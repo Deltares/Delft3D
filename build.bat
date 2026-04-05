@@ -1,25 +1,34 @@
 @ echo off
 
 setlocal enabledelayedexpansion
-set config=
-set -config=
-set -help=
+rem Default arguments.
+rem No default value means that the option is a flag that is either on or off.
+rem A variable that can have arguments requires a default value (can be "")
+set config=fm-suite
+set sln_extension=sln
 set build=
-set -build=
-set generator=
-set vs=
-set -vs=
-set ifort=
-set -ifort=
+set vs=0
 set coverage=
-set -coverage=
-set build_type=
-set -build_type=
+set build_type=Debug
 set keep_build=
-set -keep_build=
-set cmake=cmake
+set compiler=ifx
 
-rem # Jump to the directory where this build.bat script is
+rem Non-argument variables
+set generator=
+set cmake=cmake
+set oneapi=
+
+rem Argument variables
+set -help=
+set -config=
+set -build=
+set -vs=
+set -coverage=
+set -build_type=
+set -keep_build=
+set -compiler=
+
+rem Jump to the directory where this build.bat script is
 cd %~dp0
 set root=%CD%
 
@@ -33,13 +42,15 @@ call :check_cmake_installation
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 echo.
+echo     oneapi      : !oneapi!
+echo     compiler    : !compiler!
+echo     vs          : !vs!
 echo     config      : !config!
 echo     generator   : !generator!
-echo     ifort       : !ifort!
-echo     build       : !build!
-echo     coverage    : !coverage!
-echo     vs          : !vs!
 echo     build_type  : !build_type!
+echo     build       : !build!
+echo     keep_build  : !keep_build!
+echo     coverage    : !coverage!
 
 call :checks
 if !ERRORLEVEL! NEQ 0 exit /B %~1
@@ -64,7 +75,7 @@ if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 
 echo.
-echo Generated Visual Studio solution file: %root%\build_%config%\%config%.sln
+echo Generated Visual Studio solution file: %root%\build_%config%\%config%.%sln_extension%
 echo Finished
 goto :end
 
@@ -77,10 +88,10 @@ rem === Command line arguments    ===
 rem =================================
 :get_arguments
     echo.
-    echo Get command line arguments ...
+    echo Get command line arguments...
 
     rem Read arguments
-    set "options=-config:all -help: -vs:0 -ifort:0 -coverage: -build: -build_type:Debug -keep_build:"
+    set "options=-config:!config! -help:!help! -vs:!vs! -compiler:!compiler! -coverage:!coverage! -build:!build! -build_type:!build_type! -keep_build:!keep_build!"
     rem see: https://stackoverflow.com/questions/3973824/windows-bat-file-optional-argument-parsing answer 2.
     for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
     :loop
@@ -103,14 +114,16 @@ rem =================================
         goto :usage
     )
 
-    set configs="all delft3d4 delft3dfm dflowfm dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
-    set "modified=!configs:%-config%=!"
-    if !modified!==%configs% (
-        echo ERROR: Configuration !-config! not recognized
+    set config=!-config!
+
+    set compilers="ifort ifx"
+    set "modified=!compilers:%-compiler%=!"
+    if !modified!==!compilers! (
+        echo ERROR: Compiler !-compiler! not recognized
         goto :argument_error
     )
 
-    set config=!-config!
+    set compiler=!-compiler!
 
     if !-coverage! == 1 (
         set coverage=1
@@ -152,42 +165,43 @@ rem === Get environment variables ===
 rem =================================
 :get_environment_vars
     echo.
-    echo Attempting to find latest versions of ifort and Visual Studio based on environment variables ...
+    echo Attempting to find latest versions of Intel OneAPI and Visual Studio based on environment variables...
 
     if NOT "%IFORT_COMPILER16%" == "" (
-        set ifort=16
+        set oneapi=16
         echo Found: Intel Fortran 2016
     )
     if NOT "%IFORT_COMPILER18%" == "" (
-        set ifort=18
+        set oneapi=18
         echo Found: Intel Fortran 2018
     )
     if NOT "%IFORT_COMPILER19%" == "" (
-        set ifort=19
+        set oneapi=19
         echo Found: Intel Fortran 2019
     )
     if NOT "%IFORT_COMPILER21%" == "" (
-        set ifort=21
+        set oneapi=21
         echo Found: Intel Fortran 2021
     )
     if NOT "%IFORT_COMPILER23%" == "" (
-        set ifort=23
+        set oneapi=23
         echo Found: Intel Fortran 2023
     )
     if NOT "%IFORT_COMPILER24%" == "" (
-        set ifort=24
+        set oneapi=24
         echo Found: Intel Fortran 2024
     )
-
-    if "!ifort!" == "" (
-        echo Warning: Could not find ifort version in environment.
+    if NOT "%IFORT_COMPILER25%" == "" (
+        set oneapi=25
+        echo Found: Intel Fortran 2025
     )
 
-    if NOT !-ifort! == 0 (
-        echo Overriding automatically found ifort version !ifort! with argument !-ifort!
-        set ifort=!-ifort!
-    ) else if "!ifort!" == "" (
-        echo Error: ifort not set. Please ensure that ifort is installed and run build.bat from a prompt with the right environment set.
+    if "!oneapi!" == "" (
+        echo Warning: Could not find Intel OneAPI version in environment.
+    )
+
+    if "!oneapi!" == "" (
+        echo Error: oneapi not set. Please ensure that Intel OneAPI is installed and run build.bat from a prompt with the right environment set.
         set ERRORLEVEL=1
         goto :end
     )
@@ -228,17 +242,22 @@ rem =================================
         echo Found: VisualStudio 17 2022
     )
 
-    if "!vs!" == "" (
+    if "%VisualStudioVersion%" == "18.0" (
+        set vs=2026
+        set sln_extension=slnx
+        echo Found: VisualStudio 18 2026
+    )
+
+    if "!vs!" == "0" (
         echo Warning: Could not find Visual Studio version in environment.
     )
 
-    if NOT !-vs! == 0 (
+    if NOT "!-vs!" == "0" (
         echo Overriding automatically found VS version !vs! with argument !-vs!
         set vs=!-vs!
-    ) else if "!vs!" == "" (
-        echo Error: Visual Studio not found. Please ensure that Visual Studio is installed and run build.bat from a prompt with the right environment set.
-        set ERRORLEVEL=1
-        goto :end
+    ) else if "!vs!" == "0" (
+        echo Warning: Visual Studio not found nor provided by -vs. Please ensure that Visual Studio is installed and run build.bat from a prompt with the right environment set.
+        echo Continuing without specifying the generator, using the CMake default.
     )
     goto :eof
 
@@ -247,7 +266,7 @@ rem === Check CMake installation ===
 rem ================================
 :check_cmake_installation
     echo.
-    echo Checking whether CMake is installed ...
+    echo Checking whether CMake is installed...
     set count=1
     for /f "tokens=* usebackq" %%f in (`!cmake! --version`) do (
       if !count! LEQ 1 (
@@ -259,7 +278,7 @@ rem ================================
         echo !cmake! version: !var1:~13,20!
     ) else (
 
-        echo !cmake! not found, trying with default path ...
+        echo !cmake! not found, trying with default path...
         set cmake="c:/Program Files/CMake/bin/cmake"
         set count=1
         for /f "tokens=* usebackq" %%f in (`!cmake! --version`) do (
@@ -283,6 +302,7 @@ rem =======================
 rem === Set generator  ====
 rem =======================
 :set_generator
+    set generator=
     if "!vs!" == "2017" (
         set generator="Visual Studio 15 2017"
     )
@@ -292,6 +312,13 @@ rem =======================
     if "!vs!" == "2022" (
         set generator="Visual Studio 17 2022"
     )
+    if "!vs!" == "2026" (
+        set generator="Visual Studio 18 2026"
+    )
+    set cmake_generator_arg=
+    if not "!generator!" == "" (
+        set "cmake_generator_arg=-G !generator!"
+    )
     goto :eof
 
 rem =======================
@@ -300,14 +327,6 @@ rem =======================
 :checks
     if "!config!" == "" (
         echo ERROR: config is empty.
-        set ERRORLEVEL=1
-        goto :end
-    )
-    if "!generator!" == "" (
-        echo ERROR: generator is empty.
-        echo        Possible causes:
-        echo            In prepare_sln.py:
-        echo                Chosen Visual Studio version is not installed
         set ERRORLEVEL=1
         goto :end
     )
@@ -328,7 +347,7 @@ rem =======================
         set ERRORLEVEL=1
         goto :end
     )
-    echo Calling vcvarsall.bat for VisualStudio %vs% ...
+    echo Calling vcvarsall.bat for VisualStudio %vs%...
     call "!VS%vs%INSTALLDIR!\VC\Auxiliary\Build\vcvarsall.bat" amd64
 
     rem # Execution of vcvarsall results in a jump to the C-drive. Jump back to the script directory
@@ -343,8 +362,8 @@ rem =======================
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
     call :create_cmake_dir build_!config!
-    echo Running CMake for !config! ...
-    !cmake! -S .\src\cmake -B build_!config! -G %generator% -A x64 -D CONFIGURATION_TYPE="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
+    echo Running CMake for !config!...
+    !cmake! -S .\src\cmake -B build_!config! !cmake_generator_arg! -T fortran=!compiler! -A x64 -D CONFIGURATION_TYPE:STRING="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
 
@@ -354,7 +373,7 @@ rem =======================
 :insert_coverage
     rem Insert options to implement the build objects with hooks for the code-coverage tool.
     rem This code is running from within build_%~1
-    python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.sln
+    python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.%sln_extension%
 
 rem =======================
 rem === Build =============
@@ -363,7 +382,7 @@ rem =======================
     if %build% EQU 0 goto :eof
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
-    echo Building !config! ...
+    echo Building !config!...
     !cmake! --build build_!config! --config !build_type! 1>build_!config!\build_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
@@ -374,7 +393,7 @@ rem =======================
 :create_cmake_dir
     cd /d %root%
     if %keep_build% == 0 (
-        echo Cleaning directories %root%\build_%config% and %root%\install_%config% ...
+        echo Cleaning directories %root%\build_%config% and %root%\install_%config%...
         if exist "%root%\build_%config%\" rmdir /s/q "%root%\build_%config%\" > del.log 2>&1
         if exist "%root%\install_%config%\" rmdir /s/q "%root%\install_%config%\" > del.log 2>&1
     )
@@ -390,7 +409,7 @@ rem =======================
     if !ERRORLEVEL! NEQ 0 goto :eof
 
     echo.
-    echo Installing !config! ...
+    echo Installing !config!...
     !cmake! --install build_%config% --config !build_type! 1>build_!config!\install_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
     goto :eof
@@ -405,37 +424,36 @@ rem =======================
     echo     The following actions will be executed:
     echo     - Create directory 'build_^<CONFIG^>', where ^<CONFIG^> can be specified by the -config option.
     echo       Delete it first when it already exists, unless -keep_build is specified
-    echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln' inside 'build_^<CONFIG^>'
+    echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln(x)' inside 'build_^<CONFIG^>'
     echo.
     echo [OPTIONS]: space separated list of options, sometimes followed by a value, in any order
     echo.
     echo -config ^<CONFIG^>:
-    echo   all     (default) : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo   delft3d4          : Delft3D-FLOW, D-WAQ, D-Waves
-    echo   delft3dfm         : D-Flow FM   , D-WAQ, D-Waves, DIMR
-    echo   dflowfm           : D-Flow FM
-    echo   dflowfm_interacter: D-Flow FM with Interacter
-    echo   dimr              : DIMR
-    echo   drr               : D-RR
-    echo   dwaq              : D-WAQ
-    echo   dwaves            : D-Waves
-    echo   flow2d3d          : Delft3D-FLOW
-    echo   swan              : SWAN
-    echo   tests
+    echo   all                : All products that are in fm-suite and d3d4-suite combined
+    echo   fm-suite (default) : D-Flow FM, D-WAQ, D-Waves, DIMR
+    echo   d3d4-suite         : Delft3D-FLOW, Delft3D-WAQ, Delft3D-PART, Delft3D-WAVE
+    echo   dflowfm_interacter : D-Flow FM with Interacter
+    echo   dflowfm            : D-Flow FM without Interacter
+    echo   dimr               : DIMR
+    echo   drr                : D-RR
+    echo   dwaq               : D-WAQ
+    echo   dwaves             : D-Waves
+    echo   flow2d3d           : Delft3D-FLOW
+    echo   swan               : SWAN
+    echo   fbc                : FBC-tools
     echo   tools
     echo   tools_gpl
     echo.
     echo -help: Show this help page.                                                           Example: -help
     echo -coverage: Instrument object files for code-coverage tool (codecov).                  Example: -coverage
     echo -build: Run build and install steps after running cmake.                              Example: -build
-    echo -vs: desired visual studio version. Overrides default.                                Example: -vs 2019
-    echo -ifort: desired intel fortran compiler version. Overrides default.                    Example: -ifort 21
+    echo -vs: desired visual studio version.                                                   Example: -vs 2019
+    echo -compiler: desired Intel compiler, either ifort or ifx (default).                     Example: -compiler ifx
     echo -build_type: build optimization level.                                                Example: -build_type Release
-rem extra four spaces required for aligning Example:
+rem extra four spaces required for aligning Example, compensating for ^ characters:
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
-    echo More info  : https://oss.deltares.nl/web/delft3d/source-code
-    echo About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README
+    echo More info  : https://github.com/Deltares/Delft3D
     echo.
     set ERRORLEVEL=1
     goto :end
@@ -447,7 +465,7 @@ rem =======================
     echo.
     echo.
     echo.
-    echo ERROR: Please check the log files in the build_%config% directory.
+    echo ERROR: Please check previous error messages and the CMake output in build_%config%\cmake_%config%.log.
     goto :eof
 
 rem =======================

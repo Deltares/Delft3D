@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,9 +26,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-! 
-! 
 
 !> DFM_MAX25_GETDATA - Subroutine to provide max25 filters to dfmoutput.
 !!
@@ -108,7 +105,7 @@ subroutine fmgetdata_running_mean(filename, filename_out, field_name, minmaxlst)
          do j = 1, nStations
             call write_val2string(maxvalues(j), cnum1, 1)
             call write_val2string(minvalues(j), cnum2, 1)
-            write(iunit,'(2(a12,x),2x,a)') cnum1, cnum2, trim(stations(j))
+            write(iunit,'(2(a12,1x),2x,a)') cnum1, cnum2, trim(stations(j))
          end do
       end do
       close(iunit)

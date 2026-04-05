@@ -8,7 +8,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                 & error     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -2213,7 +2213,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & sscomp    ,i(iwrk1)  , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
-                    & nto       ,r(volum0) ,r(volum1) ,hdt       , gdp       )
+                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,r(taubmx) , gdp       )
           call timer_stop(timer_bott3d, gdp)
           if (bedupd) then
                 !
@@ -3287,7 +3287,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & sscomp    ,i(iwrk1)  , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
-                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,gdp       )
+                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,r(taubmx) ,gdp       )
           call timer_stop(timer_bott3d, gdp)
        endif
        !

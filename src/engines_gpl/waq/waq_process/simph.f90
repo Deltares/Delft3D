@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -28,9 +28,9 @@ module m_simph
 contains
 
 
-    subroutine simph  (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine simph  (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         !>\file
         !>       Simple calculation of pH
 
@@ -68,18 +68,18 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
         use m_logger_helper
-        USE PHYSICALCONSTS, ONLY : CtoKelvin
+        USE PHYSICALCONSTS, ONLY : celsius_to_kelvin
         IMPLICIT REAL    (A-H, J-Z)
         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declarations, constants in source
         !
-        PARAMETER (MC = 12.0, MCO2 = 44.0, &
-                MHCO3 = 61.0, M3TOL = 1.0E-3, KELVIN = real(CtoKelvin))
+        REAL(kind = real_wp), PARAMETER :: MC = 12.0, MCO2 = 44.0, &
+                MHCO3 = 61.0, M3TOL = 1.0E-3
         integer(kind = int_wp), save :: nr_mes = 0     ! message count negative total carbonate
         integer(kind = int_wp), save :: nrmes2 = 0     ! message count negative salinity
         integer(kind = int_wp), save :: nrmes3 = 0     ! message count high salinity
@@ -97,7 +97,7 @@ contains
         !
         !     Loop over de segmenten
         !
-        DO ISEG = 1, NOSEG
+        DO ISEG = 1, num_cells
             !
             !     Eerste kenmerk actief of inactief segment
             !
@@ -105,14 +105,14 @@ contains
             !
             IF (BTEST(IKNMRK(ISEG), 0)) THEN
                 !
-                !     Map PMSA on local variables
+                !     Map process_space_real on local variables
                 !
-                SAL = PMSA(IP1)
-                CARBTOT = PMSA(IP2)
-                ALKA = PMSA(IP3)
-                TEMP = PMSA(IP4)
-                PH_MIN = PMSA(IP5)
-                PH_MAX = PMSA(IP6)
+                SAL = process_space_real(IP1)
+                CARBTOT = process_space_real(IP2)
+                ALKA = process_space_real(IP3)
+                TEMP = process_space_real(IP4)
+                PH_MIN = process_space_real(IP5)
+                PH_MAX = process_space_real(IP6)
                 !
                 !     Error messages
 
@@ -172,7 +172,7 @@ contains
                     ENDIF
                     ALKA = 1E-30
                 ENDIF
-                IF (TEMP <= -KELVIN) THEN
+                IF (celsius_to_kelvin(TEMP) <= 0.0_real_wp) THEN
                     WRITE (ILUMON, *) ' WARNING: Temperature drops below 0 Kelvin', &
                             ' segment=', ISEG, ' Temp set to 15 oC (288.15 K)'
                     TEMP = 15
@@ -181,7 +181,7 @@ contains
                 !---- Procesformuleringen ---------------------------------------
                 ! ********************************
                 ! Dissociatieconstanten afhankelijk van temperatuur en saliniteit
-                TEMPK = TEMP + KELVIN
+                TEMPK = celsius_to_kelvin(TEMP)
 
                 ! Roy et al (1993), Millero (1995)
                 LNK1 = 290.9097 - 14554.21 / TEMPK - 45.0575 * log(TEMPK) + &
@@ -253,8 +253,8 @@ contains
                 !
                 !---- Output: voorzover van toepassing --------------------
                 !
-                PMSA(IP7) = PH
-                PMSA(IP8) = CO2
+                process_space_real(IP7) = PH
+                process_space_real(IP8) = CO2
                 !
             ENDIF
             !

@@ -3,7 +3,7 @@ subroutine rdmassbal(xz        ,yz        ,kcs       ,gsqs      , &
                    & lsedtot   ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -126,7 +126,7 @@ subroutine rdmassbal(xz        ,yz        ,kcs       ,gsqs      , &
     ! Get value of Filbal. If no file name specified, then no balance output requested.
     !
     filbal = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filbal', filbal)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filbal', filbal)
     if (filbal == ' ') return
     massbal = .true.
     !

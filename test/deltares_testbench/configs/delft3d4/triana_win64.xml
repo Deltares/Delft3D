@@ -36,7 +36,6 @@
     <!--
     The order is important. Start with the following programs:
         command_prompt
-        svn
         mpi
     -->
     <programs>
@@ -45,9 +44,6 @@
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="triana" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
             <path>flow2d3d/bin/triana.exe</path>

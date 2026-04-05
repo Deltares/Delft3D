@@ -1,155 +1,178 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-  SUBROUTINE CUTCELLS(n12)
-  use m_netw
-  use gridoperations
-  implicit none
-  integer, intent(in) :: N12
-  integer :: ja, KMOD
-  integer :: K, KM, K1, K2, K3, K4, L, LL, LNU,N,N1,N2,NN, IN
-  INTEGER , ALLOCATABLE :: KNP(:), KNEW(:)
-  INTEGER :: KK(4)
+module m_cutcells_sub
 
-  DOUBLE PRECISION      :: XM, YM
+   implicit none
 
-  CALL READYY('CUTCELLS',0d0)
+   private
 
-  CALL FINDCELLS(0)                                      ! ALL FACES INSIDE LANDBOUNDARY PIECE
+   public :: cutcells
 
-  ALLOCATE (KNP (NUMP)); KNP  = 0
-  ALLOCATE (KNEW(NUML)); KNEW = 0
+contains
 
-  DO N = 1,NUMP
-     NN = netcell(N)%N
-     IF ( NN >= 4 ) THEN
-        K1     = NETCELL(N)%NOD(1)
-        KNP(N) = KC(K1)
-        DO K = 2,NN
-           K1 = NETCELL(N)%NOD(K)
-           KNP(N) = KNP(N)*KC(K1)                        ! COMPLETELY INSIDE = 1
-        ENDDO
-     ENDIF
-  ENDDO
+   subroutine CUTCELLS(n12)
+      use precision, only: dp
+      use m_crosslinkpoly, only: crosslinkpoly
+      use m_netw
+      use gridoperations
+      use m_readyy
+      use m_set_nod_adm
+      use m_new_link
 
-  KMOD = MAX(1,NUMP/100)
-  DO N = 1,NUMP
+      integer, intent(in) :: N12
+      integer :: ja, KMOD
+      integer :: K, KM, K1, K2, L, LL, LNU, N, NN
+      integer, allocatable :: KNP(:), KNEW(:)
+      integer :: KK(4)
 
-     if (mod(n,KMOD) == 0) CALL READYY('CUTCELLS', dble(n)/dble(nump))
+      real(kind=dp) :: XM, YM
 
-     IF ( KNP(N) == 0 ) THEN                             ! AT LEAST 1 POINT OUTSIDE POLYGON
+      call READYY('CUTCELLS', 0.0_dp)
 
-        NN = netcell(N)%N
+      call FINDCELLS(0) ! ALL FACES INSIDE LANDBOUNDARY PIECE
 
-        DO LL = 1,NN
+      allocate (KNP(NUMP))
+      KNP = 0
+      allocate (KNEW(NUML))
+      KNEW = 0
 
-           L  = netcell(N)%LIN(LL)
+      do N = 1, NUMP
+         NN = netcell(N)%N
+         if (NN >= 4) then
+            K1 = NETCELL(N)%NOD(1)
+            KNP(N) = KC(K1)
+            do K = 2, NN
+               K1 = NETCELL(N)%NOD(K)
+               KNP(N) = KNP(N) * KC(K1) ! COMPLETELY INSIDE = 1
+            end do
+         end if
+      end do
 
-           IF (KNEW(L) == 0) THEN
+      KMOD = max(1, NUMP / 100)
+      do N = 1, NUMP
 
-              CALL CROSSLINKPOLY(L,0,0,(/0/),(/0/),XM,YM,JA)
+         if (mod(n, KMOD) == 0) then
+            call READYY('CUTCELLS', real(n, kind=dp) / real(nump, kind=dp))
+         end if
 
-              IF ( JA == 1 ) THEN
-                 CALL DSETNEWPOINT( XM, YM, KM )
-                 KNEW(L) = KM
-              ENDIF
+         if (KNP(N) == 0) then ! AT LEAST 1 POINT OUTSIDE POLYGON
 
-           ENDIF
+            NN = netcell(N)%N
 
-        ENDDO
+            do LL = 1, NN
 
-     ENDIF
+               L = netcell(N)%LIN(LL)
 
-  ENDDO
+               if (KNEW(L) == 0) then
 
-  DO N  = 1,NUMP
+                  call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
 
-     K  = 0
-     NN = netcell(N)%N
-     DO LL = 1,NN
+                  if (JA == 1) then
+                     call DSETNEWPOINT(XM, YM, KM)
+                     KNEW(L) = KM
+                  end if
 
-        L  = netcell(N)%LIN(LL)
-        K1 = KN(1,L) ; K2 = KN(2,L)
+               end if
 
-        IF ( KNP(N) == 0 ) THEN                             ! SHOULD BE HANDLED
+            end do
 
-           IF (KNEW(L) .NE. 0) THEN                         ! NIEUW PUNT KOPPELEN
+         end if
 
-              IF (KNEW(L) > 0) THEN
-                 IF (KC(K1) == 1) THEN
-                    CALL NEWLINK( KNEW(L), K2, LNU)
-                 ELSE
-                    CALL NEWLINK( KNEW(L), K1, LNU)
-                 ENDIF
-                 KNEW(L) = -1*KNEW(L)
-              ENDIF
-              K     = K + 1
-              KK(K) = IABS(KNEW(L))
+      end do
 
-           ENDIF
+      do N = 1, NUMP
 
-        ENDIF
+         K = 0
+         NN = netcell(N)%N
+         do LL = 1, NN
 
-     ENDDO
+            L = netcell(N)%LIN(LL)
+            K1 = KN(1, L)
+            K2 = KN(2, L)
 
+            if (KNP(N) == 0) then ! SHOULD BE HANDLED
 
-     IF (K >= 2) THEN
-        CALL NEWLINK(KK(1), KK(2), LNU)
-     ENDIF
+               if (KNEW(L) /= 0) then ! NIEUW PUNT KOPPELEN
 
-     IF (K >= 3) THEN
-        CALL NEWLINK(KK(2), KK(3), LNU)
-     ENDIF
+                  if (KNEW(L) > 0) then
+                     if (KC(K1) == 1) then
+                        call NEWLINK(KNEW(L), K2, LNU)
+                     else
+                        call NEWLINK(KNEW(L), K1, LNU)
+                     end if
+                     KNEW(L) = -1 * KNEW(L)
+                  end if
+                  K = K + 1
+                  KK(K) = abs(KNEW(L))
 
-     IF (K >= 4) THEN
-        CALL NEWLINK(KK(3), KK(4), LNU)
-     ENDIF
-  ENDDO
+               end if
 
-  IF (N12 .NE. 4) THEN
-     DO L = 1, NUML
-        K1 = KN(1,L) ; K2 = KN(2,L) ! NETPUNTEN DIE NIET IN NUMP VOORKWAMEN OOK MAAR GELIJK WEG
-        IF (K1 .NE. 0 .AND. K2 .NE. 0) THEN
-           IF  (KC(K1) == 1 .OR. KC(K2) == 1) THEN
-               KN(1,L) = 0 ; KN(2,L) = 0
-           ENDIF
-        ENDIF
-     ENDDO
-  ENDIF
+            end if
 
-  DEALLOCATE(KNP,KNEW)
+         end do
 
-  CALL SETNODADM(0)
+         if (K >= 2) then
+            call NEWLINK(KK(1), KK(2), LNU)
+         end if
 
-  CALL READYY('CUTCELLS', -1d0)
+         if (K >= 3) then
+            call NEWLINK(KK(2), KK(3), LNU)
+         end if
 
-  END SUBROUTINE CUTCELLS
+         if (K >= 4) then
+            call NEWLINK(KK(3), KK(4), LNU)
+         end if
+      end do
+
+      if (N12 /= 4) then
+         do L = 1, NUML
+            K1 = KN(1, L)
+            K2 = KN(2, L) ! NETPUNTEN DIE NIET IN NUMP VOORKWAMEN OOK MAAR GELIJK WEG
+            if (K1 /= 0 .and. K2 /= 0) then
+               if (KC(K1) == 1 .or. KC(K2) == 1) then
+                  KN(1, L) = 0
+                  KN(2, L) = 0
+               end if
+            end if
+         end do
+      end if
+
+      deallocate (KNP, KNEW)
+
+      call SETNODADM(0)
+
+      call READYY('CUTCELLS', -1.0_dp)
+
+   end subroutine CUTCELLS
+
+end module m_cutcells_sub

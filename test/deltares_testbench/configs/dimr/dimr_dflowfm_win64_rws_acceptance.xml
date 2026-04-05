@@ -37,7 +37,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -45,9 +44,6 @@
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
             <shell ref="command_prompt"/>
@@ -74,7 +70,6 @@
                 <program ref="dimr">
                     <arguments>
                         <argument>dimr.xml</argument>
-                        <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
                     </arguments>
                 </program>
             </programs>
@@ -93,7 +88,7 @@
     <testCases>
         <!-- ======================================================================== -->
         <testCase name="e02_f091_c040_rws_waal" ref="dimr_trunk">
-            <path version="2024-01-11T16:30:00">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
+            <path version="2025-08-11T16:08:07.789000">e02_dflowfm/f091_rws_acceptance/c040_rws_waal</path>
             <maxRunTime>7200.0</maxRunTime> <!-- seconds -->
              <checks>
                 <file name="dflowfm/resultaten/Q10165_his.nc" type="NETCDF">

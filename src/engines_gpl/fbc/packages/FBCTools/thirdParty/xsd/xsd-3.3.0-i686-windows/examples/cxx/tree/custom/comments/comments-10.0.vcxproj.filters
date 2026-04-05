@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{97CD019E-CFDE-4879-AB8C-97DB3B526F92}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{8E3E001B-1C7C-4383-A18D-B83AA525773F}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Inline Files">
+      <UniqueIdentifier>{07ed52c5-d0a0-4659-9a65-2ee052612d2c}</UniqueIdentifier>
+      <Extensions>ixx</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{515a4811-9a34-429e-9c6d-3b771934d8db}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dom-parse.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="people.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="xml-schema-custom.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="dom-parse.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="people.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xml-schema-custom.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xml-schema.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="people.ixx">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="people.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

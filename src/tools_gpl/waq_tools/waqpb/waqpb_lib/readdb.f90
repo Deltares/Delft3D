@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -27,24 +27,59 @@
 !
 !
 
-subroutine readdb(lu_inp, lu_mes)
+subroutine readdb(lu_inp, lu_mes, csv_folder)
     use m_validate_input, only: validate_names, validate_units
     use m_waqpb_data
     use m_string_utils, only: index_in_array, string_equals
 
     integer  :: lu_inp  !< Logical unit number for input
     integer  :: lu_mes  !< Logical unit number for messages (logging)
+    character(len=*), intent(in) :: csv_folder !< Folder containing the CSV files
 
-    character*255 c255
-    character*10 chkcnf(nconfm),c10
-    character*1  swicnf(nconfm),c1dum
-    integer      jndex , iproc , iconf , ipos  , ihulp , idum(1), error
+    character(len=255) c255
+    character(len=255) :: all_csv_files_name(14) !< Array of database CSV file names to check existence
+    character(len=10) chkcnf(nconfm),c10
+    character(len=1)  swicnf(nconfm),c1dum
+    logical :: file_exists
+    integer :: count_csv_files_missing
+    integer      i, jndex , iproc , iconf , ipos  , ihulp , idum(1), error
 
+
+    ! Check if all *.csv files exist before reading
+    all_csv_files_name = [csv_folder//'grpsub.csv', &
+                          csv_folder//'items.csv', &
+                          csv_folder//'fortran.csv', &
+                          csv_folder//'proces.csv', &
+                          csv_folder//'config.csv', &
+                          csv_folder//'con_pro.csv', &
+                          csv_folder//'con_sub.csv', &
+                          csv_folder//'inputs.csv', &
+                          csv_folder//'outputs.csv', &
+                          csv_folder//'outpflx.csv', &
+                          csv_folder//'stochi.csv', &
+                          csv_folder//'velocs.csv', &
+                          csv_folder//'disps.csv', &
+                          csv_folder//'old_items.csv']
+    file_exists = .true.
+    count_csv_files_missing = 0
+    do i = 1, size(all_csv_files_name)
+        inquire (file=all_csv_files_name(i), exist=file_exists)
+        if (.not. file_exists) then
+            count_csv_files_missing = count_csv_files_missing + 1
+            write (*, '(A,A,A)') 'Error: the file "', trim(all_csv_files_name(i)), '" cannot be found.'
+        end if
+    end do
+    if (count_csv_files_missing > 0) then
+        write(*, *)
+        write (*, '(A, I0, A)') 'Error: ', count_csv_files_missing, ' *.csv file(s) missing (see information above). Program stopped.'
+        stop 1
+    end if
 
     !Read database containing Processes Library
 
     !Read Table P1
-    open(newunit = lu_inp, file='grpsub.csv')
+
+    open(newunit = lu_inp, file=(csv_folder//'grpsub.csv'))
     read(lu_inp, *)
     nsgrp = 0
   5 if (nsgrp+1>nsgrpm) stop 'dimension NSGRPM'
@@ -56,7 +91,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read Table P2
-    open(newunit=lu_inp, file='items.csv')
+    open(newunit=lu_inp, file=(csv_folder//'items.csv'))
     read(lu_inp, *)
     nitem = 0
  10 if (nitem+1>nitemm) stop 'dimension NITEMM'
@@ -74,7 +109,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read Table P3
-    open(newunit=lu_inp, file='fortran.csv')
+    open(newunit=lu_inp, file=(csv_folder//'fortran.csv'))
     read(lu_inp, *)
     nfort = 0
  15 if (nfort+1>nfortm) stop 'dimension NFORTM'
@@ -89,7 +124,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read Table P4
-    open(newunit=lu_inp, file='proces.csv')
+    open(newunit=lu_inp, file=(csv_folder//'proces.csv'))
     read(lu_inp, *)
     nproc = 0
  20 if (nproc+1>nprocm) stop 'dimension NprocM'
@@ -105,7 +140,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table P5
-    open(newunit=lu_inp, file='config.csv')
+    open(newunit=lu_inp, file=(csv_folder//'config.csv'))
     read(lu_inp, *)
     nconf = 0
 100 if (nconf+1>nconfm) stop 'dimension NconfM'
@@ -119,7 +154,7 @@ subroutine readdb(lu_inp, lu_mes)
 
     !Read table R1
     write(lu_mes,'(5x,'' processing file CON_PRO.CSV ...'')')
-    open(newunit=lu_inp, file='con_pro.csv')
+    open(newunit=lu_inp, file=(csv_folder//'con_pro.csv'))
     read(lu_inp, *) c10,(chkcnf(iconf),iconf=1,nconf)
     !Check consistency beween Config and Con_pro files
     do 110 iconf = 1,nconf
@@ -167,7 +202,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R2
-    open(newunit=lu_inp, file='con_sub.csv')
+    open(newunit=lu_inp, file=(csv_folder//'con_sub.csv'))
     read(lu_inp, *)
     ncnsb = 0
 130 if (ncnsb+1>ncnsbm) stop 'dimension ncnsb'
@@ -180,7 +215,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R3
-    open(newunit=lu_inp, file='inputs.csv')
+    open(newunit=lu_inp, file=(csv_folder//'inputs.csv'))
     read(lu_inp, *)
     ninpu = 0
  40 if (ninpu+1>ninpum) stop 'dimension NinpuM'
@@ -199,7 +234,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R4
-    open(newunit=lu_inp, file='outputs.csv')
+    open(newunit=lu_inp, file=(csv_folder//'outputs.csv'))
     read(lu_inp, *)
     noutp = 0
  50 if (noutp+1>noutpm) stop 'dimension NoutpM'
@@ -218,7 +253,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R5
-    open(newunit=lu_inp, file='outpflx.csv')
+    open(newunit=lu_inp, file=(csv_folder//'outpflx.csv'))
     read(lu_inp, *)
     noutf = 0
  60 if (noutf+1>noutfm) stop 'dimension NoutfM'
@@ -237,7 +272,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R6
-    open(newunit=lu_inp, file='stochi.csv')
+    open(newunit=lu_inp, file=(csv_folder//'stochi.csv'))
     read(lu_inp, *)
     nstoc = 0
  70 if (nstoc+1>nstocm) stop 'dimension NstocM'
@@ -254,7 +289,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R7
-    open(newunit=lu_inp, file='velocs.csv')
+    open(newunit=lu_inp, file=(csv_folder//'velocs.csv'))
     read(lu_inp, *)
     nvelo = 0
  90 if (nvelo+1>nvelom) stop 'dimension NveloM'
@@ -271,7 +306,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R8
-    open(newunit=lu_inp, file='disps.csv')
+    open(newunit=lu_inp, file=(csv_folder//'disps.csv'))
     read(lu_inp, *)
     ndisp = 0
  80 if (ndisp+1>ndispm) stop 'dimension NdispM'
@@ -288,7 +323,7 @@ subroutine readdb(lu_inp, lu_mes)
 
 
     !Read table R9
-    open(newunit=lu_inp, file='table5.csv')
+    open(newunit=lu_inp, file=(csv_folder//'table5.csv'))
     read(lu_inp, * , end = 202)
     nmodv = 0
 200 if (nmodv+1>nmodvm) stop 'dimension NmodvM'
@@ -300,7 +335,7 @@ subroutine readdb(lu_inp, lu_mes)
     write(lu_mes,'(i5,'' lines read from TABLE5.CSV'')') nmodv
 202 continue
     !Table old_items
-    open(newunit=lu_inp, file='old_items.csv')
+    open(newunit=lu_inp, file=(csv_folder//'old_items.csv'))
     read(lu_inp, * , end = 302)
     n_old_items = 0
 300 if (n_old_items+1>n_old_items_max) stop 'dimension n_old_items_max'
@@ -321,24 +356,24 @@ subroutine readdb(lu_inp, lu_mes)
 end subroutine readdb
 
 
-subroutine writdb(lu)
+subroutine writdb(lu, csv_folder)
     use m_waqpb_data
     integer :: lu !< logical unit number
-
+    character(len=*), intent(in) :: csv_folder !< Folder containing the CSV files
     integer iproc, iconf, i
-    character*10 c10
-    character*1  swicnf(nconfm)
+    character(len=10) c10
+    character(len=1)  swicnf(nconfm)
 
     !Table P1
-    open(newunit=lu, file='grpsub.csv')
+    open(newunit=lu, file=(csv_folder//'grpsub.csv'))
     write(lu,'(''sgrpid,sgrpnm'')')
     if (nsgrp>0) then
-        write(lu,'(''"'',a30,''","'',a50,''"'')') (sgrpid(i),sgrpnm(i),i=1,nsgrp)
+        write(lu,'(''"'',a30,''","'',a50,''"''))') (sgrpid(i),sgrpnm(i),i=1,nsgrp)
     end if
     close(lu)
 
     !Table P2
-    open(newunit=lu, file='items.csv')
+    open(newunit=lu, file=(csv_folder//'items.csv'))
     write(lu,'(''itemid,itemse,itemex,itemde,itemun,itemnm,'', &
             ''itemag,itemda,itemwk,itemgr'')')
     if (nitem>0) then
@@ -350,18 +385,16 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table P3
-    open(newunit=lu, file='fortran.csv')
+    open(newunit=lu, file=(csv_folder//'fortran.csv'))
     write(lu,'(''fortid'')')
     if (nfort>0) then
         write(lu,'(''"'',a10,''"'')') (fortid(i),i=1,nfort)
     end if
     close(lu)
 
-
     !Table P4
-    open(newunit=lu, file='proces.csv')
+    open(newunit=lu, file=(csv_folder//'proces.csv'))
     write(lu,'(''procid,procco,procfo,procnm'')')
     if (nproc>0) then
         write(lu,'(''"''a10,''",'',i3,'',"'',a10,''","'',a50,''"'')') &
@@ -369,9 +402,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table P5
-    open(newunit=lu, file='config.csv')
+    open(newunit=lu, file=(csv_folder//'config.csv'))
     write(lu,'(''confid,confnm'')')
     if (nconf>0)  then
         write(lu,'(''"'',a10,''","'',a50,''"'')') &
@@ -379,9 +411,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R1
-    open(newunit=lu, file='con_pro.csv')
+    open(newunit=lu, file=(csv_folder//'con_pro.csv'))
     c10 = 'Config:'
     write(lu, '(''"'',a10,''"'',99('',"'',a10,''"''))') &
             c10,(confid(i),i=1,nconf)
@@ -398,9 +429,8 @@ subroutine writdb(lu)
 300 continue
     close(lu)
 
-
     !Table R2
-    open(newunit=lu, file='con_sub.csv')
+    open(newunit=lu, file=(csv_folder//'con_sub.csv'))
     write(lu,'(''r2_cid,r2_sid'')')
     if (ncnsb>0) then
         write(lu,'(''"'',a10,''","'',a10,''"'')') &
@@ -408,9 +438,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R3
-    open(newunit=lu, file='inputs.csv')
+    open(newunit=lu, file=(csv_folder//'inputs.csv'))
     write(lu,'(''inpupr,inpuit,inpunm,inpude,inpudo,inpusx'')')
     if (ninpu>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1, &
@@ -420,9 +449,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R4
-    open(newunit=lu, file='outputs.csv')
+    open(newunit=lu, file=(csv_folder//'outputs.csv'))
     write(lu,'(''outppr,outpit,outpnm,outpdo,outpsx'')')
     if (noutp>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1, &
@@ -431,9 +459,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R5
-    open(newunit=lu, file='outpflx.csv')
+    open(newunit=lu, file=(csv_folder//'outpflx.csv'))
     write(lu,'(''outfpr,outffl,outfnm,outfdo'')')
     if (noutf>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',i4,'',"'',a1,''"'')') &
@@ -441,9 +468,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R6
-    open(newunit=lu, file='stochi.csv')
+    open(newunit=lu, file=(csv_folder//'stochi.csv'))
     write(lu,'(''stocfl,stocsu,stocsc'')')
     if (nstoc>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',f10.5)') &
@@ -451,9 +477,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R7
-    open(newunit=lu, file='velocs.csv')
+    open(newunit=lu, file=(csv_folder//'velocs.csv'))
     write(lu,'(''veloit,velosu,velosc'')')
     if (nvelo>0) then
         write(lu,'(''"''a10,''","'',a10,''",'',f10.5)') &
@@ -461,9 +486,8 @@ subroutine writdb(lu)
     end if
     close(lu)
 
-
     !Table R8
-    open(newunit=lu, file='disps.csv')
+    open(newunit=lu, file=(csv_folder//'disps.csv'))
     write(lu,'(''dispit,dispsu,dispsc'')')
     if (ndisp>0) then
         write(lu,'(''"''a10,''","'',a10,''",'',f10.5)') &
@@ -473,7 +497,7 @@ subroutine writdb(lu)
 
 
     !Table old_items
-    open(newunit=lu, file='old_items.csv')
+    open(newunit=lu, file=(csv_folder//'old_items.csv'))
     write(lu,'(''old_name,new_name,old_default,configuration,serial,action_type'')')
     if (n_old_items>0) then
         write(lu,'(''"'',a10,''","'',a10,''",'',g15.6,'',"'',a10,''",'',i10,'','',i10)') &

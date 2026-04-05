@@ -39,7 +39,6 @@
     <!--
     The order is important. Start with the following programs:
         command_prompt
-        svn
         mpi
     -->
     <programs>
@@ -48,9 +47,6 @@
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="coupsds" logOutputToFile="true" programStringRemoveQuotes="true">
             <shell ref="command_prompt"/>

@@ -1,53 +1,59 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !
-      SUBROUTINE INQASP(ASP)
-      USE M_DEVICES
-      implicit none
-      double precision :: asp
-      double precision :: dx
-      double precision :: dy
-      integer :: jaxis
-      integer :: nunix
-      double precision :: xleft
-      double precision :: xright
-      double precision :: ybot
-      double precision :: ytop
-      COMMON /SCREENAREA/ XLEFT,YBOT,JAXIS
-      YTOP   = MAX(0.95d0,1 - YBOT)
-      XRIGHT = MAX(0.90d0,1 - XLEFT)
-      DX     = XRIGHT- XLEFT
-      DY     = YTOP  - YBOT
-      ASP    = ( DY*dble(NPY) ) / ( DX*dble(NPX) )
-      RETURN
-      END
+module m_inqasp
+
+   implicit none
+
+contains
+
+   subroutine INQASP(ASP)
+      use precision, only: dp
+      use m_devices, only: npy, npx
+      use m_screenarea, only: ybot, xleft
+
+      real(kind=dp) :: asp
+      real(kind=dp) :: dx
+      real(kind=dp) :: dy
+      real(kind=dp) :: xright
+      real(kind=dp) :: ytop
+
+      YTOP = max(0.95_dp, 1 - YBOT)
+      XRIGHT = max(0.90_dp, 1 - XLEFT)
+      DX = XRIGHT - XLEFT
+      DY = YTOP - YBOT
+      ASP = (DY * real(NPY, kind=dp)) / (DX * real(NPX, kind=dp))
+      return
+   end
+
+end module m_inqasp

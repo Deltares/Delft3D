@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@
 
 module delwaq_exe_version_module
     use waq_static_version_info
-
+    use m_waq_precision
     implicit none
 
     character(*), private, parameter :: component_name = 'DELWAQ'

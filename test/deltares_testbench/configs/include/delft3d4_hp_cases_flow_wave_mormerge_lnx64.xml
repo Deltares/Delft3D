@@ -25,7 +25,7 @@
 				
 				-->
 
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e25_f01_c03-groin4_wave" ref="flow2d3d_default">
 			<path version="2024-02-22T14:50:00">e25_d3dflow-wave-mormerge/f01_general/c03-groin4_wave</path>
 			<programs>

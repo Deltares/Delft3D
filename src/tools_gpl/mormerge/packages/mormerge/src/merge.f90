@@ -1,7 +1,7 @@
 subroutine merge (inputfile, workdir, runid)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -68,8 +68,6 @@ subroutine merge (inputfile, workdir, runid)
     integer                                             :: loopcount
     integer                                             :: lundia
     integer                                             :: lunfil
-    integer                                             :: lunin
-    integer                                             :: lunout
     integer                                             :: scanmode
     integer, external                                   :: createstream
     integer       , dimension(:)  , allocatable         :: handles         ! data stream handles

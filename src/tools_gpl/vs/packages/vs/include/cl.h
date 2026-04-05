@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,10 +28,8 @@
 // $HeadURL$
 
 #ifndef _CL_INCLUDED
-#   define _CL_INCLUDED
-    extern struct St_cel * CL_find_cell_in_tree (
-                                     struct St_cel *, const BText );
-    extern BVoid           CL_remove_cell_branche (struct St_cel *);
-    extern struct St_cel * CL_add_cell_to_tree (
-                                     struct St_cel *, const BText);
+#define _CL_INCLUDED
+extern struct St_cel* CL_find_cell_in_tree(struct St_cel*, const BText);
+extern BVoid CL_remove_cell_branche(struct St_cel*);
+extern struct St_cel* CL_add_cell_to_tree(struct St_cel*, const BText);
 #endif

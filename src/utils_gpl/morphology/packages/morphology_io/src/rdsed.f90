@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,6 +29,7 @@
 !-------------------------------------------------------------------------------
 module m_rdsed
 use m_depfil_stm
+use m_combinepaths, only: combinepaths
 
 private
 
@@ -75,6 +76,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                           , pointer :: sc_cmf1
     real(fp)                           , pointer :: sc_cmf2
     real(fp)                           , pointer :: sc_flcf
+    real(fp)                           , pointer :: d_micro
+    real(fp)                           , pointer :: ustar_macro
     integer                            , pointer :: nmudfrac
     integer                            , pointer :: sc_mudfac
     logical          , dimension(:)    , pointer :: cmpupdfrac
@@ -150,15 +153,12 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 ! Local variables
 !
     integer                     :: i
-    integer                     :: iocond
     integer                     :: isize
     integer                     :: istat
     integer(pntrsize)           :: istat_ptr
     integer                     :: j
     integer                     :: l
-    integer                     :: lbl                 !< bedload fraction number: lbl = l - lsed
     integer                     :: lenc                !< Help var. (length of character var.) 
-    integer                     :: lfile
     integer                     :: luninp
     integer                     :: n                   !< Temporary storage for nseddia(l)
     integer                     :: nclayfrac           ! Number of clay fractions
@@ -170,21 +170,20 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     real(fp)                    :: sedsg               !< Temporary storage for geometric standard deviation
     real(fp)                    :: tpsmud, tpssand
     logical                     :: ex
+    logical                     :: is_float
     logical                     :: success
     character(11)               :: fmttmp !< Format file ('formatted  ') 
     character(20)               :: sedname
     character(256)              :: filtrn
     character(256)              :: rec
-    character(300)              :: message
     character(80)               :: parname
     character(20)               :: sc_type
-    character(20)               :: sedtype             !< Local variable for sediment type
-    character(78)               :: string
     character(10)               :: versionstring
     character(6)                :: seddxxstring
     character(256)              :: errmsg
     character(256)              :: floc_str
     character(256)              :: settle_str
+    character(:), allocatable   :: filename
     type(tree_data), pointer    :: sedblock_ptr
 !
 !! executable statements -------------------------------------------------------
@@ -196,6 +195,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     sc_cmf1              => sedpar%sc_cmf1
     sc_cmf2              => sedpar%sc_cmf2
     sc_flcf              => sedpar%sc_flcf
+    d_micro              => sedpar%d_micro
+    ustar_macro          => sedpar%ustar_macro
     flocmod              => sedpar%flocmod
     nflocpop             => sedpar%nflocpop
     nflocsizes           => sedpar%nflocsizes
@@ -403,7 +404,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Check version number of sed input file
     !
     versionstring = ' '
-    call prop_get_string(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
+    call prop_get(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
     if (versionstring == '02.00' .or. versionstring == '03.00') then
        if (versionstring == '03.00') sedpar%version = 3.0_fp
        error  = .false.
@@ -425,12 +426,10 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        enddo
        !
        iopsus = 0
-       call prop_get_integer(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
-       !
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'MudCnt', flsmdc)
+       call prop_get(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
        !
        floc_str = 'none'
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
+       call prop_get(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
        call str_lower(floc_str)
        select case (floc_str)
        case ('none')
@@ -445,18 +444,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        case ('verney_etal')
           flocmod = FLOC_VERNEY_ETAL
           nflocsizes = -999
-          call prop_get_integer(sed_ptr, 'SedimentOverall', 'NFlocSizes', nflocsizes)
-          if (nflocsizes == -999) then
-             errmsg = 'NFlocSizes must be specified when using the population balance model.'
-             call write_error(errmsg, unit=lundia)
-             error = .true.
-             return
-          elseif (nflocsizes <= 1) then
-             errmsg = 'Invalid value specified for NFlocSizes.'
-             call write_error(errmsg, unit=lundia)
-             error = .true.
-             return
-          endif
        case default
            errmsg = 'Unknown flocculation model "'//trim(floc_str)//'" specified.'
            call write_error(errmsg, unit=lundia)
@@ -464,8 +451,36 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
            return
        end select
        !
+       call prop_get(sed_ptr, 'SedimentOverall', 'NFlocSizes', nflocsizes)
+       select case (flocmod)
+       case (FLOC_MANNING_DYER, FLOC_CHASSAGNE_SAFAR)
+          if (nflocsizes /= 1 .and. nflocsizes /= 2) then
+             errmsg = 'NFlocSizes must be 1 or 2 for the selected flocculation model.'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          endif
+       case (FLOC_VERNEY_ETAL)
+          if (nflocsizes == -999) then
+             errmsg = 'NFlocSizes must be specified when using the population balance model.'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          elseif (nflocsizes < 1) then
+             errmsg = 'Invalid value specified for NFlocSizes.'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+          endif
+       end select
+       !
        if (flocmod /= FLOC_NONE) then
           nflocpop = nclayfrac / nflocsizes
+          !
+          if (istat==0) allocate (sedpar%namflocpop(nflocpop), stat = istat)
+          namflocpop    => sedpar%namflocpop
+          namflocpop = ' '
+          !
           if (nflocpop * nflocsizes /= nclayfrac) then
              write(errmsg,'(a,i0,a,i0,a)') 'The number of clay fractions (',nclayfrac,') is not a multiple of the number of floc sizes (',nflocsizes,').'
              call write_error(errmsg, unit=lundia)
@@ -476,46 +491,46 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           call prop_get(sed_ptr, 'SedimentOverall', 'TFloc', sedpar%tfloc)
           sedpar%tbreakup = sedpar%tfloc
           call prop_get(sed_ptr, 'SedimentOverall', 'TBreakUp', sedpar%tbreakup)
+          !
+          call prop_get(sed_ptr, 'SedimentOverall', 'DiaMicro', d_micro)
+          call prop_get(sed_ptr, 'SedimentOverall', 'UstarMacro', ustar_macro)
        endif
        !
        sedpar%flnrd(0) = ' '
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'NodeRelations', sedpar%flnrd(0))
+       call prop_get(sed_ptr, 'SedimentOverall', 'NodeRelations', sedpar%flnrd(0))
        if (sedpar%flnrd(0) .ne. ' ') then
-          call combinepaths(filsed, sedpar%flnrd(0))
+          filename = combinepaths(filsed, sedpar%flnrd(0))
+          sedpar%flnrd(0) = filename
        endif
        !
-       !
-       ! Intel 7.0 crashes on an inquire statement when file = ' '
-       !
-       if (flsmdc == ' ') then
-          ex = .false.
-       else
-          call combinepaths(filsed, flsmdc)
-          inquire (file = flsmdc, exist = ex)
-       endif
-       if (ex) then
-          !
-          ! Space varying data has been specified
-          ! Use routine that also read the depth file to read the data
-          !
-          call depfil_stm(lundia    ,error     ,flsmdc    ,fmttmp    , &
-                        & mudcnt    ,1         ,1         ,griddim   , errmsg)
-          if (error) then
-              call write_error(errmsg, unit=lundia)
-              return
-          endif
-          do nm = 1, griddim%nmmax
-             mudcnt(nm) = max(0.0_fp, min(mudcnt(nm), 1.0_fp))
-          enddo
-       else
-          flsmdc = ' '
-          mdcuni = 0.0_fp
-          call prop_get(sed_ptr, 'SedimentOverall', 'MudCnt', mdcuni)
+       mdcuni = 0.0_fp
+       call prop_get(sed_ptr, 'SedimentOverall', 'MudCnt', filsed, is_float, mdcuni, filename)
+       if (is_float) then
           !
           ! Uniform data has been specified
           !
           mudcnt = max(0.0_fp,min(mdcuni,1.0_fp))
-       endif
+       else
+          inquire (file = filename, exist = ex)
+          if (ex) then
+             !
+             ! Space varying data has been specified
+             ! Use routine that also read the depth file to read the data
+             !
+             flsmdc = filename
+             call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
+                           & mudcnt    ,1         ,1         ,griddim   , errmsg)
+             if (error) then
+                 call write_error(errmsg, unit=lundia)
+                 return
+             endif
+             do nm = 1, griddim%nmmax
+                mudcnt(nm) = max(0.0_fp, min(mudcnt(nm), 1.0_fp))
+             enddo
+          else
+             call write_error('File "'//filename//'" for MudCnt not found', unit=lundia)
+          end if
+       end if
        !
        if ( .not. associated(sed_ptr%child_nodes) ) then
           errmsg = 'Unable to read sediment information'
@@ -526,42 +541,36 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        ! Sand-mud interaction parameters
        !
-       call prop_get_string(sed_ptr, 'SedimentOverall', 'PmCrit', flspmc)
-       !
-       ! Intel 7.0 crashes on an inquire statement when file = ' '
-       !
-       if (flspmc == ' ') then
-          ex = .false.
-       else
-          call combinepaths(filsed, flspmc)
-          inquire (file = flspmc, exist = ex)
-       endif
-       if (ex) then
-          !
-          ! Space varying data has been specified
-          ! Use routine that also read the depth file to read the data
-          !
-          call depfil_stm(lundia    ,error     ,flspmc    ,fmttmp    , &
-                        & pmcrit    ,1         ,1         ,griddim   )
-          if (error) return
-          do nm = 1, griddim%nmmax
-             pmcrit(nm) = min(pmcrit(nm), 1.0_fp)
-          enddo
-       else
-          flspmc = ' '
-          call prop_get(sed_ptr, 'SedimentOverall', 'PmCrit', pmcrit(1))
-          !
-          ! Explicit loop because of stack overflow
-          !
+       call prop_get(sed_ptr, 'SedimentOverall', 'PmCrit', filsed, is_float, pmcrit(1), filename)
+       if (is_float) then
           do nm = 1, griddim%nmmax
              pmcrit(nm) = min(pmcrit(1), 1.0_fp)
           enddo
-       endif
+       else
+          inquire(file=filename, exist=ex)
+          if (ex) then
+             !
+             ! Space varying data has been specified
+             ! Use routine that also read the depth file to read the data
+             !
+             call depfil_stm(lundia    ,error     ,flspmc    ,fmttmp    , &
+                           & pmcrit    ,1         ,1         ,griddim   , errmsg)
+             if (error) then
+                 call write_error(errmsg, unit=lundia)
+                 return
+             endif
+             do nm = 1, griddim%nmmax
+                pmcrit(nm) = min(pmcrit(nm), 1.0_fp)
+             enddo
+          else
+             call write_error('File "'//filename//'" for PmCrit not found', unit=lundia)
+          end if
+       end if
        !
        ! Get bed shear skin stress parameters
        !
        bsskin = .false.
-       call prop_get_logical(sed_ptr, 'SedimentOverall', 'BsSkin', bsskin)
+       call prop_get(sed_ptr, 'SedimentOverall', 'BsSkin', bsskin)
        if (bsskin) then
           call prop_get(sed_ptr, 'SedimentOverall', 'KsSilt', kssilt)
           call prop_get(sed_ptr, 'SedimentOverall', 'KsSand', kssand)
@@ -615,15 +624,16 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              if ( trim(parname) /= 'sediment') cycle
              !
              parname = ' '
-             call prop_get_string(sedblock_ptr, '*', 'Name', parname)
+             call prop_get(sedblock_ptr, '*', 'Name', parname)
              if (.not. strcmpi(parname, sedname)) cycle
              !
              ! sediment fraction found
              !
              sedpar%flnrd(l) = ' '
-             call prop_get_string(sedblock_ptr, '*', 'NodeRelations', sedpar%flnrd(l))
+             call prop_get(sedblock_ptr, '*', 'NodeRelations', sedpar%flnrd(l))
              if (sedpar%flnrd(l) .ne. ' ') then
-                call combinepaths(filsed, sedpar%flnrd(l))
+                filename = combinepaths(filsed, sedpar%flnrd(l))
+                sedpar%flnrd(l) = filename
              endif
              !
              exit
@@ -631,8 +641,18 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           sedpar%sedblock(l) = sedblock_ptr
           !
           if (flocmod /= FLOC_NONE .and. sedtyp(l) == SEDTYP_CLAY) then
+             if (nflocsizes == 1) then ! in case of a single floc size per clay population, set sensible defaults
+                 namclay(l) = namsed(l)
+                 flocsize(l) = 1
+             endif
              call prop_get(sedblock_ptr, '*', 'ClayLabel', namclay(l))
              call prop_get(sedblock_ptr, '*', 'FlocSize' , flocsize(l))
+             if (namclay(l) == ' ') then
+                errmsg = 'The ClayLabel string should not be empty for '//trim(namsed(l))
+                call write_error(errmsg, unit=lundia)
+                error = .true.
+                return
+             endif
           endif
           !
           rhosol(l) = rmissval
@@ -657,44 +677,37 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! varying grain size.
           !
           if (lsedtot == 1) then
-             call prop_get_string(sedblock_ptr, '*', 'SedD50', flsdia)
-             if (flsdia == ' ') then
+             call prop_get(sedblock_ptr, '*', 'SedD50', filsed, is_float, sedd50(l), filename)
+             if (filename == ' ' .and. comparereal(sedd50(l), rmissval) == 0) then
                 !
                 ! Alternative for SedD50 is SedDia (backward compatibility)
                 !
-                call prop_get_string(sedblock_ptr, '*', 'SedDia', flsdia)
+                call prop_get(sedblock_ptr, '*', 'SedDia', filsed, is_float, sedd50(l), filename)
              endif
-             !
-             ! Intel 7.0 crashes on an inquire statement when file = ' '
-             !
-             if (flsdia == ' ') then
-                ex = .false.
-             else
-                call combinepaths(filsed, flsdia)
-                inquire (file = flsdia, exist = ex)
+             if (.not. is_float) then
+                inquire (file = filename, exist = ex)
+                if (ex) then
+                   flsdia = filename
+                   !
+                   !  File with space varying data has been specified, read it now.
+                   !
+                   call depfil_stm(lundia    ,error     ,filename  ,fmttmp    , &
+                                 & sedd50fld ,1         ,1         ,griddim   , errmsg)
+                   if (error) then 
+                       call write_error(errmsg, unit=lundia)
+                       return
+                   endif
+                else
+                   call write_error('File "'//filename//'" for SedD50 not found', unit=lundia)
+                   error = .true.
+                   return
+                endif
              endif
-             if (ex) then
-                !
-                !  File with space varying data has been specified, read it now.
-                !
-                call depfil_stm(lundia    ,error     ,flsdia    ,fmttmp    , &
-                              & sedd50fld ,1         ,1         ,griddim   , errmsg)
-                if (error) then 
-                    call write_error(errmsg, unit=lundia)
-                    return
-                endif      
-             else
-                flsdia = ' '
-             endif
-          else
-             ex = .false.
           endif
           !
-          ! If there are multiple sediment fractions, or if no spatially
-          ! varying grain size file was specified, read the sediment size
-          ! properties.
+          ! If the grain size is not spatially varying, read all sediment size properties.
           !
-          if (.not. ex) then
+          if (flsdia == ' ') then
              do j = 0, 100
                 seddxx = rmissval
                 if (j == 0) then
@@ -748,13 +761,17 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
              if (flocmod /= FLOC_NONE .and. sedtyp(l) == SEDTYP_CLAY) then
                  select case (flocmod)
                  case (FLOC_MANNING_DYER)
-                     if (flocsize(l) == 1) then
+                     if (nflocsizes == 1) then
+                        iform_settle(l) = WS_FORM_MANNING_DYER
+                     elseif (flocsize(l) == 1) then
                         iform_settle(l) = WS_FORM_MANNING_DYER_MICRO
                      else
                         iform_settle(l) = WS_FORM_MANNING_DYER_MACRO
                      endif
                  case (FLOC_CHASSAGNE_SAFAR)
-                     if (flocsize(l) == 1) then
+                     if (nflocsizes == 1) then
+                        iform_settle(l) = WS_FORM_CHASSAGNE_SAFAR
+                     elseif (flocsize(l) == 1) then
                         iform_settle(l) = WS_FORM_CHASSAGNE_SAFAR_MICRO
                      else
                         iform_settle(l) = WS_FORM_CHASSAGNE_SAFAR_MACRO
@@ -783,8 +800,8 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                    return
                 endif
                 !
-                call prop_get_string(sedblock_ptr, '*', 'SettleFunction', dll_function_settle(l))
-                call prop_get_string(sedblock_ptr, '*', 'SettleInput'   , dll_usrfil_settle(l))
+                call prop_get(sedblock_ptr, '*', 'SettleFunction', dll_function_settle(l))
+                call prop_get(sedblock_ptr, '*', 'SettleInput'   , dll_usrfil_settle(l))
                 iform_settle(l) = WS_FORM_USER_ROUTINE
              else
                 settle_str = ' '
@@ -829,6 +846,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                 call prop_get(sedblock_ptr, '*', 'SalMax', par_settle(1,l))
                 par_settle(2,l) = 1.0_fp
                 call prop_get(sedblock_ptr, '*', 'GamFloc', par_settle(2,l))
+             case (WS_FORM_CHASSAGNE_SAFAR, WS_FORM_CHASSAGNE_SAFAR_MACRO)
+                par_settle(1,l) = d_micro
+                par_settle(2,l) = ustar_macro
              end select
              !
              ! Tracer calibration factor
@@ -842,40 +862,42 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! First assume that 'IniSedThick'/'SdBUni' contains a filename
           ! If the file does not exist, assume that 'SdBUni' contains a uniform value (real)
           !
-          call prop_get_string(sedblock_ptr, '*', 'IniSedThick', flsdbd(l))
-          if (flsdbd(l) /= ' ') then
-             inisedunit(l) = 'm'
-          else
+          sdbuni(l) = rmissval
+          call prop_get(sedblock_ptr, '*', 'IniSedThick', filsed, is_float, sdbuni(l), filename)
+          if (filename == ' ' .and. comparereal(sdbuni(l), rmissval) == 0) then
              inisedunit(l) = 'kg/m2'
-             call prop_get_string(sedblock_ptr, '*', 'SdBUni', flsdbd(l))
-          endif
-          !
-          ! Intel 7.0 crashes on an inquire statement when file = ' '
-          !
-          if (flsdbd(l) == ' ') then
-             ex = .false.
+             call prop_get(sedblock_ptr, '*', 'SdBUni', filsed, is_float, sdbuni(l), filename)
           else
-             call combinepaths(filsed, flsdbd(l))
-             inquire (file = flsdbd(l), exist = ex)
+             inisedunit(l) = 'm'
           endif
-          if (.not. ex) then
-             sdbuni(l) = rmissval
-             if (inisedunit(l) == 'm') then
-                call prop_get(sedblock_ptr, '*', 'IniSedThick', sdbuni(l), success, valuesfirst=.true.)
-             else
-                call prop_get(sedblock_ptr, '*', 'SdBUni', sdbuni(l), success, valuesfirst=.true.)
-             endif
-             if (.not. success .or. comparereal(sdbuni(l),rmissval) == 0) then
-                if (inisedunit(l) == 'm') then
-                   write (errmsg,'(5a)') 'Invalid file or value "',trim(flsdbd(l)),'" assigned to IniSedThick for fraction ',trim(sedname),'.'
-                else
-                   write (errmsg,'(5a)') 'Invalid file or value "',trim(flsdbd(l)),'" assigned to SdBUni for fraction ',trim(sedname),'.'
-                endif
+          !
+          if (is_float) then
+             if (comparereal(sdbuni(l), rmissval) == 0) then
+                write (errmsg,'(3a)') 'No IniSedThick value specified for fraction ',trim(sedname),'.'
+                call mess(LEVEL_ERROR, errmsg)
+                error = .true.
+                return
+             elseif (sdbuni(l) < 0.0_fp .and. inisedunit(l) == 'm') then
+                write (errmsg,'(a,g0,3a)') 'Invalid, negative value "',sdbuni(l),'" assigned to IniSedThick for fraction ',trim(sedname),'.'
+                call mess(LEVEL_ERROR, errmsg)
+                error = .true.
+                return
+             elseif (sdbuni(l) < 0.0_fp .and. inisedunit(l) == 'kg/m2') then
+                write (errmsg,'(a,g0,3a)') 'Invalid, negative value "',sdbuni(l),'" assigned to SdBUni for fraction ',trim(sedname),'.'
                 call mess(LEVEL_ERROR, errmsg)
                 error = .true.
                 return
              endif
-             flsdbd(l) = ' '
+          else
+             inquire (file = filename, exist = ex)
+             if (ex) then
+                flsdbd(l) = filename
+             else
+                write (errmsg,'(a,g0,3a)') 'File "',filename,'" for initial sediment thickness of fraction ',trim(sedname),' not found.'
+                call mess(LEVEL_ERROR, errmsg)
+                error = .true.
+                return
+             endif
           endif
           !
           if (l <= lsed) then
@@ -889,9 +911,9 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! Intel 7.0 crashes on an inquire statement when file = ' '
           !
           if (filtrn /= ' ') then
-             call combinepaths(filsed, filtrn)
-             inquire (file = filtrn, exist = ex)
-             if (ex) flstrn(l) = filtrn
+             filename = combinepaths(filsed, filtrn)
+             inquire (file = filename, exist = ex)
+             if (ex) flstrn(l) = filename
              !
              call prop_get(sedblock_ptr, '*', 'TraFrm', iform(l))
              call prop_get(sedblock_ptr, '*', 'TranspFrm', iform(l))
@@ -969,7 +991,6 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        if (.not. associated(sedpar%floclist)) then
           !
           if (istat==0) allocate (sedpar%floclist  (nflocpop, nflocsizes ), stat = istat)
-          if (istat==0) allocate (sedpar%namflocpop(nflocpop             ), stat = istat)
           !
           if (istat/=0) then
              errmsg = 'RDSED: memory alloc error - floclist'
@@ -981,17 +1002,22 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
           ! update local pointers
           !
           floclist      => sedpar%floclist
-          namflocpop    => sedpar%namflocpop
        endif
        !
        floclist = 0
-       namflocpop = ' '
        !
        do l = 1, lsed
           if (sedtyp(l) /= SEDTYP_CLAY) cycle
           !
           do i = 1, nflocpop
-             if (namclay(l) == namflocpop(i) .or. namflocpop(i) == ' ') exit
+             ! check if population name has already been encountered before
+             if (namclay(l) == namflocpop(i)) exit
+
+             ! if not, then insert it in the first empty slot
+             if (namflocpop(i) == ' ') then
+                namflocpop(i) = namclay(l)
+                exit
+             endif
           enddo
           if (i > nflocpop) then
              errmsg = 'Too many different clay labels.'
@@ -1301,7 +1327,6 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     real(fp)                  :: xxinv               !< Help var. [1/xx or 1/(1-xx) in log unif distrib.]
     real(fp)                  :: xm
     logical                   :: cmpupdall           !< flag indicating whether bed composition is updated for all fractions
-    logical        , external :: stringsequalinsens
     character(45)             :: txtput1
     character(12)             :: txtput2
     character(100)            :: txtput3
@@ -1414,11 +1439,21 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
            txtput3 = 'Verney et al'
        end select
        write (lundia, '(3a)') txtput1, ':  ', trim(txtput3)
+       if (flocmod == FLOC_VERNEY_ETAL) then
+          errmsg = 'Verney flocculation model not yet implemented.'
+          call write_error(errmsg, unit=lundia)
+          error = .true.
+          return
+       endif
        !
        txtput1 = 'Flocculation time scale'
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tfloc
        txtput1 = 'Floc break-up time scale'
        write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%tbreakup
+       txtput1 = 'Characteristic diameter of micro flocs'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%d_micro
+       txtput1 = 'Characteristic shear velocity of macro flocs'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%ustar_macro
     endif
     if (bsskin) then
        txtput1 = 'Skin friction Soulsby 2004'
@@ -1518,20 +1553,21 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
           write (lundia, '(2a,e12.4)') txtput1, ':', exp(logsedsig(l))
           txtput1 = '  SedD50'
           write (lundia, '(3a)') txtput1, ':  ', trim(flsdia)
-       elseif (nseddia(l) > 0) then
+       else
           !
           ! Determine various sediment diameters in case of
           ! sand or bedload.
           !
           txtput1 = '  sed. distribution'
           if (nseddia(l) == 0) then
-             !
-             ! error: no sediment diameter specified!
-             !
-             errmsg = 'Missing sediment diameter data'
-             call write_error(errmsg, unit=lundia)
-             error = .true.
-             return
+             ! this is okay for fine fractions ...
+             if (sedtyp(l) >= sedpar%min_dxx_sedtyp) then
+                ! ... but not for coarser fractions that need diameter information
+                errmsg = 'Missing sediment diameter data'
+                call write_error(errmsg, unit=lundia)
+                error = .true.
+                return
+             endif
           elseif (nseddia(l) == 1) then
              !
              ! Just one sediment diameter
@@ -2039,7 +2075,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
     ! Check version number of sed input file
     !
     versionstring = ' '
-    call prop_get_string(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
+    call prop_get(sed_ptr, 'SedimentFileInformation', 'FileVersion', versionstring)
     if (trim(versionstring) == '02.00') then
        !
        ! allocate temporary arrays with length equal to the number of data blocks in the file
@@ -2060,7 +2096,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
           parname = tree_get_name( asedblock_ptr )
           if (parname == 'sediment') then
              parname = ' '
-             call prop_get_string(asedblock_ptr, '*', 'Name', parname)
+             call prop_get(asedblock_ptr, '*', 'Name', parname)
              !
              ! Check if the same sediment name was used before
              !
@@ -2082,7 +2118,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
              !
              tratypnr = TRA_COMBINE
              sedtyptmp = ' '
-             call prop_get_string(asedblock_ptr, '*', 'SedTyp', sedtyptmp)
+             call prop_get(asedblock_ptr, '*', 'SedTyp', sedtyptmp)
              call small(sedtyptmp, 999)
              !
              if (index(sedtyptmp, 'clay') == 1) then
@@ -2111,7 +2147,7 @@ subroutine count_sed(lundia    ,error     ,lsed      ,lsedtot   , &
              ! Determine sediment type
              !
              totalload = .false.
-             call prop_get_logical(asedblock_ptr, '*', 'TotalLoad', totalload)
+             call prop_get(asedblock_ptr, '*', 'TotalLoad', totalload)
              if (totalload) tratypnr = TRA_BEDLOAD
              !
              if (tratypnr == TRA_BEDLOAD) then

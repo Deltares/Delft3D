@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,27 +31,21 @@
 
 #include "nef-tag.h"
 
-extern  BInt4 nefis_errcnt;
-extern  BInt4 nefis_errno;
-extern  BChar error_text[LENGTH_ERROR_MESSAGE+1];
+extern BInt4 nefis_errcnt;
+extern BInt4 nefis_errno;
+extern BChar error_text[LENGTH_ERROR_MESSAGE + 1];
 
-extern BInt4  convert_ieee       ( voidp *, charp *, BUInt8 , BInt4  , BText  ,
-                                   BInt4  );
+extern BInt4 convert_ieee(voidp*, charp*, BUInt8, BInt4, BText, BInt4);
 #if DO_DEBUG
-extern BInt4  DBG_nefis_tree     ( BInt4  , BText  );
+extern BInt4 DBG_nefis_tree(BInt4, BText);
 #endif
-extern BInt4  GP_inquire_cel      ( BInt4  , BText   , BUInt4 *, BText *, BUInt8 *);
-extern BInt4  GP_inquire_dat      ( BInt4   , BUInt8 *, BText  , BText  );
-extern BInt4  GP_inquire_elm      ( BInt4  , BText   , BText   , BText   , BText,
-                                    BText  , BUInt4 *, BUInt4 *, BUInt4 *, BUInt8 *);
-extern BInt4  GP_inquire_grp      ( BInt4   , BInt4  , BInt4 *, BText  , BText  ,
-                                   BInt4  *, BInt4 *, BInt4 *);
-extern BUInt8 GP_read_file       ( BInt4   , BText  , BUInt8 , BUInt8 );
-extern BInt4  GP_retrieve_var    ( BInt4   , BInt4 *, BInt4  , BInt4 *);
-extern BInt4  RT_retrieve        ( BInt4   , BText  , BText  ,
-                                   BUInt8 *, BUInt4 *, BUInt4 *,
-                                   BUInt4 *, BUInt4 *, BText   ,
-                                   BUInt4 *, BUInt4 *, BUInt4 *,
-                                   BUInt8 *, BUInt8 *);
-extern BInt4 RT_retrieve_var     ( BInt4   , BUInt8 *, BInt4 , BUInt8 *);
+extern BInt4 GP_inquire_cel(BInt4, BText, BUInt4*, BText*, BUInt8*);
+extern BInt4 GP_inquire_dat(BInt4, BUInt8*, BText, BText);
+extern BInt4 GP_inquire_elm(BInt4, BText, BText, BText, BText, BText, BUInt4*, BUInt4*, BUInt4*, BUInt8*);
+extern BInt4 GP_inquire_grp(BInt4, BInt4, BInt4*, BText, BText, BInt4*, BInt4*, BInt4*);
+extern BUInt8 GP_read_file(BInt4, BText, BUInt8, BUInt8);
+extern BInt4 GP_retrieve_var(BInt4, BInt4*, BInt4, BInt4*);
+extern BInt4 RT_retrieve(BInt4, BText, BText, BUInt8*, BUInt4*, BUInt4*, BUInt4*, BUInt4*, BText, BUInt4*, BUInt4*,
+                         BUInt4*, BUInt8*, BUInt8*);
+extern BInt4 RT_retrieve_var(BInt4, BUInt8*, BInt4, BUInt8*);
 #endif

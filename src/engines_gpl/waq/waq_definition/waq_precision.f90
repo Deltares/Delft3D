@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,17 +23,15 @@
 
 module m_waq_precision
 
-    use, intrinsic :: iso_fortran_env
-    use, intrinsic :: iso_c_binding
+    use, intrinsic :: iso_fortran_env, only: INT16, INT32, INT64
+    use, intrinsic :: iso_c_binding, only: C_INTPTR_T
+    use precision, only: sp, dp
     implicit none
     private
-    public :: INT16, INT64, int_wp, sp, dp, qp, real_wp, C_INTPTR_T
+    public :: INT16, INT64, int_wp, sp, dp, real_wp, C_INTPTR_T
 
     integer, parameter :: int_wp = INT32
 
-    integer, parameter :: sp = REAL32
-    integer, parameter :: real_wp = REAL32
-    integer, parameter :: dp = REAL64
-    integer, parameter :: qp = REAL128
+    integer, parameter :: real_wp = sp
 
 end module m_waq_precision

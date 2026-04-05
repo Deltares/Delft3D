@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,7 +33,7 @@ module m_logger
 
     !> Interface for logging messages
     type, abstract :: logger
-        integer(kind=int_wp) :: log_level = DEBUG_LEVEL  !< level of logging (0 is no logging)
+        integer(kind=int_wp) :: log_level = debug_level  !< level of logging (0 is no logging)
 
     contains
         procedure(log_message_interface), deferred :: log_error, log_warning, log_info, log_debug
@@ -43,11 +43,11 @@ module m_logger
     abstract interface
 
         !> signature/interface of the log_.. procedures
-        subroutine log_message_interface(this, message, new_line)
+        subroutine log_message_interface(this, message, add_new_line)
             import logger
             class(logger), intent(in) :: this         !< instance of this logger
             character(len=*), intent(in) :: message   !< path of file to log towards
-            logical, optional, intent(in) :: new_line !< add a new line before message
+            logical, optional, intent(in) :: add_new_line !< add a new line before message
         end subroutine
     end interface
 

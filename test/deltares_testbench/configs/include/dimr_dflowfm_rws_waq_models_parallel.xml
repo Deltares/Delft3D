@@ -1,4 +1,4 @@
-    <testCases>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
         <testCase name="e02_f300_c01_dflowfm3d_dwaq-grevelingen-j19_6-w4" ref="dimr_trunk_4">
             <path version="2024-01-11T12:00:00">e02_dflowfm/f300_rws_waq_models/c01_dflowfm3d_dwaq-grevelingen-j19_6-w4</path>
              <checks>
@@ -118,7 +118,7 @@
             <processCount>4</processCount>
         </testCase>
         <testCase name="e02_f300_c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1" ref="dimr_trunk_4">
-            <path version="2024-01-11T12:00:00">e02_dflowfm/f300_rws_waq_models/c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1</path>
+            <path version="2024-08-26T15:05:00">e02_dflowfm/f300_rws_waq_models/c02_dflowfm3d_dwaq_slib-waddenzee_200m-j17_6-v1</path>
              <checks>
                 <file name="DFM_OUTPUT_DWSM-FM-Slib_200m/DWSM-FM-Slib_200m_0000_map.nc" type="NETCDF">
                     <parameters>

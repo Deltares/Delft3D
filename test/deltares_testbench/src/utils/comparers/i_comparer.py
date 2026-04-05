@@ -8,7 +8,7 @@ from src.utils.logging.i_logger import ILogger
 
 
 class IComparer(ABC):
-    """Interface for comparer classes"""
+    """Interface for comparer classes."""
 
     @abstractmethod
     def compare(
@@ -19,15 +19,20 @@ class IComparer(ABC):
         testcase_name: str,
         logger: ILogger,
     ) -> List[Tuple[str, FileCheck, Parameter, ComparisonResult]]:
-        """Compares contents of left file and right file
-        (usually reference file with generated file)
+        """Compare contents of left file and right file (usually reference file with generated file).
 
-        Args:
-            left_path (str): Path to the first file
-            right_path (str): Path to the second file
-            file_check (FileCheck): file check information
-            testcase_name (str): name of the test case
+        Parameters
+        ----------
+        left_path : str
+            Path to the first file.
+        right_path : str
+            Path to the second file.
+        file_check : FileCheck
+            File check information.
+        testcase_name : str
+            Name of the test case.
 
-        Returns:
-            List[Tuple[FileCheck, Parameter, ComparisonResult]]
+        Returns
+        -------
+        List[Tuple[FileCheck, Parameter, ComparisonResult]]
         """

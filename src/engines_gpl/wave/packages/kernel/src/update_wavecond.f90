@@ -1,7 +1,7 @@
 module update_waves
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -146,10 +146,6 @@ subroutine update_wavecond(sr,wavetime)
          call gettabledata(sr%tseriesfile, sr%ts_wd, sr%wdir(1:1), &
                          & timhr, sr%refjulday, errorstring)
       endif
-      !
-      do i=1,sr%nbound
-
-      enddo
       !
    elseif (unibest) then
       if (varbound) then

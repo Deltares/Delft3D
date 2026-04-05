@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -47,7 +47,7 @@
 
       type(t_hydrodynamics), pointer                   :: domain_hyd            ! description of one domain hydrodynamics
       integer                                :: i_domain              ! domain index
-      integer                                :: nolay                 ! number of layers
+      integer                                :: num_layers                 ! number of layers
       integer                                :: ilay                  ! layer index
       integer                                :: iseg                  ! segment index
       integer                                :: isegl                 ! segment index
@@ -59,20 +59,21 @@
 
       do i_domain = 1 , n_domain
          domain_hyd => domain_hyd_coll%hyd_pnts(i_domain)
-         do iq = 1 , domain_hyd%noq
+         do iq = 1 , domain_hyd%num_exchanges
             iq_new = iqnew(iq, i_domain)
             if (iq_new.gt.0) then
                hyd%area(iq_new) = domain_hyd%area(iq)
                hyd%flow(iq_new) = domain_hyd%flow(iq)
             endif
          enddo
-         do iseg_domain = 1 , domain_hyd%noseg
+         do iseg_domain = 1 , domain_hyd%num_cells
             iseg = ipnew(iseg_domain,i_domain)
             hyd%volume(iseg) = domain_hyd%volume(iseg_domain)
             if ( hyd%sal_present ) hyd%sal(iseg) = domain_hyd%sal(iseg_domain)
             if ( hyd%tem_present ) hyd%tem(iseg) = domain_hyd%tem(iseg_domain)
             if ( hyd%tau_present ) hyd%tau(iseg) = domain_hyd%tau(iseg_domain)
             if ( hyd%vdf_present ) hyd%vdf(iseg) = domain_hyd%vdf(iseg_domain)
+            if ( hyd%vel_present ) hyd%vel(iseg) = domain_hyd%vel(iseg_domain)
          enddo
       enddo
 

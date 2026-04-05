@@ -2,101 +2,52 @@
 #$ -V
 #$ -j yes
 #$ -cwd
-    #
-    # This script runs agrhyd on Linux
-    # Adapt and use it for your own purpose
-    #
+
+#
+# This script runs agrhyd on Linux
+#
 
 function print_usage_info {
-    echo "Usage: ${0##*/} <agrhyd.ini> [OPTION]..."
-    echo "Run Agrhyd on Linux."
+    echo "Purpose: Sets LD_LIBRARY_PATH and runs agrhyd on Linux with all given command line arguments."
     echo
-    echo "<agrhyd.ini>"
-    echo "       (Mandatory) Agrhyd input file"
+    echo "Usage:   ${0##*/} <ini-file> [OPTIONS]..."
     echo
-    echo "Options:"
-    echo "-h, --help"
-    echo "       print this help message and exit"
+    echo "Command line arguments:"
+    echo "<ini-file>          agrhyd input file"
+    echo "-h, --help, --usage print this help message and exit"
 }
-
 
 # ============
 # === MAIN ===
 # ============
 
-#
-## Defaults
+## Set number of open files to unlimited
 ulimit -s unlimited
 
-
-#
 ## Start processing command line options:
-
-argfile=$1
-case $argfile in
-    -h|--help)
+case $1 in
+    -h|--help|--usage)
     print_usage_info
+    exit 0
     ;;
 esac
 
-workdir=`pwd`
-
-if [ ! -f $argfile ]; then
-    if [ ! -f $argfile.inp ]; then
-        echo "ERROR: input mdu file $argfile does not exist in working directory $workdir"
-        print_usage_info
-    fi
-fi
-
-
-if [ -z "${D3D_HOME}" ]; then
-    scriptdirname=`readlink \-f \$0`
-    scriptdir=`dirname $scriptdirname`
-    D3D_HOME=$scriptdir/..
-else
-    # D3D_HOME is passed through via argument --D3D_HOME
-    # Commonly its value is "/some/path/bin/.."
-    # Scriptdir: remove "/.." at the end of the string
-    scriptdir=${D3D_HOME%"/.."}
-fi
-if [ ! -d $D3D_HOME ]; then
-    echo "ERROR: directory $D3D_HOME does not exist"
-    print_usage_info
-fi
-export D3D_HOME
-
-
-echo "    Argfile       : $argfile"
-echo "    D3D_HOME         : $D3D_HOME"
-echo "    Working directory: $workdir"
-echo 
-
-    #
-    # Set the directories containing the binaries
-    #
-
-bindir=$D3D_HOME/bin
-libdir=$D3D_HOME/lib
-
-
-    #
-    # No adaptions needed below
-    #
-
-    # Run
+## Set the directories containing the binaries
+scriptdirname=`readlink \-f \$0`
+bindir=`dirname $scriptdirname`
+libdir=$bindir/../lib
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+echo
+echo "    bin dir          : $bindir"
+echo "    lib dir          : $libdir"
+echo
 
-module load intelmpi/21.2.0 &>/dev/null
-export FI_PROVIDER=tcp
-
-
+## Run
 echo "executing:"
-echo "$bindir/agrhyd $argfile"
-echo 
-$bindir/agrhyd $argfile
+echo "$bindir/agrhyd $*"
+echo
+$bindir/agrhyd $*
 
-
-
-    # Wait until all child processes are finished
+## Wait until all child processes are finished
 wait
 

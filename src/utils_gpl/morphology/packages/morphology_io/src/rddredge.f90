@@ -1,7 +1,7 @@
 module m_rddredge
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -55,6 +55,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     use morphology_data_module, only: sedpar_type, morpar_type
     use dredge_data_module
     use grid_dimens_module, only: griddimtype
+    use string_module, only: strcmpi
     !
     implicit none
     !
@@ -141,11 +142,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     integer                                 :: lsed
     integer                                 :: lsedtot
     integer                                 :: n
-    integer                                 :: nglob
-    integer                                 :: m
-    integer                                 :: mglob
     integer                                 :: nm
-    integer                                 :: nmglob
     integer                                 :: nmcor
     integer                                 :: noutletlinks
     integer                                 :: npnt
@@ -177,7 +174,6 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     real(sp)                                :: versionnr
     real(sp)                                :: versionnrinput
     logical                                 :: ex
-    logical, external                       :: stringsequalinsens
     logical                                 :: success
     logical                                 :: unique
     logical                                 :: def_dredgewhendry
@@ -264,7 +260,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     write (lundia,'(a)') 'General'
     !
     filename = ''
-    call prop_get_string(dad_ptr, 'General', 'PolygonFile', filename)
+    call prop_get(dad_ptr, 'General', 'PolygonFile', filename)
     nullify(pol_ptr)
     if (filename /= ' ') then
        call tree_get_node_by_name( dad_ptr, 'General', node_ptr )
@@ -302,7 +298,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     ! Check version number of dredge input file
     !
     versionnrinput = 0.00_sp
-    call prop_get_real(dad_ptr, 'DredgeFileInformation', 'FileVersion', versionnrinput)
+    call prop_get(dad_ptr, 'DredgeFileInformation', 'FileVersion', versionnrinput)
     !
     if (comparereal(versionnrinput, versionnr) == -1) then
        write (errmsg,'(a,f6.2,a)') 'Dredge input file must have version number ',versionnr, ' or higher.'
@@ -347,7 +343,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     refplane(1) = rmissval
     !
     filename    = ' '
-    call prop_get_string(dad_ptr, 'General', 'TimeSeries', filename)
+    call prop_get(dad_ptr, 'General', 'TimeSeries', filename)
     !
     ! Intel 7.0 crashes on an inquire statement when file = ' '
     !
@@ -374,18 +370,18 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
        error = .true.
        return
     endif
-    call prop_get_logical(dad_ptr, 'General', 'TS_MorTimeScale', tsmortime)
+    call prop_get(dad_ptr, 'General', 'TS_MorTimeScale', tsmortime)
     call prop_get(dad_ptr, 'General', 'DredgeDepth', def_dredge_depth)
     call prop_get(dad_ptr, 'General', 'Clearance'  , def_clearance)
     call prop_get(dad_ptr, 'General', 'MaxVolRate' , def_maxvolrate)
-    call prop_get_integer(dad_ptr, 'General', 'InPolygon', def_chkloc)
+    call prop_get(dad_ptr, 'General', 'InPolygon', def_chkloc)
     if (def_chkloc < 1 .or. def_chkloc > 3) then
        errmsg = 'rddredge: Invalid default for in polygon check'
        call write_error(errmsg, unit=lundia)
        error = .true.
        return
     endif
-    call prop_get_integer(dad_ptr, 'General', 'DredgeDistr', def_dredgedistr)
+    call prop_get(dad_ptr, 'General', 'DredgeDistr', def_dredgedistr)
     if (def_dredgedistr < 1 .or. def_dredgedistr > DREDGEDISTR_MAX) then
        errmsg = 'rddredge: Invalid default dredge distribution'
        call write_error(errmsg, unit=lundia)
@@ -393,7 +389,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
        return
     endif
     !
-    call prop_get_logical(dad_ptr, 'General', 'UseDunes'        , def_use_dunes)
+    call prop_get(dad_ptr, 'General', 'UseDunes'        , def_use_dunes)
     if (def_use_dunes .and. .not. lfbedfrm) then
        errmsg = 'rddredge: UseDunes - Dunes can only be used when modelled.'
        call write_error(errmsg, unit=lundia)
@@ -402,14 +398,14 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     endif
     call prop_get(dad_ptr, 'General', 'AlphaDuneHeight', def_alpha_dh)
     call prop_get(dad_ptr, 'General', 'PloughEfficiency', def_plough_effic)
-    call prop_get_integer(dad_ptr, 'General', 'DumpDistr', def_dumpdistr)
+    call prop_get(dad_ptr, 'General', 'DumpDistr', def_dumpdistr)
     if (def_dumpdistr < 1 .or. def_dumpdistr > DUMPDISTR_MAX) then
        errmsg = 'rddredge: Invalid default dump distribution'
        call write_error(errmsg, unit=lundia)
        error = .true.
        return
     endif
-    call prop_get_integer(dad_ptr, 'General', 'DistrOverDump', def_dr2dudistr)
+    call prop_get(dad_ptr, 'General', 'DistrOverDump', def_dr2dudistr)
     if (def_dr2dudistr < 1 .or. def_dr2dudistr > DR2DUDISTR_MAX) then
        errmsg = 'rddredge: Invalid default distribution over dump areas'
        call write_error(errmsg, unit=lundia)
@@ -438,18 +434,18 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     endif
     !
     call prop_get        (dad_ptr, 'General', 'MinimumDumpDepth', def_mindumpdepth)
-    call prop_get_logical(dad_ptr, 'General', 'DredgeWhenDry'   , def_dredgewhendry)
-    call prop_get_logical(dad_ptr, 'General', 'DumpWhenDry'     , def_dumpwhendry)
-    call prop_get_logical(dad_ptr, 'General', 'ObeyCmp'           , def_obey_cmp)
+    call prop_get(dad_ptr, 'General', 'DredgeWhenDry'   , def_dredgewhendry)
+    call prop_get(dad_ptr, 'General', 'DumpWhenDry'     , def_dumpwhendry)
+    call prop_get(dad_ptr, 'General', 'ObeyCmp'           , def_obey_cmp)
     triggerall = .false.
-    call prop_get_logical(dad_ptr, 'General', 'TriggerAll'        , triggerall)
+    call prop_get(dad_ptr, 'General', 'TriggerAll'        , triggerall)
     if (triggerall) then
        def_drtrigger = DREDGETRIG_ALLBYONE
     else
        def_drtrigger = DREDGETRIG_POINTBYPOINT
     endif
     call prop_get        (dad_ptr, 'General', 'DredgeTrigger'     , def_drtrigger)
-    call prop_get_logical(dad_ptr, 'General', 'DredgeWhileMorfac0', def_if_morfac_0)
+    call prop_get(dad_ptr, 'General', 'DredgeWhileMorfac0', def_if_morfac_0)
     !
     sfound = .false.
     ex     = .false.
@@ -459,7 +455,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           if (tree_get_name( link_ptr ) /= 'domain') cycle
           !
           stringval = ''
-          call prop_get_string(link_ptr, '*', 'Name', stringval)
+          call prop_get(link_ptr, '*', 'Name', stringval)
           if (stringval /= domain_name) cycle
           !
           ! First assume that 'RefPlane' contains a filename
@@ -467,7 +463,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           ! a uniform value (real)
           !
           refplanefile = ''
-          call prop_get_string(link_ptr, '*', 'RefPlane', refplanefile)
+          call prop_get(link_ptr, '*', 'RefPlane', refplanefile)
           !
           ! Intel 7.0 crashes on an inquire statement when file = ' '
           !
@@ -488,7 +484,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
        ! Check if 'RefPlane' contains a filename.
        !
        refplanefile = ''
-       call prop_get_string(dad_ptr, 'General', 'RefPlane', refplanefile)
+       call prop_get(dad_ptr, 'General', 'RefPlane', refplanefile)
        !
        ! Intel 7.0 crashes on an inquire statement when file = ' '
        !
@@ -563,7 +559,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
              !
              areatp  = 'dredge'
              unique  = .true.
-             call prop_get_string(link_ptr, '*', 'name', name)
+             call prop_get(link_ptr, '*', 'name', name)
              call register_polygon(name   , pol_ptr, nadred, totnpdr, &
                                  & areatp , unique , lundia)
              if ( associated(link_ptr%child_nodes) ) then
@@ -577,7 +573,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    node_ptr => link_ptr%child_nodes(j)%node_ptr
                    parname = tree_get_name( node_ptr )
                    if (parname == 'dump') then
-                      call prop_get_string(node_ptr, '*', 'dump', name)
+                      call prop_get(node_ptr, '*', 'dump', name)
                       call register_polygon(name   , pol_ptr, nadump, totnpdu, &
                                           & areatp , unique , lundia)
                       nalink = nalink + 1
@@ -599,7 +595,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    node_ptr => link_ptr%child_nodes(j)%node_ptr
                    parname = tree_get_name( node_ptr )
                    if (parname == 'dump') then
-                      call prop_get_string(link_ptr, '*', 'dump', name)
+                      call prop_get(link_ptr, '*', 'dump', name)
                       call register_polygon(name   , pol_ptr, nadump, totnpdu, &
                                           & areatp , unique , lundia)
                       nalink = nalink + 1
@@ -797,7 +793,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 ! Set dredge area name
                 !
                 dredge_areas(cntssrc) = ''
-                call prop_get_string(link_ptr, '*', 'Name', dredge_areas(cntssrc))
+                call prop_get(link_ptr, '*', 'Name', dredge_areas(cntssrc))
                 pdredge%name = dredge_areas(cntssrc)
 
                 write(lundia, '(a,i0)')      'Dredge definition number      : ', cntdred
@@ -872,7 +868,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    error = .true.
                    return
                 endif
-                call prop_get_integer(link_ptr, '*', 'InPolygon', pdredge%ichkloc)
+                call prop_get(link_ptr, '*', 'InPolygon', pdredge%ichkloc)
                 if (pdredge%ichkloc < 1 .or. pdredge%ichkloc > 3) then
                    message = 'Invalid in polygon check for dredge area "'// &
                              & trim(dredge_areas(cntssrc))//'"'
@@ -880,7 +876,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    error = .true.
                    return
                 endif
-                call prop_get_integer(link_ptr, '*', 'DredgeDistr', pdredge%dredgedistr)
+                call prop_get(link_ptr, '*', 'DredgeDistr', pdredge%dredgedistr)
                 if (pdredge%dredgedistr < 1 .or. pdredge%dredgedistr > DREDGEDISTR_MAX) then
                    message =  'Invalid dredge distribution for dredge area "'// &
                              & trim(dredge_areas(cntssrc))//'"'
@@ -927,6 +923,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 write(lundia,'(a,i0,a)')     '  Depth definition            : ',pdredge%depthdef,' (relative to '//trim(stringval)//')'
                 !
                 call prop_get(link_ptr, '*', 'Clearance'    , pdredge%clearance)
+                write(lundia,'(a,es12.3e3,a)') '  Clearance                   : ', pdredge%clearance,' m'
                 call prop_get(link_ptr, '*', 'DredgeWhenDry', pdredge%dredgewhendry)
                 call prop_get(link_ptr, '*', 'DumpLimited'  , pdredge%dumplimited)
                 if (pdredge%maxvolrate < 0.0_fp) then
@@ -1014,7 +1011,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          ! Get the polygon's dumpid
                          !
                          cntdump = 0
-                         call prop_get_integer(dump_area_ptr, '*', 'dumpid', cntdump)
+                         call prop_get(dump_area_ptr, '*', 'dumpid', cntdump)
                          if (cntdump < 1) then
                             errmsg = 'rddredge: Invalid dump ID: '//trim(parname)
                             call write_error(trim(errmsg), unit=lundia)
@@ -1062,7 +1059,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          call prop_get(node_ptr, '*', 'Sediment' , sedname)
                          sfound = .false.
                          do j2 = 1, lsedtot
-                            if ( stringsequalinsens(namsed(j2), sedname) ) then
+                            if ( strcmpi(namsed(j2), sedname) ) then
                                cntsedidx = j2
                                sfound    = .true.
                             endif
@@ -1086,7 +1083,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 !
                 cntsedidx = 0
                 dredge_areas(cntssrc) = ''
-                call prop_get_string(link_ptr, '*', 'Name', dredge_areas(cntssrc))
+                call prop_get(link_ptr, '*', 'Name', dredge_areas(cntssrc))
                 if (dredge_areas(cntssrc) == ' ') then
                    write(stringval,'(a,i0)') 'nourishment ', cntsupl
                    dredge_areas(cntssrc) = stringval
@@ -1165,7 +1162,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          call prop_get(node_ptr, '*', 'Sediment', sedname)
                          sfound = .false.
                          do j2 = 1, lsedtot
-                            if ( stringsequalinsens(namsed(j2), sedname) ) then
+                            if ( strcmpi(namsed(j2), sedname) ) then
                                cntsedidx = j2
                                sfound    = .true.
                             endif
@@ -1205,7 +1202,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                          ! Get the polygon's dumpid
                          !
                          cntdump = 0
-                         call prop_get_integer(dump_area_ptr, '*', 'dumpid', cntdump)
+                         call prop_get(dump_area_ptr, '*', 'dumpid', cntdump)
                          if (cntdump < 1) then
                             errmsg =  'rddredge: Invalid dump ID'
                             call write_error(trim(errmsg), unit=lundia)
@@ -1346,7 +1343,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                    write(lundia,'(a,i0,a)') '  Dump distribution           : ', pdredge%dumpdistr,' ('//trim(stringval)//')'
                    !
                    do j = ilink, cntlink
-                      write(lundia,'(2a)') '    Dump at                   : ', trim(dump_areas(link_def(j,2)))
+                      write(lundia,'(2a)') '  Dump at                     : ', trim(dump_areas(link_def(j,2)))
                    enddo
                    !
                    ! To be checked futher down: unique relation and capacity limitation
@@ -1390,7 +1387,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
              ! Get dredge area name
              !
              parname = ''
-             call prop_get_string(link_ptr, '*', 'Name', parname)
+             call prop_get(link_ptr, '*', 'Name', parname)
              do ia = 1, nadump
                 if (parname == dump_areas(ia)) exit
              enddo
@@ -1413,7 +1410,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 error = .true.
                 return
              endif
-             call prop_get_integer(link_ptr, '*', 'DumpDistr', pdump%dumpdistr)
+             call prop_get(link_ptr, '*', 'DumpDistr', pdump%dumpdistr)
              if (pdump%dumpdistr<1 .or. pdump%dumpdistr>DUMPDISTR_MAX) then
                 errmsg =  'rddredge: Invalid dump distribution for dump area "'// &
                           & trim(dump_areas(ia))//'"'
@@ -1421,7 +1418,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 error = .true.
                 return
              endif
-             call prop_get_integer(link_ptr, '*', 'InPolygon', pdump%ichkloc)
+             call prop_get(link_ptr, '*', 'InPolygon', pdump%ichkloc)
              if (pdump%ichkloc<1 .or. pdump%ichkloc>3) then
                 errmsg = 'rddredge: Invalid in polygon check for dump area "'// &
                           & trim(dump_areas(ia))//'"'
@@ -1430,7 +1427,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
                 return
              endif
              !
-             call prop_get_logical(link_ptr, '*', 'DumpWhenDry'  , pdump%dumpwhendry)
+             call prop_get(link_ptr, '*', 'DumpWhenDry'  , pdump%dumpwhendry)
              call prop_get(link_ptr, '*', 'MinimumDumpDepth', pdump%mindumpdepth)
              pdump%dumpcapaflag = comparereal(pdump%mindumpdepth,-999.0_fp) /= 0
              !
@@ -1620,7 +1617,7 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
     if (noutletlinks > 0) then
        !
        istat = 0
-       if (istat == 0) call realloc(dredgepar%link_percentage, (/nalink+noutletlinks,lsedtot/), fill = 100.0_fp, stat = istat)
+       if (istat == 0) call realloc(dredgepar%link_percentage, (/nalink+noutletlinks,lsedtot/), fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%link_distance, nalink+noutletlinks, fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%link_sum, (/nalink+noutletlinks,lsedtot/), fill = 0.0_fp, stat = istat)
        if (istat == 0) call realloc(dredgepar%voldump, (/nadump+1,lsedtot/), fill = 0.0_fp, stat = istat)
@@ -1667,6 +1664,18 @@ subroutine rddredge(dredgepar, dad_ptr, sedpar, lfbedfrm, morpar, lundia, julref
           if (pdredge%outletlink>0) then
              link_def(pdredge%outletlink,1) = i
              link_def(pdredge%outletlink,2) = nadump
+             !
+             ! determine the percentage that is dumped outside the model
+             !
+             do lsed = 1, lsedtot
+                sumperc = 0.0_fp
+                do j = 1, nalink
+                   if (link_def(j,1) /= i) cycle
+                   sumperc = sumperc + link_percentage(j,lsed)
+                enddo
+                !
+                link_percentage(pdredge%outletlink,lsed) = 100.0_fp - sumperc
+             enddo
           endif
        enddo
        !

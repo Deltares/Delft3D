@@ -31,9 +31,8 @@ if (WIN32)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdf4
                             netcdff)
-    oss_include_libraries(${library_name} oss_dependencies)
+    target_link_libraries(${library_name} ${oss_dependencies})
 
     include_directories(${mpi_module_path}
                         ${version_include_dir}
@@ -45,13 +44,6 @@ if (WIN32)
 endif(WIN32)
 
 if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-    pkg_check_modules(NETCDF_FTN REQUIRED IMPORTED_TARGET netcdf-fortran)
-
     set(oss_dependencies    delftio
                             deltares_common
                             ec_module
@@ -59,10 +51,9 @@ if (UNIX)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdf4
-                            netcdff)
+                            netcdff
+    )
 
-    oss_include_libraries(${library_name} oss_dependencies)
     target_link_libraries(${library_name} ${oss_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

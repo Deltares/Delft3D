@@ -109,9 +109,9 @@ subroutine write_waqgeom(hyd, version_full)
           allocate(nd(i)%y  (numContPts))
        enddo
        allocate(bl(ndxi))
-       allocate(lntmp(2,hyd%noq1))
-       allocate(xutmp(hyd%noq1))
-       allocate(yutmp(hyd%noq1))
+       allocate(lntmp(2,hyd%num_exchanges_u_dir))
+       allocate(xutmp(hyd%num_exchanges_u_dir))
+       allocate(yutmp(hyd%num_exchanges_u_dir))
 
        ! copy the values
        do i=1,numk
@@ -134,7 +134,7 @@ subroutine write_waqgeom(hyd, version_full)
          bl(i) = hyd%depth(i)
        enddo
        lnx = 0
-       do i=1,hyd%noq1
+       do i=1,hyd%num_exchanges_u_dir
           ip1 = hyd%ipoint(1,i)
           ip2 = hyd%ipoint(2,i)
           if(ip1.ge.-nobndl .and. ip1.le.ndxi .and. &
@@ -201,18 +201,18 @@ subroutine read_waqgeom(hyd)
        allocate(hyd%kn(2,hyd%numl))
        allocate(hyd%netcellnod(hyd%nv,hyd%nump))
 
-       allocate(hyd%xdepth(hyd%nmax,hyd%mmax))
-       allocate(hyd%ydepth(hyd%nmax,hyd%mmax))
-       allocate(hyd%depth(hyd%mmax))
+       allocate(hyd%xdepth(hyd%num_rows,hyd%num_columns))
+       allocate(hyd%ydepth(hyd%num_rows,hyd%num_columns))
+       allocate(hyd%depth(hyd%num_columns))
 
-       allocate(hyd%idomain(hyd%mmax*hyd%nolay))
-       allocate(hyd%iglobal(hyd%mmax*hyd%nolay))
-       allocate(hyd%ilocal_link(hyd%noq1))
-       allocate(hyd%iglobal_link(hyd%noq1))
-       allocate(hyd%flowelemcontourx(hyd%numcontpts,hyd%mmax))
-       allocate(hyd%flowelemcontoury(hyd%numcontpts,hyd%mmax))
-       allocate(hyd%xu(hyd%noq1))
-       allocate(hyd%yu(hyd%noq1))
+       allocate(hyd%idomain(hyd%num_columns*hyd%num_layers))
+       allocate(hyd%iglobal(hyd%num_columns*hyd%num_layers))
+       allocate(hyd%ilocal_link(hyd%num_exchanges_u_dir))
+       allocate(hyd%iglobal_link(hyd%num_exchanges_u_dir))
+       allocate(hyd%flowelemcontourx(hyd%numcontpts,hyd%num_columns))
+       allocate(hyd%flowelemcontoury(hyd%numcontpts,hyd%num_columns))
+       allocate(hyd%xu(hyd%num_exchanges_u_dir))
+       allocate(hyd%yu(hyd%num_exchanges_u_dir))
 
        ! copy the values
        do i=1,numk
@@ -227,7 +227,7 @@ subroutine read_waqgeom(hyd)
        do i=1,nump
           hyd%netcellnod(:,i) = netcellnod(:,i)
        enddo
-       do i=1,hyd%mmax
+       do i=1,hyd%num_columns
           hyd%xdepth(1,i)  = xz(i)
           hyd%ydepth(1,i)  = yz(i)
           hyd%idomain(i)   = idomain(i)
@@ -241,7 +241,7 @@ subroutine read_waqgeom(hyd)
           hyd%xu(i)  = xu(i)
           hyd%yu(i)  = yu(i)
        enddo
-       do i=1,hyd%mmax
+       do i=1,hyd%num_columns
           hyd%iglobal(i) = iglobal(i)
        enddo
        hyd%crs = crs

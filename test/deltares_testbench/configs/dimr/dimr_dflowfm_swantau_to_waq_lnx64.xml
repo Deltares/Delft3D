@@ -48,7 +48,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -56,12 +55,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
@@ -106,7 +99,7 @@
     -->
   <testCases>
     <testCase name="e02_f041_c01_FriesianInlet_schematic" ref="dflowfm_swantau_to_waq_default">
-      <path version="2024-02-22T14:40:00">e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
+      <path version="2026-03-17T15:45:27.523000">e02_dflowfm/f041_SWAN-tau_to_WAQ/c01_FriesianInlet_schematic</path>
       <checks>
         <file name="dflowfm/dflowfmoutput/f34_map.nc" type="netCDF">
           <parameters>

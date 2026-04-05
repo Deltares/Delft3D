@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -111,10 +111,10 @@ subroutine test_clockwise
 end subroutine test_clockwise
 
 subroutine test_pinpok
+    use m_missing, only: jins
+
     real(hp), dimension(6) :: x, y
     real(hp)               :: xl, yl
-    logical                :: isclockwise
-    integer                :: jins
     integer                :: inside
 
     !

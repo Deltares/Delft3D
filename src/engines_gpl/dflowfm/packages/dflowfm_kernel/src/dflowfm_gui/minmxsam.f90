@@ -1,126 +1,134 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
- subroutine minmxsam()
+module m_minmxsam
 
- use m_samples
- use m_missing
- use m_isoscaleunit
+   implicit none
 
- implicit none
+contains
 
- double precision :: rmin, rmax
- double precision :: VMAX,VMIN,DV,VAL(256)
- integer :: NCOLS(256),NIS,NIE,nv,JAAUTO
- character(len=256) :: buffer
- common /depmax2/ vmax,vmin,dv,val,ncols,nv,nis,nie,jaauto
- integer :: k, i
- logical inview
+   subroutine minmxsam()
+      use precision, only: dp
 
- if (jaauto > 0) then
-    rmin =  1d30
-    rmax = -1d30
+      use m_samples, only: ns, xs, ys, zs
+      use m_missing, only: dmiss
+      use m_isoscaleunit, only: unit
+      use m_paramtext, only: paramtext
+      use m_inview, only: inview
+      use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
 
-    do k = 1,ns
-       if ( zs(k)==DMISS ) cycle
-       if ( inview( xs(k), ys(k) ) ) then
-           if (zs(k) < rmin) then
-               rmin  = zs(k)
-           endif
-           if (zs(k) > rmax) then
-               rmax  = zs(k)
-           endif
-       endif
-    enddo
-    vmax = rmax
-    vmin = rmin
-    dv   = vmax - vmin
-    do i = 1,nv
-       val(i) = vmin + (i-1)*dv/(nv-1)
-    enddo
- endif
+      real(kind=dp) :: rmin, rmax
+      character(len=256) :: buffer
+      integer :: k, i
 
- !Samples have the same unit of the displayed values
- write(buffer, '(a,a)') 'Samples                              ',UNIT(1)
- CALL PARAMTEXT(buffer, 2 )
+      if (jaauto > 0) then
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
 
- end subroutine minmxsam
+         do k = 1, ns
+            if (zs(k) == DMISS) then
+               cycle
+            end if
+            if (inview(xs(k), ys(k))) then
+               if (zs(k) < rmin) then
+                  rmin = zs(k)
+               end if
+               if (zs(k) > rmax) then
+                  rmax = zs(k)
+               end if
+            end if
+         end do
+         vmax = rmax
+         vmin = rmin
+         dv = vmax - vmin
+         do i = 1, nv
+            val(i) = vmin + (i - 1) * dv / (nv - 1)
+         end do
+      end if
 
- subroutine minmxarc()
+      !Samples have the same unit of the displayed values
+      write (buffer, '(a,a)') 'Samples                              ', UNIT(1)
+      call PARAMTEXT(buffer, 2)
 
- use m_arcinfo
- use m_missing
- use m_isoscaleunit
+   end subroutine minmxsam
 
- implicit none
+   subroutine minmxarc()
+      use precision, only: dp
 
- double precision :: rmin, rmax, x,y,z
- double precision :: VMAX,VMIN,DV,VAL(256)
- integer :: NCOLS(256),NIS,NIE,nv,JAAUTO
- character(len=256) :: buffer
- common /depmax2/ vmax,vmin,dv,val,ncols,nv,nis,nie,jaauto
- integer :: m,n,i
- logical inview
+      use m_arcinfo, only: nca, mca, x0, dxa, y0, dya, d
+      use m_missing, only: dmiss
+      use m_isoscaleunit, only: unit
+      use m_paramtext, only: paramtext
+      use m_inview, only: inview
+      use m_depmax2, only: vmax => vmax2, vmin => vmin2, dv => dv2, val => val2, nv => nv2, jaauto => jaauto2
 
- if (jaauto > 0) then
-    rmin =  1d30
-    rmax = -1d30
+      implicit none
 
-    do n= 1,nca
-        do m = 1,mca
-         
-           x = x0 + dxa*(m-1)
-           y = y0 + dya*(n-1)
-           z = dble(d(m,n))
-           if ( inview(x, y).and. z .ne. dmiss ) then
-               if (z < rmin) then
-                   rmin = z
-               endif
-               if (z > rmax) then
-                   rmax = z
-               endif
-           endif
-        enddo
-     enddo
-     vmax = rmax
-     vmin = rmin
-     dv   = vmax - vmin
-     do i = 1,nv
-        val(i) = vmin + (i-1)*dv/(nv-1)
-     enddo
- endif
- 
- !Samples have the same unit of the displayed values
- write(buffer, '(a,a)') 'Samples                              ',UNIT(1)
- CALL PARAMTEXT(buffer, 2 )
+      real(kind=dp) :: rmin, rmax, x, y, z
+      character(len=256) :: buffer
+      integer :: m, n, i
 
- end subroutine minmxarc
+      if (jaauto > 0) then
+         rmin = 1.0e30_dp
+         rmax = -1.0e30_dp
+
+         do n = 1, nca
+            do m = 1, mca
+
+               x = x0 + dxa * (m - 1)
+               y = y0 + dya * (n - 1)
+               z = real(d(m, n), kind=dp)
+               if (inview(x, y) .and. z /= dmiss) then
+                  if (z < rmin) then
+                     rmin = z
+                  end if
+                  if (z > rmax) then
+                     rmax = z
+                  end if
+               end if
+            end do
+         end do
+         vmax = rmax
+         vmin = rmin
+         dv = vmax - vmin
+         do i = 1, nv
+            val(i) = vmin + (i - 1) * dv / (nv - 1)
+         end do
+      end if
+
+      !Samples have the same unit of the displayed values
+      write (buffer, '(a,a)') 'Samples                              ', UNIT(1)
+      call PARAMTEXT(buffer, 2)
+
+   end subroutine minmxarc
+
+end module m_minmxsam

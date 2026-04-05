@@ -15,18 +15,13 @@ add_executable(${executable_name} ${source_files} ${dimr_lib_sources})
 set(oss_dependencies deltares_common_c dimr_lib) 
 
 if(UNIX)
-
-   oss_include_libraries(${executable_name} oss_dependencies) 
-   
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE
                               "${dimr_lib_path}/include"
                               "${expat_include_path}")
 
-
-    target_link_libraries(${executable_name} ${oss_dependencies}) 
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
+    target_link_libraries(${executable_name} ${oss_dependencies})
     
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
@@ -36,13 +31,9 @@ endif(UNIX)
 
 
 if (WIN32)
-    
-    oss_include_libraries(${executable_name} oss_dependencies) 
-
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
-    target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
-    
+
     target_include_directories(${executable_name} 
                                PRIVATE
                                "${expat_include_path}"

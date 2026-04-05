@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -83,7 +83,7 @@ contains
         do itype = 1, ntyp_3dl
             if (sdmix(itype) < 0.0) then
                 sdmixn(itype) = 1.0d0 + sdmix(itype)
-                !           dmix(k) = dabs(sdmix(itype)) * dep
+                !           dmix(k) = abs(sdmix(itype)) * dep
             else
                 sdmixn(itype) = 0.0d0
             endif

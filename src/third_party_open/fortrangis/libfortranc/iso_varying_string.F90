@@ -886,10 +886,10 @@ contains
 
 ! Convert a varying string into a character string
 ! (automatic length)
-    
-    forall(i_char = 1:len(string))
+
+    do concurrent(i_char = 1:len(string))
        char_string(i_char:i_char) = string%chars(i_char)
-    end forall
+    end do
 
 ! Finish
 
@@ -1449,9 +1449,9 @@ contains
 
     ALLOCATE(string%chars(length+1))
 
-    forall(i_char = 1:length)
+    do concurrent (i_char = 1:length)
        string%chars(i_char) = char_(i_char:i_char)
-    end forall
+    end do
     string%chars(length+1) = char(0)
 
 ! Finish

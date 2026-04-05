@@ -37,7 +37,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -45,9 +44,6 @@
             <arguments>
                 <argument>/C</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>thirdparty\svn\win64\svn.exe</path>
         </program>
         <program name="wes" logOutputToFile="true" programStringRemoveQuotes="true">
             <path>wes/bin/wes.exe</path>

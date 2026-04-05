@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -320,7 +320,6 @@ subroutine cptdis(ag         ,area       ,alfa       ,cd1        , &
 !
 ! Local variables:
 !
-    integer           :: iexit
     integer           :: iter
     real(hp)          :: eps    
     real(hp)          :: hc     ! critical depth

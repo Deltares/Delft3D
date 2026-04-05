@@ -1,7 +1,7 @@
 module morphology_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -224,12 +224,20 @@ integer,parameter,public   :: MOR_STAT_BODS= 2
 integer,parameter,public   :: SC_MUDTHC  = 1
 integer,parameter,public   :: SC_MUDFRAC = 2
 !
+! Threshold options for FIXFAC calculation
+!
+integer, parameter, public :: THRESH_CONSTANT = 1 ! constant value specified using Thresh
+integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 !value based on thickness of alluvial transport layer
+!
 ! collection of morphology output options
 !
 type moroutputtype
     integer :: transptype      ! 0 = mass
                                ! 1 = volume including pores
                                ! 2 = volume excluding pores
+    character(len=30) :: unit_sediment_amount
+    character(len=30) :: unit_transport_rate
+    character(len=30) :: unit_transport_per_crs
     !
     character(len=30), dimension(4) :: statqnt = (/"H1  ","UV  ","SBUV","SSUV"/)
     character(len=30), dimension(4) :: statnam = (/"water depth              ", &
@@ -287,6 +295,15 @@ type moroutputtype
     logical :: blave
     logical :: bamor
     logical :: wumor
+    logical :: aldiff
+    logical :: bodsed
+    logical :: dpsed
+    logical :: thlyr
+    logical :: preload
+    logical :: sedconc
+    logical :: morfac
+    logical :: sxytot
+    logical :: sxyavg
 end type moroutputtype
 
 !
@@ -466,6 +483,7 @@ type morpar_type
                            !  1: none
                            !  2: Bagnold, Ikeda/Van Rijn
                            !  3: Van Bendegom, Koch&Flokstra
+    integer :: ithresh     !  switch for threshold for reduction of sediment thickness
     integer :: morfacpar   ! parameter index of morfac in table structure
                            ! only used when varyingmorfac=true
     integer :: morfacrec   ! record index of morfac in table structure
@@ -480,6 +498,7 @@ type morpar_type
                            !  3: 
     integer :: telform     !  switch for thickness of exchange layer
                            !  1: fixed (user-spec.) thickness
+    
     !
     ! pointers
     !
@@ -524,7 +543,8 @@ type morpar_type
     character(256) :: mmsyncfilnam !  name of output file for synchronisation of mormerge run
     character(256) :: telfil       !  name of file containing exchange layer thickness
     character(256) :: ttlfil       !  name of file containing transport layer thickness
-    character(256) :: flsthetsd    !  name of file containing dry cell erosion factor
+    character(256) :: aldifffil    !  name of file containing active-layer diffusion
+    character(:), allocatable :: flsthetsd    !  name of file containing dry cell erosion factor
     !
 end type morpar_type
 
@@ -573,6 +593,8 @@ type sedpar_type
     real(fp) :: sc_flcf   !  fraction of ParFluff0/ParFluff1 when the fluff layer fully covers the bed for Soulsby & Clarke (2005)
     real(fp) :: tbreakup  !  relaxation time scale for break-up of flocs [s]
     real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
+    real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
+    real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
     !
     ! reals
@@ -726,12 +748,12 @@ type sedtra_type
     !
     real(fp)         , dimension(:)      , pointer :: bc_mor_array !(lsedtot*2)
     !
-    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:kmax)
-    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:kmax)
-    real(fp)         , dimension(:)      , pointer :: wslc     !(0:kmax)
+    real(fp)         , dimension(:)      , pointer :: dcwwlc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: epsclc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: epswlc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: rsdqlc   !(1:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: sddflc   !(0:num_layers_grid)
+    real(fp)         , dimension(:)      , pointer :: wslc     !(0:num_layers_grid)
     !
     real(fp)         , dimension(:)      , pointer :: e_dzdn   !(nu1:nu2)         dzduu in structured Delft3D-FLOW
     real(fp)         , dimension(:)      , pointer :: e_dzdt   !(nu1:nu2)         dzdvv in structured Delft3D-FLOW
@@ -754,14 +776,20 @@ type sedtra_type
     real(fp)         , dimension(:,:)    , pointer :: e_ssnc   !(nu1:nu2,lsed)    ssuuc in structured Delft3D-FLOW
     real(fp)         , dimension(:,:)    , pointer :: e_sstc   !(nu1:nu2,lsed)    ssvvc in structured Delft3D-FLOW
     !
+    real(fp)         , dimension(:,:)    , pointer :: frac_he  !(nu1:nu2,lsedtot) effective fraction of sediment for computing hiding exposure (transport)
+    real(fp)         , dimension(:)      , pointer :: dm_he    !(nu1:nu2)         arithmetic mean sediment diameter for computing hiding exposure (transport)
+    real(fp)         , dimension(:)      , pointer :: dg_he    !(nu1:nu2)         geometric mean sediment diameter for computing hiding exposure (transport) (dummy, not used)
     real(fp)         , dimension(:,:)    , pointer :: frac     !< (nc1:nc2,lsedtot) effective fraction of sediment in bed available for transport
     real(fp)         , dimension(:)      , pointer :: mudfrac  !< (nc1:nc2)         effective mud fraction in the part of the bed exposed to transport
     real(fp)         , dimension(:)      , pointer :: sandfrac !< (nc1:nc2)         effective sand fraction in the part of the bed exposed to transport (mud excluded)
     real(fp)         , dimension(:)      , pointer :: dm       !< (nc1:nc2)         arithmetic mean sediment diameter of the part of the bed exposed to transport (mud excluded)
     real(fp)         , dimension(:)      , pointer :: dg       !< (nc1:nc2)         geometric mean sediment diameter of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dgsd     !< (nc1:nc2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: dxx      !< (nc1:nc2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: hidexp   !< (nc1:nc2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
+    real(fp)         , dimension(:)      , pointer :: dgsd     !(nu1:nu2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
+    real(fp)         , dimension(:)      , pointer :: dgsd_he  !(nu1:nu2)         geometric standard deviation of for computing hiding exposure (transport) (dummy, not used)
+    real(fp)         , dimension(:,:)    , pointer :: dxx      !(nu1:nu2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
+    real(fp)         , dimension(:,:)    , pointer :: dxx_he   !(nu1:nu2,nxx)     sediment diameter corresponding for computing hiding exposure (transport) (dummy, not used)
+    real(fp)         , dimension(:,:)    , pointer :: hidexp   !(nu1:nu2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
+    real(fp)         , dimension(:)      , pointer :: mudfrac_he  !(nu1:nu2)      effective mud fraction for computing hiding exposure (dummy, not used)
     !
     real(fp)         , dimension(:)      , pointer :: uuu      !(nc1:nc2)
     real(fp)         , dimension(:)      , pointer :: vvv      !(nc1:nc2)
@@ -859,6 +887,13 @@ subroutine nullsedtra(sedtra)
     nullify(sedtra%dxx)
     nullify(sedtra%hidexp)
     !
+    nullify(sedtra%frac_he)
+    nullify(sedtra%mudfrac_he)
+    nullify(sedtra%dm_he)
+    nullify(sedtra%dg_he)
+    nullify(sedtra%dgsd_he)
+    nullify(sedtra%dxx_he)
+    !
     nullify(sedtra%uuu)
     nullify(sedtra%vvv)
     nullify(sedtra%umod)
@@ -899,14 +934,14 @@ end subroutine nullsedtra
 
 
 !> Allocate the arrays of sedtra_type data structure.
-subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
+subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, nc2, nu1, nu2, nxx, nstatqnt, iopt)
 !!--declarations----------------------------------------------------------------
     !
     ! Function/routine arguments
     !
     type (sedtra_type)                                       :: sedtra
     type (moroutputtype)                                     :: moroutput
-    integer                                    , intent(in)  :: kmax
+    integer                                    , intent(in)  :: num_layers_grid
     integer                                    , intent(in)  :: lsed
     integer                                    , intent(in)  :: lsedtot
     integer                                    , intent(in)  :: nc1
@@ -933,12 +968,12 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     !
     if (istat==0) allocate(sedtra%bc_mor_array (lsedtot*2), STAT = istat)
     !
-    if (istat==0) allocate(sedtra%dcwwlc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%epsclc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%epswlc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%rsdqlc  (1:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%sddflc  (0:kmax), STAT = istat)
-    if (istat==0) allocate(sedtra%wslc    (0:kmax), STAT = istat)
+    if (istat==0) allocate(sedtra%dcwwlc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%epsclc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%epswlc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%rsdqlc  (1:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%sddflc  (0:num_layers_grid), STAT = istat)
+    if (istat==0) allocate(sedtra%wslc    (0:num_layers_grid), STAT = istat)
     !
     if (istat==0) allocate(sedtra%e_dzdn  (nu1:nu2), STAT = istat)
     if (istat==0) allocate(sedtra%e_dzdt  (nu1:nu2), STAT = istat)
@@ -974,6 +1009,14 @@ subroutine allocsedtra(sedtra, moroutput, kmax, lsed, lsedtot, nc1, nc2, nu1, nu
     if (istat==0) allocate(sedtra%dgsd    (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%dxx     (nc1:nc2,nxx), STAT = istat)
     if (istat==0) allocate(sedtra%hidexp  (nc1:nc2,lsedtot), STAT = istat)
+    !
+    ! hiding exposure computed on the basis of transport and coarse layer
+    if (istat==0) allocate(sedtra%frac_he (nu1:nu2,lsedtot), STAT = istat)
+    if (istat==0) allocate(sedtra%mudfrac_he (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dm_he   (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dg_he   (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dgsd_he (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dxx_he  (nu1:nu2,nxx), STAT = istat)
     !
     if (istat==0) allocate(sedtra%uuu     (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%vvv     (nc1:nc2), STAT = istat)
@@ -1169,6 +1212,14 @@ subroutine clrsedtra(istat, sedtra)
     if (associated(sedtra%dxx     ))   deallocate(sedtra%dxx     , STAT = istat)
     if (associated(sedtra%hidexp  ))   deallocate(sedtra%hidexp  , STAT = istat)
     !
+    ! hiding exposure on the basis of transport and coarse layer
+    if (associated(sedtra%frac_he ))   deallocate(sedtra%frac_he , STAT = istat)
+    if (associated(sedtra%mudfrac_he ))   deallocate(sedtra%mudfrac_he , STAT = istat)
+    if (associated(sedtra%dm_he   ))   deallocate(sedtra%dm_he   , STAT = istat)
+    if (associated(sedtra%dg_he   ))   deallocate(sedtra%dg_he   , STAT = istat)
+    if (associated(sedtra%dgsd_he ))   deallocate(sedtra%dgsd_he , STAT = istat)
+    if (associated(sedtra%dxx_he  ))   deallocate(sedtra%dxx_he  , STAT = istat)
+    !
     if (associated(sedtra%uuu     ))   deallocate(sedtra%uuu     , STAT = istat)
     if (associated(sedtra%vvv     ))   deallocate(sedtra%vvv     , STAT = istat)
     if (associated(sedtra%umod    ))   deallocate(sedtra%umod    , STAT = istat)
@@ -1233,6 +1284,8 @@ subroutine nullsedpar(sedpar)
     sedpar%version  = 2.0_fp
     sedpar%tbreakup = 1e-10_fp
     sedpar%tfloc    = 1e-10_fp
+    sedpar%d_micro  = 1e-4_fp
+    sedpar%ustar_macro = 0.067_fp
     !
     sedpar%flocmod        = FLOC_NONE
     sedpar%nflocpop       = 1
@@ -1360,6 +1413,7 @@ subroutine nullmorpar(morpar)
     integer                              , pointer :: iopkcw
     integer                              , pointer :: iopsus
     integer                              , pointer :: islope
+    integer                              , pointer :: ithresh
     integer                              , pointer :: morfacpar
     integer                              , pointer :: morfacrec
     integer                              , pointer :: morfactable
@@ -1446,7 +1500,7 @@ subroutine nullmorpar(morpar)
     character(256)                       , pointer :: mmsyncfilnam
     character(256)                       , pointer :: ttlfil
     character(256)                       , pointer :: telfil
-    character(256)                       , pointer :: flsthetsd
+    character(256)                       , pointer :: aldifffil
     type (bedbndtype)     , dimension(:) , pointer :: morbnd
     type (cmpbndtype)     , dimension(:) , pointer :: cmpbnd
     !
@@ -1517,6 +1571,7 @@ subroutine nullmorpar(morpar)
     iopkcw              => morpar%iopkcw
     iopsus              => morpar%iopsus
     islope              => morpar%islope
+    ithresh             => morpar%ithresh
     morfacpar           => morpar%morfacpar
     morfacrec           => morpar%morfacrec
     morfactable         => morpar%morfactable
@@ -1546,7 +1601,7 @@ subroutine nullmorpar(morpar)
     mmsyncfilnam        => morpar%mmsyncfilnam
     ttlfil              => morpar%ttlfil
     telfil              => morpar%telfil
-    flsthetsd           => morpar%flsthetsd
+    aldifffil           => morpar%aldifffil
     !
     istat = 0
     allocate (morpar%moroutput  , STAT = istat)
@@ -1582,7 +1637,8 @@ subroutine nullmorpar(morpar)
     mmsyncfilnam       = ' '
     ttlfil             = ' '
     telfil             = ' '
-    flsthetsd          = ' '
+    aldifffil          = ' '
+    morpar%flsthetsd = ' '
     !
     morfac             = 1.0_fp
     thresh             = 0.1_fp
@@ -1643,6 +1699,7 @@ subroutine nullmorpar(morpar)
     iopkcw             = 1
     iopsus             = 0
     islope             = 2
+    ithresh            = THRESH_CONSTANT
     morfacpar          = imissval
     morfacrec          = imissval
     morfactable        = imissval
@@ -1696,6 +1753,9 @@ subroutine initmoroutput(moroutput, def)
     endif
     !
     moroutput%transptype  = 2
+    moroutput%unit_sediment_amount = 'm3'
+    moroutput%unit_transport_rate  = 'm3 s-1 m-1'
+    moroutput%unit_transport_per_crs   = 'm3 s-1'
     !
     moroutput%statflg(:,:) = 0
     moroutput%nstatqnt     = 0
@@ -1704,6 +1764,7 @@ subroutine initmoroutput(moroutput, def)
     moroutput%morstats     = .false.
     !
     moroutput%aks           = no
+    moroutput%sxyavg        = yes
     moroutput%cumavg        = no
     moroutput%dg            = no
     moroutput%dgsd          = no
@@ -1716,14 +1777,19 @@ subroutine initmoroutput(moroutput, def)
     moroutput%frac          = no
     moroutput%lyrfrac       = yes
     moroutput%msed          = yes
+    moroutput%bodsed        = yes
+    moroutput%dpsed         = yes
+    moroutput%thlyr         = yes
     moroutput%mudfrac       = no
     moroutput%percentiles   = no
     moroutput%poros         = yes
     moroutput%rca           = yes
     moroutput%rsedeq        = yes
+    moroutput%sedconc       = yes
     moroutput%sandfrac      = no
     moroutput%sedpar        = no
     moroutput%seddif        = no
+    moroutput%sxytot        = yes
     moroutput%sbuuvv        = yes
     moroutput%sbcuv         = no
     moroutput%sscuv         = no
@@ -1746,6 +1812,9 @@ subroutine initmoroutput(moroutput, def)
     moroutput%blave         = no
     moroutput%bamor         = no
     moroutput%wumor         = no
+    moroutput%aldiff        = no
+    moroutput%preload       = yes
+    moroutput%morfac        = yes
 end subroutine initmoroutput
 
 
@@ -2016,7 +2085,6 @@ subroutine get_one_transport_parameter(val, trapar, l, i, timhr, nm)
     integer     , optional, intent(in)    :: nm         !< spatial index for which value is requested
     
     integer                     :: j           !< sediment parameter source file index
-    real(fp)                    :: par         !< scalar to store the value
     real(fp)                    :: parvec(1)   !< array to receive the value
     character(256)              :: message     !< error message
     type(parfile_type), pointer :: parfile     !< temporary to one trapar%parfile field

@@ -1,0 +1,140 @@
+# syntax=containers.deltares.nl/docker-proxy/docker/dockerfile:1.4
+
+# note that although the BASE_IMAGE_URL argument allows you to easily change the base image,
+# all the following code assumes that you're running an Alma Linux or compatible environment.
+ARG BASE_IMAGE_URL=containers.deltares.nl/base_linux_containers/8-base:latest
+
+FROM ${BASE_IMAGE_URL} AS buildtools
+
+ARG INTEL_ONEAPI_VERSION=2024
+
+# Install intel C/C++ and Fortran compilers, the
+# math kernel library and MPI library/tools
+RUN --mount=type=cache,target=/var/cache/dnf,id=compilers-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
+set -eo pipefail
+
+cat <<EOT > /etc/yum.repos.d/oneAPI.repo
+[oneAPI]
+name=Intel® oneAPI repository
+baseurl=https://yum.repos.intel.com/oneapi
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://yum.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB
+EOT
+
+dnf update --assumeyes
+dnf install --assumeyes epel-release
+dnf config-manager --set-enabled powertools
+# gcc and gcc-c++ are dependencies of the intel compilers.
+# For oneAPI 2023, they are not listed as dependencies in dnf, so
+# we have to install them explicitly. We explicitly install a
+# modern version than the standard, since the Intel C++ compiler
+# uses the standard library of gcc/g++.
+dnf install --assumeyes \
+    which binutils patchelf diffutils procps m4 make gcc-toolset-14 \
+    wget perl python3 xz
+
+# For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
+# as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
+# runtime of the C++ compiler for 2023.2.0, duplicating the one of 2023.2.1 and increasing the image size.
+# We cannot install mpi 2023.10 with oneAPI 2023, since then petsc does not build. Therefore, we use a newer version and a corresponding common-vars.
+if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
+    COMMON_VARS_VERSION="2024.2.1"
+    COMPILER_DPCPP_CPP_VERSION="2023.2.0"
+    COMPILER_FORTRAN_VERSION="2023.2.0"
+    MKL_DEVEL_VERSION="2023.2.0"
+    MPI_DEVEL_VERSION="2021.13.1"
+elif [[ $INTEL_ONEAPI_VERSION = "2024" ]]; then
+    COMMON_VARS_VERSION="2024.2.1"
+    COMPILER_DPCPP_CPP_VERSION="2024.2.1"
+    COMPILER_FORTRAN_VERSION="2024.2.1"
+    MKL_DEVEL_VERSION="2024.2.2"
+    MPI_DEVEL_VERSION="2021.13.1"
+elif [[ $INTEL_ONEAPI_VERSION = "2025" ]]; then
+    COMMON_VARS_VERSION="2025.3.1"
+    COMPILER_DPCPP_CPP_VERSION="2025.3.2"
+    COMPILER_FORTRAN_VERSION="2025.3.2"
+    MKL_DEVEL_VERSION="2025.3.1"
+    MPI_DEVEL_VERSION="2021.17.2"
+fi
+
+dnf install --assumeyes \
+    intel-oneapi-common-vars-${COMMON_VARS_VERSION} \
+    intel-oneapi-compiler-dpcpp-cpp-${COMPILER_DPCPP_CPP_VERSION} \
+    intel-oneapi-compiler-fortran-${COMPILER_FORTRAN_VERSION} \
+    intel-oneapi-mkl-devel-${MKL_DEVEL_VERSION} \
+    intel-oneapi-mpi-devel-${MPI_DEVEL_VERSION}
+
+if [[ $INTEL_ONEAPI_VERSION = "2023" ]]; then
+    # For some reason, in oneapi 2023, the latest symlink is not set correctly.
+    ln --symbolic --force --no-target-directory /opt/intel/oneapi/mpi/2021.13 /opt/intel/oneapi/mpi/latest
+fi
+
+cat <<EOT >> /etc/bashrc
+source /opt/intel/oneapi/setvars.sh
+source /opt/rh/gcc-toolset-14/enable
+EOT
+
+EOF
+
+# Build autotools, because some libraries require recent versions of it.
+RUN --mount=type=cache,target=/var/cache/src/,id=autotools-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
+source /etc/bashrc
+set -eo pipefail
+
+for URL in \
+    'https://mirrors.kernel.org/gnu/autoconf/autoconf-2.72.tar.xz' \
+    'https://mirrors.kernel.org/gnu/automake/automake-1.17.tar.xz' \
+    'https://mirrors.kernel.org/gnu/libtool/libtool-2.4.7.tar.xz'
+do
+    BASEDIR=$(basename -s '.tar.xz' "$URL")
+    if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+        echo "CACHED ${BASEDIR}"
+    else
+        echo "Fetching ${BASEDIR}.tar.xz..."
+        wget --quiet --output-document=- "$URL" | tar --extract --xz --file=- --directory='/var/cache/src/'
+    fi
+
+    pushd "/var/cache/src/${BASEDIR}"
+    ./configure CC=icx CXX=icpx FC=ifx CFLAGS="-O3" CXXFLAGS="-O3" FCFLAGS="-O3"
+    make --jobs=$(nproc)
+    make install
+    popd
+done
+EOF
+
+# ninja is required for building cmake
+RUN <<"EOF"
+set -eo pipefail
+wget https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+unzip ninja-linux.zip
+chmod +x ninja
+mv ninja /usr/bin/
+rm ninja-linux.zip
+
+echo "Installed ninja version:" $(ninja --version)
+EOF
+
+# CMake
+RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3.tar.gz'
+BASEDIR=$(basename -s '.tar.gz' "$URL")
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${BASEDIR}.tar.gz..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
+
+pushd /var/cache/src/cmake-4.2.3
+./bootstrap --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
+make --jobs=$(nproc)
+make install
+popd
+EOF

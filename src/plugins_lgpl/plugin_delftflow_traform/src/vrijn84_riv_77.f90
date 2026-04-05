@@ -65,7 +65,6 @@ subroutine core_function()
 !
 ! Local variables for input parameters
 !
-integer            :: i
 integer            :: l
 integer            :: m
 integer            :: n, nm
@@ -84,7 +83,6 @@ real(hp)           :: ws
 real(hp)           :: zumod
 character(len=256) :: runid
 character(len=256) :: filenm
-character(len=256) :: error_message
 !
 ! Local variables: parameters
 !
@@ -123,7 +121,6 @@ real(hp)           :: tbcr
 real(hp)           :: thetcr
 real(hp)           :: ustar
 real(hp)           :: zc
-logical            :: opened
 !
 !! extract array variables -----------------------------------------------------
 !

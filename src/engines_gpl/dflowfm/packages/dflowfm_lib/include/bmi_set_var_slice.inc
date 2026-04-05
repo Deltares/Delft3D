@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -43,10 +43,11 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      twav(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("Uorb")
+  case("uorb")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     Uorb(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+     uorb(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+
   case("InterceptThickness")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -67,34 +68,14 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      infilt(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("infiltcap0")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     infiltcap0(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("infiltcap")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      infiltcap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonMinInfCap")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonMinInfCap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonMaxInfCap")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonMaxInfCap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonDecreaseRate")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonDecreaseRate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonRecoveryRate")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     HortonRecoveryRate(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("HortonState")
+  case("horton_state")
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
-     HortonState(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
+     horton_state(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
   case("shx")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -191,20 +172,35 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      evap(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("qext")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     qext(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("qextreal")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     qextreal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("vextcum")
+
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
+     vextcum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
+  case("rainuni")
+     ! Does not apply to scalar variables
+     continue
   case("numlatsg")
      ! Does not apply to scalar variables
      continue
   case("qplat")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1)/))
-     qplat(:,c_start(1)+1:(c_start(1)+c_count(1))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
+     qplat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
   case("qqlat")
 
-     call c_f_pointer(xptr, x_2d_double_ptr, (/c_count(1), c_count(2)/))
-     qqlat(:,c_start(1)+1:(c_start(1)+c_count(1))) = x_2d_double_ptr
+     call c_f_pointer(xptr, x_3d_double_ptr, (/c_count(1), c_count(2), c_count(3)/))
+     qqlat(c_start(1)+1:(c_start(1)+c_count(1)),c_start(2)+1:(c_start(2)+c_count(2))) = x_2d_double_ptr
   case("balat")
 
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1), c_count(2)/))
+     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      balat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("qplatCum")
 
@@ -250,21 +246,6 @@
 
      call c_f_pointer(xptr, x_1d_int_ptr, (/c_count(1)/))
      kclat(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_int_ptr
-  case("qext")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qext(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("qextreal")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     qextreal(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("vextcum")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     vextcum(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("rainuni")
-     ! Does not apply to scalar variables
-     continue
   case("Qsunmap")
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
@@ -465,10 +446,6 @@
 
      call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
      diusp(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
-  case("taus")
-
-     call c_f_pointer(xptr, x_1d_double_ptr, (/c_count(1)/))
-     taus(c_start(1)+1:(c_start(1)+c_count(1))) = x_1d_double_ptr
   case("ndxi")
      ! Does not apply to scalar variables
      continue

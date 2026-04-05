@@ -1,7 +1,7 @@
 module dredge_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -257,7 +257,7 @@ type (dumptype), dimension(:) , allocatable, intent(inout) :: dump_prop       ! 
 integer, intent(in)  :: new_size
 
 type (dumptype), dimension(:) , allocatable :: dump_prop_new       ! (nadump) dump area properties
-integer :: i
+
 if(allocated(dump_prop)) then
    if (new_size > 0 .and. new_size > size(dump_prop)) then
       allocate(dump_prop_new(new_size))
@@ -275,7 +275,6 @@ subroutine initdredge(dredgepar)
     !
     type(dredge_type) :: dredgepar
     !
-    integer :: istat
 !
 !! executable statements -------------------------------------------------------
 !

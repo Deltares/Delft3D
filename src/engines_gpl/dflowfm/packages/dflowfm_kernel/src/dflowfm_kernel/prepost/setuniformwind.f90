@@ -1,48 +1,60 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+module m_setuniformwind
 
- subroutine setuniformwind()
- use m_wind
- use m_sferic
- use m_flowgeom
- implicit none
- double precision :: wdir
+   implicit none
 
- jawind = 2
- wdir   = (90d0 - winddir)*dg2rd
+   private
 
- call allocatewindarrays()
+   public :: setuniformwind
 
- wx   = windsp*cos(wdir)
- wy   = windsp*sin(wdir)
- call setwindstress()
- end subroutine setuniformwind
+contains
+
+   subroutine setuniformwind()
+      use precision, only: dp
+      use m_setwindstress, only: setwindstress
+      use m_wind
+      use m_sferic
+      use m_flowgeom
+      use fm_external_forcings, only: allocatewindarrays
+
+      real(kind=dp) :: wdir
+
+      jawind = 2
+      wdir = (90.0_dp - winddir) * dg2rd
+
+      call allocatewindarrays()
+
+      wx = windsp * cos(wdir)
+      wy = windsp * sin(wdir)
+      call setwindstress()
+   end subroutine setuniformwind
+
+end module m_setuniformwind

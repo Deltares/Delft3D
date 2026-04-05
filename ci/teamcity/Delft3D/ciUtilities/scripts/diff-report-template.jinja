@@ -1,0 +1,72 @@
+{% if added or modified or deleted or renamed %}
+## This PR made the following changes to DVC files:
+(if no diff was included, it was likely because the file was too large)
+
+{% if added %}
+<details>
+<summary><h3>Added</h3></summary>
+
+{% for file in added | sort(attribute='path') %}
+{% if file.diff %}
+
+<details> 
+<summary><h4>{{ file.path }}</h4></summary>
+
+```{% if file.lang and file.lang != 'plain' %}{{file.lang|trim}}{% endif %} 
+{{file.diff | trim |truncate(5000)}}
+```
+
+</details>
+{% else %}
+- `{{file.path}}`  
+{% endif %}
+{%endfor%}
+
+</details>
+{%endif-%}
+
+{% if modified  %}
+<details>
+<summary> <h3>Modified </h3> </summary>
+
+{% for file in modified | sort(attribute='path') %}
+{% if file.diff %}
+<details> 
+<summary><h4>{{ file.path }}</h4></summary>
+
+```diff
+{{file.diff | trim |truncate(5000)}}
+```
+
+</details>
+{% else %}
+- `{{file.path}}`  
+{% endif %}
+{% endfor %}
+
+
+{% if deleted %}
+<details>
+<summary> <h3>Deleted</h3> </summary>
+
+{% for file in deleted | sort(attribute='path') %}
+- `{{file.path}}`  
+{%endfor%}
+
+</details>
+{% endif -%}
+
+    
+{% if renamed %}
+<details>
+<summary> <h3>Renamed</h3> </summary>
+{% for rename in renamed | sort(attribute='path.old')-%}
+- `{{ rename.path.old}}` -> `{{ rename.path.new }}`  
+{%endfor-%}
+</details>
+{% endif -%}
+
+
+</details>
+{% endif -%}
+{%endif%}

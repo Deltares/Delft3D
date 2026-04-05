@@ -1,51 +1,46 @@
-"""
-Description: parser for handling supplied arguments
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2023
+"""Parser for handling supplied arguments.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import getpass
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, Optional, List
+from typing import Any, List, Optional
 
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
-from src.utils.handlers.credential_handler import CredentialHandler
-from src.suite.test_bench_settings import TestBenchSettings
-from src.utils.common import get_log_level
 from src.config.types.path_type import PathType
+from src.suite.command_line_settings import CommandLineSettings
+from src.utils.common import get_log_level
+from src.utils.handlers.credential_handler import CredentialHandler
+from src.utils.logging.log_level import LogLevel
 
 
 class TestBenchParameterParser:
-    """Handles the parsing of the testbench parameters"""
+    """Handles the parsing of the testbench parameters."""
 
     @classmethod
-    def parse_arguments_to_settings(cls) -> TestBenchSettings:
-        """Parses args (namespace) to a TestBenchSettings object
+    def parse_arguments_to_settings(cls) -> CommandLineSettings:
+        """Parse args (namespace) to a CommandLineSettings object.
 
-        Args:
-            args (Namespace): namespace containing the parameter data
-
-        Returns:
-            TestBenchSettings: Parsed settings
+        Returns
+        -------
+            CommandLineSettings: Parsed settings
         """
-
         parser = cls.__create_argument_parser()
         args: Namespace = parser.parse_args()
 
-        settings = TestBenchSettings()
+        settings = CommandLineSettings()
 
-        # Store path of Testbench.py into os environment
+        # Store path of TestBench.py into os environment
         script_path, script_name = os.path.split(os.path.abspath(__file__))
 
         settings.test_bench_root = script_path
         settings.test_bench_script_name = script_name
         settings.test_bench_startup_dir = os.getcwd()
 
-        settings.server_base_url = (
-            cls.__get_argument_value("server_base_url", args) or ""
-        )
+        settings.server_base_url = cls.__get_argument_value("server_base_url", args) or ""
         settings.override_paths = args.__dict__["or_paths"]
 
         # Loglevel from config.xml can be overruled by loglevel from arguments
@@ -61,9 +56,6 @@ class TestBenchParameterParser:
             path_type = cls.get_path_type(skip_string)
             settings.skip_download.extend(path_type)
 
-        # automatically commit reference run if succesfull
-        settings.autocommit = cls.__get_argument_value("autocommit", args) or False
-
         # Enables running the tests in parallel (multi-process)
         settings.parallel = cls.__get_argument_value("parallel", args) or False
 
@@ -73,13 +65,11 @@ class TestBenchParameterParser:
 
         settings.filter = args.filter
         # Determine type of run
-        settings.run_mode = (
-            cls.__get_argument_value("run_mode", args) or ModeType.LIST
-        )
-        settings.config_file = (
-            cls.__get_argument_value("config", args) or "config.xml"
-        )
-        settings.credentials = cls.__get_credentials(args, settings.teamcity)
+        settings.run_mode = cls.__get_argument_value("run_mode", args) or ModeType.LIST
+        settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
+        settings.credentials = cls.__get_credentials(args, settings.teamcity, settings.log_level)
+
+        settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
         return settings
 
@@ -105,20 +95,16 @@ class TestBenchParameterParser:
         return return_value
 
     @classmethod
-    def __get_credentials(cls, args: Namespace, is_active_directory_user: bool) -> Credentials:
+    def __get_credentials(cls, args: Namespace, is_active_directory_user: bool, log_level: LogLevel) -> Credentials:
         credentials = Credentials()
-        credential_handler = CredentialHandler(credentials)
+        credential_handler = CredentialHandler(credentials=credentials, log_level=log_level)
         credentials.name = "commandline"
 
         is_interactive = cls.__get_argument_value("interactive", args) or False
         make_interactive = not credential_handler.credential_file_exists() and is_interactive
-        credentials.username = (
-            cls.__get_argument_value("username", args, make_interactive) or ""
-        )
+        credentials.username = cls.__get_argument_value("username", args, make_interactive) or ""
 
-        credentials.password = (
-            cls.__get_argument_value("password", args, make_interactive, True) or ""
-        )
+        credentials.password = cls.__get_argument_value("password", args, make_interactive, True) or ""
 
         if not is_active_directory_user:
             credential_handler.setup_credentials(is_interactive)
@@ -226,12 +212,6 @@ class TestBenchParameterParser:
             dest="parallel",
         )
         parser.add_argument(
-            "--autocommit",
-            action="store_true",
-            help="Turns on autocommit when doing a reference run.",
-            dest="autocommit",
-        )
-        parser.add_argument(
             "--teamcity",
             action="store_true",
             help="Turns on specific TeamCity logging.",
@@ -264,6 +244,12 @@ class TestBenchParameterParser:
             action="store_true",
             help="Must be True to enable username/password via keyboard.",
             dest="interactive",
+        )
+        parser.add_argument(
+            "--skip-post-processing",
+            action="store_true",
+            help="Skips the postprocessing for either compare or reference.",
+            dest="skip_post_processing",
         )
 
         return parser

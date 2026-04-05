@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -22,15 +22,16 @@
 !!  rights reserved.
 module m_staprc
     use m_waq_precision
+    use m_logger_helper, only: get_log_unit_number
 
     implicit none
 
 contains
 
 
-    subroutine staprc (pmsa, fl, ipoint, increm, noseg, &
-            noflux, iexpnt, iknmrk, noq1, noq2, &
-            noq3, noq4)
+    subroutine staprc (process_space_real, fl, ipoint, increm, num_cells, &
+            noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
+            num_exchanges_z_dir, num_exchanges_bottom_dir)
         use m_extract_waq_attribute
 
         !>\file
@@ -66,23 +67,26 @@ contains
 
         IMPLICIT NONE
 
-        REAL(kind = real_wp) :: PMSA  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), NOSEG, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), NOQ1, NOQ2, NOQ3, NOQ4
+        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         INTEGER(kind = int_wp) :: IP1, IP2, IP3, IP4, IP5, &
                 IP6, IP7, IP8, IP9, IP10, &
                 IN1, IN2, IN3, IN4, IN5, &
                 IN6, IN7, IN8, IN9, IN10
         INTEGER(kind = int_wp) :: ISEG
-        INTEGER(kind = int_wp) :: IACTION
+        INTEGER(kind = int_wp) :: IACTION, lunrep
         INTEGER(kind = int_wp) :: ATTRIB
         REAL(kind = real_wp) :: TSTART, TSTOP, TIME, DELT
         REAL(kind = real_wp) :: CCRIT, TCOUNT
         REAL(kind = real_wp) :: ABOVE, BELOW
+        REAL(kind = real_wp), parameter :: missing_value = -999.0_real_wp
 
         INTEGER(kind = int_wp), PARAMETER :: MAXWARN = 50
         INTEGER(kind = int_wp), SAVE :: NOWARN = 0
+
+        call get_log_unit_number(lunrep)
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -116,12 +120,12 @@ contains
         !
         !     (Use a safe margin)
         !
-        TSTART = PMSA(IP2)
-        TSTOP = PMSA(IP3)
-        TIME = PMSA(IP4)
-        DELT = PMSA(IP5)
-        CCRIT = PMSA(IP6)
-        IF (PMSA(IP7) == 1.0) THEN
+        TSTART = process_space_real(IP2)
+        TSTOP = process_space_real(IP3)
+        TIME = process_space_real(IP4)
+        DELT = process_space_real(IP5)
+        CCRIT = process_space_real(IP6)
+        IF (process_space_real(IP7) == 1.0) THEN
             ABOVE = DELT
             BELOW = 0.0
         ELSE
@@ -144,13 +148,13 @@ contains
         IF (TIME >= TSTART - 0.5 * DELT .AND. TIME <= TSTOP + 0.5 * DELT) THEN
             IACTION = 2
             IF (TIME <= TSTART + 0.5 * DELT) THEN
-                DO ISEG = 1, NOSEG
+                DO ISEG = 1, num_cells
                     IP8 = IPOINT(8) + (ISEG - 1) * INCREM(8)
                     IP9 = IPOINT(9) + (ISEG - 1) * INCREM(9)
                     IP10 = IPOINT(10) + (ISEG - 1) * INCREM(10)
-                    PMSA(IP8) = 0.0
-                    PMSA(IP9) = 0.0
-                    PMSA(IP10) = 0.0
+                    process_space_real(IP8) = 0.0
+                    process_space_real(IP9) = 0.0
+                    process_space_real(IP10) = 0.0
                 ENDDO
             ENDIF
         ENDIF
@@ -165,22 +169,25 @@ contains
         IP9 = IPOINT(9)
         IP10 = IPOINT(10)
 
-        DO ISEG = 1, NOSEG
-            IF (BTEST(IKNMRK(ISEG), 0)) THEN
-
+        DO ISEG = 1, num_cells
+            !
+            !           Only active cells that do not have a missing value
+            !           Note: the value representing a missing value is exact
+            !
+            IF (BTEST(IKNMRK(ISEG), 0) .and. process_space_real(ip1) /= missing_value ) then
                 !
                 !           Keep track of the time within the current exceedance specification
                 !           that each segment is active
                 !
-                TCOUNT = PMSA(IP8) + DELT
-                PMSA(IP8) = TCOUNT
+                TCOUNT = process_space_real(IP8) + DELT
+                process_space_real(IP8) = TCOUNT
 
-                IF (PMSA(IP1) >= CCRIT) THEN
-                    PMSA(IP9) = PMSA(IP9) + ABOVE
-                    PMSA(IP10) = PMSA(IP10) + ABOVE * PMSA(IP1)
+                IF (process_space_real(IP1) >= CCRIT) THEN
+                    process_space_real(IP9) = process_space_real(IP9) + ABOVE
+                    process_space_real(IP10) = process_space_real(IP10) + ABOVE * process_space_real(IP1)
                 ELSE
-                    PMSA(IP9) = PMSA(IP9) + BELOW
-                    PMSA(IP10) = PMSA(IP10) + BELOW * PMSA(IP1)
+                    process_space_real(IP9) = process_space_real(IP9) + BELOW
+                    process_space_real(IP10) = process_space_real(IP10) + BELOW * process_space_real(IP1)
                 ENDIF
             ENDIF
 
@@ -189,22 +196,22 @@ contains
             !
             IF (IACTION == 3) THEN
                 IF (TCOUNT > 0.0) THEN
-                    IF (PMSA(IP9) > 0) THEN
-                        PMSA(IP10) = PMSA(IP10) / PMSA(IP9)
+                    IF (process_space_real(IP9) > 0) THEN
+                        process_space_real(IP10) = process_space_real(IP10) / process_space_real(IP9)
                     ENDIF
-                    PMSA(IP9) = PMSA(IP9) / TCOUNT
+                    process_space_real(IP9) = process_space_real(IP9) / TCOUNT
                 ELSE
-                    PMSA(IP9) = 0.0
+                    process_space_real(IP9) = 0.0
 
                     IF (NOWARN < MAXWARN) THEN
-                        CALL extract_waq_attribute(IKNMRK(ISEG), 3, ATTRIB)
+                        CALL extract_waq_attribute(3, IKNMRK(ISEG), ATTRIB)
                         IF (ATTRIB /= 0) THEN
                             NOWARN = NOWARN + 1
-                            WRITE(*, '(a,i0)')      'Exceedance could not be determined for segment ', ISEG
-                            WRITE(*, '(a,e12.4,a)') '    - segment not active in the given period. Exceedance set to zero'
+                            WRITE(lunrep, '(a,i0)')      'Exceedance could not be determined for segment ', ISEG
+                            WRITE(lunrep, '(a,e12.4,a)') '    - segment not active in the given period. Exceedance set to zero'
 
                             IF (NOWARN == MAXWARN) THEN
-                                WRITE(*, '(a)') '(Further messages suppressed)'
+                                WRITE(lunrep, '(a)') '(Further messages suppressed)'
                             ENDIF
                         ENDIF
                     ENDIF

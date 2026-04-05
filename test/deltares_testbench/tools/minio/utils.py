@@ -2,14 +2,18 @@ import enum
 from datetime import datetime, timedelta, timezone
 from typing import Iterator, List
 
+from s3_path_wrangler.paths import S3Path
+
 
 class Color(enum.Enum):
+    """Use to map color to ANSI terminal color code."""
+
     RED = 31
     GREEN = 32
     YELLOW = 33
 
 
-def color(s: str, color: Color):
+def color(s: str, color: Color) -> str:
     """Use ANSI escape codes to color text."""
     return f"\x1b[{color.value}m{s}\x1b[0m"
 
@@ -52,20 +56,20 @@ def ceil_dt(dt: datetime, delta: timedelta) -> datetime:
     >>> ceil_dt(datetime(2023, 12, 31, 23, 59, 59, tzinfo=timezone.utc), timedelta(minutes=1))
     datetime.datetime(2024, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)
     """
-    min = datetime.min.replace(tzinfo=timezone.utc)
-    quo, rem = divmod(dt - min, delta)
-    return min + (quo + 1) * delta if rem else dt
+    zero = datetime.min.replace(tzinfo=timezone.utc)
+    quo, rem = divmod(dt - zero, delta)
+    return zero + (quo + 1) * delta if rem else dt
 
 
 def to_unix_path(path: str) -> str:
-    """Convert Windows path separators with Unix path separators.
+    r"""Convert Windows path separators with Unix path separators.
 
     Both kind of path separators work on Windows, on Unix only the
     unix path separators are valid.
 
     Examples
     --------
-    >>> to_unix_path(r'\\foo\\bar/qux\\quux')
+    >>> to_unix_path(r'\foo\bar/qux\quux')
     '/foo/bar/qux/quux'
     """
     return path.replace("\\", "/")
@@ -110,3 +114,9 @@ def resolve_relative(path: str) -> str:
         else:
             result.append(part)
     return "/".join(result)
+
+
+def remove_prefix(path: S3Path, prefix: S3Path) -> S3Path:
+    if not all(p1 == p2 for p1, p2 in zip(path.parts, prefix.parts, strict=False)):
+        raise ValueError(f"{prefix} is not a prefix of {path}")
+    return S3Path.from_parts(path.parts[len(prefix.parts) :])

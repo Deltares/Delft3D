@@ -1,14 +1,16 @@
-import pytest
 import textwrap
+from unittest.mock import Mock, call, patch
+
 import numpy as np
-from unittest.mock import Mock, patch, call
+import pytest
+
+from src.utils.common import escape_teamcity, log_header, log_separator, log_table
 from src.utils.logging.log_level import LogLevel
-from src.utils.common import log_header, log_separator, log_table, escape_teamcity
 
 
 class TestCommon:
-    @patch('src.utils.logging.console_logger.ConsoleLogger')
-    def test_log_header(self, mock_logger):
+    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    def test_log_header(self, mock_logger) -> None:
         logger_instance = Mock()
 
         # Arrange
@@ -19,27 +21,27 @@ class TestCommon:
 
         # Assert
         expected_calls = [
-            call('**********', LogLevel.INFO),
-            call('Sample Header', LogLevel.INFO),
-            call('**********', LogLevel.INFO),
+            call("**********", LogLevel.INFO),
+            call("Sample Header", LogLevel.INFO),
+            call("**********", LogLevel.INFO),
         ]
 
         logger_instance.log.assert_has_calls(expected_calls)
 
-    @patch('src.utils.logging.console_logger.ConsoleLogger')
-    def test_log_separator(self, mock_logger):
+    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    def test_log_separator(self, mock_logger) -> None:
         # Arrange
         logger_instance = Mock()
         mock_logger.return_value = logger_instance
 
         # Act
-        log_separator(logger_instance, LogLevel.INFO, 3, 'v')
+        log_separator(logger_instance, LogLevel.INFO, 3, "v")
 
         # Assert
-        logger_instance.log.assert_called_with('vvv', LogLevel.INFO)
+        logger_instance.log.assert_called_with("vvv", LogLevel.INFO)
 
-    @patch('src.utils.logging.console_logger.ConsoleLogger')
-    def test_log_table(self, mock_logger):
+    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    def test_log_table(self, mock_logger) -> None:
         # Arrange
         logger_instance = Mock()
         mock_logger.return_value = logger_instance
@@ -55,18 +57,18 @@ class TestCommon:
 
         # Assert
         expected_calls = [
-            call('-------------------------------', LogLevel.INFO),
-            call('|Header 1|Header 2   |Header 3|', LogLevel.INFO),
-            call('-------------------------------', LogLevel.INFO),
-            call('|2       |test string|3.9     |', LogLevel.INFO),
-            call('|5       |test 2     |2.6     |', LogLevel.INFO),
-            call('-------------------------------', LogLevel.INFO),
+            call("-------------------------------", LogLevel.INFO),
+            call("|Header 1|Header 2   |Header 3|", LogLevel.INFO),
+            call("-------------------------------", LogLevel.INFO),
+            call("|2       |test string|3.9     |", LogLevel.INFO),
+            call("|5       |test 2     |2.6     |", LogLevel.INFO),
+            call("-------------------------------", LogLevel.INFO),
         ]
 
         logger_instance.log.assert_has_calls(expected_calls)
 
-    @patch('src.utils.logging.console_logger.ConsoleLogger')
-    def test_convert_numpy_float_to_python_float(self, mock_logger):
+    @patch("src.utils.logging.console_logger.ConsoleLogger")
+    def test_convert_numpy_float_to_python_float(self, mock_logger) -> None:
         # Arrange
         logger_instance = Mock()
         mock_logger.return_value = logger_instance
@@ -88,17 +90,17 @@ class TestCommon:
 
         # Assert
         expected_calls = [
-            call('------------------------------------------', LogLevel.INFO),
-            call('|Test name|Runtime  |MaxAbsDiff|File name|', LogLevel.INFO),
-            call('------------------------------------------', LogLevel.INFO),
-            call('|name_1   |1.177e+00|8.882e-16 |abc.nc   |', LogLevel.INFO),
-            call('------------------------------------------', LogLevel.INFO),
+            call("------------------------------------------", LogLevel.INFO),
+            call("|Test name|Runtime  |MaxAbsDiff|File name|", LogLevel.INFO),
+            call("------------------------------------------", LogLevel.INFO),
+            call("|name_1   |1.177e+00|8.882e-16 |abc.nc   |", LogLevel.INFO),
+            call("------------------------------------------", LogLevel.INFO),
         ]
 
         logger_instance.log.assert_has_calls(expected_calls)
 
     @pytest.mark.parametrize(
-        "input,expected",
+        ("input", "expected"),
         [
             pytest.param("\n", "|n", id="line-feed"),
             pytest.param("\r", "|r", id="cariage-return"),
@@ -124,15 +126,19 @@ class TestCommon:
             exactly four characters long. So remember to pad the code with zeroes. Sincerely, Ren\u00e9.
             """,
         ).strip()  # Strip off leading and trailing line feeds from multi-line string.
-        expected = textwrap.dedent(
-           f"""
+        expected = (
+            textwrap.dedent(
+                f"""
             In this text, there are newlines (
             ), cariage-returns (|r), single quotes (|'), brackets (|[|]), vertical bars (||).
             Finally there are some unicode characters: ({"".join("|0x{:04X}".format(c) for c in range(0x2654, 0x2660))}).
             Watch out for those unicode characters with codes in the lower range. The code must be
             exactly four characters long. So remember to pad the code with zeroes. Sincerely, Ren|0x00E9.
             """,
-        ).strip().replace("\n", "|n")
+            )
+            .strip()
+            .replace("\n", "|n")
+        )
 
         # Act
         result = escape_teamcity(text)

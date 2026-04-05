@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -213,10 +213,6 @@ subroutine test_tabulated_cross_section
    double precision        :: wetperimeter
    double precision        :: totalarea
    double precision        :: totalwidth
-   double precision        :: plusarea
-   double precision        :: pluswidth
-   double precision        :: minarea
-   double precision        :: minwidth
    type(t_CrossSection), pointer :: cross
    double precision, parameter  :: refdata(4,25) = &
                (/0.00000000000000D+000, 150.000000000000D+000, 0.00000000000000D+000, 150.000000000000D+000      , &
@@ -275,10 +271,6 @@ subroutine test_yz_cross_section
    double precision        :: wetperimeter
    double precision        :: totalarea
    double precision        :: totalwidth
-   double precision        :: plusarea
-   double precision        :: pluswidth
-   double precision        :: minarea
-   double precision        :: minwidth
    type(t_CrossSection), pointer :: cross
    double precision, parameter        :: refdata(4,25) = &
                (/0.00000000000000D+000, 0.00000000000000D+000, 0.00000000000000D+000, 1.00000000000000D-002   , &

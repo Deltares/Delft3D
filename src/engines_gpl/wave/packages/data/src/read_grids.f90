@@ -1,7 +1,7 @@
 module read_grids
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -341,7 +341,6 @@ subroutine replacecoordinates(filnam, mmax, nmax, xb, yb)
     integer           :: i
     integer           :: irgf
     integer           :: j
-    character(256)    :: rec
 !
 !! executable statements -------------------------------------------------------
 !
@@ -576,7 +575,10 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
                          & filename_tmp, flowLinkConnectivity)
     use netcdf
+    use nc_check, only : nc_check_err
     use dwaves_version_module
+    use m_ec_basic_interpolation, only: tricall
+
     implicit none
 !
 ! Parameters
@@ -608,16 +610,13 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
 !
     byte    , dimension(:)  , allocatable  :: nelemconn
     integer                                :: commonnodes
-    integer                                :: etamax
     integer                                :: i
     integer                                :: idfile
     integer                                :: iddim_e
-    integer                                :: iddim_enclsp
     integer                                :: iddim_numencpts
     integer                                :: iddim_numencparts
     integer                                :: iddim_laydim
     integer                                :: iddim_n
-    integer                                :: iddim_mmax
     integer                                :: iddim_ndx
     integer                                :: iddim_nelm
     integer                                :: iddim_nemax
@@ -640,27 +639,18 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     integer                                :: idvar_encptsppt
     integer                                :: ierror
     integer                                :: ik
-    integer                                :: irgf
     integer                                :: j
     integer                                :: jatri
     integer                                :: jk
-    integer                                :: k
-    integer                                :: ksimax
     integer                                :: maxelem
-    integer                                :: necurnodes
     integer                                :: nemax
     integer                                :: nemaxout
     integer                                :: nelm
     integer                                :: nflowlink
     integer                                :: nnodes
-    integer                                :: npareg
     integer, external                      :: nc_def_var
     integer                                :: numedge
-    integer                                :: numencl
-    integer                                :: pos
     integer                                :: elt
-    integer                                :: lc
-    integer                                :: hc
     integer                                :: eltlink2
     integer                                :: neighblow
     integer                                :: neighbhigh
@@ -681,19 +671,19 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     real(hp), dimension(:)  , allocatable  :: nelmslice
     real(hp), dimension(:,:), allocatable  :: grid_corner
     logical                                :: eltlink2found
-    logical                                :: kw_found
     logical                                :: regulargrid
-    character(10)                          :: dum
     character(NF90_MAX_NAME)               :: string
     character(8)                           :: cdate
     character(10)                          :: ctime
     character(5)                           :: czone
     character(256)                         :: full_version
+    integer :: nh_
 !
 !! executable statements -------------------------------------------------------
 !
     ! Default value for missing value: zero
     !
+    nh_ = nh
     nmax   = 1   ! Unstructured grid: use only mmax to count the elements
     xymiss = 0.0_hp
     !
@@ -1020,7 +1010,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
           ! Not used: edgeindx, numedge, triedge, xh, yh, nh, trisize
           !
           call tricall(jatri, xcc, ycc, nelm, elemconntmp, maxelem, &
-                     & edgeindx, numedge, triedge, xh, yh, nh, trisize)
+                     & edgeindx, numedge, triedge, xh, yh, nh_, trisize)
           !
           ! Turn the triangles in elemconn into quadrilaterals (rectangles):
           ! point4 == point3

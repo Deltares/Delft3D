@@ -101,18 +101,17 @@ function(create_vs_user_files)
 <VisualStudioUserFile>
 	<Configurations>
 		<Configuration Name=\"Debug|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
-		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/></Configurations></VisualStudioUserFile>"
+		<Configuration Name=\"Release|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+		<Configuration Name=\"RelWithDebInfo|x64\" Command=\"${debugcommand}\" Environment=\"${envpath}\"/>
+    </Configurations>
+</VisualStudioUserFile>"
 )
 	set (userfilename "${CMAKE_BINARY_DIR}/template.vcxproj.user")
     file(
         WRITE "${userfilename}"
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <Project ToolsVersion=\"15.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Release'\">
-        <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
-        <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
-    </PropertyGroup>
-    <PropertyGroup Condition=\"'\$(Configuration)'=='Debug'\">
+    <PropertyGroup>
         <LocalDebuggerEnvironment>${envpath}</LocalDebuggerEnvironment>
         <LocalDebuggerCommand>${debugcommand}</LocalDebuggerCommand>
     </PropertyGroup>
@@ -132,25 +131,6 @@ function(configure_visual_studio_user_file executable_name)
     endif()
 endfunction()
 
-# oss_include_libraries
-# Adds oss dependencies to the specified library.
-#
-# Note that it is assumed that the dependency is located in the PROJECT_BINARY_DIR in a subdirectory with the same dependency name.
-#
-# Argument
-# library_name : The name of the library where dependencies should be added.
-# dependencies : A list of dependencies to set for the library_name.
-function(oss_include_libraries library_name dependencies)
-
-    foreach(dependency IN LISTS ${dependencies})
-        add_dependencies(${library_name} ${dependency})
-
-        if (NOT CMAKE_GENERATOR MATCHES "Visual Studio")
-            include_directories( ${PROJECT_BINARY_DIR}/${dependency} )
-        endif()
-    endforeach()
-
-endfunction()
 
 
 
@@ -167,7 +147,8 @@ function(get_fortran_source_files source_directory source_files)
                         ${source_directory}/*.F90
                         ${source_directory}/*.for
                         ${source_directory}/*.f
-                        ${source_directory}/*.F)
+                        ${source_directory}/*.F
+                        ${source_directory}/*.inc)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 # get_fortran_source_files_recursive
@@ -215,18 +196,18 @@ endfunction()
 # Argument
 # name              : The name of the package.
 # description_file  : The file containing the description of the package.
-# mayor             : The mayor version nr.
+# major             : The major version nr.
 # minor             : The minor version nr.
 # build             : The build version nr.
 # generator         : The generators to be used to build the package, seperated by ';'.
-function(configure_package_installer name description_file  mayor minor build generator)
+function(configure_package_installer name description_file  major minor build generator)
   set(CPACK_VERBATIM_VARIABLES YES)
   set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${name}")
-  set(CPACK_PACKAGE_VENDOR "Deltares 2021")
+  set(CPACK_PACKAGE_VENDOR "Deltares 2026")
   set(CPACK_PACKAGE_DESCRIPTION_FILE "${description_file}")
   set(CPACK_RESOURCE_FILE_LICENSE "${checkout_src_root}/Copyright.txt")
-  set(CPACK_PACKAGE_VERSION_MAJOR "${mayor}")
+  set(CPACK_PACKAGE_VERSION_MAJOR "${major}")
   set(CPACK_PACKAGE_VERSION_MINOR "${minor}")
   set(CPACK_PACKAGE_VERSION_PATCH "${build}")
   set(CPACK_GENERATOR "${generator}")
@@ -260,7 +241,7 @@ endfunction(set_rpath)
 #    argument defines the directory that contains the files that are needed for the test.
 #    The `include_dir` argument is optional, if the test does not depend on external data, do not provide the argument.
 # test_list: [separate multiple values/ list]
-#   if you have one fortran file that contains multiple tests, and you want to execute each test separetly, you have to
+#   if you have one fortran file that contains multiple tests, and you want to execute each test separately, you have to
 #    implement
 #
 #   >>>   if (iargc > 0) then
@@ -306,6 +287,9 @@ function(create_test test_name)
     # For options with multiple values
     set(multi_value_args dependencies test_files include_dir test_list labels)
 
+    # set expression to check for failed tests
+    set(fail_reg_ex "Condition.*failed;Values not comparable;[A|a]ssertion.*failed")
+
     # Parse the arguments
     cmake_parse_arguments("op" "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -315,13 +299,18 @@ function(create_test test_name)
             src_files ${op_test_files}
             target_type "executable"
     )
+    # Set environment paths to find *.so/*.dll files Make sure DLL is found by adding its directory to PATH
+    if (UNIX)
+        set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
+    endif (UNIX)
+    if (WIN32)
+        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
+    endif (WIN32)
 
-    # add the ftnunit to the dependencies.
+
+    # Link libraries, include ftnunit in dependencies
     set(op_dependencies ftnunit ${op_dependencies})
-
-    # Link libraries
-    target_link_libraries(${test_name} ${op_dependencies})
-    # set_property(TARGET ${test_name} PROPERTY LINKER_LANGUAGE Fortran)
+    target_link_libraries(${test_name} PRIVATE ${op_dependencies})
 
     # Other link libraries
     if (WIN32)
@@ -330,46 +319,52 @@ function(create_test test_name)
                 ${mpi_library_path}
                 ${checkout_src_root}/third_party_open/pthreads/bin/x64
         )
+        set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})
     endif(WIN32)
-    set_target_properties(${test_name} PROPERTIES FOLDER ${op_visual_studio_folder})
 
-    if (DEFINED op_test_list)
-        foreach(test_i IN LISTS op_test_list)
-            add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
-        endforeach()
-    else()
-        add_test(NAME ${test_name} COMMAND ${test_name})
-    endif()
-
-
-    if (DEFINED op_include_dir)
-        # Copy an entire directory
-        file(COPY ${op_include_dir} DESTINATION ${CMAKE_BINARY_DIR}/test_data/${test_name})
-
-        if (DEFINED op_test_list)
-            foreach(test_i IN LISTS op_test_list)
-                set_tests_properties(${test_i} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
-            endforeach()
-        else()
-            set_tests_properties(${test_name} PROPERTIES ENVIRONMENT DATA_PATH=${CMAKE_BINARY_DIR}/test_data/${test_name})
-        endif()
-
+    # Obtain name of test, irrespective of whether a single test or a list is given
+    set(tests_to_set ${test_name})
+    if(DEFINED op_test_list)
+        set(tests_to_set ${op_test_list})
     endif()
 
     # add labels to tests
-
     if (DEFINED op_labels)
+        set(labels "")
         # convert the labels list to a dictionary
         list(LENGTH op_labels labels_len)
 
         foreach(pair IN LISTS op_labels)
             string(REPLACE ":" ";" pair_list ${pair})
             list(GET pair_list 0 test_i)
-            list(GET pair_list 1 label)
-            set_tests_properties(${test_i} PROPERTIES LABELS ${label})
+                list(GET pair_list 1 label)
+                list(APPEND labels ${label})
         endforeach()
-
     endif()
+
+    set(TEST_DATA_PATH ${CMAKE_CURRENT_BINARY_DIR}/test_data)
+
+    foreach(test_i IN LISTS tests_to_set)
+        if(tests_to_set STREQUAL ${test_name})
+            add_test(NAME ${test_i} COMMAND ${test_name})
+        else()
+            add_test(NAME ${test_i} COMMAND ${test_name} ${test_i})
+        endif()
+
+        set_property(TEST ${test_i} PROPERTY FAIL_REGULAR_EXPRESSION ${fail_reg_ex})
+
+        if (DEFINED op_include_dir)
+            # Copy an entire directory
+            file(COPY ${op_include_dir} DESTINATION ${TEST_DATA_PATH})
+        endif()
+        # Set data path environmental variable
+        set(data_path "DATA_PATH=${TEST_DATA_PATH}")
+
+        set_tests_properties(${test_i} PROPERTIES
+            ENVIRONMENT "${lib_path};${data_path}"
+            LABELS "${labels}"
+        )
+    endforeach()
 
 endfunction()
 
@@ -420,14 +415,20 @@ endfunction()
 
 # Function to return ifort version number
 function(get_intel_version)
-    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(1|2|3|4)[\.0-9]*")
-        set(intel_version 21 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(5|6|7)[\.0-9]*")
-        set(intel_version 22 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "2021\.(8|9|10)[\.0-9]*")
-        set(intel_version 23 PARENT_SCOPE)
-    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "(2021\.0\.0\.20231010|2021\.0\.0\.20240222|2024[\.0-9]*)")
+    # Intel OneAPI versions have different version numbers for their compilers.
+    # Furthermore, the compiler versions reported through CMAKE_Fortran_COMPILER_VERSION do not always match the official compiler version string.
+    # Before OneAPI 2021, the compiler version matches the ifort version (e.g., 2020.2)
+    # After OneAPI 2024, the compiler version matches the ifx version (e.g., 2025.1)
+    # In between, the ifx version does match the OneAPI version, but the ifort version is always reported as 2021.x(x).x.xxxxxxxx.
+    # Up to and including version 2023, the 2021.x version kept increasing, but in OneAPI 2024 the version reported in CMake goes back to 2021.0 or 2021.1.
+    if (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.[0-9]\\.[0-9]\\.(20231010|202[4-9][0-9][0-9][0-9][0-9])|^2024[\\.0-9]*")
         set(intel_version 24 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(8|9|10)\\.[\\.0-9]*|^2023[\\.0-9]*")
+        set(intel_version 23 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^2021\\.(5|6|7)\\.[\\.0-9]*|^2022[\\.0-9]*")
+        set(intel_version 22 PARENT_SCOPE)
+    elseif (${CMAKE_Fortran_COMPILER_VERSION} MATCHES "^20([0-9][0-9])[\\.0-9]*")
+        set(intel_version ${CMAKE_MATCH_1} PARENT_SCOPE) # Set to the result of the first capture group in parentheses (the last two year numbers, for example 25)
     else()
         message(FATAL_ERROR "Intel version ${CMAKE_Fortran_COMPILER_VERSION} is not recognized.")
     endif()

@@ -7,7 +7,7 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
                & nudge     ,nudvic    ,v2dwbl    ,ftauw     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -175,7 +175,7 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     !
     dpuopt = ' '
     lenc   = 8
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Dpuopt', dpuopt)
+    call prop_get(gdp%mdfile_ptr, '*', 'Dpuopt', dpuopt)
     if (dpuopt(1:lenc) /= ' ') then
        !
        ! Make sure dpuopt is in upper case
@@ -351,13 +351,13 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     !
     chz_k2d = .false.
     if (momsol == 'waqua') chz_k2d = .true.
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'ChzK2d', chz_k2d)
+    call prop_get(gdp%mdfile_ptr, '*', 'ChzK2d', chz_k2d)
     !
     ! 'Iter  ' restrict number of iterations
     ! WARNING: momsol is supposed to be already read/set
     !          then iter1 has a default value
     !
-    call prop_get_integer(gdp%mdfile_ptr, '*', 'Iter', iter1)
+    call prop_get(gdp%mdfile_ptr, '*', 'Iter', iter1)
     !
     ! Numerical settings for iteration in advection-diffusion solver (DIFU)
     !
@@ -377,12 +377,12 @@ subroutine rdnum(lunmd     ,lundia    ,nrrec     ,mdfrec    , &
     ! WARNING: Dryflp must be read before Dpsopt
     !
     dpsopt = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Dryflp', dpsopt)
+    call prop_get(gdp%mdfile_ptr, '*', 'Dryflp', dpsopt)
     !
     ! locate and read 'Dpsopt' record for determining DPS procedure
     !
     chulp = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Dpsopt', chulp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Dpsopt', chulp)
     !
     lenc = 8
     if (dpsopt(1:lenc) /= ' ' .and. chulp(1:lenc) /= ' ') then

@@ -1,18 +1,17 @@
-"""
-Description: TestCasePath Data Class
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2024
+"""TestCasePath Data Class.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 from typing import Optional
 
 
 class TestCasePath:
-    """Class for registering path to test case data"""
+    """Class for registering path to test case data."""
 
     __test__ = False  # Pytest gets confused by classes with names starting with 'Test'.
 
-    def __init__(self, prefix: str, version: Optional[str] = None):
+    def __init__(self, prefix: str, version: Optional[str] = None) -> None:
         self.__prefix = prefix
         self.__version = version
 

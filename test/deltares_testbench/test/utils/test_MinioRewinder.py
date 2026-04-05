@@ -32,8 +32,14 @@ def make_object(
     last_modified: datetime = datetime.min.replace(tzinfo=timezone.utc),
     is_delete_marker: bool = False,
     etag: Optional[str] = None,
+    tags: Optional[dict[str, str]] = None,
 ) -> MinioObject:
     version_id = version_id or uuid4().hex
+    new_tags = None
+    if tags is not None:
+        new_tags = Tags()
+        for k, v in tags.items():
+            new_tags[k] = v
 
     return MinioObject(
         bucket_name=bucket_name,
@@ -42,6 +48,7 @@ def make_object(
         last_modified=last_modified,
         is_delete_marker=is_delete_marker,
         etag=etag,
+        tags=new_tags,
     )
 
 
@@ -64,7 +71,7 @@ def minio_objects_equal(this: MinioObject, that: MinioObject) -> bool:
 
 
 class TestMinioRewinder:
-    def test_rewind_download_delete_marker(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_rewind_download_delete_marker(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -96,7 +103,7 @@ class TestMinioRewinder:
             "my-bucket", "object1_name", str(Path("./object1_name")), version_id=mocker.ANY
         )
 
-    def test_rewind_download_before_rewind(self, mocker: MockerFixture):
+    def test_rewind_download_before_rewind(self, mocker: MockerFixture) -> None:
         # Create a Mock for the Minio client
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -123,7 +130,7 @@ class TestMinioRewinder:
 
         mock_minio_client.fget_object.assert_not_called()
 
-    def test_rewind_remove_file_not_in_download(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_rewind_remove_file_not_in_download(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Create a Mock for the Minio client
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -154,10 +161,13 @@ class TestMinioRewinder:
         rewinder_instance.download("my-bucket", "prefix", Path("."), timestamp)
 
         # Assert
-        assert mocker.call(f"Removing local file that is not present in MinIO bucket: {file}") in logger.info.call_args_list
+        assert (
+            mocker.call(f"Removing local file that is not present in MinIO bucket: {file}")
+            in logger.debug.call_args_list
+        )
         assert not fs.exists(file)
 
-    def test_rewind_download_after_rewind(self, mocker: MockerFixture, fs: FakeFilesystem):
+    def test_rewind_download_after_rewind(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
         # Arrange
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -191,7 +201,7 @@ class TestMinioRewinder:
             "my-bucket", "object2_name", str(Path("object2_name")), version_id=mocker.ANY
         )
 
-    def test_rewind_download_on_rewind(self, mocker: MockerFixture):
+    def test_rewind_download_on_rewind(self, mocker: MockerFixture) -> None:
         # Create a Mock for the Minio client
         mock_minio_client = mocker.Mock(spec=Minio)
 
@@ -316,11 +326,12 @@ class TestMinioRewinder:
         )
 
     def create_file_side_effect(self, filename):
-        def side_effect(*args, **kwargs):
+        def side_effect(*args, **kwargs) -> None:
             # Create the file (you can customize this logic)
-            with open(filename, 'w') as f:
-                f.write('File content')
+            with open(filename, "w") as f:
+                f.write("File content")
             return None  # Return None to mimic the function call
+
         return side_effect
 
     def test_download__same_key_multiple_versions__get_latest_versions(
@@ -481,9 +492,9 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        info = [call.args[0] for call in logger.info.call_args_list]
+        debug = [call.args[0] for call in logger.debug.call_args_list]
         assert all(
-            f"Skipping download: {dest_path / name}, local and online are the same version." in info
+            f"Skipping download: {dest_path / name}, local and online are the same version." in debug
             for name in ["empty-file", "bar", "qux"]
         )
         assert sorted(minio_client.fget_object.call_args_list, key=lambda call: call.kwargs["version_id"]) == [
@@ -561,8 +572,8 @@ class TestMinioRewinder:
 
         # Assert
         assert fs.exists("destination/path")  # Destination directory has been created.
-        info = f'Skipping download: {Path("destination/path/foo")}, local and online are the same version.'
-        assert mocker.call(info) in logger.info.call_args_list
+        debug = f"Skipping download: {Path('destination/path/foo')}, local and online are the same version."
+        assert mocker.call(debug) in logger.debug.call_args_list
         minio_client.fget_object.assert_not_called()
 
     @pytest.mark.parametrize("allow_create_and_delete", [False, True])
@@ -715,7 +726,9 @@ class TestMinioRewinder:
         ]
 
     @pytest.mark.parametrize("allow_create_and_delete", [False, True])
-    def test_build_plan__mixed_operations(self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+    def test_build_plan__mixed_operations(
+        self, allow_create_and_delete: bool, mocker: MockerFixture, fs: FakeFilesystem
+    ) -> None:
         """It should include all different kind of operations in the computed plan.
 
         This test covers all of the branches in the big `if` statement in the `build_plan`
@@ -861,7 +874,7 @@ class TestMinioRewinder:
         assert plan.multipart_upload_part_size == part_size
         assert not plan.items
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_operation__put_object(
         self, type_: Operation, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
@@ -891,7 +904,7 @@ class TestMinioRewinder:
             tags=None,
         )
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_operation_with_tags__put_object(
         self, type_: Operation, mocker: MockerFixture, fs: FakeFilesystem
     ) -> None:
@@ -979,7 +992,7 @@ class TestMinioRewinder:
         )
         assert minio_client.put_object.call_args.kwargs["data"].read() == b""
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_non_existent_file__raise_error(
         self, type_: Operation, mocker: MockerFixture
     ) -> None:
@@ -999,7 +1012,7 @@ class TestMinioRewinder:
         with pytest.raises(RuntimeError, match="non-existent local file"):
             rewinder.execute_plan(plan)
 
-    @pytest.mark.parametrize("type_", (Operation.CREATE, Operation.UPDATE))
+    @pytest.mark.parametrize("type_", [Operation.CREATE, Operation.UPDATE])
     def test_execute_plan__create_or_update_without_local_path__raise_error(
         self, type_: Operation, mocker: MockerFixture
     ) -> None:
@@ -1105,7 +1118,7 @@ class TestMinioRewinder:
         assert minio_objects_equal(conflict.latest_version, new_object)
         assert conflict.latest_version.tags == (tags if add_tags else None)
         assert conflict.update_type == Operation.CREATE
-        minio_client.get_object_tags.call_count == int(add_tags)
+        assert minio_client.get_object_tags.call_count == int(add_tags)
 
     @pytest.mark.parametrize("add_tags", [pytest.param(True, id="add_tags"), pytest.param(False, id="skip_tags")])
     def test_detect_conflicts__object_didnt_exist_but_is_now_a_delete_marker__no_conflict(
@@ -1348,3 +1361,152 @@ class TestMinioRewinder:
         assert sum(1 for elem in conflicts if elem.update_type == Operation.CREATE) == create_count
         assert sum(1 for elem in conflicts if elem.update_type == Operation.UPDATE) == update_count
         assert sum(1 for elem in conflicts if elem.update_type == Operation.REMOVE) == remove_count
+
+    def test_list_objects__latest_exclude_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/bar.txt", version_id="2", last_modified=now, is_delete_marker=True),
+        ]
+
+        # Act
+        obj, *other_objects = list(rewinder.list_objects(prefix))
+
+        # Assert
+        assert not other_objects
+        assert obj.object_name == "case_data/foo.txt"
+        assert obj.version_id == "2"
+        assert obj.last_modified == now
+
+    def test_list_objects__latest_include_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/bar.txt", version_id="2", last_modified=now, is_delete_marker=True),
+        ]
+
+        # Act
+        objects = sorted(rewinder.list_objects(prefix, include_delete_markers=True), key=lambda obj: obj.object_name)
+
+        # Assert
+        assert len(objects) == 2
+        bar_obj, foo_obj = objects
+
+        assert foo_obj.version_id == "2"
+        assert not foo_obj.is_delete_marker
+        assert bar_obj.version_id == "2"
+        assert bar_obj.is_delete_marker
+
+    def test_list_objects__rewind_exclude_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object(
+                "case_data/bar.txt", version_id="2", last_modified=now - timedelta(hours=2), is_delete_marker=True
+            ),
+            make_object("case_data/bar.txt", version_id="3", last_modified=now),
+        ]
+
+        # Act
+        obj, *other_objects = sorted(
+            rewinder.list_objects(prefix, timestamp=now - timedelta(hours=1)),
+            key=lambda obj: obj.object_name or "",
+        )
+
+        # Assert
+        assert not other_objects
+
+        assert obj.version_id == "1"
+        assert obj.last_modified == now - timedelta(days=1)
+
+    def test_list_objects__rewind_include_delete_markers(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object("case_data/foo.txt", version_id="2", last_modified=now),
+            make_object("case_data/bar.txt", version_id="1", last_modified=now - timedelta(days=1)),
+            make_object(
+                "case_data/bar.txt", version_id="2", last_modified=now - timedelta(hours=2), is_delete_marker=True
+            ),
+            make_object("case_data/bar.txt", version_id="3", last_modified=now),
+        ]
+
+        # Act
+        objects = sorted(
+            rewinder.list_objects(
+                prefix,
+                timestamp=now - timedelta(hours=1),
+                include_delete_markers=True,
+            ),
+            key=lambda obj: obj.object_name or "",
+        )
+
+        # Assert
+        assert len(objects) == 2
+        bar_obj, foo_obj = objects
+
+        assert foo_obj.version_id == "1"
+        assert not foo_obj.is_delete_marker
+        assert bar_obj.version_id == "2"
+        assert bar_obj.is_delete_marker
+
+    def test_list_objects__add_tags(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now),
+        ]
+        tags = Tags()
+        tags["issue-id"] = "FOO-123"
+        client.get_object_tags.return_value = tags
+
+        # Act
+        obj, *other_objects = rewinder.list_objects(prefix, add_tags=True)
+
+        # Assert
+        assert not other_objects
+        assert obj.tags is not None
+        assert obj.tags["issue-id"] == "FOO-123"
+
+    def test_list_objects__add_tags__missing_tag(self, mocker: MockerFixture) -> None:
+        # Arrange
+        now = datetime.now(timezone.utc)
+        client = mocker.Mock(spec=Minio)
+        rewinder = Rewinder(client, mocker.Mock(spec=ILogger))
+        prefix = S3Path.from_bucket("my-bucket") / "case_data"
+        client.list_objects.return_value = [
+            make_object("case_data/foo.txt", version_id="1", last_modified=now),
+        ]
+        client.get_object_tags.return_value = None
+
+        # Act
+        obj, *other_objects = rewinder.list_objects(prefix, add_tags=True)
+
+        # Assert
+        assert not other_objects
+        assert obj.tags is None

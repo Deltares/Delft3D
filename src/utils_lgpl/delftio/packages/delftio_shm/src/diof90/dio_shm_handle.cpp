@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,36 +31,31 @@
 //
 //  stef.hummel@deltares.nl
 //
-//  (c) Deltares, july 2002
+//  (c) Deltares, 2026
 //
 
-
 #include <stdio.h>
-#include <stdlib.h>    // for getenv
+#include <stdlib.h> // for getenv
 
 #include "dio_shm_handle.h"
-
-
-
 
 //
 // On Unix: ESM for shared mem blocks
 //
 
-#if (defined(HAVE_CONFIG_H))
+#ifdef HAVE_CONFIG_H
 
-#include "dio-sync-ux.h"
-#include "esm.h"
+    #include "dio-sync-ux.h"
+    #include "esm.h"
 
-static int esmContext=-1;   // esm Context (-1: not connected)
+static int esmContext = -1; // esm Context (-1: not connected)
 
 int DioShmEsmGetContext(void)
 {
-
-    if ( esmContext == -1 )
+    if (esmContext == -1)
     {
-        char * dioShmEnv = getenv("DIO_SHM_ESM");
-        if ( dioShmEnv == 0 )
+        char* dioShmEnv = getenv("DIO_SHM_ESM");
+        if (dioShmEnv == 0)
         {
             fprintf(stderr, "COULD NOT GET env. var. DIO_SHM_ESM\n");
         }
@@ -68,18 +63,15 @@ int DioShmEsmGetContext(void)
         {
             int id, numRead;
             numRead = sscanf(dioShmEnv, "%d", &id);
-            if ( numRead != 1 )
+            if (numRead != 1)
             {
-                fprintf(stderr,
-                    "COULD NOT READ ContextID from env. var. DIO_SHM_ESM\n");
+                fprintf(stderr, "COULD NOT READ ContextID from env. var. DIO_SHM_ESM\n");
             }
             else
             {
-                if (ESM_Init(0) != ESM_OK )
+                if (ESM_Init(0) != ESM_OK)
                 {
-                    fprintf(stderr,
-                       "COULD not initialize ESM (Context %d)\n", id);
-
+                    fprintf(stderr, "COULD not initialize ESM (Context %d)\n", id);
                 }
                 else
                 {
@@ -88,11 +80,10 @@ int DioShmEsmGetContext(void)
             }
         }
     }
-    return( esmContext );
+    return (esmContext);
 }
 
 #endif
-
 
 //
 // CONSTRUCTOR for WINDOWS (use memory mapped file as shared mem block)
@@ -100,10 +91,7 @@ int DioShmEsmGetContext(void)
 
 #if (!defined(HAVE_CONFIG_H))
 
-DioShmHandle::DioShmHandle(
-    int iSize,
-    char * name
-    )
+DioShmHandle::DioShmHandle(int iSize, char* name)
 {
     this->mmfHandle = NULL;
     this->shmBlock = NULL;
@@ -111,26 +99,17 @@ DioShmHandle::DioShmHandle(
     // TODO Allow only one view per process (search name)
     if (this->mmfHandle == NULL)
     {
-        this->mmfHandle =
-            CreateFileMapping(  INVALID_HANDLE_VALUE,
-                                NULL,
-                                PAGE_READWRITE,
-                                0,
-                                iSize,
-                                name
-                                );
+        this->mmfHandle = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, iSize, name);
 
-		DWORD dwError_CFM = GetLastError();
-		if (dwError_CFM != 0 && dwError_CFM != ERROR_ALREADY_EXISTS )
-		{
-			fprintf(stderr,
-                       "Error creating Memory Mapped File: %lu\n", dwError_CFM);
-		}
+        DWORD dwError_CFM = GetLastError();
+        if (dwError_CFM != 0 && dwError_CFM != ERROR_ALREADY_EXISTS)
+        {
+            fprintf(stderr, "Error creating Memory Mapped File: %lu\n", dwError_CFM);
+        }
 
         if (this->mmfHandle != NULL)
         {
-            this->shmBlock = MapViewOfFile (  this->mmfHandle,
-                                    FILE_MAP_WRITE, 0, 0, 0);
+            this->shmBlock = MapViewOfFile(this->mmfHandle, FILE_MAP_WRITE, 0, 0, 0);
         }
     }
 }
@@ -141,10 +120,7 @@ DioShmHandle::DioShmHandle(
 // CONSTRUCTOR for UNIX (attach to shared mem block in ESM)
 //
 
-DioShmHandle::DioShmHandle(
-    int iSize,
-    char * name
-    )
+DioShmHandle::DioShmHandle(int iSize, char* name)
 {
     this->mmfHandle = NULL;
     this->shmBlock = NULL;
@@ -154,11 +130,11 @@ DioShmHandle::DioShmHandle(
     {
         int cId = DioShmEsmGetContext();
 
-        if ( cId >= 0 )
+        if (cId >= 0)
         {
-            if ( iSize == 0 )
+            if (iSize == 0)
             {
-                while( this->mmfHandle == NULL )
+                while (this->mmfHandle == NULL)
                 {
                     int sleepTime = 100;
                     DIOSYNCcSLEEP(&sleepTime);
@@ -184,7 +160,6 @@ DioShmHandle::DioShmHandle(
 
 #endif
 
-
 #if (!defined(HAVE_CONFIG_H))
 
 //
@@ -195,11 +170,11 @@ DioShmHandle::~DioShmHandle(void)
 {
     if (this->shmBlock != NULL)
     {
-        UnmapViewOfFile (this->shmBlock);
+        UnmapViewOfFile(this->shmBlock);
     }
     if (this->mmfHandle != NULL)
     {
-        CloseHandle (this->mmfHandle);
+        CloseHandle(this->mmfHandle);
     }
 }
 
@@ -218,4 +193,3 @@ DioShmHandle::~DioShmHandle(void)
 }
 
 #endif
-

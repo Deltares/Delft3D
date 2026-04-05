@@ -1,7 +1,7 @@
 module m_ini_noderel
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -47,6 +47,7 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
    use properties
    use string_module, only:str_lower
    use messageHandling
+   use m_combinepaths, only: combinepaths
     
    implicit none
    
@@ -140,9 +141,9 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
             call str_lower(block_name)
             pFrac%tableFile = ' '
             if (trim(block_name) == 'general') then
-               call prop_get_string(block_ptr, '*', 'TableFile', pFrac%tableFile)
+               call prop_get(block_ptr, '*', 'TableFile', pFrac%tableFile)
                if (pFrac%tableFile .ne. ' ') then
-                  call combinepaths(fileName, pFrac%tableFile)
+                  pFrac%tableFile = combinepaths(fileName, pFrac%tableFile)
                endif
                exit
             endif
@@ -160,12 +161,12 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
                icount = icount + 1
                pNodRel => pFrac%noderelations(icount)
             
-               call prop_get_string(block_ptr, '*', 'Node', pNodRel%Node)
+               call prop_get(block_ptr, '*', 'Node', pNodRel%Node)
                if (pNodRel%Node .eq. ' ') then
                   call SetMessage(LEVEL_FATAL, 'No Node Specified for Nodal Point Relation in File: '//trim(fileName))
                endif
                
-               call prop_get_string(block_ptr, '*', 'Method', pNodRel%Method)
+               call prop_get(block_ptr, '*', 'Method', pNodRel%Method)
                if (pNodRel%Method .eq. ' ') then
                   call SetMessage(LEVEL_FATAL, 'No Method Specified for Nodal Point Relation in File: '//trim(fileName))
                endif
@@ -173,22 +174,22 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
                
                if (pNodRel%Method == 'table') then
 
-                  call prop_get_string(block_ptr, '*', 'BranchIn', pNodRel%BranchIn)
+                  call prop_get(block_ptr, '*', 'BranchIn', pNodRel%BranchIn)
                   if (pNodRel%BranchIn .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Incoming Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
 
-                  call prop_get_string(block_ptr, '*', 'BranchOut1', pNodRel%Branchout1)
+                  call prop_get(block_ptr, '*', 'BranchOut1', pNodRel%Branchout1)
                   if (pNodRel%BranchOut1 .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No First Outgoing Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
 
-                  call prop_get_string(block_ptr, '*', 'BranchOut2', pNodRel%Branchout2)
+                  call prop_get(block_ptr, '*', 'BranchOut2', pNodRel%Branchout2)
                   if (pNodRel%BranchOut2 .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Second Outgoing Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
 
-                  call prop_get_string(block_ptr, '*', 'Table', pNodRel%tableName)
+                  call prop_get(block_ptr, '*', 'Table', pNodRel%tableName)
                   if (pNodRel%tableName == ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Table Specified for Table Method in File: '//trim(fileName))
                   endif

@@ -2,123 +2,60 @@
 #$ -V
 #$ -j yes
 #$ -cwd
-    #
-    # This script runs Delpar on Linux
-    # Adapt and use it for your own purpose
-    #
+
+#
+# This script runs delpar on Linux
+#
 
 function print_usage_info {
-    echo "Usage: ${0##*/} <delpar.inp> [OPTION]..."
-    echo "Run a Delpar model on Linux."
+    echo "Purpose: Sets LD_LIBRARY_PATH and runs delpar on Linux with all given command line arguments."
     echo
-    echo "<*.inp>/runid.par"
-    echo "       Delpar input file/Delpar configuration file, containing name of *.inp and *.mdu file"
+    echo "Usage:   ${0##*/} [<inp/mdp-file>] [OPTIONS]..."
     echo
-    echo "Options:"
-    echo "-h, --help"
-    echo "       print this help message and exit"
-    exit 1
+    echo "Command line arguments:"
+    echo "<inp/mdp-file>      delpar input file (optional*)"
+    echo "-h, --help, --usage print this help message and exit"
+    echo
+    echo "* when no input file name is provided, delpar will look for a file named runid.par with the name of the input file"
 }
-
 
 # ============
 # === MAIN ===
 # ============
 
-#
-## Defaults
-inputfile=
-D3D_HOME=
+## Get inputfile
+inputfile=$1
+
+## Set number of open files to unlimited
 ulimit -s unlimited
 
-
-#
 ## Start processing command line options:
-
-inputfile=$1
 case $inputfile in
-    -h|--help)
+    -h|--help|--usage)
     print_usage_info
+    exit 0
     ;;
+    runid.par)
+    inputfile=
+    # inputfile is made empty on purpose, delpar looks for runid.par by default if no argument is given.
 esac
 
-shift
-while [[ $# -ge 1 ]]
-do
-key="$1"
-shift
-
-case $key in
-    -h|--help)
-    print_usage_info
-    ;;
-    --D3D_HOME)
-    D3D_HOME="$1"
-    shift
-    ;;
-esac
-done
-
-
-if [ ! -f $inputfile ]; then
-    if [ ! -f $inputfile.inp ]; then
-        echo "ERROR: inputfile $inputfile does not exist"
-        print_usage_info
-    fi
-fi
-if [ "$inputfile" = "runid.par" ]; then
-    echo "input file is set to 'runid.par'."
-    inputfile=""
-    # inputfile is made empty on purpose, to maintain backwards compatibility with Delft3d4
-fi
-
-
-
-workdir=`pwd`
-
-if [ -z "${D3D_HOME}" ]; then
-    scriptdirname=`readlink \-f \$0`
-    scriptdir=`dirname $scriptdirname`
-    D3D_HOME=$scriptdir/..
-else
-    # D3D_HOME is passed through via argument --D3D_HOME
-    # Commonly its value is "/some/path/bin/.."
-    # Scriptdir: remove "/.." at the end of the string
-    scriptdir=${D3D_HOME%"/.."}
-fi
-if [ ! -d $D3D_HOME ]; then
-    echo "ERROR: directory $D3D_HOME does not exist"
-    print_usage_info
-fi
-export D3D_HOME
-
-echo "    inputfile        : $inputfile"
-echo "    D3D_HOME         : $D3D_HOME"
-echo "    Working directory: $workdir"
-echo 
-
-    #
-    # Set the directories containing the binaries
-    #
-
-bindir=$D3D_HOME/bin
-libdir=$D3D_HOME/lib
-
-
-    #
-    # No adaptions needed below
-    #
-
-    # Run
+## Set the directories containing the binaries
+scriptdirname=`readlink \-f \$0`
+bindir=`dirname $scriptdirname`
+libdir=$bindir/../lib
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
+echo
+echo "    bin dir          : $bindir"
+echo "    lib dir          : $libdir"
+echo
 
-
-    echo "executing:"
-    echo "$bindir/delpar" $inputfile
-    echo
+## Run
+echo "executing:"
+echo "$bindir/delpar $inputfile"
+echo
 $bindir/delpar $inputfile
 
-
-    # Wait until all child processes are finished
+## Wait until all child processes are finished
 wait
 

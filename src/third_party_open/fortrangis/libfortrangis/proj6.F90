@@ -49,7 +49,7 @@
 !! \include proj6_test.F90
 !!
 !! \ingroup libfortrangis
-MODULE proj6
+MODULE proj
 USE,INTRINSIC :: ISO_C_BINDING
 IMPLICIT NONE
 
@@ -385,4 +385,4 @@ proj_trans_f = proj_trans_array(p, direction, n, coord)
 END FUNCTION proj_trans_f
 
 
-END MODULE proj6
+END MODULE proj

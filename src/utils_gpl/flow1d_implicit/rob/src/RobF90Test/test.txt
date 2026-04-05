@@ -1,0 +1,22 @@
+Change property value for the second quantity in the set
+Value now New Property Value
+Remove : q2  
+Remove : q2_3
+RobPutDouble :
+FRobPutDouble (all elements same value) : Quantity q1   ElementSetID TestSet ID PROVIDING    10.00
+FRobPutDouble (all elements same value) : Quantity q1   ElementSetID TestSet ID ACCEPTING    20.00
+RobPutDouble : Quantityset q2   Quantity q2_1 ElementID PROVIDING TestSet ID   15.00   26.00   37.00
+RobPutDouble : Quantityset q2   Quantity q2_1 ElementID ACCEPTING TestSet ID   30.00   52.00   74.00
+RobPutDouble : Quantityset q2   Quantity q2_2 ElementID PROVIDING TestSet ID   16.00   27.00   38.00
+RobPutDouble : Quantityset q2   Quantity q2_2 ElementID ACCEPTING TestSet ID   32.00   54.00   76.00
+RobPutDouble : Quantityset q2   Quantity q2_3 ElementID PROVIDING TestSet ID   17.00   28.00   39.00
+RobPutDouble : Quantityset q2   Quantity q2_3 ElementID ACCEPTING TestSet ID   34.00   56.00   78.00
+RobGetDouble :
+RobGetDouble Quantity q1   Role = PROVIDING, Quantityset =TestSet ID (result=  0)   10.00   10.00   10.00
+RobGetDouble Quantity q1   Role = ACCEPTING, Quantityset =TestSet ID (result=  0)   20.00   20.00   20.00
+RobGetDouble Quantityset q2 Quantity=q2_1 Role = PROVIDING,result=  0   15.00   26.00   37.00
+RobGetDouble Quantityset q2 Quantity=q2_1 Role = ACCEPTING,result=  0   30.00   52.00   74.00
+RobGetDouble Quantityset q2 Quantity=q2_2 Role = PROVIDING,result=  0   16.00   27.00   38.00
+RobGetDouble Quantityset q2 Quantity=q2_2 Role = ACCEPTING,result=  0   32.00   54.00   76.00
+RobGetDouble Quantityset q2 Quantity=q2_3 Role = PROVIDING,result=  0   17.00   28.00   39.00
+RobGetDouble Quantityset q2 Quantity=q2_3 Role = ACCEPTING,result=  0   34.00   56.00   78.00

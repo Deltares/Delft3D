@@ -31,7 +31,6 @@ set(oss_dependencies    deltares_common
                         esmfsm_c
                         esmfsm_version_number
                         nefis)
-oss_include_libraries(${executable_name} oss_dependencies)
 
 if (WIN32)
     # Set linker options

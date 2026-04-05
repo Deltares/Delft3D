@@ -1,36 +1,47 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      !> Write a curvilinear grid to (ascii) grd-file.
+module m_wrirgf
+   use m_wriarc, only: wriarc
+
+   implicit none
+
+   private
+
+   public :: wrirgf
+
+contains
+
+   !> Write a curvilinear grid to (ascii) grd-file.
       !! NOTE: 'new' format (RGFGrid 4.x)
       !!
       !! Format:
@@ -41,80 +52,97 @@
       !! First subsequent line without a '=' should be '0 0 0' (backwards compatibility)
       !! Next line should be mmax, nmax
       !! That ends the header, start reading coordinates in the usual fashion.
-      SUBROUTINE WRIRGF(MRGF,FILNAM)
-      use m_sferic
-      use m_grid
-      use m_missing
-      use m_arcinfo
-      use m_polygon
+   subroutine WRIRGF(MRGF, FILNAM)
+      use m_wridep, only: wridep
+      use m_ecrtab, only: ecrtab
+      use precision, only: dp
+      use m_sferic, only: jsferic
+      use m_grid, only: mc, nc, xc, mmax, nmax, yc, zc
+      use m_missing, only: xymis, dmiss
+      use m_arcinfo, only: x0, y0, dxa, dya
+      use m_polygon, only: savepol, xpl, ypl, npl, restorepol
+      use m_readyy, only: readyy
+      use m_firstlin, only: firstlin
+      use m_wripol, only: wripol
+      use m_filez, only: doclose, newfil
 
-      implicit none
-      double precision :: half
-      integer :: ipnt, n, i,j, nfirst
+      real(kind=dp) :: half
+      integer :: ipnt, n, i, j, nfirst
       integer :: mrgf, mdep
 
+      character NAME2 * 76, FILNAM * (*)
 
-
-      CHARACTER NAME2*76, FILNAM*(*)
-
-      IPNT  = INDEX(FILNAM,'.')
+      IPNT = index(FILNAM, '.')
       NAME2 = FILNAM
-      WRITE(NAME2(IPNT+1:),'(A)') 'enc'
+      write (NAME2(IPNT + 1:), '(A)') 'enc'
 
-      CALL FIRSTLIN(MRGF)
-      IF (JSFERIC .EQ. 1) THEN
-         WRITE(MRGF,'(A)') 'Coordinate System=Spherical'
-      ENDIF
-      WRITE(MRGF,'(A,F14.3)') 'Missing Value=',XYMIS
+      call FIRSTLIN(MRGF)
+      if (JSFERIC == 1) then
+         write (MRGF, '(A)') 'Coordinate System=Spherical'
+      end if
+      write (MRGF, '(A,F14.3)') 'Missing Value=', XYMIS
 
-      WRITE(MRGF,'(2I8)') MC,NC
-      WRITE(MRGF,'(3I8)') 0, 0, 0 ! Backwards compatibility
-     ! CALL CORRGF(Xc,Yc,MMAX,NMAX)
-     ! CALL ISITU()
-     ! CALL WRIENC(NAME2, Xc, MC, NC, IJC, IJYES,mmax,nmax)
+      write (MRGF, '(2I8)') MC, NC
+      write (MRGF, '(3I8)') 0, 0, 0 ! Backwards compatibility
+      ! CALL CORRGF(Xc,Yc,MMAX,NMAX)
+      ! CALL ISITU()
+      ! CALL WRIENC(NAME2, Xc, MC, NC, IJC, IJYES,mmax,nmax)
       HALF = 0
-      CALL READYY('Writing Grid File',HALF)
-      CALL ECRTAB(Xc,MC,NC,MRGF,HALF,mmax,nmax)
-      HALF = 0.5d0
-      CALL ECRTAB(Yc,MC,NC,MRGF,HALF,mmax,nmax)
+      call READYY('Writing Grid File', HALF)
+      call ECRTAB(Xc, MC, NC, MRGF, HALF, mmax, nmax)
+      HALF = 0.5_dp
+      call ECRTAB(Yc, MC, NC, MRGF, HALF, mmax, nmax)
 
-      CALL READYY(' ',-1d0)
-      CALL DOCLOSE (MRGF)
+      call READYY(' ', -1.0_dp)
+      call DOCLOSE(MRGF)
 
-      WRITE(NAME2(IPNT+1:),'(A)') 'asc'
-      call newfil(MDEP,NAME2)
-      call wriarc(MDEP,ZC,MMAX,NMAX,MC,NC,X0,Y0,DXA,DYA,DMISS)
+      write (NAME2(IPNT + 1:), '(A)') 'asc'
+      call newfil(MDEP, NAME2)
+      call wriarc(MDEP, ZC, MMAX, NMAX, MC, NC, X0, Y0, DXA, DYA, DMISS)
       call doclose(MDEP)
 
-      WRITE(NAME2(IPNT+1:),'(A)') 'dep'
-      call newfil(MDEP,NAME2)
-      call  WRIDEP(MDEP,Zc,1,1,mmax,nmax,mmax,nmax)
+      write (NAME2(IPNT + 1:), '(A)') 'dep'
+      call newfil(MDEP, NAME2)
+      call WRIDEP(MDEP, Zc, 1, 1, mmax, nmax, mmax, nmax)
       call doclose(MDEP)
 
-      if (mc*nc < -1000) then ! save grd to polygon for partitioning
+      if (mc * nc < -1000) then ! save grd to polygon for partitioning
          call savepol()
-         n = 0 ; nfirst = 0
-         do i = 1, mc-1
-            do j = 1,nc-1
-               if (xc(i,j)   .ne. dmiss .and. xc(i+1,j)   .ne. dmiss .and. &
-                   xc(i,j+1) .ne. dmiss .and. xc(i+1,j+1) .ne. dmiss ) then
-                   if (nfirst .ne. 0) then
-                      n = n + 1 ; xpl(n) = xc(i,j  )   ; ypl(n) = yc(i,j)
-                      n = n + 1 ; xpl(n) = xc(i+1,j)   ; ypl(n) = yc(i+1,j)
-                      n = n + 1 ; xpl(n) = xc(i+1,j+1) ; ypl(n) = yc(i+1,j+1)
-                      n = n + 1 ; xpl(n) = xc(i,j+1)   ; ypl(n) = yc(i,j+1)
-                      n = n + 1 ; xpl(n) = dmiss       ; ypl(n) = dmiss
-                   else
-                      nfirst = 1
-                   endif
-                endif
-            enddo
-         enddo
+         n = 0
+         nfirst = 0
+         do i = 1, mc - 1
+            do j = 1, nc - 1
+               if (xc(i, j) /= dmiss .and. xc(i + 1, j) /= dmiss .and. &
+                   xc(i, j + 1) /= dmiss .and. xc(i + 1, j + 1) /= dmiss) then
+                  if (nfirst /= 0) then
+                     n = n + 1
+                     xpl(n) = xc(i, j)
+                     ypl(n) = yc(i, j)
+                     n = n + 1
+                     xpl(n) = xc(i + 1, j)
+                     ypl(n) = yc(i + 1, j)
+                     n = n + 1
+                     xpl(n) = xc(i + 1, j + 1)
+                     ypl(n) = yc(i + 1, j + 1)
+                     n = n + 1
+                     xpl(n) = xc(i, j + 1)
+                     ypl(n) = yc(i, j + 1)
+                     n = n + 1
+                     xpl(n) = dmiss
+                     ypl(n) = dmiss
+                  else
+                     nfirst = 1
+                  end if
+               end if
+            end do
+         end do
          npl = n
-         WRITE(NAME2(IPNT:),'(A)') '_part.pol'
-         call newfil(MDEP,NAME2)
+         write (NAME2(IPNT:), '(A)') '_part.pol'
+         call newfil(MDEP, NAME2)
          call wripol(mdep)
          call restorepol()
-      endif
+      end if
 
-      END SUBROUTINE WRIRGF
+   end subroutine WRIRGF
+
+end module m_wrirgf

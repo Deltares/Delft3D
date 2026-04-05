@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 !
 !
 
-      subroutine write_cco(file_cco, mmax  , nmax  , xdepth, ydepth, nolay)
+      subroutine write_cco(file_cco, num_columns  , num_rows  , xdepth, ydepth, num_layers)
 
       ! function : write a cco file
 
@@ -40,11 +40,11 @@
       ! declaration of the arguments
 
       type(t_file)                       :: file_cco               ! aggregation-file
-      integer                                :: mmax                   ! grid cells m direction
-      integer                                :: nmax                   ! grid cells n direction
-      real                                   :: xdepth(nmax,mmax)      ! x coordinate depth points
-      real                                   :: ydepth(nmax,mmax)      ! y coordinate depth points
-      integer                                :: nolay                  ! nolay
+      integer                                :: num_columns                   ! grid cells m direction
+      integer                                :: num_rows                   ! grid cells n direction
+      real                                   :: xdepth(num_rows,num_columns)      ! x coordinate depth points
+      real                                   :: ydepth(num_rows,num_columns)      ! y coordinate depth points
+      integer                                :: num_layers                  ! num_layers
 
       ! local declarations
 
@@ -58,7 +58,7 @@
       integer       lun
       integer       filtyp
       integer       plform
-      character*6   binary
+      character(len=6) binary
       binary = 'BINARY'
       plform = PL_DOS
 
@@ -68,12 +68,12 @@
       npart = 0
       rdum  = 0.0
 
-      call file_cco%open()
+      call file_cco%open(replace = .true.)
       lun    = file_cco%unit
       filtyp = file_cco%type
 
       if ( filtyp .ne. FT_ASC ) then
-         write(file_cco%unit,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
+         write(file_cco%unit,iostat=ioerr) num_columns, num_rows, x0, y0, alpha, npart, num_layers
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file header record'
             call stop_with_error()
@@ -98,7 +98,7 @@
             call stop_with_error()
          endif
       else
-         write(file_cco%unit,*,iostat=ioerr) mmax, nmax, x0, y0, alpha, npart, nolay
+         write(file_cco%unit,*,iostat=ioerr) num_columns, num_rows, x0, y0, alpha, npart, num_layers
          if ( ioerr .ne. 0 ) then
             write(*,*) ' error writing cco file header record'
             call stop_with_error()

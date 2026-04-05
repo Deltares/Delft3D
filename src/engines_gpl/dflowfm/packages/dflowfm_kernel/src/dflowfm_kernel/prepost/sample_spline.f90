@@ -1,98 +1,107 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
-
-!> sample a spline
-subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
-   use m_splines
-   use m_alloc
+!
+!
+module m_sample_spline
    implicit none
+contains
+!> sample a spline
+   subroutine sample_spline(num, xs, ys, numref, Nr, xr, yr, ierror)
+      use precision, only: dp
+      use m_splint, only: splint
+      use m_spline, only: spline
 
-   integer,                                     intent(in)    :: num       !< number of spline control points
-   double precision, dimension(num),            intent(in)    :: xs, ys    !< spline control points coordinates
-   integer,                                     intent(in)    :: numref    !< number of additional points between spline control points
-   integer,                                     intent(inout) :: Nr        !< array size (in), number of sample points (out)
-   double precision, dimension(Nr),             intent(out)   :: xr, yr    !< sample point coordinates
-   integer,                                     intent(out)   :: ierror    !< no error (0), memory error (2) or other error (1)
+      integer, intent(in) :: num !< number of spline control points
+      real(kind=dp), dimension(num), intent(in) :: xs, ys !< spline control points coordinates
+      integer, intent(in) :: numref !< number of additional points between spline control points
+      integer, intent(inout) :: Nr !< array size (in), number of sample points (out)
+      real(kind=dp), dimension(Nr), intent(out) :: xr, yr !< sample point coordinates
+      integer, intent(out) :: ierror !< no error (0), memory error (2) or other error (1)
 
-   double precision, dimension(:), allocatable                :: xh2, yh2
+      real(kind=dp), dimension(:), allocatable :: xh2, yh2
 
-   double precision                                           :: tn
+      real(kind=dp) :: tn
 
-   integer                                                    :: i, j, Nr_in
+      integer :: i, j, Nr_in
 
-   ierror = 1
+      ierror = 1
 
-   Nr_in = Nr
+      Nr_in = Nr
 
-   if ( num.lt.1 ) goto 1234
+      if (num < 1) then
+         goto 1234
+      end if
 
 !  compute the number of samples
-   Nr = num + (num-1)*numref
+      Nr = num + (num - 1) * numref
 
 !  check array size
-   if ( Nr_in.lt.Nr ) then
-      ierror = 2
-      goto 1234
-   end if
+      if (Nr_in < Nr) then
+         ierror = 2
+         goto 1234
+      end if
 
 !  allocate
-   allocate(xh2(num))
-   allocate(yh2(num))
+      allocate (xh2(num))
+      allocate (yh2(num))
 
-   call spline(xs,num,xh2)
-   call spline(ys,num,yh2)
+      call spline(xs, num, xh2)
+      call spline(ys, num, yh2)
 
-   Nr = 0
-   do i = 1,num-1
-      do j = 1,numref+1
-         Nr = Nr+1
-         tn = (i - 1) + dble(j-1) / dble(numref+1)
-         call splint(xs,xh2,num,tn,xr(Nr))
-         call splint(ys,yh2,num,tn,yr(Nr))
+      Nr = 0
+      do i = 1, num - 1
+         do j = 1, numref + 1
+            Nr = Nr + 1
+            tn = (i - 1) + real(j - 1, kind=dp) / real(numref + 1, kind=dp)
+            call splint(xs, xh2, num, tn, xr(Nr))
+            call splint(ys, yh2, num, tn, yr(Nr))
+         end do
       end do
-   end do
 
 !  add last point
-   Nr = Nr+1
-   tn = dble(num-1)
-   call splint(xs,xh2,num,tn,xr(Nr))
-   call splint(ys,yh2,num,tn,yr(Nr))
+      Nr = Nr + 1
+      tn = real(num - 1, kind=dp)
+      call splint(xs, xh2, num, tn, xr(Nr))
+      call splint(ys, yh2, num, tn, yr(Nr))
 
-   ierror = 0
-   1234 continue
+      ierror = 0
+1234  continue
 
 !  deallocate
-   if ( allocated(xh2) ) deallocate(xh2)
-   if ( allocated(yh2) ) deallocate(yh2)
+      if (allocated(xh2)) then
+         deallocate (xh2)
+      end if
+      if (allocated(yh2)) then
+         deallocate (yh2)
+      end if
 
-   return
-end subroutine sample_spline
+      return
+   end subroutine sample_spline
+end module m_sample_spline

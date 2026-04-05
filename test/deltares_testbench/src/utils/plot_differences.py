@@ -1,30 +1,40 @@
 # coding: utf-8
 
 import logging
+
 import pandas
 from pandas.plotting import register_matplotlib_converters
+
 register_matplotlib_converters()
 import matplotlib
 
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
+matplotlib.use("Agg")
 import os
+
+import matplotlib.pyplot as plt
 import numpy
+from matplotlib.font_manager import FontProperties
 
 
-def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, parameter, location, file_type):
-    """
-    Plot Time series with matplotlib and pandas
-    :param right_path: directory to copy plot to (ie test result directory)
-    :param date_time: x-axis (format 'yyyy-mm-dd hh:mm:ss' or 'value')
-    :param yval1: reference result
-    :param yval2: test result
-    :param case_name: test case name
-    :param parameter:
-    :param location:
-    :param file_type: Type of the file from which the data is taken
-    :return:
+def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, parameter, location, file_type) -> None:
+    """Plot Time series with matplotlib and pandas.
+
+    Parameters
+    ----------
+    right_path
+        Directory to copy plot to (ie test result directory).
+    date_time
+        X-axis (format 'yyyy-mm-dd hh:mm:ss' or 'value').
+    yval1
+        Reference result.
+    yval2
+        Test result.
+    case_name
+        Test case name.
+    parameter
+    location
+    file_type
+        Type of the file from which the data is taken.
     """
     case_name = case_name.strip()
     parameter = parameter.strip()
@@ -35,7 +45,7 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     for i in range(0, len(yval1)):
         diff.append(yval2[i] - yval1[i])
 
-    df = pandas.DataFrame({'X': date_time, 'Reference': yval1, 'Test': yval2, 'Diff': diff})
+    df = pandas.DataFrame({"X": date_time, "Reference": yval1, "Test": yval2, "Diff": diff})
     df.Reference = df.Reference.astype(float)
     df.Test = df.Test.astype(float)
     df.Diff = df.Diff.astype(float)
@@ -50,31 +60,31 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
     fig, axes = plt.subplots(2, 1, figsize=(13, 5.5))
 
     # plot in the two axes
-    for name in ['Test', 'Reference']:
+    for name in ["Test", "Reference"]:
         y = df[name]
-        style = ':'
-        if name == 'Test':
-            style = 'r-'
-        if name =='Reference':
-            style = 'b--'
-        axes[0].plot(df['X'], df[name], style, label=name)
-    title = 'Test and Reference Results: {case_name}\n{location}'.format(case_name=case_name, location=location)
+        style = ":"
+        if name == "Test":
+            style = "r-"
+        if name == "Reference":
+            style = "b--"
+        axes[0].plot(df["X"], df[name], style, label=name)
+    title = "Test and Reference Results: {case_name}\n{location}".format(case_name=case_name, location=location)
     axes[0].set_title(title, fontsize=7)
     # axes[0].ticklabel_format(useOffset=False)
     axes[0].set_ylabel(parameter, fontsize=7)
-    axes[0].set_xlabel('time $\\quad \\longrightarrow$', fontsize=7)
+    axes[0].set_xlabel("time $\\quad \\longrightarrow$", fontsize=7)
     axes[0].legend(prop=fontP)
     axes[0].xaxis.set_major_formatter(x_formatter)
     axes[0].xaxis.set_tick_params(labelsize=7)
     axes[0].yaxis.set_major_formatter(y_formatter)
     axes[0].yaxis.set_tick_params(labelsize=7)
 
-    axes[1].plot(df['X'], df['Diff'], 'b-', label='Test - Reference')
-    title = 'Difference (Test-Ref): {case_name}\n{location}'.format(case_name=case_name, location=location)
+    axes[1].plot(df["X"], df["Diff"], "b-", label="Test - Reference")
+    title = "Difference (Test-Ref): {case_name}\n{location}".format(case_name=case_name, location=location)
     axes[1].set_title(title, fontsize=7)
     # axes[1].ticklabel_format(useOffset=False)
     axes[1].set_ylabel(parameter, fontsize=7)
-    axes[1].set_xlabel('time $\\quad \\longrightarrow$', fontsize=7)
+    axes[1].set_xlabel("time $\\quad \\longrightarrow$", fontsize=7)
     axes[1].legend(prop=fontP)
     axes[1].xaxis.set_major_formatter(x_formatter)
     axes[1].xaxis.set_tick_params(labelsize=7)
@@ -85,17 +95,19 @@ def PlotDifferencesTimeSeries(right_path, date_time, yval1, yval2, case_name, pa
 
     # save the figure
     logging.debug("Plotting time series, variable: " + str(parameter) + " and location name: " + str(location))
-    outfilename = '{parameter}_{location}_{file_type}.pdf'.format(location=location, parameter=parameter, file_type=file_type)
-    outfilename = outfilename.replace(r'/', '-')
-    outfilename = outfilename.replace(r':', '')
-    outfilename = outfilename.replace(r' ', '_')
+    outfilename = "{parameter}_{location}_{file_type}.pdf".format(
+        location=location, parameter=parameter, file_type=file_type
+    )
+    outfilename = outfilename.replace(r"/", "-")
+    outfilename = outfilename.replace(r":", "")
+    outfilename = outfilename.replace(r" ", "_")
     outfilename = os.path.join(right_path, outfilename)
     fig.savefig(outfilename)
     fig.clf()
-    plt.close('all')
+    plt.close("all")
 
 
-def PlotDifferencesMap(right_path, x, y, yval1, yval2, allowed_diff, case_name, parameter, location, file_type):
+def PlotDifferencesMap(right_path, x, y, yval1, yval2, allowed_diff, case_name, parameter, location, file_type) -> None:
     case_name = case_name.strip()
     parameter = parameter.strip()
     location = location.strip()
@@ -104,22 +116,24 @@ def PlotDifferencesMap(right_path, x, y, yval1, yval2, allowed_diff, case_name, 
     diff = numpy.abs(yval2[:] - yval1[:])
     colours = []
     for i in range(0, len(yval1)):
-        colours.append('blue')
+        colours.append("blue")
     max_diff = max(diff[:])
-    dotsize = 5.
+    dotsize = 5.0
     area = diff / max_diff * dotsize
     for i in range(len(yval1)):
         if area[i] > 0.8 * dotsize:
-            colours[i] = 'red'
+            colours[i] = "red"
         elif area[i] > allowed_diff / max_diff * dotsize:
-            colours[i] = 'grey'
+            colours[i] = "grey"
             area[i] = max(0.15, area[i])
         if area[i] <= allowed_diff / max_diff * dotsize:
             area[i] = 0.15
 
     y_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
     fig = plt.figure()
-    title = 'Abs. Difference (Test-Ref): {case_name}\n {parameter} {location}'.format(case_name=case_name, location=location, parameter=parameter)
+    title = "Abs. Difference (Test-Ref): {case_name}\n {parameter} {location}".format(
+        case_name=case_name, location=location, parameter=parameter
+    )
     ax1 = fig.add_subplot(111)
 
     ratio = ax1.get_data_ratio()
@@ -149,27 +163,32 @@ def PlotDifferencesMap(right_path, x, y, yval1, yval2, allowed_diff, case_name, 
         if dy / dx > 10.0:
             ratio = 10.0
 
-    ax1.set_aspect(1. / ratio)  # make axes square
+    ax1.set_aspect(1.0 / ratio)  # make axes square
     ax1.set_title(title, fontsize=7)
     ax1.yaxis.set_major_formatter(y_formatter)
 
-    plt.xlabel('$x \\quad \\longrightarrow$', fontsize=7)
-    plt.ylabel('$y \\quad \\longrightarrow$', fontsize=7)
-    plt.tick_params(axis='both', which='major', labelsize=7)
-    plt.tick_params(axis='both', which='minor', labelsize=7)
+    plt.xlabel("$x \\quad \\longrightarrow$", fontsize=7)
+    plt.ylabel("$y \\quad \\longrightarrow$", fontsize=7)
+    plt.tick_params(axis="both", which="major", labelsize=7)
+    plt.tick_params(axis="both", which="minor", labelsize=7)
 
-    tekst = ('Dotsize represents difference\nGiven abs. tolerance: %f\nMax. abs. difference: %f\nRed dot > 0.8*%f\nGrey dot: above tolerance\nBlue dot: below tolerance' % (allowed_diff, max_diff, max_diff))
+    tekst = (
+        "Dotsize represents difference\nGiven abs. tolerance: %f\nMax. abs. difference: %f\nRed dot > 0.8*%f\nGrey dot: above tolerance\nBlue dot: below tolerance"
+        % (allowed_diff, max_diff, max_diff)
+    )
     fig.text(0.01, 0.90, tekst, fontsize=5)
 
-    ax1.scatter(x, y, c=colours, s=area, edgecolor='none')
+    ax1.scatter(x, y, c=colours, s=area, edgecolor="none")
 
     # save the figure
     logging.debug("Plotting map, variable: " + parameter + " and location name: " + location)
-    outfilename = '{parameter}_{location}_{file_type}.pdf'.format(location=location, parameter=parameter, file_type=file_type)
-    outfilename = outfilename.replace(r'/', '-')
-    outfilename = outfilename.replace(r':', '')
-    outfilename = outfilename.replace(r' ', '_')
+    outfilename = "{parameter}_{location}_{file_type}.pdf".format(
+        location=location, parameter=parameter, file_type=file_type
+    )
+    outfilename = outfilename.replace(r"/", "-")
+    outfilename = outfilename.replace(r":", "")
+    outfilename = outfilename.replace(r" ", "_")
     outfilename = os.path.join(right_path, outfilename)
     plt.savefig(outfilename)
     plt.clf()
-    plt.close('all')
+    plt.close("all")

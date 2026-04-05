@@ -1,7 +1,7 @@
 subroutine dimbacktemp(lundia    ,lconst    ,lstsci    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -74,7 +74,7 @@ subroutine dimbacktemp(lundia    ,lconst    ,lstsci    ,gdp       )
     allocate (gdp%gdheat%flbcktemp(lstsci)  , stat=istat)
     !  
     ! Check for background temperature
-    call prop_get_logical(gdp%mdfile_ptr, '*', 'Bcktem' , gdp%gdheat%back_temp)
+    call prop_get(gdp%mdfile_ptr, '*', 'Bcktem' , gdp%gdheat%back_temp)
     ! 
     icount = lstsci
     allocate(tempbackconst(icount))
@@ -98,7 +98,7 @@ subroutine dimbacktemp(lundia    ,lconst    ,lstsci    ,gdp       )
        else
           write (keyword(5:6), '(i2)') i
        endif
-       call prop_get_string(gdp%mdfile_ptr, '*', keyword, tempbackconst(j))
+       call prop_get(gdp%mdfile_ptr, '*', keyword, tempbackconst(j))
        call small(tempbackconst(j) ,999 )
     enddo
     !

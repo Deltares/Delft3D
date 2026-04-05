@@ -1,60 +1,50 @@
 @ echo off
 title run_delpar
-
-    rem This script runs Delft3D-FLOW on Windows
-    rem Adapt and use it for your own purpose
-
+rem
+rem this script runs delpar on Windows
+rem
 setlocal enabledelayedexpansion
 
+rem show usage?
+if [%1] EQU []        goto usage
+if [%1] EQU [-h]      goto usage
+if [%1] EQU [--help]  goto usage
+if [%1] EQU [--usage] goto usage
 
-    rem Set the config file
+rem Set the directories containing the binaries and set PATH
+set bindir=%~dp0
+set libdir=%bindir%\..\lib
+set PATH=%libdir%;%bindir%;%PATH%
 
-set inputfile=
-if [%1] EQU [] (
-    goto usage
-) else (
-    if [%1] EQU [--help] (
-        goto usage
-    ) else (
-        set inputfile=%1
-    )
+rem set the input file
+set inputfile=%1
+echo delpar inp-file:%inputfile%
+
+rem go to directory, run delpar, and return
+set currentdir=%CD%
+For %%A in ("%inputfile%") do (
+    set argName=%%~nxA
+    set argPath=%%~dpA
 )
-echo Inputfile: %inputfile%
-if not exist %inputfile% (
-    if not exist %inputfile%.inp (
-        echo ERROR: inputfile "%inputfile%" does not exist
-        goto usage
-    )
+if "%argName%" == "runid.par" (
+    set argName=
+    rem argName is made empty on purpose, delpar looks for runid.par by default if no argument is given.
 )
-if "%inputfile%" == "runid.par" (
-    echo input file is set to "runid.par".
-    set inputfile=
-    rem inputfile is made empty on purpose, to maintain backwards compatibility with Delft3d4
-)
-
-
-set workdir=%CD%
-echo Working directory: %workdir%
-set D3D_HOME=%~dp0..
-echo D3D_HOME         : %D3D_HOME%
-set partdir=%D3D_HOME%\bin
-set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
-
-
-set PATH=%partdir%;%sharedir%;%libdir%
-echo executing in this window: "%partdir%\delpar.exe" %inputfile%
-"%partdir%\delpar.exe" %inputfile%
-
+cd /d "%argPath%"
+echo executing in this window: "%bindir%\delpar.exe" %argName%
+"%bindir%\delpar.exe" %argName%
+cd /d "%currentdir%"
 goto end
 
 :usage
+echo Purpose: Sets PATH and runs delpar on Windows.
+echo.
 echo Usage:
-echo run_delpar.bat [--help] *.inp/runid.par
-echo     --help   : (Optional) show this usage
-echo        *.inp : (Optional) Delpar input file
-echo    rundi.par : (Optional) Delpar configuration file, containing name of *.inp and *.mdu file
-
+echo run_delpar.bat [^<inp-file^> ^| -h ^| --help ^| --usage]
+echo.
+echo     ^<inp-file^>              delpar input file (mandatory)
+echo     -h ^| --help ^| --usage   show this usage (optional)
 :end
-    rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
+
+rem To prevent the DOS box from disappearing immediately: remove the rem on the following line
 rem pause

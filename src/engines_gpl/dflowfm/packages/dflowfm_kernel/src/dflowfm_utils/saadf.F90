@@ -33,7 +33,6 @@
 
 ! matall
 
-
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
 !----------------------------------------------------------------------c
@@ -53,14 +52,27 @@
 !----------------------------------------------------------------------c
 ! Note: this module still incomplete.                                  c
 !----------------------------------------------------------------------c
-subroutine amub (nrow,ncol,job,a,ja,ia,b,jb,ib,&
-&c,jc,ic,nzmax,iw,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax
-   real*8, intent(inout) :: a(*), b(*), c(*)
-   integer, intent(inout) :: ja(*),jb(*),jc(*),ia(nrow+1),ib(*),ic(*)&
-   &,iw(ncol)
-   integer :: len, ierr, j, ii, ka, jj, kb, jcol, jpos, job
-   integer :: k
+
+#define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
+
+module m_saadf
+   use precision, only: dp
+   implicit none
+
+   interface dnrm2XXX
+      module procedure dnrm2XXX_1
+      module procedure dnrm2XXX_2
+   end interface dnrm2XXX
+contains
+   subroutine amub(nrow, ncol, job, a, ja, ia, b, jb, ib,&
+   &c, jc, ic, nzmax, iw, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax
+      real(dp), intent(inout) :: a(:), b(:), c(:)
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(:), ic(:)&
+      &, iw(ncol)
+      integer :: len, ierr, j, ii, ka, jj, kb, jcol, jpos, job
+      integer :: k
 !-----------------------------------------------------------------------
 ! performs the matrix by matrix product C = A B
 !-----------------------------------------------------------------------
@@ -106,57 +118,64 @@ subroutine amub (nrow,ncol,job,a,ja,ia,b,jb,ib,&
 !   on the condition that ncol(A) = nrow(B).
 !
 !-----------------------------------------------------------------------
-   real*8 scal
-   logical values
-   values = (job .ne. 0)
-   len = 0
-   ic(1) = 1
-   ierr = 0
+      real(dp) scal
+      logical values
+      values = (job /= 0)
+      len = 0
+      ic(1) = 1
+      ierr = 0
 !     initialize array iw.
-   do 1 j=1, ncol
-      iw(j) = 0
-1  continue
+      do j = 1, ncol
+         iw(j) = 0
+      end do
 !
-   do 500 ii=1, nrow
+      do ii = 1, nrow
 !     row i
-      do 200 ka=ia(ii), ia(ii+1)-1
-         if (values) scal = a(ka)
-         jj   = ja(ka)
-         do 100 kb=ib(jj),ib(jj+1)-1
-            jcol = jb(kb)
-            jpos = iw(jcol)
-            if (jpos .eq. 0) then
-               len = len+1
-               if (len .gt. nzmax) then
-                  ierr = ii
-                  return
-               endif
-               jc(len) = jcol
-               iw(jcol)= len
-               if (values) c(len)  = scal*b(kb)
-            else
-               if (values) c(jpos) = c(jpos) + scal*b(kb)
-            endif
-100      continue
-200   continue
-      do 201 k=ic(ii), len
-         iw(jc(k)) = 0
-201   continue
-      ic(ii+1) = len+1
-500 continue
-   return
+         do ka = ia(ii), ia(ii + 1) - 1
+            if (values) then
+               scal = a(ka)
+            end if
+            jj = ja(ka)
+            do kb = ib(jj), ib(jj + 1) - 1
+               jcol = jb(kb)
+               jpos = iw(jcol)
+               if (jpos == 0) then
+                  len = len + 1
+                  if (len > nzmax) then
+                     ierr = ii
+                     return
+                  end if
+                  jc(len) = jcol
+                  iw(jcol) = len
+                  if (values) then
+                     c(len) = scal * b(kb)
+                  end if
+               else
+                  if (values) then
+                     c(jpos) = c(jpos) + scal * b(kb)
+                  end if
+               end if
+            end do
+         end do
+         do k = ic(ii), len
+            iw(jc(k)) = 0
+         end do
+         ic(ii + 1) = len + 1
+      end do
+      return
 !-------------end-of-amub-----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplb (nrow,ncol,job,a,ja,ia,b,jb,ib,&
-&c,jc,ic,nzmax,iw,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax, job
-   real*8, intent(inout) :: a(*), b(*), c(*)
-   integer, intent(inout) :: ja(*),jb(*),jc(*),ia(nrow+1),ib(nrow+1)&
-   &,ic(nrow+1), iw(ncol)
-   integer, intent(out) :: ierr
-   integer :: ii, ka, jcol, len, j, kb, jpos, k
+   subroutine aplb(nrow, ncol, job, a, ja, ia, b, jb, ib,&
+   &c, jc, ic, nzmax, iw, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax, job
+      real(dp), intent(inout) :: a(:), b(:), c(:)
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(nrow + 1)&
+      &, ic(nrow + 1), iw(ncol)
+      integer, intent(out) :: ierr
+      integer :: ii, ka, jcol, len, j, kb, jpos, k
 !-----------------------------------------------------------------------
 ! performs the matrix sum  C = A+B.
 !-----------------------------------------------------------------------
@@ -198,58 +217,69 @@ subroutine aplb (nrow,ncol,job,a,ja,ia,b,jb,ib,&
 !         columns in A.
 !
 !-----------------------------------------------------------------------
-   logical values
-   values = (job .ne. 0)
-   ierr = 0
-   len = 0
-   ic(1) = 1
-   do 1 j=1, ncol
-      iw(j) = 0
-1  continue
+      logical values
+      values = (job /= 0)
+      ierr = 0
+      len = 0
+      ic(1) = 1
+      do j = 1, ncol
+         iw(j) = 0
+      end do
 !
-   do 500 ii=1, nrow
+      do ii = 1, nrow
 !     row i
-      do 200 ka=ia(ii), ia(ii+1)-1
-         len = len+1
-         jcol    = ja(ka)
-         if (len .gt. nzmax) goto 999
-         jc(len) = jcol
-         if (values) c(len)  = a(ka)
-         iw(jcol)= len
-200   continue
-!
-      do 300 kb=ib(ii),ib(ii+1)-1
-         jcol = jb(kb)
-         jpos = iw(jcol)
-         if (jpos .eq. 0) then
-            len = len+1
-            if (len .gt. nzmax) goto 999
+         do ka = ia(ii), ia(ii + 1) - 1
+            len = len + 1
+            jcol = ja(ka)
+            if (len > nzmax) then
+               goto 999
+            end if
             jc(len) = jcol
-            if (values) c(len)  = b(kb)
-            iw(jcol)= len
-         else
-            if (values) c(jpos) = c(jpos) + b(kb)
-         endif
-300   continue
-      do 301 k=ic(ii), len
-         iw(jc(k)) = 0
-301   continue
-      ic(ii+1) = len+1
-500 continue
-   return
-999 ierr = ii
-   return
+            if (values) then
+               c(len) = a(ka)
+            end if
+            iw(jcol) = len
+         end do
+         !
+         do kb = ib(ii), ib(ii + 1) - 1
+            jcol = jb(kb)
+            jpos = iw(jcol)
+            if (jpos == 0) then
+               len = len + 1
+               if (len > nzmax) then
+                  goto 999
+               end if
+               jc(len) = jcol
+               if (values) then
+                  c(len) = b(kb)
+               end if
+               iw(jcol) = len
+            else
+               if (values) then
+                  c(jpos) = c(jpos) + b(kb)
+               end if
+            end if
+         end do
+         do k = ic(ii), len
+            iw(jc(k)) = 0
+         end do
+         ic(ii + 1) = len + 1
+      end do
+      return
+999   ierr = ii
+      return
 !------------end of aplb -----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplb1(nrow,ncol,job,a,ja,ia,b,jb,ib,c,jc,ic,nzmax,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax, job
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*)
-   integer, intent(inout):: ja(*),jb(*),jc(*),ia(nrow+1),ib(nrow+1)&
-   &,ic(nrow+1)
-   integer :: i, ka, kb, kamax, kbmax, j2,kc, j1
+   subroutine aplb1(nrow, ncol, job, a, ja, ia, b, jb, ib, c, jc, ic, nzmax, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax, job
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), b(:), c(:)
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(nrow + 1)&
+      &, ic(nrow + 1)
+      integer :: i, ka, kb, kamax, kbmax, j2, kc, j1
 !-----------------------------------------------------------------------
 ! performs the matrix sum  C = A+B for matrices in sorted CSR format.
 ! the difference with aplb  is that the resulting matrix is such that
@@ -294,67 +324,80 @@ subroutine aplb1(nrow,ncol,job,a,ja,ia,b,jb,ib,c,jc,ic,nzmax,ierr)
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
-   logical values
-   values = (job .ne. 0)
-   ierr = 0
+      logical values
+
+      no_warning_unused_dummy_argument(ic)
+      no_warning_unused_dummy_argument(nzmax)
+
+      values = (job /= 0)
+      ierr = 0
 !     kc = 1
 !     ic(1) = kc
 !
-   do 6 i=1, nrow
-      ka = ia(i)
-      kb = ib(i)
-      kamax = ia(i+1)-1
-      kbmax = ib(i+1)-1
-5     continue
-      if (ka .le. kamax) then
-         j1 = ja(ka)
-      else
-         j1 = ncol+1
-      endif
-      if (kb .le. kbmax) then
-         j2 = jb(kb)
-      else
-         j2 = ncol+1
-      endif
+      do i = 1, nrow
+         ka = ia(i)
+         kb = ib(i)
+         kamax = ia(i + 1) - 1
+         kbmax = ib(i + 1) - 1
+5        continue
+         if (ka <= kamax) then
+            j1 = ja(ka)
+         else
+            j1 = ncol + 1
+         end if
+         if (kb <= kbmax) then
+            j2 = jb(kb)
+         else
+            j2 = ncol + 1
+         end if
 !
 !     three cases
 !
-      if (j1 .eq. j2) then
-         if (values) c(kc) = a(ka)+b(kb)
-         jc(kc) = j1
-         ka = ka+1
-         kb = kb+1
+         if (j1 == j2) then
+            if (values) then
+               c(kc) = a(ka) + b(kb)
+            end if
+            jc(kc) = j1
+            ka = ka + 1
+            kb = kb + 1
 !           kc = kc+1
-      else if (j1 .lt. j2) then
-         jc(kc) = j1
-         if (values) c(kc) = a(ka)
-         ka = ka+1
+         else if (j1 < j2) then
+            jc(kc) = j1
+            if (values) then
+               c(kc) = a(ka)
+            end if
+            ka = ka + 1
 !           kc = kc+1
-      else if (j1 .gt. j2) then
-         jc(kc) = j2
-         if (values) c(kc) = b(kb)
-         kb = kb+1
+         else if (j1 > j2) then
+            jc(kc) = j2
+            if (values) then
+               c(kc) = b(kb)
+            end if
+            kb = kb + 1
 !           kc = kc+1
-      endif
+         end if
 !        if (kc .gt. nzmax) goto 999
-      if (ka .le. kamax .or. kb .le. kbmax) goto 5
+         if (ka <= kamax .or. kb <= kbmax) then
+            goto 5
+         end if
 !        ic(i+1) = kc
-6  continue
-   return
-999 ierr = i
-   return
+      end do
+      return
+999   ierr = i
+      return
 !------------end-of-aplb1-----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplsb (nrow,ncol,a,ja,ia,s,b,jb,ib,c,jc,ic,&
-&nzmax,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*), s
-   integer, intent(inout) :: ja(*),jb(*),jc(*),ia(nrow+1),ib(nrow+1)&
-   &,ic(nrow+1)
-   integer :: i, ka, kb, kamax, kbmax, j1, j2, kc
+   subroutine aplsb(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
+   &nzmax, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), b(:), c(:), s
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(nrow + 1)&
+      &, ic(nrow + 1)
+      integer :: i, ka, kb, kamax, kbmax, j1, j2, kc
 !-----------------------------------------------------------------------
 ! performs the operation C = A+s B for matrices in sorted CSR format.
 ! the difference with aplsb is that the resulting matrix is such that
@@ -398,78 +441,84 @@ subroutine aplsb (nrow,ncol,a,ja,ia,s,b,jb,ib,c,jc,ic,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
-   ierr = 0
+
+      no_warning_unused_dummy_argument(ic)
+      no_warning_unused_dummy_argument(nzmax)
+
+      ierr = 0
 !     kc = 1
 !     ic(1) = kc
 !
 !     the following loop does a merge of two sparse rows + adds  them.
 !
-   do 6 i=1, nrow
-      ka = ia(i)
-      kb = ib(i)
-      kamax = ia(i+1)-1
-      kbmax = ib(i+1)-1
-5     continue
+      do i = 1, nrow
+         ka = ia(i)
+         kb = ib(i)
+         kamax = ia(i + 1) - 1
+         kbmax = ib(i + 1) - 1
+5        continue
 !
 !     this is a while  -- do loop --
 !
-      if (ka .le. kamax .or. kb .le. kbmax) then
+         if (ka <= kamax .or. kb <= kbmax) then
 !
-         if (ka .le. kamax) then
-            j1 = ja(ka)
-         else
+            if (ka <= kamax) then
+               j1 = ja(ka)
+            else
 !     take j1 large enough  that always j2 .lt. j1
-            j1 = ncol+1
-         endif
-         if (kb .le. kbmax) then
-            j2 = jb(kb)
-         else
+               j1 = ncol + 1
+            end if
+            if (kb <= kbmax) then
+               j2 = jb(kb)
+            else
 !     similarly take j2 large enough  that always j1 .lt. j2
-            j2 = ncol+1
-         endif
+               j2 = ncol + 1
+            end if
 !
 !     three cases
 !
-         if (j1 .eq. j2) then
-            c(kc) = a(ka)+s*b(kb)
-            jc(kc) = j1
-            ka = ka+1
-            kb = kb+1
+            if (j1 == j2) then
+               c(kc) = a(ka) + s * b(kb)
+               jc(kc) = j1
+               ka = ka + 1
+               kb = kb + 1
 !              kc = kc+1
-         else if (j1 .lt. j2) then
-            jc(kc) = j1
-            c(kc) = a(ka)
-            ka = ka+1
+            else if (j1 < j2) then
+               jc(kc) = j1
+               c(kc) = a(ka)
+               ka = ka + 1
 !              kc = kc+1
-         else if (j1 .gt. j2) then
-            jc(kc) = j2
-            c(kc) = s*b(kb)
-            kb = kb+1
+            else if (j1 > j2) then
+               jc(kc) = j2
+               c(kc) = s * b(kb)
+               kb = kb + 1
 !              kc = kc+1
-         endif
+            end if
 !           if (kc .gt. nzmax) goto 999
-         goto 5
+            goto 5
 !
 !     end while loop
 !
-      endif
+         end if
 !        ic(i+1) = kc
-6  continue
-   return
-999 ierr = i
-   return
+      end do
+
+      return
+999   ierr = i
+      return
 !------------end-of-aplsb ---------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplsb1 (nrow,ncol,a,ja,ia,s,b,jb,ib,c,jc,ic,&
-&nzmax,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*), s
-   integer, intent(inout) :: ja(*),jb(*),jc(*),ia(nrow+1),ib(nrow+1)&
-   &,ic(nrow+1)
-   integer :: i, ka, kb, kamax, kbmax, j1, j2, kc
+   subroutine aplsb1(nrow, ncol, a, ja, ia, s, b, jb, ib, c, jc, ic,&
+   &nzmax, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), b(:), c(:), s
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(nrow + 1)&
+      &, ic(nrow + 1)
+      integer :: i, ka, kb, kamax, kbmax, j1, j2, kc
 !-----------------------------------------------------------------------
 ! performs the operation C = A+s B for matrices in sorted CSR format.
 ! the difference with aplsb is that the resulting matrix is such that
@@ -513,79 +562,84 @@ subroutine aplsb1 (nrow,ncol,a,ja,ia,s,b,jb,ib,c,jc,ic,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
-   ierr = 0
+
+      no_warning_unused_dummy_argument(ic)
+      no_warning_unused_dummy_argument(nzmax)
+
+      ierr = 0
 !     kc = 1
 !     ic(1) = kc
 !
 !     the following loop does a merge of two sparse rows + adds  them.
 !
-   do 6 i=1, nrow
-      ka = ia(i)
-      kb = ib(i)
-      kamax = ia(i+1)-1
-      kbmax = ib(i+1)-1
-5     continue
+      do i = 1, nrow
+         ka = ia(i)
+         kb = ib(i)
+         kamax = ia(i + 1) - 1
+         kbmax = ib(i + 1) - 1
+5        continue
 !
 !     this is a while  -- do loop --
 !
-      if (ka .le. kamax .or. kb .le. kbmax) then
+         if (ka <= kamax .or. kb <= kbmax) then
 !
-         if (ka .le. kamax) then
-            j1 = ja(ka)
-         else
+            if (ka <= kamax) then
+               j1 = ja(ka)
+            else
 !     take j1 large enough  that always j2 .lt. j1
-            j1 = ncol+1
-         endif
-         if (kb .le. kbmax) then
-            j2 = jb(kb)
-         else
+               j1 = ncol + 1
+            end if
+            if (kb <= kbmax) then
+               j2 = jb(kb)
+            else
 !     similarly take j2 large enough  that always j1 .lt. j2
-            j2 = ncol+1
-         endif
+               j2 = ncol + 1
+            end if
 !
 !     three cases
 !
-         if (j1 .eq. j2) then
-            c(kc) = a(ka)+s*b(kb)
-            jc(kc) = j1
-            ka = ka+1
-            kb = kb+1
+            if (j1 == j2) then
+               c(kc) = a(ka) + s * b(kb)
+               jc(kc) = j1
+               ka = ka + 1
+               kb = kb + 1
 !              kc = kc+1
-         else if (j1 .lt. j2) then
-            jc(kc) = j1
-            c(kc) = a(ka)
-            ka = ka+1
+            else if (j1 < j2) then
+               jc(kc) = j1
+               c(kc) = a(ka)
+               ka = ka + 1
 !              kc = kc+1
-         else if (j1 .gt. j2) then
-            jc(kc) = j2
-            c(kc) = s*b(kb)
-            kb = kb+1
+            else if (j1 > j2) then
+               jc(kc) = j2
+               c(kc) = s * b(kb)
+               kb = kb + 1
 !              kc = kc+1
-         endif
+            end if
 !           if (kc .gt. nzmax) goto 999
-         goto 5
+            goto 5
 !
 !     end while loop
 !
-      endif
+         end if
 !        ic(i+1) = kc
-6  continue
-   return
-999 ierr = i
-   return
+      end do
+      return
+999   ierr = i
+      return
 !------------end-of-aplsb1 ---------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine apmbt (nrow,ncol,job,a,ja,ia,b,jb,ib,&
-&c,jc,ic,nzmax,iw,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax, job
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*)
-   integer, intent(inout) :: ja(*),jb(*),jc(*),ia(nrow+1),ib(ncol+1)&
-   &,ic(*),iw(*)
-   integer :: j, nnza, nnzb, ljob, ipos, k, ii, jcol, jpos, i, len
-   integer :: ka
+   subroutine apmbt(nrow, ncol, job, a, ja, ia, b, jb, ib,&
+   &c, jc, ic, nzmax, iw, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax, job
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), b(:), c(:)
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(ncol + 1)&
+      &, ic(:), iw(:)
+      integer :: j, nnza, nnzb, ljob, ipos, k, ii, jcol, jpos, i, len
+      integer :: ka
 !-----------------------------------------------------------------------
 ! performs the matrix sum  C = A + transp(B) or C = A - transp(B)
 !-----------------------------------------------------------------------
@@ -638,95 +692,112 @@ subroutine apmbt (nrow,ncol,job,a,ja,ia,b,jb,ib,&
 !        the matrix is internally converted in coordinate format.
 !
 !-----------------------------------------------------------------------
-   logical values
-   values = (job .ne. 0)
+      logical values
+      values = (job /= 0)
 !
-   ierr = 0
-   do 1 j=1, ncol
-      iw(j) = 0
-1  continue
-!
-   nnza = ia(nrow+1)-1
-   nnzb = ib(ncol+1)-1
-   len = nnzb
-   if (nzmax .lt. nnzb .or. nzmax .lt. nnza) then
-      ierr = -1
-      return
-   endif
+
+      no_warning_unused_dummy_argument(b)
+      no_warning_unused_dummy_argument(jb)
+
+      ierr = 0
+      do j = 1, ncol
+         iw(j) = 0
+      end do
+      !
+      nnza = ia(nrow + 1) - 1
+      nnzb = ib(ncol + 1) - 1
+      len = nnzb
+      if (nzmax < nnzb .or. nzmax < nnza) then
+         ierr = -1
+         return
+      end if
 !
 ! trasnpose matrix b into c
 !
-   ljob = 0
-   if (values) ljob = 1
-   ipos = 1
+      ljob = 0
+      if (values) then
+         ljob = 1
+      end if
+      ipos = 1
 !     call csrcsc (ncol,ljob,ipos,b,jb,ib,c,jc,ic)
 !-----------------------------------------------------------------------
-   if (job .eq. -1) then
-      do 2 k=1,len
-         c(k) = -c(k)
-2     continue
-   endif
+      if (job == -1) then
+         do k = 1, len
+            c(k) = -c(k)
+         end do
+      end if
 !
 !--------------- main loop --------------------------------------------
 !
-   do 500 ii=1, nrow
-      do 200 k = ic(ii),ic(ii+1)-1
-         iw(jc(k)) = k
-200   continue
+      do ii = 1, nrow
+         do k = ic(ii), ic(ii + 1) - 1
+            iw(jc(k)) = k
+         end do
 !-----------------------------------------------------------------------
-      do 300 ka = ia(ii), ia(ii+1)-1
-         jcol = ja(ka)
-         jpos = iw(jcol)
-         if (jpos .eq. 0) then
+         do ka = ia(ii), ia(ii + 1) - 1
+            jcol = ja(ka)
+            jpos = iw(jcol)
+            if (jpos == 0) then
 !
 !     if fill-in append in coordinate format to matrix.
 !
-            len = len+1
-            if (len .gt. nzmax) goto 999
-            jc(len) = jcol
+               len = len + 1
+               if (len > nzmax) then
+                  goto 999
+               end if
+               jc(len) = jcol
 
-            ic(len) = ii
-            if (values) c(len)  = a(ka)
-         else
+               ic(len) = ii
+               if (values) then
+                  c(len) = a(ka)
+               end if
+            else
 !     else do addition.
-            if (values) c(jpos) = c(jpos) + a(ka)
-         endif
-300   continue
-      do 301 k=ic(ii), ic(ii+1)-1
-         iw(jc(k)) = 0
-301   continue
-500 continue
-!
+               if (values) then
+                  c(jpos) = c(jpos) + a(ka)
+               end if
+            end if
+         end do
+         do k = ic(ii), ic(ii + 1) - 1
+            iw(jc(k)) = 0
+         end do
+      end do
+      !
 !     convert first part of matrix (without fill-ins) into coo format
 !
-   ljob = 2
-   if (values) ljob = 3
-   do 501 i=1, nrow+1
-      iw(i) = ic(i)
-501 continue
-   call csrcoo (nrow,ljob,nnzb,c,jc,iw,nnzb,c,ic,jc,ierr)
+      ljob = 2
+      if (values) then
+         ljob = 3
+      end if
+      do i = 1, nrow + 1
+         iw(i) = ic(i)
+      end do
+      call csrcoo(nrow, ljob, nnzb, c, jc, iw, nnzb, c, ic, jc, ierr)
 !
 !     convert the whole thing back to csr format.
 !
-   ljob = 0
-   if (values) ljob = 1
-   call coicsr (nrow,len,ljob,c,jc,ic,iw)
-   return
-999 ierr = ii
-   return
+      ljob = 0
+      if (values) then
+         ljob = 1
+      end if
+      call coicsr(nrow, len, ljob, c, jc, ic, iw)
+      return
+999   ierr = ii
+      return
 !--------end-of-apmbt---------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplsbt(nrow,ncol,a,ja,ia,s,b,jb,ib,&
-&c,jc,ic,nzmax,iw,ierr)
-   integer, intent(in) :: nrow, ncol, nzmax
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), b(*), c(*), s
-   integer, intent(inout) :: ja(*),jb(*),jc(*),ia(nrow+1),ib(ncol+1)&
-   &,ic(*),iw(*)
-   integer :: j, nnza, nnzb, len, k, ii, ka, jcol, ljob, ipos, jpos
-   integer :: i
+   subroutine aplsbt(nrow, ncol, a, ja, ia, s, b, jb, ib,&
+   &c, jc, ic, nzmax, iw, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), b(:), c(:), s
+      integer, intent(inout) :: ja(:), jb(:), jc(:), ia(nrow + 1), ib(ncol + 1)&
+      &, ic(:), iw(:)
+      integer :: j, nnza, nnzb, len, k, ii, ka, jcol, ljob, ipos, jpos
+      integer :: i
 !-----------------------------------------------------------------------
 ! performs the matrix sum  C = A + transp(B).
 !-----------------------------------------------------------------------
@@ -775,83 +846,93 @@ subroutine aplsbt(nrow,ncol,a,ja,ia,s,b,jb,ib,&
 !        the matrix is internally converted in coordinate format.
 !
 !-----------------------------------------------------------------------
-   ierr = 0
-   do 1 j=1, ncol
-      iw(j) = 0
-1  continue
-!
-   nnza = ia(nrow+1)-1
-   nnzb = ib(ncol+1)-1
-   len = nnzb
-   if (nzmax .lt. nnzb .or. nzmax .lt. nnza) then
-      ierr = -1
-      return
-   endif
+      ierr = 0
+      no_warning_unused_dummy_argument(b)
+      no_warning_unused_dummy_argument(jb)
+
+      do j = 1, ncol
+         iw(j) = 0
+      end do
+      !
+      nnza = ia(nrow + 1) - 1
+      nnzb = ib(ncol + 1) - 1
+      len = nnzb
+      if (nzmax < nnzb .or. nzmax < nnza) then
+         ierr = -1
+         return
+      end if
 !
 !     transpose matrix b into c
 !
-   ljob = 1
-   ipos = 1
+      ljob = 1
+      ipos = 1
 !     call csrcsc (ncol,ljob,ipos,b,jb,ib,c,jc,ic)
-   do 2 k=1,len
-2  c(k) = c(k)*s
+      do k = 1, len
+         c(k) = c(k) * s
+      end do
+
 !
 !     main loop. add rows from ii = 1 to nrow.
 !
-   do 500 ii=1, nrow
+      do ii = 1, nrow
 !     iw is used as a system to recognize whether there
 !     was a nonzero element in c.
-      do 200 k = ic(ii),ic(ii+1)-1
-         iw(jc(k)) = k
-200   continue
-!
-      do 300 ka = ia(ii), ia(ii+1)-1
-         jcol = ja(ka)
-         jpos = iw(jcol)
-         if (jpos .eq. 0) then
+         do k = ic(ii), ic(ii + 1) - 1
+            iw(jc(k)) = k
+         end do
+         !
+         do ka = ia(ii), ia(ii + 1) - 1
+            jcol = ja(ka)
+            jpos = iw(jcol)
+            if (jpos == 0) then
 !
 !     if fill-in append in coordinate format to matrix.
 !
-            len = len+1
-            if (len .gt. nzmax) goto 999
-            jc(len) = jcol
-            ic(len) = ii
-            c(len)  = a(ka)
-         else
+               len = len + 1
+               if (len > nzmax) then
+                  goto 999
+               end if
+               jc(len) = jcol
+               ic(len) = ii
+               c(len) = a(ka)
+            else
 !     else do addition.
-            c(jpos) = c(jpos) + a(ka)
-         endif
-300   continue
-      do 301 k=ic(ii), ic(ii+1)-1
-         iw(jc(k)) = 0
-301   continue
-500 continue
+               c(jpos) = c(jpos) + a(ka)
+            end if
+         end do
+         do k = ic(ii), ic(ii + 1) - 1
+            iw(jc(k)) = 0
+         end do
+
+      end do
+
 !
 !     convert first part of matrix (without fill-ins) into coo format
 !
-   ljob = 3
-   do 501 i=1, nrow+1
-      iw(i) = ic(i)
-501 continue
-   call csrcoo (nrow,ljob,nnzb,c,jc,iw,nnzb,c,ic,jc,ierr)
+      ljob = 3
+      do i = 1, nrow + 1
+         iw(i) = ic(i)
+      end do
+      call csrcoo(nrow, ljob, nnzb, c, jc, iw, nnzb, c, ic, jc, ierr)
 !
 !     convert the whole thing back to csr format.
 !
-   ljob = 1
-   call coicsr (nrow,len,ljob,c,jc,ic,iw)
-   return
-999 ierr = ii
-   return
+      ljob = 1
+      call coicsr(nrow, len, ljob, c, jc, ic, iw)
+      return
+999   ierr = ii
+      return
 !--------end-of-aplsbt--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine diamua (nrow,job, a, ja, ia, diag, b, jb, ib)
-   integer, intent(in) :: nrow, job
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
-   integer, intent(inout) :: ja(*),jb(*), ia(nrow+1),ib(nrow+1)
-   real*8 :: scal
-   integer :: ii, k1, k2, k
+   subroutine diamua(nrow, job, a, ja, ia, diag, b, jb, ib)
+
+      integer, intent(in) :: nrow, job
+      real(dp), intent(inout) :: a(:), b(:), diag(nrow)
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(nrow + 1)
+      real(dp) :: scal
+      integer :: ii, k1, k2, k
 !-----------------------------------------------------------------------
 ! performs the matrix by matrix product B = Diag * A  (in place)
 !-----------------------------------------------------------------------
@@ -881,36 +962,39 @@ subroutine diamua (nrow,job, a, ja, ia, diag, b, jb, ib)
 ! 2)        algorithm in place (B can take the place of A).
 !           in this case use job=0.
 !-----------------------------------------------------------------
-   do 1 ii=1,nrow
+      do ii = 1, nrow
 !
 !     normalize each row
 !
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      scal = diag(ii)
-      do 2 k=k1, k2
-         b(k) = a(k)*scal
-2     continue
-1  continue
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         scal = diag(ii)
+         do k = k1, k2
+            b(k) = a(k) * scal
+         end do
+      end do
+      !
+      if (job == 0) then
+         return
+      end if
 !
-   if (job .eq. 0) return
-!
-   do 3 ii=1, nrow+1
-      ib(ii) = ia(ii)
-3  continue
-   do 31 k=ia(1), ia(nrow+1) -1
-      jb(k) = ja(k)
-31 continue
-   return
+      do ii = 1, nrow + 1
+         ib(ii) = ia(ii)
+      end do
+      do k = ia(1), ia(nrow + 1) - 1
+         jb(k) = ja(k)
+      end do
+      return
 !----------end-of-diamua------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine amudia (nrow,job, a, ja, ia, diag, b, jb, ib)
-   integer, intent(in) :: nrow, job
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
-   integer, intent(inout) :: ja(*),jb(*), ia(nrow+1),ib(nrow+1)
-   integer :: ii, k1, k2, k
+   subroutine amudia(nrow, job, a, ja, ia, diag, b, jb, ib)
+
+      integer, intent(in) :: nrow, job
+      real(dp), intent(inout) :: a(:), b(:), diag(nrow)
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(nrow + 1)
+      integer :: ii, k1, k2, k
 !-----------------------------------------------------------------------
 ! performs the matrix by matrix product B = A * Diag  (in place)
 !-----------------------------------------------------------------------
@@ -939,35 +1023,38 @@ subroutine amudia (nrow,job, a, ja, ia, diag, b, jb, ib)
 ! 1)        The column dimension of A is not needed.
 ! 2)        algorithm in place (B can take the place of A).
 !-----------------------------------------------------------------
-   do 1 ii=1,nrow
+      do ii = 1, nrow
 !
 !     scale each element
 !
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      do 2 k=k1, k2
-         b(k) = a(k)*diag(ja(k))
-2     continue
-1  continue
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         do k = k1, k2
+            b(k) = a(k) * diag(ja(k))
+         end do
+      end do
+      !
+      if (job == 0) then
+         return
+      end if
 !
-   if (job .eq. 0) return
-!
-   do 3 ii=1, nrow+1
-      ib(ii) = ia(ii)
-3  continue
-   do 31 k=ia(1), ia(nrow+1) -1
-      jb(k) = ja(k)
-31 continue
-   return
+      do ii = 1, nrow + 1
+         ib(ii) = ia(ii)
+      end do
+      do k = ia(1), ia(nrow + 1) - 1
+         jb(k) = ja(k)
+      end do
+      return
 !-----------------------------------------------------------------------
 !-----------end-of-amudiag----------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplsca (nrow, a, ja, ia, scal,iw)
-   integer, intent(in) :: nrow
-   real*8, intent(inout) :: a(*), scal
-   integer, intent(inout) :: ja(*), ia(nrow+1),iw(*)
-   integer :: icount, j, ko, ii, k1, k2, k
+   subroutine aplsca(nrow, a, ja, ia, scal, iw)
+
+      integer, intent(in) :: nrow
+      real(dp), intent(inout) :: a(:), scal
+      integer, intent(inout) :: ja(:), ia(nrow + 1), iw(:)
+      integer :: icount, j, ko, ii, k1, k2, k
 !-----------------------------------------------------------------------
 ! Adds a scalar to the diagonal entries of a sparse matrix A :=A + s I
 !-----------------------------------------------------------------------
@@ -1004,69 +1091,72 @@ subroutine aplsca (nrow, a, ja, ia, scal,iw)
 !     elemnts.
 !     coded by Y. Saad. Latest version July, 19, 1990
 !-----------------------------------------------------------------------
-   logical test
+      logical test
 !
-   call diapos (nrow,ja,ia,iw)
-   icount = 0
-   do 1 j=1, nrow
-      if (iw(j) .eq. 0) then
-         icount = icount+1
-      else
-         a(iw(j)) = a(iw(j)) + scal
-      endif
-1  continue
-!
+      call diapos(nrow, ja, ia, iw)
+      icount = 0
+      do j = 1, nrow
+         if (iw(j) == 0) then
+            icount = icount + 1
+         else
+            a(iw(j)) = a(iw(j)) + scal
+         end if
+      end do
+      !
 !     if no diagonal elements to insert in data structure return.
 !
-   if (icount .eq. 0) return
+      if (icount == 0) then
+         return
+      end if
 !
 ! shift the nonzero elements if needed, to allow for created
 ! diagonal elements.
 !
-   ko = ia(nrow+1)+icount
+      ko = ia(nrow + 1) + icount
 !
 !     copy rows backward
 !
-   do 5 ii=nrow, 1, -1
+      do ii = nrow, 1, -1
 !
 !     go through  row ii
 !
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      ia(ii+1) = ko
-      test = (iw(ii) .eq. 0)
-      do 4 k = k2,k1,-1
-         j = ja(k)
-         if (test .and. (j .lt. ii)) then
-            test = .false.
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         ia(ii + 1) = ko
+         test = (iw(ii) == 0)
+         do k = k2, k1, -1
+            j = ja(k)
+            if (test .and. (j < ii)) then
+               test = .false.
+               ko = ko - 1
+               a(ko) = scal
+               ja(ko) = ii
+               iw(ii) = ko
+            end if
+            ko = ko - 1
+            a(ko) = a(k)
+            ja(ko) = j
+         end do
+         !     diagonal element has not been added yet.
+         if (test) then
             ko = ko - 1
             a(ko) = scal
             ja(ko) = ii
             iw(ii) = ko
-         endif
-         ko = ko-1
-         a(ko) = a(k)
-         ja(ko) = j
-4     continue
-!     diagonal element has not been added yet.
-      if (test) then
-         ko = ko-1
-         a(ko) = scal
-         ja(ko) = ii
-         iw(ii) = ko
-      endif
-5  continue
-   ia(1) = ko
-   return
+         end if
+      end do
+      ia(1) = ko
+      return
 !-----------------------------------------------------------------------
 !----------end-of-aplsca------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine apldia (nrow, job, a, ja, ia, diag, b, jb, ib, iw)
-   integer, intent(in) :: nrow, job
-   real*8, intent(inout) :: a(*), b(*), diag(nrow)
-   integer, intent(inout) :: ja(*),jb(*), ia(nrow+1),ib(nrow+1),iw(*)
-   integer :: nnz, k, icount, j, ko, ii, k1, k2
+   subroutine apldia(nrow, job, a, ja, ia, diag, b, jb, ib, iw)
+
+      integer, intent(in) :: nrow, job
+      real(dp), intent(inout) :: a(:), b(:), diag(nrow)
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(nrow + 1), iw(:)
+      integer :: nnz, k, icount, j, ko, ii, k1, k2
 !-----------------------------------------------------------------------
 ! Adds a diagonal matrix to a general sparse matrix:  B = A + Diag
 !-----------------------------------------------------------------------
@@ -1112,82 +1202,85 @@ subroutine apldia (nrow, job, a, ja, ia, diag, b, jb, ib, iw)
 !
 ! coded by Y. Saad. Latest version July, 19, 1990
 !-----------------------------------------------------------------
-   logical test
+      logical test
 !
 !     copy integer arrays into b's data structure if required
 !
-   if (job .ne. 0) then
-      nnz = ia(nrow+1)-1
-      do 2  k=1, nnz
-         jb(k) = ja(k)
-         b(k)  = a(k)
-2     continue
-      do 3 k=1, nrow+1
-         ib(k) = ia(k)
-3     continue
-   endif
+      if (job /= 0) then
+         nnz = ia(nrow + 1) - 1
+         do k = 1, nnz
+            jb(k) = ja(k)
+            b(k) = a(k)
+         end do
+         do k = 1, nrow + 1
+            ib(k) = ia(k)
+         end do
+      end if
 !
 !     get positions of diagonal elements in data structure.
 !
-   call diapos (nrow,ja,ia,iw)
+      call diapos(nrow, ja, ia, iw)
 !
-!     count number of holes in diagonal and add diag(*) elements to
+!     count number of holes in diagonal and add diag(:) elements to
 !     valid diagonal entries.
 !
-   icount = 0
-   do 1 j=1, nrow
-      if (iw(j) .eq. 0) then
-         icount = icount+1
-      else
-         b(iw(j)) = a(iw(j)) + diag(j)
-      endif
-1  continue
-!
+      icount = 0
+      do j = 1, nrow
+         if (iw(j) == 0) then
+            icount = icount + 1
+         else
+            b(iw(j)) = a(iw(j)) + diag(j)
+         end if
+      end do
+      !
 !     if no diagonal elements to insert return
 !
-   if (icount .eq. 0) return
+      if (icount == 0) then
+         return
+      end if
 !
 !     shift the nonzero elements if needed, to allow for created
 !     diagonal elements.
 !
-   ko = ib(nrow+1)+icount
+      ko = ib(nrow + 1) + icount
 !
 !     copy rows backward
 !
-   do 5 ii=nrow, 1, -1
+      do ii = nrow, 1, -1
 !
 !     go through  row ii
 !
-      k1 = ib(ii)
-      k2 = ib(ii+1)-1
-      ib(ii+1) = ko
-      test = (iw(ii) .eq. 0)
-      do 4 k = k2,k1,-1
-         j = jb(k)
-         if (test .and. (j .lt. ii)) then
-            test = .false.
+         k1 = ib(ii)
+         k2 = ib(ii + 1) - 1
+         ib(ii + 1) = ko
+         test = (iw(ii) == 0)
+         do k = k2, k1, -1
+            j = jb(k)
+            if (test .and. (j < ii)) then
+               test = .false.
+               ko = ko - 1
+               b(ko) = diag(ii)
+               jb(ko) = ii
+               iw(ii) = ko
+            end if
+            ko = ko - 1
+            b(ko) = a(k)
+            jb(ko) = j
+         end do
+!     diagonal element has not been added yet.
+         if (test) then
             ko = ko - 1
             b(ko) = diag(ii)
             jb(ko) = ii
             iw(ii) = ko
-         endif
-         ko = ko-1
-         b(ko) = a(k)
-         jb(ko) = j
-4     continue
-!     diagonal element has not been added yet.
-      if (test) then
-         ko = ko-1
-         b(ko) =  diag(ii)
-         jb(ko) = ii
-         iw(ii) = ko
-      endif
-5  continue
-   ib(1) = ko
-   return
+         end if
+      end do
+
+      ib(1) = ko
+      return
 !-----------------------------------------------------------------------
 !------------end-of-apldiag---------------------------------------------
-end
+   end
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
 !----------------------------------------------------------------------c
@@ -1223,9 +1316,11 @@ end
 !----------------------------------------------------------------------c
 
 !-----------------------------------------------------------------------
-subroutine amuxms (n, x, y, a,ja)
-   real*8  x(*), y(*), a(*)
-   integer n, ja(*)
+   subroutine amuxms(n, x, y, a, ja)
+      use precision, only: dp
+
+      real(dp) :: x(:), y(:), a(:)
+      integer n, ja(:)
 !-----------------------------------------------------------------------
 !         A times a vector in MSR format
 !-----------------------------------------------------------------------
@@ -1246,30 +1341,33 @@ subroutine amuxms (n, x, y, a,ja)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer i, k
+      integer i, k
 !-----------------------------------------------------------------------
-   do 10 i=1, n
-      y(i) = a(i)*x(i)
-10 continue
-   do 100 i = 1,n
+      do i = 1, n
+         y(i) = a(i) * x(i)
+      end do
+
+      do i = 1, n
 !
 !     compute the inner product of row i with vector x
 !
-      do 99 k=ja(i), ja(i+1)-1
-         y(i) = y(i) + a(k) *x(ja(k))
-99    continue
-100 continue
+         do k = ja(i), ja(i + 1) - 1
+            y(i) = y(i) + a(k) * x(ja(k))
+         end do
+      end do
 !
-   return
+      return
 !---------end-of-amuxm--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
-subroutine atmuxr (m, n, x, y, a, ja, ia)
-   real*8 x(*), y(*), a(*)
-   integer m, n, ia(*), ja(*)
+   subroutine atmuxr(m, n, x, y, a, ja, ia)
+      use precision, only: dp
+
+      real(dp) :: x(:), y(:), a(:)
+      integer m, n, ia(:), ja(:)
 !-----------------------------------------------------------------------
 !         transp( A ) times a vector, A can be rectangular
 !-----------------------------------------------------------------------
@@ -1294,32 +1392,33 @@ subroutine atmuxr (m, n, x, y, a, ja, ia)
 !-----------------------------------------------------------------------
 !     local variables
 !
-   integer i, k
+      integer i, k
 !-----------------------------------------------------------------------
 !
 !     zero out output vector
 !
-   do 1 i=1,m
-      y(i) = 0.0
-1  continue
+      do i = 1, m
+         y(i) = 0.0
+      end do
 !
 ! loop over the rows
 !
-   do 100 i = 1,n
-      do 99 k=ia(i), ia(i+1)-1
-         y(ja(k)) = y(ja(k)) + x(i)*a(k)
-99    continue
-100 continue
-!
-   return
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            y(ja(k)) = y(ja(k)) + x(i) * a(k)
+         end do
+      end do
+      !
+      return
 !-------------end-of-atmuxr---------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine amuxe (n,x,y,na,ncol,a,ja)
-   integer, intent(in) :: n, na, ncol
-   real*8, intent(inout) :: x(n), y(n), a(na,*)
-   integer, intent(inout) :: ja(na,*)
+   subroutine amuxe(n, x, y, na, ncol, a, ja)
+
+      integer, intent(in) :: n, na, ncol
+      real(dp), intent(inout) :: x(n), y(n), a(na, *)
+      integer, intent(inout) :: ja(na, *)
 !-----------------------------------------------------------------------
 !        A times a vector in Ellpack Itpack format (ELL)
 !-----------------------------------------------------------------------
@@ -1347,25 +1446,28 @@ subroutine amuxe (n,x,y,na,ncol,a,ja)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer i, j
+      integer i, j
 !-----------------------------------------------------------------------
-   do 1 i=1, n
-      y(i) = 0.0
-1  continue
-   do 10 j=1,ncol
-      do 25 i = 1,n
-         y(i) = y(i)+a(i,j)*x(ja(i,j))
-25    continue
-10 continue
+      do i = 1, n
+         y(i) = 0.0
+      end do
+
+      do j = 1, ncol
+         do i = 1, n
+            y(i) = y(i) + a(i, j) * x(ja(i, j))
+         end do
+      end do
 !
-   return
+      return
 !--------end-of-amuxe---------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff)
-   integer n, ndiag, idiag, ioff(idiag)
-   real*8 x(n), y(n), diag(ndiag,idiag)
+   subroutine amuxd(n, x, y, diag, ndiag, idiag, ioff)
+      use precision, only: dp
+
+      integer n, ndiag, idiag, ioff(idiag)
+      real(dp) :: x(n), y(n), diag(ndiag, idiag)
 !-----------------------------------------------------------------------
 !        A times a vector in Diagonal storage format (DIA)
 !-----------------------------------------------------------------------
@@ -1396,28 +1498,30 @@ subroutine amuxd (n,x,y,diag,ndiag,idiag,ioff)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer j, k, io, i1, i2
+      integer j, k, io, i1, i2
 !-----------------------------------------------------------------------
-   do 1 j=1, n
-      y(j) = 0.0d0
-1  continue
-   do 10 j=1, idiag
-      io = ioff(j)
-      i1 = max0(1,1-io)
-      i2 = min0(n,n-io)
-      do 9 k=i1, i2
-         y(k) = y(k)+diag(k,j)*x(k+io)
-9     continue
-10 continue
+      do j = 1, n
+         y(j) = 0.0_dp
+      end do
+      do j = 1, idiag
+         io = ioff(j)
+         i1 = max(1, 1 - io)
+         i2 = min(n, n - io)
+         do k = i1, i2
+            y(k) = y(k) + diag(k, j) * x(k + io)
+         end do
+      end do
 !
-   return
+      return
 !----------end-of-amuxd-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine amuxj (n, x, y, jdiag, a, ja, ia)
-   integer n, jdiag, ja(*), ia(*)
-   real*8 x(n), y(n), a(*)
+   subroutine amuxj(n, x, y, jdiag, a, ja, ia)
+      use precision, only: dp
+
+      integer n, jdiag, ja(:), ia(:)
+      real(dp) :: x(n), y(n), a(:)
 !-----------------------------------------------------------------------
 !        A times a vector in Jagged-Diagonal storage format (JAD)
 !-----------------------------------------------------------------------
@@ -1451,30 +1555,30 @@ subroutine amuxj (n, x, y, jdiag, a, ja, ia)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer i, ii, k1, len, j
+      integer i, ii, k1, len, j
 !-----------------------------------------------------------------------
-   do 1 i=1, n
-      y(i) = 0.0d0
-1  continue
-   do 70 ii=1, jdiag
-      k1 = ia(ii)-1
-      len = ia(ii+1)-k1-1
-      do 60 j=1,len
-         y(j)= y(j)+a(k1+j)*x(ja(k1+j))
-60    continue
-70 continue
+      do i = 1, n
+         y(i) = 0.0_dp
+      end do
+      do ii = 1, jdiag
+         k1 = ia(ii) - 1
+         len = ia(ii + 1) - k1 - 1
+         do j = 1, len
+            y(j) = y(j) + a(k1 + j) * x(ja(k1 + j))
+         end do
+      end do
 !
-   return
+      return
 !----------end-of-amuxj-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
-!-----------------------------------------------------------------------
-   integer, intent(in) :: nr, nc
-   integer, intent(inout) :: ia(nr+1), ja(*), ka(*), kvstr(nr+1)&
-   &, kvstc(*)
-   real*8, intent(inout) ::  a(*), x(*), b(*)
+   subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
+
+      integer, intent(in) :: nr, nc
+      integer, intent(inout) :: ia(nr + 1), ja(:), ka(:), kvstr(nr + 1)&
+      &, kvstc(:)
+      real(dp), intent(inout) :: a(:), x(:), b(:)
 !-----------------------------------------------------------------------
 !     Sparse matrix-full vector product, in VBR format.
 !-----------------------------------------------------------------------
@@ -1494,40 +1598,44 @@ subroutine vbrmv(nr, nc, ia, ja, ka, a, kvstr, kvstc, x, b)
 !
 !-----------------------------------------------------------------------
 !-----local variables
-   integer n, i, j, ii, jj, k, istart, istop
-   real*8  xjj
+      integer n, i, j, ii, jj, k, istart, istop
+      real(dp) :: xjj
 !---------------------------------
-   n = kvstc(nc+1)-1
-   do i = 1, n
-      b(i) = 0.d0
-   enddo
+      no_warning_unused_dummy_argument(ka)
+
+      n = kvstc(nc + 1) - 1
+      do i = 1, n
+         b(i) = 0.0_dp
+      end do
 !---------------------------------
-   k = 1
-   do i = 1, nr
-      istart = kvstr(i)
-      istop  = kvstr(i+1)-1
-      do j = ia(i), ia(i+1)-1
-         do jj = kvstc(ja(j)), kvstc(ja(j)+1)-1
-            xjj = x(jj)
-            do ii = istart, istop
-               b(ii) = b(ii) + xjj*a(k)
-               k = k + 1
-            enddo
-         enddo
-      enddo
-   enddo
+      k = 1
+      do i = 1, nr
+         istart = kvstr(i)
+         istop = kvstr(i + 1) - 1
+         do j = ia(i), ia(i + 1) - 1
+            do jj = kvstc(ja(j)), kvstc(ja(j) + 1) - 1
+               xjj = x(jj)
+               do ii = istart, istop
+                  b(ii) = b(ii) + xjj * a(k)
+                  k = k + 1
+               end do
+            end do
+         end do
+      end do
 !---------------------------------
-   return
-end
+      return
+   end
 !-----------------------------------------------------------------------
 !----------------------end-of-vbrmv-------------------------------------
 !-----------------------------------------------------------------------
 !----------------------------------------------------------------------c
 ! 2)     T R I A N G U L A R    S Y S T E M    S O L U T I O N S       c
 !----------------------------------------------------------------------c
-subroutine lsol (n,x,y,al,jal,ial)
-   integer n, jal(*),ial(n+1)
-   real*8  x(n), y(n), al(*)
+   subroutine lsol(n, x, y, al, jal, ial)
+      use precision, only: dp
+
+      integer n, jal(:), ial(n + 1)
+      real(dp) :: x(n), y(n), al(:)
 !-----------------------------------------------------------------------
 !   solves    L x = y ; L = lower unit triang. /  CSR format
 !-----------------------------------------------------------------------
@@ -1551,26 +1659,28 @@ subroutine lsol (n,x,y,al,jal,ial)
 !--------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8  t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   x(1) = y(1)
-   do 150 k = 2, n
-      t = y(k)
-      do 100 j = ial(k), ial(k+1)-1
-         t = t-al(j)*x(jal(j))
-100   continue
-      x(k) = t
-150 continue
+      x(1) = y(1)
+      do k = 2, n
+         t = y(k)
+         do j = ial(k), ial(k + 1) - 1
+            t = t - al(j) * x(jal(j))
+         end do
+         x(k) = t
+      end do
 !
-   return
+      return
 !----------end-of-lsol--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine ldsol (n,x,y,al,jal)
-   integer n, jal(*)
-   real*8 x(n), y(n), al(*)
+   subroutine ldsol(n, x, y, al, jal)
+      use precision, only: dp
+
+      integer n, jal(:)
+      real(dp) :: x(n), y(n), al(:)
 !-----------------------------------------------------------------------
 !     Solves L x = y    L = triangular. MSR format
 !-----------------------------------------------------------------------
@@ -1595,25 +1705,27 @@ subroutine ldsol (n,x,y,al,jal)
 !--------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8 t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   x(1) = y(1)*al(1)
-   do 150 k = 2, n
-      t = y(k)
-      do 100 j = jal(k), jal(k+1)-1
-         t = t - al(j)*x(jal(j))
-100   continue
-      x(k) = al(k)*t
-150 continue
-   return
+      x(1) = y(1) * al(1)
+      do k = 2, n
+         t = y(k)
+         do j = jal(k), jal(k + 1) - 1
+            t = t - al(j) * x(jal(j))
+         end do
+         x(k) = al(k) * t
+      end do
+      return
 !----------end-of-ldsol-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine lsolc (n,x,y,al,jal,ial)
-   integer n, jal(*),ial(*)
-   real*8  x(n), y(n), al(*)
+   subroutine lsolc(n, x, y, al, jal, ial)
+      use precision, only: dp
+
+      integer n, jal(:), ial(:)
+      real(dp) :: x(n), y(n), al(:)
 !-----------------------------------------------------------------------
 !       SOLVES     L x = y ;    where L = unit lower trang. CSC format
 !-----------------------------------------------------------------------
@@ -1624,7 +1736,7 @@ subroutine lsolc (n,x,y,al,jal,ial)
 ! On entry:
 !----------
 ! n      = integer. dimension of problem.
-! y      = real*8 array containg the right side.
+! y      = real(dp) array containg the right side.
 !
 ! al,
 ! jal,
@@ -1637,27 +1749,29 @@ subroutine lsolc (n,x,y,al,jal,ial)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8 t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   do 140 k=1,n
-      x(k) = y(k)
-140 continue
-   do 150 k = 1, n-1
-      t = x(k)
-      do 100 j = ial(k), ial(k+1)-1
-         x(jal(j)) = x(jal(j)) - t*al(j)
-100   continue
-150 continue
+      do k = 1, n
+         x(k) = y(k)
+      end do
+      do k = 1, n - 1
+         t = x(k)
+         do j = ial(k), ial(k + 1) - 1
+            x(jal(j)) = x(jal(j)) - t * al(j)
+         end do
+      end do
 !
-   return
+      return
 !----------end-of-lsolc-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine ldsolc (n,x,y,al,jal)
-   integer n, jal(*)
-   real*8 x(n), y(n), al(*)
+   subroutine ldsolc(n, x, y, al, jal)
+      use precision, only: dp
+
+      integer n, jal(:)
+      real(dp) :: x(n), y(n), al(:)
 !-----------------------------------------------------------------------
 !    Solves     L x = y ;    L = nonunit Low. Triang. MSC format
 !-----------------------------------------------------------------------
@@ -1683,29 +1797,30 @@ subroutine ldsolc (n,x,y,al,jal)
 !--------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8 t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   do 140 k=1,n
-      x(k) = y(k)
-140 continue
-   do 150 k = 1, n
-      x(k) = x(k)*al(k)
-      t = x(k)
-      do 100 j = jal(k), jal(k+1)-1
-         x(jal(j)) = x(jal(j)) - t*al(j)
-100   continue
-150 continue
+      do k = 1, n
+         x(k) = y(k)
+      end do
+      do k = 1, n
+         x(k) = x(k) * al(k)
+         t = x(k)
+         do j = jal(k), jal(k + 1) - 1
+            x(jal(j)) = x(jal(j)) - t * al(j)
+         end do
+      end do
 !
-   return
+      return
 !----------end-of-lsolc------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev)
-   integer, intent(in) :: n, nlev
-   integer, intent(inout) :: jal(*), ilev(nlev+1), lev(n)
-   real*8, intent(inout) :: x(n), y(n), al(*)
+   subroutine ldsoll(n, x, y, al, jal, nlev, lev, ilev)
+
+      integer, intent(in) :: n, nlev
+      integer, intent(inout) :: jal(:), ilev(nlev + 1), lev(n)
+      real(dp), intent(inout) :: x(n), y(n), al(:)
 !-----------------------------------------------------------------------
 !    Solves L x = y    L = triangular. Uses LEVEL SCHEDULING/MSR format
 !-----------------------------------------------------------------------
@@ -1730,34 +1845,36 @@ subroutine ldsoll (n,x,y,al,jal,nlev,lev,ilev)
 !-----------
 !  x = The solution of  L x = y .
 !--------------------------------------------------------------------
-   integer :: ii, jrow, i, k
-   real*8 :: t
+      integer :: ii, jrow, i, k
+      real(dp) :: t
 !
 !     outer loop goes through the levels. (SEQUENTIAL loop)
 !
-   do 150 ii=1, nlev
+      do ii = 1, nlev
 !
 !     next loop executes within the same level. PARALLEL loop
 !
-      do 100 i=ilev(ii), ilev(ii+1)-1
-         jrow = lev(i)
+         do i = ilev(ii), ilev(ii + 1) - 1
+            jrow = lev(i)
 !
 ! compute inner product of row jrow with x
 !
-         t = y(jrow)
-         do 130 k=jal(jrow), jal(jrow+1)-1
-            t = t - al(k)*x(jal(k))
-130      continue
-         x(jrow) = t*al(jrow)
-100   continue
-150 continue
-   return
+            t = y(jrow)
+            do k = jal(jrow), jal(jrow + 1) - 1
+               t = t - al(k) * x(jal(k))
+            end do
+            x(jrow) = t * al(jrow)
+         end do
+      end do
+      return
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine usol (n,x,y,au,jau,iau)
-   integer n, jau(*),iau(n+1)
-   real*8  x(n), y(n), au(*)
+   subroutine usol(n, x, y, au, jau, iau)
+      use precision, only: dp
+
+      integer n, jau(:), iau(n + 1)
+      real(dp) :: x(n), y(n), au(:)
 !-----------------------------------------------------------------------
 !             Solves   U x = y    U = unit upper triangular.
 !-----------------------------------------------------------------------
@@ -1781,26 +1898,28 @@ subroutine usol (n,x,y,au,jau,iau)
 !--------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8  t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   x(n) = y(n)
-   do 150 k = n-1,1,-1
-      t = y(k)
-      do 100 j = iau(k), iau(k+1)-1
-         t = t - au(j)*x(jau(j))
-100   continue
-      x(k) = t
-150 continue
+      x(n) = y(n)
+      do k = n - 1, 1, -1
+         t = y(k)
+         do j = iau(k), iau(k + 1) - 1
+            t = t - au(j) * x(jau(j))
+         end do
+         x(k) = t
+      end do
 !
-   return
+      return
 !----------end-of-usol--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine udsol (n,x,y,au,jau)
-   integer n, jau(*)
-   real*8  x(n), y(n),au(*)
+   subroutine udsol(n, x, y, au, jau)
+      use precision, only: dp
+
+      integer n, jau(:)
+      real(dp) :: x(n), y(n), au(:)
 !-----------------------------------------------------------------------
 !             Solves   U x = y  ;   U = upper triangular in MSR format
 !-----------------------------------------------------------------------
@@ -1825,26 +1944,28 @@ subroutine udsol (n,x,y,au,jau)
 !--------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8 t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   x(n) = y(n)*au(n)
-   do 150 k = n-1,1,-1
-      t = y(k)
-      do 100 j = jau(k), jau(k+1)-1
-         t = t - au(j)*x(jau(j))
-100   continue
-      x(k) = au(k)*t
-150 continue
+      x(n) = y(n) * au(n)
+      do k = n - 1, 1, -1
+         t = y(k)
+         do j = jau(k), jau(k + 1) - 1
+            t = t - au(j) * x(jau(j))
+         end do
+         x(k) = au(k) * t
+      end do
 !
-   return
+      return
 !----------end-of-udsol-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine usolc (n,x,y,au,jau,iau)
-   real*8  x(*), y(*), au(*)
-   integer n, jau(*),iau(*)
+   subroutine usolc(n, x, y, au, jau, iau)
+      use precision, only: dp
+
+      real(dp) :: x(:), y(:), au(:)
+      integer n, jau(:), iau(:)
 !-----------------------------------------------------------------------
 !       SOUVES     U x = y ;    where U = unit upper trang. CSC format
 !-----------------------------------------------------------------------
@@ -1855,7 +1976,7 @@ subroutine usolc (n,x,y,au,jau,iau)
 ! On entry:
 !----------
 ! n      = integer. dimension of problem.
-! y      = real*8 array containg the right side.
+! y      = real(dp) array containg the right side.
 !
 ! au,
 ! jau,
@@ -1868,27 +1989,29 @@ subroutine usolc (n,x,y,au,jau,iau)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8 t
+      integer k, j
+      real(dp) t
 !-----------------------------------------------------------------------
-   do 140 k=1,n
-      x(k) = y(k)
-140 continue
-   do 150 k = n,1,-1
-      t = x(k)
-      do 100 j = iau(k), iau(k+1)-1
-         x(jau(j)) = x(jau(j)) - t*au(j)
-100   continue
-150 continue
+      do k = 1, n
+         x(k) = y(k)
+      end do
+      do k = n, 1, -1
+         t = x(k)
+         do j = iau(k), iau(k + 1) - 1
+            x(jau(j)) = x(jau(j)) - t * au(j)
+         end do
+      end do
 !
-   return
+      return
 !----------end-of-usolc-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine udsolc (n,x,y,au,jau)
-   integer n, jau(*)
-   real*8 x(n), y(n), au(*)
+   subroutine udsolc(n, x, y, au, jau)
+      use precision, only: dp
+
+      integer n, jau(:)
+      real(dp) :: x(n), y(n), au(:)
 !-----------------------------------------------------------------------
 !    Solves     U x = y ;    U = nonunit Up. Triang. MSC format
 !-----------------------------------------------------------------------
@@ -1901,7 +2024,7 @@ subroutine udsolc (n,x,y,au,jau)
 ! On entry:
 !----------
 ! n      = integer. dimension of problem.
-! y      = real*8 array containg the right hand side.
+! y      = real(dp) array containg the right hand side.
 !
 ! au,
 ! jau,   = Upper triangular matrix stored in Modified Sparse Column
@@ -1913,237 +2036,294 @@ subroutine udsolc (n,x,y,au,jau)
 !--------------------------------------------------------------------
 ! local variables
 !
-   integer k, j
-   real*8 t
+      integer k, j
+      real(dp) :: t
 !-----------------------------------------------------------------------
-   do 140 k=1,n
-      x(k) = y(k)
-140 continue
-   do 150 k = n,1,-1
-      x(k) = x(k)*au(k)
-      t = x(k)
-      do 100 j = jau(k), jau(k+1)-1
-         x(jau(j)) = x(jau(j)) - t*au(j)
-100   continue
-150 continue
+      do k = 1, n
+         x(k) = y(k)
+      end do
+      do k = n, 1, -1
+         x(k) = x(k) * au(k)
+         t = x(k)
+         do j = jau(k), jau(k + 1) - 1
+            x(jau(j)) = x(jau(j)) - t * au(j)
+         end do
+      end do
 !
-   return
+      return
 !----------end-of-udsolc------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 
 !-----------------------------------------------------------------------
-subroutine errpr (n, y, y1,iout,msg)
-   integer, intent(in) :: n, iout
-   real*8, intent(in) :: y(*), y1(*)
-   character*6, intent(in) :: msg
+   subroutine errpr(n, y, y1, iout, msg)
 
-   real*8 :: t
-   integer :: k
+      integer, intent(in) :: n, iout
+      real(dp), intent(in) :: y(:), y1(:)
+      character(len=6), intent(in) :: msg
 
-   t = 0.0d0
-   do 1 k=1,n
-      t = t+(y(k)-y1(k))**2
-1  continue
-   t = sqrt(t)
-   write (iout,*) ' 2-norm of difference in ',msg,' =', t
-   return
-end
-subroutine  dcopy(n,dx,incx,dy,incy)
+      real(dp) :: t
+      integer :: k
+
+      t = 0.0_dp
+      do k = 1, n
+         t = t + (y(k) - y1(k))**2
+      end do
+      t = sqrt(t)
+      write (iout, *) ' 2-norm of difference in ', msg, ' =', t
+      return
+   end
+   subroutine dcopy(n, dx, incx, dy, incy)
+      use precision, only: dp
 !
 !     copies a vector, x, to a vector, y.
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dy(1)
-   integer i,incx,incy,ix,iy,m,mp1,n
+      real(kind=dp) dx(1), dy(1)
+      integer i, incx, incy, ix, iy, m, mp1, n
 !
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      dy(iy) = dx(ix)
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         dy(iy) = dx(ix)
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !        code for both increments equal to 1
 !
 !
 !        clean-up loop
 !
-20 m = mod(n,7)
-   if( m .eq. 0 ) go to 40
-   do 30 i = 1,m
-      dy(i) = dx(i)
-30 continue
-   if( n .lt. 7 ) return
-40 mp1 = m + 1
-   do 50 i = mp1,n,7
-      dy(i) = dx(i)
-      dy(i + 1) = dx(i + 1)
-      dy(i + 2) = dx(i + 2)
-      dy(i + 3) = dx(i + 3)
-      dy(i + 4) = dx(i + 4)
-      dy(i + 5) = dx(i + 5)
-      dy(i + 6) = dx(i + 6)
-50 continue
-   return
-end
+20    m = mod(n, 7)
+      if (m == 0) then
+         go to 40
+      end if
+      do i = 1, m
+         dy(i) = dx(i)
+      end do
+      if (n < 7) then
+         return
+      end if
+40    mp1 = m + 1
+      do i = mp1, n, 7
+         dy(i) = dx(i)
+         dy(i + 1) = dx(i + 1)
+         dy(i + 2) = dx(i + 2)
+         dy(i + 3) = dx(i + 3)
+         dy(i + 4) = dx(i + 4)
+         dy(i + 5) = dx(i + 5)
+         dy(i + 6) = dx(i + 6)
+      end do
+      return
+   end
 
-
-double precision function ddotORG(n,dx,incx,dy,incy) result(ddot)
+   real(kind=dp) function ddotORG(n, dx, incx, dy, incy) result(ddot)
 !
 !     forms the dot product of two vectors.
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dy(1),dtemp
-   integer i,incx,incy,ix,iy,m,mp1,n
+      real(kind=dp) dx(1), dy(1), dtemp
+      integer i, incx, incy, ix, iy, m, mp1, n
 !
-   ddot = 0.0d0
-   dtemp = 0.0d0
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      ddot = 0.0_dp
+      dtemp = 0.0_dp
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      dtemp = dtemp + dx(ix)*dy(iy)
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   ddot = dtemp
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         dtemp = dtemp + dx(ix) * dy(iy)
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      ddot = dtemp
+      return
 !
 !        code for both increments equal to 1
 !
 !
 !        clean-up loop
 !
-20 m = mod(n,5)
-   if( m .eq. 0 ) go to 40
-   do 30 i = 1,m
-      dtemp = dtemp + dx(i)*dy(i)
-30 continue
-   if( n .lt. 5 ) go to 60
-40 mp1 = m + 1
-   do 50 i = mp1,n,5
-      dtemp = dtemp + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) +&
-      &dx(i + 2)*dy(i + 2) + dx(i + 3)*dy(i + 3) + dx(i + 4)*dy(i + 4)
-50 continue
-60 ddot = dtemp
-   return
-end
+20    m = mod(n, 5)
+      if (m == 0) then
+         go to 40
+      end if
+      do i = 1, m
+         dtemp = dtemp + dx(i) * dy(i)
+      end do
+      if (n < 5) then
+         go to 60
+      end if
+40    mp1 = m + 1
+      do i = mp1, n, 5
+         dtemp = dtemp + dx(i) * dy(i) + dx(i + 1) * dy(i + 1) +&
+         &dx(i + 2) * dy(i + 2) + dx(i + 3) * dy(i + 3) + dx(i + 4) * dy(i + 4)
+      end do
+60    ddot = dtemp
+      return
+   end
 !
-double precision function dasum(n,dx,incx)
+   real(kind=dp) function dasum(n, dx, incx)
 !
 !     takes the sum of the absolute values.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dtemp
-   integer i,incx,m,mp1,n,nincx
+      real(kind=dp) dx(1), dtemp
+      integer i, incx, m, mp1, n, nincx
 !
-   dasum = 0.0d0
-   dtemp = 0.0d0
-   if(n.le.0)return
-   if(incx.eq.1)go to 20
+      dasum = 0.0_dp
+      dtemp = 0.0_dp
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
-   nincx = n*incx
-   do 10 i = 1,nincx,incx
-      dtemp = dtemp + dabs(dx(i))
-10 continue
-   dasum = dtemp
-   return
+      nincx = n * incx
+      do i = 1, nincx, incx
+         dtemp = dtemp + abs(dx(i))
+      end do
+      dasum = dtemp
+      return
 !
 !        code for increment equal to 1
 !
 !
 !        clean-up loop
 !
-20 m = mod(n,6)
-   if( m .eq. 0 ) go to 40
-   do 30 i = 1,m
-      dtemp = dtemp + dabs(dx(i))
-30 continue
-   if( n .lt. 6 ) go to 60
-40 mp1 = m + 1
-   do 50 i = mp1,n,6
-      dtemp = dtemp + dabs(dx(i)) + dabs(dx(i + 1)) + dabs(dx(i + 2))&
-      &+ dabs(dx(i + 3)) + dabs(dx(i + 4)) + dabs(dx(i + 5))
-50 continue
-60 dasum = dtemp
-   return
-end
+20    m = mod(n, 6)
+      if (m == 0) then
+         go to 40
+      end if
+      do i = 1, m
+         dtemp = dtemp + abs(dx(i))
+      end do
+      if (n < 6) then
+         go to 60
+      end if
+40    mp1 = m + 1
+      do i = mp1, n, 6
+         dtemp = dtemp + abs(dx(i)) + abs(dx(i + 1)) + abs(dx(i + 2))&
+         &+ abs(dx(i + 3)) + abs(dx(i + 4)) + abs(dx(i + 5))
+      end do
+60    dasum = dtemp
+      return
+   end
 
-subroutine daxpyXXX(n,da,dx,incx,dy,incy)
+   subroutine daxpyXXX(n, da, dx, incx, dy, incy)
 !
 !     constant times a vector plus a vector.
 !     uses unrolled loops for increments equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dy(1),da
-   integer i,incx,incy,ix,iy,m,mp1,n
+      real(kind=dp) dx(1), dy(1), da
+      integer i, incx, incy, ix, iy, m, mp1, n
 !
-   if(n.le.0)return
-   if (da .eq. 0.0d0) return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (da == 0.0_dp) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      dy(iy) = dy(iy) + da*dx(ix)
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         dy(iy) = dy(iy) + da * dx(ix)
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !        code for both increments equal to 1
 !
 !
 !        clean-up loop
 !
-20 m = mod(n,4)
-   if( m .eq. 0 ) go to 40
-   do 30 i = 1,m
-      dy(i) = dy(i) + da*dx(i)
-30 continue
-   if( n .lt. 4 ) return
-40 mp1 = m + 1
-   do 50 i = mp1,n,4
-      dy(i) = dy(i) + da*dx(i)
-      dy(i + 1) = dy(i + 1) + da*dx(i + 1)
-      dy(i + 2) = dy(i + 2) + da*dx(i + 2)
-      dy(i + 3) = dy(i + 3) + da*dx(i + 3)
-50 continue
-   return
-end
-double precision function dnrm2XXX ( n, dx, incx)
-   integer, intent(in) :: n, incx
-   double precision, intent(in) :: dx(*)
-   double precision  :: cutlo, cuthi, hitest, sum, xmax,zero,one
-   integer           :: next, nn, i, j
-   data   zero, one /0.0d0, 1.0d0/
+20    m = mod(n, 4)
+      if (m == 0) then
+         go to 40
+      end if
+      do i = 1, m
+         dy(i) = dy(i) + da * dx(i)
+      end do
+      if (n < 4) then
+         return
+      end if
+40    mp1 = m + 1
+      do i = mp1, n, 4
+         dy(i) = dy(i) + da * dx(i)
+         dy(i + 1) = dy(i + 1) + da * dx(i + 1)
+         dy(i + 2) = dy(i + 2) + da * dx(i + 2)
+         dy(i + 3) = dy(i + 3) + da * dx(i + 3)
+      end do
+      return
+   end
+
+   real(kind=dp) function dnrm2XXX_2(n, dx_2, incx)
+      integer, intent(in) :: n, incx
+      real(kind=dp), intent(in) :: dx_2(:, :)
+
+      real(kind=dp), allocatable, dimension(:) :: dx
+      dx = reshape(dx_2, [n])
+      dnrm2XXX_2 = dnrm2XXX_1(n, dx, incx)
+   end function dnrm2XXX_2
+
+   real(kind=dp) function dnrm2XXX_1(n, dx, incx)
+      integer, intent(in) :: n, incx
+      real(kind=dp), intent(in) :: dx(:)
+      real(kind=dp) :: cutlo, cuthi, hitest, sum, xmax, zero, one
+      integer :: next, nn, i, j
+      data zero, one/0.0_dp, 1.0_dp/
 !
 !     euclidean norm of the n-vector stored in dx() with storage
 !     increment incx .
@@ -2154,8 +2334,8 @@ double precision function dnrm2XXX ( n, dx, incx)
 !
 !     four phase method     using two built-in constants that are
 !     hopefully applicable to all machines.
-!         cutlo = maximum of  dsqrt(u/eps)  over all known machines.
-!         cuthi = minimum of  dsqrt(v)      over all known machines.
+!         cutlo = maximum of  sqrt(u/eps)  over all known machines.
+!         cuthi = minimum of  sqrt(v)      over all known machines.
 !     where
 !         eps = smallest no. such that eps + 1. .gt. 1.
 !         u   = smallest positive no.   (underflow limit)
@@ -2182,445 +2362,532 @@ double precision function dnrm2XXX ( n, dx, incx)
 !     cuthi, d.p.   same as s.p.  cuthi = 1.30438d19
 !     data cutlo, cuthi / 8.232d-11,  1.304d19 /
 !     data cutlo, cuthi / 4.441e-16,  1.304e19 /
-   data cutlo, cuthi / 8.232d-11,  1.304d19 /
+      data cutlo, cuthi/8.232e-11_dp, 1.304e19_dp/
 !
-   if(n .gt. 0) go to 10
-   dnrm2XXX  = zero
-   go to 300
+      if (n > 0) then
+         go to 10
+      end if
+      dnrm2XXX_1 = zero
+      go to 300
 !
-10 assign 30 to next
-   sum = zero
-   nn = n * incx
+10    assign 30 to next
+      sum = zero
+      nn = n * incx
 !                                                 begin main loop
-   i = 1
-20 go to next,(30, 50, 70, 110)
-30 if( dabs(dx(i)) .gt. cutlo) go to 85
-   assign 50 to next
-   xmax = zero
+      i = 1
+20    go to next, (30, 50, 70, 110)
+30    if (abs(dx(i)) > cutlo) go to 85
+      assign 50 to next
+      xmax = zero
 !
 !                        phase 1.  sum is zero
 !
-50 if( dx(i) .eq. zero) go to 200
-   if( dabs(dx(i)) .gt. cutlo) go to 85
+50    if (dx(i) == zero) go to 200
+      if (abs(dx(i)) > cutlo) then
+         go to 85
+      end if
 !
 !                                prepare for phase 2.
-   assign 70 to next
-   go to 105
+      assign 70 to next
+      go to 105
 !
 !                                prepare for phase 4.
 !
-100 i = j
-   assign 110 to next
-   sum = (sum / dx(i)) / dx(i)
-105 xmax = dabs(dx(i))
-   go to 115
+100   i = j
+      assign 110 to next
+      sum = (sum / dx(i)) / dx(i)
+105   xmax = abs(dx(i))
+      go to 115
 !
 !                   phase 2.  sum is small.
 !                             scale to avoid destructive underflow.
 !
-70 if( dabs(dx(i)) .gt. cutlo ) go to 75
+70    if (abs(dx(i)) > cutlo) go to 75
 !
 !                     common code for phases 2 and 4.
 !                     in phase 4 sum is large.  scale to avoid overflow.
 !
-110 if( dabs(dx(i)) .le. xmax ) go to 115
-   sum = one + sum * (xmax / dx(i))**2
-   xmax = dabs(dx(i))
-   go to 200
+110   if (abs(dx(i)) <= xmax) go to 115
+      sum = one + sum * (xmax / dx(i))**2
+      xmax = abs(dx(i))
+      go to 200
 !
-115 sum = sum + (dx(i)/xmax)**2
-   go to 200
+115   sum = sum + (dx(i) / xmax)**2
+      go to 200
 !
 !
 !                  prepare for phase 3.
 !
-75 sum = (sum * xmax) * xmax
+75    sum = (sum * xmax) * xmax
 !
 !
 !     for real or d.p. set hitest = cuthi/n
 !     for complex      set hitest = cuthi/(2*n)
 !
-85 hitest = cuthi/float( n )
+85    hitest = cuthi / real(n, kind=kind(hitest))
 !
 !                   phase 3.  sum is mid-range.  no scaling.
 !
-   do 95 j =i,nn,incx
-      if(dabs(dx(j)) .ge. hitest) go to 100
-95 sum = sum + dx(j)**2
-   dnrm2XXX = dsqrt( sum )
-   go to 300
+      do j = i, nn, incx
+         if (abs(dx(j)) >= hitest) then
+            go to 100
+         end if
+         sum = sum + dx(j)**2
+      end do
+      dnrm2XXX_1 = sqrt(sum)
+      go to 300
 !
-200 continue
-   i = i + incx
-   if ( i .le. nn ) go to 20
+200   continue
+      i = i + incx
+      if (i <= nn) then
+         go to 20
+      end if
 !
 !              end of main loop.
 !
 !              compute square root and adjust for scaling.
 !
-   dnrm2XXX = xmax * dsqrt(sum)
-300 continue
-   return
-end
+      dnrm2XXX_1 = xmax * sqrt(sum)
+300   continue
+      return
+   end
 
-subroutine  dscalXXX(n,da,dx,incx)
+   subroutine dscalXXX(n, da, dx, incx)
 !     scales a vector by a constant.
 !     uses unrolled loops for increment equal to one.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision da,dx(1)
-   integer i,incx,m,mp1,n,nincx
+      real(kind=dp) da, dx(1)
+      integer i, incx, m, mp1, n, nincx
 !
-   if(n.le.0)return
-   if(incx.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
-   nincx = n*incx
-   do 10 i = 1,nincx,incx
-      dx(i) = da*dx(i)
-10 continue
-   return
+      nincx = n * incx
+      do i = 1, nincx, incx
+         dx(i) = da * dx(i)
+      end do
+      return
 !
 !        code for increment equal to 1
 !
 !
 !        clean-up loop
 !
-20 m = mod(n,5)
-   if( m .eq. 0 ) go to 40
-   do 30 i = 1,m
-      dx(i) = da*dx(i)
-30 continue
-   if( n .lt. 5 ) return
-40 mp1 = m + 1
-   do 50 i = mp1,n,5
-      dx(i) = da*dx(i)
-      dx(i + 1) = da*dx(i + 1)
-      dx(i + 2) = da*dx(i + 2)
-      dx(i + 3) = da*dx(i + 3)
-      dx(i + 4) = da*dx(i + 4)
-50 continue
-   return
-end
+20    m = mod(n, 5)
+      if (m == 0) then
+         go to 40
+      end if
+      do i = 1, m
+         dx(i) = da * dx(i)
+      end do
+      if (n < 5) then
+         return
+      end if
+40    mp1 = m + 1
+      do i = mp1, n, 5
+         dx(i) = da * dx(i)
+         dx(i + 1) = da * dx(i + 1)
+         dx(i + 2) = da * dx(i + 2)
+         dx(i + 3) = da * dx(i + 3)
+         dx(i + 4) = da * dx(i + 4)
+      end do
+      return
+   end
 
-subroutine  dswapXXX (n,dx,incx,dy,incy)
+   subroutine dswapXXX(n, dx, incx, dy, incy)
 !
 !     interchanges two vectors.
 !     uses unrolled loops for increments equal one.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dy(1),dtemp
-   integer i,incx,incy,ix,iy,m,mp1,n
+      real(kind=dp) dx(1), dy(1), dtemp
+      integer i, incx, incy, ix, iy, m, mp1, n
 !
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      dtemp = dx(ix)
-      dx(ix) = dy(iy)
-      dy(iy) = dtemp
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         dtemp = dx(ix)
+         dx(ix) = dy(iy)
+         dy(iy) = dtemp
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !       code for both increments equal to 1
 !
 !
 !       clean-up loop
 !
-20 m = mod(n,3)
-   if( m .eq. 0 ) go to 40
-   do 30 i = 1,m
-      dtemp = dx(i)
-      dx(i) = dy(i)
-      dy(i) = dtemp
-30 continue
-   if( n .lt. 3 ) return
-40 mp1 = m + 1
-   do 50 i = mp1,n,3
-      dtemp = dx(i)
-      dx(i) = dy(i)
-      dy(i) = dtemp
-      dtemp = dx(i + 1)
-      dx(i + 1) = dy(i + 1)
-      dy(i + 1) = dtemp
-      dtemp = dx(i + 2)
-      dx(i + 2) = dy(i + 2)
-      dy(i + 2) = dtemp
-50 continue
-   return
-end
+20    m = mod(n, 3)
+      if (m == 0) then
+         go to 40
+      end if
+      do i = 1, m
+         dtemp = dx(i)
+         dx(i) = dy(i)
+         dy(i) = dtemp
+      end do
+      if (n < 3) then
+         return
+      end if
+40    mp1 = m + 1
+      do i = mp1, n, 3
+         dtemp = dx(i)
+         dx(i) = dy(i)
+         dy(i) = dtemp
+         dtemp = dx(i + 1)
+         dx(i + 1) = dy(i + 1)
+         dy(i + 1) = dtemp
+         dtemp = dx(i + 2)
+         dx(i + 2) = dy(i + 2)
+         dy(i + 2) = dtemp
+      end do
+      return
+   end
 
-integer function idamaxXXX(n,dx,incx)
+   integer function idamaxXXX(n, dx, incx)
 !
 !     finds the index of element having max. absolute value.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dmax
-   integer i,incx,ix,n
+      real(kind=dp) dx(1), dmax
+      integer i, incx, ix, n
 !
-   idamaxXXX = 0
-   if( n .lt. 1 ) return
-   idamaxXXX = 1
-   if(n.eq.1)return
-   if(incx.eq.1)go to 20
+      idamaxXXX = 0
+      if (n < 1) then
+         return
+      end if
+      idamaxXXX = 1
+      if (n == 1) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
-   ix = 1
-   dmax = dabs(dx(1))
-   ix = ix + incx
-   do 10 i = 2,n
-      if(dabs(dx(ix)).le.dmax) go to 5
-      idamaxXXX = i
-      dmax = dabs(dx(ix))
-5     ix = ix + incx
-10 continue
-   return
+      ix = 1
+      dmax = abs(dx(1))
+      ix = ix + incx
+      do i = 2, n
+         if (abs(dx(ix)) <= dmax) then
+            go to 5
+         end if
+         idamaxXXX = i
+         dmax = abs(dx(ix))
+5        ix = ix + incx
+      end do
+      return
 !
 !        code for increment equal to 1
 !
-20 dmax = dabs(dx(1))
-   do 30 i = 2,n
-      if(dabs(dx(i)).le.dmax) go to 30
-      idamaxXXX = i
-      dmax = dabs(dx(i))
-30 continue
-   return
-end
+20    dmax = abs(dx(1))
+      do i = 2, n
+         if (abs(dx(i)) <= dmax) then
+            cycle
+         end if
+         idamaxXXX = i
+         dmax = abs(dx(i))
+      end do
+      return
+   end
 !
-subroutine  drotXXX (n,dx,incx,dy,incy,c,s)
+   subroutine drotXXX(n, dx, incx, dy, incy, c, s)
 !
 !     applies a plane rotation.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision dx(1),dy(1),dtemp,c,s
-   integer i,incx,incy,ix,iy,n
+      real(kind=dp) dx(1), dy(1), dtemp, c, s
+      integer i, incx, incy, ix, iy, n
 !
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      dtemp = c*dx(ix) + s*dy(iy)
-      dy(iy) = c*dy(iy) - s*dx(ix)
-      dx(ix) = dtemp
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         dtemp = c * dx(ix) + s * dy(iy)
+         dy(iy) = c * dy(iy) - s * dx(ix)
+         dx(ix) = dtemp
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !       code for both increments equal to 1
 !
-20 do 30 i = 1,n
-      dtemp = c*dx(i) + s*dy(i)
-      dy(i) = c*dy(i) - s*dx(i)
-      dx(i) = dtemp
-30 continue
-   return
-end
+20    do i = 1, n
+         dtemp = c * dx(i) + s * dy(i)
+         dy(i) = c * dy(i) - s * dx(i)
+         dx(i) = dtemp
+      end do
+      return
+   end
 !
-subroutine drotgXXX(da,db,c,s)
+   subroutine drotgXXX(da, db, c, s)
 !
 !     construct givens plane rotation.
 !     jack dongarra, linpack, 3/11/78.
 !
-   double precision da,db,c,s,roe,scale,r,z
+      real(kind=dp) da, db, c, s, roe, scale, r, z
 !
-   roe = db
-   if( dabs(da) .gt. dabs(db) ) roe = da
-   scale = dabs(da) + dabs(db)
-   if( scale .ne. 0.0d0 ) go to 10
+      no_warning_unused_dummy_argument(c)
+
+      roe = db
+      if (abs(da) > abs(db)) then
+         roe = da
+      end if
+      scale = abs(da) + abs(db)
+      if (scale /= 0.0_dp) then
+         go to 10
+      end if
 !        c = 1.0d0
-   s = 0.0d0
-   r = 0.0d0
-   go to 20
-10 r = scale*dsqrt((da/scale)**2 + (db/scale)**2)
-   r = dsign(1.0d0,roe)*r
+      s = 0.0_dp
+      r = 0.0_dp
+      go to 20
+10    r = scale * sqrt((da / scale)**2 + (db / scale)**2)
+      r = sign(1.0_dp, roe) * r
 !     c = da/r
-   s = db/r
-20 z = 1.0d0
-   if( dabs(da) .gt. dabs(db) ) z = s
-!     if( dabs(db) .ge. dabs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
-   da = r
-   db = z
-   return
-end
+      s = db / r
+20    z = 1.0_dp
+      if (abs(da) > abs(db)) then
+         z = s
+      end if
+!     if( abs(db) .ge. abs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
+      da = r
+      db = z
+      return
+   end
 !
-subroutine  ccopyXXX(n,cx,incx,cy,incy)
+   subroutine ccopyXXX(n, cx, incx, cy, incy)
 !
 !     copies a vector, x, to a vector, y.
 !     jack dongarra, linpack, 3/11/78.
 !
-   complex cx(1),cy(1)
-   integer i,incx,incy,ix,iy,n
+      complex cx(1), cy(1)
+      integer i, incx, incy, ix, iy, n
 !
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !        code for unequal increments or equal increments
 !          not equal to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      cy(iy) = cx(ix)
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         cy(iy) = cx(ix)
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !        code for both increments equal to 1
 !
-20 do 30 i = 1,n
-      cy(i) = cx(i)
-30 continue
-   return
-end
-subroutine  cscalXXX(n,ca,cx,incx)
+20    do i = 1, n
+         cy(i) = cx(i)
+      end do
+      return
+   end
+   subroutine cscalXXX(n, ca, cx, incx)
 !
 !     scales a vector by a constant.
 !     jack dongarra, linpack,  3/11/78.
 !
-   complex ca,cx(1)
-   integer i,incx,n,nincx
+      complex ca, cx(1)
+      integer i, incx, n, nincx
 !
-   if(n.le.0)return
-   if(incx.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
-   nincx = n*incx
-   do 10 i = 1,nincx,incx
-      cx(i) = ca*cx(i)
-10 continue
-   return
+      nincx = n * incx
+      do i = 1, nincx, incx
+         cx(i) = ca * cx(i)
+      end do
+      return
 !
 !        code for increment equal to 1
 !
-20 do 30 i = 1,n
-      cx(i) = ca*cx(i)
-30 continue
-   return
-end
+20    do i = 1, n
+         cx(i) = ca * cx(i)
+      end do
+      return
+   end
 !
-subroutine  csrotXXX (n,cx,incx,cy,incy,c,s)
+   subroutine csrotXXX(n, cx, incx, cy, incy, c, s)
 !
 !     applies a plane rotation, where the cos and sin (c and s) are real
 !     and the vectors cx and cy are complex.
 !     jack dongarra, linpack, 3/11/78.
 !
-   complex cx(1),cy(1),ctemp
-   real c,s
-   integer i,incx,incy,ix,iy,n
+      complex cx(1), cy(1), ctemp
+      real c, s
+      integer i, incx, incy, ix, iy, n
 !
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      ctemp = c*cx(ix) + s*cy(iy)
-      cy(iy) = c*cy(iy) - s*cx(ix)
-      cx(ix) = ctemp
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         ctemp = c * cx(ix) + s * cy(iy)
+         cy(iy) = c * cy(iy) - s * cx(ix)
+         cx(ix) = ctemp
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !       code for both increments equal to 1
 !
-20 do 30 i = 1,n
-      ctemp = c*cx(i) + s*cy(i)
-      cy(i) = c*cy(i) - s*cx(i)
-      cx(i) = ctemp
-30 continue
-   return
-end
-subroutine  cswapXXX (n,cx,incx,cy,incy)
+20    do i = 1, n
+         ctemp = c * cx(i) + s * cy(i)
+         cy(i) = c * cy(i) - s * cx(i)
+         cx(i) = ctemp
+      end do
+      return
+   end
+   subroutine cswapXXX(n, cx, incx, cy, incy)
 !
 !     interchanges two vectors.
 !     jack dongarra, linpack, 3/11/78.
 !
-   complex cx(1),cy(1),ctemp
-   integer i,incx,incy,ix,iy,n
+      complex cx(1), cy(1), ctemp
+      integer i, incx, incy, ix, iy, n
 !
-   if(n.le.0)return
-   if(incx.eq.1.and.incy.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1 .and. incy == 1) then
+         go to 20
+      end if
 !
 !       code for unequal increments or equal increments not equal
 !         to 1
 !
-   ix = 1
-   iy = 1
-   if(incx.lt.0)ix = (-n+1)*incx + 1
-   if(incy.lt.0)iy = (-n+1)*incy + 1
-   do 10 i = 1,n
-      ctemp = cx(ix)
-      cx(ix) = cy(iy)
-      cy(iy) = ctemp
-      ix = ix + incx
-      iy = iy + incy
-10 continue
-   return
+      ix = 1
+      iy = 1
+      if (incx < 0) then
+         ix = (-n + 1) * incx + 1
+      end if
+      if (incy < 0) then
+         iy = (-n + 1) * incy + 1
+      end if
+      do i = 1, n
+         ctemp = cx(ix)
+         cx(ix) = cy(iy)
+         cy(iy) = ctemp
+         ix = ix + incx
+         iy = iy + incy
+      end do
+      return
 !
 !       code for both increments equal to 1
-20 do 30 i = 1,n
-      ctemp = cx(i)
-      cx(i) = cy(i)
-      cy(i) = ctemp
-30 continue
-   return
-end
-subroutine  csscalXXX(n,sa,cx,incx)
+20    do i = 1, n
+         ctemp = cx(i)
+         cx(i) = cy(i)
+         cy(i) = ctemp
+      end do
+      return
+   end
+   subroutine csscalXXX(n, sa, cx, incx)
 !
 !     scales a complex vector by a real constant.
 !     jack dongarra, linpack, 3/11/78.
 !
-   complex cx(1)
-   real sa
-   integer i,incx,n,nincx
+      complex cx(1)
+      real sa
+      integer i, incx, n, nincx
 !
-   if(n.le.0)return
-   if(incx.eq.1)go to 20
+      if (n <= 0) then
+         return
+      end if
+      if (incx == 1) then
+         go to 20
+      end if
 !
 !        code for increment not equal to 1
 !
-   nincx = n*incx
-   do 10 i = 1,nincx,incx
-      cx(i) = cmplx(sa*real(cx(i)),sa*aimag(cx(i)))
-10 continue
-   return
+      nincx = n * incx
+      do i = 1, nincx, incx
+         cx(i) = cmplx(sa * real(cx(i)), sa * aimag(cx(i)))
+      end do
+      return
 !
 !        code for increment equal to 1
 !
-20 do 30 i = 1,n
-      cx(i) = cmplx(sa*real(cx(i)),sa*aimag(cx(i)))
-30 continue
-   return
-end
+20    do i = 1, n
+         cx(i) = cmplx(sa * real(cx(i)), sa * aimag(cx(i)))
+      end do
+      return
+   end
 
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
@@ -2677,12 +2944,13 @@ end
 ! cooell  : converts coordinate to Ellpack/Itpack format               c
 ! dcsort  : sorting routine used by crsjad                             c
 !----------------------------------------------------------------------c
-subroutine csrdns(nrow,ncol,a,ja,ia,dns,ndns,ierr)
-   integer, intent(in) :: nrow, ncol, ndns
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: dns(ndns,*), a(*)
-   integer, intent(inout) :: ja(*),ia(*)
-   integer :: i, j, k
+   subroutine csrdns(nrow, ncol, a, ja, ia, dns, ndns, ierr)
+
+      integer, intent(in) :: nrow, ncol, ndns
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: dns(ndns, *), a(:)
+      integer, intent(inout) :: ja(:), ia(:)
+      integer :: i, j, k
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row    to    Dense
 !-----------------------------------------------------------------------
@@ -2711,34 +2979,35 @@ subroutine csrdns(nrow,ncol,a,ja,ia,dns,ndns,ierr)
 !         row number i, because it found a column number .gt. ncol.
 !
 !-----------------------------------------------------------------------
-   ierr = 0
-   do 1 i=1, nrow
-      do 2 j=1,ncol
-         dns(i,j) = 0.0d0
-2     continue
-1  continue
+      ierr = 0
+      do j = 1, ncol
+         do i = 1, nrow
+            dns(i, j) = 0.0_dp
+         end do
+      end do
 !
-   do 4 i=1,nrow
-      do 3 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         if (j .gt. ncol) then
-            ierr = i
-            return
-         endif
-         dns(i,j) = a(k)
-3     continue
-4  continue
-   return
+      do i = 1, nrow
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            if (j > ncol) then
+               ierr = i
+               return
+            end if
+            dns(i, j) = a(k)
+         end do
+      end do
+      return
 !---- end of csrdns ----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine dnscsr(nrow,ncol,nzmax,dns,ndns,a,ja,ia,ierr)
-   integer, intent(in) :: nrow, ncol, ndns, nzmax
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: dns(ndns,*),a(*)
-   integer, intent(inout) :: ia(*),ja(*)
-   integer ::next, i, j
+   subroutine dnscsr(nrow, ncol, nzmax, dns, a, ja, ia, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: dns(:, :), a(:)
+      integer, intent(inout) :: ia(:), ja(:)
+      integer :: next, i, j
 !-----------------------------------------------------------------------
 ! Dense     to    Compressed Row Sparse
 !-----------------------------------------------------------------------
@@ -2770,34 +3039,36 @@ subroutine dnscsr(nrow,ncol,nzmax,dns,ndns,a,ja,ia,ierr)
 !         processing row number i, because there was no space left in
 !         a, and ja (as defined by parameter nzmax).
 !-----------------------------------------------------------------------
-   ierr = 0
-   next = 1
-   ia(1) = 1
-   do 4 i=1,nrow
-      do 3 j=1, ncol
-         if (dns(i,j) .eq. 0.0d0) goto 3
-         if (next .gt. nzmax) then
-            ierr = i
-            return
-         endif
-         ja(next) = j
-         a(next) = dns(i,j)
-         next = next+1
-3     continue
-      ia(i+1) = next
-4  continue
-   return
+      ierr = 0
+      next = 1
+      ia(1) = 1
+      do i = 1, nrow
+         do j = 1, ncol
+            if (dns(i, j) == 0.0_dp) then
+               cycle
+            end if
+            if (next > nzmax) then
+               ierr = i
+               return
+            end if
+            ja(next) = j
+            a(next) = dns(i, j)
+            next = next + 1
+         end do
+         ia(i + 1) = next
+      end do
+      return
 !---- end of dnscsr ----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine coocsr(nrow,nnz,a,ir,jc,ao,jao,iao)
-!-----------------------------------------------------------------------
-   integer, intent(in) :: nrow, nnz
-   real*8, intent(inout) :: a(*),ao(*)
-   integer, intent(inout) :: ir(*),jc(*),jao(*),iao(*)
-   integer :: k, j, k0, iad, i
-   real*8 :: x
+   subroutine coocsr(nrow, nnz, a, ir, jc, ao, jao, iao)
+
+      integer, intent(in) :: nrow, nnz
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer, intent(inout) :: ir(:), jc(:), jao(:), iao(:)
+      integer :: k, j, k0, iad, i
+      real(dp) :: x
 !-----------------------------------------------------------------------
 !  Coordinate     to   Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -2828,44 +3099,45 @@ subroutine coocsr(nrow,nnz,a,ir,jc,ao,jao,iao)
 !------ This routine is NOT in place.  See coicsr
 !
 !------------------------------------------------------------------------
-   do 1 k=1,nrow+1
-      iao(k) = 0
-1  continue
+      do k = 1, nrow + 1
+         iao(k) = 0
+      end do
 ! determine row-lengths.
-   do 2 k=1, nnz
-      iao(ir(k)) = iao(ir(k))+1
-2  continue
+      do k = 1, nnz
+         iao(ir(k)) = iao(ir(k)) + 1
+      end do
 ! starting position of each row..
-   k = 1
-   do 3 j=1,nrow+1
-      k0 = iao(j)
-      iao(j) = k
-      k = k+k0
-3  continue
+      k = 1
+      do j = 1, nrow + 1
+         k0 = iao(j)
+         iao(j) = k
+         k = k + k0
+      end do
 ! go through the structure  once more. Fill in output matrix.
-   do 4 k=1, nnz
-      i = ir(k)
-      j = jc(k)
-      x = a(k)
-      iad = iao(i)
-      ao(iad) =  x
-      jao(iad) = j
-      iao(i) = iad+1
-4  continue
+      do k = 1, nnz
+         i = ir(k)
+         j = jc(k)
+         x = a(k)
+         iad = iao(i)
+         ao(iad) = x
+         jao(iad) = j
+         iao(i) = iad + 1
+      end do
 ! shift back iao
-   do 5 j=nrow,1,-1
-      iao(j+1) = iao(j)
-5  continue
-   iao(1) = 1
-   return
+      do j = nrow, 1, -1
+         iao(j + 1) = iao(j)
+      end do
+      iao(1) = 1
+      return
 !------------- end of coocsr -------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine coicsr (n,nnz,job,a,ja,ia,iwk)
-   integer, intent(in) :: n, nnz, job
-   integer, intent(inout) :: ia(nnz),ja(nnz),iwk(n+1)
-   real*8, intent(inout) :: a(*)
+   subroutine coicsr(n, nnz, job, a, ja, ia, iwk)
+
+      integer, intent(in) :: n, nnz, job
+      integer, intent(inout) :: ia(nnz), ja(nnz), iwk(n + 1)
+      real(dp), intent(inout) :: a(:)
 !------------------------------------------------------------------------
 ! IN-PLACE coo-csr conversion routine.
 !------------------------------------------------------------------------
@@ -2901,75 +3173,87 @@ subroutine coicsr (n,nnz,job,a,ja,ia,iwk)
 !----------------------------------------------------------------------c
 !  Coded by Y. Saad, Sep. 26 1989                                      c
 !----------------------------------------------------------------------c
-   real*8 :: t,tnext
-   logical :: values
-   integer :: i, j, k, init, ipos, inext, jnext
+      real(dp) :: t, tnext
+      logical :: values
+      integer :: i, j, k, init, ipos, inext, jnext
 !-----------------------------------------------------------------------
-   values = (job .eq. 1)
+      values = (job == 1)
 ! find pointer array for resulting matrix.
-   do 35 i=1,n+1
-      iwk(i) = 0
-35 continue
-   do 4 k=1,nnz
-      i = ia(k)
-      iwk(i+1) = iwk(i+1)+1
-4  continue
+      do i = 1, n + 1
+         iwk(i) = 0
+      end do
+      do k = 1, nnz
+         i = ia(k)
+         iwk(i + 1) = iwk(i + 1) + 1
+      end do
 !------------------------------------------------------------------------
-   iwk(1) = 1
-   do 44 i=2,n
-      iwk(i) = iwk(i-1) + iwk(i)
-44 continue
+      iwk(1) = 1
+      do i = 2, n
+         iwk(i) = iwk(i - 1) + iwk(i)
+      end do
 !
 !     loop for a cycle in chasing process.
 !
-   init = 1
-   k = 0
-5  if (values) t = a(init)
-   i = ia(init)
-   j = ja(init)
-   ia(init) = -1
+      init = 1
+      k = 0
+5     if (values) t = a(init)
+      i = ia(init)
+      j = ja(init)
+      ia(init) = -1
 !------------------------------------------------------------------------
-6  k = k+1
+6     k = k + 1
 !     current row number is i.  determine  where to go.
-   ipos = iwk(i)
+      ipos = iwk(i)
 !     save the chased element.
-   if (values) tnext = a(ipos)
-   inext = ia(ipos)
-   jnext = ja(ipos)
+      if (values) then
+         tnext = a(ipos)
+      end if
+      inext = ia(ipos)
+      jnext = ja(ipos)
 !     then occupy its location.
-   if (values) a(ipos)  = t
-   ja(ipos) = j
+      if (values) then
+         a(ipos) = t
+      end if
+      ja(ipos) = j
 !     update pointer information for next element to come in row i.
-   iwk(i) = ipos+1
+      iwk(i) = ipos + 1
 !     determine  next element to be chased,
-   if (ia(ipos) .lt. 0) goto 65
-   t = tnext
-   i = inext
-   j = jnext
-   ia(ipos) = -1
-   if (k .lt. nnz) goto 6
-   goto 70
-65 init = init+1
-   if (init .gt. nnz) goto 70
-   if (ia(init) .lt. 0) goto 65
+      if (ia(ipos) < 0) then
+         goto 65
+      end if
+      t = tnext
+      i = inext
+      j = jnext
+      ia(ipos) = -1
+      if (k < nnz) then
+         goto 6
+      end if
+      goto 70
+65    init = init + 1
+      if (init > nnz) then
+         goto 70
+      end if
+      if (ia(init) < 0) then
+         goto 65
+      end if
 !     restart chasing --
-   goto 5
-70 do 80 i=1,n
-      ia(i+1) = iwk(i)
-80 continue
-   ia(1) = 1
-   return
+      goto 5
+70    do i = 1, n
+         ia(i + 1) = iwk(i)
+      end do
+      ia(1) = 1
+      return
 !----------------- end of coicsr ----------------------------------------
 !------------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrcoo (nrow,job,nzmax,a,ja,ia,nnz,ao,ir,jc,ierr)
-!-----------------------------------------------------------------------
-   integer, intent(in) :: nrow, job, nzmax
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*),ao(*)
-   integer, intent(inout) :: ir(*),jc(*),ja(*),ia(nrow+1)
-   integer :: nnz, k, i, k1, k2
+   subroutine csrcoo(nrow, job, nzmax, a, ja, ia, nnz, ao, ir, jc, ierr)
+
+      integer, intent(in) :: nrow, job, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer, intent(inout) :: ir(:), jc(:), ja(:), ia(nrow + 1)
+      integer :: nnz, k, i, k1, k2
 !-----------------------------------------------------------------------
 !  Compressed Sparse Row      to      Coordinate
 !-----------------------------------------------------------------------
@@ -3014,42 +3298,50 @@ subroutine csrcoo (nrow,job,nzmax,a,ja,ia,nnz,ao,ir,jc,ierr)
 !         but ir CANNOT be the same as ia.
 !         2) note the order in the output arrays,
 !------------------------------------------------------------------------
-   ierr = 0
-   nnz = ia(nrow+1)-1
-   if (nnz .gt. nzmax) then
-      ierr = 1
-      return
-   endif
-!------------------------------------------------------------------------
-   goto (3,2,1) job
-1  do 10 k=1,nnz
-      ao(k) = a(k)
-10 continue
-2  do 11 k=1,nnz
-      jc(k) = ja(k)
-11 continue
+      ierr = 0
+      nnz = ia(nrow + 1) - 1
+      if (nnz > nzmax) then
+         ierr = 1
+         return
+      end if
+
+      if (job == 1) then
+         goto 3
+      else if (job == 2) then
+         goto 2
+      else if (job == 3) then
+         goto 1
+      end if
+
+1     do k = 1, nnz
+         ao(k) = a(k)
+      end do
+2     do k = 1, nnz
+         jc(k) = ja(k)
+      end do
 !
 !     copy backward to allow for in-place processing.
 !
-3  do 13 i=nrow,1,-1
-      k1 = ia(i+1)-1
-      k2 = ia(i)
-      do 12 k=k1,k2,-1
-         ir(k) = i
-12    continue
-13 continue
-   return
+3     do i = nrow, 1, -1
+         k1 = ia(i + 1) - 1
+         k2 = ia(i)
+         do k = k1, k2, -1
+            ir(k) = i
+         end do
+      end do
+      return
 !------------- end-of-csrcoo -------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrssr (nrow,a,ja,ia,nzmax,ao,jao,iao,ierr)
-   integer, intent(in) :: nrow, nzmax
-   integer, intent(out) :: ierr
-   real*8, intent(inout) :: a(*), ao(*)
-   integer, intent(inout) :: ia(*), ja(*), iao(*), jao(*)
-   real*8 :: t
-   integer :: ko, i, kold, kdiag, k
+   subroutine csrssr(nrow, a, ja, ia, nzmax, ao, jao, iao, ierr)
+
+      integer, intent(in) :: nrow, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer, intent(inout) :: ia(:), ja(:), iao(:), jao(:)
+      real(dp) :: t
+      integer :: ko, i, kold, kdiag, k
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to     Symmetric Sparse Row
 !-----------------------------------------------------------------------
@@ -3083,52 +3375,60 @@ subroutine csrssr (nrow,a,ja,ia,nzmax,ao,jao,iao,ierr)
 !          (according to the value of nzmax)
 !
 !-----------------------------------------------------------------------
-   ierr = 0
-   ko = 0
+      ierr = 0
+      ko = 0
 !-----------------------------------------------------------------------
-   do  7 i=1, nrow
-      kold = ko
-      kdiag = 0
-      do 71 k = ia(i), ia(i+1) -1
-         if (ja(k)  .gt. i) goto 71
-         ko = ko+1
-         if (ko .gt. nzmax) then
-            ierr = i
-            return
-         endif
-         ao(ko) = a(k)
-         jao(ko) = ja(k)
-         if (ja(k)  .eq. i) kdiag = ko
-71    continue
-      if (kdiag .eq. 0 .or. kdiag .eq. ko) goto 72
+      do i = 1, nrow
+         kold = ko
+         kdiag = 0
+         do k = ia(i), ia(i + 1) - 1
+            if (ja(k) > i) then
+               cycle
+            end if
+            ko = ko + 1
+            if (ko > nzmax) then
+               ierr = i
+               return
+            end if
+            ao(ko) = a(k)
+            jao(ko) = ja(k)
+            if (ja(k) == i) then
+               kdiag = ko
+            end if
+         end do
+         if (kdiag == 0 .or. kdiag == ko) then
+            goto 72
+         end if
 !
 !     exchange
 !
-      t = ao(kdiag)
-      ao(kdiag) = ao(ko)
-      ao(ko) = t
+         t = ao(kdiag)
+         ao(kdiag) = ao(ko)
+         ao(ko) = t
 !
-      k = jao(kdiag)
-      jao(kdiag) = jao(ko)
-      jao(ko) = k
-72    iao(i) = kold+1
-7  continue
+         k = jao(kdiag)
+         jao(kdiag) = jao(ko)
+         jao(ko) = k
+72       iao(i) = kold + 1
+      end do
 !     redefine iao(n+1)
-   iao(nrow+1) = ko+1
-   return
+      iao(nrow + 1) = ko + 1
+      return
 !--------- end of csrssr -----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
-&ao, jao, iao, indu, iwk, ierr)
+   subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
+   &ao, jao, iao, indu, iwk, ierr)
+      use precision, only: dp
+
 !     .. Scalar Arguments ..
-   integer            ierr, job, nrow, nzmax, value2
+      integer ierr, job, nrow, nzmax, value2
 !     ..
 !     .. Array Arguments ..
-   integer            ia(nrow+1), iao(nrow+1), indu(nrow),&
-   &iwk(nrow+1), ja(*), jao(nzmax)
-   real*8             a(*), ao(nzmax)
+      integer ia(nrow + 1), iao(nrow + 1), indu(nrow),&
+      &iwk(nrow + 1), ja(:), jao(nzmax)
+      real(dp) :: a(:), ao(nzmax)
 !     ..
 !-----------------------------------------------------------------------
 !     Symmetric Sparse Row to Compressed Sparse Row format
@@ -3193,78 +3493,83 @@ subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
 !
 !-----------------------------------------------------------------------
 !     .. Local Scalars ..
-   integer            i, ipos, j, k, kfirst, klast, ko, kosav, nnz
-   real*8             tmp
+      integer i, ipos, j, k, kfirst, klast, ko, kosav, nnz
+      real(dp) :: tmp
 !     ..
 !     .. Executable Statements ..
-   ierr = 0
-   do 10 i = 1, nrow
-      indu(i) = 0
-      iwk(i) = 0
-10 continue
-   iwk(nrow+1) = 0
+      ierr = 0
+      do i = 1, nrow
+         indu(i) = 0
+         iwk(i) = 0
+      end do
+      iwk(nrow + 1) = 0
 !
 !     .. compute number of elements in each row of (A'-D)
 !     put result in iwk(i+1)  for row i.
 !
-   do 30 i = 1, nrow
-      do 20 k = ia(i), ia(i+1) - 1
-         j = ja(k)
-         if (j.ne.i)&
-         &iwk(j+1) = iwk(j+1) + 1
-20    continue
-30 continue
+      do i = 1, nrow
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            if (j /= i) then
+               iwk(j + 1) = iwk(j + 1) + 1
+            end if
+         end do
+      end do
 !
 !     .. find addresses of first elements of ouput matrix. result in iwk
 !
-   iwk(1) = 1
-   do 40 i = 1, nrow
-      indu(i) = iwk(i) + ia(i+1) - ia(i)
-      iwk(i+1) = iwk(i+1) + indu(i)
-      indu(i) = indu(i) - 1
-40 continue
+      iwk(1) = 1
+      do i = 1, nrow
+         indu(i) = iwk(i) + ia(i + 1) - ia(i)
+         iwk(i + 1) = iwk(i + 1) + indu(i)
+         indu(i) = indu(i) - 1
+      end do
 !.....Have we been given enough storage in ao, jao ?
-   nnz = iwk(nrow+1) - 1
-   if (nnz.gt.nzmax) then
-      ierr = nnz
-      return
-   endif
+      nnz = iwk(nrow + 1) - 1
+      if (nnz > nzmax) then
+         ierr = nnz
+         return
+      end if
 !
 !     .. copy the existing matrix (backwards).
 !
-   kosav = iwk(nrow+1)
-   do 60 i = nrow, 1, -1
-      klast = ia(i+1) - 1
-      kfirst = ia(i)
-      iao(i+1) = kosav
-      kosav = iwk(i)
-      ko = iwk(i) - kfirst
-      iwk(i) = ko + klast + 1
-      do 50 k = klast, kfirst, -1
-         if (value2.ne.0)&
-         &ao(k+ko) = a(k)
-         jao(k+ko) = ja(k)
-50    continue
-60 continue
-   iao(1) = 1
+      kosav = iwk(nrow + 1)
+      do i = nrow, 1, -1
+         klast = ia(i + 1) - 1
+         kfirst = ia(i)
+         iao(i + 1) = kosav
+         kosav = iwk(i)
+         ko = iwk(i) - kfirst
+         iwk(i) = ko + klast + 1
+         do k = klast, kfirst, -1
+            if (value2 /= 0) then
+               ao(k + ko) = a(k)
+            end if
+            jao(k + ko) = ja(k)
+         end do
+      end do
+      iao(1) = 1
 !
 !     now copy (A'-D). Go through the structure of ao, jao, iao
 !     that has already been copied. iwk(i) is the address
 !     of the next free location in row i for ao, jao.
 !
-   do 80 i = 1, nrow
-      do 70 k = iao(i), indu(i)
-         j = jao(k)
-         if (j.ne.i) then
-            ipos = iwk(j)
-            if (value2.ne.0)&
-            &ao(ipos) = ao(k)
-            jao(ipos) = i
-            iwk(j) = ipos + 1
-         endif
-70    continue
-80 continue
-   if (job.le.0) return
+      do i = 1, nrow
+         do k = iao(i), indu(i)
+            j = jao(k)
+            if (j /= i) then
+               ipos = iwk(j)
+               if (value2 /= 0) then
+                  ao(ipos) = ao(k)
+               end if
+               jao(ipos) = i
+               iwk(j) = ipos + 1
+            end if
+         end do
+      end do
+      if (job <= 0) then
+         return
+      end if
 !
 !     .. eliminate duplicate entries --
 !     array INDU is used as marker for existing indices, it is also the
@@ -3273,129 +3578,136 @@ subroutine ssrcsr(job, value2, nrow, a, ja, ia, nzmax,&
 !     matrix is copied to squeeze out the space taken by the duplicated
 !     entries.
 !
-   do 90 i = 1, nrow
-      indu(i) = 0
-      iwk(i) = iao(i)
-90 continue
-   iwk(nrow+1) = iao(nrow+1)
-   k = 1
-   do 120 i = 1, nrow
-      iao(i) = k
-      ipos = iwk(i)
-      klast = iwk(i+1)
-100   if (ipos.lt.klast) then
-         j = jao(ipos)
-         if (indu(j).eq.0) then
+      do i = 1, nrow
+         indu(i) = 0
+         iwk(i) = iao(i)
+      end do
+      iwk(nrow + 1) = iao(nrow + 1)
+      k = 1
+      do i = 1, nrow
+         iao(i) = k
+         ipos = iwk(i)
+         klast = iwk(i + 1)
+100      if (ipos < klast) then
+            j = jao(ipos)
+            if (indu(j) == 0) then
 !     .. new entry ..
-            if (value2.ne.0) then
-               if (ao(ipos) .ne. 0.0D0) then
+               if (value2 /= 0) then
+                  if (ao(ipos) /= 0.0_dp) then
+                     indu(j) = k
+                     jao(k) = jao(ipos)
+                     ao(k) = ao(ipos)
+                     k = k + 1
+                  end if
+               else
                   indu(j) = k
                   jao(k) = jao(ipos)
-                  ao(k) = ao(ipos)
                   k = k + 1
-               endif
-            else
-               indu(j) = k
-               jao(k) = jao(ipos)
-               k = k + 1
-            endif
-         else if (value2.ne.0) then
+               end if
+            else if (value2 /= 0) then
 !     .. duplicate entry ..
-            ao(indu(j)) = ao(indu(j)) + ao(ipos)
-         endif
-         ipos = ipos + 1
-         go to 100
-      endif
+               ao(indu(j)) = ao(indu(j)) + ao(ipos)
+            end if
+            ipos = ipos + 1
+            go to 100
+         end if
 !     .. remove marks before working on the next row ..
-      do 110 ipos = iao(i), k - 1
-         indu(jao(ipos)) = 0
-110   continue
-120 continue
-   iao(nrow+1) = k
-   if (job.le.1) return
+         do ipos = iao(i), k - 1
+            indu(jao(ipos)) = 0
+         end do
+      end do
+      iao(nrow + 1) = k
+      if (job <= 1) then
+         return
+      end if
 !
 !     .. partial ordering ..
 !     split the matrix into strict upper/lower triangular
 !     parts, INDU points to the the beginning of the strict upper part.
 !
-   do 140 i = 1, nrow
-      klast = iao(i+1) - 1
-      kfirst = iao(i)
-130   if (klast.gt.kfirst) then
-         if (jao(klast).lt.i .and. jao(kfirst).ge.i) then
+      do i = 1, nrow
+         klast = iao(i + 1) - 1
+         kfirst = iao(i)
+130      if (klast > kfirst) then
+            if (jao(klast) < i .and. jao(kfirst) >= i) then
 !     .. swap klast with kfirst ..
-            j = jao(klast)
-            jao(klast) = jao(kfirst)
-            jao(kfirst) = j
-            if (value2.ne.0) then
-               tmp = ao(klast)
-               ao(klast) = ao(kfirst)
-               ao(kfirst) = tmp
-            endif
-         endif
-         if (jao(klast).ge.i)&
-         &klast = klast - 1
-         if (jao(kfirst).lt.i)&
-         &kfirst = kfirst + 1
-         go to 130
-      endif
+               j = jao(klast)
+               jao(klast) = jao(kfirst)
+               jao(kfirst) = j
+               if (value2 /= 0) then
+                  tmp = ao(klast)
+                  ao(klast) = ao(kfirst)
+                  ao(kfirst) = tmp
+               end if
+            end if
+            if (jao(klast) >= i) then
+               klast = klast - 1
+            end if
+            if (jao(kfirst) < i) then
+               kfirst = kfirst + 1
+            end if
+            go to 130
+         end if
 !
-      if (jao(klast).lt.i) then
-         indu(i) = klast + 1
-      else
-         indu(i) = klast
-      endif
-140 continue
-   if (job.le.2) return
+         if (jao(klast) < i) then
+            indu(i) = klast + 1
+         else
+            indu(i) = klast
+         end if
+      end do
+      if (job <= 2) then
+         return
+      end if
 !
 !     .. order the entries according to column indices
 !     bubble-sort is used
 !
-   do 190 i = 1, nrow
-      do 160 ipos = iao(i), indu(i)-1
-         do 150 j = indu(i)-1, ipos+1, -1
-            k = j - 1
-            if (jao(k).gt.jao(j)) then
-               ko = jao(k)
-               jao(k) = jao(j)
-               jao(j) = ko
-               if (value2.ne.0) then
-                  tmp = ao(k)
-                  ao(k) = ao(j)
-                  ao(j) = tmp
-               endif
-            endif
-150      continue
-160   continue
-      do 180 ipos = indu(i), iao(i+1)-1
-         do 170 j = iao(i+1)-1, ipos+1, -1
-            k = j - 1
-            if (jao(k).gt.jao(j)) then
-               ko = jao(k)
-               jao(k) = jao(j)
-               jao(j) = ko
-               if (value2.ne.0) then
-                  tmp = ao(k)
-                  ao(k) = ao(j)
-                  ao(j) = tmp
-               endif
-            endif
-170      continue
-180   continue
-190 continue
+      do i = 1, nrow
+         do ipos = iao(i), indu(i) - 1
+            do j = indu(i) - 1, ipos + 1, -1
+               k = j - 1
+               if (jao(k) > jao(j)) then
+                  ko = jao(k)
+                  jao(k) = jao(j)
+                  jao(j) = ko
+                  if (value2 /= 0) then
+                     tmp = ao(k)
+                     ao(k) = ao(j)
+                     ao(j) = tmp
+                  end if
+               end if
+            end do
+         end do
+         do ipos = indu(i), iao(i + 1) - 1
+            do j = iao(i + 1) - 1, ipos + 1, -1
+               k = j - 1
+               if (jao(k) > jao(j)) then
+                  ko = jao(k)
+                  jao(k) = jao(j)
+                  jao(j) = ko
+                  if (value2 /= 0) then
+                     tmp = ao(k)
+                     ao(k) = ao(j)
+                     ao(j) = tmp
+                  end if
+               end if
+            end do
+         end do
+      end do
 !
-   return
+      return
 !---- end of ssrcsr ----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine xssrcsr (nrow,a,ja,ia,nzmax,ao,jao,iao,indu,ierr)
-   integer, intent(in) :: nrow, nzmax
-   integer, intent(out) :: ierr
-   integer, intent(inout) :: ia(nrow+1),iao(nrow+1),ja(*),jao(nzmax)&
-   &,indu(nrow+1)
-   real*8 , intent(inout) :: a(*),ao(nzmax)
-   integer :: i, j, k, lenrow, nnz, ipos, kosav, klast, kfirst, ko
+   subroutine xssrcsr(nrow, a, ja, ia, nzmax, ao, jao, iao, indu, ierr)
+
+      integer, intent(in) :: nrow, nzmax
+      integer, intent(out) :: ierr
+      integer, intent(inout) :: ia(nrow + 1), iao(nrow + 1), ja(:), jao(nzmax)&
+      &, indu(nrow + 1)
+      real(dp), intent(inout) :: a(:), ao(nzmax)
+      integer :: i, j, k, lenrow, nnz, ipos, kosav, klast, kfirst, ko
 !-----------------------------------------------------------------------
 ! Symmetric Sparse Row   to    (regular) Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -3438,80 +3750,86 @@ subroutine xssrcsr (nrow,a,ja,ia,nzmax,ao,jao,iao,indu,ierr)
 !         needed for nzmax. otherwise ierr=0 (normal return).
 !
 !-----------------------------------------------------------------------
-   ierr = 0
-   do 1 i=1,nrow+1
-      indu(i) = 0
-1  continue
+      ierr = 0
+      do i = 1, nrow + 1
+         indu(i) = 0
+      end do
 !
 !     compute  number of elements in each row of strict upper part.
 !     put result in indu(i+1)  for row i.
 !
-   do 3 i=1, nrow
-      do 2 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         if (j .lt. i) indu(j+1) = indu(j+1)+1
-2     continue
-3  continue
+      do i = 1, nrow
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            if (j < i) then
+               indu(j + 1) = indu(j + 1) + 1
+            end if
+         end do
+      end do
 !-----------
 !     find addresses of first elements of ouput matrix. result in indu
 !-----------
-   indu(1) = 1
-   do 4 i=1,nrow
-      lenrow = ia(i+1)-ia(i)
-      indu(i+1) = indu(i) + indu(i+1) + lenrow
-4  continue
+      indu(1) = 1
+      do i = 1, nrow
+         lenrow = ia(i + 1) - ia(i)
+         indu(i + 1) = indu(i) + indu(i + 1) + lenrow
+      end do
 !--------------------- enough storage in a, ja ? --------
-   nnz = indu(nrow+1)-1
-   if (nnz .gt. nzmax) then
-      ierr = nnz
-      return
-   endif
+      nnz = indu(nrow + 1) - 1
+      if (nnz > nzmax) then
+         ierr = nnz
+         return
+      end if
 !
 !     now copy lower part (backwards).
 !
-   kosav = indu(nrow+1)
-   do 6 i=nrow,1,-1
-      klast = ia(i+1)-1
-      kfirst = ia(i)
-      iao(i+1) = kosav
-      ko = indu(i)
-      kosav = ko
-      do 5 k = kfirst, klast
-         ao(ko) = a(k)
-         jao(ko) = ja(k)
-         ko = ko+1
-5     continue
-      indu(i) = ko
-6  continue
-   iao(1) = 1
+      kosav = indu(nrow + 1)
+      do i = nrow, 1, -1
+         klast = ia(i + 1) - 1
+         kfirst = ia(i)
+         iao(i + 1) = kosav
+         ko = indu(i)
+         kosav = ko
+         do k = kfirst, klast
+            ao(ko) = a(k)
+            jao(ko) = ja(k)
+            ko = ko + 1
+         end do
+         indu(i) = ko
+      end do
+      iao(1) = 1
 !
 !     now copy upper part. Go through the structure of ao, jao, iao
 !     that has already been copied (lower part). indu(i) is the address
 !     of the next free location in row i for ao, jao.
 !
-   do 8 i=1,nrow
+      outer_loop: &
+         do i = 1, nrow
 !     i-th row is now in ao, jao, iao structure -- lower half part
-      do 9 k=iao(i), iao(i+1)-1
-         j = jao(k)
-         if (j .ge. i)  goto 8
-         ipos = indu(j)
-         ao(ipos) = ao(k)
-         jao(ipos) = i
-         indu(j) = indu(j) + 1
-9     continue
-8  continue
-   return
+         do k = iao(i), iao(i + 1) - 1
+            j = jao(k)
+            if (j >= i) then
+               cycle outer_loop
+            end if
+            ipos = indu(j)
+            ao(ipos) = ao(k)
+            jao(ipos) = i
+            indu(j) = indu(j) + 1
+         end do
+      end do outer_loop
+      return
 !----- end of xssrcsr --------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrell (nrow,a,ja,ia,maxcol,coef,jcoef,ncoef,&
-&ndiag,ierr)
-   integer, intent(in) :: nrow, maxcol, ncoef
-   integer, intent(out) :: ierr, ndiag
-   integer, intent(inout) :: ia(nrow+1), ja(*), jcoef(ncoef,1)
-   real*8 , intent(inout) :: a(*), coef(ncoef,1)
-   integer :: i,j,k,k1,k2
+   subroutine csrell(nrow, a, ja, ia, maxcol, coef, jcoef, ncoef,&
+   &ndiag, ierr)
+
+      integer, intent(in) :: nrow, maxcol, ncoef
+      integer, intent(out) :: ierr, ndiag
+      integer, intent(inout) :: ia(nrow + 1), ja(:), jcoef(ncoef, 1)
+      real(dp), intent(inout) :: a(:), coef(ncoef, 1)
+      integer :: i, j, k, k1, k2
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to    Ellpack - Itpack format
 !-----------------------------------------------------------------------
@@ -3545,48 +3863,49 @@ subroutine csrell (nrow,a,ja,ia,maxcol,coef,jcoef,ncoef,&
 !
 !-----------------------------------------------------------------------
 ! first determine the length of each row of lower-part-of(A)
-   ierr = 0
-   ndiag = 0
-   do 3 i=1, nrow
-      k = ia(i+1)-ia(i)
-      ndiag = max0(ndiag,k)
-3  continue
+      ierr = 0
+      ndiag = 0
+      do i = 1, nrow
+         k = ia(i + 1) - ia(i)
+         ndiag = max(ndiag, k)
+      end do
 !----- check whether sufficient columns are available. -----------------
-   if (ndiag .gt. maxcol) then
-      ierr = 1
-      return
-   endif
+      if (ndiag > maxcol) then
+         ierr = 1
+         return
+      end if
 !
 ! fill coef with zero elements and jcoef with row numbers.------------
 !
-   do 4 j=1,ndiag
-      do 41 i=1,nrow
-         coef(i,j) = 0.0d0
-         jcoef(i,j) = i
-41    continue
-4  continue
+      do j = 1, ndiag
+         do i = 1, nrow
+            coef(i, j) = 0.0_dp
+            jcoef(i, j) = i
+         end do
+      end do
 !
 !------- copy elements row by row.--------------------------------------
 !
-   do 6 i=1, nrow
-      k1 = ia(i)
-      k2 = ia(i+1)-1
-      do 5 k=k1,k2
-         coef(i,k-k1+1) = a(k)
-         jcoef(i,k-k1+1) = ja(k)
-5     continue
-6  continue
-   return
+      do i = 1, nrow
+         k1 = ia(i)
+         k2 = ia(i + 1) - 1
+         do k = k1, k2
+            coef(i, k - k1 + 1) = a(k)
+            jcoef(i, k - k1 + 1) = ja(k)
+         end do
+      end do
+      return
 !--- end of csrell------------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine ellcsr(nrow,coef,jcoef,ncoef,ndiag,a,ja,ia,nzmax,ierr)
-   integer, intent(in) :: nrow, nzmax, ncoef, ndiag
-   integer, intent(out) :: ierr
-   integer, intent(inout) :: ia(nrow+1), ja(*), jcoef(ncoef,1)
-   real*8 , intent(inout) :: a(*), coef(ncoef,1)
-   integer :: kpos, i, k
+   subroutine ellcsr(nrow, coef, jcoef, ncoef, ndiag, a, ja, ia, nzmax, ierr)
+
+      integer, intent(in) :: nrow, nzmax, ncoef, ndiag
+      integer, intent(out) :: ierr
+      integer, intent(inout) :: ia(nrow + 1), ja(:), jcoef(ncoef, 1)
+      real(dp), intent(inout) :: a(:), coef(ncoef, 1)
+      integer :: kpos, i, k
 !-----------------------------------------------------------------------
 !  Ellpack - Itpack format  to  Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -3621,36 +3940,37 @@ subroutine ellcsr(nrow,coef,jcoef,ncoef,ndiag,a,ja,ia,nzmax,ierr)
 !         a and ja to store output matrix.
 !-----------------------------------------------------------------------
 ! first determine the length of each row of lower-part-of(A)
-   ierr = 0
+      ierr = 0
 !-----check whether sufficient columns are available. -----------------
 !
 !------- copy elements row by row.--------------------------------------
-   kpos = 1
-   ia(1) = kpos
-   do 6 i=1, nrow
-      do 5 k=1,ndiag
-         if (coef(i,k) .ne. 0.0d0) then
-            if (kpos .gt. nzmax) then
-               ierr = kpos
-               return
-            endif
-            a(kpos) = coef(i,k)
-            ja(kpos) = jcoef(i,k)
-            kpos = kpos+1
-         endif
-5     continue
-      ia(i+1) = kpos
-6  continue
-   return
+      kpos = 1
+      ia(1) = kpos
+      do i = 1, nrow
+         do k = 1, ndiag
+            if (coef(i, k) /= 0.0_dp) then
+               if (kpos > nzmax) then
+                  ierr = kpos
+                  return
+               end if
+               a(kpos) = coef(i, k)
+               ja(kpos) = jcoef(i, k)
+               kpos = kpos + 1
+            end if
+         end do
+         ia(i + 1) = kpos
+      end do
+      return
 !--- end of ellcsr -----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrmsr (n,a,ja,ia,ao,jao,wk,iwk)
-   integer, intent(in) :: n
-   real*8 , intent(inout) :: a(*),ao(*),wk(n)
-   integer, intent(inout) :: ia(n+1),ja(*),jao(*),iwk(n+1)
-   integer :: icount, i, k, iptr, ii, j
+   subroutine csrmsr(n, a, ja, ia, ao, jao, wk, iwk)
+
+      integer, intent(in) :: n
+      real(dp), intent(inout) :: a(:), ao(:), wk(n)
+      integer, intent(inout) :: ia(n + 1), ja(:), jao(:), iwk(n + 1)
+      integer :: icount, i, k, iptr, ii, j
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row   to      Modified - Sparse Row
 !                                 Sparse row with separate main diagonal
@@ -3710,56 +4030,57 @@ subroutine csrmsr (n,a,ja,ia,ao,jao,wk,iwk)
 !--------
 ! coded by Y. Saad Sep. 1989. Rechecked Feb 27, 1990.
 !-----------------------------------------------------------------------
-   icount = 0
+      icount = 0
 !
 ! store away diagonal elements and count nonzero diagonal elements.
 !
-   do 1 i=1,n
-      wk(i) = 0.0d0
-      iwk(i+1) = ia(i+1)-ia(i)
-      do 2 k=ia(i),ia(i+1)-1
-         if (ja(k) .eq. i) then
-            wk(i) = a(k)
-            icount = icount + 1
-            iwk(i+1) = iwk(i+1)-1
-         endif
-2     continue
-1  continue
+      do i = 1, n
+         wk(i) = 0.0_dp
+         iwk(i + 1) = ia(i + 1) - ia(i)
+         do k = ia(i), ia(i + 1) - 1
+            if (ja(k) == i) then
+               wk(i) = a(k)
+               icount = icount + 1
+               iwk(i + 1) = iwk(i + 1) - 1
+            end if
+         end do
+      end do
 !
 ! compute total length
 !
-   iptr = n + ia(n+1) - icount
+      iptr = n + ia(n + 1) - icount
 !
 !     copy backwards (to avoid collisions)
 !
-   do 500 ii=n,1,-1
-      do 100 k=ia(ii+1)-1,ia(ii),-1
-         j = ja(k)
-         if (j .ne. ii) then
-            ao(iptr) = a(k)
-            jao(iptr) = j
-            iptr = iptr-1
-         endif
-100   continue
-500 continue
+      do ii = n, 1, -1
+         do k = ia(ii + 1) - 1, ia(ii), -1
+            j = ja(k)
+            if (j /= ii) then
+               ao(iptr) = a(k)
+               jao(iptr) = j
+               iptr = iptr - 1
+            end if
+         end do
+      end do
 !
-! compute pointer values and copy wk(*)
+! compute pointer values and copy wk(:)
 !
-   jao(1) = n+2
-   do 600 i=1,n
-      ao(i) = wk(i)
-      jao(i+1) = jao(i)+iwk(i+1)
-600 continue
-   return
+      jao(1) = n + 2
+      do i = 1, n
+         ao(i) = wk(i)
+         jao(i + 1) = jao(i) + iwk(i + 1)
+      end do
+      return
 !------------ end of subroutine csrmsr ---------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine msrcsr (n,a,ja,ao,jao,iao,wk,iwk)
-   integer, intent(in) :: n
-   real*8 , intent(inout) :: a(*),ao(*),wk(n)
-   integer, intent(inout) :: ja(*),jao(*),iao(n+1),iwk(n+1)
-   integer :: i,j,k,ii,idiag,iptr
+   subroutine msrcsr(n, a, ja, ao, jao, iao, wk, iwk)
+
+      integer, intent(in) :: n
+      real(dp), intent(inout) :: a(:), ao(:), wk(n)
+      integer, intent(inout) :: ja(:), jao(:), iao(n + 1), iwk(n + 1)
+      integer :: i, j, k, ii, idiag, iptr
 !-----------------------------------------------------------------------
 !       Modified - Sparse Row  to   Compressed Sparse Row
 !
@@ -3793,53 +4114,57 @@ subroutine msrcsr (n,a,ja,ao,jao,iao,wk,iwk)
 !   loop 500.  Modified  Sun 29 May 1994 by R. Bramley (Indiana).
 !
 !-----------------------------------------------------------------------
-   logical added
-   do 1 i=1,n
-      wk(i) = a(i)
-      iwk(i) = ja(i)
-1  continue
-   iwk(n+1) = ja(n+1)
-   iao(1) = 1
-   iptr = 1
+      logical added
+      do i = 1, n
+         wk(i) = a(i)
+         iwk(i) = ja(i)
+      end do
+      iwk(n + 1) = ja(n + 1)
+      iao(1) = 1
+      iptr = 1
 !---------
-   do 500 ii=1,n
-      added = .false.
-      idiag = iptr + (iwk(ii+1)-iwk(ii))
-      do 100 k=iwk(ii),iwk(ii+1)-1
-         j = ja(k)
-         if (j .lt. ii) then
-            ao(iptr) = a(k)
-            jao(iptr) = j
-            iptr = iptr+1
-         elseif (added) then
-            ao(iptr) = a(k)
-            jao(iptr) = j
-            iptr = iptr+1
-         else
+      do ii = 1, n
+         added = .false.
+         idiag = iptr + (iwk(ii + 1) - iwk(ii))
+         do k = iwk(ii), iwk(ii + 1) - 1
+            j = ja(k)
+            if (j < ii) then
+               ao(iptr) = a(k)
+               jao(iptr) = j
+               iptr = iptr + 1
+            elseif (added) then
+               ao(iptr) = a(k)
+               jao(iptr) = j
+               iptr = iptr + 1
+            else
 ! add diag element - only reserve a position for it.
-            idiag = iptr
-            iptr = iptr+1
-            added = .true.
+               idiag = iptr
+               iptr = iptr + 1
+               added = .true.
 !     then other element
-            ao(iptr) = a(k)
-            jao(iptr) = j
-            iptr = iptr+1
-         endif
-100   continue
-      ao(idiag) = wk(ii)
-      jao(idiag) = ii
-      if (.not. added) iptr = iptr+1
-      iao(ii+1) = iptr
-500 continue
-   return
+               ao(iptr) = a(k)
+               jao(iptr) = j
+               iptr = iptr + 1
+            end if
+         end do
+         ao(idiag) = wk(ii)
+         jao(idiag) = ii
+         if (.not. added) then
+            iptr = iptr + 1
+         end if
+         iao(ii + 1) = iptr
+      end do
+      return
 !------------ end of subroutine msrcsr ---------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrcsc (n,job,ipos,a,ja,ia,ao,jao,iao)
-   integer, intent(in) :: n, job, ipos
-   integer ia(n+1),iao(n+1),ja(*),jao(*)
-   real*8  a(*),ao(*)
+   subroutine csrcsc(n, job, ipos, a, ja, ia, ao, jao, iao)
+      use precision, only: dp
+
+      integer, intent(in) :: n, job, ipos
+      integer ia(n + 1), iao(n + 1), ja(:), jao(:)
+      real(dp) :: a(:), ao(:)
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to      Compressed Sparse Column
 !
@@ -3876,14 +4201,15 @@ subroutine csrcsc (n,job,ipos,a,ja,ia,ao,jao,iao)
 !    the transpose.
 !
 !-----------------------------------------------------------------------
-   call csrcsc2 (n,n,job,ipos,a,ja,ia,ao,jao,iao)
-end
+      call csrcsc2(n, n, job, ipos, a, ja, ia, ao, jao, iao)
+   end
 !-----------------------------------------------------------------------
-subroutine csrcsc2 (n,n2,job,ipos,a,ja,ia,ao,jao,iao)
-   integer, intent(in) :: n, job, n2, ipos
-   integer, intent(inout) :: ia(n+1),iao(n2+1),ja(*),jao(*)
-   real*8 , intent(inout) :: a(*),ao(*)
-   integer :: i,j,k,next
+   subroutine csrcsc2(n, n2, job, ipos, a, ja, ia, ao, jao, iao)
+
+      integer, intent(in) :: n, job, n2, ipos
+      integer, intent(inout) :: ia(n + 1), iao(n2 + 1), ja(:), jao(:)
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer :: i, j, k, next
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to      Compressed Sparse Column
 !
@@ -3925,43 +4251,46 @@ subroutine csrcsc2 (n,n2,job,ipos,a,ja,ia,ao,jao,iao)
 !
 !-----------------------------------------------------------------------
 !----------------- compute lengths of rows of transp(A) ----------------
-   do 1 i=1,n2+1
-      iao(i) = 0
-1  continue
-   do 3 i=1, n
-      do 2 k=ia(i), ia(i+1)-1
-         j = ja(k)+1
-         iao(j) = iao(j)+1
-2     continue
-3  continue
+      do i = 1, n2 + 1
+         iao(i) = 0
+      end do
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k) + 1
+            iao(j) = iao(j) + 1
+         end do
+      end do
 !---------- compute pointers from lengths ------------------------------
-   iao(1) = ipos
-   do 4 i=1,n2
-      iao(i+1) = iao(i) + iao(i+1)
-4  continue
+      iao(1) = ipos
+      do i = 1, n2
+         iao(i + 1) = iao(i) + iao(i + 1)
+      end do
 !--------------- now do the actual copying -----------------------------
-   do 6 i=1,n
-      do 62 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         next = iao(j)
-         if (job .eq. 1)  ao(next) = a(k)
-         jao(next) = i
-         iao(j) = next+1
-62    continue
-6  continue
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            next = iao(j)
+            if (job == 1) then
+               ao(next) = a(k)
+            end if
+            jao(next) = i
+            iao(j) = next + 1
+         end do
+      end do
 !-------------------------- reshift iao and leave ----------------------
-   do 7 i=n2,1,-1
-      iao(i+1) = iao(i)
-7  continue
-   iao(1) = ipos
+      do i = n2, 1, -1
+         iao(i + 1) = iao(i)
+      end do
+      iao(1) = ipos
 !--------------- end of csrcsc2 ----------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrlnk (n,a,ja,ia,link)
-   real*8 , intent(inout) :: a(*)
-   integer, intent(in) :: n
-   integer, intent(inout) :: ja(*), ia(n+1), link(*)
+   subroutine csrlnk(n, a, ja, ia, link)
+
+      real(dp), intent(inout) :: a(:)
+      integer, intent(in) :: n
+      integer, intent(inout) :: ja(:), ia(n + 1), link(:)
 !-----------------------------------------------------------------------
 !      Compressed Sparse Row         to    Linked storage format.
 !-----------------------------------------------------------------------
@@ -4012,31 +4341,36 @@ subroutine csrlnk (n,a,ja,ia,link)
 ! ------ ia may be altered on return.
 !-----------------------------------------------------------------------
 ! local variables
-   integer i, k, istart, iend
+      integer i, k, istart, iend
+
+      no_warning_unused_dummy_argument(a)
+      no_warning_unused_dummy_argument(ja)
 !
 ! loop through all rows
 !
-   do 100 i =1, n
-      istart = ia(i)
-      iend = ia(i+1)-1
-      if (iend .gt. istart) then
-         do 99  k=istart, iend-1
-            link(k) = k+1
-99       continue
-         link(iend) = 0
-      else
-         ia(i) = 0
-      endif
-100 continue
+      do i = 1, n
+         istart = ia(i)
+         iend = ia(i + 1) - 1
+         if (iend > istart) then
+            do k = istart, iend - 1
+               link(k) = k + 1
+            end do
+            link(iend) = 0
+         else
+            ia(i) = 0
+         end if
+      end do
 !
-   return
+      return
 !-------------end-of-csrlnk --------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine lnkcsr (n, a, jcol, istart, link, ao, jao, iao)
-   real*8 a(*), ao(*)
-   integer n, jcol(*), istart(n), link(*), jao(*), iao(*)
+   subroutine lnkcsr(n, a, jcol, istart, link, ao, jao, iao)
+      use precision, only: dp
+
+      real(dp) :: a(:), ao(:)
+      integer n, jcol(:), istart(n), link(:), jao(:), iao(:)
 !-----------------------------------------------------------------------
 !     Linked list storage format   to      Compressed Sparse Row  format
 !-----------------------------------------------------------------------
@@ -4078,40 +4412,41 @@ subroutine lnkcsr (n, a, jcol, istart, link, ao, jao, iao)
 ! first determine individial bandwidths and pointers.
 !-----------------------------------------------------------------------
 ! local variables
-   integer irow, ipos, next
+      integer irow, ipos, next
 !-----------------------------------------------------------------------
-   ipos = 1
-   iao(1) = ipos
+      ipos = 1
+      iao(1) = ipos
 !
 !     loop through all rows
 !
-   do 100 irow =1, n
+      do irow = 1, n
 !
 !     unroll i-th row.
 !
-      next = istart(irow)
-10    if (next .eq. 0) goto 99
-      jao(ipos) = jcol(next)
-      ao(ipos)  = a(next)
-      ipos = ipos+1
-      next = link(next)
-      goto 10
-99    iao(irow+1) = ipos
-100 continue
+         next = istart(irow)
+10       if (next == 0) goto 99
+         jao(ipos) = jcol(next)
+         ao(ipos) = a(next)
+         ipos = ipos + 1
+         next = link(next)
+         goto 10
+99       iao(irow + 1) = ipos
+      end do
 !
-   return
+      return
 !-------------end-of-lnkcsr -------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrdia (n,idiag,job,a,ja,ia,ndiag,&
-&diag,ioff,ao,jao,iao,ind)
-   integer, intent(in) :: n, ndiag
-   integer, intent(inout) :: idiag
-   real*8 , intent(inout) :: diag(ndiag,idiag), a(*), ao(*)
-   integer, intent(inout) :: ia(*), ind(*), ja(*), jao(*), iao(*)&
-   &, ioff(*)
-   integer :: i,j,k,l,jmax,ii,job,job1,job2,ko,n2,idum
+   subroutine csrdia(n, idiag, job, a, ja, ia, ndiag,&
+   &diag, ioff, ao, jao, iao, ind)
+
+      integer, intent(in) :: n, ndiag
+      integer, intent(inout) :: idiag
+      real(dp), intent(inout) :: diag(ndiag, idiag), a(:), ao(:)
+      integer, intent(inout) :: ia(:), ind(:), ja(:), jao(:), iao(:)&
+      &, ioff(:)
+      integer :: i, j, k, l, jmax, ii, job, job1, job2, ko, n2, idum
 !-----------------------------------------------------------------------
 ! Compressed sparse row     to    diagonal format
 !-----------------------------------------------------------------------
@@ -4138,9 +4473,9 @@ subroutine csrdia (n,idiag,job,a,ja,ia,ndiag,&
 !         internally determined. In this case csrdia exctracts the
 !         idiag most important diagonals, i.e. those having the largest
 !         number on nonzero elements. If the first digit is zero
-!         then csrdia assumes that ioff(*) contains the offsets
+!         then csrdia assumes that ioff(:) contains the offsets
 !         of the diagonals to be extracted. there is no verification
-!         that ioff(*) contains valid entries.
+!         that ioff(:) contains valid entries.
 !         The second (y) digit of job determines whether or not
 !         the remainder of the matrix is to be written on ao,jao,iao.
 !         If it is zero  then ao, jao, iao is not filled, i.e.,
@@ -4186,75 +4521,91 @@ subroutine csrdia (n,idiag,job,a,ja,ia,ndiag,&
 !       as a result if several diagonals have the same weight (number
 !       of nonzero elemnts) the leftmost one is selected first.
 !-----------------------------------------------------------------------
-   job1 = job/10
-   job2 = job-job1*10
-   if (job1 .eq. 0) goto 50
-   n2 = n+n-1
-   call infdia(n,ja,ia,ind,idum)
+      job1 = job / 10
+      job2 = job - job1 * 10
+      if (job1 == 0) then
+         goto 50
+      end if
+      n2 = n + n - 1
+      call infdia(n, ja, ia, ind, idum)
 !----------- determine diagonals to  accept.----------------------------
 !-----------------------------------------------------------------------
-   ii = 0
-4  ii=ii+1
-   jmax = 0
-   do 41 k=1, n2
-      j = ind(k)
-      if (j .le. jmax) goto 41
-      i = k
-      jmax = j
-41 continue
-   if (jmax .le. 0) then
-      ii = ii-1
-      goto 42
-   endif
-   ioff(ii) = i-n
-   ind(i) = - jmax
-   if (ii .lt.  idiag) goto 4
-42 idiag = ii
+      ii = 0
+4     ii = ii + 1
+      jmax = 0
+      do k = 1, n2
+         j = ind(k)
+         if (j <= jmax) then
+            cycle
+         end if
+         i = k
+         jmax = j
+      end do
+      if (jmax <= 0) then
+         ii = ii - 1
+         goto 42
+      end if
+      ioff(ii) = i - n
+      ind(i) = -jmax
+      if (ii < idiag) then
+         goto 4
+      end if
+42    idiag = ii
 !---------------- initialize diago to zero -----------------------------
-50 continue
-   do 55 j=1,idiag
-      do 54 i=1,n
-         diag(i,j) = 0.0d0
-54    continue
-55 continue
+50    continue
+      do j = 1, idiag
+         do i = 1, n
+            diag(i, j) = 0.0_dp
+         end do
+      end do
 !-----------------------------------------------------------------------
-   ko = 1
+      ko = 1
 !-----------------------------------------------------------------------
 ! extract diagonals and accumulate remaining matrix.
 !-----------------------------------------------------------------------
-   do 6 i=1, n
-      do 51 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         do 52 l=1,idiag
-            if (j-i .ne. ioff(l)) goto 52
-            diag(i,l) = a(k)
-            goto 51
-52       continue
+      do i = 1, n
+         k_loop: &
+            do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            do l = 1, idiag
+               if (j - i /= ioff(l)) then
+                  cycle
+               end if
+               diag(i, l) = a(k)
+               cycle k_loop
+            end do
 !--------------- append element not in any diagonal to ao,jao,iao -----
-         if (job2 .eq. 0) goto 51
-         ao(ko) = a(k)
-         jao(ko) = j
-         ko = ko+1
-51    continue
-      if (job2 .ne. 0 ) ind(i+1) = ko
-6  continue
-   if (job2 .eq. 0) return
+            if (job2 == 0) then
+               cycle k_loop
+            end if
+            ao(ko) = a(k)
+            jao(ko) = j
+            ko = ko + 1
+         end do k_loop
+         if (job2 /= 0) then
+            ind(i + 1) = ko
+         end if
+      end do
+      if (job2 == 0) then
+         return
+      end if
 !     finish with iao
-   iao(1) = 1
-   do 7 i=2,n+1
-      iao(i) = ind(i)
-7  continue
-   return
+      iao(1) = 1
+      do i = 2, n + 1
+         iao(i) = ind(i)
+      end do
+      return
 !----------- end of csrdia ---------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine diacsr (n,job,idiag,diag,ndiag,ioff,a,ja,ia)
-   integer, intent(in) :: n, job, ndiag,idiag
-   real*8 , intent(inout) :: diag(ndiag,idiag), a(*)
-   integer ia(*), ja(*), ioff(*)
-   real*8 :: t
-   integer :: i,j,jj,ko
+   subroutine diacsr(n, job, idiag, diag, ndiag, ioff, a, ja, ia)
+
+      integer, intent(in) :: n, job, ndiag, idiag
+      real(dp), intent(inout) :: diag(ndiag, idiag), a(:)
+      integer ia(:), ja(:), ioff(:)
+      real(dp) :: t
+      integer :: i, j, jj, ko
 !-----------------------------------------------------------------------
 !    diagonal format     to     compressed sparse row
 !-----------------------------------------------------------------------
@@ -4271,7 +4622,7 @@ subroutine diacsr (n,job,idiag,diag,ndiag,ioff,a,ja,ia)
 !         whether this entry is zero. If it is then do not include
 !         in the output matrix. Note that the test is a test for
 !         an exact arithmetic zero. Be sure that the zeros are
-!         actual zeros in double precision otherwise this would not
+!         actual zeros in real(kind=dp) otherwise this would not
 !         work.
 !
 ! idiag = integer equal to the number of diagonals to be extracted.
@@ -4295,29 +4646,36 @@ subroutine diacsr (n,job,idiag,diag,ndiag,ioff,a,ja,ia)
 ! ----- the arrays a and ja should be of length n*idiag.
 !
 !-----------------------------------------------------------------------
-   ia(1) = 1
-   ko = 1
-   do 80 i=1, n
-      do 70 jj = 1, idiag
-         j = i+ioff(jj)
-         if (j .lt. 1 .or. j .gt. n) goto 70
-         t = diag(i,jj)
-         if (job .eq. 0 .and. t .eq. 0.0d0) goto 70
-         a(ko) = t
-         ja(ko) = j
-         ko = ko+1
-70    continue
-      ia(i+1) = ko
-80 continue
-   return
+      ia(1) = 1
+      ko = 1
+      do i = 1, n
+         do jj = 1, idiag
+            j = i + ioff(jj)
+            if (j < 1 .or. j > n) then
+               cycle
+            end if
+            t = diag(i, jj)
+            if (job == 0 .and. t == 0.0_dp) then
+               cycle
+            end if
+            a(ko) = t
+            ja(ko) = j
+            ko = ko + 1
+         end do
+         ia(i + 1) = ko
+      end do
+
+      return
 !----------- end of diacsr ---------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine bsrcsr (job, n, m, na, a, ja, ia, ao, jao, iao)
-   implicit none
-   integer job, n, m, na, ia(*), ja(*), jao(*), iao(n+1)
-   real*8 a(na,*), ao(*)
+   subroutine bsrcsr(job, n, m, na, a, ja, ia, ao, jao, iao)
+      use precision, only: dp
+
+      implicit none
+      integer job, n, m, na, ia(:), ja(:), jao(:), iao(n + 1)
+      real(dp) :: a(na, *), ao(:)
 !-----------------------------------------------------------------------
 !             Block Sparse Row  to Compressed Sparse Row.
 !-----------------------------------------------------------------------
@@ -4408,53 +4766,57 @@ subroutine bsrcsr (job, n, m, na, a, ja, ia, ao, jao, iao)
 !-----------------------------------------------------------------------
 ! locals
 !
-   integer i, i1, i2, ij, ii, irow, j, jstart, k, krow, no
-   logical val
+      integer i, i1, i2, ij, ii, irow, j, jstart, k, krow, no
+      logical val
 !
-   val = (job.ne.0)
-   no = n * m
-   irow = 1
-   krow = 1
-   iao(irow) = 1
+      val = (job /= 0)
+      no = n * m
+      irow = 1
+      krow = 1
+      iao(irow) = 1
 !-----------------------------------------------------------------------
-   do 2 ii=1, n
+      do ii = 1, n
 !
 !     recall: n is the block-row dimension
 !
-      i1 = ia(ii)
-      i2 = ia(ii+1)-1
+         i1 = ia(ii)
+         i2 = ia(ii + 1) - 1
 !
 !     create m rows for each block row -- i.e., each k.
 !
-      do 23 i=1,m
-         do 21 k=i1, i2
-            jstart = m*(ja(k)-1)
-            do 22  j=1,m
-               ij = (j-1)*m + i
-               if (val) ao(krow) = a(ij,k)
-               jao(krow) = jstart+j
-               krow = krow+1
-22          continue
-21       continue
-         irow = irow+1
-         iao(irow) = krow
-23    continue
-2  continue
-   return
+         do i = 1, m
+            do k = i1, i2
+               jstart = m * (ja(k) - 1)
+               do j = 1, m
+                  ij = (j - 1) * m + i
+                  if (val) then
+                     ao(krow) = a(ij, k)
+                  end if
+                  jao(krow) = jstart + j
+                  krow = krow + 1
+               end do
+            end do
+            irow = irow + 1
+            iao(irow) = krow
+         end do
+      end do
+      return
 !-------------end-of-bsrcsr --------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrbsr (job,nrow,m,na,a,ja,ia,ao,jao,iao,iw,ierr)
-   implicit none
-   integer job,ierr,nrow,m,na,ia(nrow+1),ja(*),jao(na),iao(*),iw(*)
-   real*8 a(*),ao(na,*)
+   subroutine csrbsr(job, nrow, m, na, a, ja, ia, ao, jao, iao, iw, ierr)
+      use precision, only: dp
+
+      implicit none
+      integer job, ierr, nrow, m, na, ia(nrow + 1), ja(:), jao(na), iao(:), iw(:)
+      real(dp) :: a(:), ao(na, *)
 !-----------------------------------------------------------------------
 !     Compressed Sparse Row  to    Block Sparse Row
 !-----------------------------------------------------------------------
 !
 ! This  subroutine converts a matrix stored  in a general compressed a,
-! ja, ia format into a a block  sparse row format a(m,m,*),ja(*),ia(*).
+! ja, ia format into a a block  sparse row format a(m,m,*),ja(:),ia(:).
 ! See routine  bsrcsr  for more  details on  data   structure for block
 ! matrices.
 !
@@ -4525,99 +4887,110 @@ subroutine csrbsr (job,nrow,m,na,a,ja,ia,ao,jao,iao,iw,ierr)
 !-----------------------------------------------------------------------
 !     nr is the block-dimension of the output matrix.
 !
-   integer nr, m2, io, ko, ii, len, k, jpos, j, i, ij, jr, irow
-   logical vals
+      integer nr, m2, io, ko, ii, len, k, jpos, j, i, ij, jr, irow
+      logical vals
 !-----
-   ierr = 0
-   if (m*m .gt. na) ierr = 2
-   if (m .eq. 0) ierr = 1
-   if (ierr .ne. 0) return
+      ierr = 0
+      if (m * m > na) then
+         ierr = 2
+      end if
+      if (m == 0) then
+         ierr = 1
+      end if
+      if (ierr /= 0) then
+         return
+      end if
 !-----------------------------------------------------------------------
-   vals = (job .gt. 0)
-   nr = 1 + (nrow-1) / m
-   m2 = m*m
-   ko = 1
-   io = 1
-   iao(io) = 1
-   len = 0
+      vals = (job > 0)
+      nr = 1 + (nrow - 1) / m
+      m2 = m * m
+      ko = 1
+      io = 1
+      iao(io) = 1
+      len = 0
 !
 !     iw determines structure of block-row (nonzero indicator)
 !
-   do j=1, nr
-      iw(j) = 0
-   enddo
+      do j = 1, nr
+         iw(j) = 0
+      end do
 !
 !     big loop -- leap by m rows each time.
 !
-   do ii=1, nrow, m
-      irow = 0
+      do ii = 1, nrow, m
+         irow = 0
 !
 !     go through next m rows -- make sure not to go beyond nrow.
 !
-      do while (ii+irow .le. nrow .and. irow .le. m-1)
-         do k=ia(ii+irow),ia(ii+irow+1)-1
+         do while (ii + irow <= nrow .and. irow <= m - 1)
+            do k = ia(ii + irow), ia(ii + irow + 1) - 1
 !
 !     block column index = (scalar column index -1) / m + 1
 !
-            j = ja(k)-1
-            jr = j/m + 1
-            j = j - (jr-1)*m
-            jpos = iw(jr)
-            if (jpos .eq. 0) then
+               j = ja(k) - 1
+               jr = j / m + 1
+               j = j - (jr - 1) * m
+               jpos = iw(jr)
+               if (jpos == 0) then
 !
 !     create a new block
 !
-               iw(jr) = ko
-               jao(ko) = jr
-               if (vals) then
+                  iw(jr) = ko
+                  jao(ko) = jr
+                  if (vals) then
 !
 !     initialize new block to zero -- then copy nonzero element
 !
-                  do i=1, m2
-                     ao(i,ko) = 0.0d0
-                  enddo
-                  ij = j*m + irow + 1
-                  ao(ij,ko) = a(k)
-               endif
-               ko = ko+1
-            else
+                     do i = 1, m2
+                        ao(i, ko) = 0.0_dp
+                     end do
+                     ij = j * m + irow + 1
+                     ao(ij, ko) = a(k)
+                  end if
+                  ko = ko + 1
+               else
 !
 !     copy column index and nonzero element
 !
-               jao(jpos) = jr
-               ij = j*m + irow + 1
-               if (vals) ao(ij,jpos) = a(k)
-            endif
-         enddo
-         irow = irow+1
-      enddo
+                  jao(jpos) = jr
+                  ij = j * m + irow + 1
+                  if (vals) then
+                     ao(ij, jpos) = a(k)
+                  end if
+               end if
+            end do
+            irow = irow + 1
+         end do
 !
 !     refresh iw
 !
-      do j = iao(io),ko-1
-         iw(jao(j)) = 0
-      enddo
-      if (job .eq. -1) then
-         len = len + ko-1
-         ko = 1
-      else
-         io = io+1
-         iao(io) = ko
-      endif
-   enddo
-   if (job .eq. -1) iao(1) = len
+         do j = iao(io), ko - 1
+            iw(jao(j)) = 0
+         end do
+         if (job == -1) then
+            len = len + ko - 1
+            ko = 1
+         else
+            io = io + 1
+            iao(io) = ko
+         end if
+      end do
+      if (job == -1) then
+         iao(1) = len
+      end if
 !
-   return
+      return
 !--------------end-of-csrbsr--------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrbnd (n,a,ja,ia,job,abd,nabd,lowd,ml,mu,ierr)
-   integer, intent(in) :: n, nabd, job
-   integer, intent(out) :: ierr
-   real*8 , intent(inout) :: a(*),abd(nabd,n)
-   integer, intent(inout) :: ia(n+1),ja(*),lowd
-   integer :: i,j,k,m,ii,mdiag,ml,mu
+   subroutine csrbnd(n, a, ja, ia, job, abd, nabd, lowd, ml, mu, ierr)
+
+      integer, intent(in) :: n, nabd, job
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), abd(nabd, n)
+      integer, intent(inout) :: ia(n + 1), ja(:), lowd
+      integer :: i, j, k, m, ii, mdiag, ml, mu
 !-----------------------------------------------------------------------
 !   Compressed Sparse Row  to  Banded (Linpack ) format.
 !-----------------------------------------------------------------------
@@ -4727,43 +5100,52 @@ subroutine csrbnd (n,a,ja,ia,job,abd,nabd,lowd,ml,mu,ierr)
 !----------------------------------------------------------------------*
 ! first determine ml and mu.
 !-----------------------------------------------------------------------
-   ierr = 0
+      ierr = 0
 !-----------
-   if (job .eq. 1) call getbwd(n,a,ja,ia,ml,mu)
-   m = ml+mu+1
-   if (lowd .eq. 0) lowd = m
-   if (m .gt. lowd)  THEN
-      ierr = -2
-   ENDIF
-   if (lowd .gt. nabd .or. lowd .lt. 0) ierr = -1
-   if (ierr .lt. 0) return
+      if (job == 1) then
+         call getbwd(n, a, ja, ia, ml, mu)
+      end if
+      m = ml + mu + 1
+      if (lowd == 0) then
+         lowd = m
+      end if
+      if (m > lowd) then
+         ierr = -2
+      end if
+      if (lowd > nabd .or. lowd < 0) then
+         ierr = -1
+      end if
+      if (ierr < 0) then
+         return
+      end if
 !------------
-   do 15  i=1,m
-      ii = lowd -i+1
-      do 10 j=1,n
-         abd(ii,j) = 0.0d0
-10    continue
-15 continue
+      do i = 1, m
+         ii = lowd - i + 1
+         do j = 1, n
+            abd(ii, j) = 0.0_dp
+         end do
+      end do
 !---------------------------------------------------------------------
-   mdiag = lowd-ml
-   do 30 i=1,n
-      do 20 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         abd(i-j+mdiag,j) = a(k)
-20    continue
-30 continue
-   return
+      mdiag = lowd - ml
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            abd(i - j + mdiag, j) = a(k)
+         end do
+      end do
+      return
 !------------- end of csrbnd -------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine bndcsr (n,abd,nabd,lowd,ml,mu,a,ja,ia,len,ierr)
-   integer, intent(in) :: n, nabd
-   integer, intent(out) :: ierr
-   real*8,  intent(inout) :: a(*),abd(nabd,*)
-   integer, intent(inout) :: ia(n+1),ja(*), len,lowd
-   real*8 :: t
-   integer :: i,j,irow,ml,mu,ko
+   subroutine bndcsr(n, abd, nabd, lowd, ml, mu, a, ja, ia, len, ierr)
+
+      integer, intent(in) :: n, nabd
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), abd(:, :)
+      integer, intent(inout) :: ia(n + 1), ja(:), len, lowd
+      real(dp) :: t
+      integer :: i, j, irow, ml, mu, ko
 !-----------------------------------------------------------------------
 ! Banded (Linpack ) format   to    Compressed Sparse Row  format.
 !-----------------------------------------------------------------------
@@ -4818,46 +5200,53 @@ subroutine bndcsr (n,abd,nabd,lowd,ml,mu,a,ja,ia,len,ierr)
 !         originally transformed to a bnd format.
 !
 !-----------------------------------------------------------------------
-   ierr = 0
+      ierr = 0
 !-----------
-   if (lowd .gt. nabd .or. lowd .le. 0) then
-      ierr = -1
-      return
-   endif
+      if (lowd > nabd .or. lowd <= 0) then
+         ierr = -1
+         return
+      end if
 !-----------
-   ko = 1
-   ia(1) = 1
-   do 30 irow=1,n
+      ko = 1
+      ia(1) = 1
+      do irow = 1, n
 !-----------------------------------------------------------------------
-      i = lowd
-      do  20 j=irow-ml,irow+mu
-         if (j .le. 0 ) goto 19
-         if (j .gt. n) goto 21
-         t = abd(i,j)
-         if (t .eq. 0.0d0) goto 19
-         if (ko .gt. len) then
-            ierr = irow
-            return
-         endif
-         a(ko) = t
-         ja(ko) = j
-         ko = ko+1
-19       i = i-1
-20    continue
+         i = lowd
+         do j = irow - ml, irow + mu
+            if (j <= 0) then
+               goto 19
+            end if
+            if (j > n) then
+               goto 21
+            end if
+            t = abd(i, j)
+            if (t == 0.0_dp) then
+               goto 19
+            end if
+            if (ko > len) then
+               ierr = irow
+               return
+            end if
+            a(ko) = t
+            ja(ko) = j
+            ko = ko + 1
+19          i = i - 1
+         end do
 !     end for row irow
-21    ia(irow+1) = ko
-30 continue
-   return
+21       ia(irow + 1) = ko
+      end do
+      return
 !------------- end of bndcsr -------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrssk (n,imod,a,ja,ia,asky,isky,nzmax,ierr)
-   integer, intent(in) :: n, nzmax
-   integer, intent(out) :: ierr
-   real*8 , intent(inout) :: a(*), asky(nzmax)
-   integer, intent(inout) :: imod, ia(n+1), isky(n+1), ja(*)
-   integer :: i,j,k,ml,nnz,kend
+   subroutine csrssk(n, imod, a, ja, ia, asky, isky, nzmax, ierr)
+
+      integer, intent(in) :: n, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), asky(nzmax)
+      integer, intent(inout) :: imod, ia(n + 1), isky(n + 1), ja(:)
+      integer :: i, j, k, ml, nnz, kend
 !-----------------------------------------------------------------------
 !      Compressed Sparse Row         to     Symmetric Skyline Format
 !  or  Symmetric Sparse Row
@@ -4915,64 +5304,69 @@ subroutine csrssk (n,imod,a,ja,ia,asky,isky,nzmax,ierr)
 !-----------------------------------------------------------------------
 ! first determine individial bandwidths and pointers.
 !-----------------------------------------------------------------------
-   ierr = 0
-   isky(1) = 0
-   do 3 i=1,n
-      ml = 0
-      do 31 k=ia(i),ia(i+1)-1
-         ml = max(ml,i-ja(k)+1)
-31    continue
-      isky(i+1) = isky(i)+ml
-3  continue
+      ierr = 0
+      isky(1) = 0
+      do i = 1, n
+         ml = 0
+         do k = ia(i), ia(i + 1) - 1
+            ml = max(ml, i - ja(k) + 1)
+         end do
+         isky(i + 1) = isky(i) + ml
+      end do
 !
 !     test if there is enough space  asky to do the copying.
 !
-   nnz = isky(n+1)
-   if (nnz .gt. nzmax) then
-      ierr = nnz
-      return
-   endif
+      nnz = isky(n + 1)
+      if (nnz > nzmax) then
+         ierr = nnz
+         return
+      end if
 !
 !   fill asky with zeros.
 !
-   do 1 k=1, nnz
-      asky(k) = 0.0d0
-1  continue
+      do k = 1, nnz
+         asky(k) = 0.0_dp
+      end do
 !
 !     copy nonzero elements.
 !
-   do 4 i=1,n
-      kend = isky(i+1)
-      do 41 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         if (j .le. i) asky(kend+j-i) = a(k)
-41    continue
-4  continue
+      do i = 1, n
+         kend = isky(i + 1)
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            if (j <= i) then
+               asky(kend + j - i) = a(k)
+            end if
+         end do
+      end do
 !
 ! modify pointer according to imod if necessary.
 !
-   if (imod .eq. 0) return
-   if (imod .eq. 1) then
-      do 50 k=1, n+1
-         isky(k) = isky(k)+1
-50    continue
-   endif
-   if (imod .eq. 2) then
-      do 60 k=1, n
-         isky(k) = isky(k+1)
-60    continue
-   endif
+      if (imod == 0) then
+         return
+      end if
+      if (imod == 1) then
+         do k = 1, n + 1
+            isky(k) = isky(k) + 1
+         end do
+      end if
+      if (imod == 2) then
+         do k = 1, n
+            isky(k) = isky(k + 1)
+         end do
+      end if
 !
-   return
+      return
 !------------- end of csrssk -------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine sskssr (n,imod,asky,isky,ao,jao,iao,nzmax,ierr)
-   integer, intent(in) :: n, nzmax
-   integer, intent(out) :: ierr
-   real*8 , intent(inout) :: asky(*),ao(nzmax)
-   integer, intent(inout) :: imod, isky(n+1),iao(n+1),jao(nzmax)
+   subroutine sskssr(n, imod, asky, isky, ao, jao, iao, nzmax, ierr)
+
+      integer, intent(in) :: n, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: asky(:), ao(nzmax)
+      integer, intent(inout) :: imod, isky(n + 1), iao(n + 1), jao(nzmax)
 !-----------------------------------------------------------------------
 !     Symmetric Skyline Format  to  Symmetric Sparse Row format.
 !-----------------------------------------------------------------------
@@ -5027,69 +5421,82 @@ subroutine sskssr (n,imod,asky,isky,ao,jao,iao,nzmax,ierr)
 ! This module is in place: ao and iao can be the same as asky, and isky.
 !-----------------------------------------------------------------------
 ! local variables
-   integer next, kend, kstart, i, j, k
-   ierr = 0
+      integer next, kend, kstart, i, j, k
+      ierr = 0
 !
 ! check for validity of imod
 !
-   if (imod.ne.0 .and. imod.ne.1 .and. imod .ne. 2) then
-      ierr =-1
-      return
-   endif
+      if (imod /= 0 .and. imod /= 1 .and. imod /= 2) then
+         ierr = -1
+         return
+      end if
 !
 ! next  = pointer to next available position in output matrix
 ! kend  = pointer to end of current row in skyline matrix.
 !
-   next = 1
+      next = 1
 !
 ! set kend = start position -1 in  skyline matrix.
 !
-   kend = 0
-   if (imod .eq. 1) kend = isky(1)-1
-   if (imod .eq. 0) kend = isky(1)
+      kend = 0
+      if (imod == 1) then
+         kend = isky(1) - 1
+      end if
+      if (imod == 0) then
+         kend = isky(1)
+      end if
 !
 ! loop through all rows
 !
-   do 50 i=1,n
+      do i = 1, n
 !
 ! save value of pointer to ith row in output matrix
 !
-      iao(i) = next
+         iao(i) = next
 !
 ! get beginnning and end of skyline  row
 !
-      kstart = kend+1
-      if (imod .eq. 0) kend = isky(i+1)
-      if (imod .eq. 1) kend = isky(i+1)-1
-      if (imod .eq. 2) kend = isky(i)
+         kstart = kend + 1
+         if (imod == 0) then
+            kend = isky(i + 1)
+         end if
+         if (imod == 1) then
+            kend = isky(i + 1) - 1
+         end if
+         if (imod == 2) then
+            kend = isky(i)
+         end if
 !
 ! copy element into output matrix unless it is a zero element.
 !
-      do 40 k=kstart,kend
-         if (asky(k) .eq. 0.0d0) goto 40
-         j = i-(kend-k)
-         jao(next) = j
-         ao(next)  = asky(k)
-         next=next+1
-         if (next .gt. nzmax+1) then
-            ierr = i
-            return
-         endif
-40    continue
-50 continue
-   iao(n+1) = next
-   return
+         do k = kstart, kend
+            if (asky(k) == 0.0_dp) then
+               cycle
+            end if
+            j = i - (kend - k)
+            jao(next) = j
+            ao(next) = asky(k)
+            next = next + 1
+            if (next > nzmax + 1) then
+               ierr = i
+               return
+            end if
+         end do
+      end do
+      iao(n + 1) = next
+      return
 !-------------end-of-sskssr --------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrjad (nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
-   integer, intent(in) :: nrow
-   integer, intent(out) :: idiag
-   integer, intent(inout) :: ja(*), jao(*), ia(nrow+1), iperm(nrow)&
-   &, iao(nrow)
-   real*8 , intent(inout) :: a(*), ao(*)
-   integer :: i,j,k,k0,k1,jj,ilo,len
+   subroutine csrjad(nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
+
+      integer, intent(in) :: nrow
+      integer, intent(out) :: idiag
+      integer, intent(inout) :: ja(:), jao(:), ia(nrow + 1), iperm(nrow)&
+      &, iao(nrow)
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer :: i, j, k, k0, k1, jj, ilo, len
 !-----------------------------------------------------------------------
 !    Compressed Sparse Row  to   JAgged Diagonal storage.
 !-----------------------------------------------------------------------
@@ -5097,9 +5504,9 @@ subroutine csrjad (nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
 ! row format to the jagged diagonal format. The data structure
 ! for the JAD (Jagged Diagonal storage) is as follows. The rows of
 ! the matrix are (implicitly) permuted so that their lengths are in
-! decreasing order. The real entries ao(*) and their column indices
-! jao(*) are stored in succession. The number of such diagonals is idiag.
-! the lengths of each of these diagonals is stored in iao(*).
+! decreasing order. The real entries ao(:) and their column indices
+! jao(:) are stored in succession. The number of such diagonals is idiag.
+! the lengths of each of these diagonals is stored in iao(:).
 ! For more details see [E. Anderson and Y. Saad,
 ! ``Solving sparse triangular systems on parallel computers'' in
 ! Inter. J. of High Speed Computing, Vol 1, pp. 73-96 (1989).]
@@ -5138,59 +5545,60 @@ subroutine csrjad (nrow, a, ja, ia, idiag, iperm, ao, jao, iao)
 !     ---- define initial iperm and get lengths of each row
 !     ---- jao is used a work vector to store tehse lengths
 !
-   idiag = 0
-   ilo = nrow
-   do 10 j=1, nrow
-      iperm(j) = j
-      len = ia(j+1) - ia(j)
-      ilo = min(ilo,len)
-      idiag = max(idiag,len)
-      jao(j) = len
-10 continue
+      idiag = 0
+      ilo = nrow
+      do j = 1, nrow
+         iperm(j) = j
+         len = ia(j + 1) - ia(j)
+         ilo = min(ilo, len)
+         idiag = max(idiag, len)
+         jao(j) = len
+      end do
 !
 !     call sorter to get permutation. use iao as work array.
 !
-   call dcsort (jao, nrow, iao, iperm, ilo, idiag)
+      call dcsort(jao, nrow, iao, iperm, ilo, idiag)
 !
 !     define output data structure. first lengths of j-diagonals
 !
-   do 20 j=1, nrow
-      iao(j) = 0
-20 continue
-   do 40 k=1, nrow
-      len = jao(iperm(k))
-      do 30 i=1,len
-         iao(i) = iao(i)+1
-30    continue
-40 continue
+      do j = 1, nrow
+         iao(j) = 0
+      end do
+      do k = 1, nrow
+         len = jao(iperm(k))
+         do i = 1, len
+            iao(i) = iao(i) + 1
+         end do
+      end do
 !
 !     get the output matrix itself
 !
-   k1 = 1
-   k0 = k1
-   do 60 jj=1, idiag
-      len = iao(jj)
-      do 50 k=1,len
-         i = ia(iperm(k))+jj-1
-         ao(k1) = a(i)
-         jao(k1) = ja(i)
-         k1 = k1+1
-50    continue
-      iao(jj) = k0
+      k1 = 1
       k0 = k1
-60 continue
-   iao(idiag+1) = k1
-   return
+      do jj = 1, idiag
+         len = iao(jj)
+         do k = 1, len
+            i = ia(iperm(k)) + jj - 1
+            ao(k1) = a(i)
+            jao(k1) = ja(i)
+            k1 = k1 + 1
+         end do
+         iao(jj) = k0
+         k0 = k1
+      end do
+      iao(idiag + 1) = k1
+      return
 !----------end-of-csrjad------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine jadcsr (nrow, idiag, a, ja, ia, iperm, ao, jao, iao)
-   integer, intent(in) :: nrow, idiag
-   integer, intent(inout) :: ja(*), jao(*), ia(idiag+1), iperm(nrow)&
-   &, iao(nrow+1)
-   real*8 , intent(inout) :: a(*), ao(*)
-   integer :: k1, jj, kpos, i, j, k, len
+   subroutine jadcsr(nrow, idiag, a, ja, ia, iperm, ao, jao, iao)
+
+      integer, intent(in) :: nrow, idiag
+      integer, intent(inout) :: ja(:), jao(:), ia(idiag + 1), iperm(nrow)&
+      &, iao(nrow + 1)
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer :: k1, jj, kpos, i, j, k, len
 !-----------------------------------------------------------------------
 !     Jagged Diagonal Storage   to     Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -5219,56 +5627,56 @@ subroutine jadcsr (nrow, idiag, a, ja, ia, iperm, ao, jao, iao)
 ! determine first the pointers for output matrix. Go through the
 ! structure once:
 !
-   do 137 j=1,nrow
-      jao(j) = 0
-137 continue
+      do j = 1, nrow
+         jao(j) = 0
+      end do
 !
 !     compute the lengths of each row of output matrix -
 !
-   do 140 i=1, idiag
-      len = ia(i+1)-ia(i)
-      do 138 k=1,len
-         jao(iperm(k)) = jao(iperm(k))+1
-138   continue
-140 continue
+      do i = 1, idiag
+         len = ia(i + 1) - ia(i)
+         do k = 1, len
+            jao(iperm(k)) = jao(iperm(k)) + 1
+         end do
+      end do
 !
 !     remember to permute
 !
-   kpos = 1
-   iao(1) = 1
-   do 141 i=1, nrow
-      kpos = kpos+jao(i)
-      iao(i+1) = kpos
-141 continue
+      kpos = 1
+      iao(1) = 1
+      do i = 1, nrow
+         kpos = kpos + jao(i)
+         iao(i + 1) = kpos
+      end do
 !
 !     copy elemnts one at a time.
 !
-   do 200 jj = 1, idiag
-      k1 = ia(jj)-1
-      len = ia(jj+1)-k1-1
-      do 160 k=1,len
-         kpos = iao(iperm(k))
-         ao(kpos) = a(k1+k)
-         jao(kpos) = ja(k1+k)
-         iao(iperm(k)) = kpos+1
-160   continue
-200 continue
+      do jj = 1, idiag
+         k1 = ia(jj) - 1
+         len = ia(jj + 1) - k1 - 1
+         do k = 1, len
+            kpos = iao(iperm(k))
+            ao(kpos) = a(k1 + k)
+            jao(kpos) = ja(k1 + k)
+            iao(iperm(k)) = kpos + 1
+         end do
+      end do
 !
 !     rewind pointers
 !
-   do 5 j=nrow,1,-1
-      iao(j+1) = iao(j)
-5  continue
-   iao(1) = 1
-   return
+      do j = nrow, 1, -1
+         iao(j + 1) = iao(j)
+      end do
+      iao(1) = 1
+      return
 !----------end-of-jadcsr------------------------------------------------
 !-----------------------------------------------------------------------
-end
-subroutine dcsort(ival, n, icnt, index, ilo, ihi)
+   end
+   subroutine dcsort(ival, n, icnt, index, ilo, ihi)
 !-----------------------------------------------------------------------
 !     Specifications for arguments:
 !     ----------------------------
-   integer n, ilo, ihi, ival(n), icnt(ilo:ihi), index(n)
+      integer n, ilo, ihi, ival(n), icnt(ilo:ihi), index(n)
 !-----------------------------------------------------------------------
 !    This routine computes a permutation which, when applied to the
 !    input vector ival, sorts the integers in ival in descending
@@ -5341,37 +5749,39 @@ subroutine dcsort(ival, n, icnt, index, ilo, ihi)
 !     ----------------------------------
 !     Specifications for local variables
 !     ----------------------------------
-   integer i, j, ivalj
+      integer i, j, ivalj
 !
 !     --------------------------
 !     First executable statement
 !     --------------------------
-   do 10 i = ilo, ihi
-      icnt(i) = 0
-10 continue
+      do i = ilo, ihi
+         icnt(i) = 0
+      end do
 !
-   do 20 i = 1, n
-      icnt(ival(i)) = icnt(ival(i)) + 1
-20 continue
+      do i = 1, n
+         icnt(ival(i)) = icnt(ival(i)) + 1
+      end do
 !
-   do 30 i = ihi-1,ilo,-1
-      icnt(i) = icnt(i) + icnt(i+1)
-30 continue
+      do i = ihi - 1, ilo, -1
+         icnt(i) = icnt(i) + icnt(i + 1)
+      end do
 !
-   do 40 j = n, 1, -1
-      ivalj = ival(j)
-      index(icnt(ivalj)) = j
-      icnt(ivalj) = icnt(ivalj) - 1
-40 continue
-   return
-end
+      do j = n, 1, -1
+         ivalj = ival(j)
+         index(icnt(ivalj)) = j
+         icnt(ivalj) = icnt(ivalj) - 1
+      end do
+      return
+   end
 !-------end-of-dcsort---------------------------------------------------
 !-----------------------------------------------------------------------
-subroutine cooell(job,n,nnz,a,ja,ia,ao,jao,lda,ncmax,nc,ierr)
-   implicit none
-   integer job,n,nnz,lda,ncmax,nc,ierr
-   integer ja(nnz),ia(nnz),jao(lda,ncmax)
-   real*8  a(nnz),ao(lda,ncmax)
+   subroutine cooell(job, n, nnz, a, ja, ia, ao, jao, lda, ncmax, nc, ierr)
+      use precision, only: dp
+
+      implicit none
+      integer job, n, nnz, lda, ncmax, nc, ierr
+      integer ja(nnz), ia(nnz), jao(lda, ncmax)
+      real(dp) :: a(nnz), ao(lda, ncmax)
 !-----------------------------------------------------------------------
 !     COOrdinate format to ELLpack format
 !-----------------------------------------------------------------------
@@ -5391,67 +5801,76 @@ subroutine cooell(job,n,nnz,a,ja,ia,ao,jao,lda,ncmax,nc,ierr)
 !
 !     NOTE: the last column of JAO is used as work space!!
 !-----------------------------------------------------------------------
-   integer i,j,k,ip
-   real*8  zero
-   logical copyval
-   parameter (zero=0.0D0)
+      integer i, j, k, ip
+      real(dp) :: zero
+      logical copyval
+      parameter(zero=0.0_dp)
 !     .. first executable statement ..
-   copyval = (job.ne.0)
-   if (lda .lt. n) then
-      ierr = -1
-      return
-   endif
+      copyval = (job /= 0)
+      if (lda < n) then
+         ierr = -1
+         return
+      end if
 !     .. use the last column of JAO as workspace
 !     .. initialize the work space
-   do i = 1, n
-      jao(i,ncmax) = 0
-   enddo
-   nc = 0
+      do i = 1, n
+         jao(i, ncmax) = 0
+      end do
+      nc = 0
 !     .. go through ia and ja to find out number nonzero per row
-   do k = 1, nnz
-      i = ia(k)
-      jao(i,ncmax) = jao(i,ncmax) + 1
-   enddo
+      do k = 1, nnz
+         i = ia(k)
+         jao(i, ncmax) = jao(i, ncmax) + 1
+      end do
 !     .. maximum number of nonzero per row
-   nc = 0
-   do i = 1, n
-      if (nc.lt.jao(i,ncmax)) nc = jao(i,ncmax)
-      jao(i,ncmax) = 0
-   enddo
+      nc = 0
+      do i = 1, n
+         if (nc < jao(i, ncmax)) then
+            nc = jao(i, ncmax)
+         end if
+         jao(i, ncmax) = 0
+      end do
 !     .. if nc > ncmax retrun now
-   if (nc.gt.ncmax) then
-      ierr = nc
-      return
-   endif
+      if (nc > ncmax) then
+         ierr = nc
+         return
+      end if
 !     .. go through ia and ja to copy the matrix to AO and JAO
-   do k = 1, nnz
-      i = ia(k)
-      j = ja(k)
-      jao(i,ncmax) = jao(i,ncmax) + 1
-      ip = jao(i,ncmax)
-      if (ip.gt.nc) nc = ip
-      if (copyval) ao(i,ip) = a(k)
-      jao(i,ip) = j
-   enddo
+      do k = 1, nnz
+         i = ia(k)
+         j = ja(k)
+         jao(i, ncmax) = jao(i, ncmax) + 1
+         ip = jao(i, ncmax)
+         if (ip > nc) then
+            nc = ip
+         end if
+         if (copyval) then
+            ao(i, ip) = a(k)
+         end if
+         jao(i, ip) = j
+      end do
 !     .. fill the unspecified elements of AO and JAO with zero diagonals
-   do i = 1, n
-      do j = ia(i+1)-ia(i)+1, nc
-         jao(i,j)=i
-         if(copyval) ao(i,j) = zero
-      enddo
-   enddo
-   ierr = 0
+      do i = 1, n
+         do j = ia(i + 1) - ia(i) + 1, nc
+            jao(i, j) = i
+            if (copyval) then
+               ao(i, j) = zero
+            end if
+         end do
+      end do
+      ierr = 0
 !
-   return
-end
+      return
+   end
 !-----end-of-cooell-----------------------------------------------------
 !-----------------------------------------------------------------------
-subroutine xcooell(n,nnz,a,ja,ia,ac,jac,nac,ner,ncmax,ierr)
-   integer, intent(in) :: n, nnz, nac, ner
-   integer, intent(out) :: ierr
-   real*8 , intent(inout) :: a(nnz), ac(nac,ner)
-   integer, intent(inout) :: ja(nnz), ia(nnz), jac(nac,ner)
-   integer ::ncmax, icount, k, ii, in, inn, is, innz
+   subroutine xcooell(n, nnz, a, ja, ia, ac, jac, nac, ner, ncmax, ierr)
+
+      integer, intent(in) :: n, nnz, nac, ner
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(nnz), ac(nac, ner)
+      integer, intent(inout) :: ja(nnz), ia(nnz), jac(nac, ner)
+      integer :: ncmax, icount, k, ii, in, inn, is, innz
 !-----------------------------------------------------------------------
 !   coordinate format to ellpack format.
 !-----------------------------------------------------------------------
@@ -5520,7 +5939,7 @@ subroutine xcooell(n,nnz,a,ja,ia,ac,jac,nac,ner,ncmax,ierr)
 !
 !  NCA     - Integer. First dimension of output arrays ca and jac.
 !
-!  A(NNZ)  - Real array. (Double precision)
+!  A(NNZ)  - Real array. (real(kind=dp))
 !            Stored entries of the sparse matrix A.
 !            NNZ is the number of nonzeros.
 !
@@ -5537,7 +5956,7 @@ subroutine xcooell(n,nnz,a,ja,ia,ac,jac,nac,ner,ncmax,ierr)
 !
 !  OUTPUT PARAMETERS
 !  -----------------
-!  AC(NAC,*)  - Real array. (Double precision)
+!  AC(NAC,*)  - Real array. (real(kind=dp))
 !               Stored entries of the sparse matrix A in compressed
 !               storage mode.
 !
@@ -5566,16 +5985,17 @@ subroutine xcooell(n,nnz,a,ja,ia,ac,jac,nac,ner,ncmax,ierr)
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !   Initial error parameter to zero:
 !
-   ierr = 0
+      ierr = 0
 !
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !   Initial output arrays to zero:
 !
-   do 4 in = 1,ner
-      do 4 innz =1,n
-         jac(innz,in) = n
-         ac(innz,in) = 0.0d0
-4  continue
+      do in = 1, ner
+         do innz = 1, n
+            jac(innz, in) = n
+            ac(innz, in) = 0.0_dp
+         end do
+      end do
 !
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
@@ -5587,71 +6007,81 @@ subroutine xcooell(n,nnz,a,ja,ia,ac,jac,nac,ner,ncmax,ierr)
 !   parameter NCMAX equals the maximum number of nonzeros in any row
 !   of the sparse matrix.
 !
-   ncmax = 1
-   do 10 is = 1,n
-      k = 0
-      do 30 ii = 1,nnz
-         if(ia(ii).eq.is)then
-            k = k + 1
-            if (k .le. ner) then
-               ac(is,k) = a(ii)
-               jac(is,k) = ja(ii)
-            endif
-         endif
-30    continue
-      if (k.ge.ncmax) ncmax = k
-10 continue
+      ncmax = 1
+      do is = 1, n
+         k = 0
+         do ii = 1, nnz
+            if (ia(ii) == is) then
+               k = k + 1
+               if (k <= ner) then
+                  ac(is, k) = a(ii)
+                  jac(is, k) = ja(ii)
+               end if
+            end if
+         end do
+         if (k >= ncmax) then
+            ncmax = k
+         end if
+      end do
 !- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !
 !     Perform some simple error checks:
 !
 !heck maximum number of nonzeros in each row:
-   if (ncmax.eq.ner) ierr = 0
-   if (ncmax.gt.ner) then
-      ierr = -1
-      return
-   endif
+      if (ncmax == ner) then
+         ierr = 0
+      end if
+      if (ncmax > ner) then
+         ierr = -1
+         return
+      end if
 !
 !heck if there are any zero columns in AC:
 !
-   do 45 in = 1,ncmax
-      icount = 0
-      do 44 inn =1,n
-         if (ac(inn,in).ne.0.0d0) icount = 1
-44    continue
-      if (icount.eq.0) then
-         ierr = 1
-         return
-      endif
-45 continue
+      do in = 1, ncmax
+         icount = 0
+         do inn = 1, n
+            if (ac(inn, in) /= 0.0_dp) then
+               icount = 1
+            end if
+         end do
+         if (icount == 0) then
+            ierr = 1
+            return
+         end if
+      end do
 !
 !heck if there are any zero rows in AC:
 !
-   do 55 inn = 1,n
-      icount = 0
-      do 54 in =1,ncmax
-         if (ac(inn,in).ne.0.0d0) icount = 1
-54    continue
-      if (icount.eq.0) then
-         ierr = 2
-         return
-      endif
-55 continue
-   return
+      do inn = 1, n
+         icount = 0
+         do in = 1, ncmax
+            if (ac(inn, in) /= 0.0_dp) then
+               icount = 1
+            end if
+         end do
+         if (icount == 0) then
+            ierr = 2
+            return
+         end if
+      end do
+      return
 !------------- end of xcooell -------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csruss (nrow,a,ja,ia,diag,al,jal,ial,au,jau,iau)
-   real*8 a(*),al(*),diag(*),au(*)
-   integer nrow,ja(*),ia(nrow+1),jal(*),ial(nrow+1),jau(*),&
-   &iau(nrow+1)
+   subroutine csruss(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
+      use precision, only: dp
+
+      real(dp) :: a(:), al(:), diag(:), au(:)
+      integer nrow, ja(:), ia(nrow + 1), jal(:), ial(nrow + 1), jau(:),&
+      &iau(nrow + 1)
 !-----------------------------------------------------------------------
 ! Compressed Sparse Row     to     Unsymmetric Sparse Skyline format
 !-----------------------------------------------------------------------
 ! this subroutine converts a matrix stored in csr format into a nonsym.
 ! sparse skyline format. This latter format does not assume
 ! that the matrix has a symmetric pattern and consists of the following
-! * the diagonal of A stored separately in diag(*);
+! * the diagonal of A stored separately in diag(:);
 ! * The strict lower part of A is stored  in CSR format in al,jal,ial
 ! * The strict upper part is stored in CSC format in au,jau,iau.
 !-----------------------------------------------------------------------
@@ -5672,73 +6102,76 @@ subroutine csruss (nrow,a,ja,ia,diag,al,jal,ial,au,jau,iau)
 ! au,jau,iau = matrix in CSC format storing the strict upper
 !              triangular part of A.
 !-----------------------------------------------------------------------
-   integer i, j, k, kl, ku
+      integer i, j, k, kl, ku
 !
 ! determine U's data structure first
 !
-   do 1 i=1,nrow+1
-      iau(i) = 0
-1  continue
-   do 3 i=1, nrow
-      do 2 k=ia(i), ia(i+1)-1
-         j = ja(k)
-         if (j .gt. i) iau(j+1) = iau(j+1)+1
-2     continue
-3  continue
+      do i = 1, nrow + 1
+         iau(i) = 0
+      end do
+      do i = 1, nrow
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            if (j > i) then
+               iau(j + 1) = iau(j + 1) + 1
+            end if
+         end do
+      end do
 !
 !     compute pointers from lengths
 !
-   iau(1) = 1
-   do 4 i=1,nrow
-      iau(i+1) = iau(i)+iau(i+1)
-      ial(i+1) = ial(i)+ial(i+1)
-4  continue
+      iau(1) = 1
+      do i = 1, nrow
+         iau(i + 1) = iau(i) + iau(i + 1)
+         ial(i + 1) = ial(i) + ial(i + 1)
+      end do
 !
 !     now do the extractions. scan all rows.
 !
-   kl = 1
-   ial(1) = kl
-   do  7 i=1, nrow
+      kl = 1
+      ial(1) = kl
+      do i = 1, nrow
 !
 !     scan all elements in a row
 !
-      do 71 k = ia(i), ia(i+1)-1
-         j = ja(k)
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
 !
 !     if in upper part, store in row j (of transp(U) )
 !
-         if (j  .gt. i) then
-            ku = iau(j)
-            au(ku) = a(k)
-            jau(ku) = i
-            iau(j) = ku+1
-         elseif (j  .eq. i) then
-            diag(i) = a(k)
-         elseif (j .lt. i) then
-            al(kl) = a(k)
-            jal(kl) = j
-            kl = kl+1
-         endif
-71    continue
-      ial(i+1) = kl
-7  continue
+            if (j > i) then
+               ku = iau(j)
+               au(ku) = a(k)
+               jau(ku) = i
+               iau(j) = ku + 1
+            elseif (j == i) then
+               diag(i) = a(k)
+            elseif (j < i) then
+               al(kl) = a(k)
+               jal(kl) = j
+               kl = kl + 1
+            end if
+         end do
+         ial(i + 1) = kl
+      end do
 !
 ! readjust iau
 !
-   do 8 i=nrow,1,-1
-      iau(i+1) = iau(i)
-8  continue
-   iau(1) = 1
+      do i = nrow, 1, -1
+         iau(i + 1) = iau(i)
+      end do
+      iau(1) = 1
 !--------------- end-of-csruss -----------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine usscsr (nrow,a,ja,ia,diag,al,jal,ial,au,jau,iau)
-   integer, intent(in) :: nrow
-   real*8 , intent(inout) :: a(*),al(*),diag(*),au(*)
-   integer, intent(inout) :: ja(*),ia(nrow+1),jal(*),ial(nrow+1)&
-   &,jau(*),iau(nrow+1)
-   integer :: i,j,k,ka,jak
+   subroutine usscsr(nrow, a, ja, ia, diag, al, jal, ial, au, jau, iau)
+
+      integer, intent(in) :: nrow
+      real(dp), intent(inout) :: a(:), al(:), diag(:), au(:)
+      integer, intent(inout) :: ja(:), ia(nrow + 1), jal(:), ial(nrow + 1)&
+      &, jau(:), iau(nrow + 1)
+      integer :: i, j, k, ka, jak
 !-----------------------------------------------------------------------
 ! Unsymmetric Sparse Skyline   format   to Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -5767,157 +6200,71 @@ subroutine usscsr (nrow,a,ja,ia,diag,al,jal,ial,au,jau,iau)
 !
 ! count elements in lower part + diagonal
 !
-   do 1 i=1, nrow
-      ia(i+1) = ial(i+1)-ial(i)+1
-1  continue
+      do i = 1, nrow
+         ia(i + 1) = ial(i + 1) - ial(i) + 1
+      end do
 !
 ! count elements in upper part
 !
-   do 3 i=1, nrow
-      do 2 k=iau(i), iau(i+1)-1
-         j = jau(k)
-         ia(j+1) = ia(j+1)+1
-2     continue
-3  continue
+      do i = 1, nrow
+         do k = iau(i), iau(i + 1) - 1
+            j = jau(k)
+            ia(j + 1) = ia(j + 1) + 1
+         end do
+      end do
 !---------- compute pointers from lengths ------------------------------
-   ia(1) = 1
-   do 4 i=1,nrow
-      ia(i+1) = ia(i)+ia(i+1)
-4  continue
+      ia(1) = 1
+      do i = 1, nrow
+         ia(i + 1) = ia(i) + ia(i + 1)
+      end do
 !
 ! copy lower part + diagonal
 !
-   do 6 i=1, nrow
-      ka = ia(i)
-      do 5 k=ial(i), ial(i+1)-1
-         a(ka) = al(k)
-         ja(ka) = jal(k)
-         ka = ka+1
-5     continue
-      a(ka) = diag(i)
-      ja(ka) = i
-      ia(i) = ka+1
-6  continue
+      do i = 1, nrow
+         ka = ia(i)
+         do k = ial(i), ial(i + 1) - 1
+            a(ka) = al(k)
+            ja(ka) = jal(k)
+            ka = ka + 1
+         end do
+         a(ka) = diag(i)
+         ja(ka) = i
+         ia(i) = ka + 1
+      end do
 !
 !     copy upper part
 !
-   do 8 i=1, nrow
-      do 7 k=iau(i), iau(i+1)-1
+      do i = 1, nrow
+         do k = iau(i), iau(i + 1) - 1
 !
 ! row number
 !
-         jak = jau(k)
+            jak = jau(k)
 !
 ! where element goes
 !
-         ka = ia(jak)
-         a(ka) = au(k)
-         ja(ka) = i
-         ia(jak) = ka+1
-7     continue
-8  continue
+            ka = ia(jak)
+            a(ka) = au(k)
+            ja(ka) = i
+            ia(jak) = ka + 1
+         end do
+      end do
 !
 ! readjust ia
 !
-   do 9 i=nrow,1,-1
-      ia(i+1) = ia(i)
-9  continue
-   ia(1) = 1
+      do i = nrow, 1, -1
+         ia(i + 1) = ia(i)
+      end do
+      ia(1) = 1
 !----------end-of-usscsr------------------------------------------------
-end
-!-----------------------------------------------------------------------
-!      subroutine csrsss (nrow,a,ja,ia,sorted,diag,al,jal,ial,au)
-!      real*8 a(*),al(*),diag(*),au(*)
-!      integer ja(*),ia(nrow+1),jal(*),ial(nrow+1)
-!      logical sorted
-!c-----------------------------------------------------------------------
-!c Compressed Sparse Row     to     Symmetric Sparse Skyline   format
-!c-----------------------------------------------------------------------
-!c this subroutine converts a matrix stored in csr format into the
-!c Symmetric sparse skyline   format. This latter format assumes that
-!c that the matrix has a symmetric pattern. It consists of the following
-!c * the diagonal of A stored separately in diag(*);
-!c * The strict lower part of A is stored  in csr format in al,jal,ial
-!c * The values only of strict upper part as stored in csc format in au.
-!c-----------------------------------------------------------------------
-!c On entry
-!c-----------
-!c nrow  = dimension of the matrix a.
-!c a     = real array containing the nonzero values of the matrix
-!c         stored rowwise.
-!c ja    = column indices of the values in array a
-!c ia    = integer array of length n+1 containing the pointers to
-!c         beginning of each row in arrays a, ja.
-!c sorted= a logical indicating whether or not the elements in a,ja,ia
-!c         are sorted.
-!c
-!c On return
-!c ---------
-!c diag  = array containing the diagonal entries of A
-!c al,jal,ial = matrix in csr format storing the strict lower
-!c              trangular part of A.
-!c au    = values of the strict upper trangular part of A, column wise.
-!c-----------------------------------------------------------------------
-!c
-!c     extract lower part and diagonal.
-!c
-!      kl = 1
-!      ial(1) = kl
-!      do  7 i=1, nrow
-!c
-!c scan all elements in a row
-!c
-!         do 71 k = ia(i), ia(i+1)-1
-!            jak = ja(k)
-!            if (jak  .eq. i) then
-!               diag(i) = a(k)
-!            elseif (jak .lt. i) then
-!               al(kl) = a(k)
-!               jal(kl) = jak
-!               kl = kl+1
-!            endif
-! 71      continue
-!         ial(i+1) = kl
-! 7    continue
-!c
-!c sort if not sorted
-!c
-!      if (.not. sorted) then
-!c%%%%%---- incompatible arg list!
-!         call csort (nrow, al, jal, ial, au, .true.)
-!      endif
-!c
-!c copy u
-!c
-!      do  8 i=1, nrow
-!c
-!c scan all elements in a row
-!c
-!         do 81 k = ia(i), ia(i+1)-1
-!            jak = ja(k)
-!            if (jak  .gt. i) then
-!               ku = ial(jak)
-!               au(ku) = a(k)
-!               ial(jak) = ku+1
-!            endif
-! 81      continue
-! 8    continue
-!c
-!c readjust ial
-!c
-!      do 9 i=nrow,1,-1
-!         ial(i+1) = ial(i)
-! 9    continue
-!      ial(1) = 1
-!c--------------- end-of-csrsss -----------------------------------------
-!c-----------------------------------------------------------------------
-!      end
-!c
-subroutine ssscsr (nrow,a,ja,ia,diag,al,jal,ial,au)
-   integer, intent(in) :: nrow
-   real*8 , intent(inout) :: a(*),al(*),diag(*),au(*)
-   integer, intent(inout) :: ja(*),ia(nrow+1),jal(*),ial(nrow+1)
-   integer :: i,j,k,ka,jak
+   end
+
+   subroutine ssscsr(nrow, a, ja, ia, diag, al, jal, ial, au)
+
+      integer, intent(in) :: nrow
+      real(dp), intent(inout) :: a(:), al(:), diag(:), au(:)
+      integer, intent(inout) :: ja(:), ia(nrow + 1), jal(:), ial(nrow + 1)
+      integer :: i, j, k, ka, jak
 !-----------------------------------------------------------------------
 ! Unsymmetric Sparse Skyline   format   to Compressed Sparse Row
 !-----------------------------------------------------------------------
@@ -5945,341 +6292,70 @@ subroutine ssscsr (nrow,a,ja,ia,diag,al,jal,ial,au)
 !
 ! count elements in lower part + diagonal
 !
-   do 1 i=1, nrow
-      ia(i+1) = ial(i+1)-ial(i)+1
-1  continue
+      do i = 1, nrow
+         ia(i + 1) = ial(i + 1) - ial(i) + 1
+      end do
 !
 ! count elements in upper part
 !
-   do 3 i=1, nrow
-      do 2 k=ial(i), ial(i+1)-1
-         j = jal(k)
-         ia(j+1) = ia(j+1)+1
-2     continue
-3  continue
+      do i = 1, nrow
+         do k = ial(i), ial(i + 1) - 1
+            j = jal(k)
+            ia(j + 1) = ia(j + 1) + 1
+         end do
+      end do
 !---------- compute pointers from lengths ------------------------------
-   ia(1) = 1
-   do 4 i=1,nrow
-      ia(i+1) = ia(i)+ia(i+1)
-4  continue
+      ia(1) = 1
+      do i = 1, nrow
+         ia(i + 1) = ia(i) + ia(i + 1)
+      end do
 !
 ! copy lower part + diagonal
 !
-   do 6 i=1, nrow
-      ka = ia(i)
-      do 5 k=ial(i), ial(i+1)-1
-         a(ka) = al(k)
-         ja(ka) = jal(k)
-         ka = ka+1
-5     continue
-      a(ka) = diag(i)
-      ia(i) = ka+1
-6  continue
+      do i = 1, nrow
+         ka = ia(i)
+         do k = ial(i), ial(i + 1) - 1
+            a(ka) = al(k)
+            ja(ka) = jal(k)
+            ka = ka + 1
+         end do
+         a(ka) = diag(i)
+         ia(i) = ka + 1
+      end do
 !
 !     copy upper part
 !
-   do 8 i=1, nrow
-      do 7 k=ial(i), ial(i+1)-1
+      do i = 1, nrow
+         do k = ial(i), ial(i + 1) - 1
 !
 ! row number
 !
-         jak = jal(k)
+            jak = jal(k)
 !
 ! where element goes
 !
-         ka = ia(jak)
-         a(ka) = au(k)
-         ja(ka) = i
-         ia(jak) = ka+1
-7     continue
-8  continue
+            ka = ia(jak)
+            a(ka) = au(k)
+            ja(ka) = i
+            ia(jak) = ka + 1
+         end do
+      end do
 !
 ! readjust ia
 !
-   do 9 i=nrow,1,-1
-      ia(i+1) = ia(i)
-9  continue
-   ia(1) = 1
+      do i = nrow, 1, -1
+         ia(i + 1) = ia(i)
+      end do
+      ia(1) = 1
 !----------end-of-ssscsr------------------------------------------------
-end
-!-----------------------------------------------------------------------
-!      subroutine csrvbr(n,ia,ja,a,nr,nc,kvstr,kvstc,ib,jb,kb,
-!     &     b, job, iwk, nkmax, nzmax, ierr )
-!c-----------------------------------------------------------------------
-!      integer n, ia(n+1), ja(*), nr, nc, ib(*), jb(nkmax-1), kb(nkmax)
-!      integer kvstr(*), kvstc(*), job, iwk(*), nkmax, nzmax, ierr
-!      real*8  a(*), b(nzmax)
-!c-----------------------------------------------------------------------
-!c     Converts compressed sparse row to variable block row format.
-!c-----------------------------------------------------------------------
-!c     On entry:
-!c--------------
-!c     n       = number of matrix rows
-!c     ia,ja,a = input matrix in CSR format
-!c
-!c     job     = job indicator.
-!c               If job=0, kvstr and kvstc are used as supplied.
-!c               If job=1, kvstr and kvstc are determined by the code.
-!c               If job=2, a conformal row/col partitioning is found and
-!c               returned in both kvstr and kvstc.  In the latter two cases,
-!c               an optimized algorithm can be used to perform the
-!c               conversion because all blocks are full.
-!c
-!c     nkmax   = size of supplied jb and kb arrays
-!c     nzmax   = size of supplied b array
-!c
-!c     If job=0 then the following are input:
-!c     nr,nc   = matrix block row and block column dimension
-!c     kvstr   = first row number for each block row
-!c     kvstc   = first column number for each block column.
-!c               (kvstr and kvstc may be the same array)
-!c
-!c     On return:
-!c---------------
-!c
-!c     ib,jb,kb,b = output matrix in VBR format
-!c
-!c     ierr    = error message
-!c               ierr = 0 means normal return
-!c               ierr = 1 out of space in jb and/or kb arrays
-!c               ierr = 2 out of space in b array
-!c               ierr = 3 nonsquare matrix used with job=2
-!c
-!c     If job=1,2 then the following are output:
-!c     nr,nc   = matrix block row and block column dimension
-!c     kvstr   = first row number for each block row
-!c     kvstc   = first column number for each block column
-!c               If job=2, then kvstr and kvstc contain the same info.
-!c
-!c     Work space:
-!c----------------
-!c     iwk(1:ncol) = inverse kvstc array.  If job=1,2 then we also need:
-!c     iwk(ncol+1:ncol+nr) = used to help determine sparsity of each block row.
-!c     The workspace is not assumed to be initialized to zero, nor is it
-!c     left that way.
-!c
-!c     Algorithms:
-!c----------------
-!c     There are two conversion codes in this routine.  The first assumes
-!c     that all blocks are full (there is a nonzero in the CSR data
-!c     structure for each entry in the block), and is used if the routine
-!c     determines the block partitioning itself.  The second code makes
-!c     no assumptions about the block partitioning, and is used if the
-!c     caller provides the partitioning.  The second code is much less
-!c     efficient than the first code.
-!c
-!c     In the first code, the CSR data structure is traversed sequentially
-!c     and entries are placed into the VBR data structure with stride
-!c     equal to the row dimension of the block row.  The columns of the
-!c     CSR data structure are sorted first if necessary.
-!c
-!c     In the second code, the block sparsity pattern is first determined.
-!c     This is done by traversing the CSR data structure and using an
-!c     implied linked list to determine which blocks are nonzero.  Then
-!c     the VBR data structure is filled by mapping each individual entry
-!c     in the CSR data structure into the VBR data structure.  The columns
-!c     of the CSR data structure are sorted first if necessary.
-!c
-!c-----------------------------------------------------------------------
-!c     Local variables:
-!c---------------------
-!      integer ncol, nb, neqr, numc, a0, b0, b1, k0, i, ii, j, jj, jnew
-!      logical sorted
-!c
-!c     ncol = number of scalar columns in matrix
-!c     nb = number of blocks in conformal row/col partitioning
-!c     neqr = number of rows in block row
-!c     numc = number of nonzero columns in row
-!c     a0 = index for entries in CSR a array
-!c     b0 = index for entries in VBR b array
-!c     b1 = temp
-!c     k0 = index for entries in VBR kb array
-!c     i  = loop index for block rows
-!c     ii = loop index for scalar rows in block row
-!c     j  = loop index for block columns
-!c     jj = loop index for scalar columns in block column
-!c     jnew = block column number
-!c     sorted = used to indicate if matrix already sorted by columns
-!c
-!c-----------------------------------------------------------------------
-!      ierr = 0
-!c-----sort matrix by column indices
-!      call csorted(n, ia, ja, sorted)
-!      if (.not. sorted) then
-!         call csort (n, a, ja, ia, b, .true.)
-!      endif
-!      if (job .eq. 1 .or. job .eq. 2) then
-!c--------need to zero workspace; first find ncol
-!         ncol = 0
-!         do i = 2, n
-!            ncol = max0(ncol, ja(ia(i)-1))
-!         enddo
-!         do i = 1, ncol
-!            iwk(i) = 0
-!         enddo
-!         call csrkvstr(n, ia, ja, nr, kvstr)
-!         call csrkvstc(n, ia, ja, nc, kvstc, iwk)
-!      endif
-!c-----check if want conformal partitioning
-!      if (job .eq. 2) then
-!         if (kvstr(nr+1) .ne. kvstc(nc+1)) then
-!            ierr = 3
-!            return
-!         endif
-!c        use iwk temporarily
-!         call kvstmerge(nr, kvstr, nc, kvstc, nb, iwk)
-!         nr = nb
-!         nc = nb
-!         do i = 1, nb+1
-!            kvstr(i) = iwk(i)
-!            kvstc(i) = iwk(i)
-!         enddo
-!      endif
-!c-----------------------------------------------------------------------
-!c     inverse kvst (scalar col number) = block col number
-!c     stored in iwk(1:n)
-!c-----------------------------------------------------------------------
-!      do i = 1, nc
-!         do j = kvstc(i), kvstc(i+1)-1
-!            iwk(j) = i
-!         enddo
-!      enddo
-!      ncol = kvstc(nc+1)-1
-!c-----jump to conversion routine
-!      if (job .eq. 0) goto 400
-!c-----------------------------------------------------------------------
-!c     Fast conversion for computed block partitioning
-!c-----------------------------------------------------------------------
-!      a0 = 1
-!      b0 = 1
-!      k0 = 1
-!      kb(1) = 1
-!c-----loop on block rows
-!      do i = 1, nr
-!         neqr = kvstr(i+1) - kvstr(i)
-!         numc = ia(kvstr(i)+1) - ia(kvstr(i))
-!         ib(i) = k0
-!c--------loop on first row in block row to determine block sparsity
-!         j = 0
-!         do jj = ia(kvstr(i)), ia(kvstr(i)+1)-1
-!            jnew = iwk(ja(jj))
-!            if (jnew .ne. j) then
-!c--------------check there is enough space in kb and jb arrays
-!               if (k0+1 .gt. nkmax) then
-!                  ierr = 1
-!                  write (*,*) 'csrvbr: no space in kb for block row ', i
-!                  return
-!               endif
-!c--------------set entries for this block
-!               j = jnew
-!               b0 = b0 + neqr * (kvstc(j+1) - kvstc(j))
-!               kb(k0+1) = b0
-!               jb(k0) = j
-!               k0 = k0 + 1
-!            endif
-!         enddo
-!c--------loop on scalar rows in block row
-!         do ii = 0, neqr-1
-!            b1 = kb(ib(i))+ii
-!c-----------loop on elements in a scalar row
-!            do jj = 1, numc
-!c--------------check there is enough space in b array
-!               if (b1 .gt. nzmax) then
-!                  ierr = 2
-!                  write (*,*) 'csrvbr: no space in b for block row ', i
-!                  return
-!               endif
-!               b(b1) = a(a0)
-!               b1 = b1 + neqr
-!               a0 = a0 + 1
-!            enddo
-!         enddo
-!      enddo
-!      ib(nr+1) = k0
-!      return
-!c-----------------------------------------------------------------------
-!c     Conversion for user supplied block partitioning
-!c-----------------------------------------------------------------------
-! 400  continue
-!c-----initialize workspace for sparsity indicator
-!      do i = ncol+1, ncol+nc
-!         iwk(i) = 0
-!      enddo
-!      k0 = 1
-!      kb(1) = 1
-!c-----find sparsity of block rows
-!      do i = 1, nr
-!         neqr = kvstr(i+1) - kvstr(i)
-!         numc = ia(kvstr(i)+1) - ia(kvstr(i))
-!         ib(i) = k0
-!c--------loop on all the elements in the block row to determine block sparsity
-!         do jj = ia(kvstr(i)), ia(kvstr(i+1))-1
-!            iwk(iwk(ja(jj))+ncol) = 1
-!         enddo
-!c--------use sparsity to set jb and kb arrays
-!         do j = 1, nc
-!            if (iwk(j+ncol) .ne. 0) then
-!c--------------check there is enough space in kb and jb arrays
-!               if (k0+1 .gt. nkmax) then
-!                  ierr = 1
-!                  write (*,*) 'csrvbr: no space in kb for block row ', i
-!                  return
-!               endif
-!               kb(k0+1) = kb(k0) + neqr * (kvstc(j+1) - kvstc(j))
-!               jb(k0) = j
-!               k0 = k0 + 1
-!               iwk(j+ncol) = 0
-!            endif
-!         enddo
-!      enddo
-!      ib(nr+1) = k0
-!c-----Fill b with entries from a by traversing VBR data structure.
-!      a0 = 1
-!c-----loop on block rows
-!      do i = 1, nr
-!         neqr = kvstr(i+1) - kvstr(i)
-!c--------loop on scalar rows in block row
-!         do ii = 0, neqr-1
-!            b0 = kb(ib(i)) + ii
-!c-----------loop on block columns
-!            do j = ib(i), ib(i+1)-1
-!c--------------loop on scalar columns within block column
-!               do jj = kvstc(jb(j)), kvstc(jb(j)+1)-1
-!c-----------------check there is enough space in b array
-!                  if (b0 .gt. nzmax) then
-!                     ierr = 2
-!                     write (*,*)'csrvbr: no space in b for blk row',i
-!                     return
-!                  endif
-!                  if (a0 .ge. ia(kvstr(i)+ii+1)) then
-!                     b(b0) = 0.d0
-!                  else
-!                     if (jj .eq. ja(a0)) then
-!                        b(b0) = a(a0)
-!                        a0 = a0 + 1
-!                     else
-!                        b(b0) = 0.d0
-!                     endif
-!                  endif
-!                  b0 = b0 + neqr
-!c--------------endloop on scalar columns
-!               enddo
-!c-----------endloop on block columns
-!            enddo
-! 2020       continue
-!         enddo
-!      enddo
-!      return
-!      end
-!-----------------------------------------------------------------------
-!----------------------------end-of-csrvbr------------------------------
-!----------------------------------------------------------------------c
-subroutine vbrcsr(ia, ja, a, nr, kvstr, kvstc, ib, jb, kb,&
-&b, nzmax, ierr)
-!-----------------------------------------------------------------------
-   integer ia(*), ja(*), nr, ib(nr+1), jb(*), kb(*)
-   integer kvstr(nr+1), kvstc(*), nzmax, ierr
-   real*8  a(*), b(nzmax)
+   end
+
+   subroutine vbrcsr(ia, ja, a, nr, kvstr, kvstc, ib, jb, kb,&
+   &b, nzmax, ierr)
+      use precision, only: dp
+      integer ia(:), ja(:), nr, ib(nr + 1), jb(:), kb(:)
+      integer kvstr(nr + 1), kvstc(:), nzmax, ierr
+      real(dp) :: a(:), b(nzmax)
 !-----------------------------------------------------------------------
 !     Converts variable block row to compressed sparse row format.
 !-----------------------------------------------------------------------
@@ -6315,7 +6391,7 @@ subroutine vbrcsr(ia, ja, a, nr, kvstr, kvstc, ib, jb, kb,&
 !-----------------------------------------------------------------------
 !     Local variables:
 !---------------------
-   integer neqr, numc, a0, b0, i, ii, j, jj
+      integer neqr, numc, a0, b0, i, ii, j, jj
 !
 !     neqr = number of rows in block row
 !     numc = number of nonzero columns in row
@@ -6327,60 +6403,60 @@ subroutine vbrcsr(ia, ja, a, nr, kvstr, kvstc, ib, jb, kb,&
 !     jj = loop index for scalar columns in block column
 !
 !-----------------------------------------------------------------------
-   ierr = 0
-   a0 = 1
-   b0 = 1
+      ierr = 0
+      a0 = 1
+      b0 = 1
 !-----loop on block rows
-   do i = 1, nr
+      do i = 1, nr
 !--------set num of rows in block row, and num of nonzero cols in row
-      neqr = kvstr(i+1) - kvstr(i)
-      numc = ( kb(ib(i+1)) - kb(ib(i)) ) / neqr
+         neqr = kvstr(i + 1) - kvstr(i)
+         numc = (kb(ib(i + 1)) - kb(ib(i))) / neqr
 !--------construct ja for a scalar row
-      do j = ib(i), ib(i+1)-1
-         do jj = kvstc(jb(j)), kvstc(jb(j)+1)-1
-            ja(a0) = jj
-            a0 = a0 + 1
-         enddo
-      enddo
+         do j = ib(i), ib(i + 1) - 1
+            do jj = kvstc(jb(j)), kvstc(jb(j) + 1) - 1
+               ja(a0) = jj
+               a0 = a0 + 1
+            end do
+         end do
 !--------construct neqr-1 additional copies of ja for the block row
-      do ii = 1, neqr-1
-         do j = 1, numc
-            ja(a0) = ja(a0-numc)
-            a0 = a0 + 1
-         enddo
-      enddo
+         do ii = 1, neqr - 1
+            do j = 1, numc
+               ja(a0) = ja(a0 - numc)
+               a0 = a0 + 1
+            end do
+         end do
 !--------reset a0 back to beginning of block row
-      a0 = kb(ib(i))
+         a0 = kb(ib(i))
 !--------loop on scalar rows in block row
-      do ii = 0, neqr-1
-         ia(kvstr(i)+ii) = a0
-         b0 = kb(ib(i)) + ii
+         do ii = 0, neqr - 1
+            ia(kvstr(i) + ii) = a0
+            b0 = kb(ib(i)) + ii
 !-----------loop on elements in a scalar row
-         do jj = 1, numc
+            do jj = 1, numc
 !--------------check there is enough space in a array
-            if (a0 .gt. nzmax) then
-               ierr = -(kvstr(i)+ii)
-               write (*,*) 'vbrcsr: no space for row ', -ierr
-               return
-            endif
-            a(a0) = b(b0)
-            a0 = a0 + 1
-            b0 = b0 + neqr
-         enddo
-      enddo
+               if (a0 > nzmax) then
+                  ierr = -(kvstr(i) + ii)
+                  write (*, *) 'vbrcsr: no space for row ', -ierr
+                  return
+               end if
+               a(a0) = b(b0)
+               a0 = a0 + 1
+               b0 = b0 + neqr
+            end do
+         end do
 !-----endloop on block rows
-   enddo
-   ia(kvstr(nr+1)) = a0
-   return
-end
+      end do
+      ia(kvstr(nr + 1)) = a0
+      return
+   end
 !-----------------------------------------------------------------------
 !---------------------------end-of-vbrcsr-------------------------------
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-subroutine csorted(n, ia, ja, sorted)
+   subroutine csorted(n, ia, ja, sorted)
 !-----------------------------------------------------------------------
-   integer n, ia(n+1), ja(*)
-   logical sorted
+      integer n, ia(n + 1), ja(:)
+      logical sorted
 !-----------------------------------------------------------------------
 !     Checks if matrix in CSR format is sorted by columns.
 !-----------------------------------------------------------------------
@@ -6395,19 +6471,19 @@ subroutine csorted(n, ia, ja, sorted)
 !
 !-----------------------------------------------------------------------
 !-----local variables
-   integer i,j
+      integer i, j
 !---------------------------------
-   do i = 1, n
-      do j = ia(i)+1, ia(i+1)-1
-         if (ja(j-1) .ge. ja(j)) then
-            sorted = .false.
-            return
-         endif
-      enddo
-   enddo
-   sorted = .true.
-   return
-end
+      do i = 1, n
+         do j = ia(i) + 1, ia(i + 1) - 1
+            if (ja(j - 1) >= ja(j)) then
+               sorted = .false.
+               return
+            end if
+         end do
+      end do
+      sorted = .true.
+      return
+   end
 !-----------------------------------------------------------------------
 !------------------------end-of-csorted---------------------------------
 !----------------------------------------------------------------------c
@@ -6461,12 +6537,13 @@ end
 ! csrkvstc:  Finds block column partitioning of matrix in CSR format   c
 ! kvstmerge: Merges block partitionings, for conformal row/col pattern c
 !----------------------------------------------------------------------c
-subroutine submat (n,job,i1,i2,j1,j2,a,ja,ia,nr,nc,ao,jao,iao)
-   integer, intent(in) :: n,job
-   integer, intent(inout) :: i1,i2,j1,j2,nr,nc,ia(*),ja(*),jao(*)&
-   &,iao(*)
-   real*8 , intent(inout) :: a(*),ao(*)
-   integer :: i, j, k, ii, k1,k2,klen
+   subroutine submat(n, job, i1, i2, j1, j2, a, ja, ia, nr, nc, ao, jao, iao)
+
+      integer, intent(in) :: n, job
+      integer, intent(inout) :: i1, i2, j1, j2, nr, nc, ia(:), ja(:), jao(:)&
+      &, iao(:)
+      real(dp), intent(inout) :: a(:), ao(:)
+      integer :: i, j, k, ii, k1, k2, klen
 !-----------------------------------------------------------------------
 ! extracts the submatrix A(i1:i2,j1:j2) and puts the result in
 ! matrix ao,iao,jao
@@ -6502,39 +6579,47 @@ subroutine submat (n,job,i1,i2,j1,j2,a,ja,ia,nr,nc,ao,jao,iao)
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
-   nr = i2-i1+1
-   nc = j2-j1+1
+      no_warning_unused_dummy_argument(n)
+
+      nr = i2 - i1 + 1
+      nc = j2 - j1 + 1
 !
-   if ( nr .le. 0 .or. nc .le. 0) return
+      if (nr <= 0 .or. nc <= 0) then
+         return
+      end if
 !
-   klen = 0
+      klen = 0
 !
 !     simple procedure. proceeds row-wise...
 !
-   do 100 i = 1,nr
-      ii = i1+i-1
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      iao(i) = klen+1
+      do i = 1, nr
+         ii = i1 + i - 1
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         iao(i) = klen + 1
 !-----------------------------------------------------------------------
-      do 60 k=k1,k2
-         j = ja(k)
-         if (j .ge. j1 .and. j .le. j2) then
-            klen = klen+1
-            if (job .eq. 1) ao(klen) = a(k)
-            jao(klen) = j - j1+1
-         endif
-60    continue
-100 continue
-   iao(nr+1) = klen+1
-   return
+         do k = k1, k2
+            j = ja(k)
+            if (j >= j1 .and. j <= j2) then
+               klen = klen + 1
+               if (job == 1) then
+                  ao(klen) = a(k)
+               end if
+               jao(klen) = j - j1 + 1
+            end if
+         end do
+      end do
+      iao(nr + 1) = klen + 1
+      return
 !------------end-of submat----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine filter(n,job,drptol,a,ja,ia,b,jb,ib,len,ierr)
-   real*8 a(*),b(*),drptol
-   integer ja(*),jb(*),ia(*),ib(*),n,job,len,ierr
+   subroutine filter(n, job, drptol, a, ja, ia, b, jb, ib, len, ierr)
+      use precision, only: dp
+
+      real(dp) :: a(:), b(:), drptol
+      integer ja(:), jb(:), ia(:), ib(:), n, job, len, ierr
 !-----------------------------------------------------------------------
 !     This module removes any elements whose absolute value
 !     is small from an input matrix A and puts the resulting
@@ -6582,51 +6667,61 @@ subroutine filter(n,job,drptol,a,ja,ia,b,jb,ib,len,ierr)
 !           contributed by David Day,  Sep 19, 1989.                   c
 !----------------------------------------------------------------------c
 ! local variables
-   real*8 norm,loctol
-   integer index,row,k,k1,k2
+      real(dp) :: norm, loctol
+      integer index, row, k, k1, k2
 !
-   index = 1
-   do 10 row= 1,n
-      k1 = ia(row)
-      k2 = ia(row+1) - 1
-      ib(row) = index
-      goto (100,200,300) job
-100   norm = 1.0d0
-      goto 400
-200   norm = 0.0d0
-      do 22 k = k1,k2
-         norm = norm + a(k) * a(k)
-22    continue
-      norm = sqrt(norm)
-      goto 400
-300   norm = 0.0d0
-      do 23 k = k1,k2
-         if( abs(a(k))  .gt. norm) then
-            norm = abs(a(k))
-         endif
-23    continue
-400   loctol = drptol * norm
-      do 30 k = k1,k2
-         if( abs(a(k)) .gt. loctol)then
-            if (index .gt. len) then
-               ierr = row
-               return
-            endif
-            b(index) =  a(k)
-            jb(index) = ja(k)
-            index = index + 1
-         endif
-30    continue
-10 continue
-   ib(n+1) = index
-   return
+      index = 1
+      do row = 1, n
+         k1 = ia(row)
+         k2 = ia(row + 1) - 1
+         ib(row) = index
+
+         if (job == 1) then
+            goto 100
+         else if (job == 2) then
+            goto 200
+         else if (job == 3) then
+            goto 300
+         end if
+
+100      norm = 1.0_dp
+         goto 400
+200      norm = 0.0_dp
+         do k = k1, k2
+            norm = norm + a(k) * a(k)
+         end do
+         norm = sqrt(norm)
+         goto 400
+300      norm = 0.0_dp
+         do k = k1, k2
+            if (abs(a(k)) > norm) then
+               norm = abs(a(k))
+            end if
+         end do
+400      loctol = drptol * norm
+         do k = k1, k2
+            if (abs(a(k)) > loctol) then
+               if (index > len) then
+                  ierr = row
+                  return
+               end if
+               b(index) = a(k)
+               jb(index) = ja(k)
+               index = index + 1
+            end if
+         end do
+      end do
+      ib(n + 1) = index
+      return
 !--------------------end-of-filter -------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine filterm (n,job,drop,a,ja,b,jb,len,ierr)
-   real*8 a(*),b(*),drop
-   integer ja(*),jb(*),n,job,len,ierr
+   subroutine filterm(n, job, drop, a, ja, b, jb, len, ierr)
+      use precision, only: dp
+
+      real(dp) :: a(:), b(:), drop
+      integer ja(:), jb(:), n, job, len, ierr
 !-----------------------------------------------------------------------
 !     This subroutine removes any elements whose absolute value
 !     is small from an input matrix A. Same as filter but
@@ -6672,50 +6767,60 @@ subroutine filterm (n,job,drop,a,ja,b,jb,len,ierr)
 !----------------------------------------------------------------------c
 ! local variables
 !
-   real*8 norm,loctol
-   integer index,row,k,k1,k2
+      real(dp) :: norm, loctol
+      integer index, row, k, k1, k2
 !
-   index = n+2
-   do 10 row= 1,n
-      k1 = ja(row)
-      k2 = ja(row+1) - 1
-      jb(row) = index
-      goto (100,200,300) job
-100   norm = 1.0d0
-      goto 400
-200   norm = a(row)**2
-      do 22 k = k1,k2
-         norm = norm + a(k) * a(k)
-22    continue
-      norm = sqrt(norm)
-      goto 400
-300   norm = abs(a(row))
-      do 23 k = k1,k2
-         norm = max(abs(a(k)),norm)
-23    continue
-400   loctol = drop * norm
-      do 30 k = k1,k2
-         if( abs(a(k)) .gt. loctol)then
-            if (index .gt. len) then
-               ierr = row
-               return
-            endif
-            b(index) =  a(k)
-            jb(index) = ja(k)
-            index = index + 1
-         endif
-30    continue
-10 continue
-   jb(n+1) = index
-   return
+      index = n + 2
+      do row = 1, n
+         k1 = ja(row)
+         k2 = ja(row + 1) - 1
+         jb(row) = index
+
+         if (job == 1) then
+            goto 100
+         else if (job == 2) then
+            goto 200
+         else if (job == 3) then
+            goto 300
+         end if
+
+100      norm = 1.0_dp
+         goto 400
+200      norm = a(row)**2
+         do k = k1, k2
+            norm = norm + a(k) * a(k)
+         end do
+         norm = sqrt(norm)
+         goto 400
+300      norm = abs(a(row))
+         do k = k1, k2
+            norm = max(abs(a(k)), norm)
+         end do
+400      loctol = drop * norm
+         do k = k1, k2
+            if (abs(a(k)) > loctol) then
+               if (index > len) then
+                  ierr = row
+                  return
+               end if
+               b(index) = a(k)
+               jb(index) = ja(k)
+               index = index + 1
+            end if
+         end do
+      end do
+      jb(n + 1) = index
+      return
 !--------------------end-of-filterm-------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csort (n,a,ja,ia,iwork,values)
-   logical values
-   integer n, ja(*), ia(n+1), iwork(*)
-   real*8 a(*)
+   subroutine csort(n, a, ja, ia, iwork, values)
+      use precision, only: dp
+
+      logical values
+      integer n, ja(:), ia(n + 1), iwork(:)
+      real(dp) :: a(:)
 !-----------------------------------------------------------------------
 ! This routine sorts the elements of  a matrix (stored in Compressed
 ! Sparse Row Format) in increasing order of their column indices within
@@ -6731,7 +6836,7 @@ subroutine csort (n,a,ja,ia,iwork,values)
 ! ia    = the array of pointers to the rows.
 ! iwork = integer work array of length max ( n+1, 2*nnz )
 !         where nnz = (ia(n+1)-ia(1))  ) .
-! values= logical indicating whether or not the real values a(*) must
+! values= logical indicating whether or not the real values a(:) must
 !         also be permuted. if (.not. values) then the array a is not
 !         touched by csort and can be a dummy array.
 !
@@ -6744,87 +6849,91 @@ subroutine csort (n,a,ja,ia,iwork,values)
 ! Y. Saad - Feb. 1, 1991.
 !-----------------------------------------------------------------------
 ! local variables
-   integer i, k, j, ifirst, nnz, next, irow, ko
+      integer i, k, j, ifirst, nnz, next, irow, ko
 !
 ! count the number of elements in each column
 !
-   do 1 i=1,n+1
-      iwork(i) = 0
-1  continue
-   do 3 i=1, n
-      do 2 k=ia(i), ia(i+1)-1
-         j = ja(k)+1
-         iwork(j) = iwork(j)+1
-2     continue
-3  continue
+      do i = 1, n + 1
+         iwork(i) = 0
+      end do
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k) + 1
+            iwork(j) = iwork(j) + 1
+         end do
+      end do
 !
 ! compute pointers from lengths.
 !
-   iwork(1) = 1
-   do 4 i=1,n
-      iwork(i+1) = iwork(i) + iwork(i+1)
-4  continue
+      iwork(1) = 1
+      do i = 1, n
+         iwork(i + 1) = iwork(i) + iwork(i + 1)
+      end do
 !
 ! get the positions of the nonzero elements in order of columns.
 !
-   ifirst = ia(1)
-   nnz = ia(n+1)-ifirst
-   do 5 i=1,n
-      do 51 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         next = iwork(j)
-         iwork(nnz+next) = k
-         iwork(j) = next+1
-51    continue
-5  continue
+      ifirst = ia(1)
+      nnz = ia(n + 1) - ifirst
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            next = iwork(j)
+            iwork(nnz + next) = k
+            iwork(j) = next + 1
+         end do
+      end do
 !
 ! convert to coordinate format
 !
-   do 6 i=1, n
-      do 61 k=ia(i), ia(i+1)-1
-         iwork(k) = i
-61    continue
-6  continue
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            iwork(k) = i
+         end do
+      end do
 !
 ! loop to find permutation: for each element find the correct
 ! position in (sorted) arrays a, ja. Record this in iwork.
 !
-   do 7 k=1, nnz
-      ko = iwork(nnz+k)
-      irow = iwork(ko)
-      next = ia(irow)
+      do k = 1, nnz
+         ko = iwork(nnz + k)
+         irow = iwork(ko)
+         next = ia(irow)
 !
 ! the current element should go in next position in row. iwork
 ! records this position.
 !
-      iwork(ko) = next
-      ia(irow)  = next+1
-7  continue
+         iwork(ko) = next
+         ia(irow) = next + 1
+      end do
 !
 ! perform an in-place permutation of the  arrays.
 !
-   call ivperm (nnz, ja(ifirst), iwork)
-   if (values) call dvperm (nnz, a(ifirst), iwork)
+      call ivperm(nnz, ja(ifirst:ifirst + nnz - 1), iwork)
+      if (values) then
+         call dvperm(nnz, a(ifirst:ifirst + nnz - 1), iwork)
+      end if
 !
 ! reshift the pointers of the original matrix back.
 !
-   do 8 i=n,1,-1
-      ia(i+1) = ia(i)
-8  continue
-   ia(1) = ifirst
+      do i = n, 1, -1
+         ia(i + 1) = ia(i)
+      end do
+      ia(1) = ifirst
 !
-   return
+      return
 !---------------end-of-csort--------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine clncsr(job,value2,nrow,a,ja,ia,indu,iwk)
+   subroutine clncsr(job, value2, nrow, a, ja, ia, indu, iwk)
+      use precision, only: dp
+
 !     .. Scalar Arguments ..
-   integer job, nrow, value2
+      integer job, nrow, value2
 !     ..
 !     .. Array Arguments ..
-   integer ia(nrow+1),indu(nrow),iwk(nrow+1),ja(*)
-   real*8  a(*)
+      integer ia(nrow + 1), indu(nrow), iwk(nrow + 1), ja(:)
+      real(dp) :: a(:)
 !     ..
 !
 !     This routine performs two tasks to clean up a CSR matrix
@@ -6855,11 +6964,13 @@ subroutine clncsr(job,value2,nrow,a,ja,ia,indu,iwk)
 !     iwk     -- integer work space of size nrow+1
 !
 !     .. Local Scalars ..
-   integer i,j,k,ko,ipos,kfirst,klast
-   real*8  tmp
+      integer i, j, k, ko, ipos, kfirst, klast
+      real(dp) :: tmp
 !     ..
 !
-   if (job.le.0) return
+      if (job <= 0) then
+         return
+      end if
 !
 !     .. eliminate duplicate entries --
 !     array INDU is used as marker for existing indices, it is also the
@@ -6868,124 +6979,132 @@ subroutine clncsr(job,value2,nrow,a,ja,ia,indu,iwk)
 !     matrix is copied to squeeze out the space taken by the duplicated
 !     entries.
 !
-   do 90 i = 1, nrow
-      indu(i) = 0
-      iwk(i) = ia(i)
-90 continue
-   iwk(nrow+1) = ia(nrow+1)
-   k = 1
-   do 120 i = 1, nrow
-      ia(i) = k
-      ipos = iwk(i)
-      klast = iwk(i+1)
-100   if (ipos.lt.klast) then
-         j = ja(ipos)
-         if (indu(j).eq.0) then
+      do i = 1, nrow
+         indu(i) = 0
+         iwk(i) = ia(i)
+      end do
+      iwk(nrow + 1) = ia(nrow + 1)
+      k = 1
+      do i = 1, nrow
+         ia(i) = k
+         ipos = iwk(i)
+         klast = iwk(i + 1)
+100      if (ipos < klast) then
+            j = ja(ipos)
+            if (indu(j) == 0) then
 !     .. new entry ..
-            if (value2.ne.0) then
-               if (a(ipos) .ne. 0.0D0) then
+               if (value2 /= 0) then
+                  if (a(ipos) /= 0.0_dp) then
+                     indu(j) = k
+                     ja(k) = ja(ipos)
+                     a(k) = a(ipos)
+                     k = k + 1
+                  end if
+               else
                   indu(j) = k
                   ja(k) = ja(ipos)
-                  a(k) = a(ipos)
                   k = k + 1
-               endif
-            else
-               indu(j) = k
-               ja(k) = ja(ipos)
-               k = k + 1
-            endif
-         else if (value2.ne.0) then
+               end if
+            else if (value2 /= 0) then
 !     .. duplicate entry ..
-            a(indu(j)) = a(indu(j)) + a(ipos)
-         endif
-         ipos = ipos + 1
-         go to 100
-      endif
+               a(indu(j)) = a(indu(j)) + a(ipos)
+            end if
+            ipos = ipos + 1
+            go to 100
+         end if
 !     .. remove marks before working on the next row ..
-      do 110 ipos = ia(i), k - 1
-         indu(ja(ipos)) = 0
-110   continue
-120 continue
-   ia(nrow+1) = k
-   if (job.le.1) return
+         do ipos = ia(i), k - 1
+            indu(ja(ipos)) = 0
+         end do
+      end do
+      ia(nrow + 1) = k
+      if (job <= 1) then
+         return
+      end if
 !
 !     .. partial ordering ..
 !     split the matrix into strict upper/lower triangular
 !     parts, INDU points to the the beginning of the upper part.
 !
-   do 140 i = 1, nrow
-      klast = ia(i+1) - 1
-      kfirst = ia(i)
-130   if (klast.gt.kfirst) then
-         if (ja(klast).lt.i .and. ja(kfirst).ge.i) then
+      do i = 1, nrow
+         klast = ia(i + 1) - 1
+         kfirst = ia(i)
+130      if (klast > kfirst) then
+            if (ja(klast) < i .and. ja(kfirst) >= i) then
 !     .. swap klast with kfirst ..
-            j = ja(klast)
-            ja(klast) = ja(kfirst)
-            ja(kfirst) = j
-            if (value2.ne.0) then
-               tmp = a(klast)
-               a(klast) = a(kfirst)
-               a(kfirst) = tmp
-            endif
-         endif
-         if (ja(klast).ge.i)&
-         &klast = klast - 1
-         if (ja(kfirst).lt.i)&
-         &kfirst = kfirst + 1
-         go to 130
-      endif
+               j = ja(klast)
+               ja(klast) = ja(kfirst)
+               ja(kfirst) = j
+               if (value2 /= 0) then
+                  tmp = a(klast)
+                  a(klast) = a(kfirst)
+                  a(kfirst) = tmp
+               end if
+            end if
+            if (ja(klast) >= i) then
+               klast = klast - 1
+            end if
+            if (ja(kfirst) < i) then
+               kfirst = kfirst + 1
+            end if
+            go to 130
+         end if
 !
-      if (ja(klast).lt.i) then
-         indu(i) = klast + 1
-      else
-         indu(i) = klast
-      endif
-140 continue
-   if (job.le.2) return
+         if (ja(klast) < i) then
+            indu(i) = klast + 1
+         else
+            indu(i) = klast
+         end if
+      end do
+      if (job <= 2) then
+         return
+      end if
 !
 !     .. order the entries according to column indices
 !     burble-sort is used
 !
-   do 190 i = 1, nrow
-      do 160 ipos = ia(i), indu(i)-1
-         do 150 j = indu(i)-1, ipos+1, -1
-            k = j - 1
-            if (ja(k).gt.ja(j)) then
-               ko = ja(k)
-               ja(k) = ja(j)
-               ja(j) = ko
-               if (value2.ne.0) then
-                  tmp = a(k)
-                  a(k) = a(j)
-                  a(j) = tmp
-               endif
-            endif
-150      continue
-160   continue
-      do 180 ipos = indu(i), ia(i+1)-1
-         do 170 j = ia(i+1)-1, ipos+1, -1
-            k = j - 1
-            if (ja(k).gt.ja(j)) then
-               ko = ja(k)
-               ja(k) = ja(j)
-               ja(j) = ko
-               if (value2.ne.0) then
-                  tmp = a(k)
-                  a(k) = a(j)
-                  a(j) = tmp
-               endif
-            endif
-170      continue
-180   continue
-190 continue
-   return
+      do i = 1, nrow
+         do ipos = ia(i), indu(i) - 1
+            do j = indu(i) - 1, ipos + 1, -1
+               k = j - 1
+               if (ja(k) > ja(j)) then
+                  ko = ja(k)
+                  ja(k) = ja(j)
+                  ja(j) = ko
+                  if (value2 /= 0) then
+                     tmp = a(k)
+                     a(k) = a(j)
+                     a(j) = tmp
+                  end if
+               end if
+            end do
+         end do
+         do ipos = indu(i), ia(i + 1) - 1
+            do j = ia(i + 1) - 1, ipos + 1, -1
+               k = j - 1
+               if (ja(k) > ja(j)) then
+                  ko = ja(k)
+                  ja(k) = ja(j)
+                  ja(j) = ko
+                  if (value2 /= 0) then
+                     tmp = a(k)
+                     a(k) = a(j)
+                     a(j) = tmp
+                  end if
+               end if
+            end do
+         end do
+      end do
+      return
 !---- end of clncsr ----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine copmat (nrow,a,ja,ia,ao,jao,iao,ipos,job)
-   real*8 a(*),ao(*)
-   integer nrow, ia(*),ja(*),jao(*),iao(*), ipos, job
+   subroutine copmat(nrow, a, ja, ia, ao, jao, iao, ipos, job)
+      use precision, only: dp
+
+      real(dp) :: a(:), ao(:)
+      integer nrow, ia(:), ja(:), jao(:), iao(:), ipos, job
 !----------------------------------------------------------------------
 ! copies the matrix a, ja, ia, into the matrix ao, jao, iao.
 !----------------------------------------------------------------------
@@ -7010,30 +7129,34 @@ subroutine copmat (nrow,a,ja,ia,ao,jao,iao,ipos,job)
 !           Y. Saad, March 1990.
 !-----------------------------------------------------------------------
 ! local variables
-   integer kst, i, k
+      integer kst, i, k
 !
-   kst    = ipos -ia(1)
-   do 100 i = 1, nrow+1
-      iao(i) = ia(i) + kst
-100 continue
+      kst = ipos - ia(1)
+      do i = 1, nrow + 1
+         iao(i) = ia(i) + kst
+      end do
 !
-   do 200 k=ia(1), ia(nrow+1)-1
-      jao(kst+k)= ja(k)
-200 continue
+      do k = ia(1), ia(nrow + 1) - 1
+         jao(kst + k) = ja(k)
+      end do
 !
-   if (job .ne. 1) return
-   do 201 k=ia(1), ia(nrow+1)-1
-      ao(kst+k) = a(k)
-201 continue
+      if (job /= 1) then
+         return
+      end if
+      do k = ia(1), ia(nrow + 1) - 1
+         ao(kst + k) = a(k)
+      end do
 !
-   return
+      return
 !--------end-of-copmat -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine msrcop (nrow,a,ja,ao,jao,job)
-   real*8 a(*),ao(*)
-   integer nrow, ja(*),jao(*), job
+   subroutine msrcop(nrow, a, ja, ao, jao, job)
+      use precision, only: dp
+
+      real(dp) :: a(:), ao(:)
+      integer nrow, ja(:), jao(:), job
 !----------------------------------------------------------------------
 ! copies the MSR matrix a, ja, into the MSR matrix ao, jao
 !----------------------------------------------------------------------
@@ -7050,30 +7173,32 @@ subroutine msrcop (nrow,a,ja,ao,jao,job)
 !           Y. Saad,
 !-----------------------------------------------------------------------
 ! local variables
-   integer i, k
+      integer i, k
 !
-   do 100 i = 1, nrow+1
-      jao(i) = ja(i)
-100 continue
+      do i = 1, nrow + 1
+         jao(i) = ja(i)
+      end do
 !
-   do 200 k=ja(1), ja(nrow+1)-1
-      jao(k)= ja(k)
-200 continue
+      do k = ja(1), ja(nrow + 1) - 1
+         jao(k) = ja(k)
+      end do
 !
-   if (job .ne. 1) return
-   do 201 k=ja(1), ja(nrow+1)-1
-      ao(k) = a(k)
-201 continue
-   do 202 k=1,nrow
-      ao(k) = a(k)
-202 continue
+      if (job /= 1) then
+         return
+      end if
+      do k = ja(1), ja(nrow + 1) - 1
+         ao(k) = a(k)
+      end do
+      do k = 1, nrow
+         ao(k) = a(k)
+      end do
 !
-   return
+      return
 !--------end-of-msrcop -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-double precision function getelm (i,j,a,ja,ia,iadd,sorted)
+   real(kind=dp) function getelm(i, j, a, ja, ia, iadd, sorted)
 !-----------------------------------------------------------------------
 !     purpose:
 !     --------
@@ -7112,73 +7237,77 @@ double precision function getelm (i,j,a,ja,ia,iadd,sorted)
 !-----------------------------------------------------------------------
 !     noel m. nachtigal october 28, 1990 -- youcef saad jan 20, 1991.
 !-----------------------------------------------------------------------
-   integer i, ia(*), iadd, j, ja(*)
-   double precision a(*)
-   logical sorted
+      integer i, ia(:), iadd, j, ja(:)
+      real(kind=dp) a(:)
+      logical sorted
 !
 !     local variables.
 !
-   integer ibeg, iend, imid, k
+      integer ibeg, iend, imid, k
 !
 !     initialization
 !
-   iadd = 0
-   getelm = 0.0
-   ibeg = ia(i)
-   iend = ia(i+1)-1
+      iadd = 0
+      getelm = 0.0
+      ibeg = ia(i)
+      iend = ia(i + 1) - 1
 !
 !     case where matrix is not necessarily sorted
 !
-   if (.not. sorted) then
+      if (.not. sorted) then
 !
 ! scan the row - exit as soon as a(i,j) is found
 !
-      do 5  k=ibeg, iend
-         if (ja(k) .eq.  j) then
-            iadd = k
-            goto 20
-         endif
-5     continue
+         do k = ibeg, iend
+            if (ja(k) == j) then
+               iadd = k
+               goto 20
+            end if
+         end do
 !
 !     end unsorted case. begin sorted case
 !
-   else
+      else
 !
 !     begin binary search.   compute the middle index.
 !
-10    imid = ( ibeg + iend ) / 2
+10       imid = (ibeg + iend) / 2
 !
 !     test if  found
 !
-      if (ja(imid).eq.j) then
-         iadd = imid
-         goto 20
-      endif
-      if (ibeg .ge. iend) goto 20
+         if (ja(imid) == j) then
+            iadd = imid
+            goto 20
+         end if
+         if (ibeg >= iend) then
+            goto 20
+         end if
 !
 !     else     update the interval bounds.
 !
-      if (ja(imid).gt.j) then
-         iend = imid -1
-      else
-         ibeg = imid +1
-      endif
-      goto 10
+         if (ja(imid) > j) then
+            iend = imid - 1
+         else
+            ibeg = imid + 1
+         end if
+         goto 10
 !
 !     end both cases
 !
-   endif
+      end if
 !
-20 if (iadd .ne. 0) getelm = a(iadd)
+20    if (iadd /= 0) getelm = a(iadd)
 !
-   return
+      return
 !--------end-of-getelm--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine getdia (nrow,ncol,job,a,ja,ia,len,diag,idiag,ioff)
-   real*8 diag(*),a(*)
-   integer nrow, ncol, job, len, ioff, ia(*), ja(*), idiag(*)
+   subroutine getdia(nrow, ncol, job, a, ja, ia, len, diag, idiag, ioff)
+      use precision, only: dp
+
+      real(dp) :: diag(:), a(:)
+      integer nrow, ncol, job, len, ioff, ia(:), ja(:), idiag(:)
 !-----------------------------------------------------------------------
 ! this subroutine extracts a given diagonal from a matrix stored in csr
 ! format. the output matrix may be transformed with the diagonal removed
@@ -7189,7 +7318,7 @@ subroutine getdia (nrow,ncol,job,a,ja,ia,len,diag,idiag,ioff)
 ! the matrix that are contained in the diagonal offset by ioff
 ! with respect to the main diagonal. if the diagonal element
 ! falls outside the matrix then it is defined as a zero entry.
-! thus the proper definition of diag(*) with offset ioff is
+! thus the proper definition of diag(:) with offset ioff is
 !
 !     diag(i) = a(i,ioff+i) i=1,2,...,nrow
 !     with elements falling outside the matrix being defined as zero.
@@ -7219,7 +7348,7 @@ subroutine getdia (nrow,ncol,job,a,ja,ia,len,diag,idiag,ioff)
 ! len   = number of nonzero elements found in diag.
 !         (len .le. min(nrow,ncol-ioff)-max(1,1-ioff) + 1 )
 !
-! diag  = real*8 array of length nrow containing the wanted diagonal.
+! diag  = real(dp) array of length nrow containing the wanted diagonal.
 !       diag contains the diagonal (a(i,j),j-i = ioff ) as defined
 !         above.
 !
@@ -7238,59 +7367,63 @@ subroutine getdia (nrow,ncol,job,a,ja,ia,len,diag,idiag,ioff)
 !     Y. Saad, sep. 21 1989 - modified and retested Feb 17, 1996.      c
 !----------------------------------------------------------------------c
 !     local variables
-   integer istart, max, iend, i, kold, k, kdiag, ko
+      integer istart, max, iend, i, kold, k, kdiag, ko
 !
-   istart = max(0,-ioff)
-   iend = min(nrow,ncol-ioff)
-   len = 0
-   do 1 i=1,nrow
-      idiag(i) = 0
-      diag(i) = 0.0d0
-1  continue
+      istart = max(0, -ioff)
+      iend = min(nrow, ncol - ioff)
+      len = 0
+      do i = 1, nrow
+         idiag(i) = 0
+         diag(i) = 0.0_dp
+      end do
 !
 !     extract  diagonal elements
 !
-   do 6 i=istart+1, iend
-      do 51 k= ia(i),ia(i+1) -1
-         if (ja(k)-i .eq. ioff) then
-            diag(i)= a(k)
-            idiag(i) = k
-            len = len+1
-            goto 6
-         endif
-51    continue
-6  continue
-   if (job .eq. 0 .or. len .eq.0) return
+      outer_loop: &
+         do i = istart + 1, iend
+         do k = ia(i), ia(i + 1) - 1
+            if (ja(k) - i == ioff) then
+               diag(i) = a(k)
+               idiag(i) = k
+               len = len + 1
+               cycle outer_loop
+            end if
+         end do
+      end do outer_loop
+      if (job == 0 .or. len == 0) then
+         return
+      end if
 !
 !     remove diagonal elements and rewind structure
 !
-   ko = 0
-   do  7 i=1, nrow
-      kold = ko
-      kdiag = idiag(i)
-      do 71 k= ia(i), ia(i+1)-1
-         if (k .ne. kdiag) then
-            ko = ko+1
-            a(ko) = a(k)
-            ja(ko) = ja(k)
-         endif
-71    continue
-      ia(i) = kold+1
-7  continue
+      ko = 0
+      do i = 1, nrow
+         kold = ko
+         kdiag = idiag(i)
+         do k = ia(i), ia(i + 1) - 1
+            if (k /= kdiag) then
+               ko = ko + 1
+               a(ko) = a(k)
+               ja(ko) = ja(k)
+            end if
+         end do
+         ia(i) = kold + 1
+      end do
 !
 !     redefine ia(nrow+1)
 !
-   ia(nrow+1) = ko+1
-   return
+      ia(nrow + 1) = ko + 1
+      return
 !------------end-of-getdia----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine transp (nrow,ncol,a,ja,ia,iwk,ierr)
-   integer, intent(in) :: nrow
-   integer, intent(out) :: ierr
-   integer, intent(inout) :: ia(*), ja(*), iwk(*), ncol
-   real*8 , intent(inout) :: a(*)
+   subroutine transp(nrow, ncol, a, ja, ia, iwk, ierr)
+
+      integer, intent(in) :: nrow
+      integer, intent(out) :: ierr
+      integer, intent(inout) :: ia(:), ja(:), iwk(:), ncol
+      real(dp), intent(inout) :: a(:)
 !------------------------------------------------------------------------
 ! In-place transposition routine.
 !------------------------------------------------------------------------
@@ -7343,93 +7476,103 @@ subroutine transp (nrow,ncol,a,ja,ia,iwk,ierr)
 !  modified Oct. 11, 1989.                                             c
 !----------------------------------------------------------------------c
 ! local variables
-   real*8  :: t, t1
-   integer :: i,j,k,l,init,inext,jcol,nnz
+      real(dp) :: t, t1
+      integer :: i, j, k, l, init, inext, jcol, nnz
 
-   ierr = 0
-   nnz = ia(nrow+1)-1
+      ierr = 0
+      nnz = ia(nrow + 1) - 1
 !
 !     determine column dimension
 !
-   jcol = 0
-   do 1 k=1, nnz
-      jcol = max(jcol,ja(k))
-1  continue
-   if (jcol .gt. ncol) then
-      ierr = jcol
-      return
-   endif
+      jcol = 0
+      do k = 1, nnz
+         jcol = max(jcol, ja(k))
+      end do
+      if (jcol > ncol) then
+         ierr = jcol
+         return
+      end if
 !
 !     convert to coordinate format. use iwk for row indices.
 !
-   ncol = jcol
+      ncol = jcol
 !
-   do 3 i=1,nrow
-      do 2 k=ia(i),ia(i+1)-1
-         iwk(k) = i
-2     continue
-3  continue
+      do i = 1, nrow
+         do k = ia(i), ia(i + 1) - 1
+            iwk(k) = i
+         end do
+      end do
 !     find pointer array for transpose.
-   do 35 i=1,ncol+1
-      ia(i) = 0
-35 continue
-   do 4 k=1,nnz
-      i = ja(k)
-      ia(i+1) = ia(i+1)+1
-4  continue
-   ia(1) = 1
+      do i = 1, ncol + 1
+         ia(i) = 0
+      end do
+      do k = 1, nnz
+         i = ja(k)
+         ia(i + 1) = ia(i + 1) + 1
+      end do
+      ia(1) = 1
 !------------------------------------------------------------------------
-   do 44 i=1,ncol
-      ia(i+1) = ia(i) + ia(i+1)
-44 continue
+      do i = 1, ncol
+         ia(i + 1) = ia(i) + ia(i + 1)
+      end do
 !
 !     loop for a cycle in chasing process.
 !
-   init = 1
-   k = 0
-5  t = a(init)
-   i = ja(init)
-   j = iwk(init)
-   iwk(init) = -1
+      init = 1
+      k = 0
+5     t = a(init)
+      i = ja(init)
+      j = iwk(init)
+      iwk(init) = -1
 !------------------------------------------------------------------------
-6  k = k+1
+6     k = k + 1
 !     current row number is i.  determine  where to go.
-   l = ia(i)
+      l = ia(i)
 !     save the chased element.
-   t1 = a(l)
-   inext = ja(l)
+      t1 = a(l)
+      inext = ja(l)
 !     then occupy its location.
-   a(l)  = t
-   ja(l) = j
+      a(l) = t
+      ja(l) = j
 !     update pointer information for next element to be put in row i.
-   ia(i) = l+1
+      ia(i) = l + 1
 !     determine  next element to be chased
-   if (iwk(l) .lt. 0) goto 65
-   t = t1
-   i = inext
-   j = iwk(l)
-   iwk(l) = -1
-   if (k .lt. nnz) goto 6
-   goto 70
-65 init = init+1
-   if (init .gt. nnz) goto 70
-   if (iwk(init) .lt. 0) goto 65
+      if (iwk(l) < 0) then
+         goto 65
+      end if
+      t = t1
+      i = inext
+      j = iwk(l)
+      iwk(l) = -1
+      if (k < nnz) then
+         goto 6
+      end if
+      goto 70
+65    init = init + 1
+      if (init > nnz) then
+         goto 70
+      end if
+      if (iwk(init) < 0) then
+         goto 65
+      end if
 !     restart chasing --
-   goto 5
-70 continue
-   do 80 i=ncol,1,-1
-      ia(i+1) = ia(i)
-80 continue
-   ia(1) = 1
+      goto 5
+70    continue
+      do i = ncol, 1, -1
+         ia(i + 1) = ia(i)
+      end do
+      ia(1) = 1
 !
-   return
+      return
 !------------------end-of-transp ----------------------------------------
 !------------------------------------------------------------------------
-end
+   end
 !------------------------------------------------------------------------
-subroutine getl (n,a,ja,ia,ao,jao,iao)
-   integer n, ia(*), ja(*), iao(*), jao(*)
-   real*8 a(*), ao(*)
+   subroutine getl(n, a, ja, ia, ao, jao, iao)
+      use precision, only: dp
+
+      integer n, ia(:), ja(:), iao(:), jao(:)
+      real(dp) :: a(:), ao(:)
 !------------------------------------------------------------------------
 ! this subroutine extracts the lower triangular part of a matrix
 ! and writes the result ao, jao, iao. The routine is in place in
@@ -7451,45 +7594,53 @@ subroutine getl (n,a,ja,ia,ao,jao,iao)
 !
 !------------------------------------------------------------------------
 ! local variables
-   real*8 t
-   integer ko, kold, kdiag, k, i
+      real(dp) :: t
+      integer ko, kold, kdiag, k, i
 !
 ! inititialize ko (pointer for output matrix)
 !
-   ko = 0
-   do  7 i=1, n
-      kold = ko
-      kdiag = 0
-      do 71 k = ia(i), ia(i+1) -1
-         if (ja(k)  .gt. i) goto 71
-         ko = ko+1
-         ao(ko) = a(k)
-         jao(ko) = ja(k)
-         if (ja(k)  .eq. i) kdiag = ko
-71    continue
-      if (kdiag .eq. 0 .or. kdiag .eq. ko) goto 72
+      ko = 0
+      do i = 1, n
+         kold = ko
+         kdiag = 0
+         do k = ia(i), ia(i + 1) - 1
+            if (ja(k) > i) then
+               cycle
+            end if
+            ko = ko + 1
+            ao(ko) = a(k)
+            jao(ko) = ja(k)
+            if (ja(k) == i) then
+               kdiag = ko
+            end if
+         end do
+         if (kdiag == 0 .or. kdiag == ko) then
+            goto 72
+         end if
 !
 !     exchange
 !
-      t = ao(kdiag)
-      ao(kdiag) = ao(ko)
-      ao(ko) = t
+         t = ao(kdiag)
+         ao(kdiag) = ao(ko)
+         ao(ko) = t
 !
-      k = jao(kdiag)
-      jao(kdiag) = jao(ko)
-      jao(ko) = k
-72    iao(i) = kold+1
-7  continue
+         k = jao(kdiag)
+         jao(kdiag) = jao(ko)
+         jao(ko) = k
+72       iao(i) = kold + 1
+      end do
 !     redefine iao(n+1)
-   iao(n+1) = ko+1
-   return
+      iao(n + 1) = ko + 1
+      return
 !----------end-of-getl -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine getu (n,a,ja,ia,ao,jao,iao)
-   integer n, ia(*), ja(*), iao(*), jao(*)
-   real*8 a(*), ao(*)
+   subroutine getu(n, a, ja, ia, ao, jao, iao)
+      use precision, only: dp
+
+      integer n, ia(:), ja(:), iao(:), jao(:)
+      real(dp) :: a(:), ao(:)
 !------------------------------------------------------------------------
 ! this subroutine extracts the upper triangular part of a matrix
 ! and writes the result ao, jao, iao. The routine is in place in
@@ -7511,42 +7662,48 @@ subroutine getu (n,a,ja,ia,ao,jao,iao)
 !
 !------------------------------------------------------------------------
 ! local variables
-   real*8 t
-   integer ko, k, i, kdiag, kfirst
-   ko = 0
-   do  7 i=1, n
-      kfirst = ko+1
-      kdiag = 0
-      do 71 k = ia(i), ia(i+1) -1
-         if (ja(k)  .lt. i) goto 71
-         ko = ko+1
-         ao(ko) = a(k)
-         jao(ko) = ja(k)
-         if (ja(k)  .eq. i) kdiag = ko
-71    continue
-      if (kdiag .eq. 0 .or. kdiag .eq. kfirst) goto 72
+      real(dp) :: t
+      integer ko, k, i, kdiag, kfirst
+      ko = 0
+      do i = 1, n
+         kfirst = ko + 1
+         kdiag = 0
+         do k = ia(i), ia(i + 1) - 1
+            if (ja(k) < i) then
+               cycle
+            end if
+            ko = ko + 1
+            ao(ko) = a(k)
+            jao(ko) = ja(k)
+            if (ja(k) == i) then
+               kdiag = ko
+            end if
+         end do
+         if (kdiag == 0 .or. kdiag == kfirst) then
+            goto 72
+         end if
 !     exchange
-      t = ao(kdiag)
-      ao(kdiag) = ao(kfirst)
-      ao(kfirst) = t
+         t = ao(kdiag)
+         ao(kdiag) = ao(kfirst)
+         ao(kfirst) = t
 !
-      k = jao(kdiag)
-      jao(kdiag) = jao(kfirst)
-      jao(kfirst) = k
-72    iao(i) = kfirst
-7  continue
+         k = jao(kdiag)
+         jao(kdiag) = jao(kfirst)
+         jao(kfirst) = k
+72       iao(i) = kfirst
+      end do
 !     redefine iao(n+1)
-   iao(n+1) = ko+1
-   return
+      iao(n + 1) = ko + 1
+      return
 !----------end-of-getu -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine levels (n, jal, ial, nlev, lev, ilev, levnum)
-   integer, intent(in) :: n
-   integer, intent(out) :: nlev
-   integer, intent(inout) ::jal(*),ial(*), levnum(*), ilev(*), lev(*)
-   integer :: i, j, levi
+   subroutine levels(n, jal, ial, nlev, lev, ilev, levnum)
+      integer, intent(in) :: n
+      integer, intent(out) :: nlev
+      integer, intent(inout) :: jal(:), ial(:), levnum(:), ilev(:), lev(:)
+      integer :: i, j, levi
 !-----------------------------------------------------------------------
 ! levels gets the level structure of a lower triangular matrix
 ! for level scheduling in the parallel solution of triangular systems
@@ -7574,62 +7731,62 @@ subroutine levels (n, jal, ial, nlev, lev, ilev, levnum)
 ! levnum   = integer array of length n (containing the level numbers
 !            of each unknown on return)
 !-----------------------------------------------------------------------
-   do 10 i = 1, n
-      levnum(i) = 0
-10 continue
+      do i = 1, n
+         levnum(i) = 0
+      end do
 !
 !     compute level of each node --
 !
-   nlev = 0
-   do 20 i = 1, n
-      levi = 0
-      do 15 j = ial(i), ial(i+1) - 1
-         levi = max (levi, levnum(jal(j)))
-15    continue
-      levi = levi+1
-      levnum(i) = levi
-      nlev = max(nlev,levi)
-20 continue
+      nlev = 0
+      do i = 1, n
+         levi = 0
+         do j = ial(i), ial(i + 1) - 1
+            levi = max(levi, levnum(jal(j)))
+         end do
+         levi = levi + 1
+         levnum(i) = levi
+         nlev = max(nlev, levi)
+      end do
 !-------------set data structure  --------------------------------------
-   do 21 j=1, nlev+1
-      ilev(j) = 0
-21 continue
+      do j = 1, nlev + 1
+         ilev(j) = 0
+      end do
 !------count  number   of elements in each level -----------------------
-   do 22 j=1, n
-      i = levnum(j)+1
-      ilev(i) = ilev(i)+1
-22 continue
+      do j = 1, n
+         i = levnum(j) + 1
+         ilev(i) = ilev(i) + 1
+      end do
 !---- set up pointer for  each  level ----------------------------------
-   ilev(1) = 1
-   do 23 j=1, nlev
-      ilev(j+1) = ilev(j)+ilev(j+1)
-23 continue
+      ilev(1) = 1
+      do j = 1, nlev
+         ilev(j + 1) = ilev(j) + ilev(j + 1)
+      end do
 !-----determine elements of each level --------------------------------
-   do 30 j=1,n
-      i = levnum(j)
-      lev(ilev(i)) = j
-      ilev(i) = ilev(i)+1
-30 continue
+      do j = 1, n
+         i = levnum(j)
+         lev(ilev(i)) = j
+         ilev(i) = ilev(i) + 1
+      end do
 !     reset pointers backwards
-   do 35 j=nlev, 1, -1
-      ilev(j+1) = ilev(j)
-35 continue
-   ilev(1) = 1
-   return
+      do j = nlev, 1, -1
+         ilev(j + 1) = ilev(j)
+      end do
+      ilev(1) = 1
+      return
 !----------end-of-levels------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine amask (nrow,ncol,a,ja,ia,jmask,imask,&
-&c,jc,ic,iw,nzmax,ierr)
-!---------------------------------------------------------------------
-   integer, intent(in) :: nrow, ncol, nzmax
-   integer, intent(out) :: ierr
-   real*8 , intent(inout) :: a(*),c(*)
-   integer, intent(inout) :: ia(nrow+1),ja(*),jc(*),ic(nrow+1)&
-   &,jmask(*),imask(nrow+1)
-   logical, intent(inout) :: iw(ncol)
-   integer :: k, k1,k2,len,ii,j
+   subroutine amask(nrow, ncol, a, ja, ia, jmask, imask,&
+   &c, jc, ic, iw, nzmax, ierr)
+
+      integer, intent(in) :: nrow, ncol, nzmax
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), c(:)
+      integer, intent(inout) :: ia(nrow + 1), ja(:), jc(:), ic(nrow + 1)&
+      &, jmask(:), imask(nrow + 1)
+      logical, intent(inout) :: iw(ncol)
+      integer :: k, k1, k2, len, ii, j
 !-----------------------------------------------------------------------
 ! This subroutine builds a sparse matrix from an input matrix by
 ! extracting only elements in positions defined by the mask jmask, imask
@@ -7674,50 +7831,51 @@ subroutine amask (nrow,ncol,a,ja,ia,jmask,imask,&
 ! on a, ja, ia
 !
 !-----------------------------------------------------------------------
-   ierr = 0
-   len = 0
-   do 1 j=1, ncol
-      iw(j) = .false.
-1  continue
+      ierr = 0
+      len = 0
+      do j = 1, ncol
+         iw(j) = .false.
+      end do
 !     unpack the mask for row ii in iw
-   do 100 ii=1, nrow
+      do ii = 1, nrow
 !     save pointer in order to be able to do things in place
-      do 2 k=imask(ii), imask(ii+1)-1
-         iw(jmask(k)) = .true.
-2     continue
+         do k = imask(ii), imask(ii + 1) - 1
+            iw(jmask(k)) = .true.
+         end do
 !     add umasked elemnts of row ii
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      ic(ii) = len+1
-      do 200 k=k1,k2
-         j = ja(k)
-         if (iw(j)) then
-            len = len+1
-            if (len .gt. nzmax) then
-               ierr = ii
-               return
-            endif
-            jc(len) = j
-            c(len) = a(k)
-         endif
-200   continue
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         ic(ii) = len + 1
+         do k = k1, k2
+            j = ja(k)
+            if (iw(j)) then
+               len = len + 1
+               if (len > nzmax) then
+                  ierr = ii
+                  return
+               end if
+               jc(len) = j
+               c(len) = a(k)
+            end if
+         end do
 !
-      do 3 k=imask(ii), imask(ii+1)-1
-         iw(jmask(k)) = .false.
-3     continue
-100 continue
-   ic(nrow+1)=len+1
+         do k = imask(ii), imask(ii + 1) - 1
+            iw(jmask(k)) = .false.
+         end do
+      end do
+      ic(nrow + 1) = len + 1
 !
-   return
+      return
 !-----end-of-amask -----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine rperm (nrow,a,ja,ia,ao,jao,iao,perm,job)
-   integer, intent(in) :: nrow, job
-   integer, intent(inout) :: ja(*),ia(nrow+1),jao(*),iao(nrow+1)&
-   &,perm(nrow)
-   real*8 , intent(inout) :: a(*),ao(*)
+   subroutine rperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
+
+      integer, intent(in) :: nrow, job
+      integer, intent(inout) :: ja(:), ia(nrow + 1), jao(:), iao(nrow + 1)&
+      &, perm(nrow)
+      real(dp), intent(inout) :: a(:), ao(:)
 !-----------------------------------------------------------------------
 ! this subroutine permutes the rows of a matrix in CSR format.
 ! rperm  computes B = P A  where P is a permutation matrix.
@@ -7752,46 +7910,50 @@ subroutine rperm (nrow,a,ja,ia,ao,jao,iao,perm,job)
 !----------------------------------------------------------------------c
 !           Y. Saad, May  2, 1990                                      c
 !----------------------------------------------------------------------c
-   logical :: values
-   integer :: i, j, k, ii, ko
-   values = (job .eq. 1)
+      logical :: values
+      integer :: i, j, k, ii, ko
+      values = (job == 1)
 !
 !     determine pointers for output matix.
 !
-   do 50 j=1,nrow
-      i = perm(j)
-      iao(i+1) = ia(j+1) - ia(j)
-50 continue
+      do j = 1, nrow
+         i = perm(j)
+         iao(i + 1) = ia(j + 1) - ia(j)
+      end do
 !
 ! get pointers from lengths
 !
-   iao(1) = 1
-   do 51 j=1,nrow
-      iao(j+1)=iao(j+1)+iao(j)
-51 continue
+      iao(1) = 1
+      do j = 1, nrow
+         iao(j + 1) = iao(j + 1) + iao(j)
+      end do
 !
 ! copying
 !
-   do 100 ii=1,nrow
+      do ii = 1, nrow
 !
 ! old row = ii  -- new row = iperm(ii) -- ko = new pointer
 !
-      ko = iao(perm(ii))
-      do 60 k=ia(ii), ia(ii+1)-1
-         jao(ko) = ja(k)
-         if (values) ao(ko) = a(k)
-         ko = ko+1
-60    continue
-100 continue
+         ko = iao(perm(ii))
+         do k = ia(ii), ia(ii + 1) - 1
+            jao(ko) = ja(k)
+            if (values) then
+               ao(ko) = a(k)
+            end if
+            ko = ko + 1
+         end do
+      end do
 !
-   return
+      return
 !---------end-of-rperm -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine cperm (nrow,a,ja,ia,ao,jao,iao,perm,job)
-   integer nrow,ja(*),ia(nrow+1),jao(*),iao(nrow+1),perm(*), job
-   real*8 a(*), ao(*)
+   subroutine cperm(nrow, a, ja, ia, ao, jao, iao, perm, job)
+      use precision, only: dp
+
+      integer nrow, ja(:), ia(nrow + 1), jao(:), iao(nrow + 1), perm(:), job
+      real(dp) :: a(:), ao(:)
 !-----------------------------------------------------------------------
 ! this subroutine permutes the columns of a matrix a, ja, ia.
 ! the result is written in the output matrix  ao, jao, iao.
@@ -7831,36 +7993,40 @@ subroutine cperm (nrow,a,ja,ia,ao,jao,iao,perm,job)
 !
 !----------------------------------------------------------------------c
 ! local parameters:
-   integer k, i, nnz
+      integer k, i, nnz
 !
-   nnz = ia(nrow+1)-1
-   do 100 k=1,nnz
-      jao(k) = perm(ja(k))
-100 continue
+      nnz = ia(nrow + 1) - 1
+      do k = 1, nnz
+         jao(k) = perm(ja(k))
+      end do
 !
 !     done with ja array. return if no need to touch values.
 !
-   if (job .ne. 1) return
+      if (job /= 1) then
+         return
+      end if
 !
 ! else get new pointers -- and copy values too.
 !
-   do 1 i=1, nrow+1
-      iao(i) = ia(i)
-1  continue
+      do i = 1, nrow + 1
+         iao(i) = ia(i)
+      end do
 !
-   do 2 k=1, nnz
-      ao(k) = a(k)
-2  continue
+      do k = 1, nnz
+         ao(k) = a(k)
+      end do
 !
-   return
+      return
 !---------end-of-cperm--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine dperm (nrow,a,ja,ia,ao,jao,iao,perm,qperm,job)
-   integer nrow,ja(*),ia(nrow+1),jao(*),iao(nrow+1),perm(nrow),&
-   &qperm(*),job
-   real*8 a(*),ao(*)
+   subroutine dperm(nrow, a, ja, ia, ao, jao, iao, perm, qperm, job)
+      use precision, only: dp
+
+      integer nrow, ja(:), ia(nrow + 1), jao(:), iao(nrow + 1), perm(nrow),&
+      &qperm(:), job
+      real(dp) :: a(:), ao(:)
 !-----------------------------------------------------------------------
 ! This routine permutes the rows and columns of a matrix stored in CSR
 ! format. i.e., it computes P A Q, where P, Q are permutation matrices.
@@ -7908,35 +8074,36 @@ subroutine dperm (nrow,a,ja,ia,ao,jao,iao,perm,qperm,job)
 !     on entry.
 !----------------------------------------------------------------------c
 ! local variables
-   integer locjob, mod
+      integer locjob, mod
 !
 !     locjob indicates whether or not real values must be copied.
 !
-   locjob = mod(job,2)
+      locjob = mod(job, 2)
 !
 ! permute rows first
 !
-   call rperm (nrow,a,ja,ia,ao,jao,iao,perm,locjob)
+      call rperm(nrow, a, ja, ia, ao, jao, iao, perm, locjob)
 !
 ! then permute columns
 !
-   locjob = 0
+      locjob = 0
 !
-   if (job .le. 2) then
-      call cperm (nrow,ao,jao,iao,ao,jao,iao,perm,locjob)
-   else
-      call cperm (nrow,ao,jao,iao,ao,jao,iao,qperm,locjob)
-   endif
+      if (job <= 2) then
+         call cperm(nrow, ao, jao, iao, ao, jao, iao, perm, locjob)
+      else
+         call cperm(nrow, ao, jao, iao, ao, jao, iao, qperm, locjob)
+      end if
 !
-   return
+      return
 !-------end-of-dperm----------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine dperm1 (i1,i2,a,ja,ia,b,jb,ib,perm,ipos,job)
-   integer, intent(in) :: ipos, job
-   integer, intent(inout) :: i1,i2,ja(*),ia(*),jb(*),ib(*),perm(*)
-   real*8 , intent(inout) :: a(*),b(*)
+   subroutine dperm1(i1, i2, a, ja, ia, b, jb, ib, perm, ipos, job)
+
+      integer, intent(in) :: ipos, job
+      integer, intent(inout) :: i1, i2, ja(:), ia(:), jb(:), ib(:), perm(:)
+      real(dp), intent(inout) :: a(:), b(:)
 !-----------------------------------------------------------------------
 !     general submatrix extraction routine.
 !-----------------------------------------------------------------------
@@ -7973,32 +8140,35 @@ subroutine dperm1 (i1,i2,a,ja,ia,b,jb,ib,perm,ipos,job)
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer ko,irow,k,i
-   logical values
+      integer ko, irow, k, i
+      logical values
 !-----------------------------------------------------------------------
-   values = (job .eq. 1)
-   ko = ipos
-   ib(1) = ko
-   do 900 i=i1,i2
-      irow = perm(i)
-      do 800 k=ia(irow),ia(irow+1)-1
-         if (values) b(ko) = a(k)
-         jb(ko) = ja(k)
-         ko=ko+1
-800   continue
-      ib(i-i1+2) = ko
-900 continue
-   return
+      values = (job == 1)
+      ko = ipos
+      ib(1) = ko
+      do i = i1, i2
+         irow = perm(i)
+         do k = ia(irow), ia(irow + 1) - 1
+            if (values) then
+               b(ko) = a(k)
+            end if
+            jb(ko) = ja(k)
+            ko = ko + 1
+         end do
+         ib(i - i1 + 2) = ko
+      end do
+      return
 !--------end-of-dperm1--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine dperm2 (i1,i2,a,ja,ia,b,jb,ib,cperm,rperm,istart,&
-&ipos,job)
-   integer, intent(in) :: ipos, job, istart
-   integer, intent(inout) :: i1,i2,ja(*),ia(*),jb(*),ib(*),cperm(*)&
-   &,rperm(*)
-   real*8 , intent(inout) :: a(*),b(*)
+   subroutine dperm2(i1, i2, a, ja, ia, b, jb, ib, cperm, rperm, istart,&
+   &ipos, job)
+
+      integer, intent(in) :: ipos, job, istart
+      integer, intent(inout) :: i1, i2, ja(:), ia(:), jb(:), ib(:), cperm(:)&
+      &, rperm(:)
+      real(dp), intent(inout) :: a(:), b(:)
 !-----------------------------------------------------------------------
 !     general submatrix permutation/ extraction routine.
 !-----------------------------------------------------------------------
@@ -8065,30 +8235,33 @@ subroutine dperm2 (i1,i2,a,ja,ia,b,jb,ib,cperm,rperm,istart,&
 !-----------------------------------------------------------------------
 ! local variables
 !
-   integer ko,irow,k, i
-   logical values
+      integer ko, irow, k, i
+      logical values
 !-----------------------------------------------------------------------
-   values = (job .eq. 1)
-   ko = ipos
-   ib(istart) = ko
-   do 900 i=i1,i2
-      irow = rperm(i)
-      do 800 k=ia(irow),ia(irow+1)-1
-         if (values) b(ko) = a(k)
-         jb(ko) = cperm(ja(k))
-         ko=ko+1
-800   continue
-      ib(istart+i-i1+1) = ko
-900 continue
-   return
+      values = (job == 1)
+      ko = ipos
+      ib(istart) = ko
+      do i = i1, i2
+         irow = rperm(i)
+         do k = ia(irow), ia(irow + 1) - 1
+            if (values) then
+               b(ko) = a(k)
+            end if
+            jb(ko) = cperm(ja(k))
+            ko = ko + 1
+         end do
+         ib(istart + i - i1 + 1) = ko
+      end do
+      return
 !--------end-of-dperm2--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine dmperm (nrow,a,ja,ao,jao,perm,job)
-   integer, intent(in) :: nrow
-   integer, intent(inout) :: ja(*),jao(*),perm(nrow),job
-   real*8 , intent(inout) :: a(*),ao(*)
+   subroutine dmperm(nrow, a, ja, ao, jao, perm, job)
+
+      integer, intent(in) :: nrow
+      integer, intent(inout) :: ja(:), jao(:), perm(nrow), job
+      real(dp), intent(inout) :: a(:), ao(:)
 !-----------------------------------------------------------------------
 ! This routine performs a symmetric permutation of the rows and
 ! columns of a matrix stored in MSR format. i.e., it computes
@@ -8128,60 +8301,62 @@ subroutine dmperm (nrow,a,ja,ao,jao,perm,job)
 !----------------------------------------------------------------------c
 !     local variables
 !
-   integer n1, n2, j
-   n1 = nrow+1
-   n2 = n1+1
+      integer n1, n2, j
+      n1 = nrow + 1
+      n2 = n1 + 1
 !
-   call dperm (nrow,a,ja,ja,ao(n2),jao(n2),jao,perm,perm,job)
+      call dperm(nrow, a, ja, ja, ao(n2:), jao(n2:), jao, perm, perm, job)
 !
-   jao(1) = n2
-   do 101 j=1, nrow
-      ao(perm(j)) = a(j)
-      jao(j+1) = jao(j+1)+n1
-101 continue
+      jao(1) = n2
+      do j = 1, nrow
+         ao(perm(j)) = a(j)
+         jao(j + 1) = jao(j + 1) + n1
+      end do
 !
 ! done
 !
-   return
+      return
 !-----------------------------------------------------------------------
 !--------end-of-dmperm--------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
 
-subroutine permsimple(n, x, XH, perm, permselect)
-   integer, intent(in) :: n, perm(n), permselect
-   real*8 , intent(inout) :: x(n), XH(N)
-   integer :: k
+   subroutine permsimple(n, x, XH, perm, permselect)
 
-   if (permselect > 1) then
-      XH   = X
-      DO K = 1,N
-         X(PERM(K)) = XH(k)
-      ENDDO
-   endif
-END
+      integer, intent(in) :: n, perm(n), permselect
+      real(dp), intent(inout) :: x(n), XH(N)
+      integer :: k
 
-subroutine permsimpleINVERSE (n, x, XH, perm, permselect)
-   integer, intent(in) :: n, perm(n), permselect
-   real*8 , intent(inout) :: x(n), XH(N)
-   integer :: k
+      if (permselect > 1) then
+         XH = X
+         do K = 1, N
+            X(PERM(K)) = XH(k)
+         end do
+      end if
+   end
 
-   if (permselect > 1) then
-      XH   = X
-      DO K = 1,N
-         X(K) = XH(PERM(K))
-      ENDDO
-   endif
-END
+   subroutine permsimpleINVERSE(n, x, XH, perm, permselect)
 
+      integer, intent(in) :: n, perm(n), permselect
+      real(dp), intent(inout) :: x(n), XH(N)
+      integer :: k
 
-subroutine dvperm (n, x, perm)
-   integer, intent(in) :: n
-   integer, intent(inout) :: perm(n)
-   real*8 , intent(inout) :: x(n)
+      if (permselect > 1) then
+         XH = X
+         do K = 1, N
+            X(K) = XH(PERM(K))
+         end do
+      end if
+   end
+
+   subroutine dvperm(n, x, perm)
+
+      integer, intent(in) :: n
+      integer, intent(inout) :: perm(n)
+      real(dp), intent(inout) :: x(n)
 !-----------------------------------------------------------------------
 ! this subroutine performs an in-place permutation of a real vector x
-! according to the permutation array perm(*), i.e., on return,
+! according to the permutation array perm(:), i.e., on return,
 ! the vector x satisfies,
 !
 !     x(perm(j)) :== x(j), j=1,2,.., n
@@ -8195,69 +8370,77 @@ subroutine dvperm (n, x, perm)
 !
 ! on return:
 !----------
-! x   = vector x permuted according to x(perm(*)) :=  x(*)
+! x   = vector x permuted according to x(perm(:)) :=  x(:)
 !
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
 ! local variables
-   real*8  :: tmp, tmp1
-   integer :: init, next, j, k, ii
+      real(dp) :: tmp, tmp1
+      integer :: init, next, j, k, ii
 !
-   init      = 1
-   tmp   = x(init)
-   ii        = perm(init)
-   perm(init)= -perm(init)
-   k         = 0
+      init = 1
+      tmp = x(init)
+      ii = perm(init)
+      perm(init) = -perm(init)
+      k = 0
 !
 ! loop
 !
-6  k = k+1
+6     k = k + 1
 !
 ! save the chased element --
 !
-   tmp1    = x(ii)
-   x(ii)     = tmp
-   next    = perm(ii)
-   if (next .lt. 0 ) goto 65
+      tmp1 = x(ii)
+      x(ii) = tmp
+      next = perm(ii)
+      if (next < 0) then
+         goto 65
+      end if
 !
 ! test for end
 !
-   if (k .gt. n) goto 101
-   tmp       = tmp1
-   perm(ii)  = - perm(ii)
-   ii        = next
+      if (k > n) then
+         goto 101
+      end if
+      tmp = tmp1
+      perm(ii) = -perm(ii)
+      ii = next
 !
 ! end loop
 !
-   goto 6
+      goto 6
 !
 ! reinitilaize cycle --
 !
-65 init      = init+1
-   if (init .gt. n) goto 101
-   if (perm(init) .lt. 0) goto 65
-   tmp   = x(init)
-   ii = perm(init)
-   perm(init)=-perm(init)
-   goto 6
+65    init = init + 1
+      if (init > n) then
+         goto 101
+      end if
+      if (perm(init) < 0) then
+         goto 65
+      end if
+      tmp = x(init)
+      ii = perm(init)
+      perm(init) = -perm(init)
+      goto 6
 !
-101 continue
-   do 200 j=1, n
-      perm(j) = -perm(j)
-200 continue
+101   continue
+      do j = 1, n
+         perm(j) = -perm(j)
+      end do
 !
-   return
+      return
 !-------------------end-of-dvperm---------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine ivperm (n, ix, perm)
-   integer, intent(in) :: n
-   integer, intent(inout) :: ix(n), perm(n)
+   subroutine ivperm(n, ix, perm)
+      integer, intent(in) :: n
+      integer, intent(inout) :: ix(n), perm(n)
 !-----------------------------------------------------------------------
 ! this subroutine performs an in-place permutation of an integer vector
-! ix according to the permutation array perm(*), i.e., on return,
+! ix according to the permutation array perm(:), i.e., on return,
 ! the vector x satisfies,
 !
 !     ix(perm(j)) :== ix(j), j=1,2,.., n
@@ -8271,74 +8454,84 @@ subroutine ivperm (n, ix, perm)
 !
 ! on return:
 !----------
-! ix  = vector x permuted according to ix(perm(*)) :=  ix(*)
+! ix  = vector x permuted according to ix(perm(:)) :=  ix(:)
 !
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
 ! local variables
-   integer :: tmp, tmp1, j, init, ii, k, next
+      integer :: tmp, tmp1, j, init, ii, k, next
 !
-   init      = 1
-   tmp   = ix(init)
-   ii        = perm(init)
-   perm(init)= -perm(init)
-   k         = 0
+      init = 1
+      tmp = ix(init)
+      ii = perm(init)
+      perm(init) = -perm(init)
+      k = 0
 !
 ! loop
 !
-6  k = k+1
+6     k = k + 1
 !
 ! save the chased element --
 !
-   tmp1    = ix(ii)
-   ix(ii)     = tmp
-   next    = perm(ii)
-   if (next .lt. 0 ) goto 65
+      tmp1 = ix(ii)
+      ix(ii) = tmp
+      next = perm(ii)
+      if (next < 0) then
+         goto 65
+      end if
 !
 ! test for end
 !
-   if (k .gt. n) goto 101
-   tmp       = tmp1
-   perm(ii)  = - perm(ii)
-   ii        = next
+      if (k > n) then
+         goto 101
+      end if
+      tmp = tmp1
+      perm(ii) = -perm(ii)
+      ii = next
 !
 ! end loop
 !
-   goto 6
+      goto 6
 !
 ! reinitilaize cycle --
 !
-65 init      = init+1
-   if (init .gt. n) goto 101
-   if (perm(init) .lt. 0) goto 65
-   tmp   = ix(init)
-   ii = perm(init)
-   perm(init)=-perm(init)
-   goto 6
+65    init = init + 1
+      if (init > n) then
+         goto 101
+      end if
+      if (perm(init) < 0) then
+         goto 65
+      end if
+      tmp = ix(init)
+      ii = perm(init)
+      perm(init) = -perm(init)
+      goto 6
 !
-101 continue
-   do 200 j=1, n
-      perm(j) = -perm(j)
-200 continue
+101   continue
+      do j = 1, n
+         perm(j) = -perm(j)
+      end do
 !
-   return
+      return
 !-------------------end-of-ivperm---------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine retmx (n,a,ja,ia,dd)
-   real*8 a(*),dd(*)
-   integer n,ia(*),ja(*)
+   subroutine retmx(n, a, ja, ia, dd)
+      use precision, only: dp
+
+      real(dp) :: a(:), dd(:)
+      integer n, ia(:), ja(:)
 !-----------------------------------------------------------------------
-! returns in dd(*) the max absolute value of elements in row *.
+! returns in dd(:) the max absolute value of elements in row *.
 ! used for scaling purposes. superseded by rnrms  .
 !
 ! on entry:
 ! n   = dimension of A
 ! a,ja,ia
 !     = matrix stored in compressed sparse row format
-! dd  = real*8 array of length n. On output,entry dd(i) contains
+! dd  = real(dp) array of length n. On output,entry dd(i) contains
 !       the element of row i that has the largest absolute value.
 !       Moreover the sign of dd is modified such that it is the
 !       same as that of the diagonal element in row i.
@@ -8346,39 +8539,41 @@ subroutine retmx (n,a,ja,ia,dd)
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
 ! local variables
-   integer k2, i, k1, k
-   real*8 t, t1, t2
+      integer k2, i, k1, k
+      real(dp) :: t, t1, t2
 !
 ! initialize
 !
-   k2 = 1
-   do 11 i=1,n
-      k1 = k2
-      k2 = ia(i+1) - 1
-      t = 0.0d0
-      do 101  k=k1,k2
-         t1 = abs(a(k))
-         if (t1 .gt. t) t = t1
-         if (ja(k) .eq. i) then
-            if (a(k) .ge. 0.0) then
-               t2 = a(k)
-            else
-               t2 = - a(k)
-            endif
-         endif
-101   continue
-      dd(i) =  t2*t
+      k2 = 1
+      do i = 1, n
+         k1 = k2
+         k2 = ia(i + 1) - 1
+         t = 0.0_dp
+         do k = k1, k2
+            t1 = abs(a(k))
+            if (t1 > t) then
+               t = t1
+            end if
+            if (ja(k) == i) then
+               if (a(k) >= 0.0) then
+                  t2 = a(k)
+               else
+                  t2 = -a(k)
+               end if
+            end if
+         end do
+         dd(i) = t2 * t
 !     we do not invert diag
-11 continue
-   return
+      end do
+      return
 !---------end of retmx -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine diapos  (n,ja,ia,idiag)
-   integer, intent(in) :: n
-   integer, intent(inout) :: ia(n+1), ja(*), idiag(n)
-   integer :: i, k
+   subroutine diapos(n, ja, ia, idiag)
+      integer, intent(in) :: n
+      integer, intent(inout) :: ia(n + 1), ja(:), idiag(n)
+      integer :: i, k
 !-----------------------------------------------------------------------
 ! this subroutine returns the positions of the diagonal elements of a
 ! sparse matrix a, ja, ia, in the array idiag.
@@ -8399,28 +8594,31 @@ subroutine diapos  (n,ja,ia,idiag)
 !----------------------------------------------------------------------c
 !           Y. Saad, March, 1990
 !----------------------------------------------------------------------c
-   do 1 i=1, n
-      idiag(i) = 0
-1  continue
+      do i = 1, n
+         idiag(i) = 0
+      end do
 !
 !     sweep through data structure.
 !
-   do  6 i=1,n
-      do 51 k= ia(i),ia(i+1) -1
-         if (ja(k) .eq. i) idiag(i) = k
-51    continue
-6  continue
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            if (ja(k) == i) then
+               idiag(i) = k
+            end if
+         end do
+      end do
 !----------- -end-of-diapos---------------------------------------------
 !-----------------------------------------------------------------------
-   return
-end
+      return
+   end
 !-----------------------------------------------------------------------
-subroutine dscaldg (n,a,ja,ia,diag,job)
-   integer, intent(in) :: n, job
-   real*8 , intent(inout) :: a(*), diag(*)
-   integer, intent(inout) :: ia(*),ja(*)
-   integer :: i,j, k1, k2,k
-   real*8 :: t
+   subroutine dscaldg(n, a, ja, ia, diag, job)
+
+      integer, intent(in) :: n, job
+      real(dp), intent(inout) :: a(:), diag(:)
+      integer, intent(inout) :: ia(:), ja(:)
+      integer :: i, j, k1, k2, k
+      real(dp) :: t
 !-----------------------------------------------------------------------
 ! scales rows by diag where diag is either given (job=0)
 ! or to be computed:
@@ -8432,41 +8630,52 @@ subroutine dscaldg (n,a,ja,ia,diag,job)
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
-   goto (12,11,10) job+1
-10 do 110 j=1,n
-      k1= ia(j)
-      k2 = ia(j+1)-1
-      t = 0.0d0
-      do 111 k = k1,k2
-111   t = t+a(k)*a(k)
-110 diag(j) = sqrt(t)
-   goto 12
-11 continue
-   call retmx (n,a,ja,ia,diag)
+
+      if (job == 0) then
+         goto 12
+      else if (job == 1) then
+         goto 11
+      else if (job == 2) then
+         goto 10
+      end if
+
+10    do j = 1, n
+         k1 = ia(j)
+         k2 = ia(j + 1) - 1
+         t = 0.0_dp
+         do k = k1, k2
+            t = t + a(k) * a(k)
+         end do
+         diag(j) = sqrt(t)
+      end do
+      goto 12
+11    continue
+      call retmx(n, a, ja, ia, diag)
 !------
-12 do 1 j=1,n
-      if (diag(j) .ne. 0.0d0) then
-         diag(j) = 1.0d0/diag(j)
-      else
-         diag(j) = 1.0d0
-      endif
-1  continue
-   do 2 i=1,n
-      t = diag(i)
-      do 21 k=ia(i),ia(i+1) -1
-         a(k) = a(k)*t
-21    continue
-2  continue
-   return
+12    do j = 1, n
+         if (diag(j) /= 0.0_dp) then
+            diag(j) = 1.0_dp / diag(j)
+         else
+            diag(j) = 1.0_dp
+         end if
+      end do
+      do i = 1, n
+         t = diag(i)
+         do k = ia(i), ia(i + 1) - 1
+            a(k) = a(k) * t
+         end do
+      end do
+      return
 !--------end of dscaldg -----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine extbdg (n,a,ja,ia,bdiag,nblk,ao,jao,iao)
-   integer, intent(in) :: n, nblk
-   real*8 , intent(inout) :: bdiag(*),a(*),ao(*)
-   integer, intent(inout) :: ia(*),ja(*),jao(*),iao(*)
-   integer :: j, k, jj, j1, j2, ko, kb, i, ltr, l, m
+   subroutine extbdg(n, a, ja, ia, bdiag, nblk, ao, jao, iao)
+
+      integer, intent(in) :: n, nblk
+      real(dp), intent(inout) :: bdiag(:), a(:), ao(:)
+      integer, intent(inout) :: ia(:), ja(:), jao(:), iao(:)
+      integer :: j, k, jj, j1, j2, ko, kb, i, ltr, l, m
 !-----------------------------------------------------------------------
 ! this subroutine extracts the main diagonal blocks of a
 ! matrix stored in compressed sparse row format and puts the result
@@ -8485,7 +8694,7 @@ subroutine extbdg (n,a,ja,ia,bdiag,nblk,ao,jao,iao)
 !
 ! on return:
 !----------
-! bdiag = real*8 array of size (n x nblk) containing the diagonal
+! bdiag = real(dp) array of size (n x nblk) containing the diagonal
 !       blocks of A on return
 ! ao,
 ! jao,
@@ -8493,48 +8702,49 @@ subroutine extbdg (n,a,ja,ia,bdiag,nblk,ao,jao,iao)
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
-   m = 1 + (n-1)/nblk
+      m = 1 + (n - 1) / nblk
 ! this version is sequential -- there is a more parallel version
 ! that goes through the structure twice ....
-   ltr =  ((nblk-1)*nblk)/2
-   l = m * ltr
-   do 1 i=1,l
-      bdiag(i) = 0.0d0
-1  continue
-   ko = 0
-   kb = 1
-   iao(1) = 1
+      ltr = ((nblk - 1) * nblk) / 2
+      l = m * ltr
+      do i = 1, l
+         bdiag(i) = 0.0_dp
+      end do
+      ko = 0
+      kb = 1
+      iao(1) = 1
 !-------------------------
-   do 11 jj = 1,m
-      j1 = (jj-1)*nblk+1
-      j2 =  min0 (n,j1+nblk-1)
-      do 12 j=j1,j2
-         do 13 i=ia(j),ia(j+1) -1
-            k = ja(i)
-            if (k .lt. j1) then
-               ko = ko+1
-               ao(ko) = a(i)
-               jao(ko) = k
-            else if (k .lt. j) then
+      do jj = 1, m
+         j1 = (jj - 1) * nblk + 1
+         j2 = min(n, j1 + nblk - 1)
+         do j = j1, j2
+            do i = ia(j), ia(j + 1) - 1
+               k = ja(i)
+               if (k < j1) then
+                  ko = ko + 1
+                  ao(ko) = a(i)
+                  jao(ko) = k
+               else if (k < j) then
 !     kb = (jj-1)*ltr+((j-j1)*(j-j1-1))/2+k-j1+1
 !     bdiag(kb) = a(i)
-               bdiag(kb+k-j1) = a(i)
-            endif
-13       continue
-         kb = kb + j-j1
-         iao(j+1) = ko+1
-12    continue
-11 continue
-   return
+                  bdiag(kb + k - j1) = a(i)
+               end if
+            end do
+            kb = kb + j - j1
+            iao(j + 1) = ko + 1
+         end do
+      end do
+      return
 !---------end-of-extbdg-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine getbwd(n,a,ja,ia,ml,mu)
-   integer, intent(in) :: n
-   real*8 , intent(inout) :: a(*)
-   integer, intent(inout) :: ja(*),ia(n+1),ml,mu
-   integer ::ldist,i,k
+   subroutine getbwd(n, a, ja, ia, ml, mu)
+
+      integer, intent(in) :: n
+      real(dp), intent(inout) :: a(:)
+      integer, intent(inout) :: ja(:), ia(n + 1), ml, mu
+      integer :: ldist, i, k
 !-----------------------------------------------------------------------
 ! gets the bandwidth of lower part and upper part of A.
 ! does not assume that A is sorted.
@@ -8561,26 +8771,28 @@ subroutine getbwd(n,a,ja,ia,ml,mu)
 !----------------------------------------------------------------------c
 ! Y. Saad, Sep. 21 1989                                                c
 !----------------------------------------------------------------------c
-   ml = - n
-   mu = - n
-   do 3 i=1,n
-      do 31 k=ia(i),ia(i+1)-1
-         ldist = i-ja(k)
-         ml = max(ml,ldist)
-         mu = max(mu,-ldist)
-31    continue
-3  continue
-   return
+      no_warning_unused_dummy_argument(a)
+
+      ml = -n
+      mu = -n
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            ldist = i - ja(k)
+            ml = max(ml, ldist)
+            mu = max(mu, -ldist)
+         end do
+      end do
+      return
 !---------------end-of-getbwd ------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine blkfnd (nrow,ja,ia,nblk)
-   integer, intent(in) :: nrow
-   integer, intent(out) :: nblk
-   integer, intent(inout) :: ia(nrow+1),ja(*)
-   integer :: imsg, jf, jl, i1, i2, jfirst, jlast, jrow, len0, iblk&
-   &, len, i, irow, minlen
+   subroutine blkfnd(nrow, ja, ia, nblk)
+      integer, intent(in) :: nrow
+      integer, intent(out) :: nblk
+      integer, intent(inout) :: ia(nrow + 1), ja(:)
+      integer :: imsg, jf, jl, i1, i2, jfirst, jlast, jrow, len0, iblk&
+      &, len, i, irow, minlen
 !-----------------------------------------------------------------------
 ! This routine attemptps to determine whether or not  the input
 ! matrix has a block structure and finds the blocks size
@@ -8614,57 +8826,63 @@ subroutine blkfnd (nrow,ja,ia,nblk)
 ! of rows that have the same length and such that the first column
 ! number and the last column number are identical.
 !-----------------------------------------------------------------------
-   minlen = ia(2)-ia(1)
-   irow   = 1
-   do 1 i=2,nrow
-      len = ia(i+1)-ia(i)
-      if (len .lt. minlen) then
-         minlen = len
-         irow = i
-      endif
-1  continue
+      minlen = ia(2) - ia(1)
+      irow = 1
+      do i = 2, nrow
+         len = ia(i + 1) - ia(i)
+         if (len < minlen) then
+            minlen = len
+            irow = i
+         end if
+      end do
 !
 !     ---- candidates are all dividers of minlen
 !
-   nblk = 1
-   if (minlen .le. 1) return
+      nblk = 1
+      if (minlen <= 1) then
+         return
+      end if
 !
-   do 99 iblk = minlen, 1, -1
-      if (mod(minlen,iblk) .ne. 0) goto 99
-      len = ia(2) - ia(1)
-      len0 = len
-      jfirst = ja(1)
-      jlast = ja(ia(2)-1)
-      do 10 jrow = irow+1,irow+nblk-1
-         i1 = ia(jrow)
-         i2 = ia(jrow+1)-1
-         len = i2+1-i1
-         jf = ja(i1)
-         jl = ja(i2)
-         if (len .ne. len0 .or. jf .ne. jfirst .or.&
-         &jl .ne. jlast) goto 99
-10    continue
+      outer_loop: &
+         do iblk = minlen, 1, -1
+         if (mod(minlen, iblk) /= 0) then
+            cycle outer_loop
+         end if
+         len = ia(2) - ia(1)
+         len0 = len
+         jfirst = ja(1)
+         jlast = ja(ia(2) - 1)
+         do jrow = irow + 1, irow + nblk - 1
+            i1 = ia(jrow)
+            i2 = ia(jrow + 1) - 1
+            len = i2 + 1 - i1
+            jf = ja(i1)
+            jl = ja(i2)
+            if (len /= len0 .or. jf /= jfirst .or. jl /= jlast) then
+               cycle outer_loop
+            end if
+         end do
 !
 !     check for this candidate ----
 !
-      call blkchk (nrow,ja,ia,iblk,imsg)
-      if (imsg .eq. 0) then
+         call blkchk(nrow, ja, ia, iblk, imsg)
+         if (imsg == 0) then
 !
 !     block size found
 !
-         nblk = iblk
-         return
-      endif
-99 continue
+            nblk = iblk
+            return
+         end if
+      end do outer_loop
 !--------end-of-blkfnd -------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine blkchk (nrow,ja,ia,nblk,imsg)
-   integer, intent(in) :: nrow, nblk
-   integer, intent(out) :: imsg
-   integer, intent(inout) :: ia(nrow+1),ja(*)
-   integer :: len, i, k, lena, jstart, j, ii, i1,j2, irow, nr
+   subroutine blkchk(nrow, ja, ia, nblk, imsg)
+      integer, intent(in) :: nrow, nblk
+      integer, intent(out) :: imsg
+      integer, intent(inout) :: ia(nrow + 1), ja(:)
+      integer :: len, i, k, lena, jstart, j, ii, i1, j2, irow, nr
 !-----------------------------------------------------------------------
 ! This routine checks whether the input matrix is a block
 ! matrix with block size of nblk. A block matrix is one which is
@@ -8707,62 +8925,74 @@ subroutine blkchk (nrow,ja,ia,nblk,imsg)
 ! and such that the first column number and the last column number
 ! are identical.
 !----------------------------------------------------------------------
-   imsg = 0
-   if (nblk .le. 1) return
-   nr = nrow/nblk
-   if (nr*nblk .ne. nrow) goto 101
+      imsg = 0
+      if (nblk <= 1) then
+         return
+      end if
+      nr = nrow / nblk
+      if (nr * nblk /= nrow) then
+         goto 101
+      end if
 !--   main loop ---------------------------------------------------------
-   irow = 1
-   do 20 ii=1, nr
+      irow = 1
+      do ii = 1, nr
 !     i1= starting position for group of nblk rows in original matrix
-      i1 = ia(irow)
-      j2 = i1
+         i1 = ia(irow)
+         j2 = i1
 !     lena = length of each row in that group  in the original matrix
-      lena = ia(irow+1)-i1
+         lena = ia(irow + 1) - i1
 !     len = length of each block-row in that group in the output matrix
-      len = lena/nblk
-      if (len* nblk .ne. lena) goto 103
+         len = lena / nblk
+         if (len * nblk /= lena) then
+            goto 103
+         end if
 !
 !     for each row
 !
-      do 6 i = 1, nblk
-         irow = irow + 1
-         if (ia(irow)-ia(irow-1) .ne. lena ) goto 104
+         do i = 1, nblk
+            irow = irow + 1
+            if (ia(irow) - ia(irow - 1) /= lena) then
+               goto 104
+            end if
 !
 !     for each block
 !
-         do 7 k=0, len-1
-            jstart = ja(i1+nblk*k)-1
-            if ( (jstart/nblk)*nblk .ne. jstart) goto 102
+            do k = 0, len - 1
+               jstart = ja(i1 + nblk * k) - 1
+               if ((jstart / nblk) * nblk /= jstart) then
+                  goto 102
+               end if
 !
 !     for each column
 !
-            do 5 j=1, nblk
-               if (jstart+j .ne. ja(j2) )  goto 104
-               j2 = j2+1
-5           continue
-7        continue
-6     continue
-20 continue
+               do j = 1, nblk
+                  if (jstart + j /= ja(j2)) then
+                     goto 104
+                  end if
+                  j2 = j2 + 1
+               end do
+            end do
+         end do
+      end do
 !     went through all loops successfully:
-   return
-101 imsg = -1
-   return
-102 imsg = -2
-   return
-103 imsg = -3
-   return
-104 imsg = -4
+      return
+101   imsg = -1
+      return
+102   imsg = -2
+      return
+103   imsg = -3
+      return
+104   imsg = -4
 !----------------end of chkblk -----------------------------------------
 !-----------------------------------------------------------------------
-   return
-end
+      return
+   end
 !-----------------------------------------------------------------------
-subroutine infdia (n,ja,ia,ind,idiag)
-   integer, intent(in) :: n
-   integer, intent(out) :: idiag
-   integer, intent(inout) :: ia(*), ind(*), ja(*)
-   integer :: i,j,k,n2
+   subroutine infdia(n, ja, ia, ind, idiag)
+      integer, intent(in) :: n
+      integer, intent(out) :: idiag
+      integer, intent(inout) :: ia(:), ind(:), ja(:)
+      integer :: i, j, k, n2
 !-----------------------------------------------------------------------
 !     obtains information on the diagonals of A.
 !-----------------------------------------------------------------------
@@ -8790,33 +9020,35 @@ subroutine infdia (n,ja,ia,ind,idiag)
 !----------------------------------------------------------------------c
 !           Y. Saad, Sep. 21 1989                                      c
 !----------------------------------------------------------------------c
-   n2= n+n-1
-   do 1 i=1,n2
-      ind(i) = 0
-1  continue
-   do 3 i=1, n
-      do 2 k=ia(i),ia(i+1)-1
-         j = ja(k)
-         ind(n+j-i) = ind(n+j-i) +1
-2     continue
-3  continue
+      n2 = n + n - 1
+      do i = 1, n2
+         ind(i) = 0
+      end do
+      do i = 1, n
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            ind(n + j - i) = ind(n + j - i) + 1
+         end do
+      end do
 !     count the nonzero ones.
-   idiag = 0
-   do 41 k=1, n2
-      if (ind(k) .ne. 0) idiag = idiag+1
-41 continue
-   return
+      idiag = 0
+      do k = 1, n2
+         if (ind(k) /= 0) then
+            idiag = idiag + 1
+         end if
+      end do
+      return
 ! done
 !------end-of-infdia ---------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine amubdg (nrow,ncol,ncolb,ja,ia,jb,ib,ndegr,nnz,iw)
-   integer, intent(in) :: nrow, ncol, ncolb
-   integer, intent(out) :: nnz
-   integer, intent(inout) :: ja(*),jb(*),ia(nrow+1),ib(ncol+1)&
-   &,ndegr(nrow),iw(ncolb)
-   integer :: jc, jr, j, last, k, ldg, ii
+   subroutine amubdg(nrow, ncol, ncolb, ja, ia, jb, ib, ndegr, nnz, iw)
+      integer, intent(in) :: nrow, ncol, ncolb
+      integer, intent(out) :: nnz
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(ncol + 1)&
+      &, ndegr(nrow), iw(ncolb)
+      integer :: jc, jr, j, last, k, ldg, ii
 !-----------------------------------------------------------------------
 ! gets the number of nonzero elements in each row of A*B and the total
 ! number of nonzero elements in A*B.
@@ -8848,73 +9080,73 @@ subroutine amubdg (nrow,ncol,ncolb,ja,ia,jb,ib,ndegr,nnz,iw)
 !-------------
 ! iw  = integer work array of length ncolb.
 !-----------------------------------------------------------------------
-   do 1 k=1, ncolb
-      iw(k) = 0
-1  continue
+      do k = 1, ncolb
+         iw(k) = 0
+      end do
 
-   do 2 k=1, nrow
-      ndegr(k) = 0
-2  continue
+      do k = 1, nrow
+         ndegr(k) = 0
+      end do
 !
 !     method used: Transp(A) * A = sum [over i=1, nrow]  a(i)^T a(i)
 !     where a(i) = i-th row of  A. We must be careful not to add  the
 !     elements already accounted for.
 !
 !
-   do 7 ii=1,nrow
+      do ii = 1, nrow
 !
 !     for each row of A
 !
-      ldg = 0
+         ldg = 0
 !
 !    end-of-linked list
 !
-      last = -1
-      do 6 j = ia(ii),ia(ii+1)-1
+         last = -1
+         do j = ia(ii), ia(ii + 1) - 1
 !
 !     row number to be added:
 !
-         jr = ja(j)
-         do 5 k=ib(jr),ib(jr+1)-1
-            jc = jb(k)
-            if (iw(jc) .eq. 0) then
+            jr = ja(j)
+            do k = ib(jr), ib(jr + 1) - 1
+               jc = jb(k)
+               if (iw(jc) == 0) then
 !
 !     add one element to the linked list
 !
-               ldg = ldg + 1
-               iw(jc) = last
-               last = jc
-            endif
-5        continue
-6     continue
-      ndegr(ii) = ldg
+                  ldg = ldg + 1
+                  iw(jc) = last
+                  last = jc
+               end if
+            end do
+         end do
+         ndegr(ii) = ldg
 !
 !     reset iw to zero
 !
-      do 61 k=1,ldg
-         j = iw(last)
-         iw(last) = 0
-         last = j
-61    continue
+         do k = 1, ldg
+            j = iw(last)
+            iw(last) = 0
+            last = j
+         end do
 !-----------------------------------------------------------------------
-7  continue
+      end do
 !
-   nnz = 0
-   do 8 ii=1, nrow
-      nnz = nnz+ndegr(ii)
-8  continue
+      nnz = 0
+      do ii = 1, nrow
+         nnz = nnz + ndegr(ii)
+      end do
 !
-   return
+      return
 !---------------end-of-amubdg ------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine aplbdg (nrow,ncol,ja,ia,jb,ib,ndegr,nnz,iw)
-   integer, intent(in) :: nrow, ncol
-   integer, intent(out) :: nnz
-   integer, intent(inout) :: ja(*),jb(*),ia(nrow+1),ib(nrow+1)&
-   &,iw(ncol),ndegr(nrow)
-   integer :: last, j, jr, jc, ldg, k, ii
+   subroutine aplbdg(nrow, ncol, ja, ia, jb, ib, ndegr, nnz, iw)
+      integer, intent(in) :: nrow, ncol
+      integer, intent(out) :: nnz
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(nrow + 1)&
+      &, iw(ncol), ndegr(nrow)
+      integer :: last, j, jr, jc, ldg, k, ii
 !-----------------------------------------------------------------------
 ! gets the number of nonzero elements in each row of A+B and the total
 ! number of nonzero elements in A+B.
@@ -8944,74 +9176,75 @@ subroutine aplbdg (nrow,ncol,ja,ia,jb,ib,ndegr,nnz,iw)
 ! iw  = integer work array of length equal to ncol.
 !
 !-----------------------------------------------------------------------
-   do 1 k=1, ncol
-      iw(k) = 0
-1  continue
+      do k = 1, ncol
+         iw(k) = 0
+      end do
 !
-   do 2 k=1, nrow
-      ndegr(k) = 0
-2  continue
+      do k = 1, nrow
+         ndegr(k) = 0
+      end do
 !
-   do 7 ii=1,nrow
-      ldg = 0
+      do ii = 1, nrow
+         ldg = 0
 !
 !    end-of-linked list
 !
-      last = -1
+         last = -1
 !
 !     row of A
 !
-      do 5 j = ia(ii),ia(ii+1)-1
-         jr = ja(j)
+         do j = ia(ii), ia(ii + 1) - 1
+            jr = ja(j)
 !
 !     add element to the linked list
 !
-         ldg = ldg + 1
-         iw(jr) = last
-         last = jr
-5     continue
+            ldg = ldg + 1
+            iw(jr) = last
+            last = jr
+         end do
 !
 !     row of B
 !
-      do 6 j=ib(ii),ib(ii+1)-1
-         jc = jb(j)
-         if (iw(jc) .eq. 0) then
+         do j = ib(ii), ib(ii + 1) - 1
+            jc = jb(j)
+            if (iw(jc) == 0) then
 !
 !     add one element to the linked list
 !
-            ldg = ldg + 1
-            iw(jc) = last
-            last = jc
-         endif
-6     continue
+               ldg = ldg + 1
+               iw(jc) = last
+               last = jc
+            end if
+         end do
 !     done with row ii.
-      ndegr(ii) = ldg
+         ndegr(ii) = ldg
 !
 !     reset iw to zero
 !
-      do 61 k=1,ldg
-         j = iw(last)
-         iw(last) = 0
-         last = j
-61    continue
+         do k = 1, ldg
+            j = iw(last)
+            iw(last) = 0
+            last = j
+         end do
 !-----------------------------------------------------------------------
-7  continue
+      end do
 !
-   nnz = 0
-   do 8 ii=1, nrow
-      nnz = nnz+ndegr(ii)
-8  continue
-   return
+      nnz = 0
+      do ii = 1, nrow
+         nnz = nnz + ndegr(ii)
+      end do
+      return
 !----------------end-of-aplbdg -----------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine rnrms   (nrow, nrm, a, ja, ia, diag)
-   integer, intent(in) :: nrow, nrm
-   real*8 , intent(inout) :: a(*), diag(nrow)
-   integer, intent(inout) :: ja(*), ia(nrow+1)
-   real*8 :: scal
-   integer :: k, k1, k2, ii
+   subroutine rnrms(nrow, nrm, a, ja, ia, diag)
+
+      integer, intent(in) :: nrow, nrm
+      real(dp), intent(inout) :: a(:), diag(nrow)
+      integer, intent(inout) :: ja(:), ia(nrow + 1)
+      real(dp) :: scal
+      integer :: k, k1, k2, ii
 !-----------------------------------------------------------------------
 ! gets the norms of each row of A. (choice of three norms)
 !-----------------------------------------------------------------------
@@ -9032,39 +9265,44 @@ subroutine rnrms   (nrow, nrm, a, ja, ia, diag)
 ! diag = real vector of length nrow containing the norms
 !
 !-----------------------------------------------------------------
-   do 1 ii=1,nrow
+      no_warning_unused_dummy_argument(ja)
+
+      do ii = 1, nrow
 !
 !     compute the norm if each element.
 !
-      scal = 0.0d0
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      if (nrm .eq. 0) then
-         do 2 k=k1, k2
-            scal = max(scal,abs(a(k) ) )
-2        continue
-      elseif (nrm .eq. 1) then
-         do 3 k=k1, k2
-            scal = scal + abs(a(k) )
-3        continue
-      else
-         do 4 k=k1, k2
-            scal = scal+a(k)**2
-4        continue
-      endif
-      if (nrm .eq. 2) scal = sqrt(scal)
-      diag(ii) = scal
-1  continue
-   return
+         scal = 0.0_dp
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         if (nrm == 0) then
+            do k = k1, k2
+               scal = max(scal, abs(a(k)))
+            end do
+         elseif (nrm == 1) then
+            do k = k1, k2
+               scal = scal + abs(a(k))
+            end do
+         else
+            do k = k1, k2
+               scal = scal + a(k)**2
+            end do
+         end if
+         if (nrm == 2) then
+            scal = sqrt(scal)
+         end if
+         diag(ii) = scal
+      end do
+      return
 !-----------------------------------------------------------------------
 !-------------end-of-rnrms----------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine cnrms   (nrow, nrm, a, ja, ia, diag)
-   integer, intent(in) :: nrow, nrm
-   real*8,  intent(inout) :: a(*), diag(nrow)
-   integer, intent(inout) :: ja(*), ia(nrow+1)
-   integer :: k, ii, k1, k2, j
+   subroutine cnrms(nrow, nrm, a, ja, ia, diag)
+
+      integer, intent(in) :: nrow, nrm
+      real(dp), intent(inout) :: a(:), diag(nrow)
+      integer, intent(inout) :: ja(:), ia(nrow + 1)
+      integer :: k, ii, k1, k2, j
 !-----------------------------------------------------------------------
 ! gets the norms of each column of A. (choice of three norms)
 !-----------------------------------------------------------------------
@@ -9085,39 +9323,42 @@ subroutine cnrms   (nrow, nrm, a, ja, ia, diag)
 ! diag = real vector of length nrow containing the norms
 !
 !-----------------------------------------------------------------
-   do 10 k=1, nrow
-      diag(k) = 0.0d0
-10 continue
-   do 1 ii=1,nrow
-      k1 = ia(ii)
-      k2 = ia(ii+1)-1
-      do 2 k=k1, k2
-         j = ja(k)
+      do k = 1, nrow
+         diag(k) = 0.0_dp
+      end do
+      do ii = 1, nrow
+         k1 = ia(ii)
+         k2 = ia(ii + 1) - 1
+         do k = k1, k2
+            j = ja(k)
 !     update the norm of each column
-         if (nrm .eq. 0) then
-            diag(j) = max(diag(j),abs(a(k) ) )
-         elseif (nrm .eq. 1) then
-            diag(j) = diag(j) + abs(a(k) )
-         else
-            diag(j) = diag(j)+a(k)**2
-         endif
-2     continue
-1  continue
-   if (nrm .ne. 2) return
-   do 3 k=1, nrow
-      diag(k) = sqrt(diag(k))
-3  continue
-   return
+            if (nrm == 0) then
+               diag(j) = max(diag(j), abs(a(k)))
+            elseif (nrm == 1) then
+               diag(j) = diag(j) + abs(a(k))
+            else
+               diag(j) = diag(j) + a(k)**2
+            end if
+         end do
+      end do
+      if (nrm /= 2) then
+         return
+      end if
+      do k = 1, nrow
+         diag(k) = sqrt(diag(k))
+      end do
+      return
 !-----------------------------------------------------------------------
 !------------end-of-cnrms-----------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine roscal(nrow,job,nrm,a,ja,ia,diag,b,jb,ib,ierr)
-   integer, intent(in) :: nrow, job, nrm
-   integer, intent(out) :: ierr
-   real*8 , intent(out) :: a(*), b(*), diag(nrow)
-   integer, intent(inout) :: ja(*),jb(*),ia(nrow+1),ib(nrow+1)
-   integer :: j
+   subroutine roscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
+
+      integer, intent(in) :: nrow, job, nrm
+      integer, intent(out) :: ierr
+      real(dp), intent(out) :: a(:), b(:), diag(nrow)
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(nrow + 1)
+      integer :: j
 !-----------------------------------------------------------------------
 ! scales the rows of A such that their norms are one on return
 ! 3 choices of norms: 1-norm, 2-norm, max-norm.
@@ -9154,29 +9395,29 @@ subroutine roscal(nrow,job,nrm,a,ja,ia,diag,b,jb,ib,ierr)
 ! 1)        The column dimension of A is not needed.
 ! 2)        algorithm in place (B can take the place of A).
 !-----------------------------------------------------------------
-   call rnrms (nrow,nrm,a,ja,ia,diag)
-   ierr = 0
-   do 1 j=1, nrow
-      if (diag(j) .eq. 0.0d0) then
-         ierr = j
-         return
-      else
-         diag(j) = 1.0d0/diag(j)
-      endif
-1  continue
-   call diamua(nrow,job,a,ja,ia,diag,b,jb,ib)
-   return
+      call rnrms(nrow, nrm, a, ja, ia, diag)
+      ierr = 0
+      do j = 1, nrow
+         if (diag(j) == 0.0_dp) then
+            ierr = j
+            return
+         else
+            diag(j) = 1.0_dp / diag(j)
+         end if
+      end do
+      call diamua(nrow, job, a, ja, ia, diag, b, jb, ib)
+      return
 !-------end-of-roscal---------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine coscal(nrow,job,nrm,a,ja,ia,diag,b,jb,ib,ierr)
-!-----------------------------------------------------------------------
-   integer, intent(in) :: nrow, job
-   integer, intent(out) :: ierr
-   real*8 , intent(inout) :: a(*),b(*),diag(nrow)
-   integer, intent(inout) :: ja(*),jb(*),ia(nrow+1),ib(nrow+1)
-   integer :: j, nrm
+   subroutine coscal(nrow, job, nrm, a, ja, ia, diag, b, jb, ib, ierr)
+
+      integer, intent(in) :: nrow, job
+      integer, intent(out) :: ierr
+      real(dp), intent(inout) :: a(:), b(:), diag(nrow)
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(nrow + 1)
+      integer :: j, nrm
 !-----------------------------------------------------------------------
 ! scales the columns of A such that their norms are one on return
 ! result matrix written on b, or overwritten on A.
@@ -9214,29 +9455,31 @@ subroutine coscal(nrow,job,nrm,a,ja,ia,diag,b,jb,ib,ierr)
 ! 1)     The column dimension of A is not needed.
 ! 2)     algorithm in place (B can take the place of A).
 !-----------------------------------------------------------------
-   call cnrms (nrow,nrm,a,ja,ia,diag)
-   ierr = 0
-   do 1 j=1, nrow
-      if (diag(j) .eq. 0.0) then
-         ierr = j
-         return
-      else
-         diag(j) = 1.0d0/diag(j)
-      endif
-1  continue
-   call amudia (nrow,job,a,ja,ia,diag,b,jb,ib)
-   return
+      call cnrms(nrow, nrm, a, ja, ia, diag)
+      ierr = 0
+      do j = 1, nrow
+         if (diag(j) == 0.0) then
+            ierr = j
+            return
+         else
+            diag(j) = 1.0_dp / diag(j)
+         end if
+      end do
+      call amudia(nrow, job, a, ja, ia, diag, b, jb, ib)
+      return
 !--------end-of-coscal--------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine addblk(nrowa, ncola, a, ja, ia, ipos, jpos, job,&
-&nrowb, ncolb, b, jb, ib, nrowc, ncolc, c, jc, ic, nzmx, ierr)
+   subroutine addblk(nrowa, ncola, a, ja, ia, ipos, jpos, job,&
+   &nrowb, ncolb, b, jb, ib, nrowc, ncolc, c, jc, ic, nzmx, ierr)
+      use precision, only: dp
+
 !      implicit none
-   integer nrowa, nrowb, nrowc, ncola, ncolb, ncolc, ipos, jpos
-   integer nzmx, ierr, job
-   integer ja(1:*), ia(1:*), jb(1:*), ib(1:*), jc(1:*), ic(1:*)
-   real*8 a(1:*), b(1:*), c(1:*)
+      integer nrowa, nrowb, nrowc, ncola, ncolb, ncolc, ipos, jpos
+      integer nzmx, ierr, job
+      integer ja(1:*), ia(1:*), jb(1:*), ib(1:*), jc(1:*), ic(1:*)
+      real(dp) :: a(1:*), b(1:*), c(1:*)
 !-----------------------------------------------------------------------
 !     This subroutine adds a matrix B into a submatrix of A whose
 !     (1,1) element is located in the starting position (ipos, jpos).
@@ -9276,81 +9519,89 @@ subroutine addblk(nrowa, ncola, a, ja, ia, ipos, jpos, job,&
 !-------
 !     this will not work if any of the two input matrices is not sorted
 !-----------------------------------------------------------------------
-   logical values
-   integer i,j1,j2,ka,kb,kc,kamax,kbmax
-   values = (job .ne. 0)
-   ierr = 0
-   nrowc = max(nrowa, nrowb+ipos-1)
-   ncolc = max(ncola, ncolb+jpos-1)
-   kc = 1
-   kbmax = 0
-   ic(1) = kc
+      logical values
+      integer i, j1, j2, ka, kb, kc, kamax, kbmax
+      values = (job /= 0)
+      ierr = 0
+      nrowc = max(nrowa, nrowb + ipos - 1)
+      ncolc = max(ncola, ncolb + jpos - 1)
+      kc = 1
+      kbmax = 0
+      ic(1) = kc
 !
-   do 10 i=1, nrowc
-      if (i.le.nrowa) then
-         ka = ia(i)
-         kamax = ia(i+1)-1
-      else
-         ka = ia(nrowa+1)
-      end if
-      if ((i.ge.ipos).and.((i-ipos).le.nrowb)) then
-         kb = ib(i-ipos+1)
-         kbmax = ib(i-ipos+2)-1
-      else
-         kb = ib(nrowb+1)
-      end if
+      do i = 1, nrowc
+         if (i <= nrowa) then
+            ka = ia(i)
+            kamax = ia(i + 1) - 1
+         else
+            ka = ia(nrowa + 1)
+         end if
+         if ((i >= ipos) .and. ((i - ipos) <= nrowb)) then
+            kb = ib(i - ipos + 1)
+            kbmax = ib(i - ipos + 2) - 1
+         else
+            kb = ib(nrowb + 1)
+         end if
 !
 !     a do-while type loop -- goes through all the elements in a row.
 !
-20    continue
-      if (ka .le. kamax) then
-         j1 = ja(ka)
-      else
-         j1 = ncolc+1
-      endif
-      if (kb .le. kbmax) then
-         j2 = jb(kb) + jpos - 1
-      else
-         j2 = ncolc+1
-      endif
+20       continue
+         if (ka <= kamax) then
+            j1 = ja(ka)
+         else
+            j1 = ncolc + 1
+         end if
+         if (kb <= kbmax) then
+            j2 = jb(kb) + jpos - 1
+         else
+            j2 = ncolc + 1
+         end if
 !
 !     if there are more elements to be added.
 !
-      if ((ka .le. kamax .or. kb .le. kbmax) .and.&
-      &(j1 .le. ncolc .or. j2 .le. ncolc)) then
+         if ((ka <= kamax .or. kb <= kbmax) .and.&
+         &(j1 <= ncolc .or. j2 <= ncolc)) then
 !
 !     three cases
 !
-         if (j1 .eq. j2) then
-            if (values) c(kc) = a(ka)+b(kb)
-            jc(kc) = j1
-            ka = ka+1
-            kb = kb+1
-            kc = kc+1
-         else if (j1 .lt. j2) then
-            jc(kc) = j1
-            if (values) c(kc) = a(ka)
-            ka = ka+1
-            kc = kc+1
-         else if (j1 .gt. j2) then
-            jc(kc) = j2
-            if (values) c(kc) = b(kb)
-            kb = kb+1
-            kc = kc+1
-         endif
-         if (kc .gt. nzmx) goto 999
-         goto 20
-      end if
-      ic(i+1) = kc
-10 continue
-   return
-999 ierr = i
-   return
+            if (j1 == j2) then
+               if (values) then
+                  c(kc) = a(ka) + b(kb)
+               end if
+               jc(kc) = j1
+               ka = ka + 1
+               kb = kb + 1
+               kc = kc + 1
+            else if (j1 < j2) then
+               jc(kc) = j1
+               if (values) then
+                  c(kc) = a(ka)
+               end if
+               ka = ka + 1
+               kc = kc + 1
+            else if (j1 > j2) then
+               jc(kc) = j2
+               if (values) then
+                  c(kc) = b(kb)
+               end if
+               kb = kb + 1
+               kc = kc + 1
+            end if
+            if (kc > nzmx) then
+               goto 999
+            end if
+            goto 20
+         end if
+         ic(i + 1) = kc
+      end do
+      return
+999   ierr = i
+      return
 !---------end-of-addblk-------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine get1up (n,ja,ia,ju)
-   integer  n, ja(*),ia(*),ju(*)
+   subroutine get1up(n, ja, ia, ju)
+      integer n, ja(:), ia(:), ju(:)
 !----------------------------------------------------------------------
 ! obtains the first element of each row of the upper triangular part
 ! of a matrix. Assumes that the matrix is already sorted.
@@ -9371,31 +9622,33 @@ subroutine get1up (n,ja,ia,ju)
 !           This is a more general version of diapos.
 !-----------------------------------------------------------------------
 ! local vAriables
-   integer i, k
+      integer i, k
 !
-   do 5 i=1, n
-      ju(i) = 0
-      k = ia(i)
+      do i = 1, n
+         ju(i) = 0
+         k = ia(i)
 !
-1     continue
-      if (ja(k) .ge. i) then
-         ju(i) = k
-         goto 5
-      elseif (k .lt. ia(i+1) -1) then
-         k=k+1
+1        continue
+         if (ja(k) >= i) then
+            ju(i) = k
+            cycle
+         elseif (k < ia(i + 1) - 1) then
+            k = k + 1
 !
 ! go try next element in row
 !
-         goto 1
-      endif
-5  continue
-   return
+            goto 1
+         end if
+      end do
+      return
 !-----end-of-get1up-----------------------------------------------------
-end
+   end
 !----------------------------------------------------------------------
-subroutine xtrows (i1,i2,a,ja,ia,ao,jao,iao,iperm,job)
-   integer i1,i2,ja(*),ia(*),jao(*),iao(*),iperm(*),job
-   real*8 a(*),ao(*)
+   subroutine xtrows(i1, i2, a, ja, ia, ao, jao, iao, iperm, job)
+      use precision, only: dp
+
+      integer i1, i2, ja(:), ia(:), jao(:), iao(:), iperm(:), job
+      real(dp) :: a(:), ao(:)
 !-----------------------------------------------------------------------
 ! this subroutine extracts given rows from a matrix in CSR format.
 ! Specifically, rows number iperm(i1), iperm(i1+1), ...., iperm(i2)
@@ -9433,35 +9686,37 @@ subroutine xtrows (i1,i2,a,ja,ia,ao,jao,iao,iperm,job)
 !----------------------------------------------------------------------c
 !           Y. Saad, revised May  2, 1990                              c
 !----------------------------------------------------------------------c
-   logical :: values
-   integer :: ii, j, k, ko
-   values = (job .eq. 1)
+      logical :: values
+      integer :: ii, j, k, ko
+      values = (job == 1)
 !
 ! copying
 !
-   ko = 1
-   iao(1) = ko
-   do 100 j=i1,i2
+      ko = 1
+      iao(1) = ko
+      do j = i1, i2
 !
 ! ii=iperm(j) is the index of old row to be copied.
 !
-      ii = iperm(j)
-      do 60 k=ia(ii), ia(ii+1)-1
-         jao(ko) = ja(k)
-         if (values) ao(ko) = a(k)
-         ko = ko+1
-60    continue
-      iao(j-i1+2) = ko
-100 continue
+         ii = iperm(j)
+         do k = ia(ii), ia(ii + 1) - 1
+            jao(ko) = ja(k)
+            if (values) then
+               ao(ko) = a(k)
+            end if
+            ko = ko + 1
+         end do
+         iao(j - i1 + 2) = ko
+      end do
 !
-   return
+      return
 !---------end-of-xtrows-------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine csrkvstr(n, ia, ja, nr, kvstr)
+   subroutine csrkvstr(n, ia, ja, nr, kvstr)
 !-----------------------------------------------------------------------
-   integer n, ia(n+1), ja(*), nr, kvstr(*)
+      integer n, ia(n + 1), ja(:), nr, kvstr(:)
 !-----------------------------------------------------------------------
 !     Finds block row partitioning of matrix in CSR format.
 !-----------------------------------------------------------------------
@@ -9482,36 +9737,36 @@ subroutine csrkvstr(n, ia, ja, nr, kvstr)
 !
 !-----------------------------------------------------------------------
 !     local variables
-   integer i, j, jdiff
+      integer i, j, jdiff
 !-----------------------------------------------------------------------
-   nr = 1
-   kvstr(1) = 1
+      nr = 1
+      kvstr(1) = 1
 !---------------------------------
-   do i = 2, n
-      jdiff = ia(i+1)-ia(i)
-      if (jdiff .eq. ia(i)-ia(i-1)) then
-         do j = ia(i), ia(i+1)-1
-            if (ja(j) .ne. ja(j-jdiff)) then
-               nr = nr + 1
-               kvstr(nr) = i
-               goto 299
-            endif
-         enddo
-299      continue
-      else
-300      nr = nr + 1
-         kvstr(nr) = i
-      endif
-   enddo
-   kvstr(nr+1) = n+1
+      do i = 2, n
+         jdiff = ia(i + 1) - ia(i)
+         if (jdiff == ia(i) - ia(i - 1)) then
+            do j = ia(i), ia(i + 1) - 1
+               if (ja(j) /= ja(j - jdiff)) then
+                  nr = nr + 1
+                  kvstr(nr) = i
+                  goto 299
+               end if
+            end do
+299         continue
+         else
+300         nr = nr + 1
+            kvstr(nr) = i
+         end if
+      end do
+      kvstr(nr + 1) = n + 1
 !---------------------------------
-   return
-end
+      return
+   end
 !-----------------------------------------------------------------------
 !------------------------end-of-csrkvstr--------------------------------
-subroutine csrkvstc(n, ia, ja, nc, kvstc, iwk)
+   subroutine csrkvstc(n, ia, ja, nc, kvstc, iwk)
 !-----------------------------------------------------------------------
-   integer n, ia(n+1), ja(*), nc, kvstc(*), iwk(*)
+      integer n, ia(n + 1), ja(:), nc, kvstc(:), iwk(:)
 !-----------------------------------------------------------------------
 !     Finds block column partitioning of matrix in CSR format.
 !-----------------------------------------------------------------------
@@ -9527,7 +9782,7 @@ subroutine csrkvstc(n, ia, ja, nc, kvstc, iwk)
 !
 !     Work space:
 !----------------
-!     iwk(*) of size equal to the number of scalar columns plus one.
+!     iwk(:) of size equal to the number of scalar columns plus one.
 !        Assumed initialized to 0, and left initialized on return.
 !
 !     Notes:
@@ -9536,47 +9791,47 @@ subroutine csrkvstc(n, ia, ja, nc, kvstc, iwk)
 !
 !-----------------------------------------------------------------------
 !     local variables
-   integer i, j, k, ncol
+      integer i, j, k, ncol
 !
 !-----------------------------------------------------------------------
 !-----use ncol to find maximum scalar column number
-   ncol = 0
+      ncol = 0
 !-----mark the beginning position of the blocks in iwk
-   do i = 1, n
-      if (ia(i) .lt. ia(i+1)) then
-         j = ja(ia(i))
-         iwk(j) = 1
-         do k = ia(i)+1, ia(i+1)-1
-            j = ja(k)
-            if (ja(k-1).ne.j-1) then
-               iwk(j) = 1
-               iwk(ja(k-1)+1) = 1
-            endif
-         enddo
-         iwk(j+1) = 1
-         ncol = max0(ncol, j)
-      endif
-   enddo
+      do i = 1, n
+         if (ia(i) < ia(i + 1)) then
+            j = ja(ia(i))
+            iwk(j) = 1
+            do k = ia(i) + 1, ia(i + 1) - 1
+               j = ja(k)
+               if (ja(k - 1) /= j - 1) then
+                  iwk(j) = 1
+                  iwk(ja(k - 1) + 1) = 1
+               end if
+            end do
+            iwk(j + 1) = 1
+            ncol = max(ncol, j)
+         end if
+      end do
 !---------------------------------
-   nc = 1
-   kvstc(1) = 1
-   do i = 2, ncol+1
-      if (iwk(i).ne.0) then
-         nc = nc + 1
-         kvstc(nc) = i
-         iwk(i) = 0
-      endif
-   enddo
-   nc = nc - 1
+      nc = 1
+      kvstc(1) = 1
+      do i = 2, ncol + 1
+         if (iwk(i) /= 0) then
+            nc = nc + 1
+            kvstc(nc) = i
+            iwk(i) = 0
+         end if
+      end do
+      nc = nc - 1
 !---------------------------------
-   return
-end
+      return
+   end
 !-----------------------------------------------------------------------
 !------------------------end-of-csrkvstc--------------------------------
 !-----------------------------------------------------------------------
-subroutine kvstmerge(nr, kvstr, nc, kvstc, n, kvst)
+   subroutine kvstmerge(nr, kvstr, nc, kvstc, n, kvst)
 !-----------------------------------------------------------------------
-   integer nr, kvstr(nr+1), nc, kvstc(nc+1), n, kvst(*)
+      integer nr, kvstr(nr + 1), nc, kvstc(nc + 1), n, kvst(:)
 !-----------------------------------------------------------------------
 !     Merges block partitionings, for conformal row/col pattern.
 !-----------------------------------------------------------------------
@@ -9597,36 +9852,40 @@ subroutine kvstmerge(nr, kvstr, nc, kvstc, n, kvst)
 !
 !-----------------------------------------------------------------------
 !-----local variables
-   integer i,j
+      integer i, j
 !---------------------------------
-   if (kvstr(nr+1) .ne. kvstc(nc+1)) return
-   i = 1
-   j = 1
-   n = 1
-200 if (i .gt. nr+1) then
-      kvst(n) = kvstc(j)
-      j = j + 1
-   elseif (j .gt. nc+1) then
-      kvst(n) = kvstr(i)
-      i = i + 1
-   elseif (kvstc(j) .eq. kvstr(i)) then
-      kvst(n) = kvstc(j)
-      j = j + 1
-      i = i + 1
-   elseif (kvstc(j) .lt. kvstr(i)) then
-      kvst(n) = kvstc(j)
-      j = j + 1
-   else
-      kvst(n) = kvstr(i)
-      i = i + 1
-   endif
-   n = n + 1
-   if (i.le.nr+1 .or. j.le.nc+1) goto 200
-   n = n - 2
+      if (kvstr(nr + 1) /= kvstc(nc + 1)) then
+         return
+      end if
+      i = 1
+      j = 1
+      n = 1
+200   if (i > nr + 1) then
+         kvst(n) = kvstc(j)
+         j = j + 1
+      elseif (j > nc + 1) then
+         kvst(n) = kvstr(i)
+         i = i + 1
+      elseif (kvstc(j) == kvstr(i)) then
+         kvst(n) = kvstc(j)
+         j = j + 1
+         i = i + 1
+      elseif (kvstc(j) < kvstr(i)) then
+         kvst(n) = kvstc(j)
+         j = j + 1
+      else
+         kvst(n) = kvstr(i)
+         i = i + 1
+      end if
+      n = n + 1
+      if (i <= nr + 1 .or. j <= nc + 1) then
+         goto 200
+      end if
+      n = n - 2
 !---------------------------------
-   return
+      return
 !------------------------end-of-kvstmerge-------------------------------
-end
+   end
 !----------------------------------------------------------------------c
 !                          S P A R S K I T                             c
 !----------------------------------------------------------------------c
@@ -9643,11 +9902,11 @@ end
 !           FixHeapM, HeapInsertM,indsetr,rndperm, are utility         c
 !           routines for sorting, generating random permutations, etc. c
 !----------------------------------------------------------------------c
-subroutine multic (n,ja,ia,ncol,kolrs,il,iord,maxcol,ierr)
-   integer, intent(in) :: n, maxcol
-   integer, intent(out) :: ierr
-   integer, intent(inout) :: ja(*),ia(n+1),kolrs(n),iord(n)&
-   &,il(maxcol+1)
+   subroutine multic(n, ja, ia, ncol, kolrs, il, iord, maxcol, ierr)
+      integer, intent(in) :: n, maxcol
+      integer, intent(out) :: ierr
+      integer, intent(inout) :: ja(:), ia(n + 1), kolrs(n), iord(n)&
+      &, il(maxcol + 1)
 !-----------------------------------------------------------------------
 !     multicoloring ordering -- greedy algorithm --
 !     determines the coloring permutation and sets up
@@ -9680,100 +9939,104 @@ subroutine multic (n,ja,ia,ncol,kolrs,il,iord,maxcol,ierr)
 !
 !-----------------------------------------------------------------------
 !
-   integer kol, i, j, k, mycol, icol, mcol, ii, ncol
+      integer kol, i, j, k, mycol, icol, mcol, ii, ncol
 !
-   ierr = 0
-   do 1 j=1, n
-      kolrs(j) = 0
-1  continue
-   do 11 j=1, maxcol
-      il(j) = 0
-11 continue
+      ierr = 0
+      do j = 1, n
+         kolrs(j) = 0
+      end do
+      do j = 1, maxcol
+         il(j) = 0
+      end do
 !
-   ncol = 0
+      ncol = 0
 !
 !     scan all nodes
 !
-   do 4 ii=1, n
-      i = iord(ii)
+      do ii = 1, n
+         i = iord(ii)
 !
 !     look at adjacent nodes to determine colors already assigned
 !
-      mcol = 0
-      do 2 k=ia(i), ia(i+1)-1
-         j = ja(k)
-         icol = kolrs(j)
-         if (icol .ne. 0) then
-            mcol = max(mcol,icol)
+         mcol = 0
+         do k = ia(i), ia(i + 1) - 1
+            j = ja(k)
+            icol = kolrs(j)
+            if (icol /= 0) then
+               mcol = max(mcol, icol)
 !
 !     il used as temporary to record already assigned colors.
 !
-            il(icol) = 1
-         endif
-2     continue
+               il(icol) = 1
+            end if
+         end do
 !
 !     taken colors determined. scan il until a slot opens up.
 !
-      mycol = 1
-3     if (il(mycol) .eq. 1) then
-         mycol = mycol+1
-         if (mycol .gt. maxcol) goto 99
-         if (mycol .le. mcol) goto 3
-      endif
+         mycol = 1
+3        if (il(mycol) == 1) then
+            mycol = mycol + 1
+            if (mycol > maxcol) then
+               goto 99
+            end if
+            if (mycol <= mcol) then
+               goto 3
+            end if
+         end if
 !
 !     reset il to zero for next nodes
 !
-      do 35 j=1, mcol
-         il(j) = 0
-35    continue
+         do j = 1, mcol
+            il(j) = 0
+         end do
 !
 !     assign color and update number of colors so far
 !
-      kolrs(i) = mycol
-      ncol = max(ncol,mycol)
-4  continue
+         kolrs(i) = mycol
+         ncol = max(ncol, mycol)
+      end do
 !
 !     every node has now been colored. Count nodes of each color
 !
-   do 6 j=1, n
-      kol = kolrs(j)+1
-      il(kol) = il(kol)+1
-6  continue
+      do j = 1, n
+         kol = kolrs(j) + 1
+         il(kol) = il(kol) + 1
+      end do
 !
 !     set pointers il
 !
-   il(1) = 1
-   do 7 j=1, ncol
-      il(j+1) = il(j)+il(j+1)
-7  continue
+      il(1) = 1
+      do j = 1, ncol
+         il(j + 1) = il(j) + il(j + 1)
+      end do
 !
 !     set iord
 !
-   do 8 j=1, n
-      kol = kolrs(j)
-      iord(j) = il(kol)
-      il(kol) = il(kol)+1
-8  continue
+      do j = 1, n
+         kol = kolrs(j)
+         iord(j) = il(kol)
+         il(kol) = il(kol) + 1
+      end do
 !
 !     shift il back
 !
-   do 9 j=ncol,1,-1
-      il(j+1) = il(j)
-9  continue
-   il(1) = 1
+      do j = ncol, 1, -1
+         il(j + 1) = il(j)
+      end do
+      il(1) = 1
 !
-   return
-99 ierr = 1
-   return
+      return
+99    ierr = 1
+      return
 !----end-of-multic------------------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
 
-subroutine indset0 (n,ja,ia,nset,iord,riord,sym,iptr)
-   integer, intent(in) :: n, iptr
-   integer, intent(inout) :: nset, ja(*),ia(*),riord(*),iord(*)
-   logical, intent(in) :: sym
+   subroutine indset0(n, ja, ia, nset, iord, riord, sym, iptr)
+      integer, intent(in) :: n, iptr
+      integer, intent(inout) :: nset, ja(:), ia(:), riord(:), iord(:)
+      logical, intent(in) :: sym
 !----------------------------------------------------------------------
 ! greedy algorithm for independent set ordering
 !----------------------------------------------------------------------
@@ -9793,56 +10056,62 @@ subroutine indset0 (n,ja,ia,nset,iord,riord,sym,iptr)
 !----------------------------------------------------------------------
 ! local variables
 !
-   integer j, k1, k2, nod, k, mat, ipos, nummat
-   do 1 j=1, n
-      iord(j) = 0
-1  continue
-   nummat = 1
-   if (.not. sym) nummat = 2
+      integer j, k1, k2, nod, k, mat, ipos, nummat
+      do j = 1, n
+         iord(j) = 0
+      end do
+      nummat = 1
+      if (.not. sym) then
+         nummat = 2
+      end if
 !
 !     iord used as a marker
 !
-   nset = 0
-   do 12  nod=1, n
-      if (iord(nod) .ne. 0) goto 12
-      nset = nset+1
-      iord(nod) = 1
+      nset = 0
+      do nod = 1, n
+         if (iord(nod) /= 0) then
+            cycle
+         end if
+         nset = nset + 1
+         iord(nod) = 1
 !
 !     visit all neighbors of current nod
 !
-      ipos = 0
-      do 45 mat=1, nummat
-         do 4 k=ia(ipos+nod), ia(ipos+nod+1)-1
-            j = ja(k)
-            if (j .ne. nod) iord(j) = 2
-4        continue
-         ipos = iptr-1
-45    continue
-12 continue
+         ipos = 0
+         do mat = 1, nummat
+            do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
+               j = ja(k)
+               if (j /= nod) then
+                  iord(j) = 2
+               end if
+            end do
+            ipos = iptr - 1
+         end do
+      end do
 !
 !     get permutation
 !
-   k1 = 0
-   k2 = nset
-   do 6 j=1,n
-      if (iord(j) .eq. 1) then
-         k1 = k1+1
-         k = k1
-      else
-         k2 = k2+1
-         k = k2
-      endif
-      riord(k) = j
-      iord(j) = k
-6  continue
-   return
+      k1 = 0
+      k2 = nset
+      do j = 1, n
+         if (iord(j) == 1) then
+            k1 = k1 + 1
+            k = k1
+         else
+            k2 = k2 + 1
+            k = k2
+         end if
+         riord(k) = j
+         iord(j) = k
+      end do
+      return
 !----------------------------------------------------------------------
-end
+   end
 !----------------------------------------------------------------------
-subroutine indset1 (n,ja,ia,nset,iord,riord,iw,sym,iptr)
-   integer, intent(in) :: n, iptr
-   integer, intent(inout) :: nset, ja(*),ia(*),riord(*),iord(*),iw(*)
-   logical, intent(in) :: sym
+   subroutine indset1(n, ja, ia, nset, iord, riord, iw, sym, iptr)
+      integer, intent(in) :: n, iptr
+      integer, intent(inout) :: nset, ja(:), ia(:), riord(:), iord(:), iw(:)
+      logical, intent(in) :: sym
 !----------------------------------------------------------------------
 ! greedy algorithm for independent set ordering -- with intial
 ! order of traversal given by that of min degree.
@@ -9862,92 +10131,96 @@ subroutine indset1 (n,ja,ia,nset,iord,riord,iw,sym,iptr)
 ! matrix has a symmetric structure.
 !----------------------------------------------------------------------
 ! local variables
-   integer j,k1,k2,nummat,nod,k,ipos, mat, ii, imat, iptrm1
+      integer j, k1, k2, nummat, nod, k, ipos, mat, ii, imat, iptrm1
 !
 !     nummat is the number of matrices to loop through (A in symmetric
 !     pattern case (nummat=1) or A,and transp(A) otherwise (mummat=2)
 !
-   if (sym) then
-      nummat = 1
-   else
-      nummat = 2
-   endif
-   iptrm1 = iptr-1
+      if (sym) then
+         nummat = 1
+      else
+         nummat = 2
+      end if
+      iptrm1 = iptr - 1
 !
 !     initialize arrays
 !
-   do 1 j=1,n
-      iord(j) = j
-      riord(j) = j
-      iw(j) = 0
-1  continue
+      do j = 1, n
+         iord(j) = j
+         riord(j) = j
+         iw(j) = 0
+      end do
 !
 !     initialize degrees of all nodes
 !
-   ipos = 0
-   do 100 imat =1,nummat
-      do 15 j=1,n
-         iw(j) = iw(j) + ia(ipos+j+1)-ia(ipos+j)
-15    continue
-      ipos = iptrm1
-100 continue
+      ipos = 0
+      do imat = 1, nummat
+         do j = 1, n
+            iw(j) = iw(j) + ia(ipos + j + 1) - ia(ipos + j)
+         end do
+         ipos = iptrm1
+      end do
 !
 !     call heapsort -- sorts nodes in increasing degree.
 !
-   call HeapSort (iw,iord,riord,n,n)
+      call HeapSort(iw, iord, riord, n, n)
 !
 !     weights no longer needed -- use iw to store order of traversal.
 !
-   do 16 j=1, n
-      iw(n-j+1) = iord(j)
-      iord(j) = 0
-16 continue
+      do j = 1, n
+         iw(n - j + 1) = iord(j)
+         iord(j) = 0
+      end do
 !
 !     iord used as a marker
 !
-   nset = 0
-   do 12  ii = 1, n
-      nod = iw(ii)
-      if (iord(nod) .ne. 0) goto 12
-      nset = nset+1
-      iord(nod) = 1
+      nset = 0
+      do ii = 1, n
+         nod = iw(ii)
+         if (iord(nod) /= 0) then
+            cycle
+         end if
+         nset = nset + 1
+         iord(nod) = 1
 !
 !     visit all neighbors of current nod
 !
-      ipos = 0
-      do 45 mat=1, nummat
-         do 4 k=ia(ipos+nod), ia(ipos+nod+1)-1
-            j = ja(k)
-            if (j .ne. nod) iord(j) = 2
-4        continue
-         ipos = iptrm1
-45    continue
-12 continue
+         ipos = 0
+         do mat = 1, nummat
+            do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
+               j = ja(k)
+               if (j /= nod) then
+                  iord(j) = 2
+               end if
+            end do
+            ipos = iptrm1
+         end do
+      end do
 !
 !     get permutation
 !
-   k1 = 0
-   k2 = nset
-   do 6 j=1,n
-      if (iord(j) .eq. 1) then
-         k1 = k1+1
-         k = k1
-      else
-         k2 = k2+1
-         k = k2
-      endif
-      riord(k) = j
-      iord(j) = k
-6  continue
-   return
+      k1 = 0
+      k2 = nset
+      do j = 1, n
+         if (iord(j) == 1) then
+            k1 = k1 + 1
+            k = k1
+         else
+            k2 = k2 + 1
+            k = k2
+         end if
+         riord(k) = j
+         iord(j) = k
+      end do
+      return
 !----------------------------------------------------------------------
-end
+   end
 !----------------------------------------------------------------------
-subroutine indset2(n,ja,ia,nset,iord,riord,iw,sym,iptr)
-   integer, intent(in) :: n
-   integer, intent(inout) ::nset, iptr,ja(*),ia(*),riord(n),iord(n)&
-   &,iw(n)
-   logical, intent(in) :: sym
+   subroutine indset2(n, ja, ia, nset, iord, riord, iw, sym, iptr)
+      integer, intent(in) :: n, iptr
+      integer, intent(inout) :: nset, ja(:), ia(:), riord(n), iord(n)&
+      &, iw(n)
+      logical, intent(in) :: sym
 !----------------------------------------------------------------------
 ! greedy algorithm for independent set ordering -- local minimization
 ! using heap strategy --
@@ -9985,129 +10258,136 @@ subroutine indset2(n,ja,ia,nset,iord,riord,iw,sym,iptr)
 !----------------------------------------------------------------------
 ! local variables --
 !
-   integer j,k1,k2,nummat,nod,k,ipos,i,last,lastlast,jold,jnew,&
-   &jo,jn, ichild, imat, iptrm1
+      integer j, k1, k2, nummat, nod, k, ipos, i, last, lastlast, jold, jnew,&
+      &jo, jn, ichild, imat, iptrm1
 !
 !     nummat is the number of matrices to loop through (A in symmetric
 !     pattern case (nummat=1) or A,and transp(A) otherwise (mummat=2)
 !
-   if (sym) then
-      nummat = 1
-   else
-      nummat = 2
-   endif
-   iptrm1 = iptr-1
+      if (sym) then
+         nummat = 1
+      else
+         nummat = 2
+      end if
+      iptrm1 = iptr - 1
 !
 !     initialize arrays
 !
-   do 1 j=1,n
-      iord(j) = j
-      riord(j) = j
-      iw(j) = 0
-1  continue
+      do j = 1, n
+         iord(j) = j
+         riord(j) = j
+         iw(j) = 0
+      end do
 !
 !     initialize degrees of all nodes
 !
-   ipos = 0
-   do 100 imat =1,nummat
-      do 15 j=1,n
-         iw(j) = iw(j) + ia(ipos+j+1)-ia(ipos+j)
-15    continue
-100 ipos = iptrm1
+      ipos = 0
+      do imat = 1, nummat
+         do j = 1, n
+            iw(j) = iw(j) + ia(ipos + j + 1) - ia(ipos + j)
+         end do
+         ipos = iptrm1
+      end do
 !
 ! start by constructing a heap
 !
-   do 2 i=n/2,1,-1
-      j = i
-      call FixHeap (iw,iord,riord,j,j,n)
-2  continue
+      do i = n / 2, 1, -1
+         j = i
+         call FixHeap(iw, iord, riord, j, j, n)
+      end do
 !
 ! main loop -- remove nodes one by one.
 !
-   last = n
-   nset = 0
-3  continue
-   lastlast = last
-   nod = iord(1)
+      last = n
+      nset = 0
+3     continue
+      lastlast = last
+      nod = iord(1)
 !
 !     move first element to end
 !
-   call moveback (iw,iord,riord,last)
-   last = last -1
-   nset = nset + 1
+      call moveback(iw, iord, riord, last)
+      last = last - 1
+      nset = nset + 1
 !
 !     scan all neighbors of accepted node -- move them to back --
 !
-   ipos = 0
-   do 101 imat =1,nummat
-      do 5 k=ia(ipos+nod),ia(ipos+nod+1)-1
-         jold = ja(k)
-         jnew = riord(jold)
-         if (jold .eq. nod .or. jnew .gt. last) goto 5
-         iw(jnew) = -1
-         call HeapInsert (iw,iord,riord,jnew,ichild,jnew)
-         call moveback (iw,iord,riord,last)
-         last = last -1
-5     continue
-      ipos = iptrm1
-101 continue
+      ipos = 0
+      do imat = 1, nummat
+         do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
+            jold = ja(k)
+            jnew = riord(jold)
+            if (jold == nod .or. jnew > last) then
+               cycle
+            end if
+            iw(jnew) = -1
+            call HeapInsert(iw, iord, riord, jnew, ichild, jnew)
+            call moveback(iw, iord, riord, last)
+            last = last - 1
+         end do
+         ipos = iptrm1
+      end do
 !
 ! update the degree of each edge
 !
-   do 6 k=last+1,lastlast-1
-      jold = iord(k)
+      do k = last + 1, lastlast - 1
+         jold = iord(k)
 !
 !     scan the neighbors of current node
 !
-      ipos = 0
-      do 102 imat =1,nummat
-         do 61 i=ia(ipos+jold),ia(ipos+jold+1)-1
-            jo = ja(i)
-            jn = riord(jo)
+         ipos = 0
+         do imat = 1, nummat
+            do i = ia(ipos + jold), ia(ipos + jold + 1) - 1
+               jo = ja(i)
+               jn = riord(jo)
 !
 !     consider this node only if it has not been moved
 !
-            if (jn .gt. last) goto 61
+               if (jn > last) then
+                  cycle
+               end if
 !     update degree of this neighbor
-            iw(jn) = iw(jn)-1
+               iw(jn) = iw(jn) - 1
 !     and fix the heap accordingly
-            call HeapInsert (iw,iord,riord,jn,ichild,jn)
-61       continue
-         ipos = iptrm1
-102   continue
-6  continue
+               call HeapInsert(iw, iord, riord, jn, ichild, jn)
+            end do
+            ipos = iptrm1
+         end do
+      end do
 !
 !     stopping test -- end main "while"loop
 !
-   if (last .gt. 1) goto 3
-   nset = nset + last
+      if (last > 1) then
+         goto 3
+      end if
+      nset = nset + last
 !
 !     rescan all nodes one more time to determine the permutations
 !
-   k1 = 0
-   k2 = nset
-   do 7 j=n,1,-1
-      if (iw(j) .ge. 0) then
-         k1 = k1+1
-         k = k1
-      else
-         k2 = k2+1
-         k = k2
-      endif
-      riord(k) = iord(j)
-7  continue
-   do j=1,n
-      iord(riord(j)) = j
-   enddo
-   return
+      k1 = 0
+      k2 = nset
+      do j = n, 1, -1
+         if (iw(j) >= 0) then
+            k1 = k1 + 1
+            k = k1
+         else
+            k2 = k2 + 1
+            k = k2
+         end if
+         riord(k) = iord(j)
+      end do
+      do j = 1, n
+         iord(riord(j)) = j
+      end do
+      return
 !----------------------------------------------------------------------
-end
+   end
 !----------------------------------------------------------------------
-subroutine indset3(n,ja,ia,nset,iord,riord,iw,sym,iptr)
-   integer, intent(in) :: n
-   integer, intent(inout) :: nset,iptr,ja(*),ia(*),riord(n),iord(n)&
-   &,iw(n)
-   logical, intent(in) :: sym
+   subroutine indset3(n, ja, ia, nset, iord, riord, iw, sym, iptr)
+      integer, intent(in) :: n
+      integer, intent(inout) :: nset, iptr, ja(:), ia(:), riord(n), iord(n)&
+      &, iw(n)
+      logical, intent(in) :: sym
 !----------------------------------------------------------------------
 ! greedy algorithm for independent set ordering -- local minimization
 ! using heap strategy -- VERTEX COVER ALGORITHM --
@@ -10146,86 +10426,93 @@ subroutine indset3(n,ja,ia,nset,iord,riord,iw,sym,iptr)
 !----------------------------------------------------------------------
 ! local variables --
 !
-   integer :: j,nummat,nod,k,ipos,i,lastnset,jold,jnew, nnz, ideg
-   integer :: iptrm1, imat
+      integer :: j, nummat, nod, k, ipos, i, lastnset, jold, jnew, nnz, ideg
+      integer :: iptrm1, imat
 !
 !     nummat is the number of matrices to loop through (A in symmetric
 !     pattern case (nummat=1) or A,and transp(A) otherwise (mummat=2)
 !
-   if (sym) then
-      nummat = 1
-   else
-      nummat = 2
-   endif
-   iptrm1 = iptr-1
+      if (sym) then
+         nummat = 1
+      else
+         nummat = 2
+      end if
+      iptrm1 = iptr - 1
 !
 !     initialize arrays
 !
-   do 1 j=1,n
-      riord(j) = j
-      iord(j) = j
-      iw(j) = 0
-1  continue
+      do j = 1, n
+         riord(j) = j
+         iord(j) = j
+         iw(j) = 0
+      end do
 !
 !     initialize degrees of all nodes
 !
-   nnz = 0
-   ipos = 0
-   do 100 imat =1,nummat
-      do 15 j=1,n
-         ideg = ia(ipos+j+1)-ia(ipos+j)
-         iw(j) = iw(j) + ideg
-         nnz = nnz + ideg
-15    continue
-100 ipos = iptrm1
+      nnz = 0
+      ipos = 0
+      do imat = 1, nummat
+         do j = 1, n
+            ideg = ia(ipos + j + 1) - ia(ipos + j)
+            iw(j) = iw(j) + ideg
+            nnz = nnz + ideg
+         end do
+         ipos = iptrm1
+      end do
 !
 !     number of edges
 !
-   if (sym) nnz = 2*nnz
+      if (sym) then
+         nnz = 2 * nnz
+      end if
 !
 ! start by constructing a Max heap
 !
-   do 2 i=n/2,1,-1
-      j = i
-      call FixHeapM (iw,riord,iord,j,j,n)
-2  continue
-   nset = n
+      do i = n / 2, 1, -1
+         j = i
+         call FixHeapM(iw, riord, iord, j, j, n)
+      end do
+      nset = n
 !----------------------------------------------------------------------
 ! main loop -- remove nodes one by one.
 !----------------------------------------------------------------------
-3  continue
-   lastnset = nset
-   nod = riord(1)
+3     continue
+      lastnset = nset
+      nod = riord(1)
 !
 !     move first element to end
 !
-   call movebackM (iw,riord,iord,nset)
-   nnz = nnz - iw(nset)
-   nset = nset -1
+      call movebackM(iw, riord, iord, nset)
+      nnz = nnz - iw(nset)
+      nset = nset - 1
 !
 !     scan all neighbors of accepted node --
 !
-   ipos = 0
-   do 101 imat =1,nummat
-      do 5 k=ia(ipos+nod),ia(ipos+nod+1)-1
-         jold = ja(k)
-         jnew = iord(jold)
-         if (jold .eq. nod .or. jnew .gt. nset) goto 5
-         iw(jnew) = iw(jnew) - 1
-         nnz = nnz-1
-         call FixHeapM (iw,riord,iord,jnew,jnew,nset)
-5     continue
-      ipos = iptrm1
-101 continue
+      ipos = 0
+      do imat = 1, nummat
+         do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
+            jold = ja(k)
+            jnew = iord(jold)
+            if (jold == nod .or. jnew > nset) then
+               cycle
+            end if
+            iw(jnew) = iw(jnew) - 1
+            nnz = nnz - 1
+            call FixHeapM(iw, riord, iord, jnew, jnew, nset)
+         end do
+         ipos = iptrm1
+      end do
 !
-   if (nnz .gt. 0) goto 3
-   return
+      if (nnz > 0) then
+         goto 3
+      end if
+      return
 !-----------------------------------------------------------------------
-end
+   end
 !-----------------------------------------------------------------------
-subroutine HeapSort (a,ind,rind,n,ncut)
-   integer, intent(in) :: n, ncut
-   integer, intent(inout) :: a(*),ind(n),rind(n)
+   subroutine HeapSort(a, ind, rind, n, ncut)
+      integer, intent(in) :: n, ncut
+      integer, intent(inout) :: a(:), ind(n), rind(n)
 !----------------------------------------------------------------------
 ! integer version -- min heap sorts decreasinly.
 !----------------------------------------------------------------------
@@ -10239,27 +10526,27 @@ subroutine HeapSort (a,ind,rind,n,ncut)
 !----------------------------------------------------------------------
 ! local variables
 !
-   integer i,last, j,jlast
+      integer i, last, j, jlast
 !
 !    Heap sort algorithm ---
 !
 !    build heap
-   do 1 i=n/2,1,-1
-      j = i
-      call FixHeap (a,ind,rind,j,j,n)
-1  continue
+      do i = n / 2, 1, -1
+         j = i
+         call FixHeap(a, ind, rind, j, j, n)
+      end do
 !
 !   done -- now remove keys one by one
 !
-   jlast = max(2,n-ncut+1)
-   do 2 last=n,jlast,-1
-      call moveback (a,ind,rind,last)
-2  continue
-   return
-end
+      jlast = max(2, n - ncut + 1)
+      do last = n, jlast, -1
+         call moveback(a, ind, rind, last)
+      end do
+      return
+   end
 !----------------------------------------------------------------------
-subroutine FixHeap (a,ind,rind,jkey,vacant,last)
-   integer a(*),ind(*),rind(*),jkey,vacant,last
+   subroutine FixHeap(a, ind, rind, jkey, vacant, last)
+      integer a(:), ind(:), rind(:), jkey, vacant, last
 !----------------------------------------------------------------------
 !     inserts a key (key and companion index) at the vacant position
 !     in a (min) heap -
@@ -10274,32 +10561,37 @@ subroutine FixHeap (a,ind,rind,jkey,vacant,last)
 !----------------------------------------------------------------------
 ! local variables
 !
-   integer child,lchild,rchild,xkey, ikey
-   xkey = a(jkey)
-   ikey = ind(jkey)
-   lchild = 2*vacant
-1  continue
-   rchild = lchild+1
-   child = lchild
-   if (rchild .le. last .and. a(rchild) .lt. a(child))&
-   &child = rchild
-   if (xkey .le. a(child) .or. child .gt. last) goto 2
-   a(vacant) = a(child)
-   ind(vacant) = ind(child)
-   rind(ind(vacant)) = vacant
-   vacant = child
-   lchild = 2*vacant
-   if (lchild .le.  last) goto 1
-2  continue
-   a(vacant) = xkey
-   ind(vacant) = ikey
-   rind(ikey) = vacant
-   return
+      integer child, lchild, rchild, xkey, ikey
+      xkey = a(jkey)
+      ikey = ind(jkey)
+      lchild = 2 * vacant
+1     continue
+      rchild = lchild + 1
+      child = lchild
+      if (rchild <= last .and. a(rchild) < a(child)) then
+         child = rchild
+      end if
+      if (xkey <= a(child) .or. child > last) then
+         goto 2
+      end if
+      a(vacant) = a(child)
+      ind(vacant) = ind(child)
+      rind(ind(vacant)) = vacant
+      vacant = child
+      lchild = 2 * vacant
+      if (lchild <= last) then
+         goto 1
+      end if
+2     continue
+      a(vacant) = xkey
+      ind(vacant) = ikey
+      rind(ikey) = vacant
+      return
 !----------------------------------------------------------------------
-end
+   end
 !----------------------------------------------------------------------
-subroutine HeapInsert (a,ind,rind,jkey,child,node)
-   integer a(*),ind(*),rind(*),jkey,child,node
+   subroutine HeapInsert(a, ind, rind, jkey, child, node)
+      integer a(:), ind(:), rind(:), jkey, child, node
 !----------------------------------------------------------------------
 ! inserts a key to a heap from `node'. Checks values up
 ! only -- i.e.,assumes that the subtree (if any) whose root
@@ -10309,63 +10601,69 @@ subroutine HeapInsert (a,ind,rind,jkey,child,node)
 ! child is where the key ended up.
 !----------------------------------------------------------------------
 !---- local variables
-   integer parent,xkey,ikey
-   xkey = a(jkey)
-   ikey = ind(jkey)
+      integer parent, xkey, ikey
+      xkey = a(jkey)
+      ikey = ind(jkey)
 !      node = node + 1
-   a(node) = xkey
-   ind(node) = ikey
-   rind(ikey) = node
-   if (node .le. 1) return
-   child=node
-1  parent = child/2
-   if (a(parent) .le. a(child)) goto 2
-   call interchange(a,ind,rind,child,parent)
-   child = parent
-   if (child .gt. 1) goto 1
-2  continue
-   return
-end
+      a(node) = xkey
+      ind(node) = ikey
+      rind(ikey) = node
+      if (node <= 1) then
+         return
+      end if
+      child = node
+1     parent = child / 2
+      if (a(parent) <= a(child)) then
+         goto 2
+      end if
+      call interchange(a, ind, rind, child, parent)
+      child = parent
+      if (child > 1) then
+         goto 1
+      end if
+2     continue
+      return
+   end
 !-----------------------------------------------------------------------
-subroutine interchange (a,ind,rind,i,j)
-   integer a(*),ind(*),rind(*),i,j
-   integer tmp,itmp
-   tmp = a(i)
-   itmp = ind(i)
+   subroutine interchange(a, ind, rind, i, j)
+      integer a(:), ind(:), rind(:), i, j
+      integer tmp, itmp
+      tmp = a(i)
+      itmp = ind(i)
 !
-   a(i) = a(j)
-   ind(i) = ind(j)
+      a(i) = a(j)
+      ind(i) = ind(j)
 !
-   a(j) = tmp
-   ind(j) = itmp
-   rind(ind(j)) = j
-   rind(ind(i)) = i
+      a(j) = tmp
+      ind(j) = itmp
+      rind(ind(j)) = j
+      rind(ind(i)) = i
 !
-   return
-end
+      return
+   end
 !----------------------------------------------------------------------
-subroutine moveback (a,ind,rind,last)
-   integer a(*),ind(*),rind(*),last
+   subroutine moveback(a, ind, rind, last)
+      integer a(:), ind(:), rind(:), last
 ! moves the front key to the back and inserts the last
 ! one back in from the top --
 !
 ! local variables
 !
-   integer vacant,xmin, imin
+      integer vacant, xmin, imin
 !
-   vacant = 1
-   xmin = a(vacant)
-   imin = ind(vacant)
-   call FixHeap(a,ind,rind,last,vacant,last-1)
-   a(last) = xmin
-   ind(last) = imin
-   rind(ind(last)) = last
+      vacant = 1
+      xmin = a(vacant)
+      imin = ind(vacant)
+      call FixHeap(a, ind, rind, last, vacant, last - 1)
+      a(last) = xmin
+      ind(last) = imin
+      rind(ind(last)) = last
 !
-   return
-end
+      return
+   end
 !----------------------------------------------------------------------
-subroutine FixHeapM (a,ind,rind,jkey,vacant,last)
-   integer a(*),ind(*),rind(*),jkey,vacant,last
+   subroutine FixHeapM(a, ind, rind, jkey, vacant, last)
+      integer a(:), ind(:), rind(:), jkey, vacant, last
 !----
 !     inserts a key (key and companion index) at the vacant position
 !     in a heap -  THIS IS A MAX HEAP VERSION
@@ -10380,31 +10678,36 @@ subroutine FixHeapM (a,ind,rind,jkey,vacant,last)
 !----
 ! local variables
 !
-   integer child,lchild,rchild,xkey, ikey
-   xkey = a(jkey)
-   ikey = ind(jkey)
-   lchild = 2*vacant
-1  continue
-   rchild = lchild+1
-   child = lchild
-   if (rchild .le. last .and. a(rchild) .gt. a(child))&
-   &child = rchild
-   if (xkey .ge. a(child) .or. child .gt. last) goto 2
-   a(vacant) = a(child)
-   ind(vacant) = ind(child)
-   rind(ind(vacant)) = vacant
-   vacant = child
-   lchild = 2*vacant
-   if (lchild .le.  last) goto 1
-2  continue
-   a(vacant) = xkey
-   ind(vacant) = ikey
-   rind(ikey) = vacant
-   return
-end
+      integer child, lchild, rchild, xkey, ikey
+      xkey = a(jkey)
+      ikey = ind(jkey)
+      lchild = 2 * vacant
+1     continue
+      rchild = lchild + 1
+      child = lchild
+      if (rchild <= last .and. a(rchild) > a(child)) then
+         child = rchild
+      end if
+      if (xkey >= a(child) .or. child > last) then
+         goto 2
+      end if
+      a(vacant) = a(child)
+      ind(vacant) = ind(child)
+      rind(ind(vacant)) = vacant
+      vacant = child
+      lchild = 2 * vacant
+      if (lchild <= last) then
+         goto 1
+      end if
+2     continue
+      a(vacant) = xkey
+      ind(vacant) = ikey
+      rind(ikey) = vacant
+      return
+   end
 !
-subroutine HeapInsertM (a,ind,rind,jkey,child,node)
-   integer a(*),ind(*),rind(*),jkey,child,node
+   subroutine HeapInsertM(a, ind, rind, jkey, child, node)
+      integer a(:), ind(:), rind(:), jkey, child, node
 !----------------------------------------------------------------------
 ! inserts a key to a heap from `node'. Checks values up
 ! only -- i.e.,assumes that the subtree (if any) whose root
@@ -10414,26 +10717,32 @@ subroutine HeapInsertM (a,ind,rind,jkey,child,node)
 ! child is where the key ended up.
 !----------------------------------------------------------------------
 !---- local variables
-   integer parent,xkey,ikey
-   xkey = a(jkey)
-   ikey = ind(jkey)
+      integer parent, xkey, ikey
+      xkey = a(jkey)
+      ikey = ind(jkey)
 !      node = node + 1
-   a(node) = xkey
-   ind(node) = ikey
-   rind(ikey) = node
-   if (node .le. 1) return
-   child=node
-1  parent = child/2
-   if (a(parent) .ge. a(child)) goto 2
-   call interchange(a,ind,rind,child,parent)
-   child = parent
-   if (child .gt. 1) goto 1
-2  continue
-   return
-end
+      a(node) = xkey
+      ind(node) = ikey
+      rind(ikey) = node
+      if (node <= 1) then
+         return
+      end if
+      child = node
+1     parent = child / 2
+      if (a(parent) >= a(child)) then
+         goto 2
+      end if
+      call interchange(a, ind, rind, child, parent)
+      child = parent
+      if (child > 1) then
+         goto 1
+      end if
+2     continue
+      return
+   end
 !----------------------------------------------------------------------
-subroutine movebackM (a,ind,rind,last)
-   integer a(*),ind(*),rind(*),last
+   subroutine movebackM(a, ind, rind, last)
+      integer a(:), ind(:), rind(:), last
 !----------------------------------------------------------------------
 ! moves the front key to the back and inserts the last
 ! one back in from the top --  MAX HEAP VERSION
@@ -10441,24 +10750,24 @@ subroutine movebackM (a,ind,rind,last)
 !
 ! local variables
 !
-   integer vacant,xmin, imin
+      integer vacant, xmin, imin
 !
-   vacant = 1
-   xmin = a(vacant)
-   imin = ind(vacant)
-   call FixHeapM(a,ind,rind,last,vacant,last-1)
-   a(last) = xmin
-   ind(last) = imin
-   rind(ind(last)) = last
+      vacant = 1
+      xmin = a(vacant)
+      imin = ind(vacant)
+      call FixHeapM(a, ind, rind, last, vacant, last - 1)
+      a(last) = xmin
+      ind(last) = imin
+      rind(ind(last)) = last
 !----------------------------------------------------------------------
-   return
-end
+      return
+   end
 !----------------------------------------------------------------------
-subroutine indsetr (n,ja,ia,nset,iord,riord,sym,iptr)
-   integer, intent(in) :: n
-   integer, intent(inout) :: nset, ja(*),ia(*),riord(*),iord(*)
-   logical, intent(in) :: sym
-   integer :: ipos, iptr, ii, nummat
+   subroutine indsetr(n, ja, ia, nset, iord, riord, sym, iptr)
+      integer, intent(in) :: n
+      integer, intent(inout) :: nset, ja(:), ia(:), riord(:), iord(:)
+      logical, intent(in) :: sym
+      integer :: ipos, iptr, ii, nummat
 !----------------------------------------------------------------------
 ! greedy algorithm for independent set ordering -- RANDOM TRAVERSAL --
 !----------------------------------------------------------------------
@@ -10478,62 +10787,68 @@ subroutine indsetr (n,ja,ia,nset,iord,riord,sym,iptr)
 !----------------------------------------------------------------------
 ! local variables
 !
-   integer j, k1, k2, nod, k, mat, iseed
-   do 1 j=1, n
-      iord(j) = 0
-1  continue
+      integer j, k1, k2, nod, k, mat, iseed
+      do j = 1, n
+         iord(j) = 0
+      end do
 !
 ! generate random permutation
 !
-   iseed = 0
-   call rndperm(n, riord, iseed)
-   write (8,'(10i6)') (riord(j),j=1,n)
+      iseed = 0
+      call rndperm(n, riord, iseed)
+      write (8, '(10i6)') (riord(j), j=1, n)
 !
-   nummat = 1
-   if (.not. sym) nummat = 2
+      nummat = 1
+      if (.not. sym) then
+         nummat = 2
+      end if
 !
 ! iord used as a marker
 !
-   nset = 0
-   do 12  ii=1, n
-      nod = riord(ii)
-      if (iord(nod) .ne. 0) goto 12
-      nset = nset+1
-      iord(nod) = 1
+      nset = 0
+      do ii = 1, n
+         nod = riord(ii)
+         if (iord(nod) /= 0) then
+            cycle
+         end if
+         nset = nset + 1
+         iord(nod) = 1
 !
 ! visit all neighbors of current nod
 !
-      ipos = 0
-      do 45 mat=1, nummat
-         do 4 k=ia(ipos+nod), ia(ipos+nod+1)-1
-            j = ja(k)
-            if (j .ne. nod) iord(j) = 2
-4        continue
-         ipos = iptr-1
-45    continue
-12 continue
+         ipos = 0
+         do mat = 1, nummat
+            do k = ia(ipos + nod), ia(ipos + nod + 1) - 1
+               j = ja(k)
+               if (j /= nod) then
+                  iord(j) = 2
+               end if
+            end do
+            ipos = iptr - 1
+         end do
+      end do
 !
 ! get permutation
 !
-   k1 = 0
-   k2 = nset
-   do 6 j=1,n
-      if (iord(j) .eq. 1) then
-         k1 = k1+1
-         k = k1
-      else
-         k2 = k2+1
-         k = k2
-      endif
-      riord(k) = j
-      iord(j) = k
-6  continue
-   return
+      k1 = 0
+      k2 = nset
+      do j = 1, n
+         if (iord(j) == 1) then
+            k1 = k1 + 1
+            k = k1
+         else
+            k2 = k2 + 1
+            k = k2
+         end if
+         riord(k) = j
+         iord(j) = k
+      end do
+      return
 !----------------------------------------------------------------------
-end
+   end
 !----------------------------------------------------------------------
-subroutine rndperm(n,iord,iseed)
-   integer n, iseed, iord(n)
+   subroutine rndperm(n, iord, iseed)
+      integer n, iseed, iord(n)
 !----------------------------------------------------------------------
 ! this subroutine will generate a pseudo random permutation of the
 ! n integers 1,2, ...,n.
@@ -10541,30 +10856,33 @@ subroutine rndperm(n,iord,iseed)
 !----------------------------------------------------------------------
 ! local
 !
-   integer i, j, itmp
-   integer, external :: irand
+      integer i, j, itmp
+      integer, external :: irand
 !----------------------------------------------------------------------
-   do j=1, n
-      iord(j) = j
-   enddo
-!
-   do i=1, n
-      j = mod(irand(0),n) + 1
-      itmp = iord(i)
-      iord(i) = iord(j)
-      iord(j) = itmp
-   enddo
-!----------------------------------------------------------------------
-   return
-!----------------------------------------------------------------------
-end
+      no_warning_unused_dummy_argument(iseed)
 
-subroutine amub_countonly(nrow,ncol,a,ja,ia,b,jb,ib,iw,len)
-   integer, intent(in) :: nrow, ncol
-   integer, intent(out) :: len
-   real*8 , intent(inout) :: a(*), b(*)
-   integer, intent(inout) :: ja(*),jb(*),ia(nrow+1),ib(*),iw(ncol)
-   integer :: jj, k, kb, jcol, jpos, j, ii, ka
+      do j = 1, n
+         iord(j) = j
+      end do
+!
+      do i = 1, n
+         j = mod(irand(0), n) + 1
+         itmp = iord(i)
+         iord(i) = iord(j)
+         iord(j) = itmp
+      end do
+!----------------------------------------------------------------------
+      return
+!----------------------------------------------------------------------
+   end
+
+   subroutine amub_countonly(nrow, ncol, a, ja, ia, b, jb, ib, iw, len)
+
+      integer, intent(in) :: nrow, ncol
+      integer, intent(out) :: len
+      real(dp), intent(inout) :: a(:), b(:)
+      integer, intent(inout) :: ja(:), jb(:), ia(nrow + 1), ib(:), iw(ncol)
+      integer :: jj, k, kb, jcol, jpos, j, ii, ka
 !-----------------------------------------------------------------------
 ! computes number of nonzeros in matrix product C = A B
 !-----------------------------------------------------------------------
@@ -10595,30 +10913,34 @@ subroutine amub_countonly(nrow,ncol,a,ja,ia,b,jb,ib,iw,len)
 !   on the condition that ncol(A) = nrow(B).
 !
 !-----------------------------------------------------------------------
-   len = 0
+      no_warning_unused_dummy_argument(a)
+      no_warning_unused_dummy_argument(b)
+
+      len = 0
 !     initialize array iw.
-   do 1 j=1, ncol
-      iw(j) = 0
-1  continue
+      do j = 1, ncol
+         iw(j) = 0
+      end do
 !
-   do 500 ii=1, nrow
+      do ii = 1, nrow
 !     row i
-      do 200 ka=ia(ii), ia(ii+1)-1
-         jj   = ja(ka)
-         do 100 kb=ib(jj),ib(jj+1)-1
-            jcol = jb(kb)
-            jpos = iw(jcol)
-            if (jpos .eq. 0) then
-               len = len+1
-               iw(jcol)= len
-            endif
-100      continue
-200   continue
-      do 201 k=1,ncol
-         iw(k) = 0
-201   continue
-500 continue
-   return
+         do ka = ia(ii), ia(ii + 1) - 1
+            jj = ja(ka)
+            do kb = ib(jj), ib(jj + 1) - 1
+               jcol = jb(kb)
+               jpos = iw(jcol)
+               if (jpos == 0) then
+                  len = len + 1
+                  iw(jcol) = len
+               end if
+            end do
+         end do
+         do k = 1, ncol
+            iw(k) = 0
+         end do
+      end do
+      return
 !-------------end-of-amub-----------------------------------------------
 !-----------------------------------------------------------------------
-end
+   end
+end module m_saadf

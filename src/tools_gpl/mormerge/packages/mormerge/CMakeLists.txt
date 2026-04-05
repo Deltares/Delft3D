@@ -28,7 +28,6 @@ set_source_files_properties(${fortran_version_files}
 # Set dependencies
 set(oss_dependencies    deltares_common
                         deltares_common_c) 
-oss_include_libraries(${executable_name} oss_dependencies)
 target_link_libraries(${executable_name} ${oss_dependencies})
 
 if (WIN32)

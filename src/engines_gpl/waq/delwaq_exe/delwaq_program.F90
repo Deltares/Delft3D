@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -23,14 +23,14 @@
 
 program delwaq
 
-    use m_delwaq1
-    use m_delwaq2
-    use delwaq_exe_version_module
+    use m_delwaq1, only: delwaq1
+    use m_delwaq2, only: delwaq2
+    use delwaq_exe_version_module, only: get_fullversionstring_delwaq
 
-    use m_logger_factory
-    use m_logger_type
-    use m_logger
-    use m_log_level
+    use m_logger_factory, only: create_logger
+    use m_logger_type, only: file
+    use m_logger, only: logger
+    use m_log_level, only: info_level
 
     use m_command_line_help, only: show_command_line_help, show_command_line_version
     use m_string_utils, only: join_strings
@@ -38,7 +38,7 @@ program delwaq
 
     implicit none
 
-    character(len = 256), dimension(:), allocatable :: argv
+    character(len=256), dimension(:), allocatable :: argv
     character(:), allocatable :: id_str
     character(len=10) :: log_file_path
 
@@ -55,17 +55,17 @@ program delwaq
 
     if (is_command_arg_specified('--version') .or. &
         is_command_arg_specified('-v')) then
-            call show_command_line_version()
-            stop 0
+        call show_command_line_version()
+        stop 0
     end if
 
     ! initialize logging
     log_file_path = 'delwaq.log'
-    log = create_logger(FILE, INFO_LEVEL, log_file_path)
+    log = create_logger(file, info_level, log_file_path)
 
     argv = get_arguments()
     call log%log_info('Running: '//trim(id_str))
-    call log%log_info('Provided arguments: '//join_strings(argv(2:), ', '))
+    call log%log_info('Provided arguments: '//join_strings(argv(1:), ', '))
 
     if (.not. delwaq1(argv)) then
         call log%log_error('Error during delwaq pre-processing')
@@ -80,5 +80,5 @@ program delwaq
     end if
 
     call log%log_info('Normal end', .true.)
-    write (*, *) ' Normal end'
+    write(*, *) 'Normal end'
 end program delwaq

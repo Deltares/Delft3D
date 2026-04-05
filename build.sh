@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # ================
 # === Usage    ===
 # ================
@@ -8,37 +7,43 @@ function print_usage_info {
     echo
     echo
     echo "Usage: ${0##*/} <CONFIG> [OPTIONS]"
-    echo "- Only when <CONFIG>=all: Compile all engines that are not CMaked yet in the traditional way"
     echo "- Create directory 'build_<CONFIG>'"
     echo "  Delete it when it already existed"
-    echo "- Execute '. src/setenv.sh' to load modules"
-    echo "- Execute 'CMake <CONFIG>' to create makefile inside 'build_<CONFIG>'"
-    echo "- Execute 'make VERBOSE=1 install'"
-    echo "- Only when <CONFIG>=all: Combine all binaries in 'build_<CONFIG>\lnx64'"
+    echo "- Execute CMake step to create makefile inside 'build_<CONFIG>'"
+    echo "- Execute CMake step to build inside 'build_<CONFIG>' and install inside 'install_<CONFIG>'"
     echo
     echo "<CONFIG>:"
-    echo "- If <CONFIG> is missing, this usage will be print"
-    echo "- all: All CMaked projects, currently D-Flow FM, DWAQ and DIMR"
-    echo "- dflowfm"
+    echo "- all: All CMaked products that are in fm-suite and d3d4-suite combined"
+    echo "- fm-suite"
+    echo "- d3d4-suite"
     echo "- dwaq"
     echo "- dwaves"
     echo "- dimr"
     echo "- tests"
     echo "- swan"
-    echo "- delft3d4"
     echo "- flow2d3d"
     echo
     echo "Options:"
-    echo "-p, --prepareonly"
-    echo "       Only CMake, no make"
+    echo "-h, --help"
+    echo "       Show this help page."
+    echo "--build"
+    echo "       Run build and install steps after running cmake."
+    echo "--build_dir <DIR_NAME>"
+    echo "       Absolute path to build directory equal to"
+    echo "       '${root}/build_<CONFIG>' for Release builds and"
+    echo "       '${root}/build_<CONFIG>_debug' for Debug builds."
+    echo "--build_type <BUILD_TYPE>"
+    echo "       Build optimization level with <BUILD_TYPE> equal to 'Release' or 'Debug'."
+    echo "--install_dir <DIR_NAME>"
+    echo "       Absolute path to install directory equal to"
+    echo "       '${root}/install_<CONFIG>' for Release builds and"
+    echo "       '${root}/install_<CONFIG>_debug' for Debug builds."
+    echo "--keep_build"
+    echo "       Do not delete the 'build_<CONFIG>' and 'install_<CONFIG>' folders."
     echo
-    echo "--debug"
-    echo "      Compile in debug mode"
+    echo "More info  : https://github.com/Deltares/Delft3D"
     echo
-    echo "More info  : https://oss.deltares.nl/web/delft3d/source-code"
-    echo "About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/README"
-    echo
-    exit 1
+    exit $help_exit_code
 }
 
 # =========================
@@ -48,10 +53,6 @@ function CheckUtils () {
     if ! command -v patchelf &> /dev/null; then
        echo "'patchelf' is not found."
     fi
-
-    if ! command -v svnversion &> /dev/null; then
-       echo "'svnversion' is not found."
-    fi
 }
 
 
@@ -60,11 +61,23 @@ function CheckUtils () {
 # === CreateCMakedir    ===
 # =========================
 function CreateCMakedir () {
-    echo
-    echo "Create CMake dir for $1$2 ..."
-    cd     $root
-    rm -rf $root/build_$1$2
-    mkdir  $root/build_$1$2
+    cd "$root"
+    
+    if [ "$keep_build" = "0" ]; then
+       echo
+       echo "Remove old build dir for $1 ..."
+       rm -rf "$build_dir"
+       rm -rf "$install_dir"
+    fi
+    
+    if [ ! -d "$build_dir" ]; then
+       echo
+       echo "Create build dir for $1 ..."
+       mkdir "$build_dir"
+    fi
+    if [ ! -d "$install_dir" ]; then
+       mkdir "$install_dir"
+    fi
 
     return
 }
@@ -77,9 +90,20 @@ function CreateCMakedir () {
 function DoCMake () {
     echo
     echo "Executing CMake for $1 ..."
-    cd    $root/build_$1$2
-    echo "cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype}"
-          cmake ../src/cmake -G "$generator" -B "." -D CONFIGURATION_TYPE="$1" -D CMAKE_BUILD_TYPE=${buildtype} -D CMAKE_INSTALL_PREFIX=../build_$1$2/install/
+    
+    cd "$root"
+    echo
+    echo "cmake ./src/cmake -G \"$generator\" -B \"$build_dir\" \\"
+    echo "    -D CONFIGURATION_TYPE=\"$1\" \\"
+    echo "    -D CMAKE_BUILD_TYPE=$build_type \\"
+    echo "    -D CMAKE_INSTALL_PREFIX=\"$install_dir\""
+    echo
+    
+    cmake ./src/cmake -G "$generator" -B "$build_dir" \
+        -D CONFIGURATION_TYPE="$1" \
+        -D CMAKE_BUILD_TYPE=$build_type \
+        -D CMAKE_INSTALL_PREFIX="$install_dir"
+        
     if [ $? -ne 0 ]; then
         echo "CMake configure resulted in an error. Check log files."
         exit 1
@@ -95,10 +119,14 @@ function DoCMake () {
 # =====================
 function BuildCMake () {
     echo
-    echo "Building (make) based on CMake preparations for $1 ..."
-    cd    $root/build_$1$2
-    echo "make -j VERBOSE=1 install"
-          make -j VERBOSE=1 install
+    echo "Building $1 ..."
+    
+    cd "$build_dir"
+    echo
+    echo "cmake --build . --parallel --target install"
+    echo
+          cmake --build . --parallel --target install
+    
     if [ $? -ne 0 ]; then
         echo "CMake build resulted in an error. Check log files."
         exit 1
@@ -109,113 +137,58 @@ function BuildCMake () {
 
 
 
-# =========================
-# === InstallAll        ===
-# =========================
-function InstallAll () {
-    if [ ${1} = "all"  ]; then
-        echo
-        echo "Installing in build_$1$2 ..."
-        cd     $root
-        rm -rf $root/build_$1$2/lnx64
-        mkdir -p $root/build_$1$2/lnx64/bin
-        mkdir -p $root/build_$1$2/lnx64/lib
-        mkdir -p $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin
-        mkdir -p $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin_COS7
-
-
-        # CMaked stuff
-        cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
-
-        # Additional step to copy ESMF stuff needed by D-WAVES
-        cp -rf $root/src/third_party_open/esmf/lnx64/bin/ESMF_RegridWeightGen                          $root/build_$1$2/lnx64/bin                               &>/dev/null
-        cp -rf $root/src/third_party_open/esmf/lnx64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.sh   $root/build_$1$2/lnx64/bin                               &>/dev/null
-        cp -rf $root/src/third_party_open/esmf/lnx64/bin/lib*                                          $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin      &>/dev/null
-        cp -rf $root/src/third_party_open/esmf/lnx64/bin_COS7/lib*                                     $root/build_$1$2/lnx64/share/delft3d/esmf/lnx64/bin_COS7 &>/dev/null
-    fi
-
-    return
-}
-
-
-
-# =========================
-# === InstallDwaq       ===
-# =========================
-function InstallDwaq () {
-    if [ ${1} = "dwaq"  ]; then
-        echo
-        echo "Installing in build_$1$2 ..."
-        cd     $root
-        rm -rf $root/build_$1$2/lnx64
-        mkdir -p $root/build_$1$2/lnx64/bin
-        mkdir -p $root/build_$1$2/lnx64/lib
-
-
-        # CMaked stuff
-        cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
-    fi
-
-    return
-}
-
-
-# =========================
-# === InstallDimr       ===
-# =========================
-function InstallDimr () {
-    if [ ${1} = "dimr"  ]; then
-        echo
-        echo "Installing in build_$1$2 ..."
-        cd     $root
-        rm -rf $root/build_$1$2/lnx64
-        mkdir -p $root/build_$1$2/lnx64/bin
-        mkdir -p $root/build_$1$2/lnx64/lib
-
-
-        # CMaked stuff
-        cp -rf $root/build_$1$2/install/* $root/build_$1$2/lnx64/ &>/dev/null
-    fi
-
-    return
-}
-
 # ============
 # === MAIN ===
 # ============
 
-#
-## Defaults
-prepareonly=0
+# Defaults
 mode=quiet
 config=
 generator="Unix Makefiles"
-compiler=intel23
-buildtype=Release
-buildDirExtension=""
+build_type=Release
+build_dir_postfix=""
+build=0
+keep_build=0
+build_dir=""
+install_dir=""
+help_exit_code=0
 
-## check if Deltares system
-isdeltares=$([ -f "/opt/apps/deltares/.nl" ] && echo "yes" || echo "no")
+# Make sure that root is defined when calling print_usage_info
+scriptdirname=$(readlink -f "$0")
+scriptdir=$(dirname "$scriptdirname")
+root=$scriptdir
 
-#
-## Start processing command line options:
-
+# Start processing command line options:
 while [[ $# -ge 1 ]]
 do
 key="$1"
 
 case $key in
-    -c|--compiler)
-    shift
-    compiler="$1"
+    --build)
+    build=1
     shift
     ;;
-    -p|--prepareonly)
-    prepareonly=1
+    --build_dir)
+    shift
+    build_dir="$1"
+    shift
+    ;;
+    --build_type)
+    shift
+    build_type="$1"
     shift
     ;;
     -h|--help)
     print_usage_info
+    ;;
+    --install_dir)
+    shift
+    install_dir="$1"
+    shift
+    ;;
+    --keep_build)
+    keep_build=1
+    shift
     ;;
     all)
     config="all"
@@ -253,11 +226,6 @@ case $key in
     config="flow2d3d"
     shift
     ;;
-    --debug)
-    buildtype=Debug
-    buildDirExtension="_debug"
-    shift
-    ;;
     *)
     echo ERROR: Unknown command line argument $key
     exit 1
@@ -265,71 +233,54 @@ case $key in
 esac
 done
 
-#
 # Check config parameter
-if [ -z $config ]; then
+if [ -z "$config" ]; then
+    help_exit_code=1
     print_usage_info
 fi
 
-scriptdirname=`readlink \-f \$0`
-scriptdir=`dirname $scriptdirname`
-root=$scriptdir
-
-
-if [ "$isdeltares" = "yes" ]; then
-    # On Deltares systems only
-    echo
-    echo "    config          : $config" "${buildtype}"
-    echo "    deltares system : $isdeltares"
-    echo "    compiler        : $compiler"
-    echo "    prepareonly     : $prepareonly"
-    echo
-
-    # Check if modules exist
-    module list > /dev/null
-    if [ $? -ne 0 ]; then
-        # No, modules do not exist: "Dot" setenv.sh version without modules
-        echo ". $root/src/setenv_no_modules.sh $compiler"
-              . $root/src/setenv_no_modules.sh $compiler
-    else
-        # Yes, modules do exist: "Dot" setenv.sh to load the modules needed
-        echo ". $root/src/setenv.sh $compiler"
-              . $root/src/setenv.sh $compiler
-    fi
-    if [ $? -ne 0 ]; then
-        echo "Setenv.sh resulted in an error. Check log files."
-        exit 1
-    fi
-
+# Check build_type
+if [ "$build_type" = "Debug" ]; then
+    build_dir_postfix="_debug"
+elif [ "$build_type" = "Release" ]; then
+    build_dir_postfix=""
 else
-    # On other systems
-    echo
-    echo "    config          : $config" "${buildtype}"
-    echo "    prepareonly     : $prepareonly"
-    echo
+    echo ERROR: Unknown build type ${build_type}; should be "Release" or "Debug".
+    exit 1
 fi
+
+# set directories for build and install
+if [ -z "$build_dir" ]; then
+    build_dir="$root/build_${config}${build_dir_postfix}"
+fi
+if [ -z "$install_dir" ]; then
+    install_dir="$root/install_${config}${build_dir_postfix}"
+fi
+
+echo
+echo "    config          : $config"
+echo "    generator       : $generator"
+echo "    build_type      : $build_type"
+echo "    build           : $build"
+echo "    keep_build      : $keep_build"
+echo "    build_dir       : $build_dir"
+echo "    install_dir     : $install_dir"
+echo
 
 # check required utilities
 chkutils=$(CheckUtils)
-if [ ! -z "$chkutils" ]; then
+if [ -n "$chkutils" ]; then
     echo "$chkutils"
     echo "Install missing programs and retry."
     exit 1
 fi
 
-CreateCMakedir ${config} ${buildDirExtension}
+CreateCMakedir ${config}
 
-DoCMake ${config} ${buildDirExtension}
+DoCMake ${config}
 
-if [ "$prepareonly" = "1" ]; then
-    echo Finished with preparations only
-    exit 0
+if [ "$build" = "1" ]; then
+    BuildCMake ${config}
 fi
-
-BuildCMake ${config} ${buildDirExtension}
-
-InstallAll ${config} ${buildDirExtension}
-InstallDwaq ${config} ${buildDirExtension}
-InstallDimr ${config} ${buildDirExtension}
 
 echo Finished

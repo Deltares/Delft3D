@@ -4,7 +4,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                      & nambnd    ,lsec      ,tstart    ,tunit     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -112,7 +112,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of default transport formula
     !
     filtrn = ' '
-    call prop_get_string(gdp%mdfile_ptr,'*','TraFrm',filtrn)
+    call prop_get(gdp%mdfile_ptr,'*','TraFrm',filtrn)
     !
     call initrafrm(lundia    ,error     ,lsedtot   ,gdp%gdtrapar)
     if (.not.error) then
@@ -120,7 +120,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of sediment input file
     !
     filsed = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filsed', filsed)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filsed', filsed)
     !
     ! Sediment input has been placed in input_tree in subroutine dimsedconst
     ! get pointer
@@ -139,7 +139,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! Read name of morphology input file
     !
     filmor = ' '
-    call prop_get_string(gdp%mdfile_ptr, '*', 'Filmor', filmor)
+    call prop_get(gdp%mdfile_ptr, '*', 'Filmor', filmor)
     !
     ! Create Morphology branch in input tree
     !
@@ -193,7 +193,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     call rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
                 & ipardef   ,rpardef   ,NPARDEF   ,gdp%gdtrapar, &
                 & gdp%gdmorpar%moroutput%sedpar, &
-                & gdp%gdsedpar%sedtyp  ,gdp%gdsedpar%sedblock  , &
+                & gdp%gdsedpar%sedtyp  ,filsed, gdp%gdsedpar%sedblock  , &
                 & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)
     endif
     if (.not.error) then

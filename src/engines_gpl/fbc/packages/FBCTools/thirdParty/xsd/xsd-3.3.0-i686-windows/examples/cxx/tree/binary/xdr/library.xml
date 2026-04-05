@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+
+<!--
+
+file      : examples/cxx/tree/binary/xdr/library.xml
+author    : Boris Kolpackov <boris@codesynthesis.com>
+copyright : not copyrighted - public domain
+
+-->
+
+<lib:catalog xmlns:lib="http://www.codesynthesis.com/library"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://www.codesynthesis.com/library library.xsd">
+
+  <book id="MM" available="false">
+    <isbn>0679760806</isbn>
+    <title>The Master and Margarita</title>
+    <genre>fiction</genre>
+
+    <author recommends="WP">
+      <name>Mikhail Bulgakov</name>
+      <born>1891-05-15</born>
+      <died>1940-03-10</died>
+    </author>
+  </book>
+
+
+  <book id="WP">
+    <isbn>0679600841</isbn>
+    <title>War and Peace</title>
+    <genre>history</genre>
+
+    <author recommends="CP">
+      <name>Leo Tolstoy</name>
+      <born>1828-09-09</born>
+      <died>1910-11-20</died>
+    </author>
+  </book>
+
+
+  <book id="CP" available="false">
+    <isbn>0679420290</isbn>
+    <title>Crime and Punishment</title>
+    <genre>philosophy</genre>
+
+    <author>
+      <name>Fyodor Dostoevsky</name>
+      <born>1821-11-11</born>
+      <died>1881-02-09</died>
+    </author>
+  </book>
+
+</lib:catalog>

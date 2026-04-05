@@ -1,62 +1,67 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR a PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+module m_splint
+   implicit none
+   private
+   public :: splint
 
-      SUBROUTINE SPLINT(YA,Y2A,N,X,Y)
-      implicit none
+contains
 
-      integer                                               :: N     !< number of control points
-      double precision, dimension(N)                        :: ya    !< control point values
-      double precision, dimension(N)                        :: y2a   !< control point second order derivatives
-      double precision,                         intent(in)  :: x     !< spline coordinate
-      double precision,                         intent(out) :: y     !< interpolated value at prescribed spline coordinate
+   subroutine splint(ya, y2a, n, x, y)
+      use precision, only: dp
 
-!     AANGEPAST VOOR GEBRUIK BIJ XA IS ENKEL 0,1,2...N-1
-!     ZOEKEN KAN GESLOOPT DOOR DEFINITIE VAN XA IS 0,1,
+      integer, intent(in) :: n !< number of control points
+      real(kind=dp), dimension(n), intent(in) :: ya !< control point values
+      real(kind=dp), dimension(n), intent(in) :: y2a !< control point second order derivatives
+      real(kind=dp), intent(in) :: x !< spline coordinate
+      real(kind=dp), intent(out) :: y !< interpolated value at prescribed spline coordinate
 
-      double precision                                      :: EPS, A,B, SPLFAC = 1D0
+      ! Adjusted for use with xa is only 0,1,2...n-1
+      ! Search can be broken because the definition of xa is 0,1,
 
-      integer                                               :: intx
-      integer                                               :: KLO, KHI
+      real(kind=dp), parameter :: EPS = 0.00001_dp
+      real(kind=dp), parameter :: SPLFAC = 1.0_dp
+      real(kind=dp) :: a, b
 
-      EPS  = 0.00001D0
-      INTX = INT(X)
-      IF (X-INTX .LT. EPS) THEN
-         Y = YA(INTX+1)
-      ELSE
-         KLO = INTX + 1
-         KHI = KLO  + 1
-         A   = ((KHI-1)-X)
-         B   = (X-(KLO-1))
-         Y   = A*YA(KLO) + B*YA(KHI) + SPLFAC*( (A**3-A)*Y2A(KLO) + (B**3-B)*Y2A(KHI) )/6D0
-      ENDIF
-      RETURN
-      END SUBROUTINE SPLINT
+      integer :: intx
+      integer :: klo, khi
+
+      intx = int(x)
+      if (x - intx < EPS) then
+         y = ya(intx + 1)
+      else
+         klo = intx + 1
+         khi = klo + 1
+         a = ((khi - 1) - x)
+         b = (x - (klo - 1))
+         y = a * ya(klo) + b * ya(khi) + SPLFAC * ((a**3 - a) * y2a(klo) + (b**3 - b) * y2a(khi)) / 6.0_dp
+      end if
+   end subroutine splint
+end module m_splint

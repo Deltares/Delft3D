@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -40,9 +40,9 @@
   case("twav")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(twav))
      twav(:) = x_1d_double_ptr
-  case("Uorb")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(Uorb))
-     Uorb(:) = x_1d_double_ptr
+  case("uorb")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(uorb))
+     uorb(:) = x_1d_double_ptr
   case("InterceptThickness")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(InterceptThickness))
      InterceptThickness(:) = x_1d_double_ptr
@@ -58,27 +58,12 @@
   case("infilt")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(infilt))
      infilt(:) = x_1d_double_ptr
-  case("infiltcap0")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(infiltcap0))
-     infiltcap0(:) = x_1d_double_ptr
   case("infiltcap")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(infiltcap))
      infiltcap(:) = x_1d_double_ptr
-  case("HortonMinInfCap")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonMinInfCap))
-     HortonMinInfCap(:) = x_1d_double_ptr
-  case("HortonMaxInfCap")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonMaxInfCap))
-     HortonMaxInfCap(:) = x_1d_double_ptr
-  case("HortonDecreaseRate")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonDecreaseRate))
-     HortonDecreaseRate(:) = x_1d_double_ptr
-  case("HortonRecoveryRate")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(HortonRecoveryRate))
-     HortonRecoveryRate(:) = x_1d_double_ptr
-  case("HortonState")
-     call c_f_pointer(xptr, x_1d_int_ptr, shape(HortonState))
-     HortonState(:) = x_1d_int_ptr
+  case("horton_state")
+     call c_f_pointer(xptr, x_1d_int_ptr, shape(horton_state))
+     horton_state(:) = x_1d_int_ptr
   case("shx")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(shx))
      shx(:) = x_1d_double_ptr
@@ -151,6 +136,18 @@
   case("evap")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(evap))
      evap(:) = x_1d_double_ptr
+  case("qext")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(qext))
+     qext(:) = x_1d_double_ptr
+  case("qextreal")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(qextreal))
+     qextreal(:) = x_1d_double_ptr
+  case("vextcum")
+     call c_f_pointer(xptr, x_1d_double_ptr, shape(vextcum))
+     vextcum(:) = x_1d_double_ptr
+  case("rainuni")
+     call c_f_pointer(xptr, x_0d_double_ptr)
+     rainuni = x_0d_double_ptr
   case("numlatsg")
      call c_f_pointer(xptr, x_0d_int_ptr)
      numlatsg = x_0d_int_ptr
@@ -158,7 +155,7 @@
      call c_f_pointer(xptr, x_2d_double_ptr, shape(qplat))
      qplat(:,:) = x_2d_double_ptr
   case("qqlat")
-     call c_f_pointer(xptr, x_2d_double_ptr, shape(qqlat))
+     call c_f_pointer(xptr, x_3d_double_ptr, shape(qqlat))
      qqlat(:,:) = x_2d_double_ptr
   case("balat")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(balat))
@@ -196,18 +193,6 @@
   case("kclat")
      call c_f_pointer(xptr, x_1d_int_ptr, shape(kclat))
      kclat(:) = x_1d_int_ptr
-  case("qext")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(qext))
-     qext(:) = x_1d_double_ptr
-  case("qextreal")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(qextreal))
-     qextreal(:) = x_1d_double_ptr
-  case("vextcum")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(vextcum))
-     vextcum(:) = x_1d_double_ptr
-  case("rainuni")
-     call c_f_pointer(xptr, x_0d_double_ptr)
-     rainuni = x_0d_double_ptr
   case("Qsunmap")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(Qsunmap))
      Qsunmap(:) = x_1d_double_ptr
@@ -358,9 +343,6 @@
   case("diusp")
      call c_f_pointer(xptr, x_1d_double_ptr, shape(diusp))
      diusp(:) = x_1d_double_ptr
-  case("taus")
-     call c_f_pointer(xptr, x_1d_double_ptr, shape(taus))
-     taus(:) = x_1d_double_ptr
   case("ndxi")
      call c_f_pointer(xptr, x_0d_int_ptr)
      ndxi = x_0d_int_ptr

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2015-2024.                                
+!  Copyright (C)  Stichting Deltares, 2015-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -36,7 +36,7 @@ select case(var_name)
     type_name = "double"
   case("twav")
     type_name = "double"
-  case("Uorb")
+  case("uorb")
     type_name = "double"
   case("bodsed")
     type_name = "double"
@@ -78,19 +78,9 @@ select case(var_name)
     type_name = "double"
   case("infilt")
     type_name = "double"
-  case("infiltcap0")
-    type_name = "double"
   case("infiltcap")
     type_name = "double"
-  case("HortonMinInfCap")
-    type_name = "double"
-  case("HortonMaxInfCap")
-    type_name = "double"
-  case("HortonDecreaseRate")
-    type_name = "double"
-  case("HortonRecoveryRate")
-    type_name = "double"
-  case("HortonState")
+  case("horton_state")
     type_name = "int"
   case("shx")
     type_name = "double"
@@ -140,6 +130,14 @@ select case(var_name)
     type_name = "double"
   case("evap")
     type_name = "double"
+  case("qext")
+    type_name = "double"
+  case("qextreal")
+    type_name = "double"
+  case("vextcum")
+    type_name = "double"
+  case("rainuni")
+    type_name = "double"
   case("numlatsg")
     type_name = "int"
   case("qplat")
@@ -170,14 +168,6 @@ select case(var_name)
     type_name = "int"
   case("kclat")
     type_name = "int"
-  case("qext")
-    type_name = "double"
-  case("qextreal")
-    type_name = "double"
-  case("vextcum")
-    type_name = "double"
-  case("rainuni")
-    type_name = "double"
   case("Qsunmap")
     type_name = "double"
   case("zbndz")
@@ -277,8 +267,6 @@ select case(var_name)
   case("viusp")
     type_name = "double"
   case("diusp")
-    type_name = "double"
-  case("taus")
     type_name = "double"
   case("ndxi")
     type_name = "int"

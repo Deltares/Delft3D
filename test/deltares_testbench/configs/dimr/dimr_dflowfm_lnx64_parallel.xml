@@ -13,15 +13,15 @@
             <referenceDir>./data/reference_results</referenceDir>
         </localPaths>
         <locations>
-			<location name="reference_results">
+            <location name="reference_results">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
             </location>
-			<location name="cases">
+            <location name="cases">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
             </location>
-			<location name="reference_engines">
+            <location name="reference_engines">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references/bin</root>
             </location>
@@ -41,7 +41,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -49,12 +48,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-			<environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
@@ -98,6 +91,29 @@
                 </program>
             </programs>
             <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform independent results -->
+        <testCase name="generic">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform dependent results -->
+        <!-- check the actual testCase why the results are platform dependent -->
+        <testCase name="generic_platform_specific">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
                 <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
@@ -120,6 +136,6 @@
         </testCase>
     </defaultTestCases>
 
-  <xi:include href="../include/dimr_dflowfm_parallel_lnx64.xml"/>
+  <xi:include href="../include/dimr_dflowfm_parallel.xml"/>
 
 </deltaresTestbench_v3>

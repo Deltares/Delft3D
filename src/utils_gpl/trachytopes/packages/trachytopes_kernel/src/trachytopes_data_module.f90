@@ -1,7 +1,7 @@
 module trachytopes_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -215,7 +215,7 @@ subroutine inittrachy(gdtrachy, nodir, istat)
     type(trachy_type), intent(inout) :: gdtrachy
     integer                          :: nodir
     integer                          :: istat    
-    integer                          :: j, k
+    integer                          :: j
 !
 ! Global variables
 !

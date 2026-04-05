@@ -25,19 +25,19 @@ contains
     !                                              = (EQUATION,NR. OF RHS)      C
     !          N          ORDER OF MATRIX A, NUMBER OF UNKNOWNS/EQUATIONS       C
     !          M          NUMBER OF RHS-VECTORS                                 C
-    !          NMAX       RANGE OF FIRST INDEX IN A AND B MATRICES              C
-    !                     (CONCERNS FORTRAN DECLARATION (NMAX,*)                C
+    !          num_rows       RANGE OF FIRST INDEX IN A AND B MATRICES              C
+    !                     (CONCERNS FORTRAN DECLARATION (num_rows,*)                C
     !          IH         INTEGER WORK-ARRAY, LENGTH N                          C
     !          WORK       REAL    WORK-ARRAY, LENGTH N                          C
     !          IER        ERROR SWITCH =  0 : NO ERRORS DETECTED                C
     !                                  = -1 : SINGULARITY IN MATRIX A DETECTED  C
     !                                                                           C
     !     ----------------------------------------------------------------------C
-    SUBROUTINE INVERM (A, B, N, M, NMAX, IH, WORK, IER)
+    SUBROUTINE INVERM (A, B, N, M, num_rows, IH, WORK, IER)
         IMPLICIT REAL(kind = 8)  (A-H, O-Z)
         IMPLICIT INTEGER (i, j, m, n)
 
-        DIMENSION A(NMAX, *), B(NMAX, *), IH(*), WORK(*)
+        DIMENSION A(num_rows, *), B(num_rows, *), IH(*), WORK(*)
         IER = 0
         DO IR = 1, N
             IH(IR) = IR

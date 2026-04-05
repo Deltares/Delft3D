@@ -65,7 +65,7 @@ void FM_2WayCutRefine(ctrl_t *ctrl, graph_t *graph, real_t *ntpwgts, idx_t niter
   IFSET(ctrl->dbglvl, METIS_DBG_REFINE, 
       Print2WayRefineStats(ctrl, graph, ntpwgts, 0, -2));
 
-  origdiff = iabs(tpwgts[0]-pwgts[0]);
+  origdiff = abs(tpwgts[0]-pwgts[0]);
   iset(nvtxs, -1, moved);
   for (pass=0; pass<niter; pass++) { /* Do a number of passes */
     rpqReset(queues[0]);
@@ -73,7 +73,7 @@ void FM_2WayCutRefine(ctrl_t *ctrl, graph_t *graph, real_t *ntpwgts, idx_t niter
 
     mincutorder = -1;
     newcut = mincut = initcut = graph->mincut;
-    mindiff = iabs(tpwgts[0]-pwgts[0]);
+    mindiff = abs(tpwgts[0]-pwgts[0]);
 
     ASSERT(ComputeCut(graph, where) == graph->mincut);
     ASSERT(CheckBnd(graph));
@@ -99,10 +99,10 @@ void FM_2WayCutRefine(ctrl_t *ctrl, graph_t *graph, real_t *ntpwgts, idx_t niter
       newcut -= (ed[higain]-id[higain]);
       INC_DEC(pwgts[to], pwgts[from], vwgt[higain]);
 
-      if ((newcut < mincut && iabs(tpwgts[0]-pwgts[0]) <= origdiff+avgvwgt) || 
-          (newcut == mincut && iabs(tpwgts[0]-pwgts[0]) < mindiff)) {
+      if ((newcut < mincut && abs(tpwgts[0]-pwgts[0]) <= origdiff+avgvwgt) || 
+          (newcut == mincut && abs(tpwgts[0]-pwgts[0]) < mindiff)) {
         mincut  = newcut;
-        mindiff = iabs(tpwgts[0]-pwgts[0]);
+        mindiff = abs(tpwgts[0]-pwgts[0]);
         mincutorder = nswaps;
       }
       else if (nswaps-mincutorder > limit) { /* We hit the limit, undo last move */

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -414,7 +414,7 @@ contains
         !         2      PHOSPHOR
         !         3      SILICON
         !         4      KMIN         (light limitation)
-        !         5      KMAX         (photo-inhibition)
+        !         5      num_layers_grid         (photo-inhibition)
         !         6                   (to be neglected)
         !         7      Growth-DIATOMS
         !               ......

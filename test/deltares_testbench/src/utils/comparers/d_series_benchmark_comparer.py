@@ -10,6 +10,7 @@ import src.utils.comparers.d_series_comparer as DSeriesComparer
 from src.config.file_check import FileCheck
 from src.config.parameter import Parameter
 from src.utils.comparers.comparison_result import ComparisonResult
+from src.utils.comparers.end_result import EndResult
 from src.utils.comparers.tree_comparer import TreeException
 from src.utils.logging.i_logger import ILogger
 
@@ -17,7 +18,7 @@ from src.utils.logging.i_logger import ILogger
 
 
 class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
-    def __init__(self):
+    def __init__(self) -> None:
         # call base class constructor
         DSeriesComparer.DSeriesComparer.__init__(self)
         self.skipped_keys.append("txt")
@@ -44,12 +45,12 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
 
         try:
             ftest = open(test_file, "r")
-        except Exception as e:
-            raise Exception("Cannot open tested file " + filename + " in " + right_path)
+        except Exception:
+            raise Exception(f"Cannot open tested file {filename} in {right_path}")
         try:
             self.testtree = self.buildTrees(ftest)
         except TreeException as e:
-            raise Exception("Test: " + e.message)
+            raise Exception(f"Test: {e.message}")
         finally:
             ftest.close()
 
@@ -71,9 +72,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
 
         local_error = False
         if (varList is not None) and (varList > []):
-            paramResults_file = os.path.join(
-                right_path, "param_results_" + filename.split(".")[0] + ".csv"
-            )
+            paramResults_file = os.path.join(right_path, f"param_results_{filename.split('.')[0]}.csv")
             fparamResults = open(paramResults_file, "w")
             fparamResults.write(
                 "%4s, %12s, %12s, %12s, %12s, %12s, %12s\n"
@@ -99,9 +98,9 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
 
                 # These values are part of the final result summary
                 end_result = ComparisonResult(error=local_error)
-                end_result.result = param_result["valueOK"]
-                end_result.maxAbsDiff = param_result["absolute difference"]
-                end_result.maxRelDiff = param_result["relative difference"]
+                end_result.result = EndResult.from_string(param_result["valueOK"])
+                end_result.max_abs_diff = param_result["absolute difference"]
+                end_result.max_rel_diff = param_result["relative difference"]
 
                 if isinstance(param_result["result value"], str):
                     resultvalue = "%18s" % param_result["result value"]
@@ -124,9 +123,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
                         var_path,
                     )
                 )
-                paramResults.append(
-                    (testcase_name, file_check, local_parameter, end_result)
-                )
+                paramResults.append((testcase_name, file_check, local_parameter, end_result))
             fparamResults.close()
         else:
             raise Exception("No variables in CSV-file to compare !")
@@ -153,21 +150,19 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
         # Open the dump file and build trees
         try:
             fref = open(ref_file, "r")
-        except Exception as e:
-            raise Exception("Cannot open tested file " + filename + " in " + ref_path)
+        except Exception:
+            raise Exception(f"Cannot open tested file {filename} in {ref_path}")
         try:
             self.reftree = self.buildTrees(fref)
         except TreeException as e:
-            raise Exception("Reference: " + e.message)
+            raise Exception(f"Reference: {e.message}")
         finally:
             fref.close()
 
         # Check if the csv is passed correctly
         if varList is None:
             var_empty = "Variable List is empty!"
-            sys.stderr.write(
-                "##teamcity[testFailed name='%s' message=var_empty]\n" % testName
-            )
+            sys.stderr.write(f"##teamcity[testFailed name='{testName}' message={var_empty}]\n")
         else:
             # For all the values retrieved from the csv file get path and variable
             for var in varList:
@@ -177,13 +172,10 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
                     refResult = self.getVarData(self.reftree, branchPath, varName)
                     if not (isinstance(var["value"], str)):
                         refResult = float(refResult)
-                except Exception as e:
+                except Exception:
                     results.update({varName: False})
-                    var_notfound = "Variable " + varName + " not found in " + branchPath
-                    sys.stderr.write(
-                        "##teamcity[testFailed name='%s' message=var_notfound]\n"
-                        % testName
-                    )
+                    var_notfound = f"Variable {varName} not found in {branchPath}"
+                    sys.stderr.write(f"##teamcity[testFailed name='{testName}' message={var_notfound}]\n")
                     raise Exception(var_notfound)
 
                 # Define default tolerances
@@ -203,9 +195,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
                     if refResult == var["value"]:
                         absDif = 0.00
                     else:
-                        absDif = self.compute_abs_difference_between_strings(
-                            refResult, var["value"]
-                        )
+                        absDif = self.compute_abs_difference_between_strings(refResult, var["value"])
                 try:
                     relDif = abs(refResult - var["value"]) / abs(var["value"])
                 except:
@@ -215,23 +205,15 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
                 if (relDif > relTol) or (absDif > absTol):
                     resultstring = "NOK"
                     sys.stderr.write(
-                        "##teamcity[testFailed name='%(testName)s' message='Comparison: differences above tolerance "
-                        "for %(varName)s' , the  software value is %(refVal)s' and the "
-                        "reference value %(DFoundVal)s'\n"
-                        % {
-                            "testName": testName,
-                            "varName": varName,
-                            "refVal": refResult,
-                            "DFoundVal": var["value"],
-                        }
+                        f"##teamcity[testFailed name='{testName}' message='Comparison: differences above tolerance "
+                        f"for {varName}' , the  software value is {refResult}' and the "
+                        f"reference value {var['value']}'\n"
                     )
                 else:
                     resultstring = "OK"
                 results.update(
                     {
-                        branchPath
-                        + "|"
-                        + varName: {
+                        branchPath + "|" + varName: {
                             "valueOK": resultstring,
                             "result value": refResult,
                             "benchmark value": var["value"],
@@ -249,7 +231,7 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
         try:
             csvfile = open(csv_filename, "rb")
         except:
-            raise Exception("Cannot open csv-file " + csv_filename)
+            raise Exception(f"Cannot open csv-file {csv_filename}")
         r = csvfile.readlines()
         for bline in r:
             if sys.version.split(".")[0] == "2":
@@ -294,8 +276,6 @@ class DSeriesBenchmarkComparer(DSeriesComparer.DSeriesComparer):
     def split_lines_ignoring_quotes(self, line):
         # Split an expression on comma operators. Expressions within quotes are not split.
         compos = [-1]
-        compos.extend(
-            t[2][1] for t in generate_tokens(StringIO(line).readline) if t[1] == ","
-        )
+        compos.extend(t[2][1] for t in generate_tokens(StringIO(line).readline) if t[1] == ",")
         compos.append(len(line))
         return [line[compos[i] + 1 : compos[i + 1]] for i in range(len(compos) - 1)]

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).               
 !                                                                               
@@ -29,11 +29,12 @@
 
 ! 
 ! 
-
-!> wall clock timer
-   subroutine klok(t)
-   use MessageHandling
+module m_wall_clock_time
    implicit none
+contains
+!> wall clock timer
+   subroutine wall_clock_time(t)
+   use MessageHandling
 
    double precision   :: t
    character(len=8)   :: date
@@ -61,4 +62,5 @@
    t = ndays*3600d0*24d0 + timing(5)*3600d0 + timing(6)*60d0 + timing(7) + dble(timing(8))/1000d0
 
 
-   end subroutine klok
+   end subroutine wall_clock_time
+end module m_wall_clock_time

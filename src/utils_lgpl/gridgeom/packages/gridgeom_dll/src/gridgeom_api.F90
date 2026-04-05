@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -397,7 +397,7 @@ function ggeo_count_cells_dll(c_meshDimIn, c_meshIn, c_meshDimOut) result(ierr) 
    type(c_t_ug_meshgeomdim), intent(inout)    :: c_meshDimOut       !< input mesh dimensions
    !locals
    type(t_ug_meshgeom)                        :: meshgeomIn        !< fortran meshgeom
-   integer                                    :: ierr, n, nn, maxNumNodes
+   integer                                    :: ierr, n, maxNumNodes
    
    ierr = 0
    

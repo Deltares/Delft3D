@@ -1,0 +1,82 @@
+*
+* RTC module 1.00
+* -----------------------------------------------------------------
+*
+*
+* All input- and output file names (free format)
+*
+*
+* 1. RTC ini file                                                      I
+* 2. Sobek lokaties                                                    I
+* 3. 3B lokaties                                                       I
+* 4. Neerslag lokaties                                                 I
+* 5. Externe data lokaties                                             I
+* 6. Control data  (=kopie D3B2SBK.INP)                                I
+* 7. Actuele tijdstap info (=Maalstop.in2)                             I
+* 8. Beslisparameters                                                  I
+* 9. Maatregelen Sobek                                                 I
+* 10. Maatregelen 3B                                                   I
+* 11. Actuele resultaten vanuit SOBEK                                  I
+* 12. Actuele resultaten vanuit 3B                                     I   NB actuele data Rain, Wind: intern RTC gegenereerd
+* 13. Monitoring lokaties WQ                                           I
+* 14. Actuele data monitoring lokaties                                 I
+* 15. Uitvoer naar 3B  (ASCII) on-line 1 tijdstap                      O
+* 16. Uitvoer naar Sobek (HIS) on-line 1 tijdstap                      O
+* 17. Uitvoer (ASCII)          alle tijdstappen                        O
+* 18. Uitvoerfile 3B    (HIS)  alle tijdstappen                        O
+* 19. Uitvoerfile Sobek (HIS)  alle tijdstappen                        O
+* 20. Uitvoerfile RTC-beslisparameters (HIS) alle tijdstappen          O
+* 21. Log file                                                         O
+* 22. LNG file                                                         I
+* 23. Rainfall file                                                    I
+* 24. Wind file                                                        I
+* 25. Prediction of rain                                               O
+* 26. Prediction of wind                                               O
+* 27. Reservoir input file                                             I nieuw
+* 28. dioconfig.ini file                                               I
+* 29. RTC message file for simulate                                    I nieuw
+* 30. CTRL.INI file                                                    I
+* 31. Delft3D Barrier file (not used in Sobek)                         I
+* 32. Delft3D location file                                            I
+* 33. Delft3D on-line HIS file                                         I
+* 34. Delft3D measures file                                            I
+*
+*  In case of using Delft3D do not give any paths info, only names!!!!
+*  Paths will be given by %D3D_HOME% and %ARCH%.
+*  At this moment it concerns the files:  RTC.DAT (1)
+*                                         RTC.LNG (22)
+*
+'RTC.DAT'                            1   ASC
+'SBK_LOC.RTC'                        2   ASC
+'3B_LOC.RTC'                         3   ASC
+'PREC_LOC.RTC'                       4   ASC
+'EXT_LOC.RTC'                        5   ASC
+'rtc.INP'                     6   VERVALLEN
+'RTC.IN2'                     7   VERVALLEN
+'DECISPAR.RTC'                       8   ASC
+'SBK_MEAS.RTC'                       9   ASC
+'3B_MEAS.RTC'                       10   ASC
+'SBK_RTC.HIS'                11   HIS
+'OW_LEVEL.HIS'               12   HIS
+'MONSTAT.WQ'         13  Nieuw voor koppeling WQ
+'MONWQ.HIS'          14  Nieuw voor koppeling WQ
+'RTC_3B.HIS'                 15  HIS
+'RTC_SBK.HIS'                16  HIS
+'RTC_OUT.MSG'                17  ASC
+'RTC3BALL.HIS'               18  HIS
+'RTCSBALL.HIS'               19  HIS
+'RTCPARAL.HIS'               20  HIS
+'RTC.LOG'                    21  Fixed RTC.LOG do not change
+'RTC.LNG'                     22
+'TEST_RL.BUI'               23 ASC
+'TEST_RL.WND'               24 ASC
+'PRE_RAIN.HIS'               25 HIS
+'PRE_WND.HIS'                26 HIS
+'Reservoir.Rtc'                      27
+'dioconfig.ini'                      28
+'sobekrtc_progress.txt'              29
+'CTRL.INI'                           30
+'TMP_Bar.bcb'                        31
+'D3D_Loc.Rtc'                        32
+'TMP_FLOWToRTC'                      33
+'D3D_MEAS.RTC'                       34

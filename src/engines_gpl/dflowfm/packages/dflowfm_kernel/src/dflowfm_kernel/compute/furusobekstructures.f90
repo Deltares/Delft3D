@@ -1,66 +1,73 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-subroutine furusobekstructures()
-use m_flow
-use m_flowgeom
-use m_strucs
-implicit none
-integer :: ng, n, L, Ls, LL, Lb, Lt
-double precision :: zup, bup, a, fac
+module m_furusobekstructures
 
-logical :: firstiter=.true. , jarea= .false.
+   use precision, only: dp
+   implicit none
 
-firstiter = .true.
-jarea     = .false.
+contains
 
-do ng = 1, ncgensg      ! loop over generalstruc signals
-   do n  = L1cgensg(ng), L2cgensg(ng)
-      L  = kcgen(3,n)
-      if (kcgen(1,n) == ln(2,L)) then
-         Ls = -L ! Flow link has opposite orientation to structure's orientation.
-      else
-         Ls = L
-      end if
+   subroutine furusobekstructures()
+      use m_flgsfm, only: flgsfm
+      use m_flow, only: ncgensg, l1cgensg, l2cgensg, kcgen, hu, fusav, rusav, ausav
+      use m_flowgeom, only: ln
+      implicit none
+      integer :: ng, n, L, Ls
+      logical :: firstiter = .true., jarea = .false.
 
-      if (hu(L) > 0d0) then ! hu is above lowest sill
-         call flgsfm( n, ng, Ls, firstiter , jarea )
-      else    ! after discussion with Jan, this should be done to prevent any non zero in sub velocities u1(1:3) after re-wetting    
-         fusav(:,n) = 0d0
-         rusav(:,n) = 0d0
-         ausav(:,n) = 0d0
-      endif
-   enddo
+      firstiter = .true.
+      jarea = .false.
 
-enddo
+      do ng = 1, ncgensg ! loop over generalstruc signals
+         do n = L1cgensg(ng), L2cgensg(ng)
+            L = kcgen(3, n)
+            if (kcgen(1, n) == ln(2, L)) then
+               Ls = -L ! Flow link has opposite orientation to structure's orientation.
+            else
+               Ls = L
+            end if
 
-end subroutine furusobekstructures
+            if (hu(L) > 0.0_dp) then ! hu is above lowest sill
+               call flgsfm(n, ng, Ls, jarea)
+            else ! after discussion with Jan, this should be done to prevent any non zero in sub velocities u1(1:3) after re-wetting
+               fusav(:, n) = 0.0_dp
+               rusav(:, n) = 0.0_dp
+               ausav(:, n) = 0.0_dp
+            end if
+         end do
+
+      end do
+
+   end subroutine furusobekstructures
+
+end module m_furusobekstructures

@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2024.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -67,8 +67,8 @@
 
          write(sdnm, '(i4.4)') i_domain
          domain%name = trim(waq_output_dir)//'/'//trim(name)//'_'//sdnm//'.hyd'
-         domain%mmax = -999
-         domain%nmax = -999
+         domain%num_columns = -999
+         domain%num_rows = -999
          domain%aggr = ' '
          i_domain1 = hyd%domain_coll%add(domain)
       enddo

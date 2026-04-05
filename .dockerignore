@@ -1,0 +1,20 @@
+# Use the `--ignorefile` option of `docker build` to apply this file in the build context
+
+# Don't copy Windows binaries into the container
+**/*.lib
+**/*.dll
+**/*.exe
+**/*.ilk
+**/*.exp
+**/*.pdb
+
+# Java jar files
+**/*.jar
+
+# Python
+**/__pycache__
+**/*.pyd
+
+# Documents and other media
+**/*.doc
+**/*.pdf

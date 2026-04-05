@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,33 +35,23 @@
  */
 
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define TEST FC_FUNC(test,TEST)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define TEST FC_FUNC(test, TEST)
 #else
-/* WIN32 */
-#   define STDCALL  /* nothing */
-#   define TEST TEST
+    /* WIN32 */
+    #define STDCALL /* nothing */
+    #define TEST TEST
 #endif
 
-#if defined (__cplusplus)
-    extern "C" {
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
-extern void STDCALL TEST ( void );
+extern void STDCALL TEST(void);
 
-#if defined (__cplusplus)
-    }
+#if defined(__cplusplus)
+}
 #endif
 
-
-int
-main (
-    int     argc,
-    char *  argv[],
-    char *  envp[]
-    ) {
-
-    TEST ();
-    }
-
+int main(int argc, char* argv[], char* envp[]) { TEST(); }

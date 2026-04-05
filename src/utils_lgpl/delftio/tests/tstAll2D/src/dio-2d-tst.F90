@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -39,8 +39,8 @@ module Dio_2D_Tst
 
     integer, parameter :: nSets = 6 ! #datasets/streams
 
-    integer, parameter :: MMAX  = 25   ! M-size
-    integer, parameter :: NMAX  = 12   ! N-size
+    integer, parameter :: num_columns  = 25   ! M-size
+    integer, parameter :: num_rows  = 12   ! N-size
 #if (defined(WIN32))
     integer, parameter :: NTIMES = 50  ! #timesteps
 #else

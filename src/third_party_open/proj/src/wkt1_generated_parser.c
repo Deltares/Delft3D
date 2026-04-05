@@ -132,7 +132,7 @@
 # define YYERROR_VERBOSE 1
 #endif
 
-/* Use api.header.include to #include this header
+/* Use api.header.include to#include this header
    instead of duplicating it here.  */
 #ifndef YY_PJ_WKT1_WKT1_GENERATED_PARSER_H_INCLUDED
 # define YY_PJ_WKT1_WKT1_GENERATED_PARSER_H_INCLUDED

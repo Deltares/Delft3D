@@ -5,9 +5,6 @@ stocfl,stocsu,stocsc
 "dTempHtfl ","NatTemp   ",   1.00000
 "dTempHtfl2","NatTemp   ",   0.00000
 "dModTemp  ","ModTemp   ",   1.00000
-"dDumVarSal","FrCon     ",   0.00000
-"dDumVarSal","FrFlow    ",   0.00000
-"dDumVarSal","SalBnd    ",   0.00000
 "dDumRestim","Continuity",   0.00000
 "dDumVerDis","OXY       ",   0.00000
 "dDumHorDis","OXY       ",   0.00000
@@ -246,6 +243,7 @@ stocfl,stocsu,stocsc
 "dDumS1Comp","DetPS1    ",   0.00000
 "dDumS1Comp","DetSiS1   ",   0.00000
 "dDumS1Comp","OONS1     ",   0.00000
+"dDumS1Comp","OOPS1     ",   0.00000
 "dDumS1Comp","OOSiS1    ",   0.00000
 "dDumS2Comp","IM1S2     ",   0.00000
 "dDumS2Comp","IM2S2     ",   0.00000
@@ -747,12 +745,12 @@ stocfl,stocsu,stocsc
 "dRIM2S2Pup","IM2S2     ",  -1.00000
 "dRIM3S2Pup","IM3       ",   1.00000
 "dRIM3S2Pup","IM3S2     ",  -1.00000
-"dResS1IM1 ","IM1       ",   1.00000
-"dResS1IM1 ","IM1S1     ",  -1.00000
-"dResS1IM2 ","IM2       ",   1.00000
-"dResS1IM2 ","IM2S1     ",  -1.00000
-"dResS1IM3 ","IM3       ",   1.00000
-"dResS1IM3 ","IM3S1     ",  -1.00000
+"dRS1IM1Buf","IM1       ",   1.00000
+"dRS1IM1Buf","IM1S1     ",  -1.00000
+"dRS1IM2Buf","IM2       ",   1.00000
+"dRS1IM2Buf","IM2S1     ",  -1.00000
+"dRS1IM3Buf","IM3       ",   1.00000
+"dRS1IM3Buf","IM3S1     ",  -1.00000
 "dSedIM1   ","IM1       ",  -1.00000
 "dSedIM1   ","IM1S1     ",   1.00000
 "dSedIM1S2 ","IM1       ",  -1.00000
@@ -888,9 +886,9 @@ stocfl,stocsu,stocsc
 "dSedPOP3  ","OOPS1     ",   1.00000
 "dSedPOS3  ","POS3      ",  -1.00000
 "dSedPON3S2","PON3      ",  -1.00000
-"dSedPON3S2","OONS3     ",   1.00000
+"dSedPON3S2","OONS2     ",   1.00000
 "dSedPOP3S2","POP3      ",  -1.00000
-"dSedPOP3S2","OOPS3     ",   1.00000
+"dSedPOP3S2","OOPS2     ",   1.00000
 "dSedPOS3S2","POS3      ",  -1.00000
 "dSedPON4  ","PON4      ",  -1.00000
 "dSedPON4  ","OONS1     ",   1.00000
@@ -1044,6 +1042,8 @@ stocfl,stocsu,stocsc
 "dDigS1MPB2","MPB2psamS1",   1.00000
 "dDigS1MPB2","MPB2psamS2",  -1.00000
 "dDigS2MPB2","MPB2psamS2",   1.00000
+"dResS1IM1 ","IM1       ",   1.00000
+"dResS1IM1 ","IM1S1     ",  -1.00000
 "dResS2IM1 ","IM1S2     ",  -1.00000
 "dResS2IM1 ","IM1       ",   1.00000
 "dBurS1IM1 ","IM1S1     ",  -1.00000
@@ -1052,6 +1052,8 @@ stocfl,stocsu,stocsc
 "dDigS1IM1 ","IM1S1     ",   1.00000
 "dDigS1IM1 ","IM1S2     ",  -1.00000
 "dDigS2IM1 ","IM1S2     ",   1.00000
+"dResS1IM2 ","IM2       ",   1.00000
+"dResS1IM2 ","IM2S1     ",  -1.00000
 "dResS2IM2 ","IM2S2     ",  -1.00000
 "dResS2IM2 ","IM2       ",   1.00000
 "dBurS1IM2 ","IM2S1     ",  -1.00000
@@ -1060,6 +1062,8 @@ stocfl,stocsu,stocsc
 "dDigS1IM2 ","IM2S1     ",   1.00000
 "dDigS1IM2 ","IM2S2     ",  -1.00000
 "dDigS2IM2 ","IM2S2     ",   1.00000
+"dResS1IM3 ","IM3       ",   1.00000
+"dResS1IM3 ","IM3S1     ",  -1.00000
 "dResS2IM3 ","IM3S2     ",  -1.00000
 "dResS2IM3 ","IM3       ",   1.00000
 "dBurS1IM3 ","IM3S1     ",  -1.00000
@@ -1379,34 +1383,66 @@ stocfl,stocsu,stocsc
 "dSed153   ","153-par   ",  -1.00000
 "dSed153   ","153S1     ",   1.00000
 "dSed153   ","153S1-par ",   1.00000
+"dSed153S2 ","153       ",  -1.00000
+"dSed153S2 ","153-par   ",  -1.00000
+"dSed153S2 ","153S2     ",   1.00000
+"dSed153S2 ","153S2-par ",   1.00000
 "dSedHCB   ","HCB       ",  -1.00000
 "dSedHCB   ","HCB-par   ",  -1.00000
 "dSedHCB   ","HCBS1     ",   1.00000
 "dSedHCB   ","HCBS1-par ",   1.00000
+"dSedHCBS2 ","HCB       ",  -1.00000
+"dSedHCBS2 ","HCB-par   ",  -1.00000
+"dSedHCBS2 ","HCBS2     ",   1.00000
+"dSedHCBS2 ","HCBS2-par ",   1.00000
 "dSedHCH   ","HCH       ",  -1.00000
 "dSedHCH   ","HCH-par   ",  -1.00000
 "dSedHCH   ","HCHS1     ",   1.00000
 "dSedHCH   ","HCHS1-par ",   1.00000
+"dSedHCHS2 ","HCH       ",  -1.00000
+"dSedHCHS2 ","HCH-par   ",  -1.00000
+"dSedHCHS2 ","HCHS2     ",   1.00000
+"dSedHCHS2 ","HCHS2-par ",   1.00000
 "dSedFlu   ","Flu       ",  -1.00000
 "dSedFlu   ","Flu-par   ",  -1.00000
 "dSedFlu   ","FluS1     ",   1.00000
 "dSedFlu   ","FluS1-par ",   1.00000
+"dSedFluS2 ","Flu       ",  -1.00000
+"dSedFluS2 ","Flu-par   ",  -1.00000
+"dSedFluS2 ","FluS2     ",   1.00000
+"dSedFluS2 ","FluS2-par ",   1.00000
 "dSedBap   ","Bap       ",  -1.00000
 "dSedBap   ","Bap-par   ",  -1.00000
 "dSedBap   ","BapS1     ",   1.00000
 "dSedBap   ","BapS1-par ",   1.00000
+"dSedBapS2 ","Bap       ",  -1.00000
+"dSedBapS2 ","Bap-par   ",  -1.00000
+"dSedBapS2 ","BapS2     ",   1.00000
+"dSedBapS2 ","BapS2-par ",   1.00000
 "dSedAtr   ","Atr       ",  -1.00000
 "dSedAtr   ","Atr-par   ",  -1.00000
 "dSedAtr   ","AtrS1     ",   1.00000
 "dSedAtr   ","AtrS1-par ",   1.00000
+"dSedAtrS2 ","Atr       ",  -1.00000
+"dSedAtrS2 ","Atr-par   ",  -1.00000
+"dSedAtrS2 ","AtrS2     ",   1.00000
+"dSedAtrS2 ","AtrS2-par ",   1.00000
 "dSedMef   ","Mef       ",  -1.00000
 "dSedMef   ","Mef-par   ",  -1.00000
 "dSedMef   ","MefS1     ",   1.00000
 "dSedMef   ","MefS1-par ",   1.00000
+"dSedMefS2 ","Mef       ",  -1.00000
+"dSedMefS2 ","Mef-par   ",  -1.00000
+"dSedMefS2 ","MefS2     ",   1.00000
+"dSedMefS2 ","MefS2-par ",   1.00000
 "dSedDiu   ","Diu       ",  -1.00000
 "dSedDiu   ","Diu-par   ",  -1.00000
 "dSedDiu   ","DiuS1     ",   1.00000
 "dSedDiu   ","DiuS1-par ",   1.00000
+"dSedDiuS2 ","Diu       ",  -1.00000
+"dSedDiuS2 ","Diu-par   ",  -1.00000
+"dSedDiuS2 ","DiuS2     ",   1.00000
+"dSedDiuS2 ","DiuS2-par ",   1.00000
 "dResS1As  ","As        ",   1.00000
 "dResS1As  ","AsS1      ",  -1.00000
 "dResS2As  ","As        ",   1.00000
@@ -1706,6 +1742,10 @@ stocfl,stocsu,stocsc
 "dSedOMP   ","OMP-par   ",  -1.00000
 "dSedOMP   ","OMPS1     ",   1.00000
 "dSedOMP   ","OMPS1-par ",   1.00000
+"dSedOMPS2 ","OMP       ",  -1.00000
+"dSedOMPS2 ","OMP-par   ",  -1.00000
+"dSedOMPS2 ","OMPS2     ",   1.00000
+"dSedOMPS2 ","OMPS2-par ",   1.00000
 "dAtmDepOMP","OMP       ",   1.00000
 "dAtmDepOMP","OMP-Par   ",   1.00000
 "dDfwastOMP","OMP       ",   1.00000
@@ -2913,51 +2953,51 @@ stocfl,stocsu,stocsc
 "SF_dNitrif","S1_NH4    ",  -1.00000
 "SF_dNitrif","S1_NO3    ",   1.00000
 "SF_dNitrif","S1_OXY    ",  -4.57100
-"SF_dCPPOC1","S1_PC1    ",  -1.00000
-"SF_dCPPOC1","S1_PC2    ",   1.00000
-"SF_dCPPON1","S1_PN1    ",  -1.00000
-"SF_dCPPON1","S1_PN2    ",   1.00000
-"SF_dCPPOP1","S1_PP1    ",  -1.00000
-"SF_dCPPOP1","S1_PP2    ",   1.00000
+"SF_dCPPOC1","DetCS1    ",  -1.00000
+"SF_dCPPOC1","OOCS1     ",   1.00000
+"SF_dCPPON1","DetNS1    ",  -1.00000
+"SF_dCPPON1","OONS1     ",   1.00000
+"SF_dCPPOP1","DetPS1    ",  -1.00000
+"SF_dCPPOP1","OOPS1     ",   1.00000
 "SF_dCPPOS1","S1_PS1    ",  -1.00000
-"SF_dCPPOS1","S1_PS2    ",   1.00000
-"SF_dCDPOC1","S1_PC1    ",  -1.00000
+"SF_dCPPOS1","OOSiS1    ",   1.00000
+"SF_dCDPOC1","DetCS1    ",  -1.00000
 "SF_dCDPOC1","S1_DOC    ",   1.00000
-"SF_dCDPON1","S1_PN1    ",  -1.00000
+"SF_dCDPON1","DetNS1    ",  -1.00000
 "SF_dCDPON1","S1_DON    ",   1.00000
-"SF_dCDPOP1","S1_PP1    ",  -1.00000
+"SF_dCDPOP1","DetPS1    ",  -1.00000
 "SF_dCDPOP1","S1_DOP    ",   1.00000
 "SF_dCDPOS1","S1_PS1    ",  -1.00000
 "SF_dCDPOS1","S1_DOS    ",   1.00000
-"SF_dMPOC1 ","S1_PC1    ",  -1.00000
-"SF_dMPON1 ","S1_PN1    ",  -1.00000
+"SF_dMPOC1 ","DetCS1    ",  -1.00000
+"SF_dMPON1 ","DetNS1    ",  -1.00000
 "SF_dMPON1 ","S1_NH4    ",   1.00000
-"SF_dMPOP1 ","S1_PP1    ",  -1.00000
+"SF_dMPOP1 ","DetPS1    ",  -1.00000
 "SF_dMPOP1 ","S1_PO4    ",   1.00000
 "SF_dMPOS1 ","S1_PS1    ",  -1.00000
 "SF_dMPOS1 ","S1_SUD    ",   1.00000
-"SF_dCPPOC2","S1_PC2    ",  -1.00000
+"SF_dCPPOC2","OOCS1     ",  -1.00000
 "SF_dCPPOC2","S1_PC3    ",   1.00000
-"SF_dCPPON2","S1_PN2    ",  -1.00000
+"SF_dCPPON2","OONS1     ",  -1.00000
 "SF_dCPPON2","S1_PN3    ",   1.00000
-"SF_dCPPOP2","S1_PP2    ",  -1.00000
+"SF_dCPPOP2","OOPS1     ",  -1.00000
 "SF_dCPPOP2","S1_PP3    ",   1.00000
-"SF_dCPPOS2","S1_PS2    ",  -1.00000
+"SF_dCPPOS2","OOSiS1    ",  -1.00000
 "SF_dCPPOS2","S1_PS3    ",   1.00000
-"SF_dCDPOC2","S1_PC2    ",  -1.00000
+"SF_dCDPOC2","OOCS1     ",  -1.00000
 "SF_dCDPOC2","S1_DOC    ",   1.00000
-"SF_dCDPON2","S1_PN2    ",  -1.00000
+"SF_dCDPON2","OONS1     ",  -1.00000
 "SF_dCDPON2","S1_DON    ",   1.00000
-"SF_dCDPOP2","S1_PP2    ",  -1.00000
+"SF_dCDPOP2","OOPS1     ",  -1.00000
 "SF_dCDPOP2","S1_DOP    ",   1.00000
-"SF_dCDPOS2","S1_PS2    ",  -1.00000
+"SF_dCDPOS2","OOSiS1    ",  -1.00000
 "SF_dCDPOS2","S1_DOS    ",   1.00000
-"SF_dMPOC2 ","S1_PC2    ",  -1.00000
-"SF_dMPON2 ","S1_PN2    ",  -1.00000
+"SF_dMPOC2 ","OOCS1     ",  -1.00000
+"SF_dMPON2 ","OONS1     ",  -1.00000
 "SF_dMPON2 ","S1_NH4    ",   1.00000
-"SF_dMPOP2 ","S1_PP2    ",  -1.00000
+"SF_dMPOP2 ","OOPS1     ",  -1.00000
 "SF_dMPOP2 ","S1_PO4    ",   1.00000
-"SF_dMPOS2 ","S1_PS2    ",  -1.00000
+"SF_dMPOS2 ","OOSiS1    ",  -1.00000
 "SF_dMPOS2 ","S1_SUD    ",   1.00000
 "SF_dCPPOC3","S1_PC3    ",  -1.00000
 "SF_dCPPOC3","S1_PC4    ",   1.00000
@@ -3001,7 +3041,7 @@ stocfl,stocsu,stocsc
 "SF_dDisPO4","S1_PO4    ",   1.00000
 "SF_dDisPO4","S1_VIVP   ",  -1.00000
 "SF_dDisSi ","S1_Si     ",   1.00000
-"SF_dDisSi ","S1_Opal   ",  -1.00000
+"SF_dDisSi ","DetSiS1   ",  -1.00000
 "SF_dOxCon ","S1_OXY    ",  -2.66700
 "SF_dNiDen ","S1_NO3    ",  -0.93300
 "SF_dFeRed ","S1_FeIIIpa", -18.60000
@@ -3032,20 +3072,20 @@ stocfl,stocsu,stocsc
 "SF_dP2VBup","S1_PO4    ",  -1.00000
 "SF_dS1VBup","S1_SO4    ",  -1.00000
 "SF_dS2VBup","S1_SUD    ",  -1.00000
-"SF_dC1VBre","S1_PC1    ",   1.00000
-"SF_dC2VBre","S1_PC2    ",   1.00000
+"SF_dC1VBre","DetCS1    ",   1.00000
+"SF_dC2VBre","OOCS1     ",   1.00000
 "SF_dC3VBre","S1_PC3    ",   1.00000
 "SF_dC4VBre","S1_PC4    ",   1.00000
-"SF_dN1VBre","S1_PN1    ",   1.00000
-"SF_dN2VBre","S1_PN2    ",   1.00000
+"SF_dN1VBre","DetNS1    ",   1.00000
+"SF_dN2VBre","OONS1     ",   1.00000
 "SF_dN3VBre","S1_PN3    ",   1.00000
 "SF_dN4VBre","S1_PN4    ",   1.00000
-"SF_dP1VBre","S1_PP1    ",   1.00000
-"SF_dP2VBre","S1_PP2    ",   1.00000
+"SF_dP1VBre","DetPS1    ",   1.00000
+"SF_dP2VBre","OOPS1     ",   1.00000
 "SF_dP3VBre","S1_PP3    ",   1.00000
 "SF_dP4VBre","S1_PP4    ",   1.00000
 "SF_dS1VBre","S1_PS1    ",   1.00000
-"SF_dS2VBre","S1_PS2    ",   1.00000
+"SF_dS2VBre","OOSiS1    ",   1.00000
 "SF_dS3VBre","S1_PS3    ",   1.00000
 "SF_dS4VBre","S1_PS4    ",   1.00000
 "INIS1_CH4 ","S1_CH4    ",   1.00000
@@ -3063,21 +3103,21 @@ stocfl,stocsu,stocsc
 "INIS1_AAP ","S1_AAP    ",   1.00000
 "INIS1_APAT","S1_APATP  ",   1.00000
 "INIS1_Fe3p","S1_FeIIIpa",   1.00000
-"INIS1_Opal","S1_Opal   ",   1.00000
-"INIS1_POC1","S1_PC1    ",   1.00000
-"INIS1_POC2","S1_PC2    ",   1.00000
+"INIS1_Opal","DetSiS1   ",   1.00000
+"INIS1_POC1","DetCS1    ",   1.00000
+"INIS1_POC2","OOCS1     ",   1.00000
 "INIS1_POC3","S1_PC3    ",   1.00000
 "INIS1_POC4","S1_PC4    ",   1.00000
-"INIS1_PON1","S1_PN1    ",   1.00000
-"INIS1_PON2","S1_PN2    ",   1.00000
+"INIS1_PON1","DetNS1    ",   1.00000
+"INIS1_PON2","OONS1     ",   1.00000
 "INIS1_PON3","S1_PN3    ",   1.00000
 "INIS1_PON4","S1_PN4    ",   1.00000
-"INIS1_POP1","S1_PP1    ",   1.00000
-"INIS1_POP2","S1_PP2    ",   1.00000
+"INIS1_POP1","DetPS1    ",   1.00000
+"INIS1_POP2","OOPS1     ",   1.00000
 "INIS1_POP3","S1_PP3    ",   1.00000
 "INIS1_POP4","S1_PP4    ",   1.00000
 "INIS1_POS1","S1_PS1    ",   1.00000
-"INIS1_POS2","S1_PS2    ",   1.00000
+"INIS1_POS2","OOSiS1    ",   1.00000
 "INIS1_POS3","S1_PS3    ",   1.00000
 "INIS1_POS4","S1_PS4    ",   1.00000
 "INIS1_SUP ","S1_SUP    ",   1.00000
@@ -3236,6 +3276,7 @@ stocfl,stocsu,stocsc
 "dSedTAgg42","TAggSed42 ",   1.00000
 "dSedTAgg43","TyreAgg43 ",  -1.00000
 "dSedTAgg43","TAggSed43 ",   1.00000
+"dDumSTRWP ","Tyre1     ",   0.00000
 "dNH4up_D1 ","NH4       ",  -1.00000
 "dNH4up_D1 ","diatN_1   ",   1.00000
 "dNH4up_D1 ","ALKA      ",  -4.35700
@@ -3887,32 +3928,26 @@ stocfl,stocsu,stocsc
 "dm_GrnChl1","GreenChl_1",  -1.00000
 "dm_GreenN1","GreenN_1  ",  -1.00000
 "dm_GreenP1","GreenP_1  ",  -1.00000
-"dm_GrnSi1 ","GreenSi_1 ",   0.00000
 "dm_GreenC2","GreenC_2  ",  -1.00000
 "dm_GrnChl2","GreenChl_2",  -1.00000
 "dm_GreenN2","GreenN_2  ",  -1.00000
 "dm_GreenP2","GreenP_2  ",  -1.00000
-"dm_GrnSi2 ","GreenSi_2 ",   0.00000
 "dm_cmC1   ","cmC_1     ",  -1.00000
 "dm_cmChl1 ","cmChl_1   ",  -1.00000
 "dm_cmN1   ","cmN_1     ",  -1.00000
 "dm_cmP1   ","cmP_1     ",  -1.00000
-"dm_cmSi1  ","cmSi_1    ",   0.00000
 "dm_cmC2   ","cmC_2     ",  -1.00000
 "dm_cmChl2 ","cmChl_2   ",  -1.00000
 "dm_cmN2   ","cmN_2     ",  -1.00000
 "dm_cmP2   ","cmP_2     ",  -1.00000
-"dm_cmSi2  ","cmSi_2    ",   0.00000
 "dm_ncmC1  ","ncmC_1    ",  -1.00000
 "dm_ncmChl1","ncmChl_1  ",  -1.00000
 "dm_ncmN1  ","ncmN_1    ",  -1.00000
 "dm_ncmP1  ","ncmP_1    ",  -1.00000
-"dm_ncmSi1 ","ncmSi_1   ",   0.00000
 "dm_ncmC2  ","ncmC_2    ",  -1.00000
 "dm_ncmChl2","ncmChl_2  ",  -1.00000
 "dm_ncmN2  ","ncmN_2    ",  -1.00000
 "dm_ncmP2  ","ncmP_2    ",  -1.00000
-"dm_ncmSi2 ","ncmSi_2   ",   0.00000
 "dm_zooC1  ","zooC_1    ",  -1.00000
 "dm_zooChl1","zooChl_1  ",   0.00000
 "dm_zooN1  ","zooN_1    ",  -1.00000
@@ -3937,32 +3972,26 @@ stocfl,stocsu,stocsc
 "dZ_GrnChl1","GreenChl_1",  -1.00000
 "dZ_GreenN1","GreenN_1  ",  -1.00000
 "dZ_GreenP1","GreenP_1  ",  -1.00000
-"dZ_GrnSi1 ","GreenSi_1 ",   0.00000
 "dZ_GreenC2","GreenC_2  ",  -1.00000
 "dZ_GrnChl2","GreenChl_2",  -1.00000
 "dZ_GreenN2","GreenN_2  ",  -1.00000
 "dZ_GreenP2","GreenP_2  ",  -1.00000
-"dZ_GrnSi2 ","GreenSi_2 ",   0.00000
 "dZ_cmC1   ","cmC_1     ",  -1.00000
 "dZ_cmChl1 ","cmChl_1   ",  -1.00000
 "dZ_cmN1   ","cmN_1     ",  -1.00000
 "dZ_cmP1   ","cmP_1     ",  -1.00000
-"dZ_cmSi1  ","cmSi_1    ",   0.00000
 "dZ_cmC2   ","cmC_2     ",  -1.00000
 "dZ_cmChl2 ","cmChl_2   ",  -1.00000
 "dZ_cmN2   ","cmN_2     ",  -1.00000
 "dZ_cmP2   ","cmP_2     ",  -1.00000
-"dZ_cmSi2  ","cmSi_2    ",   0.00000
 "dZ_ncmC1  ","ncmC_1    ",  -1.00000
 "dZ_ncmChl1","ncmChl_1  ",  -1.00000
 "dZ_ncmN1  ","ncmN_1    ",  -1.00000
 "dZ_ncmP1  ","ncmP_1    ",  -1.00000
-"dZ_ncmSi1 ","ncmSi_1   ",   0.00000
 "dZ_ncmC2  ","ncmC_2    ",  -1.00000
 "dZ_ncmChl2","ncmChl_2  ",  -1.00000
 "dZ_ncmN2  ","ncmN_2    ",  -1.00000
 "dZ_ncmP2  ","ncmP_2    ",  -1.00000
-"dZ_ncmSi2 ","ncmSi_2   ",   0.00000
 "dZ_zooC1  ","zooC_1    ",  -1.00000
 "dZ_zooChl1","zooChl_1  ",   0.00000
 "dZ_zooN1  ","zooN_1    ",  -1.00000
@@ -3973,153 +4002,135 @@ stocfl,stocsu,stocsc
 "dZ_zooN2  ","zooN_2    ",  -1.00000
 "dZ_zooP2  ","zooP_2    ",  -1.00000
 "dZ_zooSi2 ","zooSi_2   ",   0.00000
-"dG3_DiatC1","DiatC_1   ",  -1.00000
-"dG3_DiatCh","DiatChl_1 ",  -1.00000
-"dG3_DiatCh","DiatChl_2 ",  -1.00000
-"dG3_DiatN1","DiatN_1   ",  -1.00000
-"dG3_DiatP1","DiatP_1   ",  -1.00000
-"dG3_DiatSi","DiatSi_1  ",  -1.00000
-"dG3_DiatSi","DiatSi_2  ",  -1.00000
-"dG3_DiatC2","DiatC_2   ",  -1.00000
-"dG3_DiatN2","DiatN_2   ",  -1.00000
-"dG3_DiatP2","DiatP_2   ",  -1.00000
-"dG3_GreenC","GreenC_1  ",  -1.00000
-"dG3_GreenC","GreenC_2  ",  -1.00000
-"dG3_GrnChl","GreenChl_1",  -1.00000
-"dG3_GrnChl","GreenChl_2",  -1.00000
-"dG3_GreenN","GreenN_1  ",  -1.00000
-"dG3_GreenN","GreenN_2  ",  -1.00000
-"dG3_GreenP","GreenP_1  ",  -1.00000
-"dG3_GreenP","GreenP_2  ",  -1.00000
-"dG3_GrnSi1","GreenSi_1 ",   0.00000
-"dG3_GrnSi2","GreenSi_2 ",   0.00000
+"dG3_DiaC1 ","DiatC_1   ",  -1.00000
+"dG3_DiaCh1","DiatChl_1 ",  -1.00000
+"dG3_DiaN1 ","DiatN_1   ",  -1.00000
+"dG3_DiaP1 ","DiatP_1   ",  -1.00000
+"dG3_DiaSi1","DiatSi_1  ",  -1.00000
+"dG3_DiaC2 ","DiatC_2   ",  -1.00000
+"dG3_DiaCh2","DiatChl_1 ",  -1.00000
+"dG3_DiaN2 ","DiatN_2   ",  -1.00000
+"dG3_DiaP2 ","DiatP_2   ",  -1.00000
+"dG3_DiaSi2","DiatSi_2  ",  -1.00000
+"dG3_GrnC1 ","GreenC_1  ",  -1.00000
+"dG3_GrnCh1","GreenChl_1",  -1.00000
+"dG3_GrnN1 ","GreenN_1  ",  -1.00000
+"dG3_GrnP1 ","GreenP_1  ",  -1.00000
+"dG3_GrnC2 ","GreenC_2  ",  -1.00000
+"dG3_GrnCh2","GreenChl_2",  -1.00000
+"dG3_GrnN2 ","GreenN_2  ",  -1.00000
+"dG3_GrnP2 ","GreenP_2  ",  -1.00000
 "dG3_cmC1  ","cmC_1     ",  -1.00000
 "dG3_cmChl1","cmChl_1   ",  -1.00000
 "dG3_cmN1  ","cmN_1     ",  -1.00000
 "dG3_cmP1  ","cmP_1     ",  -1.00000
-"dG3_cmSi1 ","cmSi_1    ",   0.00000
 "dG3_cmC2  ","cmC_2     ",  -1.00000
 "dG3_cmChl2","cmChl_2   ",  -1.00000
 "dG3_cmN2  ","cmN_2     ",  -1.00000
 "dG3_cmP2  ","cmP_2     ",  -1.00000
-"dG3_cmSi2 ","cmSi_2    ",   0.00000
 "dG3_ncmC1 ","ncmC_1    ",  -1.00000
-"dG3_ncmChl","ncmChl_1  ",  -1.00000
-"dG3_ncmChl","ncmChl_2  ",  -1.00000
+"dG3_ncmCh1","ncmChl_1  ",  -1.00000
 "dG3_ncmN1 ","ncmN_1    ",  -1.00000
 "dG3_ncmP1 ","ncmP_1    ",  -1.00000
-"dG3_ncmSi1","ncmSi_1   ",   0.00000
 "dG3_ncmC2 ","ncmC_2    ",  -1.00000
+"dG3_ncmCh2","ncmChl_2  ",  -1.00000
 "dG3_ncmN2 ","ncmN_2    ",  -1.00000
 "dG3_ncmP2 ","ncmP_2    ",  -1.00000
-"dG3_ncmSi2","ncmSi_2   ",   0.00000
 "dG3_zooC1 ","zooC_1    ",  -1.00000
-"dG3_zooChl","zooChl_1  ",   0.00000
-"dG3_zooChl","zooChl_2  ",   0.00000
+"dG3_zooCh1","zooChl_1  ",   0.00000
 "dG3_zooN1 ","zooN_1    ",  -1.00000
 "dG3_zooP1 ","zooP_1    ",  -1.00000
 "dG3_zooSi1","zooSi_1   ",   0.00000
 "dG3_zooC2 ","zooC_2    ",  -1.00000
+"dG3_zooCh2","zooChl_2  ",   0.00000
 "dG3_zooN2 ","zooN_2    ",  -1.00000
 "dG3_zooP2 ","zooP_2    ",  -1.00000
 "dG3_zooSi2","zooSi_2   ",   0.00000
-"dG4_DiatC1","DiatC_1   ",  -1.00000
-"dG4_DiatCh","DiatChl_1 ",  -1.00000
-"dG4_DiatCh","DiatChl_2 ",  -1.00000
-"dG4_DiatN1","DiatN_1   ",  -1.00000
-"dG4_DiatP1","DiatP_1   ",  -1.00000
-"dG4_DiatSi","DiatSi_1  ",  -1.00000
-"dG4_DiatSi","DiatSi_2  ",  -1.00000
-"dG4_DiatC2","DiatC_2   ",  -1.00000
-"dG4_DiatN2","DiatN_2   ",  -1.00000
-"dG4_DiatP2","DiatP_2   ",  -1.00000
-"dG4_GreenC","GreenC_1  ",  -1.00000
-"dG4_GreenC","GreenC_2  ",  -1.00000
-"dG4_GrnChl","GreenChl_1",  -1.00000
-"dG4_GrnChl","GreenChl_2",  -1.00000
-"dG4_GreenN","GreenN_1  ",  -1.00000
-"dG4_GreenN","GreenN_2  ",  -1.00000
-"dG4_GreenP","GreenP_1  ",  -1.00000
-"dG4_GreenP","GreenP_2  ",  -1.00000
-"dG4_GrnSi1","GreenSi_1 ",   0.00000
-"dG4_GrnSi2","GreenSi_2 ",   0.00000
+"dG4_DiaC1 ","DiatC_1   ",  -1.00000
+"dG4_DiaCh1","DiatChl_1 ",  -1.00000
+"dG4_DiaN1 ","DiatN_1   ",  -1.00000
+"dG4_DiaP1 ","DiatP_1   ",  -1.00000
+"dG4_DiaSi1","DiatSi_1  ",  -1.00000
+"dG4_DiaC2 ","DiatC_2   ",  -1.00000
+"dG4_DiaCh2","DiatChl_2 ",  -1.00000
+"dG4_DiaN2 ","DiatN_2   ",  -1.00000
+"dG4_DiaP2 ","DiatP_2   ",  -1.00000
+"dG4_DiaSi2","DiatSi_2  ",  -1.00000
+"dG4_GrnC1 ","GreenC_1  ",  -1.00000
+"dG4_GrnCh1","GreenChl_1",  -1.00000
+"dG4_GrnN1 ","GreenN_1  ",  -1.00000
+"dG4_GrnP1 ","GreenP_1  ",  -1.00000
+"dG4_GrnC2 ","GreenC_2  ",  -1.00000
+"dG4_GrnCh2","GreenChl_2",  -1.00000
+"dG4_GrnN2 ","GreenN_2  ",  -1.00000
+"dG4_GrnP2 ","GreenP_2  ",  -1.00000
 "dG4_cmC1  ","cmC_1     ",  -1.00000
 "dG4_cmChl1","cmChl_1   ",  -1.00000
 "dG4_cmN1  ","cmN_1     ",  -1.00000
 "dG4_cmP1  ","cmP_1     ",  -1.00000
-"dG4_cmSi1 ","cmSi_1    ",   0.00000
 "dG4_cmC2  ","cmC_2     ",  -1.00000
 "dG4_cmChl2","cmChl_2   ",  -1.00000
 "dG4_cmN2  ","cmN_2     ",  -1.00000
 "dG4_cmP2  ","cmP_2     ",  -1.00000
-"dG4_cmSi2 ","cmSi_2    ",   0.00000
 "dG4_ncmC1 ","ncmC_1    ",  -1.00000
-"dG4_ncmChl","ncmChl_1  ",  -1.00000
-"dG4_ncmChl","ncmChl_2  ",  -1.00000
+"dG4_ncmCh1","ncmChl_1  ",  -1.00000
 "dG4_ncmN1 ","ncmN_1    ",  -1.00000
 "dG4_ncmP1 ","ncmP_1    ",  -1.00000
-"dG4_ncmSi1","ncmSi_1   ",   0.00000
 "dG4_ncmC2 ","ncmC_2    ",  -1.00000
+"dG4_ncmCh2","ncmChl_2  ",  -1.00000
 "dG4_ncmN2 ","ncmN_2    ",  -1.00000
 "dG4_ncmP2 ","ncmP_2    ",  -1.00000
-"dG4_ncmSi2","ncmSi_2   ",   0.00000
 "dG4_zooC1 ","zooC_1    ",  -1.00000
-"dG4_zooChl","zooChl_1  ",   0.00000
-"dG4_zooChl","zooChl_2  ",   0.00000
+"dG4_zooCh1","zooChl_1  ",   0.00000
 "dG4_zooN1 ","zooN_1    ",  -1.00000
 "dG4_zooP1 ","zooP_1    ",  -1.00000
 "dG4_zooSi1","zooSi_1   ",   0.00000
 "dG4_zooC2 ","zooC_2    ",  -1.00000
+"dG4_zooCh2","zooChl_2  ",   0.00000
 "dG4_zooN2 ","zooN_2    ",  -1.00000
 "dG4_zooP2 ","zooP_2    ",  -1.00000
 "dG4_zooSi2","zooSi_2   ",   0.00000
-"dG5_DiatC1","DiatC_1   ",  -1.00000
-"dG5_DiatCh","DiatChl_1 ",  -1.00000
-"dG5_DiatCh","DiatChl_2 ",  -1.00000
-"dG5_DiatN1","DiatN_1   ",  -1.00000
-"dG5_DiatP1","DiatP_1   ",  -1.00000
-"dG5_DiatSi","DiatSi_1  ",  -1.00000
-"dG5_DiatSi","DiatSi_2  ",  -1.00000
-"dG5_DiatC2","DiatC_2   ",  -1.00000
-"dG5_DiatN2","DiatN_2   ",  -1.00000
-"dG5_DiatP2","DiatP_2   ",  -1.00000
-"dG5_GreenC","GreenC_1  ",  -1.00000
-"dG5_GreenC","GreenC_2  ",  -1.00000
-"dG5_GrnChl","GreenChl_1",  -1.00000
-"dG5_GrnChl","GreenChl_2",  -1.00000
-"dG5_GreenN","GreenN_1  ",  -1.00000
-"dG5_GreenN","GreenN_2  ",  -1.00000
-"dG5_GreenP","GreenP_1  ",  -1.00000
-"dG5_GreenP","GreenP_2  ",  -1.00000
-"dG5_GrnSi1","GreenSi_1 ",   0.00000
-"dG5_GrnSi2","GreenSi_2 ",   0.00000
+"dG5_DiaC1 ","DiatC_1   ",  -1.00000
+"dG5_DiaCh1","DiatChl_1 ",  -1.00000
+"dG5_DiaN1 ","DiatN_1   ",  -1.00000
+"dG5_DiaP1 ","DiatP_1   ",  -1.00000
+"dG5_DiaSi1","DiatSi_1  ",  -1.00000
+"dG5_DiaC2 ","DiatC_2   ",  -1.00000
+"dG5_DiaCh2","DiatChl_2 ",  -1.00000
+"dG5_DiaN2 ","DiatN_2   ",  -1.00000
+"dG5_DiaP2 ","DiatP_2   ",  -1.00000
+"dG5_DiaSi2","DiatSi_2  ",  -1.00000
+"dG5_GrnC1 ","GreenC_1  ",  -1.00000
+"dG5_GrnCh1","GreenChl_1",  -1.00000
+"dG5_GrnN1 ","GreenN_1  ",  -1.00000
+"dG5_GrnP1 ","GreenP_1  ",  -1.00000
+"dG5_GrnC2 ","GreenC_2  ",  -1.00000
+"dG5_GrnCh2","GreenChl_2",  -1.00000
+"dG5_GrnN2 ","GreenN_2  ",  -1.00000
+"dG5_GrnP2 ","GreenP_2  ",  -1.00000
 "dG5_cmC1  ","cmC_1     ",  -1.00000
 "dG5_cmChl1","cmChl_1   ",  -1.00000
 "dG5_cmN1  ","cmN_1     ",  -1.00000
 "dG5_cmP1  ","cmP_1     ",  -1.00000
-"dG5_cmSi1 ","cmSi_1    ",   0.00000
 "dG5_cmC2  ","cmC_2     ",  -1.00000
 "dG5_cmChl2","cmChl_2   ",  -1.00000
 "dG5_cmN2  ","cmN_2     ",  -1.00000
 "dG5_cmP2  ","cmP_2     ",  -1.00000
-"dG5_cmSi2 ","cmSi_2    ",   0.00000
 "dG5_ncmC1 ","ncmC_1    ",  -1.00000
-"dG5_ncmChl","ncmChl_1  ",  -1.00000
-"dG5_ncmChl","ncmChl_2  ",  -1.00000
+"dG5_ncmCh1","ncmChl_1  ",  -1.00000
 "dG5_ncmN1 ","ncmN_1    ",  -1.00000
 "dG5_ncmP1 ","ncmP_1    ",  -1.00000
-"dG5_ncmSi1","ncmSi_1   ",   0.00000
 "dG5_ncmC2 ","ncmC_2    ",  -1.00000
+"dG5_ncmCh2","ncmChl_2  ",  -1.00000
 "dG5_ncmN2 ","ncmN_2    ",  -1.00000
 "dG5_ncmP2 ","ncmP_2    ",  -1.00000
-"dG5_ncmSi2","ncmSi_2   ",   0.00000
 "dG5_zooC1 ","zooC_1    ",  -1.00000
-"dG5_zooChl","zooChl_1  ",   0.00000
-"dG5_zooChl","zooChl_2  ",   0.00000
+"dG5_zooCh1","zooChl_1  ",   0.00000
 "dG5_zooN1 ","zooN_1    ",  -1.00000
 "dG5_zooP1 ","zooP_1    ",  -1.00000
 "dG5_zooSi1","zooSi_1   ",   0.00000
 "dG5_zooC2 ","zooC_2    ",  -1.00000
+"dG5_zooCh2","zooChl_2  ",   0.00000
 "dG5_zooN2 ","zooN_2    ",  -1.00000
 "dG5_zooP2 ","zooP_2    ",  -1.00000
 "dG5_zooSi2","zooSi_2   ",   0.00000

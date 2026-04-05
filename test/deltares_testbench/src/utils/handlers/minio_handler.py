@@ -1,14 +1,16 @@
-"""
-Description: Executes MinIO commands
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2024
+"""Executes MinIO commands.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+import certifi
+import urllib3
 from minio import Minio
 
 from src.config.credentials import Credentials
@@ -18,26 +20,28 @@ from src.utils.minio_rewinder import Rewinder
 
 
 class MinIOHandler(IHandler):
-    """MinIO wrapper, has handler interface"""
+    """MinIO wrapper, has handler interface."""
 
-    def prepare_upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
-        logger.debug("Preparing upload to MinIO not implemented yet")
+    def download(
+        self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger
+    ) -> None:
+        """Set up a Minio client connection.
 
-    def upload(self, from_path: str, to_path: str, credentials: Credentials, logger: ILogger) -> None:
-        logger.debug("Uploading to MinIO not implemented yet")
+        You can specify the download source and destination.
 
-    def download(self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger):
-        """Sets up a Minio client connection. You can specify the download
-        source and destination
-
-        Args:
-            from_path (str): minio URL
-            to_path (str): dowload location
-            credentials (Credentials): minio credentials
-            version (str): timestamp string e.g. "2023.10.20T12:00"
-            logger (ILogger): The logger that logs to a file
+        Parameters
+        ----------
+        from_path : str
+            Minio URL.
+        to_path : str
+            Dowload location.
+        credentials : Credentials
+            Minio credentials.
+        version : str
+            Timestamp string e.g. "2023.10.20T12:00".
+        logger : ILogger
+            The logger that logs to a file.
         """
-
         match = re.match(r"^https://(?P<hostname>[^/]*)/(?P<bucket>[^/]*)/(?P<path>.*)$", from_path)
         if match is None:
             raise ValueError("Invalid `from_path` value. Must match pattern `https://{hostname}/{bucket-name}/{path}`")
@@ -46,7 +50,22 @@ class MinIOHandler(IHandler):
         s3_path = match.group("path")
 
         # Minio client connection
-        my_client = Minio(s3_storage, access_key=credentials.username, secret_key=credentials.password)
+        my_client = Minio(
+            s3_storage,
+            access_key=credentials.username,
+            secret_key=credentials.password,
+            secure=True,
+            http_client=urllib3.PoolManager(
+                timeout=urllib3.Timeout.DEFAULT_TIMEOUT,
+                cert_reqs="CERT_REQUIRED",
+                ca_certs=os.environ.get("SSL_CERT_FILE") or certifi.where(),
+                retries=urllib3.Retry(
+                    total=5,
+                    backoff_factor=0.2,
+                    status_forcelist=[500, 502, 503, 504],  # Retry on temporary server errors
+                ),
+            ),
+        )
         rewinder = Rewinder(my_client, logger)
 
         # Download the objects

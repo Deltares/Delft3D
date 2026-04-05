@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{E2FFBF97-01E8-483D-8B32-D8D6F065E4C7}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0B3DDFAD-4254-48B9-BB24-1FC92DD1E7F6}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Inline Files">
+      <UniqueIdentifier>{a33f9d45-baba-483a-83c4-9421790f7d92}</UniqueIdentifier>
+      <Extensions>ixx</Extensions>
+    </Filter>
+    <Filter Include="Schema Files">
+      <UniqueIdentifier>{0c14530b-7a4b-4841-864e-e8da7ae18eea}</UniqueIdentifier>
+      <Extensions>xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="driver.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="people-custom.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="people.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="people-custom-fwd.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="people-custom.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="people-fwd.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="people.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="people.ixx">
+      <Filter>Inline Files</Filter>
+    </None>
+    <None Include="Readme.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="people.xsd">
+      <Filter>Schema Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

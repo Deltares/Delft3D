@@ -9,7 +9,7 @@ contains
 subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, nmlb, nmub, nmmax, lsed, lsedtot)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -45,6 +45,8 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     use precision
     use morphology_data_module, only: sedtra_type, sedpar_type, trapar_type, morpar_type
     use bedcomposition_module, only: getfrac, bedcomp_data
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
     !
     implicit none
     !
@@ -95,10 +97,15 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     real(fp)             , dimension(:)    , pointer :: taucr
     real(fp)             , dimension(:)    , pointer :: tetacr
     real(fp)             , dimension(:)    , pointer :: xx
+    real(fp)             , dimension(:)    , pointer :: dg_he
+    real(fp)             , dimension(:)    , pointer :: dgsd_he
+    real(fp)             , dimension(:)    , pointer :: dm_he
+    real(fp)             , dimension(:,:)  , pointer :: dxx_he
+    real(fp)             , dimension(:,:)  , pointer :: frac_he
+    real(fp)             , dimension(:)    , pointer :: mudfrac_he
     !
     integer                                          :: ll
     real(fp)                                         :: drho
-    real(fp)                                         :: s
 !
 !! executable statements -------------------------------------------------------
 !
@@ -109,7 +116,9 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     !
     asklhe    => morpar%asklhe
     frac      => sedtra%frac
+    frac_he   => sedtra%frac_he
     mudfrac   => sedtra%mudfrac
+    mudfrac_he => sedtra%mudfrac_he
     sandfrac  => sedtra%sandfrac
     anymud    => sedpar%anymud
     logsedsig => sedpar%logsedsig
@@ -131,6 +140,12 @@ subroutine initsedtra(sedtra, sedpar, trapar, morpar, morlyr, rhow, ag, vicmol, 
     hidexp    => sedtra%hidexp
     taucr     => sedpar%taucr
     tetacr    => sedpar%tetacr
+    
+    mudfrac_he   => sedtra%mudfrac_he
+    dg_he        => sedtra%dg_he
+    dgsd_he      => sedtra%dgsd_he
+    dm_he        => sedtra%dm_he
+    dxx_he       => sedtra%dxx_he
     !
     ! Calculation of dimensionless grain size and critical shear stress
     ! Only for uniform sedd50

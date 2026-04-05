@@ -1,0 +1,28 @@
+[General]
+fileVersion           = 1.01                
+fileType              = boundConds          
+
+[Forcing]
+name                  = NE_0001             
+function              = harmonic            
+quantity              = harmonic component  
+unit                  = minutes             
+quantity              = waterlevelbnd amplitude
+unit                  = m                   
+quantity              = waterlevelbnd phase 
+unit                  = deg
+0    0    0     
+750  1.5  -17.13
+
+[Forcing]
+name                  = NE_0006             
+function              = harmonic            
+quantity              = harmonic component  
+unit                  = minutes             
+quantity              = waterlevelbnd amplitude
+unit                  = m                   
+quantity              = waterlevelbnd phase 
+unit                  = deg
+0    0    0     
+750  1.5  -34.26
+

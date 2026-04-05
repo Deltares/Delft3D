@@ -41,7 +41,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -50,14 +49,10 @@
                 <argument>-c</argument>
             </arguments>
         </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
-        </program>
         <program name="dimr" logOutputToFile="true">
-            <location ref="tools" type="check" />
+            <location ref="tools" type="check">
+                <from>.</from>
+            </location>
             <path>create_and_execute_run_docker.sh</path>
         </program>
     </programs>
@@ -70,6 +65,22 @@
                 <program ref="dimr">
                     <arguments>
                         <argument>dimr_config.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dimr_noconfig">
+            <programs>
+                <program ref="dimr">
+                    <arguments>
+                        <argument>dimr.xml</argument>
                     </arguments>
                 </program>
             </programs>

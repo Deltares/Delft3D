@@ -1,0 +1,36 @@
+[General]
+fileVersion           = 1.01                
+fileType              = boundConds          
+
+[Forcing]
+name                  = Boundary01_0001     
+function              = timeSeries          
+timeInterpolation     = linear              
+quantity              = time                
+unit                  = seconds since 2015-05-27 00:00:00
+quantity              = waterlevelbnd       
+unit                  = m
+0      0 
+3600   5 
+7200   10
+10800  10
+14400  5 
+18000  0 
+21600  0
+
+[Forcing]
+name                  = Boundary01_0001     
+function              = timeSeries
+timeInterpolation     = linear              
+quantity              = time                
+unit                  = seconds since 2015-05-27 00:00:00
+quantity              = waterlevelbnd       
+unit                  = m
+0      0 
+3600   5 
+7200   10
+10800  10
+14400  5 
+18000  0 
+21600  0
+

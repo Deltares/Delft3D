@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,36 +33,27 @@
  *  13 oct 05
  *----------------------------------------------------------------------------*/
 
-
 #include <stdio.h>
 
-
-int
-main (
-    int argc,
-    char *argv[],
-    char *envp[]
-    ) {
-
-    printf ("sizeof (char)      = %d\n",    sizeof (char));
-    printf ("sizeof (short)     = %d\n",    sizeof (short));
-    printf ("sizeof (int)       = %d\n",    sizeof (int));
-    printf ("sizeof (long)      = %d\n",    sizeof (long));
-    printf ("sizeof (long long) = %d\n",    sizeof (long long));
-    printf ("sizeof (float)     = %d\n",    sizeof (float));
-    printf ("sizeof (double)    = %d\n",    sizeof (double));
-    printf ("sizeof (char *)    = %d\n",    sizeof (char *));
-    printf ("sizeof (short *)   = %d\n",    sizeof (short *));
-    printf ("sizeof (int *)     = %d\n",    sizeof (int *));
-    printf ("sizeof (long *)    = %d\n",    sizeof (long *));
-    printf ("sizeof (float *)   = %d\n",    sizeof (float *));
-    printf ("sizeof (double *)  = %d\n",    sizeof (double *));
-    printf ("sizeof (void *)    = %d\n",    sizeof (void *));
+int main(int argc, char* argv[], char* envp[])
+{
+    printf("sizeof (char)      = %d\n", sizeof(char));
+    printf("sizeof (short)     = %d\n", sizeof(short));
+    printf("sizeof (int)       = %d\n", sizeof(int));
+    printf("sizeof (long)      = %d\n", sizeof(long));
+    printf("sizeof (long long) = %d\n", sizeof(long long));
+    printf("sizeof (float)     = %d\n", sizeof(float));
+    printf("sizeof (double)    = %d\n", sizeof(double));
+    printf("sizeof (char *)    = %d\n", sizeof(char*));
+    printf("sizeof (short *)   = %d\n", sizeof(short*));
+    printf("sizeof (int *)     = %d\n", sizeof(int*));
+    printf("sizeof (long *)    = %d\n", sizeof(long*));
+    printf("sizeof (float *)   = %d\n", sizeof(float*));
+    printf("sizeof (double *)  = %d\n", sizeof(double*));
+    printf("sizeof (void *)    = %d\n", sizeof(void*));
 
     return 0;
-    }
-
-
+}
 
 /*------------------------------------------------------------------------------
 

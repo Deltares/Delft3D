@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -83,7 +83,7 @@ contains
 
         open (newunit=this%file_unit_number, file=this%log_file_path, iostat=error_code)
 
-        if (this%file_unit_number == 0 .or. error_code > 0) then
+        if (this%file_unit_number == 0 .or. error_code /= 0) then
             write(*, *) "Could not open the file " // this%log_file_path // " for logging."
             call stop_with_error()
         end if

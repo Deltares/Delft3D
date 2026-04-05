@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -68,8 +68,8 @@ module m_hydmod
 
     ! open boundaries
     type t_open_boundary_line
-        integer :: ibnd                   ! boundary number
-        integer :: ibnd_new               ! renumbered boundary number (0 = inactive)
+        integer :: ibnd = 0               ! boundary number
+        integer :: ibnd_new = 0           ! renumbered boundary number (0 = inactive)
         real(kind = 8) :: x1                     ! x1
         real(kind = 8) :: y1                     ! y1
         real(kind = 8) :: x2                     ! x2
@@ -116,20 +116,20 @@ module m_hydmod
         integer :: minimum_vdf_used       !
         integer :: vertical_diffusion     !
         character(len = TEXT_SIZE) :: description(3)         !
-        character*14 :: hyd_ref                ! hydrodynamic reference date
-        character*14 :: hyd_start              ! hydrodynamic start date
-        character*14 :: hyd_stop               ! hydrodynamic stop date
-        character*14 :: hyd_step               ! hydrodynamic time step
-        character*14 :: cnv_ref                ! conversion reference date
-        character*14 :: cnv_start              ! conversion start date
-        character*14 :: cnv_stop               ! conversion stop date
-        character*14 :: cnv_step               ! conversion time step
+        character(len=14) :: hyd_ref                ! hydrodynamic reference date
+        character(len=14) :: hyd_start              ! hydrodynamic start date
+        character(len=14) :: hyd_stop               ! hydrodynamic stop date
+        character(len=14) :: hyd_step               ! hydrodynamic time step
+        character(len=14) :: cnv_ref                ! conversion reference date
+        character(len=14) :: cnv_start              ! conversion start date
+        character(len=14) :: cnv_stop               ! conversion stop date
+        character(len=14) :: cnv_step               ! conversion time step
         integer :: cnv_step_sec           ! conversion time step in seconds
         real(kind = 8) :: time_ref               ! hydrodynamic reference date in julian
-        integer :: mmax                   ! grid cells m direction
-        integer :: nmax                   ! grid cells n direction
-        integer :: kmax                   ! number of layers in hydrodynamics
-        integer :: nolay                  ! number of layers in conversion
+        integer :: num_columns                   ! grid cells m direction
+        integer :: num_rows                   ! grid cells n direction
+        integer :: num_layers_grid                   ! number of layers in hydrodynamics
+        integer :: num_layers                  ! number of layers in conversion
         logical :: time_in_seconds        ! time in sources file in seconds or not
         type(t_file) :: file_com               ! hydrodynamic-file
         type(t_file) :: file_dwq               ! aggregation-file (horizontal)
@@ -146,6 +146,7 @@ module m_hydmod
         type(t_file) :: file_sal               ! salinity-file
         type(t_file) :: file_tem               ! temperature-file
         type(t_file) :: file_vdf               ! vert-diffusion-file
+        type(t_file) :: file_vel               ! velocities-file
         type(t_file) :: file_srf               ! surfaces-file
         type(t_file) :: file_hsrf              ! horizontal-surfaces-file
         type(t_file) :: file_lgt               ! total-grid-file
@@ -161,6 +162,7 @@ module m_hydmod
         logical :: tem_present            ! indication if temperature is availeble
         logical :: tau_present            ! indication if tau is availeble
         logical :: vdf_present            ! indication if vertical diffusion is availeble
+        logical :: vel_present            ! indication if velocities are availeble
         real :: min_vdf_upper          ! minimum-vert-diffusion-upper-layer
         real :: min_vdf_lower          ! minimum-vert-diffusion-lower-layer
         real :: min_vdf_interface      ! minimum-vert-diffusion-interface-depth
@@ -174,16 +176,16 @@ module m_hydmod
         type(t_domain_collection) :: domain_coll            ! the domains
         type(t_dd_bound_coll) :: dd_bound_coll          ! the dd boundaries
         type(t_openbndsect_coll) :: openbndsect_coll       ! the (dlflowfm) boundary sections
-        integer :: noseg                  ! number of segments
+        integer :: num_cells                  ! number of segments
         integer :: nosegl                 ! number of segments per layer
-        integer :: nobnd                  ! number of boundaries
+        integer :: num_boundary_conditions                  ! number of boundaries
         integer :: nobndl                 ! number of boundaries per layer
         integer :: lnx                    ! number of flow links
-        integer :: noq                    ! number of exchanges
-        integer :: noq1                   ! number of exchanges in first direction
-        integer :: noq2                   ! number of exchanges in second direction
-        integer :: noq3                   ! number of exchanges in third direction
-        integer :: noq4                   ! number of exchanges in fourth direction
+        integer :: num_exchanges                    ! number of exchanges
+        integer :: num_exchanges_u_dir                   ! number of exchanges in first direction
+        integer :: num_exchanges_v_dir                   ! number of exchanges in second direction
+        integer :: num_exchanges_z_dir                   ! number of exchanges in third direction
+        integer :: num_exchanges_bottom_dir                   ! number of exchanges in fourth direction
         real, pointer :: volume(:)              ! volume
         real, pointer :: area(:)                ! area
         real, pointer :: flow(:)                ! flow
@@ -194,6 +196,7 @@ module m_hydmod
         real, pointer :: tem(:)                 ! tem
         real, pointer :: tau(:)                 ! tau
         real, pointer :: vdf(:)                 ! vdf
+        real, pointer :: vel(:)                 ! flow velocities
         integer, pointer :: lgrid(:, :)             ! active grid table
         integer, pointer :: ipoint(:, :)            ! pointer table
         real, pointer :: xdepth(:, :)            ! x coordinates depth points

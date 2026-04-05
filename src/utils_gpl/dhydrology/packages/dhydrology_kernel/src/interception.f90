@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU Affero General Public License as               
@@ -117,8 +117,7 @@ module interception
       
       ierr = DHYD_NOERR
       pt = 0.1 * CanopyGapFraction
-
-      P_sat = MAX(0.0,(-Cmax / EoverR) * LOG (1.0 - (EoverR/(1.0 - CanopyGapFraction - pt))))
+      P_sat = MAX(0.0d0,(-Cmax / EoverR) * LOG (1.0 - (EoverR/(1.0 - CanopyGapFraction - pt))))
 
       where(Precipitation > P_sat)
          Iwet = ((1 - CanopyGapFraction - pt) * P_sat) - Cmax

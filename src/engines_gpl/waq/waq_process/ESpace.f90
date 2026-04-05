@@ -6,9 +6,9 @@ implicit none
 
 contains
 
-      subroutine ESPACE     ( pmsa   , fl     , ipoint , increm, noseg , &
-                              noflux , iexpnt , iknmrk , noq1  , noq2  , &
-                              noq3   , noq4   )
+      subroutine ESPACE     ( process_space_real   , fl     , ipoint , increm, num_cells , &
+                              noflux , iexpnt , iknmrk , num_exchanges_u_dir  , num_exchanges_v_dir  , &
+                              num_exchanges_z_dir   , num_exchanges_bottom_dir   )
       use data_processing, only : extract_value_from_group
       use m_logger_helper, only : write_error_message
       use m_extract_waq_attribute
@@ -21,25 +21,25 @@ contains
 !
 !     Type    Name         I/O Description
 !
-      real(kind=real_wp)  ::pmsa(*)     !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp)  ::process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
       real(kind=real_wp)  ::fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp)  ::ipoint(*)  ! I  Array of pointers in pmsa to get and store the data
+      integer(kind=int_wp)  ::ipoint(*)  ! I  Array of pointers in process_space_real to get and store the data
       integer(kind=int_wp)  ::increm(*)  ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
-      integer(kind=int_wp)  ::noseg       ! I  Number of computational elements in the whole model schematisation
+      integer(kind=int_wp)  ::num_cells       ! I  Number of computational elements in the whole model schematisation
       integer(kind=int_wp)  ::noflux      ! I  Number of fluxes, increment in the fl array
       integer(kind=int_wp)  ::iexpnt(4,*) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
       integer(kind=int_wp)  ::iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
-      integer(kind=int_wp)  ::noq1        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
-      integer(kind=int_wp)  ::noq2        ! I  Nr of exchanges in 2nd direction, noq1+noq2 gives hor. dir. reg. grid
-      integer(kind=int_wp)  ::noq3        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
-      integer(kind=int_wp)  ::noq4        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+      integer(kind=int_wp)  ::num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+      integer(kind=int_wp)  ::num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+      integer(kind=int_wp)  ::num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+      integer(kind=int_wp)  ::num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
 !
 !*******************************************************************************
 !     Final Draft of version for PUB April 2018
 !     Changes:
 !     double input FrSol and Kd for Unpaved removed
 !     consistent use of unit kg/d for sources f all types in input
-!     flexible definition of length of PMSA
+!     flexible definition of length of process_space_real
 !     protect against dividion by zero if SUMLOCATOR = 0
 
 !     NOTE every receptor is a layer and that the numbering is the same
@@ -54,7 +54,7 @@ contains
 !     support variables
 !!    integer(kind=int_wp),parameter   ::npmsamax = 200
       integer(kind=int_wp), allocatable, save ::ipnt(:)    !    Local work array for the pointering
-      integer(kind=int_wp)             ::iseg, isegl, iflux, ip, isrc, irec, isubs, ioq, iatt1, npmsa, ipmsa, isc
+      integer(kind=int_wp)             ::iseg, isegl, iflux, ip, isrc, irec, isubs, ioq, iatt1, npmsa, process_space_int, isc
       real(kind=real_wp)                ::emisvar, emisfac, sumlocator, drydep, rainconc, flux, ro_mmperday, ra_mmperday, roun_mmperday,&
                             in_mmperday, fwashoff, ferosion, froun, finf, fdisp, fdeepinf, fgwbflow
       real(kind=real_wp)                ::fluxloss, conc, fluxbound, fluxunbound, fluxinf, fluxroun, fluxero, fluxwash, fluxgwf, fluxdeepinf,&
@@ -79,7 +79,7 @@ contains
       integer(kind=int_wp),parameter    ::lu_ini = 1963
       real(kind=real_wp)   ,parameter    ::qmin = 1e-10
 
-      ! PMSA admin
+      ! process_space_real admin
       integer(kind=int_wp)              ::offset_srca
       integer(kind=int_wp)              ::offset_srcb
       integer(kind=int_wp)              ::offset_ef
@@ -198,18 +198,18 @@ contains
       if (first) then
 
             ! pick up actual dimensions
-            nsrca = nint(pmsa(ipoint(ip_nsrca)))
-            nsrcb = nint(pmsa(ipoint(ip_nsrcb)))
-            nsubsin  = nint(pmsa(ipoint(ip_nsubs)))
+            nsrca = nint(process_space_real(ipoint(ip_nsrca)))
+            nsrcb = nint(process_space_real(ipoint(ip_nsrcb)))
+            nsubsin  = nint(process_space_real(ipoint(ip_nsubs)))
             if (nsubsin/=nsubs) call write_error_message ('Substances inconsistent')
-            nrecin = nint(pmsa(ipoint(ip_nrecin)))
+            nrecin = nint(process_space_real(ipoint(ip_nrecin)))
             if (nrecin/=nrec) call write_error_message ('Receptors inconsistent')
-            nosegl = nint(pmsa(ipoint(ip_nosegl)))
+            nosegl = nint(process_space_real(ipoint(ip_nosegl)))
 
             ! pick up constants
-            delt = nint(pmsa(ipoint(ip_delt)))
+            delt = nint(process_space_real(ipoint(ip_delt)))
 
-            ! PMSA admin
+            ! process_space_real admin
             offset_srca = lastsingle                      ! EV and locator sources type A
             offset_srcb = offset_srca + nsrca*nopar_srca  ! EV and locator sources type A
             offset_decp = offset_srcb + nsrcb*nopar_srcb  ! decay rate paved
@@ -251,10 +251,10 @@ contains
 
                 ! calculate total losses
                 ip = offset_srca + (isrc-1)*nopar_srca + 1
-                emisvar = pmsa(ipoint(ip))
+                emisvar = process_space_real(ipoint(ip))
                 do isubs = 1,nsubs
                     ip = offset_ef_srca + (isrc-1)*nsubs + isubs
-                    emisfac = pmsa(ipoint(ip))
+                    emisfac = process_space_real(ipoint(ip))
                     losses(isubs) = emisvar*emisfac*1000.   ! kg/d to g/d
                 enddo
 
@@ -262,7 +262,7 @@ contains
                 sumlocator = 0.0
                 do isegl = 1,nosegl
                     ip = offset_srca + (isrc-1)*nopar_srca + 2
-                    locator(isegl) = pmsa(ipoint(ip)+(isegl-1)*increm(ip))
+                    locator(isegl) = process_space_real(ipoint(ip)+(isegl-1)*increm(ip))
                     sumlocator = sumlocator + locator(isegl)
                 enddo
 
@@ -270,7 +270,7 @@ contains
                 ip = offset_rf_srca + (isrc-1)*nrec
                 do irec = 1,nrec
                     ip = ip + 1
-                    frac2rec(irec) = pmsa(ipoint(ip))
+                    frac2rec(irec) = process_space_real(ipoint(ip))
                 enddo
 
                 ! losses per sc
@@ -317,12 +317,12 @@ contains
       endif
 
 !******************************************************************************* PROCESSING in TIME LOOP
-      do ipmsa = 1,npmsa
-        ipnt(ipmsa) = ipoint(ipmsa)
+      do process_space_int = 1,npmsa
+        ipnt(process_space_int) = ipoint(process_space_int)
       enddo
 
       ! pick up time and copy to output
-      itime = nint(pmsa(ipoint(ip_itime)))
+      itime = nint(process_space_real(ipoint(ip_itime)))
       call ddhhmmss(itime,scu,ddhhmmss1)
       write (lu_nod,*) ddhhmmss1, ' ; ddhhmmss'
 
@@ -352,10 +352,10 @@ contains
 
               ! losses
               ip = offset_srcb + isrc
-                emisvar = pmsa(ipnt(ip))
+                emisvar = process_space_real(ipnt(ip))
               do isubs = 1,nsubs
                   ip = offset_ef_srcb + (isrc-1)*nsubs + isubs
-                  emisfac = pmsa(ipoint(ip))
+                  emisfac = process_space_real(ipoint(ip))
                   losses(isubs) = emisvar*emisfac*1000. ! kg/d to g/d
               enddo
 
@@ -363,7 +363,7 @@ contains
               ip = offset_rf_srcb + (isrc-1)*nrec
               do irec = 1,nrec
                   ip = ip + 1
-                  frac2rec(irec) = pmsa(ipoint(ip))
+                  frac2rec(irec) = process_space_real(ipoint(ip))
               enddo
 
               ! fluxes
@@ -379,19 +379,19 @@ contains
           enddo
 
           ! Atmospheric deposition ------------------------------------------------------------------
-          totsurf  = pmsa(ipnt(ip_totsurf))
-          fpaved   = pmsa(ipnt(ip_fpaved))
-          funpaved = pmsa(ipnt(ip_funpaved))
-          fwater   = pmsa(ipnt(ip_fwater))
-          rainfall = pmsa(ipnt(ip_rainfall)) *86400.    ! m3/s to m3/d
-          totalflow = max(qmin,pmsa(ipnt(ip_totflow)))
+          totsurf  = process_space_real(ipnt(ip_totsurf))
+          fpaved   = process_space_real(ipnt(ip_fpaved))
+          funpaved = process_space_real(ipnt(ip_funpaved))
+          fwater   = process_space_real(ipnt(ip_fwater))
+          rainfall = process_space_real(ipnt(ip_rainfall)) *86400.    ! m3/s to m3/d
+          totalflow = max(qmin,process_space_real(ipnt(ip_totflow)))
 
           ! total dep
           do isubs = 1,nsubs
               ip = offset_ef + isubs
-              drydep = pmsa(ipoint(ip))
+              drydep = process_space_real(ipoint(ip))
               ip = ip + nsubs
-              rainconc = pmsa(ipoint(ip))
+              rainconc = process_space_real(ipoint(ip))
               losses(isubs) = drydep*totsurf  + rainfall*rainconc ! g/d
           enddo
 
@@ -424,7 +424,7 @@ contains
           call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
-          leakage = pmsa(ipnt(ip_leakage))
+          leakage = process_space_real(ipnt(ip_leakage))
           do isubs = 1,nsubs
               ! input
               ! fluxes
@@ -433,9 +433,9 @@ contains
               fluxstp  = (1.-leakage) * (totflxin(isubs,rec_sew) - fluxloss)
               ! output
               ioq = (sew2stw-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxleak
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxleak
               ioq = (sew2stp-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxstp
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxstp
               ! to downstream
               totflxin(isubs,rec_stw) = totflxin(isubs,rec_stw) + fluxleak
           enddo
@@ -448,7 +448,7 @@ contains
           call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
-          ropaved = pmsa(ipnt(ip_ropaved))
+          ropaved = process_space_real(ipnt(ip_ropaved))
           !               m3/s  m2
           ro_mmperday = ropaved / (totsurf*fpaved) * 1000. * 86400.
           fwashoff = (ro_mmperday-ro_lothr)/(ro_hithr-ro_lothr)
@@ -456,15 +456,15 @@ contains
           do isubs = 1,nsubs
               ! input
               ip = offset_decp + isubs
-              kpaved = pmsa(ipoint(ip))
+              kpaved = process_space_real(ipoint(ip))
               ip = offset_conc + isubs
-              conc = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              conc = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ! fluxes
               fluxloss = kpaved * conc / 86400.
               fluxwash = (conc / delt + totflxin(isubs,rec_pav) - fluxloss)*fwashoff
               ! output
               ioq = (pav2stw-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxwash
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxwash
               iflux = fl0_dec + isubs + (iseg-1)*noflux
               fl(iflux) = fluxloss
               ! to downstream
@@ -479,9 +479,9 @@ contains
           call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
-          rounpaved = pmsa(ipnt(ip_rounpaved))
+          rounpaved = process_space_real(ipnt(ip_rounpaved))
           roun_mmperday = rounpaved / (totsurf*funpaved) * 1000. * 86400.
-          infilt = pmsa(ipnt(ip_percola))
+          infilt = process_space_real(ipnt(ip_percola))
           in_mmperday = infilt / totsurf * 1000. * 86400.
           ra_mmperday = rainfall / totsurf * 1000.           ! already in m3/d
           ferosion = (ra_mmperday-ra_lothr)/(ra_hithr-ra_lothr)
@@ -496,11 +496,11 @@ contains
           do isubs = 1,nsubs
               ! input
               ip = offset_decup + isubs
-              kunpaved = pmsa(ipoint(ip))
+              kunpaved = process_space_real(ipoint(ip))
               ip = offset_kdup + isubs
-              kdunpaved = pmsa(ipoint(ip))
+              kdunpaved = process_space_real(ipoint(ip))
               ip = offset_conc + isubs
-              conc = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              conc = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ! fluxes
               fluxloss = kunpaved * conc / 86400.
               fluxbound = kdunpaved *(conc / delt + totflxin(isubs,rec_unp) - fluxloss) ! Bound substance  flux
@@ -509,9 +509,9 @@ contains
               fluxinf = fluxunbound * fdisp * finf
               fluxroun = fluxunbound * fdisp * froun
               ioq = (unp2stw-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxero + fluxroun
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxero + fluxroun
               ioq = (unp2soi-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxinf
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxinf
               iflux = fl0_dec + isubs + (iseg-1)*noflux
               fl(iflux) = fluxloss
               ! to downstream
@@ -527,25 +527,25 @@ contains
           call extract_waq_attribute(1,iknmrk(iseg),iatt1) ! pick up first attribute
           if (iatt1>0) then
 
-          gwbaseflow = pmsa(ipnt(ip_gwbflow))
-          deepinfilt = pmsa(ipnt(ip_deepinf))
+          gwbaseflow = process_space_real(ipnt(ip_gwbflow))
+          deepinfilt = process_space_real(ipnt(ip_deepinf))
           fgwbflow = max(min(gwbaseflow,1.0),0.0)
           fdeepinf = max(min(deepinfilt,1.0),0.0)
 
           do isubs = 1,nsubs
               ! input
               ip = offset_decso + isubs
-              ksoil = pmsa(ipoint(ip))
+              ksoil = process_space_real(ipoint(ip))
               ip = offset_conc + isubs
-              conc = pmsa(ipoint(ip)+(iseg-1)*increm(ip))
+              conc = process_space_real(ipoint(ip)+(iseg-1)*increm(ip))
               ! fluxes
               fluxloss = ksoil * conc / 86400.
               fluxgwf = (conc / delt + totflxin(isubs,rec_soi) - fluxloss) * fgwbflow
               fluxdeepinf = (conc / delt + totflxin(isubs,rec_soi) - fluxloss) * fdeepinf
               ioq = (soi2stw-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxgwf
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxgwf
               ioq = (soi2inf-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxdeepinf
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxdeepinf
               iflux = fl0_dec + isubs + (iseg-1)*noflux
               fl(iflux) = fluxloss
               ! to downstream
@@ -566,9 +566,9 @@ contains
               fluxexp = totflxin(isubs,rec_stw)
               ! output
               ip = lins + line + isubs
-              pmsa(ipoint(ip)+increm(ip)*(iseg-1)) = fluxexp
+              process_space_real(ipoint(ip)+increm(ip)*(iseg-1)) = fluxexp
               ioq = (stw2exp-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxexp
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxexp
               boun(isubs) = fluxexp/totalflow
           enddo
           write (lu_nod,1003) boun
@@ -586,15 +586,15 @@ contains
               fluxexp = totflxin(isubs,rec_sfw)
               ! output
               ip = lins + line + isubs
-              pmsa(ipoint(ip)+increm(ip)*(iseg-1)) = fluxexp
+              process_space_real(ipoint(ip)+increm(ip)*(iseg-1)) = fluxexp
               ioq = (sfw2exp-1)*nosegl + isegl
-              pmsa(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxexp
+              process_space_real(ipoint(offset_vel+isubs)+increm(offset_vel+isubs)*(ioq-1)) = fluxexp
           enddo
 
           endif
 
-          do ipmsa = 1,npmsa
-            ipnt(ipmsa) = ipnt(ipmsa) + increm(ipmsa)
+          do process_space_int = 1,npmsa
+            ipnt(process_space_int) = ipnt(process_space_int) + increm(process_space_int)
           enddo
 
       enddo

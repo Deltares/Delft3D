@@ -1,7 +1,6 @@
-"""
-Description: Path helper
------------------------------------------------------
-Copyright (C)  Stichting Deltares, 2013
+"""Path helper.
+
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import os
@@ -10,7 +9,7 @@ from typing import List
 
 
 # Path helpers
-class Paths(object):
+class Paths:
     # split network path in server, folder and rest with os.sep
     # input: path
     # output: server part, folder part, left over part
@@ -40,7 +39,7 @@ class Paths(object):
     # check if a given path string is an actual path
     # input: path string
     # output: boolean
-    def isPath(self, path):
+    def isPath(self, path) -> bool:
         if "/" in path:
             if path.startswith("/") and path.count("/") == 1:
                 return False
@@ -53,7 +52,7 @@ class Paths(object):
     # check if the given path is an absolute path
     # input: path string
     # output: boolean
-    def isAbsolute(self, path):
+    def isAbsolute(self, path) -> bool:
         if path[0] == "/" or re.match(r"^[A-Za-z]:", path):
             return True
         return False
@@ -70,7 +69,7 @@ class Paths(object):
         else:
             result = ""
         # split in windows paths
-        wpes = self.convertAbsoluteToLiteral(path).split("\\")
+        wpes = self.__convertAbsoluteToLiteral(path).split("\\")
         for wpe in wpes:
             # split in linux path elements
             lpes = wpe.split("/")
@@ -81,7 +80,7 @@ class Paths(object):
         return result
 
     # convert a path string containing \ -> \\
-    def convertAbsoluteToLiteral(self, path):
+    def __convertAbsoluteToLiteral(self, path):
         # convert double backslash to single
         conv = re.sub(r"(\\\\)", r"\\", path)
         return re.sub(r"(?<!\\)+\\(?!\\)+", r"\\", conv)
@@ -93,8 +92,18 @@ class Paths(object):
         fws = "/"
         bws = "\\"
 
+        if left in (None, ""):
+            return right or ""
+        if right in (None, ""):
+            return left
+
         # Make sure that the handlers can accept URIs that contain spaces.
         if "://" in left:
+            # XML pretty-printing can introduce newlines/indentation in text nodes.
+            # Strip control whitespace so URL segments don't turn into '%20%20%20...' or contain newlines.
+            left = left.replace("\r", "").replace("\n", "").replace("\t", "").strip()
+            right = right.replace("\r", "").replace("\n", "").replace("\t", "").strip()
+
             left = left.replace(" ", "%20")
             right = right.replace(" ", "%20")
 
@@ -134,8 +143,12 @@ class Paths(object):
     # input: left and rest (variable args)
     # output: string formatted on left as origin
     def mergeFullPath(self, left, *args):
-        result = left
-        for a in args:
+        parts = [p for p in (left, *args) if p not in (None, "")]
+        if not parts:
+            return ""
+
+        result = parts[0]
+        for a in parts[1:]:
             result = self.mergePathElements(result, a)
         return result
 
@@ -147,11 +160,7 @@ class Paths(object):
         if excludePathsContaining == "":
             return [os.path.abspath(x[0]) for x in os.walk(root)]
         else:
-            return [
-                os.path.abspath(x[0])
-                for x in os.walk(root)
-                if excludePathsContaining not in str(x[0])
-            ]
+            return [os.path.abspath(x[0]) for x in os.walk(root) if excludePathsContaining not in str(x[0])]
 
     # find all files in all sub directories from a given path
     # input: root path to search from
@@ -161,14 +170,9 @@ class Paths(object):
         for subdir in self.findAllSubFolders(root, ""):
             prefix = subdir.replace(os.path.abspath(root), "")
             prefix = self.rebuildToLocalPath(prefix)
-            if subdir.find(".svn") == -1:
-                retval.extend(
-                    [
-                        os.path.join(prefix, f)
-                        for f in os.listdir(subdir)
-                        if os.path.isfile(os.path.join(subdir, f))
-                    ]
-                )
+            retval.extend(
+                [os.path.join(prefix, f) for f in os.listdir(subdir) if os.path.isfile(os.path.join(subdir, f))]
+            )
         # Remove leading/trailing slashes; they mess up the comparison
         for index, rv in enumerate(retval):
             retval[index] = rv.strip("/\\")

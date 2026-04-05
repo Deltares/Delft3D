@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="ECModulePostBuild" AfterTargets="Build">
+    <ItemGroup>
+      <_FilesToCopyECModule Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\*"/>      
+    </ItemGroup>
+    <Copy SourceFiles="@(_FilesToCopyECModule)" DestinationFolder="$(OutDir)\%(RecursiveDir)" SkipUnchangedFiles="true"/>    
+  </Target>
+  
+  <Target Name="ECModuleClean" AfterTargets="Clean">
+    <ItemGroup>
+      <_OriginalFilesECModule Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\*"/>
+      <_FilesToCleanECModule Include="$(OutDir)\%(_OriginalFilesECModule.RecursiveDir)%(_OriginalFilesECModule.FileName)%(_OriginalFilesECModule.Extension)"/>      
+    </ItemGroup>
+    <Delete Files="@(_FilesToCleanECModule)"/>    
+  </Target>
+</Project>

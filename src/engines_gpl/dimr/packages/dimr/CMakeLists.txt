@@ -35,22 +35,20 @@ if(UNIX)
    add_definitions(-DD3D_PLUGIN_EXT=".so")
 
    set(oss_dependencies    deltares_common_c
+                           getopt
                            dimr_lib
                            expat)
 
-   oss_include_libraries(${executable_name} oss_dependencies) 
-   
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
-                               ${NETCDF_INCLUDEDIR}
                               "${dimr_lib_path}/include"
+                              "${getopt_include_path}"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS}) 
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
+    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
+
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     target_link_libraries(${executable_name} Threads::Threads)
@@ -61,15 +59,16 @@ endif(UNIX)
 if (WIN32)
 
    set(oss_dependencies    deltares_common_c
+                           getopt
                            dimr_lib) 
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
-    target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
     
     target_include_directories(${executable_name} 
                                 PRIVATE  
                                 ${header_path}
                                 "${dimr_lib_path}/include"
+                                "${getopt_include_path}"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
                                 "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
@@ -79,6 +78,7 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
+                            "${getopt_library_path_win}"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
@@ -93,7 +93,6 @@ endif(WIN32)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source} ${dimr_lib_sources} ${header_version_file}  ${rc_version_file})
 set_target_properties (${executable_name} PROPERTIES FOLDER engines_gpl/dimr)
 if (WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
 	if (CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${executable_name}.vcxproj.$ENV{USERNAME}.user")
 		configure_file(
 		"${CMAKE_BINARY_DIR}/template.vcxproj.user"

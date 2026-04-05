@@ -1,7 +1,7 @@
 module open_mi_dio
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -33,7 +33,7 @@ module open_mi_dio
 !!!
 !!! open_mi_dio.F90: OD - module (*O*penMI exchange by means of *D*elftIO)
 !!!
-!!! (c) Deltares, feb. 2005
+!!! (c) Deltares, 2026
 !!!
 !!! Stef.Hummel@deltares.nl
 !!!
@@ -294,7 +294,7 @@ end function OD_ExchItemCreate_WithIDs
 ! Create provided exchange item, 2d field (called by providing component)
 !
 !==============================================================================
-function OD_ExchItemCreate_WithSizes(quantID, elmsetID, mMax, nMax, role, startTime) result(success)
+function OD_ExchItemCreate_WithSizes(quantID, elmsetID, num_columns, num_rows, role, startTime) result(success)
     !
     ! return value
     logical :: success  ! .true.: all OK
@@ -302,24 +302,22 @@ function OD_ExchItemCreate_WithSizes(quantID, elmsetID, mMax, nMax, role, startT
     ! arguments
     character(Len=*)             , intent(in) :: quantID    ! Quantity Identifier
     character(Len=*)             , intent(in) :: elmsetID   ! ElementSet Identifier
-    integer                      , intent(in) :: mMax       ! # values m-dir.
-    integer                      , intent(in) :: nMax       ! # values n-dir.
+    integer                      , intent(in) :: num_columns       ! # values m-dir.
+    integer                      , intent(in) :: num_rows       ! # values n-dir.
     integer                      , intent(in) :: role       ! Providing / Accepting
     double precision             , intent(in) :: startTime  ! Start time for Dio PLT
     !
     ! locals
-    type(t_od_exchange), pointer              :: od_exchange ! pointer to exchanged item
-    character(Len=DioMaxParLen), dimension(1) :: arrQuant    ! Array representation of qant.
     character(Len=DioMaxLocLen), &
        allocatable, dimension(:)              :: locIds      ! Row/Col loc ids
     integer                                   :: m, n, mn    ! loop counters
 
     !
     ! body
-    allocate(locIds(mMax*nMax))
-    do n = 1, nMax
-        do m = 1, mMax
-           mn = (n-1) * mMax + m
+    allocate(locIds(num_columns*num_rows))
+    do n = 1, num_rows
+        do m = 1, num_columns
+           mn = (n-1) * num_columns + m
            write(locIds(mn), '(A,I4.4,A,I4.4,A)') 'row,col[', n, ',', m, ']'
         enddo
     enddo

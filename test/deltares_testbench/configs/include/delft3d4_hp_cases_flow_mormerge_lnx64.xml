@@ -25,7 +25,7 @@
 				
 				-->
 
-	<testCases>
+	<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 		<testCase name="e24_f01_c01-bas" ref="flow2d3d_default">
 			<path version="2024-02-22T14:50:00">e24_d3dflow-mormerge/f01_general/c01-bas</path>
 			<programs>

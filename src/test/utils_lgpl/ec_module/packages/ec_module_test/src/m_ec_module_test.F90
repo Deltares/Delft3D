@@ -95,6 +95,13 @@ private
 
 contains
 
+    subroutine callback_msg(lvl,msg)
+       implicit none
+       integer, intent(in)              :: lvl
+       character(len=*), intent(in)     :: msg
+       write(lvl,'(A)') trim(msg)       ! intentionally using lvl as a file handle !!
+    end subroutine callback_msg
+
     subroutine do_test(verbose, jacompare, janewref, config_ptr, testname, stop_on_differ)
        implicit none
        logical, intent(in)                 :: verbose, jacompare, janewref
@@ -241,7 +248,7 @@ contains
                                                        xyen=xyen)
              endif
              if (.not.success) then
-                call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+                call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
                 call ec_test_exception
                 return
              endif
@@ -269,15 +276,15 @@ contains
              do iext = 1,size(ext_ptr%child_nodes)
                 if (trim(tree_get_name(node_ptr)) == 'Forcing') then
                    node_ptr => ext_ptr%child_nodes(iext)%node_ptr
-                   call prop_get_string(node_ptr, '', 'Quantity', quantityname, success)
-                   call prop_get_string(node_ptr, '', 'BCFile', forcingfile, success)
+                   call prop_get(node_ptr, '', 'Quantity', quantityname, success)
+                   call prop_get(node_ptr, '', 'BCFile', forcingfile, success)
                    has_forcingfile=success
-                   call prop_get_string(node_ptr, '', 'Filename', inFilename, success)
-                   call prop_get_string(node_ptr, '', 'Filetype', inFiletype, success)
+                   call prop_get(node_ptr, '', 'Filename', inFilename, success)
+                   call prop_get(node_ptr, '', 'Filetype', inFiletype, success)
                    inFiletype_nr = getECFileTypeNumber(inFiletype)
-                   call prop_get_string(node_ptr, '', 'Method', method, success)
+                   call prop_get(node_ptr, '', 'Method', method, success)
                    method_nr = getECFileTypeNumber(method)
-                   call prop_get_string(node_ptr, '', 'Operand', operand, success)
+                   call prop_get(node_ptr, '', 'Operand', operand, success)
                    operand_nr = getECFileTypeNumber(operand)
                    isrc = isrc + 1
 
@@ -315,7 +322,7 @@ contains
                                                              xyen=xyen)
                    endif
                    if (.not.success) then
-                      call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+                      call TCMessage(testname,'AddTimeSpaceRelation failed','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
                       call ec_test_exception
                       return
                    endif
@@ -425,7 +432,7 @@ contains
              success = ec_gettimespacevalue_by_itemID(ecInstancePtr, itemIDs(1), tst%tgt_refdate, tst%tgt_tzone, tst%tgt_tunit, tst%t(it), targetArray)
           endif
           if (.not.success) then
-             call TCMessage(testname,'Error getting value for target item','testFailed',details=dumpECMessageStack(0,ec_test_callback_msg))
+             call TCMessage(testname,'Error getting value for target item','testFailed',details=dump_ec_message_stack(0,ec_test_callback_msg))
              call ec_test_exception
              return
              cycle
@@ -498,12 +505,6 @@ contains
        success = ecInstanceFree(ecInstancePtr)
 
        contains
-          subroutine callback_msg(lvl,msg)
-             implicit none
-             integer, intent(in)              :: lvl
-             character(len=*), intent(in)     :: msg
-             write(lvl,'(A)') trim(msg)       ! intentionally using lvl as a file handle !!
-          end subroutine callback_msg
 
           function getTestInput(config_ptr, config, testname) result (success)
              implicit none
@@ -532,12 +533,12 @@ contains
                 return
              endif
 
-             call prop_get_integer (config_ptr, trim(testname), 'VectorMax', config%vectormax, status)
+             call prop_get (config_ptr, trim(testname), 'VectorMax', config%vectormax, status)
 
              liststring = ''
              nx = 0
              ny = 0
-             call prop_get_string (config_ptr, trim(testname), 'LocationsX', liststring , status)
+             call prop_get (config_ptr, trim(testname), 'LocationsX', liststring , status)
              if (len_trim(liststring)>0) then                  ! count the comma's, which serve as separators
                 nx = 1
                 do ipos = 1, len_trim(liststring)
@@ -548,7 +549,7 @@ contains
              endif
 
              liststring = ''
-             call prop_get_string (config_ptr, trim(testname), 'LocationsX2', liststring , status)
+             call prop_get (config_ptr, trim(testname), 'LocationsX2', liststring , status)
              if (len_trim(liststring)>0) then                  ! count the comma's, which serve as separators
                 nx2 = 1
                 do ipos = 1, len_trim(liststring)
@@ -560,7 +561,7 @@ contains
              endif
 
              liststring = ''
-             call prop_get_string (config_ptr, trim(testname), 'LocationsY', liststring , status)
+             call prop_get (config_ptr, trim(testname), 'LocationsY', liststring , status)
              if (len_trim(liststring)>0) then                  ! count the comma's, which serve as separators
                 ny = 1
                 do ipos = 1, len_trim(liststring)
@@ -571,7 +572,7 @@ contains
              endif
 
              liststring = ''
-             call prop_get_string (config_ptr, trim(testname), 'LocationsY2', liststring , status)
+             call prop_get (config_ptr, trim(testname), 'LocationsY2', liststring , status)
              if (len_trim(liststring)>0) then                  ! count the comma's, which serve as separators
                 ny2 = 1
                 do ipos = 1, len_trim(liststring)
@@ -585,7 +586,7 @@ contains
 
              config%ntimes = 0
              liststring = ''
-             call prop_get_string (config_ptr, trim(testname), 'TimeIntervals', liststring , status)
+             call prop_get (config_ptr, trim(testname), 'TimeIntervals', liststring , status)
              if (len_trim(liststring)>0) then
                 read(liststring,*) t_start, t_stop, t_increment
                 nt = 1 + (t_stop - t_start)/t_increment
@@ -596,7 +597,7 @@ contains
                 config%ntimes = nt
              endif
              liststring = ''
-             call prop_get_string (config_ptr, trim(testname), 'Times', liststring , status)
+             call prop_get (config_ptr, trim(testname), 'Times', liststring , status)
              if (len_trim(liststring)>0) then
                 nt = 1
                 do ipos = 1, len_trim(liststring)
@@ -607,33 +608,33 @@ contains
                 config%ntimes = nt
              endif
 
-             call prop_get_string (config_ptr, trim(testname),  'TestPathName', config%testpathname , status)
-             call prop_get_string (config_ptr, trim(testname),  'QuantityName', config%quantityname , status)
-             call prop_get_string (config_ptr, trim(testname),  'LocationName', config%locationname , status)
-             call prop_get_string (config_ptr, trim(testname),  'ExtFileName', config%extFilename , status)
-             call prop_get_string (config_ptr, trim(testname),  'InputFileName', config%inFilename , status)
-             call prop_get_string (config_ptr, trim(testname),  'InputFileType', filetype , status)
+             call prop_get (config_ptr, trim(testname),  'TestPathName', config%testpathname , status)
+             call prop_get (config_ptr, trim(testname),  'QuantityName', config%quantityname , status)
+             call prop_get (config_ptr, trim(testname),  'LocationName', config%locationname , status)
+             call prop_get (config_ptr, trim(testname),  'ExtFileName', config%extFilename , status)
+             call prop_get (config_ptr, trim(testname),  'InputFileName', config%inFilename , status)
+             call prop_get (config_ptr, trim(testname),  'InputFileType', filetype , status)
              if (status) config%inFileType = getECFileTypeNumber(filetype)
              if (config%inFileType == ec_undef_int) return
-             call prop_get_string (config_ptr, trim(testname),  'RefFileName', config%refFilename , status)
-             call prop_get_string (config_ptr, trim(testname),  'BCFileName', config%forcingfile , status)
-             call prop_get_string (config_ptr, trim(testname),  'ConverterMethod', method , status)
+             call prop_get (config_ptr, trim(testname),  'RefFileName', config%refFilename , status)
+             call prop_get (config_ptr, trim(testname),  'BCFileName', config%forcingfile , status)
+             call prop_get (config_ptr, trim(testname),  'ConverterMethod', method , status)
              if (status) config%method = getECMethodNumber(method)
              if (config%method == ec_undef_int) return
-             call prop_get_string (config_ptr, trim(testname),  'Operand', operand , status)
+             call prop_get (config_ptr, trim(testname),  'Operand', operand , status)
              if (status) config%operand = getECOperandNumber(operand)
              if (config%operand == ec_undef_int) return
-             call prop_get_integer (config_ptr, trim(testname), 'KernelRefDate', config%tgt_refdate , status)
-             call prop_get_double (config_ptr, trim(testname),  'KernelTimeZone', config%tgt_tzone , status)
-             call prop_get_string (config_ptr, trim(testname),  'KernelTimeUnit', kerneltimeunit , status)
+             call prop_get (config_ptr, trim(testname), 'KernelRefDate', config%tgt_refdate , status)
+             call prop_get (config_ptr, trim(testname),  'KernelTimeZone', config%tgt_tzone , status)
+             call prop_get (config_ptr, trim(testname),  'KernelTimeUnit', kerneltimeunit , status)
              if (status) config%tgt_tunit = getECTimeUnitNumber(kerneltimeunit)
              if (config%tgt_tunit == ec_undef_int) return
-             call prop_get_double (config_ptr, trim(testname),  'Tolerance', config%tolerance , status)
-             call prop_get_integer (config_ptr, trim(testname), 'IndexStart', config%ndxstart , status)
-             call prop_get_integer (config_ptr, trim(testname), 'IndexEnd', config%ndxend , status)
-             call prop_get_integer (config_ptr, trim(testname), 'UseSpheric', jasferic , status)
+             call prop_get (config_ptr, trim(testname),  'Tolerance', config%tolerance , status)
+             call prop_get (config_ptr, trim(testname), 'IndexStart', config%ndxstart , status)
+             call prop_get (config_ptr, trim(testname), 'IndexEnd', config%ndxend , status)
+             call prop_get (config_ptr, trim(testname), 'UseSpheric', jasferic , status)
              config%jasferic = (jasferic>0)
-             call prop_get_logical(config_ptr, trim(testname),  'UseBcBlockApproach', config%useBcBlockApproach, status)
+             call prop_get(config_ptr, trim(testname),  'UseBcBlockApproach', config%useBcBlockApproach, status)
 
              ! This information should normally be obtained from a config file : configFilename
              config%name = testname

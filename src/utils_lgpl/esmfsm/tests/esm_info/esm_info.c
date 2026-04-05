@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2024.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -35,46 +35,35 @@
 /*  30 aug 04 */
 /*------------------------------------------------------------------------------ */
 
-
 #include "esm.h"
 
 #include <stdlib.h>
 
+static void usage(char* cmd)
+{
+    fprintf(stderr, "Usage: %s\n", cmd);
+    exit(1);
+}
 
-static void
-usage (
-    char    *cmd
-    ) {
+int main(int argc, char* argv[], char* envp[])
+{
+    int contextid;
+    int pagesize;
+    char dummy[1000];
 
-    fprintf (stderr, "Usage: %s\n", cmd);
-    exit (1);
+    if (argc != 1) usage(argv[0]);
+
+    if (ESM_Init(0) != ESM_OK)
+    {
+        fprintf(stderr, "ESM initialization fails: %s\n", ESM_Error());
+        exit(1);
     }
 
-
-int
-main (
-    int     argc,
-    char    *argv[],
-    char    *envp[]
-    ) {
-
-    int     contextid;
-    int     pagesize;
-    char    dummy [1000];
-
-    if (argc != 1)
-        usage (argv[0]);
-
-    if (ESM_Init (0) != ESM_OK) {
-        fprintf (stderr, "ESM initialization fails: %s\n", ESM_Error ());
-        exit (1);
-        }
-
-    if (ESM_Shared_Info (stdout) != ESM_OK) {
-        fprintf (stderr, "ESM fails: %s\n", ESM_Error ());
-        exit (1);
-        }
-
-    exit (0);
+    if (ESM_Shared_Info(stdout) != ESM_OK)
+    {
+        fprintf(stderr, "ESM fails: %s\n", ESM_Error());
+        exit(1);
     }
 
+    exit(0);
+}

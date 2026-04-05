@@ -1,11 +1,16 @@
-# Fortran Unit Test
+# Unit Tests
+Back to main [development page](development.md).
+
+Note: This page is *draft*.
+We have unit tests located in `test/unit_test/` (described below) and unit tests located in `src/test/` (not yet described).
+The former tests are configured to be executed in the build folder, whereas the latter tests should run in the installation folder.
 
 ## 1. Create Unit tests
 
 ### 1.1 Folder structure
 
-- The unit tests are located in the `test/unit_test` directory. The subdirectories are structured in the
-  same way as the src directory.
+- The unit tests are located in the `test/unit_test` directory.
+  The subdirectories are structured in the same way as the src directory.
 - To test a certain subroutine or function located in a module, create a file with the same name as the
   subroutine or function in the `test/unit_test` directory.
 
@@ -52,7 +57,7 @@
     │   │   ├── data
     │   │   │    └── file_1.txt
     │   │   ├── CMakeLists.txt
-    │   │   ├── tests_sub_routine_1.f90
+    │   │   ├── tests_sub_routine_2.f90
             ...
 ```
 
@@ -70,13 +75,16 @@ create_test(
         include_dir ${CMAKE_CURRENT_SOURCE_DIR}/data/
         test_list test_1 test_2
 )
+```
+in the first folder marked by (Here), and a similar CMakeLists.txt file in the folder of the second package.
 
+```cmake
 set(dependencies target1 target2 ftnunit)
 
 create_test(
         tests_sub_routine_2
         dependencies ${dependencies}
-        visual_studio_folder tests/unit_test/engines_gpl/waq/package_1
+        visual_studio_folder tests/unit_test/engines_gpl/waq/package_2
         test_files tests_sub_routine_2.f90
         include_dir ${CMAKE_CURRENT_SOURCE_DIR}/data/
         test_list test_3 test_4
@@ -90,12 +98,12 @@ Use the `create_test` cmake function to create the test by providing the followi
 - The test name should include be descriptive so that it is easy to identify what is the purpose of the test and what it is
   testing. The test name does not have to contain the module name it is testing, however, can do so to be able
   to filter the tests using regex.
-- The `visual_studio_folder` argument defines the folder in which the test will be located in the visual studio
+- The `visual_studio_folder` argument defines the folder in which the test will be located in the Visual Studio
   solution.
 - The `test_files` argument defines the files that will be compiled to create the test.
 - `test_list`: [separate multiple values/ list]
-  if you have one fortran file that contains multiple tests, and you want to execute each test separately, you have to
-  implement the tests in the fortran file as following.
+  if you have one Fortran file that contains multiple tests, and you want to execute each test separately, you have to
+  implement the tests in the Fortran file as following.
 
 ```fortran
 program test_file_1
@@ -218,7 +226,7 @@ Then in the `create_test` function use the argument `test_list` followed by the 
 
 ### 1.3 Test Data
 
-Put all the files that are needed for the test tn the data folder.
+Put all the files that are needed for the test in the data folder.
 In the Fortran code to access the data you stored in the `data/` folder, you can use the
 `get_environment_variable` function. This function will return the absolute path to the directory where the data is
 during test runtime.
@@ -287,30 +295,28 @@ add_subdirectory(package-2 test_package_2) #package-2 refers to the name of the 
 - Windows: After building the source code, execute ctest in the build directory. Then run ctest followed by the config.
 
 ```bash
-cd build_all
+cd install_all
 ctest -C debug
 ```
 
 - or you can use the `test-dir` flag to point ctest to the directory where the build is.
 
 ```bash
-ctest -C debug --test-dir build_all
+ctest -C debug --test-dir install_all
 ```
 
 ### 2.1 Linux
 
-- Linux: After building, it is necessary to extend the $LD_LIBRARY_PATH to include the `install/lib` directory, so the
-  test executables can find the compiled *.so's. Here the `build_all` indicates the directory where the source code is built (
-  i.e. build_all, build_waq, etc.).
+- Linux: After building the source code, execute ctest in the build directory
 
 ```bash
-export LD_LIBRARY_PATH=/<path-where-repo-exist>/<build-dir>/install/lib:$LD_LIBRARY_PATH
-ctest -C debug --test-dir build_all
+cd install_all
+ctest -C debug
 ```
 
 ### 2.2 Run specific test
 
-- To run a specific test you can the flag `-R` to specify a regex pattern that matches the test name(s) you want to run.
+- To run a specific test you can use the flag `-R` to specify a regex pattern that matches the test name(s) you want to run.
   For example, if your test is named MyTest, you can run:
 
 ```bash
@@ -361,22 +367,22 @@ and in your test code (test_model_a.f90) you can access the global variables as 
 ```fortran
 use model_a_target, only : global_var1, global_var2
 ```
+
 ### 3.2 Paths and directories
 
-The current work directory for any unit test is under
+The unit tests will be run within the <build-dir>.
+The work directory for any unit test is under
 
 ```bash
-<build-dir>/test_delwaq/test_<engine-name>/<build-type>/<test-name>
+<build-dir>/tests_unit_<engine-name>/<package>/<build-type>/<test-name>
 ```
 and the test data that can be accessed by the `DATA_PATH` environment variable is under
 
 ```bash
-<build-dir>/test_data
+<build-dir>/tests_unit_<engine-name>/<package>/test_data
 ```
-Therefore if you refere to data in your files it has to be prepended by 
+Therefore if you refer to data in your files it has to be prepended by 
 
 ```bash
-../../test_data/<test-name>/<file-name>
+../test_data/
 ```
-
-![relative_paths](images/relative-paths.PNG)

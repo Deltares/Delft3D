@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -29,8 +29,8 @@
 
       subroutine wripdn ( procid, procnm, procco, procfo, lun   )
 
-      character*50 procnm
-      character*10 procid, procfo
+      character(len=50) procnm
+      character(len=10) procid, procfo
       integer      procco, lun   , i
       include 'pdf.inc'
 

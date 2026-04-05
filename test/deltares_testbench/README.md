@@ -3,7 +3,7 @@
 ## Installation
 Before you can use the testbench you need to install the dependencies. You will need to have
 python installed. At the time of this writing we require python with version greater than or
-equal to '3.9'. Please consult the `requires-python` setting in `pyproject.toml` for the
+equal to '3.11'. Please consult the `requires-python` setting in `pyproject.toml` for the
 latest version requirement of python. You can check which versions of python are in your path
 and their versions using the following
 
@@ -75,17 +75,27 @@ manually every time. Here's an example using vscode:
 
 ### Installing the dependencies using `pip`
 After activating your virtual environment, you're ready to install the dependencies of the
-testbench:
+testbench. The `pip` directory contains multiple `requirements.txt` files with 'pinned'
+versions of all the dependencies (and sub-dependencies). The full list of dependencies
+may differ slightly between platforms (different python versions and operating systems). So
+please pick the `requirements.txt` file for your platform to install the dependencies.
+
+Notice that there's separate `requirements.txt` and `dev-requirements.txt` files. 
+The `dev-requirements.txt` files not only contain the dependencies needed to run the testbench,
+but also tools that help with development of the testbench code. You can read more about
+the differences between the normal and development dependencies 
+[in this section](#why-separate-the-dependencies-from-development-dependencies).
+
+Linux: (Choose between dev or non-dev dependencies)
 ```bash
-pip install -r requirements.txt
+pip install -r pip/lnx-requirements.txt
+pip install -r pip/lnx-dev-requirements.txt
 ```
 
-Currently, the `requirements.txt` contains the dependencies needed for running the testbench,
-but also for running the unit tests of the testbench. You can try running them to verify that
-the dependencies have been installed:
-
-```bash
-python -m pytest
+Windows: (Choose between dev or non-dev dependencies)
+```cmd
+pip install -r pip/win-requirements.txt
+pip install -r pip/win-dev-requirements.txt
 ```
 
 ### Installing and pinning the dependencies using `uv`
@@ -98,7 +108,7 @@ To install `uv`, follow the installation steps here: https://github.com/astral-s
 python, so it's much faster.
 
 The dependencies listed in `pyproject.toml` can be used by `uv` to generate the pinned
-package versions. You only need to do this after you've adding a new python package to the 
+package versions. You only need to do this after you've added a new python package to the 
 `pyproject.toml` or updated the version constraints of the python packages
 that are already there. If you just want to install the pinned python packages, you can
 skip this step. Use `uv pip compile`:

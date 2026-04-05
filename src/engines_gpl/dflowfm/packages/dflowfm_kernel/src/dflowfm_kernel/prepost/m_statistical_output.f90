@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -25,24 +25,27 @@
 module m_statistical_output
 
    use MessageHandling
-   use m_output_config
-   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
+   use m_output_config, only: t_output_quantity_config
+   use m_statistical_output_types, only: t_output_variable_item, t_output_variable_set, process_data_interface_double, SO_NONE, SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN
    use m_read_statistical_output
    use m_temporal_statistics
-   use stdlib_kinds, only: dp
+   use precision, only: dp
+   use fm_location_types
 
    implicit none
 
    private
 
-   public realloc
-   public dealloc
-   public update_statistical_output, update_source_input, add_stat_output_items, &
-      initialize_statistical_output, reset_statistical_output, finalize_average
+   public :: realloc, dealloc
+   public :: update_statistical_output, update_source_input, add_stat_output_items, &
+             initialize_statistical_output, reset_statistical_output, finalize_average
+   public :: t_output_variable_set, t_output_variable_item, t_output_quantity_config, process_data_interface_double
+   public :: SO_CURRENT, SO_AVERAGE, SO_MAX, SO_MIN, SO_NONE
 
    !> Realloc memory cross-section definition or cross-sections
    interface realloc
       module procedure reallocate_output_set
+      module procedure reallocate_output_set_cropped
    end interface
 
    !> Free the memory of cross-section definition or cross-sections
@@ -52,48 +55,70 @@ module m_statistical_output
 
 contains
 
-   subroutine reallocate_output_set(output_set, crop)
-      use m_alloc
+   subroutine reallocate_output_set(output_set)
 
-      type(t_output_variable_set), intent(inout)   :: output_set !< output variable set to reallocate
-      logical, intent(in), optional                :: crop       !< crop output set to number of valid items
-      
-      logical                   :: crop_
-      type(t_output_variable_item), allocatable, dimension(:)    :: new_statout
-   
-      crop_ = .false.
-      if(present(crop)) then
-         crop_ = crop
-      end if
-      
-      if (crop_ .and. output_set%count < output_set%capacity) then
-         allocate(new_statout(output_set%count))
-         new_statout(1:output_set%count) = output_set%statout(1:output_set%count)
-         call move_alloc(new_statout,output_set%statout)
-         output_set%capacity = output_set%count
-      else
-         if (allocated(output_set%statout)) then
-            if (output_set%count > output_set%capacity) then ! only increase size if necessary
-               output_set%capacity = output_set%capacity*2
-               allocate(new_statout(output_set%capacity))
-               new_statout(1:size(output_set%statout)) =  output_set%statout
-               call move_alloc(new_statout,output_set%statout)
-            end if
-         else
-           output_set%capacity = 200
-           allocate(output_set%statout(output_set%capacity))
-         end if
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+
+      ! Optimization: if the output set is already at capacity, we don't need to do anything
+      if (allocated(output_set%statout) .and. output_set%capacity >= output_set%count) then
+         return
       end if
 
+      if (output_set%capacity == 0) then
+         output_set%capacity = 200
+      end if
+
+      do while (output_set%count > output_set%capacity)
+         output_set%capacity = 2 * output_set%capacity
+      end do
+
+      call reallocate_to_capacity(output_set)
    end subroutine reallocate_output_set
+
+   subroutine reallocate_output_set_cropped(output_set, crop)
+
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+      logical, intent(in) :: crop !< whether to crop the output set to its current count
+
+      if (.not. crop) then
+         call reallocate_output_set(output_set)
+         return
+      end if
+
+      ! Optimization: if the output set is already at capacity, we don't need to do anything
+      if (allocated(output_set%statout) .and. output_set%capacity == output_set%count) then
+         return
+      end if
+
+      output_set%capacity = output_set%count
+
+      call reallocate_to_capacity(output_set)
+   end subroutine reallocate_output_set_cropped
+
+   !> Utility function to reallocate the statout array of an output set to its capacity
+   subroutine reallocate_to_capacity(output_set)
+      type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
+
+      type(t_output_variable_item), allocatable, dimension(:) :: new_statout
+      integer :: count_to_copy
+
+      if (allocated(output_set%statout)) then
+         allocate (new_statout(output_set%capacity))
+         count_to_copy = min(output_set%count, size(output_set%statout))
+         new_statout(1:count_to_copy) = output_set%statout(1:count_to_copy)
+         call move_alloc(new_statout, output_set%statout)
+      else
+         allocate (output_set%statout(output_set%capacity))
+      end if
+   end subroutine reallocate_to_capacity
 
    subroutine deallocate_output_set(output_set)
       implicit none
       ! Input/output parameters
-      type(t_output_variable_set), intent(inout)   :: output_set !< Current cross-section definition
+      type(t_output_variable_set), intent(inout) :: output_set !< Current cross-section definition
 
       if (allocated(output_set%statout)) then
-         deallocate(output_set%statout)
+         deallocate (output_set%statout)
       end if
    end subroutine deallocate_output_set
 
@@ -101,12 +126,10 @@ contains
    subroutine update_source_input(output_set)
       type(t_output_variable_set), intent(inout) :: output_set !< output set that we wish to update
 
-      type(t_output_variable_item), pointer      :: item
-
       integer :: j
-      
+
       do j = 1, output_set%count
-         associate(item => output_set%statout(j))
+         associate (item => output_set%statout(j))
             if (associated(item%source_input_function_pointer)) then
                call item%source_input_function_pointer(item%source_input)
             end if
@@ -117,8 +140,9 @@ contains
 
    !> Update the stat_output of an item, depending on the operation_type.
    elemental subroutine update_statistical_output(item, dts)
-      type(t_output_variable_item), intent(inout) :: item   !< statistical output item to update
-      double precision,             intent(in)    :: dts    !< current timestep
+      use precision, only: dp
+      type(t_output_variable_item), intent(inout) :: item !< statistical output item to update
+      real(kind=dp), intent(in) :: dts !< current timestep
 
       if (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX) then ! max/min of moving average requested
          call update_moving_average_data(item%moving_average_data, item%source_input, dts)
@@ -146,7 +170,7 @@ contains
       type(t_output_variable_item), intent(inout) :: item !< The item to be processed. Will be double-checked on its operation type.
 
       if (item%operation_type == SO_AVERAGE) then
-         item%stat_output = item%stat_output/item%time_step_sum
+         item%stat_output = item%stat_output / item%time_step_sum
       end if
 
    end subroutine finalize_average
@@ -174,17 +198,17 @@ contains
 
    !> Create a new output item and add it to the output set according to output quantity config
    subroutine add_stat_output_items(output_set, output_config, data_pointer, source_input_function_pointer)
-      use m_statistical_output_types, only: process_data_interface_double
+      use precision, only: dp
       use MessageHandling, only: mess, LEVEL_WARN
 
-      type(t_output_variable_set),                                 intent(inout) :: output_set    !< Output set that item will be added to
-      type(t_output_quantity_config), target,                      intent(in   ) :: output_config !< Output quantity config linked to this output item, a pointer to it will be stored in the new output item.
-      double precision, pointer, dimension(:),                     intent(in   ) :: data_pointer  !< Pointer to output quantity data ("source input")
-      procedure(process_data_interface_double), optional, pointer, intent(in   ) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
-      
-      type(t_output_variable_item)                       :: item ! new item to be added
+      type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
+      type(t_output_quantity_config), intent(in) :: output_config !< Output quantity config linked to this output item, a copy will be stored in the new output item
+      real(kind=dp), pointer, dimension(:), intent(in) :: data_pointer !< Pointer to output quantity data ("source input")
+      procedure(process_data_interface_double), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
+
+      type(t_output_variable_item) :: item ! new item to be added
       character(len=len_trim(output_config%input_value)) :: valuestring
-      integer                                            :: ierr
+      integer :: ierr
 
       valuestring = output_config%input_value
 
@@ -198,18 +222,16 @@ contains
 
             ! Disable statistics in time on structures of this type if any of them lie across multiple partitions
             if (model_has_structures_across_partitions(output_config%location_specifier) .and. item%operation_type /= SO_CURRENT) then
-               call mess(LEVEL_WARN,'Disabling output item "' // trim(output_config%name) // '(' // trim(operation_type_to_string(item%operation_type)) // ')"' // &
-                                    ' as at least one ' // trim(location_specifier_to_string(output_config%location_specifier)) // &
-                                    ' lies across multiple partitions, which could produce invalid output')
+               call mess(LEVEL_WARN, 'Disabling output item "'//trim(output_config%name)//'('//trim(operation_type_to_string(item%operation_type))//')"'// &
+                         ' as at least one '//trim(get_location_specifier_string(output_config%location_specifier))// &
+                         ' lies across multiple partitions, which could produce invalid output')
                cycle
             end if
 
             output_set%count = output_set%count + 1
-            if (output_set%count > output_set%capacity) then
-               call reallocate_output_set(output_set)
-            end if
+            call realloc(output_set)
 
-            item%output_config => output_config
+            item%output_config = output_config
             item%source_input => data_pointer
             if (present(source_input_function_pointer)) then
                if (associated(source_input_function_pointer)) then
@@ -246,46 +268,46 @@ contains
                               model_has_dambreaks_across_partitions, &
                               model_has_gates_across_partitions, &
                               model_has_compound_structures_across_partitions
-      use m_dad, only:        model_has_dredge_links_across_partitions
+      use m_dad, only: model_has_dredge_links_across_partitions
       use m_partitioninfo, only: model_has_crosssections_across_partitions
-      use m_lateral, only: model_has_laterals_across_partitions
-      integer, intent(in) :: location_specifier    !< The location specifier indicating the type of structure (UNC_LOC_XXX)
-      logical             :: res                   !< Whether or not any structures of this type lie across multiple partitions
+      use m_laterals, only: model_has_laterals_across_partitions
+      integer, intent(in) :: location_specifier !< The location specifier indicating the type of structure (UNC_LOC_XXX)
+      logical :: res !< Whether or not any structures of this type lie across multiple partitions
 
       res = .false.
 
       select case (location_specifier)
       case default
          return
-      case (UNC_LOC_OBSCRS)      ! Cross-sections
+      case (UNC_LOC_OBSCRS) ! Cross-sections
          res = model_has_crosssections_across_partitions()
-      case (UNC_LOC_WEIRGEN)     ! Weirs
+      case (UNC_LOC_WEIRGEN) ! Weirs
          res = model_has_weirs_across_partitions
-      case (UNC_LOC_GENSTRU)     ! General structures
+      case (UNC_LOC_GENSTRU) ! General structures
          res = model_has_general_structures_across_partitions
-      case (UNC_LOC_ORIFICE)     ! Orifices
+      case (UNC_LOC_ORIFICE) ! Orifices
          res = model_has_orifices_across_partitions
-      case (UNC_LOC_UNIWEIR)     ! Universal weirs
+      case (UNC_LOC_UNIWEIR) ! Universal weirs
          res = model_has_universal_weirs_across_partitions
-      case (UNC_LOC_CULVERT)     ! Culverts
+      case (UNC_LOC_CULVERT) ! Culverts
          res = model_has_culverts_across_partitions
-      case (UNC_LOC_PUMP)        ! Pumps
+      case (UNC_LOC_PUMP) ! Pumps
          res = model_has_pumps_across_partitions
-      case (UNC_LOC_BRIDGE)      ! Bridges
+      case (UNC_LOC_BRIDGE) ! Bridges
          res = model_has_bridges_across_partitions
       case (UNC_LOC_LONGCULVERT) ! Long culverts
          res = model_has_long_culverts_across_partitions
-      case (UNC_LOC_DRED_LINK)   ! Dredge links
+      case (UNC_LOC_DRED_LINK) ! Dredge links
          res = model_has_dredge_links_across_partitions
-      case (UNC_LOC_DAM)         ! Dams
+      case (UNC_LOC_DAM) ! Dams
          res = model_has_dams_across_partitions
-      case (UNC_LOC_DAMBREAK)    ! Dam breaks
+      case (UNC_LOC_DAMBREAK) ! Dam breaks
          res = model_has_dambreaks_across_partitions
-      case (UNC_LOC_GATE)        ! Gates
+      case (UNC_LOC_GATE) ! Gates
          res = model_has_gates_across_partitions
-      case (UNC_LOC_CMPSTRU)     ! Compound structures
+      case (UNC_LOC_CMPSTRU) ! Compound structures
          res = model_has_compound_structures_across_partitions
-      case (UNC_LOC_LATERAL)     ! Laterals
+      case (UNC_LOC_LATERAL) ! Laterals
          res = model_has_laterals_across_partitions
       end select
 
@@ -303,9 +325,9 @@ contains
       case (SO_CURRENT)
          item%stat_output => item%source_input
       case (SO_AVERAGE)
-         allocate(item%stat_output(input_size))
+         allocate (item%stat_output(input_size))
       case (SO_MIN, SO_MAX)
-         allocate(item%stat_output(input_size))
+         allocate (item%stat_output(input_size))
       case (SO_NONE)
          continue
       case default
@@ -317,8 +339,8 @@ contains
 
    !> Obtain a character string describing the statistics operation (for writing to screen)
    function operation_type_to_string(operation_type) result(operation_string)
-      integer, intent(in) :: operation_type        !< Integer representing the operation type
-      character(len=256)  :: operation_string      !> Character string describing the operation type
+      integer, intent(in) :: operation_type !< Integer representing the operation type
+      character(len=256) :: operation_string !> Character string describing the operation type
 
       select case (operation_type)
       case default

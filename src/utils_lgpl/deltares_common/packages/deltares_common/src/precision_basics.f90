@@ -1,64 +1,155 @@
 module precision_basics
 !----- LGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
-!                                                                               
-!  This library is free software; you can redistribute it and/or                
-!  modify it under the terms of the GNU Lesser General Public                   
-!  License as published by the Free Software Foundation version 2.1.                 
-!                                                                               
-!  This library is distributed in the hope that it will be useful,              
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU            
-!  Lesser General Public License for more details.                              
-!                                                                               
-!  You should have received a copy of the GNU Lesser General Public             
-!  License along with this library; if not, see <http://www.gnu.org/licenses/>. 
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D" and "Deltares"    
-!  are registered trademarks of Stichting Deltares, and remain the property of  
-!  Stichting Deltares. All rights reserved.                                     
-!                                                                               
+!
+!  Copyright (C)  Stichting Deltares, 2011-2026.
+!
+!  This library is free software; you can redistribute it and/or
+!  modify it under the terms of the GNU Lesser General Public
+!  License as published by the Free Software Foundation version 2.1.
+!
+!  This library is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!  Lesser General Public License for more details.
+!
+!  You should have received a copy of the GNU Lesser General Public
+!  License along with this library; if not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D" and "Deltares"
+!  are registered trademarks of Stichting Deltares, and remain the property of
+!  Stichting Deltares. All rights reserved.
+!
 !-------------------------------------------------------------------------------
-!  
-!  
+!
+!
 !!--description-----------------------------------------------------------------
 !
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
-use, intrinsic :: ieee_arithmetic, only : ieee_is_nan, ieee_is_finite
+   use, intrinsic :: iso_fortran_env, only: int32, int64
+   use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_is_finite
+   use stdlib_kinds, only: sp, dp, xdp, qp
 
-implicit none
+   implicit none(type, external)
+   private
+
+! A few notes on the use the floating point precisions from the stdlib_kinds module.
+! This a rather arbitrary choice since there are many ways that seem to result in
+! the same floating point definitions. Arguments for the choice can be found here:
+! https://fortran-lang.discourse.group/t/real-kinds-and-interoperability/8095/24
 !
-! parameters, used in conversions: sp=single precision, hp=high (double) precision
+! Our code does not consist of only Fortran. It has significant interaction with
+! other languages: first and foremost C/C++. Therefore, using
 !
-integer, parameter :: sp=kind(1.0e00)
-integer, parameter :: hp=kind(1.0d00)
+! use iso_c_binding, only: sp=>c_float, dp=>c_double, qp=>c_float128
 !
-! double precision integers:
+! would be the most natural choice. However, we typically call C/C++ code via
+! Fortran wrappers which use their own definitions of floating point precision.
 !
-integer, parameter :: long = selected_int_kind(16)
+! PetSc uses:
+!   #define PetscFortranFloat real(kind=selected_real_kind(5))
+!   #define PetscFortranDouble real(kind=selected_real_kind(10))
+!   #define PetscFortranLongDouble real(kind=selected_real_kind(19))
 !
-! interfaces
+! netCDF uses:
+!   integer, parameter ::                                          &
+!                        FourByteReal = selected_real_kind(P =  6, R =  37), &
+!                       EightByteReal = selected_real_kind(P = 13, R = 307)
 !
-  interface comparereal
-     module procedure comparerealdouble
-     module procedure comparerealsingle
-     module procedure comparerealdouble_finite_check
-     module procedure comparerealsingle_finite_check
-  end interface
+! BMI 2.0 uses:
+!    double precision
 !
-  private :: ieee_is_nan, ieee_is_finite
+! Our DIMR API uses:
+!    c_double
+!
+! Our code will fail if any of these definitions gives something else. Since that
+! hasn't happened, and nobody has given examples of recent hardware on which these
+! choices would give different results, the choice becomes arbitrary and any choice
+! similar to these definitions will do. Therefore, we followed the names and
+! definitions introduced by stdlib_kinds.
+
+! The extendede double precision xdp and quad precision qp are included for research
+! purposes only and to claim the variable names. They may not be available on all
+! hardware types.
+
+! For backward compatibility: hp=high precision, equal to dp
+   integer, parameter, public :: hp = dp
+
+! long integer of at least 54 bits:
+   integer, parameter, public :: long = selected_int_kind(16)
+
+   interface comparereal !< deprecated, preferably use new equal interface which returns a logical instead of integer
+      module procedure comparerealdouble
+      module procedure comparerealsingle
+      module procedure comparerealdouble_finite_check
+      module procedure comparerealsingle_finite_check
+   end interface
+
+   interface equal
+      module procedure real_dp_equal
+      module procedure real_sp_equal
+      module procedure real_dp_equal_eps
+      module procedure real_sp_equal_eps
+   end interface
+
+   public :: comparereal 
+   public :: equal
+   public :: dp
+   public :: sp
+   public :: int32
+   public :: int64
 
 contains
 
-function comparerealdouble(val1, val2, eps)
+   !> Returns .true. if two double precision numbers are equal within 2x machine epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal(a, b) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a !< First double precision number to compare
+      real(kind=dp), intent(in) :: b !< Second double precision number to compare
+
+      res = abs(a - b) < 2.0_dp * epsilon(a) * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal
+
+   !> Returns .true. if two single precision numbers are equal within 2x machine epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal(a, b) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a !< First single precision number to compare
+      real(kind=sp), intent(in) :: b !< Second single precision number to compare
+
+      res = abs(a - b) < 2.0_sp * epsilon(a) * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal
+
+   !> Returns .true. if two double precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a   !< First double precision number to compare
+      real(kind=dp), intent(in) :: b   !< Second double precision number to compare
+      real(kind=dp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal_eps
+
+   !> Returns .true. if two single precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a   !< First single precision number to compare
+      real(kind=sp), intent(in) :: b   !< Second single precision number to compare
+      real(kind=sp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal_eps
+
+   pure function comparerealdouble(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -77,49 +168,46 @@ function comparerealdouble(val1, val2, eps)
 ! eps may not be given by the user! See what happens when
 ! val1 = -666.0, val2 = -999.0, eps = 0.5
 !
-!!--declarations----------------------------------------------------------------
-    implicit none
-!
 ! Return value
 !
-integer :: comparerealdouble
+   integer :: comparerealdouble
 !
 ! Global variables
 !
-real(kind=hp), intent(in)           :: val1
-real(kind=hp), intent(in)           :: val2
-real(kind=hp), optional, intent(in) :: eps
+   real(kind=dp), intent(in) :: val1
+   real(kind=dp), intent(in) :: val2
+   real(kind=dp), optional, intent(in) :: eps
 !
 ! Local variables
 !
-real(kind=hp) :: eps0
-real(kind=hp) :: value
+   real(kind=dp) :: eps0
+   real(kind=dp) :: value
 !
 !! executable statements -------------------------------------------------------
 !
-if (present(eps)) then
-    eps0 = eps
-else 
-    eps0 = 2.0_hp * epsilon(val1)
-endif
+   if (present(eps)) then
+      eps0 = eps
+   else
+      eps0 = 2.0_hp * epsilon(val1)
+   end if
 !
-if (abs(val1)<1.0_hp .or. abs(val2)<1.0_hp) then
-   value = val1 - val2
-else
-   value = val1/val2 - 1.0_hp
-endif
+   if (abs(val1) < 1.0_hp .or. abs(val2) < 1.0_hp) then
+      value = val1 - val2
+   else
+      value = val1 / val2 - 1.0_hp
+   end if
 !
-if (abs(value)<eps0) then
-   comparerealdouble = 0
-elseif (val1<val2) then
-   comparerealdouble = -1
-else
-   comparerealdouble = 1
-endif
+   if (abs(value) < eps0) then
+      comparerealdouble = 0
+   elseif (val1 < val2) then
+      comparerealdouble = -1
+   else
+      comparerealdouble = 1
+   end if
 
-end function comparerealdouble
+   end function comparerealdouble
 
-function comparerealsingle(val1, val2,eps)
+   pure function comparerealsingle(val1, val2, eps)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -138,50 +226,47 @@ function comparerealsingle(val1, val2,eps)
 ! eps may not be given by the user! See what happens when
 ! val1 = -666.0, val2 = -999.0, eps = 0.5
 !
-!!--declarations----------------------------------------------------------------
-implicit none
-!
 ! Return value
 !
-integer :: comparerealsingle
+      integer :: comparerealsingle
 !
 ! Global variables
 !
-real(kind=sp), intent(in)           :: val1
-real(kind=sp), intent(in)           :: val2
-real(kind=sp), optional, intent(in) :: eps
+      real(kind=sp), intent(in) :: val1
+      real(kind=sp), intent(in) :: val2
+      real(kind=sp), optional, intent(in) :: eps
 !
 ! Local variables
 !
-real(kind=sp) :: eps0
-real(kind=sp) :: value
+      real(kind=sp) :: eps0
+      real(kind=sp) :: value
 !
 !! executable statements -------------------------------------------------------
 !
-!  
-if (present(eps)) then
-    eps0 = eps
-else
-    eps0 = 2.0_sp * epsilon(val1)
-endif
 !
-if (abs(val1)<1.0_sp .or. abs(val2)<1.0_sp) then
-   value = val1 - val2
-else
-   value = val1/val2 - 1.0_sp
-endif
+      if (present(eps)) then
+         eps0 = eps
+      else
+         eps0 = 2.0_sp * epsilon(val1)
+      end if
 !
-if (abs(value)<eps0) then
-   comparerealsingle = 0
-elseif (val1<val2) then
-   comparerealsingle = -1
-else
-   comparerealsingle = 1
-endif
+      if (abs(val1) < 1.0_sp .or. abs(val2) < 1.0_sp) then
+         value = val1 - val2
+      else
+         value = val1 / val2 - 1.0_sp
+      end if
+!
+      if (abs(value) < eps0) then
+         comparerealsingle = 0
+      elseif (val1 < val2) then
+         comparerealsingle = -1
+      else
+         comparerealsingle = 1
+      end if
 
-end function comparerealsingle
+   end function comparerealsingle
 
-function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
+   pure function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two double precision numbers
@@ -193,51 +278,42 @@ function comparerealdouble_finite_check(val1, val2, check_finite, eps) result(co
 !               +1 if val1 > val2
 !               +2 if val1 is not NaN and val2 is NaN
 !
-!!--declarations----------------------------------------------------------------
-    implicit none
-!
 ! Return value
 !
-integer :: compare
+      integer :: compare
 !
 ! Global variables
 !
-real(kind=hp), intent(in)           :: val1
-real(kind=hp), intent(in)           :: val2
-logical,       intent(in)           :: check_finite
-real(kind=hp), optional, intent(in) :: eps
-!
-! Local variables
-!
-real(kind=hp) :: value
-!
+      real(kind=dp), intent(in) :: val1
+      real(kind=dp), intent(in) :: val2
+      logical, intent(in) :: check_finite
+      real(kind=dp), optional, intent(in) :: eps
+
 !! executable statements -------------------------------------------------------
 !
-if (.not. check_finite) then
-   compare = comparereal(val1, val2, eps)
-else if (ieee_is_finite(val1) .and. ieee_is_finite(val2)) then
-   compare = comparereal(val1, val2, eps)
-else
-   if (ieee_is_nan(val1) .and. ieee_is_nan(val2)) then
-      compare = 0
-   else if (ieee_is_nan(val1)) then
-      compare = -2
-   else if (ieee_is_nan(val2)) then
-      compare = 2
-   else if (val1 > val2) then ! now val1 = +/- Inf or val2 = +/- Inf
-      compare = 1
-   else if (val1 < val2) then
-      compare = -1
-   else
-      compare = 0
-   end if
-end if
+      if (.not. check_finite) then
+         compare = comparereal(val1, val2, eps)
+      else if (ieee_is_finite(val1) .and. ieee_is_finite(val2)) then
+         compare = comparereal(val1, val2, eps)
+      else
+         if (ieee_is_nan(val1) .and. ieee_is_nan(val2)) then
+            compare = 0
+         else if (ieee_is_nan(val1)) then
+            compare = -2
+         else if (ieee_is_nan(val2)) then
+            compare = 2
+         else if (val1 > val2) then ! now val1 = +/- Inf or val2 = +/- Inf
+            compare = 1
+         else if (val1 < val2) then
+            compare = -1
+         else
+            compare = 0
+         end if
+      end if
 
-end function comparerealdouble_finite_check
+   end function comparerealdouble_finite_check
 
-
-
-function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
+   pure function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(compare)
 !!--description-----------------------------------------------------------------
 !
 ! Compares two real numbers of type sp
@@ -249,47 +325,38 @@ function comparerealsingle_finite_check(val1, val2, check_finite, eps) result(co
 !               +1 if val1 > val2
 !               +2 if val1 is not NaN and val2 is NaN
 !
-!!--declarations----------------------------------------------------------------
-implicit none
-!
 ! Return value
 !
-integer :: compare
+      integer :: compare
 !
 ! Global variables
 !
-real(kind=sp), intent(in)           :: val1
-real(kind=sp), intent(in)           :: val2
-logical,       intent(in)           :: check_finite
-real(kind=sp), optional, intent(in) :: eps
-!
-! Local variables
-!
-real(kind=sp) :: value
-!
+      real(kind=sp), intent(in) :: val1
+      real(kind=sp), intent(in) :: val2
+      logical, intent(in) :: check_finite
+      real(kind=sp), optional, intent(in) :: eps
+
 !! executable statements -------------------------------------------------------
 !
-if (.not. check_finite) then
-   compare = comparereal(val1, val2, eps)
-else if (ieee_is_finite(val1) .and. ieee_is_finite(val2)) then
-   compare = comparereal(val1, val2, eps)
-else
-   if (ieee_is_nan(val1) .and. ieee_is_nan(val2)) then
-      compare = 0
-   else if (ieee_is_nan(val1)) then
-      compare = -2
-   else if (ieee_is_nan(val2)) then
-      compare = 2
-   else if (val1 > val2) then ! now val1 = +/- Inf or val2 = +/- Inf
-      compare = 1
-   else if (val1 < val2) then
-      compare = -1
-   else
-      compare = 0
-   end if
-end if
+      if (.not. check_finite) then
+         compare = comparereal(val1, val2, eps)
+      else if (ieee_is_finite(val1) .and. ieee_is_finite(val2)) then
+         compare = comparereal(val1, val2, eps)
+      else
+         if (ieee_is_nan(val1) .and. ieee_is_nan(val2)) then
+            compare = 0
+         else if (ieee_is_nan(val1)) then
+            compare = -2
+         else if (ieee_is_nan(val2)) then
+            compare = 2
+         else if (val1 > val2) then ! now val1 = +/- Inf or val2 = +/- Inf
+            compare = 1
+         else if (val1 < val2) then
+            compare = -1
+         else
+            compare = 0
+         end if
+      end if
 
-end function comparerealsingle_finite_check
-
-
+   end function comparerealsingle_finite_check
 end module precision_basics

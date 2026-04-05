@@ -38,9 +38,6 @@
         <argument>/C</argument>
       </arguments>
     </program>
-    <program name="svn" addSearchPaths="false">
-      <path>thirdparty\svn\win64\svn.exe</path>
-    </program>
     <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
         <path>bin/run_dimr.bat</path>
         <shell ref="command_prompt"/>
@@ -54,6 +51,16 @@
     <program name="checkhydbal" addSearchPaths="false">
       <path>thirdparty\checkhydbal\win64\checkhydbal.exe</path>
     </program>
+    <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+      <location ref="reference_engines" type="reference">
+          <from>win64</from>
+      </location>
+      <location ref="local" type="check">
+          <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+      </location>
+      <path>bin/run_dflowfm.bat</path>
+      <shell ref="command_prompt"/>
+    </program>
   </programs>
   <defaultTestCases>
     <testCase name="dflowfm_default">
@@ -61,7 +68,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -76,6 +82,29 @@
       <!-- seconds -->
     </testCase>
     <testCase name="dflowfm_restart">
+    <programs>
+        <program ref="dimr" seq="1">
+            <arguments>
+                <argument>dimr.xml</argument>
+            </arguments>
+        </program>
+        <program ref="dimr" seq="2">
+            <arguments>
+                <argument>dimr_restart.xml</argument>
+            </arguments>
+        </program>
+    </programs>
+      <location ref="cases" type="input">
+        <!-- if "to" is not specified, "from" is used as target -->
+        <from>.</from>
+      </location>
+      <location ref="reference_results" type="reference">
+        <from>win64</from>
+      </location>
+      <maxRunTime>3600.0</maxRunTime>
+      <!-- seconds -->
+    </testCase>    
+    <testCase name="dflowfm_restart_platform">
     <programs>
         <program ref="dimr" seq="1">
             <arguments>
@@ -105,7 +134,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>dimr_config.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -124,7 +152,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>

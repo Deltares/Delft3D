@@ -1,100 +1,123 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> Runs flow steps for a certain period (do computational flowsteps for as long as timeinterval dtrange).
-subroutine flow_run_sometimesteps(dtrange, iresult)                   ! do computational flowsteps for as long as timeinterval dtrange
-   use m_flowtimes
-   use unstruc_messages
-   use m_partitioninfo
-   use unstruc_display, only: jaGUI
-   use dfm_error
-   use m_lateral, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
-                        get_lateral_volume_per_layer, lateral_volume_per_layer
+module m_flow_run_sometimesteps
+
    implicit none
-   double precision, intent(in)  :: dtrange
-   integer,          intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
-   integer                       :: key
 
-   double precision :: timetarget
+   private
 
-   if (apply_transport_is_used) then
-      call reset_outgoing_lat_concentration()
-   end if
+   public :: flow_run_sometimesteps
 
-   iresult = DFM_GENERICERROR
-   if (dtrange < 0) then
-      timetarget = time1 + epsilon(1d0) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
-   else
-      timetarget = time1 + dtrange
-   end if
+contains
 
-   timetarget = min(timetarget, tstop_user)
+   subroutine flow_run_sometimesteps(dtrange, iresult) ! do computational flowsteps for as long as timeinterval dtrange
+      use m_flow_init_usertimestep, only: flow_init_usertimestep
+      use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
+      use precision, only: dp
+      use m_flow_single_timestep, only: flow_single_timestep
+      use m_flowtimes, only: time1, tstop_user, time_user
+      use dfm_error, only: dfm_genericerror, dfm_noerr
+      use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
+                            qqlat, qplat, get_lateral_volume_per_layer, &
+                            lateral_volume_per_layer, distribute_lateral_discharge, average_waterlevels_per_lateral 
+      use m_partitioninfo, only: reduce_lateral_output, distribute_lateral_input, jampi 
 
+      real(kind=dp), intent(in) :: dtrange
+      integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
+      integer :: key
 
- do while (time1 < timetarget)                        ! nb, outside flow_singletimestep, time0=time1 !
+      real(kind=dp) :: timetarget
+
+      if (apply_transport_is_used) then
+         call reset_outgoing_lat_concentration()
+         if (jampi == 1) then
+            call distribute_lateral_input()
+         end if
+         call distribute_lateral_discharge(qplat, qqlat)
+      end if
+
+      iresult = DFM_GENERICERROR
+      if (dtrange < 0) then
+         timetarget = time1 + epsilon(1.0_dp) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
+      else
+         timetarget = time1 + dtrange
+      end if
+
+      timetarget = min(timetarget, tstop_user)
+
+      do while (time1 < timetarget) ! nb, outside flow_singletimestep, time0=time1 !
 
     !! INIT only in case of new user timestep
-    if (time1 >= time_user) then
-       call flow_init_usertimestep(iresult)
+         if (time1 >= time_user) then
+            call flow_init_usertimestep(iresult)
 
-       if (iresult /= DFM_NOERR) then
-          goto 888
-       end if
-    end if
+            if (iresult /= DFM_NOERR) then
+               goto 888
+            end if
+         end if
 
     !! RUN actual SINGLE computational timestep
-    call flow_single_timestep(key, iresult)
-    if (iresult /= DFM_NOERR) then
-       goto 888
-    end if
+         call flow_single_timestep(key, iresult)
+         if (iresult /= DFM_NOERR) then
+            goto 888
+         end if
 
     !! FINALIZE only when a time_user is finished
-    if (time1 >= time_user) then
-       call flow_finalize_usertimestep(iresult)
+         if (time1 >= time_user) then
+            call flow_finalize_usertimestep(iresult)
 
-       if (iresult /= DFM_NOERR) then
-          goto 888
-       end if
-    end if
+            if (iresult /= DFM_NOERR) then
+               goto 888
+            end if
+         end if
 
- enddo
- 
-   if (apply_transport_is_used) then
-      call finish_outgoing_lat_concentration(dtrange)
-      call get_lateral_volume_per_layer(lateral_volume_per_layer)
-   end if
+      end do
 
-   iresult = DFM_NOERR
-   return ! Return with success.
+      if (average_waterlevels_per_lateral%is_used) then
+         call average_waterlevels_per_lateral%update()
+      end if
+      if (apply_transport_is_used) then
+         call get_lateral_volume_per_layer(lateral_volume_per_layer)
+         if (jampi == 1) then
+            call reduce_lateral_output()
+         end if
+         call finish_outgoing_lat_concentration()
+      end if
+      iresult = DFM_NOERR
+      return ! Return with success.
 
-888 continue
-end subroutine flow_run_sometimesteps
+888   continue
+   end subroutine flow_run_sometimesteps
+
+end module m_flow_run_sometimesteps

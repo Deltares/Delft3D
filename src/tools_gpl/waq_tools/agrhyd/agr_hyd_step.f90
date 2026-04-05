@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2023.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -58,13 +58,13 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
     ! some init
 
-    allocate(rwork(output_hyd%noseg), stat = ierr_alloc)
+    allocate(rwork(output_hyd%num_cells), stat = ierr_alloc)
     if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
     endif
 
     ! volumes
 
-    call aggregate_extended(input_hyd%noseg, output_hyd%noseg, &
+    call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
             1, 1, &
             1, 1, &
             1, 0, &
@@ -75,13 +75,13 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
     ! volumes always positive
 
-    do iseg = 1, output_hyd%noseg
+    do iseg = 1, output_hyd%num_cells
         output_hyd%volume(iseg) = max(0.0, output_hyd%volume(iseg))
     enddo
 
     ! areas
 
-    call aggregate_extended(input_hyd%noq, output_hyd%noq, &
+    call aggregate_extended(input_hyd%num_exchanges, output_hyd%num_exchanges, &
             1, 1, &
             1, 1, &
             1, 0, &
@@ -92,13 +92,13 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
     ! areas always positive
 
-    do iq = 1, output_hyd%noq
+    do iq = 1, output_hyd%num_exchanges
         output_hyd%area(iq) = max(0.0, output_hyd%area(iq))
     enddo
 
     ! flows
 
-    call aggregate_extended(input_hyd%noq, output_hyd%noq, &
+    call aggregate_extended(input_hyd%num_exchanges, output_hyd%num_exchanges, &
             1, 1, &
             1, 1, &
             1, 0, &
@@ -110,7 +110,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     ! salinity, averaged with volume
 
     if (input_hyd%sal_present) then
-        call aggregate_extended(input_hyd%noseg, output_hyd%noseg, &
+        call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
                 1, 1, &
                 1, 1, &
                 1, 1, &
@@ -123,7 +123,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     ! temperature, averaged with volume
 
     if (input_hyd%tem_present) then
-        call aggregate_extended(input_hyd%noseg, output_hyd%noseg, &
+        call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
                 1, 1, &
                 1, 1, &
                 1, 1, &
@@ -133,12 +133,25 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
                 rwork, output_hyd%tem)
     endif
 
+    ! flow velocities, averaged with volume
+
+    if (input_hyd%vel_present) then
+        call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
+                1, 1, &
+                1, 1, &
+                1, 1, &
+                1, 1, &
+                ipnt, AGGREGATION_TYPE_WEIGHTED_AVERAGE, &
+                input_hyd%vel, input_hyd%volume, &
+                rwork, output_hyd%vel)
+    endif
+
     ! tau, only do last layer, other layers 0.0
 
     !     if ( input_hyd%tau_present ) then
     !        output_hyd%tau = 0.0
-    !        i1 = (input_hyd%nolay-1)*input_hyd%nosegl + 1
-    !        i2 = (output_hyd%nolay-1)*output_hyd%nosegl + 1
+    !        i1 = (input_hyd%num_layers-1)*input_hyd%nosegl + 1
+    !        i2 = (output_hyd%num_layers-1)*output_hyd%nosegl + 1
     !        call aggregate_extended( input_hyd%nosegl , output_hyd%nosegl ,
     !    +                1                , 1                 ,
     !    +                1                , 1                 ,
@@ -150,7 +163,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
     !     endif
     if (input_hyd%tau_present) then
         output_hyd%tau = 0.0
-        call aggregate_extended(input_hyd%noseg, output_hyd%noseg, &
+        call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
                 1, 1, &
                 1, 1, &
                 1, 1, &
@@ -164,18 +177,18 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
     if (input_hyd%vdf_present) then
 
-        if (input_hyd%nolay /= output_hyd%nolay) then
+        if (input_hyd%num_layers /= output_hyd%num_layers) then
 
             ! take minimum of the surrounding segments (actauly exchanges) over the layers only
 
-            noseg2 = input_hyd%nosegl * output_hyd%nolay
+            noseg2 = input_hyd%nosegl * output_hyd%num_layers
             allocate(vdfwork(noseg2), stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(*, *) ' error allocating memory' ; call stop_with_error() ;
             endif
             do iseg = 1, noseg2
                 vdfwork(iseg) = rmiss
             enddo
-            call aggregate_extended(input_hyd%noseg, noseg2, &
+            call aggregate_extended(input_hyd%num_cells, noseg2, &
                     1, 1, &
                     1, 1, &
                     1, 1, &
@@ -186,7 +199,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
             ! then average over the horizonatal aggregation, last layer is not used
 
-            do ilay = 1, output_hyd%nolay - 1
+            do ilay = 1, output_hyd%num_layers - 1
                 i1 = (ilay - 1) * input_hyd%nosegl + 1
                 i4 = ilay * input_hyd%nosegl
                 i2 = (ilay - 1) * output_hyd%nosegl + 1
@@ -203,8 +216,8 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
 
             ! last layer set to zero
 
-            i2 = (output_hyd%nolay - 1) * output_hyd%nosegl + 1
-            output_hyd%vdf(i2:output_hyd%noseg) = 0.0
+            i2 = (output_hyd%num_layers - 1) * output_hyd%nosegl + 1
+            output_hyd%vdf(i2:output_hyd%num_cells) = 0.0
 
             deallocate(vdfwork, stat = ierr_alloc)
             if (ierr_alloc /= 0) then ; write(*, *) ' error deallocating memory' ; call stop_with_error() ;
@@ -213,7 +226,7 @@ subroutine agr_hyd_step(input_hyd, ipnt, ipnt_q, ipnt_vdf, ipnt_tau, output_hyd)
         else
 
             output_hyd%vdf = 0.0
-            call aggregate_extended(input_hyd%noseg, output_hyd%noseg, &
+            call aggregate_extended(input_hyd%num_cells, output_hyd%num_cells, &
                     1, 1, &
                     1, 1, &
                     1, 1, &

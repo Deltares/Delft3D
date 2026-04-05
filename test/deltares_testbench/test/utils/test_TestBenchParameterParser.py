@@ -17,14 +17,12 @@ class TestTestBenchParameterParser:
         sys.argv = temp
 
     @pytest.fixture()
-    def override_command_line_args_with_server_base_url(
-        self, override_command_line_args
-    ):
+    def override_command_line_args_with_server_base_url(self, override_command_line_args):
         override_command_line_args.extend(["--server-base-url", "https://abcdef.ij"])
-        yield sys.argv
+        return sys.argv
 
     @staticmethod
-    def test_parse_arguments_default_server_base_url(override_command_line_args):
+    def test_parse_arguments_default_server_base_url(override_command_line_args) -> None:
         # Arrange
         parser = TestBenchParameterParser()
 
@@ -37,7 +35,7 @@ class TestTestBenchParameterParser:
     @staticmethod
     def test_parse_arguments_override_server_base_url(
         override_command_line_args_with_server_base_url,
-    ):
+    ) -> None:
         # Arrange
         parser = TestBenchParameterParser()
 

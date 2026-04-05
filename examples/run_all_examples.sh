@@ -1,96 +1,20 @@
 #!/bin/bash
 
-export PATH=$PATH:/usr/lib64/mpich/bin/
+# Call all run scripts with a path to a Dimrset-bin folder
+dimrset_bin=$PWD/../install_all/lnx64/bin
+root=$PWD
 
-echo "Running testcase 01_standard ..."
-cd 01_standard
-./run.sh >screen.log 2>&1
-
-
-echo "Running testcase 01_standard parallel ..."
-./run_parallel.sh >screen_parallel.log 2>&1
-cd ..
-
-
-echo "Running testcase 02_domaindecomposition ..."
-cd 02_domaindecomposition
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 03_flow-wave ..."
-cd 03_flow-wave
-./run.sh >screen.log 2>&1
-
-
-echo "Running testcase 03_flow-wave parallel ..."
-./run_parallel.sh >screen_parallel.log 2>&1
-cd ..
-
-
-echo "Running testcase 04_fluidmud ..."
-cd 04_fluidmud
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 05_mormerge ..."
-cd 05_mormerge/merge
-./run.sh >screen.log 2>&1
-cd ../..
-
-
-echo "Running testcase 06_delwaq ..."
-cd 06_delwaq
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 07_wave ..."
-cd 07_wave
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 08_part-tracer ..."
-cd 08_part-tracer
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 09_part-oil ..."
-cd 09_part-oil
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 10_delwaq-part-tracer ..."
-cd 10_delwaq-part-tracer
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 11_standard_netcdf ..."
-cd 11_standard_netcdf
-./run.sh >screen.log 2>&1
-cd ..
-
-
-echo "Running testcase 12_dflowfm (test_data) e02_f14_c040_westerscheldt"
-cd 12_dflowfm/test_data/e02_f14_c040_westerscheldt
-./run.sh >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e100_f02_c02-FriesianInlet_schematic_FM"
-cd e100_f02_c02-FriesianInlet_schematic_FM
-./run.sh >screen.log 2>&1
-cd ..
-
-echo "Running testcase 12_dflowfm (test_data) e100_f02_c02-FriesianInlet_schematic_FM_wave"
-cd e100_f02_c02-FriesianInlet_schematic_FM_wave
-./run.sh >screen.log 2>&1
-cd ../../..
-
+echo "==================================="
+echo "=== SEQUENTIAL COMPUTATIONS"
+echo "==================================="
+find -maxdepth 6 -type d | sort -n | while read -r i
+do
+    cd $root/$i
+    if [ -e run.sh ]; then
+        echo -e "\n\n================================="
+        echo "$PWD/run.sh $dimrset_bin"
+        ./run.sh $dimrset_bin
+    fi
+done
 
 echo ...finished
-

@@ -1,191 +1,155 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
- module m_turbulence
- implicit none
+module m_turbulence
+   use precision, only: dp
+   implicit none
 
-                                    ! Coefficients of k-e model:
- double precision                  :: cmukep
- double precision                  :: sqcmukep
- double precision                  :: sqcmukepi
- double precision                  :: cewall
- double precision                  :: cde
- double precision                  :: c1e
- double precision                  :: c2e
- double precision                  :: sigdif
- double precision                  :: sigtke, sigtkei
- double precision                  :: sigeps, sigepsi
- double precision                  :: sigrho
- double precision                  :: sigsal
- double precision                  :: sigtem
- double precision                  :: sigtracer
+   ! Coefficients of turbulence model
+   real(kind=dp), parameter :: CMUKEP = 0.09_dp
+   real(kind=dp) :: c3e_stable
+   real(kind=dp) :: c3e_unstable
+   integer, parameter :: SIGDIF = 1
+   integer, parameter :: SIGTKE = 1
+   integer, parameter :: SIGTKEI = 1
+   real(kind=dp), parameter :: SIGEPS = 1.3_dp
+   real(kind=dp), parameter :: SIGEPSI = 1.0_dp / SIGEPS
+   real(kind=dp), parameter :: SIGRHO = 0.7_dp !< BOUYANCY
+   real(kind=dp), parameter :: C2E = 1.92_dp
+   real(kind=dp), parameter :: C2T = 1.0_dp - C2E
+   real(kind=dp), parameter :: C3T_STABLE = CMUKEP
+   real(kind=dp), parameter :: CDE = CMUKEP**0.75_dp
+   real(kind=dp) :: c1e
+   real(kind=dp) :: c1t
+   real(kind=dp) :: c3t_unstable
 
- !                                    c1e    = c2e-vonkar**2/(sigeps*sqrt(cmukep))
+   real(kind=dp) :: brunt_vaisala_coefficient
 
- double precision                  :: c1t
- double precision                  :: c2t
- double precision                  :: c3tsta
- double precision                  :: c3tuns
+   integer, parameter :: kmxx = 2000 !< max dim of nr of vertical layers
+   integer, parameter :: mg = 4 !< max dim of nr of sediment fractions
 
+   integer, parameter :: TURB_LAX_ALL = 1
+   integer, parameter :: TURB_LAX_CONNECTED = 2
 
- double precision                  :: coefn2
- double precision                  :: skmy
- double precision                  :: a1ph
- double precision                  :: a2
- double precision                  :: b1
- double precision                  :: b2
- double precision                  :: c1
- double precision                  :: e1
- double precision                  :: e2
- !double precision :: e2     = e1-1+vonkar**2*b1**0.6667/skmy
- double precision                  :: ghmin
- double precision                  :: ghmax
+   real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
+   real(kind=dp) :: buoflu(kmxx)
+   real(kind=dp) :: bruva(kmxx)
+   real(kind=dp) :: tkepro(0:kmxx) ! vertical production t
 
- !quasi-equilibrium coefficients:
- !double precision :: csb1   = a2*(1-6*a1ph/b1)
- !double precision :: csb2   = 3*a2*(6*a1ph+b2)
- !double precision :: csu1   = a1*(1-3*c1-6*a1ph/b1)
- !double precision :: csu2   = 3*a1ph*a2*((b2-3*a2)*(1-6*a1ph/b1)-3*c1*(6*a1ph+b2))
- !double precision :: csu3   = 3*a2*(6*a1ph+b2)
- !double precision :: csu4   = 9*a1*a2
+   real(kind=dp) :: ak(0:kmxx) ! local arrays, (0:
+   real(kind=dp) :: bk(0:kmxx)
+   real(kind=dp) :: ck(0:kmxx)
+   real(kind=dp) :: dk(0:kmxx)
+   real(kind=dp) :: ek(0:kmxx)
+   real(kind=dp) :: dz(0:kmxx)
+   real(kind=dp) :: dke(0:kmxx)
 
- integer, parameter                :: kmxx = 2000     ! max dim of nr of vertical layers
- integer, parameter                :: mg   = 4        ! max dim of nr of sediment fractions
+   real(kind=dp) :: ucxref(kmxx) !< for reference/plotting:
+   real(kind=dp) :: ucm(kmxx) !< for reference/plotting:
+   real(kind=dp) :: dijdijref(0:kmxx)
+   real(kind=dp) :: tkin1ref(0:kmxx)
+   real(kind=dp) :: teps1ref(0:kmxx)
+   real(kind=dp) :: vicwref(0:kmxx)
+   real(kind=dp) :: hcref(kmxx) !< mid-layer heigths
+   real(kind=dp) :: hwref(0:kmxx) !< layer interface height, 0=bed
 
- double precision                  :: dijdij (0:kmxx) ! dudz(k)**2+dvdz(k)**2 vertical shear squared
- double precision                  :: buoflu (  kmxx)
- double precision                  :: bruva  (  kmxx)
- double precision                  :: tkepro (0:kmxx)
+   real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1e-32_dp
+   real(kind=dp) :: tke_min
+   real(kind=dp) :: eps_min
 
- double precision                  :: ak     (0:kmxx)                       ! local arrays, (0:
- double precision                  :: bk     (0:kmxx)
- double precision                  :: ck     (0:kmxx)
- double precision                  :: dk     (0:kmxx)
- double precision                  :: ek     (0:kmxx)
- double precision                  :: dz     (0:kmxx)
- double precision                  :: dke    (0:kmxx)
+   real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
+   real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
 
- double precision                  :: ucxref   (  kmxx)                     ! and for reference/plotting:
- double precision                  :: ucm      (  kmxx)                     ! and for reference/plotting:
- double precision                  :: dijdijref(0:kmxx)
- double precision                  ::  tkin1ref(0:kmxx)
- double precision                  ::  teps1ref(0:kmxx)
- double precision                  ::   vicwref(0:kmxx)
- double precision                  ::     hcref(  kmxx)                     ! mid-layer heigths
- double precision                  ::     hwref(0:kmxx)                     ! layer interface height, 0=bed
+   real(kind=dp), allocatable, dimension(:) :: tureps0 ! eps old (1/s)  , at layer interface at u
+   real(kind=dp), allocatable, dimension(:) :: tureps1 ! eps new        , at layer interface at u
 
+   real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
+   real(kind=dp), allocatable, dimension(:), target :: vicwws !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:), target :: difwws !< [m2/s] vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: rich !< Richardson number at velocity-point
+   real(kind=dp), allocatable, dimension(:) :: richs !< Richardson number at pressure-point
 
- double precision                  :: epstke = 1d-32    ! D3D: - 7, dpm: -32
- double precision                  :: epseps = 1d-32    ! D3D: - 7, dpm: -32
- double precision                  :: epsd = 1d-32      ! D3D: - 7, dpm: -32
+   real(kind=dp), allocatable, dimension(:), target :: in_situ_density ! Pressure dependent water density at cell centres (kg/m3)
+   real(kind=dp), allocatable, dimension(:), target :: potential_density ! Potential water density at cell centres (kg/m3)
+   real(kind=dp), dimension(:), pointer :: rho ! Water density at cell centres (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: drhodz !< Vertical density gradient
+   real(kind=dp), allocatable, dimension(:) :: rhosww ! deviatoric density at vertical interfaces, w points (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: rhowat ! density at cell centres (kg/m3), only salt and temp
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev ! previous step baroclinic force, at u points
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_pressures ! baroclinic pressures (/ag), at pressure points
+   real(kind=dp), allocatable, dimension(:) :: integrated_baroclinic_pressures ! depth-integrated baroclinic pressures (/ag), at pressure points
 
- double precision, allocatable     :: turkin0  (:)      ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
- double precision, allocatable, target :: turkin1(:)    !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, dimension(:) :: rhou !< density at flow links (kg/m3)
 
- double precision, allocatable     :: tureps0  (:)      ! eps old (1/s)  , at layer interface at u
- double precision, allocatable     :: tureps1  (:)      ! eps new        , at layer interface at u
+   real(kind=dp) :: Schmidt_number_salinity = 0.7_dp !< Turbulent Schmidt number for salinity
+   real(kind=dp) :: Prandtl_number_temperature = 0.7_dp !< Turbulent Prandtl number for temperature
+   real(kind=dp) :: Schmidt_number_tracer = 1.0_dp !< Turbulent Schmidt number for tracers
 
- double precision, allocatable     :: vicwwu   (:)      ! vertical eddy viscosity (m2/s) at layer interface at u point
- double precision, allocatable, target :: vicwws   (:)  !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: sigsed !< prandtl schmidt per sediment fraction
+   real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
+   real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
- !real            , allocatable    :: tkepro   (:)      ! vertical production t
- !real            , allocatable    :: tkedis   (:)      ! vertical dissipation
- double precision, allocatable, target     :: rho      (:)      ! density at cell centres (kg/m3)
- double precision, allocatable     :: rho0     (:)      ! density at cell centres (kg/m3), previous step
- double precision, allocatable     :: rhosww   (:)      ! deviatoric density at vertical interfaces, w points (kg/m3)
- double precision, allocatable     :: rhowat   (:)      ! density at cell centres (kg/m3), only salt and temp
- double precision, allocatable     :: dpbdx0   (:)      ! previous step baroclinic pressure gradient, at u points
- double precision, allocatable     :: rvdn     (:)      ! help integral of (rho-rhomean)*deltaz at pressure points (kg/m2)
- double precision, allocatable     :: grn      (:)      ! help integral of vertical baroclinic pressure integral at pressure points  (kg/m)
+   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
 
- double precision, allocatable     :: rhou     (:)      ! density at flow links   (kg/m3)
+   integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
 
- double precision, allocatable     :: sigsed   (:)      ! prandtl schmidt per sediment fraction
- double precision, allocatable     :: sigdifi  (:)      ! inverse prandtl schmidt nrs
- double precision, allocatable     :: wsf      (:)      ! fall velocities of all numconst constituents
-
- double precision, allocatable     :: turkinepsws (:,:) ! k and eps,1,2     at layer interface at c , horizontal transport of k and eps
- double precision, allocatable     :: tqcu(:)           ! sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
- double precision, allocatable     :: eqcu(:)           ! sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
- double precision, allocatable     :: sqcu(:)           ! sum of q          at layer interface at cupw , horizontal transport of k and eps
-
-
- double precision, allocatable     :: tttu(:), ttqc(:), tttc(:) ! test12
-
- integer         , allocatable     :: ln0(:,:)          ! links in transport trimmed to minimum of ktop,ktop0 for z-layers
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_ON = 1.0_dp
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_OFF = 0.0_dp
 
 contains
-!> Sets ALL (scalar) variables in this module to their default values.
-subroutine default_turbulence()
-use m_physcoef
 
+   !> Sets (underived) variables in this module to their default values.
+   subroutine default_turbulence()
+      use m_physcoef, only: vonkar
+      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
+      c1t = (1.0_dp - c1e) * cmukep
+      c3t_unstable = (1.0_dp - c1e) * cmukep
+      c3e_stable = 0.0_dp
+      c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
 
-! Coefficients of k-e model:
-    sigdif    = 1d0
-    sigtke    = 1.0d0  ; sigtkei = 1d0/sigtke
-    sigeps    = 1.3d0  ; sigepsi = 1d0/sigeps
-    sigrho    = 0.7d0  ! bouyancy
-    sigsal    = Schmidt_number_salinity
-    sigtem    = Prandtl_number_temperature
-    sigtracer = Schmidt_number_tracer
+      tke_min = MINIMUM_VALUE_K_EPS_TAU
+      eps_min = MINIMUM_VALUE_K_EPS_TAU
+   end subroutine default_turbulence
 
-    cmukep    = 0.09d0
-    sqcmukep  = sqrt(cmukep)
-    sqcmukepi = 1.d0 / sqcmukep
+   !> Calculates derived coefficients for turbulence
+   subroutine calculate_derived_coefficients_turbulence()
+      use m_physcoef, only: rhomean, ag
 
-    cde       = cmukep**0.75d0
-    cewall    = cmukep**0.75d0/vonkar   ! 0.4769d0  !        0.09**0.75/0.41  ! /vonkar
-    c2e       = 1.92d0
-    c1e       = 1.44d0
-    c1e       = c2e-vonkar**2/(sigeps*sqcmukep)
+      brunt_vaisala_coefficient = -ag / (SIGRHO * rhomean)
 
-    c1t       = (1d0-c1e) * cmukep
-    c2t       = 1d0-c2e
-    c3tsta    = 1d0 * cmukep
-    c3tuns    = (1d0-c1e) * cmukep
+   end subroutine calculate_derived_coefficients_turbulence
 
-    coefn2    = - ag / (sigrho*rhomean)
-
-    skmy   = 1.96d0
-    a1ph   = 0.92d0
-    a2     = 0.74d0
-    b1     = 16.6d0
-    b2     = 10.1d0
-    c1     = 0.08d0
-    e1     = 1.80d0
-    e2     = 1.33d0
-!e2     = e1-1+vonkar**2*b1**0.6667/skmy = 1.358, not 1.33?
-    ghmin  =-0.280d0
-    ghmax  = 0.0233d0
-end subroutine default_turbulence
-
- end module m_turbulence
+end module m_turbulence

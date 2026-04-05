@@ -1,267 +1,323 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-  SUBROUTINE REFINEQUADS()
-  use m_netw
-  USE M_AFMETING
-  use gridoperations
-  implicit none
-  integer :: jaddrand
-  integer :: k, KMOD
-  integer :: k1
-  integer :: k12
-  integer :: k2
-  integer :: k23
-  integer :: k3
-  integer :: k34
-  integer :: k4
-  integer :: k41
-  integer :: ki
-  integer :: kk
-  integer :: km
-  integer :: l
-  integer :: l12
-  integer :: l12o
-  integer :: l23
-  integer :: l23o
-  integer :: l34
-  integer :: l34o
-  integer :: l41
-  integer :: l41o
-  integer :: lfa
-  integer :: ll
-  integer :: ll2
-  integer :: lnu
-  integer :: n
-  integer :: nf
-  integer :: numkorg
-  DOUBLE PRECISION :: XM, YM, ZM
-  INTEGER , ALLOCATABLE :: KNP(:)
-  INTEGER KKI(5), LLI(5)
+module m_refinequads
 
-  integer                            :: numk_old, jatolan ! for generating polygon
-  integer, allocatable, dimension(:) :: kc_old  ! for generating polygon
+   implicit none
 
+   private
 
-  LFA      = 2
-  JADDRAND = 1
+   public :: refinequads
 
-  CALL INCREASENETW(4*NUMK,6*NUML)
+contains
 
-  NUMKORG  = NUMK
-  numk_old = numk
+   subroutine REFINEQUADS()
+      use m_refinelink2, only: refinelink2
+      use m_mark_cells_crossed_by_poly, only: mark_cells_crossed_by_poly
+      use precision, only: dp
+      use m_confrm
+      use m_netw
+      use m_afmeting, only: k0
+      use gridoperations
+      use m_readyy
+      use m_delpol
+      use m_copynetboundstopol
+      use m_set_nod_adm
+      use m_new_link
 
-  CALL FINDCELLS(4); LC = 0
+      integer :: jaddrand
+      integer :: k, KMOD
+      integer :: k1
+      integer :: k12
+      integer :: k2
+      integer :: k23
+      integer :: k3
+      integer :: k34
+      integer :: k4
+      integer :: k41
+      integer :: ki
+      integer :: kk
+      integer :: km
+      integer :: l
+      integer :: l12
+      integer :: l12o
+      integer :: l23
+      integer :: l23o
+      integer :: l34
+      integer :: l34o
+      integer :: l41
+      integer :: l41o
+      integer :: lfa
+      integer :: ll
+      integer :: ll2
+      integer :: lnu
+      integer :: n
+      integer :: nf
+      integer :: numkorg
+      real(kind=dp) :: XM, YM
+      integer, allocatable :: KNP(:)
+      integer KKI(5)
 
-  CALL READYY('Refine quads',0d0)
+      integer :: numk_old, jatolan ! for generating polygon
+      integer, allocatable, dimension(:) :: kc_old ! for generating polygon
 
-  ALLOCATE (KNP(NUMP)); KNP = 0
-  DO N = 1,NUMP
-     IF ( netcell(N)%N == 4 ) THEN
-        K1     = netcell(N)%NOD(1)
-        K2     = netcell(N)%NOD(2)
-        K3     = netcell(N)%NOD(3)
-        K4     = netcell(N)%NOD(4)
-        KNP(N) = KC(K1)*KC(K2)*KC(K3)*KC(K4)
-     ENDIF
-  ENDDO
+      LFA = 2
+      JADDRAND = 1
 
-  KMOD = MAX(1,NUMK/100)
-  DO N = 1,NUMP
+      call INCREASENETW(4 * NUMK, 6 * NUML)
 
-     if (mod(n,KMOD) == 0)   CALL READYY('Refine quads', dble(n)/dble(nump))
+      NUMKORG = NUMK
+      numk_old = numk
 
+      call FINDCELLS(4)
+      LC = 0
 
-     IF ( KNP(N) == 1 ) THEN
+      call READYY('Refine quads', 0.0_dp)
 
-        K1  = netcell(N)%NOD(1)
-        K2  = netcell(N)%NOD(2)
-        K3  = netcell(N)%NOD(3)
-        K4  = netcell(N)%NOD(4)
+      allocate (KNP(NUMP))
+      KNP = 0
+      do N = 1, NUMP
+         if (netcell(N)%N == 4) then
+            K1 = netcell(N)%NOD(1)
+            K2 = netcell(N)%NOD(2)
+            K3 = netcell(N)%NOD(3)
+            K4 = netcell(N)%NOD(4)
+            KNP(N) = KC(K1) * KC(K2) * KC(K3) * KC(K4)
+         end if
+      end do
 
-        L12 = netcell(N)%LIN(1) ; L12O = L12
-        L23 = netcell(N)%LIN(2) ; L23O = L23
-        L34 = netcell(N)%LIN(3) ; L34O = L34
-        L41 = netcell(N)%LIN(4) ; L41O = L41
+      KMOD = max(1, NUMK / 100)
+      do N = 1, NUMP
 
-        K12 = 0
-        IF (KN(1,L12) .NE. 0 .AND. M13QUAD >= 0) THEN
-           CALL REFINELINK2(L12,K12) ; LC(L12O) = -K12 ; IF (LNN(L12O) == 2) KC(K12) = 3
-        ENDIF
+         if (mod(n, KMOD) == 0) then
+            call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
+         end if
 
-        K23 = 0
-        IF (KN(1,L23) .NE. 0 .AND. M13QUAD <= 0) THEN
-           CALL REFINELINK2(L23,K23) ; LC(L23O) = -K23 ; IF (LNN(L23O) == 2) KC(K23) = 3
-        ENDIF
+         if (KNP(N) == 1) then
 
-        K34 = 0
-        IF (KN(1,L34) .NE. 0 .AND. M13QUAD >= 0) THEN
-           CALL REFINELINK2(L34,K34) ; LC(L34O) = -K34 ; IF (LNN(L34O) == 2) KC(K34) = 3
-        ENDIF
+            K1 = netcell(N)%NOD(1)
+            K2 = netcell(N)%NOD(2)
+            K3 = netcell(N)%NOD(3)
+            K4 = netcell(N)%NOD(4)
 
-        K41 = 0
-        IF (KN(1,L41) .NE. 0 .AND. M13QUAD <= 0) THEN
-           CALL REFINELINK2(L41,K41) ; LC(L41O) = -K41 ; IF (LNN(L41O) == 2) KC(K41) = 3
-        ENDIF
+            L12 = netcell(N)%LIN(1)
+            L12O = L12
+            L23 = netcell(N)%LIN(2)
+            L23O = L23
+            L34 = netcell(N)%LIN(3)
+            L34O = L34
+            L41 = netcell(N)%LIN(4)
+            L41O = L41
 
-        IF (M13QUAD == 0) THEN
+            K12 = 0
+            if (KN(1, L12) /= 0 .and. M13QUAD >= 0) then
+               call REFINELINK2(L12, K12)
+               LC(L12O) = -K12
+               if (LNN(L12O) == 2) then
+                  KC(K12) = 3
+               end if
+            end if
 
-           XM = 0.25D0*(XK(K1) + XK(K2) + XK(K3) + XK(K4) )
-           YM = 0.25D0*(YK(K1) + YK(K2) + YK(K3) + YK(K4) )
+            K23 = 0
+            if (KN(1, L23) /= 0 .and. M13QUAD <= 0) then
+               call REFINELINK2(L23, K23)
+               LC(L23O) = -K23
+               if (LNN(L23O) == 2) then
+                  KC(K23) = 3
+               end if
+            end if
 
-           CALL DSETNEWPOINT(XM,YM,KM) ; KC(KM) = 2
+            K34 = 0
+            if (KN(1, L34) /= 0 .and. M13QUAD >= 0) then
+               call REFINELINK2(L34, K34)
+               LC(L34O) = -K34
+               if (LNN(L34O) == 2) then
+                  KC(K34) = 3
+               end if
+            end if
 
-        ENDIF
+            K41 = 0
+            if (KN(1, L41) /= 0 .and. M13QUAD <= 0) then
+               call REFINELINK2(L41, K41)
+               LC(L41O) = -K41
+               if (LNN(L41O) == 2) then
+                  KC(K41) = 3
+               end if
+            end if
 
-        IF (M13QUAD == 0 ) THEN
-           IF (K12 /= 0) THEN
-              CALL NEWLINK  (KM ,K12, lnu)
-           ELSE IF (LC(L12) < 0 ) THEN
-              CALL NEWLINK  (KM ,-LC(L12), lnu)
-           ENDIF
+            if (M13QUAD == 0) then
 
-           IF (K34 /= 0) THEN
-              CALL NEWLINK  (KM ,K34,lnu)
-           ELSE IF (LC(L34) < 0 ) THEN
-              CALL NEWLINK  (KM ,-LC(L34), lnu)
-           ENDIF
-        ELSE IF (M13QUAD > 0) THEN
+               XM = 0.25_dp * (XK(K1) + XK(K2) + XK(K3) + XK(K4))
+               YM = 0.25_dp * (YK(K1) + YK(K2) + YK(K3) + YK(K4))
 
-           IF (K12 == 0) K12 = -LC(L12)
-           IF (K34 == 0) K34 = -LC(L34)
-           CALL NEWLINK  (K12 ,K34, lnu)
-        ENDIF
+               call DSETNEWPOINT(XM, YM, KM)
+               KC(KM) = 2
 
-        IF (M13QUAD == 0) THEN
-           IF (K23 /= 0) THEN
-              CALL NEWLINK  (KM ,K23,lnu)
-           ELSE IF (LC(L23) < 0 ) THEN
-              CALL NEWLINK  (KM ,-LC(L23), lnu)
-           ENDIF
+            end if
 
+            if (M13QUAD == 0) then
+               if (K12 /= 0) then
+                  call NEWLINK(KM, K12, lnu)
+               else if (LC(L12) < 0) then
+                  call NEWLINK(KM, -LC(L12), lnu)
+               end if
 
-           IF (K41 /= 0) THEN
-              CALL NEWLINK  (KM ,K41,lnu)
-           ELSE IF (LC(L41) < 0 ) THEN
-              CALL NEWLINK  (KM ,-LC(L41), lnu)
-           ENDIF
+               if (K34 /= 0) then
+                  call NEWLINK(KM, K34, lnu)
+               else if (LC(L34) < 0) then
+                  call NEWLINK(KM, -LC(L34), lnu)
+               end if
+            else if (M13QUAD > 0) then
 
-        ELSE IF (M13QUAD < 0) THEN
+               if (K12 == 0) then
+                  K12 = -LC(L12)
+               end if
+               if (K34 == 0) then
+                  K34 = -LC(L34)
+               end if
+               call NEWLINK(K12, K34, lnu)
+            end if
 
-           IF (K23 == 0) K23 = -LC(L23)
-           IF (K41 == 0) K41 = -LC(L41)
-           CALL NEWLINK  (K23 ,K41, lnu)
+            if (M13QUAD == 0) then
+               if (K23 /= 0) then
+                  call NEWLINK(KM, K23, lnu)
+               else if (LC(L23) < 0) then
+                  call NEWLINK(KM, -LC(L23), lnu)
+               end if
 
-        ENDIF
+               if (K41 /= 0) then
+                  call NEWLINK(KM, K41, lnu)
+               else if (LC(L41) < 0) then
+                  call NEWLINK(KM, -LC(L41), lnu)
+               end if
 
-     ENDIF
+            else if (M13QUAD < 0) then
 
+               if (K23 == 0) then
+                  K23 = -LC(L23)
+               end if
+               if (K41 == 0) then
+                  K41 = -LC(L41)
+               end if
+               call NEWLINK(K23, K41, lnu)
 
-  ENDDO
+            end if
 
-  KMOD = MAX(1,NUMP/100)
-  DO N = 1, NUMP
-     if (mod(n,KMOD) == 0)   CALL READYY('Refine quads', dble(n)/dble(nump))
-     IF (KNP(N) == 0) THEN
-        NF = netcell(N)%N
-        IF (NF == 4) THEN
+         end if
 
-           KI  = 0
-           DO KK = 1,NF
-              K  = netcell(N)%NOD (KK)
-              L  = netcell(N)%LIN(KK)
-              IF (LC(L) < 0) THEN
-                 KI = KI + 1; KKI(KI) = -LC(L); LL = KK
-              ENDIF
-           ENDDO
+      end do
 
-           IF (KI == 1) THEN
-              K0  = KKI(1)
-              LL2 = LL + 2
-              IF (LL2 > 4) LL2 = LL2-4
-              LL2 = netcell(N)%LIN(LL2)
-              K1  = KN(1,LL2) ; K2 = KN(2,LL2)
+      KMOD = max(1, NUMP / 100)
+      do N = 1, NUMP
+         if (mod(n, KMOD) == 0) then
+            call READYY('Refine quads', real(n, kind=dp) / real(nump, kind=dp))
+         end if
+         if (KNP(N) == 0) then
+            NF = netcell(N)%N
+            if (NF == 4) then
 
-              IF (K1 .NE. 0 .AND. K2 .NE. 0) THEN
-                 CALL NEWLINK(K0,K1,LNU) ! ; KC(K1) = 6
-                 CALL NEWLINK(K0,K2,LNU) ! ; KC(K2) = 6
-              ENDIF
+               KI = 0
+               do KK = 1, NF
+                  K = netcell(N)%NOD(KK)
+                  L = netcell(N)%LIN(KK)
+                  if (LC(L) < 0) then
+                     KI = KI + 1
+                     KKI(KI) = -LC(L)
+                     LL = KK
+                  end if
+               end do
 
-           ELSE IF (KI == 2) THEN
-              CALL NEWLINK(KKI(1),KKI(2),LNU)
-              DO KK = 1, NF
-                 K  = netcell(N)%NOD (KK)
-                 IF (KC(K) == 0) THEN
-                    CALL NEWLINK(KKI(1),K,LNU) !; KC(KKI(1)) = 3
-                    CALL NEWLINK(KKI(2),K,LNU) !; KC(KKI(2)) = 3
-                    EXIT
-                 ENDIF
-              ENDDO
+               if (KI == 1) then
+                  K0 = KKI(1)
+                  LL2 = LL + 2
+                  if (LL2 > 4) then
+                     LL2 = LL2 - 4
+                  end if
+                  LL2 = netcell(N)%LIN(LL2)
+                  K1 = KN(1, LL2)
+                  K2 = KN(2, LL2)
 
-           ENDIF
+                  if (K1 /= 0 .and. K2 /= 0) then
+                     call NEWLINK(K0, K1, LNU) ! ; KC(K1) = 6
+                     call NEWLINK(K0, K2, LNU) ! ; KC(K2) = 6
+                  end if
 
-        ENDIF
+               else if (KI == 2) then
+                  call NEWLINK(KKI(1), KKI(2), LNU)
+                  do KK = 1, NF
+                     K = netcell(N)%NOD(KK)
+                     if (KC(K) == 0) then
+                        call NEWLINK(KKI(1), K, LNU) !; KC(KKI(1)) = 3
+                        call NEWLINK(KKI(2), K, LNU) !; KC(KKI(2)) = 3
+                        exit
+                     end if
+                  end do
 
-     ENDIF
-  ENDDO
+               end if
 
+            end if
 
-  CALL READYY('Refine quads',-1d0)
+         end if
+      end do
 
-  CALL SETNODADM(0)
+      call READYY('Refine quads', -1.0_dp)
 
-  DEALLOCATE(KNP)
+      call SETNODADM(0)
 
-   jatolan = 1
-   call confrm('Copy refinement border to polygon?', jatolan)
-   if ( jatolan.eq.1 ) then
+      deallocate (KNP)
+
+      jatolan = 1
+      call confrm('Copy refinement border to polygon?', jatolan)
+      if (jatolan == 1) then
 !     store original node mask
-      allocate(kc_old(numk))
-      kc_old = min(kc,1)  ! see admin_mask
+         allocate (kc_old(numk))
+         kc_old = min(kc, 1) ! see admin_mask
 
 !     deative polygon
-      call savepol()
-      call delpol()
-      call findcells(100)
+         call savepol()
+         call delpol()
+         call findcells(100)
 !     reactivate polygon
-      call restorepol()
+         call restorepol()
 !     mark cells crossed by polygon, by setting lnn of their links appropriately
-      kc_old(numk_old+1:numk) = 1
-      call mark_cells_crossed_by_poly(numk,kc_old)
-      call delpol()
-      call copynetboundstopol(0, 0, 0, 1)
+         kc_old(numk_old + 1:numk) = 1
+         call mark_cells_crossed_by_poly(numk, kc_old)
+         call delpol()
+         call copynetboundstopol(0, 0, 0, 1)
 
-      deallocate(kc_old)
-   end if
+         deallocate (kc_old)
+      end if
 
-  RETURN
-  END SUBROUTINE REFINEQUADS
+      return
+   end subroutine REFINEQUADS
+
+end module m_refinequads

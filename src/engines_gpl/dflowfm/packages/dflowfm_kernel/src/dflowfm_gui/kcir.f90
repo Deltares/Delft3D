@@ -1,53 +1,65 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
-      SUBROUTINE KCIR(X,Y,Z)
-      use unstruc_colors
-      USE M_MISSING
-      use m_wearelt
-      implicit none
+module m_kcir
+
+   implicit none
+
+contains
+
+   subroutine KCIR(X, Y, Z)
+      use precision, only: dp
+      use m_isocol, only: isocol
+      use m_cir, only: cir
+      use unstruc_colors, only: rcir, ncolhl
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_missing, only: dmiss
+
       integer :: ncol
-      double precision :: x
-      double precision :: y
-      double precision :: z
+      real(kind=dp) :: x
+      real(kind=dp) :: y
+      real(kind=dp) :: z
 
-      IF (Z .NE. dmiss) THEN
-         CALL ISOCOL(Z,NCOL)
-         CALL MOVABS(X,Y)
-         CALL CIR(RCIR)
-      ELSE
-         CALL SETCOL(ncolhl)
-         CALL MOVABS(X,Y)
-         CALL CIR(RCIR)
-      ENDIF
-      RETURN
-      END
+      if (Z /= dmiss) then
+         call ISOCOL(Z, NCOL)
+         call MOVABS(X, Y)
+         call CIR(RCIR)
+      else
+         call SETCOL(ncolhl)
+         call MOVABS(X, Y)
+         call CIR(RCIR)
+      end if
+      return
+   end
+
+end module m_kcir

@@ -38,7 +38,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -47,13 +46,7 @@
                 <argument>-c</argument>
             </arguments>
         </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
-        </program>
-        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true">
+        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
             <location ref="reference_engines" type="reference">
                 <from>lnx64</from>
             </location>
@@ -78,6 +71,10 @@
          <path>bin/run_dfm_volume_tool.sh</path>
          <shell ref="command_prompt"/>
      </program>
+        <program name="python" addSearchPaths="true">
+            <shell ref="command_prompt"/>
+            <path>python3</path>
+        </program>
  </programs>
 
     <!-- ======================================================================== -->
@@ -96,7 +93,28 @@
                 <from>.</from>
             </location>
             <location ref="reference_results" type="reference">
-                <from>lnx64</from>
+                <from>win64</from>
+            </location>
+            <maxRunTime>600.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <testCase name="dflowfm_bmi_default">
+            <programs>
+                <program ref="python">
+                    <arguments>
+                        <argument>case.py</argument>
+                        <argument>&gt;bmi_screen.log 2&gt;&amp;1</argument>
+                    </arguments>
+                    <environments> 
+                        <environment name="D3D_HOME_BIN" type="path">[programpath(dimr)]</environment>
+                    </environments> 
+                </program>
+            </programs>
+            <location ref="cases" type="input">
+                <!-- if "to" is not specified, "from" is used as target -->
+                <from>.</from>
+            </location>
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
             </location>
             <maxRunTime>600.0</maxRunTime> <!-- seconds -->
         </testCase>

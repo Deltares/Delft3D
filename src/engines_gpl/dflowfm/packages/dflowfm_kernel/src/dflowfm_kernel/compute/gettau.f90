@@ -1,42 +1,132 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
+module m_get_tau
+   use m_swart, only: swart
 
-subroutine gettau(n,taucurc,czc,jawaveswartdelwaq_par)
-   !
-   ! Parameters
-   integer           :: n
-   double precision  :: taucurc,czc,ustw2
-   integer           :: jawaveswartdelwaq_par
-   !
-   ! Body
-   call gettau2(n,taucurc,czc,ustw2,jawaveswartdelwaq_par)
-end subroutine gettau
+   implicit none
+
+   private
+   public get_tau
+
+   interface get_tau
+      module procedure gettau
+      module procedure gettau2
+   end interface get_tau
+
+contains
+   subroutine gettau(n, taucurc, czc, jawaveswartdelwaq_par)
+      use precision, only: dp
+      !
+      ! Parameters
+      integer :: n
+      real(kind=dp) :: taucurc, czc, ustw2
+      integer :: jawaveswartdelwaq_par
+      !
+      ! Body
+      call gettau2(n, taucurc, czc, ustw2, jawaveswartdelwaq_par)
+   end subroutine gettau
+
+   subroutine gettau2(n, taucurc, czc, ustw2, jawaveswartdelwaq_par)
+      use precision, only: dp
+      use m_flowgeom, only: nd, dx, wave_waq_shear_stress_hyd, wave_waq_shear_stress_linear_sum, wave_waq_shear_stress_max_shear_stress
+      use m_flow, only: frcu, hu, u1, v, ifrcutp, ag, au, ustb, taubxu, z0ucur, epsz0, kmx, ucx, ucy, rhomean
+      use m_waves, only: twav, uorb, ftauw
+      use m_get_chezy, only: get_chezy
+      !
+      ! Parameters
+      integer, intent(in) :: n !< Flow node number
+      real(kind=dp), intent(out) :: taucurc !< Bed shear stress from current or current plus wave
+      real(kind=dp), intent(out) :: czc !< Chezy at flow node (taucurrent)
+      real(kind=dp), intent(out) :: ustw2 !< Ustarwave Swart (if Jawaveswartdelwaq == 1)
+      integer :: jawaveswartdelwaq_par !< Overwrite the global jawaveswartdelwaq
+      !
+      ! Local variables
+      integer :: LL, nn !< Local link counters
+      real(kind=dp) :: cf, cfn, cz, frcn, ar, wa, ust, ust2, fw, z00 !< Local intermediate variables
+      !
+      ! Body
+      ustw2 = 0.0_dp
+      czc = 0.0_dp
+      cfn = 0.0_dp
+      wa = 0.0_dp
+      ust = 0.0_dp
+      z00 = 0.0_dp
+
+      do nn = 1, nd(n)%lnx
+         LL = abs(nd(n)%ln(nn))
+         frcn = frcu(LL)
+         if (frcn > 0.0_dp .and. hu(LL) > 0.0_dp) then
+            cz = get_chezy(hu(LL), frcn, u1(LL), v(LL), ifrcutp(LL))
+            cf = ag / (cz * cz)
+            ar = au(LL) * dx(LL)
+            wa = wa + ar ! area  weigthed
+            cfn = cfn + cf * ar
+            if (jawaveswartdelwaq_par <= 1) then
+               ust = ust + ustb(LL) * ar ! ustb only exists for 3D, filled with 0 for kmx==0
+            else
+               ust = ust + taubxu(LL) * ar
+            end if
+            !z00 = z00 + ar*hu(LL)*exp(-1d0 - vonkar*cz/sag)   ! z0ucur, to avoid double counting
+            z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
+         end if
+      end do
+      if (wa > 0.0_dp) then
+         cfn = cfn / wa
+         ust = ust / wa
+         z00 = z00 / wa
+      end if
+      z00 = max(z00, epsz0)
+      !
+      if (cfn > 0) then
+         czc = sqrt(ag / cfn)
+      end if
+      !
+      ust2 = 0.0_dp
+      if (kmx == 0) then
+         ust2 = cfn * (ucx(n) * ucx(n) + ucy(n) * ucy(n))
+      else
+         ust2 = ust * ust
+      end if
+      !
+      if (jawaveswartdelwaq_par == WAVE_WAQ_SHEAR_STRESS_HYD) then
+         taucurc = rhomean * ust2
+      else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_LINEAR_SUM) then
+         if (twav(n) > 1.0e-2_dp) then
+            call Swart(twav(n), uorb(n), z00, fw, ustw2)
+            ust2 = ust2 + ftauw * ustw2
+         end if
+         taucurc = rhomean * ust2
+      else if (jawaveSwartDelwaq_par == WAVE_WAQ_SHEAR_STRESS_MAX_SHEAR_STRESS) then
+         taucurc = ust ! area averaged taubxu
+      end if
+   end subroutine gettau2
+end module m_get_tau

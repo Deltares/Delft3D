@@ -1,0 +1,198 @@
+#
+# Revision 1.1  2003/02/24  10:05:00  Staakman (MX.Systems)
+# ARS7925: error 1028 adjusted.
+# 
+# This is a list of error codes and error messages used by the the
+# Sobek Simulation Modules
+#
+# The error messages are listed per simulation module. Each entry
+# consists of a combined module code and error code, a mnemonic and
+# a message text
+#
+# The combined error code is a five digit code - the first two digits
+# indentify the simulation module, the next three digits identify the
+# error code in this module
+#
+#   module code module name
+#
+# 00  Main module
+# 01  Flow module
+# 02  Salt module
+# 03  Sediment Transport module
+# 04  Morphology module
+# 05  Water Quality interface module
+# 06  Graded Sediment Module 
+# 07  Cross Sectional Table module
+# 08  Kalman filter (no messages)
+# 09  Tidal analyses
+#
+# The message text contains formal parameters - each formal paramater
+# is contained between two @ symbols. The name of the formal parameter
+# is not relevant. It will be substituded by the actual parameter
+#
+# Codes Main Module (start with '00')
+#
+00001  einqfg    Inquire first group failure on input file @nefis error@
+00002  einqng    Inquire next group failure on input file @nefis error@
+00003  eclsdf    Unable to close input definition file @nefis error@
+00004  eclsdt    Unable to close input data file @nefis error@
+00005  einqgr    Inquire group failure on input file @cel name@ @nefis error@
+00006  einqcl    Inquire cel failure on input file @cel name@ @nefis error@
+00007  einqel    Inquire element failure on input file @element name@ @nefis error@
+00008  egetel    Get element failure on input file @element name@ @nefis error@
+00009  eopndf    Unable to open definition file @definition file name@ @nefis error@
+00010  eopndt    Unable to open data file @data file name@ @nefis error@
+00011  ewrrel    Unable to write release number to file @nefis error@
+00012  eelmtp    Unknown element type @elmtyp@
+00013  efroce    Maximum Froude number in cell =@Froude number@
+00014  efrotl    (Time step @number@ Iter. step @number@ Branch @branch@ X=@coordinate@)
+00015  efrogr    Maximum Froude number in grid point =@Froude number@
+00016  eflncc    For zero discharges no stop criterium has been specified
+00017  emrbis    Too many iterations needed to calculate tidal averaged celerity
+00020  evrdec    Variable already declared in pool @element name@
+00021  eoutds    No more data space in pool @element name@
+00022  eoutns    No more space for variable name in pool @element name@
+00023  errovf    Too many messages
+00030  eflncv    Iteration in flow calculation did not converge
+00031  emrncv    Morphological calculation is not converging
+00032  emtsfp    Morphological time step became less than one flow period
+00033  erdmst    @number@ reductions of morphological time step
+#
+# Codes Flow Module (start with '01')
+#
+01001  eflhse    Water level < bottom 2D morphology branch branch @branch@
+01002  eflstr    Unexpected structure type in lateral discharge structure @structure@
+01003  eflmat    Nodal administration matrix singular
+01004  ewqcre    Cannot create WQ-Interface file @nefis error@
+01005  ewqapp    Cannot append to WQ-Interface file @Nefis error@
+01006  ewqtim    Cannot write time information to WQ-Interface file @nefis error@
+01007  eflmap    Cannot write map information of flow module @nefis error@
+01008  eflhis    Cannot write history information of flow module @nefis error@
+01009  eflboo    Cannot start writing of results of flow module @nefis error@
+01010  efleoo    No proper finish of writing of results of flow module @nefis error@
+01011  eflwrd    Cannot write restart information of flow module @nefis error@
+01012  eflrrd    Cannot read restart information of flow module @nefis error@
+01013  eflbor    Cannot start writing of restart information of flow module @nefis error@
+01014  eflrtt    Could not find restart time step
+01015  eflhci    Water level < bottom circular branch
+01016  eflmes    Messages at time step @yyyymmdd hhmmsshh@
+01017  eflexr    Head loss at branch @branch@ X=@coordinate@ undefined for zero discharge
+01018  eflcr0    Discharge will not be zero in structure @structure@ when sill becomes dry
+01019  efllim    @underflow@ in data base of structure @structure@
+01025  eflhbo    Water level < bottom  at @branch@ X=@Coordinate@ (@water level@ @bottom@)
+01026  eflngo    Negative gate opening height in structure @structure@
+01027  eflncw    Negative crest width in structure @structure@
+01028  eflcpt    More than one controller active at @structure@; see UserManual, Sobek-model window, Controllers
+01029  eflnib    Coordinate of head loss not in branch @branch@
+#1030  eflfro    -  unused -
+01031  eflhfn    High Froude numbers (See froude file)
+01032  efltwc    @number@ timesteps without convergence (See residu file)
+01033  eflmii    Minumum number of iterations @number@
+01034  eflmxi    Maximum number of iterations @number@
+01035  eflmni    Mean number of iterations @number@
+01036  eflcrl    Roughness or hydraulic radius out of limit at branch @branch@ X= @coordinate@
+01037  eflqlt    Structure @structure@ (used for retention basin) must be in a grid cell
+01038  eflgrn    Grain size d90 too small at branch @branch@ X=@coordinate@
+01039  efllag    Size of discharge buffer (time lag hydr. controller) changed after restart
+01040  eflgsa    Flow area general structure @structure@ (@area-str@) greater than flow area branch (@area-br@)
+01041  eflcha    An attempt was made to change a controllable parameter of structure @structure@ after restart 
+01042  eflrou    Chezy value in @section@ limited (lowest value was @Chezy value@)
+01043  eflrof    Chezy value in @section@ limited because of low water depth
+01044  eflgrh    Array for groundwater history data out of bounds
+#
+# Codes Salt Module (start with '02')
+#
+02001  esacon    Salt concentration at mouth must be positive @branch@
+02002  esaffv    Flood volume or maximum flood velocity not positive (@branch@)
+02003  esafil    After a maximum number of filter steps there are still negative salt concentrations
+02004  esaden    Cannot calculate density due to negative salt concentrations
+02005  esamat    Matrix is singular
+02006  esames    Messages at time step @yyyymmdd hhmmsshh@
+02007  esamap    Cannot write map information of salt module @nefis error@
+02008  esahis    Cannot write history information of salt module @nefis error@
+02009  esaboo    Cannot start writing of results of salt module @nefis error@
+02010  esaeoo    No proper finish of writing of results of salt module @nefis error@
+02011  esawrd    Cannot write restart information of salt module @nefis error@
+02012  esarrd    Cannot read restart information of salt module @nefis error@
+02013  esabor    Cannot start writing of restart information of salt module @nefis error@
+02014  esartt    Could not find restart time step
+02015  esabrm    Cannot determine dispersion coefficient. No mouth is related to branch @branch@
+#
+# Codes Sediment Module (start with '03')
+#
+03001  esefro    Froude number too large (@Froude@) in branch @branch@ at X=@coordinate@
+03002  eseqdr    Q in a sedredge branch must be either positive or negative @branch@
+03003  esemes    Messages at time step @yyyymmdd hhmmsshh@
+03004  eseboo    Cannot start writing results of sediment module @nefis error@
+03005  esemap    Cannot write map information of sediment module @nefis error@
+03006  esehis    Cannot write time information of sediment module @nefis error@
+03007  eseeoo    No proper finish of writing results of sediment module @nefis error@
+03008  esegrn    Grain sizes too small in branch @branch@ at X=@coordinate@
+03009  esefrw    Froude number > 0.8 in branch @branch@ starting at X=@coordinate@
+#
+# Codes Morphology Module (start with '04')
+#
+04001  emobou    Inflowing boundary does not have boundary condition (@branch@)
+04002  emolev    Levels not in increasing order after adapting cross sections at @branch@ @Coordinate@
+04003  emohbo    Water level < bottom  at @branch@ @Coordinate@ (@water level@ @bottom@)
+04004  emocrl    Cross section level @Level number@ = @level heigth@ m
+#4005  ......         -not used-
+04006  emomes    Messages at time step @yyyymmdd hhmmsshhh@
+04007  emomap    Cannot write map information of morphology module @nefis error@
+04008  emohis    Cannot write history information of morphology module @nefis error@
+04009  emoboo    Cannot start writing of results of morhology module @nefis error@
+04010  emoeoo    No proper finish of writing results of morphology module @nefis error@
+04011  emowrd    Cannot write restart information of morphology module @nefis error@
+04012  emorrd    Cannot read restart information of morphology module @nefis error@
+04013  emobor    Can't start writing restart information morphology module @nefis error@
+04014  emortt    Could not find restart time step of morhology module
+04015  emofor    Calculation of sediment integral at boundary failed
+04016  emcour    Maximum Courant number at @branch@ X=@Coordinate@
+04017  embeco    Begin coordinate not found @coordinate@
+04018  emenco    End coordinate not found @coordinate@
+#
+# Codes Water Quality Module (start with '05')
+#
+05001  ewqodf    Unable to open definition file @nefis error@
+05002  ewqodt    Unable to open data file @nefis error@
+05003  ewqelm    Unable to read element @element name@ @nefis error@
+05004  ewqseg    Segment error in grid point @number@
+05005  ewqopn    Cannot open Delwaq input file
+05006  ewqmod    Cannot modify Delwaq input file
+#
+# Codes Graded Sediment Module (start with '06')
+#
+06001  egfixs1   Fixed layer about to shift out of multi under layer space,  
+06002  egfixs2   sedimentation is @dz0e@ m in branch @branch@ at X=@coordinate@
+06003  egsubtp   Top level of multi under layer below under layer space at initialization in branch @branch@ at X=@coordinate@
+06004  egfixtp   Fixed layer may not be specified at top of multi under layer in branch @branch@ at X=@coordinate@
+06005  egsubbt   Bottow of multi under layer too high at initialization in some grid points
+06006  egsubtm   Too many layers required in under layer at initialization in branch @branch@ at X=@coordinate@
+06007  egfreq    Sum of supplied frequencies not equal 1 in all grid points
+06008  egunla    Multi under layer level outside under layer space in some grid points
+06009  egnorm1   Transport layer is empty in branch @branch@ at X=@coordinate@
+06010  egnorm2   Exchange layer is empty in branch @branch@ at X=@coordinate@
+06011  egrest    Graded sediment run restarted with flow data. No morphology restart info is available.   
+06012  eginit    Initialization error
+06013  egsedw    Sediment width not specified in branch @branch@ at X=@coordinate@
+06014  egoutm    Too many graded sediment output functions     
+06015  egsrtt    Could not find restart time step of graded sediment module     
+06016  egswrd    Cannot write restart information of graded sediment module @nefis error@
+06017  egsrrd    Cannot read restart information of graded sediment module @nefis error@
+06018  egsbor    Can't start writing restart information graded sediment module @nefis error@
+#
+#
+# Codes Cross Sectional Table Module (start with '07')
+#
+07001  ecsslt    Unable to create preissmann slot in @branch@
+07002  ecsnik    Nikuradse-value is too high due to slot in @branch@
+#
+# Codes Kalman Filter ((start with '08')
+# 
+#-------
+#
+# Codes Tidal Analyses ((start with '09')
+#
+09001  edeall    Cannot decrease amount of memory (array @name@)
+09002  ealloc    Cannot increase @number@ words of memory (array @name@)
+09003  egales    Too less time steps to make tidal analyses

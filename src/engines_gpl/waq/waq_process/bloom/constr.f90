@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2024.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -44,7 +44,6 @@ contains
         real(kind = dp) :: s0
         real(kind = dp) :: surf
         real(kind = dp) :: x
-        real(kind = dp) :: dlog
         real(kind = dp) :: fx
         real(kind = dp) :: derx
         real(kind = dp) :: phi
@@ -70,7 +69,7 @@ contains
         if (surf <= s0) return
 
         !  Find interval containing all roots
-        x = -dlog(surf)
+        x = -log(surf)
         call ebcalc(x, fx, derx, numgr)
         phi = (fun(nz, numgr) - fx) / emin
         y = x + phi

@@ -38,7 +38,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -46,12 +45,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <location ref="reference_engines" type="reference">
@@ -73,6 +66,49 @@
                 <environment name="PAGER" type="raw">more</environment>
             </environments>
         </program>
+
+        <program name="dimr_plain" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            </environments>
+            <arguments>
+                <argument>-m dimr_config.xml</argument>
+            </arguments>
+        </program>
+        <program name="dimr_partitioned" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="PROC_DEF_DIR" type="path">[programpath(dimr)]/../share/delft3d</environment>
+            </environments>
+        </program>
+
+        <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
+            <location ref="reference_engines" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.sh</path>
+            <environments>
+                <environment name="LIBEXT" type="string">.so</environment>
+            </environments>
+        </program>
     </programs>
     <!--
     default testCases
@@ -83,7 +119,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -105,13 +140,11 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
               <argument>-m dimr_restart.xml</argument>
-              <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
           </arguments>
       </program>
     </programs>
@@ -133,7 +166,6 @@
         <program ref="dimr">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
     </programs>
@@ -155,13 +187,11 @@
         <program ref="dimr" seq="1">
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program ref="dimr" seq="2">
           <arguments>
               <argument>-m dimr_restart.xml</argument>
-              <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
           </arguments>
       </program>
     </programs>
@@ -182,5 +212,5 @@
   <!--
   testCases
   -->
-  <xi:include href="../include/dflowfm_processes.xml"/>
+  <xi:include href="../include/dimr_dflowfm_processes.xml"/>
 </deltaresTestbench_v3>

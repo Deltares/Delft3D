@@ -1,149 +1,169 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> compose right-hand side
-subroutine make_rhs(NUMCONST, thetavert, Ndkx, Lnkx, kmx, vol1, kbot, ktop, Lbot, Ltop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
-   use m_flowgeom, only: Ndxi, Ndx, Lnx, Ln, ba  ! static mesh information
-   use m_flowtimes, only: dts
-   use m_flowparameters, only: epshu, testdryflood
-   use timers
+module m_make_rhs
 
    implicit none
 
-   integer,                                intent(in)    :: NUMCONST     !< number of transported quantities
-   double precision, dimension(NUMCONST),  intent(in)    :: thetavert   !< vertical advection explicit (0) or implicit (1)
-   integer,                                intent(in)    :: Ndkx     !< total number of flownodes (dynamically changing)
-   integer,                                intent(in)    :: Lnkx     !< total number of flowlinks (dynamically changing)
-   integer,                                intent(in)    :: kmx      !< maximum number of layers
-!   double precision, dimension(Ndkx),      intent(in)    :: sq       !< flux balance (inward positive)
-   double precision, dimension(Ndkx),      intent(in)    :: vol1     !< volumes
-   integer,          dimension(Ndx),       intent(in)    :: kbot     !< flow-node based layer administration
-   integer,          dimension(Ndx),       intent(in)    :: ktop     !< flow-node based layer administration
-   integer,          dimension(Lnx),       intent(in)    :: Lbot     !< flow-link based layer administration
-   integer,          dimension(Lnx),       intent(in)    :: Ltop     !< flow-link based layer administration
-   double precision, dimension(NUMCONST,Ndkx), intent(inout) :: sumhorflux  !< sum of horizontal fluxes
-   double precision, dimension(NUMCONST,Ndkx), intent(in)    :: fluxver  !< vertical fluxes
-   double precision, dimension(NUMCONST,Ndkx), intent(in)    :: source   !< sources
-   double precision, dimension(NUMCONST,Ndkx), intent(inout) :: sed      !< transported quantities
-   integer,                                    intent(in)    :: nsubsteps  !< number of substeps
-   integer,          dimension(Ndx),           intent(in)    :: jaupdate !< update cell (1) or not (0)
-   integer,          dimension(Ndx),           intent(in)    :: ndeltasteps !< number of substeps between updates
-   double precision, dimension(NUMCONST,Ndkx), intent(out)   :: rhs      ! right-hand side, dim(NUMCONST,Ndkx)
+   private
 
-   double precision                                      :: dvoli
-   double precision                                      :: dt_loc
+   public :: make_rhs
 
-   integer                                               :: LL, L, Lb, Lt
-   integer                                               :: kk, k, kb, kt
-   integer                                               :: k1, k2, j
+contains
 
-   double precision, parameter                           :: dtol=1d-8
+   subroutine make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
+      use precision, only: dp
+      use m_flowgeom, only: Ndxi, ba, ndx
+      use timers, only: timon, timstrt, timstop ! static mesh information
+      use m_flowtimes, only: dts
+      use m_flowparameters, only: epshu, testdryflood
 
-   integer(4) ithndl /0/
-   if (timon) call timstrt ( "make_rhs", ithndl )
+      implicit none
 
-   dt_loc = dts
-   rhs = 0d0
+      integer, intent(in) :: NUMCONST !< number of transported quantities
+      real(kind=dp), dimension(NUMCONST), intent(in) :: thetavert !< vertical advection explicit (0) or implicit (1)
+      integer, intent(in) :: Ndkx !< total number of flownodes (dynamically changing)
+      integer, intent(in) :: kmx !< maximum number of layers
+!   real(kind=dp), dimension(Ndkx),      intent(in)    :: sq       !< flux balance (inward positive)
+      real(kind=dp), dimension(Ndkx), intent(in) :: vol1 !< volumes
+      integer, dimension(Ndx), intent(in) :: kbot !< flow-node based layer administration
+      integer, dimension(Ndx), intent(in) :: ktop !< flow-node based layer administration
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux !< sum of horizontal fluxes
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
+      integer, intent(in) :: nsubsteps !< number of substeps
+      integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
+      integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps between updates
+      real(kind=dp), dimension(NUMCONST, Ndkx), intent(out) :: rhs ! right-hand side, dim(NUMCONST,Ndkx)
 
-   if ( kmx.gt.0 ) then
+      real(kind=dp) :: dvoli
+      real(kind=dp) :: dt_loc
+
+      integer :: kk, k, kb, kt
+      integer :: j
+
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
+
+      integer(4) :: ithndl = 0
+
+      if (timon) then
+         call timstrt("make_rhs", ithndl)
+      end if
+
+      dt_loc = dts
+      rhs = 0.0_dp
+
+      if (kmx > 0) then
 !     add vertical fluxes, sources, storage term and time derivative to right-hand side
 
-     !$OMP PARALLEL DO                 &
-     !$OMP PRIVATE(kk,kb,kt,k,dvoli,j) &
-     !$OMP FIRSTPRIVATE(dt_loc)
-      do kk=1,Ndxi
-
-         if ( jaupdate(kk).eq.0 ) then
-            cycle
-         else
-            dt_loc = dts * ndeltasteps(kk)
-         end if
-
-         kb = kbot(kk)
-         kt = ktop(kk)
-         do k=kb,kt
-            dvoli = 1d0/max(vol1(k),dtol)
-            if (testdryflood == 2 ) dvoli = 1d0/max(vol1(k),epshu*ba(kk))
-
-            do j=1,NUMCONST
-
-               rhs(j,k) = ((sumhorflux(j,k)/ndeltasteps(kk) - (1d0-thetavert(j))*(fluxver(j,k) - fluxver(j,k-1))) * dvoli + source(j,k))*dt_loc + sed(j,k)
-               sumhorflux(j,k) = 0d0
-
-            end do
-
-         end do
-      end do
-      !$OMP END PARALLEL DO
-
-   else
-!     add time derivative
-      if ( nsubsteps.eq.1 ) then
-         !$OMP PARALLEL DO       &
-         !$OMP PRIVATE(k,j,dvoli )
-
-         do k=1,Ndxi
-            dvoli = 1d0/max(vol1(k),dtol)
-            if (testdryflood == 2 ) dvoli = 1d0/max(vol1(k),epshu*ba(k))
-
-            do j=1,NUMCONST
-                rhs(j,k) = (sumhorflux(j,k) * dvoli + source(j,k)) * dts + sed(j,k)
-                sumhorflux(j,k) = 0d0
-            end do
-         end do
-         !$OMP END PARALLEL DO
-      else
-
-         !$OMP PARALLEL DO         &
-         !$OMP PRIVATE(k,j,dvoli ) &
+         !$OMP PARALLEL DO                 &
+         !$OMP PRIVATE(kk,kb,kt,k,dvoli,j) &
          !$OMP FIRSTPRIVATE(dt_loc)
-         do k=1,Ndxi
-            if ( jaupdate(k).eq.0 ) then
+         do kk = 1, Ndxi
+
+            if (jaupdate(kk) == 0) then
                cycle
             else
-               dt_loc = dts * ndeltasteps(k)
+               dt_loc = dts * ndeltasteps(kk)
             end if
 
-            dvoli = 1d0/max(vol1(k),dtol)
-            if (testdryflood == 2 ) dvoli = 1d0/max(vol1(k),epshu*ba(k))
+            kb = kbot(kk)
+            kt = ktop(kk)
+            do k = kb, kt
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk))
+               end if
 
-            do j=1,NUMCONST
-                rhs(j,k) = (sumhorflux(j,k)/ndeltasteps(k) * dvoli + source(j,k)) * dt_loc + sed(j,k)
-                sumhorflux(j,k) = 0d0
+               do j = 1, NUMCONST
+
+                  rhs(j, k) = ((sumhorflux(j, k) / ndeltasteps(kk) - (1.0_dp - thetavert(j)) * (fluxver(j, k) - fluxver(j, k - 1))) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  sumhorflux(j, k) = 0.0_dp
+
+               end do
+
             end do
          end do
          !$OMP END PARALLEL DO
-      end if
-   end if
 
-   if (timon) call timstop( ithndl )
-end subroutine make_rhs
+      else
+!     add time derivative
+         if (nsubsteps == 1) then
+            !$OMP PARALLEL DO       &
+            !$OMP PRIVATE(k,j,dvoli )
+
+            do k = 1, Ndxi
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               end if
+
+               do j = 1, NUMCONST
+                  rhs(j, k) = (sumhorflux(j, k) * dvoli + source(j, k)) * dts + sed(j, k)
+                  sumhorflux(j, k) = 0.0_dp
+               end do
+            end do
+            !$OMP END PARALLEL DO
+         else
+
+            !$OMP PARALLEL DO         &
+            !$OMP PRIVATE(k,j,dvoli ) &
+            !$OMP FIRSTPRIVATE(dt_loc)
+            do k = 1, Ndxi
+               if (jaupdate(k) == 0) then
+                  cycle
+               else
+                  dt_loc = dts * ndeltasteps(k)
+               end if
+
+               dvoli = 1.0_dp / max(vol1(k), dtol)
+               if (testdryflood == 2) then
+                  dvoli = 1.0_dp / max(vol1(k), epshu * ba(k))
+               end if
+
+               do j = 1, NUMCONST
+                  rhs(j, k) = (sumhorflux(j, k) / ndeltasteps(k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  sumhorflux(j, k) = 0.0_dp
+               end do
+            end do
+            !$OMP END PARALLEL DO
+         end if
+      end if
+
+      if (timon) then
+         call timstop(ithndl)
+      end if
+   end subroutine make_rhs
+
+end module m_make_rhs

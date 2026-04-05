@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -65,8 +65,8 @@
       INTEGER       NO_CONF     , LUNREP     , & 
                    IERROR
       INTEGER       DEFFDS
-      CHARACTER*10  CONF_ID     (NO_CONF)
-      CHARACTER*50  CONF_NAME   (NO_CONF)
+      CHARACTER(len=10)  CONF_ID     (NO_CONF)
+      CHARACTER(len=50)  CONF_NAME   (NO_CONF)
 !     
 !          Local variables
 !     
@@ -83,9 +83,9 @@
       INTEGER       I               , IELM
       INTEGER       ELMDMS(2,NELEMS), NBYTSG(NELEMS), & 
                    UINDEX(3)
-      CHARACTER*16  GRPNAM
-      CHARACTER*16  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
-      CHARACTER*64  ELMDES(NELEMS)
+      CHARACTER(len=16)  GRPNAM
+      CHARACTER(len=16)  ELMNMS(NELEMS)  , ELMTPS(NELEMS)
+      CHARACTER(len=64)  ELMDES(NELEMS)
 !     
 !          External NEFIS Functions
 !     

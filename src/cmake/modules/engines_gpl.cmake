@@ -13,6 +13,10 @@ set(waq_utils_c_module ${waq_module_path}/waq_utils_c)
 set(waq_utils_f_module ${waq_module_path}/waq_utils_f)
 set(waq_netcdf_module ${waq_module_path}/waq_netcdf)
 set(waq_validation_module ${waq_module_path}/waq_validation)
+set(waq_external_access_layer_module ${waq_module_path}/waq_external_access_layer)
+set(waq_preprocessor_module ${waq_module_path}/waq_preprocessor)
+set(waq_proc_preprocess_module ${waq_module_path}/waq_proc_preprocess)
+set(waq_computation_module ${waq_module_path}/waq_computation)
 set(waq_process_module ${waq_module_path}/waq_process)
 set(wq_processes_module ${waq_module_path}/wq_processes)
 set(waq_plugin_wasteload_module ${waq_module_path}/waq_plugin_wasteload)
@@ -65,17 +69,27 @@ set(d_hydro_module "${d_hydro_module_path}/d_hydro")
 set(tests_directory src/test/engines_gpl)
 set(dflowfm_kernel_test_module ${tests_directory}/dflowfm/packages/dflowfm_kernel)
 
+# Unit tests dwaq
+set(delwaq_unit_tests_module ${unit_tests_dir}/engines_gpl/waq)
+# Integration tests dwaq
+set(delwaq_integration_tests_module ${integration_tests_dir}/engines_gpl/waq)
 
-# Unit tests
-# WAQ
-set(delwaq_tests_module ${unit_tests_dir}/engines_gpl/waq)
+# RR Rainfall Runoff
+set(rr_module_path "${engines_gpl_path}/rr/packages")
+set(rr_dll_module "${rr_module_path}/rr_dll")
+set(rr_kernel_c_module "${rr_module_path}/rr_kernel_c")
+set(rr_kernel_f_module "${rr_module_path}/rr_kernel_f")
+set(rr_walrus_c_module "${rr_module_path}/rr_walrus_c")
+set(rr_module "${rr_module_path}/rr")
 
+# RTC Real Time Control
+set(rtc_module_path "${engines_gpl_path}/rtc/packages")
+set(rtc_module "${rtc_module_path}/rtc")
+set(rtc_plugin_c_module "${rtc_module_path}/plugin_rtc_c")
+set(rtc_kernel_module "${rtc_module_path}/rtc_kernel")
+
+set(fbc_module_path "${engines_gpl_path}/fbc/packages/FBCTools")
+set(dsle_module_path "${engines_gpl_path}/dsle/packages")
 
 # Install
-set(install_dflowfm_module cmake/install_fm)
-set(install_waq_module cmake/install_waq)
-set(install_wave_module cmake/install_wave)
-set(install_dimr_module cmake/install_dimr)
-set(install_tests_module cmake/install_tests)
-set(install_d_hydro_module cmake/install_d_hydro)
-set(install_flow2d3d_module cmake/install_flow2d3d)
+set(install_all_module cmake/install_all)

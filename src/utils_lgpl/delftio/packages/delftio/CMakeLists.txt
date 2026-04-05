@@ -30,11 +30,8 @@ set_target_properties(${library_name} PROPERTIES COMPILE_OPTIONS "${file_preproc
 set(oss_dependencies    deltares_common
                         deltares_common_c
                         delftio_shm) 
-oss_include_libraries(${library_name} oss_dependencies)
 
-if(UNIX)
-    target_link_libraries(${library_name} ${oss_dependencies})
-endif(UNIX)
+target_link_libraries(${library_name} ${oss_dependencies})
 
 # Set preprocessor definitions
 if(WIN32)

@@ -7,7 +7,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
               & linkinf ,error   ,gdp     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -137,6 +137,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer                              :: n
     integer                              :: m
     integer                              :: ndis_track
+    integer                              :: iweight
     integer                              :: sink_cnt
     integer                              :: sour_cnt
     integer                              :: src_index
@@ -177,6 +178,8 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
     integer, dimension(:), allocatable   :: n_dis
     integer, dimension(:), allocatable   :: m_dis
     integer, dimension(:), allocatable   :: k_dis
+    integer, dimension(:), allocatable   :: rowid_dis
+    logical                              :: nf_src_weight      ! TRUE: the weight of a source is read from the last column, FALSE: each source is assumed to have a weight of 1
     logical                              :: inside
     logical                              :: new_cell
     logical                              :: centre_and_width   ! TRUE: >=1 sinks and exactly 1 source point.
@@ -255,9 +258,19 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
              enddo
           endif
        enddo
+       
        do lcon = 1, lstsc
           conc_intake(lcon) = conc_intake(lcon) / wght_tot
        enddo
+       
+       !
+       ! Error in case no active intake layers were found,
+       !
+       if (nf_q_intake > 0.0_fp .and. wght_tot==0.0_fp) then
+           write(lundia,'(a)') "ERROR: 'No active intake layers were found. Please check the Z values in the NF2FF file (and X, Y coordinates as well)"           
+           call d3stop(1,gdp)          
+       endif           
+       
        !
        ! Remove intake from disnf, distributed over inside-points
        !
@@ -447,6 +460,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
           allocate (n_dis (sour_cnt), stat=ierror)
           allocate (m_dis (sour_cnt), stat=ierror)
           allocate (k_dis (sour_cnt), stat=ierror)
+          allocate (rowid_dis (sour_cnt), stat=ierror)
           allocate (weight(sour_cnt), stat=ierror)
           n_dis      = 0
           m_dis      = 0
@@ -454,6 +468,20 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
           ndis_track = 0
           weight     = 0.0_fp
           wght_tot   = 0.0_fp
+          
+          !
+          ! Check whether the last column of the source table represents the weight of each source
+          !          
+          iweight = size(nf_sour,2)
+          if (iweight == 6 .or. iweight == 8)  then
+             nf_src_weight = .false.
+             ! Do not use iweight:
+             iweight = -1
+          else
+             nf_src_weight = .true.
+             ! and iweight can be used
+          endif
+
           do itrack = 1, sour_cnt
              ! Combine source points that are in the same cell. This is needed because of the ugly "disnf>0" test later on.
              !
@@ -471,6 +499,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                 n_dis(ndis_track)  = n_tmp
                 m_dis(ndis_track)  = m_tmp
                 k_dis(ndis_track)  = k_tmp
+                rowid_dis(ndis_track)  = itrack
                 icur               = ndis_track
              else
                 ! Check whether the administration already contains the cell in which this source point resides
@@ -491,11 +520,20 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                    n_dis(ndis_track)  = n_tmp
                    m_dis(ndis_track)  = m_tmp
                    k_dis(ndis_track)  = k_tmp
+                   rowid_dis(ndis_track)  = itrack
                    icur               = ndis_track
                 endif
              endif
-             weight(icur) = weight(icur) + 1.0_fp
-             wght_tot     = wght_tot     + 1.0_fp
+             
+             ! Calculate source weight (per cell and total)
+             if (nf_src_weight) then
+                weight(icur) = weight(icur) + nf_sour(itrack,iweight)
+                wght_tot     = wght_tot     + nf_sour(itrack,iweight)
+             else
+                weight(icur) = weight(icur) + 1.0_fp
+                wght_tot     = wght_tot     + 1.0_fp
+             endif		 
+	   
           enddo
        endif
        !
@@ -590,7 +628,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                       else
                          ! Every source point contains momentum information
                          !
-                         src_index = itrack
+                         src_index = rowid_dis(itrack)
                       endif
                       call magdir_to_uv(alfas(n_dis(ndis_track),m_dis(ndis_track)), grdang               , &
                                       & nf_sour(src_index,IUMAG)                     , nf_sour(src_index,IUDIR), momu_tmp, momv_tmp)
@@ -698,7 +736,7 @@ subroutine desa(nlb     ,nub     ,mlb     ,mub        ,kmax       , &
                       else
                          ! Every source point contains momentum information
                          !
-                         src_index = itrack
+                         src_index = rowid_dis(itrack)
                       endif
                       call magdir_to_uv(alfas(n_dis(ndis_track),m_dis(ndis_track)), grdang               , &
                                       & nf_sour(src_index,IUMAG)                     , nf_sour(src_index,IUDIR), momu_tmp, momv_tmp)

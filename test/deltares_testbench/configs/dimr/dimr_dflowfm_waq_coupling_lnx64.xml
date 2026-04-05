@@ -34,7 +34,6 @@
         <!--
         The order is important. Start with the following programs:
             command_prompt
-            svn
             mpi
         -->
         <program name="command_prompt">
@@ -42,12 +41,6 @@
             <arguments>
                 <argument>-c</argument>
             </arguments>
-        </program>
-        <program name="svn">
-            <path>svn</path>
-            <environments>
-                <environment name="LD_LIBRARY_PATH" type="path">/opt/subversion/lib</environment>
-            </environments>
         </program>
         <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
             <location ref="reference_engines" type="reference">
@@ -63,7 +56,6 @@
             </environments>
             <arguments>
                 <argument>-m dimr.xml</argument>
-                <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument>
             </arguments>
         </program>
         <program name="dimr-mpi" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -81,7 +73,6 @@
             <arguments>
                 <argument>-c 3</argument>
                 <argument>-m dimr.xml</argument>
-                <!-- <argument>&gt;dimr_screen.log 2&gt;&amp;1</argument> -->
             </arguments>
         </program>
         <program name="vs" ignoreStandardError="true" ignoreReturnValue="true" addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf">
@@ -92,13 +83,19 @@
             </environments>
         </program>
         <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >
-            <path>data/engines/teamcity_artifacts/lnx64/bin/run_waqmerge.sh</path>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from>
+            </location>
+            <path>bin/run_waqmerge.sh</path>
         </program>
         <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
             <path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
         </program>
         <program name="maptonetcdf" addSearchPaths="false" logOutputToFile="true">
-            <path>data/engines/teamcity_artifacts/lnx64/bin/run_maptonetcdf.sh</path>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from>
+            </location>
+            <path>bin/run_maptonetcdf.sh</path>
         </program>
         <program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
             <path>thirdparty/poi2asc/lnx64/run_poi2asc.sh</path>

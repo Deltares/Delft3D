@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -35,9 +35,9 @@ module gdp
    !
    ! Grid
    !
-   integer                          , save :: kmax
-   integer                          , save :: mmax
-   integer                          , save :: nmax
+   integer                          , save :: num_layers_grid
+   integer                          , save :: num_columns
+   integer                          , save :: num_rows
    integer , dimension(:),   pointer, save :: kcs
    real(hp), dimension(:),   pointer, save :: x
    real(hp), dimension(:),   pointer, save :: y

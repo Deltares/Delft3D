@@ -1,119 +1,134 @@
 !----- AGPL --------------------------------------------------------------------
-!                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
-!                                                                               
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).               
-!                                                                               
-!  Delft3D is free software: you can redistribute it and/or modify              
-!  it under the terms of the GNU Affero General Public License as               
-!  published by the Free Software Foundation version 3.                         
-!                                                                               
-!  Delft3D  is distributed in the hope that it will be useful,                  
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of               
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the                
-!  GNU Affero General Public License for more details.                          
-!                                                                               
-!  You should have received a copy of the GNU Affero General Public License     
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.             
-!                                                                               
-!  contact: delft3d.support@deltares.nl                                         
-!  Stichting Deltares                                                           
-!  P.O. Box 177                                                                 
-!  2600 MH Delft, The Netherlands                                               
-!                                                                               
-!  All indications and logos of, and references to, "Delft3D",                  
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting 
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!                                                                               
+!
 !-------------------------------------------------------------------------------
 
-! 
-! 
+!
+!
 
 !> update the z-layer administration in parallel computations
-!>    check bl and kmxn
-!>    update kmxn, kmxL
-subroutine update_vertadmin()
-   use m_partitioninfo
-   use m_flowgeom
-   use m_flow
-   use unstruc_messages
+!!    check bl and kmxn
+!!    update kmxn, kmxL
+module m_update_vertadmin
+
    implicit none
 
-   character(len=128)                            :: mesg
+   private
 
-   double precision, dimension(:,:), allocatable :: dum
+   public :: update_vertadmin
 
-   integer                                       :: k, L
-   integer                                       :: n3, n4
-   integer                                       :: ierror
+contains
 
-   ierror = 0
+   subroutine update_vertadmin()
+      use precision, only: dp
+      use m_partitioninfo, only: jampi, update_ghosts, itype_sall, update_ghostboundvals, itype_u
+      use m_flowgeom, only: ndx, bl, lnx
+      use m_flow, only: kmx, kmxn, kmxl
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
 
-   if ( jampi.eq.0 ) return   ! intended for parallel computations only
+      character(len=128) :: mesg
 
-   if ( kmx.le.0 ) return    ! 3D only
+      real(kind=dp), dimension(:, :), allocatable :: dum
+
+      integer :: k, L
+      integer :: ierror
+
+      ierror = 0
+
+      if (jampi == 0) then
+         return ! intended for parallel computations only
+      end if
+
+      if (kmx <= 0) then
+         return ! 3D only
+      end if
 
 !  allocate dummy array
-   allocate(dum(2,Ndx))
+      allocate (dum(2, Ndx))
 
 !  bl, kmxn: filly dummy array
-   do k=1,Ndx
-      dum(1,k) = dble(kmxn(k))
-      dum(2,k) = bl(k)
-   end do
+      do k = 1, Ndx
+         dum(1, k) = real(kmxn(k), kind=dp)
+         dum(2, k) = bl(k)
+      end do
 !  udpate dummy array
-   call update_ghosts(ITYPE_SALL, 2, Ndx, dum, ierror)
-   call update_ghostboundvals(ITYPE_SALL, 2, Ndx, dum, 0, ierror)
-   if ( ierror.ne.0 ) then
-      call mess(LEVEL_INFO, 'update_vertadmin: error')
-      ierror = 1
-      goto 1234
-   end if
+      call update_ghosts(ITYPE_SALL, 2, Ndx, dum, ierror)
+      call update_ghostboundvals(ITYPE_SALL, 2, Ndx, dum, 0, ierror)
+      if (ierror /= 0) then
+         call mess(LEVEL_INFO, 'update_vertadmin: error')
+         ierror = 1
+         goto 1234
+      end if
 
 !  check bl and kmxn values
-   do k=1,Ndx
-      if ( int(dum(1,k)).ne.kmxn(k) ) then
-         write(mesg,"('update_vertadmin: kmxn error, k=', I7 )") k
-         call mess(LEVEL_INFO, mesg)
-         ierror = 1
-         goto 1234
-      end if
+      do k = 1, Ndx
+         if (int(dum(1, k)) /= kmxn(k)) then
+            write (mesg, "('update_vertadmin: kmxn error, k=', I7 )") k
+            call mess(LEVEL_INFO, mesg)
+            ierror = 1
+            goto 1234
+         end if
 
-      if ( dum(2,k).ne.bl(k) ) then
-         write(mesg,"('update_vertadmin: bl error, k=', I7 )") k
-         call mess(LEVEL_INFO, mesg)
-         ierror = 1
-         goto 1234
-      end if
-   end do
+         if (dum(2, k) /= bl(k)) then
+            write (mesg, "('update_vertadmin: bl error, k=', I7 )") k
+            call mess(LEVEL_INFO, mesg)
+            ierror = 1
+            goto 1234
+         end if
+      end do
 
-   if ( allocated(dum) ) deallocate(dum)
-   allocate(dum(1,Lnx))
+      if (allocated(dum)) then
+         deallocate (dum)
+      end if
+      allocate (dum(1, Lnx))
 
 !  kmxL: filly dummy array
-   do L=1,Lnx
-      dum(1,L) = dble(kmxL(L))
-   end do
+      do L = 1, Lnx
+         dum(1, L) = real(kmxL(L), kind=dp)
+      end do
 !  update dummy array
-   call update_ghosts(ITYPE_U, 1, Lnx, dum, ierror)
+      call update_ghosts(ITYPE_U, 1, Lnx, dum, ierror)
 
-   if ( ierror.ne.0 ) then
-      call mess(LEVEL_INFO, 'update_vertadmin: error')
-      ierror = 1
-      goto 1234
-   end if
+      if (ierror /= 0) then
+         call mess(LEVEL_INFO, 'update_vertadmin: error')
+         ierror = 1
+         goto 1234
+      end if
 
 !  update values
-   do L=1,Lnx
-      if ( int(abs(dum(1,L))).ne.kmxL(L) ) then
+      do L = 1, Lnx
+         if (int(abs(dum(1, L))) /= kmxL(L)) then
 !         write(mesg,"('update_vertadmin: kmxL error, L=', I7, 2I7 )") L, kmxL(L), int(dum(1,L))
 !         call mess(LEVEL_INFO, trim(mesg))
 !         ierror = 1
 
-         kmxL(L) = int(abs(dum(1,L)))
-      end if
-   end do
+            kmxL(L) = int(abs(dum(1, L)))
+         end if
+      end do
 
 !   if ( allocated(dum) ) deallocate(dum)
 !   allocate(dum(2,Lnx))
@@ -147,13 +162,17 @@ subroutine update_vertadmin()
 !      end if
 !   end do
 
-   if ( ierror.eq.1 ) then
-     call mess(LEVEL_ERROR, 'update_vertadmin: vertical layer administration out of sync', ' ', ' ')
+      if (ierror == 1) then
+         call mess(LEVEL_ERROR, 'update_vertadmin: vertical layer administration out of sync', ' ', ' ')
 !     stop
-   end if
+      end if
 
-1234 continue
-   if ( allocated(dum) ) deallocate(dum)
+1234  continue
+      if (allocated(dum)) then
+         deallocate (dum)
+      end if
 
-   return
-end subroutine update_vertadmin
+      return
+   end subroutine update_vertadmin
+
+end module m_update_vertadmin
