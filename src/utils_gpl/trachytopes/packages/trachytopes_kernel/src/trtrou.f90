@@ -898,7 +898,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
              rgh_geom = area_rgh
           elseif (ircod==155) then
              !
-             ! Vastila & Jarvela (2017) formula
+             ! Vastila & Jarvela (2017) formula 
              !
              ! input parameters
              vheigh         = rttdef(itrt, 1)
