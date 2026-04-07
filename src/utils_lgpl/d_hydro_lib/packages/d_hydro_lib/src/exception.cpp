@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: exception.cpp 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/exception.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/packages/d_hydro_lib/src/exception.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro
 //  Exception Object - Implementation
@@ -34,39 +36,27 @@
 //  20 jan 11
 //------------------------------------------------------------------------------
 
-
 #include "exception.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
-
-Exception::Exception (
-    const char *  format,
-    ...
-    ) {
-
-
-    const int bufsize = 256*1024;
-    char * buffer = new char [bufsize]; // really big temporary buffer, just in case
+Exception::Exception(const char* format, ...)
+{
+    const int bufsize = 256 * 1024;
+    char* buffer = new char[bufsize]; // really big temporary buffer, just in case
 
     va_list arguments;
-    va_start (arguments, format);
-    int len = vsnprintf (buffer, bufsize-1, format, arguments);
-    va_end (arguments);
-    buffer[bufsize-1] = '\0';
+    va_start(arguments, format);
+    int len = vsnprintf(buffer, bufsize - 1, format, arguments);
+    va_end(arguments);
+    buffer[bufsize - 1] = '\0';
 
-    this->message = new char [len+1];
-    strcpy (this->message, buffer);
+    this->message = new char[len + 1];
+    strcpy(this->message, buffer);
 
-    delete [] buffer;
-    }
+    delete[] buffer;
+}
 
-
-Exception::~Exception (
-    void
-    ) {
-
-    delete [] this->message;
-    }
+Exception::~Exception(void) { delete[] this->message; }

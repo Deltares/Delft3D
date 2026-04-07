@@ -42,7 +42,7 @@ module m_ec_unit_tests
       real(kind=hp), parameter :: time_step_expected2 = 0.0_hp
 
       errMessage = ' '
-      call clearECMessage()
+      call clear_ec_message()
 
       !
       ! test 1: with conversion
@@ -73,7 +73,7 @@ module m_ec_unit_tests
       !
       success = .not. ecGetTimesteps(rec2, time_steps)
       if (success) then
-         s = dumpECMessageStack(0, copyLastMsg)
+         s = dump_ec_message_stack(0, copyLastMsg)
          success = (dumpedString == 'ec_support::ecGetTimesteps: can not find time step in: time = 0 hour since 2006-01-01 00:00:00 +00:00.')
       endif
       if (.not. success) then
@@ -86,7 +86,7 @@ module m_ec_unit_tests
       !
       success = .not. ecGetTimesteps(' ', time_steps)
       if (success) then
-         s = dumpECMessageStack(0, copyLastMsg)
+         s = dump_ec_message_stack(0, copyLastMsg)
          success = (dumpedString == 'ec_support::ecGetTimesteps: Input string is empty.')
       endif
       if (.not. success) then
@@ -94,7 +94,7 @@ module m_ec_unit_tests
          return
       endif
 
-      call clearECMessage()
+      call clear_ec_message()
    end subroutine TestEcGetTimesteps
 
    !> test normal NetCDF input for ecSupportTimestringToUnitAndRefdate

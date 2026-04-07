@@ -21,7 +21,6 @@
  * @date 2011
  */
 
-
 #ifndef ABSOLUTE_TIME_CONTROLLER_H
 #define ABSOLUTE_TIME_CONTROLLER_H
 
@@ -29,28 +28,29 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class absoluteTimeController : public rule
-{
-private:
-    int iXIn;
-    int iYOut;
+            class absoluteTimeController : public rule
+            {
+            private:
+                int iXIn;
+                int iYOut;
 
-public:
-    absoluteTimeController(string id, string name, int iXIn, int iYOut);
-    ~absoluteTimeController(void);
+            public:
+                absoluteTimeController(string id, string name, int iXIn, int iYOut);
+                ~absoluteTimeController(void);
 
-    void solve(double *stateOld, double *stateNew, long long t, double dt);
-    void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
-        virtual int getIYOut() const override { return iYOut; }
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
+                virtual int getIYOut() const override { return iYOut; }
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // ABSOLUTE_TIME_CONTROLLER_H

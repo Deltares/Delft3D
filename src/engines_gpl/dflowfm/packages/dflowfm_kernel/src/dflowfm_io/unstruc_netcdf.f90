@@ -17705,7 +17705,7 @@ contains
       use m_GlobalParameters
       use m_flow, only: au
       use m_1d_structures
-      use m_General_Structure
+      use m_general_structure
       use fm_external_forcings_data
       use m_longculverts_data, only: longculverts, nlongculverts
       implicit none
