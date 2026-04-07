@@ -18,16 +18,15 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_radix_sort.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
-
-set(malloc_template_file  "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in")
-set(malloc_output_file    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
-set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
-
 if(NOT Python_FOUND)
     find_package(Python COMPONENTS Interpreter REQUIRED)
 endif()
+
+set(malloc_output_file    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
+set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
+
 execute_process(
-    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_template_file} ${malloc_output_file}
+    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_output_file}
     RESULT_VARIABLE generate_result
     OUTPUT_VARIABLE generate_output
     ERROR_VARIABLE  generate_error
@@ -38,9 +37,8 @@ endif()
 
 add_custom_command(
     OUTPUT  "${malloc_output_file}"
-    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_template_file} ${malloc_output_file}
-    DEPENDS "${malloc_template_file}"
-            "${malloc_generator_file}"
+    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_output_file}
+    DEPENDS "${malloc_generator_file}"
     COMMENT "Regenerating m_alloc_generated.f90"
 )
 
