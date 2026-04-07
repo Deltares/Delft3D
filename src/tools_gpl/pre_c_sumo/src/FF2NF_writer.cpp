@@ -41,7 +41,7 @@ namespace
         auto point_2d_to_xyz_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
             return point.layers |
                    std::views::transform([x = point.x, y = point.y](const pre_c_sumo::FarFieldLayer& layer) {
-                       return std::format("{:E}  {:E}  {:E}", x, y, layer.depth_from_surface);
+                       return std::format("{:E} {:E} {:E}", x, y, layer.depth_from_surface);
                    });
         };
         // Flatten each point × layer into a formatted "x  y  z" string, then join with '\n'.
@@ -56,15 +56,79 @@ namespace
         xyz_node.text() = text;
     }
 
+    void addWaterDepth(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    {
+        auto extract_water_depth = [](const pre_c_sumo::FarFieldPoint2D& point) {
+            return std::to_string(point.water_depth);
+        };
+        std::string text = "\n";
+        std::ranges::copy(points | std::views::transform(extract_water_depth) | std::views::join_with('\n'),
+                          std::back_inserter(text));
+        text += '\n';
+        parent_node.append_child("waterDepth").text() = text;
+    }
+
+    void addXYVelocity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    {
+        auto point_2d_to_velocity_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
+            return point.layers | std::views::transform([](const pre_c_sumo::FarFieldLayer& layer) {
+                       return std::format("{:E} {:E}", layer.x_velocity, layer.y_velocity);
+                   });
+        };
+        auto velocity_strings = points | std::views::transform(point_2d_to_velocity_strings) | std::views::join;
+
+        std::string text = "\n";
+        std::ranges::copy(velocity_strings | std::views::join_with('\n'), std::back_inserter(text));
+        text += '\n';
+        parent_node.append_child("XYvelocity").text() = text;
+    }
+
+    void addDensity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    {
+        auto point_2d_to_density_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
+            return point.layers | std::views::transform([density = point.density](const pre_c_sumo::FarFieldLayer&) {
+                       return std::format("{:E}", density);
+                   });
+        };
+        auto density_strings = points | std::views::transform(point_2d_to_density_strings) | std::views::join;
+
+        std::string text = "\n";
+        std::ranges::copy(density_strings | std::views::join_with('\n'), std::back_inserter(text));
+        text += '\n';
+        parent_node.append_child("rho").text() = text;
+    }
+
+    void addConstituents(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    {
+        auto doubles_to_space_separated_string = [](const std::vector<double>& doubles) {
+            return doubles | std::views::transform([](const double number) { return std::format("{:E}", number); }) |
+                   std::views::join_with(' ') | std::ranges::to<std::string>();
+        };
+        auto point_2d_to_constituents_string =
+            [doubles_to_space_separated_string](const pre_c_sumo::FarFieldPoint2D& point) {
+                // Repeat the constituents vector for each layer, since the FF2NF format expects depth-averaged values
+                // to be repeated per layer.
+                return std::views::repeat(point.constituents, point.layers.size()) |
+                       std::views::transform(doubles_to_space_separated_string);
+            };
+
+        std::string text = "\n";
+        std::ranges::copy(points | std::views::transform(point_2d_to_constituents_string) | std::views::join |
+                              std::views::join_with('\n'),
+                          std::back_inserter(text));
+        text += '\n';
+        parent_node.append_child("constituents").text() = text;
+    }
+
     void addFarFieldPoints(pugi::xml_node& parent_node, const std::string_view section_name,
                            const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
     {
         auto section_node = parent_node.append_child(section_name);
         addXYZ(section_node, points);
-        // addWaterDepth(section_node, points);
-        // addXYVelocity(section_node, points);
-        // addDensity(section_node, points);
-        // addConstituents(section_node, points);
+        addWaterDepth(section_node, points);
+        addXYVelocity(section_node, points);
+        addDensity(section_node, points);
+        addConstituents(section_node, points);
     }
 } // namespace
 

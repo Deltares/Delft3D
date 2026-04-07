@@ -234,3 +234,137 @@ TEST(FF2NFWriterTest, FarFieldDiffuserOneXYZPerLine)
     EXPECT_NEAR((*expectedDoubles)[1], 350.0, 1e-12); // y coordinate
     EXPECT_NEAR((*expectedDoubles)[2], 0.55, 1e-12);  // z coordinate (depth from surface)
 }
+
+TEST(FF2NFWriterTest, FarFieldDiffuserWaterDepthIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/waterDepth");
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserWaterDepthMatchesInput)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/waterDepth");
+    const auto lines = nonBlankLines(text);
+    // We expect one horizontal point for the diffusers, so 1 line
+    ASSERT_EQ(lines.size(), 1u);
+    const auto expectedDoubles = parsing_utils::parseDoubleVector(lines[0], "FFDiff/waterDepth line 1");
+    ASSERT_TRUE(expectedDoubles.has_value()) << expectedDoubles.error().message;
+    EXPECT_NEAR((*expectedDoubles)[0], 10.0, 1e-12); // water depth
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserOneXYVelocityPerLayer)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
+    const auto lines = nonBlankLines(text);
+    // One line per layer per point: 1 point × 10 layers = 10 lines
+    ASSERT_EQ(lines.size(), 10u);
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityValuesMatchInput)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
+    const auto lines = nonBlankLines(text);
+    ASSERT_GE(lines.size(), 1u);
+    const auto values = parsing_utils::parseDoubleVector(lines[0], "FFDiff/XYvelocity line 1");
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    ASSERT_EQ((*values).size(), 2u);
+    EXPECT_NEAR((*values)[0], 0.0, 1e-12); // x velocity
+    EXPECT_NEAR((*values)[1], 0.0, 1e-12); // y velocity
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
+{
+    auto writer = buildExampleWriter();
+    writer.setDiffusers(
+        {{.x = 550.0,
+          .y = 350.0,
+          .water_depth = 10.0,
+          .density = 1000.0,
+          .constituents = {15.0, 1.0},
+          .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5, .x_velocity = 1.5, .y_velocity = -0.3}}}});
+    const auto document = generateDocument(std::move(writer));
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 1u);
+    const auto values = parsing_utils::parseDoubleVector(lines[0], "FFDiff/XYvelocity");
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    ASSERT_EQ((*values).size(), 2u);
+    EXPECT_NEAR((*values)[0], 1.5, 1e-12);
+    EXPECT_NEAR((*values)[1], -0.3, 1e-12);
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserDensityIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/rho");
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserDensityValuesMatchInput)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/rho");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 10u);
+    const auto values = parsing_utils::parseDoubleVector(lines[0], "FFDiff/rho line 1");
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    ASSERT_EQ((*values).size(), 1u);
+    EXPECT_NEAR((*values)[0], 1000.0, 1e-12);
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserDensityIsRepeatedForEveryLayer)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/rho");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 10u);
+    for (const auto& line : lines)
+    {
+        const auto value = parsing_utils::parseDouble(line, "FFDiff/rho");
+        ASSERT_TRUE(value.has_value()) << value.error().message;
+        EXPECT_NEAR(*value, 1000.0, 1e-12);
+    }
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/constituents");
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserConstituentValuesMatchInput)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/constituents");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 10u);
+    const auto values = parsing_utils::parseDoubleVector(lines[0], "FFDiff/constituents line 1");
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    ASSERT_EQ((*values).size(), 2u);
+    EXPECT_NEAR((*values)[0], 15.0, 1e-12); // temperature
+    EXPECT_NEAR((*values)[1], 1.0, 1e-12);  // tracer concentration
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsAreRepeatedForEveryLayer)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/constituents");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 10u);
+    for (const auto& line : lines)
+    {
+        const auto values = parsing_utils::parseDoubleVector(line, "FFDiff/constituents");
+        ASSERT_TRUE(values.has_value()) << values.error().message;
+        ASSERT_EQ((*values).size(), 2u);
+        EXPECT_NEAR((*values)[0], 15.0, 1e-12);
+        EXPECT_NEAR((*values)[1], 1.0, 1e-12);
+    }
+}
