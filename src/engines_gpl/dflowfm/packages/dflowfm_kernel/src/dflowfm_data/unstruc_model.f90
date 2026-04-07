@@ -1427,10 +1427,10 @@ contains
       call prop_get(md_ptr, 'physics', 'SecchiDepth2', secchi_depth(2))
       call prop_get(md_ptr, 'physics', 'SecchiDepth2Fraction', secchi_radiation_fraction(2))
 
-      secchi_extinction_depth(1) = secchi_depth(1) / 1.7_dp
+      secchi_extinction_depth(1) = secchi_depth(1) / SECCHI_EXTINCTION_DEPTH_FACTOR
       
       if (secchi_depth(2) > 0) then
-         secchi_extinction_depth(2) = secchi_depth(2) / 1.7_dp
+         secchi_extinction_depth(2) = secchi_depth(2) / SECCHI_EXTINCTION_DEPTH_FACTOR
          secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
       end if
 
@@ -3448,7 +3448,7 @@ contains
          call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (degC)')
          call prop_set(prop_ptr, 'physics', 'SecchiDepth', secchi_depth(1), 'Water clarity parameter (m)')
          if (secchi_depth(2) > 0) then
-            call prop_set(prop_ptr, 'physics', 'SecchiDepth2', secchi_depth(2), 'Water clarity parameter 2 (m), only used if > 0')
+            call prop_set(prop_ptr, 'physics', 'SecchiDepth2', secchi_depth(2), 'Water clarity parameter for infrared radiation (m), only used if > 0')
             call prop_set(prop_ptr, 'physics', 'SecchiDepth2Fraction', secchi_radiation_fraction(2), 'Fraction of total absorbed by profile 2')
          end if
 

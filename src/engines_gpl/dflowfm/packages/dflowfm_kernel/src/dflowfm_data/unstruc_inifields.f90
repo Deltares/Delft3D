@@ -2066,7 +2066,7 @@ contains
       case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
-         enable_spatial_secchi_depth = 1
+         enable_spatial_secchi_depth = .true.
          do n = 1, ndx
             if (spatial_secchi_depth(n) == dmiss) then
                spatial_secchi_depth(n) = secchi_depth(1)

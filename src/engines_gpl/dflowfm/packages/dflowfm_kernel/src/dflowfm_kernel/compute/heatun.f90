@@ -85,7 +85,7 @@ contains
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
-      real(kind=dp), dimension(2) :: local_secchi_extinction_depth !< Local Secchi extinction depth used in computations
+      real(kind=dp), dimension(2) :: secchi_extinction_depth_in_cell !< Local Secchi extinction depth used in computations
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
@@ -205,8 +205,8 @@ contains
          if (solar_radiation_flux > 0.0_dp) then
 
             if (kmx > 0) then ! distribute incoming radiation over water column
-               local_secchi_extinction_depth(1) = secchi_extinction_depth(1)
-               local_secchi_extinction_depth(2) = secchi_extinction_depth(2)
+               secchi_extinction_depth_in_cell(1) = secchi_extinction_depth(1)
+               secchi_extinction_depth_in_cell(2) = secchi_extinction_depth(2)
 
                if (secchi_depth(2) > 0.0_dp) then
                   j2 = 2
@@ -216,8 +216,8 @@ contains
 
                do j = j2, 1, -1
 
-                  if (j == 1 .and. enable_spatial_secchi_depth == 1) then
-                     local_secchi_extinction_depth(1) = spatial_secchi_depth(n) / 1.7_dp
+                  if (j == 1 .and. enable_spatial_secchi_depth) then
+                     secchi_extinction_depth_in_cell(1) = spatial_secchi_depth(n) / SECCHI_EXTINCTION_DEPTH_FACTOR
                   end if
 
                   zlo = 0.0_dp
@@ -227,7 +227,7 @@ contains
                      zup = zlo
                      expup = explo
                      zlo = zws(k_top) - zws(cell_index_3D - 1)
-                     ratio = zlo / local_secchi_extinction_depth(j)
+                     ratio = zlo / secchi_extinction_depth_in_cell(j)
                      if (ratio > 4.0_dp) then !  .or. cell_index_3D.eq.k_bot) then
                         explo = 0.0_dp
                      else

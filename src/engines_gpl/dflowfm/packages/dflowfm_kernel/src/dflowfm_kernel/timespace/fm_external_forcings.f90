@@ -2669,7 +2669,7 @@ contains
          end do
       end if
 
-      if (enable_spatial_secchi_depth == 1) then
+      if (enable_spatial_secchi_depth) then
          do n = 1, ndx
             if (spatial_secchi_depth(n) == dmiss) then
                spatial_secchi_depth(n) = secchi_depth(1)

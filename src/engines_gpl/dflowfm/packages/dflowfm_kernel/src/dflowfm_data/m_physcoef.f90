@@ -98,7 +98,8 @@ module m_physcoef
    ! Secchi depth variables
    real(kind=dp), dimension(2) :: secchi_depth !< [m] Constant Secchi depth; 1 = visible light and UV radiation, 2 = infrared radiation
    real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation
-   real(kind=dp), dimension(2) :: secchi_extinction_depth !< [m] Extinction depth scale for Secchi radiation, extinction_depth = secchi_depth / 1.7
+   real(kind=dp), dimension(2) :: secchi_extinction_depth !< [m] Extinction depth scale for Secchi radiation
+   real(kind=dp), parameter :: SECCHI_EXTINCTION_DEPTH_FACTOR = 1.7_dp !< factor to compute secchi extinction depth from secchi depth
 
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
@@ -153,8 +154,8 @@ contains
       secchi_depth(2) = 0.0_dp
       secchi_radiation_fraction(1) = 1.0_dp
       secchi_radiation_fraction(2) = 0.0_dp
-      secchi_extinction_depth(1) = secchi_depth(1) / 1.7_dp
-      secchi_extinction_depth(2) = secchi_depth(2) / 1.7_dp
+      secchi_extinction_depth(1) = secchi_depth(1) / SECCHI_EXTINCTION_DEPTH_FACTOR
+      secchi_extinction_depth(2) = secchi_depth(2) / SECCHI_EXTINCTION_DEPTH_FACTOR
       vicwminb = 0.0_dp
       xlozmidov = 0.0_dp
       idensform = 2

@@ -263,14 +263,10 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (enable_spatial_secchi_depth == 0) then
-                  if (allocated(spatial_secchi_depth)) then
-                     deallocate (spatial_secchi_depth)
-                  end if
-                  allocate (spatial_secchi_depth(ndx), stat=ierr)
-                  call aerr('spatial_secchi_depth(ndx)', ierr, lnx)
-                  spatial_secchi_depth = dmiss
-                  enable_spatial_secchi_depth = 1
+               if (.not. enable_spatial_secchi_depth) then
+                  call realloc(spatial_secchi_depth, ndx, fill=dmiss)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
+                  enable_spatial_secchi_depth = .true.
                end if
 
                success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
