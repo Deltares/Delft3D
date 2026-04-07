@@ -85,7 +85,7 @@ contains
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
-      real(kind=dp), dimension(2) :: secchi_extinction_depth_in_cell !< Local Secchi extinction depth used in computations
+      real(kind=dp), dimension(2) :: secchi_extinction_depth_in_cell !< Secchi extinction depth used in cell
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
