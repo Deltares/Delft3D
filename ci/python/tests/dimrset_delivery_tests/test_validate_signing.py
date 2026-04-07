@@ -24,34 +24,31 @@ class TestIsSigntoolAvailable:
     def test_is_signtool_available_returns_true_when_signtool_exists(self, mock_run: Mock) -> None:
         """Test that is_signtool_available returns True when signtool is available."""
         # Arrange
-        developer_prompt = "vcvars64.bat"
         mock_result = Mock()
         mock_result.returncode = 0
         mock_run.return_value = mock_result
 
         # Act
-        result = is_signtool_available(developer_prompt)
+        result = is_signtool_available()
 
         # Assert
         assert result is True
         mock_run.assert_called_once_with(
-            [developer_prompt, "&&", "signtool.exe", "verify", "/?"],
+            ["signtool.exe", "verify", "/?"],
             capture_output=True,
             text=True,
-            shell=True,
         )
 
     @patch("ci_tools.dimrset_delivery.validate_signing.subprocess.run")
     def test_is_signtool_available_returns_false_when_signtool_not_found(self, mock_run: Mock) -> None:
         """Test that is_signtool_available returns False when signtool is not found."""
         # Arrange
-        developer_prompt = "vcvars64.bat"
         mock_result = Mock()
         mock_result.returncode = 1
         mock_run.return_value = mock_result
 
         # Act
-        result = is_signtool_available(developer_prompt)
+        result = is_signtool_available()
 
         # Assert
         assert result is False
@@ -60,11 +57,10 @@ class TestIsSigntoolAvailable:
     def test_is_signtool_available_returns_false_on_exception(self, mock_run: Mock) -> None:
         """Test that is_signtool_available returns False when an exception occurs."""
         # Arrange
-        developer_prompt = "vcvars64.bat"
         mock_run.side_effect = Exception("Command failed")
 
         # Act
-        result = is_signtool_available(developer_prompt)
+        result = is_signtool_available()
 
         # Assert
         assert result is False
@@ -78,7 +74,6 @@ class TestVerifySigningAuthority:
         """Test that verify_signing_authority returns 'Verified' status with correct issuer."""
         # Arrange
         filepath = "test_file.exe"
-        developer_prompt = "vcvars64.bat"
         mock_result = Mock()
         mock_result.stdout = """Successfully verified: test_file.exe
 
@@ -87,16 +82,15 @@ The signature is timestamped: Friday, January 1, 2024 12:00:00 PM"""
         mock_run.return_value = mock_result
 
         # Act
-        status, issuer = verify_signing_authority(filepath, developer_prompt)
+        status, issuer = verify_signing_authority(filepath)
 
         # Assert
         assert status == "Verified"
         assert issuer == "Deltares"
         mock_run.assert_called_once_with(
-            [developer_prompt, "&&", "signtool.exe", "verify", "/pa", "/v", filepath],
+            ["signtool.exe", "verify", "/pa", "/v", filepath],
             capture_output=True,
             text=True,
-            shell=True,
         )
 
     @patch("ci_tools.dimrset_delivery.validate_signing.subprocess.run")
@@ -104,13 +98,12 @@ The signature is timestamped: Friday, January 1, 2024 12:00:00 PM"""
         """Test that verify_signing_authority returns 'Not Verified' when file is not signed."""
         # Arrange
         filepath = "test_file.exe"
-        developer_prompt = "vcvars64.bat"
         mock_result = Mock()
         mock_result.stdout = "SignTool Error: No signature found."
         mock_run.return_value = mock_result
 
         # Act
-        status, issuer = verify_signing_authority(filepath, developer_prompt)
+        status, issuer = verify_signing_authority(filepath)
 
         # Assert
         assert status == "Not Verified"
@@ -122,11 +115,10 @@ The signature is timestamped: Friday, January 1, 2024 12:00:00 PM"""
         """Test that verify_signing_authority returns 'Error' when an exception occurs and prints the error message."""
         # Arrange
         filepath = "test_file.exe"
-        developer_prompt = "vcvars64.bat"
         mock_run.side_effect = Exception("Command failed")
 
         # Act
-        status, error_message = verify_signing_authority(filepath, developer_prompt)
+        status, error_message = verify_signing_authority(filepath)
 
         # Assert
         output = mock_stdout.getvalue()
@@ -148,7 +140,6 @@ class TestValidateSigningStatus:
         filepath = os.path.normpath(filepath)
         files_that_should_be_signed_with_issued_to = [{"file": file, "issuedTo": "Deltares"}]
         files_that_should_not_be_signed = []
-        developer_prompt = "vcvars64.bat"
         mock_verify.return_value = ("Verified", "Deltares")
 
         # Act
@@ -157,13 +148,12 @@ class TestValidateSigningStatus:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
         assert is_valid is True
         assert "File is correctly signed: test_file.exe by Deltares" in message
-        mock_verify.assert_called_once_with(filepath, developer_prompt)
+        mock_verify.assert_called_once_with(filepath)
 
     @patch("ci_tools.dimrset_delivery.validate_signing.verify_signing_authority")
     def test_validate_signing_status_incorrectly_signed_file_wrong_issuer(self, mock_verify: Mock) -> None:
@@ -173,7 +163,6 @@ class TestValidateSigningStatus:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = [{"file": file, "issuedTo": "Deltares"}]
         files_that_should_not_be_signed = []
-        developer_prompt = "vcvars64.bat"
         mock_verify.return_value = ("Verified", "WrongIssuer")
 
         # Act
@@ -182,7 +171,6 @@ class TestValidateSigningStatus:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
@@ -197,7 +185,6 @@ class TestValidateSigningStatus:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = [{"file": file, "issuedTo": "Deltares"}]
         files_that_should_not_be_signed = []
-        developer_prompt = "vcvars64.bat"
         mock_verify.return_value = ("Not Verified", "")
 
         # Act
@@ -206,7 +193,6 @@ class TestValidateSigningStatus:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
@@ -221,7 +207,6 @@ class TestValidateSigningStatus:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = []
         files_that_should_not_be_signed = ["test_file.dll"]
-        developer_prompt = "vcvars64.bat"
         mock_verify.return_value = ("Not Verified", "")
 
         # Act
@@ -230,7 +215,6 @@ class TestValidateSigningStatus:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
@@ -245,7 +229,6 @@ class TestValidateSigningStatus:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = []
         files_that_should_not_be_signed = ["test_file.dll"]
-        developer_prompt = "vcvars64.bat"
         mock_verify.return_value = ("Verified", "Deltares")
 
         # Act
@@ -254,7 +237,6 @@ class TestValidateSigningStatus:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
@@ -271,7 +253,6 @@ class TestValidateSigningStatus:
         filepath = os.path.normpath(filepath)
         files_that_should_be_signed_with_issued_to = []
         files_that_should_not_be_signed = []
-        developer_prompt = "vcvars64.bat"
         mock_verify.return_value = ("Not Verified", "")
 
         # Act
@@ -280,13 +261,12 @@ class TestValidateSigningStatus:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
         assert is_valid is True
         assert message == ""
-        mock_verify.assert_called_once_with(filepath, developer_prompt)
+        mock_verify.assert_called_once_with(filepath)
 
 
 class TestSigningIsValid:
@@ -297,28 +277,26 @@ class TestSigningIsValid:
         """Test that signing_is_valid returns True for correctly signed file."""
         # Arrange
         filepath = "/test/dir/test_file.exe"
-        developer_prompt = "vcvars64.bat"
         expected_issued_to = "Deltares"
         mock_verify.return_value = ("Verified", "Deltares")
 
         # Act
-        result = signing_is_valid(filepath, developer_prompt, expected_issued_to)
+        result = signing_is_valid(filepath, expected_issued_to)
 
         # Assert
         assert result is True
-        mock_verify.assert_called_once_with(filepath, developer_prompt)
+        mock_verify.assert_called_once_with(filepath)
 
     @patch("ci_tools.dimrset_delivery.validate_signing.verify_signing_authority")
     def test_signing_is_valid_returns_false_for_incorrectly_signed_file(self, mock_verify: Mock) -> None:
         """Test that signing_is_valid returns False for incorrectly signed file."""
         # Arrange
         filepath = "/test/dir/test_file.exe"
-        developer_prompt = "vcvars64.bat"
         expected_issued_to = "Deltares"
         mock_verify.return_value = ("Verified", "WrongIssuer")
 
         # Act
-        result = signing_is_valid(filepath, developer_prompt, expected_issued_to)
+        result = signing_is_valid(filepath, expected_issued_to)
 
         # Assert
         assert result is False
@@ -328,12 +306,11 @@ class TestSigningIsValid:
         """Test that signing_is_valid returns False for unsigned file that should be signed."""
         # Arrange
         filepath = "/test/dir/test_file.exe"
-        developer_prompt = "vcvars64.bat"
         expected_issued_to = "Deltares"
         mock_verify.return_value = ("Not Verified", "")
 
         # Act
-        result = signing_is_valid(filepath, developer_prompt, expected_issued_to)
+        result = signing_is_valid(filepath, expected_issued_to)
 
         # Assert
         assert result is False
@@ -343,12 +320,11 @@ class TestSigningIsValid:
         """Test that signing_is_valid returns False for signed file that should not be signed."""
         # Arrange
         filepath = "/test/dir/test_file.dll"
-        developer_prompt = "vcvars64.bat"
         expected_issued_to = ""
         mock_verify.return_value = ("Verified", "Deltares")
 
         # Act
-        result = signing_is_valid(filepath, developer_prompt, expected_issued_to)
+        result = signing_is_valid(filepath, expected_issued_to)
 
         # Assert
         assert result is False
@@ -361,12 +337,11 @@ class TestSigningIsValid:
         """
         # Arrange
         filepath = "/test/dir/test_file.dll"
-        developer_prompt = "vcvars64.bat"
         expected_issued_to = ""
         mock_verify.return_value = ("Not Verified", "")
 
         # Act
-        result = signing_is_valid(filepath, developer_prompt, expected_issued_to)
+        result = signing_is_valid(filepath, expected_issued_to)
 
         # Assert
         # The function logic is: status == "Verified" and expected_issued_to == issued_to
@@ -387,7 +362,6 @@ class TestIsSigningCorrect:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = [{"file": "signed_file.exe", "issuedTo": "Deltares"}]
         files_that_should_not_be_signed = [Path("unsigned_file.dll")]
-        developer_prompt = "vcvars64.bat"
 
         mock_executor_instance = Mock()
         mock_executor.return_value.__enter__.return_value = mock_executor_instance
@@ -401,7 +375,6 @@ class TestIsSigningCorrect:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
@@ -418,7 +391,6 @@ class TestIsSigningCorrect:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = [{"file": "signed_file.exe", "issuedTo": "Deltares"}]
         files_that_should_not_be_signed = [Path("unsigned_file.dll")]
-        developer_prompt = "vcvars64.bat"
 
         mock_executor_instance = Mock()
         mock_executor.return_value.__enter__.return_value = mock_executor_instance
@@ -432,7 +404,6 @@ class TestIsSigningCorrect:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
@@ -448,7 +419,6 @@ class TestIsSigningCorrect:
         directory = "/test/dir"
         files_that_should_be_signed_with_issued_to = [{"file": "signed_file.exe", "issuedTo": "Deltares"}]
         files_that_should_not_be_signed = [Path("unsigned_file.dll")]
-        developer_prompt = "vcvars64.bat"
 
         mock_executor_instance = Mock()
         mock_executor.return_value.__enter__.return_value = mock_executor_instance
@@ -462,7 +432,6 @@ class TestIsSigningCorrect:
             directory,
             files_that_should_be_signed_with_issued_to,
             files_that_should_not_be_signed,
-            developer_prompt,
         )
 
         # Assert
