@@ -2186,7 +2186,7 @@ contains
    call compute_ftheta(ftheta,ised,links_out_kinod(1))
    
    sq_sa=Q_sa/B_a !make per unit width.
-   sq_sy=sq_sa*(v/u-1/ftheta*dbl_dy) !Equation (1) (Equation (15) in Bolla-Pittaluga et al. (2003)).
+   sq_sy=sq_sa*(v/u-dbl_dy/ftheta) !Equation (1) (Equation (15) in Bolla-Pittaluga et al. (2003)).
    Q_sy=sq_sy*L_a !make total. 
    
    Q_sb=Q_sa+Q_sy !Equation (16) (implicit in Bolla-Pittaluga et al. (2003)).
