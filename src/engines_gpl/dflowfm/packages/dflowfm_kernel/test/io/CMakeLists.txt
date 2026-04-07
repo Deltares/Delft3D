@@ -82,5 +82,3 @@ f90twtest(test_ec_module_nesting
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 
-
-copy_test_resources("test_ec_module_nesting" "${CMAKE_CURRENT_SOURCE_DIR}/resources/nesting" "$<TARGET_FILE_DIR:test_ec_module_nesting>/nesting")
