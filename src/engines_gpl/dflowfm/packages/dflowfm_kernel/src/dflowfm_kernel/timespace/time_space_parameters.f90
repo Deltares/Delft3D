@@ -93,7 +93,45 @@ module timespace_parameters
    integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
+   ! enumeration for interpolation methods of providers
+   integer, parameter :: OPERAND_OVERRIDE = 1
+   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 2
+   integer, parameter :: OPERAND_ADD = 3
+   integer, parameter :: OPERAND_MULTIPLY = 4
+   integer, parameter :: OPERAND_MINIMUM = 5
+   integer, parameter :: OPERAND_MAXIMUM = 6
 contains
+
+   subroutine convert_operand_string_to_integer(string, operand, success)
+      implicit none
+      character(len=*), intent(in) :: string !< file type string
+      integer, intent(out) :: operand !< operand enumeration integer
+      logical, intent(out) :: success !< whether the conversion was successful
+
+      success = .false.
+
+      select case (trim(str_tolower(string)))
+      case ('o')
+         operand = OPERAND_OVERRIDE
+      case ('a')
+         operand = OPERAND_OVERRIDE_IF_MISSING
+      case ('+')
+         operand = OPERAND_ADD
+      case ('*')
+         operand = OPERAND_MULTIPLY
+      case ('v')
+         ! This used to map to operand_replace_if_value in the ec module, but this has been replaced by regular overriding behavior.
+         operand = OPERAND_OVERRIDE
+      case ('n')
+         operand = OPERAND_MINIMUM
+      case ('x')
+         operand = OPERAND_MAXIMUM
+      case default
+         return
+      end select
+
+      success = .true.
+   end subroutine convert_operand_string_to_integer
 
 !> Converts fileType string to an integer.
 !! Returns -1 when an invalid type string is given.

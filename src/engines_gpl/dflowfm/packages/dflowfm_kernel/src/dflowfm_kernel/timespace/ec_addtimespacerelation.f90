@@ -66,7 +66,7 @@ contains
       character(len=*), intent(in) :: filename !< File name of meteo data file.
       integer, intent(in) :: filetype !< FM's filetype enumeration.
       integer, intent(in) :: method !< FM's method enumeration.
-      character(len=1), intent(in) :: operand !< FM's operand enumeration.
+      integer, intent(in) :: operand !< FM's operand enumeration.
       real(kind=dp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
       real(kind=dp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
       real(kind=dp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate

@@ -1175,7 +1175,7 @@ contains
       use m_dambreak, only: BREACH_GROWTH_TIMESERIES
       use m_meteo, only: ec_addtimespacerelation
       use messagehandling, only: msgbuf, err_flush
-      use timespace_parameters, only: UNIFORM, SPACEANDTIME
+      use timespace_parameters, only: UNIFORM, SPACEANDTIME, OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: filename !< the name of the time series file
       type(t_dambreak), intent(inout) :: dambreak !< the dambreak data
@@ -1193,7 +1193,7 @@ contains
 
       if (index(trim(filename)//'|', '.tim|') > 0) then
          success = ec_addtimespacerelation(QID, XDUM, YDUM, KDUM, KX, filename, UNIFORM, &
-                                           SPACEANDTIME, 'O', targetIndex=1, tgt_item1=dambreak%ec_item)
+                                           SPACEANDTIME, OPERAND_OVERRIDE, targetIndex=1, tgt_item1=dambreak%ec_item)
          if (.not. success) then
             write (msgbuf, '(5a)') 'Cannot process a tim file for "', QID, '" for the dambreak "', trim(dambreak%name), '".'
             call err_flush()

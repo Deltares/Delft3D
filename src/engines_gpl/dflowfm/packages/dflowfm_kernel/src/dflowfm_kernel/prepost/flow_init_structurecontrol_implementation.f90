@@ -257,6 +257,7 @@ contains
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: add_dambreak_signal, update_dambreak_administration_old
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       logical :: status
       character(len=256) :: plifile
@@ -767,10 +768,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -828,10 +829,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -877,10 +878,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+2) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -911,10 +912,10 @@ contains
                         call resolvePath(fnam, md_structurefile_dir)
                         ! Time-interpolated value will be placed in zcgen((n-1)*3+3) when calling ec_gettimespacevalue.
                         if (index(trim(fnam)//'|', '.tim|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
                         end if
                         if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
                         end if
                      end if
                   end if
@@ -994,10 +995,10 @@ contains
                            fnam = trim(rec)
                            call resolvePath(fnam, md_structurefile_dir)
                            if (index(trim(fnam)//'|', '.tim|') > 0) then
-                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
+                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                            end if
                            if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
+                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                            end if
                         end if
                      end if
@@ -1099,11 +1100,11 @@ contains
                   call resolvePath(fnam, md_structurefile_dir)
                   if (index(trim(fnam)//'|', '.tim|') > 0) then
                      ! Time-interpolated value will be placed in zgate(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                   if (index(trim(fnam)//'|', '.cmp|') > 0) then
                      ! Evaluated harmonic signals value will be placed in zgate(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                end if
             end if
@@ -1180,11 +1181,11 @@ contains
                   call resolvePath(fnam, md_structurefile_dir)
                   if (index(trim(fnam)//'|', '.tim|') > 0) then
                      ! Time-interpolated value will be placed in zcdam(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                   if (index(trim(fnam)//'|', '.cmp|') > 0) then
                      ! Evaluated harmonic signals value will be placed in zcdam(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                end if
             end if
@@ -1326,7 +1327,7 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         ! Time-interpolated value will be placed in qpump(n) when calling ec_gettimespacevalue.
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                         if (.not. success) then
                            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
@@ -1334,7 +1335,7 @@ contains
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
                         ! Evaluated harmonic signals value will be placed in qpump(n) when calling ec_gettimespacevalue.
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                         if (.not. success) then
                            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
