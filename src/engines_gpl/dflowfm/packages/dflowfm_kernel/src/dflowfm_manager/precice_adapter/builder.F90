@@ -90,8 +90,8 @@ contains
 
       self%mesh_name = mesh_name
       self%mesh_size = mesh_size
-      self%mesh_coordinates_x = mesh_coordinates_x
-      self%mesh_coordinates_y = mesh_coordinates_y
+      self%mesh_coordinates_x => mesh_coordinates_x
+      self%mesh_coordinates_y => mesh_coordinates_y
    end subroutine builder_add_mesh_2d
 
    subroutine builder_enable_triangulation(self)
