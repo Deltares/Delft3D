@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include <charconv>
 #include <expected>
 #include <gtest/gtest.h>
@@ -9,11 +10,21 @@
 
 #include "FF2NF_writer.hpp"
 #include "monadic_utils.hpp"
+#include "parsing_utils.hpp"
 
 namespace
 {
     pre_c_sumo::FF2NFWriter buildExampleWriter()
     {
+        const std::vector<double> default_constituents = {15.0, 1.0}; // default temperature and tracer concentration
+
+        // Default layered structure: 10 layers, z = 0.05, 0.15, ..., 0.95, with zero velocity
+        const auto default_layers = std::views::iota(0u, 10u) | std::views::transform([](unsigned i) {
+                                        return pre_c_sumo::FarFieldLayer{
+                                            .depth_from_surface = i * 0.1 + 0.05, .x_velocity = 0.0, .y_velocity = 0.0};
+                                    }) |
+                                    std::ranges::to<std::vector>();
+
         return pre_c_sumo::FF2NFWriter()
             .setFF2NFFilename(R"(FF2NF\FF2NF__FlowFM_SubMod001_0.000.xml)")
             .setWaitForFile(
@@ -23,7 +34,13 @@ namespace
             .setUniqueId("")
             .setSubgridModelNumber(1)
             .setCurrentTimeSeconds(0.0)
-            .setConstituentNames({"temperature", "Tracer1"});
+            .setConstituentNames({"temperature", "Tracer1"})
+            .setDiffusers({{.x = 550.0,
+                            .y = 350.0,
+                            .water_depth = 10.0,
+                            .density = 1000.0,
+                            .constituents = default_constituents,
+                            .layers = default_layers}});
     }
 
     // Parse generated XML and return the root <COSUMO> child, failing the test
@@ -144,6 +161,15 @@ TEST(FF2NFWriterTest, CommFFUniqueIDIsWrittenWhenNonEmpty)
     EXPECT_EQ(nodeText(document, "COSUMO/comm/FFuniqueID"), "ABCDEF");
 }
 
+TEST(FF2NFWriterTest, UniqueIdLongerThan6CharactersIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setUniqueId("ABCDEFG"); // 7 characters
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "Unique ID must contain at most 6 characters");
+}
+
 TEST(FF2NFWriterTest, SubgridModelNrMatchesInput)
 {
     const auto document = generateDocument(buildExampleWriter());
@@ -181,4 +207,30 @@ TEST(FF2NFWriterTest, ConstituentNamesAreWrittenOnePerLine)
     ASSERT_EQ(lines.size(), 2u);
     EXPECT_EQ(lines[0], "temperature");
     EXPECT_EQ(lines[1], "Tracer1");
+}
+
+TEST(FF2NFWriterTest, FFDiffuserSectionIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFDiff");
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserXYZIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFDiff/XYZ");
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserOneXYZPerLine)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYZ");
+    const auto lines = nonBlankLines(text);
+    // We expect one horizontal point with 10 layers for the diffusers, so 10 lines
+    ASSERT_EQ(lines.size(), 10u);
+    const auto expectedDoubles = parsing_utils::parseDoubleVector(lines[5], "FFDiff/XYZ line 6");
+    ASSERT_TRUE(expectedDoubles.has_value()) << expectedDoubles.error().message;
+    EXPECT_NEAR((*expectedDoubles)[0], 550.0, 1e-12); // x coordinate
+    EXPECT_NEAR((*expectedDoubles)[1], 350.0, 1e-12); // y coordinate
+    EXPECT_NEAR((*expectedDoubles)[2], 0.55, 1e-12);  // z coordinate (depth from surface)
 }

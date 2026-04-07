@@ -2,6 +2,7 @@
 
 #include <expected>
 #include <algorithm>
+#include <format>
 #include <iterator>
 #include <pugixml.hpp>
 #include <ranges>
@@ -21,39 +22,10 @@ namespace
         decl.append_attribute("encoding") = "UTF-8";
     }
 
-    void addFF2NFFileName(pugi::xml_node& comm, const std::string_view ff2nf_filename)
+    template <typename DataType>
+    void addChildWithText(pugi::xml_node& parent, const std::string_view child_name, const DataType& data)
     {
-        comm.append_child("Filename").text() = ff2nf_filename;
-    }
-
-    void addWaitForFileName(pugi::xml_node& comm, const std::string_view wait_for_file)
-    {
-        comm.append_child("waitForFile").text() = wait_for_file;
-    }
-
-    void addFFRunDirectory(pugi::xml_node& comm, const std::string_view ff_run_directory)
-    {
-        comm.append_child("FFrundir").text() = ff_run_directory;
-    }
-
-    void addRunId(pugi::xml_node& comm, const std::string_view run_id)
-    {
-        comm.append_child("FFinputFile").text() = std::string{run_id} + ".mdu";
-    }
-
-    void addUniqueId(pugi::xml_node& comm, const std::string_view unique_id)
-    {
-        comm.append_child("FFuniqueID").text() = unique_id;
-    }
-
-    void addSubgridModelNumber(pugi::xml_node& subgrid_model, const int subgrid_model_nr)
-    {
-        subgrid_model.append_child("SubgridModelNr").text() = subgrid_model_nr;
-    }
-
-    void addCurrentTime(pugi::xml_node& subgrid_model, const double current_time_seconds)
-    {
-        subgrid_model.append_child("TIME").text() = current_time_seconds / 60.0;
+        parent.append_child(child_name).text() = data;
     }
 
     void addConstituentNames(pugi::xml_node& subgrid_model, const std::vector<std::string>& names)
@@ -64,6 +36,36 @@ namespace
         subgrid_model.append_child("constituentsNames").text() = text;
     }
 
+    void addXYZ(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    {
+        auto point_2d_to_xyz_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
+            return point.layers |
+                   std::views::transform([x = point.x, y = point.y](const pre_c_sumo::FarFieldLayer& layer) {
+                       return std::format("{:E}  {:E}  {:E}", x, y, layer.depth_from_surface);
+                   });
+        };
+        // Flatten each point × layer into a formatted "x  y  z" string, then join with '\n'.
+        auto xyz_strings = points | std::views::transform(point_2d_to_xyz_strings) |
+                           std::views::join; // range<range<string>> → range<string>
+
+        std::string text = "\n";
+        std::ranges::copy(xyz_strings | std::views::join_with('\n'), std::back_inserter(text));
+        text += '\n';
+
+        auto xyz_node = parent_node.append_child("XYZ");
+        xyz_node.text() = text;
+    }
+
+    void addFarFieldPoints(pugi::xml_node& parent_node, const std::string_view section_name,
+                           const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
+    {
+        auto section_node = parent_node.append_child(section_name);
+        addXYZ(section_node, points);
+        // addWaterDepth(section_node, points);
+        // addXYVelocity(section_node, points);
+        // addDensity(section_node, points);
+        // addConstituents(section_node, points);
+    }
 } // namespace
 
 namespace pre_c_sumo
@@ -130,39 +132,49 @@ namespace pre_c_sumo
         return *this;
     }
 
+    FF2NFWriter& FF2NFWriter::setDiffusers(const std::vector<FarFieldPoint2D>& diffusers)
+    {
+        diffusers_ = diffusers;
+        return *this;
+    }
+
     std::expected<void, WriteError> FF2NFWriter::validate() const
     {
         if (ff2nf_filename_.empty())
         {
-            return std::unexpected(WriteError{"setFF2NFFilename() was not called"});
+            return std::unexpected(WriteError{"FF2NF filename was not set"});
         }
         if (wait_for_file_.empty())
         {
-            return std::unexpected(WriteError{"setWaitForFile() was not called"});
+            return std::unexpected(WriteError{"Wait-for filename was not set"});
         }
         if (ff_run_directory_.empty())
         {
-            return std::unexpected(WriteError{"setFFRunDirectory() was not called"});
+            return std::unexpected(WriteError{"Far-field run directory was not set"});
         }
         if (run_id_.empty())
         {
-            return std::unexpected(WriteError{"setRunId() was not called"});
+            return std::unexpected(WriteError{"Run ID was not set"});
         }
         if (!unique_id_.has_value())
         {
-            return std::unexpected(WriteError{"setUniqueId() was not called"});
+            return std::unexpected(WriteError{"Unique ID was not set"});
+        }
+        if ((*unique_id_).size() > 6)
+        {
+            return std::unexpected(WriteError{"Unique ID must contain at most 6 characters"});
         }
         if (!subgrid_model_nr_.has_value())
         {
-            return std::unexpected(WriteError{"setSubgridModelNumber() was not called"});
+            return std::unexpected(WriteError{"Subgrid model number was not set"});
         }
         if (!current_time_seconds_.has_value())
         {
-            return std::unexpected(WriteError{"setCurrentTimeSeconds() was not called"});
+            return std::unexpected(WriteError{"Current time was not set"});
         }
         if (constituent_names_.empty())
         {
-            return std::unexpected(WriteError{"setConstituentNames() was not called"});
+            return std::unexpected(WriteError{"Constituent names were not set"});
         }
         return {};
     }
@@ -174,25 +186,25 @@ namespace pre_c_sumo
 
     void FF2NFWriter::createFileVersionSection(pugi::xml_node& root) const
     {
-        auto file_version_node = root.append_child("fileVersion");
-        file_version_node.text() = file_version.data();
+        addChildWithText(root, "fileVersion", file_version.data());
     }
 
     void FF2NFWriter::createCommSection(pugi::xml_node& root) const
     {
         auto comm = root.append_child("comm");
-        addFF2NFFileName(comm, ff2nf_filename_);
-        addWaitForFileName(comm, wait_for_file_);
-        addFFRunDirectory(comm, ff_run_directory_);
-        addRunId(comm, run_id_);
-        addUniqueId(comm, *unique_id_);
+        addChildWithText(comm, "Filename", ff2nf_filename_);
+        addChildWithText(comm, "waitForFile", wait_for_file_);
+        addChildWithText(comm, "FFrundir", ff_run_directory_);
+        addChildWithText(comm, "FFinputFile", run_id_ + ".mdu");
+        addChildWithText(comm, "FFuniqueID", *unique_id_);
     }
 
     void FF2NFWriter::createSubgridModelSection(pugi::xml_node& root) const
     {
         auto subgrid_model = root.append_child("SubgridModel");
-        addSubgridModelNumber(subgrid_model, *subgrid_model_nr_);
-        addCurrentTime(subgrid_model, *current_time_seconds_);
+        addChildWithText(subgrid_model, "SubgridModelNr", *subgrid_model_nr_);
+        addChildWithText(subgrid_model, "TIME", *current_time_seconds_ / 60.0);
         addConstituentNames(subgrid_model, constituent_names_);
+        addFarFieldPoints(subgrid_model, "FFDiff", diffusers_);
     }
 } // namespace pre_c_sumo

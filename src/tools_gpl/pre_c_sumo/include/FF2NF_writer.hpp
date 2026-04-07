@@ -15,6 +15,35 @@ namespace pre_c_sumo
         std::string message;
     };
 
+    /**
+     * @brief Far-field layer at a single horizontal point.
+     */
+    struct FarFieldLayer
+    {
+        double depth_from_surface{}; ///< Depth of the layer from the water surface [m].
+        double x_velocity{};         ///< X velocity in this layer [m/s].
+        double y_velocity{};         ///< Y velocity in this layer [m/s].
+    };
+
+    /**
+     * @brief Far-field state at a single horizontal point (diffuser, intake, or ambient).
+     *
+     * @note density and constituents are depth-averaged scalars (per node, not per layer);
+     *       the writer repeats them for every layer in the output.
+     */
+    struct FarFieldPoint2D
+    {
+        double x{};                        ///< X coordinate of the point [m].
+        double y{};                        ///< Y coordinate of the point [m].
+        double water_depth{};              ///< Total water depth at this point [m] (written to <waterDepth>).
+        double density{};                  ///< Depth-averaged density [kg/m³] (repeated for every layer in <rho>).
+        std::vector<double> constituents;  ///< Depth-averaged constituent concentrations (repeated per layer).
+        std::vector<FarFieldLayer> layers; ///< Layered velocity structure at this point.
+    };
+
+    /**
+     * @brief Writer for FF2NF XML files.
+     */
     class FF2NFWriter
     {
     public:
@@ -29,14 +58,12 @@ namespace pre_c_sumo
         FF2NFWriter& setUniqueId(std::string_view unique_id);
         FF2NFWriter& setSubgridModelNumber(int number);
         FF2NFWriter& setCurrentTimeSeconds(double seconds);
-        /// @return Error if @p names is empty or any individual name is empty.
         FF2NFWriter& setConstituentNames(const std::vector<std::string>& names);
-        /// @return Error if @p diffuser has no layers.
-        //[[nodiscard]] std::expected<void, WriteError> setDiffuser(GridPointState diffuser);
+        FF2NFWriter& setDiffusers(const std::vector<FarFieldPoint2D>& diffusers);
         /// @return Error if @p intake has no layers.
-        //[[nodiscard]] std::expected<void, WriteError> setIntake(GridPointState intake);
+        //[[nodiscard]] std::expected<void, WriteError> setIntake(PointState intake);
         /// @return Error if any point in @p ambient has no layers.
-        //[[nodiscard]] std::expected<void, WriteError> setAmbient(std::vector<GridPointState> ambient);
+        //[[nodiscard]] std::expected<void, WriteError> setAmbient(std::vector<PointState> ambient);
 
     private:
         constexpr static std::string_view root_element_name = "COSUMO";
@@ -49,10 +76,7 @@ namespace pre_c_sumo
         std::optional<int> subgrid_model_nr_;
         std::optional<double> current_time_seconds_;
         std::vector<std::string> constituent_names_;
-        // GridPointState diffuser_;
-        // GridPointState intake_;
-        // std::vector<GridPointState> ambient_;
-        // std::string settings_xml_;
+        std::vector<FarFieldPoint2D> diffusers_;
 
         /// Returns an error if any setter was not called.
         [[nodiscard]] std::expected<void, WriteError> validate() const;
