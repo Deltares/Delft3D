@@ -1,4 +1,5 @@
 set(source_files
+    endpoints.cpp
     pre_c_sumo_lib.cpp
     coupling_steps.cpp
     csumo_settings_reader.cpp
@@ -8,6 +9,7 @@ set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
     ${include_dir}/coupling_steps.hpp
     ${include_dir}/csumo_settings_reader.hpp
+    ${include_dir}/endpoints.hpp
     ${include_dir}/monadic_utils.hpp
 )
 
