@@ -3,7 +3,10 @@ module test_ec_module_nesting
    use assertions_gtest
    use m_meteo, only: initialize_ec_module, ec_addtimespacerelation, ec_gettimespacevalue, ecInstancePtr, item_waterlevelbnd
    use fm_external_forcings, only: addtimespacerelation_boundaries
+   use m_file_helpers, only: initialize_his_waterlevel, create_file
    implicit none
+
+   character(len=*), parameter :: PLI_FILENAME = "boundary_l2.pli"
 
 contains
 
@@ -48,7 +51,6 @@ contains
 
    subroutine initialize_netcdf() 
       use precision, only: dp
-      use m_file_helpers
       use cwd
 
       implicit none
@@ -107,8 +109,8 @@ contains
       waterlevel(1, :) = [0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp, 0.0_dp]
 
       ! Time step 2 (t=5s)
-      waterlevel(2, :) = [0.03337553_dp, 0.03230887_dp, 0.03185172_dp, &
-                          0.01863646_dp, 0.0181476_dp, 0.01763203_dp]
+      waterlevel(2, :) = [0.1_dp, 0.1_dp, 0.1_dp, &
+                          0.5_dp, 0.36_dp, 0.3_dp]
 
       ! Time step 3 (t=10s)
       waterlevel(3, :) = [0.08054169_dp, 0.07814353_dp, 0.07711574_dp, &
@@ -193,10 +195,19 @@ contains
 
       call initialize_netcdf()
 
+      call create_file(PLI_FILENAME, [ &
+                       "left2", &
+                       "        3 2", &
+                       "        101         250", &
+                       "        101         320", &
+                       "        101         350"])
+
+                       
+
       ! is_successful = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, 'nesting/boundary_left2.pli', &
       !                    filetype=9, method=3, operand='O', xyen=xy2bndz, forcingfile='nesting/TestCoarse_his.nc', dtnodal=dt_nodal)
 
-      is_successful = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, 'nesting/boundary_left2.pli', &
+      is_successful = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, PLI_FILENAME, &
                          filetype=9, method=3, operand='O', xyen=xy2bndz, forcingfile='TestCoarse_sample_his.nc', dtnodal=dt_nodal)
       call f90_expect_true(is_successful, "Add time spacerelation failed!")
 
@@ -209,12 +220,12 @@ contains
          ! This will be shifted a bit (plus physical processes) but after both interpolations (writing, reading)
          ! should still be close to a linear relationship with the same slope.
 
-         slope = -1.0e-4_dp
+         slope = -0.002_dp
          intercept = 0.21_dp
-         tolerance = 4.0e-5_dp  ! Adjust tolerance as needed
+         tolerance = 1.0e-5_dp  ! Adjust tolerance as needed
 
          results = [1.0_dp, 2.0_dp, 3.0_dp, 4.0_dp, 5.0_dp, 6.0_dp, 7.0_dp, 8.0_dp, 9.0_dp, 10.0_dp]
-         indices = [35.0_dp]
+         indices = [5.0_dp]
          do i = 1, size(indices)
             is_successful = ec_gettimespacevalue(ecInstancePtr, item_waterlevelbnd, 20010101, &
                                                  0.0_dp, 1, indices(i), target_array=results)
@@ -223,7 +234,7 @@ contains
                deviation = test_arrays_on_slope(ybndz, results, slope)
             end if
             print *, i, indices(i), "deviation =", deviation
-            call f90_assert_near(deviation, tolerance, 1.0e-5_dp, "Results do not match expected linear slope within tolerance!")
+            call f90_assert_near(deviation, 0.0_dp, tolerance, "Results do not match expected linear slope within tolerance!")
 
          end do
 
