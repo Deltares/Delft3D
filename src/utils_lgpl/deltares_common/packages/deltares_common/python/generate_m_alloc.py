@@ -228,7 +228,7 @@ contains
 
 end module m_alloc_generated
 """
-
+    output_file.parent.mkdir(parents=True, exist_ok=True)
     output_file.write_text(content, encoding="utf-8")
     print(f"Generated {output_file}")
 
