@@ -18,33 +18,30 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_radix_sort.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
-set(malloc_template_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in")
-set(malloc_output_file "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
-set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/cmake/generate_m_alloc.cmake")
 
-# Generate at configure time for the module dependency scanner
+set(malloc_template_file  "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_body.f90.in")
+set(malloc_output_file    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
+set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
+
+if(NOT Python_FOUND)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
+endif()
 execute_process(
-    COMMAND ${CMAKE_COMMAND}
-            -D malloc_template_file=${malloc_template_file}
-            -D malloc_output_file=${malloc_output_file}
-            -P ${malloc_generator_file}
+    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_template_file} ${malloc_output_file}
     RESULT_VARIABLE generate_result
+    OUTPUT_VARIABLE generate_output
     ERROR_VARIABLE  generate_error
 )
 if(NOT generate_result EQUAL 0)
-    message(FATAL_ERROR "Failed to generate m_alloc_generated.f90:\n${generate_error}")
+    message(FATAL_ERROR "Failed to generate m_alloc_generated.f90:\nstdout: ${generate_output}\nstderr: ${generate_error}")
 endif()
 
-# custom command to automatically regenerate m_alloc when anything changes in the template or generator file
 add_custom_command(
     OUTPUT  "${malloc_output_file}"
-    COMMAND ${CMAKE_COMMAND}
-            -D malloc_template_file="${malloc_template_file}"
-            -D malloc_output_file="${malloc_output_file}"
-            -P "${malloc_generator_file}"
+    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_template_file} ${malloc_output_file}
     DEPENDS "${malloc_template_file}"
             "${malloc_generator_file}"
-    COMMENT "Generating m_alloc_generated.f90"
+    COMMENT "Regenerating m_alloc_generated.f90"
 )
 
 get_fortran_source_files(src source)
