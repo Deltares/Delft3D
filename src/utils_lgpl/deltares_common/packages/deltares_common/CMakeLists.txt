@@ -25,6 +25,7 @@ endif()
 set(malloc_output_file    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
 set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
 
+# Configure-time generation (kept)
 execute_process(
     COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_output_file}
     RESULT_VARIABLE generate_result
@@ -35,12 +36,18 @@ if(NOT generate_result EQUAL 0)
     message(FATAL_ERROR "Failed to generate m_alloc_generated.f90:\nstdout: ${generate_output}\nstderr: ${generate_error}")
 endif()
 
+# Build-time regeneration rule
 add_custom_command(
     OUTPUT  "${malloc_output_file}"
     COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_output_file}
     DEPENDS "${malloc_generator_file}"
     COMMENT "Regenerating m_alloc_generated.f90"
+    VERBATIM
 )
+
+# Force build graph to consider this generation step explicitly
+add_custom_target(generate_m_alloc_generated DEPENDS "${malloc_output_file}")
+set_source_files_properties("${malloc_output_file}" PROPERTIES GENERATED TRUE)
 
 get_fortran_source_files(src source)
 
@@ -49,10 +56,10 @@ add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
                             ${malloc_output_file}
-                            ${malloc_template_file}
                             ${malloc_generator_file}
                             ${fortran_version_file}
 )
+add_dependencies(${library_name} generate_m_alloc_generated)
 
 target_link_libraries(${library_name} PRIVATE deltares_common_c)
 
@@ -75,7 +82,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
                                                     ${stdlib_source}
                                                     ${fortran_version_file}
                                                     ${malloc_output_file}
-                                                    ${malloc_template_file}
                                                     ${malloc_generator_file})
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)

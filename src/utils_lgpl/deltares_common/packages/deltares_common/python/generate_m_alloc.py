@@ -6,7 +6,6 @@ Usage: python generate_m_alloc.py <output_file>
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from textwrap import indent
 
 # --- Type definitions --------------------------------------------------------
 
@@ -37,6 +36,8 @@ class Rank:
 
     @property
     def drank(self):
+        # Repeat ":" n times and join with ",":
+        # n=1 -> "(:)", n=3 -> "(:,:,:)"
         return "(" + ",".join([":"] * self.n) + ")"
 
     @property
@@ -45,14 +46,18 @@ class Rank:
 
     @property
     def lindex_one(self):
+        # n=1 -> "1", n=3 -> "(1, 1, 1)"
         return "1" if self.n == 1 else "[" + ", ".join(["1"] * self.n) + "]"
 
     @property
     def shift_zero(self):
+        # n=1 -> "0", n=4 -> "(0, 0, 0, 0)"
         return "0" if self.n == 1 else "[" + ", ".join(["0"] * self.n) + "]"
 
     @property
     def allocate_temp(self):
+        # Build per-dimension bounds and join by ", ":
+        # n=3 -> "new_l_index(1):uindex(1), new_l_index(2):uindex(2), new_l_index(3):uindex(3)"
         dims = ", ".join(f"new_l_index({i}):uindex({i})" for i in range(1, self.n + 1))
         if self.n == 1:
             dims = "new_l_index:uindex"
@@ -78,8 +83,20 @@ class Rank:
     def copy_section(self):
         if self.n == 1:
             return "temp(data_l_index:data_u_index) = arr(data_l_index - shift_:data_u_index - shift_)"
-        temp_idx = ", ".join(f"data_l_index({i}):data_u_index({i})"                   for i in range(1, self.n + 1))
-        arr_idx  = ", ".join(f"data_l_index({i}) - shift_({i}):data_u_index({i}) - shift_({i})" for i in range(1, self.n + 1))
+# Build "data_l_index(k):data_u_index(k)" for each dimension k and join with ", ".
+        # n=2 temp_idx:
+        # "data_l_index(1):data_u_index(1), data_l_index(2):data_u_index(2)"
+        temp_idx = ", ".join(
+            f"data_l_index({i}):data_u_index({i})"
+            for i in range(1, self.n + 1)
+        )
+        # Build shifted source slices and join with ", ".
+        # n=2 arr_idx:
+        # "data_l_index(1) - shift_(1):data_u_index(1) - shift_(1), data_l_index(2) - shift_(2):data_u_index(2) - shift_(2)"
+        arr_idx = ", ".join(
+            f"data_l_index({i}) - shift_({i}):data_u_index({i}) - shift_({i})"
+            for i in range(1, self.n + 1)
+        )
         return f"temp({temp_idx}) = arr({arr_idx})"
 
 
