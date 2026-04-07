@@ -56,7 +56,6 @@ contains
       use m_flowtimes, only: handle_extra 
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
-      use m_flowparameters, only: epshs
       use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
                                      ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, &
                                      ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, &
