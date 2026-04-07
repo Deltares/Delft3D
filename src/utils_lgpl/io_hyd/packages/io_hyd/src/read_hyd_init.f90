@@ -217,12 +217,15 @@
       integer, intent(in)                :: num_layers
 
       integer                            :: i
+      real(kind=kind(1.0d0))             :: reciprocal_number
 
       allocate( waqgeom%interface_zs(num_layers + 1) )
       allocate( waqgeom%layer_zs(num_layers) )
 
-      waqgeom%layer_zs     = [ (0.5 + (i-1) * 1.0/num_layers, i = 1,num_layers) ]
-      waqgeom%interface_zs = [ ( (i-1) * 1.0/num_layers, i = 1,num_layers), 1.0 ]
+      reciprocal_number = 1.0 / num_layers
+
+      waqgeom%layer_zs     = [ ( -(i-0.5) * reciprocal_number, i = 1,num_layers) ]
+      waqgeom%interface_zs = [ ( -(i-1  ) * reciprocal_number, i = 1,num_layers), 0.0d0 ]
 
       end subroutine fillin_layers
       end
