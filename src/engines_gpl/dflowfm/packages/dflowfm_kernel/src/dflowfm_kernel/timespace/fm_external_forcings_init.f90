@@ -683,7 +683,7 @@ contains
          if (.not. success) then
             select case (quantity)
             case ('airdensity')
-               call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.false.)
+               call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
             case ('airpressure', 'atmosphericpressure')
                call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
             case ('pseudoAirPressure')
@@ -693,27 +693,27 @@ contains
 
             case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
                call allocatewindarrays()
-               call realloc(air_pressure, ndx, keepExisting=.false., fill=DEFAULT_AIR_PRESSURE)
-               call realloc(ec_pwxwy_x, ndx, keepExisting=.false., fill=0.0_dp)
-               call realloc(ec_pwxwy_y, ndx, keepExisting=.false., fill=0.0_dp)
+               call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
+               call realloc(ec_pwxwy_x, ndx, keepexisting=.true., fill=0.0_dp)
+               call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
                jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
                jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
 
                if (jaspacevarcharn == 1) then
-                  call realloc(ec_pwxwy_c, ndx, keepExisting=.false., fill=0.0_dp)
-                  call realloc(wcharnock, lnx, keepExisting=.false., fill=0.0_dp)
+                  call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
+                  call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
                end if
 
             case ('charnock')
-               call realloc(ec_charnock, ndx, keepExisting=.false., fill=0.0_dp)
-               call realloc(wcharnock, lnx, keepExisting=.false., fill=0.0_dp)
+               call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
+               call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
 
             case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                target_location_type = UNC_LOC_U
                jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
                call allocatewindarrays()
             case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-               call realloc(rain, ndx, keepExisting=.false., fill=0.0_dp)
+               call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
 
             case ('qext')
                res = init_qext_forcings(block_ptr, input)

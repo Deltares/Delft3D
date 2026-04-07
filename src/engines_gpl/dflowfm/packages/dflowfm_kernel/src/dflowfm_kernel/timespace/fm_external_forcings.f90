@@ -2965,20 +2965,25 @@ contains
       end if
    end function check_keyword_zerozbndinflowadvection
 
-   subroutine allocatewindarrays()
+subroutine allocatewindarrays()
       use m_wind, only: wx, wy 
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx
-      use m_alloc, only: realloc
+      use m_alloc, only: realloc, aerr
 
-       if (allocated(wx)) then
-         return !> realloc is not pointer safe!
-       end if
-       call realloc(wx, lnx, keepExisting=.false., fill=0.0_dp)
-       call realloc(wy, lnx, keepExisting=.false., fill=0.0_dp)
-       call realloc(wdsu, lnx, keepExisting=.false., fill=0.0_dp)
-       call realloc(wdsu_x, lnx, keepExisting=.false., fill=0.0_dp)
-       call realloc(wdsu_y, lnx, keepExisting=.false., fill=0.0_dp)
+      implicit none
+
+      integer :: ierr
+
+      if (.not. allocated(wx)) then
+         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
+         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+         wx = 0.0_dp
+         wy = 0.0_dp
+         wdsu = 0.0_dp
+         wdsu_x = 0.0_dp
+         wdsu_y = 0.0_dp
+      end if
 
    end subroutine allocatewindarrays
 
