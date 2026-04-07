@@ -1,5 +1,5 @@
-#ifndef SRC_TOOLS_GPL_CSUMO_PRECICE_MONADIC_UTILS_HPP
-#define SRC_TOOLS_GPL_CSUMO_PRECICE_MONADIC_UTILS_HPP
+#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_MONADIC_UTILS_HPP
+#define SRC_TOOLS_GPL_PRE_C_SUMO_MONADIC_UTILS_HPP
 
 #include <expected>
 #include <optional>
@@ -61,4 +61,4 @@ namespace monadic_utils
     inline constexpr auto unwrap = []<internal::IsMonadic T>(T&& value) { return *std::forward<T>(value); };
 } // namespace monadic_utils
 
-#endif // SRC_TOOLS_GPL_CSUMO_PRECICE_MONADIC_UTILS_HPP
+#endif // SRC_TOOLS_GPL_PRE_C_SUMO_MONADIC_UTILS_HPP

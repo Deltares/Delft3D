@@ -44,6 +44,15 @@ object StartVerschilanalyse : BuildType({
         param("model_filter", "")
         param("json_configs_path", "config")
         checkbox(
+            "run_models",
+            "true",
+            display = ParameterDisplay.NORMAL,
+            label = "Run models on H7",
+            description = "Run models on Slurm before running Verschillentool. Disable to reuse existing output at current_prefix.",
+            checked = "true",
+            unchecked = "false",
+        )
+        checkbox(
             "send_email",
             "true",
             display = ParameterDisplay.NORMAL,
@@ -124,6 +133,7 @@ object StartVerschilanalyse : BuildType({
                 export BUILD_ID='%teamcity.build.id%'
                 export BRANCH_NAME='%teamcity.build.branch%'
                 export SEND_EMAIL='%send_email%'
+                export RUN_MODELS='%run_models%'
 
                 # Create the builds dir if it does not exist
                 builds_dir="/p/devops-dsc/verschilanalyse/builds"
@@ -152,6 +162,7 @@ object StartVerschilanalyse : BuildType({
                     --models-path='%models_path%' \
                     --model-filter='%model_filter%' \
                     --json-configs-path='%json_configs_path%' \
+                    --run-models='%run_models%' \
                     --va-home="${'$'}{va_home}"
                 popd
             """.trimIndent()
