@@ -53,7 +53,7 @@ contains
                         rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
                         use_density
-      use m_flowtimes, only: handle_extra
+      use m_flowtimes, only: handle_extra 
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
       use m_flowparameters, only: epshs
@@ -249,7 +249,7 @@ contains
             if (neighbour_nodes_obs(1,i) /=0) then
                do i_neighbours = 1,3
                   ! Points that based on their depth are initially dry (epshs does not recognize temporary drying)
-                  if (water_depth(neighbour_nodes_obs(i_neighbours,i)) < epshs) wet_or_dry(neighbour_nodes_obs(i_neighbours,i)) = 0
+                  if (water_depth(neighbour_nodes_obs(i_neighbours,i)) < 0.10_dp) wet_or_dry(neighbour_nodes_obs(i_neighbours,i)) = 0
                end do
             end if
          end if
