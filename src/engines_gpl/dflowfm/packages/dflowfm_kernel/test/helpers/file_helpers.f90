@@ -44,6 +44,7 @@ contains
       use netcdf_utils, only: check_netcdf_error
       use unstruc_netcdf, only: unc_create, definencvar, unc_addcoordatts, unc_addcoordmapping
       use m_missing, only: dmiss
+      use iso_c_binding
       
       implicit none
       
@@ -152,7 +153,7 @@ contains
       call check_netcdf_error(nf90_put_att(ihisfile, id_stat_y_coord, 'standard_name', 'projection_y_coordinate'))
       
       ! Define waterlevel variable
-      call definencvar(ihisfile, id_waterlevel, nf90_double, [id_timedim, id_statdim], &
+      call definencvar(ihisfile, id_waterlevel, nf90_double, [id_statdim, id_timedim], &
                       'waterlevel', 'water level', 'm', 'station_x_coordinate station_y_coordinate station_name', &
                       fillVal=dmiss, add_gridmapping=.true.)
       call check_netcdf_error(nf90_put_att(ihisfile, id_waterlevel, 'standard_name', 'sea_surface_height'))
@@ -167,10 +168,10 @@ contains
       
       ! Write station names
       do i = 1, nstations
-         call check_netcdf_error(nf90_put_var(ihisfile, id_statname, trim(station_names(i)), &
-                                start=[1, i], count=[strlen_netcdf, 1]))
-         call check_netcdf_error(nf90_put_var(ihisfile, id_statid, trim(station_names(i)), &
-                                start=[1, i], count=[strlen_netcdf, 1]))
+          call check_netcdf_error(nf90_put_var(ihisfile, id_statname, trim(station_names(i)), &
+                           start=[1, i], count=[len_trim(station_names(i)), 1]))
+          call check_netcdf_error(nf90_put_var(ihisfile, id_statid, trim(station_names(i)), &
+                           start=[1, i], count=[len_trim(station_names(i)), 1]))
       end do
       
       ! Write station coordinates
@@ -187,9 +188,9 @@ contains
       call check_netcdf_error(nf90_put_var(ihisfile, id_statnodecount, node_count))
       deallocate(node_count)
       
-      ! Write waterlevel data
-      call check_netcdf_error(nf90_put_var(ihisfile, id_waterlevel, waterlevel, &
-                             start=[1, 1], count=[ntimes, nstations]))
+      ! Write waterlevel data (transpose because NetCDF expects station as first dim, time as second)
+      call check_netcdf_error(nf90_put_var(ihisfile, id_waterlevel, transpose(waterlevel), &
+                             start=[1, 1], count=[nstations, ntimes]))
       
       ! Close file
       call check_netcdf_error(nf90_close(ihisfile))

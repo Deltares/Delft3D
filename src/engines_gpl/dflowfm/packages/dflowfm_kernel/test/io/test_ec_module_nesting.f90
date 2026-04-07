@@ -46,12 +46,10 @@ contains
       ! all f90_expect_true(slope_matches, trim(error_msg))
    end function test_arrays_on_slope
 
-   subroutine test_netcdf_waterlevel_write()
-      !> Sample program demonstrating how to use initialize_his_waterlevel
-      !> This creates a NetCDF file matching the structure of TestCoarse_his.nc
-
+   subroutine initialize_netcdf() 
       use precision, only: dp
       use m_file_helpers
+      use cwd
 
       implicit none
 
@@ -66,9 +64,12 @@ contains
       real(kind=dp) :: time_values(ntimes)
       real(kind=dp) :: waterlevel(ntimes, nstations)
       character(len=*), parameter :: reference_time = "seconds since 2001-01-01 00:00:00 +00:00"
-      character(len=*), parameter :: output_file = "TestCoarse_his_sample.nc"
+      character(len=*), parameter :: output_file = "TestCoarse_sample_his.nc"
+
+      character(len=1024) :: current_directory
 
       integer :: i, j
+      integer :: status
 
       ! ========================================
       ! Initialize station data
@@ -78,9 +79,9 @@ contains
       station_names(1) = "left_0001"
       station_names(2) = "left_0002"
       station_names(3) = "left_0003"
-      station_names(4) = "right_0001"  ! Inferred from data
-      station_names(5) = "right_0002"  ! Inferred from data
-      station_names(6) = "right_0003"  ! Inferred from data
+      station_names(4) = "left2_0001"  ! Inferred from data
+      station_names(5) = "left2_0002"  ! Inferred from data
+      station_names(6) = "left2_0003"  ! Inferred from data
 
       ! Station coordinates from CDL
       station_x = [50.0_dp, 50.0_dp, 50.0_dp, 101.0_dp, 101.0_dp, 101.0_dp]
@@ -155,9 +156,19 @@ contains
       write (*, '(A)') "  Reference time: "//reference_time
       write (*, '(A)') ""
       write (*, '(A)') "To view the file, run:"
-      write (*, '(A)') "  ncdump "//output_file
+      status = getcwd(current_directory)
+      write (*, '(A)') "  ncdump "//trim(current_directory)//"/"//trim(output_file)
+   end subroutine
+
+   !$f90tw TESTCODE(TEST, test_ec_module_nesting, test_netcdf_waterlevel_write, test_netcdf_waterlevel_write,
+   subroutine test_netcdf_waterlevel_write() bind(C)
+      !> Sample program demonstrating how to use initialize_his_waterlevel
+      !> This creates a NetCDF file matching the structure of TestCoarse_his.nc
+
+      call initialize_netcdf()
 
    end subroutine test_netcdf_waterlevel_write
+   !$f90tw)   
 
    !$f90tw TESTCODE(TEST, test_ec_module_nesting, test_basic, test_basic,
    subroutine test_basic() bind(C)
@@ -180,9 +191,13 @@ contains
       !   is_successful = addtimespacerelation_boundaries(qid, "nesting/TestFine_bnd.ext", filetype=9, method=3, &
       !                                                               operand='O', forcing_file='nesting/TestCoarse_his.nc')
 
-      is_successful = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, 'nesting/boundary_left2.pli', &
-                         filetype=9, method=3, operand='O', xyen=xy2bndz, forcingfile='nesting/TestCoarse_his.nc', dtnodal=dt_nodal)
+      call initialize_netcdf()
 
+      ! is_successful = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, 'nesting/boundary_left2.pli', &
+      !                    filetype=9, method=3, operand='O', xyen=xy2bndz, forcingfile='nesting/TestCoarse_his.nc', dtnodal=dt_nodal)
+
+      is_successful = ec_addtimespacerelation(qid, xbndz, ybndz, kdz, kx, 'nesting/boundary_left2.pli', &
+                         filetype=9, method=3, operand='O', xyen=xy2bndz, forcingfile='TestCoarse_sample_his.nc', dtnodal=dt_nodal)
       call f90_expect_true(is_successful, "Add time spacerelation failed!")
 
       block
