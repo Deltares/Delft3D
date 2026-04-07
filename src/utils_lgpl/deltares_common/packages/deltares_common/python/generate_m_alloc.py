@@ -83,7 +83,7 @@ class Rank:
     def copy_section(self):
         if self.n == 1:
             return "temp(data_l_index:data_u_index) = arr(data_l_index - shift_:data_u_index - shift_)"
-# Build "data_l_index(k):data_u_index(k)" for each dimension k and join with ", ".
+        # Build "data_l_index(k):data_u_index(k)" for each dimension k and join with ", ".
         # n=2 temp_idx:
         # "data_l_index(1):data_u_index(1), data_l_index(2):data_u_index(2)"
         temp_idx = ", ".join(
@@ -115,7 +115,10 @@ class Attr:
     @property
     def move_alloc(self):
         if self.name == "pointer":
-            return "if (associated(arr)) deallocate(arr,stat=stat_)\n      arr => temp"
+            return ("if (associated(arr)) then\n"
+              "         deallocate(arr,stat=stat_)\n"
+              "         arr => temp\n"
+              "      end if")
         return "call move_alloc(temp, arr)"
 
 
@@ -148,9 +151,15 @@ def generate_subroutine(ftype: FortranType, rank: Rank, attr: Attr) -> str:
       keepExisting_ = .true.
       stat_ = 0
 
-      if (present(lindex)) new_l_index = lindex
-      if (present(shift)) shift_ = shift
-      if (present(keepExisting)) keepExisting_ = keepExisting
+      if (present(lindex)) then
+         new_l_index = lindex
+      end if
+      if (present(shift)) then
+         shift_ = shift
+      end if
+      if (present(keepExisting)) then
+         keepExisting_ = keepExisting
+      end if
 
       allocated_old = {attr.is_allocated}
 
@@ -170,8 +179,9 @@ def generate_subroutine(ftype: FortranType, rank: Rank, attr: Attr) -> str:
       if (stat_ /= 0) then
          goto 999
       end if
-      if (present(fill)) temp = fill
-
+      if (present(fill)) then
+         temp = fill
+      end if
       if (keepExisting_ .and. allocated_old) then
          data_l_index = max(old_l_index + shift_, new_l_index)
          data_u_index = min(old_u_index + shift_, uindex)
@@ -182,9 +192,10 @@ def generate_subroutine(ftype: FortranType, rank: Rank, attr: Attr) -> str:
 
       {attr.move_alloc}
       999   continue
-      if (present(stat)) stat = stat_
+      if (present(stat)) then 
+         stat = stat_
+      end if
    end subroutine {proc_name}"""
-
 
 def generate(output_file: Path) -> None:
     types = FortranType.all()
