@@ -248,7 +248,7 @@ contains
 
    end subroutine fm_adjust_bedload
 
-subroutine compute_ftheta(ftheta,l,Lf)
+subroutine compute_ftheta(ftheta,lsed,Lf)
    use m_fm_erosed, only: dm, ashld, bshld, cshld, dshld, alfpa, hidexp, thcrpa, ust2, lsedtot, sedd50, sedd50fld, rhosol, islope
    use m_turbulence, only: rhou
    use m_flow, only: hu
@@ -260,7 +260,7 @@ subroutine compute_ftheta(ftheta,l,Lf)
    
    implicit none
    
-   integer, intent(in) :: l !< sediment index
+   integer, intent(in) :: lsed !< sediment index
    integer, intent(in) :: Lf !< link index
    real(kind=dp), intent(out) :: ftheta !< f(\theta)
    
@@ -274,7 +274,7 @@ subroutine compute_ftheta(ftheta,l,Lf)
    depth = hu(Lf)
    call getLbotLtop(Lf, Lb, Lt)
    
-   di50 = sedd50(l)
+   di50 = sedd50(lsed)
    di50spatial = .false.
    if (di50 < 0.0_dp .and. lsedtot == 1) then
       di50spatial = .true.
@@ -284,7 +284,7 @@ subroutine compute_ftheta(ftheta,l,Lf)
    if (di50spatial) then
       di50 = sqrt(sedd50fld(k1) * sedd50fld(k2))
    end if
-   delta = (rhosol(l) - rhou(lb)) / rhou(lb)
+   delta = (rhosol(lsed) - rhou(lb)) / rhou(lb)
    shield = ust2avg / ag / delta / di50
 
    if (shield /= 0.0_dp) then
@@ -300,7 +300,7 @@ subroutine compute_ftheta(ftheta,l,Lf)
          ftheta = ashld * (shield**bshld) * &
             ((di50 / depth)**cshld) * ((di50 / dmloc)**dshld)
       else ! islope==4
-         hidexploc = (hidexp(k1, l) + hidexp(k2, l)) / 2.0_dp
+         hidexploc = (hidexp(k1, lsed) + hidexp(k2, lsed)) / 2.0_dp
          ftheta = alfpa * sqrt(shield / &
             max(shield * 0.1_dp, hidexploc * thcrpa))
       end if

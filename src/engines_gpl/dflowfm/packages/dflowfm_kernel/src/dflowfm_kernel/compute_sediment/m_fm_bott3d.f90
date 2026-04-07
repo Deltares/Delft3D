@@ -600,7 +600,7 @@ contains
    !!
 
       use precision, only: dp
-      use Messagehandling, only: LEVEL_FATAL, LEVEL_INFO, mess
+      use Messagehandling, only: LEVEL_FATAL, LEVEL_INFO, mess, errmsg
       use message_module, only: writemessages, write_error
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
       use m_fm_erosed, only: lsedtot, e_sbcn, e_sbct
@@ -705,7 +705,8 @@ contains
                       endif          
                       e_sbct(L, ised) = 0.0       
                   else
-                     call mess(LEVEL_FATAL, 'Unknown Nodal Point Relation Method Specified')
+                     write (errmsg, '(a,a)') 'Unknown Nodal Point Relation Method Specified at node: ' // trim(pNodRel%node)
+                     call mess(LEVEL_FATAL, errmsg)
                   end if
                
                else
@@ -2152,7 +2153,10 @@ contains
    
    pNodRel => pNodRel_in
 
-   dbl_dy = (bl_out_kinod(1) - bl_out_kinod(2)) / ((width_out_kinod(1) + width_out_kinod(2)) / 2.0_dp)
+   !Equations as in: 
+   !Chavarrias, V. (2026) "Implementation of Bolla Pittaluga et al. (2003) nodal point relation: Review of the relation", Deltares internal memo.
+
+   dbl_dy = (bl_out_kinod(1) - bl_out_kinod(2)) / ((width_out_kinod(1) + width_out_kinod(2)) / 2.0_dp) !Equation (18). In Bolla-Pittaluga et al. (2003): "The transverse bed slope is calculated in terms of the difference between bed elevations at the inlet of channels b and c".
    
    B_a = width_in_kinod(1)
    B_b = width_out_kinod(1)
@@ -2173,19 +2177,20 @@ contains
    
    !u=Q_a/D_a/B_a
    u = max(u_in_kinod(1) * u_to_main_in_kinod(1),U_THRESH) !we later divide by `u`
-   
-   Q_y=Q_b-Q_a*(B_b/(B_b+B_c))
-   D_abc=0.5*((D_b+D_c)/2+D_a)
-   v=Q_y/D_abc/L_a
+    
+
+   Q_y=Q_b-Q_a*(B_b/(B_b+B_c)) !Equation (13) (rework of Equation (16) in Bolla-Pittaluga et al. (2003)).
+   D_abc=0.5*((D_b+D_c)/2+D_a) !Equation (12) (Equation (17) in Bolla-Pittaluga et al. (2003)).
+   v=Q_y/D_abc/L_a !Equation (11) (part of Equation (15) in Bolla-Pittalugaet al. (2003)).
    
    call compute_ftheta(ftheta,ised,links_out_kinod(1))
    
-   sq_sa=Q_sa/B_a
-   sq_sy=sq_sa*(v/u-1/ftheta*dbl_dy)
-   Q_sy=sq_sy*L_a
+   sq_sa=Q_sa/B_a !make per unit width.
+   sq_sy=sq_sa*(v/u-1/ftheta*dbl_dy) !Equation (1) (Equation (15) in Bolla-Pittaluga et al. (2003)).
+   Q_sy=sq_sy*L_a !make total. 
    
-   Q_sb=Q_sa+Q_sy
-   sq_sb=Q_sb/B_b
+   Q_sb=Q_sa+Q_sy !Equation (16) (implicit in Bolla-Pittaluga et al. (2003)).
+   sq_sb=Q_sb/B_b !make per unit width.
 
    end subroutine
 
@@ -2208,51 +2213,59 @@ contains
    real(fp), dimension(:, :), allocatable, intent(out) :: total_sediment_transport_out !< Total sediment transport that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. [n_junctions, lsedtot]
    integer, dimension(:), allocatable, intent(out) :: idx_junctions !< Indices of junctions in the network. [n_junctions]
    integer, intent(out) :: n_junctions !< Number of junctions in the network.
-   integer, dimension (:,:), allocatable, intent(out) :: links_out ! Link index of the outgoing branches. [n_junctions,maxnumberofconnections]
-   integer, dimension (:,:), allocatable, intent(out) :: link_dir_out ! Direction of the outgoing links. [n_junctions,maxnumberofconnections]
-   integer, dimension (:), allocatable, intent(out) :: n_links_out ! Number of outgoing links for each junction. [n_junctions]
-   integer, dimension (:,:), allocatable, intent(out) :: links_in ! Link index of the incoming branches. [n_junctions,maxnumberofconnections]
-   integer, dimension (:), allocatable, intent(out) :: n_links_in ! Number of incoming links for each junction. [n_junctions]
-   real(fp), dimension (:,:), allocatable, intent(out) :: width_out ! Width of the outgoing links. [n_junctions,maxnumberofconnections]
-   real(fp), dimension (:,:), allocatable, intent(out) :: water_discharge_out ! Water discharge of the outgoing links. [n_junctions,maxnumberofconnections]
-   integer, dimension (:), allocatable, intent(out) :: flownode_junction ! Flow node indices for each junction. [n_junctions]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: width_in ! Width at incoming branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_in ! Velocity at incoming branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: q_main_in ! Main-channel discharge at incoming branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_to_main_in ! Velocity conversion factor at incoming branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_out ! Velocity at outgoing branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: q_main_out ! Main-channel discharge at outgoing branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_to_main_out ! Velocity conversion factor at outgoing branches. [n_junctions,maxnumberofconnections]
-   real(kind=dp), dimension (:,:), allocatable, intent(out) :: bl_out ! Downstream bottom level at outgoing branches. [n_junctions,maxnumberofconnections]
+   integer, dimension (:,:), allocatable, intent(out) :: links_out !< Link index of the outgoing branches. [n_junctions,maxnumberofconnections]
+   integer, dimension (:,:), allocatable, intent(out) :: link_dir_out !< Direction of the outgoing links. [n_junctions,maxnumberofconnections]
+   integer, dimension (:), allocatable, intent(out) :: n_links_out !< Number of outgoing links for each junction. [n_junctions]
+   integer, dimension (:,:), allocatable, intent(out) :: links_in !< Link index of the incoming branches. [n_junctions,maxnumberofconnections]
+   integer, dimension (:), allocatable, intent(out) :: n_links_in !< Number of incoming links for each junction. [n_junctions]
+   real(fp), dimension (:,:), allocatable, intent(out) :: width_out !< Width of the outgoing links. [n_junctions,maxnumberofconnections]
+   real(fp), dimension (:,:), allocatable, intent(out) :: water_discharge_out !< Water discharge of the outgoing links. [n_junctions,maxnumberofconnections]
+   integer, dimension (:), allocatable, intent(out) :: flownode_junction !< Flow node indices for each junction. [n_junctions]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: width_in !< Width at incoming branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_in !< Velocity at incoming branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: q_main_in !< Main-channel discharge at incoming branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_to_main_in !< Velocity conversion factor at incoming branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_out !< Velocity at outgoing branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: q_main_out !< Main-channel discharge at outgoing branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: u_to_main_out !< Velocity conversion factor at outgoing branches. [n_junctions,maxnumberofconnections]
+   real(kind=dp), dimension (:,:), allocatable, intent(out) :: bl_out !< Downstream bottom level at outgoing branches. [n_junctions,maxnumberofconnections]
          
    !Locals
-   logical :: error
-   integer :: node_out
-   integer :: inod, kl1, link_junction, link_dir, flownode_idx, ised, istat, n_links
+   real(kind=dp) :: qb1d !< flow discharge considering direction. 
+   real(kind=dp) :: wb1d !< width.
+   real(kind=dp) :: sb1d !< sediment transport rate per unit width considering direction.
+   type(t_node), pointer :: pnod !< pointer to the node structure of the geometry node at the junction.
+   logical :: error !< flag to indicate if an error occurred during execution.
+   integer :: node_out !< first flownode of the outgoing branch. 
+   integer :: inod !< counter of geometry nodes.
+   integer :: kl1 !< counter of links connected to the geometry node.
+   integer :: link_junction !< link connected to geometry node.
+   integer :: link_dir !< direction of the link connected to the geometry node. 
+   integer :: flownode_idx !< index of flownode at junction node.
+   integer :: ised !< counter of sediment fractions.
+   integer :: istat !< status of memory allocation.
+   integer :: n_links !< number of outgoing links for this junction
    integer :: sb_dir !< direction of transport at geometry (junction) node
-                                                            !  Note that `nbr` is equal to the number of links connected to that geometry (flow) node. 
-                                                            !  1: Sediment enters the flow node.
-                                                            ! -1: Sediment exits the flow node.                       
-         !                                                        
-         !                               sb_dir                   
-         !                                                        
-         !                                               []       
-         !                                              /         
-         !                                          -1 /          
-         !                                           ^/           
-         !                                           /            
-         !      discharge                      1    /             
-         !      -------->        _______[]_____^___[]             
-         !                                          \              
-         !                                           \-1          
-         !                                            \^           
-         !                                             \           
-         !                                              \          
-         !                                               \         
-         !                                                []       
-         !        
-   type(t_node), pointer :: pnod
-   real(kind=dp) :: qb1d, wb1d, sb1d
+                                                            !!  1: Sediment enters the flow node.
+                                                            !! -1: Sediment exits the flow node.                       
+   !                                                        
+   !                               sb_dir                   
+   !                                                        
+   !                                               []       
+   !                                              /         
+   !                                          -1 /          
+   !                                           ^/           
+   !                                           /            
+   !      discharge                      1    /             
+   !      -------->        _______[]_____^___[]             
+   !                                          \              
+   !                                           \-1          
+   !                                            \^           
+   !                                             \           
+   !                                              \          
+   !                                               \         
+   !                                                []       
+   !        
 
    !Allocate
    istat = 0
@@ -2365,7 +2378,7 @@ contains
             if (u1(link_junction) * link_dir < 0_dp) then
                ! Outgoing discharge
                n_links_out(n_junctions)=n_links_out(n_junctions)+1 
-               n_links=n_links_out(n_junctions) ! local number of outgoing links for this junction
+               n_links=n_links_out(n_junctions) 
                links_out(n_junctions,n_links)=link_junction
                link_dir_out(n_junctions,n_links)=link_dir
                width_out(n_junctions,n_links)=wb1d
