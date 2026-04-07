@@ -45,11 +45,11 @@ class Rank:
 
     @property
     def lindex_one(self):
-        return "1" if self.n == 1 else "(" + ", ".join(["1"] * self.n) + ")"
+        return "1" if self.n == 1 else "[" + ", ".join(["1"] * self.n) + "]"
 
     @property
     def shift_zero(self):
-        return "0" if self.n == 1 else "(" + ", ".join(["0"] * self.n) + ")"
+        return "0" if self.n == 1 else "[" + ", ".join(["0"] * self.n) + "]"
 
     @property
     def allocate_temp(self):
