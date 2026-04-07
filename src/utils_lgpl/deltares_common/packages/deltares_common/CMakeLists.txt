@@ -22,7 +22,7 @@ if(NOT Python_FOUND)
     find_package(Python COMPONENTS Interpreter REQUIRED)
 endif()
 
-set(malloc_output_file    "${CMAKE_CURRENT_SOURCE_DIR}/src/malloc_includes/m_alloc_generated.f90")
+set(malloc_output_file    "${CMAKE_CURRENT_BINARY_DIR}/generated/m_alloc_generated.f90")
 set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
 
 # Configure-time generation (kept)
@@ -72,16 +72,15 @@ target_include_directories(${library_name}  PRIVATE ${version_include_dir})
 set_source_files_properties(${fortran_version_file}
                             src/system_utils.F90
                             src/MessageHandling.F90
-                            src/malloc.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}"
 )
 
 # Create the folder structure in vfproj
+source_group("src\\malloc_includes" FILES ${malloc_output_file})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
                                                     ${rd_token_source}
                                                     ${stdlib_source}
                                                     ${fortran_version_file}
-                                                    ${malloc_output_file}
                                                     ${malloc_generator_file})
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
