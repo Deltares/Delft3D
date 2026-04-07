@@ -202,6 +202,18 @@ namespace pre_c_sumo
         return *this;
     }
 
+    FF2NFWriter& FF2NFWriter::setIntakes(const std::vector<FarFieldPoint2D>& intakes)
+    {
+        intakes_ = intakes;
+        return *this;
+    }
+
+    FF2NFWriter& FF2NFWriter::setAmbientPoints(const std::vector<FarFieldPoint2D>& ambient_points)
+    {
+        ambient_points_ = ambient_points;
+        return *this;
+    }
+
     std::expected<void, WriteError> FF2NFWriter::validate() const
     {
         if (ff2nf_filename_.empty())
@@ -270,5 +282,7 @@ namespace pre_c_sumo
         addChildWithText(subgrid_model, "TIME", *current_time_seconds_ / 60.0);
         addConstituentNames(subgrid_model, constituent_names_);
         addFarFieldPoints(subgrid_model, "FFDiff", diffusers_);
+        addFarFieldPoints(subgrid_model, "FFIntake", intakes_);
+        addFarFieldPoints(subgrid_model, "FFAmbient", ambient_points_);
     }
 } // namespace pre_c_sumo

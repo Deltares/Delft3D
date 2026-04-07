@@ -60,10 +60,8 @@ namespace pre_c_sumo
         FF2NFWriter& setCurrentTimeSeconds(double seconds);
         FF2NFWriter& setConstituentNames(const std::vector<std::string>& names);
         FF2NFWriter& setDiffusers(const std::vector<FarFieldPoint2D>& diffusers);
-        /// @return Error if @p intake has no layers.
-        //[[nodiscard]] std::expected<void, WriteError> setIntake(PointState intake);
-        /// @return Error if any point in @p ambient has no layers.
-        //[[nodiscard]] std::expected<void, WriteError> setAmbient(std::vector<PointState> ambient);
+        FF2NFWriter& setIntakes(const std::vector<FarFieldPoint2D>& intakes);
+        FF2NFWriter& setAmbientPoints(const std::vector<FarFieldPoint2D>& ambient_points);
 
     private:
         constexpr static std::string_view root_element_name = "COSUMO";
@@ -77,6 +75,8 @@ namespace pre_c_sumo
         std::optional<double> current_time_seconds_;
         std::vector<std::string> constituent_names_;
         std::vector<FarFieldPoint2D> diffusers_;
+        std::vector<FarFieldPoint2D> intakes_;
+        std::vector<FarFieldPoint2D> ambient_points_;
 
         /// Returns an error if any setter was not called.
         [[nodiscard]] std::expected<void, WriteError> validate() const;

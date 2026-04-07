@@ -18,12 +18,12 @@ namespace
     {
         const std::vector<double> default_constituents = {15.0, 1.0}; // default temperature and tracer concentration
 
-        // Default layered structure: 10 layers, z = 0.05, 0.15, ..., 0.95, with zero velocity
-        const auto default_layers = std::views::iota(0u, 10u) | std::views::transform([](unsigned i) {
-                                        return pre_c_sumo::FarFieldLayer{
-                                            .depth_from_surface = i * 0.1 + 0.05, .x_velocity = 0.0, .y_velocity = 0.0};
-                                    }) |
-                                    std::ranges::to<std::vector>();
+        // Default layered structure: 10 layers, z = 0.5, 1.5, ..., 9.5, with zero velocity
+        const auto default_layers =
+            std::views::iota(0u, 10u) | std::views::transform([](unsigned i) {
+                return pre_c_sumo::FarFieldLayer{.depth_from_surface = i + 0.5, .x_velocity = 0.0, .y_velocity = 0.0};
+            }) |
+            std::ranges::to<std::vector>();
 
         return pre_c_sumo::FF2NFWriter()
             .setFF2NFFilename(R"(FF2NF\FF2NF__FlowFM_SubMod001_0.000.xml)")
@@ -40,7 +40,31 @@ namespace
                             .water_depth = 10.0,
                             .density = 1000.0,
                             .constituents = default_constituents,
-                            .layers = default_layers}});
+                            .layers = default_layers}})
+            .setIntakes({{.x = 567.0,
+                          .y = 821.3453,
+                          .water_depth = 10.0,
+                          .density = 1000.0,
+                          .constituents = default_constituents,
+                          .layers = default_layers}})
+            .setAmbientPoints({{.x = 823.0,
+                                .y = 344.8,
+                                .water_depth = 10.0,
+                                .density = 1000.0,
+                                .constituents = default_constituents,
+                                .layers = default_layers},
+                               {.x = 465.8,
+                                .y = 793.2,
+                                .water_depth = 10.0,
+                                .density = 1000.0,
+                                .constituents = default_constituents,
+                                .layers = default_layers},
+                               {.x = 587.4,
+                                .y = 509.2,
+                                .water_depth = 10.0,
+                                .density = 1000.0,
+                                .constituents = default_constituents,
+                                .layers = default_layers}});
     }
 
     // Parse generated XML and return the root <COSUMO> child, failing the test
@@ -232,7 +256,7 @@ TEST(FF2NFWriterTest, FarFieldDiffuserOneXYZPerLine)
     ASSERT_TRUE(expectedDoubles.has_value()) << expectedDoubles.error().message;
     EXPECT_NEAR((*expectedDoubles)[0], 550.0, 1e-12); // x coordinate
     EXPECT_NEAR((*expectedDoubles)[1], 350.0, 1e-12); // y coordinate
-    EXPECT_NEAR((*expectedDoubles)[2], 0.55, 1e-12);  // z coordinate (depth from surface)
+    EXPECT_NEAR((*expectedDoubles)[2], 5.5, 1e-12);   // z coordinate (depth from surface)
 }
 
 TEST(FF2NFWriterTest, FarFieldDiffuserWaterDepthIsPresent)
@@ -367,4 +391,57 @@ TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsAreRepeatedForEveryLayer)
         EXPECT_NEAR((*values)[0], 15.0, 1e-12);
         EXPECT_NEAR((*values)[1], 1.0, 1e-12);
     }
+}
+
+TEST(FF2NFWriterTest, FFIntakeSectionIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFIntake");
+}
+
+TEST(FF2NFWriterTest, FFIntakeXYZFirstLineMatchesInput)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFIntake/XYZ");
+    const auto lines = nonBlankLines(text);
+    ASSERT_GE(lines.size(), 1u);
+    const auto values = parsing_utils::parseDoubleVector(lines[0], "FFIntake/XYZ line 1");
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    EXPECT_NEAR((*values)[0], 567.0, 1e-6);    // x
+    EXPECT_NEAR((*values)[1], 821.3453, 1e-6); // y
+}
+
+TEST(FF2NFWriterTest, FFIntakeWaterDepthMatchesInput)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFIntake/waterDepth");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 1u);
+    const auto values = parsing_utils::parseDoubleVector(lines[0], "FFIntake/waterDepth");
+    ASSERT_TRUE(values.has_value()) << values.error().message;
+    EXPECT_NEAR((*values)[0], 10.0, 1e-12);
+}
+
+TEST(FF2NFWriterTest, FFAmbientSectionIsPresent)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    expectNodeExists(document, "COSUMO/SubgridModel/FFAmbient");
+}
+
+TEST(FF2NFWriterTest, FFAmbientXYZHasOneLinePerLayerPerPoint)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFAmbient/XYZ");
+    const auto lines = nonBlankLines(text);
+    // 3 ambient points × 10 layers = 30 lines
+    ASSERT_EQ(lines.size(), 30u);
+}
+
+TEST(FF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
+{
+    const auto document = generateDocument(buildExampleWriter());
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFAmbient/waterDepth");
+    const auto lines = nonBlankLines(text);
+    // One water depth value per ambient point
+    ASSERT_EQ(lines.size(), 3u);
 }
