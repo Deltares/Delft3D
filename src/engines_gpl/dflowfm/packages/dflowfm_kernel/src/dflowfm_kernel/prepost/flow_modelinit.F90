@@ -72,6 +72,7 @@ contains
       use m_d3dflow_dimensioninit
       use timers
       use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln, xz, yz
+      use waq, only: reset_waq
       use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag
       use m_flowtimes
       use m_laterals, only: numlatsg
