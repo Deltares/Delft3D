@@ -15,7 +15,8 @@ module precice_adapter_builder
       integer(kind=c_int) :: numranks = 1_c_int
       integer(kind=c_int) :: comm = 0_c_int
       logical :: is_comm_set = .false.
-      character(kind=c_char, len=20) :: meshname ! mesh name(s)
+      character(kind=c_char, len=20) :: mesh_name ! mesh name
+      integer(kind=c_int) :: mesh_size = 0_c_int ! mesh size (number of points)
       real(kind=c_double), dimension(:), pointer :: mesh_coordinates_x ! mesh X coordinates
       real(kind=c_double), dimension(:), pointer :: mesh_coordinates_y ! mesh Y coordinates
       logical :: needs_triangulation = .false. ! Mesh needs triangulation?
@@ -79,14 +80,16 @@ contains
       self%comm = comm
    end subroutine builder_set_mpi_comm
 
-   subroutine builder_add_mesh_2d(self, meshname, mesh_coordinates_x, mesh_coordinates_y)
+   subroutine builder_add_mesh_2d(self, mesh_name, mesh_size, mesh_coordinates_x, mesh_coordinates_y)
       use precision, only: dp
       class(precice_adapter_builder_t), intent(inout) :: self
-      character(len=*) :: meshname
+      character(len=*) :: mesh_name
+      integer(kind=c_int), intent(in) :: mesh_size
       real(kind=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_x
       real(kind=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_y
 
-      self%meshname = meshname
+      self%mesh_name = mesh_name
+      self%mesh_size = mesh_size
       self%mesh_coordinates_x = mesh_coordinates_x
       self%mesh_coordinates_y = mesh_coordinates_y
    end subroutine builder_add_mesh_2d
@@ -101,10 +104,10 @@ contains
       class(precice_adapter_builder_t), intent(inout) :: self
       type(precice_adapter_t), pointer :: adapter_instance
 
-      adapter_instance = precice_adapter_t(self%configfile, self%name, self%is_comm_set, self%comm, &
-                                           self%my_rank, self%numranks, self%meshname, &
-                                           self%mesh_coordinates_x, self%mesh_coordinates_y, &
-                                           self%needs_triangulation)
+      adapter_instance => precice_adapter_t(self%configfile, self%name, self%is_comm_set, self%comm, &
+                                            self%my_rank, self%numranks, self%mesh_name, &
+                                            self%mesh_size, self%mesh_coordinates_x, self%mesh_coordinates_y, &
+                                            self%needs_triangulation)
    end function builder_build
 
 end module precice_adapter_builder

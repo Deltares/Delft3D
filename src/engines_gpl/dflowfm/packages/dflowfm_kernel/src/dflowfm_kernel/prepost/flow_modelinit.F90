@@ -71,8 +71,7 @@ contains
       use m_writesomeinitialoutput, only: writesomeinitialoutput
       use m_d3dflow_dimensioninit
       use timers
-      use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
-      use waq, only: reset_waq
+      use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln, xz, yz
       use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag
       use m_flowtimes
       use m_laterals, only: numlatsg
@@ -129,6 +128,7 @@ contains
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
       use m_fill_constituents, only: fill_constituents
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -142,6 +142,7 @@ contains
       real(kind=dp), allocatable :: weirdte_save(:)
       real(kind=dp), allocatable :: ucxq_save(:), ucyq_save(:)
       real(kind=dp), allocatable :: fvcoro_save(:)
+      class(precice_adapter_builder_t), pointer :: fm_precice_adapter_builder
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -610,6 +611,17 @@ contains
 
       call timstop(handle_extra(36)) ! End remainder
       call writesomeinitialoutput()
+
+      ! Geometry and initial data available, set up mesh(es) for precice adapter
+      ! TODO: Move name and config to more appropropriate places (also get names from config)
+      if (precice_adapter_is_enabled()) then
+         fm_precice_adapter_builder => precice_adapter_get_builder()
+         if (associated(fm_precice_adapter_builder)) then
+            call fm_precice_adapter_builder%set_name("fm")
+            call fm_precice_adapter_builder%set_configfile("../precice_config.xml")
+            call fm_precice_adapter_builder%add_mesh2d("fm_flow_cells", ndx, xz, yz)
+         end if
+      end if
 
       iresult = DFM_NOERR
 
