@@ -15,12 +15,11 @@ target_link_libraries(${library_name} ${oss_dependencies})
 include_directories(${checkout_src_root}
                    "${CMAKE_CURRENT_SOURCE_DIR}/../../include")
 
-set_source_files_properties(
-                   src/depfil_stm.F90
-                   src/
-                   PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
+#set_source_files_properties(
+#                   src/depfil_stm.F90
+#                   PROPERTIES COMPILE_OPTIONS "-g -O0")
 
-target_compile_definitions(${library_name} PRIVATE "MOR_USE_ECMODULE")
+# arget_compile_definitions(${library_name} PRIVATE "MOR_USE_ECMODULE")
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_gpl/morphology)
 

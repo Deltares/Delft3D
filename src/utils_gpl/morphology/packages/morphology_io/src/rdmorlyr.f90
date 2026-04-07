@@ -1176,6 +1176,7 @@ contains
       use grid_dimens_module, only: griddimtype
       use morphology_data_module, only: sedpar_type, morpar_type
       use m_depfil_stm
+      use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       !
       implicit none
 !
@@ -1576,6 +1577,10 @@ contains
                      else
                         inquire (file=filename, exist=ex)
                         if (ex) then
+                           write (message, '(3a,i2,2a)')  &
+                               & 'Reading thickness from ', trim(filename), &
+                               & ' for layer ', ilyr, ' in file ', trim(flcomp)
+                           call mess(LEVEL_INFO, message)
                            call depfil_stm(lundia, error, filename, fmttmp, &
                                          & thtemp, 1, 1, dims, message)
                            if (error) then

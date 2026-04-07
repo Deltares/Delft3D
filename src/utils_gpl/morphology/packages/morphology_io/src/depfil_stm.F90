@@ -1,4 +1,4 @@
-#include "global_config.inc"
+!#include "global_config.inc"
 module m_depfil_stm
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -48,11 +48,9 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    use precision
    use grid_dimens_module
 ! MOR_USE_ECMODULE macro used from global_config.h to enable/disable EC-module for space-varying input in sed/mor.
-#if MOR_USE_ECMODULE
    use m_ec_module
    use m_ec_filereader_read, only: ecSampleReadAll
    use m_ec_basic_interpolation, only: triinterp2, nearest_neighbour
-#endif
    use system_utils
    ! 
    implicit none 
@@ -115,7 +113,6 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    file = ' '
    ext  = ' ' 
    call split_filename(fildep, path, file, ext)
-#if MOR_USE_ECMODULE
    if (ext(1:3) == '.xy') then
       ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
       !
@@ -129,14 +126,29 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
       NPL = 0 ! Dummies, since STM is not aware of these yet.
       ngrid = dims%nmmax + size(dims%nmbnd, 1)
       allocate (array1d(ngrid), stat=ierror)
+      if (ierror /= 0) then
+         error = .true.
+         if (present(errmsg)) errmsg = 'Error allocating memory for interpolation of samples from file '//trim(fildep)
+         return
+      end if
       array1d = dmiss
 
       CALL triinterp2(dims%xz, dims%yz, array1d, ngrid, jdla, & 
                       XS, YS, ZS(1,:), NS, dmiss, jsferic, jins, jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
       array(ifld,:,1) = array1d
       deallocate(array1d, stat=ierror)
+      if (ierror /= 0) then
+         error = .true.
+         if (present(errmsg)) errmsg = 'Error deallocating memory for interpolation of samples from file '//trim(fildep)
+         return
+      end if
       
-      allocate (kcc(ngrid))
+      allocate (kcc(ngrid), stat=ierror)
+      if (ierror /= 0) then
+         error = .true.
+         if (present(errmsg)) errmsg = 'Error allocating memory for nearest neighbour interpolation from file '//trim(fildep)
+         return
+      end if
       kcc    = 0
       jamiss = 0
       do k = 1,ngrid
@@ -148,7 +160,12 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
       
       ! For any remaining missing points after regular interpolation, fill them up with nearest neigbour values.
       if (jamiss == 1) then
-         allocate(Mn(ngrid))
+         allocate(Mn(ngrid), stat=ierror)
+         if (ierror /= 0) then
+            error = .true.
+            if (present(errmsg)) errmsg = 'Error allocating memory for nearest neighbour interpolation from file '//trim(fildep)
+            return
+         end if
          Mn = 0
          call nearest_neighbour(ngrid, dims%xz, dims%yz, kcc, Mn, dmiss, XS, YS, NS, jsferic, jasfer3D)
          do k = 1,ngrid
@@ -157,9 +174,19 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
                array(ifld,k,1) = ZS(1,n)
             endif
          enddo
-         deallocate(Mn)
+         deallocate(Mn, stat=ierror)
+         if (ierror /= 0) then
+            error = .true.
+            if (present(errmsg)) errmsg = 'Error deallocating memory for nearest neighbour interpolation from file '//trim(fildep)
+            return
+         end if
       end if
-      deallocate(kcc)
+      deallocate(kcc, stat=ierror)
+      if (ierror /= 0) then
+         error = .true.
+         if (present(errmsg)) errmsg = 'Error deallocating memory for nearest neighbour interpolation from file '//trim(fildep)
+         return
+      end if
       
       ! mirror boundary cells if undefined if equal to dmiss
       do ibnd = 1, size(dims%nmbnd,1)  ! loop over boundary flow links (TO DO: what about 3D?)
@@ -182,15 +209,12 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
       close(minp0)
       ! success = timespaceinitialfield(dims%xz, dims%yz, array(ifld, :, :), dims%nmmax, fildep, 7, 5,  'O', transformcoef, 1) ! zie meteo module
    else
-#endif
       ! No xyz file: depfile
       !
       call depfil(lundia    ,error     ,fildep    ,fmttmp    , &
                 & array     ,nfld      ,ifld      ,dims      )
       if (present(errmsg)) errmsg = 'Error reading QUICKIN file '//trim(fildep)
-#if MOR_USE_ECMODULE
    endif
-#endif
 end subroutine depfil_stm
 !
 !
@@ -201,11 +225,9 @@ subroutine depfil_stm_double(lundia    ,error     ,fildep    ,fmttmp    , &
                            & errmsg    )
    use precision 
    use grid_dimens_module
-#if MOR_USE_ECMODULE
    use m_ec_module
    use m_ec_basic_interpolation, only: triinterp2, nearest_neighbour
    use m_ec_filereader_read, only: ecSampleReadAll
-#endif
    use system_utils
    ! 
    implicit none 
@@ -265,7 +287,6 @@ subroutine depfil_stm_double(lundia    ,error     ,fildep    ,fmttmp    , &
    file = ' '
    ext  = ' ' 
    call split_filename(fildep, path, file, ext)
-#if MOR_USE_ECMODULE
    if (ext(1:3) == '.xy') then
       ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
       !
@@ -335,13 +356,10 @@ subroutine depfil_stm_double(lundia    ,error     ,fildep    ,fmttmp    , &
 
       ! success = timespaceinitialfield(dims%xz, dims%yz, array(ifld, :, :), dims%nmmax, fildep, 7, 5,  'O', transformcoef, 1) ! zie meteo module
    else
-#endif
       call depfil_double(lundia    ,error     ,fildep    ,fmttmp    , &
                        & array     ,nfld      ,ifld      ,dims      )
       if (present(errmsg)) errmsg = 'Error reading QUICKIN file '//trim(fildep)
-#if MOR_USE_ECMODULE
    endif
-#endif
 end subroutine depfil_stm_double
 
                            
