@@ -2,6 +2,7 @@
 #define SRC_TOOLS_GPL_PRE_C_SUMO_FF2NF_WRITER_HPP
 
 #include <expected>
+#include <filesystem>
 #include <optional>
 #include <pugixml.hpp>
 #include <string>
@@ -48,6 +49,7 @@ namespace pre_c_sumo
     {
     public:
         [[nodiscard]] std::expected<std::string, WriteError> generate() const;
+        [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path) const;
 
         // --- Setters: all must be called; validate() (invoked by generate()) checks for omissions ---
 
@@ -66,16 +68,16 @@ namespace pre_c_sumo
     private:
         constexpr static std::string_view root_element_name = "COSUMO";
         constexpr static std::string_view file_version = "0.3";
-        std::string ff2nf_filename_;
-        std::string wait_for_file_;
-        std::string ff_run_directory_;
-        std::string run_id_;
-        std::optional<std::string> unique_id_; // Empty string is considered a valid unique ID
-        std::optional<int> subgrid_model_nr_;
-        std::optional<double> current_time_seconds_;
-        std::vector<std::string> constituent_names_;
-        std::vector<FarFieldPoint2D> diffusers_;
-        std::vector<FarFieldPoint2D> intakes_;
+        std::string ff2nf_filename_{};
+        std::string wait_for_file_{};
+        std::string ff_run_directory_{};
+        std::string run_id_{};
+        std::optional<std::string> unique_id_{}; // Empty string is considered a valid unique ID
+        std::optional<int> subgrid_model_nr_{};
+        std::optional<double> current_time_seconds_{};
+        std::vector<std::string> constituent_names_{};
+        std::vector<FarFieldPoint2D> diffusers_{};
+        std::optional<std::vector<FarFieldPoint2D>> intakes_{}; // Intakes are optional
         std::vector<FarFieldPoint2D> ambient_points_;
 
         /// Returns an error if any setter was not called.

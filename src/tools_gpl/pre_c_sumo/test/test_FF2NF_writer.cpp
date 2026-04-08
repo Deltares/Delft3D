@@ -111,11 +111,22 @@ namespace
         EXPECT_TRUE(root.select_node(path.data())) << "No node found at XPath: " << path;
     }
 
-    // Split text into non-blank lines.
+    // Split text into trimmed, non-blank lines.
     std::vector<std::string_view> nonBlankLines(const std::string_view text)
     {
-        auto lines = text | std::views::split('\n') | std::views::filter([](auto line) { return !line.empty(); }) |
-                     std::views::transform([](auto line) { return std::string_view(line.begin(), line.end()); });
+        auto trim = [](const auto line) {
+            const std::string_view line_view{line.begin(), line.end()};
+            const auto first = line_view.find_first_not_of(" \t\r");
+            if (first == std::string_view::npos)
+            {
+                return std::string_view{};
+            }
+            const auto last = line_view.find_last_not_of(" \t\r");
+            return std::string_view{line_view.data() + first, line_view.data() + last + 1};
+        };
+
+        auto lines = text | std::views::split('\n') | std::views::transform(trim) |
+                     std::views::filter([](const auto line) { return !line.empty(); });
         return {lines.begin(), lines.end()};
     }
 } // namespace
@@ -444,4 +455,155 @@ TEST(FF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
     const auto lines = nonBlankLines(text);
     // One water depth value per ambient point
     ASSERT_EQ(lines.size(), 3u);
+}
+
+TEST(FF2NFWriterTest, EmptyDiffusersIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setDiffusers({});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "Diffusers were not set");
+}
+
+TEST(FF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setDiffusers(
+        {{.x = 550.0, .y = 350.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}}});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "FFDiff: every point must have at least one layer");
+}
+
+TEST(FF2NFWriterTest, IntakePointWithNoLayersIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setIntakes(
+        {{.x = 567.0, .y = 821.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}}});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "FFIntake: every point must have at least one layer");
+}
+
+TEST(FF2NFWriterTest, AmbientPointWithNoLayersIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setAmbientPoints(
+        {{.x = 823.0, .y = 344.8, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}}});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "FFAmbient: every point must have at least one layer");
+}
+
+TEST(FF2NFWriterTest, DiffuserConstituentCountMismatchIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setDiffusers({{.x = 550.0,
+                          .y = 350.0,
+                          .water_depth = 10.0,
+                          .density = 1000.0,
+                          .constituents = {15.0}, // only 1 instead of 2
+                          .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}}});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "FFDiff: constituent count (1) does not match constituent names count (2)");
+}
+
+TEST(FF2NFWriterTest, AmbientConstituentCountMismatchIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setAmbientPoints({{.x = 823.0,
+                              .y = 344.8,
+                              .water_depth = 10.0,
+                              .density = 1000.0,
+                              .constituents = {15.0, 1.0, 0.5}, // 3 instead of 2
+                              .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}}});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "FFAmbient: constituent count (3) does not match constituent names count (2)");
+}
+
+TEST(FF2NFWriterTest, IntakesNotSetIsRejected)
+{
+    pre_c_sumo::FF2NFWriter writerWithoutIntakes;
+    writerWithoutIntakes.setFF2NFFilename("a.xml")
+        .setWaitForFile("b.xml")
+        .setFFRunDirectory("c/")
+        .setRunId("FlowFM")
+        .setUniqueId("")
+        .setSubgridModelNumber(1)
+        .setCurrentTimeSeconds(0.0)
+        .setConstituentNames({"temperature"})
+        .setDiffusers({{.x = 0.0,
+                        .y = 0.0,
+                        .water_depth = 0.0,
+                        .density = 0.0,
+                        .constituents = {0.0},
+                        .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.0}}}})
+        .setAmbientPoints({{.x = 0.0,
+                            .y = 0.0,
+                            .water_depth = 0.0,
+                            .density = 0.0,
+                            .constituents = {0.0},
+                            .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.0}}}});
+    const auto xml = writerWithoutIntakes.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "Intakes were not set");
+}
+
+TEST(FF2NFWriterTest, EmptyIntakesIsAccepted)
+{
+    auto writer = buildExampleWriter();
+    writer.setIntakes({});
+    const auto xml = writer.generate();
+    EXPECT_TRUE(xml.has_value()) << (xml.has_value() ? "" : xml.error().message);
+}
+
+TEST(FF2NFWriterTest, EmptyAmbientPointsIsRejected)
+{
+    auto writer = buildExampleWriter();
+    writer.setAmbientPoints({});
+    const auto xml = writer.generate();
+    ASSERT_FALSE(xml.has_value());
+    EXPECT_EQ(xml.error().message, "Ambient points were not set");
+}
+
+TEST(FF2NFWriterTest, MultiLineTextIsIndented)
+{
+    const auto xml = buildExampleWriter().generate();
+    ASSERT_TRUE(xml.has_value()) << xml.error().message;
+    const auto& text = *xml;
+
+    // The XYZ element is at depth 4 (COSUMO > SubgridModel > FFDiff > XYZ),
+    // so its data lines should be indented with 16 spaces (4 levels × 4 spaces for the PCDATA node).
+    const std::string expected_indent(16, ' ');
+
+    // Find a data line inside <XYZ> — it should start with the expected indentation
+    const auto xyz_open = text.find("<XYZ>");
+    ASSERT_NE(xyz_open, std::string::npos);
+    const auto first_newline = text.find('\n', xyz_open);
+    ASSERT_NE(first_newline, std::string::npos);
+    const auto first_data_line = text.substr(first_newline + 1);
+    const auto actual_spaces = first_data_line.find_first_not_of(' ');
+    EXPECT_EQ(actual_spaces, expected_indent.size())
+        << "Expected " << expected_indent.size() << " leading spaces, got " << actual_spaces;
+
+    // The closing tag should be at the parent indent level (12 spaces)
+    const auto xyz_close = text.find("</XYZ>");
+    ASSERT_NE(xyz_close, std::string::npos);
+    // Walk back to the start of the line
+    auto line_start = text.rfind('\n', xyz_close);
+    ASSERT_NE(line_start, std::string::npos);
+    const auto closing_indent = text.substr(line_start + 1, xyz_close - line_start - 1);
+    EXPECT_EQ(closing_indent, std::string(12, ' '))
+        << "Expected closing tag indent of 12 spaces, got " << closing_indent.size();
+}
+
+TEST(FF2NFWriterTest, DISABLED_WriteToFile)
+{
+    std::filesystem::remove("FF2NF_test_output.xml");
+    const auto result = buildExampleWriter().toFile("FF2NF_test_output.xml");
+    ASSERT_TRUE(result.has_value()) << result.error().message;
+    EXPECT_TRUE(std::filesystem::exists("FF2NF_test_output.xml"));
 }

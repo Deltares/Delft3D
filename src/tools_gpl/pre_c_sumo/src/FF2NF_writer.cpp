@@ -1,8 +1,9 @@
 #include "FF2NF_writer.hpp"
 
-#include <expected>
 #include <algorithm>
+#include <expected>
 #include <format>
+#include <fstream>
 #include <iterator>
 #include <pugixml.hpp>
 #include <ranges>
@@ -28,12 +29,18 @@ namespace
         parent.append_child(child_name).text() = data;
     }
 
-    void addConstituentNames(pugi::xml_node& subgrid_model, const std::vector<std::string>& names)
+    template <std::ranges::input_range R>
+    void addMultiLineChild(pugi::xml_node& parent, const std::string_view child_name, R&& lines)
     {
         std::string text = "\n";
-        std::ranges::copy(names | std::views::join_with('\n'), std::back_inserter(text));
+        std::ranges::copy(lines | std::views::join_with('\n'), std::back_inserter(text));
         text += '\n';
-        subgrid_model.append_child("constituentsNames").text() = text;
+        parent.append_child(child_name).text() = text;
+    }
+
+    void addConstituentNames(pugi::xml_node& subgrid_model, const std::vector<std::string>& names)
+    {
+        addMultiLineChild(subgrid_model, "constituentsNames", names);
     }
 
     void addXYZ(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
@@ -44,28 +51,14 @@ namespace
                        return std::format("{:E} {:E} {:E}", x, y, layer.depth_from_surface);
                    });
         };
-        // Flatten each point × layer into a formatted "x  y  z" string, then join with '\n'.
-        auto xyz_strings = points | std::views::transform(point_2d_to_xyz_strings) |
-                           std::views::join; // range<range<string>> → range<string>
-
-        std::string text = "\n";
-        std::ranges::copy(xyz_strings | std::views::join_with('\n'), std::back_inserter(text));
-        text += '\n';
-
-        auto xyz_node = parent_node.append_child("XYZ");
-        xyz_node.text() = text;
+        addMultiLineChild(parent_node, "XYZ",
+                          points | std::views::transform(point_2d_to_xyz_strings) | std::views::join);
     }
 
     void addWaterDepth(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
     {
-        auto extract_water_depth = [](const pre_c_sumo::FarFieldPoint2D& point) {
-            return std::to_string(point.water_depth);
-        };
-        std::string text = "\n";
-        std::ranges::copy(points | std::views::transform(extract_water_depth) | std::views::join_with('\n'),
-                          std::back_inserter(text));
-        text += '\n';
-        parent_node.append_child("waterDepth").text() = text;
+        addMultiLineChild(parent_node, "waterDepth",
+                          points | std::views::transform([](const auto& p) { return std::to_string(p.water_depth); }));
     }
 
     void addXYVelocity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
@@ -75,12 +68,8 @@ namespace
                        return std::format("{:E} {:E}", layer.x_velocity, layer.y_velocity);
                    });
         };
-        auto velocity_strings = points | std::views::transform(point_2d_to_velocity_strings) | std::views::join;
-
-        std::string text = "\n";
-        std::ranges::copy(velocity_strings | std::views::join_with('\n'), std::back_inserter(text));
-        text += '\n';
-        parent_node.append_child("XYvelocity").text() = text;
+        addMultiLineChild(parent_node, "XYvelocity",
+                          points | std::views::transform(point_2d_to_velocity_strings) | std::views::join);
     }
 
     void addDensity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
@@ -90,12 +79,8 @@ namespace
                        return std::format("{:E}", density);
                    });
         };
-        auto density_strings = points | std::views::transform(point_2d_to_density_strings) | std::views::join;
-
-        std::string text = "\n";
-        std::ranges::copy(density_strings | std::views::join_with('\n'), std::back_inserter(text));
-        text += '\n';
-        parent_node.append_child("rho").text() = text;
+        addMultiLineChild(parent_node, "rho",
+                          points | std::views::transform(point_2d_to_density_strings) | std::views::join);
     }
 
     void addConstituents(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
@@ -111,13 +96,8 @@ namespace
                 return std::views::repeat(point.constituents, point.layers.size()) |
                        std::views::transform(doubles_to_space_separated_string);
             };
-
-        std::string text = "\n";
-        std::ranges::copy(points | std::views::transform(point_2d_to_constituents_string) | std::views::join |
-                              std::views::join_with('\n'),
-                          std::back_inserter(text));
-        text += '\n';
-        parent_node.append_child("constituents").text() = text;
+        addMultiLineChild(parent_node, "constituents",
+                          points | std::views::transform(point_2d_to_constituents_string) | std::views::join);
     }
 
     void addFarFieldPoints(pugi::xml_node& parent_node, const std::string_view section_name,
@@ -130,6 +110,74 @@ namespace
         addDensity(section_node, points);
         addConstituents(section_node, points);
     }
+
+    std::expected<void, pre_c_sumo::WriteError> validatePoint(const pre_c_sumo::FarFieldPoint2D& point,
+                                                              const std::string_view section_name,
+                                                              const size_t expected_constituent_count)
+    {
+        if (point.layers.empty())
+        {
+            return std::unexpected(
+                pre_c_sumo::WriteError{std::format("{}: every point must have at least one layer", section_name)});
+        }
+        if (point.constituents.size() != expected_constituent_count)
+        {
+            return std::unexpected(pre_c_sumo::WriteError{
+                std::format("{}: constituent count ({}) does not match constituent names count ({})", section_name,
+                            point.constituents.size(), expected_constituent_count)});
+        }
+        return {};
+    }
+
+    std::expected<void, pre_c_sumo::WriteError> validatePoints(const std::vector<pre_c_sumo::FarFieldPoint2D>& points,
+                                                               const std::string_view section_name,
+                                                               const size_t expected_constituent_count)
+    {
+        auto point_results =
+            points |
+            std::views::transform([section_name, expected_constituent_count](const pre_c_sumo::FarFieldPoint2D& point) {
+                return validatePoint(point, section_name, expected_constituent_count);
+            });
+
+        if (const auto errorIt = std::ranges::find_if(point_results, monadic_utils::is_invalid);
+            errorIt != std::ranges::end(point_results))
+        {
+            return *errorIt;
+        }
+        return {};
+    }
+
+    struct IndentTextWalker : pugi::xml_tree_walker
+    {
+        bool for_each(pugi::xml_node& node) override
+        {
+            if (node.type() != pugi::node_pcdata)
+            {
+                return true;
+            }
+
+            const std::string_view text = node.value();
+            if (text.find('\n') == std::string_view::npos)
+            {
+                // Inline text does not need indentation
+                return true;
+            }
+            constexpr size_t indent_size = 4;
+            const std::string indent(depth() * indent_size, ' ');
+            const std::string parent_indent(std::max(depth() - 1, 0) * 4, ' ');
+
+            auto indented_lines = text | std::views::split('\n') | std::views::transform([&indent](const auto line) {
+                                      const std::string_view line_text{line.begin(), line.end()};
+                                      return line_text.empty() ? std::string{} : indent + std::string{line_text};
+                                  });
+
+            auto result = indented_lines | std::views::join_with('\n') | std::ranges::to<std::string>();
+            result += '\n' + parent_indent;
+
+            node.set_value(result);
+            return true;
+        }
+    };
 } // namespace
 
 namespace pre_c_sumo
@@ -143,9 +191,27 @@ namespace pre_c_sumo
         createFileVersionSection(root);
         createCommSection(root);
         createSubgridModelSection(root);
+        IndentTextWalker indent_walker;
+        document.traverse(indent_walker);
         std::ostringstream oss;
         document.save(oss);
         return oss.str();
+    }
+
+    std::expected<void, WriteError> FF2NFWriter::toFile(const std::filesystem::path& file_path) const
+    {
+        ASSIGN_OR_RETURN(const auto xml, generate());
+        std::ofstream output_file(file_path);
+        if (!output_file)
+        {
+            return std::unexpected(WriteError{"Failed to open file for writing: " + file_path.string()});
+        }
+        output_file << xml;
+        if (!output_file)
+        {
+            return std::unexpected(WriteError{"Failed to write to file: " + file_path.string()});
+        }
+        return {};
     }
 
     FF2NFWriter& FF2NFWriter::setFF2NFFilename(const std::string_view filename)
@@ -252,6 +318,21 @@ namespace pre_c_sumo
         {
             return std::unexpected(WriteError{"Constituent names were not set"});
         }
+        if (diffusers_.empty())
+        {
+            return std::unexpected(WriteError{"Diffusers were not set"});
+        }
+        if (!intakes_.has_value())
+        {
+            return std::unexpected(WriteError{"Intakes were not set"});
+        }
+        if (ambient_points_.empty())
+        {
+            return std::unexpected(WriteError{"Ambient points were not set"});
+        }
+        RETURN_IF_ERROR(validatePoints(diffusers_, "FFDiff", constituent_names_.size()));
+        RETURN_IF_ERROR(validatePoints(*intakes_, "FFIntake", constituent_names_.size()));
+        RETURN_IF_ERROR(validatePoints(ambient_points_, "FFAmbient", constituent_names_.size()));
         return {};
     }
 
@@ -282,7 +363,7 @@ namespace pre_c_sumo
         addChildWithText(subgrid_model, "TIME", *current_time_seconds_ / 60.0);
         addConstituentNames(subgrid_model, constituent_names_);
         addFarFieldPoints(subgrid_model, "FFDiff", diffusers_);
-        addFarFieldPoints(subgrid_model, "FFIntake", intakes_);
+        addFarFieldPoints(subgrid_model, "FFIntake", *intakes_);
         addFarFieldPoints(subgrid_model, "FFAmbient", ambient_points_);
     }
 } // namespace pre_c_sumo
