@@ -129,6 +129,7 @@ contains
                               len(self%name), len(self%configfile))
       end if
 
+      allocate (self%vertex_ids(self%mesh_size))
       call precicef_set_vertices(self%meshname, self%mesh_size, self%mesh_coordinates, self%vertex_ids, len(self%meshname))
 
       if (self%needs_triangulation) then

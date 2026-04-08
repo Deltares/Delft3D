@@ -177,7 +177,7 @@ contains
          print *, "[DEBUG] Updating preCICE adapter."
          fm_precice_adapter => precice_adapter_get_adapter()
          if (associated(fm_precice_adapter)) then
-            call fm_precice_adapter%update(time_user)
+            call fm_precice_adapter%update(dt_user)
          end if
       end if
 
