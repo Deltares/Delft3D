@@ -232,6 +232,8 @@ contains
             !
             ! Integration (derivs are zeroed)
             a(iderv:iderv-1+num_substances_total*num_cells) = a(iderv:iderv-1+num_substances_total*num_cells) / 86400.0 ! Nasty hack!
+            call accumulate_process_terms( a(iderv:), num_substances_total,num_cells, idt, a(imas2) )
+
             call set_explicit_time_step_for_derivatives(a(iconc:), a(imass:), a(iderv:), a(ivol), idt, &
                                                         num_substances_transported, num_substances_total, num_cells, 0, 0, &
                                                         surface)
@@ -408,4 +410,13 @@ contains
         dlwqd%iaflag = iaflag
         dlwqd%itime = itime
     end subroutine scheme_26_adaptive_time_step_fractional_step
+
+    subroutine accumulate_process_terms( deriv, num_substances_total, num_cells, idt, amass2 )
+        integer, intent(in) :: num_substances_total, num_cells, idt
+        real(kind=real_wp), dimension(num_substances_total,num_cells), intent(in) :: deriv
+        real(kind=real_wp), dimension(num_substances_total,5), intent(inout) :: amass2
+
+        amass2(:,2) = amass2(:,2) + sum( deriv, dim = 2 ) * idt
+
+    end subroutine accumulate_process_terms
 end module m_integration_scheme_26
