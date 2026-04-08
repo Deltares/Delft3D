@@ -4,21 +4,20 @@ Usage: python generate_m_alloc.py <output_file>
 """
 
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 # --- Type definitions --------------------------------------------------------
 
-@dataclass
 class FortranType:
-    dtype: str       # e.g. real(dp)
-    dtype_temp: str  # local allocatable version (differs only for character)
-    name: str        # suffix for procedure name, e.g. Double
+    def __init__(self, dtype, name, dtype_temp=None):
+        self.dtype      = dtype               # e.g. real(dp)
+        self.dtype_temp = dtype_temp or dtype # local allocatable version (differs only for character)
+        self.name       = name                # suffix for procedure name, e.g. Double
 
     @staticmethod
     def all():
         def t(dtype, name, dtype_temp=None):
-            return FortranType(dtype, dtype_temp or dtype, name)
+            return FortranType(dtype, name, dtype_temp)
         return [
             t("real(dp)",             "Double"),
             t("real(sp)",             "Real"),
@@ -30,9 +29,9 @@ class FortranType:
         ]
 
 
-@dataclass
 class Rank:
-    n: int
+    def __init__(self, n):
+        self.n = n
 
     @property
     def drank(self):
@@ -100,9 +99,9 @@ class Rank:
         return f"temp({temp_idx}) = arr({arr_idx})"
 
 
-@dataclass
 class Attr:
-    name: str  # "allocatable" or "pointer"
+    def __init__(self, name):
+        self.name = name # "allocatable" or "pointer"
 
     @property
     def prefix(self):
