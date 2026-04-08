@@ -117,8 +117,8 @@ class Attr:
         if self.name == "pointer":
             return ("if (associated(arr)) then\n"
               "         deallocate(arr,stat=stat_)\n"
-              "         arr => temp\n"
-              "      end if")
+              "      end if\n"
+              "      arr => temp")
         return "call move_alloc(temp, arr)"
 
 
