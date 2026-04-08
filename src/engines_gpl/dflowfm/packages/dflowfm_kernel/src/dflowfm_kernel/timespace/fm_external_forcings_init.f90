@@ -231,7 +231,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -253,7 +253,7 @@ contains
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
-      integer :: oper
+      integer :: operand
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
@@ -295,8 +295,8 @@ contains
          return
       end if
 
-      oper = '-' ! TODO KB needs fixing
-      call prop_get(block_ptr, '', 'operand ', oper, is_successful)
+      operand = OPERAND_UNKNOWN
+      call prop_get(block_ptr, '', 'operand ', operand, is_successful)
 
       num_items_in_block = 0
       if (associated(block_ptr%child_nodes)) then
@@ -322,10 +322,10 @@ contains
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
                call resolvePath(forcing_file, base_dir)
-               if (oper /= OPERAND_OVERRIDE .and. oper /= OPERAND_ADD) then
-                  oper = OPERAND_OVERRIDE
+               if (operand /= OPERAND_OVERRIDE .and. operand /= OPERAND_ADD) then
+                  operand = OPERAND_OVERRIDE
                   if (quantity_pli_combination_is_registered(quantity, location_file)) then
-                     oper = OPERAND_ADD
+                     operand = OPERAND_ADD
                   end if
                end if
                call register_quantity_pli_combination(quantity, location_file)
@@ -354,14 +354,14 @@ contains
                      is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                   else
                      is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=NODE_ID, method=method, &
-                                                               operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
+                                                               operand=operand, forcing_file=forcing_file, targetindex=target_index(1))
                   end if
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                  operand=oper, forcing_file=forcing_file)
+                                                                  operand=operand, forcing_file=forcing_file)
                end if
                res = res .and. is_successful ! Remember any previous errors.
-               oper = '-'  ! TODO KB needs fixing
+               operand = OPERAND_UNKNOWN
             end if
          end if
       end do

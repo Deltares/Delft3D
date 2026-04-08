@@ -94,21 +94,18 @@ module timespace_parameters
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
    ! enumeration for interpolation methods of providers
-   integer, parameter :: OPERAND_OVERRIDE = 1
-   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 2
-   integer, parameter :: OPERAND_ADD = 3
-   integer, parameter :: OPERAND_MULTIPLY = 4
-   integer, parameter :: OPERAND_MINIMUM = 5
-   integer, parameter :: OPERAND_MAXIMUM = 6
+   integer, parameter :: OPERAND_UNKNOWN = -1
+   integer, parameter :: OPERAND_OVERRIDE = 0
+   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 1
+   integer, parameter :: OPERAND_ADD = 2
+   integer, parameter :: OPERAND_MULTIPLY = 3
+   integer, parameter :: OPERAND_MINIMUM = 4
+   integer, parameter :: OPERAND_MAXIMUM = 5
 contains
 
-   subroutine convert_operand_string_to_integer(string, operand, success)
-      implicit none
+   subroutine convert_operand_string_to_integer(string, operand)
       character(len=*), intent(in) :: string !< file type string
       integer, intent(out) :: operand !< operand enumeration integer
-      logical, intent(out) :: success !< whether the conversion was successful
-
-      success = .false.
 
       select case (trim(str_tolower(string)))
       case ('o')
@@ -127,10 +124,8 @@ contains
       case ('x')
          operand = OPERAND_MAXIMUM
       case default
-         return
+         operand = OPERAND_UNKNOWN
       end select
-
-      success = .true.
    end subroutine convert_operand_string_to_integer
 
 !> Converts fileType string to an integer.
