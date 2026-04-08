@@ -96,6 +96,19 @@ contains
       type(tree_data), pointer :: morbound_ptr
       character(MAXTABLECLENGTH), dimension(:), allocatable :: parnames
       !
+      ! HANNEKE: morlyr settings
+      !
+      logical                         , pointer :: crslyr
+      real(fp)                        , pointer :: a_max
+      real(fp)                        , pointer :: sinkfrac_max
+      real(fp)                        , pointer :: asfm
+      real(fp)                        , pointer :: bsfm
+      real(fp)                        , pointer :: sigma_sfm
+      integer                         , pointer :: imobility
+      integer                         , pointer :: isedcrs2tr
+      integer                         , pointer :: ihidexptrcrs
+      real(fp)         , dimension(:) , pointer :: thclyr
+      !
       logical, pointer :: exchlyr
       logical, pointer :: track_shortage
       real(fp), pointer :: bed
@@ -121,6 +134,7 @@ contains
 !! executable statements -------------------------------------------------------
 !
       istat = bedcomp_getpointer_integer(morlyr, 'IUnderLyr', iunderlyr)
+      if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'CrsLyr', crslyr)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'ExchLyr', exchlyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NLaLyr', nlalyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NEuLyr', neulyr)
@@ -205,6 +219,26 @@ contains
       !
       select case (iunderlyr)
       case (2)
+          !
+          ! flag for coarse layer
+          !
+          call prop_get(mor_ptr, 'Underlayer', 'CrsLyr', crslyr)
+          txtput1 = 'Coarse layer'
+          if (crslyr) then
+             txtput2 = '                 YES'
+          else
+             txtput2 = '                  NO'
+          endif
+          write (lundia, '(3a)') txtput1, ':', txtput2
+          !
+          if (crslyr) then 
+             if (.not. lfbedfrm) then 
+                 errmsg = 'Coarse layer functionality requires bed forms to be activated'  
+                 call write_error(errmsg, unit=lundia)
+                 error = .true.
+                 return
+              endif 
+          endif   
          !
          ! flag for exchange layer
          !
@@ -560,6 +594,116 @@ contains
                end select
             end associate !thexlyr, telfil, telform
          end if
+         !
+         ! HANNEKE
+         !
+         istat = bedcomp_getpointer_integer(morlyr, 'ISedCrs2Tr'          , isedcrs2tr)
+         if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs'        , ihidexptrcrs)
+         if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IMobility'           , imobility)
+         if (istat /= 0) then
+             errmsg = 'Memory problem in RDMORLYR'
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return
+         endif
+         !
+         call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr) 
+         call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+         call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
+         !
+         write(lundia,'(a,i2)') 'ISedCrs2Tr: ', isedcrs2tr
+         write(lundia,'(a,i2)') 'IHidExpTrCrs:', ihidexptrcrs
+         write(lundia,'(a,i2)') 'IMobility:', imobility
+         ! 
+         txtput1 = 'Mobility model for vertical sorting'
+         select case (imobility)
+         case (0)
+             txtput2 = ' not used'
+         case (1)
+             txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
+         case (2)
+             txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
+         case (3)  
+             txtput2 = ' Wilcock and McArdell (1997)'
+         case (4)
+             txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
+         case default
+             txtput2 = ' not used'   
+             errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
+             write(lundia,'(3a)') txtput1, ':', txtput2
+             call write_error(errmsg, unit=lundia)
+             error = .true.
+             return           
+         end select
+         write(lundia,'(3a)') txtput1, ':', txtput2
+         if (crslyr) then
+             associate(telfil=>morpar%telfil) 
+                              istat = bedcomp_getpointer_realfp (morlyr, 'A_max'               , a_max)
+              if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'SinkFrac_max'        , sinkfrac_max)
+              if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'asfm'                , asfm)
+              if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'bsfm'                , bsfm)
+              if (istat == 0) istat = bedcomp_getpointer_realfp (morlyr, 'sigma_sfm'           , sigma_sfm)
+              if (istat /= 0) then
+                  errmsg = 'Memory problem in RDMORLYR'
+                  call write_error(errmsg, unit=lundia)
+                  error = .true.
+                  return
+              endif
+              call prop_get(mor_ptr, 'Underlayer', 'Amax', a_max)
+              call prop_get(mor_ptr, 'Underlayer', 'SinkFracMax', sinkfrac_max)
+              !
+              call prop_get(mor_ptr, 'Underlayer', 'Asfm', asfm)
+              call prop_get(mor_ptr, 'Underlayer', 'Bsfm', bsfm)
+              call prop_get(mor_ptr, 'Underlayer', 'Sigsfm', sigma_sfm)
+              !
+              istat = bedcomp_getpointer_realfp(morlyr, 'ThCLyr', thclyr)
+              if (istat /= 0) then
+                  errmsg = 'Memory problem in RDMORLYR'
+                  call write_error(errmsg, unit=lundia)
+                  error = .true.
+                  return
+              endif
+              !
+              ! Coarse layer thickness constant in time:
+              ! uniform or spatially varying thickness
+              !
+              txtput1 = 'Thickness coarse layer'
+              telfil = ''
+              call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', telfil)
+              !
+              ! Intel 7.0 crashes on an inquire statement when file = ' '
+              !
+              if (telfil == ' ') telfil = 'dummyname'
+              inquire (file = telfil, exist = ex)
+              !
+              if (ex) then
+                  write(lundia,'(3a)') txtput1, ':', telfil
+                  !
+                  ! read data from file
+                  !
+                  call depfil(lundia    ,error     ,telfil    ,fmttmp    , &
+                            & thclyr    ,1         ,1         ,griddim   )
+                  if (error) then
+                      errmsg = 'Unable to read transport layer thickness from ' // trim(telfil)
+                      call write_error(errmsg, unit=lundia)
+                      return
+                  endif
+              else
+                  telfil = ' '
+                  call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', thclyr(1))
+                  if (thclyr(1) <= 0) then
+                      errmsg = 'ThCLyr should be positive in ' // trim(filmor)
+                      call write_error(errmsg, unit=lundia)
+                      error = .true.
+                      return
+                  endif     
+                  thclyr(:) = thclyr(1)
+                  !
+                  write(lundia,'(2a,e20.4)') txtput1, ':', thclyr(1)
+              endif
+             end associate !telfil
+         endif
+         !
          !
          ! Active-layer diffusion
          !

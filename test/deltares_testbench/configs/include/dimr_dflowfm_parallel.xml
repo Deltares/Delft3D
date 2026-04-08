@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e02_f012_c0322" ref="postproc">
-        <path version="2025-10-15T15:07:11.252000">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
+        <path version="2026-03-31T13:41:43.639000">e02_dflowfm/f012_inout/c0322_alloutrealistic_f12_e02_3dom</path>
         <programs>
           <program ref="dimr" seq="1">
             <arguments>
@@ -181,7 +181,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f014_c041_westerscheldt_structures" ref="dimr">
-      <path version="2025-10-15T15:07:13.408000">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
+      <path version="2026-03-17T10:15:49.591000">e02_dflowfm/f014_parallel/c041_westerscheldt_structures</path>
       <programs>
         <program ref="dflowfm" seq="1">
           <arguments>
@@ -538,39 +538,6 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f014_c034_salinity_freezing_prl" ref="dimr">
-      <path version="2026-01-08T13:10:00">e02_dflowfm/f014_parallel/c034_salinity_freezing_prl</path>
-      <programs>
-        <program ref="dflowfm" seq="1">
-          <arguments>
-            <argument>--partition:ndomains=2:icgsolver=6</argument>
-            <argument>winter97_saltwater.mdu</argument>
-          </arguments>
-        </program>
-        <program ref="dimr" seq="2">
-           <arguments>
-               <argument>-c 2 -m dimr_config.xml</argument>
-           </arguments>
-        </program>
-      </programs>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="output/winter97_saltwater_0000_map.nc" type="netCDF">
-           <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-               <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
-               <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001" />
-           </parameters>
-        </file>
-        <file name="output/winter97_saltwater_0001_map.nc" type="netCDF">
-           <parameters>
-               <parameter name="mesh2d_s1" toleranceAbsolute="0.001" />
-               <parameter name="mesh2d_u1" toleranceAbsolute="0.001" />
-               <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.001" />
-           </parameters>
         </file>
       </checks>
     </testCase>

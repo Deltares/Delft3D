@@ -20,7 +20,7 @@ object TemplateMergeRequest : Template({
                 authType = token {
                     token = "%github_deltares-service-account_access_token%"
                 }
-                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
                 filterSourceBranch = "+:*"
                 ignoreDrafts = true
             }

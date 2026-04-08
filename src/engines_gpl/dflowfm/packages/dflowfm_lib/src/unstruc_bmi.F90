@@ -2452,6 +2452,9 @@ contains
 
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN) :: constituent_name, direction_string
+
+      c_lateral_pointer = c_null_ptr
+
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return
@@ -2467,7 +2470,12 @@ contains
          return
       case ("water_level")
          if (.not. average_waterlevels_per_lateral%is_used) then
-            ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
+            ! The updating of the average water levels is only required, when other engines
+            ! request water levels via BMI. Only then we want the averaging to be performed 
+            ! in flow_run_some_timesteps. This is the only place to identify if water levels
+            ! for laterals is required by other engines.
+            ! average_waterlevels_per_lateral contains the logical is_used, to identify 
+            ! whether this derived type is initialized. 
             call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
                                                             input_variable=s1, &
                                                             weighing_variable=a1, &
@@ -2544,7 +2552,7 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
-      use m_General_Structure, only: update_widths
+      use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
       use string_module, only: str_token

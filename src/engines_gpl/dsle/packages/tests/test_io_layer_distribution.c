@@ -139,10 +139,10 @@ static void test_normalize_profile() {
   const double left_profile_value = -2.0;
   const double right_profile_value = 2.0;
   profile_t linear_profile = profile_default;
-  TEST_ASSERT_EQUAL(0,
-      create_linear_profile(&linear_profile, 10, left_profile_value, right_profile_value));
+  TEST_ASSERT_EQUAL(
+      0, create_linear_profile(&linear_profile, 10, left_profile_value, right_profile_value));
   TEST_ASSERT_EQUAL(0, io_normalize_profile(&linear_profile));
-  TEST_ASSERT_DOUBLE_WITHIN(epsilon,-4.0, linear_profile.relative_discharge_from_lock[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(epsilon, -4.0, linear_profile.relative_discharge_from_lock[0]);
   TEST_ASSERT_DOUBLE_WITHIN(epsilon, 4.0, linear_profile.relative_discharge_from_lock[9]);
   cleanup_profile(&linear_profile);
 }

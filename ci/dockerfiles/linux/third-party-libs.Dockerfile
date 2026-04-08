@@ -9,7 +9,7 @@ ARG BUILDTOOLS_IMAGE_PATH=${BUILDTOOLS_IMAGE_URL}:${BUILDTOOLS_IMAGE_TAG}
 FROM ${BUILDTOOLS_IMAGE_PATH} AS base
 
 ARG INTEL_ONEAPI_VERSION
-ARG INTEL_FORTRAN_COMPILER=ifort
+ARG INTEL_FORTRAN_COMPILER=ifx
 ARG DEBUG=0
 ARG CACHE_ID_SUFFIX=cache-${INTEL_ONEAPI_VERSION}-${INTEL_FORTRAN_COMPILER}-${DEBUG}
 
@@ -807,6 +807,39 @@ cmake --install build
 popd
 EOF-aste
 
+FROM base AS pugixml
+
+ARG DEBUG
+ARG CACHE_ID_SUFFIX
+
+RUN --mount=type=cache,target=/var/cache/src/,id=pugixml-${CACHE_ID_SUFFIX} <<"EOF-pugixml"
+source /etc/bashrc
+set -eo pipefail
+
+URL='https://github.com/zeux/pugixml/releases/download/v1.15/pugixml-1.15.tar.gz'
+BASEDIR='pugixml-1.15'
+if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
+    echo "CACHED ${BASEDIR}"
+else
+    echo "Fetching ${URL}..."
+    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
+fi
+
+pushd "/var/cache/src/${BASEDIR}"
+
+[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
+
+cmake -S . -B build \
+    -D CMAKE_BUILD_TYPE=$BUILD_TYPE \
+    -D BUILD_SHARED_LIBS=ON \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D CMAKE_INSTALL_LIBDIR=lib
+
+cmake --build build --parallel $(nproc)
+cmake --install build
+popd
+EOF-pugixml
+
 FROM base AS all
 
 RUN set -eo pipefail && \
@@ -831,3 +864,4 @@ COPY --from=googletest --link /usr/local/ /usr/local/
 COPY --from=precice --link /usr/local/ /usr/local/
 COPY --from=vtk --link /usr/local/ /usr/local/
 COPY --from=aste --link /usr/local/ /usr/local/
+COPY --from=pugixml --link /usr/local/ /usr/local/
