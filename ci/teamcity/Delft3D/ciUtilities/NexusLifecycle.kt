@@ -14,16 +14,16 @@ object NexusLifecycle : BuildType({
 
     steps {
         step {
-            id = "LifecycleSyftWindows"
-            type = "LifecycleSyftWindows"
+            id = "LifecycleSyftLinux"
+            type = "LifecycleSyftLinux"
         }
         step {
-            id = "LifecycleCdxgenWindows"
-            type = "LifecycleCdxgenWindows"
+            id = "LifecycleCdxgenLinux"
+            type = "LifecycleCdxgenLinux"
         }
         step {
-            id = "LifecycleNexusIqWindows"
-            type = "LifecycleNexusIqWindows"
+            id = "LifecycleNexusIqLinux"
+            type = "LifecycleNexusIqLinux"
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
         }
