@@ -213,9 +213,9 @@ contains
 
         if (timon) call timstrt("locally_adaptive_time_step", ithandl)
         ! just debugging purposes
-        do i = 1, 200! nosss
-            write (*,*) vol_old(i), vol_new(i)
-        end do
+        ! do i = 1, 200! nosss
+        !     write (*,*) vol_old(i), vol_new(i)
+        ! end do
         
             
 
@@ -2305,6 +2305,9 @@ contains
 
                 source_is_bc = is_bc_cell(i_source)
                 target_is_bc = is_bc_cell(i_target)
+                
+                source_has_cfl_risk = .false.
+                target_has_cfl_risk = .false.
 
                 ! assign source_has_cfl_risk
                 if (source_is_bc) then
