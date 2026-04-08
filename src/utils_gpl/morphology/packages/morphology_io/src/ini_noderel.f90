@@ -48,7 +48,6 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
    use string_module, only:str_lower
    use messageHandling, only: LEVEL_FATAL, LEVEL_WARN, LEVEL_INFO, SetMessage, mess
    use m_combinepaths, only: combinepaths
-   use m_flowgeom, only: ndxi, ndx2D
     
    implicit none
    
@@ -78,10 +77,21 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
 
    ! executable statements -------------------------------------------------------
 
-   if (ndx2D==ndxi) then
-      call SetMessage(LEVEL_INFO, 'No 1D network, skipping Nodal Point Relation Data Initialization.')
-      return
-   endif 
+   !One would like to skip the nodal point relation data initialization when the grid has no 1D data, since it is not applicable. 
+   !This could be done by using the `ndx2D` and `ndxi` variables, but these are FM-only. Hence, the following does not compile
+   ! for `all`.  
+   !```
+   !use m_flowgeom, only: ndxi, ndx2D
+   !
+   ! if (ndx2D==ndxi) then
+   !    call SetMessage(LEVEL_INFO, 'No 1D network, skipping Nodal Point Relation Data Initialization.')
+   !    return
+   ! endif 
+   !```
+   !
+   !An alternative could be to use variable `griddim`, which is available in the caller. The problem is that this variable has
+   !no information whether the grid has 1D data or not.  See `grid_dimens_module::griddimtype`. 
+   !The solution could be to add 1D information to the `griddimtype` and use that here.
 
    write (lundia, *)
    write (lundia, '(a)') '*** Start  of nodal point relation data'
