@@ -2,6 +2,7 @@ package Delft3D.ciUtilities
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
+import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
 
 object SigCi : BuildType({
     name = "Sig Ci"
@@ -55,7 +56,7 @@ object SigCi : BuildType({
             }
         }
     }
-    
+
     if (DslContext.getParameter("enable_sigrid_trigger").lowercase() == "true") {
         triggers {
             vcs {
