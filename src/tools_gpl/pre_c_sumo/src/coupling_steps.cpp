@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
+#include "parsing_types.hpp"
 
 namespace pre_c_sumo
 {
@@ -16,7 +17,7 @@ namespace pre_c_sumo
         return iteration++ < 2; // Run the loop 2 times for demonstration
     }
 
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoSettingsFile(
+    std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
         const std::string_view csumo_settings_file_name)
     {
         std::println("Reading C-SUMO configuration file...");
@@ -29,12 +30,12 @@ namespace pre_c_sumo
         }
         const auto csumo_settings = std::move(expectedCsumoSettings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
-        return expectedCsumoSettings.value();
+        return csumo_settings;
     }
 
     void receiveFFData() { std::println("Receiving far-field data..."); }
 
-    void writeFF2NFFiles(CSumoSettingsReader csumo_settings)
+    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings)
     {
         for (const auto& diffuser : csumo_settings.diffusers())
         {
@@ -44,7 +45,7 @@ namespace pre_c_sumo
         }
     }
 
-    void waitForNF2FFFiles(CSumoSettingsReader csumo_settings)
+    void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings)
     {
         for (const auto& diffuser : csumo_settings.diffusers())
         {
@@ -56,7 +57,7 @@ namespace pre_c_sumo
         }
     }
 
-    void readNF2FFFiles(CSumoSettingsReader csumo_settings)
+    void readNF2FFFiles(const CSumoSettingsReader& csumo_settings)
     {
         for (const auto& diffuser : csumo_settings.diffusers())
         {
@@ -68,7 +69,7 @@ namespace pre_c_sumo
         }
     }
 
-    void convertNFToSourcesSinks(CSumoSettingsReader csumo_settings)
+    void convertNFToSourcesSinks(const CSumoSettingsReader& csumo_settings)
     {
         for (const auto& diffuser : csumo_settings.diffusers())
         {
@@ -79,7 +80,7 @@ namespace pre_c_sumo
         }
     }
 
-    void sendSourcesSinksToFF(CSumoSettingsReader csumo_settings)
+    void sendSourcesSinksToFF(const CSumoSettingsReader& csumo_settings)
     {
         std::println("Sending sources/sinks data to far-field...");
         (void)csumo_settings;

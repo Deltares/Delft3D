@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-#include "parsing_utils.hpp"
+#include "parsing_types.hpp"
 
 namespace pre_c_sumo
 {

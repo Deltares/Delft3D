@@ -9,25 +9,10 @@
 #include <string_view>
 #include <vector>
 
+#include "parsing_types.hpp"
+
 namespace parsing_utils
 {
-    /**
-     * @brief Error returned when a parsing function fails.
-     */
-    struct [[nodiscard]] ParseError
-    {
-        std::string message{};
-    };
-
-    /**
-     * @brief A 2-D coordinate pair (x, y).
-     */
-    struct [[nodiscard]] Point2D
-    {
-        double x{};
-        double y{};
-    };
-
     /**
      * @brief Parse a space-separated list of double values.
      * @param text The text to parse.

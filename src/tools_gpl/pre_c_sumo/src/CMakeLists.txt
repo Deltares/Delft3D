@@ -15,6 +15,7 @@ set(header_files
     ${include_dir}/monadic_utils.hpp
     ${include_dir}/FF2NF_writer.hpp
     ${include_dir}/parsing_utils.hpp
+    ${include_dir}/parsing_types.hpp
 )
 
 add_library(pre_c_sumo_lib ${source_files} ${header_files})
