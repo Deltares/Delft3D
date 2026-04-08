@@ -14,17 +14,12 @@ object SigCi : BuildType({
     steps {
         step {
             name = "Upload to sigrid using recipe"
-            type = "SigridCiUploadTemplate"
+            type = "SigridCiUploadTemplate2"
             param("sourceDir", ".")
             param("system", "dflow-flexible")
-            param("plugin.docker.imagePlatform", "")
             param("targetquality", "3.5")
-            param("plugin.docker.imageId", "")
             param("publish", "--publish")
             param("showupload", "--showupload")
-            param("sigridciRepoUrl", "https://github.com/Software-Improvement-Group/sigridci")
-            param("teamcity.step.phase", "")
-            param("plugin.docker.run.parameters", "")
             param("customer", "deltares")
             param(
                 "include",
