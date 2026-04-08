@@ -163,8 +163,9 @@ namespace
                 return true;
             }
             constexpr size_t indent_size = 4;
-            const std::string indent(depth() * indent_size, ' ');
-            const std::string parent_indent(std::max(depth() - 1, 0) * 4, ' ');
+            const auto current_depth = static_cast<size_t>(depth());
+            const std::string indent(current_depth * indent_size, ' ');
+            const std::string parent_indent(current_depth > 0 ? (current_depth - 1) * indent_size : 0, ' ');
 
             auto indented_lines = text | std::views::split('\n') | std::views::transform([&indent](const auto line) {
                                       const std::string_view line_text{line.begin(), line.end()};
