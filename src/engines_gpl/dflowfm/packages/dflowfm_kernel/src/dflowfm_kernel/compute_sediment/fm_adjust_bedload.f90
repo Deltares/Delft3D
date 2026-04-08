@@ -257,6 +257,7 @@ subroutine compute_ftheta(ftheta,lsed,Lf)
    use precision, only: dp, comparereal
    use m_physcoef, only: ag
    use m_get_Lbot_Ltop, only: getlbotltop
+   use Messagehandling, only: LEVEL_FATAL, mess, errmsg
    
    implicit none
    
@@ -299,10 +300,13 @@ subroutine compute_ftheta(ftheta,lsed,Lf)
          end if
          ftheta = ashld * (shield**bshld) * &
             ((di50 / depth)**cshld) * ((di50 / dmloc)**dshld)
-      else ! islope==4
+      elseif (islope == 4) then
          hidexploc = (hidexp(k1, lsed) + hidexp(k2, lsed)) / 2.0_dp
          ftheta = alfpa * sqrt(shield / &
             max(shield * 0.1_dp, hidexploc * thcrpa))
+      else
+         write (errmsg, '(a)') '`islope` method not supported for ftheta calculation in fm_adjust_bedload'
+         call mess(LEVEL_FATAL, errmsg)
       end if
    else
       ftheta = 0.0_dp

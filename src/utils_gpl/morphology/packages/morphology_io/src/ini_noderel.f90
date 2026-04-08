@@ -48,6 +48,7 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
    use string_module, only:str_lower
    use messageHandling, only: LEVEL_FATAL, LEVEL_WARN, LEVEL_INFO, SetMessage, mess
    use m_combinepaths, only: combinepaths
+   use m_flowgeom, only: ndxi, ndx2D
     
    implicit none
    
@@ -77,8 +78,14 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
 
    ! executable statements -------------------------------------------------------
 
-   write (lundia, '(a)') '  Nodal point relation data'
-   
+   if (ndx2D==ndxi) then
+      call SetMessage(LEVEL_INFO, 'No 1D network, skipping Nodal Point Relation Data Initialization.')
+      return
+   endif 
+
+   write (lundia, *)
+   write (lundia, '(a)') '*** Start  of nodal point relation data'
+      
    call GetAndCheckFileNames(nrd, sedpar, lsedtot)
    
    allocate(nrd%nodefractions(nrd%nFractions), stat=istat)
@@ -98,8 +105,14 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
 
       pFrac => nrd%nodefractions(iFrac)
       
-      write (lundia, '(3a)') '    File                ', ':', trim(fileName)
-      
+      write (lundia, '(3a)') 'Sediment fraction     ', ':  ', pFrac%Name
+
+      if (trim(fileName) == ' ') then
+         write (lundia, '(3a)') '  File                ', ':  ', 'None'
+      else
+         write (lundia, '(3a)') '  File                ', ':  ', trim(fileName)
+      endif
+
       if (.not. nrd%NRD_Default) then   
       
          ! Read File
@@ -172,14 +185,14 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
                if (pNodRel%Node .eq. ' ') then
                   call SetMessage(LEVEL_FATAL, 'No Node Specified for Nodal Point Relation in File: '//trim(fileName))
                endif
-               write (lundia, '(3a)') '    Node                ', ':', trim(pNodRel%Node)
+               write (lundia, '(3a)') '  Node                ', ':  ', trim(pNodRel%Node)
                
                call prop_get(block_ptr, '*', 'Method', pNodRel%Method)
                if (pNodRel%Method .eq. ' ') then
                   call SetMessage(LEVEL_FATAL, 'No Method Specified for Nodal Point Relation in File: '//trim(fileName))
                endif
                call str_lower(pNodRel%Method)
-               write (lundia, '(3a)') '    Method              ', ':', trim(pNodRel%Method)
+               write (lundia, '(3a)') '  Method              ', ':  ', trim(pNodRel%Method)
                
                if (pNodRel%Method == 'table') then
 
@@ -187,42 +200,42 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
                   if (pNodRel%BranchIn .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Incoming Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
-                  write (lundia, '(3a)') '    BranchIn            ', ':', trim(pNodRel%BranchIn)
+                  write (lundia, '(3a)') '  BranchIn            ', ':  ', trim(pNodRel%BranchIn)
 
                   call prop_get(block_ptr, '*', 'BranchOut1', pNodRel%Branchout1)
                   if (pNodRel%BranchOut1 .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No First Outgoing Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
-                  write (lundia, '(3a)') '    BranchOut1          ', ':', trim(pNodRel%Branchout1)
+                  write (lundia, '(3a)') '  BranchOut1          ', ':  ', trim(pNodRel%Branchout1)
 
                   call prop_get(block_ptr, '*', 'BranchOut2', pNodRel%Branchout2)
                   if (pNodRel%BranchOut2 .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Second Outgoing Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
-                  write (lundia, '(3a)') '    BranchOut2          ', ':', trim(pNodRel%Branchout2)
+                  write (lundia, '(3a)') '  BranchOut2          ', ':  ', trim(pNodRel%Branchout2)
 
                   call prop_get(block_ptr, '*', 'Table', pNodRel%tableName)
                   if (pNodRel%tableName == ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Table Specified for Table Method in File: '//trim(fileName))
                   endif
                   call str_lower(pNodRel%tableName)
-                  write (lundia, '(3a)') '    Table               ', ':', trim(pNodRel%tableName)
+                  write (lundia, '(3a)') '  Table               ', ':  ', trim(pNodRel%tableName)
                   call GetTableData(pNodRel, pFrac)      ! Read the Table
                   
                elseif (pNodRel%Method == 'function') then
                   call prop_get(block_ptr, '*', 'k', pNodRel%expQ)
-                  write (lundia, '(2a,e12.4)') '    K                   ', ':', pNodRel%expQ
+                  write (lundia, '(2a,e12.4)') '  K                   ', ':', pNodRel%expQ
                   call prop_get(block_ptr, '*', 'm', pNodRel%expW)
-                  write (lundia, '(2a,e12.4)') '    M                   ', ':', pNodRel%expW
+                  write (lundia, '(2a,e12.4)') '  M                   ', ':', pNodRel%expW
                elseif (pNodRel%Method == 'bollapittaluga') then   
                   call prop_get(block_ptr, '*', 'alpha_BP', pNodRel%alpha_BP)
-                  write (lundia, '(2a,e12.4)') '    alpha_BP            ', ':', pNodRel%alpha_BP
+                  write (lundia, '(2a,e12.4)') '  alpha_BP            ', ':', pNodRel%alpha_BP
                   !The fallback option when there is more than one incoming branch or different than 2 outgoing branches is the function method.
                   write (lundia, '(a)') 'Function parameters (fallback option):'
                   call prop_get(block_ptr, '*', 'k', pNodRel%expQ)
-                  write (lundia, '(2a,e12.4)') '    K                   ', ':', pNodRel%expQ
+                  write (lundia, '(2a,e12.4)') '  K                   ', ':', pNodRel%expQ
                   call prop_get(block_ptr, '*', 'm', pNodRel%expW)
-                  write (lundia, '(2a,e12.4)') '    M                   ', ':', pNodRel%expW
+                  write (lundia, '(2a,e12.4)') '  M                   ', ':', pNodRel%expW
                else
                  call SetMessage(LEVEL_FATAL, 'Unknown Method Specified in File: '//trim(fileName)//' Method: '//trim(pNodRel%Method))  
                endif
@@ -250,12 +263,14 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
          do icount = 0, 1
             pNodRel => pFrac%noderelations(icount)
             pNodRel%Method = 'function'
-      
             pNodRel%expQ = 1.0_fp
-            pNodRel%expw = 0.0_fp
+            pNodRel%expW = 0.0_fp
          enddo
-         
-         call mess(LEVEL_INFO,'No nodal point relation data specified. Set to default: function with parameters k = 1, m = 0.')
+
+         !We are only writing the values for the latest pointed `pNodRel`, which is `pFrac%noderelations(1)`.
+         write (lundia, '(3a)') '  Method              ', ':  ', trim(pNodRel%Method) 
+         write (lundia, '(2a,e12.4)') '  K                   ', ':', pNodRel%expQ
+         write (lundia, '(2a,e12.4)') '  M                   ', ':', pNodRel%expW
    
       endif
    
@@ -274,6 +289,8 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
       call SetMessage(LEVEL_FATAL, 'Double/Redundant Data Found')
    endif
    
+   write (lundia, '(a)') '*** End    of nodal point relation data'
+   write (lundia, *)
 end subroutine ini_noderel
 
 integer function get_noderel_idx(pFrac, nodeIDIdx, number_links_out, number_links_in, link_in)

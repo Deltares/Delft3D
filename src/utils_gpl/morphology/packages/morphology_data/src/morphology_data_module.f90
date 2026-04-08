@@ -559,8 +559,8 @@ type t_noderelation
    integer                                        :: BranchOut2Ln = 0   !< Link index 
    character(len=CHARLEN)                         :: tableName  = ' '
    character(len=CHARLEN)                         :: Method     = ' '
-   real(fp)                                       :: expQ       = 1.0_fp
-   real(fp)                                       :: expW       = 0.0_fp
+   real(fp)                                       :: expQ       = -999.0_fp ! initialized in `ini_noderel`
+   real(fp)                                       :: expW       = -999.0_fp ! initialized in `ini_noderel`
    real(fp)                                       :: alpha_BP   = 2.5_fp
    type(t_table), pointer                         :: Table
 end type t_noderelation
