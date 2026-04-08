@@ -1,11 +1,14 @@
 #include "coupling_steps.hpp"
 
 #include <precice/precice.hpp>
+#include <format>
 #include <print>
+#include <ranges>
 #include <string_view>
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
+#include "FF2NF_writer.hpp"
 #include "parsing_types.hpp"
 
 namespace pre_c_sumo
@@ -37,11 +40,61 @@ namespace pre_c_sumo
 
     void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings)
     {
+        // TODO: obtain these from the far-field model / coupling state
+        const double current_time_seconds = 0.0;
+        const std::string run_id = "FlowFM";
+        const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
+        const FarFieldLayer default_layer{.depth_from_surface = 0.0, .x_velocity = 0.0, .y_velocity = 0.0};
+
+        int diffuser_index = 0;
         for (const auto& diffuser : csumo_settings.diffusers())
         {
-            std::println("Write FF2NF file for diffuser with position: ({}, {})", diffuser.position.x,
-                         diffuser.position.y);
-            // Here you would add the actual logic to write the FF2NF files based on the diffuser settings
+            ++diffuser_index;
+            // TODO: populate from received far-field data instead of placeholders
+            auto make_point = [&constituents = diffuser.discharge.constituents,
+                               default_layer](const parsing_utils::Point2D& pos) {
+                return FarFieldPoint2D{
+                    .x = pos.x,
+                    .y = pos.y,
+                    .water_depth = 0.0, // TODO: obtain from far-field
+                    .density = 1000.0,  // TODO: obtain from far-field
+                    .constituents = constituents,
+                    .layers = {default_layer}, // TODO: obtain layered data from far-field
+                };
+            };
+
+            const auto ambient_points =
+                diffuser.ambient_positions | std::views::transform(make_point) | std::ranges::to<std::vector>();
+
+            const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
+                                                                         diffuser_index, current_time_seconds / 60.0);
+
+            const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
+
+            auto writer = FF2NFWriter()
+                              .setFF2NFFilename(ff2nf_filename.string())
+                              .setWaitForFile(nf2ff_wait_file)
+                              .setFFRunDirectory(diffuser.ff_run_dir.string())
+                              .setRunId(run_id)
+                              .setUniqueId(diffuser.id.value_or(""))
+                              .setSubgridModelNumber(diffuser_index)
+                              .setCurrentTimeSeconds(current_time_seconds)
+                              .setConstituentNames(constituent_names)
+                              .setDiffuser(make_point(diffuser.position))
+                              .setAmbientPoints(ambient_points);
+
+            if (diffuser.intake.has_value())
+            {
+                writer.setIntake(make_point(*diffuser.intake));
+            }
+
+            const auto result = writer.toFile(ff2nf_filename);
+            if (!result.has_value())
+            {
+                std::println(stderr, "Error writing FF2NF file: {}", result.error().message);
+                continue;
+            }
+            std::println("Wrote FF2NF file: {}", ff2nf_filename.string());
         }
     }
 

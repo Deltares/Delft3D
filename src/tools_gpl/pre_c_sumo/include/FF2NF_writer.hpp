@@ -48,7 +48,23 @@ namespace pre_c_sumo
     class FF2NFWriter
     {
     public:
+        /**
+         * @brief Generates the FF2NF XML content as a string.
+         * @return The generated XML content or a WriteError if validation fails.
+         * @note Validation includes checking that all required fields are set and that the data is consistent
+         *       (e.g., constituent counts match). If validation fails, the returned WriteError contains a message
+         *       describing the issue.
+         */
         [[nodiscard]] std::expected<std::string, WriteError> generate() const;
+
+        /**
+         * @brief Writes the generated FF2NF XML content to a file.
+         * @param file_path The path to the output file.
+         * @return std::expected containing void on success or WriteError on failure.
+         * @note This function first calls generate() to create the XML content. If generation fails, it returns the
+         *       WriteError from generate(). If writing to the file system fails, it returns a WriteError with an
+         *       appropriate message.
+         */
         [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path) const;
 
         // --- Setters: all must be called; validate() (invoked by generate()) checks for omissions ---
@@ -61,8 +77,8 @@ namespace pre_c_sumo
         FF2NFWriter& setSubgridModelNumber(int number);
         FF2NFWriter& setCurrentTimeSeconds(double seconds);
         FF2NFWriter& setConstituentNames(const std::vector<std::string>& names);
-        FF2NFWriter& setDiffusers(const std::vector<FarFieldPoint2D>& diffusers);
-        FF2NFWriter& setIntakes(const std::vector<FarFieldPoint2D>& intakes);
+        FF2NFWriter& setDiffuser(FarFieldPoint2D diffuser);
+        FF2NFWriter& setIntake(FarFieldPoint2D intake);
         FF2NFWriter& setAmbientPoints(const std::vector<FarFieldPoint2D>& ambient_points);
 
     private:
@@ -76,8 +92,8 @@ namespace pre_c_sumo
         std::optional<int> subgrid_model_nr_{};
         std::optional<double> current_time_seconds_{};
         std::vector<std::string> constituent_names_{};
-        std::vector<FarFieldPoint2D> diffusers_{};
-        std::optional<std::vector<FarFieldPoint2D>> intakes_{}; // Intakes are optional
+        std::optional<FarFieldPoint2D> diffuser_{};
+        std::optional<FarFieldPoint2D> intake_{};
         std::vector<FarFieldPoint2D> ambient_points_;
 
         /// Returns an error if any setter was not called.

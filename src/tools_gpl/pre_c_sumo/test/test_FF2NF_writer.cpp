@@ -35,18 +35,18 @@ namespace
             .setSubgridModelNumber(1)
             .setCurrentTimeSeconds(0.0)
             .setConstituentNames({"temperature", "Tracer1"})
-            .setDiffusers({{.x = 550.0,
-                            .y = 350.0,
-                            .water_depth = 10.0,
-                            .density = 1000.0,
-                            .constituents = default_constituents,
-                            .layers = default_layers}})
-            .setIntakes({{.x = 567.0,
-                          .y = 821.3453,
+            .setDiffuser({.x = 550.0,
+                          .y = 350.0,
                           .water_depth = 10.0,
                           .density = 1000.0,
                           .constituents = default_constituents,
-                          .layers = default_layers}})
+                          .layers = default_layers})
+            .setIntake({.x = 567.0,
+                        .y = 821.3453,
+                        .water_depth = 10.0,
+                        .density = 1000.0,
+                        .constituents = default_constituents,
+                        .layers = default_layers})
             .setAmbientPoints({{.x = 823.0,
                                 .y = 344.8,
                                 .water_depth = 10.0,
@@ -319,13 +319,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityValuesMatchInput)
 TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
 {
     auto writer = buildExampleWriter();
-    writer.setDiffusers(
-        {{.x = 550.0,
+    writer.setDiffuser(
+        {.x = 550.0,
           .y = 350.0,
           .water_depth = 10.0,
           .density = 1000.0,
           .constituents = {15.0, 1.0},
-          .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5, .x_velocity = 1.5, .y_velocity = -0.3}}}});
+          .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5, .x_velocity = 1.5, .y_velocity = -0.3}}});
     const auto document = generateDocument(std::move(writer));
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
     const auto lines = nonBlankLines(text);
@@ -457,20 +457,33 @@ TEST(FF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
     ASSERT_EQ(lines.size(), 3u);
 }
 
-TEST(FF2NFWriterTest, EmptyDiffusersIsRejected)
+TEST(FF2NFWriterTest, DiffuserNotSetIsRejected)
 {
-    auto writer = buildExampleWriter();
-    writer.setDiffusers({});
+    pre_c_sumo::FF2NFWriter writer;
+    writer.setFF2NFFilename("a.xml")
+        .setWaitForFile("b.xml")
+        .setFFRunDirectory("c/")
+        .setRunId("FlowFM")
+        .setUniqueId("")
+        .setSubgridModelNumber(1)
+        .setCurrentTimeSeconds(0.0)
+        .setConstituentNames({"temperature"})
+        .setAmbientPoints({{.x = 0.0,
+                            .y = 0.0,
+                            .water_depth = 0.0,
+                            .density = 0.0,
+                            .constituents = {0.0},
+                            .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.0}}}});
     const auto xml = writer.generate();
     ASSERT_FALSE(xml.has_value());
-    EXPECT_EQ(xml.error().message, "Diffusers were not set");
+    EXPECT_EQ(xml.error().message, "Diffuser was not set");
 }
 
 TEST(FF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
 {
     auto writer = buildExampleWriter();
-    writer.setDiffusers(
-        {{.x = 550.0, .y = 350.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}}});
+    writer.setDiffuser(
+        {.x = 550.0, .y = 350.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}});
     const auto xml = writer.generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFDiff: every point must have at least one layer");
@@ -479,8 +492,8 @@ TEST(FF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
 TEST(FF2NFWriterTest, IntakePointWithNoLayersIsRejected)
 {
     auto writer = buildExampleWriter();
-    writer.setIntakes(
-        {{.x = 567.0, .y = 821.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}}});
+    writer.setIntake(
+        {.x = 567.0, .y = 821.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}});
     const auto xml = writer.generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFIntake: every point must have at least one layer");
@@ -499,12 +512,12 @@ TEST(FF2NFWriterTest, AmbientPointWithNoLayersIsRejected)
 TEST(FF2NFWriterTest, DiffuserConstituentCountMismatchIsRejected)
 {
     auto writer = buildExampleWriter();
-    writer.setDiffusers({{.x = 550.0,
-                          .y = 350.0,
-                          .water_depth = 10.0,
-                          .density = 1000.0,
-                          .constituents = {15.0}, // only 1 instead of 2
-                          .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}}});
+    writer.setDiffuser({.x = 550.0,
+                         .y = 350.0,
+                         .water_depth = 10.0,
+                         .density = 1000.0,
+                         .constituents = {15.0}, // only 1 instead of 2
+                         .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}});
     const auto xml = writer.generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFDiff: constituent count (1) does not match constituent names count (2)");
@@ -522,42 +535,6 @@ TEST(FF2NFWriterTest, AmbientConstituentCountMismatchIsRejected)
     const auto xml = writer.generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFAmbient: constituent count (3) does not match constituent names count (2)");
-}
-
-TEST(FF2NFWriterTest, IntakesNotSetIsRejected)
-{
-    pre_c_sumo::FF2NFWriter writerWithoutIntakes;
-    writerWithoutIntakes.setFF2NFFilename("a.xml")
-        .setWaitForFile("b.xml")
-        .setFFRunDirectory("c/")
-        .setRunId("FlowFM")
-        .setUniqueId("")
-        .setSubgridModelNumber(1)
-        .setCurrentTimeSeconds(0.0)
-        .setConstituentNames({"temperature"})
-        .setDiffusers({{.x = 0.0,
-                        .y = 0.0,
-                        .water_depth = 0.0,
-                        .density = 0.0,
-                        .constituents = {0.0},
-                        .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.0}}}})
-        .setAmbientPoints({{.x = 0.0,
-                            .y = 0.0,
-                            .water_depth = 0.0,
-                            .density = 0.0,
-                            .constituents = {0.0},
-                            .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.0}}}});
-    const auto xml = writerWithoutIntakes.generate();
-    ASSERT_FALSE(xml.has_value());
-    EXPECT_EQ(xml.error().message, "Intakes were not set");
-}
-
-TEST(FF2NFWriterTest, EmptyIntakesIsAccepted)
-{
-    auto writer = buildExampleWriter();
-    writer.setIntakes({});
-    const auto xml = writer.generate();
-    EXPECT_TRUE(xml.has_value()) << (xml.has_value() ? "" : xml.error().message);
 }
 
 TEST(FF2NFWriterTest, EmptyAmbientPointsIsRejected)

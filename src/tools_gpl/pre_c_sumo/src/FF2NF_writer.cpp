@@ -262,15 +262,15 @@ namespace pre_c_sumo
         return *this;
     }
 
-    FF2NFWriter& FF2NFWriter::setDiffusers(const std::vector<FarFieldPoint2D>& diffusers)
+    FF2NFWriter& FF2NFWriter::setDiffuser(FarFieldPoint2D diffuser)
     {
-        diffusers_ = diffusers;
+        diffuser_ = std::move(diffuser);
         return *this;
     }
 
-    FF2NFWriter& FF2NFWriter::setIntakes(const std::vector<FarFieldPoint2D>& intakes)
+    FF2NFWriter& FF2NFWriter::setIntake(FarFieldPoint2D intake)
     {
-        intakes_ = intakes;
+        intake_ = std::move(intake);
         return *this;
     }
 
@@ -318,20 +318,19 @@ namespace pre_c_sumo
         {
             return std::unexpected(WriteError{"Constituent names were not set"});
         }
-        if (diffusers_.empty())
+        if (!diffuser_.has_value())
         {
-            return std::unexpected(WriteError{"Diffusers were not set"});
-        }
-        if (!intakes_.has_value())
-        {
-            return std::unexpected(WriteError{"Intakes were not set"});
+            return std::unexpected(WriteError{"Diffuser was not set"});
         }
         if (ambient_points_.empty())
         {
             return std::unexpected(WriteError{"Ambient points were not set"});
         }
-        RETURN_IF_ERROR(validatePoints(diffusers_, "FFDiff", constituent_names_.size()));
-        RETURN_IF_ERROR(validatePoints(*intakes_, "FFIntake", constituent_names_.size()));
+        RETURN_IF_ERROR(validatePoint(*diffuser_, "FFDiff", constituent_names_.size()));
+        if (intake_.has_value())
+        {
+            RETURN_IF_ERROR(validatePoint(*intake_, "FFIntake", constituent_names_.size()));
+        }
         RETURN_IF_ERROR(validatePoints(ambient_points_, "FFAmbient", constituent_names_.size()));
         return {};
     }
@@ -362,8 +361,11 @@ namespace pre_c_sumo
         addChildWithText(subgrid_model, "SubgridModelNr", *subgrid_model_nr_);
         addChildWithText(subgrid_model, "TIME", *current_time_seconds_ / 60.0);
         addConstituentNames(subgrid_model, constituent_names_);
-        addFarFieldPoints(subgrid_model, "FFDiff", diffusers_);
-        addFarFieldPoints(subgrid_model, "FFIntake", *intakes_);
+        addFarFieldPoints(subgrid_model, "FFDiff", std::vector{*diffuser_});
+        if (intake_.has_value())
+        {
+            addFarFieldPoints(subgrid_model, "FFIntake", std::vector{*intake_});
+        }
         addFarFieldPoints(subgrid_model, "FFAmbient", ambient_points_);
     }
 } // namespace pre_c_sumo
