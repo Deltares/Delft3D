@@ -48,6 +48,14 @@ object SigCi : BuildType({
         }
     }
 
+    features {
+        dockerRegistryConnections {
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_304"
+            }
+        }
+    }
+    
     if (DslContext.getParameter("enable_sigrid_trigger").lowercase() == "true") {
         triggers {
             vcs {
