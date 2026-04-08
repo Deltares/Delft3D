@@ -172,7 +172,7 @@ namespace
                                   });
 
             auto result = indented_lines | std::views::join_with('\n') | std::ranges::to<std::string>();
-            result += '\n' + parent_indent;
+            result += parent_indent;
 
             node.set_value(result);
             return true;

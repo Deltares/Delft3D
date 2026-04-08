@@ -321,11 +321,11 @@ TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
     auto writer = buildExampleWriter();
     writer.setDiffuser(
         {.x = 550.0,
-          .y = 350.0,
-          .water_depth = 10.0,
-          .density = 1000.0,
-          .constituents = {15.0, 1.0},
-          .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5, .x_velocity = 1.5, .y_velocity = -0.3}}});
+         .y = 350.0,
+         .water_depth = 10.0,
+         .density = 1000.0,
+         .constituents = {15.0, 1.0},
+         .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5, .x_velocity = 1.5, .y_velocity = -0.3}}});
     const auto document = generateDocument(std::move(writer));
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
     const auto lines = nonBlankLines(text);
@@ -513,11 +513,11 @@ TEST(FF2NFWriterTest, DiffuserConstituentCountMismatchIsRejected)
 {
     auto writer = buildExampleWriter();
     writer.setDiffuser({.x = 550.0,
-                         .y = 350.0,
-                         .water_depth = 10.0,
-                         .density = 1000.0,
-                         .constituents = {15.0}, // only 1 instead of 2
-                         .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}});
+                        .y = 350.0,
+                        .water_depth = 10.0,
+                        .density = 1000.0,
+                        .constituents = {15.0}, // only 1 instead of 2
+                        .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}});
     const auto xml = writer.generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFDiff: constituent count (1) does not match constituent names count (2)");
@@ -575,6 +575,29 @@ TEST(FF2NFWriterTest, MultiLineTextIsIndented)
     const auto closing_indent = text.substr(line_start + 1, xyz_close - line_start - 1);
     EXPECT_EQ(closing_indent, std::string(12, ' '))
         << "Expected closing tag indent of 12 spaces, got " << closing_indent.size();
+}
+
+TEST(FF2NFWriterTest, NoBlankLineBetweenLastDataLineAndClosingTag)
+{
+    const auto xml = buildExampleWriter().generate();
+    ASSERT_TRUE(xml.has_value()) << xml.error().message;
+    const auto& text = *xml;
+
+    // Find the closing </XYZ> tag and check there's no blank line before it
+    const auto xyz_close = text.find("</XYZ>");
+    ASSERT_NE(xyz_close, std::string::npos);
+
+    // Walk back past the closing tag's indent to find the preceding newline
+    const auto line_before_close = text.rfind('\n', xyz_close);
+    ASSERT_NE(line_before_close, std::string::npos);
+    ASSERT_GT(line_before_close, 0u);
+
+    // The line before that should be a data line, not blank
+    const auto line_before_that = text.rfind('\n', line_before_close - 1);
+    ASSERT_NE(line_before_that, std::string::npos);
+    const auto between = text.substr(line_before_that + 1, line_before_close - line_before_that - 1);
+    EXPECT_FALSE(between.find_first_not_of(' ') == std::string::npos)
+        << "Found blank line between last data line and closing tag";
 }
 
 TEST(FF2NFWriterTest, DISABLED_WriteToFile)

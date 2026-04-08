@@ -46,10 +46,9 @@ namespace pre_c_sumo
         const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
         const FarFieldLayer default_layer{.depth_from_surface = 0.0, .x_velocity = 0.0, .y_velocity = 0.0};
 
-        int diffuser_index = 0;
-        for (const auto& diffuser : csumo_settings.diffusers())
+        for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
-            ++diffuser_index;
+            const auto subgrid_model_nr = static_cast<int>(index + 1);
             // TODO: populate from received far-field data instead of placeholders
             auto make_point = [&constituents = diffuser.discharge.constituents,
                                default_layer](const parsing_utils::Point2D& pos) {
@@ -67,7 +66,7 @@ namespace pre_c_sumo
                 diffuser.ambient_positions | std::views::transform(make_point) | std::ranges::to<std::vector>();
 
             const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
-                                                                         diffuser_index, current_time_seconds / 60.0);
+                                                                         subgrid_model_nr, current_time_seconds / 60.0);
 
             const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
 
@@ -77,7 +76,7 @@ namespace pre_c_sumo
                               .setFFRunDirectory(diffuser.ff_run_dir.string())
                               .setRunId(run_id)
                               .setUniqueId(diffuser.id.value_or(""))
-                              .setSubgridModelNumber(diffuser_index)
+                              .setSubgridModelNumber(subgrid_model_nr)
                               .setCurrentTimeSeconds(current_time_seconds)
                               .setConstituentNames(constituent_names)
                               .setDiffuser(make_point(diffuser.position))
