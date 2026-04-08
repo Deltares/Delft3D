@@ -86,7 +86,7 @@ subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
    ! if (ndx2D==ndxi) then
    !    call SetMessage(LEVEL_INFO, 'No 1D network, skipping Nodal Point Relation Data Initialization.')
    !    return
-   ! endif 
+   ! endif
    !```
    !
    !An alternative could be to use variable `griddim`, which is available in the caller. The problem is that this variable has
