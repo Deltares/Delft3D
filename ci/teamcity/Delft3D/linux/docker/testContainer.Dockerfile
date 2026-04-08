@@ -24,7 +24,7 @@ RUN set -eo pipefail && \
 RUN set -eo pipefail && \
     curl https://bootstrap.pypa.io/get-pip.py | python3 - && \
     python3 -m pip install --upgrade pip --break-system-packages && \
-    python3 -m pip install --requirement "/tmp/lnx-requirements.txt" --break-system-packages && \
+    python3 -m pip install --requirement "/tmp/lnx-requirements.txt" --break-system-packages --ignore-installed && \
     rm --verbose "/tmp/lnx-requirements.txt"
 
 ENV LD_LIBRARY_PATH=/opt/dimrset/lib
