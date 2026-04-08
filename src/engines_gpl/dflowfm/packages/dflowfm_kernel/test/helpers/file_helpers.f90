@@ -36,10 +36,10 @@ contains
    !! @param[in] station_x      Array of station x-coordinates
    !! @param[in] station_y      Array of station y-coordinates
    !! @param[in] time_values    Array of time values (in seconds since reference)
-   !! @param[in] waterlevel     2D array (ntimes, nstations) of waterlevel values
+   !! @param[in] quantities     2D array (ntimes, nstations) of quantity values
    !! @param[in] reference_time Reference time string (e.g., "seconds since 2001-01-01 00:00:00 +00:00")
-   subroutine initialize_his_waterlevel(file_name, station_names, station_x, station_y, &
-                                         time_values, waterlevel, reference_time)
+   subroutine initialize_his_2d_scalar_quantity(file_name, station_names, station_x, station_y, &
+                                         time_values, quantity_name, quantities, reference_time)
       use netcdf
       use netcdf_utils, only: check_netcdf_error
       use unstruc_netcdf, only: unc_create, definencvar, unc_addcoordatts, unc_addcoordmapping
@@ -54,7 +54,9 @@ contains
       real(kind=dp), intent(in)    :: station_x(:)
       real(kind=dp), intent(in)    :: station_y(:)
       real(kind=dp), intent(in)    :: time_values(:)
-      real(kind=dp), intent(in)    :: waterlevel(:,:) ! (ntimes, nstations)
+      character(len=*), intent(in) :: quantity_name
+
+      real(kind=dp), intent(in)    :: quantities(:,:) ! (ntimes, nstations)
       character(len=*), intent(in) :: reference_time
 
       ! Local variables
@@ -65,19 +67,18 @@ contains
       integer :: id_crs, id_statname, id_statgeom, id_statnodecount
       integer :: id_statx, id_staty, id_statid
       integer :: id_stat_x_coord, id_stat_y_coord  ! station coordinate variables
-      integer :: id_waterlevel
+      integer :: id_quantity
       integer :: i, j
       integer, allocatable :: node_count(:)
       
       nstations = size(station_names)
       ntimes = size(time_values)
       
-      ! Validate inputs
       if (size(station_x) /= nstations .or. size(station_y) /= nstations) then
          error stop "Station coordinate arrays must match station_names size"
       end if
-      if (size(waterlevel, 1) /= ntimes .or. size(waterlevel, 2) /= nstations) then
-         error stop "Waterlevel array dimensions must be (ntimes, nstations)"
+      if (size(quantities, 1) /= ntimes .or. size(quantities, 2) /= nstations) then
+         error stop "Quantities array dimensions must be (ntimes, nstations)"
       end if
       
       ! Create NetCDF file
@@ -152,13 +153,13 @@ contains
                       'station_y_coordinate', 'y-coordinate', 'm', '', fillVal=dmiss)
       call check_netcdf_error(nf90_put_att(ihisfile, id_stat_y_coord, 'standard_name', 'projection_y_coordinate'))
       
-      ! Define waterlevel variable
-      call definencvar(ihisfile, id_waterlevel, nf90_double, [id_statdim, id_timedim], &
-                      'waterlevel', 'water level', 'm', 'station_x_coordinate station_y_coordinate station_name', &
+      ! Define quantity variable
+      call definencvar(ihisfile, id_quantity, nf90_double, [id_statdim, id_timedim], &
+                      quantity_name, quantity_name, 'm', 'station_x_coordinate station_y_coordinate station_name', &
                       fillVal=dmiss, add_gridmapping=.true.)
-      call check_netcdf_error(nf90_put_att(ihisfile, id_waterlevel, 'standard_name', 'sea_surface_height'))
-      call check_netcdf_error(nf90_put_att(ihisfile, id_waterlevel, 'cell_methods', 'time: point'))
-      call check_netcdf_error(nf90_put_att(ihisfile, id_waterlevel, 'geometry', 'station_geom'))
+      call check_netcdf_error(nf90_put_att(ihisfile, id_quantity, 'standard_name', 'sea_surface_height'))
+      call check_netcdf_error(nf90_put_att(ihisfile, id_quantity, 'cell_methods', 'time: point'))
+      call check_netcdf_error(nf90_put_att(ihisfile, id_quantity, 'geometry', 'station_geom'))
       
       ! End definition mode
       call check_netcdf_error(nf90_enddef(ihisfile))
@@ -188,13 +189,12 @@ contains
       call check_netcdf_error(nf90_put_var(ihisfile, id_statnodecount, node_count))
       deallocate(node_count)
       
-      ! Write waterlevel data (transpose because NetCDF expects station as first dim, time as second)
-      call check_netcdf_error(nf90_put_var(ihisfile, id_waterlevel, transpose(waterlevel), &
+      ! Write quantity data (transpose because NetCDF expects station as first dim, time as second)
+      call check_netcdf_error(nf90_put_var(ihisfile, id_quantity, transpose(quantities), &
                              start=[1, 1], count=[nstations, ntimes]))
       
-      ! Close file
       call check_netcdf_error(nf90_close(ihisfile))
       
-   end subroutine initialize_his_waterlevel
+   end subroutine initialize_his_2d_scalar_quantity
 
 end module
