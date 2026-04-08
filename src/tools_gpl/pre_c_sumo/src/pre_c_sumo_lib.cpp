@@ -19,43 +19,43 @@ namespace pre_c_sumo
         constexpr int mpi_size = 1;
         precice::Participant participant{"preC-SUMO", precice_config_file_name, mpi_rank, mpi_size};
 
-        // TODO
-        // participant.initialize();
-        // double preciceDt; // maximum precice time step size
-        while (doTimeloop())
+        // TESTDATA: set precsumo mesh
+        constexpr int precsumo_nodes_size = 2;
+        // constexpr int dim = 2;
+        std::vector<double> precsumo_nodes = {823.0, 344.8, 465.8, 793.2};
+        std::vector<int> precsumo_nodes_ids(precsumo_nodes_size);
+        std::vector<double> precsumo_waterlevels(precsumo_nodes_size);
+        participant.setMeshVertices("precsumo_nodes", precsumo_nodes, precsumo_nodes_ids);
+
+        // TESTDATA: set sources_sinks mesh
+        constexpr int sources_sinks_size = 4;
+        // constexpr int dim = 2;
+        std::vector<double> sources_sinks_nodes = {250.000,  350.087, 252.500,  350.048,
+                                                   1050.000, 350.365, 1050.500, 350.365};
+        std::vector<int> sources_sinks_nodes_ids(sources_sinks_size);
+        participant.setMeshVertices("sources_sinks_nodes", sources_sinks_nodes, sources_sinks_nodes_ids);
+
+        // TESTDATA: set sources_sinks data
+        // constexpr int sources_sinks_data_size = 1; // discharge
+        std::vector<double> sources_sinks = {1.23, 4.56, -1.23, -4.56};
+        participant.writeData("sources_sinks_nodes", "sources_sinks", sources_sinks_nodes_ids, sources_sinks);
+
+        participant.initialize();
+        double preciceDt; // maximum precice time step size
+        while (participant.isCouplingOngoing())
         {
-            // TODO: preciceDt = participant.getMaxTimeStepSize();
+            preciceDt = participant.getMaxTimeStepSize();
             const auto csumo_settings = readCsumoSettingsFile(csumo_settings_file_name);
-
-            // TESTDATA: set precsumo mesh
-            constexpr int precsumo_nodes_size = 2;
-            // constexpr int dim = 2;
-            std::vector<double> precsumo_nodes = {823.0, 344.8, 465.8, 793.2};
-            std::vector<int> precsumo_nodes_ids(precsumo_nodes_size);
-            participant.setMeshVertices("precsumo_nodes", precsumo_nodes, precsumo_nodes_ids);
-
+            participant.readData("precsumo_nodes", "water_depths", precsumo_nodes_ids, preciceDt, precsumo_waterlevels);
             receiveFFData();
             writeFF2NFFiles(csumo_settings.value());
             waitForNF2FFFiles(csumo_settings.value());
             readNF2FFFiles(csumo_settings.value());
             convertNFToSourcesSinks(csumo_settings.value());
 
-            // TESTDATA: set sources_sinks mesh
-            constexpr int sources_sinks_size = 4;
-            // constexpr int dim = 2;
-            std::vector<double> sources_sinks_nodes = {250.000,  350.087, 252.500,  350.048,
-                                                       1050.000, 350.365, 1050.500, 350.365};
-            std::vector<int> sources_sinks_nodes_ids(sources_sinks_size);
-            participant.setMeshVertices("sources_sinks_nodes", sources_sinks_nodes, sources_sinks_nodes_ids);
-
-            // TESTDATA: set sources_sinks data
-            // constexpr int sources_sinks_data_size = 1; // discharge
-            std::vector<double> sources_sinks = {1.23, 4.56, -1.23, -4.56};
-            participant.writeData("sources_sinks_nodes", "sources_sinks", sources_sinks_nodes_ids, sources_sinks);
-
             sendSourcesSinksToFF(csumo_settings.value());
 
-            // TODO: participant.advance(preciceDt);
+            participant.advance(preciceDt);
         }
         std::println("preC-SUMO finished.");
         return 0;

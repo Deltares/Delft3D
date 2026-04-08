@@ -34,6 +34,10 @@ src/test/**/ftnunit.run
 src/test/**/ftnunit.html
 src/test/**/DFM_OUTPUT_*/**
 
+# ignore files generated when running examples
+examples/**/DFM_OUTPUT_*/**
+examples/**/*.dia
+
 # ignore files created by updating process definition files
 src/engines_gpl/waq/resources/process_lib/*.log
 src/engines_gpl/waq/resources/process_lib/*.asc
@@ -62,3 +66,4 @@ test/deltares_testbench/data/cases/*
 examples/dflowfm/**/precice_debug_output.txt
 examples/dflowfm/**/precice-profiling/**
 examples/dflowfm/**/precice-run/**
+examples/dflowfm/**/precice-exports/**

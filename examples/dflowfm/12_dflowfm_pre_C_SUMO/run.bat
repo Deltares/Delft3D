@@ -1,7 +1,8 @@
 @ echo off
 
 set usePreCICE=1
-set startFM=0
+set startFM=1
+set startPreCSUMO=1
 
 set bindirNF=c:\checkouts\github\Delft3D\install_fm-suite\bin
 set libdirNF=%bindirNF%\..\lib
@@ -19,18 +20,23 @@ rmdir /s /q precice-run
 
 
 if %usePreCICE% EQU 1 (
-
-    rem call c:\adri\work\delft3d\2026.01\x64\bin\run_dimr.bat
-    set PATH=%bindirNF%;%libdirNF%
-    start %bindirNF%\preC-SUMO.exe -c cosumo\CSUMOsettings.xml -p precice_config.xml
+    if %startPreCSUMO% EQU 1 (
+        cd cosumo
+        set PATH=%bindirNF%;%libdirNF%
+        start %bindirNF%\preC-SUMO.exe -c CSUMOsettings.xml -p ..\precice_config.xml
+        cd ..
+    ) else (
+        echo Please start preC-SUMO
+    )
+    
     if %startFM% EQU 1 (
         cd fm
         set PATH=%bindirFF%;%libdirFF%
         call %bindirFF%\run_dflowfm.bat FlowFM.mdu --precice
+        cd ..
     ) else (
         echo Please start D-Flow FM
     )
-
 ) else (
     call %bindirFF%\run_dimr.bat
 )
