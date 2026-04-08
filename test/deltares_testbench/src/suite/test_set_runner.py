@@ -609,7 +609,11 @@ class TestSetRunner(ABC):
             local_path = self.__build_local_path(config, location)
             self.__download_location_with_retries(config, location, remote_path, local_path, logger)
             if location.type == PathType.INPUT:
-                self.__copy_to_work_folder(Path(local_path), logger)
+                work_path = Path(local_path).with_name(f"{Path(local_path).name}_work")
+                if work_path.exists() and self.settings.command_line_settings.skip_run:
+                    logger.debug(f"Preserving existing work directory: {work_path}")
+                else:
+                    self.__copy_to_work_folder(Path(local_path), logger)
 
             self.__set_absolute_paths(config, location.type, local_path)
 
