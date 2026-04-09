@@ -44,6 +44,7 @@ add_library(${library_name} ${source}
                             ${malloc_generator_file}
                             ${fortran_version_file}
 )
+add_dependencies(${library_name} generate_m_alloc_generated)
 
 target_link_libraries(${library_name} PRIVATE deltares_common_c)
 
