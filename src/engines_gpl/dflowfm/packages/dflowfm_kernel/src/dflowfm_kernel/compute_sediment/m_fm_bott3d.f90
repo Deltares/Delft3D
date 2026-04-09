@@ -641,7 +641,7 @@ contains
 
       type(t_noderelation), pointer :: pNodRel
       
-      integer :: number_prints_switch_noda_point_relation
+      integer :: number_prints_switch_nodal_point_relation
       integer, parameter :: MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION = 10
    !!
    !! Execute
@@ -682,13 +682,13 @@ contains
                         total_water_discharge_out,total_sediment_transport_out,kinod,j,ised) !input      
                      e_sbct(L, ised) = 0.0                     
                   elseif (pNodRel%Method == 'bollapittaluga') then
-                      if (n_links_out(kinod) /= 2 .OR. n_links_in(kinod) /= 1 .and. number_prints_switch_noda_point_relation <= MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION) then
-                         number_prints_switch_noda_point_relation = number_prints_switch_noda_point_relation + 1
+                      if (n_links_out(kinod) /= 2 .OR. n_links_in(kinod) /= 1 .and. number_prints_switch_nodal_point_relation <= MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION) then
+                         number_prints_switch_nodal_point_relation = number_prints_switch_nodal_point_relation + 1
                          call mess(LEVEL_INFO, 'There must be 2 out branches and 1 in branch to use the nodal point relation `BollaPittaluga`. Now there are:')
                          call mess(LEVEL_INFO, 'Out branches: ',n_links_out(kinod))
                          call mess(LEVEL_INFO, ' In branches: ',n_links_in(kinod))
                          call mess(LEVEL_INFO, 'Switching to `function`.')
-                         if (number_prints_switch_noda_point_relation == MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION) then
+                         if (number_prints_switch_nodal_point_relation == MAX_NUMBER_PRINTS_SWITCH_NODAL_POINT_RELATION) then
                             call mess(LEVEL_INFO, 'Maximum number of prints reached for nodal point relation warning. No more warnings will be printed.')
                          end if
                          
@@ -2238,7 +2238,7 @@ contains
    logical :: error !< flag to indicate if an error occurred during execution.
    integer :: node_out !< first flownode of the outgoing branch. 
    integer :: inod !< counter of geometry nodes.
-   integer :: kl1 !< counter of links connected to the geometry node.
+   integer :: ilink !< counter of links connected to the geometry node.
    integer :: link_junction !< link connected to geometry node.
    integer :: link_dir !< direction of the link connected to the geometry node. 
    integer :: flownode_idx !< index of flownode at junction node.
@@ -2338,9 +2338,9 @@ contains
    end if
 
    !Initialize
-   total_water_discharge_out(:) = 0_dp !Total water discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches.
-   total_width_out(:) = 0_dp !Width of the downstream branches.
-   total_sediment_transport_out(:, :) = 0_dp !Total sediment discharge that exits the geometry (flow) node at the junction and must be redistributed over the downstream branches. 
+   total_water_discharge_out(:) = 0_dp
+   total_width_out(:) = 0_dp 
+   total_sediment_transport_out(:, :) = 0_dp 
    width_out = 0_dp
    water_discharge_out = 0_dp
    n_links_out=0
@@ -2370,9 +2370,9 @@ contains
          flownode_idx = pnod%gridnumber
          flownode_junction(n_junctions)=flownode_idx
 
-         do kl1 = 1, nd_mor(flownode_idx)%lnx 
-            link_junction = abs(nd_mor(flownode_idx)%ln(kl1))
-            link_dir = sign(1, nd_mor(flownode_idx)%ln(kl1))
+         do ilink = 1, nd_mor(flownode_idx)%lnx 
+            link_junction = abs(nd_mor(flownode_idx)%ln(ilink))
+            link_dir = sign(1, nd_mor(flownode_idx)%ln(ilink))
             wb1d = wu_mor(link_junction)
             
             if (u1(link_junction) * link_dir < 0_dp) then
