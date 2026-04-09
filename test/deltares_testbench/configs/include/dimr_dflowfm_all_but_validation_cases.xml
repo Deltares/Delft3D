@@ -6443,6 +6443,20 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f037_c14_sediment_transport_bifurcation_BollaPittaluga" ref="dflowfm_default">
+      <path version="2026-04-02T12:46:49.489000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c14_sediment_transport_bifurcation_BollaPittaluga</path>
+      <maxRunTime>30.0</maxRunTime>
+      <checks>
+        <file name="output/r_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_sbn" toleranceAbsolute="0.0001" />
+            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.00001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f037_c31_shoal_ZW" ref="dflowfm_default">
       <path version="2025-10-15T15:19:00.611000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c31_shoal_ds_IBedCond0_us_IBedCond1</path>
       <maxRunTime>35.0000000</maxRunTime>
@@ -9147,7 +9161,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f500_c03_morpho_junctions" ref="dflowfm_default">
-      <path version="2025-10-15T15:31:52.987000">e02_dflowfm/f500_implicit1d/c03_morpho_junctions</path>
+      <path version="2026-04-07T10:09:52.146000">e02_dflowfm/f500_implicit1d/c03_morpho_junctions</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
