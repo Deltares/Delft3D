@@ -34,6 +34,11 @@ add_custom_command(
     VERBATIM
 )
 
+# Force build graph to consider this generation step explicitly
+add_custom_target(generate_m_alloc_generated DEPENDS "${malloc_output_file}")
+set_target_properties(generate_m_alloc_generated PROPERTIES FOLDER utils_lgpl/deltares_common)
+set_source_files_properties("${malloc_output_file}" PROPERTIES GENERATED TRUE)
+
 get_fortran_source_files(src source)
 
 set(library_name deltares_common)
