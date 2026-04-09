@@ -50,7 +50,8 @@ contains
       use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                             qqlat, qplat, get_lateral_volume_per_layer, &
-                            lateral_volume_per_layer, distribute_lateral_discharge, average_waterlevels_per_lateral
+                            lateral_volume_per_layer, distribute_lateral_discharge, average_waterlevels_per_lateral 
+      use m_partitioninfo, only: reduce_lateral_output, distribute_lateral_input, jampi 
 
       real(kind=dp), intent(in) :: dtrange
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -60,6 +61,9 @@ contains
 
       if (apply_transport_is_used) then
          call reset_outgoing_lat_concentration()
+         if (jampi == 1) then
+            call distribute_lateral_input()
+         end if
          call distribute_lateral_discharge(qplat, qqlat)
       end if
 
@@ -100,12 +104,16 @@ contains
 
       end do
 
-      if (apply_transport_is_used) then
-         call finish_outgoing_lat_concentration(dtrange)
-         call get_lateral_volume_per_layer(lateral_volume_per_layer)
+      if (average_waterlevels_per_lateral%is_used) then
+         call average_waterlevels_per_lateral%update()
       end if
-      call average_waterlevels_per_lateral%update()
-
+      if (apply_transport_is_used) then
+         call get_lateral_volume_per_layer(lateral_volume_per_layer)
+         if (jampi == 1) then
+            call reduce_lateral_output()
+         end if
+         call finish_outgoing_lat_concentration()
+      end if
       iresult = DFM_NOERR
       return ! Return with success.
 

@@ -138,38 +138,39 @@ typedef struct dsle_aux_results_t {
 
 /* dsle_initialize_state:
  *      fill dsle_state_t with an initial condition for an empty (no ships) lock */
-DSLE_EXPORT int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_t *state,
-                                                 double salinity_lock, double head_lock);
+DSLE_EXPORT int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p,
+                                                    dsle_phase_state_t *state, double salinity_lock,
+                                                    double head_lock);
 
 /* dsle_step_phase_1:
  *      Perform step 1: levelling to lake side */
 DSLE_EXPORT int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level,
-                                             dsle_phase_state_t *state,
-                                             dsle_phase_transports_t *results);
+                                                dsle_phase_state_t *state,
+                                                dsle_phase_transports_t *results);
 
 /* dsle_step_phase_2:
  *      Perform step 1: door open to lake side (ships out, lock exchange + flushing, ships in) */
 DSLE_EXPORT int DSLE_CALLCONV dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
-                                             dsle_phase_state_t *state,
-                                             dsle_phase_transports_t *results);
+                                                dsle_phase_state_t *state,
+                                                dsle_phase_transports_t *results);
 
 /* dsle_step_phase_3:
  *      Perform step 1: levelling to sea side */
 DSLE_EXPORT int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level,
-                                             dsle_phase_state_t *state,
-                                             dsle_phase_transports_t *results);
+                                                dsle_phase_state_t *state,
+                                                dsle_phase_transports_t *results);
 
 /* dsle_step_phase_4:
  *      Perform step 1: door open to sea side (ships out, lock exchange + flushing, ships in) */
 DSLE_EXPORT int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea,
-                                             dsle_phase_state_t *state,
-                                             dsle_phase_transports_t *results);
+                                                dsle_phase_state_t *state,
+                                                dsle_phase_transports_t *results);
 
 /* dsle_step_flush_doors_closed:
  *      Doors closed, but still flushing. */
 DSLE_EXPORT int DSLE_CALLCONV dsle_step_flush_doors_closed(const dsle_param_t *p, double t_flushing,
-                                                        dsle_phase_state_t *state,
-                                                        dsle_phase_transports_t *results);
+                                                           dsle_phase_state_t *state,
+                                                           dsle_phase_transports_t *results);
 
 /* dsle_param_default:
  *      fill dsle_param_t with default values */
@@ -178,7 +179,7 @@ DSLE_EXPORT void DSLE_CALLCONV dsle_param_default(dsle_param_t *p);
 /* dsle_calc_steady:
  *      calculate the salt intrusion for a set of parameters, assuming steady operation*/
 DSLE_EXPORT int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *results,
-                                            dsle_aux_results_t *aux_results);
+                                               dsle_aux_results_t *aux_results);
 /* dsle_error_msg:
  *      Get error messeage corresponding to error code */
 DSLE_EXPORT const char *DSLE_CALLCONV dsle_error_msg(int code);

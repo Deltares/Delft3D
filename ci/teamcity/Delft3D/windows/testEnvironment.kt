@@ -75,12 +75,15 @@ object WindowsTestEnvironment : BuildType({
         }
         dockerCommand {
             name = "Docker push"
+            enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%
                 """.trimIndent()
             }
-            enabled = "%trigger.type%" == "vcs"
+            conditions {
+                equals("trigger.type", "vcs")
+            }
         }
     }
 

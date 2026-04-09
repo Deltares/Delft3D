@@ -36,7 +36,7 @@
 
 #define no_warning_unused_dummy_argument(x) associate( x => x ); end associate
 
-#include "blasfm.h"
+#include "blasfm.inc"
 
 module GAMMAS
    use precision, only: dp

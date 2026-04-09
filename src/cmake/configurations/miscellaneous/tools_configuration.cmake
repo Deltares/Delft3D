@@ -43,6 +43,10 @@ if(NOT TARGET precice::precice)
     add_subdirectory(${checkout_src_root}/${precice_module} precice)
 endif()
 
+if (NOT TARGET pugixml::pugixml)
+    add_subdirectory(${checkout_src_root}/${pugixml_module} pugixml)
+endif()
+
 # Tools_gpl
 # Mormerge
 if(NOT TARGET mormerge)
@@ -74,9 +78,9 @@ if (NOT TARGET csumo_nfio)
     add_subdirectory(${checkout_src_root}/${csumo_nfio_module} csumo_nfio)
 endif()
 
-# csumo_precice
-if (NOT TARGET csumo_precice)
-    add_subdirectory(${checkout_src_root}/${csumo_precice_module} csumo_precice)
+# preC-SUMO
+if (NOT TARGET preC-SUMO)
+    add_subdirectory(${checkout_src_root}/${preC-SUMO_module} preC-SUMO)
 endif()
 
 # Third party

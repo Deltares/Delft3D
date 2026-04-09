@@ -2470,7 +2470,12 @@ contains
          return
       case ("water_level")
          if (.not. average_waterlevels_per_lateral%is_used) then
-            ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
+            ! The updating of the average water levels is only required, when other engines
+            ! request water levels via BMI. Only then we want the averaging to be performed 
+            ! in flow_run_some_timesteps. This is the only place to identify if water levels
+            ! for laterals is required by other engines.
+            ! average_waterlevels_per_lateral contains the logical is_used, to identify 
+            ! whether this derived type is initialized. 
             call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
                                                             input_variable=s1, &
                                                             weighing_variable=a1, &
