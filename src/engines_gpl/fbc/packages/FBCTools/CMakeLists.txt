@@ -21,7 +21,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # Enable OpenMP
 find_package(OpenMP)
-if(OPENMP_FOUND)
+if(OpenMP_FOUND)
     add_compile_options("${OpenMP_CXX_FLAGS}")
 endif()
 
@@ -118,8 +118,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                        boost_filesystem)
 endif()
 
-if(${CMAKE_COMPILER_IS_GNUCXX})
-    set(LINK_LIBRARIES ${LINK_LIBRARIES} gomp)
+if(OpenMP_CXX_FOUND)
+    set(LINK_LIBRARIES ${LINK_LIBRARIES} OpenMP::OpenMP_CXX)
 endif()
 
 target_link_libraries(FBCTools PRIVATE ${LINK_LIBRARIES})
