@@ -16,7 +16,7 @@ object SigCi : BuildType({
         step {
             name = "Upload to sigrid using recipe"
             type = "SigridCiUploadTemplateLinux2"
-            param("sourceDir", ".")
+            param("sourceDir", "/workspace")
             param("system", "dflow-flexible")
             param("targetquality", "3.5")
             param("publish", "--publish")
