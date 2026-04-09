@@ -7,6 +7,10 @@ import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnecti
 object SigCi : BuildType({
     name = "Sig Ci"
     buildNumberPattern = "%build.vcs.number%"
+
+    templates(
+        TemplateDockerRegistry
+    )
     
     vcs {
         root(DslContext.settingsRoot)
@@ -46,14 +50,6 @@ object SigCi : BuildType({
                 src/version_includes
                 """.trimIndent()
             )
-        }
-    }
-
-    features {
-        dockerRegistryConnections {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_304"
-            }
         }
     }
 
