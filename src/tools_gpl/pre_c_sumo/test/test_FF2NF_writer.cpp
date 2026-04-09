@@ -98,13 +98,6 @@ namespace
         return root.select_node(path.data()).node().text().get();
     }
 
-    // Retrieve the name of a node reached through a '/' separated path starting from
-    // the given root node.
-    std::string nodeName(const pugi::xml_node& root, const std::string_view path)
-    {
-        return root.select_node(path.data()).node().name();
-    }
-
     // Expect that a node exists at the given XPath, printing a useful message if not.
     void expectNodeExists(const pugi::xml_node& root, const std::string_view path)
     {
