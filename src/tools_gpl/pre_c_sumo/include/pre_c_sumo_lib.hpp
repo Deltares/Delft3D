@@ -1,7 +1,9 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_PRE_C_SUMO_LIB_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_PRE_C_SUMO_LIB_HPP
+#include <expected>
 
 #include <string_view>
+#include "csumo_settings_reader.hpp"
 
 namespace pre_c_sumo
 {
@@ -20,6 +22,7 @@ namespace pre_c_sumo
      * @return int Return 0 on success
      */
     int run();
+
 } // namespace pre_c_sumo
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_PRE_C_SUMO_LIB_HPP

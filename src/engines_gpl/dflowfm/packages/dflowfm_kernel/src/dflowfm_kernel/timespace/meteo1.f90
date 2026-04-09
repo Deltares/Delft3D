@@ -1114,7 +1114,7 @@ contains
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
       use spherepack, only: shaec, shaeci, shsec, shseci
-      use m_timespace_data_tables, only: LOVE_NUMBERS_H, LOVE_NUMBERS_K
+      use m_timespace_data_tables, only: LOAD_LOVE_NUMBERS_H, LOAD_LOVE_NUMBERS_K
       implicit none
 
       ! Input\Output parameter
@@ -1176,8 +1176,8 @@ contains
       end if
       if (jaselfal == 1) then
          do l = 1, ndab
-            a(1:mdab, l) = 3 * g * rhow * (1 + LOVE_NUMBERS_K(l - 1) - LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * a(1:mdab, l)
-            b(1:mdab, l) = 3 * g * rhow * (1 + LOVE_NUMBERS_K(l - 1) - LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * b(1:mdab, l)
+            a(1:mdab, l) = 3 * g * rhow * (1 + LOAD_LOVE_NUMBERS_K(l - 1) - LOAD_LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * a(1:mdab, l)
+            b(1:mdab, l) = 3 * g * rhow * (1 + LOAD_LOVE_NUMBERS_K(l - 1) - LOAD_LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * b(1:mdab, l)
          end do
       end if
 
