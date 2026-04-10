@@ -2759,6 +2759,16 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Rad_DiatS1","RadSatDiS1",   3,"Y","x",1
 "Rad_DiatS1","ExtVl     ",   4,"N","x",1
 "Rad_DiatS1","TFGroDiat ",   5,"Y","x",1
+"RadAvGreen","Depth     ",   1,"N","x",1
+"RadAvGreen","RadAve    ",   2,"N","x",1
+"RadAvGreen","RadSatGree",   3,"Y","x",1
+"RadAvGreen","ExtVl     ",   4,"N","x",1
+"RadAvGreen","TFGroGreen",   5,"Y","x",1
+"RadAvDiat ","Depth     ",   1,"N","x",1
+"RadAvDiat ","RadAve    ",   2,"N","x",1
+"RadAvDiat ","RadSatDiat",   3,"Y","x",1
+"RadAvDiat ","ExtVl     ",   4,"N","x",1
+"RadAvDiat ","TFGroDiat ",   5,"Y","x",1
 "GroMrt_Gre","Green     ",   1,"N","x",1
 "GroMrt_Gre","LimDLGreen",   2,"Y","x",1
 "GroMrt_Gre","LimNutGree",   3,"Y","x",1

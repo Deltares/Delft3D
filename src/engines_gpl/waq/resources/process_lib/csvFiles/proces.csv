@@ -116,6 +116,8 @@ procid,procco,procfo,procnm
 "Rad_Green ",123,"RADALG    ","Light efficiency function green algae             "
 "Rad_Diat  ",123,"RADALG    ","Light efficiency function diatoms                 "
 "Rad_DiatS1",123,"RDBALG    ","Light efficiency function benthic diatoms         "
+"RadAvGreen",123,"RADALG    ","Light efficiency function green algae (average)   "
+"RadAvDiat ",123,"RADALG    ","Light efficiency function diatoms (average)       "
 "GroMrt_Gre",123,"PRIPRO    ","DYNAMO: Nett primary prod. and mort. green algae  "
 "GroMrt_Dia",123,"PRIPRO    ","DYNAMO: Nett primary prod. and mort. diatoms      "
 "GroMrt_DS1",123,"SDPPRO    ","DYNAMO: Nett primary prod. and mort. diatoms in S1"

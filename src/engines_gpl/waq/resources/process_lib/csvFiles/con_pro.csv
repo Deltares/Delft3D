@@ -116,6 +116,8 @@
 "Rad_Green ",A,A,A,A,
 "Rad_Diat  ",A,A,A,A,
 "Rad_DiatS1",A,A,A,A,
+"RadAvGreen",A,A,A,A,
+"RadAvDiat ",A,A,A,A,
 "GroMrt_Gre",A,A,A,A,
 "GroMrt_Dia",A,A,A,A,
 "GroMrt_DS1",A,A,A,A,

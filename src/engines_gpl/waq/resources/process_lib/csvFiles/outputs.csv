@@ -807,6 +807,8 @@ outppr,outpit,outpnm,outpdo,outpsx
 "Rad_Green ","LimRadGree",   1,"x",1
 "Rad_Diat  ","LimRadDiat",   1,"x",1
 "Rad_DiatS1","LimRadDiS1",   1,"x",1
+"RadAvGreen","LimRadGree",   1,"x",1
+"RadAvDiat ","LimRadDiat",   1,"x",1
 "GroMrt_Gre","RcGroGreen",   1,"x",1
 "GroMrt_Gre","RcMrtGreen",   2,"x",1
 "GroMrt_Gre","RcRespGree",   3,"x",1
