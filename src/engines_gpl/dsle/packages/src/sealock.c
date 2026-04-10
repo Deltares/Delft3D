@@ -64,6 +64,10 @@ int sealock_init(sealock_state_t *lock, time_t start_time, unsigned int max_num_
     status = dsle_initialize_state(&lock->parameters, &lock->phase_state,
                                    lock->phase_state.salinity_lock, lock->phase_state.head_lock);
   }
+  // Reserve one extra constituent slot for temperature. This slot is always
+  // at index num_constituents - 1 after this point, and is populated each
+  // update by sealock_collect_layers. No other code needs to change.
+  lock->num_constituents += 1;
 
   return status;
 }
@@ -470,6 +474,13 @@ static int sealock_collect_layers(sealock_state_t *lock) {
     lock->parameters.salinity_sea = sealock_collect(sea_volumes, lock->parameters3d.salinity_sea);
   }
 
+  // Temperature occupies the last constituent slot (reserved by sealock_init).
+  unsigned int temp_slot = lock->num_constituents - 1;
+  for (unsigned int i = 0; i < lock->from_lake_volumes.num_volumes; i++) {
+    lock->parameters3d.constituent_lake[temp_slot][i] = lock->parameters.temperature_lake;
+    lock->parameters3d.constituent_sea[temp_slot][i] = lock->parameters.temperature_sea;
+  }
+
   return SEALOCK_OK;
 }
 
@@ -608,16 +619,6 @@ static int sealock_distribute_constituent_results(sealock_state_t *lock) {
   dfm_volumes_t *to_lake_volumes = &lock->to_lake_volumes;
   dfm_volumes_t *to_sea_volumes = &lock->to_sea_volumes;
 
-  if (lock->num_constituents == 0) {
-    return SEALOCK_OK;
-  }
-
-  // Derive the mixing fraction from salinity, which encodes the same volume
-  // fractions used for all passive constituents. Per layer:
-  //   frac = (sal_to_x - sal_x) / (sal_sea - sal_lake)
-  // where frac is the fraction of lock-origin water in the outflow.
-  // When sal_sea == sal_lake there is no density gradient, so no exchange
-  // and frac = 0 (constituent_to_x = constituent_x).
   double sal_lake = lock->parameters.salinity_lake;
   double sal_sea = lock->parameters.salinity_sea;
   double sal_range = sal_sea - sal_lake;

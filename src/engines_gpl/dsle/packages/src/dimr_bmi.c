@@ -100,7 +100,7 @@ static int find_or_register_constituent(sealock_state_t *lock, const char *name)
       return (int)c;
     }
   }
-  if (lock->num_constituents >= MAX_NUM_CONSTITUENTS) {
+  if (lock->num_constituents >= MAX_NUM_CONSTITUENTS-1) {
     log_error("find_or_register_constituent: exceeded MAX_NUM_CONSTITUENTS (%d) registering '%s'\n",
               MAX_NUM_CONSTITUENTS, name);
     return -1;
@@ -273,6 +273,14 @@ int get_var(const char *key, void **dst_ptr) {
   } else if (match_key(quantity, "salinity_lake")) {
     // NOTE: This is really a GET_VALUE_PTR(), called before ethe update.
     source_ptr = config.locks[lock_index].parameters3d.salinity_lake;
+  } else if (match_key(quantity, "temperature_to_lake")) {
+    unsigned int temp_slot = config.locks[lock_index].num_constituents - 1;
+    source_ptr = config.locks[lock_index].results3d.constituent_to_lake[temp_slot];
+    source_len = config.locks[lock_index].to_lake_volumes.num_volumes;
+  } else if (match_key(quantity, "temperature_to_sea")) {
+    unsigned int temp_slot = config.locks[lock_index].num_constituents - 1;
+    source_ptr = config.locks[lock_index].results3d.constituent_to_sea[temp_slot];
+    source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
   } else if (strncmp(quantity, "constituent_to_lake_", 20) == 0) {
     int c = find_or_register_constituent(&config.locks[lock_index], quantity + 20);
     if (c < 0)
