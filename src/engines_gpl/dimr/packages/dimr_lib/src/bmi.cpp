@@ -96,21 +96,22 @@ BMI_API int initialize(const char* configfile)
             //       Make copy of redirectfile
             //       Put CWD in redirectfile
             //       redirectfile = redirectfile + / + copy
-            char* fileBasename = new char[MAXSTRING];
+            char* fileBasename;
 #ifndef _WIN32
             fileBasename = strdup(basename(thisDimr->redirectFile));
 #else
-            char* ext = new char[5];
+            fileBasename = (char*)malloc(MAXSTRING);
+            char* ext = (char*)malloc(5);
             _splitpath(thisDimr->redirectFile, NULL, NULL, fileBasename, ext);
             StringCbCatA(fileBasename, MAXSTRING, ext);
-            delete[] ext;
+            free(ext);
 #endif
             if (strcmp(thisDimr->redirectFile, fileBasename) == 0)
             {
                 char* filenameCopy = new char[MAXSTRING];
                 strcpy(filenameCopy, thisDimr->redirectFile);
 
-                delete[] thisDimr->redirectFile;
+                free(thisDimr->redirectFile);
                 thisDimr->redirectFile = (char*)malloc((MAXSTRING) * sizeof(char));
 
                 if (!getcwd(thisDimr->redirectFile, MAXSTRING))
@@ -129,7 +130,7 @@ BMI_API int initialize(const char* configfile)
             // Create an empty file
             FILE* fp = fopen(thisDimr->redirectFile, "w+");
             fclose(fp);
-            delete[] fileBasename;
+            free(fileBasename);
         }
 
         thisDimr->log->Write(INFO, thisDimr->my_rank, getfullversionstring_dimr_lib());

@@ -198,17 +198,18 @@ Dimr::~Dimr(void)
     delete log;
     delete[] mainArgs;
     // componentsList
-    delete[] componentsList.components;
+    free(componentsList.components);
     // couplersList
     for (int i = 0; i < couplersList.numCouplers; i++)
     {
-        delete[] couplersList.couplers[i].items;
+        free(couplersList.couplers[i].items);
+        free(couplersList.couplers[i].itemTypes);
         if (couplersList.couplers[i].logger != NULL)
         {
-            delete couplersList.couplers[i].logger;
+            free(couplersList.couplers[i].logger);
         }
     }
-    delete[] couplersList.couplers;
+    free(couplersList.couplers);
     // control
     if (control != NULL) deleteControlBlock(*(control));
     free(control);
@@ -226,7 +227,7 @@ void Dimr::deleteControlBlock(dimr_control_block cb)
             // Recursively delete all subBlocks
             deleteControlBlock(cb.subBlocks[i]);
         }
-        delete[] cb.subBlocks;
+        free(cb.subBlocks);
     }
 }
 
