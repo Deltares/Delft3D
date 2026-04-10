@@ -55,24 +55,47 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
+         IMPLICIT REAL    (A-H, J-Z)
+         IMPLICIT INTEGER (I)
 
-        REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
+        ! REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
+        ! INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
+                ! IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local declaration
         !
 		LOGICAL  TMPOPT
 		logical LgtOpt      !    False if RadSat, Frad and LnFrad are equal for all cells
 
-        integer(kind = int_wp) :: iseg
+        !integer(kind = int_wp) :: iseg
         REAL(kind = real_wp) :: ALGMIN
         INTEGER(kind = int_wp) :: NR_MES
         SAVE     NR_MES
         DATA     NR_MES / 0 /
         !
+        !implicit none
+
+        !     Type    Name         I/O Description
+
+        real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
+        real(kind = real_wp) :: fl(*)       ! O  Array of fluxes made by this process in mass/volume/time
+        integer(kind = int_wp) :: ipoint(40) ! I  Array of pointers in process_space_real to get and store the data
+        integer(kind = int_wp) :: increm(40) ! I  Increments in ipoint for segment loop, 0=constant, 1=spatially varying
+        integer(kind = int_wp) :: num_cells       ! I  Number of computational elements in the whole model schematisation
+        integer(kind = int_wp) :: noflux      ! I  Number of fluxes, increment in the fl array
+        integer(kind = int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+        integer(kind = int_wp) :: iknmrk(*)   ! I  Active-Inactive, Surface-water-bottom, see manual for use
+        integer(kind = int_wp) :: num_exchanges_u_dir        ! I  Nr of exchanges in 1st direction (the horizontal dir if irregular mesh)
+        integer(kind = int_wp) :: num_exchanges_v_dir        ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
+        integer(kind = int_wp) :: num_exchanges_z_dir        ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward
+        integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
+        integer(kind = int_wp) :: ipnt(40)   !    Local work array for the pointering
+        integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
+        
+        integer(kind = int_wp) :: ILUMON       !    Local loop counter for computational element loop
+        integer(kind = int_wp) :: iflux        !    Local loop counter for computational element loop
+
+        
         CALL get_log_unit_number(ILUMON)
 		
 		ipnt  = ipoint
