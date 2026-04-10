@@ -16,12 +16,12 @@ object NexusLifecycle : BuildType({
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("exclude_dirs", "--exclude ./test/**, --exclude ./ci/**, --exclude ./tools/**, --exclude ./doc/**")
+            param("exclude_dirs", "--exclude ./test/**, --exclude ./ci/**, --exclude ./tools/**, --exclude ./src/**")
         }
         step {
             id = "LifecycleCdxgenLinux"
             type = "LifecycleCdxgenLinux"
-            param("exclude_dirs", "--exclude ./test/**, --exclude ./ci/**, --exclude ./tools/**, --exclude ./doc/**")
+            param("exclude_dirs", "--exclude ./test/**, --exclude ./ci/**, --exclude ./tools/**, --exclude ./src/**")
         }
         step {
             id = "LifecycleNexusIqLinux"
