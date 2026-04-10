@@ -106,6 +106,9 @@ typedef struct sealock_state_struct {
   // Number of passive constituents supplied by D-Flow FM.
   // Must be set before the run starts (via set_var or initialize).
   unsigned int num_constituents;
+  // Names registered for each constituent slot, indexed by constituent index.
+  // Populated automatically on first set_var/get_var call for that slot.
+  char *constituent_names[MAX_NUM_CONSTITUENTS];
   // 3D parameters
   dfm_parameters3d_t parameters3d;
   // Results split into layers

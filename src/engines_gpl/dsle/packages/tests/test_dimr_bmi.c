@@ -40,7 +40,6 @@ void setUp(void) {
                                     .from_sea_volumes.num_volumes = 1,
                                     .to_lake_volumes.num_volumes = 1,
                                     .to_sea_volumes.num_volumes = 1,
-                                    .num_constituents = 1,
                                 }}};
 }
 
@@ -158,13 +157,69 @@ TEST_SET_VAR(water_volume_to_sea, config.locks[0].to_sea_volumes.volumes)
 TEST_SET_VAR(temperature_lake, &config.locks[0].parameters.temperature_lake)
 TEST_SET_VAR(temperature_sea, &config.locks[0].parameters.temperature_sea)
 
-// get_var: constituent outputs (pointer identity check, same as other get_var tests)
-TEST_GET_VAR(constituent_to_lake, config.locks[0].results3d.constituent_to_lake[0])
-TEST_GET_VAR(constituent_to_sea, config.locks[0].results3d.constituent_to_sea[0])
+static void test_set_var__constituent_lake_named(void) {
+  double new_value = 42.0;
+  int status = set_var("test_sealock/constituent_lake_tracer_dye", &new_value);
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  // Index 0 because it auto-registered as the first constituent.
+  TEST_ASSERT_EQUAL(42.0, config.locks[0].parameters3d.constituent_lake[0][0]);
+  // Name was registered.
+  TEST_ASSERT_EQUAL_STRING("tracer_dye", config.locks[0].constituent_names[0]);
+  TEST_ASSERT_EQUAL(1u, config.locks[0].num_constituents);
+}
 
-// set_var: constituent arrays (num_constituents=1 in setUp ensures dest_len=1)
-TEST_SET_VAR(constituent_lake, config.locks[0].parameters3d.constituent_lake[0])
-TEST_SET_VAR(constituent_sea, config.locks[0].parameters3d.constituent_sea[0])
+static void test_set_var__constituent_lake_named__second_tracer_gets_next_slot(void) {
+  double v1 = 1.0, v2 = 2.0;
+  set_var("test_sealock/constituent_lake_tracer_a", &v1);
+  set_var("test_sealock/constituent_lake_tracer_b", &v2);
+  TEST_ASSERT_EQUAL(1.0, config.locks[0].parameters3d.constituent_lake[0][0]);
+  TEST_ASSERT_EQUAL(2.0, config.locks[0].parameters3d.constituent_lake[1][0]);
+  TEST_ASSERT_EQUAL(2u, config.locks[0].num_constituents);
+}
+
+static void test_get_var__constituent_to_lake_named(void) {
+  // Pre-register by calling set_var first.
+  double v = 0.0;
+  set_var("test_sealock/constituent_lake_tracer_dye", &v);
+  config.locks[0].results3d.constituent_to_lake[0][0] = 99.0;
+
+  double *ptr;
+  int status = get_var("test_sealock/constituent_to_lake_tracer_dye", (void **)&ptr);
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  TEST_ASSERT_EQUAL_PTR(config.locks[0].results3d.constituent_to_lake[0], ptr);
+}
+
+static void test_set_var__constituent_lake_named__same_name_reuses_slot(void) {
+  // First registration.
+  double v1 = 1.0;
+  set_var("test_sealock/constituent_lake_tracer_dye", &v1);
+  TEST_ASSERT_EQUAL(1u, config.locks[0].num_constituents);
+
+  // Second call with same name: must reuse slot 0, not allocate slot 1.
+  double v2 = 2.0;
+  set_var("test_sealock/constituent_lake_tracer_dye", &v2);
+  TEST_ASSERT_EQUAL(1u, config.locks[0].num_constituents);
+  TEST_ASSERT_EQUAL(2.0, config.locks[0].parameters3d.constituent_lake[0][0]);
+}
+
+static void test_set_var__constituent_sea_named(void) {
+  double new_value = 55.0;
+  int status = set_var("test_sealock/constituent_sea_tracer_dye", &new_value);
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  TEST_ASSERT_EQUAL(55.0, config.locks[0].parameters3d.constituent_sea[0][0]);
+  TEST_ASSERT_EQUAL_STRING("tracer_dye", config.locks[0].constituent_names[0]);
+}
+
+static void test_get_var__constituent_to_sea_named(void) {
+  double v = 0.0;
+  set_var("test_sealock/constituent_sea_tracer_dye", &v);
+  config.locks[0].results3d.constituent_to_sea[0][0] = 77.0;
+
+  double *ptr;
+  int status = get_var("test_sealock/constituent_to_sea_tracer_dye", (void **)&ptr);
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  TEST_ASSERT_EQUAL_PTR(config.locks[0].results3d.constituent_to_sea[0], ptr);
+}
 
 // set_var: num_constituents needs a bespoke test because it's unsigned int, not double.
 static void test_set_var__num_constituents(void) {
@@ -278,10 +333,12 @@ int main(void) {
   RUN_TEST(test_get_var__unknown_var_name);
 
   RUN_TEST(test_set_var__num_constituents);
-  RUN_TEST(test_set_var__constituent_lake);
-  RUN_TEST(test_set_var__constituent_sea);
-  RUN_TEST(test_get_var__constituent_to_lake);
-  RUN_TEST(test_get_var__constituent_to_sea);
+  RUN_TEST(test_set_var__constituent_lake_named);
+  RUN_TEST(test_set_var__constituent_lake_named__second_tracer_gets_next_slot);
+  RUN_TEST(test_get_var__constituent_to_lake_named);
+  RUN_TEST(test_set_var__constituent_lake_named__same_name_reuses_slot);
+  RUN_TEST(test_set_var__constituent_sea_named);
+  RUN_TEST(test_get_var__constituent_to_sea_named);
 
   RUN_TEST(test_set_var__salinity_lake);
   RUN_TEST(test_set_var__head_lake);
