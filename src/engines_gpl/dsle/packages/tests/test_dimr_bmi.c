@@ -40,6 +40,7 @@ void setUp(void) {
                                     .from_sea_volumes.num_volumes = 1,
                                     .to_lake_volumes.num_volumes = 1,
                                     .to_sea_volumes.num_volumes = 1,
+                                    .num_constituents = 1,
                                 }}};
 }
 
@@ -157,6 +158,30 @@ TEST_SET_VAR(water_volume_to_sea, config.locks[0].to_sea_volumes.volumes)
 TEST_SET_VAR(temperature_lake, &config.locks[0].parameters.temperature_lake)
 TEST_SET_VAR(temperature_sea, &config.locks[0].parameters.temperature_sea)
 
+// get_var: constituent outputs (pointer identity check, same as other get_var tests)
+TEST_GET_VAR(constituent_to_lake, config.locks[0].results3d.constituent_to_lake[0])
+TEST_GET_VAR(constituent_to_sea, config.locks[0].results3d.constituent_to_sea[0])
+
+// set_var: constituent arrays (num_constituents=1 in setUp ensures dest_len=1)
+TEST_SET_VAR(constituent_lake, config.locks[0].parameters3d.constituent_lake[0])
+TEST_SET_VAR(constituent_sea, config.locks[0].parameters3d.constituent_sea[0])
+
+// set_var: num_constituents needs a bespoke test because it's unsigned int, not double.
+static void test_set_var__num_constituents(void) {
+  // Arrange
+  unsigned int orig = config.locks[0].num_constituents;
+  double new_value = 3.0; // passed as double per BMI convention
+
+  // Act
+  int status = set_var("num_constituents", &new_value);
+
+  // Assert
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  TEST_ASSERT_EQUAL(3u, config.locks[0].num_constituents);
+
+  // Restore
+  config.locks[0].num_constituents = orig;
+}
 static void test_set_var__unknown_var_name(void) {
   double value = 42.0;
   int status = set_var("the_answer_to_life_the_universe_and_everything", &value);
@@ -251,6 +276,12 @@ int main(void) {
   RUN_TEST(test_get_var__salinity_sea);
   RUN_TEST(test_get_var__salinity_lake);
   RUN_TEST(test_get_var__unknown_var_name);
+
+  RUN_TEST(test_set_var__num_constituents);
+  RUN_TEST(test_set_var__constituent_lake);
+  RUN_TEST(test_set_var__constituent_sea);
+  RUN_TEST(test_get_var__constituent_to_lake);
+  RUN_TEST(test_get_var__constituent_to_sea);
 
   RUN_TEST(test_set_var__salinity_lake);
   RUN_TEST(test_set_var__head_lake);
