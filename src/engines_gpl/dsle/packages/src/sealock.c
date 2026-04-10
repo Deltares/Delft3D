@@ -603,6 +603,56 @@ static int sealock_distribute_results(sealock_state_t *lock) {
   return SEALOCK_OK;
 }
 
+static int sealock_distribute_constituent_results(sealock_state_t *lock) {
+  unsigned int c;
+  dfm_volumes_t *to_lake_volumes = &lock->to_lake_volumes;
+  dfm_volumes_t *to_sea_volumes = &lock->to_sea_volumes;
+
+  if (lock->num_constituents == 0) {
+    return SEALOCK_OK;
+  }
+
+  // Derive the mixing fraction from salinity, which encodes the same volume
+  // fractions used for all passive constituents. Per layer:
+  //   frac = (sal_to_x - sal_x) / (sal_sea - sal_lake)
+  // where frac is the fraction of lock-origin water in the outflow.
+  // When sal_sea == sal_lake there is no density gradient, so no exchange
+  // and frac = 0 (constituent_to_x = constituent_x).
+  double sal_lake = lock->parameters.salinity_lake;
+  double sal_sea = lock->parameters.salinity_sea;
+  double sal_range = sal_sea - sal_lake;
+
+  for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
+    unsigned int layer = to_lake_volumes->first_active_cell + i;
+    double sal_to_lake = lock->results3d.salinity_to_lake[layer];
+
+    double frac_lake = (fabs(sal_range) > DBL_EPSILON) ? (sal_to_lake - sal_lake) / sal_range : 0.0;
+    frac_lake = fmax(0.0, fmin(1.0, frac_lake));
+
+    for (c = 0; c < lock->num_constituents; c++) {
+      double c_lake = lock->parameters3d.constituent_lake[c][layer];
+      double c_sea = lock->parameters3d.constituent_sea[c][layer];
+      lock->results3d.constituent_to_lake[c][layer] = c_lake + frac_lake * (c_sea - c_lake);
+    }
+  }
+
+  for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
+    unsigned int layer = to_sea_volumes->first_active_cell + i;
+    double sal_to_sea = lock->results3d.salinity_to_sea[layer];
+
+    double frac_sea = (fabs(sal_range) > DBL_EPSILON) ? (sal_to_sea - sal_lake) / sal_range : 0.0;
+    frac_sea = fmax(0.0, fmin(1.0, frac_sea));
+
+    for (c = 0; c < lock->num_constituents; c++) {
+      double c_lake = lock->parameters3d.constituent_lake[c][layer];
+      double c_sea = lock->parameters3d.constituent_sea[c][layer];
+      lock->results3d.constituent_to_sea[c][layer] = c_lake + frac_sea * (c_sea - c_lake);
+    }
+  }
+
+  return SEALOCK_OK;
+}
+
 int sealock_update(sealock_state_t *lock, time_t time) {
   int status = sealock_set_parameters_for_time(lock, time);
   if (status == SEALOCK_OK) {
@@ -624,6 +674,9 @@ int sealock_update(sealock_state_t *lock, time_t time) {
   }
   if (status == SEALOCK_OK) {
     status = sealock_distribute_results(lock);
+  }
+  if (status == SEALOCK_OK) {
+    status = sealock_distribute_constituent_results(lock);
   }
   return status;
 }

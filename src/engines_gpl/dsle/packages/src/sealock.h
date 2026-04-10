@@ -1,5 +1,3 @@
-
-
 #ifndef SEALOCK_H
 #define SEALOCK_H
 
@@ -40,6 +38,7 @@ typedef struct dsle_phase_wise_args_struct {
                            .duration = 0}
 
 #define MAX_NUM_VOLUMES 50
+#define MAX_NUM_CONSTITUENTS 50
 #define NO_CURRENT_ROW (size_t)(-1)
 
 typedef struct dfm_volumes_struct {
@@ -56,6 +55,10 @@ typedef struct dfm_volumes_struct {
 typedef struct dfm_parameters3d_struct {
   double salinity_lake[MAX_NUM_VOLUMES];
   double salinity_sea[MAX_NUM_VOLUMES];
+  // Passive constituents supplied by D-Flow FM. Layout: [constituent][layer].
+  // The number of active constituents is tracked in sealock_state_t.
+  double constituent_lake[MAX_NUM_CONSTITUENTS][MAX_NUM_VOLUMES];
+  double constituent_sea[MAX_NUM_CONSTITUENTS][MAX_NUM_VOLUMES];
 } dfm_parameters3d_t;
 
 typedef struct dfm_results3d_struct {
@@ -70,6 +73,9 @@ typedef struct dfm_results3d_struct {
   double discharge_from_sea[MAX_NUM_VOLUMES];
   double discharge_to_sea[MAX_NUM_VOLUMES];
   double salinity_to_sea[MAX_NUM_VOLUMES];
+  // Passive constituent outputs, layout: [constituent][layer].
+  double constituent_to_lake[MAX_NUM_CONSTITUENTS][MAX_NUM_VOLUMES];
+  double constituent_to_sea[MAX_NUM_CONSTITUENTS][MAX_NUM_VOLUMES];
 } dfm_results3d_t;
 
 typedef struct sealock_state_struct {
@@ -97,6 +103,9 @@ typedef struct sealock_state_struct {
   dfm_volumes_t from_sea_volumes;
   dfm_volumes_t to_lake_volumes;
   dfm_volumes_t to_sea_volumes;
+  // Number of passive constituents supplied by D-Flow FM.
+  // Must be set before the run starts (via set_var or initialize).
+  unsigned int num_constituents;
   // 3D parameters
   dfm_parameters3d_t parameters3d;
   // Results split into layers

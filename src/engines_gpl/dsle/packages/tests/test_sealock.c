@@ -8,9 +8,55 @@
 // defined in `load_phase_wise.c`
 extern int init_phase_wise_timeseries_csv_context(csv_context_t *context);
 
+// defined in `load_time_averaged.c`
+extern int init_time_averaged_timeseries_csv_context(csv_context_t *context);
+
 void setUp(void) {}
 
 void tearDown(void) {}
+
+// Populates a lock with the equivalent of loading time_averaged.csv,
+// without touching the filesystem. Mirrors the two data rows in the file:
+//   197001011200.0: ship_vol_l2s=1, ship_vol_s2l=2, door_time=3, level=4,
+//                   dc_factor_sea=5, dc_factor_lake=6, num_cycle=7, flush=8
+//   197001021200.0: ship_vol_l2s=9, ship_vol_s2l=10, ...etc
+static void setup_cycle_average_lock_without_file(sealock_state_t *lock, csv_row_t rows[2],
+                                                  time_t times[2]) {
+  sealock_defaults(lock);
+  lock->computation_mode = cycle_average_mode;
+  lock->operational_parameters_file = NULL;
+
+  rows[0][0] = (csv_value_t){.type = double_type, .data.double_value = 197001011200.0};
+  rows[0][1] = (csv_value_t){.type = double_type, .data.double_value = 1.0};
+  rows[0][2] = (csv_value_t){.type = double_type, .data.double_value = 2.0};
+  rows[0][3] = (csv_value_t){.type = double_type, .data.double_value = 3.0};
+  rows[0][4] = (csv_value_t){.type = double_type, .data.double_value = 4.0};
+  rows[0][5] = (csv_value_t){.type = double_type, .data.double_value = 5.0};
+  rows[0][6] = (csv_value_t){.type = double_type, .data.double_value = 6.0};
+  rows[0][7] = (csv_value_t){.type = double_type, .data.double_value = 7.0};
+  rows[0][8] = (csv_value_t){.type = double_type, .data.double_value = 8.0};
+
+  rows[1][0] = (csv_value_t){.type = double_type, .data.double_value = 197001021200.0};
+  rows[1][1] = (csv_value_t){.type = double_type, .data.double_value = 9.0};
+  rows[1][2] = (csv_value_t){.type = double_type, .data.double_value = 10.0};
+  rows[1][3] = (csv_value_t){.type = double_type, .data.double_value = 11.0};
+  rows[1][4] = (csv_value_t){.type = double_type, .data.double_value = 12.0};
+  rows[1][5] = (csv_value_t){.type = double_type, .data.double_value = 13.0};
+  rows[1][6] = (csv_value_t){.type = double_type, .data.double_value = 14.0};
+  rows[1][7] = (csv_value_t){.type = double_type, .data.double_value = 15.0};
+  rows[1][8] = (csv_value_t){.type = double_type, .data.double_value = 16.0};
+
+  init_time_averaged_timeseries_csv_context(&lock->timeseries_data);
+  lock->timeseries_data.num_rows = 2;
+  lock->timeseries_data.row_cap = 2;
+  lock->timeseries_data.rows = rows;
+
+  times[0] = timestamp_to_time(197001011200.0);
+  times[1] = timestamp_to_time(197001021200.0);
+  lock->times = times;
+  lock->times_len = 2;
+  lock->current_row = NO_CURRENT_ROW;
+}
 
 static void test_sealock_defaults(void) {
   sealock_state_t lock = {0};
@@ -397,6 +443,121 @@ static void test_sealock_delta_time_ok__diff_eq_delta_time__not_ok(void) {
   TEST_ASSERT_EQUAL(0, ok);
 }
 
+static void test_sealock_update__constituent_results_match_salinity_mixing_fraction(void) {
+  // Verify that passive constituents are transported using the same mixing
+  // fraction as salinity. That is:
+  //
+  //   (constituent_to_x - constituent_lake) / (constituent_sea - constituent_lake)
+  //     == (salinity_to_x - sal_lake) / (sal_sea - sal_lake)
+  //
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 2;
+  sealock_init(&lock, times[0], 1);
+
+  // Constituent 0: lake=100, sea=200 (same direction as salinity gradient)
+  lock.parameters3d.constituent_lake[0][0] = 100.0;
+  lock.parameters3d.constituent_sea[0][0] = 200.0;
+
+  // Constituent 1: lake=50, sea=0 (opposite direction)
+  lock.parameters3d.constituent_lake[1][0] = 50.0;
+  lock.parameters3d.constituent_sea[1][0] = 0.0;
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0] + 3600));
+
+  // Assert
+  double sal_lake = lock.parameters.salinity_lake;
+  double sal_sea = lock.parameters.salinity_sea;
+  double sal_range = sal_sea - sal_lake;
+
+  // Mixing fraction implied by salinity result.
+  double frac_lake = (lock.results3d.salinity_to_lake[0] - sal_lake) / sal_range;
+  double frac_sea = (lock.results3d.salinity_to_sea[0] - sal_lake) / sal_range;
+
+  // Constituent 0
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 100.0 + frac_lake * (200.0 - 100.0),
+                            lock.results3d.constituent_to_lake[0][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 100.0 + frac_sea * (200.0 - 100.0),
+                            lock.results3d.constituent_to_sea[0][0]);
+
+  // Constituent 1
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 50.0 + frac_lake * (0.0 - 50.0),
+                            lock.results3d.constituent_to_lake[1][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 50.0 + frac_sea * (0.0 - 50.0),
+                            lock.results3d.constituent_to_sea[1][0]);
+
+  free(lock.times);
+}
+
+static void test_sealock_update__constituent_results_zero_when_no_constituents(void) {
+  // When num_constituents == 0, the constituent result arrays must remain zero.
+
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 0;
+  sealock_init(&lock, times[0], 1);
+
+  time_t start = times[0];
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, start, 1));
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, start + 3600));
+
+  // Assert: all constituent result arrays remain zero.
+  double zeros[MAX_NUM_VOLUMES] = {0};
+  for (unsigned int c = 0; c < MAX_NUM_CONSTITUENTS; c++) {
+    TEST_ASSERT_EQUAL_MEMORY(zeros, lock.results3d.constituent_to_lake[c],
+                             MAX_NUM_VOLUMES * sizeof(double));
+    TEST_ASSERT_EQUAL_MEMORY(zeros, lock.results3d.constituent_to_sea[c],
+                             MAX_NUM_VOLUMES * sizeof(double));
+  }
+
+  free(lock.times);
+}
+
+static void test_sealock_update__constituent_results_equal_lake_when_no_salinity_gradient(void) {
+  // When sal_sea == sal_lake (no gradient), frac = 0 and constituent_to_x
+  // must equal constituent_lake.
+
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 1;
+  sealock_init(&lock, times[0], 1);
+
+  time_t start = times[0];
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, start, 1));
+
+  // Force equal salinities so sal_range == 0.
+  lock.parameters.salinity_lake = 5.0;
+  lock.parameters.salinity_sea = 5.0;
+  lock.parameters3d.salinity_lake[0] = 5.0;
+  lock.parameters3d.salinity_sea[0] = 5.0;
+  lock.phase_state.salinity_lock = 5.0;
+
+  lock.parameters3d.constituent_lake[0][0] = 42.0;
+  lock.parameters3d.constituent_sea[0][0] = 99.0;
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, start + 3600));
+
+  // Assert: no gradient -> constituent_to_x == constituent_lake
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_lake[0][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_sea[0][0]);
+
+  free(lock.times);
+}
+
+
 int main(void) {
   UNITY_BEGIN();
 
@@ -414,6 +575,9 @@ int main(void) {
   RUN_TEST(test_sealock_delta_time_ok);
   RUN_TEST(test_sealock_delta_time_ok__times_len_one__always_ok);
   RUN_TEST(test_sealock_delta_time_ok__diff_eq_delta_time__not_ok);
+  RUN_TEST(test_sealock_update__constituent_results_match_salinity_mixing_fraction);
+  RUN_TEST(test_sealock_update__constituent_results_zero_when_no_constituents);
+  RUN_TEST(test_sealock_update__constituent_results_equal_lake_when_no_salinity_gradient);
 
   return UNITY_END();
 }

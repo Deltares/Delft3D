@@ -145,6 +145,17 @@ int set_var(const char *key, void *src_ptr) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_lake;
   } else if (match_key(quantity, "temperature_sea")) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_sea;
+  } else if (match_key(quantity, "num_constituents")) {
+    config.locks[lock_index].num_constituents = (unsigned int)(*(double *)src_ptr);
+    return DIMR_BMI_OK;
+  } else if (match_key(quantity, "constituent_lake")) {
+    dest_ptr = config.locks[lock_index].parameters3d.constituent_lake[0];
+    dest_len = config.locks[lock_index].num_constituents *
+               config.locks[lock_index].from_lake_volumes.num_volumes;
+  } else if (match_key(quantity, "constituent_sea")) {
+    dest_ptr = config.locks[lock_index].parameters3d.constituent_sea[0];
+    dest_len = config.locks[lock_index].num_constituents *
+               config.locks[lock_index].from_sea_volumes.num_volumes;
   } else {
     log_debug("Unhandled set_var('%s', %g)\n", key, *(double *)src_ptr);
     return DIMR_BMI_OK;
@@ -238,6 +249,14 @@ int get_var(const char *key, void **dst_ptr) {
   } else if (match_key(quantity, "salinity_lake")) {
     // NOTE: This is really a GET_VALUE_PTR(), called before ethe update.
     source_ptr = config.locks[lock_index].parameters3d.salinity_lake;
+  } else if (match_key(quantity, "constituent_to_lake")) {
+    source_ptr = config.locks[lock_index].results3d.constituent_to_lake[0];
+    source_len = config.locks[lock_index].num_constituents *
+                 config.locks[lock_index].to_lake_volumes.num_volumes;
+  } else if (match_key(quantity, "constituent_to_sea")) {
+    source_ptr = config.locks[lock_index].results3d.constituent_to_sea[0];
+    source_len = config.locks[lock_index].num_constituents *
+                 config.locks[lock_index].to_sea_volumes.num_volumes;
   } else {
     log_debug("Unhandled get_var('%s', @%p)\n", key, dst_ptr);
     return DIMR_BMI_FAILURE;
