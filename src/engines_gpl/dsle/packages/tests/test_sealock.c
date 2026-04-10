@@ -504,7 +504,8 @@ static void test_sealock_update__constituent_results_match_salinity_mixing_fract
 }
 
 static void test_sealock_update__constituent_results_zero_when_no_constituents(void) {
-  // When num_constituents == 0, the constituent result arrays must remain zero.
+  // When num_constituents is 0 before init (only the temperature slot is reserved),
+  // all user constituent result slots must remain zero.
 
   // Arrange
   csv_row_t rows[2];
@@ -513,13 +514,14 @@ static void test_sealock_update__constituent_results_zero_when_no_constituents(v
   setup_cycle_average_lock_without_file(&lock, rows, times);
   lock.num_constituents = 0;
   TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+  // After init, num_constituents == 1 (temperature slot only). No user slots.
 
   // Act
   TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0] + 3600));
 
-  // Assert: all constituent result arrays remain zero.
+  // Assert: all slots beyond the temperature slot remain zero.
   double zeros[MAX_NUM_VOLUMES] = {0};
-  for (unsigned int c = 0; c < MAX_NUM_CONSTITUENTS; c++) {
+  for (unsigned int c = 1; c < MAX_NUM_CONSTITUENTS; c++) {
     TEST_ASSERT_EQUAL_MEMORY(zeros, lock.results3d.constituent_to_lake[c],
                              MAX_NUM_VOLUMES * sizeof(double));
     TEST_ASSERT_EQUAL_MEMORY(zeros, lock.results3d.constituent_to_sea[c],
@@ -557,6 +559,101 @@ static void test_sealock_update__constituent_results_equal_lake_when_no_salinity
   TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_lake[0][0]);
   TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_sea[0][0]);
 }
+static void test_sealock_init__reserves_temperature_slot(void) {
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 0;
+
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  TEST_ASSERT_EQUAL(1u, lock.num_constituents);
+}
+
+static void test_sealock_init__reserves_temperature_slot_after_user_constituents(void) {
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 2;
+
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  TEST_ASSERT_EQUAL(3u, lock.num_constituents);
+}
+
+static void test_sealock_update__temperature_output_uses_salinity_mixing_fraction(void) {
+  // Temperature output must be mixed using the same fraction as salinity,
+  // i.e. it behaves as a passive constituent.
+
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  // No user constituents; temperature slot will be at index 0 after sealock_init.
+  lock.num_constituents = 0;
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  lock.parameters.head_lake = 0.0;
+  lock.parameters.head_sea = 0.5;
+  lock.parameters3d.salinity_lake[0] = 0.0;
+  lock.parameters3d.salinity_sea[0] = 30.0;
+  lock.parameters.temperature_lake = 10.0;
+  lock.parameters.temperature_sea = 20.0;
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0] + 3600));
+
+  // Assert: temperature output is between lake and sea temperatures.
+  unsigned int temp_slot = lock.num_constituents - 1; // == 0
+  double t_to_lake = lock.results3d.constituent_to_lake[temp_slot][0];
+  double t_to_sea = lock.results3d.constituent_to_sea[temp_slot][0];
+
+  TEST_ASSERT_TRUE(t_to_lake >= 10.0 && t_to_lake <= 20.0);
+  TEST_ASSERT_TRUE(t_to_sea >= 10.0 && t_to_sea <= 20.0);
+
+  // And it must match the salinity mixing fraction exactly.
+  double sal_lake = lock.parameters.salinity_lake;
+  double sal_sea = lock.parameters.salinity_sea;
+  double sal_range = sal_sea - sal_lake;
+
+  double frac_lake = (lock.results3d.salinity_to_lake[0] - sal_lake) / sal_range;
+  double frac_sea = (lock.results3d.salinity_to_sea[0] - sal_lake) / sal_range;
+
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 10.0 + frac_lake * 10.0, t_to_lake);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 10.0 + frac_sea * 10.0, t_to_sea);
+}
+
+static void
+test_sealock_update__temperature_output_equal_temperatures_when_no_salinity_gradient(void) {
+  // When sal_lake == sal_sea, frac = 0 and temperature output must equal temperature_lake.
+
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 0;
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  lock.parameters.salinity_lake = 5.0;
+  lock.parameters.salinity_sea = 5.0;
+  lock.parameters3d.salinity_lake[0] = 5.0;
+  lock.parameters3d.salinity_sea[0] = 5.0;
+  lock.phase_state.salinity_lock = 5.0;
+  lock.parameters.temperature_lake = 10.0;
+  lock.parameters.temperature_sea = 20.0;
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0] + 3600));
+
+  // Assert: no salinity gradient -> frac = 0 -> output = temperature_lake.
+  unsigned int temp_slot = lock.num_constituents - 1;
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 10.0, lock.results3d.constituent_to_lake[temp_slot][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 10.0, lock.results3d.constituent_to_sea[temp_slot][0]);
+}
 
 
 int main(void) {
@@ -579,6 +676,10 @@ int main(void) {
   RUN_TEST(test_sealock_update__constituent_results_match_salinity_mixing_fraction);
   RUN_TEST(test_sealock_update__constituent_results_zero_when_no_constituents);
   RUN_TEST(test_sealock_update__constituent_results_equal_lake_when_no_salinity_gradient);
+  RUN_TEST(test_sealock_init__reserves_temperature_slot);
+  RUN_TEST(test_sealock_init__reserves_temperature_slot_after_user_constituents);
+  RUN_TEST(test_sealock_update__temperature_output_uses_salinity_mixing_fraction);
+  RUN_TEST(test_sealock_update__temperature_output_equal_temperatures_when_no_salinity_gradient);
 
   return UNITY_END();
 }

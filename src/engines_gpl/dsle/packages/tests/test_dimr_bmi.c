@@ -237,6 +237,26 @@ static void test_set_var__num_constituents(void) {
   // Restore
   config.locks[0].num_constituents = orig;
 }
+
+static void test_get_var__temperature_to_lake(void) {
+  // Simulate sealock_init having reserved the temperature slot.
+  config.locks[0].num_constituents = 1;
+
+  double *ptr;
+  int status = get_var("test_sealock/temperature_to_lake", (void **)&ptr);
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  TEST_ASSERT_EQUAL_PTR(config.locks[0].results3d.constituent_to_lake[0], ptr);
+}
+
+static void test_get_var__temperature_to_sea(void) {
+  config.locks[0].num_constituents = 1;
+
+  double *ptr;
+  int status = get_var("test_sealock/temperature_to_sea", (void **)&ptr);
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
+  TEST_ASSERT_EQUAL_PTR(config.locks[0].results3d.constituent_to_sea[0], ptr);
+}
+
 static void test_set_var__unknown_var_name(void) {
   double value = 42.0;
   int status = set_var("the_answer_to_life_the_universe_and_everything", &value);
@@ -366,6 +386,8 @@ int main(void) {
   RUN_TEST(test_get_var_shape__water_volume_from_sea);
   RUN_TEST(test_get_var_shape__water_volume_to_lake);
   RUN_TEST(test_get_var_shape__water_volume_to_sea);
+  RUN_TEST(test_get_var__temperature_to_lake);
+  RUN_TEST(test_get_var__temperature_to_sea);
   RUN_TEST(test_get_var_shape__unknown_var_name);
 
   RUN_TEST(test_version_string__is_not_empty);
