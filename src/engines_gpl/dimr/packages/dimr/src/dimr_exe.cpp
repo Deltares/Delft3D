@@ -58,7 +58,6 @@
 #include <sstream>
 #include <math.h>
 #include <mpi.h>
-#include <omp.h>
 
 #if defined(WIN32)
     #include "getopt.h"
@@ -99,12 +98,6 @@ int main(int argc, char* argv[], char* envp[])
 #endif
     // Do not delete the next line; it ensures that the version string is added to the binary
     const char* dimrexeversion = getversionidstring_dimr_exe();
-
-    // Set OpenMP worker thread stack size to 20 MB.
-    // Must be called before the first parallel region.
-    // On Windows, the default (4 MB for Intel OpenMP) is too small for Fortran
-    // subroutines with large automatic arrays, causing random stack overflows.
-    kmp_set_stacksize_s(20 * 1024 * 1024);
 
     int ireturn = -1;
     DimrExe* DHE;
