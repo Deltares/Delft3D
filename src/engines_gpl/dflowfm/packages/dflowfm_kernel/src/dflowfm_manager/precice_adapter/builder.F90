@@ -19,14 +19,12 @@ module precice_adapter_builder
       integer(kind=c_int) :: mesh_size = 0_c_int ! mesh size (number of points)
       real(kind=c_double), dimension(:), pointer :: mesh_coordinates_x ! mesh X coordinates
       real(kind=c_double), dimension(:), pointer :: mesh_coordinates_y ! mesh Y coordinates
-      logical :: needs_triangulation = .false. ! Mesh needs triangulation?
    contains
       procedure :: set_configfile => builder_set_configfile
       procedure :: set_name => builder_set_name
       procedure :: set_mpi_rank => builder_set_mpi_rank
       procedure :: set_mpi_comm => builder_set_mpi_comm
       procedure :: add_mesh2d => builder_add_mesh_2d
-      procedure :: enable_triangulation => builder_enable_triangulation
       procedure :: build => builder_build
    end type
 
@@ -94,20 +92,13 @@ contains
       self%mesh_coordinates_y => mesh_coordinates_y
    end subroutine builder_add_mesh_2d
 
-   subroutine builder_enable_triangulation(self)
-      class(precice_adapter_builder_t), intent(inout) :: self
-
-      self%needs_triangulation = .true.
-   end subroutine builder_enable_triangulation
-
    function builder_build(self) result(adapter_instance)
       class(precice_adapter_builder_t), intent(inout) :: self
       type(precice_adapter_t), pointer :: adapter_instance
 
       adapter_instance => precice_adapter_t(self%configfile, self%name, self%is_comm_set, self%comm, &
                                             self%my_rank, self%numranks, self%mesh_name, &
-                                            self%mesh_size, self%mesh_coordinates_x, self%mesh_coordinates_y, &
-                                            self%needs_triangulation)
+                                            self%mesh_size, self%mesh_coordinates_x, self%mesh_coordinates_y)
    end function builder_build
 
 end module precice_adapter_builder
