@@ -66,11 +66,11 @@ contains
 #endif
 
 #ifdef _OPENMP
-      ! Set OpenMP worker thread stack size to 20 MB.
+      ! Set OpenMP worker thread stack size to the same as the windows main thread (typically 20 MB).
       ! Must be called before the first parallel region.
       ! On Windows, the default (4 MB for Intel OpenMP) is too small for Fortran
       ! subroutines with large automatic arrays, causing random stack overflows.
-      call kmp_set_stacksize_s(20 * 1024 * 1024)
+      call kmp_set_stacksize_s(DFLOWFM_STACK_SIZE_BYTES)
 
       if (mpion == 1 .and. maxnumthreads == 0) then
          ! If MPI is on for this model, *and* no user-define numthreads was set, then disable OpenMP.
