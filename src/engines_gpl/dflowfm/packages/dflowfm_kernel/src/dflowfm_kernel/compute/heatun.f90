@@ -41,8 +41,8 @@ contains
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
       use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
                             soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
-                            jadelvappos, free_convection_coefficient, secchi_radiation_fraction, secchi_extinction_depth, &
-                            SECCHI_EXTINCTION_DEPTH_FACTOR
+                            jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
+                            DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
       use m_heatfluxes, only: em, albedo, cpa, spatial_secchi_depth_is_available, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
@@ -86,7 +86,7 @@ contains
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
-      real(kind=dp), dimension(2) :: secchi_extinction_depth_in_cell !< Secchi extinction depth used in cell
+      real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient_in_cell !< Secchi extinction depth used in cell
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
@@ -206,8 +206,8 @@ contains
          if (solar_radiation_flux > 0.0_dp) then
 
             if (kmx > 0) then ! distribute incoming radiation over water column
-               secchi_extinction_depth_in_cell(1) = secchi_extinction_depth(1)
-               secchi_extinction_depth_in_cell(2) = secchi_extinction_depth(2)
+               diffuse_attenuation_coefficient_in_cell(1) = diffuse_attenuation_coefficient(1)
+               diffuse_attenuation_coefficient_in_cell(2) = diffuse_attenuation_coefficient(2)
 
                if (secchi_depth(2) > 0.0_dp) then
                   j2 = 2
@@ -218,7 +218,7 @@ contains
                do j = j2, 1, -1
 
                   if (j == 1 .and. spatial_secchi_depth_is_available) then
-                     secchi_extinction_depth_in_cell(1) = spatial_secchi_depth(n) / SECCHI_EXTINCTION_DEPTH_FACTOR
+                     diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
                   end if
 
                   zlo = 0.0_dp
@@ -228,7 +228,7 @@ contains
                      zup = zlo
                      expup = explo
                      zlo = zws(k_top) - zws(cell_index_3D - 1)
-                     ratio = zlo / secchi_extinction_depth_in_cell(j)
+                     ratio = zlo / diffuse_attenuation_coefficient_in_cell(j)
                      if (ratio > 4.0_dp) then !  .or. cell_index_3D.eq.k_bot) then
                         explo = 0.0_dp
                      else

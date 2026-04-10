@@ -1427,10 +1427,10 @@ contains
       call prop_get(md_ptr, 'physics', 'SecchiDepth2', secchi_depth(2))
       call prop_get(md_ptr, 'physics', 'SecchiDepth2Fraction', secchi_radiation_fraction(2))
 
-      secchi_extinction_depth(1) = secchi_depth(1) / SECCHI_EXTINCTION_DEPTH_FACTOR
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
       
       if (secchi_depth(2) > 0) then
-         secchi_extinction_depth(2) = secchi_depth(2) / SECCHI_EXTINCTION_DEPTH_FACTOR
+         diffuse_attenuation_coefficient(2) = secchi_depth(2) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
          secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
       end if
 

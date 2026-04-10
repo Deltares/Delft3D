@@ -98,8 +98,8 @@ module m_physcoef
    ! Secchi depth variables
    real(kind=dp), dimension(2) :: secchi_depth !< [m] Constant Secchi depth; 1 = visible light and UV radiation, 2 = infrared radiation
    real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation
-   real(kind=dp), dimension(2) :: secchi_extinction_depth !< [m] Extinction depth scale for Secchi radiation
-   real(kind=dp), parameter :: SECCHI_EXTINCTION_DEPTH_FACTOR = 1.7_dp !< factor to compute secchi extinction depth from secchi depth
+   real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient !< [m] Diffuse attenuation coefficient for radiation
+   real(kind=dp), parameter :: DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR = 1.7_dp !< factor to compute diffuse attenuation coefficient from secchi depth
 
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
@@ -154,8 +154,8 @@ contains
       secchi_depth(2) = 0.0_dp
       secchi_radiation_fraction(1) = 1.0_dp
       secchi_radiation_fraction(2) = 0.0_dp
-      secchi_extinction_depth(1) = secchi_depth(1) / SECCHI_EXTINCTION_DEPTH_FACTOR
-      secchi_extinction_depth(2) = secchi_depth(2) / SECCHI_EXTINCTION_DEPTH_FACTOR
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
+      diffuse_attenuation_coefficient(2) = secchi_depth(2) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
       vicwminb = 0.0_dp
       xlozmidov = 0.0_dp
       idensform = 2
