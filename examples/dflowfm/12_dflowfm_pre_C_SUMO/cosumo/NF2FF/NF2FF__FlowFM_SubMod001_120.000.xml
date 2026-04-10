@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <NF2FF>
   <fileVersion>0.3</fileVersion>
-  <!--'discharge' or 'velocity'-->
   <discharge>
     <Qintake>10.0</Qintake>
     <Qsource>10.0</Qsource>
@@ -10,11 +9,6 @@
     <constituentsOperator>excess</constituentsOperator>
     <constituents>10.0 0.0</constituents>
   </discharge>
-  <velocity>
-    <!-- Not implemented yet -->
-    <!-- This velocity block is added here as an example
-         COSUMO should produce a file that ONLY contains a discharge block OR a velocity block -->
-  </velocity>
   <NFResult>
     <!--Intake(s) - total Q0(/U0?) will be taken from these locations and distributed over the number of rows of intakes. This water will be directly distributed over the sources (complimented with the entrained water from the sinks, if any).-->
     <!--Sinks will use dS/dTr(ajectory) to determine entrainment sinks. If dS/dTr=0 no (additional) entrainment will take place.-->

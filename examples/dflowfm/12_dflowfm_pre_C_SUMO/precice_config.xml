@@ -16,7 +16,7 @@
     <use-data name="sources_sinks" />
   </mesh>
 
-  <mesh name="precsumo_nodes" dimensions="2">
+  <mesh name="csumo_2d_nodes" dimensions="2">
     <use-data name="water_depths" />
   </mesh>
 
@@ -34,12 +34,12 @@
   </participant>
 
   <participant name="preC-SUMO">
-    <provide-mesh name="precsumo_nodes" />
+    <provide-mesh name="csumo_2d_nodes" />
     <provide-mesh name="sources_sinks_nodes" />
     <receive-mesh name="fm_flow_cells" from="fm" />
-    <read-data name="water_depths" mesh="precsumo_nodes" />
+    <read-data name="water_depths" mesh="csumo_2d_nodes" />
     <write-data name="sources_sinks" mesh="sources_sinks_nodes" />
-    <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells" to="precsumo_nodes" constraint="consistent" />
+    <mapping:linear-cell-interpolation direction="read" from="fm_flow_cells" to="csumo_2d_nodes" constraint="consistent" />
     <export:vtu directory="precice-exports" />
   </participant>
 

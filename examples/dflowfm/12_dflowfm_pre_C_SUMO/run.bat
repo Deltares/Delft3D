@@ -4,9 +4,9 @@ set usePreCICE=1
 set startFM=1
 set startPreCSUMO=1
 
-set bindirNF=c:\checkouts\github\Delft3D\install_fm-suite\bin
+set bindirNF=..\..\..\..\install_fm-suite\bin
 set libdirNF=%bindirNF%\..\lib
-set bindirFF=c:\adri\work\git_readonly\Delft3D\install_fm-suite\bin
+set bindirFF=..\..\..\..\install_fm-suite\bin
 set libdirFF=%bindirFF%\..\lib
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*

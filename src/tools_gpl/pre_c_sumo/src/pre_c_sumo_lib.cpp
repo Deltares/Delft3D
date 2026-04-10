@@ -20,12 +20,12 @@ namespace pre_c_sumo
         precice::Participant participant{"preC-SUMO", precice_config_file_name, mpi_rank, mpi_size};
 
         // TESTDATA: set precsumo mesh
-        constexpr int precsumo_nodes_size = 2;
+        constexpr int csumo_2d_nodes_size = 2;
         // constexpr int dim = 2;
-        std::vector<double> precsumo_nodes = {823.0, 344.8, 465.8, 793.2};
-        std::vector<int> precsumo_nodes_ids(precsumo_nodes_size);
-        std::vector<double> precsumo_waterlevels(precsumo_nodes_size);
-        participant.setMeshVertices("precsumo_nodes", precsumo_nodes, precsumo_nodes_ids);
+        std::vector<double> csumo_2d_nodes = {823.0, 344.8, 465.8, 793.2};
+        std::vector<int> csumo_2d_nodes_ids(csumo_2d_nodes_size);
+        std::vector<double> precsumo_waterlevels(csumo_2d_nodes_size);
+        participant.setMeshVertices("csumo_2d_nodes", csumo_2d_nodes, csumo_2d_nodes_ids);
 
         // TESTDATA: set sources_sinks mesh
         constexpr int sources_sinks_size = 4;
@@ -41,12 +41,13 @@ namespace pre_c_sumo
         participant.writeData("sources_sinks_nodes", "sources_sinks", sources_sinks_nodes_ids, sources_sinks);
 
         participant.initialize();
-        double preciceDt; // maximum precice time step size
+        double coupling_time_step;
         while (participant.isCouplingOngoing())
         {
-            preciceDt = participant.getMaxTimeStepSize();
+            coupling_time_step = participant.getMaxTimeStepSize();
             const auto csumo_settings = readCsumoSettingsFile(csumo_settings_file_name);
-            participant.readData("precsumo_nodes", "water_depths", precsumo_nodes_ids, preciceDt, precsumo_waterlevels);
+            participant.readData("csumo_2d_nodes", "water_depths", csumo_2d_nodes_ids, coupling_time_step,
+                                 precsumo_waterlevels);
             receiveFFData();
             writeFF2NFFiles(csumo_settings.value());
             waitForNF2FFFiles(csumo_settings.value());
@@ -55,7 +56,7 @@ namespace pre_c_sumo
 
             sendSourcesSinksToFF(csumo_settings.value());
 
-            participant.advance(preciceDt);
+            participant.advance(coupling_time_step);
         }
         std::println("preC-SUMO finished.");
         return 0;

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <NF2FF>
   <fileVersion>0.3</fileVersion>
-  <!--'discharge' or 'velocity'-->
   <discharge>
     <Qintake>10.0</Qintake>
     <Qsource>10.0</Qsource>
@@ -10,11 +9,6 @@
     <constituentsOperator>excess</constituentsOperator>
     <constituents>10.0 0.0</constituents>
   </discharge>
-  <velocity>
-    <!-- Not implemented yet -->
-    <!-- This velocity block is added here as an example
-         COSUMO should produce a file that ONLY contains a discharge block OR a velocity block -->
-  </velocity>
   <NFResult>
     <intakes>
 	1550.000	   950     0.5
