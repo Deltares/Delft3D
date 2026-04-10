@@ -633,7 +633,12 @@ static int sealock_distribute_constituent_results(sealock_state_t *lock) {
     for (c = 0; c < lock->num_constituents; c++) {
       double c_lake = lock->parameters3d.constituent_lake[c][layer];
       double c_sea = lock->parameters3d.constituent_sea[c][layer];
-      lock->results3d.constituent_to_lake[c][layer] = c_lake + frac_lake * (c_sea - c_lake);
+      double value = c_lake + frac_lake * (c_sea - c_lake);
+      // Mask: zero out constituent where discharge_to_lake is zero.
+      if (fabs(lock->results3d.discharge_to_lake[layer]) < DBL_EPSILON) {
+        value = 0.0;
+      }
+      lock->results3d.constituent_to_lake[c][layer] = value;
     }
   }
 
@@ -647,7 +652,12 @@ static int sealock_distribute_constituent_results(sealock_state_t *lock) {
     for (c = 0; c < lock->num_constituents; c++) {
       double c_lake = lock->parameters3d.constituent_lake[c][layer];
       double c_sea = lock->parameters3d.constituent_sea[c][layer];
-      lock->results3d.constituent_to_sea[c][layer] = c_lake + frac_sea * (c_sea - c_lake);
+      double value = c_lake + frac_sea * (c_sea - c_lake);
+      // Mask: zero out constituent where discharge_to_sea is zero.
+      if (fabs(lock->results3d.discharge_to_sea[layer]) < DBL_EPSILON) {
+        value = 0.0;
+      }
+      lock->results3d.constituent_to_sea[c][layer] = value;
     }
   }
 
