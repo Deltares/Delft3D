@@ -2008,7 +2008,7 @@ contains
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
 
-      use m_heatfluxes, only: enable_spatial_secchi_depth, spatial_secchi_depth
+      use m_heatfluxes, only: spatial_secchi_depth_is_available, spatial_secchi_depth
       use m_physcoef, only: secchi_depth
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemheight, stemheightstd
@@ -2066,7 +2066,7 @@ contains
       case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
-         enable_spatial_secchi_depth = .true.
+         spatial_secchi_depth_is_available = .true.
          do n = 1, ndx
             if (spatial_secchi_depth(n) == dmiss) then
                spatial_secchi_depth(n) = secchi_depth(1)

@@ -68,7 +68,7 @@ module m_heatfluxes
    real(kind=dp), dimension(:), allocatable :: qtotmap
 
    ! Secchi depth variables
-   logical :: enable_spatial_secchi_depth !< Enable spatially varying Secchi depth
+   logical :: spatial_secchi_depth_is_available !< Flag to indicate if spatially varying Secchi depth is available
    real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
