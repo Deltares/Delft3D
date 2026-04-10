@@ -2813,20 +2813,18 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "NutRel_Alg","NO3       ",  10,"N","x",1
 "NutRel_Alg","PO4       ",  11,"N","x",1
 "NutRel_Alg","Si        ",  12,"Y","x",1
-"NutRel_Alg","fcPPDiat  ",  13,"N","x",1
-"NutRel_Alg","DELT      ",  14,"N","x",1
-"NutRel_Alg","NH4KRIT   ",  15,"Y","x",1
-"NutRel_Alg","fMrtGreen ",  16,"N","x",1
-"NutRel_Alg","NCRatGreen",  17,"Y","x",1
-"NutRel_Alg","PCRatGreen",  18,"Y","x",1
-"NutRel_Alg","FrAutGreen",  19,"Y","x",1
-"NutRel_Alg","FrDetGreen",  20,"Y","x",1
-"NutRel_Alg","fMrtDiat  ",  21,"Y","x",1
-"NutRel_Alg","NCRatDiat ",  22,"Y","x",1
-"NutRel_Alg","PCRatDiat ",  23,"Y","x",1
-"NutRel_Alg","SCRatDiat ",  24,"Y","x",1
-"NutRel_Alg","FrAutDiat ",  25,"Y","x",1
-"NutRel_Alg","FrDetDiat ",  26,"Y","x",1
+"NutRel_Alg","NH4KRIT   ",  13,"Y","x",1
+"NutRel_Alg","fMrtGreen ",  14,"N","x",1
+"NutRel_Alg","NCRatGreen",  15,"Y","x",1
+"NutRel_Alg","PCRatGreen",  16,"Y","x",1
+"NutRel_Alg","FrAutGreen",  17,"Y","x",1
+"NutRel_Alg","FrDetGreen",  18,"Y","x",1
+"NutRel_Alg","fMrtDiat  ",  19,"Y","x",1
+"NutRel_Alg","NCRatDiat ",  20,"Y","x",1
+"NutRel_Alg","PCRatDiat ",  21,"Y","x",1
+"NutRel_Alg","SCRatDiat ",  22,"Y","x",1
+"NutRel_Alg","FrAutDiat ",  23,"Y","x",1
+"NutRel_Alg","FrDetDiat ",  24,"Y","x",1
 "NRAlg_S1  ","fMrtGreeS1",   1,"Y","x",1
 "NRAlg_S1  ","NCRatGreen",   2,"Y","x",1
 "NRAlg_S1  ","PCRatGreen",   3,"Y","x",1
