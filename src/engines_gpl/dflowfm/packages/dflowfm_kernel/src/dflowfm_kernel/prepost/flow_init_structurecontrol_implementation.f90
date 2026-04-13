@@ -26,6 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+
 !> submodule that contains the implementation of flow_init_structurecontrol.
 submodule(m_flow_init_structurecontrol) flow_init_structurecontrol_implementation
    use precision_basics, only: dp
