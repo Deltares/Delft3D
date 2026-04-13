@@ -329,6 +329,11 @@ the binaries, you can do the following:
 mkdir -p data/engines/teamcity_artifacts/
 ln -s -T $(realpath ../../build_fm-suite_release/install/) data/engines/teamcity_artifacts/lnx64
 ```
+It may be necessary to remove the existing symbolic link before creating a new one. You can do this with the following command:
+```bash
+# The following commands should be executed in `test/deltares_testbench`
+rm -rf data/engines/teamcity_artifacts/lnx64
+```
 
 ##### Installing your MinIO credentials
 To run testbench configs `TestBench.py` automatically downloads case and reference files from MinIO 
