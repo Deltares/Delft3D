@@ -94,10 +94,12 @@ module m_physcoef
    real(kind=dp), parameter :: BACKGROUND_AIR_TEMPERATURE = 20.0_dp !< background air temperature (degrees Celsius)
    real(kind=dp), parameter :: BACKGROUND_CLOUDINESS = 50.0_dp !< (%) cloudiness for non-specified points
    real(kind=dp), parameter :: BACKGROUND_HUMIDITY = 50.0_dp !< (%) relative humidity for non-specified points
-   real(kind=dp) :: secchidepth !< (m) secchidepth
-   real(kind=dp) :: secchidepth2 !< (m) secchidepth2
-   real(kind=dp) :: secchidepth2fraction !< (m) fraction of total absorbed by profile 2
-   real(kind=dp) :: zab(2), sfr(2) !< help variables
+
+   ! Secchi depth variables
+   real(kind=dp), dimension(2) :: secchi_depth !< [m] Constant Secchi depth; 1 = visible light and UV radiation, 2 = infrared radiation
+   real(kind=dp), dimension(2) :: secchi_radiation_fraction !< [-] Radiation fraction in (1) visible light and UV radiation, (2) infrared radiation used in Secchi computation
+   real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient !< [m] Diffuse attenuation coefficient for radiation
+   real(kind=dp), parameter :: DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR = 1.7_dp !< factor to compute diffuse attenuation coefficient from secchi depth
 
    integer :: limiterhordif !< 0=No, 1=Horizontal gradient densitylimiter, 2=Finite volume
 
@@ -148,9 +150,12 @@ contains
       rhomean = 1000.0_dp
       backgroundwatertemperature = 20.0_dp
       backgroundsalinity = 30.0_dp
-      secchidepth = 1.0_dp
-      secchidepth2 = 0.0_dp
-      secchidepth2fraction = 0.0_dp
+      secchi_depth(1) = 1.0_dp
+      secchi_depth(2) = 0.0_dp
+      secchi_radiation_fraction(1) = 1.0_dp
+      secchi_radiation_fraction(2) = 0.0_dp
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
+      diffuse_attenuation_coefficient(2) = secchi_depth(2) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
       vicwminb = 0.0_dp
       xlozmidov = 0.0_dp
       idensform = 2
