@@ -3,8 +3,8 @@
 #include "sealock.h"
 #include "load_phase_wise.h"
 #include "load_time_averaged.h"
-#include "timestamp.h"
 #include "log/log.h"
+#include "timestamp.h"
 
 #include <assert.h>
 #include <float.h>
@@ -62,7 +62,7 @@ int sealock_init(sealock_state_t *lock, time_t start_time, unsigned int max_num_
   if (status == SEALOCK_OK) {
     // Initialize parameters consistent with current and given settings.
     status = dsle_initialize_state(&lock->parameters, &lock->phase_state,
-                                  lock->phase_state.salinity_lock, lock->phase_state.head_lock);
+                                   lock->phase_state.salinity_lock, lock->phase_state.head_lock);
   }
 
   return status;
@@ -199,25 +199,25 @@ static int sealock_apply_phase_wise_result_correction(sealock_state_t *lock, tim
   assert(delta_time > 0);
 
   log_debug("%s: delta_time = %lu, skipped_time = %lu\n", __func__, delta_time, skipped_time);
-  log_debug("%s: duration = %lu, dimr_phase_duration = %lu\n", __func__, phase_duration, dimr_phase_duration);
+  log_debug("%s: duration = %lu, dimr_phase_duration = %lu\n", __func__, phase_duration,
+            dimr_phase_duration);
   log_debug("%s: correction factor: %g\n", __func__, correction_factor);
 
   log_info("Correcting for change of phase.\n");
   // Calculate (corrected) volume, and resulting salinity for lake and sea.
   // Note: The total salt mass should remain the same, so no correction is needed there.
   log_info("Applying correction to discharge_from_lake : %g -> %g\n",
-            lock->results.discharge_from_lake,
-            lock->results.discharge_from_lake * correction_factor);
+           lock->results.discharge_from_lake,
+           lock->results.discharge_from_lake * correction_factor);
   lock->results.discharge_from_lake *= correction_factor;
   log_info("Applying correction to discharge_from_sea  : %g -> %g\n",
-            lock->results.discharge_from_sea,
-            lock->results.discharge_from_sea * correction_factor);
+           lock->results.discharge_from_sea, lock->results.discharge_from_sea * correction_factor);
   lock->results.discharge_from_sea *= correction_factor;
-  log_info("Applying correction to discharge_to_lake : %g -> %g\n",
-            lock->results.discharge_to_lake, lock->results.discharge_to_lake * correction_factor);
+  log_info("Applying correction to discharge_to_lake : %g -> %g\n", lock->results.discharge_to_lake,
+           lock->results.discharge_to_lake * correction_factor);
   lock->results.discharge_to_lake *= correction_factor;
-  log_info("Applying correction to discharge_to_sea  : %g -> %g\n",
-            lock->results.discharge_to_sea, lock->results.discharge_to_sea * correction_factor);
+  log_info("Applying correction to discharge_to_sea  : %g -> %g\n", lock->results.discharge_to_sea,
+           lock->results.discharge_to_sea * correction_factor);
   lock->results.discharge_to_sea *= correction_factor;
 
   return SEALOCK_OK;
@@ -264,7 +264,8 @@ static int sealock_update_phase_wise_parameters(sealock_state_t *lock, time_t ti
         }
         break;
       }
-      lock->phase_args.time_duration_end = lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
+      lock->phase_args.time_duration_end =
+          lock->times[lock->current_row] + (time_t)lock->phase_args.duration;
     }
   }
   return status;
@@ -285,24 +286,24 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
     switch (lock->phase_args.routine) {
     case 1:
       status = dsle_step_phase_1(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
-                                &lock->phase_results);
+                                 &lock->phase_results);
       break;
     case 2:
       status = dsle_step_phase_2(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
-                                &lock->phase_results);
+                                 &lock->phase_results);
       break;
     case 3:
       status = dsle_step_phase_3(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
-                                &lock->phase_results);
+                                 &lock->phase_results);
       break;
     case 4:
       status = dsle_step_phase_4(&lock->parameters, lock->phase_args.duration, &lock->phase_state,
-                                &lock->phase_results);
+                                 &lock->phase_results);
       break;
     default:
       if (lock->phase_args.routine < 0) {
         status = dsle_step_flush_doors_closed(&lock->parameters, lock->phase_args.duration,
-                                             &lock->phase_state, &lock->phase_results);
+                                              &lock->phase_state, &lock->phase_results);
       } else {
         status = SEALOCK_ERROR;
       }

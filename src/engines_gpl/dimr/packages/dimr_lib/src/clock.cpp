@@ -33,105 +33,55 @@
 //  24 may 11
 //-------------------------------------------------------------------------------
 
-
 #include "clock.h"
 #include <ctime>
 #include <time.h>
 
-Clock::Clock (
-    void
-    ) {
+Clock::Clock(void) { this->Reset(); }
 
-    this->Reset ();
-    }
+Clock::~Clock(void) {}
 
-
-Clock::~Clock (
-    void
-    ) {
-
-    }
-
-
-Clock::Timestamp
-Clock::Epoch (
-    void
-    ) {
-
-#if defined (WIN32)
-    //Alternative implementation (is GetSystemTime thread safe?):
-	//std::time_t SysTime = std::time(nullptr);
-	//struct tm *OSTime;
-	//OSTime=localtime(&SysTime);
-	//return ((Timestamp) OSTime->tm_sec + OSTime->tm_min * 100 + OSTime->tm_hour * 10000 + OSTime->tm_yday * 1000000);
+Clock::Timestamp Clock::Epoch(void)
+{
+#if defined(WIN32)
+    // Alternative implementation (is GetSystemTime thread safe?):
+    // std::time_t SysTime = std::time(nullptr);
+    // struct tm *OSTime;
+    // OSTime=localtime(&SysTime);
+    // return ((Timestamp) OSTime->tm_sec + OSTime->tm_min * 100 + OSTime->tm_hour * 10000 + OSTime->tm_yday * 1000000);
     SYSTEMTIME tv;
-    GetSystemTime(&tv);     // ToDo: Check return code for errors
-    return (((((Timestamp) tv.wDay * 24 + (Timestamp) tv.wHour) * 60 + (Timestamp) tv.wMinute) * 60 + (Timestamp) tv.wSecond) * 1000000) + tv.wMilliseconds;
+    GetSystemTime(&tv); // ToDo: Check return code for errors
+    return (((((Timestamp)tv.wDay * 24 + (Timestamp)tv.wHour) * 60 + (Timestamp)tv.wMinute) * 60 +
+             (Timestamp)tv.wSecond) *
+            1000000) +
+           tv.wMilliseconds;
 
 #else
-    struct timeval  tv;
+    struct timeval tv;
 
-    if (gettimeofday (&tv, NULL) != 0)
+    if (gettimeofday(&tv, NULL) != 0)
         return 0;
     else
-        return ((Timestamp) tv.tv_sec * 1000000) + tv.tv_usec;
+        return ((Timestamp)tv.tv_sec * 1000000) + tv.tv_usec;
 #endif
-    }
+}
 
+Clock::Timestamp Clock::Elapsed(void) { return this->Epoch() - this->starttime; }
 
-Clock::Timestamp
-Clock::Elapsed (
-    void
-    ) {
+Clock::Timestamp Clock::Start(void) { return this->starttime; }
 
-    return this->Epoch () - this->starttime;
-    }
+void Clock::Set(Timestamp time) { this->starttime = time; }
 
-Clock::Timestamp
-Clock::Start (
-    void
-    ) {
+void Clock::Reset(void) { this->starttime = this->Epoch(); }
 
-    return this->starttime;
-    }
-
-
-void
-Clock::Set (
-    Timestamp time
-    ) {
-
-    this->starttime = time;
-    }
-
-
-void
-Clock::Reset (
-    void
-    ) {
-
-    this->starttime = this->Epoch ();
-    }
-
-
-char *
-Clock::Now (
-    char *  buffer
-    ) {
+char* Clock::Now(char* buffer)
+{
     // Epoch is only used for the milliseconds
-    Timestamp eTime = this->Epoch ();
-	time_t ttNow = time(0);
-	tm * ptmNow;
-	ptmNow = localtime(&ttNow);
-    sprintf (buffer, "%04d-%02d-%02d %02d:%02d:%02d.%03d",
-                        1900 + ptmNow->tm_year,
-                        1 + ptmNow->tm_mon,
-                        ptmNow->tm_mday,
-                        ptmNow->tm_hour,
-                        ptmNow->tm_min,
-                        ptmNow->tm_sec,
-                        (int) (eTime % 1000000)
-                        );
+    Timestamp eTime = this->Epoch();
+    time_t ttNow = time(0);
+    tm* ptmNow;
+    ptmNow = localtime(&ttNow);
+    sprintf(buffer, "%04d-%02d-%02d %02d:%02d:%02d.%03d", 1900 + ptmNow->tm_year, 1 + ptmNow->tm_mon, ptmNow->tm_mday,
+            ptmNow->tm_hour, ptmNow->tm_min, ptmNow->tm_sec, (int)(eTime % 1000000));
     return buffer;
-    }
-
+}

@@ -338,7 +338,7 @@ contains
             if (xl < x_intersect) then
                ! ray crosses edge to the right of point
                crossings = crossings + 1
-            else if (equal(xl, x_intersect, TOLERANCE_FACTOR*epsilon(xl))) then
+            else if (equal(xl, x_intersect, TOLERANCE_FACTOR * epsilon(xl))) then
                ! point is exactly on the edge
                is_inside = .true.
                if (jins == 0) then
@@ -2552,11 +2552,7 @@ contains
       integer :: jacros, in, m2, nintlinks ! nr of internal links = connected edges
 
       ! set tolerance for convergence
-      if (jsferic == 1) then
-         eps = 0.1_hp * circumcenter_tolerance / earth_radius / degrad_hp ! Convert metres to equivalent degrees
-      else
-         eps = circumcenter_tolerance
-      end if
+      eps = circumcenter_tolerance
 
       xzw = 0.0_dp; yzw = 0.0_dp
       if (jsferic == 1) then ! jglobe                 ! regularise sferic coordinates
@@ -2643,7 +2639,7 @@ contains
                      end if
                   end if
                end do
-               if (k > 1 .and. abs(xccf - xccfo) < eps .and. abs(yccf - yccfo) < eps) then
+               if (k > 1 .and. dbdistance(xccf, yccf, xccfo, yccfo, jsferic, jasfer3D, dmiss) < eps) then
                   m = 1
                   exit
                end if

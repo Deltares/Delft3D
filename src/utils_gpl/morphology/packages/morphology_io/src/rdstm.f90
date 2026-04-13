@@ -175,7 +175,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     ! 
     !  For 1D branches read the node relation definitions
     !
-    call ini_noderel(stm%nrd, stm%sedpar, stm%lsedtot)
+    call ini_noderel(lundia, stm%nrd, stm%sedpar, stm%lsedtot)
     !     
     ! Read morphology parameters
     !

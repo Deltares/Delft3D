@@ -41,6 +41,7 @@ contains
       use m_delete_drypoints_from_netgeom, only: delete_drypoints_from_netgeom
       use unstruc_model, only: md_dryptsfile, md_encfile
       use gridoperations, only: update_cell_circumcenters
+      use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_method
       use unstruc_caching
       use network_data, only: nump, nump1d2d, lne, lnn, xzw, yzw, netcell
       use m_flowgeom, only: xz, yz, ba
@@ -58,9 +59,9 @@ contains
          call delete_drypoints_from_netgeom(md_dryptsfile, 0, 0, update_blcell)
          call delete_drypoints_from_netgeom(md_encfile, 0, -1, update_blcell)
 
-         ! for issue UNST-3381, compute circumcenter after deleting dry areas
-         ! TODO: UNST-3436 must be done as a better solution
-         if (len_trim(md_dryptsfile) > 0 .or. len_trim(md_encfile) > 0) then
+         ! Note: code below should stay as long as the old circumcenter method is still available (INTERNAL_NETLINKS_EDGE).
+         ! For the new methods, it is no longer needed (implemented in UNST-8546).
+         if (circumcenter_method /= ALL_NETLINKS_LOOP .and. (len_trim(md_dryptsfile) > 0 .or. len_trim(md_encfile) > 0)) then         ! for issue UNST-3381, compute circumcenter after deleting dry areas
             call update_cell_circumcenters()
          end if
 

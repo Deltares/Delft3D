@@ -5,8 +5,8 @@
 #include <string.h>
 
 #include "config.h"
-#include "util.h"
 #include "dsle.h"
+#include "util.h"
 
 // The dsle_calculate loop can take advantage of shared values (e.g. a
 // reciprocal volume) between steps and the derivative parameters. Most
@@ -44,9 +44,9 @@ inline double TANH(const double x) {
 #endif
 
 #define ERROR_CODES(X)                                                                             \
-  X(DSLE_SUCCESS, "Success")                                                                        \
-  X(DSLE_SHIP_TOO_BIG, "The ship is too large for the lock")                                        \
-  X(DSLE_ERR_REMAINING_HEAD_DIFF, "Remaining head difference when opening doors")                   \
+  X(DSLE_SUCCESS, "Success")                                                                       \
+  X(DSLE_SHIP_TOO_BIG, "The ship is too large for the lock")                                       \
+  X(DSLE_ERR_REMAINING_HEAD_DIFF, "Remaining head difference when opening doors")                  \
   X(DSLE_ERR_SAL_LOCK_OUT_OF_BOUNDS, "The salinity of the lock exceeds that of the boundaries")
 
 #define ERROR_ENUM(ID, TEXT) ID,
@@ -630,8 +630,9 @@ static forceinline void step_phase_4(const dsle_param_t *p, const derived_parame
   state->volume_ship_in_lock = p->ship_volume_sea_to_lake;
 }
 
-static forceinline void step_flush_doors_closed(const dsle_param_t *p, const derived_parameters_t *o,
-                                                double t_flushing, dsle_phase_state_t *state,
+static forceinline void step_flush_doors_closed(const dsle_param_t *p,
+                                                const derived_parameters_t *o, double t_flushing,
+                                                dsle_phase_state_t *state,
                                                 dsle_phase_transports_t *results) {
   // Flushing with gates closed
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -704,7 +705,7 @@ static forceinline void step_flush_doors_closed(const dsle_param_t *p, const der
 }
 
 int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_t *state,
-                                      double sal_lock, double head_lock) {
+                                        double sal_lock, double head_lock) {
   state->salinity_lock = sal_lock;
   state->saltmass_lock = sal_lock * (p->lock_length * p->lock_width * (head_lock - p->lock_bottom));
   state->head_lock = head_lock;
@@ -713,8 +714,8 @@ int DSLE_CALLCONV dsle_initialize_state(const dsle_param_t *p, dsle_phase_state_
   return DSLE_SUCCESS;
 }
 
-int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level, dsle_phase_state_t *state,
-                                  dsle_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level,
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -730,7 +731,7 @@ int DSLE_CALLCONV dsle_step_phase_1(const dsle_param_t *p, double t_level, dsle_
 }
 
 int DSLE_CALLCONV dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
-                                  dsle_phase_state_t *state, dsle_phase_transports_t *results) {
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -749,8 +750,8 @@ int DSLE_CALLCONV dsle_step_phase_2(const dsle_param_t *p, double t_open_lake,
 }
 
 int DSLE_CALLCONV dsle_step_flush_doors_closed(const dsle_param_t *p, double t_flushing,
-                                             dsle_phase_state_t *state,
-                                             dsle_phase_transports_t *results) {
+                                               dsle_phase_state_t *state,
+                                               dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -765,8 +766,8 @@ int DSLE_CALLCONV dsle_step_flush_doors_closed(const dsle_param_t *p, double t_f
   return DSLE_SUCCESS;
 }
 
-int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level, dsle_phase_state_t *state,
-                                  dsle_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level,
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -781,8 +782,8 @@ int DSLE_CALLCONV dsle_step_phase_3(const dsle_param_t *p, double t_level, dsle_
   return DSLE_SUCCESS;
 }
 
-int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea, dsle_phase_state_t *state,
-                                  dsle_phase_transports_t *results) {
+int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea,
+                                    dsle_phase_state_t *state, dsle_phase_transports_t *results) {
   // Get the derived parameters
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
@@ -801,7 +802,7 @@ int DSLE_CALLCONV dsle_step_phase_4(const dsle_param_t *p, double t_open_sea, ds
 }
 
 int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *results,
-                                 dsle_aux_results_t *aux_results) {
+                                   dsle_aux_results_t *aux_results) {
 
   derived_parameters_t o;
   calculate_derived_parameters(p, &o);
