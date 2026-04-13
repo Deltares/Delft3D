@@ -4,7 +4,6 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
-import Delft3D.linux.container_smoketest.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
@@ -59,17 +58,7 @@ project {
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
             )
-        }        
-        subProject {
-            id("SmokeTestsContainerH7")
-            name = "Smoke tests container on H7"
-            buildType(LinuxSubmitH7ContainerSmokeTest)
-            buildType(LinuxReceiveH7ContainerSmokeTest)
-            buildTypesOrder = listOf(
-                LinuxSubmitH7ContainerSmokeTest,
-                LinuxReceiveH7ContainerSmokeTest,
-            )
-        }        
+        }             
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
