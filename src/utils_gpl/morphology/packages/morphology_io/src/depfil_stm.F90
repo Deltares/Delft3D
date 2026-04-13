@@ -47,6 +47,7 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
                     & errmsg    )
    use precision
    use grid_dimens_module
+   use dfparall, only: inode, nproc
 ! MOR_USE_ECMODULE macro used from global_config.h to enable/disable EC-module for space-varying input in sed/mor.
 #if MOR_USE_ECMODULE
    use m_ec_module
@@ -103,6 +104,9 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    integer                                    :: k, n, jamiss
    integer, dimension(:), pointer             :: kcc
    integer, dimension(:), allocatable         :: Mn
+   character(20)                              :: nodestr=''  !< keep track of node number in parallel runs for output writing
+   logical                                    :: is_open
+   integer                                    :: unit_no
    
    ! 
    !! executable statements ------------------------------------------------------- 
@@ -115,13 +119,27 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    file = ' '
    ext  = ' ' 
    call split_filename(fildep, path, file, ext)
+   !if (nproc > 0) then
+   write(nodestr, '(a,i0,a,i0,a)') ' [', inode, '/', nproc, ']'
+   !end if
+
 #if MOR_USE_ECMODULE
    if (ext(1:3) == '.xy') then
       ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
       !
       ! TODO: AvD: test code below now works via EC module, but still needs some inconvenient additional 'dummy' arguments. Consider further refactoring.
+      inquire(file=fildep, opened=is_open, number=unit_no)
+      if (is_open) then
+         write(lundia,*) '(File ', trim(fildep),' is open on unit ', unit_no, trim(nodestr), ')'
+      else
+         write(lundia,*) '(File ', trim(fildep),' is not open', trim(nodestr), ')'
+      end if
       open (newunit=minp0, file = fildep, form = fmttmp, status = 'old') 
+      write(lundia,*) '(File ', trim(fildep),' is open on unit ', minp0, trim(nodestr), ')'
       success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
+      write(lundia,*) '(Samples have been read from file ', trim(fildep),' on unit ', minp0, trim(nodestr), ')'
+      close(minp0)
+      write(lundia,*) '(File ', trim(fildep),' is closed on unit ', minp0, trim(nodestr), ')'
       jdla = 1
       jsferic = 0
       jasfer3D = 0
@@ -135,6 +153,7 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
                       XS, YS, ZS(1,:), NS, dmiss, jsferic, jins, jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
       array(ifld,:,1) = array1d
       deallocate(array1d, stat=ierror)
+      write(lundia,*) '(Samples are triangulated from file ', trim(fildep), ' ', trim(nodestr), ')'
       
       allocate (kcc(ngrid))
       kcc    = 0
@@ -158,6 +177,7 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
             endif
          enddo
          deallocate(Mn)
+         write(lundia,*) '(Additional missing are filled using nearest neighbour values from file ', trim(fildep), ' ', trim(nodestr), ')'
       end if
       deallocate(kcc)
       
@@ -179,7 +199,6 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
              if (present(errmsg)) errmsg = 'Error reading samples (not covering full grid) ' // trim(fildep) //' at location (x,y)=('// trim(xlocstring) //','//  trim(ylocstring) //').' 
          endif
       enddo    
-      close(minp0)
       ! success = timespaceinitialfield(dims%xz, dims%yz, array(ifld, :, :), dims%nmmax, fildep, 7, 5,  'O', transformcoef, 1) ! zie meteo module
    else
 #endif

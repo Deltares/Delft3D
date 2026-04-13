@@ -1176,6 +1176,7 @@ contains
       use grid_dimens_module, only: griddimtype
       use morphology_data_module, only: sedpar_type, morpar_type
       use m_depfil_stm
+      use dfparall, only: inode, nproc
       !
       implicit none
 !
@@ -1251,6 +1252,7 @@ contains
       real(fp), dimension(:), pointer :: mfluni
       character(20), dimension(:), pointer :: namsed
       character(256), dimension(:), pointer :: mflfil
+      character(20) :: nodestr=''  !< keep track of node number in parallel runs for output writing
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1268,10 +1270,14 @@ contains
       nmlb = dims%nmlb
       nmub = dims%nmub
       error = .false.
+      !if (nproc > 0) then
+      write(nodestr, '(a,i0,a,i0,a)') ' [', inode, '/', nproc, ']'
+      !end if
       !
       ! Fluff layer
       !
       if (morpar%flufflyr%iflufflyr > 0 .and. .not. rst_fluff) then
+         write(lundia, '(a,i0)') '*** Reading Fluff layer input'//trim(nodestr)
          !
          ! If not restart then initialize using values specified in input file
          !
@@ -1287,6 +1293,7 @@ contains
             if (mfluni(ised) < 0.0_fp) then ! -999 flags filename specified
                inquire (file=mflfil(ised), exist=ex)
                if (ex) then
+                  write(lundia, '(a,i0,a)') '   Fraction: ', ised , ' File: '// trim(mflfil(ised))//trim(nodestr)
                   call depfil_stm(lundia, error, mflfil(ised), &
                                 & fmttmp, mfluff, lsed, ised, &
                                 & dims, message)
@@ -1295,9 +1302,10 @@ contains
                      return
                   end if
                else
-                  call write_error('Fluff mass file '//trim(mflfil(ised))//' does not exist', unit=lundia)
+                  call write_error('Fluff mass file '//trim(mflfil(ised))//' does not exist'//trim(nodestr), unit=lundia)
                end if
             else
+               write(lundia, '(a,i0,a,f0.3,a)') '   Fraction: ', ised , ' : ', mfluni(ised), trim(inisedunit(ised))//trim(nodestr)
                mfluff(ised, :) = mfluni(ised)
             end if
          end do
@@ -1306,6 +1314,7 @@ contains
       ! Bed layers
       !
       if (.not. rst_bedcmp) then
+         write(lundia, '(a)') '*** Reading Bed layer input '//trim(nodestr)
          istat = bedcomp_getpointer_integer(morlyr, 'iunderlyr', iunderlyr)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nlyr', nlyr)
          if (istat == 0) istat = bedcomp_getpointer_realprec(morlyr, 'bodsed', bodsed)
@@ -1325,12 +1334,14 @@ contains
             !
             ! If not restart and no layer administration, then use the bed composition specified in the sed file.
             !
+            write(lundia, '(a)') 'Source: .sed file'//trim(nodestr)
             error = .false.
             do ised = 1, lsedtot
                if (flsdbd(ised) == ' ') then
                   !
                   ! Uniform data has been specified
                   !
+                  write(lundia, '(a,i0,a,f0.3,a)') '   Fraction ', ised , ' : ', real(sdbuni(ised), prec), trim(inisedunit(ised))//trim(nodestr)
                   do nm = 1, nmmax
                      bodsed(ised, nm) = real(sdbuni(ised), prec)
                   end do
@@ -1339,11 +1350,12 @@ contains
                   ! Space varying data has been specified
                   ! Use routine that also read the depth file to read the data
                   !
+                  write(lundia, '(a,i0,a,f0.3,a)') '   Fraction ', ised , ' : ', trim(mflfil(ised)), ' in '//trim(inisedunit(ised))//trim(nodestr)
                   call depfil_stm_double(lundia, error, flsdbd(ised), &
                                        & fmttmp, bodsed, lsedtot, &
                                        & ised, dims, message)
                   if (error) then
-                     message = 'RDMORLYR '//message
+                     message = 'RDMORLYR '//message//trim(nodestr)
                      call mess(LEVEL_ERROR, message)
                      return
                   end if
@@ -1415,7 +1427,7 @@ contains
                      if (bodsed(ised, nm) < 0.0) then
                         write (message, '(a,i2,a,f15.2,a,a,a,i0,a,f15.2,f15.2,a)')  &
                             & 'Negative sediment thickness for fraction ', ised, ': ', bodsed(ised, nm), ' in file ', &
-                            & trim(flsdbd(ised)), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                            & trim(flsdbd(ised)), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'//trim(nodestr)
                         call mess(LEVEL_ERROR, trim(message))
                         error = .true.
                         return
@@ -1533,6 +1545,7 @@ contains
                   ! Increment ilyr, but do not exceed nlyr
                   !
                   ilyr = min(nlyr, ilyr + 1)
+                  write(lundia, '(a,a,i0,a)') 'Layer no.', ':', ilyr, trim(nodestr)
                   !
                   ! Initialize/reset the temporary array
                   !
@@ -1563,9 +1576,10 @@ contains
                      filename = ' '
                      call prop_get(layer_ptr, '*', parname, flcomp, is_float, sedbed, filename)
                      if (is_float) then
+                        write(lundia, '(a,a,a,f0.3,a)') '   ', trim(parname), ' : ', sedbed, trim(inisedunit(ised))//trim(nodestr)
                         if (comparereal(sedbed, rmissval) == 0) then ! string was empty or key not found
                            write (message, '(a,i2,2a)')  &
-                              & 'No value assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
+                              & 'No value assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)//trim(nodestr)
                            call mess(LEVEL_ERROR, message)
                            error = .true.
                            return
@@ -1576,19 +1590,20 @@ contains
                      else
                         inquire (file=filename, exist=ex)
                         if (ex) then
+                           write(lundia, '(a,a,a,a)') '   ', trim(parname) , ' : ', trim(filename)//trim(nodestr) ! , ' in '//trim(inisedunit(ised))
                            call depfil_stm(lundia, error, filename, fmttmp, &
                                          & thtemp, 1, 1, dims, message)
                            if (error) then
                               call mess(LEVEL_ERROR, message)
                               write (message, '(3a,i2,2a)')  &
                                   & 'Error reading thickness from ', trim(filename), &
-                                  & ' for layer ', ilyr, ' in file ', trim(flcomp)
+                                  & ' for layer ', ilyr, ' in file ', trim(flcomp)//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               return
                            end if
                         else
                            write (message, '(3a,i2,2a)')  &
-                              & 'File not found: "', trim(filename), '" assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
+                              & 'File not found: "', trim(filename), '" assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)//trim(nodestr)
                            call mess(LEVEL_ERROR, message)
                            error = .true.
                            return
@@ -1615,7 +1630,7 @@ contains
                               write (message, '(7a,i2,2a)')  &
                                   & 'Use Fraction', trim(lstr), ' instead of SedBed', &
                                   & trim(lstr), ' for ', trim(layertype), ' layer ', &
-                                  & ilyr, ' in file ', trim(flcomp)
+                                  & ilyr, ' in file ', trim(flcomp)//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
@@ -1633,6 +1648,7 @@ contains
                            !
                            ! Constant fraction
                            !
+                           write(lundia, '(a,a,a,f0.3,a)') '   ', parname , ' : ', fraction, trim(inisedunit(ised))//trim(nodestr)
                            if (comparereal(fraction,rmissval) == 0) then
                               fraction = 0.0_fp
                            else
@@ -1648,6 +1664,7 @@ contains
                               ! Spatially varying fraction
                               !
                               anyfrac = .true.
+                              write(lundia, '(a,a,a,a)') '   ', parname , ' : ', trim(filename)//trim(nodestr) !' in '//trim(inisedunit(ised))
                               call depfil_stm(lundia, error, filename, fmttmp, &
                                             & rtemp(nmlb, ised), 1, 1, dims, message)
                               if (error) then
@@ -1655,13 +1672,13 @@ contains
                                  write (message, '(a,i2,3a,i2,2a)')  &
                                      & 'Error reading fraction ', ised, 'from ', &
                                      & trim(filename), ' for layer ', ilyr, ' in file ', &
-                                     & trim(flcomp)
+                                     & trim(flcomp)//trim(nodestr)
                                  call mess(LEVEL_ERROR, message)
                                  return
                               end if
                            else
                               write (message, '(7a,i2,2a)')  &
-                                 & 'File not found: "', trim(filename), '" assigned to ', trim(parname), ' of ', trim(layertype), ' layer ', ilyr, ' in file ', trim(flcomp)
+                                 & 'File not found: "', trim(filename), '" assigned to ', trim(parname), ' of ', trim(layertype), ' layer ', ilyr, ' in file ', trim(flcomp)//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
@@ -1674,7 +1691,7 @@ contains
                      if (.not. anyfrac) then
                         write (message, '(a,i2,2a)')  &
                             & 'No data found for any sediment fraction in the data block of layer ', ilyr, &
-                            & ' in file ', trim(flcomp)
+                            & ' in file ', trim(flcomp)//trim(nodestr)
                         call mess(LEVEL_ERROR, message)
                         error = .true.
                         return
@@ -1691,7 +1708,7 @@ contains
                            if (thtemp(nm) < 0.0_fp) then
                               write (message, '(a,i2,3a,i0,a,f15.2,f15.2,a)')  &
                                   & 'Negative sediment thickness specified for layer ', &
-                                  & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                                  & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
@@ -1701,14 +1718,14 @@ contains
                               if (rtemp(nm, ised) < 0.0_fp) then
                                  write (message, '(2a,i2,a,i2,3a,i0,a,f15.2,f15.2,a)')  &
                                      & 'Negative ', trim(layertype), ised, ' in layer ', &
-                                     & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                                     & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'//trim(nodestr)
                                  call mess(LEVEL_ERROR, message)
                                  error = .true.
                                  return
                               elseif (rtemp(nm, ised) > 1.0_fp) then
                                  write (message, '(a,i2,a,i2,3a,i0,a,f15.2,f15.2,a)')  &
                                      & trim(layertype), ised, ' bigger than 1 in layer ', &
-                                     & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                                     & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'//trim(nodestr)
                                  call mess(LEVEL_ERROR, message)
                                  error = .true.
                                  return
@@ -1718,7 +1735,7 @@ contains
                            if (abs(totfrac - 1.0_fp) > 1e-4_fp) then
                               write (message, '(3a,i2,3a,i0,a,f15.2,f15.2,a)')  &
                                   & 'Sum of ', trim(layertype), ' not equal to 1 in layer ', &
-                                  & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                                  & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
@@ -1895,7 +1912,7 @@ contains
                               write (message, '(7a,i2,2a)')  &
                                   & 'Use SedBed', trim(lstr), ' instead of Fraction', &
                                   & trim(lstr), ' for ', trim(layertype), ' layer ', &
-                                  & ilyr, ' in file ', trim(flcomp)
+                                  & ilyr, ' in file ', trim(flcomp)//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
@@ -1909,6 +1926,7 @@ contains
                         filename = ' '
                         sedbed = rmissval
                         call prop_get(layer_ptr, '*', parname, flcomp, is_float, sedbed, filename)
+                        write(lundia, '(a,a,a,f0.3,a)') '   '//parname, ' : ', sedbed, ' ', trim(inisedunit(ised))//trim(nodestr)
                         if (is_float) then
                            !
                            ! Constant thickness or mass
@@ -1920,7 +1938,7 @@ contains
                                   & 'Invalid value ', sedbed, ' for ', trim(parname), &
                                   & ' of ', trim(layertype), ' layer ', &
                                   & ilyr, ' in file ', trim(flcomp), &
-                                  & ' Positive value required.'
+                                  & ' Positive value required.'//trim(nodestr)
                               call mess(LEVEL_ERROR, message)
                               error = .true.
                               return
@@ -1935,6 +1953,7 @@ contains
                            ! Spatially varying thickness or mass
                            !
                            anysedbed = .true.
+                           write(lundia, '(a,a,a,f0.3,a)') '   ', parname , ' : ', trim(filename), ' in '//trim(inisedunit(ised))
                            call depfil_stm(lundia, error, filename, fmttmp, &
                                          & rtemp(nmlb, ised), 1, 1, dims, message)
                            if (error) then
@@ -1953,7 +1972,7 @@ contains
                      if (.not. anysedbed) then
                         write (message, '(a,i2,2a)')  &
                             & 'No data found for any sediment fraction in the data block of layer ', ilyr, &
-                            & ' in file ', trim(flcomp)
+                            & ' in file ', trim(flcomp)//trim(nodestr)
                         call mess(LEVEL_ERROR, message)
                         error = .true.
                         return
@@ -1971,7 +1990,7 @@ contains
                               if (rtemp(nm, ised) < 0.0_fp) then
                                  write (message, '(2a,i2,a,i2,3a,i0,a,f15.2,f15.2,a)')  &
                                      & 'Negative ', trim(layertype), ised, ' in layer ', &
-                                     & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'
+                                     & ilyr, ' in file ', trim(flcomp), ' at nm=', nm, ' (x, y = ', dims%xz(nm), dims%yz(nm), ')'//trim(nodestr)
                                  call mess(LEVEL_ERROR, message)
                                  error = .true.
                                  return
