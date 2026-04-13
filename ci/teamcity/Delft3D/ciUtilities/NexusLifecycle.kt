@@ -28,6 +28,7 @@ object NexusLifecycle : BuildType({
             type = "LifecycleNexusIqLinux"
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
+            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
         }
     }
 
