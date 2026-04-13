@@ -116,7 +116,6 @@
 
       ! only in unstructured cases!!
       if (output_hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
-          input_hyd%waqgeom%num_layers = input_hyd%num_layers
 
           call realloc (apnt, size(ipnt_h, 2))
           apnt = ipnt_h(1,:)
