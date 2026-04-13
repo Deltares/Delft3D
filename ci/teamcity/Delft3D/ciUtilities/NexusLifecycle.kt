@@ -16,7 +16,7 @@ object NexusLifecycle : BuildType({
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("exclude_dirs", "--exclude ./test/** --exclude ./ci/** --exclude ./tools/** --exclude ./doc/**")
+            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
         }
         step {
             id = "LifecycleCdxgenLinux"
