@@ -183,6 +183,8 @@ namespace
 
 namespace pre_c_sumo
 {
+    FF2NFWriter::FF2NFWriter(FF2NFConfig config) : config_(std::move(config)) {}
+
     std::expected<std::string, WriteError> FF2NFWriter::generate() const
     {
         RETURN_IF_ERROR(validate());
@@ -215,124 +217,42 @@ namespace pre_c_sumo
         return {};
     }
 
-    FF2NFWriter& FF2NFWriter::setFF2NFFilename(const std::string_view filename)
-    {
-        ff2nf_filename_ = filename;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setWaitForFile(const std::string_view filename)
-    {
-        wait_for_file_ = filename;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setFFRunDirectory(const std::string_view run_directory)
-    {
-        ff_run_directory_ = run_directory;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setRunId(const std::string_view run_id)
-    {
-        run_id_ = run_id;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setUniqueId(const std::string_view unique_id)
-    {
-        unique_id_ = unique_id;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setSubgridModelNumber(const int number)
-    {
-        subgrid_model_nr_ = number;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setCurrentTimeSeconds(const double seconds)
-    {
-        current_time_seconds_ = seconds;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setConstituentNames(const std::vector<std::string>& names)
-    {
-        constituent_names_ = names;
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setDiffuser(FarFieldPoint2D diffuser)
-    {
-        diffuser_ = std::move(diffuser);
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setIntake(FarFieldPoint2D intake)
-    {
-        intake_ = std::move(intake);
-        return *this;
-    }
-
-    FF2NFWriter& FF2NFWriter::setAmbientPoints(const std::vector<FarFieldPoint2D>& ambient_points)
-    {
-        ambient_points_ = ambient_points;
-        return *this;
-    }
-
     std::expected<void, WriteError> FF2NFWriter::validate() const
     {
-        if (ff2nf_filename_.empty())
+        if (config_.ff2nf_filename.empty())
         {
-            return std::unexpected(WriteError{"FF2NF filename was not set"});
+            return std::unexpected(WriteError{"FF2NF filename must not be empty"});
         }
-        if (wait_for_file_.empty())
+        if (config_.wait_for_file.empty())
         {
-            return std::unexpected(WriteError{"Wait-for filename was not set"});
+            return std::unexpected(WriteError{"Wait-for filename must not be empty"});
         }
-        if (ff_run_directory_.empty())
+        if (config_.ff_run_directory.empty())
         {
-            return std::unexpected(WriteError{"Far-field run directory was not set"});
+            return std::unexpected(WriteError{"Far-field run directory must not be empty"});
         }
-        if (run_id_.empty())
+        if (config_.run_id.empty())
         {
-            return std::unexpected(WriteError{"Run ID was not set"});
+            return std::unexpected(WriteError{"Run ID must not be empty"});
         }
-        if (!unique_id_.has_value())
-        {
-            return std::unexpected(WriteError{"Unique ID was not set"});
-        }
-        if ((*unique_id_).size() > 6)
+        if (config_.unique_id.size() > 6)
         {
             return std::unexpected(WriteError{"Unique ID must contain at most 6 characters"});
         }
-        if (!subgrid_model_nr_.has_value())
-        {
-            return std::unexpected(WriteError{"Subgrid model number was not set"});
-        }
-        if (!current_time_seconds_.has_value())
-        {
-            return std::unexpected(WriteError{"Current time was not set"});
-        }
-        if (constituent_names_.empty())
+        if (config_.constituent_names.empty())
         {
             return std::unexpected(WriteError{"Constituent names were not set"});
         }
-        if (!diffuser_.has_value())
-        {
-            return std::unexpected(WriteError{"Diffuser was not set"});
-        }
-        if (ambient_points_.empty())
+        if (config_.ambient_points.empty())
         {
             return std::unexpected(WriteError{"Ambient points were not set"});
         }
-        RETURN_IF_ERROR(validatePoint(*diffuser_, "FFDiff", constituent_names_.size()));
-        if (intake_.has_value())
+        RETURN_IF_ERROR(validatePoint(config_.diffuser, "FFDiff", config_.constituent_names.size()));
+        if (config_.intake.has_value())
         {
-            RETURN_IF_ERROR(validatePoint(*intake_, "FFIntake", constituent_names_.size()));
+            RETURN_IF_ERROR(validatePoint(*config_.intake, "FFIntake", config_.constituent_names.size()));
         }
-        RETURN_IF_ERROR(validatePoints(ambient_points_, "FFAmbient", constituent_names_.size()));
+        RETURN_IF_ERROR(validatePoints(config_.ambient_points, "FFAmbient", config_.constituent_names.size()));
         return {};
     }
 
@@ -349,24 +269,24 @@ namespace pre_c_sumo
     void FF2NFWriter::createCommSection(pugi::xml_node& root) const
     {
         auto comm = root.append_child("comm");
-        addChildWithText(comm, "Filename", ff2nf_filename_);
-        addChildWithText(comm, "waitForFile", wait_for_file_);
-        addChildWithText(comm, "FFrundir", ff_run_directory_);
-        addChildWithText(comm, "FFinputFile", run_id_ + ".mdu");
-        addChildWithText(comm, "FFuniqueID", *unique_id_);
+        addChildWithText(comm, "Filename", config_.ff2nf_filename);
+        addChildWithText(comm, "waitForFile", config_.wait_for_file);
+        addChildWithText(comm, "FFrundir", config_.ff_run_directory);
+        addChildWithText(comm, "FFinputFile", config_.run_id + ".mdu");
+        addChildWithText(comm, "FFuniqueID", config_.unique_id);
     }
 
     void FF2NFWriter::createSubgridModelSection(pugi::xml_node& root) const
     {
         auto subgrid_model = root.append_child("SubgridModel");
-        addChildWithText(subgrid_model, "SubgridModelNr", *subgrid_model_nr_);
-        addChildWithText(subgrid_model, "TIME", *current_time_seconds_ / 60.0);
-        addConstituentNames(subgrid_model, constituent_names_);
-        addFarFieldPoints(subgrid_model, "FFDiff", std::vector{*diffuser_});
-        if (intake_.has_value())
+        addChildWithText(subgrid_model, "SubgridModelNr", config_.subgrid_model_nr);
+        addChildWithText(subgrid_model, "TIME", config_.current_time_seconds / 60.0);
+        addConstituentNames(subgrid_model, config_.constituent_names);
+        addFarFieldPoints(subgrid_model, "FFDiff", std::vector{config_.diffuser});
+        if (config_.intake.has_value())
         {
-            addFarFieldPoints(subgrid_model, "FFIntake", std::vector{*intake_});
+            addFarFieldPoints(subgrid_model, "FFIntake", std::vector{*config_.intake});
         }
-        addFarFieldPoints(subgrid_model, "FFAmbient", ambient_points_);
+        addFarFieldPoints(subgrid_model, "FFAmbient", config_.ambient_points);
     }
 } // namespace pre_c_sumo

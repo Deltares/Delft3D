@@ -43,16 +43,36 @@ namespace pre_c_sumo
     };
 
     /**
+     * @brief Configuration for generating an FF2NF XML file.
+     */
+    struct FF2NFConfig
+    {
+        std::string ff2nf_filename;
+        std::string wait_for_file;
+        std::string ff_run_directory;
+        std::string run_id;
+        std::string unique_id;
+        int subgrid_model_nr{};
+        double current_time_seconds{};
+        std::vector<std::string> constituent_names;
+        FarFieldPoint2D diffuser;
+        std::optional<FarFieldPoint2D> intake;
+        std::vector<FarFieldPoint2D> ambient_points;
+    };
+
+    /**
      * @brief Writer for FF2NF XML files.
      */
     class FF2NFWriter
     {
     public:
+        explicit FF2NFWriter(FF2NFConfig config);
+
         /**
          * @brief Generates the FF2NF XML content as a string.
          * @return The generated XML content or a WriteError if validation fails.
-         * @note Validation includes checking that all required fields are set and that the data is consistent
-         *       (e.g., constituent counts match). If validation fails, the returned WriteError contains a message
+         * @note Validation checks that the data is consistent (e.g., constituent counts match,
+         *       unique ID length). If validation fails, the returned WriteError contains a message
          *       describing the issue.
          */
         [[nodiscard]] std::expected<std::string, WriteError> generate() const;
@@ -67,36 +87,11 @@ namespace pre_c_sumo
          */
         [[nodiscard]] std::expected<void, WriteError> toFile(const std::filesystem::path& file_path) const;
 
-        // --- Setters: all must be called; validate() (invoked by generate()) checks for omissions ---
-
-        FF2NFWriter& setFF2NFFilename(std::string_view filename);
-        FF2NFWriter& setWaitForFile(std::string_view filename);
-        FF2NFWriter& setFFRunDirectory(std::string_view run_directory);
-        FF2NFWriter& setRunId(std::string_view run_id);
-        FF2NFWriter& setUniqueId(std::string_view unique_id);
-        FF2NFWriter& setSubgridModelNumber(int number);
-        FF2NFWriter& setCurrentTimeSeconds(double seconds);
-        FF2NFWriter& setConstituentNames(const std::vector<std::string>& names);
-        FF2NFWriter& setDiffuser(FarFieldPoint2D diffuser);
-        FF2NFWriter& setIntake(FarFieldPoint2D intake);
-        FF2NFWriter& setAmbientPoints(const std::vector<FarFieldPoint2D>& ambient_points);
-
     private:
         constexpr static std::string_view root_element_name = "COSUMO";
         constexpr static std::string_view file_version = "0.3";
-        std::string ff2nf_filename_{};
-        std::string wait_for_file_{};
-        std::string ff_run_directory_{};
-        std::string run_id_{};
-        std::optional<std::string> unique_id_{}; // Empty string is considered a valid unique ID
-        std::optional<int> subgrid_model_nr_{};
-        std::optional<double> current_time_seconds_{};
-        std::vector<std::string> constituent_names_{};
-        std::optional<FarFieldPoint2D> diffuser_{};
-        std::optional<FarFieldPoint2D> intake_{};
-        std::vector<FarFieldPoint2D> ambient_points_;
+        FF2NFConfig config_;
 
-        /// Returns an error if any setter was not called.
         [[nodiscard]] std::expected<void, WriteError> validate() const;
 
         pugi::xml_node createRootElement(pugi::xml_document& document) const;

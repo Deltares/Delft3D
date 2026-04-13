@@ -70,24 +70,21 @@ namespace pre_c_sumo
 
             const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
 
-            auto writer = FF2NFWriter()
-                              .setFF2NFFilename(ff2nf_filename.string())
-                              .setWaitForFile(nf2ff_wait_file)
-                              .setFFRunDirectory(diffuser.ff_run_dir.string())
-                              .setRunId(run_id)
-                              .setUniqueId(diffuser.id.value_or(""))
-                              .setSubgridModelNumber(subgrid_model_nr)
-                              .setCurrentTimeSeconds(current_time_seconds)
-                              .setConstituentNames(constituent_names)
-                              .setDiffuser(make_point(diffuser.position))
-                              .setAmbientPoints(ambient_points);
+            auto ff2nf_config = FF2NFConfig{
+                .ff2nf_filename = ff2nf_filename.string(),
+                .wait_for_file = nf2ff_wait_file,
+                .ff_run_directory = diffuser.ff_run_dir.string(),
+                .run_id = run_id,
+                .unique_id = diffuser.id.value_or(""),
+                .subgrid_model_nr = subgrid_model_nr,
+                .current_time_seconds = current_time_seconds,
+                .constituent_names = constituent_names,
+                .diffuser = make_point(diffuser.position),
+                .intake = diffuser.intake.has_value() ? std::optional{make_point(*diffuser.intake)} : std::nullopt,
+                .ambient_points = ambient_points,
+            };
 
-            if (diffuser.intake.has_value())
-            {
-                writer.setIntake(make_point(*diffuser.intake));
-            }
-
-            const auto result = writer.toFile(ff2nf_filename);
+            const auto result = FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename);
             if (!result.has_value())
             {
                 std::println(stderr, "Error writing FF2NF file: {}", result.error().message);
