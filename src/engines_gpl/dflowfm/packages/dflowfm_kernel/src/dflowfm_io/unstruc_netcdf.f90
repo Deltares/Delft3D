@@ -15568,19 +15568,152 @@ contains
 
    end subroutine get_layer_data_ugrid
 
+   !> Builds the 2D UGRID mesh geometry object from the current global flow geometry arrays.
+   !! Called once at model initialisation (or whenever the output domain changes).
+   !! The resulting flowgeom%mesh2d is ready to be passed directly to ug_write_mesh_struct.
+   !!
+   !! Phase 2 note: when polygon-based output subdomains are introduced, pass a cell_mask
+   !! over ndx2d cells here and filter the topology accordingly. The write routine
+   !! (unc_write_flowgeom_filepointer_ugrid) will remain unaware of whether masking was applied.
+   subroutine build_flowgeom_2d(flowgeom, jabndnd, cell_mask)
+      use m_flowgeom,         only: ndxi, ndx, ndx2d, ndx1db, nd, xz, yz, lnx1d, lnxi, lnx1db, lnx, ndxi, ndx1db, ndx2d, t_fm_flowgeom
+      use network_data,       only: xk, yk, zk, kc, numk, numl, numl1d
+      use m_missing,          only: dmiss
+      use m_alloc,            only: realloc, reallocP
+      use m_save_ugrid_state, only: mesh2dname
+      use precision,          only: dp
+      implicit none
+
+      type(t_fm_flowgeom), intent(out)           :: flowgeom   !< Populated flow geometry object; flowgeom%mesh2d is ready for ug_write_mesh_struct.
+      integer,             intent(in)            :: jabndnd    !< Include boundary cells (1) or not (0).
+      logical,             intent(in), optional  :: cell_mask(:) !< (Phase 2) Selection mask over ndx2d cells.
+                                                                 !! If absent, all 2D cells are included.
+
+      integer, allocatable, target :: edge_nodes(:,:), face_nodes(:,:), edge_type(:)
+      integer, dimension(:,:), pointer :: edge_faces => null()
+      real(kind=dp), allocatable, target :: xue(:), yue(:)
+      real(kind=dp), allocatable, target :: x2dn(:), y2dn(:), z2dn(:)
+
+      integer :: numl2d, numNodes, ndxndxi
+      integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
+
+      if (jabndnd == 1) then
+         ndxndxi = ndx
+      else
+         ndxndxi = ndxi
+      end if
+
+      numl2d = numl - numl1d
+
+      call realloc(edge_nodes,   [2, numl2d],  fill=-999, keepExisting=.false.)
+      call reallocP(edge_faces,  [2, numl2d],  fill=-999)
+      call realloc(edge_type,    numl2d,        fill=-999, keepExisting=.false.)
+      call realloc(xue,          numl2d,        fill=dmiss, keepExisting=.false.)
+      call realloc(yue,          numl2d,        fill=dmiss, keepExisting=.false.)
+
+      ! numk2d is determined by the re-mapping loop below; allocate conservatively to numk.
+      call realloc(x2dn, numk, fill=dmiss, keepExisting=.false.)
+      call realloc(y2dn, numk, fill=dmiss, keepExisting=.false.)
+      call realloc(z2dn, numk, fill=dmiss, keepExisting=.false.)
+
+      call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
+
+      ! Determine max number of vertices per 2D cell.
+      numNodes = 0
+      do i = 1, ndxndxi
+         numNodes = max(numNodes, size(nd(i)%nod))
+      end do
+
+      call realloc(face_nodes, [numNodes, ndx2d], fill=-999)
+
+      ! Re-map net node indices to a compact 2D-only set, using kc as lookup table.
+      kc = 0
+      netNodeReMappedIndex = 0
+      do l = 1, numl2d
+         nn = edge_nodes(1, l)
+         if (nn > 0 .and. kc(nn) == 0) then
+            netNodeReMappedIndex = netNodeReMappedIndex + 1
+            x2dn(netNodeReMappedIndex) = xk(nn)
+            y2dn(netNodeReMappedIndex) = yk(nn)
+            z2dn(netNodeReMappedIndex) = zk(nn)
+            kc(nn) = netNodeReMappedIndex
+         end if
+         nn = edge_nodes(2, l)
+         if (nn > 0 .and. kc(nn) == 0) then
+            netNodeReMappedIndex = netNodeReMappedIndex + 1
+            x2dn(netNodeReMappedIndex) = xk(nn)
+            y2dn(netNodeReMappedIndex) = yk(nn)
+            z2dn(netNodeReMappedIndex) = zk(nn)
+            kc(nn) = netNodeReMappedIndex
+         end if
+      end do
+
+      ! Apply re-mapped indices to edge_nodes.
+      do l = 1, numl2d
+         edge_nodes(1, l) = kc(edge_nodes(1, l))
+         edge_nodes(2, l) = kc(edge_nodes(2, l))
+      end do
+
+      ! Build face_nodes using re-mapped indices.
+      do n = 1, ndx2d
+         nnSize = size(nd(n)%nod)
+         do i = 1, nnSize
+            nn = nd(n)%nod(i)
+            if (nn > 0) then
+               face_nodes(i, n) = kc(nn)
+            end if
+         end do
+      end do
+
+      ! --- Populate t_fm_flowgeom scalars ---
+      flowgeom%ndx2d  = ndx2d
+      flowgeom%ndxi   = ndxi
+      flowgeom%ndx1db = ndx1db
+      flowgeom%ndx    = ndx
+      flowgeom%lnx1d  = lnx1d
+      flowgeom%lnxi   = lnxi
+      flowgeom%lnx1db = lnx1db
+      flowgeom%lnx    = lnx
+
+      ! --- Populate t_ug_meshgeom inside t_fm_flowgeom ---
+      flowgeom%mesh2d%meshName        = mesh2dname
+      flowgeom%mesh2d%dim             = 2
+      flowgeom%mesh2d%start_index     = 1
+      flowgeom%mesh2d%numNode         = netNodeReMappedIndex
+      flowgeom%mesh2d%numEdge         = numl2d
+      flowgeom%mesh2d%numFace         = ndx2d
+      flowgeom%mesh2d%maxNumFaceNodes = numNodes
+
+      flowgeom%mesh2d%nodex      => x2dn(1:netNodeReMappedIndex)
+      flowgeom%mesh2d%nodey      => y2dn(1:netNodeReMappedIndex)
+      flowgeom%mesh2d%nodez      => z2dn(1:netNodeReMappedIndex)
+      flowgeom%mesh2d%edgex      => xue
+      flowgeom%mesh2d%edgey      => yue
+      flowgeom%mesh2d%facex      => xz(1:ndx2d)
+      flowgeom%mesh2d%facey      => yz(1:ndx2d)
+      flowgeom%mesh2d%edge_nodes => edge_nodes
+      flowgeom%mesh2d%face_nodes => face_nodes
+      flowgeom%mesh2d%edge_faces => edge_faces
+      ! edge_type is owned by flowgeom; allocate directly there.
+      call realloc(flowgeom%edge_type, numl2d, fill=-999, keepExisting=.false.)
+
+      call get_2d_edge_data(edge_nodes, edge_faces, flowgeom%edge_type, xue, yue)
+
+   end subroutine build_flowgeom_2d
+
 !> Writes the unstructured flow geometry in UGRID format to an already opened netCDF dataset.
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
-      use m_flowgeom
-      use network_data
+      use m_flowgeom, only: t_fm_flowgeom
+      !use network_data
       use m_sferic
       use m_missing
       use netcdf
       use m_partitioninfo
-      use m_flow, only: kmx, mxlaydefs, laymx, numtopsig, s1max
+      use m_flow, only: kmx, mxlaydefs, laymx, numtopsig!, s1max
       use m_alloc
       use dfm_error
-      use m_save_ugrid_state !stores the contactname_1D2D and other saved ugrid names
+      use m_save_ugrid_state
       use m_CrossSections
       use m_flowparameters, only: jafullgridoutput
       use m_flowtimes, only: handle_extra
@@ -15588,7 +15721,7 @@ contains
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
       use fm_location_types
-      implicit none
+      implicit none(type, external)
 
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(inout) :: id_tsp !< Set of time and space related variable id's
@@ -15596,68 +15729,56 @@ contains
       logical, optional, intent(in) :: jaFou !< Whether this flowgeom writing is part of a Fourier file or not (affects 3D layer writing)
       logical, optional, intent(in) :: ja2D !< Whether to include the 2D grid (default = .true.)
 
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndxndxi !< Last 2/3D node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1D node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-      integer :: ndx1d !< Number of internal 1D nodes.
+      integer :: jabndnd_
+      !integer :: ndxndxi
+      !integer :: last_1d
+      !integer :: ndx1d
 
-      integer :: nn
-      integer, allocatable, target :: edge_nodes(:, :), face_nodes(:, :), edge_type(:), contacts(:, :)
-      integer, dimension(:, :), pointer :: edge_faces => null()
+      integer, allocatable :: contacts(:, :), contacttype(:)
       integer :: layer_count, layer_type
-   !! Geometry options
-      integer, parameter :: LAYERTYPE_OCEAN_SIGMA = 1 !< Dimensionless vertical ocean sigma coordinate.
-      integer, parameter :: LAYERTYPE_Z = 2 !< Vertical coordinate for fixed z-layers.
-      integer, parameter :: LAYERTYPE_OCEAN_SIGMA_Z = 3 !< Combined Z-Sigma layers
+
+      integer, parameter :: LAYERTYPE_OCEAN_SIGMA   = 1
+      integer, parameter :: LAYERTYPE_Z             = 2
+      integer, parameter :: LAYERTYPE_OCEAN_SIGMA_Z = 3
+
       real(kind=dp), dimension(:), pointer :: layer_zs => null(), interface_zs => null()
       character(len=10) :: waterlevelname, bldepthname
       logical :: jafou_
       logical :: ja2D_
-!   type(t_crs) :: pj
 
       integer :: ierr
-      integer :: i, numContPts, numNodes, n, numl2d, L
       logical :: jaInDefine
-      integer :: n1dedges, n1d2dcontacts, numk2d, start_index
-      integer, allocatable :: contacttype(:)
+      integer :: n1dedges, n1d2dcontacts, start_index
 
-      ! re-mapping of 1d mesh coordinates for UGrid
-      real(kind=dp), allocatable, target :: xue(:), yue(:)
-      ! re-mapping of 2d mesh coordinates for UGrid
-      real(kind=dp), allocatable, target :: x2dn(:), y2dn(:), z2dn(:)
-      integer :: netNodeReMappedIndex, nnSize
-         ! Build meshgeom for 2D mesh and write via ug_write_mesh_struct
+      ! meshgeom2d is built by build_flowgeom_2d and then written here
+      type(t_fm_flowgeom) :: flowgeom2d
+      type(t_ug_network)  :: networkids_dummy
 
-            type(t_ug_meshgeom) :: meshgeom2d
-            type(t_ug_network)  :: networkids_dummy
-
-      jaInDefine = 0
+      jaInDefine    = 0
       n1d2dcontacts = 0
-      n1dedges = 0
-      start_index = 1
+      n1dedges      = 0
+      start_index   = 1
 
-      if (ndxi <= 0) then
-         call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
-         return
-      end if
+      !if (ndxi <= 0) then
+      !   call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
+      !   return
+      !end if
 
-      if (timon) then
-         call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
-      end if
+      if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
+
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
       else
          jabndnd_ = 0
       end if
 
-      ! Include boundary cells in output (ndx) or not (ndxi)
-      if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
-      else
-         ndxndxi = ndxi
-         last_1d = ndxi
-      end if
+      !if (jabndnd_ == 1) then
+      !   ndxndxi = ndx
+      !   last_1d = ndx1db
+      !else
+      !   ndxndxi = ndxi
+      !   last_1d = ndxi
+      !end if
 
       if (present(jaFou)) then
          jafou_ = jaFou
@@ -15671,30 +15792,29 @@ contains
          ja2D_ = .true.
       end if
 
-      ! Put dataset in define mode (possibly again) to add dimensions and variables.
       ierr = ncu_ensure_define_mode(ncid, jaInDefine)
       if (ierr /= nf90_noerr) then
          call mess(LEVEL_ERROR, 'Could not put header in flow geometry file.')
          call check_error(ierr)
          return
       end if
+
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
 
       ! Get layer info.
-      if (kmx <= 0) then ! If no layers present.
+      if (kmx <= 0) then
          layer_count = 0
-         layer_type = -1
-         ! Leave layer_zs and interface_zs unallocated, since they will not be used in this case.
-      else ! If layers present.
+         layer_type  = -1
+      else
          if (mxlaydefs > 1) then
             call mess(LEVEL_WARN, 'Multiple layer definitions cannot be handled for layer variables. Layer variables will not be written.')
             ierr = DFM_NOTIMPLEMENTED
             goto 888
          else
             layer_count = laymx(1)
-            call reallocP(layer_zs, layer_count, fill=dmiss, keepExisting=.false.)
+            call reallocP(layer_zs,     layer_count,     fill=dmiss, keepExisting=.false.)
             call reallocP(interface_zs, layer_count + 1, fill=dmiss, keepExisting=.false.)
             call get_layer_data_ugrid(layer_count, layer_type, layer_zs, interface_zs)
          end if
@@ -15703,164 +15823,65 @@ contains
       n1d2dcontacts = 0
 
       if (jafullgridoutput == 0) then
-         unc_writeopts = ior(unc_writeopts, UG_WRITE_LYRVAR)
+         unc_writeopts = ior(unc_writeopts,  UG_WRITE_LYRVAR)
       else
          unc_writeopts = iand(unc_writeopts, not(UG_WRITE_LYRVAR))
       end if
 
       waterlevelname = 's1'
-      bldepthname = 'bldepth'
+      bldepthname    = 'bldepth'
       if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
          if (jafou_) then
             waterlevelname = 's1max'
          end if
       end if
 
-      ! note: unc_writeopts, waterlevelname, and bldepthname are module variables
-      ! and as such implicitly passed to unc_write_1D_flowgeom_ugrid
       call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
-      numk2d = 0
-      ndx1d = ndxi - ndx2d
-      if (ndx2d > 0 .and. ja2D_) then ! 2D flow geometry
-         numl2d = numl - numl1d
-         numk2d = (numk - n1d2dcontacts) - ndx1d
-         call realloc(edge_nodes, [2, numl2d], fill=-999, keepExisting=.false.)
-         call reallocP(edge_faces, [2, numl2d], fill=-999)
-         call realloc(edge_type, numl2d, fill=-999, keepExisting=.false.)
-         call realloc(xue, numl2d, fill=dmiss, keepExisting=.false.)
-         call realloc(yue, numl2d, fill=dmiss, keepExisting=.false.)
-         call realloc(x2dn, numk2d, fill=dmiss, keepExisting=.false.)
-         call realloc(y2dn, numk2d, fill=dmiss, keepExisting=.false.)
-         call realloc(z2dn, numk2d, fill=dmiss, keepExisting=.false.)
-         call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
 
-         ! Determine max nr of vertices and contour points
-         numNodes = 0
-         numContPts = 0 ! TODO: AvD: contour points equals nodes here, remove, OR move to 1D
-         do i = 1, ndxndxi
-            numNodes = max(numNodes, size(nd(i)%nod))
-            numContPts = max(numContPts, size(nd(i)%x))
-         end do
+      !ndx1d = ndxi - ndx2d
 
-         ! Note: AvD: for cell corners, we write *all* net nodes (numk). This may also be '1D' nodes, but that is not problematic: they will simply not be referenced in face_nodes/edge_nodes.
-         ! Note: AvD: numk may be larger than nr of cell corners. Will cause problems when writing output data on corners (mismatch in dimensions), not crucial now.
-         call realloc(face_nodes, [numNodes, ndx2d], fill=-999)
+      !if (ndx2d > 0 .and. ja2D_) then
+         ! Build the 2D mesh geometry object (node re-mapping, edge/face connectivity, coordinates).
+         call build_flowgeom_2d(flowgeom2d, jabndnd_)
 
-         ! re-mapping by edge nodes is needed, use kc as table
-         kc = 0
-         netNodeReMappedIndex = 0
-         do l = 1, numl2d
-            nn = edge_nodes(1, l)
-            if (nn > 0) then
-               if (kc(nn) == 0) then
-                  netNodeReMappedIndex = netNodeReMappedIndex + 1
-                  x2dn(netNodeReMappedIndex) = xk(nn)
-                  y2dn(netNodeReMappedIndex) = yk(nn)
-                  z2dn(netNodeReMappedIndex) = zk(nn)
-                  kc(nn) = netNodeReMappedIndex
-               end if
-            end if
-            nn = edge_nodes(2, l)
-            if (nn > 0) then
-               if (kc(nn) == 0) then
-                  netNodeReMappedIndex = netNodeReMappedIndex + 1
-                  x2dn(netNodeReMappedIndex) = xk(nn)
-                  y2dn(netNodeReMappedIndex) = yk(nn)
-                  z2dn(netNodeReMappedIndex) = zk(nn)
-                  kc(nn) = netNodeReMappedIndex
-               end if
-            end if
-         end do
-
-         !remapped edge_nodes
-         do l = 1, numl2d
-            edge_nodes(1, l) = kc(edge_nodes(1, l))
-            edge_nodes(2, l) = kc(edge_nodes(2, l))
-         end do
-
-         !remapped face_nodes
-         do n = 1, ndx2d
-            nnSize = size(nd(n)%nod)
-            do i = 1, nnSize
-               nn = nd(n)%nod(i)
-               if (nn > 0) then
-                  face_nodes(i, n) = kc(nn)
-               end if
-            end do
-         end do
-
-            meshgeom2d%meshName        = mesh2dname
-            meshgeom2d%dim             = 2
-            meshgeom2d%start_index     = start_index
-            meshgeom2d%numNode         = numk2d
-            meshgeom2d%numEdge         = numl2d
-            meshgeom2d%numFace         = ndx2d
-            meshgeom2d%maxNumFaceNodes = numNodes
-            meshgeom2d%num_layers      = layer_count
-            meshgeom2d%layertype       = layer_type
-            meshgeom2d%numtopsig       = numtopsig
-
-            meshgeom2d%nodex      => x2dn
-            meshgeom2d%nodey      => y2dn
-            meshgeom2d%nodez      => z2dn
-            meshgeom2d%edgex      => xue
-            meshgeom2d%edgey      => yue
-            meshgeom2d%facex      => xz(1:ndx2d)
-            meshgeom2d%facey      => yz(1:ndx2d)
-            meshgeom2d%edge_nodes => edge_nodes
-            meshgeom2d%face_nodes => face_nodes
-            meshgeom2d%edge_faces => edge_faces
-
-            if (layer_count > 0) then
-               meshgeom2d%layer_zs     => layer_zs
-               meshgeom2d%interface_zs => interface_zs
-            end if
-
-            ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, meshgeom2d)
-         ! TODO: AvD: lnx1d+1:lnx includes open bnd links, which may *also* be 1D boundaries (don't want that in mesh2d)
-         ! note edge_faces does not need re-indexing, cell number are flow variables and 2d comes first
-
-         !ierr = ug_write_mesh_arrays(ncid, id_tsp%meshids2d, mesh2dname, 2, UG_LOC_EDGE + UG_LOC_FACE, numk2d, numl2d, ndx2d, numNodes, &
-         !                            edge_nodes, face_nodes, edge_faces, null(), null(), x2dn, y2dn, xue, yue, xz(1:ndx2d), yz(1:ndx2d), &
-         !                            crs, -999, dmiss, start_index, layer_count, layer_type, &
-         !                            layer_zs=layer_zs, interface_zs=interface_zs, &
-         !                            nsigma_opt=numtopsig, &
-         !                            waterlevelname=trim(waterlevelname), bldepthname=trim(bldepthname), &
-         !                            writeopts=unc_writeopts)
-
-         ! Add edge type variable (edge-flowlink relation)
-         call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, edge_type)
-
-         ! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models
-         if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
-            ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
-            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
-            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'units', "m")
-            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'positive', "down")
-
-            if (jafou_) then
-               ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(waterlevelname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_s1max(2))
-               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'standard_name', "water level on cell centres")
-               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'units', "m")
-               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
-
-               ierr = nf90_enddef(ncid)
-               ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(1:ndx2d))
-               ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(1:ndx2d))
-               ierr = nf90_redef(ncid)
-            else
-               ierr = nf90_enddef(ncid)
-               ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(1:ndx2d))
-               ierr = nf90_redef(ncid)
-            end if
+         ! Attach layer data (write-time concern: depends on jafou_ / sigma-z path).
+         flowgeom2d%mesh2d%num_layers = layer_count
+         flowgeom2d%mesh2d%layertype  = layer_type
+         flowgeom2d%mesh2d%numtopsig  = numtopsig
+         if (layer_count > 0) then
+            flowgeom2d%mesh2d%layer_zs     => layer_zs
+            flowgeom2d%mesh2d%interface_zs => interface_zs
          end if
 
-         deallocate (edge_nodes)
-         deallocate (face_nodes)
-         deallocate (edge_faces)
-         deallocate (x2dn)
-         deallocate (y2dn)
-      end if
+         ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom2d%mesh2d)
+         ! Add edge type variable (edge-flowlink relation)
+         call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom2d%edge_type)
+
+         !! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models
+         !if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
+         !   ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
+         !   ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
+         !   ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'units', "m")
+         !   ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'positive', "down")
+         !
+         !   if (jafou_) then
+         !      ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(waterlevelname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_s1max(2))
+         !      ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'standard_name', "water level on cell centres")
+         !      ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'units', "m")
+         !      ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
+         !
+         !      ierr = nf90_enddef(ncid)
+         !      ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(1:ndx2d))
+         !      ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(1:ndx2d))
+         !      ierr = nf90_redef(ncid)
+         !   else
+         !      ierr = nf90_enddef(ncid)
+         !      ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(1:ndx2d))
+         !      ierr = nf90_redef(ncid)
+         !   end if
+         !end if
+
+      !end if
 
       ! NOTE: UNST-1318: backwards compatibility: we write zk values in flowgeom/map file since DELFT3DFM still needs it.
       !       The def_var is inside io_ugrid (needs to be removed), but the put_var is only here.
@@ -15890,25 +15911,22 @@ contains
 
       ! -- Start data writing (time-independent data) ------------
       ! Flow cell cc coordinates (only 1D + internal 2D)
-      if (ndx1d > 0) then
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-         ! TODO: AvD: UNST-1318: handle 1d zk as well
-      end if
-      if (ndx2d > 0 .and. ja2D_) then
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-         ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
-      end if
+      !if (ndx1d > 0) then
+      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
+      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
+      !   ! TODO: AvD: UNST-1318: handle 1d zk as well
+      !end if
+      !if (ndx2d > 0 .and. ja2D_) then
+      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
+      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
+      !   ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
+      !end if
 
       ! Put the contacts
       if (n1d2dcontacts > 0) then
          ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
       end if
 
-      if (allocated(edge_type)) then
-         deallocate (edge_type)
-      end if
       ! TODO: AvD: also edge_type for 1D
       if (associated(layer_zs)) then
          deallocate (layer_zs)
@@ -15922,33 +15940,30 @@ contains
       if (allocated(contacttype)) then
          deallocate (contacttype)
       end if
-      if (allocated(edge_nodes)) then
-         deallocate (edge_nodes)
-      end if
 
       ! TODO: AvD:
       ! * in WAVE: handle the obsolete 'nFlowElemWithBnd'/'nFlowElem' difference
       ! * for WAVE: add FlowElem_zcc back in com file.
       ! * for parallel: add 'FlowElemDomain', 'FlowLinkDomain', 'FlowElemGlobalNr'
       ! domain numbers
-      if (jampi == 1) then
-         ! FlowElemDomain
-         if (ndx2d > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(1:ndx2d))
-         end if
-         ! FlowElemGlobalNr
-         if (ndx2d > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(1:ndx2d))
-         end if
-         ! FlowElemDomain
-         if (ndx1d > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
-         end if
-         ! FlowElemGlobalNr
-         if (ndx1d > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
-         end if
-      end if
+      !if (jampi == 1) then
+      !   ! FlowElemDomain
+      !   if (ndx2d > 0) then
+      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(1:ndx2d))
+      !   end if
+      !   ! FlowElemGlobalNr
+      !   if (ndx2d > 0) then
+      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(1:ndx2d))
+      !   end if
+      !   ! FlowElemDomain
+      !   if (ndx1d > 0) then
+      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
+      !   end if
+      !   ! FlowElemGlobalNr
+      !   if (ndx1d > 0) then
+      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
+      !   end if
+      !end if
 
       if (mb_latmin /= dmiss .and. mb_latmax /= dmiss .and. mb_lonmin /= dmiss .and. mb_lonmax /= dmiss) then
          ierr = ionc_add_geospatial_bounds(ncid, mb_latmin, mb_latmax, mb_lonmin, mb_lonmax)
