@@ -122,6 +122,11 @@ int set_var(const char *key, void *src_ptr) {
   char *vartype = NULL;
   char *lock_id = NULL;
 
+  if (src_ptr == NULL) {
+    log_debug("set_var('%s') called with NULL src_ptr, ignoring.\n", key);
+    return DIMR_BMI_OK;
+  }
+
   log_info("%s( \"%s\", *src_ptr = %g) called.\n", __func__, key, *(double *)src_ptr);
 
   copy_key(key, keystr);

@@ -16,6 +16,9 @@ void log_init(char *name, FILE *fp) {
 void log_set_level(log_level_t lvl) { logger.level = lvl; }
 
 static void vlog(log_level_t lvl, char *fmt, va_list ap) {
+  if (logger.name == NULL) {
+    log_init("dsle", stderr);
+  }
   if (lvl >= logger.level && lvl <= logERROR) {
     FILE *stream = logger.fp ? logger.fp : stderr;
     fprintf(stream, "[%s] %s: ", level_strings[lvl], logger.name);
