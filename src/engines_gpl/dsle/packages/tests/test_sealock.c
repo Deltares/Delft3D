@@ -443,7 +443,32 @@ static void test_sealock_delta_time_ok__diff_eq_delta_time__not_ok(void) {
   TEST_ASSERT_EQUAL(0, ok);
 }
 
-static void test_sealock_update__constituent_results_match_salinity_mixing_fraction(void) {
+static void test_sealock_init__reserves_temperature_slot(void) {
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 0;
+
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  TEST_ASSERT_EQUAL(1u, lock.num_constituents);
+}
+
+static void test_sealock_init__reserves_temperature_slot_after_user_constituents(void) {
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 2;
+
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  TEST_ASSERT_EQUAL(3u, lock.num_constituents);
+}
+
+
+static void test_sealock_update__constituent_results_cycle_average(void) {
   // Verify that passive constituents are transported using the same mixing
   // fraction as salinity.
 
@@ -529,7 +554,7 @@ static void test_sealock_update__constituent_results_zero_when_no_constituents(v
   }
 }
 
-static void test_sealock_update__constituent_results_equal_lake_when_no_salinity_gradient(void) {
+static void test_sealock_update__constituent_results_equal_cycle_avg_no_gradient(void) {
   // When sal_sea == sal_lake (no gradient), frac = 0 and constituent_to_x
   // must equal constituent_lake.
 
@@ -559,31 +584,8 @@ static void test_sealock_update__constituent_results_equal_lake_when_no_salinity
   TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_lake[0][0]);
   TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_sea[0][0]);
 }
-static void test_sealock_init__reserves_temperature_slot(void) {
-  csv_row_t rows[2];
-  time_t times[2];
-  sealock_state_t lock = {0};
-  setup_cycle_average_lock_without_file(&lock, rows, times);
-  lock.num_constituents = 0;
 
-  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
-
-  TEST_ASSERT_EQUAL(1u, lock.num_constituents);
-}
-
-static void test_sealock_init__reserves_temperature_slot_after_user_constituents(void) {
-  csv_row_t rows[2];
-  time_t times[2];
-  sealock_state_t lock = {0};
-  setup_cycle_average_lock_without_file(&lock, rows, times);
-  lock.num_constituents = 2;
-
-  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
-
-  TEST_ASSERT_EQUAL(3u, lock.num_constituents);
-}
-
-static void test_sealock_update__temperature_output_uses_salinity_mixing_fraction(void) {
+static void test_sealock_update__temperature_output_cycle_average(void) {
   // Temperature output must be mixed using the same fraction as salinity,
   // i.e. it behaves as a passive constituent.
 
@@ -673,12 +675,12 @@ int main(void) {
   RUN_TEST(test_sealock_delta_time_ok);
   RUN_TEST(test_sealock_delta_time_ok__times_len_one__always_ok);
   RUN_TEST(test_sealock_delta_time_ok__diff_eq_delta_time__not_ok);
-  RUN_TEST(test_sealock_update__constituent_results_match_salinity_mixing_fraction);
+  RUN_TEST(test_sealock_update__constituent_results_cycle_average);
   RUN_TEST(test_sealock_update__constituent_results_zero_when_no_constituents);
-  RUN_TEST(test_sealock_update__constituent_results_equal_lake_when_no_salinity_gradient);
+  RUN_TEST(test_sealock_update__constituent_results_equal_cycle_avg_no_gradient);
   RUN_TEST(test_sealock_init__reserves_temperature_slot);
   RUN_TEST(test_sealock_init__reserves_temperature_slot_after_user_constituents);
-  RUN_TEST(test_sealock_update__temperature_output_uses_salinity_mixing_fraction);
+  RUN_TEST(test_sealock_update__temperature_output_cycle_average);
   RUN_TEST(test_sealock_update__temperature_output_equal_temperatures_when_no_salinity_gradient);
 
   return UNITY_END();
