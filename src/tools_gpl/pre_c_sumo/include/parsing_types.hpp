@@ -8,7 +8,7 @@ namespace parsing_utils
     /**
      * @brief Error returned when a parsing function fails.
      */
-    struct [[nodiscard]] ParseError
+    struct ParseError
     {
         std::string message{};
     };
@@ -16,7 +16,7 @@ namespace parsing_utils
     /**
      * @brief A 2-D coordinate pair (x, y).
      */
-    struct [[nodiscard]] Point2D
+    struct Point2D
     {
         double x{};
         double y{};
