@@ -70,21 +70,11 @@ int sealock_init(sealock_state_t *lock, time_t start_time, unsigned int max_num_
 
   if (status == SEALOCK_OK) {
     // Initialise constituent_lock state for phase_wise_mode.
-    //
     // User constituents (slots 0..temp_slot-1): default to 0.0.
-    // A future improvement would allow setting initial concentrations
-    // by constituent name via set_var before sealock_init, e.g.:
-    //   set_var("my_lock/constituent_lock/sediment", &initial_conc);
-    // For now, callers that need non-zero initial conditions should set
-    // lock->constituent_lock[c] directly after sealock_init returns.
     for (unsigned int c = 0; c < temp_slot; c++) {
       lock->constituent_lock[c] = 0.0;
     }
-
-// Temperature slot: use the initial lock temperature from the ini
-    // (stored in parameters.temperature_lake by dsle_ini_handler).
-    // After sealock_collect_layers runs on the first update, these will
-    // be overwritten with the actual D-Flow FM boundary temperatures.
+    // Temperature slot: initial temperature from ini is stored in both temperature_lake & temperature_sea.
     lock->constituent_lock[temp_slot] = lock->parameters.temperature_lake;
   }
 
