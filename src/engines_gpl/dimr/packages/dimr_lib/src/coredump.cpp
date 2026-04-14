@@ -34,42 +34,35 @@
 //  29 oct 11
 //------------------------------------------------------------------------------
 
-
 #include "dimr.h"
 
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define Dimr_CoreDump FC_FUNC(dimr_coredump,DIMR_COREDUMP)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define Dimr_CoreDump FC_FUNC(dimr_coredump, DIMR_COREDUMP)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define Dimr_CoreDump DIMR_COREDUMP
+    // WIN32
+    #define STDCALL /* nothing */
+    #define Dimr_CoreDump DIMR_COREDUMP
 #endif
 
-
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 extern "C" {
 #endif
 
-void STDCALL
-Dimr_CoreDump (
-    void
-    ) {
-
+void STDCALL Dimr_CoreDump(void)
+{
     // ToDo: Check whether the core dump was actually requested.
     //       Only activate the printf statement when a core dump is actually requested
     // printf ("\n!! INTENDED CORE DUMP OF DIMR FOR DEBUGGING PURPOSES !!\n\n");
-    fflush (stdout);
-    fflush (stderr);
+    fflush(stdout);
+    fflush(stderr);
 
     // When requested: generate a core dump:
     // int * null = NULL;
     // int never = *null;
+}
 
-    }
-
-
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 }
 #endif

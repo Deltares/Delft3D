@@ -29,23 +29,23 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace components
-{
+    namespace schematization
+    {
+        namespace components
+        {
 
-class component : public element
-{
-public:
-	component(string id, string name);
-	virtual ~component(void) {};
+            class component : public element
+            {
+            public:
+                component(string id, string name);
+                virtual ~component(void) {};
 
-	void activate() {};
-	void deactivate() {};
-};
+                void activate() {};
+                void deactivate() {};
+            };
 
-} // end namespace components
-} // end namespace schematization
+        } // end namespace components
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* COMPONENT_H */

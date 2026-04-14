@@ -2213,7 +2213,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & sscomp    ,i(iwrk1)  , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
-                    & nto       ,r(volum0) ,r(volum1) ,hdt       , gdp       )
+                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,r(taubmx) , gdp       )
           call timer_stop(timer_bott3d, gdp)
           if (bedupd) then
                 !
@@ -3287,7 +3287,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                     & sscomp    ,i(iwrk1)  , &
                     & r(guv)    ,r(gvu)    ,i(kcu)    , &
                     & i(kcv)    ,icx       ,icy       ,timhr     , &
-                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,gdp       )
+                    & nto       ,r(volum0) ,r(volum1) ,hdt       ,r(taubmx) ,gdp       )
           call timer_stop(timer_bott3d, gdp)
        endif
        !

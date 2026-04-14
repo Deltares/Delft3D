@@ -76,3 +76,6 @@ endif(WIN32)
 
 # precicef (preCICE fortran bindings)
 set(precicef_module "${third_party_open_path}/precicef")
+
+# pugixml
+set(pugixml_module ${third_party_open_path}/pugixml)

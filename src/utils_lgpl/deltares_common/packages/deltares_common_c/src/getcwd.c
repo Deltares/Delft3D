@@ -31,15 +31,12 @@
 //--------------------------------------------------------------------------------
 
 #ifdef _WIN32
-#include <direct.h>
-#define GETCWD _getcwd
+    #include <direct.h>
+    #define GETCWD _getcwd
 #else
-#include <unistd.h>
-#define GETCWD getcwd
+    #include <unistd.h>
+    #define GETCWD getcwd
 #endif
 
 /* Return 0 on success, 1 on error. */
-int getCWDHelper(char *str, int len)
-{
-    return GETCWD(str, len) == NULL;
-}
+int getCWDHelper(char* str, int len) { return GETCWD(str, len) == NULL; }

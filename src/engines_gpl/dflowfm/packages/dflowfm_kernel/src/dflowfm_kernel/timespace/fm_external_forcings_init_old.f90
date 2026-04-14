@@ -263,17 +263,13 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) then
-                     deallocate (Secchisp)
-                  end if
-                  allocate (Secchisp(ndx), stat=ierr)
-                  call aerr('Secchisp(ndx)', ierr, lnx)
-                  Secchisp = dmiss
-                  jaSecchisp = 1
+               if (.not. spatial_secchi_depth_is_available) then
+                  call realloc(spatial_secchi_depth, ndx, fill=dmiss)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
+                  spatial_secchi_depth_is_available = .true.
                end if
 
-               success = timespaceinitialfield(xz, yz, Secchisp, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
+               success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'advectiontype') then
 
@@ -1974,10 +1970,10 @@ contains
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
                   ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
-                  call clearECMessage()
+                  call clear_ec_message()
                   if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=num_source_sink)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
-                              //'''. for source/sinks failed:'//dumpECMessageStack(LEVEL_WARN, callback_msg)
+                              //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()
                      success = .false.
                   end if

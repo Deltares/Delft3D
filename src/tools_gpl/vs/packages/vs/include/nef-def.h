@@ -29,10 +29,10 @@
 #ifndef _NEF_DEF_H_
 #define _NEF_DEF_H_
 
-#define MAX_CEL_DIM          100
-#define MAX_DESC              64
-#define MAX_DIM                5
-#define MAX_NAME              16
-#define MAX_TYPE               8
+#define MAX_CEL_DIM 100
+#define MAX_DESC 64
+#define MAX_DIM 5
+#define MAX_NAME 16
+#define MAX_TYPE 8
 
 #endif

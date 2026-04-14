@@ -8,7 +8,7 @@ if (WIN32)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume:recursion")
     # Set global linker flags for Fortran
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /STACK:20000000")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /STACK:${DFLOWFM_STACK_SIZE_BYTES}")
     # Set global C/C++ compiler flags that apply for each C/C++ project
     string(APPEND CMAKE_C_FLAGS " /MP")
     string(APPEND CMAKE_CXX_FLAGS " /MP")
@@ -58,6 +58,12 @@ if (WIN32)
         string(APPEND CMAKE_MODULE_LINKER_FLAGS " /MANIFEST:NO")
         string(APPEND CMAKE_SHARED_LINKER_FLAGS " /MANIFEST:NO")
     endif()
+
+    # On windows, we have precompiled release versions of third party libraries,
+    # so we cannot link to the windows debug runtime library unless moving through a C interface.
+    # As a workaround, we link to the release runtime library in debug mode as well until a
+    # package manager solves the issue of providing debug versions of the third party libraries on windows.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif(WIN32)
 
 if (UNIX)

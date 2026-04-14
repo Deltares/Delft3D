@@ -11,7 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(src_path src)
 
 # Gather the source files
-set(headers include/blasfm.h)
+set(headers include/blasfm.inc)
 
 # Set version file variables
 set(dflowfm_version_header_path ${dflowfm_path}/version)
@@ -184,6 +184,7 @@ if (WIN32)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
            target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+           target_link_libraries(${library_name} PRIVATE interacter_utils)
         endif()
     else()
         target_link_libraries(${library_name} PRIVATE interacter_stub)
@@ -193,7 +194,7 @@ if (WIN32)
                                 "${mpi_library_path}"
     )
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                             "${mpi_fortran_library}"
                             petsc
     )
@@ -217,6 +218,7 @@ set_source_files_properties(${fortran_version_files}
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/menuv1.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/setwor.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/viewport.F90
+                            ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_gui_path}/intini.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/read_commandline.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/write_some_final_output.F90
                             ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_io_path}/wrwaq.F90
@@ -255,19 +257,20 @@ set_source_files_properties(${fortran_version_files}
 
 # Define preprocessor definitions
 set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+target_compile_definitions(${library_name} PRIVATE DFLOWFM_STACK_SIZE_BYTES=${DFLOWFM_STACK_SIZE_BYTES})
 if (WIN32)
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
+        target_compile_definitions(${library_name} PUBLIC "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=1")
     else()
-        target_compile_definitions(${library_name} PRIVATE "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
+        target_compile_definitions(${library_name} PUBLIC "WIN32;HAVE_METIS;HAVE_MPI;HAVE_PETSC;HAVE_OPENGL;HAVE_DISPLAY=0")
     endif()
 
     add_warnings_as_errors_post_build_windows(${library_name})
 endif(WIN32)
 
 if (UNIX)
-    target_compile_definitions(${library_name} PRIVATE "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    target_compile_definitions(${library_name} PUBLIC "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
     find_package(OpenMP COMPONENTS Fortran)
     if(OpenMP_Fortran_FOUND)
          target_link_libraries(${library_name} PRIVATE ${OpenMP_Fortran_LIBRARIES})

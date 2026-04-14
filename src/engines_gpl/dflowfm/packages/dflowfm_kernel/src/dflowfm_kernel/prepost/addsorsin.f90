@@ -149,8 +149,8 @@ contains
       character(len=*), intent(in) :: name !< Name of the source/sink.
       real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
-      real(kind=dp), dimension(:), intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
-      real(kind=dp), dimension(:), intent(in) :: z_sink !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
+      real(kind=dp), dimension(2), intent(in) :: z_source !< Vertical position of the source, Z-values in m. (second point is dmiss if not a range)
+      real(kind=dp), dimension(2), intent(in) :: z_sink !< Vertical position of the sink, Z-values in m. (second point is dmiss if not a range)
       real(kind=dp), intent(in) :: area !< Area of the source/sink, in m2. Set to 0.0 for momentum-free point sources.
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
@@ -227,10 +227,8 @@ contains
       source_sink_z_top(2, num_source_sink) = z_source(1)
 
       if (kk > 0) then
-         if (size(z_sink) == 2) then
-            if (z_sink(2) /= dmiss) then
-               source_sink_z_top(1, num_source_sink) = z_sink(2)
-            end if
+         if (z_sink(2) /= dmiss) then
+            source_sink_z_top(1, num_source_sink) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
@@ -250,10 +248,8 @@ contains
       end if
 
       if (kk2 > 0) then
-         if (size(z_source) == 2) then
-            if (z_source(2) /= dmiss) then
-               source_sink_z_top(2, num_source_sink) = z_source(2)
-            end if
+         if (z_source(2) /= dmiss) then
+            source_sink_z_top(2, num_source_sink) = z_source(2)
          end if
          ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)
          if (num_points > 1) then

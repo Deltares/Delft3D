@@ -735,7 +735,7 @@ contains
       use precision, only: dp
 
       use m_f1dimp
-      use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim
+      use m_flowgeom, only: ndx, bai_mor, ba, bl, dx, lnx, dxi, acl, wu, snu, csu, wu_mor, wcx1, wcx2, wcy1, wcy2, kcu, wcl, lnxi, griddim, xz, yz
       use m_flow, only: s0, s1, u1, v, au, hu, qa, frcu_mor, frcu, z0urou, ifrcutp, taubxu, ucx_mor, ucy_mor, ustb, z0ucur
       use m_sediment, only: stmpar, jased, stm_included, kcsmor
       use m_fm_erosed, only: ndx_mor, lsedtot, lnx_mor, pmcrit, link1, ln_mor, hs_mor, ucxq_mor, ucyq_mor, uau
@@ -812,6 +812,8 @@ contains
       call reallocate_fill(rhowat, grd_fmmv_fmsv, ndx, ndx_mor)
       call reallocate_fill(ktb, grd_fmmv_fmsv, ndx, ndx_mor) !FM1DIMP2DO: It could be better to allocate the wave part with <ndx_mor>. To limit the mess it is now done here.
       call reallocate_fill(bl, grd_fmmv_fmsv, ndx, ndx_mor)
+      call reallocate_fill(xz, grd_fmmv_fmsv, ndx, ndx_mor)
+      call reallocate_fill(yz, grd_fmmv_fmsv, ndx, ndx_mor)
 !FM1DIMP2DO
 !The value of <bl> here is not correct, as it copies the value from the closest node.
 !However, this is not a big issue, as this value is only used for checking whether flow
