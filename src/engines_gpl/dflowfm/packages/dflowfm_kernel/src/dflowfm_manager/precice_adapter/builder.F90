@@ -16,9 +16,8 @@ module precice_adapter_builder
       integer(kind=c_int) :: comm = 0_c_int
       logical :: is_comm_set = .false.
       character(kind=c_char, len=20) :: mesh_name ! mesh name
-      integer(kind=c_int) :: mesh_size = 0_c_int ! mesh size (number of points)
-      real(kind=c_double), dimension(:), pointer :: mesh_coordinates_x ! mesh X coordinates
-      real(kind=c_double), dimension(:), pointer :: mesh_coordinates_y ! mesh Y coordinates
+      integer(kind=c_int) :: mesh_size = 0_c_int ! mesh size (number of points): N
+      real(kind=c_double), dimension(:), allocatable :: mesh_coordinates ! mesh coordinates: x1,y1,x2,y2,...,xN,yN
    contains
       procedure :: set_configfile => builder_set_configfile
       procedure :: set_name => builder_set_name
@@ -42,8 +41,7 @@ contains
 
    subroutine builder_destructor(self)
       class(precice_adapter_builder_t), intent(inout) :: self
-      deallocate (self%mesh_coordinates_x)
-      deallocate (self%mesh_coordinates_y)
+      deallocate (self%mesh_coordinates)
    end subroutine builder_destructor
 
    subroutine builder_set_configfile(self, configfile)
@@ -85,11 +83,19 @@ contains
       integer(kind=c_int), intent(in) :: mesh_size
       real(kind=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_x
       real(kind=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_y
+      ! Local variables
+      integer :: i
 
       self%mesh_name = mesh_name
       self%mesh_size = mesh_size
-      self%mesh_coordinates_x => mesh_coordinates_x
-      self%mesh_coordinates_y => mesh_coordinates_y
+
+      allocate (self%mesh_coordinates(mesh_size * 2))
+
+      do i = 1, mesh_size
+         self%mesh_coordinates(2 * i - 1) = mesh_coordinates_x(i)
+         self%mesh_coordinates(2 * i) = mesh_coordinates_y(i)
+      end do
+
    end subroutine builder_add_mesh_2d
 
    function builder_build(self) result(adapter_instance)
@@ -98,7 +104,7 @@ contains
 
       adapter_instance => precice_adapter_t(self%configfile, self%name, self%is_comm_set, self%comm, &
                                             self%my_rank, self%numranks, self%mesh_name, &
-                                            self%mesh_size, self%mesh_coordinates_x, self%mesh_coordinates_y)
+                                            self%mesh_size, self%mesh_coordinates)
    end function builder_build
 
 end module precice_adapter_builder

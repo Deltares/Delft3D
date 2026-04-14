@@ -21,7 +21,7 @@ module precice_adapter
       integer(kind=c_int) :: my_rank = 0_c_int
       integer(kind=c_int) :: numranks = 1_c_int
       real(kind=c_double), dimension(:), allocatable :: mesh_coordinates ! Mesh coordinates: x1,y1,x2,y2,...,xN,yN
-      integer(kind=c_int) :: mesh_size = 0_c_int
+      integer(kind=c_int) :: mesh_size = 0_c_int ! Number of vertices in the mesh: N
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -36,8 +36,7 @@ module precice_adapter
 contains
 
    function precice_adapter_constructor(configfile, name, is_comm_set, comm, my_rank, numranks, meshname, &
-                                        mesh_size, mesh_coordinates_x, mesh_coordinates_y) &
-      result(adapter_instance)
+                                        mesh_size, mesh_coordinates) result(adapter_instance)
       use precision, only: dp
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
 
@@ -51,11 +50,8 @@ contains
       integer(kind=c_int), intent(in) :: numranks
       character(kind=c_char, len=*), intent(in) :: meshname
       integer(kind=c_int), intent(in) :: mesh_size
-      real(KIND=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_x
-      real(KIND=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_y
+      real(KIND=c_double), dimension(:), intent(in), allocatable :: mesh_coordinates
       type(precice_adapter_t), pointer :: adapter_instance
-      ! Local variables
-      integer :: i
 
       allocate (adapter_instance)
       adapter_instance%configfile = configfile
@@ -67,12 +63,7 @@ contains
       adapter_instance%meshname = meshname
 
       adapter_instance%mesh_size = mesh_size
-      allocate (adapter_instance%mesh_coordinates(adapter_instance%mesh_size * 2))
-
-      do i = 1, adapter_instance%mesh_size
-         adapter_instance%mesh_coordinates(2 * i - 1) = mesh_coordinates_x(i)
-         adapter_instance%mesh_coordinates(2 * i) = mesh_coordinates_y(i)
-      end do
+      adapter_instance%mesh_coordinates = mesh_coordinates
 
    end function precice_adapter_constructor
 
