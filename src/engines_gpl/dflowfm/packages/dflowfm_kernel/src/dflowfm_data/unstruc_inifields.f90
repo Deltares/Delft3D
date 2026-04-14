@@ -1575,15 +1575,14 @@ contains
       use timespace_parameters, only: NCGRID
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
-      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
-      use m_flowparameters, only: ja_friction_coefficient_time_dependent
-      use m_flow, only: frcu
-      use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
+      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, &
+         waveforcing, ja_friction_coefficient_time_dependent
+      use m_flow, only: frcu, jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
-      use m_heatfluxes, only: spatial_secchi_depth
+      use m_heatfluxes, only: spatial_secchi_depth, time_varying_secchi_depth_is_available
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
@@ -1736,6 +1735,10 @@ contains
          call realloc(spatial_secchi_depth, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
          target_location_type = UNC_LOC_S
          target_array => spatial_secchi_depth
+         if (filetype == NCGRID) then
+            time_dependent_array = .true.
+            time_varying_secchi_depth_is_available = .true.
+         end if
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
          call realloc(dicoww, ndx, constant_dicoww)

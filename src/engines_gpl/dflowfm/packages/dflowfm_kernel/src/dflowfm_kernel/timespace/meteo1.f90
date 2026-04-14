@@ -3693,6 +3693,7 @@ module m_meteo
    integer, target :: item_stressxy_y !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
 
    integer, target :: item_frcu !< Unique Item id of the ext-file's 'frcu' quantity's component.
+   integer, target :: item_secchi_depth !< Unique Item id of the ext-file's 'secchidepth' quantity's component.
 
    integer, target :: item_apwxwy_p !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
@@ -3869,6 +3870,7 @@ contains
       item_stressxy_y = ec_undef_int
 
       item_frcu = ec_undef_int
+      item_secchi_depth = ec_undef_int
 
       item_apwxwy_p = ec_undef_int
       item_apwxwy_x = ec_undef_int
@@ -4219,6 +4221,9 @@ contains
       case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
+      case ('secchi_depth_time_dependent', 'secchidepth')
+         itemPtr1 => item_secchi_depth
+         dataPtr1 => spatial_secchi_depth
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
          itemPtr1 => item_apwxwy_p
          dataPtr1 => air_pressure

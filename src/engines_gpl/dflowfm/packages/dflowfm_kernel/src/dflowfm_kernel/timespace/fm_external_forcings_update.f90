@@ -91,6 +91,7 @@ contains
       use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
+      use m_heatfluxes, only: spatial_secchi_depth, time_varying_secchi_depth_is_available
       use m_heatu, only: heatu
       use m_flow_trachyupdate, only: flow_trachyupdate
       use m_flow_trachy_needs_update, only: flow_trachy_needs_update
@@ -100,7 +101,7 @@ contains
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
        item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature, &
-       item_bubblescreen_discharge
+       item_bubblescreen_discharge, item_secchi_depth
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
 
@@ -166,6 +167,10 @@ contains
 
       if (ja_friction_coefficient_time_dependent > 0) then
          call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
+      end if
+
+      if (time_varying_secchi_depth_is_available) then
+         call get_timespace_value_by_item_and_array(item_secchi_depth, spatial_secchi_depth, time_in_seconds)
       end if
 
       call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))

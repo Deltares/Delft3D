@@ -69,6 +69,7 @@ module m_heatfluxes
 
    ! Secchi depth variables
    logical :: spatial_secchi_depth_is_available !< Flag to indicate if spatially varying Secchi depth is available
+   logical :: time_varying_secchi_depth_is_available !< Flag to indicate if time-varying Secchi depth is available
    real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
