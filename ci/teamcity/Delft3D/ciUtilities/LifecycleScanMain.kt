@@ -16,12 +16,12 @@ object LifecycleScanMain : BuildType({
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
+            param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
         }
         step {
             id = "LifecycleCdxgenLinux"
             type = "LifecycleCdxgenLinux"
-            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
+            param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
         }
         step {
             id = "LifecycleNexusIqLinux"
@@ -29,7 +29,7 @@ object LifecycleScanMain : BuildType({
             param("nexus_iq_application_id", "delft3d-main")
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
-            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
+            param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
         }
     }
 
