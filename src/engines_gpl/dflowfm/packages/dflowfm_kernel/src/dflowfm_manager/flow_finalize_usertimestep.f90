@@ -68,6 +68,7 @@ contains
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_flow_trachy_needs_update
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, precice_adapter_interface_t
+      use MessageHandling, only: mess, LEVEL_DEBUG
 
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
@@ -174,7 +175,7 @@ contains
 
       ! Communicate trough precice_adapter if anabled.
       if (precice_adapter_is_enabled()) then
-         print *, "[DEBUG] Updating preCICE adapter."
+         call mess(LEVEL_DEBUG, "Updating preCICE adapter.")
          fm_precice_adapter => precice_adapter_get_adapter()
          call fm_precice_adapter%update(dt_user)
       end if

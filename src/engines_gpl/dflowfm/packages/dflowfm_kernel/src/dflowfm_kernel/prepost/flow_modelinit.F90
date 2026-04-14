@@ -622,8 +622,8 @@ contains
       if (precice_adapter_is_enabled()) then
          fm_precice_adapter_builder => precice_adapter_get_builder()
          call fm_precice_adapter_builder%set_name("fm")
-         call fm_precice_adapter_builder%set_configfile("../precice_config.xml")
-         call fm_precice_adapter_builder%add_mesh2d("fm_flow_cells", ndx, xz, yz)
+         call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
+         call fm_precice_adapter_builder%add_mesh_2d("fm_flow_cells", ndx, xz, yz)
       end if
 
       iresult = DFM_NOERR
