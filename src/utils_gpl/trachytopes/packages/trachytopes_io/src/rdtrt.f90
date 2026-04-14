@@ -123,7 +123,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
 ! Local parameters
 !
     integer, parameter :: IROUGH = 300
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -1137,7 +1136,6 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
@@ -1798,7 +1796,7 @@ subroutine dimtrt(lundia    ,error     ,gdtrachy   ,mdfile_ptr , &
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
+    
 !
 ! Global variables
 !
@@ -2054,13 +2052,13 @@ subroutine dittar(filnam    ,lundia    ,error     ,nttaru    )
 !    use globaldata
     use system_utils, only: exifil
     use MessageHandling
+    use trachytopes_data_module, only: MAXFLD
     !
     implicit none
     !
 !
 ! Local parameters
 !
-    integer, parameter :: MAXFLD = 12
 !
 ! Global variables
 !
