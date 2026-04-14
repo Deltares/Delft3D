@@ -57,15 +57,14 @@ digraph SourceSinkUML {
         label="{Constituents (absolute values, optional)|
             temperature : double\ [degC]\l
             salinity : double\ [ppt]\l
-            constituent_A : double\l
-            constituent_B : double\l
-            constituent_C : double\l
+            additional_constituents : array\<double, 5\>\l
+            // fixed-size additional tracer slots [kg/m3]\l
         }"
     ];
 
     Source [
         label="{Source|
-            water_quality : optional\<Constituents\>\l
+            // Momentum and Constituents as optional fields\l
         }"
     ];
 
