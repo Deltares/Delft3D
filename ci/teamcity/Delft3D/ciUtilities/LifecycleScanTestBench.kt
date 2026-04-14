@@ -23,13 +23,14 @@ object LifecycleScanTestBench : BuildType({
             type = "LifecycleCdxgenLinux"
             param("scan_target", "test/deltares_testbench")
         }
-        // step {
-        //     id = "LifecycleNexusIqLinux"
-        //     type = "LifecycleNexusIqLinux"
-        //     param("nexus_iq_username", "%nexus_iq_username%")
-        //     param("nexus_iq_password", "%nexus_iq_password%")
-        //     param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
-        // }
+        step {
+            id = "LifecycleNexusIqLinux"
+            type = "LifecycleNexusIqLinux"
+            param("nexus_iq_application_id", "delft3d-testbench")
+            param("nexus_iq_username", "%nexus_iq_username%")
+            param("nexus_iq_password", "%nexus_iq_password%")
+            param("scan_target", "test/deltares_testbench")
+        }
     }
 
     features {
