@@ -17,17 +17,6 @@ namespace pre_c_sumo
      */
 
     /**
-     * @brief Drive the main timeloop of the preC-SUMO demonstration.
-     *
-     * This function returns true while the timeloop should continue, and
-     * false when it should stop. The current implementation contains a
-     * simple demonstration counter.
-     *
-     * @return true if the timeloop should continue, false otherwise.
-     */
-    bool doTimeloop();
-
-    /**
      * @brief Read and parse the C-SUMO settings file.
      *
      * Attempts to read the C-SUMO settings from the given file.
