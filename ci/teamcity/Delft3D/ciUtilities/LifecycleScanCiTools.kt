@@ -16,12 +16,12 @@ object LifecycleScanCiTools : BuildType({
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("scan_target", "ci/python/ci_tools")
+            param("scan_target", "ci/python")
         }
         step {
             id = "LifecycleCdxgenLinux"
             type = "LifecycleCdxgenLinux"
-            param("scan_target", "ci/python/ci_tools")
+            param("scan_target", "ci/python")
         }
         step {
             id = "LifecycleNexusIqLinux"
@@ -29,7 +29,7 @@ object LifecycleScanCiTools : BuildType({
             param("nexus_iq_application_id", "delft3d-ci-tools")
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
-            param("scan_target", "ci/python/ci_tools")
+            param("scan_target", "ci/python")
         }
     }
 
