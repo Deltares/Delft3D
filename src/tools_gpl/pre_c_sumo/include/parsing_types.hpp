@@ -10,7 +10,7 @@ namespace parsing_utils
      */
     struct ParseError
     {
-        std::string message{};
+        std::string message;
     };
 
     /**
@@ -18,8 +18,8 @@ namespace parsing_utils
      */
     struct Point2D
     {
-        double x{};
-        double y{};
+        double x_coordinate{};
+        double y_coordinate{};
     };
 } // namespace parsing_utils
 

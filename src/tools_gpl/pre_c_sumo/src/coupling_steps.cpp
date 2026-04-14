@@ -44,21 +44,21 @@ namespace pre_c_sumo
         const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
         const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
-        const FarFieldLayer default_layer{.depth_from_surface = 0.0, .x_velocity = 0.0, .y_velocity = 0.0};
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
             // TODO: populate from received far-field data instead of placeholders
-            auto make_point = [&constituents = diffuser.discharge.constituents,
-                               default_layer](const parsing_utils::Point2D& pos) {
+            auto make_point = [&constituents =
+                                   diffuser.discharge.constituents](const parsing_utils::Point2D& position) {
                 return FarFieldPoint2D{
-                    .x = pos.x,
-                    .y = pos.y,
+                    .position = position,
                     .water_depth = 0.0, // TODO: obtain from far-field
-                    .density = 1000.0,  // TODO: obtain from far-field
-                    .constituents = constituents,
-                    .layers = {default_layer}, // TODO: obtain layered data from far-field
+                    .layers = {FarFieldLayer{.z_coordinate = 0.0,
+                                             .x_velocity = 0.0,
+                                             .y_velocity = 0.0,
+                                             .density = 1000.0,
+                                             .constituents = constituents}}, // TODO: obtain layered data from far-field
                 };
             };
 

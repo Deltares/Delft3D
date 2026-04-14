@@ -46,9 +46,10 @@ namespace
     void addXYZ(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
     {
         auto point_2d_to_xyz_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
-            return point.layers |
-                   std::views::transform([x = point.x, y = point.y](const pre_c_sumo::FarFieldLayer& layer) {
-                       return std::format("{:E} {:E} {:E}", x, y, layer.depth_from_surface);
+            return point.layers | std::views::transform([x_coordinate = point.position.x_coordinate,
+                                                         y_coordinate = point.position.y_coordinate](
+                                                            const pre_c_sumo::FarFieldLayer& layer) {
+                       return std::format("{:E} {:E} {:E}", x_coordinate, y_coordinate, layer.z_coordinate);
                    });
         };
         addMultiLineChild(parent_node, "XYZ",
@@ -75,8 +76,8 @@ namespace
     void addDensity(pugi::xml_node& parent_node, const std::vector<pre_c_sumo::FarFieldPoint2D>& points)
     {
         auto point_2d_to_density_strings = [](const pre_c_sumo::FarFieldPoint2D& point) {
-            return point.layers | std::views::transform([density = point.density](const pre_c_sumo::FarFieldLayer&) {
-                       return std::format("{:E}", density);
+            return point.layers | std::views::transform([](const pre_c_sumo::FarFieldLayer& layer) {
+                       return std::format("{:E}", layer.density);
                    });
         };
         addMultiLineChild(parent_node, "rho",
@@ -89,13 +90,13 @@ namespace
             return doubles | std::views::transform([](const double number) { return std::format("{:E}", number); }) |
                    std::views::join_with(' ') | std::ranges::to<std::string>();
         };
-        auto point_2d_to_constituents_string =
-            [doubles_to_space_separated_string](const pre_c_sumo::FarFieldPoint2D& point) {
-                // Repeat the constituents vector for each layer, since the FF2NF format expects depth-averaged values
-                // to be repeated per layer.
-                return std::views::repeat(point.constituents, point.layers.size()) |
-                       std::views::transform(doubles_to_space_separated_string);
-            };
+        auto point_2d_to_constituents_string = [doubles_to_space_separated_string](
+                                                   const pre_c_sumo::FarFieldPoint2D& point) {
+            return point.layers |
+                   std::views::transform([&doubles_to_space_separated_string](const pre_c_sumo::FarFieldLayer& layer) {
+                       return doubles_to_space_separated_string(layer.constituents);
+                   });
+        };
         addMultiLineChild(parent_node, "constituents",
                           points | std::views::transform(point_2d_to_constituents_string) | std::views::join);
     }
@@ -120,11 +121,15 @@ namespace
             return std::unexpected(
                 pre_c_sumo::WriteError{std::format("{}: every point must have at least one layer", section_name)});
         }
-        if (point.constituents.size() != expected_constituent_count)
+        auto bad_layer = std::ranges::find_if(point.layers, [expected_constituent_count](const auto& layer) {
+            return layer.constituents.size() != expected_constituent_count;
+        });
+        if (bad_layer != point.layers.end())
         {
-            return std::unexpected(pre_c_sumo::WriteError{
-                std::format("{}: constituent count ({}) does not match constituent names count ({})", section_name,
-                            point.constituents.size(), expected_constituent_count)});
+            return std::unexpected(pre_c_sumo::WriteError{std::format(
+                "{}: constituent count ({}) at ({:.2f}, {:.2f}, {:.2f}) does not match constituent names count ({})",
+                section_name, bad_layer->constituents.size(), point.position.x_coordinate, point.position.y_coordinate,
+                bad_layer->z_coordinate, expected_constituent_count)});
         }
         return {};
     }

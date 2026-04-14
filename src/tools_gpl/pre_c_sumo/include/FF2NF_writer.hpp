@@ -9,6 +9,8 @@
 #include <string_view>
 #include <vector>
 
+#include "parsing_utils.hpp"
+
 namespace pre_c_sumo
 {
     struct WriteError
@@ -21,25 +23,21 @@ namespace pre_c_sumo
      */
     struct FarFieldLayer
     {
-        double depth_from_surface{}; ///< Depth of the layer from the water surface [m].
-        double x_velocity{};         ///< X velocity in this layer [m/s].
-        double y_velocity{};         ///< Y velocity in this layer [m/s].
+        double z_coordinate{};            ///< Depth of the layer from the water surface [m].
+        double x_velocity{};              ///< X velocity in this layer [m/s].
+        double y_velocity{};              ///< Y velocity in this layer [m/s].
+        double density{};                 ///< Density at this layer [kg/m³].
+        std::vector<double> constituents; ///< Constituent concentrations at this layer.
     };
 
     /**
      * @brief Far-field state at a single horizontal point (diffuser, intake, or ambient).
-     *
-     * @note density and constituents are depth-averaged scalars (per node, not per layer);
-     *       the writer repeats them for every layer in the output.
      */
     struct FarFieldPoint2D
     {
-        double x{};                        ///< X coordinate of the point [m].
-        double y{};                        ///< Y coordinate of the point [m].
+        parsing_utils::Point2D position;   ///< Horizontal position of the point [m].
         double water_depth{};              ///< Total water depth at this point [m] (written to <waterDepth>).
-        double density{};                  ///< Depth-averaged density [kg/m³] (repeated for every layer in <rho>).
-        std::vector<double> constituents;  ///< Depth-averaged constituent concentrations (repeated per layer).
-        std::vector<FarFieldLayer> layers; ///< Layered velocity structure at this point.
+        std::vector<FarFieldLayer> layers; ///< Per-layer structure (velocity, density, constituents).
     };
 
     /**

@@ -19,11 +19,15 @@ namespace
         const std::vector<double> default_constituents = {15.0, 1.0}; // default temperature and tracer concentration
 
         // Default layered structure: 10 layers, z = 0.5, 1.5, ..., 9.5, with zero velocity
-        const auto default_layers =
-            std::views::iota(0u, 10u) | std::views::transform([](unsigned i) {
-                return pre_c_sumo::FarFieldLayer{.depth_from_surface = i + 0.5, .x_velocity = 0.0, .y_velocity = 0.0};
-            }) |
-            std::ranges::to<std::vector>();
+        const auto default_layers = std::views::iota(0u, 10u) |
+                                    std::views::transform([&default_constituents](const unsigned i) {
+                                        return pre_c_sumo::FarFieldLayer{.z_coordinate = i + 0.5,
+                                                                         .x_velocity = 0.0,
+                                                                         .y_velocity = 0.0,
+                                                                         .density = 1000.0,
+                                                                         .constituents = default_constituents};
+                                    }) |
+                                    std::ranges::to<std::vector>();
 
         return pre_c_sumo::FF2NFConfig{
             .ff2nf_filename = R"(FF2NF\FF2NF__FlowFM_SubMod001_0.000.xml)",
@@ -35,35 +39,20 @@ namespace
             .subgrid_model_nr = 1,
             .current_time_seconds = 0.0,
             .constituent_names = {"temperature", "Tracer1"},
-            .diffuser = {.x = 550.0,
-                         .y = 350.0,
+            .diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0},
                          .water_depth = 10.0,
-                         .density = 1000.0,
-                         .constituents = default_constituents,
                          .layers = default_layers},
-            .intake = pre_c_sumo::FarFieldPoint2D{.x = 567.0,
-                                                  .y = 821.3453,
+            .intake = pre_c_sumo::FarFieldPoint2D{.position = {.x_coordinate = 567.0, .y_coordinate = 821.3453},
                                                   .water_depth = 10.0,
-                                                  .density = 1000.0,
-                                                  .constituents = default_constituents,
                                                   .layers = default_layers},
-            .ambient_points = {{.x = 823.0,
-                                .y = 344.8,
+            .ambient_points = {{.position = {.x_coordinate = 823.0, .y_coordinate = 344.8},
                                 .water_depth = 10.0,
-                                .density = 1000.0,
-                                .constituents = default_constituents,
                                 .layers = default_layers},
-                               {.x = 465.8,
-                                .y = 793.2,
+                               {.position = {.x_coordinate = 465.8, .y_coordinate = 793.2},
                                 .water_depth = 10.0,
-                                .density = 1000.0,
-                                .constituents = default_constituents,
                                 .layers = default_layers},
-                               {.x = 587.4,
-                                .y = 509.2,
+                               {.position = {.x_coordinate = 587.4, .y_coordinate = 509.2},
                                 .water_depth = 10.0,
-                                .density = 1000.0,
-                                .constituents = default_constituents,
                                 .layers = default_layers}},
         };
     }
@@ -313,13 +302,13 @@ TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityValuesMatchInput)
 TEST(FF2NFWriterTest, FarFieldDiffuserXYVelocityNonZeroValuesMatchInput)
 {
     auto config = buildExampleConfig();
-    config.diffuser = {
-        .x = 550.0,
-        .y = 350.0,
-        .water_depth = 10.0,
-        .density = 1000.0,
-        .constituents = {15.0, 1.0},
-        .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5, .x_velocity = 1.5, .y_velocity = -0.3}}};
+    config.diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0},
+                       .water_depth = 10.0,
+                       .layers = {pre_c_sumo::FarFieldLayer{.z_coordinate = 0.5,
+                                                            .x_velocity = 1.5,
+                                                            .y_velocity = -0.3,
+                                                            .density = 1000.0,
+                                                            .constituents = {15.0, 1.0}}}};
     const auto document = generateDocument(std::move(config));
     const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/XYvelocity");
     const auto lines = nonBlankLines(text);
@@ -363,6 +352,23 @@ TEST(FF2NFWriterTest, FarFieldDiffuserDensityIsRepeatedForEveryLayer)
     }
 }
 
+TEST(FF2NFWriterTest, FarFieldDiffuserDensityVariesPerLayer)
+{
+    auto config = buildExampleConfig();
+    config.diffuser.layers[0].density = 1025.0;
+    config.diffuser.layers[9].density = 1028.0;
+    const auto document = generateDocument(std::move(config));
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/rho");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 10u);
+    const auto first = parsing_utils::parseDouble(lines[0], "FFDiff/rho line 1");
+    const auto last = parsing_utils::parseDouble(lines[9], "FFDiff/rho line 10");
+    ASSERT_TRUE(first.has_value()) << first.error().message;
+    ASSERT_TRUE(last.has_value()) << last.error().message;
+    EXPECT_NEAR(*first, 1025.0, 1e-12);
+    EXPECT_NEAR(*last, 1028.0, 1e-12);
+}
+
 TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsIsPresent)
 {
     const auto document = generateDocument(buildExampleConfig());
@@ -396,6 +402,27 @@ TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsAreRepeatedForEveryLayer)
         EXPECT_NEAR((*values)[0], 15.0, 1e-12);
         EXPECT_NEAR((*values)[1], 1.0, 1e-12);
     }
+}
+
+TEST(FF2NFWriterTest, FarFieldDiffuserConstituentsVaryPerLayer)
+{
+    auto config = buildExampleConfig();
+    config.diffuser.layers[0].constituents = {20.0, 2.0};
+    config.diffuser.layers[9].constituents = {10.0, 0.5};
+    const auto document = generateDocument(std::move(config));
+    const std::string text = nodeText(document, "COSUMO/SubgridModel/FFDiff/constituents");
+    const auto lines = nonBlankLines(text);
+    ASSERT_EQ(lines.size(), 10u);
+    const auto first = parsing_utils::parseDoubleVector(lines[0], "FFDiff/constituents line 1");
+    const auto last = parsing_utils::parseDoubleVector(lines[9], "FFDiff/constituents line 10");
+    ASSERT_TRUE(first.has_value()) << first.error().message;
+    ASSERT_TRUE(last.has_value()) << last.error().message;
+    ASSERT_EQ((*first).size(), 2u);
+    ASSERT_EQ((*last).size(), 2u);
+    EXPECT_NEAR((*first)[0], 20.0, 1e-12);
+    EXPECT_NEAR((*first)[1], 2.0, 1e-12);
+    EXPECT_NEAR((*last)[0], 10.0, 1e-12);
+    EXPECT_NEAR((*last)[1], 0.5, 1e-12);
 }
 
 TEST(FF2NFWriterTest, FFIntakeSectionIsPresent)
@@ -454,8 +481,7 @@ TEST(FF2NFWriterTest, FFAmbientWaterDepthHasOneLinePerPoint)
 TEST(FF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();
-    config.diffuser = {
-        .x = 550.0, .y = 350.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}};
+    config.diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0}, .water_depth = 10.0, .layers = {}};
     const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFDiff: every point must have at least one layer");
@@ -464,8 +490,7 @@ TEST(FF2NFWriterTest, DiffuserPointWithNoLayersIsRejected)
 TEST(FF2NFWriterTest, IntakePointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();
-    config.intake = {
-        .x = 567.0, .y = 821.0, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}};
+    config.intake = {.position = {.x_coordinate = 567.0, .y_coordinate = 821.0}, .water_depth = 10.0, .layers = {}};
     const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFIntake: every point must have at least one layer");
@@ -475,7 +500,7 @@ TEST(FF2NFWriterTest, AmbientPointWithNoLayersIsRejected)
 {
     auto config = buildExampleConfig();
     config.ambient_points = {
-        {.x = 823.0, .y = 344.8, .water_depth = 10.0, .density = 1000.0, .constituents = {15.0, 1.0}, .layers = {}}};
+        {.position = {.x_coordinate = 823.0, .y_coordinate = 344.8}, .water_depth = 10.0, .layers = {}}};
     const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
     EXPECT_EQ(xml.error().message, "FFAmbient: every point must have at least one layer");
@@ -484,29 +509,28 @@ TEST(FF2NFWriterTest, AmbientPointWithNoLayersIsRejected)
 TEST(FF2NFWriterTest, DiffuserConstituentCountMismatchIsRejected)
 {
     auto config = buildExampleConfig();
-    config.diffuser = {.x = 550.0,
-                       .y = 350.0,
+    config.diffuser = {.position = {.x_coordinate = 550.0, .y_coordinate = 350.0},
                        .water_depth = 10.0,
-                       .density = 1000.0,
-                       .constituents = {15.0}, // only 1 instead of 2
-                       .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}};
+                       .layers = {pre_c_sumo::FarFieldLayer{
+                           .z_coordinate = 0.5, .density = 1000.0, .constituents = {15.0}}}}; // only 1 instead of 2
     const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
-    EXPECT_EQ(xml.error().message, "FFDiff: constituent count (1) does not match constituent names count (2)");
+    EXPECT_EQ(xml.error().message,
+              "FFDiff: constituent count (1) at (550.00, 350.00, 0.50) does not match constituent names count (2)");
 }
 
 TEST(FF2NFWriterTest, AmbientConstituentCountMismatchIsRejected)
 {
     auto config = buildExampleConfig();
-    config.ambient_points = {{.x = 823.0,
-                              .y = 344.8,
-                              .water_depth = 10.0,
-                              .density = 1000.0,
-                              .constituents = {15.0, 1.0, 0.5}, // 3 instead of 2
-                              .layers = {pre_c_sumo::FarFieldLayer{.depth_from_surface = 0.5}}}};
+    config.ambient_points = {
+        {.position = {.x_coordinate = 823.0, .y_coordinate = 344.8},
+         .water_depth = 10.0,
+         .layers = {pre_c_sumo::FarFieldLayer{
+             .z_coordinate = 0.5, .density = 1000.0, .constituents = {15.0, 1.0, 0.5}}}}}; // 3 instead of 2
     const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
     ASSERT_FALSE(xml.has_value());
-    EXPECT_EQ(xml.error().message, "FFAmbient: constituent count (3) does not match constituent names count (2)");
+    EXPECT_EQ(xml.error().message,
+              "FFAmbient: constituent count (3) at (823.00, 344.80, 0.50) does not match constituent names count (2)");
 }
 
 TEST(FF2NFWriterTest, EmptyAmbientPointsIsRejected)
