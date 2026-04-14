@@ -44,10 +44,9 @@ contains
 !==============================================================================
 subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
                     & array     ,nfld      ,ifld      ,dims      , &
-                    & errmsg    )
+                    & errmsg  )
    use precision
    use grid_dimens_module
-   use m_partitioninfo, only: jampi, my_rank, numranks
 ! MOR_USE_ECMODULE macro used from global_config.h to enable/disable EC-module for space-varying input in sed/mor.
 #if MOR_USE_ECMODULE
    use m_ec_module
@@ -125,9 +124,6 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    file = ' '
    ext  = ' ' 
    call split_filename(fildep, path, file, ext)
-   if (jampi > 0) then
-      write(nodestr, '(a,i0,a,i0,a)') ' [', my_rank, '/', numranks, ']'
-   end if
 
 #if MOR_USE_ECMODULE
    if (ext(1:3) == '.xy') then
