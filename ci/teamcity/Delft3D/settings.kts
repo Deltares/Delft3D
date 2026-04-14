@@ -142,9 +142,10 @@ project {
         buildType(DvcDiffComment)
         buildType(LifecycleScanMain)
         buildType(LifecycleScanTestBench)
+        buildType(LifecycleScanCiTools)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment, LifecycleScanMain, LifecycleScanTestBench
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment, LifecycleScanMain, LifecycleScanTestBench, LifecycleScanCiTools
         )
     }
 
