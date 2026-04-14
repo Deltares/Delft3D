@@ -511,6 +511,10 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     !     Vaestilae & Jaervelae (2017) and Jarvela (2004) vegetation formulations
     nropar(155) = 10
     nropar(156) = 6
+    nropar(158) = 10
+    nropar(159) = 6
+    nropar(160) = 11
+    nropar(161) = 7
     !
     ! 201-249: Vegetation roughness predictors (linear)
     !
