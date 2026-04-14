@@ -204,9 +204,7 @@ program unstruc
 
    call iset_jaopengl(md_jaopengl)
 
-#ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
-#endif
+   ierr = init_openmp(md_numthreads, jampi)
 
    call START_PROGRAM()
    call resetFullFlowModel()

@@ -2669,10 +2669,10 @@ contains
          end do
       end if
 
-      if (jaSecchisp > 0) then
+      if (spatial_secchi_depth_is_available) then
          do n = 1, ndx
-            if (Secchisp(n) == dmiss) then
-               Secchisp(n) = Secchidepth
+            if (spatial_secchi_depth(n) == dmiss) then
+               spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
       end if
