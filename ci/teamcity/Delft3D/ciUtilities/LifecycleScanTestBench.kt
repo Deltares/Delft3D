@@ -16,13 +16,13 @@ object LifecycleScanTestBench : BuildType({
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("scan_target", "/workspace/test/deltares_testbench")
+            param("scan_target", "test/deltares_testbench")
         }
-        step {
-            id = "LifecycleCdxgenLinux"
-            type = "LifecycleCdxgenLinux"
-            param("scan_target", "/workspace/test/deltares_testbench")
-        }
+        // step {
+        //     id = "LifecycleCdxgenLinux"
+        //     type = "LifecycleCdxgenLinux"
+        //     param("scan_target", "/workspace/test/deltares_testbench")
+        // }
         // step {
         //     id = "LifecycleNexusIqLinux"
         //     type = "LifecycleNexusIqLinux"
