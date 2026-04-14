@@ -420,11 +420,11 @@
                     "description": "Circumcenter computation method.",
                     "unit": "-",
                     "enum_values": {
-                    "internalNetlinksEdge": "iterate each edge",
-                    "internalNetlinksLoop": "iterate each loop",
-                    "allNetlinksLoop": "iterate each edge and each loop",
-					"status": "deprecated"
-                    }
+                        "internalNetlinksEdge": "iterate each edge",
+                        "internalNetlinksLoop": "iterate each loop",
+                        "allNetlinksLoop": "iterate each edge and each loop"
+                    },
+                    "status": "deprecated"
                 },
                 {
                     "key": "circumcenterTolerance",
@@ -432,7 +432,7 @@
                     "default_value": 1e-15,
                     "description": "Tolerance for convergence of circumcenter method.",
                     "unit": "m",
-					"status": "deprecated"
+                    "status": "deprecated"
                 },
                 {
                     "key": "baMin",
@@ -1886,7 +1886,7 @@
                         }
                     }
                 },
-				{
+                {
                     "key": "unifFrictCoef1D2D",
                     "value_type": "float",
                     "default_value": 0.023,
@@ -1940,11 +1940,11 @@
                     "unit": "m²/s"
                 },
                 {
-                  "key": "vicwminb",
-                  "default_value": 0.0,
-                  "value_type": "float",
-                  "description": "Minimum viscosity in production and buoyancy term.",
-                  "unit": "m²/s"
+                    "key": "vicwminb",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Minimum viscosity in production and buoyancy term.",
+                    "unit": "m²/s"
                 },
                 {
                     "key": "xlOzmidov",
@@ -1953,13 +1953,13 @@
                     "description": "Ozmidov length scale, 0.0=no contribution of internal waves to vertical diffusion.",
                     "unit": "m"
                 },
-				{
+                {
                     "key": "TKEMin",
                     "default_value": 1e-32,
                     "value_type": "float",
                     "description": "Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model.",
                     "status": "research",
-					"unit": "m²/s²"
+                    "unit": "m²/s²"
                 },
                 {
                     "key": "EPSMin",
@@ -1967,7 +1967,7 @@
                     "value_type": "float",
                     "description": "Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model.",
                     "status": "research",
-					"unit": "m²/s²"
+                    "unit": "m²/s²"
                 },
                 {
                     "key": "TAUMin",
@@ -1975,7 +1975,7 @@
                     "value_type": "float",
                     "description": "Minimum turbulent time scale (TAU) value in k-tau turbulence model.",
                     "status": "research",
-					"unit": "m²/s²"
+                    "unit": "m²/s²"
                 },
                 {
                     "key": "Smagorinsky",
@@ -2170,7 +2170,7 @@
                     "description": "Coefficient for evaporative heat flux, if negative, then Cd wind is used.",
                     "unit": "-"
                 },
-                                {
+                {
                     "key": "albedo",
                     "default_value": 0.06,
                     "value_type": "float",
