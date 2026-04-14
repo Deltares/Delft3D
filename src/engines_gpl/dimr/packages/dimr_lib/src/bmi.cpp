@@ -27,6 +27,7 @@
 #endif
 
 #include <cstring>
+#include <filesystem>
 #include <string>
 #include <sstream>
 
@@ -90,38 +91,14 @@ BMI_API int initialize(const char* configfile)
 
         if (thisDimr->redirectFile != NULL)
         {
-            // RedirectFile must be including the full path:
-            // - Get the basename (platform dependent implementation)
-            // - if (redirectfile == basename) then
-            //       Make copy of redirectfile
-            //       Put CWD in redirectfile
-            //       redirectfile = redirectfile + / + copy
-            char* fileBasename;
-#ifndef _WIN32
-            fileBasename = strdup(basename(thisDimr->redirectFile));
-#else
-            fileBasename = (char*)malloc(MAXSTRING);
-            char* ext = (char*)malloc(5);
-            _splitpath(thisDimr->redirectFile, NULL, NULL, fileBasename, ext);
-            StringCbCatA(fileBasename, MAXSTRING, ext);
-            free(ext);
-#endif
-            if (strcmp(thisDimr->redirectFile, fileBasename) == 0)
+            // If redirectFile is just a filename (no directory component), prepend CWD
+            std::filesystem::path redirectPath(thisDimr->redirectFile);
+            if (redirectPath.filename() == redirectPath)
             {
-                char* filenameCopy = new char[MAXSTRING];
-                strcpy(filenameCopy, thisDimr->redirectFile);
-
+                redirectPath = std::filesystem::current_path() / redirectPath;
                 free(thisDimr->redirectFile);
-                thisDimr->redirectFile = (char*)malloc((MAXSTRING) * sizeof(char));
-
-                if (!getcwd(thisDimr->redirectFile, MAXSTRING))
-                {
-                    throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (init)");
-                }
-
-                strcat(thisDimr->redirectFile, thisDimr->dirSeparator);
-                strcat(thisDimr->redirectFile, filenameCopy);
-                delete[] filenameCopy;
+                const std::string fullPath = redirectPath.string();
+                thisDimr->redirectFile = strdup(fullPath.c_str());
             }
             // Redirection to file is currently handled in the logger by writing directly to the specified file
             thisDimr->log->redirectFile = thisDimr->redirectFile;
@@ -130,7 +107,6 @@ BMI_API int initialize(const char* configfile)
             // Create an empty file
             FILE* fp = fopen(thisDimr->redirectFile, "w+");
             fclose(fp);
-            free(fileBasename);
         }
 
         thisDimr->log->Write(INFO, thisDimr->my_rank, getfullversionstring_dimr_lib());
