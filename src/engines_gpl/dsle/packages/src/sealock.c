@@ -64,23 +64,17 @@ int sealock_init(sealock_state_t *lock, time_t start_time, unsigned int max_num_
     status = dsle_initialize_state(&lock->parameters, &lock->phase_state,
                                    lock->phase_state.salinity_lock, lock->phase_state.head_lock);
   }
-  // Reserve one extra constituent slot for temperature.
-  lock->num_constituents += 1;
-  unsigned int temp_slot = lock->num_constituents - 1;
 
   if (status == SEALOCK_OK) {
-    // Initialise constituent_lock state for phase_wise_mode.
-    // User constituents (slots 0..temp_slot-1): default to 0.0.
-    for (unsigned int c = 0; c < temp_slot; c++) {
-      lock->constituent_lock[c] = 0.0;
-    }
-    // Temperature slot: initial temperature from ini is stored in both temperature_lake & temperature_sea.
-    lock->constituent_lock[temp_slot] = lock->parameters.temperature_lake;
+    // Register temperature at slot 0 (TEMPERATURE_CONSTITUENT_SLOT) unconditionally.
+    // User tracers arriving later via BMI set_var will occupy slots 1+.
+    lock->constituent_names[TEMPERATURE_CONSTITUENT_SLOT] = "temperature";
+    lock->num_constituents = 1;
+    lock->constituent_lock[TEMPERATURE_CONSTITUENT_SLOT] = lock->parameters.temperature_lake;
   }
 
   return status;
 }
-
 int sealock_load_timeseries(sealock_state_t *lock, char *filepath) {
   int status = SEALOCK_OK;
   double *time_column = NULL;
@@ -528,11 +522,14 @@ static int sealock_collect_layers(sealock_state_t *lock) {
     lock->parameters.salinity_sea = sealock_collect(sea_volumes, lock->parameters3d.salinity_sea);
   }
 
-  // Temperature occupies the last constituent slot (reserved by sealock_init).
-  unsigned int temp_slot = lock->num_constituents - 1;
+  // Temperature always occupies slot 0. Inject the scalar temperature_lake/sea values
+  // (kept current via set_var) into every layer of the constituent arrays so that
+  // sealock_step_constituents and sealock_distribute_constituent_results see consistent data.
   for (unsigned int i = 0; i < lock->from_lake_volumes.num_volumes; i++) {
-    lock->parameters3d.constituent_lake[temp_slot][i] = lock->parameters.temperature_lake;
-    lock->parameters3d.constituent_sea[temp_slot][i] = lock->parameters.temperature_sea;
+    lock->parameters3d.constituent_lake[TEMPERATURE_CONSTITUENT_SLOT][i] =
+        lock->parameters.temperature_lake;
+    lock->parameters3d.constituent_sea[TEMPERATURE_CONSTITUENT_SLOT][i] =
+        lock->parameters.temperature_sea;
   }
 
   return SEALOCK_OK;

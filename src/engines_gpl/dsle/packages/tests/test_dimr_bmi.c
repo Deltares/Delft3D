@@ -221,23 +221,6 @@ static void test_get_var__constituent_to_sea_named(void) {
   TEST_ASSERT_EQUAL_PTR(config.locks[0].results3d.constituent_to_sea[0], ptr);
 }
 
-// set_var: num_constituents needs a bespoke test because it's unsigned int, not double.
-static void test_set_var__num_constituents(void) {
-  // Arrange
-  unsigned int orig = config.locks[0].num_constituents;
-  double new_value = 3.0; // passed as double per BMI convention
-
-  // Act
-  int status = set_var("num_constituents", &new_value);
-
-  // Assert
-  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);
-  TEST_ASSERT_EQUAL(3u, config.locks[0].num_constituents);
-
-  // Restore
-  config.locks[0].num_constituents = orig;
-}
-
 static void test_get_var__temperature_to_lake(void) {
   // Simulate sealock_init having reserved the temperature slot.
   config.locks[0].num_constituents = 1;
@@ -352,7 +335,6 @@ int main(void) {
   RUN_TEST(test_get_var__salinity_lake);
   RUN_TEST(test_get_var__unknown_var_name);
 
-  RUN_TEST(test_set_var__num_constituents);
   RUN_TEST(test_set_var__constituent_lake_named);
   RUN_TEST(test_set_var__constituent_lake_named__second_tracer_gets_next_slot);
   RUN_TEST(test_get_var__constituent_to_lake_named);

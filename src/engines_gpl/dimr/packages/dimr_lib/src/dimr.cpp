@@ -1383,7 +1383,11 @@ void Dimr::receive_ptr(const char* name, const char* sourceName, int compType, B
     char nameShape[100];
     strcpy(nameShape, name);
     strcat(nameShape, "_shape");
-    (dllSetVar)(nameShape, shape);
+    if (compType != COMP_TYPE_DSLE)
+    {
+       //Setting nameshape in DSLE registers it as a constituent, which we do not want.
+       (dllSetVar)(nameShape, shape);
+    }
     // Finally: call setvar(name, pointer)
     (dllSetVar)(name, (void*)sourceVarPtr);
 

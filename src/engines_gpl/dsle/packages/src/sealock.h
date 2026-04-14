@@ -39,6 +39,7 @@ typedef struct dsle_phase_wise_args_struct {
 
 #define MAX_NUM_VOLUMES 50
 #define MAX_NUM_CONSTITUENTS 50
+#define TEMPERATURE_CONSTITUENT_SLOT 0
 #define NO_CURRENT_ROW (size_t)(-1)
 
 typedef struct dfm_volumes_struct {

@@ -170,9 +170,6 @@ int set_var(const char *key, void *src_ptr) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_lake;
   } else if (match_key(quantity, "temperature_sea")) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_sea;
-  } else if (match_key(quantity, "num_constituents")) {
-    config.locks[lock_index].num_constituents = (unsigned int)(*(double *)src_ptr);
-    return DIMR_BMI_OK;
   } else if (strncmp(quantity, "constituent_lake_", 17) == 0) {
     int c = find_or_register_constituent(&config.locks[lock_index], quantity + 17);
     if (c < 0)
@@ -279,12 +276,10 @@ int get_var(const char *key, void **dst_ptr) {
     // NOTE: This is really a GET_VALUE_PTR(), called before ethe update.
     source_ptr = config.locks[lock_index].parameters3d.salinity_lake;
   } else if (match_key(quantity, "temperature_to_lake")) {
-    unsigned int temp_slot = config.locks[lock_index].num_constituents - 1;
-    source_ptr = config.locks[lock_index].results3d.constituent_to_lake[temp_slot];
+    source_ptr = config.locks[lock_index].results3d.constituent_to_lake[TEMPERATURE_CONSTITUENT_SLOT];
     source_len = config.locks[lock_index].to_lake_volumes.num_volumes;
   } else if (match_key(quantity, "temperature_to_sea")) {
-    unsigned int temp_slot = config.locks[lock_index].num_constituents - 1;
-    source_ptr = config.locks[lock_index].results3d.constituent_to_sea[temp_slot];
+    source_ptr = config.locks[lock_index].results3d.constituent_to_sea[TEMPERATURE_CONSTITUENT_SLOT];
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
   } else if (strncmp(quantity, "constituent_to_lake_", 20) == 0) {
     int c = find_or_register_constituent(&config.locks[lock_index], quantity + 20);
@@ -296,6 +291,18 @@ int get_var(const char *key, void **dst_ptr) {
     if (c < 0)
       return DIMR_BMI_FAILURE;
     source_ptr = config.locks[lock_index].results3d.constituent_to_sea[c];
+  } else if (strncmp(quantity, "constituent_lake_", 17) == 0) {
+    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 17);
+    if (c < 0)
+      return DIMR_BMI_FAILURE;
+    source_ptr = config.locks[lock_index].parameters3d.constituent_lake[c];
+    source_len = config.locks[lock_index].from_lake_volumes.num_volumes;
+  } else if (strncmp(quantity, "constituent_sea_", 16) == 0) {
+    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 16);
+    if (c < 0)
+      return DIMR_BMI_FAILURE;
+    source_ptr = config.locks[lock_index].parameters3d.constituent_sea[c];
+    source_len = config.locks[lock_index].from_sea_volumes.num_volumes;
   } else {
     log_debug("Unhandled get_var('%s', @%p)\n", key, dst_ptr);
     return DIMR_BMI_FAILURE;
@@ -399,13 +406,16 @@ int get_var_shape(char *key, int dims[DIMR_BMI_MAXDIMS]) { // dims -> int[6]
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
   } else if (match_key(quantity, "salinity_to_sea")) {
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
-  } else if (match_key(quantity, "water_volume_from_lake")) {
-    source_len = config.locks[lock_index].from_lake_volumes.num_volumes;
-  } else if (match_key(quantity, "water_volume_from_sea")) {
-    source_len = config.locks[lock_index].from_sea_volumes.num_volumes;
-  } else if (match_key(quantity, "water_volume_to_lake")) {
-    source_len = config.locks[lock_index].to_lake_volumes.num_volumes;
   } else if (match_key(quantity, "water_volume_to_sea")) {
+    source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
+  } else if (strncmp(quantity, "constituent_lake_", 17) == 0 ||
+             strncmp(quantity, "constituent_sea_", 16) == 0) {
+    source_len = config.locks[lock_index].from_lake_volumes.num_volumes;
+  } else if (strncmp(quantity, "constituent_to_lake_", 20) == 0 ||
+             match_key(quantity, "temperature_to_lake")) {
+    source_len = config.locks[lock_index].to_lake_volumes.num_volumes;
+  } else if (strncmp(quantity, "constituent_to_sea_", 19) == 0 ||
+             match_key(quantity, "temperature_to_sea")) {
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
   } else {
     log_debug("Unhandled get_var('%s', @%p)\n", key, dims);
