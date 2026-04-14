@@ -4,8 +4,8 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
 
-object NexusLifecycle : BuildType({
-    name = "Nexus Lifecycle"
+object LifecycleScanMain : BuildType({
+    name = "Lifecycle Scan Main"
     buildNumberPattern = "%build.vcs.number%"
     
     vcs {
@@ -40,12 +40,12 @@ object NexusLifecycle : BuildType({
         }
     }
 
-    // if (DslContext.getParameter("enable_sigrid_trigger").lowercase() == "true") {
-    //     triggers {
-    //         vcs {
-    //             branchFilter = "+:<default>"
-    //             perCheckinTriggering = false
-    //         }
-    //     }
-    // }
+    if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
+        triggers {
+            vcs {
+                branchFilter = "+:<default>"
+                perCheckinTriggering = false
+            }
+        }
+    }
 })
