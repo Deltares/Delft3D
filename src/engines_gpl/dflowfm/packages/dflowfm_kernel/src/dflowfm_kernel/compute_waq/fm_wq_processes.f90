@@ -404,6 +404,7 @@ contains
       use m_alloc
       use m_flow, only: kmx
       use m_flowgeom, only: Ndxi, ba
+      use m_sferic, only: jsferic
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_COMPOSITE, jawave, &
                                   jawaveSwartDelwaq
       use fm_external_forcings_data
@@ -442,6 +443,7 @@ contains
 
       integer(4), save :: ithndl = 0
 
+      character(len=20), parameter :: clatitude = 'latitude'
       character(len=20), parameter :: ctauflow = 'tauflow'
       character(len=20), parameter :: ctau = 'tau'
       character(len=20), parameter :: cvelocity = 'velocity'
@@ -491,6 +493,22 @@ contains
       isfsurf = num_spatial_time_fuctions
       call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='surf')
       call mess(LEVEL_INFO, '''horizontal surface'' connected as ''surf'' (by default)')
+
+      icon = index_in_array(clatitude, coname_sub)
+      if (icon > 0) then
+         if (jsferic == 0) then
+            call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because model is not spherical.')
+            isflat = 0
+         else
+            num_spatial_time_fuctions = num_spatial_time_fuctions + 1
+            isflat = num_spatial_time_fuctions
+            call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
+            call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
+         endif
+      else
+         call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because ''latitude'' is not in the sub-file.')
+         isflat = 0
+      end if
 
       icon = index_in_array(ctauflow, coname_sub)
       if (icon > 0) then
@@ -1384,7 +1402,7 @@ contains
       !  copy data from D-FlowFM to WAQ
       use m_getfetch, only: getfetch
       use m_getkbotktopmax
-      use m_flowgeom, only: Ndxi, ba
+      use m_flowgeom, only: Ndxi, ba, yz
       use m_flow, only: vol1, ucx, ucy
       use m_flowtimes, only: irefdate, tunit
       use m_flowparameters, only: flow_without_waves, jawaveswartdelwaq
@@ -1403,7 +1421,7 @@ contains
 
       real(kind=dp) :: u10, dir, wdir, FetchL, FetchD
       integer :: isys, iconst, iwqbot
-      integer :: ipoisurf, ipoitau, ipoivel
+      integer :: ipoisurf, ipoilat, ipoitau, ipoivel
       integer :: ipoivol, ipoiconc, ipoisal, ipoitem
       integer :: ipoivwind, ipoiwinddir, ipoifetchl, ipoifetchd, ipoiradsurf, ipoirain, ipoivertdisper, ipoileng
       integer :: ipoiwaveheight, ipoiwavelength, ipoiwaveperiod
@@ -1444,13 +1462,41 @@ contains
          end do
       end if
 
-      ipoisurf = arrpoi(iisfun) + (isfsurf - 1) * num_cells
-      do kk = 1, Ndxi
-         call getkbotktopmax(kk, kb, kt, ktmax)
-         do k = kb, ktmax
-            process_space_real(ipoisurf + k - kbx) = ba(kk)
+      ! fill concentrations and masses (not transported, only first time), bottom area and latitude (when possible)
+      if (first) then
+         first = .false.
+
+         ipoisurf = arrpoi(iisfun) + (isfsurf - 1) * num_cells
+         do kk = 1, Ndxi
+            call getkbotktopmax(kk, kb, kt, ktmax)
+            do k = kb, ktmax
+               process_space_real(ipoisurf + k - kbx) = ba(kk)
+            end do
          end do
-      end do
+   
+         if (isflat > 0) then
+            ipoilat = arrpoi(iisfun) + (isflat - 1) * num_cells
+            do kk = 1, Ndxi
+               call getkbotktopmax(kk, kb, kt, ktmax)
+               do k = kb, ktmax
+                  process_space_real(ipoilat + k - kbx) = yz(kk)
+               end do
+            end do
+         end if
+
+         if (num_substances_total > num_substances_transported) then
+            do kk = 1, Ndxi
+               call getkbotktopmax(kk, kb, kt, ktmax)
+               do k = kb, ktmax
+                  do isys = num_substances_transported + 1, num_substances_total
+                     iwqbot = isys2wqbot(isys)
+                     process_space_real(ipoiconc + (k - kbx) * (num_substances_total) + isys - 1) = wqbot(iwqbot, k)
+                     amass(isys, k - kbx + 1) = wqbot(iwqbot, k) * ba(kk)
+                  end do
+               end do
+            end do
+         end if
+      end if
 
       ipoivol = arrpoi(iivol)
       do k = 0, ktx - kbx
@@ -1646,23 +1692,6 @@ contains
             end do
          end if
       end do
-
-      ! fill concentrations and masses (not transported, only first time)
-      if (first) then
-         first = .false.
-         if (num_substances_total > num_substances_transported) then
-            do kk = 1, Ndxi
-               call getkbotktopmax(kk, kb, kt, ktmax)
-               do k = kb, ktmax
-                  do isys = num_substances_transported + 1, num_substances_total
-                     iwqbot = isys2wqbot(isys)
-                     process_space_real(ipoiconc + (k - kbx) * (num_substances_total) + isys - 1) = wqbot(iwqbot, k)
-                     amass(isys, k - kbx + 1) = wqbot(iwqbot, k) * ba(kk)
-                  end do
-               end do
-            end do
-         end if
-      end if
 
       ! set iknmrk array
       if (kmx > 0) then
