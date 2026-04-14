@@ -47,7 +47,7 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
                     & errmsg    )
    use precision
    use grid_dimens_module
-   use dfparall, only: inode, nproc
+   use m_partitioninfo, only: jampi, my_rank, numranks
 ! MOR_USE_ECMODULE macro used from global_config.h to enable/disable EC-module for space-varying input in sed/mor.
 #if MOR_USE_ECMODULE
    use m_ec_module
@@ -107,7 +107,13 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    character(20)                              :: nodestr=''  !< keep track of node number in parallel runs for output writing
    logical                                    :: is_open
    integer                                    :: unit_no
+   integer                                    :: total_missing
+   real(8) :: mem_mb
+   logical :: mem_ok
    
+   integer :: c0, c1, rate
+   real(kind=fp) :: dt
+   real :: t0, t1
    ! 
    !! executable statements ------------------------------------------------------- 
    ! 
@@ -119,15 +125,17 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
    file = ' '
    ext  = ' ' 
    call split_filename(fildep, path, file, ext)
-   !if (nproc > 0) then
-   write(nodestr, '(a,i0,a,i0,a)') ' [', inode, '/', nproc, ']'
-   !end if
+   if (jampi > 0) then
+      write(nodestr, '(a,i0,a,i0,a)') ' [', my_rank, '/', numranks, ']'
+   end if
 
 #if MOR_USE_ECMODULE
    if (ext(1:3) == '.xy') then
       ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
       !
       ! TODO: AvD: test code below now works via EC module, but still needs some inconvenient additional 'dummy' arguments. Consider further refactoring.
+      call system_clock(c0, rate)
+      call cpu_time(t0)
       inquire(file=fildep, opened=is_open, number=unit_no)
       if (is_open) then
          write(lundia,*) '(File ', trim(fildep),' is open on unit ', unit_no, trim(nodestr), ')'
@@ -137,9 +145,16 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
       open (newunit=minp0, file = fildep, form = fmttmp, status = 'old') 
       write(lundia,*) '(File ', trim(fildep),' is open on unit ', minp0, trim(nodestr), ')'
       success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
-      write(lundia,*) '(Samples have been read from file ', trim(fildep),' on unit ', minp0, trim(nodestr), ')'
+      write(lundia,*) '(', ns,'samples have been read from file ', trim(fildep),' on unit ', minp0, trim(nodestr), ')'
       close(minp0)
       write(lundia,*) '(File ', trim(fildep),' is closed on unit ', minp0, trim(nodestr), ')'
+      call system_clock(c1)
+      call cpu_time(t1)
+      dt = real(c1 - c0, fp) / real(rate, fp)
+      write(lundia, '(a,f6.2,a)') 'Wall time taken to read file '//trim(fildep)//trim(nodestr)//': ', dt, ' seconds'
+      write(lundia, '(a,f6.2,a)') 'CPU time taken to read file '//trim(fildep)//trim(nodestr)//': ', t1 - t0, ' seconds'
+      call system_clock(c0, rate)
+      call cpu_time(t0)
       jdla = 1
       jsferic = 0
       jasfer3D = 0
@@ -153,19 +168,28 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
                       XS, YS, ZS(1,:), NS, dmiss, jsferic, jins, jasfer3D, NPL, 0, 0, XPL, YPL, ZPL, transformcoef)
       array(ifld,:,1) = array1d
       deallocate(array1d, stat=ierror)
-      write(lundia,*) '(Samples are triangulated from file ', trim(fildep), ' ', trim(nodestr), ')'
+      write(lundia,*) '(Samples are triangulated to grid with ', dims%nmmax,' points from file ', trim(fildep), ' ', trim(nodestr), ')'
+      call system_clock(c1)
+      call cpu_time(t1)
+      dt = real(c1 - c0, fp) / real(rate, fp)
+      write(lundia, '(a,f6.2,a)') 'Wall time taken to triangulate file '//trim(fildep)//trim(nodestr)//': ', dt, ' seconds'
+      write(lundia, '(a,f6.2,a)') 'CPU time taken to triangulate file '//trim(fildep)//trim(nodestr)//': ', t1 - t0, ' seconds'
       
       allocate (kcc(ngrid))
       kcc    = 0
       jamiss = 0
+      total_missing = 0
       do k = 1,ngrid
          if (array(ifld,k,1) == dmiss) then
             kcc(k) = 1
             jamiss = 1
+            total_missing = total_missing + 1
          endif
       enddo
       
       ! For any remaining missing points after regular interpolation, fill them up with nearest neigbour values.
+      call system_clock(c0, rate)
+      call cpu_time(t0)
       if (jamiss == 1) then
          allocate(Mn(ngrid))
          Mn = 0
@@ -177,9 +201,14 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
             endif
          enddo
          deallocate(Mn)
-         write(lundia,*) '(Additional missing are filled using nearest neighbour values from file ', trim(fildep), ' ', trim(nodestr), ')'
+         write(lundia,*) '(Additional missing', total_missing ,'points are filled using nearest neighbour values from file ', trim(fildep), ' ', trim(nodestr), ')'
       end if
       deallocate(kcc)
+      call system_clock(c1)
+      call cpu_time(t1)
+      dt = real(c1 - c0, fp) / real(rate, fp)
+      write(lundia, '(a,f6.2,a)') 'Wall time taken to fill missing points using nearest neighbour for file '//trim(fildep)//trim(nodestr)//': ', dt, ' seconds'
+      write(lundia, '(a,f6.2,a)') 'CPU time taken to fill missing points using nearest neighbour for file '//trim(fildep)//trim(nodestr)//': ', t1 - t0, ' seconds'
       
       ! mirror boundary cells if undefined if equal to dmiss
       do ibnd = 1, size(dims%nmbnd,1)  ! loop over boundary flow links (TO DO: what about 3D?)
@@ -210,6 +239,10 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
 #if MOR_USE_ECMODULE
    endif
 #endif
+   call get_mem_available_mb(mem_mb, mem_ok)
+   if (mem_ok) then
+      write(lundia,'(a,f10.1,a)') 'MemAvailable: ', mem_mb, ' MB'
+   end if
 end subroutine depfil_stm
 !
 !
@@ -364,7 +397,38 @@ subroutine depfil_stm_double(lundia    ,error     ,fildep    ,fmttmp    , &
 end subroutine depfil_stm_double
 
                            
-                           
+subroutine get_mem_available_mb(mem_mb, ok)
+  use iso_fortran_env, only: int64
+  implicit none
+  real(8), intent(out) :: mem_mb
+  logical, intent(out) :: ok
+  integer :: iu, ios, p
+  character(len=256) :: line
+  integer(int64) :: kb
+
+  mem_mb = -1.0d0
+  ok = .false.
+  kb = -1_int64
+
+  open(newunit=iu, file='/proc/meminfo', status='old', action='read', iostat=ios)
+  if (ios /= 0) return
+
+  do
+     read(iu, '(A)', iostat=ios) line
+     if (ios /= 0) exit
+     if (index(line, 'MemAvailable:') == 1) then
+        p = len('MemAvailable:') + 1
+        read(line(p:), *, iostat=ios) kb
+        if (ios == 0) then
+           mem_mb = real(kb,8) / 1024.0d0
+           ok = .true.
+        end if
+        exit
+     end if
+  end do
+  close(iu)
+end subroutine get_mem_available_mb
+
 end module m_depfil_stm
     
     
