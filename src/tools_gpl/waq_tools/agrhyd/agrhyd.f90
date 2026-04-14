@@ -121,6 +121,7 @@ program agrhyd
         read (*, '(a)') input_file
         write (*, *)
     end if
+
     if (input_file == ' ') then
         open (lunrep, file='agrhyd.rep', recl=132)
         call fill_in_date_time(rundat)
