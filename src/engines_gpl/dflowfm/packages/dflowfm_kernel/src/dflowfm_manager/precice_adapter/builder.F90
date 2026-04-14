@@ -39,11 +39,6 @@ contains
       allocate (builder_instance)
    end function precice_adapter_builder_constructor
 
-   subroutine builder_destructor(self)
-      class(precice_adapter_builder_t), intent(inout) :: self
-      deallocate (self%mesh_coordinates)
-   end subroutine builder_destructor
-
    subroutine builder_set_configfile(self, configfile)
       class(precice_adapter_builder_t), intent(inout) :: self
       character(kind=c_char, len=*), intent(in) :: configfile
@@ -81,8 +76,8 @@ contains
       class(precice_adapter_builder_t), intent(inout) :: self
       character(len=*) :: mesh_name
       integer(kind=c_int), intent(in) :: mesh_size
-      real(kind=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_x
-      real(kind=c_double), dimension(:), intent(in), pointer :: mesh_coordinates_y
+      real(kind=c_double), dimension(:), intent(in) :: mesh_coordinates_x
+      real(kind=c_double), dimension(:), intent(in) :: mesh_coordinates_y
       ! Local variables
       integer :: i
 

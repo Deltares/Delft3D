@@ -26,7 +26,6 @@ module precice_adapter
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
       procedure :: finalize => precice_adapter_finalize
-      final :: precice_adapter_destructor
    end type precice_adapter_t
 
    interface precice_adapter_t
@@ -66,14 +65,6 @@ contains
       adapter_instance%mesh_coordinates = mesh_coordinates
 
    end function precice_adapter_constructor
-
-   subroutine precice_adapter_destructor(self)
-      type(precice_adapter_t), intent(inout) :: self
-
-      if (allocated(self%mesh_coordinates)) then
-         deallocate (self%mesh_coordinates)
-      end if
-   end subroutine precice_adapter_destructor
 
    subroutine precice_adapter_initialize(self)
       use precice, only: precicef_set_vertices, precicef_initialize, &
@@ -151,9 +142,8 @@ contains
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
-      if (allocated(self%mesh_coordinates)) then
-         deallocate (self%mesh_coordinates)
-      end if
+      if ( loc(self) >=0 ) continue ! Suppress unused error.
+
       call precicef_finalize()
    end subroutine precice_adapter_finalize
 
