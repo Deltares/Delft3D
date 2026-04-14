@@ -249,6 +249,7 @@ contains
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
+      integer :: ierr
       logical :: mpi_initd
 
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
@@ -290,13 +291,12 @@ contains
          jampi = 0
       end if
 
-#ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
-#endif
       !   make domain number string as soon as possible
       write (sdmn, '(I4.4)') my_rank
 
 #endif
+
+      ierr = init_openmp(md_numthreads, jampi)
 
       ! do this until default has changed
       jaGUI = 0
