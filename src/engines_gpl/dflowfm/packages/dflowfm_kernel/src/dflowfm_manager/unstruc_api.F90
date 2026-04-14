@@ -342,9 +342,7 @@ contains
       ! Build and initialize precice adapter if enabled.
       if (precice_adapter_is_enabled()) then
          fm_precice_adapter => precice_adapter_get_adapter()
-         if (ASSOCIATED(fm_precice_adapter)) then
-            call fm_precice_adapter%initialize()
-         end if
+         call fm_precice_adapter%initialize()
       end if
 
       call mess(LEVEL_INFO, 'Writing initial output to file(s)...')
@@ -441,9 +439,7 @@ contains
 
       if (precice_adapter_is_enabled()) then
          fm_precice_adapter => precice_adapter_get_adapter()
-         if (associated(fm_precice_adapter)) then
-            call fm_precice_adapter%finalize()
-         end if
+         call fm_precice_adapter%finalize()
       end if
 
       call dealloc_nfarrays()

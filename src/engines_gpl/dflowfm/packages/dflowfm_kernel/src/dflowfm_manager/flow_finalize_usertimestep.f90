@@ -176,9 +176,7 @@ contains
       if (precice_adapter_is_enabled()) then
          print *, "[DEBUG] Updating preCICE adapter."
          fm_precice_adapter => precice_adapter_get_adapter()
-         if (associated(fm_precice_adapter)) then
-            call fm_precice_adapter%update(dt_user)
-         end if
+         call fm_precice_adapter%update(dt_user)
       end if
 
       iresult = DFM_NOERR

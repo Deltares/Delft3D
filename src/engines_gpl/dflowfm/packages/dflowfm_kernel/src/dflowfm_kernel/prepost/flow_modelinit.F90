@@ -621,11 +621,9 @@ contains
       ! TODO: Move name and config to more appropropriate places (also get names from config)
       if (precice_adapter_is_enabled()) then
          fm_precice_adapter_builder => precice_adapter_get_builder()
-         if (associated(fm_precice_adapter_builder)) then
-            call fm_precice_adapter_builder%set_name("fm")
-            call fm_precice_adapter_builder%set_configfile("../precice_config.xml")
-            call fm_precice_adapter_builder%add_mesh2d("fm_flow_cells", ndx, xz, yz)
-         end if
+         call fm_precice_adapter_builder%set_name("fm")
+         call fm_precice_adapter_builder%set_configfile("../precice_config.xml")
+         call fm_precice_adapter_builder%add_mesh2d("fm_flow_cells", ndx, xz, yz)
       end if
 
       iresult = DFM_NOERR
