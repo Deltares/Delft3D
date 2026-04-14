@@ -78,7 +78,7 @@ contains
         end do
 
         ! Setup - fill cell areas for flow cells in bubble screen
-        call realloc(ba, n, fill=10.0_dp)
+        call realloc(ba, n, fill=10.0_dp, keepexisting=.false.)
 
         ! Call function to test
         computed_area = compute_bubblescreen_area(bubblescreen)
@@ -117,10 +117,10 @@ contains
 
         ! Setup - globals
         kmx = 10
-        call realloc(kbot, 1, fill=2)
-        call realloc(ktop, 1, fill=11)
-        call realloc(s1, 1, fill=-0.4_dp) ! z_top = waterlevel = -0.4 m
-        call realloc(zws, 11, fill=0.0_dp)
+        call realloc(kbot, 1, fill=2, keepexisting=.false.)
+        call realloc(ktop, 1, fill=11, keepexisting=.false.)
+        call realloc(s1, 1, fill=-0.4_dp, keepexisting=.false.) ! z_top = waterlevel = -0.4 m
+        call realloc(zws, 11, fill=0.0_dp, keepexisting=.false.)
         zws(1:11) = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp] ! Layers are 1 m thick
 
         ! Setup - expected values
