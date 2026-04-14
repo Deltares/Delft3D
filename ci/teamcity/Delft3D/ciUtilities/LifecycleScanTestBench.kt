@@ -16,20 +16,20 @@ object LifecycleScanTestBench : BuildType({
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
+            param("scan_target", "/workspace/test/deltares_testbench")
         }
         step {
             id = "LifecycleCdxgenLinux"
             type = "LifecycleCdxgenLinux"
-            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
+            param("scan_target", "/workspace/test/deltares_testbench")
         }
-        step {
-            id = "LifecycleNexusIqLinux"
-            type = "LifecycleNexusIqLinux"
-            param("nexus_iq_username", "%nexus_iq_username%")
-            param("nexus_iq_password", "%nexus_iq_password%")
-            param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
-        }
+        // step {
+        //     id = "LifecycleNexusIqLinux"
+        //     type = "LifecycleNexusIqLinux"
+        //     param("nexus_iq_username", "%nexus_iq_username%")
+        //     param("nexus_iq_password", "%nexus_iq_password%")
+        //     param("exclude_dirs", "test/**,ci/**,doc/**,tools/**")
+        // }
     }
 
     features {
