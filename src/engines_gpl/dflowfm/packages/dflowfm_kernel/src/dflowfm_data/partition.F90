@@ -6416,6 +6416,7 @@ contains
       num_cells = count(global_cellmask == 1)
 
       allocate(global_cells(num_cells))
+      global_cells = -1
       num_cells = 0
       do k = 1, ndx
          if (global_cellmask(iglobal_s(k)) == 1) then

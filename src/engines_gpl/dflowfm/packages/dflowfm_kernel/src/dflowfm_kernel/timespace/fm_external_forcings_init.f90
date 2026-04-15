@@ -29,7 +29,7 @@
 !
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
-   implicit none
+   implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
    integer, parameter :: INI_KEY_LEN = 32
@@ -145,7 +145,7 @@ contains
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
       call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
-      
+
       if (max_num_src > 0) then
          call reallocsrc(max_num_src, 0)
       end if
@@ -281,7 +281,7 @@ contains
       if (is_successful) then
          call resolvePath(location_file, base_dir)
       else
-       write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''locationFile'' is missing.'
          call err_flush()
          return
       end if
@@ -290,7 +290,7 @@ contains
       if (is_successful) then
          call resolvePath(forcing_file, base_dir)
       else
-        write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
+         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''forcingFile'' is missing.'
          call err_flush()
          return
       end if
@@ -354,7 +354,7 @@ contains
                      is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                   else
                      is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=NODE_ID, method=method, &
-                                                               operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
+                                                                     operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
                   end if
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
@@ -402,7 +402,7 @@ contains
       character(len=*), intent(out) :: location_file !< The location file of the lateral, only set if loc_spec_type = LOCTP_POLYGON_FILE
       logical, intent(out) :: is_success !< Flag indicating if the reading was successful
 
-   logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
+      logical :: has_node_id, has_branch_id, has_chainage, has_num_coordinates, has_location_file, has_x_coordinates, has_y_coordinates
       integer :: number_of_discharge_specifications, ierr
       integer, parameter :: maximum_number_of_discharge_specifications = 4
 
@@ -466,7 +466,7 @@ contains
 
       if (has_num_coordinates .or. has_x_coordinates .or. has_y_coordinates) then
          if (.not. (has_num_coordinates .and. has_x_coordinates .and. has_y_coordinates)) then
-       call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
+            call mess(LEVEL_ERROR, 'Lateral '''//trim(loc_id)//''': numCoordinates, xCoordinates and yCoordinates must be set together.')
             return
          end if
          call prop_get(block_ptr, 'Lateral', 'numCoordinates', num_coordinates)
@@ -569,9 +569,9 @@ contains
       call prepare_lateral_mask(kclat, ilattype)
 
       numlatsg = numlatsg + 1
-      call realloc(nnlat, max(2*ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
+      call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
       call selectelset_internal_nodes(xz, yz, kclat, ndxi, nnLat(nlatnd + 1:), nlat, &
-                          loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
+                                      loc_spec_type, location_file, num_coordinates, x_coordinates, y_coordinates, branch_id, chainage, node_id)
 
       n1latsg(numlatsg) = nlatnd + 1
       n2latsg(numlatsg) = nlatnd + nlat
@@ -779,7 +779,7 @@ contains
 
             if (.not. allocated(ec_pwxwy_x)) then
                allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2*ndx)
+               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
             end if
 
             if (jaspacevarcharn == 1) then
@@ -982,7 +982,6 @@ contains
       integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
-      
 
       character(len=INI_VALUE_LEN) :: location_file
       character(len=INI_VALUE_LEN) :: sourcesink_id
@@ -998,54 +997,54 @@ contains
       is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-      
+
       ! Read source/sink z range information from ext file, load it from the polyline file later on as a fallback.
       source_z_in_ext_file = .false.
       sink_z_in_ext_file = .false.
       call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, source_z_in_ext_file)
       call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, sink_z_in_ext_file)
-      
+
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
          ! Read data from polyline file
          call resolvePath(location_file, base_dir)
-         
+
          call oldfil(polyline_file_lun, location_file)
          if (polyline_file_lun == 0) then
-            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '" // trim(location_file) // "'"
+            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '"//trim(location_file)//"'"
             call err_flush()
             return
          end if
-         
+
          call reapol(polyline_file_lun, 0)
          if (npl == 0) then
-            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '" // trim(location_file) // "'"
+            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '"//trim(location_file)//"'"
             call err_flush()
             return
          end if
-         
+
          ! Avoid having two places specifying the same (and potentially conflicting) z data.
          if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
             write (msgbuf, '(a)') 'Error in source sink initialization, source/sink z information cannot be specified both' &
-               // 'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
+               //'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
             call err_flush()
             return
          end if
-         
+
          if (.not. source_z_in_ext_file) then
             z_range_source(1) = zpl(npl)
-            if (colpl > 3) then 
+            if (colpl > 3) then
                z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
             end if
          end if
-         
+
          if (.not. sink_z_in_ext_file) then
             z_range_sink(1) = zpl(1)
-            if (colpl > 3) then 
+            if (colpl > 3) then
                z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
             end if
          end if
-         
+
          allocate (x_coordinates(npl), stat=ierr)
          allocate (y_coordinates(npl), stat=ierr)
          x_coordinates = xpl(1:npl)
@@ -1056,7 +1055,7 @@ contains
          if (is_read) then
             if (num_coordinates <= 0) then
                call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-               write (msgbuf, '(a)') 'SourceSink ''' // trim(sourcesink_id) // ''': numCoordinates must be greater than 0.'
+               write (msgbuf, '(a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if
@@ -1069,16 +1068,16 @@ contains
          end if
          have_location_coordinates = is_read
       end if
-      
+
       if (.not. have_location_file .and. .not. have_location_coordinates) then
-         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Location information is incomplete or missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Location information is incomplete or missing.'
          call err_flush()
          return
       end if
-      
+
       is_successful = .true.
    end function
-   
+
    !> Read sourcesink blocks from new external forcings file.
    function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
@@ -1125,7 +1124,7 @@ contains
       sourcesink_id = ' '
       call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
       if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
-         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Field ''id'' is missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Field ''id'' is missing.'
          call err_flush()
          return
       end if
@@ -1135,10 +1134,10 @@ contains
       if (.not. is_successful) then
          return ! Error message already printed in sourcesink_parse_coordinates
       end if
-      
+
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-         write (msgbuf, '(a)') 'Incomplete block in file ''' // trim(file_name) // ''': [' // trim(group_name) // ']. Key "discharge" is missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1146,12 +1145,12 @@ contains
       ! read optional value 'area' to compute the momentum released
       area = 0.0_dp
       call prop_get(block_ptr, '', 'area', area, is_read)
-      
+
       ! Create the actual source/sink based on the parsed data
       call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name), ']. ' &
-            // 'Source sink with id=' //trim(sourcesink_id) //'. could not be added.'
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
+            //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
       end if
@@ -1159,11 +1158,11 @@ contains
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
       is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
-                                                    1, source_sink_all_discharges(1, :))
+                                                     1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
-         write (msgbuf, '(a)') 'Error while processing ''' // trim(file_name) // ''': [' // trim(group_name) // ']. ' &
-            // 'Could not initialize discharge data in ''' // trim(discharge_input) // ''' for source sink with id=' // trim(sourcesink_id)//'.'
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
+            //'Could not initialize discharge data in '''//trim(discharge_input)//''' for source sink with id='//trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
@@ -1217,7 +1216,7 @@ contains
    !> Compute (and returns) the number of source/sinks necessary for the bubblescreens
    !! this is needed to preallocate the source sinks array (EC Module)
    !! Snaps all bubblescreens based on their polyline to flow nodes and within a flownode to the proper layers.
-   !! while doing this pre-inits the BubbleScreen data structure with processed info 
+   !! while doing this pre-inits the BubbleScreen data structure with processed info
    !! (m_flowexternalforcingsdata::bubblescreens and m_flowexternalforcingsdata::bubblescreens_air_discharge)
    !!
    !! Input is a loaded .ext file tree structure.
@@ -1278,8 +1277,8 @@ contains
       allocate (bubblescreen_air_discharge(num_bubblescreens))
 
       ! Initialize cache
-      call init_cell_geom_as_polylines() 
-         
+      call init_cell_geom_as_polylines()
+
       ! Cycle through all [blocks] in the .ext file tree and find the [bubblescreen] blocks
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
@@ -1317,20 +1316,18 @@ contains
                   total_area = total_area + ba(bubblescreen%flowcell_indices(i_flowcell))
                end do
                bubblescreen%total_area = total_area
-               
+
             end if
 
             ! Add the pre-initialized bubblescreen to bubblescreens
             bubblescreens(i_bubblescreen) = bubblescreen
 
          end if
-      end do 
+      end do
 
       call cleanup_cell_geom_polylines()
 
-      
    end subroutine initialize_bubblescreens
-
 
    !> Finish initialization of bubblescreen object and create the source/sink objects
    !! also connect the EC module to bubblescreen_air_discharge
@@ -1348,6 +1345,9 @@ contains
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_setsorsin
       use m_missing, only: dmiss
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_sum
+      use m_alloc, only: realloc
+      use m_flowgeom, only: ndx
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1361,9 +1361,11 @@ contains
       integer :: i, bi !< Loop indices
       integer :: ierr !< Error code
       integer :: bubblescreen_source_sink_count
+      integer :: n_cells
+      integer, dimension(:), allocatable :: bubblescreen_cells
 
-      real(kind=dp), dimension(1) :: x_flowcell !< x-coordinate of flow cell
-      real(kind=dp), dimension(1) :: y_flowcell !< y-coordinate of flow cell
+      real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
+      real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
       real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
       real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
       real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
@@ -1380,7 +1382,7 @@ contains
       ! Read bubble screen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
       if (is_successful) then
-         allocate(character(len=len_trim(id)+50) :: srcid)
+         allocate (character(len=len_trim(id) + 50) :: srcid)
 
          ! Find the bubblescreen with matching id
          do i = 1, size(bubblescreens)
@@ -1389,34 +1391,49 @@ contains
                exit
             end if
          end do
-         
+
          associate (bubblescreen => bubblescreens(bi))
 
-            ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
-            do cidx = 1, bubblescreen%num_flowcells
+            n_cells = bubblescreen%num_flowcells
+            bubblescreen_cells = bubblescreen%flowcell_indices
+            ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+            if (jampi == 1) then
+               bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+               n_cells = size(bubblescreen_cells)
+            end if
+            call realloc(x_flowcell, n_cells, fill=0.0_dp)
+            call realloc(y_flowcell, n_cells, fill=0.0_dp)
+            do i = 1, n_cells
+               if (.not. bubblescreen_cells(i) == -1) then
+                  x_flowcell(i) = xzw(bubblescreen_cells(i))
+                  y_flowcell(i) = yzw(bubblescreen_cells(i))
+               end if
+            end do
+            if (jampi == 1) then
+               call reduce_sum(n_cells, x_flowcell)
+               call reduce_sum(n_cells, y_flowcell)
+            end if
+            z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
+            z_flowcell_sink = bubblescreen%z_level
 
+            ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
+            do cidx = 1, n_cells
                ! Create the source/sink name
                bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
-               write(srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
-
-               ! Get the x,y coordinates for the bubblescreen flow cell
-               x_flowcell = xzw(bubblescreen%flowcell_indices(cidx))
-               y_flowcell = yzw(bubblescreen%flowcell_indices(cidx))
-               z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
-               z_flowcell_sink = bubblescreen%z_level
+               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
-               call addsorsin(srcid, x_flowcell, y_flowcell, z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               call addsorsin(srcid, x_flowcell(cidx:cidx), y_flowcell(cidx:cidx), z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
 
-               write (msgbuf, '(A, A, A, L, A, 2F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", x_flowcell(1), y_flowcell(1)
+               write (msgbuf, '(A, A, A, L, A, 2F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", x_flowcell(cidx), y_flowcell(cidx)
                call msg_flush()
             end do
          end associate
       end if
 
       is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                        trim(discharge_input), bi, 1, bubblescreen_air_discharge)
-      
+                                                     trim(discharge_input), bi, 1, bubblescreen_air_discharge)
+
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
             //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
