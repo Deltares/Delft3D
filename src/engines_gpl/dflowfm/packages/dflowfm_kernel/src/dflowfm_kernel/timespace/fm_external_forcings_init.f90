@@ -143,7 +143,7 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src = compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name)
+      call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
       
       if (max_num_src > 0) then
@@ -175,7 +175,7 @@ contains
             res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
 
          case ('bubblescreen')
-            res = res .and. init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name)
+            res = res .and. add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
@@ -1222,7 +1222,7 @@ contains
    !!
    !! Input is a loaded .ext file tree structure.
    !! Returns the resulting number of source sinks
-   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_bubblescreen_source_sinks)
+   subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_cell_geometry, only: ba
@@ -1244,7 +1244,7 @@ contains
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      integer :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
+      integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
       logical :: is_successful
@@ -1329,12 +1329,12 @@ contains
       call cleanup_cell_geom_polylines()
 
       
-   end function compute_and_preinit_bubblescreens_sourcesinks
+   end subroutine initialize_bubblescreens
 
 
    !> Finish initialization of bubblescreen object and create the source/sink objects
    !! also connect the EC module to bubblescreen_air_discharge
-   function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1426,7 +1426,7 @@ contains
 
       is_successful = .true.
 
-   end function init_bubblescreen_forcings
+   end function add_bubblescreen_source_sinks
 
    !> Get several target grid properties for a given location type.
    !!
