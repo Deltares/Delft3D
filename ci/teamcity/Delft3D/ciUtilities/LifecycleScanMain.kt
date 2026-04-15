@@ -3,6 +3,7 @@ package Delft3D.ciUtilities
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
+import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 object LifecycleScanMain : BuildType({
     name = "Lifecycle Scan Main"
