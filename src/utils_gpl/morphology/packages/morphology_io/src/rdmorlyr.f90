@@ -1253,7 +1253,6 @@ contains
       character(20), dimension(:), pointer :: namsed
       character(256), dimension(:), pointer :: mflfil
       character(45)             :: txtput1
-      character(12)             :: txtput2
       character(100)            :: txtput3      
 !
 !! executable statements -------------------------------------------------------
