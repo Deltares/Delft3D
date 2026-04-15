@@ -1345,7 +1345,7 @@ contains
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_setsorsin
       use m_missing, only: dmiss
-      use m_partitioninfo, only: jampi, reduce_cells, reduce_sum
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
 
@@ -1410,8 +1410,8 @@ contains
                end if
             end do
             if (jampi == 1) then
-               call reduce_sum(n_cells, x_flowcell)
-               call reduce_sum(n_cells, y_flowcell)
+               call reduce_double_array_max(n_cells, x_flowcell)
+               call reduce_double_array_max(n_cells, y_flowcell)
             end if
             z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
             z_flowcell_sink = bubblescreen%z_level

@@ -3543,6 +3543,28 @@ contains
       return
    end subroutine reduce_int1_max
 
+!> for an array of doubles, take maximum over all subdomains (not over the array itself)
+   subroutine reduce_double_array_max(N, var)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer, intent(in) :: N !< array size
+      real(kind=dp), dimension(N), intent(inout) :: var !< array with values to be reduced to global maximum over all subdomains
+
+      real(kind=dp), dimension(N) :: dum
+
+      integer :: ierror
+
+#ifdef HAVE_MPI
+      call MPI_allreduce(var, dum, N, mpi_double_precision, mpi_max, DFM_COMM_DFMWORLD, ierror)
+      var = dum
+#endif
+      return
+   end subroutine reduce_double_array_max
+
    !> for an array over integers, take maximum over all subdomains (not over the array itself)
    subroutine reduce_int_max(N, var)
 #ifdef HAVE_MPI
@@ -6399,12 +6421,14 @@ contains
       integer, dimension(:), intent(in)               :: local_cells !< Local flow cell indices found on this partition
       integer, intent(in) :: ndx !< number of flow cells (internal + boundary), should match ndx in m_flowgeom
       integer, dimension(:), allocatable :: global_cells   !< Local flow cell indices of the global union
-      integer, dimension(:), allocatable :: global_cellmask
+      integer, dimension(:), allocatable :: global_cellmask, ilocal_s
       integer :: k, num_cells
 #ifdef HAVE_MPI
       integer :: mpi_err
 #endif
 
+      allocate(global_cellmask(nglobal_s))
+      global_cellmask = 0
       ! Mark globally present cells using local->global mapping
       global_cellmask(iglobal_s(local_cells)) = 1
 
@@ -6414,14 +6438,24 @@ contains
 #endif
 
       num_cells = count(global_cellmask == 1)
-
       allocate(global_cells(num_cells))
-      global_cells = -1
-      num_cells = 0
+
+      ! Build inverse mapping: global index -> local index (0 if not on this partition)
+      allocate(ilocal_s(nglobal_s))
+      ilocal_s = -1
       do k = 1, ndx
-         if (global_cellmask(iglobal_s(k)) == 1) then
+         if (iglobal_s(k) > 0) then
+            ilocal_s(iglobal_s(k)) = k
+         end if
+      end do
+
+      num_cells = 0
+      ! Iterate in global index order: guarantees identical ordering on all partitions.
+      ! Off-partition cells get 0 (sentinel), own cells get their local index.
+      do k = 1, nglobal_s
+         if (global_cellmask(k) == 1) then
             num_cells = num_cells + 1
-            global_cells(num_cells) = k
+            global_cells(num_cells) = ilocal_s(k)
          end if
       end do
 
