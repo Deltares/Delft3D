@@ -46,7 +46,7 @@ object LifecycleScanMain : BuildType({
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Wednesday
                 hour = 10
-                minute = 30
+                minute = 45
             }
 
             branchFilter = "+:refs/heads/all/task/SWFABRIEK-63-lifecycle-pipeline-2"
