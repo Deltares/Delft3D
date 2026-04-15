@@ -11,7 +11,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(src_path src)
 
 # Gather the source files
-set(headers include/blasfm.h)
+set(headers include/blasfm.inc)
 
 # Set version file variables
 set(dflowfm_version_header_path ${dflowfm_path}/version)
@@ -166,7 +166,7 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                           interacter_stub
                           PkgConfig::PETSC
                           uuid
@@ -183,18 +183,18 @@ if (WIN32)
         if(NOT lib_interacter)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
-           target_link_libraries(${library_name} PUBLIC ${lib_interacter})
-           target_link_libraries(${library_name} PUBLIC interacter_utils)
+           target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+           target_link_libraries(${library_name} PRIVATE interacter_utils)
         endif()
     else()
-        target_link_libraries(${library_name} PUBLIC interacter_stub)
+        target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
     target_link_directories(${library_name} PUBLIC
                                 "${mpi_library_path}"
     )
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                             "${mpi_fortran_library}"
                             petsc
     )
@@ -257,6 +257,7 @@ set_source_files_properties(${fortran_version_files}
 
 # Define preprocessor definitions
 set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+target_compile_definitions(${library_name} PRIVATE DFLOWFM_STACK_SIZE_BYTES=${DFLOWFM_STACK_SIZE_BYTES})
 if (WIN32)
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1

@@ -1,7 +1,7 @@
 #include "dsle_config.h"
 #include "ini/ini_read.h"
-#include "unity.h"
 #include "timestamp.h"
+#include "unity.h"
 
 void setUp(void) {}
 
@@ -54,11 +54,12 @@ static void test_dsle_config_get_lock_index__lock_found(void) {
   // Arrange
   dsle_config_t config = {
       .num_locks = 3,
-      .locks = {
-        [0] = {.id = "foo"},
-        [1] = {.id = "bar"},
-        [2] = {.id = "baz"},
-    },
+      .locks =
+          {
+              [0] = {.id = "foo"},
+              [1] = {.id = "bar"},
+              [2] = {.id = "baz"},
+          },
   };
 
   // Act
@@ -72,11 +73,12 @@ static void test_dsle_config_get_lock_index__lock_not_found(void) {
   // Arrange
   dsle_config_t config = {
       .num_locks = 3,
-      .locks = {
-        [0] = {.id = "foo"},
-        [1] = {.id = "bar"},
-        [2] = {.id = "baz"},
-    },
+      .locks =
+          {
+              [0] = {.id = "foo"},
+              [1] = {.id = "bar"},
+              [2] = {.id = "baz"},
+          },
   };
 
   // Act

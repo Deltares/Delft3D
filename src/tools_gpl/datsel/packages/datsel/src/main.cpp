@@ -26,49 +26,43 @@
 //------------------------------------------------------------------------------
 // $Id$
 // $HeadURL$
- /*
+/*
  *  Wrapper for FORTRAN main program: DATSEL
  *
  *  29 Jan 2007
  */
-#if defined (HAVE_CONFIG_H)
-#   include "config.h"
+#if defined(HAVE_CONFIG_H)
+    #include "config.h"
 #endif
 
-#if defined (WIN32)
-#   define FTNCALL __stdcall
+#if defined(WIN32)
+    #define FTNCALL __stdcall
 #else
-#   define FTNCALL
-#   if defined (FTN_UNDERSCORE)
-#      define DATSEL datsel_
-#   else
-#      if defined (HAVE_CONFIG_H)
-#         define DATSEL FC_FUNC(datsel, DATSEL)
-#      else
-#         define DATSEL datsel
-#      endif
-#   endif
+    #define FTNCALL
+    #if defined(FTN_UNDERSCORE)
+        #define DATSEL datsel_
+    #else
+        #if defined(HAVE_CONFIG_H)
+            #define DATSEL FC_FUNC(datsel, DATSEL)
+        #else
+            #define DATSEL datsel
+        #endif
+    #endif
 #endif
 
-#if defined (__cplusplus)
-    extern "C" {
+#if defined(__cplusplus)
+extern "C" {
 #endif
 
-//extern void FTNCALL DATSEL (void);
-extern void DATSEL (void);
+// extern void FTNCALL DATSEL (void);
+extern void DATSEL(void);
 
-#if defined (__cplusplus)
-    }
+#if defined(__cplusplus)
+}
 #endif
 
-
-int main (
-    int     argc,
-    char *  argv[],
-    char *  envp[]
-    )
+int main(int argc, char* argv[], char* envp[])
 {
-    DATSEL ();
+    DATSEL();
     return 0;
 }
-

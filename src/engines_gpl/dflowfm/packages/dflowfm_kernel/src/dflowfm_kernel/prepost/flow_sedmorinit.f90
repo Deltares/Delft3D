@@ -414,7 +414,7 @@ contains
          if (.not. size(stmpar%morpar%moroutput%avgintv, 1) == 3) then
             success = .false.
          end if
-         call getOutputTimeArrays(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, success)
+         call set_time_interval(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, tstart_user, tstop_user, success)
          if (ti_sed > (tstop_user - tstart_user)) then
             ti_sed = tstop_user - tstart_user
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - The averaging interval for time averaged sedmor output is larger than output duration in the simulation.')

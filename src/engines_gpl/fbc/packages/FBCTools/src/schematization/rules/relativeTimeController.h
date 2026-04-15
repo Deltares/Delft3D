@@ -21,7 +21,6 @@
  * @date 2011
  */
 
-
 #ifndef RELATIVE_TIME_CONTROLLER_H
 #define RELATIVE_TIME_CONTROLLER_H
 
@@ -32,63 +31,71 @@ using namespace rtctools::utilities;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class relativeTimeController : public rule
-{
-public:
-	enum valueOption{RELATIVE, ABSOLUTE};
-	enum ruleMode{ NATIVE, RETAINVALUEWHENINACTIVE };
+            class relativeTimeController : public rule
+            {
+            public:
+                enum valueOption
+                {
+                    RELATIVE,
+                    ABSOLUTE
+                };
+                enum ruleMode
+                {
+                    NATIVE,
+                    RETAINVALUEWHENINACTIVE
+                };
 
-private:
-	double tActive;
-	double tMaximum;
-	double dt;
-	lookupTableConverter *converter;
-	valueOption vOpt;
-	int iYIn;
-	int iYOut;
-	int iTimeActiveOut;
-	ruleMode vRuleMode;
+            private:
+                double tActive;
+                double tMaximum;
+                double dt;
+                lookupTableConverter* converter;
+                valueOption vOpt;
+                int iYIn;
+                int iYOut;
+                int iTimeActiveOut;
+                ruleMode vRuleMode;
 
-    // SOBEK - specific
-	double tableResetTime;
-	double staTime;
-	bool ruleCanBeActivatedForFirstTime; // state keeping for (re)activition of rule in the current run
-	bool firstIteration;
+                // SOBEK - specific
+                double tableResetTime;
+                double staTime;
+                bool ruleCanBeActivatedForFirstTime; // state keeping for (re)activition of rule in the current run
+                bool firstIteration;
 
-    struct TimeActiveState
-	{
-		long long time;
-		bool active;
-	};
+                struct TimeActiveState
+                {
+                    long long time;
+                    bool active;
+                };
 
-	TimeActiveState timeActiveStates[3];
-	int timeActiveStatesIndex;
+                TimeActiveState timeActiveStates[3];
+                int timeActiveStatesIndex;
 
-public:
-	relativeTimeController(string id, string name, lookupTableConverter *converter, 
-		valueOption vOpt, double tMaximum, int iYIn, int iYOut, int iTimeActiveOut,
-		ruleMode = NATIVE);
-	~relativeTimeController(void) {};
+            public:
+                relativeTimeController(string id, string name, lookupTableConverter* converter, valueOption vOpt,
+                                       double tMaximum, int iYIn, int iYOut, int iTimeActiveOut, ruleMode = NATIVE);
+                ~relativeTimeController(void) {};
 
-	void deactivate();
-	void stateTransfer(double *stateOld, double *stateNew, long long t, double dt);
+                void deactivate();
+                void stateTransfer(double* stateOld, double* stateNew, long long t, double dt);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
 
-	void updateTimeActiveState(long long t, bool);
-    bool wasActiveInPreviousTimeStep(long long t);
+                void updateTimeActiveState(long long t, bool);
+                bool wasActiveInPreviousTimeStep(long long t);
 
-    virtual int getIYOut() const override  { return iYOut; }
-};
+                virtual int getIYOut() const override { return iYOut; }
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // RELATIVE_TIME_CONTROLLER_H
