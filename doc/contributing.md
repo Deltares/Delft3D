@@ -21,8 +21,9 @@ If you are entirely new to contributing to open source, [this generic guide](htt
      Obviously, with some iterations if one of the steps identifies issues to be resolved before the merge.
  - To keep legal representation of the Delft3D software indisputable, we ask you to sign a Fiduciary License Agreement (FLA) before the final merge into main.
    For an explanation why, see [this page](https://fsfe.org/activities/fla/fla.en.html) by the Free Software Foundation Europe.
-   The FLA makes sense for code contributions of significant size.
-   For small bug fixes, it's better to send an email with a test case and the recommended code changes than following the formal procedure described above.
+   The FLA can be obtained via the Deltares contact person who handles the merging process.
+   Signing the FLA makes sense for code contributions of significant size.
+   For small bug fixes, it's better to send an email with a test case and a description of the recommended code changes than following the formal procedure described above.
 
 ### Deltares employees
  - Checkout/Clone the repository locally.
