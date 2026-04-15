@@ -12,6 +12,7 @@ module m_bubblescreen
    public :: update_bubblescreen_discharge
    public :: convert_discharge_air_to_water
    public :: find_active_layer_interfaces
+   public :: compute_bubblescreen_area
 
 contains
 
@@ -59,7 +60,7 @@ contains
 
          call find_active_layer_interfaces(n, bubblescreen%z_level, bubblescreen%id, k_start, k_stop, k_max_velocity)
 
-         call update_bubblescreen_source_sink_layer_indices(bubblescreen%source_sink_indices(i_flowcell), n, k_start, k_stop, k_max_velocity)
+         call update_bubblescreen_source_sink_layer_indices(bubblescreen%source_sink_indices(i_flowcell), k_start, k_stop, k_max_velocity)
 
       end do
 
@@ -186,18 +187,13 @@ contains
    end subroutine update_bubblescreen_source_sink_discharge
 
    !> Updates the vertical layer indices for a bubble screen linked source/sink
-   subroutine update_bubblescreen_source_sink_layer_indices(source_sink_index, n, k_start, k_stop, k_max_velocity)
+   subroutine update_bubblescreen_source_sink_layer_indices(source_sink_index, k_start, k_stop, k_max_velocity)
       use m_flow, only: zws
       ! Parameters
       integer, intent(in) :: source_sink_index !< [-] Index of source/sink in {fm_external_forcings_data::source_sink_indices}
-      integer, intent(in) :: n !< [-] 2D flow cell index; in {network_data::netcell}
       integer, intent(in) :: k_start !< [-] Start active layer index (bottom); in {m_flow::zws}
       integer, intent(in) :: k_stop !< [-] Stop active layer index (top); in {m_flow::zws}
       integer, intent(in) :: k_max_velocity !< [-] Layer index with maximum downward velocity; in {m_flow::zws}
-
-      ! Update source/sink 2D flow cell indices
-      source_sink_indices(1, source_sink_index) = n
-      source_sink_indices(4, source_sink_index) = n
 
       ! Update source/sink top and bottom z-levels
       source_sink_z_bottom(1, source_sink_index) = (zws(k_start) + zws(k_start + 1)) / 2.0_dp
@@ -214,7 +210,7 @@ contains
       ! Parameters
       type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
       real(kind=dp) :: area !< [m2] Area of the bubble screen
-      real(kind=dp), dimension(:), allocatable :: global_area
+      real(kind=dp), dimension(1) :: global_area
       ! Local variables
       integer :: i
       integer :: flownode_nr !< Flow node number
