@@ -26,7 +26,7 @@ object LifecycleScanMain : BuildType({
         step {
             id = "LifecycleNexusIqLinux"
             type = "LifecycleNexusIqLinux"
-            param("nexus_iq_application_id", "Delft3D.%teamcity.build.branch%".substringAfterLast("/"))
+            param("nexus_iq_application_id", "Delft3D-%teamcity.build.branch%".substringAfterLast("/"))
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
             param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
