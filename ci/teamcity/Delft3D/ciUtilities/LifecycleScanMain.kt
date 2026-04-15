@@ -32,7 +32,7 @@ object LifecycleScanMain : BuildType({
                 VERSION="${'$'}{BRANCH##*/}"
 
                 # Build a valid Nexus IQ application ID
-                LIFECYCLE_ID="delft3d.${'$'}VERSION"
+                LIFECYCLE_ID="Delft3D-${'$'}VERSION"
 
                 echo "Lifecycle ID: ${'$'}LIFECYCLE_ID"
 
