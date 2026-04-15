@@ -2097,6 +2097,26 @@ contains
 
    end subroutine fm_diffusion_active_layer
 
+   subroutine determine_linkbased_cumblchg()
+      use m_sediment, only: cumes
+      use m_fm_erosed, only: blchg
+      use m_flowgeom, only: lnx, ln, acl
+
+      implicit none
+
+      integer :: L, k1, k2
+      real(kind=dp) :: ac1, ac2
+
+      do L = 1, lnx
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ac1 = acl(L)
+         ac2 = 1.0_dp - ac1
+         cumes(L) = cumes(L) + ac1 * (blchg(k1)) + ac2 * (blchg(k2))
+      end do
+
+   end subroutine determine_linkbased_cumblchg
+
    !> Apply the nodal point relation by Bolla and Pittaluga et al. (2003) to compute the sediment transport 
    !rate at the node of a bifurcation. The relation is applied at the junction flownode of a bifurcation, 
    !which has one incoming and two outgoing branches. The sediment transport rate at the node is computed 
@@ -2198,7 +2218,7 @@ contains
    Q_sb=Q_sa+Q_sy !Equation (16) (implicit in Bolla-Pittaluga et al. (2003)).
    sq_sb=Q_sb/B_b !make per unit width.
 
-   end subroutine
+   end subroutine nodal_point_relation_BollaPittaluga
 
    subroutine nodal_point_relation_data( &
    total_water_discharge_out, total_width_out, total_sediment_transport_out,idx_junctions,n_junctions,n_links_out,links_out,link_dir_out,width_out,water_discharge_out,flownode_junction,n_links_in,links_in,&
