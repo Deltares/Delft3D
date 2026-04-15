@@ -6,7 +6,6 @@
 #ifndef _WIN32
     #include "config.h"
     #include <dlfcn.h>
-    #include <libgen.h>
 #endif
 #include <limits.h>
 
@@ -15,15 +14,8 @@
 #endif
 
 #ifdef _WIN32
-    #include <Strsafe.h>
     #include <windows.h>
-    #include <direct.h>
     #define strdup _strdup
-    #define chdir _chdir
-    #define getcwd _getcwd
-    #define dup2 _dup2
-#else
-    #include <unistd.h>
 #endif
 
 #include <cstring>
@@ -146,8 +138,13 @@ BMI_API int initialize(const char* configfile)
         thisDimr->timersInit();
 
         // Store dimr absolute path
-        thisDimr->dimrWorkingDirectory = new char[MAXSTRING];
-        if (!getcwd(thisDimr->dimrWorkingDirectory, MAXSTRING))
+        try
+        {
+            const std::string dimrWorkingDirectory = std::filesystem::current_path().string();
+            thisDimr->dimrWorkingDirectory = new char[dimrWorkingDirectory.size() + 1];
+            std::strcpy(thisDimr->dimrWorkingDirectory, dimrWorkingDirectory.c_str());
+        }
+        catch (const std::filesystem::filesystem_error&)
         {
             thisDimr->log->Write(FATAL, thisDimr->my_rank, "Cannot get the current working directory");
         }
@@ -185,7 +182,7 @@ BMI_API int initialize(const char* configfile)
                 *waveModePtr = 0;
             }
 
-            chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
+            std::filesystem::current_path(thisDimr->control->subBlocks[0].unit.component->workingDir);
             thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Initialize(%s)",
                                  thisDimr->control->subBlocks[0].unit.component->name,
                                  thisDimr->control->subBlocks[0].unit.component->inputFile);
@@ -249,7 +246,7 @@ BMI_API int update(double tStep)
         else
         {
             // Start block
-            chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
+            std::filesystem::current_path(thisDimr->control->subBlocks[0].unit.component->workingDir);
             thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Update(%6.1f)",
                                  thisDimr->control->subBlocks[0].unit.component->name, tStep);
             thisDimr->timerStart(thisDimr->control->subBlocks[0].unit.component);
@@ -304,7 +301,7 @@ BMI_API int finalize(void)
         else
         {
             // Start block
-            chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
+            std::filesystem::current_path(thisDimr->control->subBlocks[0].unit.component->workingDir);
             thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Finalize()",
                                  thisDimr->control->subBlocks[0].unit.component->name);
             thisDimr->timerStart(thisDimr->control->subBlocks[0].unit.component);
