@@ -1283,19 +1283,20 @@ contains
    !! numgen to reflect the new count of valid links.
    pure module subroutine remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
       use m_flowgeom, only: kcu
+      use network_data, only: LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
       integer, intent(inout) :: numgen !< number of flow links in kegen
       integer, dimension(:), intent(inout) :: kegen !< array with the link indices
       integer :: i, cell, numcells
-      integer, dimension(1):: help
       numcells = 0
       do i = 1, numgen
          cell = abs(kegen(i))
          ! remove 1d links and 1d2d longitudinal links from the dambreak polygon list.
-         help = findloc([1, 4, 5, 7], value = abs(kcu(cell)))
-         if (help(1) == 0 ) then
+         select case (abs(kcu(cell)))
+         case(LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
+         case default
             numcells = numcells + 1
             kegen(numcells) = cell
-         end if
+         end select
       end do
       numgen = numcells
    end subroutine remove_1d_links_from_dambreak_polygon_list
