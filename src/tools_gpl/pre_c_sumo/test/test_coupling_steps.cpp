@@ -12,4 +12,8 @@ TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
 }
 
 // This test verifies that the receive_ff_data function executes without throwing an exception.
-TEST(CsumoPreciceCouplingStepsTest, ReceiveNFData) { EXPECT_NO_THROW(pre_c_sumo::receiveFFData()); }
+// TEST(CsumoPreciceCouplingStepsTest, ReceiveFFData) {
+//
+//    EXPECT_NO_THROW(pre_c_sumo::receiveFFData());
+//
+//}

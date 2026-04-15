@@ -10,6 +10,7 @@
 #include "csumo_settings_reader.hpp"
 #include "FF2NF_writer.hpp"
 #include "parsing_types.hpp"
+#include "precice_state.hpp"
 
 namespace pre_c_sumo
 {
@@ -30,14 +31,19 @@ namespace pre_c_sumo
         return csumo_settings;
     }
 
-    void receiveFFData() { std::println("Receiving far-field data..."); }
+    void receiveFFData(const PreCICEState& precice_state)
+    {
+        std::vector<double> water_depths(precice_state.csumo_2d_nodes_ids.size());
+        precice_state.participant->readData("csumo_2d_nodes", "water_depths", precice_state.csumo_2d_nodes_ids, 0.0,
+                                            water_depths);
+    }
 
     void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings)
     {
         // TODO: obtain these from the far-field model / coupling state
         const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
+        const std::vector<std::string> constituent_names = {"temperature", "salinity", "1"};
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
@@ -69,7 +75,7 @@ namespace pre_c_sumo
                 .wait_for_file = nf2ff_wait_file,
                 .ff_run_directory = diffuser.ff_run_dir.string(),
                 .run_id = run_id,
-                .unique_id = diffuser.id.value_or(""),
+                .unique_id = "ABCDEF", // diffuser.id.value_or(""),
                 .subgrid_model_nr = subgrid_model_nr,
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
