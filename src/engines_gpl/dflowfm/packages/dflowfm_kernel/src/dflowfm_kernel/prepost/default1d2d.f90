@@ -7,7 +7,7 @@ contains
       use precision, only: dp
       use m_network, only: t_network
       use m_flowgeom, only: wu1Duni5, hh1Duni5
-      use m_physcoef, only: ifrctypuni, frcuni1d2d
+      use m_physcoef, only: frcunistreetinlet
       use m_CrossSections, only: AddCrossSectionDefinition, realloc
       use network_data, only: numl1d, kn
       use m_GlobalParameters, only: t_chainage2cross
@@ -64,10 +64,9 @@ contains
       network%CSDefinitions%CS(idef)%frictionSectionID(1) = ''
       network%CSDefinitions%CS(idef)%frictionSectionIndex(1) = 0
 
-      ! Use default friction values for 1D2D links
-      ! For lateral 1D2D links, use frcuni1d2d with ifrctypuni
-      network%CSDefinitions%CS(idef)%frictionType(1) = ifrctypuni
-      network%CSDefinitions%CS(idef)%frictionValue(1) = frcuni1d2d
+      ! Use default friction values for 1D2D links of type 5 (street inlets)
+      network%CSDefinitions%CS(idef)%frictionType(1) = MANNING
+      network%CSDefinitions%CS(idef)%frictionValue(1) = frcunistreetinlet
 
       ! Now create a cross-section instance
       if (network%crs%count + 1 > network%crs%size) then
@@ -75,9 +74,6 @@ contains
       end if
       icrs = network%crs%count + 1
       call finalizeCrs(network, network%crs%cross(icrs), idef, icrs)
-      ! Note: For street inlets and roof gutters, you would use:
-      ! frictionType = MANNING
-      ! frictionValue = frcunistreetinlet or frcuniroofgutterpipe
       temp_line2cross = network%adm%line2cross
       deallocate (network%adm%line2cross)
       allocate (network%adm%line2cross(numl1d, 3))
