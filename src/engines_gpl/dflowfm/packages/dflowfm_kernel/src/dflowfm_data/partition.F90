@@ -6389,4 +6389,41 @@ contains
       end if
    end subroutine logical_and_across_partitions
 
+!> Given a list of local flow cell indices, returns the union of all such lists across
+   !> all MPI partitions, expressed as local indices on the current partition.
+   function reduce_cells(local_cells, ndx) result(global_cells)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      integer, dimension(:), intent(in)               :: local_cells !< Local flow cell indices found on this partition
+      integer, intent(in) :: ndx !< number of flow cells (internal + boundary), should match ndx in m_flowgeom
+      integer, dimension(:), allocatable :: global_cells   !< Local flow cell indices of the global union
+      integer, dimension(:), allocatable :: global_cellmask
+      integer :: k, num_cells
+#ifdef HAVE_MPI
+      integer :: mpi_err
+#endif
+
+      ! Mark globally present cells using local->global mapping
+      global_cellmask(iglobal_s(local_cells)) = 1
+
+#ifdef HAVE_MPI
+      call MPI_Allreduce(MPI_IN_PLACE, global_cellmask, nglobal_s, &
+                         MPI_INTEGER, MPI_MAX, DFM_COMM_DFMWORLD, mpi_err)
+#endif
+
+      num_cells = count(global_cellmask == 1)
+
+      allocate(global_cells(num_cells))
+      num_cells = 0
+      do k = 1, ndx
+         if (global_cellmask(iglobal_s(k)) == 1) then
+            num_cells = num_cells + 1
+            global_cells(num_cells) = k
+         end if
+      end do
+
+   end function reduce_cells
+
 end module m_partitioninfo
