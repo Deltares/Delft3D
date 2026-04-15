@@ -1176,7 +1176,6 @@ contains
       use grid_dimens_module, only: griddimtype
       use morphology_data_module, only: sedpar_type, morpar_type
       use m_depfil_stm
-      use dfparall, only: inode, nproc
       !
       implicit none
 !
