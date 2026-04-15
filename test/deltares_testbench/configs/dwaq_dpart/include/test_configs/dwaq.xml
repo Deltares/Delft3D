@@ -2256,6 +2256,27 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e03_f01_c36_test036" ref="dwaq_default">
+        <path version="2026-04-07T17:00:00">e03_waq/f01_general/c36_test036</path>
+        <checks>
+            <file name="d3d-waq-test036.ada" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                </parameters>
+            </file>
+            <file name="d3d-waq-test036.hda" type="NEFIS">
+                <parameters name="DELWAQ_RESULTS">
+                    <parameter name="SUBST_001" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-07"/>
+                    <parameter name="SUBST_002" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_003" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                    <parameter name="SUBST_004" toleranceAbsolute="1.0e-03" toleranceRelative="1.0e-05"/>
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e03_f02_c03_loadscenario1" ref="dwaq_default">
         <dependency version="2025-11-11T09:20:00" local_dir="f02_hongkong_c00_hydro">e03_waq/f02_hongkong/c00_hydro</dependency>
         <path version="2025-12-01T12:49:14.722000">e03_waq/f02_hongkong/c03_loadscenario1</path>
@@ -6984,7 +7005,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f07_c05_exercise_05" ref="dwaq_default">
-        <dependency version="2025-11-05T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
+        <dependency version="2025-11-11T09:20:00" local_dir="f07_course_d3dfm_env_mod_c00_hydro">e03_waq/f07_course_d3dfm_env_mod/c00_hydro</dependency>
         <path version="2026-01-30T15:00:00">e03_waq/f07_course_d3dfm_env_mod/c05_exercise_05/exercise5.dsproj_data/Water_Quality_output</path>
         <checks>
             <file name="deltashell.ada" type="NEFIS">

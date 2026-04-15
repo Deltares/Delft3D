@@ -31,7 +31,7 @@
     </checks>
   </testCase>
   <testCase name="e109_f01_c010_weir_timeseries" ref="dimr_trunk_lnx64"> <!-- dflowfm + drtc + dwaves -->
-    <path version="2024-10-15T15:00:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
+    <path version="2025-06-05T13:59:00">e109_dflowfm-drtc-dwaves/f01_general/c010_weir_timeseries</path>
     <checks>
       <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_map.nc" type="NETCDF">
         <parameters>
@@ -75,7 +75,7 @@
     </checks>
   </testCase>
   <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default"> <!-- dflowfm + dwaq -->	
-    <path version="2025-09-03T12:20:29.004000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
+    <path version="2026-03-17T10:19:21.726000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
     <checks>
       <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
         <parameters>
