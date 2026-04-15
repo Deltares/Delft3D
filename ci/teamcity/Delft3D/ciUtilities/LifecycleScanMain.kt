@@ -23,14 +23,20 @@ object LifecycleScanMain : BuildType({
             scriptContent = """
                 set -euo pipefail
 
+                # Explicitly read the TeamCity branch parameter
+                BRANCH="%teamcity.build.branch%"
+
                 echo "Branch: ${'$'}BRANCH"
 
+                # Extract last path segment: all/release/2026.01 -> 2026.01
                 VERSION="${'$'}{BRANCH##*/}"
 
-                LIFECYCLE_ID="Delft3D-${'$'}VERSION"
+                # Build a valid Nexus IQ application ID
+                LIFECYCLE_ID="delft3d.${'$'}VERSION"
 
                 echo "Lifecycle ID: ${'$'}LIFECYCLE_ID"
 
+                # Expose it to later steps
                 echo "##teamcity[setParameter name='nexus_iq_application_id' value='${'$'}LIFECYCLE_ID']"
             """.trimIndent()
         }
