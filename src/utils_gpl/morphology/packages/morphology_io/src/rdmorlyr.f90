@@ -85,8 +85,9 @@ contains
       integer :: nval
       character(11) :: fmttmp !< Format file ('formatted  ')
       character(20) :: parname
+      character(45) :: txtput1
       character(20) :: txtput2
-      character(40) :: txtput1
+      character(100) :: txtput3      
       character(80) :: bndname
       character(256) :: errmsg
       character(:), allocatable :: filename
@@ -1252,6 +1253,9 @@ contains
       real(fp), dimension(:), pointer :: mfluni
       character(20), dimension(:), pointer :: namsed
       character(256), dimension(:), pointer :: mflfil
+      character(45)             :: txtput1
+      character(12)             :: txtput2
+      character(100)            :: txtput3      
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1273,7 +1277,7 @@ contains
       ! Fluff layer
       !
       if (morpar%flufflyr%iflufflyr > 0 .and. .not. rst_fluff) then
-         write(lundia, '(a,i0)') '*** Reading Fluff layer input'
+         write(lundia, '(a,i0)') '*** Reading fluff layer input'
          !
          ! If not restart then initialize using values specified in input file
          !
@@ -1305,12 +1309,14 @@ contains
                mfluff(ised, :) = mfluni(ised)
             end if
          end do
+         write(lundia, '(a,i0)') '*** End of fluff layer input'
+         write (lundia, *)
       end if
       !
       ! Bed layers
       !
       if (.not. rst_bedcmp) then
-         write(lundia, '(a)') '*** Reading Bed layer input '
+         write(lundia, '(a,a)') '*** Reading bed layer input from ', trim(flcomp)
          istat = bedcomp_getpointer_integer(morlyr, 'iunderlyr', iunderlyr)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nlyr', nlyr)
          if (istat == 0) istat = bedcomp_getpointer_realprec(morlyr, 'bodsed', bodsed)
@@ -1541,7 +1547,7 @@ contains
                   ! Increment ilyr, but do not exceed nlyr
                   !
                   ilyr = min(nlyr, ilyr + 1)
-                  write(lundia, '(a,a,i0)') 'Layer no.', ':', ilyr
+                  write(lundia, '(a,i0)') 'Layer ', ilyr
                   !
                   ! Initialize/reset the temporary array
                   !
@@ -1553,6 +1559,9 @@ contains
                   layertype = ' '
                   call prop_get(layer_ptr, '*', 'Type', layertype)
                   call small(layertype, len(layertype))
+                  txtput1 = '  '//'Type'
+                  txtput3 = trim(layertype)
+                  write(lundia, '(3a)') txtput1, ':', txtput3                       
                   if (layertype == ' ') then
                      !
                      ! no Type field found
@@ -1566,13 +1575,14 @@ contains
                         & layertype == 'volume fraction') then
                      !
                      ! mass or volume fraction and layer thickness specified
-                     !
+                     !                      
                      parname = 'Thick'
                      sedbed = rmissval
                      filename = ' '
                      call prop_get(layer_ptr, '*', parname, flcomp, is_float, sedbed, filename)
                      if (is_float) then
-                        write(lundia, '(a,a,a,f0.3,a)') '   ', trim(parname), ' : ', sedbed, trim(inisedunit(ised))
+                        txtput1 = '  '//trim(parname)                      
+                        write(lundia, '(2a,f0.3)') txtput1, ': ', sedbed
                         if (comparereal(sedbed, rmissval) == 0) then ! string was empty or key not found
                            write (message, '(a,i2,2a)')  &
                               & 'No value assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
@@ -1586,7 +1596,9 @@ contains
                      else
                         inquire (file=filename, exist=ex)
                         if (ex) then
-                           write(lundia, '(a,a,a,a)') '   ', trim(parname) , ' : ', trim(filename) ! , ' in '//trim(inisedunit(ised))
+                           txtput1 = '  '//trim(parname)
+                           txtput3 = trim(filename)
+                           write(lundia, '(3a)') txtput1, ':', txtput3
                            call depfil_stm(lundia, error, filename, fmttmp, &
                                          & thtemp, 1, 1, dims, message)
                            if (error) then
@@ -1644,7 +1656,8 @@ contains
                            !
                            ! Constant fraction
                            !
-                           write(lundia, '(a,a,a,f0.3,a)') '   ', parname , ' : ', fraction, trim(inisedunit(ised))
+                           txtput1 = '  '//trim(parname)
+                           write(lundia, '(2a,f0.3)') txtput1, ': ', fraction
                            if (comparereal(fraction,rmissval) == 0) then
                               fraction = 0.0_fp
                            else
@@ -1660,7 +1673,9 @@ contains
                               ! Spatially varying fraction
                               !
                               anyfrac = .true.
-                              write(lundia, '(a,a,a,a)') '   ', parname , ' : ', trim(filename) !' in '//trim(inisedunit(ised))
+                              txtput1 = '  '//trim(parname)
+                              txtput3 = trim(filename)
+                              write(lundia, '(3a)') txtput1, ':', txtput3
                               call depfil_stm(lundia, error, filename, fmttmp, &
                                             & rtemp(nmlb, ised), 1, 1, dims, message)
                               if (error) then
@@ -1922,7 +1937,8 @@ contains
                         filename = ' '
                         sedbed = rmissval
                         call prop_get(layer_ptr, '*', parname, flcomp, is_float, sedbed, filename)
-                        write(lundia, '(a,a,a,f0.3,a)') '   '//parname, ' : ', sedbed, ' ', trim(inisedunit(ised))
+                        txtput1 = '  '//trim(parname)
+                        write(lundia, '(2a,f0.3)') txtput1, ': ', sedbed
                         if (is_float) then
                            !
                            ! Constant thickness or mass
@@ -1949,7 +1965,9 @@ contains
                            ! Spatially varying thickness or mass
                            !
                            anysedbed = .true.
-                           write(lundia, '(a,a,a,f0.3,a)') '   ', parname , ' : ', trim(filename), ' in '//trim(inisedunit(ised))
+                           txtput1 = '  '//trim(parname)
+                           txtput3 = trim(filename)
+                           write(lundia, '(3a)') txtput1, ':', txtput3
                            call depfil_stm(lundia, error, filename, fmttmp, &
                                          & rtemp(nmlb, ised), 1, 1, dims, message)
                            if (error) then
@@ -2148,6 +2166,8 @@ contains
                return
             end if
          end if
+         write(lundia, '(a)') '*** End of bed layer input'
+         write(lundia, *)
       end if
    end subroutine rdinimorlyr
 
