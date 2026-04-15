@@ -12,7 +12,11 @@ object LifecycleScanMain : BuildType({
     vcs {
         root(DslContext.settingsRoot)
     }
-
+    
+    params {
+        param("nexus_iq_application_id", "Delft3D-main")
+    }
+    
     steps {   
         script {
             name = "Compute Nexus IQ application ID"
