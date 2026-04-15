@@ -27,15 +27,13 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_addsorsin
    use m_reallocsrc, only: reallocsrc
    use m_missing, only: dmiss, dxymis
+   use messagehandling, only: IDLEN, msgbuf, warn_flush
    use precision, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -45,7 +43,6 @@ module m_addsorsin
 contains
 
    !> Add a source(-sink) to the model based on geometry given in a polyline file.
-   !!
    !! This subroutine is a wrapper around addsorsin, mainly taking care of reading the polyline file.
    subroutine addsorsin_from_polyline_file(polyline_file, name, z_source, z_sink, area, ierr)
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
@@ -53,8 +50,8 @@ contains
       use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
       use m_reapol, only: reapol
       use system_utils, only: split_filename
-      use MessageHandling, only: IDLEN
 
+      ! Parameters
       character(len=*), intent(in) :: polyline_file !< Name of the polyline file, either with x,y values only (*.pli), or including z-values (*.pliz).
       character(len=*), optional, intent(in) :: name !< Name of the source-sink. When not present, name is based on the polyline filename instead.
       real(kind=dp), dimension(:), optional, intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
@@ -62,12 +59,15 @@ contains
       real(kind=dp), intent(in) :: area !< Area of the source/sink, in m2. Set to 0.0 for momentum-free point sources.
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
+      ! Local variables
       integer :: istat
       integer :: pli_lun
       integer :: z_size ! Intended size of z_source_ and z_sink_ arrays, either 1 or 2.
-      real(kind=dp), dimension(:), allocatable :: z_source_, z_sink_
+      real(kind=dp), dimension(:), allocatable :: z_source_
+      real(kind=dp), dimension(:), allocatable :: z_sink_
       logical :: have_z_range
-      character(len=0) :: path, ext
+      character(len=0) :: path
+      character(len=0) :: ext
       character(len=IDLEN) :: name_
 
       ierr = DFM_WRONGINPUT
@@ -138,14 +138,12 @@ contains
          source_sink_indices, source_sink_z_bottom, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, &
          source_sink_discharge_sine, source_sink_name
       use m_GlobalParameters, only: INDTP_ALL
-
-      use messagehandling, only: msgbuf, warn_flush
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D
-      use MessageHandling, only: IDLEN
       use m_find_flownode, only: find_nearest_flownodes
 
+      ! Parameters
       character(len=*), intent(in) :: name !< Name of the source/sink.
       real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
       real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
@@ -154,9 +152,14 @@ contains
       real(kind=dp), intent(in) :: area !< Area of the source/sink, in m2. Set to 0.0 for momentum-free point sources.
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
-      integer :: kk, kk2, i, jakdtree, kdum(1)
+      ! Local variables
+      integer :: kk
+      integer :: kk2
+      integer :: i
+      integer :: jakdtree
       integer :: num_points
-      character(len=IdLen) :: tmpname(1)
+      integer, dimension(1) :: kdum
+      character(len=IdLen), dimension(1) :: tmpname
 
       ierr = DFM_WRONGINPUT
 
