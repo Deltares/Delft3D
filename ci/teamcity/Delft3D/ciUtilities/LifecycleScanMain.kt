@@ -41,6 +41,20 @@ object LifecycleScanMain : BuildType({
         }
     }
 
+    triggers {
+        schedule {
+            schedulingPolicy = weekly {
+                dayOfWeek = ScheduleTrigger.DAY.Wednesday
+                hour = 10
+                minute = 20
+            }
+
+            branchFilter = "+:refs/heads/all/release/2026.01"
+
+            triggerBuild = always()
+        }
+    }
+
     if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
         triggers {
             vcs {
