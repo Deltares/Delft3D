@@ -1286,11 +1286,13 @@ contains
       integer, intent(inout) :: numgen !< number of flow links in kegen
       integer, dimension(:), intent(inout) :: kegen !< array with the link indices
       integer :: i, cell, numcells
+      integer, dimension(1):: help
       numcells = 0
       do i = 1, numgen
-         cell = kegen(i)
+         cell = abs(kegen(i))
          ! remove 1d links and 1d2d longitudinal links from the dambreak polygon list.
-         if ((abs(kcu(abs(cell))) /= 1) .and. abs(kcu(abs(cell))) /= 4) then
+         help = findloc([1, 4, 5, 7], value = abs(kcu(cell)))
+         if (help(1) == 0 ) then
             numcells = numcells + 1
             kegen(numcells) = cell
          end if

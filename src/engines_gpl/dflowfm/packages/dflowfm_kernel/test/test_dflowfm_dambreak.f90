@@ -16,15 +16,12 @@ contains
       real(kind=dp), parameter :: tolerance = 1e-8_dp
       real(kind=dp), dimension(PATH_LENGTH) :: x, y, running_distance, expected_running_distance
 
-      cell_numbers = [1, 2, 3, 4, 5, 6]
-      kcu = [2, 4, 2, 3, 1, 2]
+      cell_numbers = [1, 2, 3, 4, 5, 6, 7, 8]
+      kcu = [2, 4, 2, 3, 1, 2, -1, -2 ]
       num_cells = size(cell_numbers)
       call remove_1d_links_from_dambreak_polygon_list(num_cells, cell_numbers)
-      call f90_expect_eq(num_cells, 4, "number of 2d and 1d2d cells must be equal to 4")
-      call f90_expect_eq(cell_numbers(1), 1, "cell number(1) must be 1")
-      call f90_expect_eq(cell_numbers(2), 3, "cell number(2) must be 3")
-      call f90_expect_eq(cell_numbers(3), 4, "cell number(3) must be 4")
-      call f90_expect_eq(cell_numbers(4), 6, "cell number(4) must be 6")
+      call f90_expect_eq(num_cells, 5, "number of cells must be equal to 5")
+      call f90_expect_true(all(cell_numbers(1:num_cells) == [1, 3, 4, 6, 8]), "cells numbers must be equal to [1, 3, 4, 6, 8]")
    end subroutine test_skip_1d_flowlinks
    !$f90tw)
 end module test_dflowfm_dambreak
