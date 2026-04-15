@@ -3609,6 +3609,7 @@ contains
       use geometry_module, only: dbpinpol
       use m_reapol
       use m_filez, only: oldfil
+      use timespace_parameters, only: OPERAND_ADD
       implicit none
 
       logical :: success
@@ -3635,7 +3636,7 @@ contains
             call dbpinpol(xz(k), yz(k), inside, &
                           dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inside == 1) then
-               if (operand == '+' .and. zz(k) /= imiss) then
+               if (operand == OPERAND_ADD .and. zz(k) /= imiss) then
                   zz(k) = zz(k) + transformcoef(1)
                else
                   zz(k) = transformcoef(1)

@@ -1155,12 +1155,13 @@ contains
       use m_flow, only: ifrctypuni, ifrcutp, frcu
       use m_flowgeom, only: lnx
       use m_missing, only: dmiss
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       implicit none
 
       integer :: link
 
-      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. (operand == 'O' .or. operand == 'V')) then
+      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
          do link = 1, lnx
             if (frcu(link) /= dmiss) then
                ! type array only must be used if different from uni

@@ -173,7 +173,7 @@ contains
       end if
       call operand_fm_to_ec(operand, ec_operand)
       if (ec_operand == operand_undefined) then
-         write (msgbuf, '(a,a,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
+         write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
             ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
          call err_flush()
          return
