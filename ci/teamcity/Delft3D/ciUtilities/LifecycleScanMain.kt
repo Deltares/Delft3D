@@ -68,32 +68,29 @@ object LifecycleScanMain : BuildType({
         }
     }
 
-    triggers {
-        schedule {
-            schedulingPolicy = weekly {
-                dayOfWeek = ScheduleTrigger.DAY.Wednesday
-                hour = 15
-                minute = 30
-            }
-
-            branchFilter = """
-                +:all/release/2026.02
-                +:all/release/2026.01
-                +:all/release/2025.02
-                +:all/release/2025.01
-                +:all/release/2024.02
-            """.trimIndent()
-
-            triggerBuild = always()
-            withPendingChangesOnly = false
-        }
-    }
-
     if (DslContext.getParameter("enable_lifecycle_trigger").lowercase() == "true") {
         triggers {
             vcs {
                 branchFilter = "+:<default>"
                 perCheckinTriggering = false
+            }
+            schedule {
+                schedulingPolicy = weekly {
+                    dayOfWeek = ScheduleTrigger.DAY.Wednesday
+                    hour = 15
+                    minute = 30
+                }
+
+                branchFilter = """
+                    +:all/release/2026.02
+                    +:all/release/2026.01
+                    +:all/release/2025.02
+                    +:all/release/2025.01
+                    +:all/release/2024.02
+                """.trimIndent()
+
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
         }
     }
