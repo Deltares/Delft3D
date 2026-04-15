@@ -14,12 +14,6 @@
 namespace pre_c_sumo
 {
 
-    bool doTimeloop()
-    {
-        static int iteration = 0;
-        return iteration++ < 2; // Run the loop 2 times for demonstration
-    }
-
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
         const std::string_view csumo_settings_file_name)
     {
