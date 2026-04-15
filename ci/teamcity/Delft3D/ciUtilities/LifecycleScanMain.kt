@@ -72,13 +72,16 @@ object LifecycleScanMain : BuildType({
         schedule {
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Wednesday
-                hour = 14
-                minute = 50
+                hour = 15
+                minute = 30
             }
 
             branchFilter = """
+                +:all/release/2026.02
                 +:all/release/2026.01
                 +:all/release/2025.02
+                +:all/release/2025.01
+                +:all/release/2024.02
             """.trimIndent()
 
             triggerBuild = always()
