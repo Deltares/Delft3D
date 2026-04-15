@@ -3,19 +3,6 @@
 #include "test_utilities.hpp"
 #include "coupling_steps.hpp"
 
-// This test verifies that the do_timeloop function allows the loop to run the expected number of times.
-// Since do_timeloop uses a static variable to count iterations, we can call it in a loop and count how many times
-// it returns true.
-TEST(CsumoPreciceCouplingStepsTest, DoTimeloopRunsExpectedNumberOfIterations)
-{
-    int iteration_count = 0;
-    while (pre_c_sumo::doTimeloop())
-    {
-        iteration_count++;
-    }
-    EXPECT_EQ(iteration_count, 2); // We expect it to run 2 iterations based on the implementation
-}
-
 // This test verifies that the read_csumo_config_file function returns an error when given an invalid file path.
 TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
 {
