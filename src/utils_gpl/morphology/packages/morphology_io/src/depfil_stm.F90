@@ -120,7 +120,12 @@ subroutine depfil_stm(lundia    ,error     ,fildep    ,fmttmp    , &
       ! Assumption: if extension starts with 'xy' (to cover both xyz and xyb), then it is assumed to be an xyz file
       !
       ! TODO: AvD: test code below now works via EC module, but still needs some inconvenient additional 'dummy' arguments. Consider further refactoring.
-      open (newunit=minp0, file = fildep, form = fmttmp, status = 'old') 
+open (newunit=minp0, file=fildep, form=fmttmp, status='old', iostat=ios, iomsg=msg)
+if (ios /= 0) then
+    write(*,*) 'Error opening file:', trim(msg)
+    success = .false.
+    return
+end if
       success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
       close(minp0)
       jdla = 1
