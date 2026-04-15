@@ -9,21 +9,21 @@ module precice_adapter_builder
    public :: precice_adapter_builder_t
 
    type :: precice_adapter_builder_t
-      character(kind=c_char, len=250) :: config_file ! preCICE XML config file path
-      character(kind=c_char, len=20) :: name ! Participant name.
+      character(kind=c_char, len=:), allocatable :: config_file ! preCICE XML config file path
+      character(kind=c_char, len=:), allocatable :: name ! Participant name.
       integer(kind=c_int) :: my_rank = 0_c_int
       integer(kind=c_int) :: number_of_ranks = 1_c_int
       integer(kind=c_int) :: communicator = 0_c_int
       logical :: is_communicator_set = .false.
-      character(kind=c_char, len=20) :: mesh_name ! mesh name
-      integer(kind=c_int) :: mesh_size = 0_c_int ! mesh size (number of points): N
-      real(kind=c_double), dimension(:), allocatable :: mesh_coordinates ! mesh coordinates: x1,y1,x2,y2,...,xN,yN
+      character(kind=c_char, len=:), allocatable :: cell_center_mesh_name ! mesh name
+      integer(kind=c_int) :: cell_center_mesh_size = 0_c_int ! mesh size (number of points): N
+      real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_2d ! mesh coordinates: x1,y1,x2,y2,...,xN,yN
    contains
       procedure :: set_config_file => builder_set_config_file
       procedure :: set_name => builder_set_name
       procedure :: set_mpi_rank => builder_set_mpi_rank
       procedure :: set_mpi_communicator => builder_set_mpi_communicator
-      procedure :: add_mesh_2d => builder_add_mesh_2d
+      procedure :: set_cell_center_mesh_2d => builder_set_cell_center_mesh_2d
       procedure :: build => builder_build
    end type
 
@@ -71,35 +71,38 @@ contains
       self%communicator = communicator
    end subroutine builder_set_mpi_communicator
 
-   subroutine builder_add_mesh_2d(self, mesh_name, mesh_size, mesh_coordinates_x, mesh_coordinates_y)
+   subroutine builder_set_cell_center_mesh_2d(self, cell_center_mesh_name, cell_center_mesh_size, cell_center_mesh_coordinates_2d_x, cell_center_mesh_coordinates_2d_y)
       use precision, only: dp
       class(precice_adapter_builder_t), intent(inout) :: self
-      character(len=*) :: mesh_name
-      integer(kind=c_int), intent(in) :: mesh_size
-      real(kind=c_double), dimension(:), intent(in) :: mesh_coordinates_x
-      real(kind=c_double), dimension(:), intent(in) :: mesh_coordinates_y
+      character(len=*) :: cell_center_mesh_name
+      integer(kind=c_int), intent(in) :: cell_center_mesh_size
+      real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_2d_x
+      real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_2d_y
       ! Local variables
       integer :: i
 
-      self%mesh_name = mesh_name
-      self%mesh_size = mesh_size
+      self%cell_center_mesh_name = cell_center_mesh_name
+      self%cell_center_mesh_size = cell_center_mesh_size
 
-      allocate (self%mesh_coordinates(mesh_size * 2))
+      if (allocated(self%cell_center_mesh_coordinates_2d)) then
+         deallocate(self%cell_center_mesh_coordinates_2d)
+      end if
+      allocate (self%cell_center_mesh_coordinates_2d(cell_center_mesh_size * 2))
 
-      do i = 1, mesh_size
-         self%mesh_coordinates(2 * i - 1) = mesh_coordinates_x(i)
-         self%mesh_coordinates(2 * i) = mesh_coordinates_y(i)
+      do i = 1, cell_center_mesh_size
+         self%cell_center_mesh_coordinates_2d(2 * i - 1) = cell_center_mesh_coordinates_2d_x(i)
+         self%cell_center_mesh_coordinates_2d(2 * i) = cell_center_mesh_coordinates_2d_y(i)
       end do
 
-   end subroutine builder_add_mesh_2d
+   end subroutine builder_set_cell_center_mesh_2d
 
    function builder_build(self) result(adapter_instance)
       class(precice_adapter_builder_t), intent(inout) :: self
       type(precice_adapter_t), pointer :: adapter_instance
 
       adapter_instance => precice_adapter_t(self%config_file, self%name, self%is_communicator_set, self%communicator, &
-                                            self%my_rank, self%number_of_ranks, self%mesh_name, &
-                                            self%mesh_size, self%mesh_coordinates)
+                                            self%my_rank, self%number_of_ranks, self%cell_center_mesh_name, &
+                                            self%cell_center_mesh_size, self%cell_center_mesh_coordinates_2d)
    end function builder_build
 
 end module precice_adapter_builder

@@ -623,7 +623,7 @@ contains
          fm_precice_adapter_builder => precice_adapter_get_builder()
          call fm_precice_adapter_builder%set_name("fm")
          call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
-         call fm_precice_adapter_builder%add_mesh_2d("fm_flow_cells", ndx, xz, yz)
+         call fm_precice_adapter_builder%set_cell_center_mesh_2d("fm_flow_cells", ndx, xz, yz)
       end if
 
       iresult = DFM_NOERR
