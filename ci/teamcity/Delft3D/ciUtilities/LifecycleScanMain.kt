@@ -19,7 +19,7 @@ object LifecycleScanMain : BuildType({
             scriptContent = """
                 set -euo pipefail
 
-                echo "Branch: $BRANCH"
+                echo "Branch: ${'$'}BRANCH"
 
                 VERSION="${'$'}{BRANCH##*/}"
 
