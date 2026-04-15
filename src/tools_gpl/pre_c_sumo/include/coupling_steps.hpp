@@ -1,9 +1,11 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
-#include <expected>
 
+#include <expected>
 #include <string_view>
+
 #include "csumo_settings_reader.hpp"
+#include "parsing_types.hpp"
 
 namespace pre_c_sumo
 {
@@ -26,7 +28,7 @@ namespace pre_c_sumo
      * @param csumoSettingsFileName Path or name of the C-SUMO settings file.
      * @return std::expected containing `CSumoSettingsReader` on success or `ParseError` on failure.
      */
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoSettingsFile(
+    std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
         const std::string_view csumoSettingsFileName);
 
     /**
@@ -45,7 +47,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void writeFF2NFFiles(CSumoSettingsReader csumoSettings);
+    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Wait until NF2FF files become available.
@@ -56,7 +58,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void waitForNF2FFFiles(CSumoSettingsReader csumoSettings);
+    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -66,7 +68,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void readNF2FFFiles(CSumoSettingsReader csumoSettings);
+    void readNF2FFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
@@ -75,7 +77,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void convertNFToSourcesSinks(CSumoSettingsReader csumoSettings);
+    void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Send computed sources/sinks to the farfield model.
@@ -85,7 +87,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void sendSourcesSinksToFF(CSumoSettingsReader csumoSettings);
+    void sendSourcesSinksToFF(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Convert NF sinks to farfield sinks.
