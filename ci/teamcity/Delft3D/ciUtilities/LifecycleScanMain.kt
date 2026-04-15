@@ -72,11 +72,14 @@ object LifecycleScanMain : BuildType({
         schedule {
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Wednesday
-                hour = 13
-                minute = 25
+                hour = 14
+                minute = 50
             }
 
-            branchFilter = "+:all/task/SWFABRIEK-63-lifecycle-pipeline-2"
+            branchFilter = """
+                +:all/release/2026.01
+                +:all/release/2025.02
+            """.trimIndent()
 
             triggerBuild = always()
             withPendingChangesOnly = false
