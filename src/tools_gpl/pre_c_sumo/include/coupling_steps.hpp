@@ -6,6 +6,7 @@
 
 #include "csumo_settings_reader.hpp"
 #include "parsing_types.hpp"
+#include "precice_state.hpp"
 
 namespace pre_c_sumo
 {
@@ -37,7 +38,7 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receiveFFData();
+    void receiveFFData(const PreCICEState& precice_state);
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.

@@ -5,6 +5,7 @@ set(source_files
     csumo_settings_reader.cpp
     FF2NF_writer.cpp
     parsing_utils.cpp
+    precice_state.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
@@ -16,6 +17,7 @@ set(header_files
     ${include_dir}/FF2NF_writer.hpp
     ${include_dir}/parsing_utils.hpp
     ${include_dir}/parsing_types.hpp
+    ${include_dir}/precice_state.hpp
 )
 
 add_library(pre_c_sumo_lib ${source_files} ${header_files})
