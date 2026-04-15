@@ -87,7 +87,6 @@ contains
       character(20) :: parname
       character(45) :: txtput1
       character(20) :: txtput2
-      character(100) :: txtput3      
       character(80) :: bndname
       character(256) :: errmsg
       character(:), allocatable :: filename
