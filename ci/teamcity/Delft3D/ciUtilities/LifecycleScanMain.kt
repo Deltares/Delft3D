@@ -46,10 +46,10 @@ object LifecycleScanMain : BuildType({
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Wednesday
                 hour = 10
-                minute = 45
+                minute = 50
             }
 
-            branchFilter = "+:refs/heads/all/task/SWFABRIEK-63-lifecycle-pipeline-2"
+            branchFilter = "+:all/task/SWFABRIEK-63-lifecycle-pipeline-2"
 
             triggerBuild = always()
         }
