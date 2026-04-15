@@ -42,9 +42,17 @@ object LifecycleScanMain : BuildType({
     }
 
     triggers {
-        vcs {
+        schedule {
+            schedulingPolicy = weekly {
+                dayOfWeek = ScheduleTrigger.DAY.Wednesday
+                hour = 13
+                minute = 25
+            }
+
             branchFilter = "+:all/task/SWFABRIEK-63-lifecycle-pipeline-2"
-            perCheckinTriggering = false
+
+            triggerBuild = always()
+            withPendingChangesOnly = false
         }
     }
 
