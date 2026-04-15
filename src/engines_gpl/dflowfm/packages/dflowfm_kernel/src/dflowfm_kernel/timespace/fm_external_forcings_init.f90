@@ -169,7 +169,7 @@ contains
          case ('lateral')
             res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
 
-         case ('spatial','meteo')
+         case ('spatial', 'meteo')
             res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
 
          case ('sourcesink')
@@ -1166,14 +1166,15 @@ contains
    !!
    !! Input is a loaded .ext file tree structure.
    !! Returns the resulting number of source sinks
-   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_source_sinks)
-      use fm_external_forcings_data, only: num_source_sink
+   function compute_and_preinit_bubblescreens_sourcesinks(bnd_ptr, base_dir, file_name) result(num_bubblescreen_source_sinks)
+      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
+      use m_cell_geometry, only: ba
       use m_filez, only: oldfil
       use m_reapol, only: reapol
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
-      use string_module, only: strcmpi
+      use string_module, only: strcmpi, str_tolower
       use m_polygon, only: npl
       use network_data
       use m_flow
@@ -1187,21 +1188,20 @@ contains
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      integer :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
       logical :: is_successful
-      integer :: cidx
       integer :: file_pointer
       integer :: i !< Loop index
-      integer :: i_bubblescreen !< Loop index for bubblescreens
-      integer :: jakdtree
-      integer :: k_start !< Bottom active layer index in a flowcell
-      integer :: k_end !< Top active layer index in a flowcell
-      integer :: num_source_sinks
+      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
+      integer :: i_source_sink !< Loop index for source/sinks within a bubblescreen
+      integer :: i_flowcell !< Loop index for flowcells within a bubblescreen
+      integer :: num_bubblescreens
       integer :: num_items_in_file
-      integer :: num_bubblescreens !< Number of bubblescreens in the ext file, used to allocate the bubblescreens array
-      integer, dimension(:), allocatable :: crossed_cells
-
+      real(kind=dp) :: total_area !< Total area of the bubblescreen
+      real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
+      real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
       character(len=:), allocatable :: id !< Bubblescreen id
@@ -1209,62 +1209,63 @@ contains
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
+      type(t_Bubblescreen) :: bubblescreen
 
+      ! Initialization
       i_bubblescreen = 0
-      jakdtree = 0
-      num_source_sinks = 0
+      num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
       ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
       num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
       allocate (bubblescreens(num_bubblescreens))
       allocate (bubblescreen_air_discharge(num_bubblescreens))
+
       ! Initialize cache
       call init_cell_geom_as_polylines()
 
+      ! Cycle through all [blocks] in the .ext file tree and find the [bubblescreen] blocks
       do i = 1, num_items_in_file
          block_ptr => bnd_ptr%child_nodes(i)%node_ptr
          group_name = trim(tree_get_name(block_ptr))
 
-         if (strcmpi(group_name, 'bubblescreen')) then
+         if (str_tolower(group_name) == 'bubblescreen') then
             i_bubblescreen = i_bubblescreen + 1
-            associate (bubblescreen => bubblescreens(i_bubblescreen))
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
+            bubblescreen%id = id
 
-               is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
-               bubblescreen%id = id
+            if (is_successful) then
 
-               if (is_successful) then
-                  call savepol()
-                  call oldfil(file_pointer, location_file)
-                  call reapol(file_pointer, 0)
+               ! Read the polyline file to polygon data and get the x,y coordinates of the polyline points
+               call savepol()
+               call oldfil(file_pointer, location_file)
+               call reapol(file_pointer, 0)
+               polygon_x_coordinates = xpl(1:npl)
+               polygon_y_coordinates = ypl(1:npl)
+               call restorepol()
 
-                  bubblescreen%num_polyline = npl
+               ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
+               call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
+               bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
 
-                  bubblescreen%x_polyline = xpl(1:npl)
-                  bubblescreen%y_polyline = ypl(1:npl)
+               ! Allocate source/sink indices array for the bubblescreen and fill with source/sink indices
+               allocate (bubblescreen%source_sink_indices(bubblescreen%num_flowcells))
+               do i_source_sink = 1, bubblescreen%num_flowcells
+                  num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + 1
+                  bubblescreen%source_sink_indices(i_source_sink) = num_source_sink + num_bubblescreen_source_sinks
+               end do
 
-                  if (bubblescreen%num_polyline > 0) then
-                     call find_cells_crossed_by_polyline(bubblescreen%x_polyline, bubblescreen%y_polyline, crossed_cells, error)
-                  else
-                     write (msgbuf, '(5a)') 'Bubblescreen with id='//trim(id)//' in file ''', trim(file_name), ''': [', trim(group_name), '] has no valid location information.'
-                     call err_flush()
-                     cycle
-                  end if
+               ! Compute total area of the bubblescreen
+               total_area = 0.0_dp
+               do i_flowcell = 1, bubblescreen%num_flowcells
+                  total_area = total_area + ba(bubblescreen%flowcell_indices(i_flowcell))
+               end do
+               bubblescreen%total_area = total_area
 
-                  bubblescreen%num_flow_cells = size(crossed_cells)
-                  allocate (bubblescreen%flow_cells(bubblescreen%num_flow_cells))
-                  do cidx = 1, size(crossed_cells)
-                     bubblescreen%flow_cells(cidx)%flownode_nr = crossed_cells(cidx)
-                     ! TODO: Check if kbot will not change for changing morphology
-                     k_start = kbot(crossed_cells(cidx))
-                     k_end = k_start + kmxn(crossed_cells(cidx)) - 1
+            end if
 
-                     bubblescreen%flow_cells(cidx)%flowcell_start_index = k_start
-                     bubblescreen%flow_cells(cidx)%num_source_sinks = kmxn(crossed_cells(cidx))
-                     num_source_sinks = num_source_sinks + bubblescreen%flow_cells(cidx)%num_source_sinks
-                  end do
-               end if
-            end associate
+            ! Add the pre-initialized bubblescreen to bubblescreens
+            bubblescreens(i_bubblescreen) = bubblescreen
 
          end if
       end do
@@ -1287,7 +1288,6 @@ contains
       use m_flow
       use fm_external_forcings_data
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_bubblescreen
       use m_setsorsin
       use m_missing, only: dmiss
 
@@ -1302,11 +1302,12 @@ contains
       integer :: cidx !< Index for crossed cells
       integer :: i, bi !< Loop indices
       integer :: ierr !< Error code
-      integer :: bubble_source_count
+      integer :: bubblescreen_source_sink_count
 
-      real(kind=dp) :: tmsx !< Temporary x-coordinate for bubblescreen source/sink
-      real(kind=dp) :: tmsy !< Temporary y-coordinate for bubblescreen source/sink
-      real(kind=dp) :: tmsz !< Temporary z-coordinate for bubblescreen source/sink
+      real(kind=dp), dimension(1) :: x_flowcell !< x-coordinate of flow cell
+      real(kind=dp), dimension(1) :: y_flowcell !< y-coordinate of flow cell
+      real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
+      real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
       real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
       character(len=:), allocatable :: id !< Bubblescreen id
@@ -1316,7 +1317,7 @@ contains
 
       ! Initialization
       is_successful = .false.
-      bubble_source_count = 0
+      bubblescreen_source_sink_count = 0
 
       ! Read bubble screen attributes from the tree node
       is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
@@ -1332,28 +1333,25 @@ contains
          end do
 
          associate (bubblescreen => bubblescreens(bi))
-            do cidx = 1, size(bubblescreen%flow_cells)
-               ! For each crossed cell, create a bubblescreen source/sink object
-               tmsx = xzw(bubblescreen%flow_cells(cidx)%flownode_nr)
-               tmsy = yzw(bubblescreen%flow_cells(cidx)%flownode_nr)
 
-               bubblescreen%flow_cells(cidx)%start_index = num_source_sink + 1
-               do i = bubblescreen%flow_cells(cidx)%flowcell_start_index, &
-                  bubblescreen%flow_cells(cidx)%flowcell_start_index + bubblescreen%flow_cells(cidx)%num_source_sinks - 1
-                  write (srcid, '(A,I0)') trim(id), bubble_source_count + 1
+            ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
+            do cidx = 1, bubblescreen%num_flowcells
 
-                  tmsz = (zws(i) + zws(i - 1)) / 2.0_dp
-                  call addsorsin(srcid, [tmsx], [tmsy], [tmsz, dmiss], [tmsz, dmiss], 0.0_dp, ierr)
+               ! Create the source/sink name
+               bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
+               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
 
-                  write (msgbuf, '(A, A, A, L, A, 3F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", tmsx, tmsy, tmsz
-                  call msg_flush()
+               ! Get the x,y coordinates for the bubblescreen flow cell
+               x_flowcell = xzw(bubblescreen%flowcell_indices(cidx))
+               y_flowcell = yzw(bubblescreen%flowcell_indices(cidx))
+               z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
+               z_flowcell_sink = bubblescreen%z_level
 
-                  bubble_source_count = bubble_source_count + 1
-               end do
+               ! Create a linked source/sink in the flow cell
+               call addsorsin(srcid, x_flowcell, y_flowcell, z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
 
-               ! Fill in remaining bubblescreen flow cell data
-               bubblescreen%flow_cells(cidx)%num_source_sinks = bubble_source_count
-
+               write (msgbuf, '(A, A, A, L, A, 2F12.3)') 'Added Bubblescreen: ', trim(srcid), "Status: ", is_successful, ", Location: ", x_flowcell(1), y_flowcell(1)
+               call msg_flush()
             end do
          end associate
       end if
