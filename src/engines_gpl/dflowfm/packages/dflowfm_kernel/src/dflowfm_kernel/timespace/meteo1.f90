@@ -4221,7 +4221,7 @@ contains
       case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
-      case ('secchi_depth_time_dependent', 'secchidepth')
+      case ('secchidepth')
          itemPtr1 => item_secchi_depth
          dataPtr1 => spatial_secchi_depth
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
