@@ -2,10 +2,6 @@ module m_bubblescreen
    use precision_basics, only: dp, comparereal
    use fm_external_forcings_data, only: t_BubbleScreen, bubblescreens, source_sink_indices, source_sink_all_discharges, bubblescreen_air_discharge, source_sink_z_bottom, source_sink_z_top
    use m_alloc, only: realloc
-   use m_cell_geometry, only: ba
-   use m_flow, only: kmx, zws, kbot, s1, vol1
-   use m_get_kbot_ktop, only: getkbotktop
-   use m_transport, only: numconst, constituents
    use messageHandling, only: err_flush, msgbuf, msg_flush
 
    implicit none(type, external)
@@ -32,6 +28,8 @@ contains
 
    !> Updates the discharges for a single bubble screen object
    subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)
+      use m_cell_geometry, only: ba
+
       ! Parameters
       type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
       real(kind=dp), intent(in) :: air_discharge !< Air discharge for this bubble screen
@@ -90,6 +88,9 @@ contains
 
    !> Finds the layer interfaces of the bottom (k_start), top (k_stop) and maximum velocity (k_max_velocity) for a bubble screen in a flow cell
    subroutine find_active_layer_interfaces(flow_cell_index, z_bot, bubblescreen_id, k_start, k_stop, k_max_velocity)
+      use m_flow, only: zws, s1
+      use m_get_kbot_ktop, only: getkbotktop
+
       ! Parameters
       integer, intent(in) :: flow_cell_index !< 2D flow cell index; in {network_data::netcell}
       real(kind=dp), intent(in) :: z_bot !< [m] Bottom elevation of the flow cell
@@ -169,6 +170,8 @@ contains
 
    !> Update the discharge for a bubble screen source/sink
    subroutine update_bubblescreen_source_sink_discharge(source_sink_index, discharge)
+      use m_transport, only: numconst
+
       ! Parameters
       integer, intent(in) :: source_sink_index !< [-] Index of source/sink in {fm_external_forcings_data::source_sink_indices}
       real(kind=dp), intent(in) :: discharge !< [m3/s] Water discharge for this source/sink
@@ -184,6 +187,7 @@ contains
 
    !> Updates the vertical layer indices for a bubble screen linked source/sink
    subroutine update_bubblescreen_source_sink_layer_indices(source_sink_index, n, k_start, k_stop, k_max_velocity)
+      use m_flow, only: zws
       ! Parameters
       integer, intent(in) :: source_sink_index !< [-] Index of source/sink in {fm_external_forcings_data::source_sink_indices}
       integer, intent(in) :: n !< [-] 2D flow cell index; in {network_data::netcell}
@@ -206,7 +210,7 @@ contains
 !> Computes the total area of a bubble screen based on its flow cells
    function compute_bubblescreen_area(bubblescreen) result(area)
       use m_partitioninfo, only: jampi, reduce_double_sum, idomain, my_rank
-
+      use m_cell_geometry, only: ba
       ! Parameters
       type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
       real(kind=dp) :: area !< [m2] Area of the bubble screen
