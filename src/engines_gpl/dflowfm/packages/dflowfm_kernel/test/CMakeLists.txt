@@ -12,7 +12,8 @@ function(copy_test_resources NAME SOURCE_FOLDER TARGET_FOLDER)
     endforeach()
 endfunction()
 
-f90twtest(test_dflowfm_kernel
+set(test_target test_dflowfm_kernel_gtest)
+f90twtest(${test_target}
     CFILES test_dflowfm_kernel.cpp
     F90FILES
         src/test_dflowfm_kernel_example.f90 # This must be the first Fortran file, as it is referenced in test_dflowfm_kernel.cpp!!
@@ -42,4 +43,4 @@ f90twtest(test_dflowfm_kernel
 )
 add_subdirectory(helpers)
 
-copy_test_resources("test_dflowfm_kernel" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:test_dflowfm_kernel>/MDUversion")
+copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
