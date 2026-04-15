@@ -1350,7 +1350,7 @@ contains
                   ! Space varying data has been specified
                   ! Use routine that also read the depth file to read the data
                   !
-                  write(lundia, '(a,i0,a,f0.3,a)') '   Fraction ', ised , ' : ', trim(mflfil(ised)), ' in '//trim(inisedunit(ised))
+                  write(lundia, '(a,i0,a,a,a)') '   Fraction ', ised , ' : ', trim(flsdbd(ised)), ' in '//trim(inisedunit(ised))
                   call depfil_stm_double(lundia, error, flsdbd(ised), &
                                        & fmttmp, bodsed, lsedtot, &
                                        & ised, dims, message)
