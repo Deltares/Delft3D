@@ -13,7 +13,6 @@ contains
     subroutine disable_timers_and_mpi()
         use Timers, only: timini, timon
         use m_partitioninfo, only: jampi
-        implicit none
 
         call timini() ! Initialize timers (otherwise `flow_geominit` crashes)
         timon = .false. ! Disable timers because we're running unit tests.
@@ -25,7 +24,6 @@ contains
         use m_network
         use m_CrossSections, only: AddCrossSectionDefinition, CS_RECTANGLE
         use m_roughness, only: R_MANNING
-        implicit none
         
         type(t_network), intent(inout) :: network
         real(kind=dp), intent(in) :: width
@@ -119,7 +117,6 @@ contains
         use m_roughness, only: R_MANNING
         use m_missing, only: DMISS
         use m_alloc, only: realloc
-        implicit none
 
         real(kind=dp), intent(in) :: width
         real(kind=dp), intent(in) :: height
@@ -177,7 +174,6 @@ contains
         use m_profiles, only: profiles1D, nprofdefs
         use m_roughness, only: R_MANNING
         use m_missing, only: DMISS
-        implicit none
 
         real(kind=dp), intent(in) :: width
         real(kind=dp), intent(in) :: height
@@ -218,7 +214,7 @@ contains
     subroutine place_2d2d_link(p, q, new_link, error_code)
         use gridoperations, only: incells, setnewpoint, connectdbn
         use network_data, only: kn3typ, xzw, yzw
-        implicit none
+
         real(kind=dp), intent(in) :: p(2), q(2)
         integer, intent(out) :: new_link
         integer, intent(out) :: error_code
@@ -240,14 +236,12 @@ contains
         call connectdbn(p_centernode, q_centernode, new_link)
     end subroutine place_2d2d_link
 
-    ! Disabled this test (notice the double !). We decided to not use `network1d` code to handle 2d2d links in UNST-9384 yet. 
-    !!$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d, test_getprof_1d__network1d,
+    !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d, test_getprof_1d__network1d,
     subroutine test_getprof_1d__network1d() bind(C)
         use network_data, only: numl
         use m_flow_geominit, only: flow_geominit
         use m_network, only: initialize_1dadmin
         use unstruc_channel_flow, only: network, default_channel_flow
-        implicit none
 
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
@@ -289,10 +283,9 @@ contains
         call f90_assert_near(area, 2.0_dp, 1e-7_dp, "Unexpected area result" // c_null_char)
         call f90_assert_near(perim, 4.0_dp, 1e-7_dp, "Unexpected perim result" // c_null_char)
     end subroutine test_getprof_1d__network1d
-    !!$f90tw )
+    !$f90tw )
 
-    ! Disabled this test (notice the double !). We decided to not use `network1d` code to handle 2d2d links in UNST-9384 yet.
-    !!$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__friction, test_getprof_1d__network1d__friction,
+    !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__friction, test_getprof_1d__network1d__friction,
     subroutine test_getprof_1d__network1d__friction() bind(C)
         use network_data, only: numl
         use m_flow, only: u1, q1, hu, cfuhi, frcu, frcu_mor, u_to_umain, q1_main
@@ -303,7 +296,6 @@ contains
         use unstruc_channel_flow, only: network, default_channel_flow
         use m_Roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
-        implicit none
 
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 1
@@ -359,10 +351,9 @@ contains
         chezy = get_chezy(hydrad, 0.013_dp, 1.0_dp, 1.0_dp, R_MANNING)
         call f90_assert_near(cfuhi(1), ag / (hydrad * chezy * chezy), 1e-7_dp, "Unexpected friction result" // c_null_char) 
     end subroutine test_getprof_1d__network1d__friction
-    !!$f90tw )
+    !$f90tw )
 
-    ! Disabled this test (notice the double !). We decided to not use `network1d` code to handle 2d2d links in UNST-9384 yet.
-    !!$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__full, test_getprof_1d__network1d__full,
+    !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__network1d__full, test_getprof_1d__network1d__full,
     subroutine test_getprof_1d__network1d__full() bind(C)
         use network_data, only: numl
         use m_flow_geominit, only: flow_geominit
@@ -411,7 +402,7 @@ contains
         call f90_assert_near(area, 3.0_dp + PREISMANN_SLOT_AREA, 1e-7_dp, "Unexpected area result" // c_null_char)
         call f90_assert_near(perim, 7.0_dp, 1e-7_dp, "Unexpected perim result" // c_null_char)
     end subroutine test_getprof_1d__network1d__full
-    !!$f90tw )
+    !$f90tw )
 
     !$f90tw TESTCODE(TEST, test_getprof_1d, test_getprof_1d__prof1d_without_profile, test_getprof_1d__prof1d_without_profile,
     subroutine test_getprof_1d__prof1d_without_profile() bind(C)

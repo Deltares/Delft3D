@@ -4,9 +4,9 @@ module m_network_helpers
     public :: generate_square_grid, cleanup_network_data
 contains
 
-    !> Sets up minimal network_data with a single rectangular netcell
-    !! centered at (center_x, center_y) with given side length.
-    !! This is useful for testing routines like incells that depend on network_data.
+    !> Initializes network_data with a square grid consisting of `rows * columns` square cells.
+    !! The square cells are axis-aligned and have side length `side_length`. Only the bottom left
+    !! coordinates of the grid need to be specified.
     subroutine generate_square_grid(bottom_left_x, bottom_left_y, side_length, rows, columns, array_size_margin)
         use precision, only: dp
         use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod, LINK_2D

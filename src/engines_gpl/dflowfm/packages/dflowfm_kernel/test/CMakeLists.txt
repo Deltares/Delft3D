@@ -26,6 +26,7 @@ f90twtest(${test_target}
         src/test_ec_module_block.f90
         src/test_unstruc_model.f90
         src/test_mdu_file_read_write.f90
+        src/test_getprof_1d.f90
     F2HFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_3d_layer_administration.f90
