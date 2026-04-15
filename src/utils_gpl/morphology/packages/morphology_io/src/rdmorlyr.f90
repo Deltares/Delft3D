@@ -1275,7 +1275,7 @@ contains
       ! Fluff layer
       !
       if (morpar%flufflyr%iflufflyr > 0 .and. .not. rst_fluff) then
-         write(lundia, '(a,i0)') '*** Reading fluff layer input'
+         write(lundia, '(a)') '*** Reading fluff layer input'
          !
          ! If not restart then initialize using values specified in input file
          !
@@ -1307,7 +1307,7 @@ contains
                mfluff(ised, :) = mfluni(ised)
             end if
          end do
-         write(lundia, '(a,i0)') '*** End of fluff layer input'
+         write(lundia, '(a)') '*** End of fluff layer input'
          write (lundia, *)
       end if
       !
