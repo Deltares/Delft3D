@@ -7,9 +7,9 @@ If you are entirely new to contributing to open source, [this generic guide](htt
 ## Workflow
 ### External contributors
  - Create a fork of the Delft3D repository.
- - Reach out to Deltares in as early as possible if you intend to contribute changes back to the main Delft3D version.
+ - Reach out to Deltares as early as possible if you intend to contribute changes back to the main Delft3D version.
    This helps us with keeping track of what developments are ongoing.
-   This avoids that you start implementing something that other people are also working on, and we can give guidance as to how to best implement the intended changes.
+   This helps avoid starting work on something that other people are already implementing, and we can give guidance on how best to implement the intended changes.
  - Checkout/Clone the repository locally.
  - Create a branch, ideally using the naming convention below.
    The frequency of updating your fork/branch from the Deltares main is up to personal taste.
@@ -35,13 +35,13 @@ If you are entirely new to contributing to open source, [this generic guide](htt
  - Implement, test and document the modifications.
    In case of changes by external contributors, this step will include pulling the changes from the external repository into the local branch and at least a security scan of the changes made by the external contributor.
  - Create a pull request:
-   - Our Continuous Integration pipelines will be triggered automatically by pull request created by Deltares employees.
+   - Our Continuous Integration pipelines will be triggered automatically by a pull request created by Deltares employees.
      These pipelines consist of (Deltares-internal) TeamCity projects to build the source code (Windows and Linux) and subsequently a set of model simulation testbenches.
      A merge is only possible when all checks succeed.
      The projects will take at least 30 minutes to complete.
-   - You have to assign the Pull request to a core developer for review.
+   - You have to assign the pull request to a core developer for review.
      If review and all tests pass, the tester/reviewer is allowed to merge into main (signed Fiduciary License Agreement required in case of external contributor).
- - Official binary deliveries are only allowed using Deltares TeamCity server
+ - Official binary deliveries are only allowed using the Deltares TeamCity server.
 
 ## Branch naming
 For each issue or feature, a separate branch should be created from the main.
