@@ -42,7 +42,7 @@ contains
       use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
                             soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
                             jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
-                            DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
+                            POOL_ATKINS_PARAMETER
       use m_heatfluxes, only: em, albedo, cpa, spatial_secchi_depth_is_available, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
@@ -218,7 +218,7 @@ contains
                do j = j2, 1, -1
 
                   if (j == 1 .and. spatial_secchi_depth_is_available) then
-                     diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
+                     diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / POOL_ATKINS_PARAMETER
                   end if
 
                   zlo = 0.0_dp
