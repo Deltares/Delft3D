@@ -127,7 +127,10 @@ if (ios /= 0) then
     return
 end if
       success = ecSampleReadAll(minp0, fildep, xs, ys, zs, ns, kx)
-      close(minp0)
+close(minp0, iostat=ios, iomsg=msg)
+if (ios /= 0) then
+    write(*,*) 'Error closing file:', trim(msg)
+end if
       jdla = 1
       jsferic = 0
       jasfer3D = 0
