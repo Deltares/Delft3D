@@ -15597,6 +15597,9 @@ contains
       integer :: numl2d, numNodes, ndxndxi
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
 
+      associate (mask => cell_mask)
+      end associate
+
       if (jabndnd == 1) then
          ndxndxi = ndx
       else
@@ -15704,13 +15707,13 @@ contains
 !> Writes the unstructured flow geometry in UGRID format to an already opened netCDF dataset.
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
-      use m_flowgeom, only: t_fm_flowgeom
+      use m_flowgeom, only: t_fm_flowgeom, bl, bl_min, ba
       !use network_data
       use m_sferic
       use m_missing
       use netcdf
       use m_partitioninfo
-      use m_flow, only: kmx, mxlaydefs, laymx, numtopsig!, s1max
+      use m_flow, only: kmx, mxlaydefs, laymx, numtopsig, s1max
       use m_alloc
       use dfm_error
       use m_save_ugrid_state
@@ -15730,9 +15733,9 @@ contains
       logical, optional, intent(in) :: ja2D !< Whether to include the 2D grid (default = .true.)
 
       integer :: jabndnd_
-      !integer :: ndxndxi
-      !integer :: last_1d
-      !integer :: ndx1d
+      integer :: ndxndxi
+      integer :: last_1d
+      integer :: ndx1d
 
       integer, allocatable :: contacts(:, :), contacttype(:)
       integer :: layer_count, layer_type
@@ -15772,14 +15775,6 @@ contains
          jabndnd_ = 0
       end if
 
-      !if (jabndnd_ == 1) then
-      !   ndxndxi = ndx
-      !   last_1d = ndx1db
-      !else
-      !   ndxndxi = ndxi
-      !   last_1d = ndxi
-      !end if
-
       if (present(jaFou)) then
          jafou_ = jaFou
       else
@@ -15811,7 +15806,7 @@ contains
          if (mxlaydefs > 1) then
             call mess(LEVEL_WARN, 'Multiple layer definitions cannot be handled for layer variables. Layer variables will not be written.')
             ierr = DFM_NOTIMPLEMENTED
-            goto 888
+            return
          else
             layer_count = laymx(1)
             call reallocP(layer_zs,     layer_count,     fill=dmiss, keepExisting=.false.)
@@ -15838,8 +15833,6 @@ contains
 
       call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
-      !ndx1d = ndxi - ndx2d
-
       !if (ndx2d > 0 .and. ja2D_) then
          ! Build the 2D mesh geometry object (node re-mapping, edge/face connectivity, coordinates).
          call build_flowgeom_2d(flowgeom2d, jabndnd_)
@@ -15857,29 +15850,47 @@ contains
          ! Add edge type variable (edge-flowlink relation)
          call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom2d%edge_type)
 
-         !! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models
-         !if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
-         !   ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
-         !   ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
-         !   ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'units', "m")
-         !   ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'positive', "down")
-         !
-         !   if (jafou_) then
-         !      ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(waterlevelname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_s1max(2))
-         !      ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'standard_name', "water level on cell centres")
-         !      ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'units', "m")
-         !      ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
-         !
-         !      ierr = nf90_enddef(ncid)
-         !      ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(1:ndx2d))
-         !      ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(1:ndx2d))
-         !      ierr = nf90_redef(ncid)
-         !   else
-         !      ierr = nf90_enddef(ncid)
-         !      ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(1:ndx2d))
-         !      ierr = nf90_redef(ncid)
-         !   end if
-         !end if
+
+      associate(ndx2d => flowgeom2d%ndx2d, &
+                z2dn  => flowgeom2d%mesh2d%nodez, &
+                ndx1db => flowgeom2d%ndx1db, &
+                ndxi => flowgeom2d%ndxi, &
+                ndx => flowgeom2d%ndx)
+      
+      ndx1d = ndxi - ndx2d
+
+      if (jabndnd_ == 1) then
+         ndxndxi = ndx
+         last_1d = ndx1db
+      else
+         ndxndxi = ndxi
+         last_1d = ndxi
+      end if
+      last_1d = merge(flowgeom2d%ndx1db, flowgeom2d%ndxi, jabndnd_ == 1)
+
+         ! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models
+         if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
+            ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
+            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
+            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'units', "m")
+            ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'positive', "down")
+         
+            if (jafou_) then
+               ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(waterlevelname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_s1max(2))
+               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'standard_name', "water level on cell centres")
+               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'units', "m")
+               ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
+         
+               ierr = nf90_enddef(ncid)
+               ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(1:ndx2d))
+               ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(1:ndx2d))
+               ierr = nf90_redef(ncid)
+            else
+               ierr = nf90_enddef(ncid)
+               ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(1:ndx2d))
+               ierr = nf90_redef(ncid)
+            end if
+         end if
 
       !end if
 
@@ -15909,18 +15920,18 @@ contains
       end if
       ierr = nf90_enddef(ncid)
 
-      ! -- Start data writing (time-independent data) ------------
-      ! Flow cell cc coordinates (only 1D + internal 2D)
-      !if (ndx1d > 0) then
-      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-      !   ! TODO: AvD: UNST-1318: handle 1d zk as well
-      !end if
-      !if (ndx2d > 0 .and. ja2D_) then
-      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-      !   ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-      !   ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
-      !end if
+       !-- Start data writing (time-independent data) ------------
+       !Flow cell cc coordinates (only 1D + internal 2D)
+      if (ndx1d > 0) then
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
+         ! TODO: AvD: UNST-1318: handle 1d zk as well
+      end if
+      if (ndx2d > 0 .and. ja2D_) then
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
+         ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
+         ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
+      end if
 
       ! Put the contacts
       if (n1d2dcontacts > 0) then
@@ -15946,24 +15957,24 @@ contains
       ! * for WAVE: add FlowElem_zcc back in com file.
       ! * for parallel: add 'FlowElemDomain', 'FlowLinkDomain', 'FlowElemGlobalNr'
       ! domain numbers
-      !if (jampi == 1) then
-      !   ! FlowElemDomain
-      !   if (ndx2d > 0) then
-      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(1:ndx2d))
-      !   end if
-      !   ! FlowElemGlobalNr
-      !   if (ndx2d > 0) then
-      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(1:ndx2d))
-      !   end if
-      !   ! FlowElemDomain
-      !   if (ndx1d > 0) then
-      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
-      !   end if
-      !   ! FlowElemGlobalNr
-      !   if (ndx1d > 0) then
-      !      ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
-      !   end if
-      !end if
+      if (jampi == 1) then
+         ! FlowElemDomain
+         if (ndx2d > 0) then
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(1:ndx2d))
+         end if
+         ! FlowElemGlobalNr
+         if (ndx2d > 0) then
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(1:ndx2d))
+         end if
+         ! FlowElemDomain
+         if (ndx1d > 0) then
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
+         end if
+         ! FlowElemGlobalNr
+         if (ndx1d > 0) then
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
+         end if
+      end if
 
       if (mb_latmin /= dmiss .and. mb_latmax /= dmiss .and. mb_lonmin /= dmiss .and. mb_lonmax /= dmiss) then
          ierr = ionc_add_geospatial_bounds(ncid, mb_latmin, mb_latmax, mb_lonmin, mb_lonmax)
@@ -15978,9 +15989,8 @@ contains
       !call readyy('Writing flow geometry data',-1d0)
       return
 
-888   continue
       ! Possible error.
-
+end associate
    end subroutine unc_write_flowgeom_filepointer_ugrid
 
 !> Writes the unstructured 1D flow geometry in UGRID format to an already opened netCDF dataset for use in the dfm volume tool.
