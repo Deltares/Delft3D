@@ -1295,7 +1295,7 @@ contains
          case(LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
          case default
             numcells = numcells + 1
-            kegen(numcells) = cell
+            kegen(numcells) = kegen(i)
          end select
       end do
       numgen = numcells
