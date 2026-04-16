@@ -91,7 +91,7 @@ contains
       use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
-      use m_heatfluxes, only: spatial_secchi_depth, time_varying_secchi_depth_is_available
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
       use m_heatu, only: heatu
       use m_flow_trachyupdate, only: flow_trachyupdate
       use m_flow_trachy_needs_update, only: flow_trachy_needs_update
@@ -169,7 +169,7 @@ contains
          call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
       end if
 
-      if (time_varying_secchi_depth_is_available) then
+      if (secchi_depth_is_time_varying) then
          call get_timespace_value_by_item_and_array(item_secchi_depth, spatial_secchi_depth, time_in_seconds)
       end if
 

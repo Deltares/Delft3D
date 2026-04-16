@@ -1582,7 +1582,7 @@ contains
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
-      use m_heatfluxes, only: spatial_secchi_depth, time_varying_secchi_depth_is_available
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
       use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
@@ -1737,7 +1737,7 @@ contains
          target_array => spatial_secchi_depth
          if (filetype == NCGRID) then
             time_dependent_array = .true.
-            time_varying_secchi_depth_is_available = .true.
+            secchi_depth_is_time_varying = .true.
          end if
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
@@ -2011,7 +2011,7 @@ contains
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
 
-      use m_heatfluxes, only: spatial_secchi_depth_is_available, spatial_secchi_depth
+      use m_heatfluxes, only: secchi_depth_is_spatially_varying, spatial_secchi_depth
       use m_physcoef, only: secchi_depth
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemheight, stemheightstd
@@ -2069,7 +2069,7 @@ contains
       case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
-         spatial_secchi_depth_is_available = .true.
+         secchi_depth_is_spatially_varying = .true.
          do n = 1, ndx
             if (spatial_secchi_depth(n) == dmiss) then
                spatial_secchi_depth(n) = secchi_depth(1)
