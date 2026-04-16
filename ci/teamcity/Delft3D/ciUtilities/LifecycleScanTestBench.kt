@@ -12,6 +12,11 @@ object LifecycleScanTestBench : BuildType({
         root(DslContext.settingsRoot)
     }
 
+    artifactRules = """
+            test/deltares_testbench/syft-bom.json => sbom
+            test/deltares_testbench/cyclonedx-bom.json => sbom
+    """.trimIndent()
+
     steps {
         step {
             id = "LifecycleSyftLinux"

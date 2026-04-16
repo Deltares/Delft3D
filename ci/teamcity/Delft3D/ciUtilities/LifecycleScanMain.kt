@@ -12,6 +12,11 @@ object LifecycleScanMain : BuildType({
     vcs {
         root(DslContext.settingsRoot)
     }
+
+    artifactRules = """
+            syft-bom.json => sbom
+            cyclonedx-bom.json => sbom
+    """.trimIndent()
     
     params {
         param("nexus_iq_application_id", "Delft3D-main")
