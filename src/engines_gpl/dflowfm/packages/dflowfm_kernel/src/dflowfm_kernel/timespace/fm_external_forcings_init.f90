@@ -1213,14 +1213,7 @@ contains
 
    end function init_sourcesink_forcings
 
-   !> Compute (and returns) the number of source/sinks necessary for the bubblescreens
-   !! this is needed to preallocate the source sinks array (EC Module)
-   !! Snaps all bubblescreens based on their polyline to flow nodes and within a flownode to the proper layers.
-   !! while doing this pre-inits the BubbleScreen data structure with processed info
-   !! (m_flowexternalforcingsdata::bubblescreens and m_flowexternalforcingsdata::bubblescreens_air_discharge)
-   !!
-   !! Input is a loaded .ext file tree structure.
-   !! Returns the resulting number of source sinks
+   !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1311,8 +1304,8 @@ contains
 
    end subroutine initialize_bubblescreens
 
-   !> Finish initialization of bubblescreen object and create the source/sink objects
-   !! also connect the EC module to bubblescreen_air_discharge
+   !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
+   !! Source-sinks need to be added globally.
    function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
