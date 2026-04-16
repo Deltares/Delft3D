@@ -12,12 +12,10 @@ object LifecycleScanCiTools : BuildType({
         root(DslContext.settingsRoot)
     }
 
-    artifacts {
-        artifactRules = """
+    artifactRules = """
             ci/python/syft-bom.json => sbom
             ci/python/cyclonedx-bom.json => sbom
-        """.trimIndent()
-    }
+    """.trimIndent()
 
     steps {
         step {
