@@ -2,6 +2,8 @@ module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
+   use unstruc_messages, only: threshold_abort
+   use messagehandling, only: LEVEL_FATAL
 
    implicit none(type, external)
 
@@ -26,6 +28,7 @@ contains
       type(t_spatial_field_input) :: input
       logical :: success
       call make_test_input(input)
+      threshold_abort = LEVEL_FATAL
       input%interpolation_method = 'this_method_does_not_exist'
       success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
       call f90_expect_false(success, "validation should fail when interpolationMethod is unrecognized")
