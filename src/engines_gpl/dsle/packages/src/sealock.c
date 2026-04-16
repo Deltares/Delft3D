@@ -231,28 +231,42 @@ static int sealock_apply_phase_wise_result_correction(sealock_state_t *lock, tim
 }
 
 // Update constituent_lock[c] for all passive constituents using the volume
-// transports from a completed phase step. The mass balance mirrors what
-// dsle.c does internally for salinity, but without affecting density.
+// transports from a completed phase step, and write the outflow concentrations
+// to results3d. The mass balance mirrors what dsle.c does internally for salinity.
 //
-//   mass_after = mass_before + mass_in - mass_out
-//   c_lock_new = mass_after / volume_lock_after
+// Outflow concentration uses c_lock_before (the concentration BEFORE the phase),
+// mirroring how dsle.c computes salinity_to_lake/sea for leveling phases —
+// the water that flowed out carried the lock concentration at the start of the phase.
 //
-// where:
-//   mass_in  = volume_from_lake * c_lake + volume_from_sea * c_sea
-//   mass_out = (volume_to_lake + volume_to_sea) * c_lock_before
-static void sealock_step_constituents(sealock_state_t *lock, const dsle_phase_transports_t *tp,
+// Then constituent_lock is updated via:
+//   mass_after = c_lock_before * vol_before + vol_from_lake * c_lake
+//              + vol_from_sea * c_sea - vol_to_lake * c_lock_before
+//              - vol_to_sea * c_lock_before
+//   c_lock_new = mass_after / vol_after
+static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const dsle_phase_transports_t *tp,
                                       double volume_lock_before, double volume_lock_after) {
   if (volume_lock_after < DBL_EPSILON)
     return;
 
   unsigned int first_lake = lock->from_lake_volumes.first_active_cell;
   unsigned int first_sea = lock->from_sea_volumes.first_active_cell;
+  dfm_volumes_t *to_lake_volumes = &lock->to_lake_volumes;
+  dfm_volumes_t *to_sea_volumes = &lock->to_sea_volumes;
 
   for (unsigned int c = 0; c < lock->num_constituents; c++) {
     double c_lake = lock->parameters3d.constituent_lake[c][first_lake];
     double c_sea = lock->parameters3d.constituent_sea[c][first_sea];
-    double c_lock = lock->constituent_lock[c];
+    double c_lock = lock->constituent_lock[c]; // snapshot BEFORE the phase ran
 
+    // Write outflow concentrations using the pre-phase lock concentration.
+    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
+      lock->results3d.constituent_to_lake[c][to_lake_volumes->first_active_cell + i] = c_lock;
+    }
+    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
+      lock->results3d.constituent_to_sea[c][to_sea_volumes->first_active_cell + i] = c_lock;
+    }
+
+    // Update lock concentration via volume mass balance.
     double mass_after = c_lock * volume_lock_before + tp->volume_from_lake * c_lake +
                         tp->volume_from_sea * c_sea - tp->volume_to_lake * c_lock -
                         tp->volume_to_sea * c_lock;
@@ -380,7 +394,7 @@ static int sealock_phase_wise_step(sealock_state_t *lock, time_t time) {
     // Update constituent_lock state using the same volume transports as the phase step.
     if (status == SEALOCK_OK) {
       double vol_after = sealock_volume(lock);
-      sealock_step_constituents(lock, &lock->phase_results, vol_before, vol_after);
+      sealock_step_constituents_phase_wise(lock, &lock->phase_results, vol_before, vol_after);
     }
   }
 
@@ -524,7 +538,7 @@ static int sealock_collect_layers(sealock_state_t *lock) {
 
   // Temperature always occupies slot 0. Inject the scalar temperature_lake/sea values
   // (kept current via set_var) into every layer of the constituent arrays so that
-  // sealock_step_constituents and sealock_distribute_constituent_results see consistent data.
+  // sealock_step_constituents_phase_wise and sealock_distribute_constituent_results see consistent data.
   for (unsigned int i = 0; i < lock->from_lake_volumes.num_volumes; i++) {
     lock->parameters3d.constituent_lake[TEMPERATURE_CONSTITUENT_SLOT][i] =
         lock->parameters.temperature_lake;
@@ -666,54 +680,44 @@ static int sealock_distribute_results(sealock_state_t *lock) {
 }
 
 static int sealock_distribute_constituent_results(sealock_state_t *lock) {
+  // Phase-wise mode: constituent outputs are written directly by
+  // sealock_step_constituents using the pre-phase lock concentration.
+  // Results persist between updates when no phase transition occurs.
+  if (lock->computation_mode == phase_wise_mode) {
+    return SEALOCK_OK;
+  }
+
+  // Cycle-average mode: use the salinity mixing fraction as a proxy.
+  // Analytically exact at steady state for passive constituents.
   unsigned int c;
   dfm_volumes_t *to_lake_volumes = &lock->to_lake_volumes;
   dfm_volumes_t *to_sea_volumes = &lock->to_sea_volumes;
 
-  if (lock->computation_mode == phase_wise_mode) {
-    // Phase-wise mode: constituent_lock[c] tracks the actual lock concentration
-    // via sealock_step_constituents. Use it directly as the outflow concentration.
-    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
-      unsigned int layer = to_lake_volumes->first_active_cell + i;
-      for (c = 0; c < lock->num_constituents; c++) {
-        lock->results3d.constituent_to_lake[c][layer] = lock->constituent_lock[c];
-      }
-    }
-    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
-      unsigned int layer = to_sea_volumes->first_active_cell + i;
-      for (c = 0; c < lock->num_constituents; c++) {
-        lock->results3d.constituent_to_sea[c][layer] = lock->constituent_lock[c];
-      }
-    }
-  } else {
-    // Cycle-average mode: no lock state is tracked between timesteps.
-    // Use the salinity mixing fraction
-    double sal_lake = lock->parameters.salinity_lake;
-    double sal_sea = lock->parameters.salinity_sea;
-    double sal_range = sal_sea - sal_lake;
+  double sal_lake = lock->parameters.salinity_lake;
+  double sal_sea = lock->parameters.salinity_sea;
+  double sal_range = sal_sea - sal_lake;
 
-    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
-      unsigned int layer = to_lake_volumes->first_active_cell + i;
-      double sal_to_lake = lock->results3d.salinity_to_lake[layer];
-      double frac_lake =
-          (fabs(sal_range) > DBL_EPSILON) ? (sal_to_lake - sal_lake) / sal_range : 0.0;
-      frac_lake = fmax(0.0, fmin(1.0, frac_lake));
-      for (c = 0; c < lock->num_constituents; c++) {
-        double c_lake = lock->parameters3d.constituent_lake[c][layer];
-        double c_sea = lock->parameters3d.constituent_sea[c][layer];
-        lock->results3d.constituent_to_lake[c][layer] = c_lake + frac_lake * (c_sea - c_lake);
-      }
+  for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
+    unsigned int layer = to_lake_volumes->first_active_cell + i;
+    double sal_to_lake = lock->results3d.salinity_to_lake[layer];
+    double frac_lake = (fabs(sal_range) > DBL_EPSILON) ? (sal_to_lake - sal_lake) / sal_range : 0.0;
+    frac_lake = fmax(0.0, fmin(1.0, frac_lake));
+    for (c = 0; c < lock->num_constituents; c++) {
+      double c_lake = lock->parameters3d.constituent_lake[c][layer];
+      double c_sea = lock->parameters3d.constituent_sea[c][layer];
+      lock->results3d.constituent_to_lake[c][layer] = c_lake + frac_lake * (c_sea - c_lake);
     }
-    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
-      unsigned int layer = to_sea_volumes->first_active_cell + i;
-      double sal_to_sea = lock->results3d.salinity_to_sea[layer];
-      double frac_sea = (fabs(sal_range) > DBL_EPSILON) ? (sal_to_sea - sal_lake) / sal_range : 0.0;
-      frac_sea = fmax(0.0, fmin(1.0, frac_sea));
-      for (c = 0; c < lock->num_constituents; c++) {
-        double c_lake = lock->parameters3d.constituent_lake[c][layer];
-        double c_sea = lock->parameters3d.constituent_sea[c][layer];
-        lock->results3d.constituent_to_sea[c][layer] = c_lake + frac_sea * (c_sea - c_lake);
-      }
+  }
+
+  for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
+    unsigned int layer = to_sea_volumes->first_active_cell + i;
+    double sal_to_sea = lock->results3d.salinity_to_sea[layer];
+    double frac_sea = (fabs(sal_range) > DBL_EPSILON) ? (sal_to_sea - sal_lake) / sal_range : 0.0;
+    frac_sea = fmax(0.0, fmin(1.0, frac_sea));
+    for (c = 0; c < lock->num_constituents; c++) {
+      double c_lake = lock->parameters3d.constituent_lake[c][layer];
+      double c_sea = lock->parameters3d.constituent_sea[c][layer];
+      lock->results3d.constituent_to_sea[c][layer] = c_lake + frac_sea * (c_sea - c_lake);
     }
   }
 
