@@ -10,6 +10,7 @@ If you are entirely new to contributing to open source, [this generic guide](htt
  - Reach out to Deltares as early as possible if you intend to contribute changes back to the main Delft3D version.
    This helps us with keeping track of what developments are ongoing.
    This helps avoid starting work on something that other people are already implementing, and we can give guidance on how best to implement the intended changes.
+   Reach out to us via the **sales services team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams with a brief description of the scope of the code change; they will forward your request internally to the appropriate development team.
  - Checkout/Clone the repository locally.
  - Create a branch, ideally using the naming convention below.
    The frequency of updating your fork/branch from the Deltares main is up to personal taste.
