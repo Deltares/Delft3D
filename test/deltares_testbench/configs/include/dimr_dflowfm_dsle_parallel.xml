@@ -1,0 +1,38 @@
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+        <testCase name="e119_f001_c012_3D_pw_1sl_uic_cbc_parallel_automatic" ref="dimr">
+            <path version="2026-04-08T14:57:45.187000">e119_dflowfm_dsle/f001/c012_3D_pw_1sl_uic_cbc_parallel_automatic</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_0000_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="1e-3" />
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_0000_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceRelative="1e-7" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <testCase name="e119_f001_c013_3D_pw_1sl_uic_cbc_parallel_polygon" ref="dimr">
+            <path version="2026-04-08T15:02:10.327000">e119_dflowfm_dsle/f001/c013_3D_pw_1sl_uic_cbc_parallel_polygon</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_0000_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_sa1" toleranceAbsolute="1e-3" />
+                        <parameter name="mesh2d_waterdepth" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_0000_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_discharge" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_salt" toleranceRelative="1e-7" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+    </testCases>
