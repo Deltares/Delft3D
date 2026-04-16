@@ -61,18 +61,9 @@ contains
 
         !     Name     Type   Library
         !     ------   -----  ------------
-
-        IMPLICIT REAL    (A-H, J-Z)
-        IMPLICIT INTEGER (I)
-
-        !REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        !INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-        !        IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
-
-        !integer(kind = int_wp) :: iseg
-        
-        !implicit none
-
+        !
+        implicit none
+        !
         !     Type    Name         I/O Description
 
         real(kind = real_wp) :: process_space_real(*)     !I/O Process Manager System Array, window of routine to process library
@@ -92,11 +83,60 @@ contains
         
         integer(kind = int_wp) :: ILUMON       !    Local loop counter for computational element loop
         integer(kind = int_wp) :: iflux        !    Local loop counter for computational element loop
-
-
+        !
+        !     Local declaration
+        !
+        real(kind = real_wp) :: FPPGREEN
+        real(kind = real_wp) :: NCRATGREEN
+        real(kind = real_wp) :: PCRATGREEN
+        real(kind = real_wp) :: FPPDIAT
+        real(kind = real_wp) :: NCRATDIAT
+        real(kind = real_wp) :: PCRATDIAT
+        real(kind = real_wp) :: SCRATDIAT
+        real(kind = real_wp) :: DELT
+        real(kind = real_wp) :: NH4
+        real(kind = real_wp) :: NO3
+        real(kind = real_wp) :: PO4
+        real(kind = real_wp) :: SI
+        real(kind = real_wp) :: NH4KR
+        real(kind = real_wp) :: MORT1
+        real(kind = real_wp) :: NCRAT1
+        real(kind = real_wp) :: PCRAT1
+        real(kind = real_wp) :: FMRT1A
+        real(kind = real_wp) :: FMRT2A
+        real(kind = real_wp) :: MORT2
+        real(kind = real_wp) :: NCRAT2
+        real(kind = real_wp) :: PCRAT2
+        real(kind = real_wp) :: SCRAT2
+        real(kind = real_wp) :: FMRT1D
+        real(kind = real_wp) :: FMRT2D
+        real(kind = real_wp) :: CONMXN
+        real(kind = real_wp) :: AMAX1
+        real(kind = real_wp) :: CONMXP
+        real(kind = real_wp) :: CONMXS
         
+        real(kind = real_wp) :: N_DEMAND
+        real(kind = real_wp) :: P_DEMAND
+        real(kind = real_wp) :: SI_DEMAND
+        real(kind = real_wp) :: N_FACT
+        real(kind = real_wp) :: P_FACT
+        real(kind = real_wp) :: SI_FACT
+        real(kind = real_wp) :: G_FACT
+        real(kind = real_wp) :: FCPPGREEN
+        real(kind = real_wp) :: FCPPDIAT
+        real(kind = real_wp) :: DCPPGREEN
+        real(kind = real_wp) :: DCPPDIAT
+        real(kind = real_wp) :: PROD1
+        real(kind = real_wp) :: PROD2
+        real(kind = real_wp) :: XNTOT
+        real(kind = real_wp) :: NH4D
+        real(kind = real_wp) :: NO3D
+        real(kind = real_wp) :: NH4N
+        real(kind = real_wp) :: XNREST
+        real(kind = real_wp) :: FNH4
+        real(kind = real_wp) :: FDCA
+        real(kind = real_wp) :: FDCD     
         
-
 		ipnt  = ipoint
 		iflux = 0
         !

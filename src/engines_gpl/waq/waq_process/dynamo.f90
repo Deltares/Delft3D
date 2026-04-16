@@ -54,26 +54,8 @@ contains
 
         !     Name     Type   Library
         !     ------   -----  ------------
-
-         IMPLICIT REAL    (A-H, J-Z)
-         IMPLICIT INTEGER (I)
-
-        ! REAL(kind = real_wp) :: process_space_real  (*), FL    (*)
-        ! INTEGER(kind = int_wp) :: IPOINT(*), INCREM(*), num_cells, NOFLUX, &
-                ! IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
-        !     Local declaration
-        !
-		LOGICAL  TMPOPT
-		logical LgtOpt      !    False if RadSat, Frad and LnFrad are equal for all cells
-
-        !integer(kind = int_wp) :: iseg
-        REAL(kind = real_wp) :: ALGMIN
-        INTEGER(kind = int_wp) :: NR_MES
-        SAVE     NR_MES
-        DATA     NR_MES / 0 /
-        !
-        !implicit none
+        implicit none
 
         !     Type    Name         I/O Description
 
@@ -91,10 +73,67 @@ contains
         integer(kind = int_wp) :: num_exchanges_bottom_dir        ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
         integer(kind = int_wp) :: ipnt(40)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
-        
-        integer(kind = int_wp) :: ILUMON       !    Local loop counter for computational element loop
+        integer(kind = int_wp) :: ILUMON       !    monitoring and log file handle
         integer(kind = int_wp) :: iflux        !    Local loop counter for computational element loop
+        !
+        !     Local declaration
+        !
+        logical  TMPOPT
+		logical  LgtOpt      !    False if RadSat, Frad and LnFrad are equal for all cells
+        integer(kind = int_wp), save :: NR_MES = 0 
+        real(kind = real_wp) :: ALGMIN        
 
+        real(kind = real_wp) :: AMOPRF
+        real(kind = real_wp) :: DAYL
+        real(kind = real_wp) :: DIN
+        real(kind = real_wp) :: FNUT
+        real(kind = real_wp) :: FN
+        real(kind = real_wp) :: FP
+        real(kind = real_wp) :: FRAD
+        real(kind = real_wp) :: FS
+        real(kind = real_wp) :: KMDIN
+        real(kind = real_wp) :: KMP
+        real(kind = real_wp) :: KMSI
+        real(kind = real_wp) :: LIMDLGREEN
+        real(kind = real_wp) :: LIMRAD
+        real(kind = real_wp) :: LNFRAD
+        real(kind = real_wp) :: LOG
+        !real(kind = real_wp) :: MIN
+        real(kind = real_wp) :: NH4
+        real(kind = real_wp) :: NO3
+        real(kind = real_wp) :: OPTDLGREEN
+        real(kind = real_wp) :: PO4
+        real(kind = real_wp) :: RADSAT
+        real(kind = real_wp) :: RAD
+        real(kind = real_wp) :: SI
+        real(kind = real_wp) :: TCG
+        real(kind = real_wp) :: TCM
+        real(kind = real_wp) :: TEMP20
+        real(kind = real_wp) :: TEMP
+        real(kind = real_wp) :: TFGRO
+        real(kind = real_wp) :: TFG
+        real(kind = real_wp) :: TFM   
+        real(kind = real_wp) :: DEPTH
+        real(kind = real_wp) :: EXTVL
+        real(kind = real_wp) :: EXTDPT
+        real(kind = real_wp) :: RADBOT
+        real(kind = real_wp) :: EFF
+        real(kind = real_wp) :: ALG
+        real(kind = real_wp) :: PPMAX
+        real(kind = real_wp) :: MRESP
+        real(kind = real_wp) :: GRESP
+        real(kind = real_wp) :: MORT0
+        real(kind = real_wp) :: MORTS
+        real(kind = real_wp) :: SAL1
+        real(kind = real_wp) :: SAL2
+        real(kind = real_wp) :: SAL
+        real(kind = real_wp) :: ACTMOR
+        real(kind = real_wp) :: PPROD
+        real(kind = real_wp) :: DL           
+
+        real(kind = real_wp) :: TFUNG
+        real(kind = real_wp) :: RESP
+        real(kind = real_wp) :: TFUNM
         
         CALL get_log_unit_number(ILUMON)
 		
