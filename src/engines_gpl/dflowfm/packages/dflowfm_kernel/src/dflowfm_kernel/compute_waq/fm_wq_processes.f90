@@ -498,16 +498,16 @@ contains
       if (icon > 0) then
          if (jsferic == 0) then
             call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because model is not spherical.')
-            isflat = 0
+            isflatitude = 0
          else
             num_spatial_time_fuctions = num_spatial_time_fuctions + 1
-            isflat = num_spatial_time_fuctions
+            isflatitude = num_spatial_time_fuctions
             call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
             call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
          endif
       else
          call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because ''latitude'' is not in the sub-file.')
-         isflat = 0
+         isflatitude = 0
       end if
 
       icon = index_in_array(ctauflow, coname_sub)
@@ -1474,8 +1474,8 @@ contains
             end do
          end do
    
-         if (isflat > 0) then
-            ipoilat = arrpoi(iisfun) + (isflat - 1) * num_cells
+         if (isflatitude > 0) then
+            ipoilat = arrpoi(iisfun) + (isflatitude - 1) * num_cells
             do kk = 1, Ndxi
                call getkbotktopmax(kk, kb, kt, ktmax)
                do k = kb, ktmax
