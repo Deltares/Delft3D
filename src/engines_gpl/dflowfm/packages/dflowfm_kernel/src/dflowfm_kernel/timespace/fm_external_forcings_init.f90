@@ -969,7 +969,7 @@ contains
       use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
       use m_filez, only: oldfil
-      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
+      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl, m_polygon_destructor
       use m_reapol, only: reapol
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
@@ -1015,7 +1015,7 @@ contains
             call err_flush()
             return
          end if
-
+         ierr = m_polygon_destructor()
          call reapol(polyline_file_lun, 0)
          if (npl == 0) then
             write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '"//trim(location_file)//"'"
