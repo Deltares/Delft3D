@@ -8,40 +8,39 @@ extern dsle_config_t config; // Declared in `dimr_bmi.c`
 
 void setUp(void) {
   // Initialize the config.
-  config = (dsle_config_t){
-    .num_locks = 1,
-    .max_num_z_layers = 1,
-    .start_time = timestamp_to_time(197001011200.0), // YYYYMMDDhhmm
-    .end_time = timestamp_to_time(197001021200.0),
-    .current_time = timestamp_to_time(197001011200.0),
-    .log_level = logDEBUG,
-    .locks = {
-      [0] = (sealock_state_t){
-        .id = "test_sealock",
-        .computation_mode = cycle_average_mode,
-        .operational_parameters_file = "this-file-does-not-exist.csv",
-        .phase_state = (dsle_phase_state_t) {
-          .head_lock = 1.0,
-          .salinity_lock = 2.0,
-          .saltmass_lock = 3.0,
-          .volume_ship_in_lock = 4.0,
-        },
-        .parameters = (dsle_param_t){
-          .salinity_lock = 2.0,
-          .lock_length = 5.0,
-          .lock_width = 6.0,
-          .lock_bottom = 7.0,
-          .temperature_lake = 8.0,
-          .temperature_sea = 9.0,
-          .allowed_head_difference = 10.0,
-        },
-        .from_lake_volumes.num_volumes = 1,
-        .from_sea_volumes.num_volumes = 1,
-        .to_lake_volumes.num_volumes = 1,
-        .to_sea_volumes.num_volumes = 1,
-      }
-    }
-  };
+  config =
+      (dsle_config_t){.num_locks = 1,
+                      .max_num_z_layers = 1,
+                      .start_time = timestamp_to_time(197001011200.0), // YYYYMMDDhhmm
+                      .end_time = timestamp_to_time(197001021200.0),
+                      .current_time = timestamp_to_time(197001011200.0),
+                      .log_level = logDEBUG,
+                      .locks = {[0] = (sealock_state_t){
+                                    .id = "test_sealock",
+                                    .computation_mode = cycle_average_mode,
+                                    .operational_parameters_file = "this-file-does-not-exist.csv",
+                                    .phase_state =
+                                        (dsle_phase_state_t){
+                                            .head_lock = 1.0,
+                                            .salinity_lock = 2.0,
+                                            .saltmass_lock = 3.0,
+                                            .volume_ship_in_lock = 4.0,
+                                        },
+                                    .parameters =
+                                        (dsle_param_t){
+                                            .salinity_lock = 2.0,
+                                            .lock_length = 5.0,
+                                            .lock_width = 6.0,
+                                            .lock_bottom = 7.0,
+                                            .temperature_lake = 8.0,
+                                            .temperature_sea = 9.0,
+                                            .allowed_head_difference = 10.0,
+                                        },
+                                    .from_lake_volumes.num_volumes = 1,
+                                    .from_sea_volumes.num_volumes = 1,
+                                    .to_lake_volumes.num_volumes = 1,
+                                    .to_sea_volumes.num_volumes = 1,
+                                }}};
 }
 
 void tearDown(void) {}
@@ -60,7 +59,8 @@ static void test_initialize(void) {
   sealock_state_t *lock = config.locks;
 
   TEST_ASSERT_EQUAL_STRING("ini_sealock", lock->id);
-  TEST_ASSERT_EQUAL_STRING("test_data/dimr_bmi/test_sealock_cycle_average.csv", lock->operational_parameters_file);
+  TEST_ASSERT_EQUAL_STRING("test_data/dimr_bmi/test_sealock_cycle_average.csv",
+                           lock->operational_parameters_file);
 
   TEST_ASSERT_EQUAL(cycle_average_mode, lock->computation_mode);
   TEST_ASSERT_EQUAL(4.0, lock->parameters.temperature_lake);
@@ -94,7 +94,7 @@ static void test_finalize(void) {
   TEST_ASSERT_EQUAL(0, config.num_locks);
 }
 
-#define TEST_GET_VAR(name, source) \
+#define TEST_GET_VAR(name, source)                                                                 \
   static void test_get_var__##name(void) { test_get_var_parameterized(#name, (source)); }
 
 static void test_get_var_parameterized(char *variable_name, double *source) {
@@ -127,7 +127,7 @@ static void test_get_var__unknown_var_name(void) {
   TEST_ASSERT_EQUAL(DIMR_BMI_FAILURE, status);
 }
 
-#define TEST_SET_VAR(name, destination) \
+#define TEST_SET_VAR(name, destination)                                                            \
   static void test_set_var__##name(void) { test_set_var_parameterized(#name, (destination)); }
 
 static void test_set_var_parameterized(char *variable_name, double *destination) {
@@ -160,11 +160,14 @@ TEST_SET_VAR(temperature_sea, &config.locks[0].parameters.temperature_sea)
 static void test_set_var__unknown_var_name(void) {
   double value = 42.0;
   int status = set_var("the_answer_to_life_the_universe_and_everything", &value);
-  TEST_ASSERT_EQUAL(DIMR_BMI_OK, status);  // Calling `set_var` on a non-existing variable is explicitly allowed.
+  TEST_ASSERT_EQUAL(DIMR_BMI_OK,
+                    status); // Calling `set_var` on a non-existing variable is explicitly allowed.
 }
 
-#define TEST_GET_VAR_SHAPE(name, expected_dims) \
-  static void test_get_var_shape__##name(void) { test_get_var_shape_parameterized(#name, (expected_dims)); }
+#define TEST_GET_VAR_SHAPE(name, expected_dims)                                                    \
+  static void test_get_var_shape__##name(void) {                                                   \
+    test_get_var_shape_parameterized(#name, (expected_dims));                                      \
+  }
 
 static void test_get_var_shape_parameterized(char *variable_name, int expected_dims) {
   // Arrange
@@ -221,7 +224,8 @@ static void test_get_end_time(void) {
 static void test_get_current_time(void) {
   double current_time = 0.0;
   get_current_time(&current_time);
-  TEST_ASSERT_EQUAL(197001011200.0, current_time); // `current_time` is `start_time` after initialization.
+  TEST_ASSERT_EQUAL(197001011200.0,
+                    current_time); // `current_time` is `start_time` after initialization.
 }
 
 int main(void) {

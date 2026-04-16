@@ -21,7 +21,6 @@
  * @date 2010
  */
 
-
 #ifndef STATEINTERFACE_H
 #define STATEINTERFACE_H
 
@@ -35,31 +34,32 @@ using namespace std;
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-class stateInterface 
-{
-private:
-	boost::filesystem::path schemaDir;
-	boost::filesystem::path workDir;
-	timeSeriesTensorInterface *tsTensor;
+        class stateInterface
+        {
+        private:
+            boost::filesystem::path schemaDir;
+            boost::filesystem::path workDir;
+            timeSeriesTensorInterface* tsTensor;
 
-public:
-	stateInterface(boost::filesystem::path schemaDir, boost::filesystem::path workDir, timeSeriesTensorInterface *tsTensor);
-	~stateInterface();
+        public:
+            stateInterface(boost::filesystem::path schemaDir, boost::filesystem::path workDir,
+                           timeSeriesTensorInterface* tsTensor);
+            ~stateInterface();
 
-	void read();
-	void write(int tIndex=-1);
-   void writeData(string pathAndFilename, int tIndex = -1);
-   
-   /**
-   * @brief Writes state at defined time index
-   */
-   void writeStateExport(int tIndex, bool isSnapshot = false);
-};
+            void read();
+            void write(int tIndex = -1);
+            void writeData(string pathAndFilename, int tIndex = -1);
 
-} // end namespace timeseries
+            /**
+             * @brief Writes state at defined time index
+             */
+            void writeStateExport(int tIndex, bool isSnapshot = false);
+        };
+
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* STATEINTERFACE_H */

@@ -45,12 +45,6 @@ uv tool install fortls
 uv tool install fprettify
 EOF
 
-# Install git prompt and completion scripts.
-ADD --chmod=755 \
-    https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash \
-    https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh \
-    /home/dev/.local/bin/
-
 # Configure interactive bash environment.
 RUN cat >> /home/dev/.bashrc <<EOF
 # Bash history
@@ -58,8 +52,8 @@ export PROMPT_COMMAND='history -a'
 export HISTFILE=/home/dev/.history/.bash_history
 
 # Git completion and prompt support.
-source /home/dev/.local/bin/git-completion.bash
-source /home/dev/.local/bin/git-prompt.sh
+source /usr/share/bash-completion/completions/git
+source /usr/share/git-core/contrib/completion/git-prompt.sh
 
 # Aliases
 alias ls='ls --color=auto'

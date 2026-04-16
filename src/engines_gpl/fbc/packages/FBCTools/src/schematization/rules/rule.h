@@ -30,28 +30,28 @@ using namespace std;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class rule : public element
-{
-protected:
-    rule(string id, string name);
+            class rule : public element
+            {
+            protected:
+                rule(string id, string name);
 
-public:
-    virtual ~rule(void);
+            public:
+                virtual ~rule(void);
 
-    void activate();
-    void deactivate();
-    virtual void stateTransfer(double*, double*, long long, double);
-    // The defalt index for the output is -1 (not a valid index)
-    virtual int getIYOut() const { return -1; }
-};
+                void activate();
+                void deactivate();
+                virtual void stateTransfer(double*, double*, long long, double);
+                // The defalt index for the output is -1 (not a valid index)
+                virtual int getIYOut() const { return -1; }
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // RULE_H
