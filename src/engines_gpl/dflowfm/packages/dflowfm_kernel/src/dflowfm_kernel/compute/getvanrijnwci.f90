@@ -39,7 +39,7 @@ contains
    subroutine getvanrijnwci(LL, umod, u2dh, taubpuLL, z0urouL)
       use precision, only: dp
       use m_flow, only: hu, epshu, epsz0, lbot, u1, jaconveyance2d, v, ag
-      use m_bedform, only: bfmpar
+      use m_bedform, only: bfmpar, fp
       use m_flowgeom, only: ln, acl, csu, snu, lnx1d
       use m_waves, only: uorb, hwav, twav, rlabda, phiwav, ustokes, vstokes
 
@@ -118,7 +118,7 @@ contains
       uratio = min(uwbih / (u2dh + waveps), 5.0_dp)
       ka = ksc * exp(gamma * uratio)
       ka = min(ka, 10.0_dp * ksc, 0.2_dp * huLL)
-      ca = 18.0_dp * log10(12.0_dp * huLL / ka)
+      ca = 18.0_fp * log10(12.0_fp * huLL / ka)
       taubpuLL = ag * (u2dh * u2dh / umod) / ca**2
       z0urouL = max(3.33e-5_dp, ka / 30.0_dp)
    end subroutine getvanrijnwci

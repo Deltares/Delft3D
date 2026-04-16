@@ -2934,9 +2934,9 @@ contains
 
       !inputs
       integer, intent(in) :: lnx !< Number of flow links in input. (Currently unused).
-      integer, intent(out) :: keg(:) !< Output array containing the flow link numbers that were selected.  kp
+      integer, intent(out) :: keg(:) !< Output array containing the flow link numbers that were selected.
       !< Size of array is responsability of call site, and filling starts at index 1 upon each call.
-      integer, intent(out) :: numg !< Number of flow links that were selected (i.e., keg(1:numg) will be filled).  nump
+      integer, intent(out) :: numg !< Number of flow links that were selected (i.e., keg(1:numg) will be filled).
       integer, intent(in) :: loc_spec_type !< Type of spatial input for selecting nodes. One of: LOCTP_POLYGON_FILE, LOCTP_POLYLINE_FILE, LOCTP_POLYGON_XY , LOCTP_POLYLINE_XY, LOCTP_BRANCHID_CHAINAGE or LOCTP_CONTACTID.
       character(len=*), optional, intent(in) :: loc_file !< (Optional) File name of a polyline file (when loc_spec_type==LOCTP_POLYGON_FILE).
       integer, optional, intent(in) :: nump !< (Optional) Number of points in polyline coordinate arrays xpin and ypin (when loc_spec_type==LOCTP_POLYGON_XY/LOCTP_POLYLINE_XY).

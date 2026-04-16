@@ -817,13 +817,13 @@ contains
          case ('qext')
             ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
             if (jaQext == 0) then
-               write (msgbuf, '(5a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+               write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
                   '] is missing QExt=1 in MDU.'
                call err_flush()
                return
             end if
             if (.not. strcmpi(forcing_file_type, 'sample')) then
-               write (msgbuf, '(7a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
+               write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
                   ''': [', group_name, '], quantity=', trim(quantity), '.'
                call err_flush()
                return

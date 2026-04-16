@@ -681,7 +681,7 @@ contains
 
    end subroutine set_floodfill_water_levels_based_on_sample_file
 
-!> Insert friction coefficient by initial fields
+!> sert friction coefficient by initial fields
    subroutine set_friction_coefficient_by_initial_fields()
       use m_flowgeom, only: lnx, lnx1D, kcu
       use m_flow, only: frcu, ifrcutp
@@ -721,69 +721,8 @@ contains
             frcmax = frcu(link)
          end if
       end do
-      
-      call init_dynamic_vegetation_roughness()
 
    end subroutine set_friction_coefficient_by_initial_fields
-
-!> initialize dynamic vegetation roughness   
-   subroutine init_dynamic_vegetation_roughness
-      use m_flowgeom, only: lnx
-      use m_flow, only: frcu, frcu0, dynveg
-      use m_physcoef, only: frcumin, dynroughveg
-      use m_alloc
-      use unstruc_model, only: md_dynvegpol
-      use timespace_parameters, only: LOCTP_POLYGON_FILE
-      use timespace, only: selectelset_internal_links
-      use m_delpol
-      use MessageHandling
-
-      implicit none
-
-      integer, parameter :: MANNING = 1
-
-      integer :: link
-      integer :: ierr
-      integer :: k
-      integer :: pointscount
-      logical :: ex
-
-      integer, dimension(:), allocatable :: kp
-      integer, dimension(:), allocatable :: kcsveg
-   
-      if (.not. dynroughveg) then
-         return
-      end if
-   
-      inquire (file=trim(md_dynvegpol), exist=ex)
-      if (.not. ex) then
-         call mess(LEVEL_WARN, 'No polygon found for dynamic vegetation update. Process switched off.')
-         dynroughveg = 0
-         return
-      end if
-
-      frcu0 = frcu
-      call realloc(kcsveg, lnx, stat=ierr, fill=0, keepExisting=.false.)
-      if (allocated(kp)) deallocate (kp)
-      allocate (kp(1:lnx))
-      kp = 0
-      ! find links inside polygon
-      call selectelset_internal_links(lnx, kp, pointscount, LOC_SPEC_TYPE=LOCTP_POLYGON_FILE, LOC_FILE=md_dynvegpol)
-      
-      do k = 1, pointscount
-         kcsveg(kp(k)) = 1
-      end do
-      call delpol()
-      !
-      do link = 1, lnx
-         if (frcu(link) > frcumin .and. kcsveg(link) > 0) then
-            dynveg(link) = .true.
-         else
-            dynveg(link) = .false.
-         end if
-      end do
-      
-   end subroutine init_dynamic_vegetation_roughness
 
 !> set friction uniform value on links where_friction_is_not_set
    subroutine set_friction_uniform_value_on_links_where_friction_is_not_set()
@@ -1412,7 +1351,7 @@ contains
 
       if (jawave == CONST .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
-         hwav = min(hwavuni, gammax * hs)
+         hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
             if (jawavestokes > NO_STOKES_DRIFT) then

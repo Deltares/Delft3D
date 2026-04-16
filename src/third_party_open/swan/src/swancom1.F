@@ -6047,8 +6047,7 @@
 !
 !     --- calculate fraction of breakers
 !
-      QB(KCGRD(1)) = 0.                                                   JRE
-      IF ( ETOT .GT. 0. .AND. ISURF.GT.0) THEN                            JRE
+      IF ( ETOT .GT. 0. ) THEN
 !
 !       --- calculate Qb when BJ78 breaker is activated
 !

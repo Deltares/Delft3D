@@ -64,7 +64,7 @@ contains
                         soiltempthick, jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
-                        use_density, dynveg, frcu0
+                        use_density
       use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
                              AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
@@ -95,7 +95,6 @@ contains
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
-      use m_physcoef, only: dynroughveg, frcuni
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -988,12 +987,6 @@ contains
       if (jamap_chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
-      end if
-      if (dynroughveg > 0) then
-         call realloc(frcu0, lnx, stat=ierr, fill=frcuni, keepexisting=.false.)
-         call aerr('frcu0(lnx)', ierr, lnx)
-         call realloc(dynveg, lnx, stat=ierr, fill=.false., keepexisting=.false.)
-         call aerr('dynveg(lnx)', ierr, lnx)
       end if
 
       if (jarhoxu > 0 .or. jased > 0) then

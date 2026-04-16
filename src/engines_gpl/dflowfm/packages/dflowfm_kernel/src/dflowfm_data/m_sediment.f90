@@ -91,8 +91,6 @@ module m_sediment
    logical, allocatable :: bermslopeindexsus(:) !< index where nudging needs to be applied for suspended load
    real(kind=dp), allocatable :: bermslopecontrib(:, :) !< bermslope nudging sediment transport
    real(kind=dp), allocatable :: ssccum(:, :) !< water column integrated sediment transport in dry points (kg/s)
-   real(kind=dp), allocatable :: cumes(:) !< cumulative erosion/sedimentation in link positions
-
    integer :: jased !< Include sediment, 1=Krone, 2=Soulsby van Rijn 2007, 4=Delft3D morphology module
    integer :: jaseddenscoupling = 0 !< Include sediment in rho 1 = yes , 0 = no
    integer :: jasubstancedensitycoupling = 0 !< Include Delwaq substances in rho 1 = yes , 0 = no
@@ -108,8 +106,6 @@ module m_sediment
    integer :: jamormergedtuser
    real(kind=dp) :: upperlimitssc
    integer :: inmorphopol !< value of the update inside morphopol (only 0 or 1 make sense)
-   real(kind=dp) :: difparam !< switch (not applied when <= 0) and scale factor between the sediment diffusion and settling velocity (below the reference height), default 10
-   real(kind=dp) :: seddif_cal !< scale seddif
    !
    !-------------------------------------------------- old sediment transport and morphology
    integer :: mxgrKrone !< mx grainsize index nr that followsKrone. Rest follows v.Rijn
@@ -172,8 +168,6 @@ contains
       jamormergedtuser = 0
       upperlimitssc = 1.0e6_dp
       inmorphopol = 1
-      difparam = 10.0_dp
-      seddif_cal = 0.0_dp
 
    end subroutine default_sediment
 
