@@ -1,7 +1,6 @@
 module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
-   use m_file_helpers, only: create_file
    use m_wind, only: jaQext
 
    implicit none(type, external)
