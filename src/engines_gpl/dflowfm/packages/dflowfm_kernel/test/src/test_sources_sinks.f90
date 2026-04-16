@@ -1,14 +1,14 @@
 module test_sources_sinks
    use assertions_gtest
    use fm_external_forcings, only: sourcesink_parse_coordinates
-   use tree_structures, only: tree_data, tree_create
-   use properties, only: prop_inifile
+   use tree_structures, only: tree_data, tree_create, tree_create_node, tree_destroy
+   use properties, only: prop_set
    use MessageHandling, only: getLastMessage, LEVEL_ERROR, resetMessageCount_MH
    use precision_basics, only: dp
    use m_missing, only: dmiss
    use m_file_helpers, only: create_file
 
-   implicit none
+   implicit none(type, external)
 
    character(len=*), parameter :: EXT_FILENAME = "sourcesinks.ext"
 
@@ -27,35 +27,31 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
-
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
       integer :: error_level
       character(len=256) :: error_message
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "locationFile   = this_file_does_not_exist.pliz", &
-                       "zSource        = -7.5", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
-
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",           "left")
+      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "locationFile", "this_file_does_not_exist.pliz")
+      call prop_set(block_ptr, "", "zSource",      "-7.5")
+      call prop_set(block_ptr, "", "Area",         "0.0")
+      call prop_set(block_ptr, "", "discharge",    "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
       call resetMessageCount_MH()
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_false(success)
-      
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_false(success)
+
       call getLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, failed to read polyline file 'this_file_does_not_exist.pliz'")
 
+      call tree_destroy(tree)
    end subroutine test_polyline_file_missing
 !$f90tw)
 
@@ -72,9 +68,8 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
-
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
       integer :: error_level
       character(len=256) :: error_message
@@ -86,28 +81,26 @@ contains
                        "7.0 11.0 0.0", &
                        "17.0 9.0 -7.5"])
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "locationFile   = my_polyline.pliz", &
-                       "zSource        = -7.5", &
-                       "zSink          = -11.5", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
-
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",           "left")
+      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
+      call prop_set(block_ptr, "", "zSource",      "-7.5")
+      call prop_set(block_ptr, "", "zSink",        "-11.5")
+      call prop_set(block_ptr, "", "Area",         "0.0")
+      call prop_set(block_ptr, "", "discharge",    "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
       call resetMessageCount_MH()
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_false(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
       call f90_expect_true(error_message == "Error in source sink initialization, source/sink z information cannot be specified bothin the ext file and in the polyline file. Make sure the polyline file only contains x and y columns")
+
+      call tree_destroy(tree)
    end subroutine test_double_z_data_specification
 !$f90tw)
 
@@ -124,9 +117,8 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
-
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
       call create_file("my_polyline.pliz", [ &
                        "L1", &
@@ -135,23 +127,19 @@ contains
                        "7.0 11.0", &
                        "17.0 9.0"])
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "locationFile   = my_polyline.pliz", &
-                       "zSource        = -7.5", &
-                       "zSink          = -11.5", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",           "left")
+      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
+      call prop_set(block_ptr, "", "zSource",      "-7.5")
+      call prop_set(block_ptr, "", "zSink",        "-11.5")
+      call prop_set(block_ptr, "", "Area",         "0.0")
+      call prop_set(block_ptr, "", "discharge",    "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
-
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_true(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_true(success)
 
       call f90_assert_eq(size(x_coordinates), 3)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
@@ -170,6 +158,8 @@ contains
       call f90_assert_eq(size(z_range_sink), 2)
       call f90_expect_eq(z_range_sink(1), -11.5_dp)
       call f90_expect_eq(z_range_sink(2), dmiss)
+
+      call tree_destroy(tree)
    end subroutine test_xy_in_polyline_file_2_columns
 !$f90tw)
 
@@ -186,9 +176,8 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
-
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
       call create_file("my_polyline.pliz", [ &
                        "L1", &
@@ -197,21 +186,17 @@ contains
                        "7.0 11.0 0.0", &
                        "17.0 9.0 -7.5"])
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "locationFile   = my_polyline.pliz", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",           "left")
+      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
+      call prop_set(block_ptr, "", "Area",         "0.0")
+      call prop_set(block_ptr, "", "discharge",    "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
-
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_true(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_true(success)
 
       call f90_assert_eq(size(x_coordinates), 3)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
@@ -231,6 +216,7 @@ contains
       call f90_expect_eq(z_range_sink(1), -11.5_dp)
       call f90_expect_eq(z_range_sink(2), dmiss)
 
+      call tree_destroy(tree)
    end subroutine test_xyz_in_polyline_file_3_columns
 !$f90tw)
 
@@ -247,9 +233,8 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
-
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
       call create_file("my_polyline.pliz", [ &
                        "L1", &
@@ -258,21 +243,17 @@ contains
                        "7.0 11.0 0.0 0.0", &
                        "17.0 9.0 -7.5 -6.0"])
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "locationFile   = my_polyline.pliz", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",           "left")
+      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
+      call prop_set(block_ptr, "", "Area",         "0.0")
+      call prop_set(block_ptr, "", "discharge",    "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
-
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_true(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_true(success)
 
       call f90_assert_eq(size(x_coordinates), 3)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
@@ -292,6 +273,7 @@ contains
       call f90_expect_eq(z_range_sink(1), -11.5_dp)
       call f90_expect_eq(z_range_sink(2), -10.0_dp)
 
+      call tree_destroy(tree)
    end subroutine test_xyz_in_polyline_file_4_columns
 !$f90tw)
 
@@ -308,9 +290,8 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
-
-      type(tree_data), pointer :: tree
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
       call create_file("my_polyline.pliz", [ &
                        "L1", &
@@ -319,21 +300,17 @@ contains
                        "7.0 11.0 0.0 0.0 0", &
                        "17.0 9.0 -7.5 -6.0 0"])
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "locationFile   = my_polyline.pliz", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",           "left")
+      call prop_set(block_ptr, "", "name",         "cool_name")
+      call prop_set(block_ptr, "", "locationFile", "my_polyline.pliz")
+      call prop_set(block_ptr, "", "Area",         "0.0")
+      call prop_set(block_ptr, "", "discharge",    "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
-
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_true(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_true(success)
 
       call f90_assert_eq(size(x_coordinates), 3)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
@@ -353,6 +330,7 @@ contains
       call f90_expect_eq(z_range_sink(1), -11.5_dp)
       call f90_expect_eq(z_range_sink(2), -10.0_dp)
 
+      call tree_destroy(tree)
    end subroutine test_xyz_in_polyline_file_5_columns
 !$f90tw)
 
@@ -369,29 +347,24 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
-      type(tree_data), pointer :: tree
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",             "left")
+      call prop_set(block_ptr, "", "name",           "cool_name")
+      call prop_set(block_ptr, "", "numCoordinates", "2")
+      call prop_set(block_ptr, "", "xCoordinates",   "25.0 26.0")
+      call prop_set(block_ptr, "", "yCoordinates",   "5.0 6.0")
+      call prop_set(block_ptr, "", "zSource",        "-7.5")
+      call prop_set(block_ptr, "", "zSink",          "-13.5")
+      call prop_set(block_ptr, "", "Area",           "0.0")
+      call prop_set(block_ptr, "", "discharge",      "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta",  "left.bc")
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "numCoordinates = 2", &
-                       "xCoordinates   = 25.0 26.0", &
-                       "yCoordinates   = 5.0 6.0", &
-                       "zSource        = -7.5", &
-                       "zSink          = -13.5", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
-
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
-
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_true(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_true(success)
 
       call f90_assert_eq(size(x_coordinates), 2)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
@@ -408,6 +381,8 @@ contains
       call f90_assert_eq(size(z_range_sink), 2)
       call f90_expect_eq(z_range_sink(1), -13.5_dp)
       call f90_expect_eq(z_range_sink(2), dmiss)
+
+      call tree_destroy(tree)
    end subroutine test_xy_in_ext_file_single_z
 !$f90tw)
 
@@ -424,29 +399,24 @@ contains
       real(kind=dp), dimension(num_range_points) :: z_range_sink
 
       logical :: success
-      integer :: error_code
+      type(tree_data), pointer :: tree => null()
+      type(tree_data), pointer :: block_ptr => null()
 
-      type(tree_data), pointer :: tree
+      call tree_create("sourcesinks.ext", tree)
+      call tree_create_node(tree, "sourcesink", block_ptr)
+      call prop_set(block_ptr, "", "id",             "left")
+      call prop_set(block_ptr, "", "name",           "cool_name")
+      call prop_set(block_ptr, "", "numCoordinates", "2")
+      call prop_set(block_ptr, "", "xCoordinates",   "25.0 26.0")
+      call prop_set(block_ptr, "", "yCoordinates",   "5.0 6.0")
+      call prop_set(block_ptr, "", "zSource",        "-7.5 -3.0")
+      call prop_set(block_ptr, "", "zSink",          "-10.0 -6.0")
+      call prop_set(block_ptr, "", "Area",           "0.0")
+      call prop_set(block_ptr, "", "discharge",      "left.bc")
+      call prop_set(block_ptr, "", "salinityDelta",  "left.bc")
 
-      call create_file(EXT_FILENAME, [ &
-                       "[SourceSink]", &
-                       "id             = left", &
-                       "name           = cool_name", &
-                       "numCoordinates = 2", &
-                       "xCoordinates   = 25.0 26.0", &
-                       "yCoordinates   = 5.0 6.0", &
-                       "zSource        = -7.5 -3.0", &
-                       "zSink          = -10.0 -6.0", &
-                       "Area           = 0.0", &
-                       "discharge      = left.bc", &
-                       "salinityDelta  = left.bc"])
-
-      call tree_create(file_name, tree)
-      call prop_inifile(EXT_FILENAME, tree, error_code)
-      call f90_assert_eq(error_code, 0, "Failed to read ini file")
-
-      success = sourcesink_parse_coordinates(tree%child_nodes(1)%node_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
-      call f90_assert_true(success)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      call f90_expect_true(success)
 
       call f90_assert_eq(size(x_coordinates), 2)
       call f90_expect_eq(x_coordinates(1), 25.0_dp)
@@ -463,8 +433,9 @@ contains
       call f90_assert_eq(size(z_range_sink), 2)
       call f90_expect_eq(z_range_sink(1), -10.0_dp)
       call f90_expect_eq(z_range_sink(2), -6.0_dp)
+
+      call tree_destroy(tree)
    end subroutine test_xy_in_ext_file_z_ranges
 !$f90tw)
 
 end module test_sources_sinks
-
