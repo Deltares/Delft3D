@@ -120,7 +120,7 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     ag = par(1)
     delta = par(4)
     facua = par(11)
-    if (comparereal(facua, 0.0_fp, 1d-10) == 0) then
+    if (comparereal(facua, 0.0_fp, 1e-10_fp) == 0) then
        facas = par(12)
        facsk = par(13)
     else
