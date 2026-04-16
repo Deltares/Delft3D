@@ -69,7 +69,7 @@ namespace pre_c_sumo
                 .wait_for_file = nf2ff_wait_file,
                 .ff_run_directory = diffuser.ff_run_dir.string(),
                 .run_id = run_id,
-                .unique_id = diffuser.id.value_or(""),
+                .unique_id = "", // Do not use unique ID, run C-SUMO in different directories for now
                 .subgrid_model_nr = subgrid_model_nr,
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
