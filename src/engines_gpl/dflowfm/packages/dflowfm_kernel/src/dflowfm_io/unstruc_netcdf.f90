@@ -15646,7 +15646,7 @@ contains
                  xue => flowgeom%mesh2d%edgex, yue => flowgeom%mesh2d%edgey, &
                  x2dn => flowgeom%mesh2d%nodex, y2dn => flowgeom%mesh2d%nodey, z2dn => flowgeom%mesh2d%nodez)
 
-     ! call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
+      call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
 
       ! Re-map net node indices to a compact 2D-only set, using kc as lookup table.
       kc = 0
@@ -15705,11 +15705,6 @@ contains
       flowgeom%mesh2d%numEdge         = numl2d
       flowgeom%mesh2d%numFace         = ndx2d
       flowgeom%mesh2d%maxNumFaceNodes = numNodes
-
-      ! edge_type is owned by flowgeom; allocate directly there.
-      call realloc(flowgeom%edge_type, numl2d, fill=-999, keepExisting=.false.)
-
-      call get_2d_edge_data(edge_nodes, edge_faces, flowgeom%edge_type, xue, yue)
 
       end associate
    end subroutine build_flowgeom_2d
