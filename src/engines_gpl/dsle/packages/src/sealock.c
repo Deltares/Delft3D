@@ -230,19 +230,14 @@ static int sealock_apply_phase_wise_result_correction(sealock_state_t *lock, tim
   return SEALOCK_OK;
 }
 
-// Update constituent_lock[c] for all passive constituents using the volume
-// transports from a completed phase step, and write the outflow concentrations
-// to results3d. The mass balance mirrors what dsle.c does internally for salinity.
+// Update constituent_lock[c] for all passive constituents and write outflow
+// concentrations to results3d. Three cases depending on phase routine:
 //
-// Outflow concentration uses c_lock_before (the concentration BEFORE the phase),
-// mirroring how dsle.c computes salinity_to_lake/sea for leveling phases —
-// the water that flowed out carried the lock concentration at the start of the phase.
-//
-// Then constituent_lock is updated via:
-//   mass_after = c_lock_before * vol_before + vol_from_lake * c_lake
-//              + vol_from_sea * c_sea - vol_to_lake * c_lock_before
-//              - vol_to_sea * c_lock_before
-//   c_lock_new = mass_after / vol_after
+// Phases 1 and 3 (leveling): pure volume mass balance, no flushing.
+// Phases 2 and 4 (door open): volume mass balance corrected for flush passthrough —
+//   passthrough water enters from lake and exits to sea carrying c_lake, not c_lock.
+// flush_doors_closed (routine < 0): analytical exponential decay mirroring dsle.c's
+//   step_flush_doors_closed, using constituent concentrations in place of salinity.
 static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const dsle_phase_transports_t *tp,
                                       double volume_lock_before, double volume_lock_after) {
   if (volume_lock_after < DBL_EPSILON)
@@ -252,26 +247,66 @@ static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const ds
   unsigned int first_sea = lock->from_sea_volumes.first_active_cell;
   dfm_volumes_t *to_lake_volumes = &lock->to_lake_volumes;
   dfm_volumes_t *to_sea_volumes = &lock->to_sea_volumes;
+  int routine = lock->phase_args.routine;
+
+  // Precompute flushing discharge for flush_doors_closed.
+  // Derived as volume_to_sea / t_flushing, mirroring dsle.c's derived_parameters_t.
+  double flushing_discharge = 0.0;
+  if (routine < 0 && lock->phase_args.duration > DBL_EPSILON)
+    flushing_discharge = tp->volume_to_sea / lock->phase_args.duration;
 
   for (unsigned int c = 0; c < lock->num_constituents; c++) {
     double c_lake = lock->parameters3d.constituent_lake[c][first_lake];
     double c_sea = lock->parameters3d.constituent_sea[c][first_sea];
-    double c_lock = lock->constituent_lock[c]; // snapshot BEFORE the phase ran
+    double c_lock = lock->constituent_lock[c]; // concentration BEFORE the phase
 
-    // Write outflow concentrations using the pre-phase lock concentration.
-    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
-      lock->results3d.constituent_to_lake[c][to_lake_volumes->first_active_cell + i] = c_lock;
+    double c_lock_new;
+    double c_to_lake;
+    double c_to_sea;
+
+    if (routine < 0) {
+      // flush_doors_closed: replicate dsle.c's analytical exponential decay.
+      double c_diff = c_lock - c_lake;
+      double c_mass_before = c_lock * volume_lock_before;
+
+      if (fabs(c_diff) < DBL_EPSILON || flushing_discharge < DBL_EPSILON) {
+        c_lock_new = c_lock;
+        c_to_sea = c_lock;
+      } else {
+        double lam_c = flushing_discharge * c_diff / c_mass_before;
+        double c_mass_after =
+            volume_lock_before * c_diff * exp(-lam_c * lock->phase_args.duration) +
+            volume_lock_before * c_lake;
+        double c_mass_out = c_mass_before - c_mass_after;
+        c_lock_new = c_mass_after / volume_lock_before;
+        c_to_sea = tp->volume_to_sea > DBL_EPSILON ? c_mass_out / tp->volume_to_sea : c_lock;
+      }
+      c_to_lake = c_lock; // volume_to_lake == 0 for flush_doors_closed, gets masked
+    } else {
+      // Phases 1-4: volume mass balance.
+      // volume_flush_passthrough (non-zero for phases 2 and 4) carries c_lake to sea,
+      // not c_lock — subtract the error and add the correct contribution.
+      double mass_after = c_lock * volume_lock_before + c_lake * tp->volume_from_lake +
+                          c_sea * tp->volume_from_sea - c_lock * tp->volume_to_lake -
+                          c_lock * (tp->volume_to_sea - tp->volume_flush_passthrough) -
+                          c_lake * tp->volume_flush_passthrough;
+
+      c_lock_new = mass_after / volume_lock_after;
+      c_to_lake = c_lock; // outflow to lake carries pre-phase lock concentration
+      c_to_sea = tp->volume_to_sea > DBL_EPSILON
+                     ? (c_lock * (tp->volume_to_sea - tp->volume_flush_passthrough) +
+                        c_lake * tp->volume_flush_passthrough) /
+                           tp->volume_to_sea
+                     : c_lock;
     }
-    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
-      lock->results3d.constituent_to_sea[c][to_sea_volumes->first_active_cell + i] = c_lock;
-    }
 
-    // Update lock concentration via volume mass balance.
-    double mass_after = c_lock * volume_lock_before + tp->volume_from_lake * c_lake +
-                        tp->volume_from_sea * c_sea - tp->volume_to_lake * c_lock -
-                        tp->volume_to_sea * c_lock;
+    lock->constituent_lock[c] = c_lock_new;
 
-    lock->constituent_lock[c] = mass_after / volume_lock_after;
+    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++)
+      lock->results3d.constituent_to_lake[c][to_lake_volumes->first_active_cell + i] = c_to_lake;
+
+    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++)
+      lock->results3d.constituent_to_sea[c][to_sea_volumes->first_active_cell + i] = c_to_sea;
   }
 }
 

@@ -727,6 +727,30 @@ static void test_sealock_update__phase_wise__initial_temperature_affects_output(
   TEST_ASSERT_DOUBLE_WITHIN(1e-6, expected_lock, lock.constituent_lock[temp_slot]);
 }
 
+static void test_sealock_init__temperature_slot_initialised_from_temperature_lake(void) {
+  // sealock_init must copy parameters.temperature_lake into
+  // constituent_lock[temp_slot] so that phase-wise temperature output
+  // starts from the correct initial lock temperature.
+
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_phase_wise_lock_without_file(&lock, rows, times);
+  lock.num_constituents = 0;
+  // Set initial lock temperature via the field that dsle_ini_handler populates.
+  lock.parameters.temperature_lake = 6.0;
+  lock.parameters.temperature_sea = 20.0; // must not influence the initial lock value
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+
+  // Assert: temperature slot (last slot) holds temperature_lake, not temperature_sea.
+  unsigned int temp_slot = lock.num_constituents - 1;
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 6.0, lock.constituent_lock[temp_slot]);
+}
+
+
 static void test_sealock_update__phase_wise__constituent_tracks_salinity_across_all_phases(void) {
 
   // A constituent initialised with the same values as salinity (lake, sea, lock)
@@ -816,9 +840,9 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_across_
 
   // Restore salinity state (sealock_init may have modified it).
   lock.phase_state.salinity_lock = 15.0;
-  lock.phase_state.saltmass_lock = 15.0 * lock.parameters.lock_length * lock.parameters.lock_width *
-                                   (1.0 - lock.parameters.lock_bottom);
   lock.phase_state.head_lock = 1.0;
+  lock.phase_state.saltmass_lock = 15.0 * lock.parameters.lock_length * lock.parameters.lock_width *
+                                   (lock.phase_state.head_lock - lock.parameters.lock_bottom);
 
   // Slot 1 mirrors salinity exactly.
   lock.constituent_lock[1] = lock.phase_state.salinity_lock;                     // 15.0
@@ -836,27 +860,194 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_across_
   TEST_ASSERT_TRUE(fabs(lock.phase_state.salinity_lock - 15.0) > 1e-6);
 }
 
-static void test_sealock_init__temperature_slot_initialised_from_temperature_lake(void) {
-  // sealock_init must copy parameters.temperature_lake into
-  // constituent_lock[temp_slot] so that phase-wise temperature output
-  // starts from the correct initial lock temperature.
+static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_volume(void) {
 
-  // Arrange
+// identical setup, except we introduce a large flushing discharge in the open gate phases,
+// to verify that the constituent tracking works even when flushing volumes are significant compared to lock volumes. 
+// If flushing_discharge is large enough to make volume_flush_passthrough > 0,
+// then any error in the flushing volume term of sealock_step_constituents cause divergence.
+
+  // Arrange: 4-row timeseries, one row per phase.
+  csv_row_t rows[4];
+  time_t times[4];
+  sealock_state_t lock = {0};
+
+  sealock_defaults(&lock);
+  lock.computation_mode = phase_wise_mode;
+  lock.operational_parameters_file = NULL;
+
+  const double t_level = 30.0;
+  const double t_open_lake = 30.0;
+  const double t_open_sea = 30.0;
+  const double flushing_discharge = 500.0; // guarantees volume_flush_passthrough > 0
+
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){
+          .time = 197001011200.0,
+          .routine = 1,
+          .t_level = t_level,
+          .density_current_factor_lake = 1.0,
+          .density_current_factor_sea = 1.0,
+      },
+      rows[0]);
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){
+          .time = 197001011201.0,
+          .routine = 2,
+          .t_open_lake = t_open_lake,
+          .density_current_factor_lake = 1.0,
+          .density_current_factor_sea = 1.0,
+          .flushing_discharge_high_tide = flushing_discharge,
+      },
+      rows[1]);
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){
+          .time = 197001011202.0,
+          .routine = 3,
+          .t_level = t_level,
+          .density_current_factor_lake = 1.0,
+          .density_current_factor_sea = 1.0,
+      },
+      rows[2]);
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){
+          .time = 197001011203.0,
+          .routine = 4,
+          .t_open_sea = t_open_sea,
+          .density_current_factor_lake = 1.0,
+          .density_current_factor_sea = 1.0,
+          .flushing_discharge_high_tide = flushing_discharge,
+      },
+      rows[3]);
+
+  make_phase_wise_csv_context(rows, 4, &lock.timeseries_data);
+
+  times[0] = timestamp_to_time(197001011200.0);
+  times[1] = timestamp_to_time(197001011201.0);
+  times[2] = timestamp_to_time(197001011202.0);
+  times[3] = timestamp_to_time(197001011203.0);
+  lock.times = times;
+  lock.times_len = 4;
+  lock.current_row = NO_CURRENT_ROW;
+
+  // Initial conditions: lock at sea level, mixed salinity.
+  lock.phase_state.salinity_lock = 15.0;
+  lock.phase_state.head_lock = 1.0;
+
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+  lock.num_constituents = 2; // slot 0 = temperature, slot 1 = salinity mirror
+
+  // Boundary conditions.
+  lock.parameters.head_lake = 0.0;
+  lock.parameters.head_sea = 1.0;
+  lock.parameters3d.salinity_lake[0] = 0.0;
+  lock.parameters3d.salinity_sea[0] = 30.0;
+
+  // Restore salinity state (sealock_init may have modified it).
+  lock.phase_state.salinity_lock = 15.0;
+  lock.phase_state.head_lock = 1.0;
+  lock.phase_state.saltmass_lock = 15.0 * lock.parameters.lock_length * lock.parameters.lock_width *
+                                   (lock.phase_state.head_lock - lock.parameters.lock_bottom);
+
+  // Slot 1 mirrors salinity exactly.
+  lock.constituent_lock[1] = lock.phase_state.salinity_lock;                     // 15.0
+  lock.parameters3d.constituent_lake[1][0] = lock.parameters3d.salinity_lake[0]; // 0.0
+  lock.parameters3d.constituent_sea[1][0] = lock.parameters3d.salinity_sea[0];   // 30.0
+
+  // Act + Assert: after each phase, constituent_lock[1] must equal salinity_lock.
+  for (int i = 0; i < 4; i++) {
+    TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[i]));
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.phase_state.salinity_lock, lock.constituent_lock[1]);
+  }
+
+  // Sanity check: salinity must have changed from its initial value after the full
+  // cycle, proving meaningful exchange occurred and the test didn't pass trivially.
+  TEST_ASSERT_TRUE(fabs(lock.phase_state.salinity_lock - 15.0) > 1e-6);
+  TEST_ASSERT_TRUE(lock.phase_results.volume_flush_passthrough > 0);
+}
+
+static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_doors_closed(void) {
+  // A constituent mirroring salinity must track salinity_lock exactly through
+  // a flush_doors_closed phase (routine < 0), proving the exponential decay
+  // calculation in sealock_step_constituents is correct.
+  //
+  // If the simple volume balance is used instead of the exponential decay,
+  // constituent_lock[1] will diverge from salinity_lock after the flush phase.
+  //
+  // Setup:
+  //   Phase 1 (leveling): establishes a post-leveling state.
+  //   Phase -1 (flush doors closed): flushing_discharge=10 m3/s, t_flushing=60s.
+  //   Lock volume at lake level = 5000 m3 -> volume_flush = 600 m3 (12% turnover).
+  //   Expected sal_lock change: 15.0 -> ~13.3 PSU.
+
   csv_row_t rows[2];
   time_t times[2];
   sealock_state_t lock = {0};
-  setup_phase_wise_lock_without_file(&lock, rows, times);
-  lock.num_constituents = 0;
-  // Set initial lock temperature via the field that dsle_ini_handler populates.
-  lock.parameters.temperature_lake = 6.0;
-  lock.parameters.temperature_sea = 20.0; // must not influence the initial lock value
 
-  // Act
+  sealock_defaults(&lock);
+  lock.computation_mode = phase_wise_mode;
+  lock.operational_parameters_file = NULL;
+
+  const double t_level = 30.0;
+  const double t_flushing = 60.0;
+  const double flushing_discharge = 10.0;
+
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){
+          .time = 197001011200.0,
+          .routine = 1,
+          .t_level = t_level,
+          .density_current_factor_lake = 1.0,
+          .density_current_factor_sea = 1.0,
+          .flushing_discharge_high_tide = flushing_discharge,
+      },
+      rows[0]);
+  make_phase_wise_csv_row(
+      (phase_wise_row_t){
+          .time = 197001011201.0,
+          .routine = -1,
+          .t_flushing = t_flushing,
+          .density_current_factor_lake = 1.0,
+          .density_current_factor_sea = 1.0,
+          .flushing_discharge_high_tide = flushing_discharge,
+      },
+      rows[1]);
+
+  make_phase_wise_csv_context(rows, 2, &lock.timeseries_data);
+
+  times[0] = timestamp_to_time(197001011200.0);
+  times[1] = timestamp_to_time(197001011201.0);
+  lock.times = times;
+  lock.times_len = 2;
+  lock.current_row = NO_CURRENT_ROW;
+
+  lock.phase_state.salinity_lock = 15.0;
+  lock.phase_state.head_lock = 1.0;
+
   TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+  lock.num_constituents = 2;
 
-  // Assert: temperature slot (last slot) holds temperature_lake, not temperature_sea.
-  unsigned int temp_slot = lock.num_constituents - 1;
-  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 6.0, lock.constituent_lock[temp_slot]);
+  lock.parameters.head_lake = 0.0;
+  lock.parameters.head_sea = 1.0;
+  lock.parameters3d.salinity_lake[0] = 0.0;
+  lock.parameters3d.salinity_sea[0] = 30.0;
+
+  lock.phase_state.salinity_lock = 15.0;
+  lock.phase_state.saltmass_lock = 15.0 * lock.parameters.lock_length * lock.parameters.lock_width *
+                                   (1.0 - lock.parameters.lock_bottom);
+  lock.phase_state.head_lock = 1.0;
+
+  lock.constituent_lock[1] = lock.phase_state.salinity_lock;
+  lock.parameters3d.constituent_lake[1][0] = lock.parameters3d.salinity_lake[0];
+  lock.parameters3d.constituent_sea[1][0] = lock.parameters3d.salinity_sea[0];
+
+  for (int i = 0; i < 2; i++) {
+    TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[i]));
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.phase_state.salinity_lock, lock.constituent_lock[1]);
+  }
+
+  // Sanity: flushing must have reduced salinity meaningfully from initial 15.0.
+  TEST_ASSERT_TRUE(fabs(lock.phase_state.salinity_lock - 15.0) > 1e-6);
 }
 
 int main(void) {
@@ -884,6 +1075,8 @@ int main(void) {
   RUN_TEST(test_sealock_init__temperature_slot_initialised_from_temperature_lake);
   RUN_TEST(test_sealock_update__phase_wise__initial_temperature_affects_output);
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_across_all_phases);
-  
+  RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_volume);
+  RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_doors_closed);
+
   return UNITY_END();
 }
