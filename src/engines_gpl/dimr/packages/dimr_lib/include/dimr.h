@@ -94,11 +94,7 @@ class Log;
 class Dimr
 {
 public:
-    static Dimr* GetInstance()
-    {
-        if (instance == NULL) instance = new Dimr();
-        return instance;
-    }
+    static Dimr* GetInstance();
 
     void scanConfigFile(void);
     void connectLibs(void);
@@ -144,6 +140,7 @@ public:
     Level feedbackLevel;
     const char* configfile; // name of configuration file
     bool done;              // set to true when it's time to stop
+    bool logIsOwned;        // false when log was injected via set_dimr_logger (owned by the caller)
     char* redirectFile;     // Name of file to redirect stdout/stderr to
                             // Default: Off when started via dimr-exe, On otherwise
 
@@ -151,9 +148,6 @@ public:
     const char* dirSeparator;
     // String constants; initialized below, outside class definition
 private:
-    // static Dimr *m_pInstance;
-    static Dimr* instance;
-
     Dimr();
     ~Dimr();
     Dimr(Dimr const&) = delete;           // Don't Implement.

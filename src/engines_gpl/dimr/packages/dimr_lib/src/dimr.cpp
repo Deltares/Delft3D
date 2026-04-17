@@ -83,7 +83,11 @@
     #include <unistd.h>
 #endif
 
-Dimr* Dimr::instance = NULL;
+Dimr* Dimr::GetInstance()
+{
+    static Dimr instance;
+    return &instance;
+}
 
 Dimr::Dimr(void)
 {
@@ -95,6 +99,7 @@ Dimr::Dimr(void)
     logLevel = WARNING;
     feedbackLevel = INFO;
     log = new Log(logFile, clock, logLevel, feedbackLevel);
+    logIsOwned = true;
     config = NULL;
     mainArgs = NULL;
     slaveArg = NULL;
@@ -184,7 +189,10 @@ Dimr::~Dimr(void)
     // to do:  (void) FreeLibrary(handle);
     freeLibs();
 
-    log->Write(DEBUG, my_rank, "dimr shutting down normally");
+    if (logIsOwned)
+    {
+        log->Write(DEBUG, my_rank, "dimr shutting down normally");
+    }
 
 #ifndef _WIN32
     free(exeName);
@@ -192,15 +200,19 @@ Dimr::~Dimr(void)
     delete[] exeName;
 #endif
 
+    if (logIsOwned)
+    {
+        delete log;
+    }
     delete clock;
     delete config;
     free(exePath);
-    delete log;
     delete[] mainArgs;
     // componentsList
     for (int i = 0; i < componentsList.numComponents; i++)
     {
         delete[] componentsList.components[i].workingDir;
+        free(componentsList.components[i].processes);
     }
     free(componentsList.components);
     // couplersList
@@ -227,7 +239,11 @@ void Dimr::deleteControlBlock(dimr_control_block cb)
     {
         for (int i = 0; i < cb.numSubBlocks; i++)
         {
-            if (cb.computeTimes->empty()) cb.computeTimes->clear();
+            if (cb.computeTimes != nullptr)
+            {
+                delete cb.computeTimes;
+                cb.computeTimes = nullptr;
+            }
             // Recursively delete all subBlocks
             deleteControlBlock(cb.subBlocks[i]);
         }
@@ -2010,16 +2026,19 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     if (controlBlockXml->name == "control")
     {
         controlBlock->type = CT_SEQUENTIAL;
+        controlBlock->computeTimes = nullptr;
     }
     else if (controlBlockXml->name == "parallel")
     {
         controlBlock->type = CT_PARALLEL;
+        controlBlock->computeTimes = nullptr;
     }
     else if (controlBlockXml->name == "start")
     {
         controlBlock->type = CT_START;
         controlBlock->unit.component = getComponent(controlBlockXml->GetAttrib("name"));
         controlBlock->unit.coupler = NULL;
+        controlBlock->computeTimes = nullptr;
     }
     else if (controlBlockXml->name == "startGroup")
     {
@@ -2051,6 +2070,7 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
         controlBlock->type = CT_COUPLER;
         controlBlock->unit.component = NULL;
         controlBlock->unit.coupler = getCoupler(controlBlockXml->GetAttrib("name"));
+        controlBlock->computeTimes = nullptr;
     }
     controlBlock->numSubBlocks = 0;
     controlBlock->subBlocks = NULL;
@@ -2420,7 +2440,10 @@ void Dimr::freeLibs(void)
             continue;
         }
 
-        log->Write(ALL, my_rank, "Freeing library \"%s\"", componentsList.components[i].library);
+        if (logIsOwned)
+        {
+            log->Write(ALL, my_rank, "Freeing library \"%s\"", componentsList.components[i].library);
+        }
 #ifndef _WIN32
         dlerror(); /* clear error code */
         int ierr = dlclose(componentsList.components[i].libHandle);

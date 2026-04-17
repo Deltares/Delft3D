@@ -85,7 +85,7 @@ contains
 
       jastored = 0
 
-      inquire (FILE=md_cutcelllist, EXIST=JAWEL)
+      inquire (FILE=trim(md_cutcelllist), EXIST=JAWEL)
       NUMFIL = 0
       if (JAWEL) then
          call OLDFIL(MLIST, md_cutcelllist)

@@ -44,6 +44,11 @@ BMI_API void set_dimr_logger(Log* loggerFromDimrExe)
     {
         thisDimr = Dimr::GetInstance();
     }
+    if (thisDimr->logIsOwned)
+    {
+        delete thisDimr->log; // owned by Dimr; replaced by the caller's logger
+        thisDimr->logIsOwned = false;
+    }
     thisDimr->log = loggerFromDimrExe;
 }
 
