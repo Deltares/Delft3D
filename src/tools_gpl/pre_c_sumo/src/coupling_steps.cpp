@@ -37,7 +37,8 @@ namespace pre_c_sumo
         // TODO: obtain these from the far-field model / coupling state
         const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
+        const std::vector<std::string> constituent_names = {"temperature", "salinity",
+                                                            "tracer"}; // TODO: derive from settings
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
