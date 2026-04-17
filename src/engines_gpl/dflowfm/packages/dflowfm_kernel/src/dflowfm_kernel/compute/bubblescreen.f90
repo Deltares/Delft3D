@@ -8,9 +8,9 @@ module m_bubblescreen
     use m_transport, only: numconst, constituents
     use messageHandling, only: err_flush, msgbuf, msg_flush
 
-    implicit none(type, external)
+   implicit none(type, external)
 
-    private
+   private
 
     public :: update_bubblescreen_discharge_wrapper
     public :: update_bubblescreen_discharge
@@ -24,17 +24,19 @@ contains
         ! Local variables
         integer :: i !< Loop index
 
-        do i = 1, size(bubblescreens)
-            call update_bubblescreen_discharge(bubblescreens(i), bubblescreen_air_discharge(i))
-        end do
+      do i = 1, size(bubblescreens)
+         call update_bubblescreen_discharge(bubblescreens(i), bubblescreen_air_discharge(i))
+      end do
 
-    end subroutine update_bubblescreen_discharge_wrapper
+   end subroutine update_bubblescreen_discharge_wrapper
 
-    !> Updates the discharges for a single bubble screen object
-    subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)       
-        ! Parameters
-        type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
-        real(kind=dp), intent(in) :: air_discharge !< Air discharge for this bubble screen
+   !> Updates the discharges for a single bubble screen object
+   subroutine update_bubblescreen_discharge(bubblescreen, air_discharge)
+      use m_cell_geometry, only: ba
+
+      ! Parameters
+      type(t_BubbleScreen), intent(in) :: bubblescreen !< Bubble screen data structure
+      real(kind=dp), intent(in) :: air_discharge !< Air discharge for this bubble screen
 
         ! Local variables
         integer :: i_flowcell !< Bubblescreen flow cell index
@@ -65,28 +67,28 @@ contains
 
         end do
 
-    end subroutine update_bubblescreen_discharge
+   end subroutine update_bubblescreen_discharge
 
-    !> Converts the injected air discharge rate to entrained water discharge rate using an empirical formula.
-    pure function convert_discharge_air_to_water(air_discharge, alpha) result(water_discharge)
-        ! Parameters
-        real(kind=dp), intent(in) :: air_discharge !< [m3/s] Air discharge rate
-        real(kind=dp), intent(in), optional :: alpha !< Empirical factor α used in the conversion between the amount of entrained water and the amount of injected air (default 1000).
-        real(kind=dp) :: water_discharge !< [m3/s] Resulting water discharge rate
+   !> Converts the injected air discharge rate to entrained water discharge rate using an empirical formula.
+   pure function convert_discharge_air_to_water(air_discharge, alpha) result(water_discharge)
+      ! Parameters
+      real(kind=dp), intent(in) :: air_discharge !< [m3/s] Air discharge rate
+      real(kind=dp), intent(in), optional :: alpha !< Empirical factor α used in the conversion between the amount of entrained water and the amount of injected air (default 1000).
+      real(kind=dp) :: water_discharge !< [m3/s] Resulting water discharge rate
 
-        ! Local variables
-        real(kind=dp) :: alpha0
+      ! Local variables
+      real(kind=dp) :: alpha0
 
-        ! Check if alpha is provided, otherwise use default value
-        if (present(alpha)) then
-            alpha0 = alpha
-        else
-            alpha0 = 1000.0_dp
-        end if
+      ! Check if alpha is provided, otherwise use default value
+      if (present(alpha)) then
+         alpha0 = alpha
+      else
+         alpha0 = 1000.0_dp
+      end if
 
-        water_discharge = (alpha0 * air_discharge) ** (2.0_dp / 3.0_dp)
+      water_discharge = (alpha0 * air_discharge)**(2.0_dp / 3.0_dp)
 
-    end function convert_discharge_air_to_water
+   end function convert_discharge_air_to_water
 
     !> Finds the layer interfaces of the bottom (k_start), top (k_stop) and maximum velocity (k_max_velocity) for a bubble screen in a flow cell
     subroutine find_active_layer_interfaces(flow_cell_index, z_bot, bubblescreen_id, k_start, k_stop, k_max_velocity)
@@ -98,76 +100,74 @@ contains
         integer, intent(out) :: k_stop !< Layer interface of highest active source/sink in bubble screen; in {m_flow::zws}
         integer, intent(out) :: k_max_velocity !< Layer interface with maximum downward velocity; in {m_flow::zws}
 
-        ! Local variables
-        integer :: k !< Layer interface {in m_flow::zws}
-        integer :: k_bot !< Bottom layer interface from getkbotktop {in m_flow::zws}
-        integer :: k_top !< Top layer interface from getkbotktop {in m_flow::zws}
-        real(kind=dp) :: z_top !< [m] Top elevation of the flow cell
-        real(kind=dp) :: z_max_velocity !< [m] Elevation of maximum downward velocity
+      ! Local variables
+      integer :: k !< Layer interface {in m_flow::zws}
+      integer :: k_bot !< Bottom layer interface from getkbotktop {in m_flow::zws}
+      integer :: k_top !< Top layer interface from getkbotktop {in m_flow::zws}
+      real(kind=dp) :: z_top !< [m] Top elevation of the flow cell
+      real(kind=dp) :: z_max_velocity !< [m] Elevation of maximum downward velocity
 
+      ! A visual illustrating the difference between layer indices (K) and layer interfaces (k) for 3D cells
+      ! A 2D flow cell is shown with kmx=4 layers
+      ! The method that is used to find k_start, k_stop, and k_max_velocity is illustrated as well
+      !
+      !   ----------- k = 4 <----- if z_top (the water level) is defined here
+      !                            k=4 will be selected as the closest interface
+      !       K=4
+      !                 v--------- if z_max_velocity is here (defined as 20% from z_top down to z_bot)
+      !   ----------- k = 3        k=3 will be selected as the closest interface
+      !
+      !       K=3
+      !
+      !   ----------- k = 2
+      !
+      !       K=2
+      !
+      !   ----------- k = 1
+      !                 ^--------- if z_bot (the z-level of the bubblescreen) is here
+      !       K=1                  k=1 will be selected as the closest interface
+      !
+      !   ----------- k = 0
 
-        ! A visual illustrating the difference between layer indices (K) and layer interfaces (k) for 3D cells
-        ! A 2D flow cell is shown with kmx=4 layers
-        ! The method that is used to find k_start, k_stop, and k_max_velocity is illustrated as well
-        ! 
-        !   ----------- k = 4 <----- if z_top (the water level) is defined here
-        !                            k=4 will be selected as the closest interface
-        !       K=4
-        !                 v--------- if z_max_velocity is here (defined as 20% from z_top down to z_bot)
-        !   ----------- k = 3        k=3 will be selected as the closest interface
-        !
-        !       K=3
-        !
-        !   ----------- k = 2
-        !
-        !       K=2
-        !
-        !   ----------- k = 1
-        !                 ^--------- if z_bot (the z-level of the bubblescreen) is here
-        !       K=1                  k=1 will be selected as the closest interface
-        !   
-        !   ----------- k = 0
+      ! Get bottom and top layer interfaces of the flow cell
+      call getkbotktop(flow_cell_index, k_bot, k_top)
 
+      ! Start all interfaces at bottom layer interface
+      k_start = k_bot - 1
+      k_stop = k_bot - 1
+      k_max_velocity = k_bot - 1
 
-        ! Get bottom and top layer interfaces of the flow cell
-        call getkbotktop(flow_cell_index, k_bot, k_top)
+      z_top = s1(flow_cell_index) ! Top elevation is set to water level in the flow cell
+      z_max_velocity = z_top - 0.2_dp * (z_top - z_bot) ! Max velocity is located at 20% below z_top down to z_bot
 
-        ! Start all interfaces at bottom layer interface
-        k_start = k_bot - 1
-        k_stop = k_bot - 1
-        k_max_velocity = k_bot - 1
+      ! Find for each z value (bot, max_velocity, top) the closest layer interface
+      do k = k_bot, k_top
+         if (abs(zws(k) - z_bot) < abs(zws(k_start) - z_bot)) then
+            k_start = k
+         end if
 
-        z_top = s1(flow_cell_index) ! Top elevation is set to water level in the flow cell
-        z_max_velocity = z_top - 0.2_dp * (z_top - z_bot) ! Max velocity is located at 20% below z_top down to z_bot
+         if (abs(zws(k) - z_max_velocity) < abs(zws(k_max_velocity) - z_max_velocity)) then
+            k_max_velocity = k
+         end if
 
-        ! Find for each z value (bot, max_velocity, top) the closest layer interface
-        do k = k_bot, k_top
-            if (abs(zws(k) - z_bot) < abs(zws(k_start) - z_bot)) then
-                k_start = k
-            end if
+         if (abs(zws(k) - z_top) < abs(zws(k_stop) - z_top)) then
+            k_stop = k
+         end if
+      end do
 
-            if (abs(zws(k) - z_max_velocity) < abs(zws(k_max_velocity) - z_max_velocity)) then
-                k_max_velocity = k
-            end if
+      ! Require at least 3 active layers in the bubble screen
+      if (k_stop - k_start < 3) then
+         write (msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen_id), '" in flow cell ', flow_cell_index, ' has insufficient active layers (min 3) between z=', &
+            zws(k_start), ' and z=', zws(k_stop), '. Increase bubble screen vertical extent or check flow cell water level.'
+         call err_flush()
+      end if
 
-            if (abs(zws(k) - z_top) < abs(zws(k_stop) - z_top)) then
-                k_stop = k
-            end if
-        end do
-        
-        ! Require at least 3 active layers in the bubble screen
-        if (k_stop - k_start < 3) then
-            write(msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen_id), '" in flow cell ', flow_cell_index, ' has insufficient active layers (min 3) between z=', &
-                zws(k_start), ' and z=', zws(k_stop), '. Increase bubble screen vertical extent or check flow cell water level.'
-            call err_flush()
-        end if
+      ! Require at least 1 layer between k_max_velocity and k_stop; if not adjust k_max_velocity
+      if (k_stop - k_max_velocity < 1) then
+         k_max_velocity = k_stop - 1
+      end if
 
-        ! Require at least 1 layer between k_max_velocity and k_stop; if not adjust k_max_velocity
-        if (k_stop - k_max_velocity < 1) then
-            k_max_velocity = k_stop - 1
-        end if
-
-    end subroutine find_active_layer_interfaces
+   end subroutine find_active_layer_interfaces
 
     !> Update the discharge for a bubble screen source/sink
     subroutine update_bubblescreen_source_sink_discharge(source_sink_index, discharge)
