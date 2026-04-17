@@ -64,8 +64,14 @@ module m_flowgeom
 
       type t_fm_flowgeom
 
-         type(t_ug_meshgeom) :: mesh2d !< Node/edge/face topology and coordinates for the 2D mesh.
-         integer, allocatable :: edge_type(:) !< Edge type array (size numl2d): encodes the flow-link relation for each 2D mesh edge
+         type(t_ug_meshgeom) :: mesh2D !< Node/edge/face topology and coordinates for the 2D mesh.
+         type(t_ug_meshgeom) :: mesh1D !< Node/edge/face topology and coordinates for the 1D mesh.
+         integer, allocatable :: edge_type(:)     !< Edge type array (size numl2d): encodes the flow-link relation for each 2D mesh edge.
+         integer, allocatable :: edgetoln(:)      !< 1D: mapping from mesh1D UGRID edge index to flow link number.
+         integer, allocatable :: contactstoln(:)  !< 1D2D: mapping from contact index to flow link number.
+         integer, allocatable :: contacts(:,:)    !< 1D2D contact node pairs [2, n1d2dcontacts].
+         integer, allocatable :: contacttype(:)   !< 1D2D contact type per contact entry.
+         integer :: n1d2dcontacts = 0             !< Number of 1D2D contacts.
 
          integer :: ndx2d = 0 !< Number of 2D flow cells (= NUMP).
          integer :: ndxi = 0 !< Number of internal flow cells (2D + 1D).
