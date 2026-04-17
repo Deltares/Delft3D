@@ -15589,10 +15589,11 @@ contains
       logical,             intent(in), optional  :: cell_mask(:) !< (Phase 2) Selection mask over ndx2d cells.
                                                                  !! If absent, all 2D cells are included.
 
-      integer, allocatable, target :: edge_nodes(:,:), face_nodes(:,:), edge_type(:)
-      integer, dimension(:,:), pointer :: edge_faces => null()
-      real(kind=dp), allocatable, target :: xue(:), yue(:)
-      real(kind=dp), allocatable, target :: x2dn(:), y2dn(:), z2dn(:)
+      !integer, allocatable, target :: edge_nodes(:,:), face_nodes(:,:), edge_type(:)
+      !integer, allocatable, target :: edge_nodes(:,:), face_nodes(:,:), edge_type(:)
+      !integer, dimension(:,:), pointer :: edge_faces => null()
+      !real(kind=dp), allocatable, target :: xue(:), yue(:)
+      !real(kind=dp), allocatable, target :: x2dn(:), y2dn(:), z2dn(:)
 
       integer :: numl2d, numNodes, ndxndxi
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
@@ -15608,18 +15609,23 @@ contains
 
       numl2d = numl - numl1d
 
-      call realloc(edge_nodes,   [2, numl2d],  fill=-999, keepExisting=.false.)
-      call reallocP(edge_faces,  [2, numl2d],  fill=-999)
-      call realloc(edge_type,    numl2d,        fill=-999, keepExisting=.false.)
-      call realloc(xue,          numl2d,        fill=dmiss, keepExisting=.false.)
-      call realloc(yue,          numl2d,        fill=dmiss, keepExisting=.false.)
 
+      call realloc(flowgeom%edge_type,    numl2d,        fill=-999, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%edge_nodes,   [2, numl2d],  fill=-999, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%edge_faces,  [2, numl2d],  fill=-999)
+      call reallocP(flowgeom%mesh2d%edgex,          numl2d,        fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%edgey,          numl2d,        fill=dmiss, keepExisting=.false.)
       ! numk2d is determined by the re-mapping loop below; allocate conservatively to numk.
-      call realloc(x2dn, numk, fill=dmiss, keepExisting=.false.)
-      call realloc(y2dn, numk, fill=dmiss, keepExisting=.false.)
-      call realloc(z2dn, numk, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%nodex , numk, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%nodey , numk, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%nodez , numk, fill=dmiss, keepExisting=.false.)
 
-      call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
+      !flowgeom%mesh2d%nodex      => x2dn(1:netNodeReMappedIndex)
+      !flowgeom%mesh2d%nodey      => y2dn(1:netNodeReMappedIndex)
+      !flowgeom%mesh2d%nodez      => z2dn(1:netNodeReMappedIndex)
+
+      flowgeom%mesh2d%facex      => xz(1:ndx2d)
+      flowgeom%mesh2d%facey      => yz(1:ndx2d)
 
       ! Determine max number of vertices per 2D cell.
       numNodes = 0
@@ -15627,7 +15633,20 @@ contains
          numNodes = max(numNodes, size(nd(i)%nod))
       end do
 
-      call realloc(face_nodes, [numNodes, ndx2d], fill=-999)
+      call reallocP(flowgeom%mesh2d%face_nodes, [numNodes, ndx2d], fill=-999)
+      !flowgeom%mesh2d%edgex      => xue
+      !flowgeom%mesh2d%edgey      => yue
+      !flowgeom%mesh2d%edge_nodes => edge_nodes
+      !flowgeom%mesh2d%face_nodes => face_nodes
+      !flowgeom%mesh2d%edge_faces => edge_faces
+      associate (edge_nodes => flowgeom%mesh2d%edge_nodes, &
+                edge_faces => flowgeom%mesh2d%edge_faces, &
+                face_nodes => flowgeom%mesh2d%face_nodes, &
+                edge_type => flowgeom%edge_type, &
+                 xue => flowgeom%mesh2d%edgex, yue => flowgeom%mesh2d%edgey, &
+                 x2dn => flowgeom%mesh2d%nodex, y2dn => flowgeom%mesh2d%nodey, z2dn => flowgeom%mesh2d%nodez)
+
+     ! call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
 
       ! Re-map net node indices to a compact 2D-only set, using kc as lookup table.
       kc = 0
@@ -15687,21 +15706,12 @@ contains
       flowgeom%mesh2d%numFace         = ndx2d
       flowgeom%mesh2d%maxNumFaceNodes = numNodes
 
-      flowgeom%mesh2d%nodex      => x2dn(1:netNodeReMappedIndex)
-      flowgeom%mesh2d%nodey      => y2dn(1:netNodeReMappedIndex)
-      flowgeom%mesh2d%nodez      => z2dn(1:netNodeReMappedIndex)
-      flowgeom%mesh2d%edgex      => xue
-      flowgeom%mesh2d%edgey      => yue
-      flowgeom%mesh2d%facex      => xz(1:ndx2d)
-      flowgeom%mesh2d%facey      => yz(1:ndx2d)
-      flowgeom%mesh2d%edge_nodes => edge_nodes
-      flowgeom%mesh2d%face_nodes => face_nodes
-      flowgeom%mesh2d%edge_faces => edge_faces
       ! edge_type is owned by flowgeom; allocate directly there.
       call realloc(flowgeom%edge_type, numl2d, fill=-999, keepExisting=.false.)
 
       call get_2d_edge_data(edge_nodes, edge_faces, flowgeom%edge_type, xue, yue)
 
+      end associate
    end subroutine build_flowgeom_2d
 
 !> Writes the unstructured flow geometry in UGRID format to an already opened netCDF dataset.
