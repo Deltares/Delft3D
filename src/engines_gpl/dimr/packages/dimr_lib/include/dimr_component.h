@@ -39,20 +39,20 @@ typedef void(CDECLOPT* BMI_GETVARSHAPE)(const char*, int*);
 typedef struct dimr_component dimr_component;
 struct dimr_component
 {
-    const char* name; // Component name: must be unique in the config.xml file (e.g. myNameFlow)
-    char* library;    // Component library name, without extension/prefix
-    int type;         // COMP_TYPE_FM, COMP_TYPE_RTC or COMP_TYPE_WAVE
+    const char* name;    // Component name: must be unique in the config.xml file (e.g. myNameFlow)
+    const char* library; // Component library name, without extension/prefix
+    int type;            // COMP_TYPE_FM, COMP_TYPE_RTC or COMP_TYPE_WAVE
 #ifdef _WIN32
     HINSTANCE libHandle; // (Windows) Handle to the loaded library for this component.
 #else
     void* libHandle; // (Linux) Handle to the loaded library for this component.
 #endif
-    char* inputFile;  // Component inputFile name
-    char* workingDir; // Component working directory
-    int* processes;   // (Optional) list of processes ranks that this component needs to run in.
-    int numProcesses; // Count of processes array.
-    bool onThisRank;  // Whether this component needs to run on current process rank.
-    char* mpiCommVar; // (Optional) Variable name for component's MPI communicator (must be accesible via BMI).
+    const char* inputFile;  // Component inputFile name
+    char* workingDir;       // Component working directory (owned, heap-allocated)
+    int* processes;         // (Optional) list of processes ranks that this component needs to run in.
+    int numProcesses;       // Count of processes array.
+    bool onThisRank;        // Whether this component needs to run on current process rank.
+    const char* mpiCommVar; // (Optional) Variable name for component's MPI communicator (must be accesible via BMI).
     MPI_Comm mpiComm; // An MPI communicator specific for this component (may run on less processes than master dimr).
     BMI_INITIALIZE dllInitialize;         // entry point in dll
     BMI_UPDATE dllUpdate;                 // entry point in dll

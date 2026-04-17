@@ -98,6 +98,11 @@ public:
 
     void Print(void);
 
+    std::string charData;
+    XmlTree* parent;
+    std::vector<XmlTree*> children;
+    std::string name;
+
 private:
     void init(void);
 
@@ -107,21 +112,7 @@ private:
 
     static std::string EnvSubst(std::string instr);
 
-public:
-    static const int maxCharData = 1000000; // maximum size of an XML character data block
-    static const int maxPathname = 2560;    // maximum length of a full path name
-
-    XmlTree* parent;
-    char* name;
-    char* pathname;
-
-    std::vector<char*> attribNames;
-    std::vector<char*> attribValues;
-
-    std::vector<XmlTree*> children;
-
-    char* charData;
-    int charDataLen;
-
-private:
+    std::string pathname;
+    std::vector<std::string> attribNames;
+    std::vector<std::string> attribValues;
 };

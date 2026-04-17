@@ -198,6 +198,10 @@ Dimr::~Dimr(void)
     delete log;
     delete[] mainArgs;
     // componentsList
+    for (int i = 0; i < componentsList.numComponents; i++)
+    {
+        delete[] componentsList.components[i].workingDir;
+    }
     free(componentsList.components);
     // couplersList
     for (int i = 0; i < couplersList.numCouplers; i++)
@@ -1590,7 +1594,7 @@ void Dimr::scanConfigFile(void)
                         configfile);
 
     // Check version number
-    const char* versionnr = fileversion->charData;
+    const char* versionnr = fileversion->charData.c_str();
     float versionnumber;
     int intRead = sscanf(versionnr, "%f", &versionnumber);
     if (intRead != 1)
@@ -1630,7 +1634,7 @@ void Dimr::scanGlobalSettings(XmlTree* rootXml)
     XmlTree* loggerNcFormat = globalSettings->Lookup("logger_ncFormat");
     if (loggerNcFormat != NULL)
     {
-        int intRead = sscanf(loggerNcFormat->charData, "%d", &(nc_mode));
+        int intRead = sscanf(loggerNcFormat->charData.c_str(), "%d", &(nc_mode));
         if (intRead != 1)
             throw Exception(Exception::ERR_INVALID_INPUT, "logger_ncFormat must contain the value 3 or 4");
         if (nc_mode == 3)
@@ -1659,7 +1663,7 @@ void Dimr::scanUnits(XmlTree* rootXml)
     // Scan
     for (int i = 0; i < rootXml->children.size(); i++)
     {
-        if (strcmp(rootXml->children[i]->name, "component") == 0)
+        if (rootXml->children[i]->name == "component")
         {
             componentsList.numComponents++;
             if (componentsList.components == NULL)
@@ -1678,7 +1682,7 @@ void Dimr::scanUnits(XmlTree* rootXml)
             }
             scanComponent(rootXml->children[i], &(componentsList.components[componentsList.numComponents - 1]));
         }
-        if (strcmp(rootXml->children[i]->name, "coupler") == 0)
+        if (rootXml->children[i]->name == "coupler")
         {
             couplersList.numCouplers++;
             if (couplersList.couplers == NULL)
@@ -1714,7 +1718,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     if (libraryElement == NULL)
         throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" does not contain a library element",
                         newComp->name);
-    newComp->library = libraryElement->charData;
+    newComp->library = libraryElement->charData.c_str();
     int libLen = strlen(newComp->library);
     char* libNameLowercase = new char[libLen + 1];
     strncpy(libNameLowercase, newComp->library, libLen);
@@ -1784,7 +1788,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     if (processElement != NULL)
     {
         // Store process rank numbers in component's processes array.
-        char_to_ints(processElement->charData, &(newComp->processes), &(newComp->numProcesses));
+        char_to_ints(processElement->charData.c_str(), &(newComp->processes), &(newComp->numProcesses));
 
         // Check whether this process' rank is also in components configured processes array.
         newComp->onThisRank = false; // Not found (yet): only active on other ranks.
@@ -1826,7 +1830,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     if (commElement != NULL)
     {
         // Store communicator var name in component.
-        newComp->mpiCommVar = commElement->charData;
+        newComp->mpiCommVar = commElement->charData.c_str();
     }
     else
     {
@@ -1841,37 +1845,39 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     }
     else
     {
-        newComp->inputFile = inputFileElement->charData;
+        newComp->inputFile = inputFileElement->charData.c_str();
     }
     // Element workingDir
     XmlTree* workingDirElement = xmlComponent->Lookup("workingDir");
+    const char* rawWorkingDir;
     if (workingDirElement == NULL)
     {
-        newComp->workingDir = (char*)&curPath;
+        rawWorkingDir = curPath;
         log->Write(INFO, my_rank, "WARNING: No workingDir specified for component %s.", newComp->name);
-        log->Write(INFO, my_rank, "         workingDir is set to %s", newComp->workingDir);
+        log->Write(INFO, my_rank, "         workingDir is set to %s", rawWorkingDir);
     }
     else
     {
-        newComp->workingDir = workingDirElement->charData;
+        rawWorkingDir = workingDirElement->charData.c_str();
     }
     // Is workingDir a valid relative path?
     char* combinedPath = new char[MAXSTRING];
-    sprintf(combinedPath, "%s%s%s", curPath, dirSeparator, newComp->workingDir);
+    sprintf(combinedPath, "%s%s%s", curPath, dirSeparator, rawWorkingDir);
     if (chdir(combinedPath))
     {
         // CombinedPath is not correct. May be just workingDir?
         delete[] combinedPath;
         // Is workingDir a valid absolute path?
-        if (chdir(newComp->workingDir))
+        if (chdir(rawWorkingDir))
         {
             throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
-                            newComp->name, newComp->workingDir);
+                            newComp->name, rawWorkingDir);
         }
+        newComp->workingDir = new char[strlen(rawWorkingDir) + 1];
+        strcpy(newComp->workingDir, rawWorkingDir);
     }
     else
     {
-        // newComp->workingDir was a pointer to workingDirElement->charData; now it will point to the new combinedPath
         newComp->workingDir = combinedPath;
     }
     chdir(curPath);
@@ -1895,7 +1901,7 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup)
     if (sourceComponent == NULL)
         throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\" does not contain a sourceComponent element",
                         newCoup->name);
-    newCoup->sourceComponentName = sourceComponent->charData;
+    newCoup->sourceComponentName = sourceComponent->charData.c_str();
     // Add reference to the actual component acting as source
     newCoup->sourceComponent = getComponent(newCoup->sourceComponentName);
     // Element targetComponent
@@ -1903,7 +1909,7 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup)
     if (targetComponent == NULL)
         throw Exception(Exception::ERR_INVALID_INPUT, "The coupler \"%s\" does not contain a targetComponent element",
                         newCoup->name);
-    newCoup->targetComponentName = targetComponent->charData;
+    newCoup->targetComponentName = targetComponent->charData.c_str();
     // Add reference to the actual component acting as target
     newCoup->targetComponent = getComponent(newCoup->targetComponentName);
     // Items
@@ -1911,7 +1917,7 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup)
     newCoup->items = NULL;
     for (int j = 0; j < xmlCoupler->children.size(); j++)
     {
-        if (strcmp(xmlCoupler->children[j]->name, "item") == 0)
+        if (xmlCoupler->children[j]->name == "item")
         {
             // Create the item
             newCoup->numItems++;
@@ -1949,8 +1955,8 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup)
                 throw Exception(Exception::ERR_INVALID_INPUT,
                                 "The coupler \"%s\", item %d, does not contain a sourceName element", newCoup->name,
                                 newCoup->numItems);
-            newItem->sourceName = xmlSource->charData;
-            if (newItem->sourceName == NULL)
+            newItem->sourceName = xmlSource->charData.c_str();
+            if (xmlSource->charData.empty())
                 throw Exception(Exception::ERR_INVALID_INPUT,
                                 "Item %d of coupler \"%s\" does not contain a source::name element", newCoup->numItems,
                                 newCoup->name);
@@ -1961,8 +1967,8 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup)
                 throw Exception(Exception::ERR_INVALID_INPUT,
                                 "The coupler \"%s\", item %d, does not contain a targetName element", newCoup->name,
                                 newCoup->numItems);
-            newItem->targetName = xmlTarget->charData;
-            if (newItem->targetName == NULL)
+            newItem->targetName = xmlTarget->charData.c_str();
+            if (xmlTarget->charData.empty())
                 throw Exception(Exception::ERR_INVALID_INPUT,
                                 "Item %d of coupler \"%s\" does not contain a target::name element", newCoup->numItems,
                                 newCoup->name);
@@ -2001,45 +2007,46 @@ void Dimr::scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup)
 //------------------------------------------------------------------------------
 void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBlock)
 {
-    if (strcmp(controlBlockXml->name, "control") == 0)
+    if (controlBlockXml->name == "control")
     {
         controlBlock->type = CT_SEQUENTIAL;
     }
-    else if (strcmp(controlBlockXml->name, "parallel") == 0)
+    else if (controlBlockXml->name == "parallel")
     {
         controlBlock->type = CT_PARALLEL;
     }
-    else if (strcmp(controlBlockXml->name, "start") == 0)
+    else if (controlBlockXml->name == "start")
     {
         controlBlock->type = CT_START;
         controlBlock->unit.component = getComponent(controlBlockXml->GetAttrib("name"));
         controlBlock->unit.coupler = NULL;
     }
-    else if (strcmp(controlBlockXml->name, "startGroup") == 0)
+    else if (controlBlockXml->name == "startGroup")
     {
         controlBlock->type = CT_STARTGROUP;
         XmlTree* timeElt = controlBlockXml->Lookup("time");
         if (timeElt == NULL)
             throw Exception(Exception::ERR_INVALID_INPUT,
-                            "The startGroup component \"%s\" does not contain a time element", controlBlockXml->name);
+                            "The startGroup component \"%s\" does not contain a time element",
+                            controlBlockXml->name.c_str());
         // The time field either contains:
         // - tStart, tStep, tStop                             , e.g. <time>0.0 3.6e3 9.99e4</time>
         // - name of a file containing computation time points, e.g. <time>wave_computations.tim</time>
         // First check whether it's the name of a file:
-        if (!readComputeTimesFile(timeElt->charData, controlBlock))
+        if (!readComputeTimesFile(timeElt->charData.c_str(), controlBlock))
         {
             // No, it's not the name of a file. Assume that it contains tStart, tStep, tStop
-            int intRead = sscanf(timeElt->charData, "%lf %lf %lf", &(controlBlock->tStart), &(controlBlock->tStep),
-                                 &(controlBlock->tEnd));
+            int intRead = sscanf(timeElt->charData.c_str(), "%lf %lf %lf", &(controlBlock->tStart),
+                                 &(controlBlock->tStep), &(controlBlock->tEnd));
             if (intRead != 3)
                 throw Exception(Exception::ERR_INVALID_INPUT,
                                 "'%s' must either contain 'tStart, tStep, tEnd' or the name of a time series file",
-                                timeElt->charData);
+                                timeElt->charData.c_str());
             // computeTimesCurrent>0 indicates a time series read from file
             controlBlock->computeTimesCurrent = -1;
         }
     }
-    else if (strcmp(controlBlockXml->name, "coupler") == 0)
+    else if (controlBlockXml->name == "coupler")
     {
         controlBlock->type = CT_COUPLER;
         controlBlock->unit.component = NULL;
@@ -2050,10 +2057,8 @@ void Dimr::scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBloc
     controlBlock->masterSubBlockId = -1;
     for (int i = 0; i < controlBlockXml->children.size(); i++)
     {
-        if (strcmp(controlBlockXml->children[i]->name, "parallel") == 0 ||
-            strcmp(controlBlockXml->children[i]->name, "start") == 0 ||
-            strcmp(controlBlockXml->children[i]->name, "startGroup") == 0 ||
-            strcmp(controlBlockXml->children[i]->name, "coupler") == 0)
+        if (controlBlockXml->children[i]->name == "parallel" || controlBlockXml->children[i]->name == "start" ||
+            controlBlockXml->children[i]->name == "startGroup" || controlBlockXml->children[i]->name == "coupler")
         {
             controlBlock->numSubBlocks++;
             if (controlBlock->subBlocks == NULL)
