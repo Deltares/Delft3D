@@ -573,7 +573,7 @@ static int sealock_collect_layers(sealock_state_t *lock) {
 
   // Temperature always occupies slot 0. Inject the scalar temperature_lake/sea values
   // (kept current via set_var) into every layer of the constituent arrays so that
-  // sealock_step_constituents_phase_wise and sealock_distribute_constituent_results see consistent data.
+  // sealock_step_constituents_phase_wise and sealock_distribute_cycle_average_constituent_results see consistent data.
   for (unsigned int i = 0; i < lock->from_lake_volumes.num_volumes; i++) {
     lock->parameters3d.constituent_lake[TEMPERATURE_CONSTITUENT_SLOT][i] =
         lock->parameters.temperature_lake;
@@ -714,7 +714,7 @@ static int sealock_distribute_results(sealock_state_t *lock) {
   return SEALOCK_OK;
 }
 
-static int sealock_distribute_constituent_results(sealock_state_t *lock) {
+static int sealock_distribute_cycle_average_constituent_results(sealock_state_t *lock) {
   // Phase-wise mode: constituent outputs are written directly by
   // sealock_step_constituents using the pre-phase lock concentration.
   // Results persist between updates when no phase transition occurs.
@@ -781,8 +781,8 @@ int sealock_update(sealock_state_t *lock, time_t time) {
   if (status == SEALOCK_OK) {
     status = sealock_distribute_results(lock);
   }
-  if (status == SEALOCK_OK) {
-    status = sealock_distribute_constituent_results(lock);
+  if (status == SEALOCK_OK && lock->computation_mode == cycle_average_mode) {
+    status = sealock_distribute_cycle_average_constituent_results(lock);
   }
   return status;
 }

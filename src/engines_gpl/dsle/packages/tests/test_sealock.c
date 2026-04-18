@@ -601,6 +601,50 @@ static void test_sealock_update__constituent_results_zero_when_no_constituents(v
   }
 }
 
+static void test_sealock_update__cycle_average__constituent_mirrors_salinity(void) {
+  // A constituent with boundary values identical to salinity must produce
+  // outflow concentrations equal to salinity_to_lake/sea exactly.
+  //
+  // This validates that the salinity fraction approach is analytically correct
+  // for passive constituents at steady state: the sea water fraction in the
+  // outflow is a hydraulic property determined by salinity/density alone,
+  // so any passive tracer with the same boundary values follows it exactly.
+  //
+  // If the fraction formula has a bug (wrong boundary values, wrong range,
+  // missing clamp), constituent_to_lake/sea will diverge from salinity.
+
+  // Arrange
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_cycle_average_lock_without_file(&lock, rows, times);
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+  lock.num_constituents = 2; // slot 0 = temperature, slot 1 = salinity mirror
+
+  lock.parameters.head_lake = 0.0;
+  lock.parameters.head_sea = 0.5;
+  lock.parameters3d.salinity_lake[0] = 0.0;
+  lock.parameters3d.salinity_sea[0] = 30.0;
+
+  // Slot 1 mirrors salinity boundary values exactly.
+  lock.parameters3d.constituent_lake[1][0] = 0.0; // == sal_lake
+  lock.parameters3d.constituent_sea[1][0] = 30.0; // == sal_sea
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0] + 3600));
+
+  // Assert: constituent output must equal salinity output exactly.
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results3d.salinity_to_lake[0],
+                            lock.results3d.constituent_to_lake[1][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results3d.salinity_to_sea[0],
+                            lock.results3d.constituent_to_sea[1][0]);
+
+  // Sanity: salinity must be non-trivial, proving the fraction was actually
+  // computed and the test didn't pass vacuously with both values at zero.
+  TEST_ASSERT_DOUBLE_WITHIN(1e-4, lock.results3d.constituent_to_lake[1][0], 29.9999949);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-4, lock.results3d.salinity_to_sea[0], 2.72727);
+}
+
 static void test_sealock_update__constituent_results_equal_cycle_avg_no_gradient(void) {
   // When sal_sea == sal_lake (no gradient), frac = 0 and constituent_to_x
   // must equal constituent_lake.
@@ -1070,6 +1114,7 @@ int main(void) {
   RUN_TEST(test_sealock_update__constituent_results_cycle_average);
   RUN_TEST(test_sealock_update__constituent_results_zero_when_no_constituents);
   RUN_TEST(test_sealock_update__constituent_results_equal_cycle_avg_no_gradient);
+  RUN_TEST(test_sealock_update__cycle_average__constituent_mirrors_salinity);
   RUN_TEST(test_sealock_init__reserves_temperature_slot);
   RUN_TEST(test_sealock_update__phase_wise__multiple_constituents_evolve_independently);
   RUN_TEST(test_sealock_init__temperature_slot_initialised_from_temperature_lake);
@@ -1077,6 +1122,5 @@ int main(void) {
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_across_all_phases);
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_volume);
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_doors_closed);
-
   return UNITY_END();
 }
