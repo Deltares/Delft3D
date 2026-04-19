@@ -702,6 +702,17 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f020_c037_heatmodel5_secchidepth_temporal" ref="dflowfm_default">
+        <path version="2026-04-16T09:24:54.336000">e02_dflowfm/f020_heat_flux/c037_heatmodel5_secchidepth_temporal</path>
+        <maxRunTime>3600.0</maxRunTime>
+        <checks>
+            <file name="output/model_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_tem1" toleranceAbsolute="1e-5" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
 
     <testCase name="e02_f021_c001_bedwithobstacle_anticreep" ref="dflowfm_default">
       <path version="2025-10-07T06:57:58.555000">e02_dflowfm/f021_anti-creep/c001_bedwithobstacle_anticreep</path>
