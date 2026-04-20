@@ -575,6 +575,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
                          & filename_tmp, flowLinkConnectivity)
     use netcdf
+    use nc_check, only : nc_check_err
     use dwaves_version_module
     use m_ec_basic_interpolation, only: tricall
 

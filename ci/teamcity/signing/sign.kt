@@ -105,6 +105,7 @@ object Sign : BuildType({
                     token = "%github_deltares-service-account_access_token%"
                 }
                 filterSourceBranch = "+:*"
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
                 ignoreDrafts = true
             }
         }

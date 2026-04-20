@@ -56,7 +56,6 @@ module m_heatfluxes
 
    integer :: jamapheatflux !< write heatfluxes to map
    integer :: jarichardsononoutput !< write Richardson nr to his
-   integer :: jasecchisp !< Spatial Secchi 0,1
    integer :: rho_water_in_wind_stress !< Use rhomean or local (surface) density of model in windstress: 0,1
    integer, parameter :: RHO_MEAN = 0 !< Use rhomean in windstress
 
@@ -68,7 +67,10 @@ module m_heatfluxes
    real(kind=dp), dimension(:), allocatable :: qfrconmap
    real(kind=dp), dimension(:), allocatable :: qtotmap
 
-   real(kind=dp), dimension(:), allocatable, target :: secchisp !< [m] Space-varying secchi depth {"location": "face", "shape": ["ndx"]}
+   ! Secchi depth variables
+   logical :: secchi_depth_is_spatially_varying !< Flag to indicate if spatially varying Secchi depth is available
+   logical :: secchi_depth_is_time_varying !< Flag to indicate if time-varying Secchi depth is available
+   real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
 

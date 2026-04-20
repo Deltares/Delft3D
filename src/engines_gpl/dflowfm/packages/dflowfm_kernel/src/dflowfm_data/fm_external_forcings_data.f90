@@ -37,7 +37,8 @@ module fm_external_forcings_data
    integer :: mhis !< unit nr external forcings history *.exthis
    integer :: kx, filetype, mext
    character(len=256) :: qid
-   character(len=1) :: operand
+   integer :: operand
+
    integer :: numbnp !< total nr of open boundary cells for network extension
    integer :: jaoldrstfile !< using old-version rst file, which does not contain boundary info
    ! For postprocessing, each boundary polyline is named as a open boundary section.
@@ -383,31 +384,22 @@ module fm_external_forcings_data
    integer :: nwbnd !< number of wave-energy boundaries
    character(len=255), dimension(:), allocatable :: fnamwbnd !< polyline filenames associated with wave-energy boundary
 
-   type t_BubbleScreenFlowCell
-      integer :: flownode_nr !< index in {network_data::netcell}
-      integer :: flowcell_start_index !< start index in the flowcell arrays
-      integer :: num_source_sinks !< nr of point sources/sinks in this cell
-      integer :: start_index !< start index for bubble sources/sinks
-   end type t_BubbleScreenFlowCell
-
    type t_Bubblescreen
-      character(len=255) :: id !< name of bubble screen
-      integer :: num_flow_cells !< nr of grid cells in bubble screen
-      integer :: num_source_sinks !< nr of point sources/sinks in bubble screen
-      type(t_BubbleScreenFlowCell), dimension(:), allocatable :: flow_cells !< Flow cells data
-
-      integer :: num_polyline !< number of polyline points
-      real(kind=dp), dimension(:), allocatable :: x_polyline !< [m] x polyline points
-      real(kind=dp), dimension(:), allocatable :: y_polyline !< [m] y polyline points
-      real(kind=dp) :: z_level !< [m] z level of the bubble screen air discharge
+      character(len=255) :: id !< Bubble screen id
+      integer :: num_flowcells !< Number of flow cells in bubble screen
+      integer, dimension(:), allocatable :: flowcell_indices !< Indices of flow cells in bubble screen. {size=num_flowcells}
+      integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
+      real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
+      real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
    end type t_Bubblescreen
 
-   type (t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< bubble screen data
-   real (kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< array to catch bubble screen air discharges
+   type(t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< Array containing all bubble screens
+   real(kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< Array to catch bubble screen air discharges
 
    ! Source/sink variables, to be moved to a separate module; see UNST-9614
    ! ====================================================================================================
 
+   ! Source/sink counters.
    integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
    integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
    integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}

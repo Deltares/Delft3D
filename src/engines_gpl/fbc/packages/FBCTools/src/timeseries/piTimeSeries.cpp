@@ -27,67 +27,58 @@
 
 using namespace rtctools::timeseries;
 
-
-piTimeSeries::piTimeSeries(string id, int index, string locationID, string parameterID, multiset<string> qualifierIDs, string unit,
-						   interpolationOption intOpt, interpolationOption extOpt) :
-	id(id), index(index), locationID(locationID), parameterID(parameterID), qualifierIDs(qualifierIDs), unit(unit), intOpt(intOpt), extOpt(extOpt)
-{ }
+piTimeSeries::piTimeSeries(string id, int index, string locationID, string parameterID, multiset<string> qualifierIDs,
+                           string unit, interpolationOption intOpt, interpolationOption extOpt)
+    : id(id),
+      index(index),
+      locationID(locationID),
+      parameterID(parameterID),
+      qualifierIDs(qualifierIDs),
+      unit(unit),
+      intOpt(intOpt),
+      extOpt(extOpt)
+{
+}
 
 string piTimeSeries::getID() { return id; }
 
-void piTimeSeries::setID(string id)
-{
-	this->id = string(id);
-}
+void piTimeSeries::setID(string id) { this->id = string(id); }
 
 int piTimeSeries::getIndex() { return index; }
 
-void piTimeSeries::setIndex(int index)
-{
-	this->index = index;
-}
-
+void piTimeSeries::setIndex(int index) { this->index = index; }
 
 string piTimeSeries::getLocationID() { return locationID; };
 
-void piTimeSeries::setLocationID(string locationID)
+void piTimeSeries::setLocationID(string locationID) { this->locationID = string(locationID); }
+
+string piTimeSeries::getParameterID() { return parameterID; };
+
+void piTimeSeries::setParameterID(string parameterID) { this->parameterID = string(parameterID); }
+
+string piTimeSeries::getQualifierID()
 {
-	this->locationID = string(locationID);
-}
-
-string piTimeSeries::getParameterID() { return	parameterID; };
-
-void piTimeSeries::setParameterID(string parameterID)
-{
-	this->parameterID = string(parameterID);
-}
-
-string piTimeSeries::getQualifierID() { 
-	string qualifierID = "";
-	for (multiset<string>::const_iterator i(qualifierIDs.begin()), end(qualifierIDs.end()); i!=qualifierIDs.end(); ++i) {
-		qualifierID.append(*i);
-	};
-	return qualifierID;
+    string qualifierID = "";
+    for (multiset<string>::const_iterator i(qualifierIDs.begin()), end(qualifierIDs.end()); i != qualifierIDs.end();
+         ++i)
+    {
+        qualifierID.append(*i);
+    };
+    return qualifierID;
 };
 
-string piTimeSeries::getUnit() { return	unit; };
+string piTimeSeries::getUnit() { return unit; };
 
 string piTimeSeries::toString()
 {
-	stringstream out;
-	out << "id[" << index << "] = '" << id;
-	out << "', locationID = '" << locationID << "', parameterID = '" << parameterID;
-	// TODO for (int i=0; i<(int)qualifierIDs.size(); i++) { out << qualifierIDs. << ","; }
-	out << "'";
-	return out.str();
+    stringstream out;
+    out << "id[" << index << "] = '" << id;
+    out << "', locationID = '" << locationID << "', parameterID = '" << parameterID;
+    // TODO for (int i=0; i<(int)qualifierIDs.size(); i++) { out << qualifierIDs. << ","; }
+    out << "'";
+    return out.str();
 }
 
-interpolationOption piTimeSeries::getInterpolationOption()
-{
-	return intOpt;
-}
+interpolationOption piTimeSeries::getInterpolationOption() { return intOpt; }
 
-interpolationOption piTimeSeries::getExtrapolationOption()
-{
-	return extOpt;
-}
+interpolationOption piTimeSeries::getExtrapolationOption() { return extOpt; }

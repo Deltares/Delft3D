@@ -31,10 +31,13 @@ typedef struct dsle_phase_wise_args_struct {
   double duration;          // duration of the active phase.
 } dsle_phase_wise_args_t;
 
-#define PHASE_WISE_CLEAR_ARGS()                                                                     \
-  (dsle_phase_wise_args_t) {                                                                         \
-    .run_update = 0, .routine = 0, .time = 0, .time_step = 0, .time_duration_end = 0, .duration = 0 \
-  }
+#define PHASE_WISE_CLEAR_ARGS()                                                                    \
+  (dsle_phase_wise_args_t){.run_update = 0,                                                        \
+                           .routine = 0,                                                           \
+                           .time = 0,                                                              \
+                           .time_step = 0,                                                         \
+                           .time_duration_end = 0,                                                 \
+                           .duration = 0}
 
 #define MAX_NUM_VOLUMES 50
 #define NO_CURRENT_ROW (size_t)(-1)
