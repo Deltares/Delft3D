@@ -263,10 +263,10 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (.not. spatial_secchi_depth_is_available) then
+               if (.not. secchi_depth_is_spatially_varying) then
                   call realloc(spatial_secchi_depth, ndx, fill=dmiss)
                   call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
-                  spatial_secchi_depth_is_available = .true.
+                  secchi_depth_is_spatially_varying = .true.
                end if
 
                success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
