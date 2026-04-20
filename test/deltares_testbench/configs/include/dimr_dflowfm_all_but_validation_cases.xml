@@ -1797,7 +1797,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
-        <path version="2026-03-04T13:35:28.939000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <path version="2026-04-20T12:05:47.677000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>           
             <file name="output/spatial_dicoww_his.nc" type="netcdf">
