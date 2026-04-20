@@ -333,7 +333,11 @@ In this field, physical model parameters can be inserted, for instance related t
 | `temperature` | Include temperature. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: only transport</li><li>**`3`**: excess model of D3D</li><li>**`5`**: composite (ocean) model</li></ul> |  |
 | `initialTemperature` | Initial temperature. | `6.0` |  | [°C] |
 | `backgroundWaterTemperature` | Background water temperature for eqn. of state if temperature not computed. | `20.0` |  | [°C] |
-| `secchiDepth` | Water clarity parameter. | `2.0` |  | [m] |
+| `SecchiDepth` | Water clarity parameter. | `1.0` |  | [m] |
+| `SecchiDepth2` ⚠️ | Water clarity parameter for non-penetrative radiation. Use SecchiDepthNonPenetrative instead. | `0.0` |  | [m] |
+| `SecchiDepthNonPenetrative` 🔬 | Water clarity parameter for non-penetrative radiation. | `0.0` |  | [m] |
+| `SecchiDepth2Fraction` ⚠️ | Fraction of solar radiation that falls in non-penetrative spectrum. Use SecchiDepthNonPenetrativeFraction instead. | `0.0` |  | [-] |
+| `SecchiDepthNonPenetrativeFraction` 🔬 | Fraction of solar radiation that falls in non-penetrative spectrum. | `0.0` |  | [-] |
 | `stanton` | Coefficient for convective heat flux, if negative, then Cd wind is used. | `0.0013` |  | [-] |
 | `dalton` | Coefficient for evaporative heat flux, if negative, then Cd wind is used. | `0.0013` |  | [-] |
 | `albedo` | Albedo coefficient. Fraction of solar radiation reflected by the water surface. | `0.06` |  | [-] |

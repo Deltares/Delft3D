@@ -2150,11 +2150,43 @@
                     "unit": "°C"
                 },
                 {
-                    "key": "secchiDepth",
-                    "default_value": 2.0,
+                    "key": "SecchiDepth",
+                    "default_value": 1.0,
                     "value_type": "float",
                     "description": "Water clarity parameter.",
                     "unit": "m"
+                },
+                {
+                    "key": "SecchiDepth2",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Water clarity parameter for non-penetrative radiation. Use SecchiDepthNonPenetrative instead.",
+                    "unit": "m",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "SecchiDepthNonPenetrative",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Water clarity parameter for non-penetrative radiation.",
+                    "unit": "m",
+                    "status": "research"
+                },
+                {
+                    "key": "SecchiDepth2Fraction",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Fraction of solar radiation that falls in non-penetrative spectrum. Use SecchiDepthNonPenetrativeFraction instead.",
+                    "unit": "-",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "SecchiDepthNonPenetrativeFraction",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Fraction of solar radiation that falls in non-penetrative spectrum.",
+                    "unit": "-",
+                    "status": "research"
                 },
                 {
                     "key": "stanton",
