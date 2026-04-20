@@ -3217,43 +3217,6 @@ contains
       ierr = nf90_put_att(irstfile, id_s1, 'long_name', 'water level')
       ierr = nf90_put_att(irstfile, id_s1, 'units', 'm')
 
-      ierr = nf90_def_var(irstfile, 'ice_thickness', nf90_double, [id_flowelemdim, id_timedim], id_ice_thickness)
-      ierr = nf90_put_att(irstfile, id_ice_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-      ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness') 
-      ierr = nf90_put_att(irstfile, id_ice_thickness, 'long_name', 'ice thickness')
-      ierr = nf90_put_att(irstfile, id_ice_thickness, 'units', 'm')
-
-      ierr = nf90_def_var(irstfile, 'ice_area_fraction', nf90_double, [id_flowelemdim, id_timedim], id_ice_area_fraction)
-      ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-      ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction') 
-      ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'long_name', 'ice area fraction')
-      ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'units', 'm2 m-2')
-
-      ierr = nf90_def_var(irstfile, 'snow_thickness', nf90_double, [id_flowelemdim, id_timedim], id_snow_thickness)
-      ierr = nf90_put_att(irstfile, id_snow_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-      ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness') 
-      ierr = nf90_put_att(irstfile, id_snow_thickness, 'long_name', 'snow thickness')
-      ierr = nf90_put_att(irstfile, id_snow_thickness, 'units', 'm')
-
-      ierr = nf90_def_var(irstfile, 'ice_pressure', nf90_double, [id_flowelemdim, id_timedim], id_ice_pressure)
-      ierr = nf90_put_att(irstfile, id_ice_pressure, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-      ierr = nf90_put_att(irstfile, id_ice_pressure, 'standard_name', 'ice_pressure')
-      ierr = nf90_put_att(irstfile, id_ice_pressure, 'long_name', 'ice pressure')
-      ierr = nf90_put_att(irstfile, id_ice_pressure, 'units', 'Pa')
-
-      ierr = nf90_def_var(irstfile, 'ice_temperature', nf90_double, [id_flowelemdim, id_timedim], id_ice_temperature)
-      ierr = nf90_put_att(irstfile, id_ice_temperature, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-      ierr = nf90_put_att(irstfile, id_ice_temperature, 'standard_name', 'ice_temperature')
-      ierr = nf90_put_att(irstfile, id_ice_temperature, 'long_name', 'ice temperature')
-      ierr = nf90_put_att(irstfile, id_ice_temperature, 'units', 'K')
-
-      ierr = nf90_def_var(irstfile, 'snow_temperature', nf90_double, [id_flowelemdim, id_timedim], id_snow_temperature)
-      ierr = nf90_put_att(irstfile, id_snow_temperature, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-      ierr = nf90_put_att(irstfile, id_snow_temperature, 'standard_name', 'snow_temperature')
-      ierr = nf90_put_att(irstfile, id_snow_temperature, 'long_name', 'snow temperature')
-      ierr = nf90_put_att(irstfile, id_snow_temperature, 'units', 'K')
-
-
       ! Definition and attributes of flow data on centres: water level timestep before the latest timestep
       ierr = nf90_def_var(irstfile, 's0', nf90_double, [id_flowelemdim, id_timedim], id_s0)
       ierr = nf90_put_att(irstfile, id_s0, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
@@ -3548,6 +3511,46 @@ contains
          ierr = nf90_put_att(irstfile, id_tem1, 'standard_name', 'sea_water_temperature')
          ierr = nf90_put_att(irstfile, id_tem1, 'long_name', 'temperature in flow element')
          ierr = nf90_put_att(irstfile, id_tem1, 'units', 'degC')
+      end if
+
+      ! Ice Cover fields, only for Semtner ice model
+      if (ja_icecover == ICECOVER_SEMTNER) then
+
+         ierr = nf90_def_var(irstfile, 'ice_thickness', nf90_double, [id_flowelemdim, id_timedim], id_ice_thickness)
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness') 
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'long_name', 'ice thickness')
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'units', 'm')
+
+         ierr = nf90_def_var(irstfile, 'ice_area_fraction', nf90_double, [id_flowelemdim, id_timedim], id_ice_area_fraction)
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction') 
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'long_name', 'ice area fraction')
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'units', 'm2 m-2')
+
+         ierr = nf90_def_var(irstfile, 'snow_thickness', nf90_double, [id_flowelemdim, id_timedim], id_snow_thickness)
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness') 
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'long_name', 'snow thickness')
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'units', 'm')
+
+         ierr = nf90_def_var(irstfile, 'ice_pressure', nf90_double, [id_flowelemdim, id_timedim], id_ice_pressure)
+         ierr = nf90_put_att(irstfile, id_ice_pressure, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_ice_pressure, 'standard_name', 'ice_pressure')
+         ierr = nf90_put_att(irstfile, id_ice_pressure, 'long_name', 'ice pressure')
+         ierr = nf90_put_att(irstfile, id_ice_pressure, 'units', 'Pa')
+
+         ierr = nf90_def_var(irstfile, 'ice_temperature', nf90_double, [id_flowelemdim, id_timedim], id_ice_temperature)
+         ierr = nf90_put_att(irstfile, id_ice_temperature, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_ice_temperature, 'standard_name', 'ice_temperature')
+         ierr = nf90_put_att(irstfile, id_ice_temperature, 'long_name', 'ice temperature')
+         ierr = nf90_put_att(irstfile, id_ice_temperature, 'units', 'K')
+
+         ierr = nf90_def_var(irstfile, 'snow_temperature', nf90_double, [id_flowelemdim, id_timedim], id_snow_temperature)
+         ierr = nf90_put_att(irstfile, id_snow_temperature, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
+         ierr = nf90_put_att(irstfile, id_snow_temperature, 'standard_name', 'snow_temperature')
+         ierr = nf90_put_att(irstfile, id_snow_temperature, 'long_name', 'snow temperature')
+         ierr = nf90_put_att(irstfile, id_snow_temperature, 'units', 'K')
       end if
 
       ! Tracer fields
@@ -4299,14 +4302,6 @@ contains
       ierr = nf90_put_var(irstfile, id_s1, s1, [1, itim], [ndxi, 1])
       ierr = nf90_put_var(irstfile, id_s0, s0, [1, itim], [ndxi, 1])
 
-      ierr = nf90_put_var(irstfile, id_ice_thickness, ice_thickness, [1, itim], [ndxi, 1])
-      ierr = nf90_put_var(irstfile, id_ice_area_fraction, ice_area_fraction, [1, itim], [ndxi, 1])
-      ierr = nf90_put_var(irstfile, id_snow_thickness, snow_thickness, [1, itim], [ndxi, 1])
-      ierr = nf90_put_var(irstfile, id_ice_pressure, ice_pressure, [1, itim], [ndxi, 1])
-      ierr = nf90_put_var(irstfile, id_ice_temperature, ice_temperature, [1, itim], [ndxi, 1])
-      ierr = nf90_put_var(irstfile, id_snow_temperature, snow_temperature, [1, itim], [ndxi, 1])
-
-
       ! Write the data: bed level
       ierr = nf90_put_var(irstfile, id_bl, bl, [1, itim], [ndxi, 1])
 
@@ -4610,6 +4605,15 @@ contains
             end do
             ierr = nf90_put_var(irstfile, id_tem1, tem1, [1, itim], [ndxi, 1])
          end if
+      end if
+
+      if (ja_icecover == ICECOVER_SEMTNER) then
+         ierr = nf90_put_var(irstfile, id_ice_thickness, ice_thickness, [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(irstfile, id_ice_area_fraction, ice_area_fraction, [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(irstfile, id_snow_thickness, snow_thickness, [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(irstfile, id_ice_pressure, ice_pressure, [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(irstfile, id_ice_temperature, ice_temperature, [1, itim], [ndxi, 1])
+         ierr = nf90_put_var(irstfile, id_snow_temperature, snow_temperature, [1, itim], [ndxi, 1])
       end if
 
       if (ITRA1 > 0) then
@@ -13796,45 +13800,7 @@ contains
                                um%inode_merge)
 
       call check_error(ierr, 'waterlevels old')
-      call readyy('Reading map data', 0.35_dp)
-
-      ! Read ice thickness (flow elem)
-      ierr = get_var_and_shift(imapfile, 'ice_thickness', ice_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                               um%inode_merge)
-
-      call check_error(ierr, 'ice thickness')
-      call readyy('Reading map data', 0.351_dp)
-
-      ! Read ice area fraction (flow elem)
-      ierr = get_var_and_shift(imapfile, 'ice_area_fraction', ice_area_fraction, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                               um%inode_merge)
-      call check_error(ierr, 'ice area fraction')
-      call readyy('Reading map data', 0.352_dp)
-
-      ! Read ice pressure (flow elem)
-      ierr = get_var_and_shift(imapfile, 'ice_pressure', ice_pressure, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                               um%inode_merge)
-      call check_error(ierr, 'ice pressure')
-      call readyy('Reading map data', 0.353_dp)
-
-      ! Read ice temperature (flow elem)
-      ierr = get_var_and_shift(imapfile, 'ice_temperature', ice_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                               um%inode_merge)
-      call check_error(ierr, 'ice temperature')
-      call readyy('Reading map data', 0.354_dp)
-
-      ! Read snow thickness (flow elem)
-      ierr = get_var_and_shift(imapfile, 'snow_thickness', snow_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                               um%inode_merge)
-      call check_error(ierr, 'snow thickness')
-      call readyy('Reading map data', 0.355_dp)
-
-      ! Read snow temperature (flow elem)
-      ierr = get_var_and_shift(imapfile, 'snow_temperature', snow_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                               um%inode_merge)
-      call check_error(ierr, 'snow temperature')
-      call readyy('Reading map data', 0.356_dp)
-      
+      call readyy('Reading map data', 0.35_dp)      
 
       ! Read chezy roughness (flow elem)
       call gettaus(2, 1) ! It can happen that `czs` is not allocated at this point (e.g., if `jamap_chezy_elements = 0`)
@@ -14187,6 +14153,45 @@ contains
             call assign_restart_data_to_local_array(tem1, constituents, itemp, um%ndxi_own, um%jamergedmap, um%inode_own)
          end if
       end if
+
+      if (ja_icecover == ICECOVER_SEMTNER) then
+         ! Read ice thickness (flow elem)
+         ierr = get_var_and_shift(imapfile, 'ice_thickness', ice_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                 um%inode_merge)
+
+         call check_error(ierr, 'ice thickness')
+         call readyy('Reading map data', 0.351_dp)
+
+         ! Read ice area fraction (flow elem)
+         ierr = get_var_and_shift(imapfile, 'ice_area_fraction', ice_area_fraction, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                 um%inode_merge)
+         call check_error(ierr, 'ice area fraction')
+         call readyy('Reading map data', 0.352_dp)
+
+         ! Read ice pressure (flow elem)
+         ierr = get_var_and_shift(imapfile, 'ice_pressure', ice_pressure, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                 um%inode_merge)
+         call check_error(ierr, 'ice pressure')
+         call readyy('Reading map data', 0.353_dp)
+
+         ! Read ice temperature (flow elem)
+         ierr = get_var_and_shift(imapfile, 'ice_temperature', ice_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                 um%inode_merge)
+         call check_error(ierr, 'ice temperature')
+         call readyy('Reading map data', 0.354_dp)
+
+         ! Read snow thickness (flow elem)
+         ierr = get_var_and_shift(imapfile, 'snow_thickness', snow_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                 um%inode_merge)
+         call check_error(ierr, 'snow thickness')
+         call readyy('Reading map data', 0.355_dp)
+
+         ! Read snow temperature (flow elem)
+         ierr = get_var_and_shift(imapfile, 'snow_temperature', snow_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
+                                 um%inode_merge)
+         call check_error(ierr, 'snow temperature')
+         call readyy('Reading map data', 0.356_dp)
+      end if      
 
       ! Read the tracers
       if (ITRA1 > 0) then
