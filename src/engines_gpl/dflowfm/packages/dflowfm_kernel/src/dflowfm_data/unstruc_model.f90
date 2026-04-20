@@ -1429,10 +1429,10 @@ contains
       call prop_get(md_ptr, 'physics', 'SecchiDepth2Fraction', secchi_radiation_fraction(2)) ! Deprecated, use SecchiDepthNonPenetrativeFraction instead
       call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2))
 
-      diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOL_ATKINS_PARAMETER
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
       
       if (secchi_depth(2) > 0) then
-         diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOL_ATKINS_PARAMETER
+         diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
          secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
       end if
 
