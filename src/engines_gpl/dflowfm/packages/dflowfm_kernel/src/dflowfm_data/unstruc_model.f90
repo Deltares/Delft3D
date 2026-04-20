@@ -3142,7 +3142,7 @@ contains
       if (writeall .or. jaLogprofatubndin /= 1) then
          call prop_set(prop_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin, 'ubnds inflow: 0=uniform U1, 1 = log U1, 2 = user3D')
       end if
-      if (writeall .or. jaLogprofkepsbndin /= 1) then
+      if (writeall .or. jaLogprofkepsbndin /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Logprofkepsbndin', jaLogprofkepsbndin, 'inflow: 0=0 keps, 1 = log keps inflow, 2 = log keps in and outflow')
       end if
 
@@ -3928,7 +3928,7 @@ contains
                        'Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file (1: yes, 0: no).')
       end if
       if (writeall .or. len_trim(unc_metadatafile) > 0) then
-         call prop_set(prop_ptr, 'output', 'MetaDataFile', unc_metadatafile, 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')
+         call prop_set(prop_ptr, 'output', 'MetaDataFile', trim(unc_metadatafile), 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')
       end if
       if (writeall .or. unc_uuidgen /= 0) then
          call prop_set(prop_ptr, 'output', 'GenerateUUID', unc_uuidgen, 'Generate UUID as unique dataset identifier and include in output NetCDF files.')
