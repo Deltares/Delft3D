@@ -11,6 +11,7 @@ from pyfakefs.fake_filesystem import FakeFilesystem
 from pytest_mock import MockerFixture
 
 from src.config.credentials import Credentials
+from src.config.dependency import Dependency
 from src.config.local_paths import LocalPaths
 from src.config.location import Location
 from src.config.program_config import ProgramConfig
@@ -929,3 +930,37 @@ class TestComparisonRunner:
         # Assert — error logged and cleanup called for the failing config
         cleanup_mock.assert_called_once_with(config)
         logger.error.assert_any_call("Failed post-download steps for 'C1': disk full")
+
+    def test_copy_dvc_dependency_uses_input_subdirectory(self, mocker: MockerFixture, fs: FakeFilesystem) -> None:
+        # Arrange — DVC dependency source has an 'input' subdirectory containing the actual data
+        settings = TestBenchSettings()
+        settings.local_paths = LocalPaths(cases_path="data/cases", references_path="data/cases")
+
+        input_loc = self.create_location(name="case", root="data/cases/", location_type=PathType.INPUT)
+        config = self.create_test_case_config(
+            "tc1", testcase_path=TestCasePath("e03_waq/f02_hongkong/c04_statistics", "DVC"), locations=[input_loc]
+        )
+        config.dependency = Dependency(
+            local_dir="f02_hongkong_c00_hydro",
+            case_path="e03_waq/f02_hongkong/c00_hydro",
+            version="DVC",
+        )
+        config.path = TestCasePath("e03_waq/f02_hongkong/c04_statistics", "DVC")
+        settings.configs_to_run = [config]
+
+        # Create the DVC source structure: cases_path/input/ contains data
+        fs.create_file("data/cases/e03_waq/f02_hongkong/c00_hydro/input/1992/com-92d.hyd", contents="hydro data")
+        fs.create_file("data/cases/e03_waq/f02_hongkong/c00_hydro/input.dvc", contents="dvc meta")
+        fs.create_file("data/cases/e03_waq/f02_hongkong/c04_statistics/input/dimr_config.xml", contents="cfg")
+
+        logger = MagicMock(spec=ConsoleLogger)
+        runner = ComparisonRunner(settings, logger)
+
+        mocker.patch("src.suite.test_set_runner.DvcHandler")
+
+        # Act
+        runner._TestSetRunner__prepare_dvc_test_cases()  # type: ignore[attr-defined]
+
+        # Assert — data copied from input/ subdirectory, not the parent
+        dest = pl.Path("data/cases/e03_waq/f02_hongkong/c04_statistics/f02_hongkong_c00_hydro/1992/com-92d.hyd")
+        assert dest.exists(), f"Expected dependency data at {dest}"

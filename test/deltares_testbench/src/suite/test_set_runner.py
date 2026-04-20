@@ -985,7 +985,7 @@ class TestSetRunner(ABC):
                 return
 
             source_input_path = Path(
-                Paths().rebuildToLocalPath(Paths().mergeFullPath(location.root, config.dependency.cases_path))
+                Paths().rebuildToLocalPath(Paths().mergeFullPath(location.root, config.dependency.cases_path, "input"))
             )
             if source_input_path.is_dir():
                 logger.info(f"Copying DVC dependency from {source_input_path} to {local_path}")
