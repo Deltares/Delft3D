@@ -15584,7 +15584,7 @@ contains
       use precision,          only: dp
       implicit none
 
-      type(t_fm_flowgeom), intent(out)           :: flowgeom   !< Populated flow geometry object; flowgeom%mesh2d is ready for ug_write_mesh_struct.
+      type(t_fm_flowgeom), intent(inout)           :: flowgeom   !< Populated flow geometry object; flowgeom%mesh2d is ready for ug_write_mesh_struct.
       integer,             intent(in)            :: jabndnd    !< Include boundary cells (1) or not (0).
       logical,             intent(in), optional  :: cell_mask(:) !< (Phase 2) Selection mask over ndx2d cells.
 
@@ -15707,7 +15707,7 @@ contains
       use precision,        only: dp
       implicit none
 
-      type(t_fm_flowgeom), intent(out) :: flowgeom  !< Populated 1D geometry object.
+      type(t_fm_flowgeom), intent(inout) :: flowgeom  !< Populated 1D geometry object.
       integer,             intent(in)  :: jabndnd    !< Include boundary nodes (1) or not (0).
 
       integer :: ndx1d, n1d_write, last_1d, n1dedges, n1d2dcontacts
@@ -15830,6 +15830,21 @@ contains
       flowgeom%lnx           = lnx
 
    end subroutine build_flowgeom_1d
+
+!> Builds the complete flow geometry object for both 1D and 2D meshes.
+!! Delegates to build_flowgeom_2d and build_flowgeom_1d in order; the call site
+!! owns the t_fm_flowgeom object and receives a fully populated result.
+   function build_flowgeom(jabndnd) result (flowgeom)
+      use m_flowgeom, only: t_fm_flowgeom
+      implicit none
+
+      type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
+      integer,             intent(in)  :: jabndnd  !< Include boundary nodes (1) or not (0).
+
+      call build_flowgeom_2d(flowgeom, jabndnd)
+      call build_flowgeom_1d(flowgeom, jabndnd)
+
+   end function build_flowgeom
 
 !> Writes the unstructured flow geometry in UGRID format to an already opened netCDF dataset.
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
@@ -15958,11 +15973,12 @@ contains
          end if
       end if
 
+      flowgeom = build_flowgeom(jabndnd_)
       call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
       !if (ndx2d > 0 .and. ja2D_) then
          ! Build the 2D mesh geometry object (node re-mapping, edge/face connectivity, coordinates).
-         call build_flowgeom_2d(flowgeom, jabndnd_)
+         !call build_flowgeom_2d(flowgeom, jabndnd_)
 
          ! Attach layer data (write-time concern: depends on jafou_ / sigma-z path).
          flowgeom%mesh2d%num_layers = layer_count
@@ -16203,7 +16219,9 @@ end associate
       end if
 
            ! --- Build geometry object ---
-      call build_flowgeom_1d(flowgeom1d, jabndnd_)
+      if (flowgeom1d%mesh1D%numNode <= 0 .or. flowgeom1d%mesh1D%numEdge <= 0) then
+         call build_flowgeom_1d(flowgeom1d, jabndnd_)
+      end if
 
       associate(mesh1d          => flowgeom1d%mesh1D,       &
                 ndx2d           => flowgeom1d%ndx2d,         &
