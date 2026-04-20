@@ -44,8 +44,6 @@ contains
                             jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
                             POOLE_ATKINS_PARAMETER
       use m_heatfluxes, only: em, albedo, cpa, spatial_secchi_depth_is_available, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
-                            DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
-      use m_heatfluxes, only: em, albedo, cpa, secchi_depth_is_spatially_varying, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
       use m_flowparameters, only: jahisheatflux, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
