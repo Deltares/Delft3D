@@ -965,7 +965,14 @@ contains
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent frictioncoefficient only implemented for NetCDF.')
+            return
+         end if
+      case ('secchidepth')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'secchi_depth'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent secchidepth only implemented for NetCDF.')
             return
          end if
       case ('windxy')

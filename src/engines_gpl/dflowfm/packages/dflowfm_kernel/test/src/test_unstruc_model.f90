@@ -56,7 +56,7 @@ contains
 
         ! Arrange
         interval_input = [7.0_dp, 7.0_dp, 42.0_dp] ! step, start, end
-        call SetMessageHandling(write2screen=.false., useLog=.true.)
+        call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
 
         ! Act
         call set_time_interval(interval_input, start, step, end_, SIMULATION_START, SIMULATION_STOP, .true., interval_name=INTERVAL_NAME)

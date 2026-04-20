@@ -1269,4 +1269,36 @@ contains
       end do
 
    end subroutine calculate_start_link_and_widths
+
+   !> Remove 1D links and 1D2D longitudinal links from the dambreak polygon list.
+   !! This function filters out flow links that are not suitable for dambreak calculations
+   !! by examining the flow link type (kcu). Only 2D flow links and 1D2D lateral links
+   !! are retained in the list.
+   !!
+   !! Flow link types filtered out:
+   !! - kcu = 1: 1D flow links
+   !! - kcu = 4: 1D2D longitudinal flow links
+   !!
+   !! The function compacts the kegen array by removing unwanted links and updates
+   !! numgen to reflect the new count of valid links.
+   pure module subroutine remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
+      use m_flowgeom, only: kcu
+      use network_data, only: LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+      integer, intent(inout) :: numgen !< number of flow links in kegen
+      integer, dimension(:), intent(inout) :: kegen !< array with the link indices
+      integer :: i, cell, numcells
+      numcells = 0
+      do i = 1, numgen
+         cell = abs(kegen(i))
+         ! remove 1d links and 1d2d longitudinal links from the dambreak polygon list.
+         select case (abs(kcu(cell)))
+         case(LINK_1D, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
+         case default
+            numcells = numcells + 1
+            kegen(numcells) = kegen(i)
+         end select
+      end do
+      numgen = numcells
+   end subroutine remove_1d_links_from_dambreak_polygon_list
+
 end submodule m_dambreak_breach_submodule
