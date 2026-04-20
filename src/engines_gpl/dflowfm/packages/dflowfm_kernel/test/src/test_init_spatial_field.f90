@@ -169,7 +169,7 @@ contains
       use m_wind, only: rain, jaqin
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
-
+      ! ARRANGE: Create a bcascii forcing file for rainfall and an ext file that references it.
       call create_file(BC_FILENAME, [ &
                        "[General]", &
                        "    fileVersion           = 1.01", &
@@ -193,20 +193,21 @@ contains
                        "    forcingFileType = bcascii"])
 
       jarain = 0
+      jaqin = 0
+      ecInstancePtr%nItems = 0
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
       call initialize_ec_module()
-
+      ! ACT: Parse the block and initialize the spatial fields, which should set up the EC connection and activate jarain.
       call parse_spatial_block(EXT_FILENAME, bnd_ptr, block_ptr)
       success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILENAME, 'Spatial')
       call tree_destroy(bnd_ptr)
-
+      ! ASSERT: init_spatial_fields should succeed, jarain and jaqin should both be 1, and the EC instance should have at least one registered item.
       call f90_expect_true(success, "init_spatial_fields should succeed for a valid bcascii rainfall block")
       call f90_expect_eq(jarain, 1, "jarain should be 1 after a successful bcascii rainfall EC connection")
       call f90_expect_eq(jaqin, 1, "jaqin should be 1 after a successful bcascii rainfall EC connection")
       call f90_expect_true(ecInstancePtr%nItems > 0, "EC instance should have at least one registered item after init_spatial_fields")
       call teardown_minimal_grid()
-      jarain = 0
    end subroutine test_rainfall_bcascii_registers_ec_connection
    !$f90tw)
 
@@ -217,7 +218,7 @@ contains
    subroutine test_unknown_quantity_returns_error() bind(C)
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
-
+      ! ARRANGE: Create an ext file with a spatial block that references a quantity that init_spatial_fields does not recognize.
       call create_file(EXT_FILENAME, [ &
                        "[Spatial]", &
                        "    quantity    = this_quantity_does_not_exist", &
@@ -226,11 +227,13 @@ contains
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
       call initialize_ec_module()
-
+      
+      ! ACT: parse the block and initialize the spatial fields.
       call parse_spatial_block(EXT_FILENAME, bnd_ptr, block_ptr)
       success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILENAME, 'Spatial')
       call tree_destroy(bnd_ptr)
 
+      ! ASSERT: init_spatial_fields should return .false. because the quantity is not recognized.
       call f90_expect_false(success, "init_spatial_fields should fail for an unrecognized spatial quantity")
 
       call teardown_minimal_grid()
@@ -248,6 +251,7 @@ contains
       character(len=*), parameter :: SOLAR_BC = "test_solar.bc"
       character(len=*), parameter :: SOLAR_EXT = "test_solar_conflict.ext"
 
+      ! ARRANGE: Set up a bcascii forcing file for solar radiation and an ext file that references it.
       call create_file(SOLAR_BC, [ &
                        "[General]", &
                        "    fileVersion           = 1.01", &
@@ -275,15 +279,15 @@ contains
       call initialize_ec_module()
       net_solar_radiation_available = .true.
 
+      ! ACT: Parse block and initialize the spatial fields
       call parse_spatial_block(SOLAR_EXT, bnd_ptr, block_ptr)
       success = init_spatial_fields(block_ptr, BASE_DIR, SOLAR_EXT, 'Spatial')
       call tree_destroy(bnd_ptr)
 
+      ! ASSERT: init_spatial_fields should fail because solar_radiation_available is .true. and enable_quantity should not allow both to be active.
       call f90_expect_false(success, "init_spatial_fields should fail when netsolarradiation is already registered")
 
       call teardown_minimal_grid()
-      net_solar_radiation_available = .false.
-      solar_radiation_available = .false.
    end subroutine test_solarradiation_conflicts_with_netsolarradiation
    !$f90tw)
 
