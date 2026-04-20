@@ -711,12 +711,6 @@ static int sealock_distribute_results(sealock_state_t *lock) {
 }
 
 static int sealock_distribute_cycle_average_constituent_results(sealock_state_t *lock) {
-  // Phase-wise mode: constituent outputs are written directly by
-  // sealock_step_constituents using the pre-phase lock concentration.
-  // Results persist between updates when no phase transition occurs.
-  if (lock->computation_mode == phase_wise_mode) {
-    return SEALOCK_OK;
-  }
 
   // Cycle-average mode: use the salinity mixing fraction as a proxy.
   // Analytically exact at steady state for passive constituents.
