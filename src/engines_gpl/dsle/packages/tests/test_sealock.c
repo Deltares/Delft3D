@@ -1,4 +1,4 @@
-#include "load_phase_wise.h"
+﻿#include "load_phase_wise.h"
 #include "sealock.h"
 #include "timestamp.h"
 #include "unity.h"
@@ -1018,6 +1018,9 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_d
   // If the simple volume balance is used instead of the exponential decay,
   // constituent_lock[1] will diverge from salinity_lock after the flush phase.
   //
+  // Because the constituents use the CSTR model while salinity follows the lambda model, 
+  // The results are only equal if the lake salinity is 0.
+  //
   // Setup:
   //   Phase 1 (leveling): establishes a post-leveling state.
   //   Phase -1 (flush doors closed): flushing_discharge=10 m3/s, t_flushing=60s.
@@ -1094,6 +1097,55 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_d
   TEST_ASSERT_TRUE(fabs(lock.phase_state.salinity_lock - 15.0) > 1e-6);
 }
 
+static void
+test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_concentration(void) {
+  // Verifies the CSTR model correctly handles c_lock < c_lake — the concentration
+  // in the lock is BELOW the inflow concentration, so flushing must INCREASE it.
+  //
+  // The old dsle.c-mirrored formula gave lam < 0 here, causing an exponentially
+  // growing (unbounded) concentration. Q/V is always positive so it always converges.
+  //
+  // Setup: vol_lock = 5000 m3, Q = 10 m3/s, t = 60s, lam = Q/V = 0.002 s-1
+  //   c_lock = 5.0, c_lake = 20.0
+  //   c_lock_new = 20 + (5 - 20) * exp(-0.002 * 60) = 20 - 15 * exp(-0.12) ≈ 6.70
+
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_phase_wise_lock_without_file(&lock, rows, times);
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+  lock.num_constituents = 2;
+
+  lock.parameters.head_lake = 0.0;
+  lock.parameters.head_sea = 1.0;
+  lock.parameters.flushing_discharge_high_tide = 10.0;
+  lock.phase_state.head_lock = 0.0; // at lake level
+  lock.phase_state.salinity_lock = 10.0;
+  lock.phase_state.saltmass_lock = 10.0 * lock.parameters.lock_length * lock.parameters.lock_width *
+                                   (0.0 - lock.parameters.lock_bottom);
+  lock.parameters3d.salinity_lake[0] = 10.0;
+  lock.parameters3d.salinity_sea[0] = 10.0;
+  lock.phase_args.routine = -1;
+  lock.phase_args.duration = 60.0;
+  lock.phase_args.run_update = 1;
+  lock.phase_args.time_duration_end = times[0] + 60;
+
+  // Constituent starts BELOW lake concentration.
+  lock.constituent_lock[1] = 5.0;
+  lock.parameters3d.constituent_lake[1][0] = 20.0;
+  lock.parameters3d.constituent_sea[1][0] = 20.0;
+
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0]));
+
+  // Assert: constituent moved TOWARD c_lake (increased), not away from it.
+  double vol = 5000.0; // 100 * 10 * 5
+  double lam = 10.0 / vol;
+  double expected = 20.0 + (5.0 - 20.0) * exp(-lam * 60.0);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-6, expected, lock.constituent_lock[1]);
+  TEST_ASSERT_TRUE(lock.constituent_lock[1] > 5.0);  // moved toward c_lake
+  TEST_ASSERT_TRUE(lock.constituent_lock[1] < 20.0); // didn't overshoot
+}
+
 int main(void) {
   UNITY_BEGIN();
 
@@ -1122,5 +1174,6 @@ int main(void) {
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_across_all_phases);
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_volume);
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_doors_closed);
+  RUN_TEST(test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_concentration);
   return UNITY_END();
 }

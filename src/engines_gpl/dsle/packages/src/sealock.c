@@ -265,23 +265,19 @@ static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const ds
     double c_to_sea;
 
     if (routine < 0) {
-      // flush_doors_closed: replicate dsle.c's analytical exponential decay.
-      double c_diff = c_lock - c_lake;
-      double c_mass_before = c_lock * volume_lock_before;
-
-      if (fabs(c_diff) < DBL_EPSILON || flushing_discharge < DBL_EPSILON) {
+      // flush_doors_closed: standard CSTR model for passive constituents.
+      // lam = Q/V (flushing discharge / lock volume)
+      //   c_lock(t) = c_lake + (c_lock_0 - c_lake) * exp(-lam * t)
+      if (flushing_discharge < DBL_EPSILON) {
         c_lock_new = c_lock;
         c_to_sea = c_lock;
       } else {
-        double lam_c = flushing_discharge * c_diff / c_mass_before;
-        double c_mass_after =
-            volume_lock_before * c_diff * exp(-lam_c * lock->phase_args.duration) +
-            volume_lock_before * c_lake;
-        double c_mass_out = c_mass_before - c_mass_after;
-        c_lock_new = c_mass_after / volume_lock_before;
+        double lam_c = flushing_discharge / volume_lock_before;
+        c_lock_new = c_lake + (c_lock - c_lake) * exp(-lam_c * lock->phase_args.duration);
+        double c_mass_out = (c_lock - c_lock_new) * volume_lock_before;
         c_to_sea = tp->volume_to_sea > DBL_EPSILON ? c_mass_out / tp->volume_to_sea : c_lock;
       }
-      c_to_lake = c_lock; // volume_to_lake == 0 for flush_doors_closed, gets masked
+      c_to_lake = c_lock;
     } else {
       // Phases 1-4: volume mass balance.
       // volume_flush_passthrough (non-zero for phases 2 and 4) carries c_lake to sea,
