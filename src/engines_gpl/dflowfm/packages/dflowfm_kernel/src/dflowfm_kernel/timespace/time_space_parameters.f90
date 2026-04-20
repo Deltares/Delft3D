@@ -104,7 +104,29 @@ module timespace_parameters
 contains
 
    function convert_operand_string_to_integer(string) result(operand)
-      character(len=*), intent(in) :: string !< file type string
+      character(len=*), intent(in) :: string !< operand string
+      integer :: operand !< operand enumeration integer
+
+      select case (trim(str_tolower(string)))
+      case ('override')
+         operand = OPERAND_OVERRIDE
+      case ('overrideIfMissing')
+         operand = OPERAND_OVERRIDE_IF_MISSING
+      case ('add')
+         operand = OPERAND_ADD
+      case ('multiply')
+         operand = OPERAND_MULTIPLY
+      case ('minimum')
+         operand = OPERAND_MINIMUM
+      case ('maximum')
+         operand = OPERAND_MAXIMUM
+      case default
+         operand = OPERAND_UNKNOWN
+      end select
+   end function convert_operand_string_to_integer
+
+   function convert_legacy_operand_string_to_integer(string) result(operand)
+      character(len=*), intent(in) :: string !< operand string
       integer :: operand !< operand enumeration integer
 
       select case (trim(str_tolower(string)))
@@ -126,7 +148,7 @@ contains
       case default
          operand = OPERAND_UNKNOWN
       end select
-   end function convert_operand_string_to_integer
+   end function convert_legacy_operand_string_to_integer
 
 !> Converts fileType string to an integer.
 !! Returns -1 when an invalid type string is given.

@@ -231,7 +231,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -298,7 +298,7 @@ contains
       operand = OPERAND_UNKNOWN
       call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
       if (is_successful) then
-         operand = convert_operand_string_to_integer(property_value)
+         operand = convert_legacy_operand_string_to_integer(property_value)
       end if
 
       num_items_in_block = 0
@@ -632,7 +632,7 @@ contains
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
                            convert_file_type_string_to_integer
-      use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_UNKNOWN, convert_operand_string_to_integer
+      use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
       use fm_external_forcings_data, only: filetype, transformcoef, kx
       use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -740,7 +740,7 @@ contains
       oper = OPERAND_OVERRIDE
       call prop_get(block_ptr, '', 'operand ', operand_ini, is_successful)
       if (is_successful) then
-         oper = convert_operand_string_to_integer(operand_ini)
+         oper = convert_legacy_operand_string_to_integer(operand_ini)
          if (oper == OPERAND_UNKNOWN) then
             write (msgbuf, '(5a)') 'Error in block in file ''', file_name, ''': [', group_name, ']. Field ''operand'' has unknown value ''' // TRIM(operand_ini) // '''.'
             call err_flush()

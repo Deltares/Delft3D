@@ -675,14 +675,26 @@ contains
       call prop_get(node_ptr, '', 'operand', operand_ini, retVal)
       if (retVal) then
          operand = convert_operand_string_to_integer(operand_ini)
+
+         ! Parse legacy operand values for backwards compatibility, but also show a warning message that these are deprecated.
+         if (operand == OPERAND_UNKNOWN) then
+            operand = convert_legacy_operand_string_to_integer(operand_ini)
+            if (operand /= OPERAND_UNKNOWN) then
+               write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+                  //trim(quantity)//'. Field ''operand'' is set to deprecated value '''//trim(operand_ini) &
+                  //'''. Replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+               call warn_flush()
+            end if
+         end if
+
          if (operand == OPERAND_UNKNOWN) then
             write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-            //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand_ini)//'''. Ignoring this block.'
+               //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand_ini)//'''. Ignoring this block.'
             call warn_flush()
             return
          end if
       end if
-      
+
       if (strcmpi(quantity, 'frictioncoefficient')) then
          friction_type = ''
          call prop_get(node_ptr, '', 'frictionType', friction_type)
