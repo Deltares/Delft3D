@@ -298,7 +298,7 @@ contains
       operand = OPERAND_UNKNOWN
       call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
       if (is_successful) then
-         call convert_operand_string_to_integer(property_value, operand)
+         operand = convert_operand_string_to_integer(property_value)
       end if
 
       num_items_in_block = 0
@@ -740,7 +740,7 @@ contains
       oper = OPERAND_OVERRIDE
       call prop_get(block_ptr, '', 'operand ', operand_ini, is_successful)
       if (is_successful) then
-         call convert_operand_string_to_integer(operand_ini, oper)
+         oper = convert_operand_string_to_integer(operand_ini)
          if (oper == OPERAND_UNKNOWN) then
             write (msgbuf, '(5a)') 'Error in block in file ''', file_name, ''': [', group_name, ']. Field ''operand'' has unknown value ''' // TRIM(operand_ini) // '''.'
             call err_flush()

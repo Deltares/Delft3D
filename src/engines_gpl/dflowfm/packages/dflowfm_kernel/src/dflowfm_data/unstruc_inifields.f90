@@ -674,7 +674,7 @@ contains
       operand = OPERAND_OVERRIDE ! default
       call prop_get(node_ptr, '', 'operand', operand_ini, retVal)
       if (retVal) then
-         call convert_operand_string_to_integer(operand_ini, operand)
+         operand = convert_operand_string_to_integer(operand_ini)
          if (operand == OPERAND_UNKNOWN) then
             write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
             //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand_ini)//'''. Ignoring this block.'

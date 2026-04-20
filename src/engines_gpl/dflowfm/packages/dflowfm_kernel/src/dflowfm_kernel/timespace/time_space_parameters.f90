@@ -94,18 +94,18 @@ module timespace_parameters
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
    ! enumeration for interpolation methods of providers
-   integer, parameter :: OPERAND_UNKNOWN = -1
-   integer, parameter :: OPERAND_OVERRIDE = 0
-   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 1
-   integer, parameter :: OPERAND_ADD = 2
-   integer, parameter :: OPERAND_MULTIPLY = 3
-   integer, parameter :: OPERAND_MINIMUM = 4
-   integer, parameter :: OPERAND_MAXIMUM = 5
+   integer, parameter :: OPERAND_UNKNOWN = -1 !< Unknown operand type.
+   integer, parameter :: OPERAND_OVERRIDE = 0 !< Override existing value with new value.
+   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 1 !< Override existing value, but only if missing.
+   integer, parameter :: OPERAND_ADD = 2 !< Add new value to existing value.
+   integer, parameter :: OPERAND_MULTIPLY = 3 !< Multiply existing value by new value.
+   integer, parameter :: OPERAND_MINIMUM = 4 !< Take the minimum of existing and new value.
+   integer, parameter :: OPERAND_MAXIMUM = 5 !< Take the maximum of existing and new value.
 contains
 
-   subroutine convert_operand_string_to_integer(string, operand)
+   function convert_operand_string_to_integer(string) result(operand)
       character(len=*), intent(in) :: string !< file type string
-      integer, intent(out) :: operand !< operand enumeration integer
+      integer :: operand !< operand enumeration integer
 
       select case (trim(str_tolower(string)))
       case ('o')
@@ -126,7 +126,7 @@ contains
       case default
          operand = OPERAND_UNKNOWN
       end select
-   end subroutine convert_operand_string_to_integer
+   end function convert_operand_string_to_integer
 
 !> Converts fileType string to an integer.
 !! Returns -1 when an invalid type string is given.
