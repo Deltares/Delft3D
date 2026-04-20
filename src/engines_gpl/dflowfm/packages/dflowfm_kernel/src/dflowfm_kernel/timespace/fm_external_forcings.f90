@@ -1216,7 +1216,7 @@ contains
       character(len=*), intent(in) :: filename !< Name of data file for current quantity.
       integer, intent(in) :: filetype !< File type of current quantity.
       integer, intent(in) :: method !< Time-interpolation method for current quantity.
-      character(len=1), intent(in) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(in) :: operand !< Operand w.r.t. previous data
       character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
@@ -1364,6 +1364,7 @@ contains
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
       use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
@@ -1446,7 +1447,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
                                                  filetype=uniform, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -1457,7 +1458,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
                                                  filetype=bcascii, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
