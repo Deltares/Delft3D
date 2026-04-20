@@ -29,6 +29,7 @@
 
 module m_spatial_field
    use precision, only: dp
+   use timespace_parameters, only: OPERAND_OVERRIDE
    implicit none(type, external)
 
    private
@@ -45,7 +46,7 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: target_mask_file = ' '     !< Optional polygon file (.pol) masking the target element set. Empty means no masking.
       character(len=INI_VALUE_LEN) :: variable_name = ' '        !< Optional variable name within the forcing file. Only meaningful when is_variable_name_available is .true..
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
-      character(len=1) :: oper = 'O'                             !< Operand: 'O' = override, '+' = add existing values.
+      integer :: oper = OPERAND_OVERRIDE                             
       real(dp) :: max_search_radius = -1.0_dp                    !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
       logical :: invert_mask = .false.                           !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false.            !< .true. when the forcingVariableName= keyword was present in the block.
