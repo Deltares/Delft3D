@@ -622,7 +622,7 @@ contains
    !> Read the current [Spatial] or [Meteo] block from new external forcings file
    !! and do required initialisation for that quantity.
    !! [Meteo] is the legacy block name and is handled identically to [Spatial].
-   function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+   module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: str_tolower
@@ -748,8 +748,11 @@ contains
 
          if (success) then
             res = enable_quantity(quantity)
+         else
+            res = .false.
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity )//''' from file '''//file_name//''': ['//group_name//']. Check previous log lines for details.'
+            call err_flush()  
          end if
-
       end associate
 
    end function init_spatial_fields

@@ -8,16 +8,16 @@ module test_init_spatial_field
    implicit none(type, external)
 
    character(len=*), parameter :: EXT_FILENAME = "test.ext"
-   character(len=*), parameter :: GROUP_NAME   = "Spatial"
-   character(len=*), parameter :: BASE_DIR      = "."
+   character(len=*), parameter :: GROUP_NAME = "Spatial"
+   character(len=*), parameter :: BASE_DIR = "."
 
 contains
 
    subroutine make_test_input(input)
       type(t_spatial_field_input), intent(out) :: input
-      input%quantity          = 'windx'
+      input%quantity = 'windx'
       input%forcing_file_type = 'netcdf'
-      input%forcing_file      = 'dummy.nc'
+      input%forcing_file = 'dummy.nc'
    end subroutine make_test_input
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_unrecognized_interpolation_method, test_validate_unrecognized_interpolation_method,
@@ -39,8 +39,8 @@ contains
    subroutine test_validate_file_type_extension_mismatch() bind(C)
       type(t_spatial_field_input) :: input
       call make_test_input(input)
-      input%forcing_file_type    = 'bcascii'     ! bcascii has no spatial default method
-      input%interpolation_method = ' '           ! no explicit method either
+      input%forcing_file_type = 'bcascii' ! bcascii has no spatial default method
+      input%interpolation_method = ' ' ! no explicit method either
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when forcingFileType does not match input file extension")
    end subroutine test_validate_file_type_extension_mismatch
@@ -90,13 +90,201 @@ contains
    subroutine test_validate_qext_wrong_file_type() bind(C)
       type(t_spatial_field_input) :: input
       call make_test_input(input)
-      input%quantity          = 'qext'
-      input%forcing_file_type = 'netcdf'   ! must be 'sample' for qext
+      input%quantity = 'qext'
+      input%forcing_file_type = 'netcdf' ! must be 'sample' for qext
       jaQext = 1
       call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
                             "validation should fail when qext is used with a non-sample forcingFileType")
-      jaQext = 0  ! restore global state
+      jaQext = 0 ! restore global state
    end subroutine test_validate_qext_wrong_file_type
    !$f90tw)
 
 end module test_init_spatial_field
+
+module test_init_spatial_fields_integration
+   use assertions_gtest
+   use fm_external_forcings, only: init_spatial_fields
+   use m_meteo, only: initialize_ec_module, jarain
+   use m_wind, only: rain
+   use m_cell_geometry, only: xz, yz, ndx
+   use m_flowgeom, only: kcs
+   use m_file_helpers, only: create_file
+   use precision_basics, only: dp
+   use unstruc_messages, only: threshold_abort
+   use messagehandling, only: LEVEL_FATAL
+   use tree_data_types, only: tree_data
+   use tree_structures, only: tree_create, tree_destroy
+   use properties, only: prop_file
+
+   implicit none(type, external)
+
+   character(len=*), parameter :: EXT_FILENAME = "test_spatial.ext"
+   character(len=*), parameter :: BC_FILENAME = "test_rain.bc"
+   character(len=*), parameter :: BASE_DIR = "."
+
+contains
+
+   !> Set up a minimal 1-cell s-point grid so that get_location_target_properties
+   !! and construct_target_mask do not dereference unallocated arrays.
+   subroutine setup_minimal_grid()
+      ndx = 1
+      if (.not. allocated(xz)) allocate (xz(ndx))
+      if (.not. allocated(yz)) allocate (yz(ndx))
+      if (.not. allocated(kcs)) allocate (kcs(ndx))
+      xz = [0.0_dp]
+      yz = [0.0_dp]
+      kcs = [1]
+   end subroutine setup_minimal_grid
+
+   subroutine teardown_minimal_grid()
+      ndx = 0
+      if (allocated(xz)) deallocate (xz)
+      if (allocated(yz)) deallocate (yz)
+      if (allocated(kcs)) deallocate (kcs)
+      if (allocated(rain)) deallocate (rain)
+   end subroutine teardown_minimal_grid
+
+   !> Parse a mini ext-file containing a single [Spatial] block and return
+   !! a pointer to that block's tree node. The caller must call tree_destroy(bnd_ptr).
+   subroutine parse_spatial_block(file_name, bnd_ptr, block_ptr)
+      character(len=*), intent(in) :: file_name
+      type(tree_data), pointer, intent(out) :: bnd_ptr
+      type(tree_data), pointer, intent(out) :: block_ptr
+      integer :: istat
+
+      call tree_create(file_name, bnd_ptr)
+      call prop_file('ini', file_name, bnd_ptr, istat)
+      block_ptr => bnd_ptr%child_nodes(1)%node_ptr
+   end subroutine parse_spatial_block
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_rainfall_bcascii_registers_ec_connection, test_rainfall_bcascii_registers_ec_connection,
+   !> Verifies that a [Spatial] block with forcingFileType=bcascii sets up the
+   !! EC connection via the 'global' location path and activates jarain.
+   !! This exercises the bcascii branch inside init_spatial_fields, which passes
+   !! 'global' (not the filename) as the location argument to ec_addtimespacerelation.
+   !! That branch is never reached from integration tests because they always use
+   !! NetCDF meteo files.
+   subroutine test_rainfall_bcascii_registers_ec_connection() bind(C)
+      use m_meteo, only: initialize_ec_module, jarain, ecInstancePtr
+      use m_wind, only: rain, jaqin
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_file(BC_FILENAME, [ &
+                       "[General]", &
+                       "    fileVersion           = 1.01", &
+                       "    fileType              = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name                  = global", &
+                       "    function              = timeseries", &
+                       "    timeInterpolation     = linear", &
+                       "    quantity              = time", &
+                       "    unit                  = seconds since 2000-01-01 00:00:00", &
+                       "    quantity              = rainfall", &
+                       "    unit                  = mm/day", &
+                       "    0    1.0", &
+                       "    100  2.0"])
+
+      call create_file(EXT_FILENAME, [ &
+                       "[Spatial]", &
+                       "    quantity        = rainfall", &
+                       "    forcingFile     = "//BC_FILENAME, &
+                       "    forcingFileType = bcascii"])
+
+      jarain = 0
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILENAME, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILENAME, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_true(success, "init_spatial_fields should succeed for a valid bcascii rainfall block")
+      call f90_expect_eq(jarain, 1, "jarain should be 1 after a successful bcascii rainfall EC connection")
+      call f90_expect_eq(jaqin, 1, "jaqin should be 1 after a successful bcascii rainfall EC connection")
+      call f90_expect_true(ecInstancePtr%nItems > 0, "EC instance should have at least one registered item after init_spatial_fields")
+      call teardown_minimal_grid()
+      jarain = 0
+   end subroutine test_rainfall_bcascii_registers_ec_connection
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_unknown_quantity_returns_error, test_unknown_quantity_returns_error,
+   !> Verifies that a [Spatial] block with an unrecognized quantity causes
+   !! init_spatial_fields to return .false.. The 'default' branch in
+   !! init_spatial_fields emits an error and returns .false..
+   subroutine test_unknown_quantity_returns_error() bind(C)
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+
+      call create_file(EXT_FILENAME, [ &
+                       "[Spatial]", &
+                       "    quantity    = this_quantity_does_not_exist", &
+                       "    forcingFile = dummy.nc"])
+
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      call parse_spatial_block(EXT_FILENAME, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILENAME, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, "init_spatial_fields should fail for an unrecognized spatial quantity")
+
+      call teardown_minimal_grid()
+   end subroutine test_unknown_quantity_returns_error
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_solarradiation_conflicts_with_netsolarradiation, test_solarradiation_conflicts_with_netsolarradiation,
+   !> Verifies that enable_quantity returns .false. when netsolarradiation has
+   !! already been registered. This guard in enable_quantity is only reachable
+   !! after a successful EC connection, so integration tests never exercise it.
+   subroutine test_solarradiation_conflicts_with_netsolarradiation() bind(C)
+      use m_wind, only: net_solar_radiation_available, solar_radiation_available
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: SOLAR_BC = "test_solar.bc"
+      character(len=*), parameter :: SOLAR_EXT = "test_solar_conflict.ext"
+
+      call create_file(SOLAR_BC, [ &
+                       "[General]", &
+                       "    fileVersion           = 1.01", &
+                       "    fileType              = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name                  = global", &
+                       "    function              = timeseries", &
+                       "    timeInterpolation     = linear", &
+                       "    quantity              = time", &
+                       "    unit                  = seconds since 2000-01-01 00:00:00", &
+                       "    quantity              = sw_radiation_flux", &
+                       "    unit                  = W m-2", &
+                       "    0    100.0", &
+                       "    100  200.0"])
+
+      call create_file(SOLAR_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = solarradiation", &
+                       "    forcingFile     = "//SOLAR_BC, &
+                       "    forcingFileType = bcascii"])
+
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+      net_solar_radiation_available = .true.
+
+      call parse_spatial_block(SOLAR_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, SOLAR_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      call f90_expect_false(success, "init_spatial_fields should fail when netsolarradiation is already registered")
+
+      call teardown_minimal_grid()
+      net_solar_radiation_available = .false.
+      solar_radiation_available = .false.
+   end subroutine test_solarradiation_conflicts_with_netsolarradiation
+   !$f90tw)
+
+end module test_init_spatial_fields_integration

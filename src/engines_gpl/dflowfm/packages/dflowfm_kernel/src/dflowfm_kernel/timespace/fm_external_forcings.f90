@@ -42,7 +42,7 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -69,6 +69,17 @@ module fm_external_forcings
          character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
          integer, intent(inout) :: iresult
       end subroutine init_new
+   end interface
+
+   interface
+      module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+         use tree_structures, only: tree_data
+         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
+         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
+         character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
+         logical :: res
+      end function init_spatial_fields
    end interface
 
    interface
