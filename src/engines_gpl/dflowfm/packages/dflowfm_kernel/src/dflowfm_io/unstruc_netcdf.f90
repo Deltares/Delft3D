@@ -2955,7 +2955,7 @@ contains
          jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
          fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
          thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
-      use m_fm_icecover, only: ice_s1, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
       use m_flowgeom, only: lnx, ndx, ndxi, ndx2d, xz, yz, bl, xu, yu, ln, lnxi
@@ -3519,37 +3519,37 @@ contains
          ierr = nf90_def_var(irstfile, 'ice_thickness', nf90_double, [id_flowelemdim, id_timedim], id_ice_thickness)
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness') 
-         ierr = nf90_put_att(irstfile, id_ice_thickness, 'long_name', 'ice thickness')
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'long_name', 'Thickness of floating ice cover')
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'units', 'm')
 
          ierr = nf90_def_var(irstfile, 'ice_area_fraction', nf90_double, [id_flowelemdim, id_timedim], id_ice_area_fraction)
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction') 
-         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'long_name', 'ice area fraction')
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'long_name', 'Fraction of the surface area covered by floating ice')
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'units', 'm2 m-2')
 
          ierr = nf90_def_var(irstfile, 'snow_thickness', nf90_double, [id_flowelemdim, id_timedim], id_snow_thickness)
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness') 
-         ierr = nf90_put_att(irstfile, id_snow_thickness, 'long_name', 'snow thickness')
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'long_name', 'Thickness of the snow layer')
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'units', 'm')
 
          ierr = nf90_def_var(irstfile, 'ice_pressure', nf90_double, [id_flowelemdim, id_timedim], id_ice_pressure)
          ierr = nf90_put_att(irstfile, id_ice_pressure, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_ice_pressure, 'standard_name', 'ice_pressure')
-         ierr = nf90_put_att(irstfile, id_ice_pressure, 'long_name', 'ice pressure')
+         ierr = nf90_put_att(irstfile, id_ice_pressure, 'long_name', 'Pressure exerted by the floating ice cover')
          ierr = nf90_put_att(irstfile, id_ice_pressure, 'units', 'Pa')
 
          ierr = nf90_def_var(irstfile, 'ice_temperature', nf90_double, [id_flowelemdim, id_timedim], id_ice_temperature)
          ierr = nf90_put_att(irstfile, id_ice_temperature, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_ice_temperature, 'standard_name', 'ice_temperature')
-         ierr = nf90_put_att(irstfile, id_ice_temperature, 'long_name', 'ice temperature')
+         ierr = nf90_put_att(irstfile, id_ice_temperature, 'long_name', 'Temperature of the floating ice cover')
          ierr = nf90_put_att(irstfile, id_ice_temperature, 'units', 'K')
 
          ierr = nf90_def_var(irstfile, 'snow_temperature', nf90_double, [id_flowelemdim, id_timedim], id_snow_temperature)
          ierr = nf90_put_att(irstfile, id_snow_temperature, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
          ierr = nf90_put_att(irstfile, id_snow_temperature, 'standard_name', 'snow_temperature')
-         ierr = nf90_put_att(irstfile, id_snow_temperature, 'long_name', 'snow temperature')
+         ierr = nf90_put_att(irstfile, id_snow_temperature, 'long_name', 'Temperature of the snow layer')
          ierr = nf90_put_att(irstfile, id_snow_temperature, 'units', 'K')
       end if
 
@@ -13445,7 +13445,7 @@ contains
       use time_module, only: datetimestring_to_seconds, seconds_to_datetimestring
       use m_flow
       use m_flowtimes
-      use m_fm_icecover, only: ice_s1, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
+      use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_transport, only: NUMCONST, ISALT, ITEMP, ISED1, ITRA1, ITRAN, constituents, itrac2const, const_names, ifrac2const
       use m_fm_wq_processes
       use fm_external_forcings_data, only: numtracers, trnames, ibnd_own, ndxbnd_own
