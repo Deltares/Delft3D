@@ -1102,7 +1102,7 @@ test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_conce
   // Verifies the CSTR model correctly handles c_lock < c_lake — the concentration
   // in the lock is BELOW the inflow concentration, so flushing must INCREASE it.
   //
-  // The old dsle.c-mirrored formula gave lam < 0 here, causing an exponentially
+  // If the lambda model would be used it would give lam < 0 here, causing an exponentially
   // growing (unbounded) concentration. Q/V is always positive so it always converges.
   //
   // Setup: vol_lock = 5000 m3, Q = 10 m3/s, t = 60s, lam = Q/V = 0.002 s-1
@@ -1142,8 +1142,6 @@ test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_conce
   double lam = 10.0 / vol;
   double expected = 20.0 + (5.0 - 20.0) * exp(-lam * 60.0);
   TEST_ASSERT_DOUBLE_WITHIN(1e-6, expected, lock.constituent_lock[1]);
-  TEST_ASSERT_TRUE(lock.constituent_lock[1] > 5.0);  // moved toward c_lake
-  TEST_ASSERT_TRUE(lock.constituent_lock[1] < 20.0); // didn't overshoot
 }
 
 int main(void) {
