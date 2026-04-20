@@ -65,8 +65,8 @@ contains
       integer :: istat
       integer :: pli_lun
       integer, parameter :: Z_SIZE = 2
-      real(kind=dp), dimension(:), allocatable :: z_source_, z_sink_
-      logical :: have_z_range
+      real(kind=dp), dimension(:), allocatable :: z_source_
+      real(kind=dp), dimension(:), allocatable :: z_sink_
       character(len=0) :: path, ext
       character(len=IDLEN) :: name_
 
@@ -130,8 +130,8 @@ contains
    !> Add a source-sink to the model.
    subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
       use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_xy_points, &
-         source_sink_indices, source_sink_z_bottom, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, &
-         source_sink_discharge_sine, source_sink_name
+                                           source_sink_indices, source_sink_z_bottom, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, &
+                                           source_sink_discharge_sine, source_sink_name
       use m_GlobalParameters, only: INDTP_ALL
 
       use messagehandling, only: msgbuf, warn_flush
