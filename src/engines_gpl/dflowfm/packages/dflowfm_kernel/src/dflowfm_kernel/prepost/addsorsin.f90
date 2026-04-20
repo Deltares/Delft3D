@@ -62,7 +62,6 @@ contains
       real(kind=dp), intent(in) :: area !< Area of the source/sink, in m2. Set to 0.0 for momentum-free point sources.
       integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
-      ! Local variables
       integer :: istat
       integer :: pli_lun
       integer, parameter :: Z_SIZE = 2
@@ -71,6 +70,7 @@ contains
       logical :: have_z_range
       character(len=0) :: path
       character(len=0) :: ext
+      character(len=IDLEN) :: name_
 
       ierr = DFM_WRONGINPUT
 
