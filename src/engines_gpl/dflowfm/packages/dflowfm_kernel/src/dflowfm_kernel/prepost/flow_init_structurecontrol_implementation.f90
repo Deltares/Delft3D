@@ -26,6 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+
 !> submodule that contains the implementation of flow_init_structurecontrol.
 submodule(m_flow_init_structurecontrol) flow_init_structurecontrol_implementation
    use precision_basics, only: dp
@@ -53,7 +54,7 @@ contains
       use m_longculverts_data, only: nlongculverts
       use m_partitioninfo, only: jampi
       use messagehandling, only: IDLEN
-      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
+      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration, remove_1d_links_from_dambreak_polygon_list
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       use m_1d_structures, only: update_bedlevels_for_bridges
 
@@ -122,6 +123,7 @@ contains
             ! NOTE: kegen below does not apply to general structures. Just a placeholder for the link snapping of all structure types.
             select case (pstru%type)
             case (ST_DAMBREAK)
+               call remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
                num_dambreak_links = num_dambreak_links + numgen
                call update_counters_for_dambreaks(pstru%id, numgen, dambridx, i, kedb, kegen)
             case (ST_PUMP)
