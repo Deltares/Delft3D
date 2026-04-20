@@ -211,7 +211,7 @@ def main() -> None:
 
             run_migration(xml_files_with_testcases_to_migrate, dry_run=args.dry_run)
         finally:
-            sys.stdout = sys.__stdout__
+            sys.stdout = original_stdout
 
 
 if __name__ == "__main__":
