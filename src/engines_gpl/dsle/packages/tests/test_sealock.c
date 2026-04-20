@@ -674,6 +674,7 @@ static void test_sealock_update__constituent_results_equal_cycle_avg_no_gradient
   // Assert: no gradient -> constituent_to_x == constituent_lake
   TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_lake[1][0]);
   TEST_ASSERT_DOUBLE_WITHIN(1e-9, 42.0, lock.results3d.constituent_to_sea[1][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, 5.0, lock.results.salinity_to_lake);
 }
 
 static void test_sealock_update__phase_wise__multiple_constituents_evolve_independently(void) {
