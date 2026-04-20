@@ -185,6 +185,7 @@ class TestDvcHandlerDownload:
         dvc_file = os.path.join(str(tmp_path), "input.dvc")
         with open(dvc_file, "w") as f:
             f.write("md5: abc\n")
+        os.makedirs(os.path.join(str(tmp_path), "input"))
 
         handler.download(dvc_file, "/unused", creds, None, logger)
 
@@ -224,3 +225,11 @@ class TestDvcHandlerFindRoot:
         handler = DvcHandler.__new__(DvcHandler)
         with pytest.raises(ValueError, match="Could not find DVC repository root"):
             handler._DvcHandler__find_dvc_root(start)  # type: ignore[attr-defined]
+
+    def test_finds_dvc_root_when_started_from_directory(self, tmp_path: object) -> None:
+        dvc_dir = os.path.join(str(tmp_path), ".dvc")
+        os.makedirs(dvc_dir)
+
+        handler = DvcHandler.__new__(DvcHandler)
+        root = handler._DvcHandler__find_dvc_root(str(tmp_path))  # type: ignore[attr-defined]
+        assert os.path.realpath(str(tmp_path)) == root

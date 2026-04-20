@@ -109,6 +109,7 @@ class DvcHandler(IHandler):
         with _aws_credentials(credentials):
             targets = self.__resolve_dvc_targets([dvc_file], logger)
             self.__fetch_and_checkout(targets, logger)
+            self.__verify_output_dirs([dvc_file], logger)
             logger.info(f"Downloading DVC directory complete: {dvc_file}")
 
     def __resolve_dvc_targets(self, dvc_files: list[str], logger: ILogger) -> list[str]:
@@ -164,7 +165,8 @@ class DvcHandler(IHandler):
         str
             Path to the DVC repository root.
         """
-        current = os.path.dirname(os.path.abspath(path))
+        abspath = os.path.abspath(path)
+        current = abspath if os.path.isdir(abspath) else os.path.dirname(abspath)
         while True:
             if os.path.isdir(os.path.join(current, ".dvc")):
                 return os.path.realpath(current)
