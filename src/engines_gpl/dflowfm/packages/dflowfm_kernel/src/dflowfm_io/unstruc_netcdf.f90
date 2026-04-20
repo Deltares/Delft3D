@@ -15974,7 +15974,7 @@ contains
       end if
 
       flowgeom = build_flowgeom(jabndnd_)
-      call unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
+      call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
       !if (ndx2d > 0 .and. ja2D_) then
          ! Build the 2D mesh geometry object (node re-mapping, edge/face connectivity, coordinates).
@@ -16139,7 +16139,7 @@ end associate
 !> Writes the unstructured 1D flow geometry in UGRID format to an already opened netCDF dataset.
 !! Geometry construction is delegated to build_flowgeom_1d; this routine only handles
 !! string metadata remapping, the ug_write_mesh_arrays call, and time-independent data writing.
-   subroutine unc_write_1D_flowgeom_ugrid(id_tsp, ncid, jabndnd, jafou, ja2D, layer_count, layer_type, layer_zs, interface_zs, contacts_, contacttype_, numcontacts)
+   subroutine unc_write_1D_flowgeom_ugrid(flowgeom1d, id_tsp, ncid, jabndnd, jafou, ja2D, layer_count, layer_type, layer_zs, interface_zs, contacts_, contacttype_, numcontacts)
       use precision,          only: dp
       use m_sferic,           only: jsferic
       use m_missing,          only: dmiss
@@ -16157,6 +16157,7 @@ end associate
       use m_flowgeom,         only: t_fm_flowgeom
       implicit none(type, external)
 
+      type(t_fm_flowgeom),               intent(inout) :: flowgeom1d
       integer,                           intent(in)    :: ncid        !< Handle to open NetCDF file.
       type(t_unc_timespace_id),          intent(inout) :: id_tsp      !< Set of time and space related variable ids.
       integer,             optional,     intent(in)    :: jabndnd     !< Include boundary nodes (1) or not (0). Default: 1.
@@ -16171,7 +16172,6 @@ end associate
       integer, allocatable,optional,     intent(out)   :: contacttype_(:)    !< Contact types.
 
       ! --- Locals ---
-      type(t_fm_flowgeom) :: flowgeom1d
 
       integer :: jabndnd_
       integer :: layer_count_

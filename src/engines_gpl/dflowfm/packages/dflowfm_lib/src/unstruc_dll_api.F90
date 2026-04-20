@@ -72,7 +72,8 @@ contains
 
       integer, intent(in) :: ncid !< Handle to open Netcdf file to write the geometry to.
       type(t_unc_mapids) :: mapids
-      call unc_write_1D_flowgeom_ugrid(mapids%id_tsp, ncid)
+      type(t_fm_flowgeom) :: flowgeom1d
+      call unc_write_1D_flowgeom_ugrid(flowgeom1d, mapids%id_tsp, ncid)
 
    end subroutine write_1D_flowgeom_ugrid
 
