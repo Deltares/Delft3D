@@ -15377,7 +15377,7 @@ contains
       implicit none
 
       integer, intent(out) :: edge_nodes(:, :) !< Edge node connectivity array to be filled.
-      integer, pointer, intent(in) :: edge_faces(:, :) !< Edge face connectivity array to be filled (uses -999 as fill value).
+      integer, pointer, intent(inout) :: edge_faces(:, :) !< Edge face connectivity array to be filled (uses -999 as fill value).
       integer, intent(out) :: edge_type(:) !< Edge type array to be filled.
       real(kind=dp), intent(out) :: xue(:) !< Edge x coordinate array to be filled.
       real(kind=dp), intent(out) :: yue(:) !< Edge y coordinate array to be filled.
@@ -15568,15 +15568,8 @@ contains
 
    end subroutine get_layer_data_ugrid
 
-   !> Builds the 2D UGRID mesh geometry object from the current global flow geometry arrays.
-   !! Called once at model initialisation (or whenever the output domain changes).
-   !! The resulting flowgeom%mesh2d is ready to be passed directly to ug_write_mesh_struct.
-   !!
-   !! Phase 2 note: when polygon-based output subdomains are introduced, pass a cell_mask
-   !! over ndx2d cells here and filter the topology accordingly. The write routine
-   !! (unc_write_flowgeom_filepointer_ugrid) will remain unaware of whether masking was applied.
    subroutine build_flowgeom_2d(flowgeom, jabndnd, cell_mask)
-      use m_flowgeom,         only: ndxi, ndx, ndx2d, ndx1db, nd, xz, yz, lnx1d, lnxi, lnx1db, lnx, ndxi, ndx1db, ndx2d, t_fm_flowgeom
+      use m_flowgeom,         only: ndxi, ndx, ndx2d, ndx1db, nd, xz, yz, lnx1d, lnxi, lnx1db, lnx, t_fm_flowgeom
       use network_data,       only: xk, yk, zk, kc, numk, numl, numl1d
       use m_missing,          only: dmiss
       use m_alloc,            only: realloc, reallocP
@@ -15584,15 +15577,23 @@ contains
       use precision,          only: dp
       implicit none
 
-      type(t_fm_flowgeom), intent(inout)           :: flowgeom   !< Populated flow geometry object; flowgeom%mesh2d is ready for ug_write_mesh_struct.
-      integer,             intent(in)            :: jabndnd    !< Include boundary cells (1) or not (0).
-      logical,             intent(in), optional  :: cell_mask(:) !< (Phase 2) Selection mask over ndx2d cells.
+      type(t_fm_flowgeom), intent(inout)          :: flowgeom   !< Populated flow geometry object.
+      integer,             intent(in)             :: jabndnd    !< Include boundary cells (1) or not (0).
+      logical,             intent(in), optional   :: cell_mask(:) !< Selection mask over ndx2d cells; if absent, all cells are included.
 
-      integer :: numl2d, numNodes, ndxndxi
+      integer :: numl2d, numNodes, numFace, numEdge, ndxndxi
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
+      logical :: use_mask
 
-      associate (mask => cell_mask)
-      end associate
+      ! Temporaries for full-grid edge data; needed before mask filtering.
+      integer,       allocatable :: tmp_edge_nodes(:,:),  tmp_edge_type(:)
+      integer,       pointer :: tmp_edge_faces(:,:)
+      real(kind=dp), allocatable :: tmp_xue(:), tmp_yue(:)
+      logical,       allocatable :: edge_included(:)
+      integer,       allocatable :: edge_compact(:) !< full-grid edge index -> output edge index (0 = excluded)
+      integer,       allocatable :: face_compact(:) !< full-grid face index -> output face index (0 = excluded)
+
+      use_mask = present(cell_mask)
 
       if (jabndnd == 1) then
          ndxndxi = ndx
@@ -15602,41 +15603,131 @@ contains
 
       numl2d = numl - numl1d
 
-      call realloc(flowgeom%edge_type,    numl2d,        fill=-999, keepExisting=.false.)
-      call reallocP(flowgeom%mesh2d%edge_nodes,   [2, numl2d],  fill=-999, keepExisting=.false.)
-      call reallocP(flowgeom%mesh2d%edge_faces,  [2, numl2d],  fill=-999)
-      call reallocP(flowgeom%mesh2d%edgex,          numl2d,        fill=dmiss, keepExisting=.false.)
-      call reallocP(flowgeom%mesh2d%edgey,          numl2d,        fill=dmiss, keepExisting=.false.)
-      ! numk2d is determined by the re-mapping loop below; allocate conservatively to numk.
-      call reallocP(flowgeom%mesh2d%nodex , numk, fill=dmiss, keepExisting=.false.)
-      call reallocP(flowgeom%mesh2d%nodey , numk, fill=dmiss, keepExisting=.false.)
-      call reallocP(flowgeom%mesh2d%nodez , numk, fill=dmiss, keepExisting=.false.)
+      ! --- Determine included faces and build face_map ---
+      if (use_mask) then
+         numFace = count(cell_mask)
+      else
+         numFace = ndx2d
+      end if
 
-      flowgeom%mesh2d%facex      => xz(1:ndx2d)
-      flowgeom%mesh2d%facey      => yz(1:ndx2d)
+      call realloc(flowgeom%face_map, numFace, keepExisting=.false., fill=0)
+      if (use_mask) then
+         n = 0
+         do i = 1, ndx2d
+            if (cell_mask(i)) then
+               n = n + 1
+               flowgeom%face_map(n) = i
+            end if
+         end do
+      else
+         do i = 1, numFace
+            flowgeom%face_map(i) = i
+         end do
+      end if
 
-      ! Determine max number of vertices per 2D cell.
-      numNodes = 0
-      do i = 1, ndxndxi
-         numNodes = max(numNodes, size(nd(i)%nod))
+      ! --- Get full-grid edge data into temporaries ---
+      allocate(tmp_edge_nodes(2, numl2d), tmp_edge_faces(2, numl2d), tmp_edge_type(numl2d))
+      allocate(tmp_xue(numl2d), tmp_yue(numl2d))
+      tmp_edge_nodes = -999
+      tmp_edge_faces = -999
+
+      call get_2d_edge_data(tmp_edge_nodes, tmp_edge_faces, tmp_edge_type, tmp_xue, tmp_yue)
+
+      ! --- Determine which edges to include (at least one adjacent face must be in the mask) ---
+      allocate(face_compact(ndx2d))
+      face_compact = 0
+      do i = 1, numFace
+         face_compact(flowgeom%face_map(i)) = i
       end do
 
-      call reallocP(flowgeom%mesh2d%face_nodes, [numNodes, ndx2d], fill=-999)
+      allocate(edge_included(numl2d))
+      if (use_mask) then
+         do l = 1, numl2d
+            edge_included(l) = (tmp_edge_faces(1, l) > 0 .and. face_compact(tmp_edge_faces(1, l)) > 0) .or. &
+                                (tmp_edge_faces(2, l) > 0 .and. face_compact(tmp_edge_faces(2, l)) > 0)
+         end do
+      else
+         edge_included = .true.
+      end if
+
+      numEdge = count(edge_included)
+
+      ! --- Build edge_map ---
+      call realloc(flowgeom%edge_map, numEdge, keepExisting=.false., fill=0)
+      allocate(edge_compact(numl2d))
+      edge_compact = 0
+      n = 0
+      do l = 1, numl2d
+         if (edge_included(l)) then
+            n = n + 1
+            flowgeom%edge_map(n) = l
+            edge_compact(l) = n
+         end if
+      end do
+
+      ! --- Allocate output geometry arrays at reduced sizes ---
+      call realloc(flowgeom%edge_type,             numEdge,        fill=-999,  keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%edge_nodes,  [2, numEdge],  fill=-999,  keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%edge_faces,  [2, numEdge],  fill=-999)
+      call reallocP(flowgeom%mesh2d%edgex,          numEdge,       fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%edgey,          numEdge,       fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%nodex, numk, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%nodey, numk, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh2d%nodez, numk, fill=dmiss, keepExisting=.false.)
+
+      ! --- facex/facey: allocate as owned pointer for masked case, pointer-assign for unmasked ---
+      if (use_mask) then
+         allocate(flowgeom%mesh2d%facex(numFace))
+         allocate(flowgeom%mesh2d%facey(numFace))
+         do i = 1, numFace
+            flowgeom%mesh2d%facex(i) = xz(flowgeom%face_map(i))
+            flowgeom%mesh2d%facey(i) = yz(flowgeom%face_map(i))
+         end do
+      else
+         flowgeom%mesh2d%facex => xz(1:ndx2d)
+         flowgeom%mesh2d%facey => yz(1:ndx2d)
+      end if
+
+      ! --- Max face nodes over included faces ---
+      numNodes = 0
+      do i = 1, numFace
+         numNodes = max(numNodes, size(nd(flowgeom%face_map(i))%nod))
+      end do
+
+      call reallocP(flowgeom%mesh2d%face_nodes, [numNodes, numFace], fill=-999)
 
       associate (edge_nodes => flowgeom%mesh2d%edge_nodes, &
-                edge_faces => flowgeom%mesh2d%edge_faces, &
-                face_nodes => flowgeom%mesh2d%face_nodes, &
-                edge_type => flowgeom%edge_type, &
+                 edge_faces => flowgeom%mesh2d%edge_faces, &
+                 face_nodes => flowgeom%mesh2d%face_nodes, &
+                 edge_type  => flowgeom%edge_type,         &
                  xue => flowgeom%mesh2d%edgex, yue => flowgeom%mesh2d%edgey, &
                  x2dn => flowgeom%mesh2d%nodex, y2dn => flowgeom%mesh2d%nodey, z2dn => flowgeom%mesh2d%nodez)
 
-      call get_2d_edge_data(edge_nodes, edge_faces, edge_type, xue, yue)
+      ! --- Compact edge data into output arrays ---
+      do i = 1, numEdge
+         l = flowgeom%edge_map(i)
+         edge_nodes(:, i) = tmp_edge_nodes(:, l)
+         edge_faces(:, i) = tmp_edge_faces(:, l)
+         edge_type(i)     = tmp_edge_type(l)
+         xue(i)           = tmp_xue(l)
+         yue(i)           = tmp_yue(l)
+      end do
 
-      ! Re-map net node indices to a compact 2D-only set, using kc as lookup table.
+      ! Remap edge_faces to output face indices (excluded adjacent faces become -999)
+      if (use_mask) then
+         do i = 1, numEdge
+            if (edge_faces(1, i) > 0) edge_faces(1, i) = face_compact(edge_faces(1, i)) ! 0 if excluded
+            if (edge_faces(2, i) > 0) edge_faces(2, i) = face_compact(edge_faces(2, i))
+            if (edge_faces(1, i) == 0) edge_faces(1, i) = -999
+            if (edge_faces(2, i) == 0) edge_faces(2, i) = -999
+         end do
+      end if
+
+      ! --- Re-map net nodes referenced by included edges to a compact set ---
       kc = 0
       netNodeReMappedIndex = 0
-      do l = 1, numl2d
-         nn = edge_nodes(1, l)
+      do i = 1, numEdge
+         nn = edge_nodes(1, i)
          if (nn > 0 .and. kc(nn) == 0) then
             netNodeReMappedIndex = netNodeReMappedIndex + 1
             x2dn(netNodeReMappedIndex) = xk(nn)
@@ -15644,7 +15735,7 @@ contains
             z2dn(netNodeReMappedIndex) = zk(nn)
             kc(nn) = netNodeReMappedIndex
          end if
-         nn = edge_nodes(2, l)
+         nn = edge_nodes(2, i)
          if (nn > 0 .and. kc(nn) == 0) then
             netNodeReMappedIndex = netNodeReMappedIndex + 1
             x2dn(netNodeReMappedIndex) = xk(nn)
@@ -15654,24 +15745,29 @@ contains
          end if
       end do
 
-      ! Apply re-mapped indices to edge_nodes.
-      do l = 1, numl2d
-         edge_nodes(1, l) = kc(edge_nodes(1, l))
-         edge_nodes(2, l) = kc(edge_nodes(2, l))
+      ! Apply remapped node indices to edge_nodes
+      do i = 1, numEdge
+         if (edge_nodes(1, i) > 0) edge_nodes(1, i) = kc(edge_nodes(1, i))
+         if (edge_nodes(2, i) > 0) edge_nodes(2, i) = kc(edge_nodes(2, i))
       end do
 
-      ! Build face_nodes using re-mapped indices.
-      do n = 1, ndx2d
+      ! --- Build face_nodes for included faces only ---
+      do i = 1, numFace
+         n     = flowgeom%face_map(i)
          nnSize = size(nd(n)%nod)
-         do i = 1, nnSize
-            nn = nd(n)%nod(i)
-            if (nn > 0) then
-               face_nodes(i, n) = kc(nn)
-            end if
+         do l = 1, nnSize
+            nn = nd(n)%nod(l)
+            if (nn > 0) face_nodes(l, i) = kc(nn)
          end do
       end do
 
-      ! --- Populate t_fm_flowgeom scalars ---
+      ! --- Build node_map (output node index -> full-grid net node index) ---
+      call realloc(flowgeom%node_map, netNodeReMappedIndex, keepExisting=.false., fill=0)
+      do nn = 1, numk
+         if (kc(nn) > 0) flowgeom%node_map(kc(nn)) = nn
+      end do
+
+      ! --- Populate scalars ---
       flowgeom%ndx2d  = ndx2d
       flowgeom%ndxi   = ndxi
       flowgeom%ndx1db = ndx1db
@@ -15681,16 +15777,19 @@ contains
       flowgeom%lnx1db = lnx1db
       flowgeom%lnx    = lnx
 
-      ! --- Populate t_ug_meshgeom inside t_fm_flowgeom ---
       flowgeom%mesh2d%meshName        = mesh2dname
       flowgeom%mesh2d%dim             = 2
       flowgeom%mesh2d%start_index     = 1
       flowgeom%mesh2d%numNode         = netNodeReMappedIndex
-      flowgeom%mesh2d%numEdge         = numl2d
-      flowgeom%mesh2d%numFace         = ndx2d
+      flowgeom%mesh2d%numEdge         = numEdge
+      flowgeom%mesh2d%numFace         = numFace
       flowgeom%mesh2d%maxNumFaceNodes = numNodes
 
       end associate
+
+      deallocate(tmp_edge_nodes, tmp_edge_faces, tmp_edge_type, tmp_xue, tmp_yue)
+      deallocate(edge_included, edge_compact, face_compact)
+
    end subroutine build_flowgeom_2d
 
 !> Constructs the 1D mesh geometry object, decoupled from direct m_flowgeom/network_data usage at the call site.
