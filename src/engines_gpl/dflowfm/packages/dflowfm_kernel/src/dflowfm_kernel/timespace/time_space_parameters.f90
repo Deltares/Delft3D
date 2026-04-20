@@ -110,7 +110,7 @@ contains
       select case (trim(str_tolower(string)))
       case ('override')
          operand = OPERAND_OVERRIDE
-      case ('overrideIfMissing')
+      case ('overrideifmissing')
          operand = OPERAND_OVERRIDE_IF_MISSING
       case ('add')
          operand = OPERAND_ADD
