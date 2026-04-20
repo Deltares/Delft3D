@@ -194,7 +194,6 @@ contains
 
       jarain = 0
       jaqin = 0
-      ecInstancePtr%nItems = 0
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
       call initialize_ec_module()
