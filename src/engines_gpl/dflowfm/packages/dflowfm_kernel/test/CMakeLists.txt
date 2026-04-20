@@ -26,6 +26,7 @@ f90twtest(${test_target}
         src/test_ec_module_block.f90
         src/test_unstruc_model.f90
         src/test_mdu_file_read_write.f90
+        src/test_dflowfm_dambreak.f90
         src/test_init_spatial_field.f90
     F2HFILES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_kernel_example.f90
@@ -38,6 +39,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_ec_module_block.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_unstruc_model.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_mdu_file_read_write.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_dflowfm_dambreak.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_init_spatial_field.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
     LIBRARIES dflowfm_kernel test_helpers
