@@ -277,7 +277,7 @@ static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const ds
         double c_mass_out = (c_lock - c_lock_new) * volume_lock_before;
         c_to_sea = tp->volume_to_sea > DBL_EPSILON ? c_mass_out / tp->volume_to_sea : c_lock;
       }
-      c_to_lake = c_lock;
+      c_to_lake = c_lock_new;
     } else {
       // Phases 1-4: volume mass balance.
       // volume_flush_passthrough (non-zero for phases 2 and 4) carries c_lake to sea,

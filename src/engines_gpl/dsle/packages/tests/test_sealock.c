@@ -721,9 +721,6 @@ static void test_sealock_update__phase_wise__multiple_constituents_evolve_indepe
   TEST_ASSERT_DOUBLE_WITHIN(1e-6, (20.0 * 5000.0 + 80.0 * 1000.0) / 6000.0,
                             lock.constituent_lock[2]);
 
-  // Assert: outputs == c_lock_before for each constituent.
-  TEST_ASSERT_DOUBLE_WITHIN(1e-6, 50.0, lock.results3d.constituent_to_lake[1][0]);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-6, 20.0, lock.results3d.constituent_to_lake[2][0]);
 }
 
 static void test_sealock_update__phase_wise__initial_temperature_affects_output(void) {
@@ -897,6 +894,8 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_across_
   for (int i = 0; i < 4; i++) {
     TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[i]));
     TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.phase_state.salinity_lock, lock.constituent_lock[1]);
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results.salinity_to_lake, lock.results3d.constituent_to_lake[1][0]);
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results.salinity_to_sea, lock.results3d.constituent_to_sea[1][0]);
   }
 
   // Sanity check: salinity must have changed from its initial value after the full
@@ -1002,6 +1001,8 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_v
   for (int i = 0; i < 4; i++) {
     TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[i]));
     TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.phase_state.salinity_lock, lock.constituent_lock[1]);
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results.salinity_to_lake, lock.results3d.constituent_to_lake[1][0]);
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results.salinity_to_sea, lock.results3d.constituent_to_sea[1][0]);
   }
 
   // Sanity check: salinity must have changed from its initial value after the full
@@ -1091,6 +1092,9 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_d
   for (int i = 0; i < 2; i++) {
     TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[i]));
     TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.phase_state.salinity_lock, lock.constituent_lock[1]);
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results.salinity_to_lake, lock.results3d.constituent_to_lake[1][0]);
+    TEST_ASSERT_DOUBLE_WITHIN(1e-9, lock.results.salinity_to_sea,lock.results3d.constituent_to_sea[1][0]);
+ 
   }
 
   // Sanity: flushing must have reduced salinity meaningfully from initial 15.0.
