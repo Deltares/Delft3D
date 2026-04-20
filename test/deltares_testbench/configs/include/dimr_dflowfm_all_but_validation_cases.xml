@@ -4629,6 +4629,17 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f015_c045_friccoef_xyz_spherical" ref="dflowfm_default">
+      <path version="2026-04-20T15:50:00">e02_dflowfm/f015_spatial_interpolation/c045_friccoef_xyz_spherical</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/friccoeff_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_cfu" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f015_c073_iniwatdep_pol" ref="dflowfm_default">
       <path version="2025-10-15T15:17:39.177000">e02_dflowfm/f015_spatial_interpolation/c073_iniwatdep_pol</path>
       <maxRunTime>15000.0000000</maxRunTime>
