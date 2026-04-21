@@ -1,5 +1,5 @@
 {
-    "file_version": "1.0.0",
+    "file_version": "2.0.0",
     "file_format_version": "1.0.0",
     "file_format_type": "ini",
     "description": "The master definition file of D-Flow FM",
@@ -68,13 +68,17 @@
                     "key": "modelSpecific",
                     "value_type": "string",
                     "description": "Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name).",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "inputSpecific",
                     "value_type": "intbool",
                     "description": "Use of hardcoded specific inputs, shall not be used by users.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -156,7 +160,9 @@
                     "key": "vertPlizFile",
                     "value_type": "path",
                     "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "frictFile",
@@ -424,7 +430,9 @@
                         "internalNetlinksLoop": "iterate each loop",
                         "allNetlinksLoop": "iterate each edge and each loop"
                     },
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "circumcenterTolerance",
@@ -432,7 +440,9 @@
                     "default_value": 1e-15,
                     "description": "Tolerance for convergence of circumcenter method.",
                     "unit": "m",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "baMin",
@@ -483,7 +493,9 @@
                     "default_value": 1.0,
                     "description": "Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed.",
                     "unit": "-",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "zLayerGrowthFactor",
@@ -582,89 +594,117 @@
                     "value_type": "intbool",
                     "default_value": 0,
                     "description": "Specifies whether the bed levels must be computed over all links of a cell including the closed boundaries, thin dams and dry points (= 0), or only the flow links. (= 1)",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "stripMesh",
                     "value_type": "intbool",
                     "default_value": 0,
                     "description": "Strip unused nodes and links from the mesh after clipping.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "topLayMinThick",
                     "value_type": "float",
                     "description": "Minimum top layer thickness, only for Z-layers.",
                     "unit": "m",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "helmert",
                     "value_type": "intbool",
                     "description": "Use Helmert.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "waterDepthIni1D",
                     "value_type": "float",
                     "description": "Initial waterdepth in 1D.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "zLayerAtuByBob",
                     "value_type": "intbool",
                     "description": "Lowest connected cells governed by bob instead of by bL L/R.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "shipDefFile",
                     "value_type": "path",
                     "description": "File *.shd containing ship definitions.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "bedWaveLength",
                     "value_type": "float",
                     "description": "Bed testcases.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "removeSmallLinksTrsh",
                     "value_type": "float",
                     "description": "Remove small links.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "createLinks1D2D",
                     "value_type": "intbool",
                     "description": "Rashly create links between 1D nodes and 2D cells when initializing model.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "bedWaveAmplitude",
                     "value_type": "float",
                     "description": "Bed testcases.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "uniformHu",
                     "value_type": "float",
                     "description": "Waterdepth in rigid-lid-like solution.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "tSigma",
                     "value_type": "float",
                     "description": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers).",
                     "unit": "s",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "dpuopt",
                     "value_type": "intenum",
                     "default_value": 1,
                     "description": "Bed level interpolation at velocity point in case of tile approach bed level.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "max",
                         "2": "mean"
@@ -674,7 +714,9 @@
                     "key": "ihuzcSig",
                     "value_type": "intenum",
                     "description": "If `keepZLayeringAtBed`>=2.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "average of Leftsig and Rightsig",
                         "2": "max of Leftsig and Rightsig",
@@ -686,13 +728,17 @@
                     "key": "ihuz",
                     "value_type": "int",
                     "description": "TODO",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cosphiutrsh",
                     "value_type": "float",
                     "description": "1.0=no bad orthos.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -704,44 +750,58 @@
                     "key": "cutCellList",
                     "value_type": "path",
                     "description": "File with names of cutcell polygons, e.g. cutcellpolygons.lst.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "uniformTyp1D",
                     "value_type": "int",
                     "description": "Uniform type for channel profiles not specified by profloc.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "1D2DInternalLinkType",
                     "value_type": "int",
                     "description": "Link treatment method for type-3 internal links.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "pipeFile",
                     "value_type": "path",
                     "description": "File *.pliz containing pipe-based 'culverts'.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "groundLayerThickness",
                     "value_type": "float",
                     "description": "Only in pipes: groundlayer thickness.",
                     "unit": "m",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "extrBl",
                     "value_type": "intbool",
                     "description": "Extrapolate bed level at boundaries according to the slope.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "keepZLay1BedVol",
                     "value_type": "intbool",
                     "description": "Correct volumes when `keepZLayeringAtBed`=1.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -1048,7 +1108,9 @@
                     "default_value": 0,
                     "value_type": "int",
                     "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0
@@ -1187,7 +1249,9 @@
                     "value_type": "float",
                     "description": "Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated.",
                     "unit": "s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "epshu",
@@ -1236,7 +1300,9 @@
                     "default_value": 0.0,
                     "value_type": "float",
                     "description": "Factor for including (1-CFL) in HO term vertical.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -1249,7 +1315,9 @@
                     "default_value": 0.0,
                     "value_type": "float",
                     "description": "Limit eddy viscosity at bed by factor of first layer above.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -1261,19 +1329,25 @@
                     "key": "lateral_fixedweir_umin_method",
                     "value_type": "int",
                     "description": "Method for minimal velocity treshold for weir losses in iterative lateral 1D2D weir coupling.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "lateral_fixedweir_minimal_1d2d_embankment",
                     "value_type": "float",
                     "description": "Minimal crest height of 1D2D SOBEK-DFM embankments.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "testFixedWeirs",
                     "value_type": "intenum",
                     "description": "Test for fixed weir algorithms.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "original Villemonte (Sieben2010) approach",
                         "1": "Sieben2007"
@@ -1284,7 +1358,9 @@
                     "value_type": "intenum",
                     "default_value": 2,
                     "description": "Check for positive waterdepth.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "0.7dts, just redo",
@@ -1300,13 +1376,17 @@
                     "key": "cfConHorMom",
                     "value_type": "float",
                     "description": "Constant for including (1-CFL) in HO term horizontal momentum.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cfFacHorMom",
                     "value_type": "float",
                     "description": "Factor for including (1-CFL) in HO term horizontal momentum.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -1319,7 +1399,9 @@
                     "value_type": "float",
                     "description": "2D bedfriction in 3D below this threshold.",
                     "unit": "m",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -1332,7 +1414,9 @@
                     "value_type": "intenum",
                     "default_value": 1,
                     "description": "Upwind advection discretization at sources/sinks.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no (higher-order)",
                         "1": "yes (first-order)"
@@ -1343,14 +1427,18 @@
                     "default_value": 0.5,
                     "value_type": "float",
                     "description": "Only when `newCorio`=1, Adams-Bashford factor in Coriolis term.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "corioConstant",
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Coriolis constant.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no change in Coriolis",
                         "1": "Coriolis constant in Spherical models",
@@ -1362,21 +1450,27 @@
                     "default_value": 1.0,
                     "value_type": "float",
                     "description": "Drop losses in 3D are applied if z upwind is below bob + 2/3 hu*`drop3D`.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "zLayerCenterBedVel",
                     "default_value": 1,
                     "value_type": "intbool",
                     "description": "Reconstruction of center velocity at half closed bed cells.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "horAdvTypZLayer",
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Horizontal advection treatment of z-layers for dambreaks.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "default",
                         "2": "sigma-like"
@@ -1387,7 +1481,9 @@
                     "default_value": 5,
                     "value_type": "intenum",
                     "description": "Coriolis type.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no Coriolis force",
                         "5": "default approach for Coriolis (depth dependent and similar to Delft3D-FLOW)"
@@ -1398,20 +1494,26 @@
                     "value_type": "float",
                     "default_value": 0.0,
                     "description": "Tolerance for zws(kb-1) at bed.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cfExpHu",
                     "value_type": "float",
                     "description": "Exponent for including (1-CFL) in sethu.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "jbasqbnddownwindhs",
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Water depth scheme at discharge boundaries.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "original hu",
                         "1": "downwind hs"
@@ -1422,7 +1524,9 @@
                     "default_value": 2,
                     "value_type": "intenum",
                     "description": "First-order or second order filter to suppress checkerboarding.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "first order",
                         "2": "second order"
@@ -1433,7 +1537,9 @@
                     "default_value": 1,
                     "value_type": "intenum",
                     "description": "Keep salinity and temperature signals on boundary cells at outflow.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no (like Thatcher-Harleman)",
                         "1": "yes (use prescribed boundary conditions)"
@@ -1444,7 +1550,9 @@
                     "default_value": 2,
                     "value_type": "intenum",
                     "description": "Z-layering at bed.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "original bed level",
                         "1": "adapted bed level",
@@ -1456,7 +1564,9 @@
                     "default_value": 1,
                     "value_type": "intenum",
                     "description": "ubnds inflow.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "uniform U1",
                         "1": "log U1",
@@ -1468,7 +1578,9 @@
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "3D profile at open boundaries.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "k-eps",
                         "1": "log k-eps inflow",
@@ -1480,28 +1592,36 @@
                     "default_value": 1e-3,
                     "value_type": "float",
                     "description": "Only compute heat flux + evaporation if depth > `epshstem`.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "diffusionOnBnd",
                     "default_value": 1,
                     "value_type": "intbool",
                     "description": "Horizontal diffusion on open boundaries.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "newCorio",
                     "default_value": 1,
                     "value_type": "intbool",
                     "description": "New standard way of Coriolis term calculation.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "barrierAdvection",
                     "default_value": 1,
                     "value_type": "intenum",
                     "description": "Advection modelling at barriers.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "no correction",
                         "2": "advection correction"
@@ -1512,7 +1632,9 @@
                     "default_value": -1,
                     "value_type": "intenum",
                     "description": "Estimate rho at 3D layer interfaces for baroclinic pressure gradient method.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "-1": "Original linear interpolation",
                         "0": "Improved linear interpolation",
@@ -1524,14 +1646,18 @@
                     "key": "chkdifd",
                     "value_type": "float",
                     "description": "Check diffusion terms if depth < `chkdifd`, only if `transportAutoTimeStepDiff`=1.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "fixedWeirFrictScheme",
                     "value_type": "intenum",
                     "default_value": 0,
                     "description": "Fixed weir friction scheme.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "friction based on hu",
                         "1": "friction based on subgrid weir friction scheme",
@@ -1545,7 +1671,9 @@
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Drying flooding algorithm.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "D-Flow FM",
                         "1": "Delft3D-FLOW",
@@ -1557,7 +1685,9 @@
                     "default_value": 3,
                     "value_type": "intenum",
                     "description": "Turbulance advection.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "none",
                         "1": "upwind explicit",
@@ -1609,7 +1739,9 @@
                     "key": "vertAdvTypSal",
                     "default_value": 6,
                     "value_type": "intenum",
-                    "status": "deprecated",
+                    "status": {
+                        "value": "deprecated"
+                    },
                     "description": "Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6.",
                     "enum_values": {
                         "0": "none",
@@ -1621,7 +1753,9 @@
                     "key": "vertAdvTypTem",
                     "default_value": 6,
                     "value_type": "intenum",
-                    "status": "deprecated",
+                    "status": {
+                        "value": "deprecated"
+                    },
                     "description": "Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6.",
                     "enum_values": {
                         "0": "none",
@@ -1668,40 +1802,52 @@
                     "value_type": "float",
                     "default_value": 5.0,
                     "description": "Minimum salinity for case of lock exchange.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "locSaltMax",
                     "value_type": "float",
                     "default_value": 10.0,
                     "description": "Maximum salinity for case of lock exchange.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "locSaltLev",
                     "value_type": "float",
                     "default_value": 1.0,
                     "description": "Salinity level for case of lock exchange.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "linContin",
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Linear continuity.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cfExpHorMom",
                     "value_type": "float",
                     "description": "Exponent for including (1-CFL) in HO term horizontal momentum.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "coriohhtrsh",
                     "value_type": "float",
                     "description": "Only when `newCorio`=1, 0.0=no safety in hu/hus weightings.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0
@@ -1712,7 +1858,9 @@
                     "key": "limTypW",
                     "value_type": "intenum",
                     "description": "Limiter type for wave action transport.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "minmod",
@@ -1725,13 +1873,17 @@
                     "key": "huWeirRegular",
                     "value_type": "float",
                     "description": "For Villemonte and Tabellenboek, regular hu below `huWeirRegular`.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "structureLayersActive",
                     "value_type": "intenum",
                     "description": "For Villemonte and Tabellenboek, regular hu below `huWeirRegular`.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "structure flow through all layers",
                         "1": "structure flow only through open layers"
@@ -1741,44 +1893,58 @@
                     "key": "baOrgFracMin",
                     "value_type": "float",
                     "description": "Cell area = max(orgcellarea*`baOrgFracMin`, cut cell area).",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "subsuplupdates1",
                     "value_type": "intbool",
                     "description": "Update water levels (s1) due to subsidence/uplift.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "linkDriedMx",
                     "value_type": "int",
                     "description": "Maximum numberr of Au growth steps after having dried.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "lateral_fixedweir_relax",
                     "value_type": "float",
                     "description": "Relaxation factor for iterative lateral 1D2D weir coupling algorithm.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "numlimdt_baorg",
                     "value_type": "float",
                     "description": "If previous numlimdt > `numlimdt_baorg` keep original cell area ba in cut cell.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cfFacHu",
                     "value_type": "float",
                     "description": "Factor for including (1-CFL) in sethu.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "vertAdvTypMom3OnBnd",
                     "value_type": "intenum",
                     "default_value": 0,
                     "description": "Vertical advection type u1 bnd UpwimpL.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "follow javau",
                         "1": "on bnd",
@@ -1789,7 +1955,9 @@
                     "key": "noDerivedTypes",
                     "value_type": "intenum",
                     "description": "Use derived types.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "use derived types",
                         "1": "less",
@@ -1802,7 +1970,9 @@
                     "value_type": "intenum",
                     "default_value": 0,
                     "description": "Include density gradient in advection term.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no (strongly advised)",
                         "1": "yes",
@@ -1815,26 +1985,34 @@
                     "key": "ilutype",
                     "value_type": "string",
                     "description": "TODO.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "nlevel",
                     "value_type": "string",
                     "description": "TODO.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "dtol",
                     "value_type": "string",
                     "description": "TODO.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "pillarFarFieldVelocity",
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Use far-field velocity for pillars.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "minWaterlevelChangeBreak",
@@ -1892,7 +2070,9 @@
                     "default_value": 0.023,
                     "description": "Uniform friction coefficient in 1D2D links.",
                     "unit": "depends on `unifFrictType`",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0
@@ -1958,7 +2138,9 @@
                     "default_value": 1e-32,
                     "value_type": "float",
                     "description": "Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "unit": "m²/s²"
                 },
                 {
@@ -1966,7 +2148,9 @@
                     "default_value": 1e-32,
                     "value_type": "float",
                     "description": "Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "unit": "m²/s²"
                 },
                 {
@@ -1974,7 +2158,9 @@
                     "default_value": 1e-32,
                     "value_type": "float",
                     "description": "Minimum turbulent time scale (TAU) value in k-tau turbulence model.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "unit": "m²/s²"
                 },
                 {
@@ -2162,7 +2348,9 @@
                     "value_type": "float",
                     "description": "Water clarity parameter for non-penetrative radiation. Use SecchiDepthNonPenetrative instead.",
                     "unit": "m",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "SecchiDepthNonPenetrative",
@@ -2170,7 +2358,9 @@
                     "value_type": "float",
                     "description": "Water clarity parameter for non-penetrative radiation.",
                     "unit": "m",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "SecchiDepth2Fraction",
@@ -2178,7 +2368,9 @@
                     "value_type": "float",
                     "description": "Fraction of solar radiation that falls in non-penetrative spectrum. Use SecchiDepthNonPenetrativeFraction instead.",
                     "unit": "-",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "SecchiDepthNonPenetrativeFraction",
@@ -2186,7 +2378,9 @@
                     "value_type": "float",
                     "description": "Fraction of solar radiation that falls in non-penetrative spectrum.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "stanton",
@@ -2294,13 +2488,17 @@
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Apply thermobaricity in computing the baroclinic pressure gradient.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "surfTempSmoFac",
                     "value_type": "float",
                     "description": "Horizontal smoothing factor for surface water in heatflux computations.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0.0,
@@ -2313,19 +2511,25 @@
                     "value_type": "intbool",
                     "default_value": 0,
                     "description": "Correct water level with initial water level in self attraction and loading.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "nfEntrainmentMomentum",
                     "value_type": "intbool",
                     "description": "Use momentum transfer in NearField related entrainment.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "equili",
                     "value_type": "intbool",
                     "description": "Equilibrium spiral flow intensity.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "soilTempThick",
@@ -2333,14 +2537,18 @@
                     "default_value": 0.0,
                     "description": "Use soil temperature buffer if >0.0",
                     "unit": "m",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "selfAttractionLoading",
                     "value_type": "intenum",
                     "default_value": 0,
                     "description": "Use self attraction and loading.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "yes",
@@ -2351,46 +2559,60 @@
                     "key": "prandtlNumberTemperature",
                     "value_type": "float",
                     "description": "Turbulent Prandtl number for temperature.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "schmidtNumberSalinity",
                     "value_type": "float",
                     "description": "Turbulent Schmidt number for salinity.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "schmidtNumberTracer",
                     "value_type": "float",
                     "description": "Turbulent Schmidt number for tracer(s).",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "umodLin",
                     "value_type": "float",
                     "description": "Linear friction umod.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "jadelvappos",
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Only positive forced evaporation fluxes.",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "freeConvectionCoefficient",
                     "default_value": 0.14,
                     "value_type": "float",
                     "description": "Free convection turbulence coefficient.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "uniffrictcoef1dgrlay",
                     "value_type": "float",
                     "description": "Uniform ground layer friction coefficient for ocean models.",
                     "unit": "m/s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "salinityDependentFreezingPoint",
@@ -2436,19 +2658,25 @@
                     "key": "mxgrkrone",
                     "value_type": "int",
                     "description": "Highest fraction index treated by Krone.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "sedDensCoupling",
                     "value_type": "intbool",
                     "description": "Sed rho coupling.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "implicitFallVelocity",
                     "value_type": "intenum",
                     "description": "Implicit or explicit fall velocity",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "implicit",
                         "1": "explicit"
@@ -2458,7 +2686,9 @@
                     "key": "nr_of_sedfractions",
                     "value_type": "int",
                     "description": "Number of sediment fractions.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -2471,7 +2701,9 @@
                     "key": "sedTrailsGrid",
                     "value_type": "path",
                     "description": "Grid file for sedtrails output locations on corners.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "sedtrailsAnalysis",
@@ -2483,19 +2715,25 @@
                         "flowvelocity": "",
                         "soulsby": ""
                     },
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "sedtrailsInterval",
                     "value_type": "list[float]",
                     "description": "Sedtrails output, given as 'interval' 'start period' 'end period'",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "sedtrailsOutputFile",
                     "value_type": "path",
                     "description": "Sedtrails time-averaged output file.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -2611,7 +2849,9 @@
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Wind drag hu or zws based.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "hu",
                         "1": "zws"
@@ -2622,14 +2862,18 @@
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Compute air density.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "wind_eachstep",
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Switch for wind and air pressure each time step or each user time step.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "each user time step",
                         "1": "each time step"
@@ -2705,40 +2949,52 @@
                     "key": "waveSwartDelwaq",
                     "value_type": "intbool",
                     "description": "If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "hwavuni",
                     "value_type": "float",
                     "description": "Root mean square wave height.",
                     "unit": "m",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "tiFetchComp",
                     "value_type": "float",
                     "description": "Time interval fetch comp if `waveModelNr`=1,2.",
                     "unit": "s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "phiwavuni",
                     "value_type": "float",
                     "description": "Root mean square wave direction, math convention.",
                     "unit": "deg",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "3DWaveStreaming",
                     "value_type": "int",
                     "description": "Influence of wave streaming. 0: no, 1: added to adve.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "3DWaveBoundaryLayer",
                     "value_type": "intenum",
                     "description": "Boundary layer formulation.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "Sana"
                     }
@@ -2748,13 +3004,17 @@
                     "value_type": "float",
                     "description": "Root mean square wave period.",
                     "unit": "s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "uorbfac",
                     "value_type": "intenum",
                     "description": "Orbital velocities.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "D3D style",
                         "1": "Guza style"
@@ -2764,7 +3024,9 @@
                     "key": "3DStokesProfile",
                     "value_type": "intenum",
                     "description": "Stokes profile.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "uniform over depth",
@@ -2777,7 +3039,9 @@
                     "value_type": "intenum",
                     "default_value": 0,
                     "description": "Wave height on map output",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "hrms wave height",
                         "1": "sign wave height"
@@ -2787,14 +3051,18 @@
                     "key": "hminlw",
                     "value_type": "float",
                     "description": "Cut-off depth for application of wave forces in momentum balance.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "jahissigwav",
                     "value_type": "intenum",
                     "default_value": 1,
                     "description": "Wave height on his output",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "hrms wave height",
                         "1": "sign wave height"
@@ -3035,13 +3303,17 @@
                     "value_type": "intbool",
                     "default_value": 0,
                     "description": "Write time steps analysis file *.steps.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "autoTimeStepVisc",
                     "value_type": "intbool",
                     "description": "Use time step limitation based on explicit diffusive term.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -3066,7 +3338,9 @@
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Ignore bed level from restart.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -3154,7 +3428,9 @@
                     "key": "trtMth",
                     "value_type": "intenum",
                     "description": "Area averaging method.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "Nikuradse k based",
                         "2": "Chezy C based (parallel and serial)"
@@ -3164,13 +3440,17 @@
                     "key": "trtMnh",
                     "value_type": "float",
                     "description": "Minimum water depth for roughness computations.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "trtCll",
                     "value_type": "path",
                     "description": "Calibration factor file for roughness from trachytopes.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -4132,117 +4412,155 @@
                     "key": "mbaLumpSourceSinks",
                     "value_type": "intbool",
                     "description": "Lump MBA source/sink mass balance terms.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "wrimap_nearfield",
                     "value_type": "intbool",
                     "description": "Write NearField parameters.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "writeDfmInterpretedValues",
                     "value_type": "intbool",
                     "description": "Write DFM interpreted values.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaLumpBoundaries",
                     "value_type": "intbool",
                     "description": "Lump MBA boundary mass balance terms.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "waqHorAggr",
                     "value_type": "path",
                     "description": "DELWAQ output horizontal aggregation file (*.dwq).",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "writeDetailedTimers",
                     "value_type": "intbool",
                     "description": "Write detailed timers output file.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "metadataFile",
                     "value_type": "path",
                     "description": "Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaInterval",
                     "value_type": "float",
                     "description": "Mass balance area output interval.",
                     "unit": "s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "wrirst_bnd",
                     "value_type": "intbool",
                     "description": "Write water level.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "generateUuid",
                     "value_type": "intbool",
                     "description": "Generate UUID as unique dataset identifier and include in output NetCDF files.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "timeSplitInterval",
                     "value_type": "string",
                     "description": "Time splitting interval after which a new output file is started. Format: value+unit, e.g. '1M'.",
                     "unit": "Y, M, D, h, m, s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "rugFile",
                     "value_type": "path",
                     "description": "Polyline file *_rug.pli defining runup gauges.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaWriteCsv",
                     "value_type": "intbool",
                     "description": "Write mass balance area output to a CSV file.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaLumpFromToMba",
                     "value_type": "intbool",
                     "description": "Lump MBA from/to other areas mass balance terms.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaLumpProcesses",
                     "value_type": "intbool",
                     "description": "Lump MBA processes mass balance terms.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "waqVertAggr",
                     "value_type": "path",
                     "description": "DELWAQ output vertical aggregation file (*.vag).",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaWriteNetcdf",
                     "value_type": "intbool",
                     "description": "Write mass balance area output to a NetCDF file.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "mbaWriteTxt",
                     "value_type": "intbool",
                     "description": "Write mass balance area output to a TXT file.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "wrimap_ice",
                     "value_type": "intbool",
                     "description": "Write output to map file for ice cover.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -4256,19 +4574,25 @@
                     "default_value": 0,
                     "value_type": "intbool",
                     "description": "Activate calibration factor friction multiplier.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "definitionFile",
                     "value_type": "path",
                     "description": "File (*.cld) containing calibration definitions.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "areaFile",
                     "value_type": "path",
                     "description": "File (*.cll) containing area distribution of calibration definitions.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -4281,25 +4605,33 @@
                     "key": "substanceFile",
                     "value_type": "path",
                     "description": "Substance file name.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "substanceDensityCoupling",
                     "value_type": "intbool",
                     "description": "Substance rho coupling.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "additionalHistoryOutputFile",
                     "value_type": "path",
                     "description": "Extra history output filename.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "statisticsFile",
                     "value_type": "path",
                     "description": "Statistics definition file.",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "thetaVertical",
@@ -4307,7 +4639,9 @@
                     "value_type": "float",
                     "description": "Theta value for vertical transport of water quality substances.",
                     "unit": "-",
-                    "status": "deprecated"
+                    "status": {
+                        "value": "deprecated"
+                    }
                 },
                 {
                     "key": "dtProcesses",
@@ -4315,14 +4649,18 @@
                     "value_type": "float",
                     "description": "Waq processes time step. Must be a multiple of `dtUser`. If `dtProcesses` is negative, water quality processes are calculated with every hydrodynamic time step.",
                     "unit": "s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "processFluxIntegration",
                     "default_value": 1,
                     "value_type": "intenum",
                     "description": "Process fluxes integration option.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "1": "WAQ",
                         "2": "D-Flow FM"
@@ -4334,7 +4672,9 @@
                     "value_type": "float",
                     "description": "Volume below which segments are marked as dry.",
                     "unit": "m³",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "depthDryThreshold",
@@ -4342,7 +4682,9 @@
                     "value_type": "float",
                     "description": "Water depth below which segments are marked as dry.",
                     "unit": "m",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         },
@@ -4403,7 +4745,9 @@
                     "default_value": 0,
                     "value_type": "intenum",
                     "description": "Vegetation model nr.",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "0": "no",
                         "1": "Baptist DFM"
@@ -4415,7 +4759,9 @@
                     "value_type": "float",
                     "description": "Stem distance factor.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cdVeg",
@@ -4423,7 +4769,9 @@
                     "value_type": "float",
                     "description": "Stem Cd coefficient.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cbVeg",
@@ -4431,7 +4779,9 @@
                     "value_type": "float",
                     "description": "Stem stiffness coefficient.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "rhoVeg",
@@ -4439,7 +4789,9 @@
                     "value_type": "float",
                     "description": "Stem Rho, if > 0, bouyant stick procedure.",
                     "unit": "kg/m³",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "stemHeightStd",
@@ -4447,7 +4799,9 @@
                     "value_type": "float",
                     "description": "Stem height standard deviation fraction, e.g. 0.1.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "stemHeightConvention",
@@ -4455,7 +4809,9 @@
                     "value_type": "enum",
                     "description": "Stem height convention.",
                     "unit": "-",
-                    "status": "research",
+                    "status": {
+                        "value": "research"
+                    },
                     "enum_values": {
                         "upward_from_bed": "Upward from bed",
                         "downward_from_surface": "Downward from surface"
@@ -4467,7 +4823,9 @@
                     "value_type": "float",
                     "description": "Minimum vegeation density in Baptist formula. Only in 2D.",
                     "unit": "1/m²",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "expChiStem",
@@ -4475,7 +4833,9 @@
                     "value_type": "float",
                     "description": "TODO.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "expChiLeaf",
@@ -4483,7 +4843,9 @@
                     "value_type": "float",
                     "description": "TODO.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "uChiStem",
@@ -4491,7 +4853,9 @@
                     "value_type": "float",
                     "description": "TODO.",
                     "unit": "m/s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "uChiLeaf",
@@ -4499,7 +4863,9 @@
                     "value_type": "float",
                     "description": "TODO.",
                     "unit": "m/s",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "areaLeaf",
@@ -4507,7 +4873,9 @@
                     "value_type": "float",
                     "description": "TODO.",
                     "unit": "m²",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 },
                 {
                     "key": "cdLeaf",
@@ -4515,7 +4883,9 @@
                     "value_type": "float",
                     "description": "TODO.",
                     "unit": "-",
-                    "status": "research"
+                    "status": {
+                        "value": "research"
+                    }
                 }
             ]
         }

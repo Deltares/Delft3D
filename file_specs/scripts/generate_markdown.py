@@ -17,6 +17,7 @@ import sys
 from typing import Dict, List, Any
 
 SPECIFICATIONS_FOLDER = Path(__file__).parent.parent / "specifications"
+STATUS_ICONS = {"research": "🔬", "deprecated": "⚠️"}
 
 
 def json_to_markdown(json_path: Path) -> str:
@@ -95,10 +96,10 @@ def generate_content(data: Dict[str, Any]) -> str:
         section_md.append(description)
         section_md.append("")
         section_md.append(
-            "| Keyword | Description | Default | Supported values | Unit |"
+            "| Keyword | Description | Default | Supported values | Unit | Status |"
         )
         section_md.append(
-            "| ------- | ----------- | ------- | ---------------- | ---- |"
+            "| ------- | ----------- | ------- | ---------------- | ---- | ------ |"
         )
 
         for prop in properties:
@@ -116,24 +117,49 @@ def get_md_row(property: Dict[str, Any]) -> str:
     default = get_default_value_formatted(property)
     supported_values = get_supported_values_formatted(property)
     unit = get_unit_formatted(property)
+    status = get_status_formatted(property)
 
-    return f"| {key} | {description} | {default} | {supported_values} | {unit} |"
+    return f"| {key} | {description} | {default} | {supported_values} | {unit} | {status} |"
 
 
 def get_key_formatted(property) -> str:
     key = f"`{property["key"]}`"
 
-    if property.get("status") == "research":
-        return key + " 🔬"
-    
-    if property.get("status") == "deprecated":
-        return key + " ⚠️"
+    status, _ = get_status_info(property)
+    icon = STATUS_ICONS.get(status)
+
+    if icon:
+        return f"{key} {icon}"
 
     return key
 
 
 def get_description_formatted(property: Dict[str, Any]) -> str:
-    return property["description"].replace("*", "\\*").replace("|", "\\|")
+    return escape_table_characters(property["description"])
+
+
+def get_status_info(property: Dict[str, Any]) -> tuple[str | None, str | None]:
+    status = property.get("status")
+
+    if status:
+        value = status.get("value")
+        comment = status.get("comment")
+        return value, comment
+
+    else:
+        return None, None
+
+
+def get_status_formatted(property: Dict[str, Any]) -> str:
+    status, comment = get_status_info(property)
+
+    if status:
+        if comment:
+            return f"{status}: {escape_table_characters(comment)}"
+
+        return status
+
+    return ""
 
 
 def get_default_value_formatted(property: Dict[str, Any]) -> str:
@@ -219,6 +245,11 @@ def get_unit_formatted(property: Dict[str, Any]) -> str:
 
 def format_lines(lines: List[str]) -> str:
     return "\n".join(lines)
+
+
+def escape_table_characters(text: str) -> str:
+    """Escape characters that have special meaning in Markdown tables."""
+    return text.replace("*", "\\*").replace("|", "\\|")
 
 
 def run():

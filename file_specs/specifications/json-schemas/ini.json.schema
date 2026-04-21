@@ -60,13 +60,25 @@
                                     "type": "string"
                                 },
                                 "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "GA",
-                                        "research",
-                                        "deprecated"
+                                    "type": "object",
+                                    "properties": {
+                                        "value": {
+                                            "type": "string",
+                                            "enum": [
+                                                "GA",
+                                                "research",
+                                                "deprecated"
+                                            ],
+                                            "default": "GA"
+                                        },
+                                        "comment": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "value"
                                     ],
-                                    "default": "GA"
+                                    "additionalProperties": false
                                 },
                                 "validation": {
                                     "type": "object",
