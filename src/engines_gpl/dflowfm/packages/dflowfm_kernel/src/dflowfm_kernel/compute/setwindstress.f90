@@ -44,8 +44,8 @@ contains
       use precision, only: dp
       use m_setcdwcoefficient, only: setcdwcoefficient
       use m_flowgeom, only: ln, lnx, snu, csu
-      use m_flow, only: jamapwind, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
-                        viskinair, ag, vonkarw, u1, ltop, v, temperature_model, TEMPERATURE_MODEL_COMPOSITE, jamapwindstress, kmx, ustw
+      use m_flow, only: write_map_output, rho_water_in_wind_stress, RHO_MEAN, wdsu, ktop, rho, wdsu_x, wdsu_y, rhomean, &
+                        viskinair, ag, vonkarw, u1, ltop, v, temperature_model, TEMPERATURE_MODEL_COMPOSITE, kmx, ustw
       use m_wind, only: windxav, windyav, jawindstressgiven, jastresstowind, wx, wy, rhoair, cdb, relativewind, jaspacevarcharn, wcharnock, cdwcof, ja_airdensity, ja_computed_airdensity, air_density
       use m_fm_icecover, only: fm_ice_drag_effect, ice_modify_winddrag, ICE_WINDDRAG_NONE, ice_area_fraction
 
@@ -59,7 +59,7 @@ contains
       if (jawindstressgiven > 0) then
 
          if (jastresstowind == 0) then ! stress directly
-            if (jamapwind > 0) then
+            if (write_map_output%wind > 0) then
                wx = 0.0_dp
                wy = 0.0_dp
             end if
@@ -131,7 +131,7 @@ contains
                   roa = air_density(k)
                end if
                tuwi = roa * cdw * uwi
-               if (jamapwindstress > 0) then
+               if (write_map_output%windstress > 0) then
                   wdsu_x(L) = tuwi * wxL
                   wdsu_y(L) = tuwi * wyL
                end if

@@ -132,33 +132,33 @@ contains
             ! update for output, only for 1D
             if (network%loaded) then
                if (ndxi - ndx2d > 0) then
-                  if (jamapFreeboard > 0) then
+                  if (write_map_output%free_board > 0) then
                      call updateFreeboard(network)
                   end if
-                  if (jamapDepthOnGround > 0) then
+                  if (write_map_output%depth_on_ground > 0) then
                      call updateDepthOnGround(network)
                   end if
-                  if (jamapVolOnGround > 0) then
+                  if (write_map_output%vol_on_ground > 0) then
                      call updateVolOnGround(network)
                   end if
                   ! NOTE: updateTotalInflow1d2d, updateTotalInflowLat done in flow_finalizesingletimestep().
                end if
             end if
             if (lnx1d > 0) then
-               if (jamapS1Gradient > 0) then
+               if (write_map_output%s1gradient > 0) then
                   call updateS1Gradient()
                end if
             end if
 
             if (jaeverydt == 0) then
-               if (jamapFlowAnalysis > 0) then
+               if (write_map_output%flow_analysis > 0) then
                   ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
                   call updateFlowAnalysisParameters()
                end if
 
                call wrimap(tim)
 
-               if (jamapFlowAnalysis > 0) then
+               if (write_map_output%flow_analysis > 0) then
                   ! Reset the interval related flow analysis arrays
                   negativeDepths = 0
                   noiterations = 0

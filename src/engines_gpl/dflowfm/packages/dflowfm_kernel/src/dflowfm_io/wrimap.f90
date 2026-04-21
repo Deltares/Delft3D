@@ -33,7 +33,7 @@ module m_wrimap
 contains
    subroutine wrimap(tim)
       use precision, only: dp
-      use m_flow, only: jamapbnd
+      use m_flow, only: write_map_output
       use unstruc_netcdf
       use unstruc_model
       use unstruc_files, only: defaultFilename
@@ -100,13 +100,13 @@ contains
                   end if
                end if
                jabndnd = 0
-               if (jamapbnd > 0) then
+               if (write_map_output%bnd > 0) then
                   jabndnd = 1
                end if
                call unc_write_map_filepointer_ugrid(mapids, tim, jabndnd) ! wrimap
             else
                jabndnd = 0
-               if (jamapbnd > 0) then
+               if (write_map_output%bnd > 0) then
                   jabndnd = 1
                end if
                call unc_write_map_filepointer(mapids%ncid, tim, jabndnd) ! wrimap

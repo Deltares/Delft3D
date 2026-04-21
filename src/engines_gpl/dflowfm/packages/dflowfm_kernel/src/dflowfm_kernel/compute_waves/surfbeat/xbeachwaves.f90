@@ -1484,7 +1484,7 @@ contains
          dtmaxwav = dts
       else
          kkcflmx = kkcflmxloc ! overwrite cell number for numlimdt when new smallest timestep
-         if (jamapFlowAnalysis > 0) then
+         if (write_map_output%flow_analysis > 0) then
             limitingTimestepEstimation(kkcflmx) = limitingTimestepEstimation(kkcflmx) + 1
          end if
       end if

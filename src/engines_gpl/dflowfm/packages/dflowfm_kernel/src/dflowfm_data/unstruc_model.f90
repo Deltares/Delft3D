@@ -2076,92 +2076,92 @@ contains
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', write_his_output%tem, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', write_his_output%sal, success)
 
-      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', jamaps0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', jamaps1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', jamapevap, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_volume1', jamapvol1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', jamaphs, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', jamaphu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', jamapanc, success)
-      if (jamapanc > 0) then
-         if (jamaps1 <= 0) then
-            jamaps1 = 1 ! Enable writing s1, necessary for writing ancillary variables
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', write_map_output%s0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', write_map_output%s1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', write_map_output%evap, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume1', write_map_output%vol1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', write_map_output%hs, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', write_map_output%hu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', write_map_output%anc, success)
+      if (write_map_output%anc > 0) then
+         if (write_map_output%s1 <= 0) then
+            write_map_output%s1 = 1 ! Enable writing s1, necessary for writing ancillary variables
          end if
-         if (jamaphs <= 0) then
-            jamaphs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
+         if (write_map_output%hs <= 0) then
+            write_map_output%hs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
          end if
-         if (jamaphu <= 0) then
-            jamaphu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
+         if (write_map_output%hu <= 0) then
+            write_map_output%hu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
          end if
       end if
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', jamapFlowAnalysis, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', jamapau, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', jamapu1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', jamapu0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', write_map_output%flow_analysis, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', write_map_output%au, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', write_map_output%u1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', write_map_output%u0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', write_map_output%ucvec, success)
       !
-      if (jawave == WAVE_SWAN_ONLINE .and. jamapucvec == 0) then ! only needed for 2 way coupling
-         jamapucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
+      if (jawave == WAVE_SWAN_ONLINE .and. write_map_output%ucvec == 0) then ! only needed for 2 way coupling
+         write_map_output%ucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
       end if
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', jamapucmag, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', jamapucqvec, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', jamapww1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', jamaprho, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', jamapviu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', jamapdiu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', jamapq1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', jamapq1main, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', write_map_output%ucmag, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', write_map_output%ucqvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', write_map_output%ww1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', write_map_output%rho, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', write_map_output%viu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', write_map_output%diu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', write_map_output%q1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', write_map_output%q1main, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', write_map_output%fw, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', write_map_output%spir, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', write_map_output%numlimdt, success)
       call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy', jamap_chezy_elements, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', jamap_chezy_links, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_constituents', jamapconst, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_sediment', jamapsed, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', jamaptur, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', jamaptrachy, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_calibration', jamapcali, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_rain', jamaprain, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_interception', jamapicept, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_wind', jamapwind, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_windstress', jamapwindstress, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', jamap_airdensity, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', write_map_output%taucurrent, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_z0', write_map_output%z0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_salinity', write_map_output%sal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy', write_map_output%chezy_elements, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', write_map_output%chezy_links, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', write_map_output%chezy_input, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_temperature', write_map_output%tem, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_constituents', write_map_output%const, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sediment', write_map_output%sed, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', write_map_output%tur, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', write_map_output%trachy, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_calibration', write_map_output%cali, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_rain', write_map_output%rain, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_interception', write_map_output%icept, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_wind', write_map_output%wind, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_windstress', write_map_output%windstress, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', write_map_output%airdensity, success)
       call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', jamaptidep, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', jamapselfal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', jamapIntTidesDiss, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', jamapPure1D_debug, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waves', jamapwav, success)
-      jamapwav_hwav = 0
-      jamapwav_twav = 0
-      jamapwav_phiwav = 0
-      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', jamapdtcell, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', write_map_output%tidep, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', write_map_output%selfal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', write_map_output%int_tides_diss, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_nudging', write_map_output%nudge, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', write_map_output%pure_1D_debug, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waves', write_map_output%wav, success)
+      write_map_output%wav_hwav = 0
+      write_map_output%wav_twav = 0
+      write_map_output%wav_phiwav = 0
+      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', write_map_output%dtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', jamapTimeWetOnGround, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', jamapFreeboard, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', jamapDepthOnGround, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', jamapVolOnGround, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', jamapTotalInflow1d2d, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', jamapTotalInflowLat, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', jamapS1Gradient, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', write_map_output%time_wet_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', write_map_output%free_board, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', write_map_output%depth_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', write_map_output%vol_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', write_map_output%total_inflow_1d2d, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', write_map_output%total_inflow_lat, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', write_map_output%s1gradient, success)
       call prop_get(md_ptr, 'output', 'Writek_CdWind', jatekcd, success)
       call prop_get(md_ptr, 'output', 'Wrirst_bnd', jarstbnd, success)
       call prop_get(md_ptr, 'output', 'Writepart_domain', japartdomain, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_bnd', jamapbnd, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_bnd', write_map_output%bnd, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_Qin', write_map_output%qin, success)
       call prop_get(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
-      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
-      if (kmx == 0 .and. jamapwqbot3d == 1) then
-         jamapwqbot3d = 0 ! Disable wqbot3d map output if model is 2D
+      call prop_get(md_ptr, 'output', 'Wrimap_NearField', write_map_output%near_field, success)
+      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', write_map_output%wqbot3d, success)
+      if (kmx == 0 .and. write_map_output%wqbot3d == 1) then
+         write_map_output%wqbot3d = 0 ! Disable wqbot3d map output if model is 2D
       end if
 
       ! Output
@@ -2169,7 +2169,7 @@ contains
       call scan_input_tree(md_ptr, 'Output', config_set_his)
       call scan_input_tree(md_ptr, 'Output', config_set_map)
       call scan_input_tree(md_ptr, 'Output', config_set_clm)
-      !if (md_mapformat /= 4 .and. jamapwindstress /= 0) then
+      !if (md_mapformat /= 4 .and. write_map_output%windstress /= 0) then
       !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
       !endif
 
@@ -2180,13 +2180,13 @@ contains
 
       ! If no temperature is involved, then do not write temperature to output map/his files
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
-         jamaptem = 0
+         write_map_output%tem = 0
          write_his_output%tem = 0
       end if
 
       ! If no salinity is involved, then do not write salinity to output map/his files
       if (jasal < 1) then
-         jamapsal = 0
+         write_map_output%sal = 0
          write_his_output%sal = 0
       end if
 
@@ -3942,17 +3942,17 @@ contains
 
       call set_properties(prop_ptr, 'Output', config_set_map)
 
-      if (jamapbnd > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_bnd', jamapbnd, 'Write boundary points to map file (1: yes, 0: no)')
+      if (write_map_output%bnd > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_bnd', write_map_output%bnd, 'Write boundary points to map file (1: yes, 0: no)')
       end if
-      if (jamapqin > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_Qin', jamapqin, 'Write sum of all influxes to map file (1: yes, 0: no)')
+      if (write_map_output%qin > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_Qin', write_map_output%qin, 'Write sum of all influxes to map file (1: yes, 0: no)')
       end if
       if (jaeverydt > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_every_dt', jaeverydt, 'Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes')
       end if
-      if (jamapwqbot3d > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
+      if (write_map_output%wqbot3d > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', write_map_output%wqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
       end if
       if (writeall .or. epswetout /= 0.1_dp) then
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')

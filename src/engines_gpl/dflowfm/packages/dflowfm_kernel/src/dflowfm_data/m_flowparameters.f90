@@ -37,7 +37,7 @@ module m_flowparameters
    use m_waveconst
    use messagehandling, only: idlen
 
-   implicit none(type, external)
+   implicit none
 
    integer :: itstep !< time step 0=no, 1 =step_explicit, 2=step_reduce, 3=step_jacobi, 4: explicit
    integer :: iadvec !< adv type, 0=no, 1 = Wenneker vol, qu-udzt array, 2=1, function,
@@ -518,77 +518,80 @@ module m_flowparameters
       integer :: long_culvert !< Write long culverts parameters to his file, 0: no, 1:yes
    end type WriteHisOutput
 
-   type(WriteHisOutput) :: write_his_output
+   type :: WriteMapOutput
+      integer :: s0 !< previous step water levels to map file, 0: no, 1: yes
+      integer :: s1 !< water levels to map file, 0: no, 1: yes
+      integer :: evap !< evaporation to map file, 0: no, 1: yes
+      integer :: vol1 !< Volumes to map file, 0: no, 1: yes
+      integer :: hs !< Water depths to map file, 0: no, 1: yes
+      integer :: hu !< Water depths on u point to map file, 0: no, 1: yes
+      integer :: anc !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
+      integer :: au !< Normal flow areas au to map file, 0: no, 1: yes
+      integer :: u1 !< velocities to map file, 0: no, 1: yes
+      integer :: u0 !< previous step velocities to map file, 0: no, 1: yes
+      integer :: ucvec !< velocity vectors to map file, 0: no, 1: yes
+      integer :: ucmag !< velocity vector magnitude to map file, 0: no, 1: yes
+      integer :: ucqvec !< velocity vectors (discharge based) to map file, 0: no, 1: yes
+      integer :: ww1 !< upward velocity on flow link to map file, 0: no, 1: yes
+      integer :: numlimdt !< Write the total number of times a cell was Courant limiting to map file, 0: no, 1: yes
+      integer :: taucurrent !< shear stress to map file, 0: no, 1: yes
+      integer :: z0 !< roughness heights to map file, 0: no, 1: yes
+      integer :: chezy_elements !< chezy roughness in flow elements to map file, 0: no, 1: yes
+      integer :: chezy_links !< chezy roughness on flow links to map file, 0: no, 1: yes
+      integer :: chezy_input !< chezy input roughness on flow links to map file, 0: no, 1: yes
+      integer :: sal !< salinity to map file, 0: no, 1: yes
+      integer :: tem !< temperature to map file, 0: no, 1: yes
+      integer :: cali !< roughness calibration factors to map file, 0: no, 1: yes
+      integer :: const !< constituents to map file, 0: no, 1: yes
+      integer :: sed !< sediment fractions to map file, 0: no, 1: yes
+      integer :: tur !< k, eps and vicww to map file, 0: no, 1: yes
+      integer :: trachy !< trachytope roughnesses to map file, 0: no, 1: yes
+      integer :: rain !< wind velocities to map file, 0: no, 1: yes
+      integer :: icept !< Interception layer to map file, 0: no, 1: yes
+      integer :: wind !< wind velocities to map file, 0: no, 1: yes
+      integer :: windstress !< wind stress to map file, 0: no, 1: yes
+      integer :: airdensity !< air density to map file, 0: no, 1: yes
+      integer :: viu !< horizontal viscosity to map file, 0: no, 1: yes
+      integer :: diu !< horizontal diffusity to map file, 0: no, 1: yes
+      integer :: rho !< flow density to map file, 0: no, 1: yes
+      integer :: q1 !< flow flux to map file, 0: no, 1: yes
+      integer :: q1main !< main channel flow flux to map file, 0: no, 1: yes
+      integer :: fw !< fixed weir energy loss to map file, 0: no, 1: yes
+      integer :: spir !< spiral flow to map file, 0: no, 1: yes
+      integer :: tidep !< tidal potential to map file, 0: no, 1: yes
+      integer :: selfal !< self attraction and loading potential to map file, 0: no, 1: yes
+      integer :: int_tides_diss !< internal tides dissipation to map file, 0: no, 1: yes
+      integer :: nudge !< output nudging to map file, 0: no, 1: yes
+      integer :: pure_1d_debug !< additional Pure1D debugging output to map file, 0: no, 1: yes
+      integer :: wav !< output waves to map file, 0: no, 1: yes
+      integer :: wav_hwav !< output waves to map file for variable hwav,   0: no, 1: yes
+      integer :: wav_twav !< output waves to map file for variable twav,   0: no, 1: yes
+      integer :: wav_phiwav !< output waves to map file for variable phiwav, 0: no, 1: yes
+      integer :: dtcell !< output time steps per cell based on CFL
+      integer :: time_wet_on_ground !< output to map file the cumulative time when water is above ground level, 0: no, 1: yes
+      integer :: free_board !< output freeboard to map file, 0: no, 1: yes
+      integer :: depth_on_ground !< output waterdepth above ground level, 0: no, 1: yes
+      integer :: vol_on_ground !< output volume above ground level, 0: no, 1: yes
+      integer :: total_inflow_1d2d !< output total 1d2d inflow to map file, 0: no, 1: yes
+      integer :: total_inflow_lat !< output total lateral inflow to map file, 0: no, 1: yes
+      integer :: s1gradient !< output water level gradient to map file, 0: no, 1: yes
+      integer :: bnd !< Includes boundary points in map output
+      integer :: qin !< Includes sum of all influxes in map output
+      integer :: flow_analysis !< Write flow analysis output to map file
+      integer :: near_field !< Nearfield related output
+      integer :: wqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
+   end type WriteMapOutput
 
-   ! written to map file yes or no
-   integer :: jamaps0 !< previous step water levels to map file, 0: no, 1: yes
-   integer :: jamaps1 !< water levels to map file, 0: no, 1: yes
-   integer :: jamapevap !< evaporation to map file, 0: no, 1: yes
-   integer :: jamapvol1 !< Volumes to map file, 0: no, 1: yes
-   integer :: jamaphs !< Water depths to map file, 0: no, 1: yes
-   integer :: jamaphu !< Water depths on u point to map file, 0: no, 1: yes
-   integer :: jamapanc !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
-   integer :: jamapau !< Normal flow areas au to map file, 0: no, 1: yes
-   integer :: jamapu1 !< velocities to map file, 0: no, 1: yes
-   integer :: jamapu0 !< previous step velocities to map file, 0: no, 1: yes
-   integer :: jamapucvec !< velocity vectors to map file, 0: no, 1: yes
-   integer :: jamapucmag !< velocity vector magnitude to map file, 0: no, 1: yes
-   integer :: jamapucqvec !< velocity vectors (discharge based) to map file, 0: no, 1: yes
-   integer :: jamapww1 !< upward velocity on flow link to map file, 0: no, 1: yes
-   integer :: jamapnumlimdt !< Write the total number of times a cell was Courant limiting to map file, 0: no, 1: yes
+   type(WriteHisOutput) :: write_his_output
+   type(WriteMapOutput) :: write_map_output
+
    logical :: write_numlimdt_file !< Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file
-   integer :: jamaptaucurrent !< shear stress to map file, 0: no, 1: yes
-   integer :: jamapz0 !< roughness heights to map file, 0: no, 1: yes
-   integer :: jamap_chezy_elements !< chezy roughness in flow elements to map file, 0: no, 1: yes
-   integer :: jamap_chezy_links !< chezy roughness on flow links to map file, 0: no, 1: yes
-   integer :: jamap_chezy_input !< chezy input roughness on flow links to map file, 0: no, 1: yes
-   integer :: jamapsal !< salinity to map file, 0: no, 1: yes
-   integer :: jamaptem !< temperature to map file, 0: no, 1: yes
-   integer :: jamapcali !< roughness calibration factors to map file, 0: no, 1: yes
-   integer :: jamapconst !< constituents to map file, 0: no, 1: yes
-   integer :: jamapsed !< sediment fractions to map file, 0: no, 1: yes
-   integer :: jamaptur !< k, eps and vicww to map file, 0: no, 1: yes
-   integer :: jamaptrachy !< trachytope roughnesses to map file, 0: no, 1: yes
-   integer :: jamaprain !< wind velocities to map file, 0: no, 1: yes
-   integer :: jamapicept !< Interception layer to map file, 0: no, 1: yes
-   integer :: jamapwind !< wind velocities to map file, 0: no, 1: yes
-   integer :: jamapwindstress !< wind stress to map file, 0: no, 1: yes
-   integer :: jamap_airdensity !< air density to mao file, 0: no, 1: yes
-   integer :: jamapviu !< horizontal viscosity to map file, 0: no, 1: yes
-   integer :: jamapdiu !< horizontal diffusity to map file, 0: no, 1: yes
-   integer :: jamaprho !< flow density to map file, 0: no, 1: yes
-   integer :: jamapq1 !< flow flux to map file, 0: no, 1: yes
-   integer :: jamapq1main !< main channel flow flux to map file, 0: no, 1: yes
-   integer :: jamapfw !< fixed weir energy loss to map file, 0: no, 1: yes
-   integer :: jamapspir !< spiral flow to map file, 0: no, 1: yes
-   integer :: jamaptidep !< tidal potential to map file, 0: no, 1: yes
-   integer :: jamapselfal !< self attraction and loading potential to map file, 0: no, 1: yes
-   integer :: jamapIntTidesDiss !< internal tides dissipation to map file, 0: no, 1: yes
-   integer :: jamapNudge !< output nudging to map file, 0: no, 1: yes
-   integer :: jamapPure1D_debug !< additional Pure1D debugging output to map file, 0: no, 1: yes
-   integer :: jamapwav !< output waves to map file, 0: no, 1: yes
-   integer :: jamapwav_hwav !< output waves to map file for variable hwav,   0: no, 1: yes
-   integer :: jamapwav_twav !< output waves to map file for variable twav,   0: no, 1: yes
-   integer :: jamapwav_phiwav !< output waves to map file for variable phiwav, 0: no, 1: yes
-   integer :: jamapdtcell !< output time steps per cell based on CFL
-   integer :: jamapTimeWetOnGround !< output to map file the cumulative time when water is above ground level, 0: no, 1: yes
-   integer :: jamapFreeboard !< output freeboard to map file, 0: no, 1: yes
-   integer :: jamapDepthOnGround !< output waterdepth above ground level, 0: no, 1: yes
-   integer :: jamapVolOnGround !< output volume above ground level, 0: no, 1: yes
-   integer :: jamapTotalInflow1d2d !< output total 1d2d inflow to map file, 0: no, 1: yes
-   integer :: jamapTotalInflowLat !< output total lateral inflow to map file, 0: no, 1: yes
-   integer :: jamapS1Gradient !< output water level gradient to map file, 0: no, 1: yes
    integer :: jatekcd !< tek output with wind cd coefficients, 0=no (default), 1=yes
    integer :: jafullgridoutput !< 0: static layer positions, 1: time- and space-varying grid layer data, 2: time- and space-varying grid layer data with CF-bounds
    integer :: jaeulervel !< 0:GLM, 1:Euler velocities
    integer :: jamombal !< records some gradients of primitives 0:no, 1:yes
    integer :: jarstbnd !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes
-   integer :: jamapbnd !< Includes boundary points in map output
-   integer :: jamapqin !< Includes sum of all influxes in map output
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
-   integer :: jamapFlowAnalysis !< Write flow analysis output to map file
-   integer :: jamapNearField !< Nearfield related output
-   integer :: jamapwqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
 
 ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
@@ -986,71 +989,71 @@ contains
       write_his_output%crs_sediment = 1
       write_his_output%dred = 1
       write_his_output%waq = 1
-      jamaps0 = 1
-      jamaps1 = 1
-      jamapevap = 0
-      jamapvol1 = 0
-      jamaphs = 1
-      jamaphu = 0
-      jamapanc = 0
-      jamapau = 0
-      jamapu0 = 1
-      jamapu1 = 1
-      jamapucvec = 1
-      jamapucmag = 1
-      jamapucqvec = 0
-      jamapww1 = 1
-      jamapnumlimdt = 1
+      write_map_output%s0 = 1
+      write_map_output%s1 = 1
+      write_map_output%evap = 0
+      write_map_output%vol1 = 0
+      write_map_output%hs = 1
+      write_map_output%hu = 0
+      write_map_output%anc = 0
+      write_map_output%au = 0
+      write_map_output%u0 = 1
+      write_map_output%u1 = 1
+      write_map_output%ucvec = 1
+      write_map_output%ucmag = 1
+      write_map_output%ucqvec = 0
+      write_map_output%ww1 = 1
+      write_map_output%numlimdt = 1
       write_numlimdt_file = .false.
-      jamaptaucurrent = 1
-      jamapz0 = 0
-      jamap_chezy_elements = 0
-      jamap_chezy_links = 0
-      jamap_chezy_input = 0
-      jamapsal = 1
-      jamaptem = 1
-      jamapconst = 1
-      jamapsed = 1
-      jamaptur = 1
-      jamaptrachy = 1
-      jamapcali = 1
-      jamaprain = 0
-      jamapicept = 0
-      jamapwind = 1
-      jamapwindstress = 0
-      jamap_airdensity = 0
-      jamapviu = 1
-      jamapdiu = 1
-      jamaprho = 1
-      jamapq1 = 1
-      jamapq1main = 0
-      jamapfw = 0
-      jamapspir = 1
-      jamaptidep = 1
-      jamapselfal = 1
-      jamapIntTidesDiss = 1
-      jamapNudge = 1
-      jamapPure1D_debug = 0
-      jamapwav = 1
-      jamapdtcell = 0
-      jamapTimeWetOnGround = 0
-      jamapFreeboard = 0
-      jamapDepthOnGround = 0
-      jamapVolOnGround = 0
-      jamapTotalInflow1d2d = 0
-      jamapTotalInflowLat = 0
-      jamapS1Gradient = 0
-      jamapFlowAnalysis = 0
-      jamapNearField = 0
-      jamapwqbot3d = 0
+      write_map_output%taucurrent = 1
+      write_map_output%z0 = 0
+      write_map_output%chezy_elements = 0
+      write_map_output%chezy_links = 0
+      write_map_output%chezy_input = 0
+      write_map_output%sal = 1
+      write_map_output%tem = 1
+      write_map_output%const = 1
+      write_map_output%sed = 1
+      write_map_output%tur = 1
+      write_map_output%trachy = 1
+      write_map_output%cali = 1
+      write_map_output%rain = 0
+      write_map_output%icept = 0
+      write_map_output%wind = 1
+      write_map_output%windstress = 0
+      write_map_output%airdensity = 0
+      write_map_output%viu = 1
+      write_map_output%diu = 1
+      write_map_output%rho = 1
+      write_map_output%q1 = 1
+      write_map_output%q1main = 0
+      write_map_output%fw = 0
+      write_map_output%spir = 1
+      write_map_output%tidep = 1
+      write_map_output%selfal = 1
+      write_map_output%int_tides_diss = 1
+      write_map_output%nudge = 1
+      write_map_output%pure_1D_debug = 0
+      write_map_output%wav = 1
+      write_map_output%dtcell = 0
+      write_map_output%time_wet_on_ground = 0
+      write_map_output%free_board = 0
+      write_map_output%depth_on_ground = 0
+      write_map_output%vol_on_ground = 0
+      write_map_output%total_inflow_1d2d = 0
+      write_map_output%total_inflow_lat = 0
+      write_map_output%s1gradient = 0
+      write_map_output%flow_analysis = 0
+      write_map_output%near_field = 0
+      write_map_output%wqbot3d = 0
 
       jarstignorebl = 0
 
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       jatekcd = 1 ! wind cd coeffs on tek
       jarstbnd = 1
-      jamapbnd = 0
-      jamapqin = 0
+      write_map_output%bnd = 0
+      write_map_output%qin = 0
       jaeverydt = 0
       japartdomain = 1
       jashp_crs = 0

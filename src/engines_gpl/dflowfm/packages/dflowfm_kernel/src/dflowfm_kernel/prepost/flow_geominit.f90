@@ -1208,7 +1208,7 @@ contains
          call setisnbnodisnblin() ! set signarray isnbnod for left and rightneighbouring uc1d.
       end if
 
-      if (network%loaded .and. ndxi - ndx2d > 0 .and. (jamapTimeWetOnGround > 0 .or. jamapFreeboard > 0 .or. jamapDepthOnGround > 0 .or. jamapVolOnGround > 0)) then
+      if (network%loaded .and. ndxi - ndx2d > 0 .and. (write_map_output%time_wet_on_ground > 0 .or. write_map_output%free_board > 0 .or. write_map_output%depth_on_ground > 0 .or. write_map_output%vol_on_ground > 0)) then
          call set_ground_level_for_1d_nodes(network) ! set ground level for 1d nodes
       end if
 

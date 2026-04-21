@@ -44,7 +44,7 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, kmx, kbotc, kmxc, layertype, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, write_map_output, mxlaydefs, kmx, kbotc, kmxc, layertype, &
                         LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
                         zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
@@ -59,7 +59,7 @@ contains
                         tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
                         z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
                         au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
-                        u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, &
+                        u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
                         soiltempthick, write_his_output, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
@@ -128,7 +128,7 @@ contains
       call realloc(cfs, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('cfs(ndx)', ierr, ndx)
 
-      if (jamapFlowAnalysis > 0) then
+      if (write_map_output%flow_analysis > 0) then
          call realloc(negativeDepths, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('negativeDepths(ndx)', ierr, ndx)
          call realloc(negativeDepths_cum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -980,11 +980,11 @@ contains
          call aerr('cftrt(numl,3)', ierr, numl)
       end if
 
-      if (jamap_chezy_elements > 0) then
+      if (write_map_output%chezy_elements > 0) then
          call realloc(czs, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czs(ndx)', ierr, ndx)
       end if
-      if (jamap_chezy_links > 0) then
+      if (write_map_output%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
       end if

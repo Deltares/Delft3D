@@ -38,7 +38,7 @@ contains
 
    subroutine poshcheck(key)
       use m_rcirc, only: rcirc
-      use m_flow, only: s1, hu, nodneg, jposhchk, s0, vol1, vol0, dp, testdryflood, epshu, numnodneg, au, eps6, u1, jamapflowanalysis, negativedepths
+      use m_flow, only: s1, hu, nodneg, jposhchk, s0, vol1, vol0, dp, testdryflood, epshu, numnodneg, au, eps6, u1, write_map_output, negativedepths
       use m_flowgeom, only: bl, ndxi, kfs, xz, yz, nd
       use m_flowtimes, only: dts, dsetb, dtmin
       use m_partitioninfo, only: jampi, reduce_int_max
@@ -173,7 +173,7 @@ contains
                      end select
                   end if
 
-                  if (jamapFlowAnalysis > 0) then
+                  if (write_map_output%flow_analysis > 0) then
                      negativeDepths(node) = negativeDepths(node) + 1
                   end if
 
