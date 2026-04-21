@@ -48,7 +48,7 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getLbotLtop
       use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
-      use precision_basics, only: comparereal
+      use precision_basics, only: equal
 
       integer, intent(in) :: L !< Horizontal link index
 
@@ -125,7 +125,7 @@ contains
       krr = 0
       do k = 0, 2 * kmx_eff + 1
          j = 0
-         if (comparereal(polal(kll), polar(krr)) == 0) then ! Values are equal, consume both pointers
+         if (equal(polal(kll), polar(krr))) then ! Values are equal, consume both pointers
             point(k) = polal(kll)
             kll = kll + 1
             krr = krr + 1
@@ -361,7 +361,7 @@ contains
             farea = -max(point(kf) - ztop, 0.0_dp) & ! to find the flux area between the flux pieces and the sigma layer
                     + max(point(kf) - zbot, 0.0_dp) &
                     - max(point(kf - 1) - zbot, 0.0_dp)
-            if (farea < 0.0_dp) then
+            if (equal(farea, 0.0_dp)) then
                kfmax1 = kf
                exit
             end if
