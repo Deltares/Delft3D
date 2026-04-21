@@ -1462,10 +1462,7 @@ contains
          end do
       end if
 
-      ! fill concentrations and masses (not transported, only first time), bottom area and latitude (when possible)
       if (first) then
-         first = .false.
-
          ipoisurf = arrpoi(iisfun) + (isfsurf - 1) * num_cells
          do kk = 1, Ndxi
             call getkbotktopmax(kk, kb, kt, ktmax)
@@ -1473,26 +1470,13 @@ contains
                process_space_real(ipoisurf + k - kbx) = ba(kk)
             end do
          end do
-   
+
          if (isflatitude > 0) then
             ipoilat = arrpoi(iisfun) + (isflatitude - 1) * num_cells
             do kk = 1, Ndxi
                call getkbotktopmax(kk, kb, kt, ktmax)
                do k = kb, ktmax
                   process_space_real(ipoilat + k - kbx) = yz(kk)
-               end do
-            end do
-         end if
-
-         if (num_substances_total > num_substances_transported) then
-            do kk = 1, Ndxi
-               call getkbotktopmax(kk, kb, kt, ktmax)
-               do k = kb, ktmax
-                  do isys = num_substances_transported + 1, num_substances_total
-                     iwqbot = isys2wqbot(isys)
-                     process_space_real(ipoiconc + (k - kbx) * (num_substances_total) + isys - 1) = wqbot(iwqbot, k)
-                     amass(isys, k - kbx + 1) = wqbot(iwqbot, k) * ba(kk)
-                  end do
                end do
             end do
          end if
@@ -1692,6 +1676,23 @@ contains
             end do
          end if
       end do
+
+      ! fill concentrations and masses (not transported, only first time)
+      if (first) then
+         first = .false.
+         if (num_substances_total > num_substances_transported) then
+            do kk = 1, Ndxi
+               call getkbotktopmax(kk, kb, kt, ktmax)
+               do k = kb, ktmax
+                  do isys = num_substances_transported + 1, num_substances_total
+                     iwqbot = isys2wqbot(isys)
+                     process_space_real(ipoiconc + (k - kbx) * (num_substances_total) + isys - 1) = wqbot(iwqbot, k)
+                     amass(isys, k - kbx + 1) = wqbot(iwqbot, k) * ba(kk)
+                  end do
+               end do
+            end do
+         end if
+      end if
 
       ! set iknmrk array
       if (kmx > 0) then
