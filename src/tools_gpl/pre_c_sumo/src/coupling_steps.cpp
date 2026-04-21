@@ -1,6 +1,7 @@
 #include "coupling_steps.hpp"
 
 #include <precice/precice.hpp>
+#include <algorithm>
 #include <format>
 #include <print>
 #include <ranges>
@@ -13,6 +14,68 @@
 
 namespace pre_c_sumo
 {
+
+    namespace
+    {
+        FarFieldPoint2D makePoint2DFrom3D(const parsing_utils::Point2D& position,
+                                        const std::vector<double>& csumo_3d_coordinates,
+                                        const std::vector<double>& rho_3d,
+                                        const int point_index,
+                                        const int layers_per_point,
+                                        const std::vector<double>& constituents)
+        {
+            FarFieldPoint2D point{};
+            point.position = position;
+
+            if (layers_per_point <= 0)
+            {
+                point.layers.push_back(FarFieldLayer{
+                    .z_coordinate = 0.0,
+                    .x_velocity = 0.0,
+                    .y_velocity = 0.0,
+                    .density = 1000.0,
+                    .constituents = constituents,
+                });
+                point.water_depth = 0.0;
+                return point;
+            }
+
+            point.layers.reserve(static_cast<std::size_t>(layers_per_point));
+            double z_min = 0.0;
+            double z_max = 0.0;
+
+            for (int layer = 0; layer < layers_per_point; ++layer)
+            {
+                const auto global_index = (point_index * layers_per_point) + layer;
+                const auto global_index_size = static_cast<std::size_t>(global_index);
+                const auto coord_index = global_index_size * 3;
+                const double z = (coord_index + 2) < csumo_3d_coordinates.size() ? csumo_3d_coordinates[coord_index + 2]
+                                                                                  : 0.0;
+                const double rho = global_index_size < rho_3d.size() ? rho_3d[global_index_size] : 1000.0;
+
+                if (layer == 0)
+                {
+                    z_min = z;
+                    z_max = z;
+                }
+                else
+                {
+                    z_min = std::min(z_min, z);
+                    z_max = std::max(z_max, z);
+                }
+
+                point.layers.push_back(FarFieldLayer{
+                    .z_coordinate = z,
+                    .x_velocity = 0.0,
+                    .y_velocity = 0.0,
+                    .density = rho,
+                    .constituents = constituents,
+                });
+            }
+            point.water_depth = z_max - z_min;
+            return point;
+        }
+    } // namespace
 
     std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
         const std::string_view csumo_settings_file_name)
@@ -30,34 +93,52 @@ namespace pre_c_sumo
         return csumo_settings;
     }
 
-    void receiveFFData() { std::println("Receiving far-field data..."); }
-
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings)
+    void receiveFFData(PreCICEState& precice_state)
     {
-        // TODO: obtain these from the far-field model / coupling state
+        std::println("Receiving far-field data...");
+        if (precice_state.csumo_3d_node_ids.empty())
+        {
+            std::println("CSUMO 3D mesh is empty");
+            return;
+        }
+
+        const auto dt = precice_state.participant->getMaxTimeStepSize();
+        precice_state.participant->readData(PreCICEState::csumo_3d_nodes_name, PreCICEState::rho_name,
+                                            precice_state.csumo_3d_node_ids, dt, precice_state.rho_3d);
+    }
+
+    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, const PreCICEState& precice_state)
+    {
         const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
         const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
+        const int layers_per_point = precice_state.current_3d_layer_count;
+
+        int point_index = 0;
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
-            // TODO: populate from received far-field data instead of placeholders
-            auto make_point = [&constituents =
-                                   diffuser.discharge.constituents](const parsing_utils::Point2D& position) {
-                return FarFieldPoint2D{
-                    .position = position,
-                    .water_depth = 0.0, // TODO: obtain from far-field
-                    .layers = {FarFieldLayer{.z_coordinate = 0.0,
-                                             .x_velocity = 0.0,
-                                             .y_velocity = 0.0,
-                                             .density = 1000.0,
-                                             .constituents = constituents}}, // TODO: obtain layered data from far-field
-                };
-            };
 
-            const auto ambient_points =
-                diffuser.ambient_positions | std::views::transform(make_point) | std::ranges::to<std::vector>();
+            const auto diffuser_point =
+                makePoint2DFrom3D(diffuser.position, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
+                                point_index++, layers_per_point, diffuser.discharge.constituents);
+
+            std::optional<FarFieldPoint2D> intake_point = std::nullopt;
+            if (diffuser.intake.has_value())
+            {
+                intake_point = makePoint2DFrom3D(*diffuser.intake, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
+                                               point_index++, layers_per_point, diffuser.discharge.constituents);
+            }
+
+            std::vector<FarFieldPoint2D> ambient_points;
+            ambient_points.reserve(diffuser.ambient_positions.size());
+            for (const auto& ambient_position : diffuser.ambient_positions)
+            {
+                ambient_points.push_back(makePoint2DFrom3D(ambient_position, precice_state.csumo_3d_coordinates,
+                                                         precice_state.rho_3d, point_index++, layers_per_point,
+                                                         diffuser.discharge.constituents));
+            }
 
             const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
                                                                          subgrid_model_nr, current_time_seconds / 60.0);
@@ -73,8 +154,8 @@ namespace pre_c_sumo
                 .subgrid_model_nr = subgrid_model_nr,
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
-                .diffuser = make_point(diffuser.position),
-                .intake = diffuser.intake.has_value() ? std::optional{make_point(*diffuser.intake)} : std::nullopt,
+                .diffuser = diffuser_point,
+                .intake = intake_point,
                 .ambient_points = ambient_points,
             };
 

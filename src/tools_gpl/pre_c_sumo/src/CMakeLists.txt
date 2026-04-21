@@ -6,6 +6,7 @@ set(source_files
     FF2NF_writer.cpp
     parsing_utils.cpp
     precice_state.cpp
+    precice_mesh_manager.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
@@ -18,6 +19,7 @@ set(header_files
     ${include_dir}/parsing_utils.hpp
     ${include_dir}/parsing_types.hpp
     ${include_dir}/precice_state.hpp
+    ${include_dir}/precice_mesh_manager.hpp
 )
 
 add_library(pre_c_sumo_lib ${source_files} ${header_files})

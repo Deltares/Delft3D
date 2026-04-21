@@ -1,0 +1,54 @@
+digraph PreCSumoPreCiceMeshLifecycle {
+  rankdir=TB;
+  splines=true;
+  nodesep=0.55;
+  ranksep=0.7;
+  fontname="Helvetica";
+  fontsize=10;
+
+  node [shape=box, style="rounded,filled", fillcolor="#EEF5FF", color="#6B85A6", fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#4A607A"];
+
+  subgraph cluster_setup {
+    label="Startup / Initialization";
+    style="rounded,filled";
+    color="#C6D9F1";
+    fillcolor="#F7FAFF";
+
+    s1 [label="1. Read C-SUMO settings\nreadCsumoSettingsFile(...)\n(positions from XYdiff/XYintake/XYambient)"];
+    s2 [label="2. Construct Participant\nprecice::Participant(...) "];
+    s3 [label="3. Build 2D points\nbuild2DMeshPointsFromSettings(...)\n=> base_2d_coordinates"];
+    s4 [label="4. Register meshes\nregister2DAndInitial3DMeshes(...)\nsetMeshVertices(2D) + setMeshVertices(3D, 1 layer)"];
+    s6 [label="5. initialize()"];
+    s7 [label="6. Read initial 2D data\nreadInitial2DData(...)\nread bed_level_z + water_level_z"];
+    s8 [label="7. Build operational 3D mesh\nrecreate3DMeshFrom2DLevels(..., 10)\nresetMesh + setMeshVertices"];
+
+    s1 -> s2 -> s3 -> s4 -> s6 -> s7 -> s8;
+  }
+
+  subgraph cluster_loop {
+    label="Coupling Loop";
+    style="rounded,filled";
+    color="#B8E0C0";
+    fillcolor="#F6FFF7";
+
+    l1 [label="A. getMaxTimeStepSize()"];
+    l2 [label="B. Read 3D coupling data\nreceiveFFData(state)\n(read rho on csumo_3d_nodes)"];
+    l3 [label="C. Write FF2NF + NF/FF exchange\nwriteFF2NFFiles(...) + existing steps"];
+    l4 [label="D. Read 2D levels\nread bed_level_z + water_level_z"];
+    l5a [label="E. Reset and rebuild 3D mesh\nrecreate3DMeshFrom2DLevels(...)"];
+    l6 [label="F. advance(dt)"];
+    l5 [label="isCouplingOngoing()?", shape=diamond, fillcolor="#FFF5E6", color="#C59553"];
+
+    l1 -> l2 -> l3 -> l4 -> l5a -> l6 -> l5;
+    l5 -> l1 [label="yes"];
+  }
+
+  s8 -> l1;
+  l5 -> end [label="no", style=dashed];
+  end [label="Finish", shape=oval, fillcolor="#EDEDED", color="#A0A0A0"];
+
+  layers [shape=note, fillcolor="#FFFDF0", color="#C8B66A", label="Shared 3D layer policy:\n0 => empty mesh\n1 => z_min only\nN>=2 => uniform z in [z_min, z_max]"];
+  s8 -> layers [style=dashed];
+  l5a -> layers [style=dashed];
+}

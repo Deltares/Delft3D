@@ -38,7 +38,7 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receiveFFData(const PreCICEState& precice_state);
+    void receiveFFData(PreCICEState& precice_state);
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
@@ -48,7 +48,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings);
+    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, const PreCICEState& precice_state);
 
     /**
      * @brief Wait until NF2FF files become available.
