@@ -15424,11 +15424,9 @@ contains
 
    end subroutine get_layer_data_ugrid
 
-!> Writes the unstructured flow geometry in UGRID format to an already opened netCDF dataset.
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: t_fm_flowgeom, bl, bl_min, ba
-      !use network_data
       use m_sferic
       use m_missing
       use netcdf
@@ -15456,6 +15454,7 @@ contains
       integer :: ndxndxi
       integer :: last_1d
       integer :: ndx1d
+      integer :: numFace2d !< Number of 2D faces in the output set (may be < ndx2d when a cell mask is active).
 
       integer, allocatable :: contacts(:, :), contacttype(:)
       integer :: layer_count, layer_type
@@ -15481,11 +15480,6 @@ contains
       n1d2dcontacts = 0
       n1dedges = 0
       start_index = 1
-
-      !if (ndxi <= 0) then
-      !   call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
-      !   return
-      !end if
 
       if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
 
@@ -15552,6 +15546,8 @@ contains
       end if
 
       flowgeom = build_flowgeom(jabndnd_)
+      numFace2d = flowgeom%mesh2d%numFace
+
       associate (ndx2d => flowgeom%ndx2d, &
                  z2dn => flowgeom%mesh2d%nodez, &
                  ndx1db => flowgeom%ndx1db, &
@@ -15561,8 +15557,6 @@ contains
          call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
          if (flowgeom%ndx2d > 0 .and. ja2D_) then
-            ! Build the 2D mesh geometry object (node re-mapping, edge/face connectivity, coordinates).
-
             ! Attach layer data (write-time concern: depends on jafou_ / sigma-z path).
             flowgeom%mesh2d%num_layers = layer_count
             flowgeom%mesh2d%layertype = layer_type
@@ -15587,7 +15581,8 @@ contains
             end if
             last_1d = merge(flowgeom%ndx1db, flowgeom%ndxi, jabndnd_ == 1)
 
-            ! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models
+            ! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models.
+            ! face_map gathers the correct subset when a cell mask is active (identity otherwise).
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
                ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
                ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
@@ -15601,31 +15596,22 @@ contains
                   ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
 
                   ierr = nf90_enddef(ncid)
-                  ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(1:ndx2d))
-                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(1:ndx2d))
+                  ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(flowgeom%face_map))
+                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(flowgeom%face_map))
                   ierr = nf90_redef(ncid)
                else
                   ierr = nf90_enddef(ncid)
-                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(1:ndx2d))
+                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(flowgeom%face_map))
                   ierr = nf90_redef(ncid)
                end if
             end if
 
          end if
 
-         ! NOTE: UNST-1318: backwards compatibility: we write zk values in flowgeom/map file since DELFT3DFM still needs it.
-         !       The def_var is inside io_ugrid (needs to be removed), but the put_var is only here.
-         ! TODO: below would be better than def_var inside io_ugrid:
-         ! TODO: ierr = unc_def_var_map(mapids, mapids%id_netnodez(:),   nf90_double, UNC_LOC_CN, 'node_z', '', 'Bed level at grid nodes', 'm', 0)
-         ! ierr = ug_inq_varid(mapids%ncid, mapids%id_tsp%meshids1d, 'node_z', mapids%id_netnodez(1)) ! TODO: AvD: 1D UGRID not entirely yet.
          ierr = ug_inq_varid(ncid, id_tsp%meshids2d, 'node_z', id_tsp%id_netnodez(2))
-         ! ierr = ug_inq_varid(mapids%ncid, mapids%id_tsp%meshids3d, 'node_z', mapids%id_netnodez(3)) ! TODO: AvD: 3D UGRID not yet
-
-!   ierr = unc_def_var_map(mapids, mapids%id_flowelemcontourx(:), nf90_double, UNC_LOC_S, 'FlowElemContour_x', '', '', 'm', [ id_flowelemcontourptsdim, id_seddim, -1 ]).
 
          ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemba(:), nf90_double, UNC_LOC_S, 'flowelem_ba', 'cell_area', '', 'm2', 0, jabndnd=jabndnd_)
          ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelembl(:), nf90_double, UNC_LOC_S, 'flowelem_bl', 'altitude', 'flow element center bedlevel (bl)', 'm', 0, jabndnd=jabndnd_)
-         ! ierr = nf90_put_att(igeomfile, id_flowelembl, 'positive',      'up') ! Not allowed for non-coordinate variables
 
          !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0 .and. ja2D_) then
@@ -15640,16 +15626,16 @@ contains
          ierr = nf90_enddef(ncid)
 
          !-- Start data writing (time-independent data) ------------
-         !Flow cell cc coordinates (only 1D + internal 2D)
+         ! 1D: index range is unaffected by any 2D cell mask.
          if (ndx1d > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d)) ! TODO: AvD: handle 1D/2D boundaries
-            ! TODO: AvD: UNST-1318: handle 1d zk as well
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d))
          end if
+         ! 2D: gather through face_map so that a reduced output set is written correctly.
          if (ndx2d > 0 .and. ja2D_) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(1:ndx2d)) ! TODO: AvD: handle 1D/2D boundaries
-            ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(flowgeom%face_map))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(flowgeom%face_map))
+            ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn) ! already remapped inside build_flowgeom_2d
          end if
 
          ! Put the contacts
@@ -15657,7 +15643,6 @@ contains
             ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
          end if
 
-         ! TODO: AvD: also edge_type for 1D
          if (associated(layer_zs)) then
             deallocate (layer_zs)
          end if
@@ -15671,25 +15656,19 @@ contains
             deallocate (contacttype)
          end if
 
-         ! TODO: AvD:
-         ! * in WAVE: handle the obsolete 'nFlowElemWithBnd'/'nFlowElem' difference
-         ! * for WAVE: add FlowElem_zcc back in com file.
-         ! * for parallel: add 'FlowElemDomain', 'FlowLinkDomain', 'FlowElemGlobalNr'
          ! domain numbers
          if (jampi == 1) then
-            ! FlowElemDomain
+            ! 2D: gather through face_map for reduced output set compatibility.
             if (ndx2d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(1:ndx2d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(flowgeom%face_map))
             end if
-            ! FlowElemGlobalNr
             if (ndx2d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(1:ndx2d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(flowgeom%face_map))
             end if
-            ! FlowElemDomain
+            ! 1D: index range unaffected by 2D cell mask.
             if (ndx1d > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
             end if
-            ! FlowElemGlobalNr
             if (ndx1d > 0) then
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
             end if
@@ -15705,10 +15684,8 @@ contains
             call timstop(handle_extra(69))
          end if
 
-         !call readyy('Writing flow geometry data',-1d0)
          return
 
-         ! Possible error.
       end associate
    end subroutine unc_write_flowgeom_filepointer_ugrid
 
