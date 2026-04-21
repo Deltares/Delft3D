@@ -72,7 +72,7 @@ static void test_ini_parse_int() {
   ival = ini_parse_int("42", &status);
   TEST_ASSERT_MESSAGE(status == INI_OK, "Conversion to int failed.");
   TEST_ASSERT_INT_WITHIN(0, 42, ival);
- 
+
   // Attempting to convert non-number should fail.
   ival = ini_parse_int("text", &status);
   TEST_ASSERT(status == INI_FAIL);

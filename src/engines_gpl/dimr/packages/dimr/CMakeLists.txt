@@ -63,7 +63,6 @@ if (WIN32)
                            dimr_lib) 
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
-    target_compile_definitions(${executable_name} PRIVATE $<$<CONFIG:DEBUG>:_DEBUG>)
     
     target_include_directories(${executable_name} 
                                 PRIVATE  

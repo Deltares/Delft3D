@@ -28,21 +28,22 @@
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class aggregation
-{
-public:
-	aggregation() {};
-	virtual ~aggregation(void) {};
+        class aggregation
+        {
+        public:
+            aggregation() {};
+            virtual ~aggregation(void) {};
 
-	virtual int getNStep() = 0;
-	virtual void aggregate(std::vector<double> &largeArray, std::vector<double> &smallArray, bool accumulative = true) = 0;
-	virtual void deaggregate(std::vector<double> &smallArray, double in0, std::vector<double> &largeArray) = 0;
-};
+            virtual int getNStep() = 0;
+            virtual void aggregate(std::vector<double>& largeArray, std::vector<double>& smallArray,
+                                   bool accumulative = true) = 0;
+            virtual void deaggregate(std::vector<double>& smallArray, double in0, std::vector<double>& largeArray) = 0;
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
 #endif /* AGGREGATION_H */

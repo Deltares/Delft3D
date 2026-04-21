@@ -38,14 +38,9 @@ object Sign : BuildType({
         }
         step {
             name = "Sign"
-            type = "AzureSigningTemplate"
+            type = "AzureSigningTemplate2"
             param("workingDir", "to_sign")
             param("binaryPatterns", "*.exe,*.dll")
-            param("timestampUrl", "http://timestamp.acs.microsoft.com")
-            param("digestAlgorithm", "SHA256")
-            param("timestampDigestAlgorithm", "SHA256")
-            param("dlibPath", """C:\\ProgramData\\Microsoft\\MicrosoftTrustedSigningClientTools\\Azure.CodeSigning.Dlib.dll""")
-            param("metadataPath", """C:\\ProgramData\\Microsoft\\MicrosoftTrustedSigningClientTools\\metadata.json""")
         }
         powerShell {
             name = "Move back signed binaries"
@@ -110,6 +105,7 @@ object Sign : BuildType({
                     token = "%github_deltares-service-account_access_token%"
                 }
                 filterSourceBranch = "+:*"
+                filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER_OR_COLLABORATOR
                 ignoreDrafts = true
             }
         }

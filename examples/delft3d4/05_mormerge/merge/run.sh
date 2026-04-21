@@ -9,7 +9,7 @@
 # 
 
 if [ -z "$1" ]; then
-    dimrset_bin=../../../build_all/lnx64/bin
+    dimrset_bin=../../../install_all/lnx64/bin
 else
     dimrset_bin=$1
 fi

@@ -31,22 +31,22 @@ using namespace rtctools::schematization::rules;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class ruleReferenceTrigger : public trigger
-{
-public:
-	ruleReferenceTrigger(string id, string name, rule *r);
-	~ruleReferenceTrigger(void);
+            class ruleReferenceTrigger : public trigger
+            {
+            public:
+                ruleReferenceTrigger(string id, string name, rule* r);
+                ~ruleReferenceTrigger(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
-#endif //RULE_REFERENCE_TRIGGER_H
+#endif // RULE_REFERENCE_TRIGGER_H

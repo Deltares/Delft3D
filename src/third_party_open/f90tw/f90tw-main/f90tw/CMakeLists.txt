@@ -69,9 +69,10 @@ function(F90TWF2H INFILES OUTFILE)
 
     if(WIN32)
         find_program(POWERSHELL_EXE NAMES "powershell.exe" REQUIRED)
+        string(REPLACE ";" "," F2H_INFILES_PS "${F2H_INFILES}")
         add_custom_command(
             OUTPUT ${F2H_OUTFILE}
-            COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]*', '' | Set-Content -Path ${F2H_OUTFILE} \" "
+            COMMAND ${POWERSHELL_EXE} -Command " \" ( ( cat ${F2H_INFILES_PS} ) | select-string -pattern '^[ \\t]*[!cC][\\$$][fF]90[tT][wW]' ) -replace '^[ \\t]*[!cC][\\$$][fF]90[tT][wW][ \\t]*', '' | Set-Content -Path ${F2H_OUTFILE} \" "
             DEPENDS ${F2H_INFILES}
             COMMENT "process ${F2H_INFILES}"
         )
@@ -145,6 +146,7 @@ function(F90TWTEST NAME)
     target_link_libraries(${NAME} PRIVATE ${FLIBNAME} f90tw_gtest)
     target_compile_definitions(${NAME} PUBLIC ${FTW_DEFINITIONS})
     add_dependencies(${NAME} ${FLIBNAME})
+    
     set_target_properties(${NAME} PROPERTIES FOLDER ${FTW_VISUAL_STUDIO_PATH}/cpp)
 
     if(WIN32)

@@ -27,12 +27,11 @@
 // $Id$
 // $HeadURL$
 #ifndef _EX_INCLUDED
-#   define COMMAND_STRING_LENGHT 512
-#   define _EX_INCLUDED
-    extern BVoid EX_process            ( BText, BInt4 );
-    extern BVoid EX_process_with_parms ( BText, BText [] , BInt4 );
-    extern BVoid EX_process_with_vars  ( BText, BText [] , BInt4 );
-    extern BVoid EX_process_with_vars_and_parms (
-                               BText, BText [], BText [] , BInt4 );
-    extern BVoid EX_write_variables_to_pipe ( FILE *, BText [] );
+    #define COMMAND_STRING_LENGHT 512
+    #define _EX_INCLUDED
+extern BVoid EX_process(BText, BInt4);
+extern BVoid EX_process_with_parms(BText, BText[], BInt4);
+extern BVoid EX_process_with_vars(BText, BText[], BInt4);
+extern BVoid EX_process_with_vars_and_parms(BText, BText[], BText[], BInt4);
+extern BVoid EX_write_variables_to_pipe(FILE*, BText[]);
 #endif

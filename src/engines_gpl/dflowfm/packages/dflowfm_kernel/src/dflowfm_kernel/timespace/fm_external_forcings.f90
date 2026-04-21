@@ -89,9 +89,28 @@ module fm_external_forcings
          integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
       end subroutine
    end interface
+   
+   interface
+      module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
+         use tree_data_types, only: tree_data
+
+         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+         character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+         real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+         real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+         real(kind=dp), dimension(2), intent(out) :: z_range_source
+         real(kind=dp), dimension(2), intent(out) :: z_range_sink
+         
+         logical :: is_successful
+      end function sourcesink_parse_coordinates
+   end interface
 
    public :: set_external_forcings
    public :: calculate_wind_stresses
+   public :: sourcesink_parse_coordinates
 
    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
 
@@ -99,7 +118,7 @@ contains
 
 !> print_error_message
    subroutine print_error_message(time_in_seconds)
-      use m_ec_message, only: dumpECMessageStack
+      use m_ec_message, only: dump_ec_message_stack
       use unstruc_messages, only: callback_msg
       use messagehandling, only: LEVEL_WARN, mess
 
@@ -109,7 +128,7 @@ contains
 
       write (tmpstr, '(f22.11)') time_in_seconds
       call mess(LEVEL_WARN, 'Error while updating meteo/structure forcing at time='//trim(tmpstr))
-      tmpstr = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      tmpstr = dump_ec_message_stack(LEVEL_WARN, callback_msg)
    end subroutine print_error_message
 
 !> prepare_wind_model_data
@@ -1186,7 +1205,7 @@ contains
       character(len=*), intent(in) :: filename !< Name of data file for current quantity.
       integer, intent(in) :: filetype !< File type of current quantity.
       integer, intent(in) :: method !< Time-interpolation method for current quantity.
-      character(len=1), intent(in) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(in) :: operand !< Operand w.r.t. previous data
       character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
@@ -1334,6 +1353,7 @@ contains
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
       use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
@@ -1416,7 +1436,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
                                                  filetype=uniform, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -1427,7 +1447,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
                                                  filetype=bcascii, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -2650,10 +2670,10 @@ contains
          end do
       end if
 
-      if (jaSecchisp > 0) then
+      if (secchi_depth_is_spatially_varying) then
          do n = 1, ndx
-            if (Secchisp(n) == dmiss) then
-               Secchisp(n) = Secchidepth
+            if (spatial_secchi_depth(n) == dmiss) then
+               spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
       end if
