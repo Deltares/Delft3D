@@ -298,11 +298,12 @@ static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const ds
 
     lock->constituent_lock[c] = c_lock_new;
 
-    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++)
+    for (unsigned int i = 0; i < to_lake_volumes->num_active_cells; i++) {
       lock->results3d.constituent_to_lake[c][to_lake_volumes->first_active_cell + i] = c_to_lake;
-
-    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++)
+    }
+    for (unsigned int i = 0; i < to_sea_volumes->num_active_cells; i++) {
       lock->results3d.constituent_to_sea[c][to_sea_volumes->first_active_cell + i] = c_to_sea;
+    }
   }
 }
 
@@ -571,10 +572,8 @@ static int sealock_collect_layers(sealock_state_t *lock) {
   // (kept current via set_var) into every layer of the constituent arrays so that
   // sealock_step_constituents_phase_wise and sealock_distribute_cycle_average_constituent_results see consistent data.
   for (unsigned int i = 0; i < lock->from_lake_volumes.num_volumes; i++) {
-    lock->parameters3d.constituent_lake[TEMPERATURE_CONSTITUENT_SLOT][i] =
-        lock->parameters.temperature_lake;
-    lock->parameters3d.constituent_sea[TEMPERATURE_CONSTITUENT_SLOT][i] =
-        lock->parameters.temperature_sea;
+    lock->parameters3d.constituent_lake[TEMPERATURE_CONSTITUENT_SLOT][i] = lock->parameters.temperature_lake;
+    lock->parameters3d.constituent_sea[TEMPERATURE_CONSTITUENT_SLOT][i] = lock->parameters.temperature_sea;
   }
 
   return SEALOCK_OK;

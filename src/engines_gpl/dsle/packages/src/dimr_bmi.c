@@ -91,13 +91,22 @@ void copy_key(const char *src, char *dst) {
 // Checks if a previously retrieved (sub) key matches a defined key.
 inline static int match_key(char *key, char *defined_key) { return !strcmp(key, defined_key); }
 
+// Returns a pointer to the constituent name after the prefix, or NULL if no match.
+static inline char *match_key_prefix(char *key, const char *prefix) {
+  size_t length = strlen(prefix);
+  if (strncmp(key, prefix, length) == 0) {
+    return &key[length];
+  }
+  return NULL;
+}
+
 // Looks up 'name' in the lock's constituent name registry.
 // Registers it in the next free slot if not found.
 // Returns the constituent index, or -1 when MAX_NUM_CONSTITUENTS is exceeded.
-static int find_or_register_constituent(sealock_state_t *lock, const char *name) {
+static unsigned int find_or_register_constituent(sealock_state_t *lock, const char *name) {
   for (unsigned int c = 0; c < lock->num_constituents; c++) {
     if (lock->constituent_names[c] && strcmp(lock->constituent_names[c], name) == 0) {
-      return (int)c;
+      return c;
     }
   }
   if (lock->num_constituents >= MAX_NUM_CONSTITUENTS-1) {
@@ -105,7 +114,7 @@ static int find_or_register_constituent(sealock_state_t *lock, const char *name)
               MAX_NUM_CONSTITUENTS, name);
     return -1;
   }
-  int c = (int)lock->num_constituents++;
+  unsigned int c = lock->num_constituents++;
   lock->constituent_names[c] = strdup(name); // owns the string, safe after keystr goes out of scope
   log_info("Registered constituent '%s' at index %d\n", name, c);
   return c;
@@ -121,6 +130,7 @@ int set_var(const char *key, void *src_ptr) {
   char *quantity = NULL;
   char *vartype = NULL;
   char *lock_id = NULL;
+  char *constituent = NULL;
 
   if (src_ptr == NULL) {
     log_debug("set_var('%s') called with NULL src_ptr, ignoring.\n", key);
@@ -170,16 +180,14 @@ int set_var(const char *key, void *src_ptr) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_lake;
   } else if (match_key(quantity, "temperature_sea")) {
     dest_ptr = &config.locks[lock_index].parameters.temperature_sea;
-  } else if (strncmp(quantity, "constituent_lake_", 17) == 0) {
-    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 17);
-    if (c < 0)
-      return DIMR_BMI_FAILURE;
+  } else if ((constituent = match_key_prefix(quantity, "constituent_lake_"))) {
+    int c = find_or_register_constituent(&config.locks[lock_index], constituent);
+    if (c < 0) return DIMR_BMI_FAILURE;
     dest_ptr = config.locks[lock_index].parameters3d.constituent_lake[c];
     dest_len = config.locks[lock_index].from_lake_volumes.num_volumes;
-  } else if (strncmp(quantity, "constituent_sea_", 16) == 0) {
-    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 16);
-    if (c < 0)
-      return DIMR_BMI_FAILURE;
+  } else if ((constituent = match_key_prefix(quantity, "constituent_sea_"))) {
+    int c = find_or_register_constituent(&config.locks[lock_index], constituent);
+    if (c < 0) return DIMR_BMI_FAILURE;
     dest_ptr = config.locks[lock_index].parameters3d.constituent_sea[c];
     dest_len = config.locks[lock_index].from_sea_volumes.num_volumes;
   } else {
@@ -210,6 +218,7 @@ int get_var(const char *key, void **dst_ptr) {
   char *quantity = NULL;
   char *vartype = NULL;
   char *lock_id = NULL;
+  char *constituent = NULL;
   char keystr[BMI_MAX_VAR_NAME + 1];
 
   log_info("%s( \"%s\", %p ) called.\n", __func__, key, dst_ptr);
@@ -281,26 +290,22 @@ int get_var(const char *key, void **dst_ptr) {
   } else if (match_key(quantity, "temperature_to_sea")) {
     source_ptr = config.locks[lock_index].results3d.constituent_to_sea[TEMPERATURE_CONSTITUENT_SLOT];
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
-  } else if (strncmp(quantity, "constituent_to_lake_", 20) == 0) {
-    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 20);
-    if (c < 0)
-      return DIMR_BMI_FAILURE;
+  } else if ((constituent = match_key_prefix(quantity, "constituent_to_lake_"))) {
+    int c = find_or_register_constituent(&config.locks[lock_index], constituent);
+    if (c < 0) return DIMR_BMI_FAILURE;
     source_ptr = config.locks[lock_index].results3d.constituent_to_lake[c];
-  } else if (strncmp(quantity, "constituent_to_sea_", 19) == 0) {
-    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 19);
-    if (c < 0)
-      return DIMR_BMI_FAILURE;
+  } else if ((constituent = match_key_prefix(quantity, "constituent_to_sea_"))) {
+    int c = find_or_register_constituent(&config.locks[lock_index], constituent);
+    if (c < 0) return DIMR_BMI_FAILURE;
     source_ptr = config.locks[lock_index].results3d.constituent_to_sea[c];
-  } else if (strncmp(quantity, "constituent_lake_", 17) == 0) {
-    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 17);
-    if (c < 0)
-      return DIMR_BMI_FAILURE;
+  } else if ((constituent = match_key_prefix(quantity, "constituent_lake_"))) {
+    int c = find_or_register_constituent(&config.locks[lock_index], constituent);
+    if (c < 0) return DIMR_BMI_FAILURE;
     source_ptr = config.locks[lock_index].parameters3d.constituent_lake[c];
     source_len = config.locks[lock_index].from_lake_volumes.num_volumes;
-  } else if (strncmp(quantity, "constituent_sea_", 16) == 0) {
-    int c = find_or_register_constituent(&config.locks[lock_index], quantity + 16);
-    if (c < 0)
-      return DIMR_BMI_FAILURE;
+  } else if ((constituent = match_key_prefix(quantity, "constituent_sea_"))) {
+    int c = find_or_register_constituent(&config.locks[lock_index], constituent);
+    if (c < 0) return DIMR_BMI_FAILURE;
     source_ptr = config.locks[lock_index].parameters3d.constituent_sea[c];
     source_len = config.locks[lock_index].from_sea_volumes.num_volumes;
   } else {

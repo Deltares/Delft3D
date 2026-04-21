@@ -103,7 +103,7 @@ typedef struct sealock_state_struct {
   dfm_volumes_t to_sea_volumes;
 
   unsigned int num_constituents;
-  char *constituent_names[MAX_NUM_CONSTITUENTS];
+  const char *constituent_names[MAX_NUM_CONSTITUENTS];
   double constituent_lock[MAX_NUM_CONSTITUENTS];
   dfm_parameters3d_t parameters3d;
   // Results split into layers
