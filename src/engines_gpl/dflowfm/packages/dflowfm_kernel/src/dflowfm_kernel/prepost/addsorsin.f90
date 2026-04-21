@@ -249,7 +249,7 @@ contains
          if (z_source(2) /= dmiss) then
             source_sink_z_top(2, num_source_sink) = z_source(2)
          end if
-         ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)
+         ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
          if (num_points > 1) then
             call normalin(source_sink_x(num_source_sink, num_points - 1), source_sink_y(num_source_sink, num_points - 1), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), source_sink_discharge_cosine(2, num_source_sink), source_sink_discharge_sine(2, num_source_sink), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
          end if
