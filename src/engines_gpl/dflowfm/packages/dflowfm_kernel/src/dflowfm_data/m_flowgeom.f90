@@ -79,16 +79,6 @@ module m_flowgeom
          integer, allocatable :: contacttype(:)   !< 1D2D contact type per contact entry.
          integer :: n1d2dcontacts = 0             !< Number of 1D2D contacts.
 
-         integer :: ndx2d = 0 !< Number of 2D flow cells (= NUMP).
-         integer :: ndxi = 0 !< Number of internal flow cells (2D + 1D).
-         integer :: ndx = 0 !< Total number of flow nodes (internal + boundary).
-         integer :: ndx1db = 0 !< Number of flow nodes including 1D boundaries.
-
-         integer :: lnx1d = 0 !< Number of 1D flow links.
-         integer :: lnxi = 0 !< Number of internal flow links (1D + 2D).
-         integer :: lnx1db = 0 !< Number of flow links including 1D boundaries.
-         integer :: lnx = 0 !< Total number of flow links (internal + boundary).
-
       end type t_fm_flowgeom
 
       real(kind=dp) :: bamin !< minimum 2D cell area

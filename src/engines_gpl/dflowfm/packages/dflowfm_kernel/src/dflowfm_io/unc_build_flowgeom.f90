@@ -148,7 +148,7 @@ contains
    end subroutine get_2d_edge_data
 
      subroutine build_flowgeom_2d(flowgeom, jabndnd, cell_mask)
-      use m_flowgeom, only: ndxi, ndx, ndx2d, ndx1db, nd, xz, yz, lnx1d, lnxi, lnx1db, lnx, t_fm_flowgeom
+      use m_flowgeom, only: ndxi, ndx, ndx2d, nd, xz, yz, t_fm_flowgeom
       use network_data, only: xk, yk, zk, kc, numk, numl, numl1d
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
@@ -360,11 +360,6 @@ contains
             if (kc(nn) > 0) flowgeom%node_map(kc(nn)) = nn
          end do
 
-         flowgeom%ndx2d  = ndx2d;  flowgeom%ndxi   = ndxi
-         flowgeom%ndx1db = ndx1db; flowgeom%ndx    = ndx
-         flowgeom%lnx1d  = lnx1d;  flowgeom%lnxi   = lnxi
-         flowgeom%lnx1db = lnx1db; flowgeom%lnx    = lnx
-
          flowgeom%mesh2d%meshName        = mesh2dname
          flowgeom%mesh2d%dim             = 2
          flowgeom%mesh2d%start_index     = 1
@@ -389,8 +384,8 @@ contains
 !! flowgeom%node_map_1d(i) gives the full-grid flow node index for output 1D node i.
 !! flowgeom%edgetoln(i) gives the full-grid flow link number for output 1D edge i.
    subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
-      use m_flowgeom, only: ndxi, ndx, ndx2d, ndx1db, nd, xz, yz, &
-                            lnx1d, lnxi, lnx1db, lnx, ln, kcu, xu, yu, ln2lne, t_fm_flowgeom
+      use m_flowgeom, only: ndxi, ndx2d, ndx1db, nd, xz, yz, &
+                            lnx1d, lnxi, lnx1db, ln, kcu, xu, yu, ln2lne, t_fm_flowgeom
       use m_save_ugrid_state, only: mesh1dname, meshgeom1d
       use network_data, only: nodepermutation, Lperm
       use m_missing, only: dmiss
@@ -620,14 +615,6 @@ contains
 
       ! --- Populate t_fm_flowgeom scalars ---
       flowgeom%n1d2dcontacts = n1d2dcontacts
-      flowgeom%ndx2d = ndx2d
-      flowgeom%ndxi = ndxi
-      flowgeom%ndx1db = ndx1db
-      flowgeom%ndx = ndx
-      flowgeom%lnx1d = lnx1d
-      flowgeom%lnxi = lnxi
-      flowgeom%lnx1db = lnx1db
-      flowgeom%lnx = lnx
 
    end subroutine build_flowgeom_1d
 

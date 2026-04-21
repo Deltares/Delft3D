@@ -15691,7 +15691,7 @@ contains
       real(kind=dp), pointer :: interface_zs_(:)
 
       integer, allocatable :: face_nodes(:, :)
-      integer :: ndx1d, start_index, ierr, i, n, nn
+      integer :: start_index, ierr, i, n, nn
       integer :: id_flowelemcontourptsdim, id_flowelemcontourx, id_flowelemcontoury
       integer :: numContPts
       real(kind=dp), allocatable :: work2(:, :)
@@ -15734,13 +15734,10 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      associate (mesh1d => flowgeom1d%mesh1D, &
-                 ndx2d => flowgeom1d%ndx2d, &
-                 n1d2dcontacts => flowgeom1d%n1d2dcontacts)
+      associate (mesh1d         => flowgeom1d%mesh1D, &
+                 n1d2dcontacts  => flowgeom1d%n1d2dcontacts)
 
-         ndx1d = flowgeom1d%ndxi - ndx2d
-
-         if (ndx1d <= 0) goto 999
+         if (mesh1d%numNode <= 0) goto 999
 
          ! --- Copy mappings into id_tsp (needed by unc_put_var_map for time-dep writes) ---
          call realloc(id_tsp%edgetoln, size(flowgeom1d%edgetoln), keepExisting=.false., fill=0)
