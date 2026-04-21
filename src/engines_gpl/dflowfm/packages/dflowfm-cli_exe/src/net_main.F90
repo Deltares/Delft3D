@@ -135,7 +135,7 @@ program unstruc
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
    real(kind=dp) :: tstartall, tstopall
-
+   
    call wall_clock_time(tstartall)
 #if HAVE_DISPLAY==0
 ! For dflowfm-cli executable, switch off all GUI calls here at *runtime*,

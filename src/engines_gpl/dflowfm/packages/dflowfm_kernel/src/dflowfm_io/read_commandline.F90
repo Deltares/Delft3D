@@ -62,6 +62,7 @@ contains
       use m_missing, only: jadelnetlinktyp
       use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       use precice, only: precicef_get_version_information
+      use precice_adapter_facade, only: precice_adapter_enable
       implicit none(type, external)
 
       integer :: istat !< Returned result status
@@ -237,9 +238,8 @@ contains
          case ('precice')
             call precicef_get_version_information(msgbuf, LEN(msgbuf))
             write (*, '(a)') 'Using preCICE: '//trim(msgbuf)
-            istat = DFM_EXIT ! For now: return and just exit without any error.
-            return
-            
+            call precice_adapter_enable()
+
          case ('h', 'help')
             call print_help_commandline()
             istat = DFM_EXIT ! Exit without any error.
