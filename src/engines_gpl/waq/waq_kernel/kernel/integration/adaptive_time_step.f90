@@ -481,6 +481,8 @@ contains
                             dlt_mass = d * (bound(substance_i, -ifrom) - conc(substance_i, ito))
                             rhs(substance_i, ito) = rhs(substance_i, ito) + dlt_mass
                             dconc2(substance_i, ito) = dconc2(substance_i, ito) + dlt_mass / vto
+
+                            ! Now just determine the contribution of the advective flux to the mass balance, for reporting purposes
                             if (q > 0.0d0) then
                                 dlt_mass = dlt_mass + q * bound(substance_i, -ifrom) * delta_t_box(ibox)
                             else
@@ -493,6 +495,9 @@ contains
                                 if (massbal) amass2(substance_i, 5) = amass2(substance_i, 5) - dlt_mass
                                 if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end if
+                            ! until here determination of mass balance contribution for reporting purposes
+
+
                         end do
                         cycle
                     end if
@@ -512,6 +517,8 @@ contains
                             dlt_mass = d * (conc(substance_i, ifrom) - bound(substance_i, -ito))
                             rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - dlt_mass
                             dconc2(substance_i, ifrom) = dconc2(substance_i, ifrom) - dlt_mass / vfrom
+
+                            ! now just determine the contribution of the advective flow to the mass balance, for reporting purposes
                             if (q > 0.0d0) then
                                 dlt_mass = dlt_mass + q * conc(substance_i, ifrom) * delta_t_box(ibox)
                             else
@@ -524,6 +531,9 @@ contains
                                 if (massbal) amass2(substance_i, 4) = amass2(substance_i, 4) - dlt_mass
                                 if (ipb > 0) dmpq(substance_i, ipb, 2) = dmpq(substance_i, ipb, 2) - dlt_mass
                             end if
+                            ! until here determination of mass balance contribution for reporting purposes
+
+
                         end do
                         cycle
                     end if
@@ -602,7 +612,7 @@ contains
             end do
             if (timon) call timstop(ithand4)
 
-            ! PART2c1: Set the vertical advection of water only for all cells in the boxes of this time step
+            ! PART2c1: Set the vertical ADVECTION of water only for all cells in the boxes of this time step
             ! all columns assigned to the same box are solved simultaneously
             if (timon) call timstrt("implicit ver-step", ithand5)
             do ibox = first_box_smallest_used_dt, last_integr_box, -1
@@ -787,8 +797,14 @@ contains
                 end do
             end do
 
-            ! PART2e: store the final results in the appropriate arrays for next fractional steps
-            ! apply reactions during this fractional step as well for the non cfl risk cells
+            
+            ! PART2e: 
+            ! Apply the reaction terms during the fractional step for all non CFL risk cells in the boxes of this time step
+            ! and then calculate the new concentrations for all cells in the boxes of this time step
+
+
+            ! store the final results in the appropriate arrays for next fractional steps
+            ! apply reactions during this fractional step as well for the non CFL risk cells
             ! and then calculate the new concentrations
             do ibox = first_box_smallest_used_dt, last_integr_box, -1
                 i_cell_begin = count_cells_for_box(ibox + 1) + 1
@@ -920,36 +936,9 @@ contains
                 if (ivpnt(substance_i) > 0) q = velo(ivpnt(substance_i), iq) * a
                 
                 ! assign advective flows q1 and q2: {0, q}
-                if (sw_settling) then         !  additional velocity upwind
-                    if (q > 0.0d0) then
-                        q1 = q
-                        q2 = 0.0d0
-                    else
-                        q1 = 0.0d0
-                        q2 = q
-                    end if
-                else if (iq > num_exchanges .or. (is_bc .and. loword)) then  ! in the bed upwind
-                    if (q > 0.0d0) then
-                        q1 = q
-                        q2 = 0.0d0
-                    else
-                        q1 = 0.0d0
-                        q2 = q
-                    end if
-                else
-                    if (vertical_upwind) then
-                        if (q > 0.0d0) then  ! upwind
-                            q1 = q
-                            q2 = 0.0d0
-                        else
-                            q1 = 0.0d0
-                            q2 = q
-                        end if
-                    else
-                        q1 = q * f1                 ! central velocities in the water phase
-                        q2 = q * f2
-                    end if
-                end if
+                call assign_additional_vertical_advective_fluxes(q, iq, num_exchanges, is_bc, loword, &
+                                                  sw_settling, vertical_upwind, f1, f2, &
+                                                  q1, q2)
 
                 ! diffusive flow
                 d = e
@@ -1076,7 +1065,6 @@ contains
                 rhs(substance_i, cell_i) = rhs(substance_i, cell_i) / diag(substance_i, cell_i)
             end do
         end do
-
         ! Mass balances ?
         if (.not. massbal) goto 9998
 
@@ -1234,6 +1222,14 @@ contains
         end do
         deriv = 0.0d0
         if (timon) call timstop(ithandl)
+        
+        !! DEBUG
+        do cell_i = 1, num_cells
+            write (789, *) cell_i, rhs(2, cell_i)
+            write (889, *) cell_i, conc(2, cell_i)
+        end do
+        
+        !! DEBUG
     end subroutine locally_adaptive_time_step
 
     subroutine parse_scheme_options(file_unit, vertical_upwind, coname, const, disp0q0, &
@@ -2942,6 +2938,44 @@ contains
             end do
             if (timon) call timstop(ithand4)
     end subroutine apply_horizontal_flux_correction
+
+    subroutine assign_additional_vertical_advective_fluxes(q, iq, num_exchanges, is_bc, loword, &
+                                                  sw_settling, vertical_upwind, f1, f2, q1, &
+                                                  q2)
+        !> Assigns additional advective fluxes for settling and bed upwind, and determines upwind or central fluxes for vertical flows.
+        implicit none
+        real(kind = dp), intent(in) :: q !< flow rate through exchange
+        integer(kind = int_wp), intent(in) :: iq !< index of the exchange
+        integer(kind = int_wp), intent(in) :: num_exchanges !< total number of exchanges or flows between cells
+        logical, intent(in) :: is_bc !< flag indicating if the exchange is at a boundary condition
+        logical, intent(in) :: loword !< flag indicating if the low-order scheme is used
+        logical, intent(in) :: sw_settling !< flag indicating if settling is being simulated
+        logical, intent(in) :: vertical_upwind !< flag indicating if upwind scheme is used for vertical flows
+        real(kind = dp), intent(in) :: f1 !< fraction of flow
+        real(kind = dp), intent(in) :: f2 !< fraction of flow
+        real(kind = dp), intent(out) :: q1 !< additional advective flow assigned to 'from' cell
+        real(kind = dp), intent(out) :: q2 !< additional advective flow assigned to 'to' cell
+
+        ! Internal variables
+        logical :: use_upwind_for_vertical_flow !< flag indicating if upwind scheme is used for vertical flows
+
+        use_upwind_for_vertical_flow = sw_settling .or. (iq > num_exchanges) .or. (is_bc .and. loword) .or. vertical_upwind
+
+        ! Determine additional advective fluxes based on flag use_upwind_for_vertical_flow and flow direction
+        if (use_upwind_for_vertical_flow) then
+            if (q > 0.0d0) then
+                q1 = q
+                q2 = 0.0d0
+            else
+                q1 = 0.0d0
+                q2 = q
+            end if
+        else
+            q1 = q * f1
+            q2 = q * f2
+        end if
+        return
+    end subroutine assign_additional_vertical_advective_fluxes
 
     function is_bc_cell(cell_i) result(bc_flag)
         !> Determines if a cell is a boundary condition cell.
