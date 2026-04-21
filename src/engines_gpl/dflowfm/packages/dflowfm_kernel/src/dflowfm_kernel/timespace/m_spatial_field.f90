@@ -46,7 +46,8 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: target_mask_file = ' '     !< Optional polygon file (.pol) masking the target element set. Empty means no masking.
       character(len=INI_VALUE_LEN) :: variable_name = ' '        !< Optional variable name within the forcing file. Only meaningful when is_variable_name_available is .true..
       character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
-      integer :: oper = OPERAND_OVERRIDE                             
+      character(len=INI_VALUE_LEN) :: operand_string = ' '       !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
+      integer :: oper = OPERAND_OVERRIDE                        !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.                            
       real(dp) :: max_search_radius = -1.0_dp                    !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
       logical :: invert_mask = .false.                           !< .true., the mask polygon selection must be inverted.
       logical :: is_variable_name_available = .false.            !< .true. when the forcingVariableName= keyword was present in the block.
@@ -74,7 +75,7 @@ contains
       call prop_get(block_ptr, '', 'interpolationMethod', res%interpolation_method)
       call prop_get(block_ptr, '', 'extrapolationAllowed', res%is_extrapolation_allowed)
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
-      call prop_get(block_ptr, '', 'operand', res%oper)
+      call prop_get(block_ptr, '', 'operand ', res%operand_string)
 
    end function read_spatial_field_block
 
@@ -88,6 +89,7 @@ contains
       use m_wind, only: jaQext
       use string_module, only: strcmpi
       use unstruc_files, only: resolvePath
+      use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
 
       type(t_spatial_field_input), intent(inout) :: input !< The spatial field input to validate; method and filetype are set on success.
       character(len=*), intent(in) :: file_name           !< Name of the ext file, used only in error messages.
@@ -137,6 +139,15 @@ contains
             ']. forcingFile ''', trim(input%forcing_file), ''' has a file extension that conflicts with forcingFileType ''', trim(input%forcing_file_type), '''.'
          call err_flush()
          return
+      end if
+
+      if (len_trim(input%operand_string) > 0) then
+         input%oper = convert_operand_string_to_integer(input%operand_string)
+         if (input%oper == OPERAND_UNKNOWN) then
+            write (msgbuf, '(5a)') 'Invalid block in file ''', file_name, ''': [', group_name, ']. Unknown operand.'
+            call err_flush()
+            return
+         end if
       end if
 
       ! Derive method
