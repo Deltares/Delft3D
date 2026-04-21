@@ -249,6 +249,7 @@ contains
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
+      integer :: ierr
       logical :: mpi_initd
 
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
@@ -290,13 +291,12 @@ contains
          jampi = 0
       end if
 
-#ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
-#endif
       !   make domain number string as soon as possible
       write (sdmn, '(I4.4)') my_rank
 
 #endif
+
+      ierr = init_openmp(md_numthreads, jampi)
 
       ! do this until default has changed
       jaGUI = 0
@@ -1051,7 +1051,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = numsrc
+         shape(1) = num_source_sink
          shape(2) = 3
          return
       case ("observations")
@@ -2275,19 +2275,19 @@ contains
          end if
          select case (field_name)
          case ("discharge")
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + 1))
+            x = c_loc(source_sink_all_discharges(1, item_index))
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1))
+            x = c_loc(source_sink_all_discharges(isalt + 1, item_index))
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1))
+            x = c_loc(source_sink_all_discharges(itemp + 1, item_index))
             return
          end select
          ! Dambreak
@@ -2452,6 +2452,9 @@ contains
 
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN) :: constituent_name, direction_string
+
+      c_lateral_pointer = c_null_ptr
+
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return
@@ -2467,7 +2470,12 @@ contains
          return
       case ("water_level")
          if (.not. average_waterlevels_per_lateral%is_used) then
-            ! Just in time initialization, update will be called at the end of flow_run_some_timesteps.
+            ! The updating of the average water levels is only required, when other engines
+            ! request water levels via BMI. Only then we want the averaging to be performed 
+            ! in flow_run_some_timesteps. This is the only place to identify if water levels
+            ! for laterals is required by other engines.
+            ! average_waterlevels_per_lateral contains the logical is_used, to identify 
+            ! whether this derived type is initialized. 
             call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
                                                             input_variable=s1, &
                                                             weighing_variable=a1, &
@@ -2544,7 +2552,7 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
-      use m_General_Structure, only: update_widths
+      use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
       use string_module, only: str_token
@@ -2747,21 +2755,21 @@ contains
          select case (field_name)
          case ("discharge")
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + 1) = x_0d_double_ptr
+            source_sink_all_discharges(1, item_index) = x_0d_double_ptr
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1) = x_0d_double_ptr
+            source_sink_all_discharges(isalt + 1, item_index) = x_0d_double_ptr
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1) = x_0d_double_ptr
+            source_sink_all_discharges(itemp + 1, item_index) = x_0d_double_ptr
             return
          end select
 

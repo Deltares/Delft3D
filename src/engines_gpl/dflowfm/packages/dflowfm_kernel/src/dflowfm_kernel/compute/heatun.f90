@@ -39,10 +39,11 @@ contains
    subroutine heatun(n, time_in_hours, nominal_solar_radiation)
       use precision, only: dp, comparereal, fp
       use physicalconsts, only: stf, celsius_to_kelvin, kelvin_to_celsius
-      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, sfr, &
-                            soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, secchidepth2, surftempsmofac, &
-                            jadelvappos, zab
-      use m_heatfluxes, only: em, albedo, cpa, jaSecchisp, Secchisp, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
+      use m_physcoef, only: ag, rhomean, backgroundsalinity, backgroundwatertemperature, dalton, epshstem, stanton, secchi_depth, &
+                            soiltempthick, BACKGROUND_AIR_PRESSURE, BACKGROUND_HUMIDITY, BACKGROUND_CLOUDINESS, surftempsmofac, &
+                            jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
+                            DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
+      use m_heatfluxes, only: em, albedo, cpa, secchi_depth_is_spatially_varying, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
       use m_flowparameters, only: jahisheatflux, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
@@ -75,7 +76,7 @@ contains
       real(kind=dp) :: dexp, zlo, zup, explo, expup, ratio, heat_capacity_water_cell_area, total_heat_flux, total_area
       real(kind=dp) :: weighted_sums(20), free_convection_heat_flux, cell_area_weight, buoyancy_parameter, free_convection_velocity, free_convective_sensible_heat_flux, &
                        free_convective_latent_heat_flux, air_density_surface, air_density_10m
-      real(kind=dp) :: pr2 = 0.49_dp, xnuair = 16.0e-06_dp, cfree = 0.14_dp
+      real(kind=dp) :: pr2 = 0.49_dp, xnuair = 16.0e-06_dp
       real(kind=dp) :: rdry = 287.05e-02_dp, rvap = 461.495e-02_dp, evafac = 1.0_dp
       real(kind=dp) :: heat_transfer_coefficient, cell_area, wxL, wyL, bak2, bottom_water_temperature
       real(kind=dp) :: solar_radiation_soil_heat_flux, soil_to_water_heat_flux, soil_water_heat_transfer_coefficient, rdtsdz
@@ -85,6 +86,7 @@ contains
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
+      real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient_in_cell !< Secchi extinction depth used in cell
 
       real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
 
@@ -204,7 +206,10 @@ contains
          if (solar_radiation_flux > 0.0_dp) then
 
             if (kmx > 0) then ! distribute incoming radiation over water column
-               if (secchidepth2 > 0.0_dp) then
+               diffuse_attenuation_coefficient_in_cell(1) = diffuse_attenuation_coefficient(1)
+               diffuse_attenuation_coefficient_in_cell(2) = diffuse_attenuation_coefficient(2)
+
+               if (secchi_depth(2) > 0.0_dp) then
                   j2 = 2
                else
                   j2 = 1
@@ -212,8 +217,8 @@ contains
 
                do j = j2, 1, -1
 
-                  if (j == 1 .and. jasecchisp > 0) then
-                     zab(1) = secchisp(n) / 1.7_dp
+                  if (j == 1 .and. secchi_depth_is_spatially_varying) then
+                     diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
                   end if
 
                   zlo = 0.0_dp
@@ -223,7 +228,7 @@ contains
                      zup = zlo
                      expup = explo
                      zlo = zws(k_top) - zws(cell_index_3D - 1)
-                     ratio = zlo / zab(j)
+                     ratio = zlo / diffuse_attenuation_coefficient_in_cell(j)
                      if (ratio > 4.0_dp) then !  .or. cell_index_3D.eq.k_bot) then
                         explo = 0.0_dp
                      else
@@ -231,7 +236,7 @@ contains
                      end if
                      dexp = expup - explo
                      if (dexp > 0.0_dp) then
-                        heatsrc0(cell_index_3D) = heatsrc0(cell_index_3D) + sfr(j) * solar_radiation_flux * dexp * ice_free_area_fraction
+                        heatsrc0(cell_index_3D) = heatsrc0(cell_index_3D) + secchi_radiation_fraction(j) * solar_radiation_flux * dexp * ice_free_area_fraction
                      else
                         exit
                      end if
@@ -314,7 +319,7 @@ contains
          buoyancy_parameter = 2.0_dp * ag * (air_density_10m - air_density_surface) / (air_density_surface + air_density_10m)
          if (buoyancy_parameter > 0.0_dp) then ! Ri= (buoyancy_parameter/DZ)/ (du/dz)2, Ri>0.25 stable
             free_convection_velocity = buoyancy_parameter * xnuair / pr2
-            free_convection_velocity = cfree * free_convection_velocity**0.33333333_dp
+            free_convection_velocity = free_convection_coefficient  * free_convection_velocity**0.33333333_dp
             free_convective_sensible_heat_flux = min(0.0_dp, -air_density_in_cell * cpa * free_convection_velocity * (surface_temperature - air_temperature_in_cell) * evafac) ! Free convective sensible heat loss:
             free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * evafac * (air_density_surface + air_density_10m) * 0.5_dp) ! Free convective latent/evaporation heat loss:
             free_convection_heat_flux = free_convective_sensible_heat_flux + free_convective_latent_heat_flux

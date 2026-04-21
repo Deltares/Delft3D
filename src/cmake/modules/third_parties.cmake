@@ -17,6 +17,9 @@ if(WIN32)
     set(petsc_module ${third_party_open_path}/petsc/${cmake_directory})
 endif(WIN32)
 
+# precice
+set(precice_module ${third_party_open_path}/precice)
+
 # triangle_c
 set(triangle_c_module ${third_party_open_path}/triangle/${cmake_directory})
 
@@ -70,3 +73,9 @@ if(WIN32)
     set(pthreads_module ${third_party_open_path}/pthreads)
     set(expat_module ${third_party_open_path}/expat)
 endif(WIN32)
+
+# precicef (preCICE fortran bindings)
+set(precicef_module "${third_party_open_path}/precicef")
+
+# pugixml
+set(pugixml_module ${third_party_open_path}/pugixml)

@@ -66,7 +66,7 @@ contains
       character(len=*), intent(in) :: filename !< File name of meteo data file.
       integer, intent(in) :: filetype !< FM's filetype enumeration.
       integer, intent(in) :: method !< FM's method enumeration.
-      character(len=1), intent(in) :: operand !< FM's operand enumeration.
+      integer, intent(in) :: operand !< FM's operand enumeration.
       real(kind=dp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
       real(kind=dp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
       real(kind=dp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
@@ -144,7 +144,7 @@ contains
       character(len=128) :: txt1, txt2, txt3
       real(kind=dp), pointer :: inputptr => null()
 
-      call clearECMessage()
+      call clear_ec_message()
       ec_addtimespacerelation = .false.
       if (present(quiet)) then
          quiet_ = quiet
@@ -173,7 +173,7 @@ contains
       end if
       call operand_fm_to_ec(operand, ec_operand)
       if (ec_operand == operand_undefined) then
-         write (msgbuf, '(a,a,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
+         write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
             ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
          call err_flush()
          return
@@ -190,7 +190,7 @@ contains
       call get_constituent_name(name, constituent_name, qidname)
       target_name = qidname
 
-      call clearECMessage()
+      call clear_ec_message()
 
       ! ============================================================
       ! If BC-Type file, create filereader and source items here
@@ -202,7 +202,7 @@ contains
                                                   refdate_mjd, tzone, ec_second, fileReaderId)) then
 
             if (.not. quiet_) then
-               message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+               message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
             end if
             message = 'Adding time-space-relation for forcing '''//trim(name)//''', location='''//trim(location)//''', file='''//trim(forcingfile)//''' failed!'
             call mess(LEVEL_ERROR, message)
@@ -237,7 +237,7 @@ contains
                else
                   success = ecSetFileReaderProperties(ecInstancePtr, fileReaderId, ec_filetype, filename, refdate_mjd, tzone, ec_second, name, forcingfile=forcingfile)
                end if
-               !message = dumpECMessageStack(LEVEL_WARN,callback_msg)
+               !message = dump_ec_message_stack(LEVEL_WARN,callback_msg)
                if (.not. success) then
                   goto 1234
                end if
@@ -263,7 +263,7 @@ contains
                   end if
                   if (.not. success) then
                      ! message = ecGetMessage()
-                     ! message = dumpECMessageStack(LEVEL_WARN,callback_msg)
+                     ! message = dump_ec_message_stack(LEVEL_WARN,callback_msg)
                      ! NOTE: do all error dumping (if any) at the end of this routine at label 1234
 
                      ! NOTE: in relation to WAVE: all calling WAVE-related routines now pass quiet=.true. to this addtimespace routine.
@@ -544,7 +544,7 @@ contains
       converterId = ecCreateConverter(ecInstancePtr)
 
       select case (str_tolower(trim(target_name)))
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1d', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreaklevelsandwidths', 'sourcesink_discharge', 'sourcesink_constituentdelta')
+      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1d', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreaklevelsandwidths', 'sourcesink_discharge', 'sourcesink_constituentdelta', 'bubblescreen_discharge')
          ! for the FM 'target' arrays, the index is provided by the caller
          if (.not. present(targetIndex)) then
             message = 'Internal program error: missing targetIndex for quantity '''//trim(target_name)
@@ -965,7 +965,14 @@ contains
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent frictioncoefficient only implemented for NetCDF.')
+            return
+         end if
+      case ('secchidepth')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'secchi_depth'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent secchidepth only implemented for NetCDF.')
             return
          end if
       case ('windxy')
@@ -1579,7 +1586,7 @@ contains
          ! TODO: AvD: I'd rather have a full message stack that will combine EC + meteo + dflowfm, and any caller may print any pending messages.
          ! For now: Print the EC message stack here, and leave the rest to the caller.
          ! TODO: RL: the message below is from m_meteo::message, whereas timespace::getmeteoerror() returns timespace::errormessage. So now this message here is lost/never printed at call site.
-         message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+         message = dump_ec_message_stack(LEVEL_ERROR, callback_msg)
          ! Leave this concluding message for the caller to print or not. (via getmeteoerror())
       end if
       message = 'm_meteo::ec_addtimespacerelation: Error while initializing '''//trim(name)//''' from file: '''//trim(filename)//''''

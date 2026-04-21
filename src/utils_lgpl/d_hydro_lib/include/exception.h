@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: exception.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/exception.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/exception.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro
 //  Exception Object - Definitions
@@ -34,25 +36,15 @@
 //  20 jan 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
+class Exception
+{
+public:
+    Exception(const char* format, ...);
 
-class Exception {
-    public:
-        Exception (
-            bool    fatal,
-            const char *  format,
-            ...
-            );
+    ~Exception(void);
 
-        ~Exception (
-            void
-            );
-
-    public:
-        bool    fatal;
-        char *  message;
-
-    };
-
+public:
+    char* message;
+};

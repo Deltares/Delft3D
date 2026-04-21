@@ -263,17 +263,13 @@ contains
 
             else if (qid == 'secchidepth') then
 
-               if (jaSecchisp == 0) then
-                  if (allocated(Secchisp)) then
-                     deallocate (Secchisp)
-                  end if
-                  allocate (Secchisp(ndx), stat=ierr)
-                  call aerr('Secchisp(ndx)', ierr, lnx)
-                  Secchisp = dmiss
-                  jaSecchisp = 1
+               if (.not. secchi_depth_is_spatially_varying) then
+                  call realloc(spatial_secchi_depth, ndx, fill=dmiss)
+                  call aerr('spatial_secchi_depth(ndx)', ierr, ndx)
+                  secchi_depth_is_spatially_varying = .true.
                end if
 
-               success = timespaceinitialfield(xz, yz, Secchisp, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
+               success = timespaceinitialfield(xz, yz, spatial_secchi_depth, ndx, filename, filetype, method, operand, transformcoef, UNC_LOC_U)
 
             else if (qid == 'advectiontype') then
 
@@ -1239,16 +1235,16 @@ contains
 
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
-               ! 1. Prepare source-sink location (will increment numsrc, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
+               ! 1. Prepare source-sink location (will increment num_source_sink, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
                call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
                   success = .true.
-                  numsrc_old = numsrc_old + 1
+                  num_source_sink_oldfile = num_source_sink_oldfile + 1
                end if
 
-               ! 2. Time series hookup is done below, once counting of all numsrc is done.
+               ! 2. Time series hookup is done below, once counting of all num_source_sink is done.
 
             else if (qid == 'shiptxy') then
                kx = 2
@@ -1515,6 +1511,7 @@ contains
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg, loglevel_StdOut
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1538,7 +1535,7 @@ contains
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
-      if (numsrc < 0) then
+      if (num_source_sink < 0) then
          jahissourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
@@ -1612,7 +1609,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
                   call warn_flush()
@@ -1681,7 +1678,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
                   call warn_flush()
@@ -1840,7 +1837,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = kx = 3
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
                   call warn_flush()
@@ -1951,21 +1948,21 @@ contains
          end do
       end if
 
-      if (numsrc_old > 0) then
-         if (numsrc_old /= numsrc) then
+      if (num_source_sink_oldfile > 0) then
+         if (num_source_sink_oldfile /= num_source_sink) then
             call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
          end if
          ja = 1
          rewind (mext)
          kx = numconst + 1
          ! TODO: UNST-537/UNST-190: we now support timeseries, the constant values should come from new format ext file, not from transformcoef
-         numsrc = 0
+         num_source_sink = 0
          success = .true.
          do while (ja == 1) ! for sorsin again read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
                call resolvePath(filename, md_extfile_dir)
-               numsrc = numsrc + 1
+               num_source_sink = num_source_sink + 1
                ! 2. Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename, '.', back=.true.) - 1
                filename0 = filename(1:L)//'.tim'
@@ -1973,11 +1970,11 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'qsrc, sasrc and tmsrc' values in array qstss on positions: (3*numsrc-2), (3*numsrc-1), and (3*numsrc), respectively.
-                  call clearECMessage()
-                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=numsrc)) then
+                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
+                  call clear_ec_message()
+                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=num_source_sink)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
-                              //'''. for source/sinks failed:'//dumpECMessageStack(LEVEL_WARN, callback_msg)
+                              //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()
                      success = .false.
                   end if

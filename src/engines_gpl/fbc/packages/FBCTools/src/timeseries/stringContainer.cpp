@@ -21,50 +21,47 @@
  * @date 2010
  */
 
-
 #include "stringContainer.h"
 #include <sstream>
 
-using namespace std;
 using namespace rtctools::timeseries;
 
+stringContainer::stringContainer() { container = map<string, string>(); }
 
-stringContainer::stringContainer()
+void stringContainer::setString(int a, int b, int c, string s)
 {
-	container = map<string,string>();
+    stringstream ss;
+    ss << a << "," << b << "," << c;
+
+    if (s.size() > 0)
+    {
+        container[ss.str()] = s;
+    }
 }
 
-void stringContainer::setString(int a, int b, int c, string s) 
+void stringContainer::addString(int a, int b, int c, string s)
 {
-	stringstream ss;
-	ss << a << "," << b << "," << c;
+    stringstream ss;
+    ss << a << "," << b << "," << c;
 
-	if (s.size()>0) {
-		container[ss.str()] = s;
-	}
-}
-
-void stringContainer::addString(int a, int b, int c, string s) 
-{
-	stringstream ss;
-	ss << a << "," << b << "," << c;
-
-	if (s.size()>0) {
-		setString(a, b, c, container[ss.str()]+s);
-	}
+    if (s.size() > 0)
+    {
+        setString(a, b, c, container[ss.str()] + s);
+    }
 }
 
 string stringContainer::getString(int a, int b, int c) const
 {
-	stringstream ss;
-	ss << a << "," << b << "," << c;
-    
-    map<string,string>::const_iterator itr = container.find(ss.str());
-	if (itr!=container.end()) {
-		return itr->second;
-	} else {
-		return string("");
-	}
-}
+    stringstream ss;
+    ss << a << "," << b << "," << c;
 
-	
+    map<string, string>::const_iterator itr = container.find(ss.str());
+    if (itr != container.end())
+    {
+        return itr->second;
+    }
+    else
+    {
+        return string("");
+    }
+}

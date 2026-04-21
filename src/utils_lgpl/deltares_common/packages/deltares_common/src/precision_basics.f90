@@ -84,19 +84,70 @@ module precision_basics
 ! long integer of at least 54 bits:
    integer, parameter, public :: long = selected_int_kind(16)
 
-   interface comparereal
+   interface comparereal !< deprecated, preferably use new equal interface which returns a logical instead of integer
       module procedure comparerealdouble
       module procedure comparerealsingle
       module procedure comparerealdouble_finite_check
       module procedure comparerealsingle_finite_check
    end interface
 
-   public :: comparereal
+   interface equal
+      module procedure real_dp_equal
+      module procedure real_sp_equal
+      module procedure real_dp_equal_eps
+      module procedure real_sp_equal_eps
+   end interface
+
+   public :: comparereal 
+   public :: equal
    public :: dp
    public :: sp
    public :: int32
    public :: int64
+
 contains
+
+   !> Returns .true. if two double precision numbers are equal within 2x machine epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal(a, b) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a !< First double precision number to compare
+      real(kind=dp), intent(in) :: b !< Second double precision number to compare
+
+      res = abs(a - b) < 2.0_dp * epsilon(a) * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal
+
+   !> Returns .true. if two single precision numbers are equal within 2x machine epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal(a, b) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a !< First single precision number to compare
+      real(kind=sp), intent(in) :: b !< Second single precision number to compare
+
+      res = abs(a - b) < 2.0_sp * epsilon(a) * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal
+
+   !> Returns .true. if two double precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_dp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=dp), intent(in) :: a   !< First double precision number to compare
+      real(kind=dp), intent(in) :: b   !< Second double precision number to compare
+      real(kind=dp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_dp)
+   end function real_dp_equal_eps
+
+   !> Returns .true. if two single precision numbers are equal within a given epsilon.
+   !! Scales the tolerance by max(|a|, |b|, 1) to handle both large and small magnitudes.
+   elemental function real_sp_equal_eps(a, b, eps) result(res)
+      logical :: res
+      real(kind=sp), intent(in) :: a   !< First single precision number to compare
+      real(kind=sp), intent(in) :: b   !< Second single precision number to compare
+      real(kind=sp), intent(in) :: eps !< Tolerance to use instead of machine epsilon
+
+      res = abs(a - b) < eps * max(abs(a), abs(b), 1.0_sp)
+   end function real_sp_equal_eps
 
    pure function comparerealdouble(val1, val2, eps)
 !!--description-----------------------------------------------------------------
@@ -119,40 +170,40 @@ contains
 !
 ! Return value
 !
-      integer :: comparerealdouble
+   integer :: comparerealdouble
 !
 ! Global variables
 !
-      real(kind=dp), intent(in) :: val1
-      real(kind=dp), intent(in) :: val2
-      real(kind=dp), optional, intent(in) :: eps
+   real(kind=dp), intent(in) :: val1
+   real(kind=dp), intent(in) :: val2
+   real(kind=dp), optional, intent(in) :: eps
 !
 ! Local variables
 !
-      real(kind=dp) :: eps0
-      real(kind=dp) :: value
+   real(kind=dp) :: eps0
+   real(kind=dp) :: value
 !
 !! executable statements -------------------------------------------------------
 !
-      if (present(eps)) then
-         eps0 = eps
-      else
-         eps0 = 2.0_hp * epsilon(val1)
-      end if
+   if (present(eps)) then
+      eps0 = eps
+   else
+      eps0 = 2.0_hp * epsilon(val1)
+   end if
 !
-      if (abs(val1) < 1.0_hp .or. abs(val2) < 1.0_hp) then
-         value = val1 - val2
-      else
-         value = val1 / val2 - 1.0_hp
-      end if
+   if (abs(val1) < 1.0_hp .or. abs(val2) < 1.0_hp) then
+      value = val1 - val2
+   else
+      value = val1 / val2 - 1.0_hp
+   end if
 !
-      if (abs(value) < eps0) then
-         comparerealdouble = 0
-      elseif (val1 < val2) then
-         comparerealdouble = -1
-      else
-         comparerealdouble = 1
-      end if
+   if (abs(value) < eps0) then
+      comparerealdouble = 0
+   elseif (val1 < val2) then
+      comparerealdouble = -1
+   else
+      comparerealdouble = 1
+   end if
 
    end function comparerealdouble
 

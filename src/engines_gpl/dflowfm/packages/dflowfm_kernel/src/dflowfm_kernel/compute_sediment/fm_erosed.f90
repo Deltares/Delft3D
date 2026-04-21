@@ -92,21 +92,15 @@ contains
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
                                   flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
-                             kmxsed, taub, uuu, vvv
-      use m_fm_erosed, only: e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, sbwx, sbwy, sswx, sswy, &
-                             sxtot, sytot, ucxq_mor, ucyq_mor
-      use m_fm_erosed, only: sourf, sourse, sour_im, sinkf, sinkse
-      use m_fm_erosed, only: hs_mor, mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, srcmax, sedtrcfac, &
-                             sedd50, rhosol, nmudfrac, taucr, tetacr, dstar, iform
-      use m_fm_erosed, only: dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, nxx, sedd50fld, &
-                             sedtyp, xx, dgsd, min_dxx_sedtyp, logsedsig
-      use m_fm_erosed, only: asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, iopkcw, max_reals, rdc, dll_reals, dll_usrfil, &
-                             dzbdt, tratyp, ws, wslc
-      use m_fm_erosed, only: max_integers, max_strings, dll_integers, dll_strings, dll_function, dll_handle
-      use m_fm_erosed, only: mfluff, wetslope, oldmudfrac
-      use m_fm_erosed, only: i10, i15, i50, i90
-      use m_fm_erosed, only: bed, bedw, camax, cdryb, depfac, dss, dcwwlc, dss, espir, factcr, rsdqlc, sddflc, susw, sus, aks, &
-                             factsd, pmcrit, uau, bedloadupwindorder
+                             kmxsed, taub, uuu, vvv, e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, &
+                             sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor, sourf, sourse, sour_im, sinkf, sinkse, hs_mor, &
+                             mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, sedtrcfac, sedd50, rhosol, nmudfrac, &
+                             taucr, tetacr, dstar, iform, dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, &
+                             nxx, sedd50fld, sedtyp, xx, min_dxx_sedtyp, logsedsig, asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, &
+                             iopkcw, max_reals, rdc, dll_reals, dll_usrfil, dzbdt, tratyp, ws, wslc, max_integers, max_strings, dll_integers, &
+                             dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
+                             cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
+                             frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, bedloadupwindorder      
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -123,6 +117,9 @@ contains
       use m_sand_mud
       use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
+      use m_compdiam, only: compdiam
+      use m_comphidexp, only: comphidexp
+      use m_getfixfac, only: getfixfac
       use m_upwbed_ho, only: fm_upwbed_ho
       !
       implicit none
@@ -243,6 +240,10 @@ contains
       real(kind=dp) :: z0u, czu
       !
       real(fp), dimension(:), allocatable :: localpar !< local array for sediment transport parameters
+
+      integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+      integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
@@ -535,7 +536,7 @@ contains
       dtmor = dts * morfac
       !
       call getfixfac(stmpar%morlyr, 1, ndx, lsedtot, & ! Update underlayer bookkeeping system for erosion/sedimentation
-         & ndx, fixfac, ffthresh)
+                   & ndx, fixfac, ffthresh, ithresh)
       !
       ! Set fixfac to 1.0 for tracer sediments and adjust frac
       !
@@ -589,11 +590,28 @@ contains
          !
          ! determine hiding & exposure factors
          !
-         call comphidexp(frac, dm, ndx, lsedtot, &
-            & sedd50, hidexp, ihidexp, asklhe, &
-            & mwwjhe, 1, ndx)
+         if (stmpar%morlyr%settings%ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+            !In this case, the hiding and exposure factors are computed based on the mean grain
+            !size of the sediment in both the active layer (which is the top layer in the bed) and
+            !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
+            !in the second layer (the coarse layer) will influence the sediment transport rate. 
+            !`frac` is used for computing the sediment transport rate for each fraction. This should
+            !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
+            call getfrac(stmpar%morlyr,frac_he    ,anymud    ,mudcnt    , &
+                        & mudfrac_he   ,1, ndx, BED_LAYER_FROM, BED_LAYER_TO)
+            call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                        & logsedsig ,nseddia   ,logseddia ,ndx     ,1, &
+                        & ndx,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                        & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+            call comphidexp(frac_he   ,dm_he     ,ndx     ,lsedtot   , &
+                           & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                           & mwwjhe    ,1, ndx)
+         else
+            call comphidexp(frac, dm, ndx, lsedtot, &
+               & sedd50, hidexp, ihidexp, asklhe, &
+               & mwwjhe, 1, ndx)
+         endif
 
-         !endif
          !
          ! TODO UNST-5545 adapt compsandfrac
          !if (lsedtot > nmudfrac .and. ((lsedtot - nmudfrac > 1) .or. (nmudfrac > 0))) then
@@ -601,8 +619,8 @@ contains
          ! compute sand fraction
          !
          call compsandfrac(frac, sedd50, ndx, lsedtot, sedtyp, &
-            & max_mud_sedtyp, sandfrac, sedd50fld, &
-            & 1, ndx)
+                         & max_mud_sedtyp, sandfrac, sedd50fld, &
+                         & 1, ndx)
       end if
       !
       ! compute normal component of bed slopes at edges    (e_xxx refers to edges)
@@ -772,16 +790,16 @@ contains
             !
             if (wave) then
                call compbsskin(umean, vmean, h1, wave, uorb(nm), twav(nm), &
-                  & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                  & rhowat(kbed), vismol, stmpar%sedpar, afluff)
+                                & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
+                                & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             else
                call compbsskin(umean, vmean, h1, wave, 0.0_dp, 0.0_dp, &
-                  & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
-                  & rhowat(kbed), vismol, stmpar%sedpar, afluff)
+                                & phiwav(nm), thcmud(nm), mudfrac(nm), taub(nm), &
+                                & rhowat(kbed), vismol, stmpar%sedpar, afluff)
             end if
          end if
          !
-         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, 1.0e-5_dp))
+         ustarc = umod(nm) * vonkar / log(1.0_fp + zumod(nm) / max(z0rou, epsz0))
          !
          ! To be in line with rest of FM, this should be
          !ustarc = umod(nm)*vonkar/log(zumod(nm)/z0rou - 1d0)
@@ -808,8 +826,6 @@ contains
          else
             temperature = backgroundwatertemperature
          end if
-         !
-         taks0 = 0.0_dp
          !
          ! Calculate Van Rijn's reference height
          !
@@ -978,13 +994,13 @@ contains
                thick1 = max(thicklc(kmaxsd) * h1, epshs)
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
-                  & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
-                  & frac(nm, l), oldmudfrac, flmd2l, iform(l), &
-                  & npar, localpar, max_integers, max_reals, &
-                  & max_strings, dll_function(l), dll_handle(l), dll_integers, &
-                  & dll_reals, dll_strings, iflufflyr, mfltot, &
-                  & fracf, maxslope, wetslope, &
-                  & error, wstau, sinktot, sourse(nm, l), sourfluff)
+                          & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
+                          & frac(nm, l), oldmudfrac, flmd2l, iform(l), &
+                          & npar, localpar, max_integers, max_reals, &
+                          & max_strings, dll_function(l), dll_handle(l), dll_integers, &
+                          & dll_reals, dll_strings, iflufflyr, mfltot, &
+                          & fracf, maxslope, wetslope, &
+                          & error, wstau, sinktot, sourse(nm, l), sourfluff)
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::erosilt returned an error. Check your inputs.'
                   call mess(LEVEL_FATAL, errmsg)
@@ -1134,7 +1150,7 @@ contains
                      klc = klc + 1
                   end do
                end if
-               taks = 0.0_fp
+               taks = taks0
                !
                ! Solve equilibrium concentration vertical and
                ! integrate over vertical
@@ -1144,19 +1160,19 @@ contains
                end if
                !
                call eqtran(siglc, thicklc, kmaxlc, wslc, ltur, &
-                  & frac(nm, l), tsigmol, dcwwlc, mdia, taucr(l), &
-                  & bfmpar%rksr(nm), 3, jasecflow, spirintnm, suspfrac, &
-                  & tetacr(l), concin3d, &
-                  & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
-                  & bed, susw, bedw, espir, wave, &
-                  & scour, ubot_from_com, camax, eps, &
-                  & iform(l), npar, localpar, max_integers, max_reals, &
-                  & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
-                  & dll_strings, &
-                  & taks, caks, taurat(nm, l), sddflc, rsdqlc, &
-                  & kmaxsd, conc2d, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
-                  & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
-                  & aks_ss3d, ust2(nm), tsd, error)
+                         & frac(nm, l), tsigmol, dcwwlc, mdia, taucr(l), &
+                         & bfmpar%rksr(nm), 3, jasecflow, spirintnm, suspfrac, &
+                         & tetacr(l), concin3d, &
+                         & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
+                         & bed, susw, bedw, espir, wave, &
+                         & scour, ubot_from_com, camax, eps, &
+                         & iform(l), npar, localpar, max_integers, max_reals, &
+                         & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
+                         & dll_strings, &
+                         & taks, caks, taurat(nm, l), sddflc, rsdqlc, &
+                         & kmaxsd, conc2d, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
+                         & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
+                         & aks_ss3d, ust2(nm), tsd, error)
                !
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::eqtran in 3D returned an error. Check your inputs.'
@@ -1190,11 +1206,11 @@ contains
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
-                     &  siglc(kmaxsd), thicklc(kmaxsd), constituents(ll, kmxsed(nm, l)), &
-                     &  vismol, tsigmol, seddif(l, kmxsed(nm, l) - 1),        &
-                     &  rhosol(l), caks_ss3d, ws(kmxsed(nm, l), l),         &
-                     &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
-                     &  sinkse(nm, l))
+                                 &  siglc(kmaxsd), thicklc(kmaxsd), constituents(ll, kmxsed(nm, l)), &
+                                 &  vismol, tsigmol, seddif(l, kmxsed(nm, l) - 1),        &
+                                 &  rhosol(l), caks_ss3d, ws(kmxsed(nm, l), l),         &
+                                 &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
+                                 &  sinkse(nm, l))
                   !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
@@ -1235,19 +1251,19 @@ contains
                ltur = 0
                !
                call eqtran(sig2d, thck2d, kmax2d, ws2d, ltur, &
-                  & frac(nm, l), tsigmol, dcww2d, mdia, taucr(l), &
-                  & bfmpar%rksr(nm), 2, jasecflow, spirintnm, suspfrac, &
-                  & tetacr(l), concin2d, &
-                  & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
-                  & bed, susw, bedw, espir, wave, &
-                  & scour, ubot_from_com, camax, eps, &
-                  & iform(l), npar, localpar, max_integers, max_reals, &
-                  & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
-                  & dll_strings, &
-                  & taks, caks, taurat(nm, l), sddf2d, rsdq2d, &
-                  & kmaxsd, trsedeq, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
-                  & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
-                  & aks_ss3d, ust2(nm), tsd, error)
+                         & frac(nm, l), tsigmol, dcww2d, mdia, taucr(l), &
+                         & bfmpar%rksr(nm), 2, jasecflow, spirintnm, suspfrac, &
+                         & tetacr(l), concin2d, &
+                         & dzdx(nm), dzdy(nm), ubot, tauadd, sus, &
+                         & bed, susw, bedw, espir, wave, &
+                         & scour, ubot_from_com, camax, eps, &
+                         & iform(l), npar, localpar, max_integers, max_reals, &
+                         & max_strings, dll_function(l), dll_handle(l), dll_integers, dll_reals, &
+                         & dll_strings, &
+                         & taks, caks, taurat(nm, l), sddf2d, rsdq2d, &
+                         & kmaxsd, trsedeq, sbcx(nm, l), sbcy(nm, l), sbwx(nm, l), &
+                         & sbwy(nm, l), sswx(nm, l), sswy(nm, l), tdss, caks_ss3d, &
+                         & aks_ss3d, ust2(nm), tsd, error)
 
                if (error) then
                   write (errmsg, '(a)') 'fm_erosed::eqtran in 2D returned an error. Check your inputs.'
@@ -1270,8 +1286,8 @@ contains
                   ! Galappatti time scale and source and sink terms
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
-                     & ws(kb, l), tsd, trsedeq, factsd,    &
-                     & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
+                                & ws(kb, l), tsd, trsedeq, factsd,    &
+                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
             if (suspfrac) then
@@ -1348,7 +1364,7 @@ contains
             call fm_upwbed(lsedtot, sswx, sswy, sxtot, sytot, e_sswn, e_sswt)
          end if
 
-      else ! 2nd order bedload upwind order
+      else ! 2nd order 
          if (bed > 0.0_fp) then
             !
             ! Upwind bed load transport

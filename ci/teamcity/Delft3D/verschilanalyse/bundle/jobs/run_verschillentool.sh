@@ -10,7 +10,7 @@
 
 set -eo pipefail
 
-if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX; then
+if ! util.check_vars_are_set BUCKET VAHOME CURRENT_PREFIX REFERENCE_PREFIX MODEL_REGEX MODELS_PATH JSON_CONFIGS_PATH; then
     >&2 echo "Abort"
     exit 1
 fi
@@ -25,12 +25,21 @@ docker login \
     containers.deltares.nl <"${HOME}/.harbor/verschillentool"
 
 # Run verschillentool (all configs).
-find config -name '*.json' -iregex "$MODEL_REGEX" -exec docker run --rm \
-    --volume="${VAHOME}/input:/data/input:ro" \
-    --volume="${VAHOME}/reference:/data/reference:ro" \
-    --volume="${PWD}/{}:/data/{}:ro" \
-    --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
-    containers.deltares.nl/verschillentool/verschillentool:release_v1.0.2 --config "/data/{}" ';'
+find "${VAHOME}/${JSON_CONFIGS_PATH}" -type f -name '*.json' -iregex "${MODEL_REGEX}" -print0 |
+    while IFS= read -r -d '' file; do
+        rel_path="${file#"${VAHOME}"/"${JSON_CONFIGS_PATH}"}" # strip host prefix
+        rel_path="${rel_path#/}"                              # and leading /
+        if ! docker run \
+            --rm \
+            --volume="${VAHOME}/${MODELS_PATH}:/data/input:ro" \
+            --volume="${VAHOME}/${JSON_CONFIGS_PATH}:/data/config:ro" \
+            --volume="${VAHOME}/reference:/data/reference:ro" \
+            --volume="${VERSCHILLENTOOL_DIR}:/data/verschillentool" \
+            containers.deltares.nl/verschillentool/verschillentool:release_v1.1.1 \
+            --config "/data/config/${rel_path}"; then
+            >&2 echo "Verschillentool failed with config: ${rel_path}"
+        fi
+    done
 
 # Use the last part of the REFERENCE_PREFIX as the REFERENCE_TAG
 REFERENCE_TAG="${REFERENCE_PREFIX##*/}"

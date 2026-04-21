@@ -25,35 +25,35 @@
 #define RTCTOOLS_DLL_H
 
 #ifdef _WIN32
-#define dllexp extern "C" __declspec(dllexport)
+    #define dllexp extern "C" __declspec(dllexport)
 #else
-#define dllexp extern "C"
+    #define dllexp extern "C"
 #endif
 
 dllexp void LoadRtcToolsDll();
 dllexp void* CreateOmiAccessableRtcToolsClass(char* schemaLocation, char* xmlFilesLocation);
-dllexp void OmiInitialize(void *pObject);
-dllexp void OmiPrepare(void *pObject);
-dllexp void FinishOmiAccessableRtcToolsClass(void *pObject);
-dllexp void DisposeOmiAccessableRtcToolsClass(void *pObject);
-dllexp void OmiGetStartTimeString(void* pObject, char *retstring, int len);
-dllexp void OmiGetEndTimeString(void* pObject, char *retstring, int len);
-dllexp void OmiGetCurrentTimeString(void* pObject, char *retstring, int len);
-dllexp int OmiGetInputExchangeItemCount(void *pObject);
-dllexp int OmiGetOutputExchangeItemCount(void *pObject);
-dllexp void OmiGetInputExchangeItem(void *pObject, int index, char *name, int len);
-dllexp void OmiInputExchangeItemGetElementId(void *pObject, int index, char *retstring, int len);
-dllexp void OmiInputExchangeItemGetQuantityId(void *pObject, int index, char *retstring, int len);
-dllexp void OmiInputExchangeItemGetUnit(void *pObject, int index, char *retstring, int len);
-dllexp void OmiGetOutputExchangeItem(void *pObject, int index, char *retstring, int len);
-dllexp void OmiOutputExchangeItemGetElementId(void *pObject, int index, char *retstring, int len);
-dllexp void OmiOutputExchangeItemGetQuantityId(void *pObject, int index, char *retstring, int len);
-dllexp void OmiOutputExchangeItemGetUnit(void *pObject, int index, char *retstring, int len);
-dllexp void OmiSetInputValue(void *pObject, int index, double value, int timeStepCount);
-dllexp int OmiSetInputValues(void *pObject, int nValue, double *valueArray, int timeStepCount);
-dllexp double OmiGetOutputValue(void *pObject, int index);
-dllexp int OmiGetOutputValues(void *pObject, int nValue, double *valueArray);
-dllexp int OmiPerformTimeStep(void *pObject, int timeStepCount);
-dllexp void OmiWriteStateFile(void *pObject, char* filename, char* filepath);
+dllexp void OmiInitialize(void* pObject);
+dllexp void OmiPrepare(void* pObject);
+dllexp void FinishOmiAccessableRtcToolsClass(void* pObject);
+dllexp void DisposeOmiAccessableRtcToolsClass(void* pObject);
+dllexp void OmiGetStartTimeString(void* pObject, char* retstring, int len);
+dllexp void OmiGetEndTimeString(void* pObject, char* retstring, int len);
+dllexp void OmiGetCurrentTimeString(void* pObject, char* retstring, int len);
+dllexp int OmiGetInputExchangeItemCount(void* pObject);
+dllexp int OmiGetOutputExchangeItemCount(void* pObject);
+dllexp void OmiGetInputExchangeItem(void* pObject, int index, char* name, int len);
+dllexp void OmiInputExchangeItemGetElementId(void* pObject, int index, char* retstring, int len);
+dllexp void OmiInputExchangeItemGetQuantityId(void* pObject, int index, char* retstring, int len);
+dllexp void OmiInputExchangeItemGetUnit(void* pObject, int index, char* retstring, int len);
+dllexp void OmiGetOutputExchangeItem(void* pObject, int index, char* retstring, int len);
+dllexp void OmiOutputExchangeItemGetElementId(void* pObject, int index, char* retstring, int len);
+dllexp void OmiOutputExchangeItemGetQuantityId(void* pObject, int index, char* retstring, int len);
+dllexp void OmiOutputExchangeItemGetUnit(void* pObject, int index, char* retstring, int len);
+dllexp void OmiSetInputValue(void* pObject, int index, double value, int timeStepCount);
+dllexp int OmiSetInputValues(void* pObject, int nValue, double* valueArray, int timeStepCount);
+dllexp double OmiGetOutputValue(void* pObject, int index);
+dllexp int OmiGetOutputValues(void* pObject, int nValue, double* valueArray);
+dllexp int OmiPerformTimeStep(void* pObject, int timeStepCount);
+dllexp void OmiWriteStateFile(void* pObject, char* filename, char* filepath);
 
-#endif //RTCTOOLS_DLL_H
+#endif // RTCTOOLS_DLL_H

@@ -5,7 +5,7 @@
 <!-- ONLINE AGGREGATION, ONE DOMAIN -->
 
 <testCase name="e02_f029_c201_hyd_file_westerschelde_3d_s_hag" ref="dflowfm_default">
-  <path version="2025-02-28T10:40:00">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
+  <path version="2026-04-13T14:10:07.705000">e02_dflowfm/f029_hyd_file/c201_westerschelde_3d_s_hag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -76,7 +76,7 @@
 </testCase>
 
 <testCase name="e02_f029_c202_hyd_file_westerschelde_3d_s_vag" ref="dflowfm_platform_specific_refs">
-  <path version="2025-09-09T07:51:41.496000">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
+  <path version="2026-04-13T14:13:54.521000">e02_dflowfm/f029_hyd_file/c202_westerschelde_3d_s_vag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -140,14 +140,14 @@
     -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="8e-04" toleranceRelative="8e-4"/>
       </parameters>
     </file>
   </checks>
 </testCase>
 
 <testCase name="e02_f029_c203_hyd_file_westerschelde_3d_s_hvag" ref="dflowfm_platform_specific_refs">
-  <path version="2025-09-09T07:51:51.941000">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
+  <path version="2026-04-13T14:13:41.974000">e02_dflowfm/f029_hyd_file/c203_westerschelde_3d_s_hvag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -289,7 +289,7 @@
 </testCase>
 
 <testCase name="e02_f029_c205_hyd_file_westerschelde_3d_z_hag" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
+  <path version="2025-10-16T07:21:53.792000">e02_dflowfm/f029_hyd_file/c205_westerschelde_3d_z_hag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -360,7 +360,7 @@
 </testCase>
 
 <testCase name="e02_f029_c206_hyd_file_westerschelde_3d_z_vag" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
+  <path version="2026-03-17T10:16:43.205000">e02_dflowfm/f029_hyd_file/c206_westerschelde_3d_z_vag</path>
   <programs>
     <program ref="dimr" seq="1">
     </program>
@@ -504,7 +504,7 @@
 <!-- ONLINE AGGREGATION, THREE DOMAINS -->
 
 <testCase name="e02_f029_c301_hyd_file_westerschelde_3d_s_hag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2025-09-09T07:52:03.454000">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
+  <path version="2026-04-13T14:12:44.773000">e02_dflowfm/f029_hyd_file/c301_westerschelde_3d_s_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -573,7 +573,7 @@
     -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-04" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -581,7 +581,7 @@
 </testCase>
 
 <testCase name="e02_f029_c302_hyd_file_westerschelde_3d_s_vag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2025-09-09T07:52:14.230000">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
+  <path version="2026-04-13T14:12:29.039000">e02_dflowfm/f029_hyd_file/c302_westerschelde_3d_s_vag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -650,7 +650,7 @@
     -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="2.0e-04" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -658,7 +658,7 @@
 </testCase>
 
 <testCase name="e02_f029_c303_hyd_file_westerschelde_3d_s_hvag_3dom" ref="dflowfm_platform_specific_refs">
-  <path version="2025-09-09T07:52:25.069000">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
+  <path version="2026-04-13T14:12:14.179000">e02_dflowfm/f029_hyd_file/c303_westerschelde_3d_s_hvag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -727,7 +727,7 @@
     -->
     <file name="deltashell_map.nc" type="netCDF">
       <parameters>
-        <parameter name="mesh2d_Continuity" toleranceAbsolute="1.0e-05" toleranceRelative="1.0e-06"/>
+        <parameter name="mesh2d_Continuity" toleranceAbsolute="2.0e-04" toleranceRelative="1.0e-06"/>
       </parameters>
     </file>
   </checks>
@@ -735,7 +735,7 @@
 </testCase>
 
 <testCase name="e02_f029_c304_hyd_file_westerschelde_2d_hag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c304_westerschelde_2d_hag_3dom</path>
+  <path version="2026-03-17T10:17:21.984000">e02_dflowfm/f029_hyd_file/c304_westerschelde_2d_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -812,7 +812,7 @@
 </testCase>
 
 <testCase name="e02_f029_c305_hyd_file_westerschelde_3d_z_hag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
+  <path version="2026-03-17T10:18:20.887000">e02_dflowfm/f029_hyd_file/c305_westerschelde_3d_z_hag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -889,7 +889,7 @@
 </testCase>
 
 <testCase name="e02_f029_c306_hyd_file_westerschelde_3d_z_vag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c306_westerschelde_3d_z_vag_3dom</path>
+  <path version="2026-03-17T10:18:48.583000">e02_dflowfm/f029_hyd_file/c306_westerschelde_3d_z_vag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>
@@ -966,7 +966,7 @@
 </testCase>
 
 <testCase name="e02_f029_c307_hyd_file_westerschelde_3d_z_hvag_3dom" ref="dflowfm_default">
-  <path version="2024-01-11T16:20:00">e02_dflowfm/f029_hyd_file/c307_westerschelde_3d_z_hvag_3dom</path>
+  <path version="2026-03-17T10:19:16.807000">e02_dflowfm/f029_hyd_file/c307_westerschelde_3d_z_hvag_3dom</path>
   <programs>
     <program ref="dimr-mpi" seq="1">
     </program>

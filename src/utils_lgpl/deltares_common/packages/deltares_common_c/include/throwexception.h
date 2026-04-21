@@ -36,30 +36,26 @@
  *  Function names for FORTRAN-C interface.
  */
 
-#if defined(linux)
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define THROWEXCEPTION FC_FUNC(throwexception,THROWEXCEPTION)
+#if defined(__linux__)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define THROWEXCEPTION FC_FUNC(throwexception, THROWEXCEPTION)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define THROWEXCEPTION THROWEXCEPTION
+    // WIN32
+    #define STDCALL /* nothing */
+    #define THROWEXCEPTION THROWEXCEPTION
 #endif
-
 
 /*
  *  Function definitions
  */
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 extern "C" {
 #endif
 
+void STDCALL THROWEXCEPTION(void);
 
-void STDCALL THROWEXCEPTION (void);
-
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 }
 #endif
-
-

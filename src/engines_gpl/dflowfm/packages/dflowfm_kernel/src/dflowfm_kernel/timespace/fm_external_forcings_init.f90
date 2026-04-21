@@ -29,10 +29,11 @@
 !
 submodule(fm_external_forcings) fm_external_forcings_init
    use precision_basics, only: dp
-   implicit none
+   use m_missing, only: dmiss => dmiss_neg
+
+   implicit none(type, external)
 
    integer, parameter :: INI_VALUE_LEN = 256
-   integer, parameter :: INI_KEY_LEN = 32
 
 contains
 
@@ -143,7 +144,9 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      max_num_src = tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+      call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
+      max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+
       if (max_num_src > 0) then
          call reallocsrc(max_num_src, 0)
       end if
@@ -166,14 +169,14 @@ contains
          case ('lateral')
             res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
 
-         case ('meteo')
-            res = res .and. init_meteo_forcings(block_ptr, base_dir, file_name, group_name)
+         case ('spatial', 'meteo')
+            res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
 
          case ('sourcesink')
             res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
 
          case ('bubblescreen')
-            res = res .and. init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name)
+            res = res .and. add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name)
 
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
@@ -229,7 +232,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -251,7 +254,7 @@ contains
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
-      character(len=1) :: oper
+      integer :: operand
       logical :: is_successful
       integer :: method, num_items_in_block, j
 
@@ -293,8 +296,11 @@ contains
          return
       end if
 
-      oper = '-'
-      call prop_get(block_ptr, '', 'operand ', oper, is_successful)
+      operand = OPERAND_UNKNOWN
+      call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
+      if (is_successful) then
+         operand = convert_operand_string_to_integer(property_value)
+      end if
 
       num_items_in_block = 0
       if (associated(block_ptr%child_nodes)) then
@@ -320,10 +326,10 @@ contains
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
                call resolvePath(forcing_file, base_dir)
-               if (oper /= 'O' .and. oper /= '+') then
-                  oper = 'O'
+               if (operand /= OPERAND_OVERRIDE .and. operand /= OPERAND_ADD) then
+                  operand = OPERAND_OVERRIDE
                   if (quantity_pli_combination_is_registered(quantity, location_file)) then
-                     oper = '+'
+                     operand = OPERAND_ADD
                   end if
                end if
                call register_quantity_pli_combination(quantity, location_file)
@@ -352,14 +358,14 @@ contains
                      is_successful = .true. ! No failure: boundaries are allowed to remain disconnected.
                   else
                      is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=NODE_ID, method=method, &
-                                                                     operand=oper, forcing_file=forcing_file, targetindex=target_index(1))
+                                                                     operand=operand, forcing_file=forcing_file, targetindex=target_index(1))
                   end if
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
-                                                                  operand=oper, forcing_file=forcing_file)
+                                                                  operand=operand, forcing_file=forcing_file)
                end if
                res = res .and. is_successful ! Remember any previous errors.
-               oper = '-'
+               operand = OPERAND_UNKNOWN
             end if
          end if
       end do
@@ -616,34 +622,24 @@ contains
 
    end function init_lateral_forcings
 
-   !> Read the current [Meteo] block from new external forcings file
-      !! and do required initialisation for that quantity.
-   function init_meteo_forcings(block_ptr, base_dir, file_name, group_name) result(res)
-      use string_module, only: strcmpi, str_tolower
-      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess, warn_flush
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use m_missing, only: dmiss
+   !> Read the current [Spatial] or [Meteo] block from new external forcings file
+   !! and do required initialisation for that quantity.
+   !! [Meteo] is the legacy block name and is handled identically to [Spatial].
+   module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+      use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
+      use m_sferic, only: jsferic
+      use string_module, only: str_tolower
+      use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
-                           update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
-                           convert_file_type_string_to_integer
-      use fm_external_forcings_data, only: filetype, transformcoef, kx
-      use fm_external_forcings, only: allocatewindarrays
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
-                        jaqin, jaqext, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
-                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, qext, pseudo_air_pressure_available, &
-                        water_level_correction_available
-      use m_flowgeom, only: ndx, lnx, xz, yz
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
-                                  btempforcingtypS, itempforcingtyp
-      use timespace, only: timespaceinitialfield
+      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
+                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, &
+                        air_pressure, pseudo_air_pressure, water_level_correction
+      use m_flowgeom, only: ndx, lnx
       use m_meteo, only: ec_addtimespacerelation
-      use dfm_error, only: DFM_NOERR
       use properties, only: prop_get
-      use unstruc_files, only: resolvePath
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use m_alloc, only: aerr
+      use m_alloc, only: realloc
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
@@ -653,371 +649,364 @@ contains
       logical :: res
 
       integer, allocatable :: mask(:)
-      logical :: invert_mask
-      logical :: is_variable_name_available
-      logical :: is_extrapolation_allowed
-      character(len=INI_VALUE_LEN) :: variable_name
-      character(len=INI_VALUE_LEN) :: interpolation_method, forcing_file, forcing_file_type, item_type, quantity, target_mask_file
-      character(len=1) :: oper
-      real(dp) :: max_search_radius
-      ! generalized properties+pointers to target element grid:
       integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set
       integer :: target_num_points !< Number of points in target element set
       real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set
       real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
-      integer :: ierr, method, ilattype
-      logical :: is_successful
+      integer :: ierr
+      integer :: kx
+      logical :: success
+      type(t_spatial_field_input) :: input
+      real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
 
       res = .false.
 
-      call prop_get(block_ptr, '', 'quantity ', quantity, is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
-         call err_flush()
+      input = read_spatial_field_block(block_ptr)
+      res = validate_spatial_field_input(input, file_name, group_name, base_dir)
+
+      if (.not. res) then !> Validation failed, error will be printed at the call site
          return
       end if
 
-      call prop_get(block_ptr, '', 'forcingFileType ', forcing_file_type, is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-            ']. Field ''forcingFileType'' is missing.'
-         call err_flush()
-         return
-      end if
+      associate (quantity => input%quantity, &
+                 forcing_file => input%forcing_file, &
+                 forcing_file_type => input%forcing_file_type, &
+                 target_mask_file => input%target_mask_file, &
+                 filetype => input%filetype, &
+                 invert_mask => input%invert_mask, &
+                 oper => input%oper, &
+                 method => input%method, &
+                 is_variable_name_available => input%is_variable_name_available, &
+                 variable_name => input%variable_name)
 
-      call prop_get(block_ptr, '', 'forcingFile ', forcing_file, is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, &
-            ']. Field ''forcingFile'' is missing.'
-         call err_flush()
-         return
-      else
-         call resolvePath(forcing_file, base_dir)
-      end if
+         ! Default location type: s-points. Only cases below that need u-points or different, will override.
+         target_location_type = UNC_LOC_S
+         kx = 1
+         success = scan_for_heat_quantities(quantity, kx)
+         if (.not. success) then
+            select case (quantity)
+            case ('airdensity')
+               call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
+            case ('airpressure', 'atmosphericpressure')
+               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
+            case ('pseudoAirPressure')
+               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
+            case ('waterLevelCorrection')
+               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
 
-      target_mask_file = ''
-      call prop_get(block_ptr, '', 'targetMaskFile ', target_mask_file)
+            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+               call allocatewindarrays()
+               call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
+               call realloc(ec_pwxwy_x, ndx, keepexisting=.true., fill=0.0_dp)
+               call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
+               jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
+               jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
 
-      invert_mask = .false.
-      call prop_get(block_ptr, '', 'targetMaskInvert ', invert_mask, is_successful)
+               if (jaspacevarcharn == 1) then
+                  call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
+                  call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+               end if
 
-      is_variable_name_available = .false.
-      variable_name = ' '
-      call prop_get(block_ptr, '', 'forcingVariableName ', variable_name, is_variable_name_available)
+            case ('charnock')
+               call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
+               call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
 
-      call prop_get(block_ptr, '', 'interpolationMethod ', interpolation_method, is_successful)
-      if (is_successful) then
-         method = convert_method_string_to_integer(interpolation_method)
-         call update_method_with_weightfactor_fallback(forcing_file_type, method)
-      else
-         method = get_default_method_for_file_type(forcing_file_type)
-      end if
-      if (method == -1) then
-         if (is_successful) then
-            write (msgbuf, '(7a)') 'There is no method associated with ''interpolationMethod'' ', trim(interpolation_method), &
-               ' in block in file ''', file_name, ''': [', group_name, '].'
-         else
-            write (msgbuf, '(7a)') 'Block contains no ''interpolationMethod'' in file ''', file_name, ''': [', group_name, &
-               '] nor an internal value associated with given ''forcingFileType'':', trim(forcing_file_type), '.'
+            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+               target_location_type = UNC_LOC_U
+               jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
+               call allocatewindarrays()
+            case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
+               call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
+
+            case ('qext')
+               res = init_qext_forcings(block_ptr, input)
+               return ! This was a special case, don't continue with timespace processing below.
+
+            case default
+               write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+               call err_flush()
+               return
+            end select
          end if
-         call err_flush()
-         return
-      end if
 
-      is_extrapolation_allowed = .false.
-      call prop_get(block_ptr, '', 'extrapolationAllowed ', is_extrapolation_allowed, is_successful)
-      call update_method_in_case_extrapolation(method, is_extrapolation_allowed)
+         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+         call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+         ! Push search radius into EC module before registering the relation.
+         call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
-      max_search_radius = -1
-      call prop_get(block_ptr, '', 'extrapolationSearchRadius ', max_search_radius, is_successful)
+         select case (trim(str_tolower(forcing_file_type)))
+         case ('bcascii')
+            ! NOTE: Currently, we only support name=global meteo in .bc files, later maybe station time series as well.
+            success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
+                                              method, oper, forcingfile=forcing_file)
+         case default
+            if (is_variable_name_available) then
+               success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                 method, oper, varname=variable_name)
+            else
+               success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                 method, oper)
+            end if
+         end select
 
-      oper = 'O'
-      call prop_get(block_ptr, '', 'operand ', oper, is_successful)
+         if (success) then
+            res = enable_quantity(quantity)
+         else
+            res = .false.
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity )//''' from file '''//file_name//''': ['//group_name//']. Check previous log lines for details.'
+            call err_flush()  
+         end if
+      end associate
 
-      transformcoef = DMISS
+   end function init_spatial_fields
+
+   !> Activate the model flags corresponding to a successfully loaded meteo quantity.
+   !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
+   !! Returns .false. on a conflict (e.g. solarradiation + netsolarradiation).
+   function enable_quantity(quantity) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+      use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
+                        jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
+                        pseudo_air_pressure_available, water_level_correction_available
+      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
+                                  btempforcingtypS, itempforcingtyp
+
+      character(len=*), intent(in) :: quantity !< The quantity name as read from the [Meteo] block.
+
+      logical :: is_successful
+
+      is_successful = .true.
+
+      select case (trim(quantity))
+      case ('airdensity')
+         call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
+         ja_airdensity = 1
+
+      case ('airpressure', 'atmosphericpressure')
+         air_pressure_available = .true.
+
+      case ('pseudoAirPressure')
+         pseudo_air_pressure_available = .true.
+
+      case ('waterLevelCorrection')
+         water_level_correction_available = .true.
+
+      case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+         jawind = 1
+         air_pressure_available = .true.
+
+      case ('charnock')
+         jaspacevarcharn = 1
+
+      case ('rainfall', 'rainfall_rate')
+         jarain = 1
+         jaqin = 1
+
+      case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+         jawind = 1
+
+      case ('airtemperature')
+         btempforcingtypA = .true.
+
+      case ('cloudiness')
+         btempforcingtypC = .true.
+
+      case ('humidity')
+         btempforcingtypH = .true.
+
+      case ('dewpoint')
+         itempforcingtyp = 5
+         btempforcingtypD = .true.
+
+      case ('solarradiation')
+         if (net_solar_radiation_available) then
+            write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
+            call err_flush()
+            is_successful = .false.
+            return
+         end if
+         btempforcingtypS = .true.
+         solar_radiation_available = .true.
+
+      case ('netsolarradiation')
+         if (solar_radiation_available) then
+            write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
+            call err_flush()
+            is_successful = .false.
+            return
+         end if
+         btempforcingtypS = .true.
+         net_solar_radiation_available = .true.
+
+      case ('longwaveradiation')
+         btempforcingtypL = .true.
+         long_wave_radiation_available = .true.
+
+      case ('humidity_airtemperature_cloudiness')
+         itempforcingtyp = 1
+
+      case ('dewpoint_airtemperature_cloudiness')
+         itempforcingtyp = 3
+
+      case ('humidity_airtemperature_cloudiness_solarradiation')
+         itempforcingtyp = 2
+         solar_radiation_available = .true.
+
+      case ('dewpoint_airtemperature_cloudiness_solarradiation')
+         itempforcingtyp = 4
+         solar_radiation_available = .true.
+
+      end select
+
+   end function enable_quantity
+
+   !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
+   !! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
+   !! qext requires forcingFileType=sample and QExt=1 in the MDU.
+   function init_qext_forcings(block_ptr, input) result(is_successful)
+      use tree_data_types, only: tree_data
+      use string_module, only: str_tolower
+      use properties, only: prop_get
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_wind, only: qext
+      use m_flowgeom, only: ndx, xz, yz
+      use timespace, only: timespaceinitialfield
+      use fm_location_types, only: UNC_LOC_S
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use m_spatial_field, only: t_spatial_field_input
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to the [Meteo] block in the ext file
+      type(t_spatial_field_input), intent(in) :: input !< Already validated input (quantity, forcing_file, filetype, method, oper)
+
+      logical :: is_successful
+
+      integer, allocatable :: mask(:)
+      real(dp) :: transformcoef(NTRANSFORMCOEF)
+      character(len=INI_VALUE_LEN) :: location_type
+      integer :: qext_ilattype
+      logical :: is_read
+
+      transformcoef = -999.0_dp
       call prop_get(block_ptr, '', 'averagingType ', transformcoef(4), is_successful)
       call prop_get(block_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
       call prop_get(block_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
       call prop_get(block_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
 
-      filetype = convert_file_type_string_to_integer(forcing_file_type)
-
-      ! Default location type: s-points. Only cases below that need u-points or different, will override.
-      target_location_type = UNC_LOC_S
-
-      is_successful = scan_for_heat_quantities(quantity, kx)
-      if (.not. is_successful) then
-         select case (quantity)
-         case ('airdensity')
-            kx = 1
-            if (.not. allocated(air_density)) then
-               allocate (air_density(ndx), stat=ierr, source=0.0_dp)
-               call aerr('air_density(ndx)', ierr, ndx)
-            end if
-         case ('airpressure', 'atmosphericpressure')
-            kx = 1
-            ierr = allocate_patm(0.0_dp)
-
-         case ('pseudoAirPressure')
-            kx = 1
-            ierr = allocate_pseudo_air_pressure(0.0_dp)
-
-         case ('waterLevelCorrection')
-            kx = 1
-            ierr = allocate_water_level_correction(0.0_dp)
-
-         case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-            kx = 1
-            call allocatewindarrays()
-
-            jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
-            jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-
-            ierr = allocate_patm(100000.0_dp)
-
-            if (.not. allocated(ec_pwxwy_x)) then
-               allocate (ec_pwxwy_x(ndx), ec_pwxwy_y(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_pwxwy_x(ndx) , ec_pwxwy_y(ndx)', ierr, 2 * ndx)
-            end if
-
-            if (jaspacevarcharn == 1) then
-               if (.not. allocated(ec_pwxwy_c)) then
-                  allocate (ec_pwxwy_c(ndx), wcharnock(lnx), stat=ierr, source=0.0_dp)
-                  call aerr('ec_pwxwy_c(ndx), wcharnock(lnx)', ierr, ndx + lnx)
-               end if
-            end if
-
-         case ('charnock')
-            kx = 1
-            if (.not. allocated(ec_charnock)) then
-               allocate (ec_charnock(ndx), stat=ierr, source=0.0_dp)
-               call aerr('ec_charnock(ndx)', ierr, ndx)
-            end if
-            if (.not. allocated(wcharnock)) then
-               allocate (wcharnock(lnx), stat=ierr)
-               call aerr('wcharnock(lnx)', ierr, lnx)
-            end if
-
-         case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-            kx = 1
-            target_location_type = UNC_LOC_U
-            call allocatewindarrays()
-
-            jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-
-         case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-            kx = 1
-            if (.not. allocated(rain)) then
-               allocate (rain(ndx), stat=ierr, source=0.0_dp)
-               call aerr('rain(ndx)', ierr, ndx)
-            end if
-
-         case ('qext')
-            ! Only time-independent sample file supported for now: sets Qext initially and this remains constant in time.
-            if (jaQext == 0) then
-               write (msgbuf, '(a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
-                  '] is missing QExt=1 in MDU.'
-               call err_flush()
-               return
-            end if
-            if (.not. strcmpi(forcing_file_type, 'sample')) then
-               write (msgbuf, '(a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
-                  ''': [', group_name, '], quantity=', trim(quantity), '.'
-               call err_flush()
-               return
-            end if
-            method = get_default_method_for_file_type(forcing_file_type)
-            call prop_get(block_ptr, '', 'locationType', item_type, is_successful)
-            select case (str_tolower(trim(item_type)))
-            case ('1d')
-               ilattype = ILATTP_1D
-            case ('2d')
-               ilattype = ILATTP_2D
-            case ('1d2d', 'all')
-               ilattype = ILATTP_ALL
-            case default
-               ilattype = ILATTP_ALL
-            end select
-
-            mask(:) = 0
-            call prepare_lateral_mask(mask, ilattype)
-
-            res = timespaceinitialfield(xz, yz, qext, ndx, forcing_file, filetype, method, oper, transformcoef, UNC_LOC_S, mask)
-            return ! This was a special case, don't continue with timespace processing below.
-         case default
-            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name// &
-               '].'
-            call err_flush()
-            return
-         end select
-      end if
-
-      ! Derive target element set properties from the quantity's topological location type
-      call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-      if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(7a)') 'Invalid data in file ''', file_name, ''': [', group_name, &
-            ']. Line ''quantity = ', trim(quantity), ''' has no known target grid properties.'
-         call err_flush()
-         return
-      end if
-
-      !> Prepare target mask for the quantity's target element set.
-      call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-      if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(7a)') 'Unsupported data in file ''', file_name, ''': [', group_name, &
-            ']. Line ''quantity = ', trim(quantity), ''' cannot be combined with targetMaskFile.'
-         call err_flush()
-         return
-      end if
-
-      select case (trim(str_tolower(forcing_file_type)))
-      case ('bcascii')
-         ! NOTE: Currently, we only support name=global meteo in.bc files, later maybe station time series as well.
-         is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                                 method, oper, forcingfile=forcing_file)
+      location_type = ' '
+      call prop_get(block_ptr, '', 'locationType', location_type, is_read)
+      select case (str_tolower(trim(location_type)))
+      case ('1d')
+         qext_ilattype = ILATTP_1D
+      case ('2d')
+         qext_ilattype = ILATTP_2D
+      case ('1d2d', 'all')
+         qext_ilattype = ILATTP_ALL
       case default
-         if (is_variable_name_available) then
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                    method, oper, varname=variable_name)
-         else
-            is_successful = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                    method, oper)
-         end if
+         qext_ilattype = ILATTP_ALL
       end select
 
-      if (is_successful) then
-         select case (quantity)
-         case ('airdensity')
-            call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
-            ja_airdensity = 1
+      call prepare_lateral_mask(mask, qext_ilattype)
 
-         case ('airpressure', 'atmosphericpressure')
-            air_pressure_available = .true.
+      is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
+                                            input%method, input%oper, transformcoef, UNC_LOC_S, mask)
 
-         case ('pseudoAirPressure')
-            pseudo_air_pressure_available = .true.
+   end function init_qext_forcings
 
-         case ('waterLevelCorrection')
-            water_level_correction_available = .true.
-
-         case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-            jawind = 1
-            air_pressure_available = .true.
-
-         case ('charnock')
-            jaspacevarcharn = 1
-
-         case ('rainfall', 'rainfall_rate')
-            jarain = 1
-            jaqin = 1
-
-         case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-            jawind = 1
-         case ('airtemperature')
-            btempforcingtypA = .true.
-         case ('cloudiness')
-            btempforcingtypC = .true.
-         case ('humidity')
-            btempforcingtypH = .true.
-         case ('dewpoint')
-            itempforcingtyp = 5
-            btempforcingtypD = .true.
-         case ('solarradiation')
-            if (net_solar_radiation_available) then
-               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
-               call err_flush()
-               return
-            end if
-            btempforcingtypS = .true.
-            solar_radiation_available = .true.
-         case ('netsolarradiation')
-            if (solar_radiation_available) then
-               write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
-               call err_flush()
-               return
-            end if
-            btempforcingtypS = .true.
-            net_solar_radiation_available = .true.
-         case ('longwaveradiation')
-            btempforcingtypL = .true.
-            long_wave_radiation_available = .true.
-         case ('humidity_airtemperature_cloudiness')
-            itempforcingtyp = 1
-         case ('dewpoint_airtemperature_cloudiness')
-            itempforcingtyp = 3
-         case ('humidity_airtemperature_cloudiness_solarradiation')
-            itempforcingtyp = 2
-            solar_radiation_available = .true.
-         case ('dewpoint_airtemperature_cloudiness_solarradiation')
-            itempforcingtyp = 4
-            solar_radiation_available = .true.
-         end select
-
-         res = .true.
-
-      end if
-
-   end function init_meteo_forcings
-
-   !> Read sourcesink blocks from new external forcings file.
-   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
+   module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
-      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
-      use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use fm_external_forcings_data, only: numsrc, qstss
-      use dfm_error, only: DFM_NOERR
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl, m_polygon_destructor
+      use m_reapol, only: reapol
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
-      character(len=INI_VALUE_LEN) :: sourcesink_id
-      character(len=INI_VALUE_LEN) :: sourcesink_name
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
+      real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
+
       character(len=INI_VALUE_LEN) :: location_file
-      character(len=INI_VALUE_LEN) :: discharge_input
-      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
-      character(len=NAMLEN) :: const_name_with_prefix
-      character(len=INI_VALUE_LEN) :: quantity_id, property_name
+      character(len=INI_VALUE_LEN) :: sourcesink_id
 
       integer :: num_coordinates
-      real(kind=dp), dimension(:), allocatable :: x_coordinates
-      real(kind=dp), dimension(:), allocatable :: y_coordinates
-      ! only constant profiles (1 value) or linear profiles (2 values) are allowed
-      integer, parameter :: num_range_points = 2
-      real(kind=dp), dimension(num_range_points) :: z_range_source
-      real(kind=dp), dimension(num_range_points) :: z_range_sink
-      real(kind=dp) :: area
-      integer :: i_const
       integer :: ierr
+      integer :: polyline_file_lun ! polyline file logical unit number
       logical :: is_successful
       logical :: is_read
+      logical :: source_z_in_ext_file, sink_z_in_ext_file
       logical :: have_location_file, have_location_coordinates
 
       is_successful = .false.
+      z_range_source(:) = dmiss
+      z_range_sink(:) = dmiss
 
-      sourcesink_id = ' '
-      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
-         call err_flush()
-         return
-      end if
-      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
+      ! Read source/sink z range information from ext file, load it from the polyline file later on as a fallback.
+      source_z_in_ext_file = .false.
+      sink_z_in_ext_file = .false.
+      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, source_z_in_ext_file)
+      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, sink_z_in_ext_file)
 
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
+         ! Read data from polyline file
          call resolvePath(location_file, base_dir)
+
+         call oldfil(polyline_file_lun, location_file)
+         if (polyline_file_lun == 0) then
+            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '"//trim(location_file)//"'"
+            call err_flush()
+            return
+         end if
+         ierr = m_polygon_destructor()
+         call reapol(polyline_file_lun, 0)
+         if (npl == 0) then
+            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '"//trim(location_file)//"'"
+            call err_flush()
+            return
+         end if
+
+         ! Avoid having two places specifying the same (and potentially conflicting) z data.
+         if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
+            write (msgbuf, '(a)') 'Error in source sink initialization, source/sink z information cannot be specified both ' &
+               //'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
+            call err_flush()
+            return
+         end if
+
+         if (.not. source_z_in_ext_file) then
+            z_range_source(1) = zpl(npl)
+            if (colpl > 3) then
+               z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+            end if
+         end if
+
+         if (.not. sink_z_in_ext_file) then
+            z_range_sink(1) = zpl(1)
+            if (colpl > 3) then
+               z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+            end if
+         end if
+
+         allocate (x_coordinates(npl), stat=ierr)
+         allocate (y_coordinates(npl), stat=ierr)
+         x_coordinates = xpl(1:npl)
+         y_coordinates = ypl(1:npl)
       else
+         ! Read data directly from ext file
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
          if (is_read) then
             if (num_coordinates <= 0) then
-               write (msgbuf, '(3a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
+               call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+               write (msgbuf, '(a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
                call err_flush()
                return
             end if
@@ -1030,21 +1019,76 @@ contains
          end if
          have_location_coordinates = is_read
       end if
+
       if (.not. have_location_file .and. .not. have_location_coordinates) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location information is incomplete or missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Location information is incomplete or missing.'
          call err_flush()
          return
       end if
 
-      ! read optional vertical profiles.
+      is_successful = .true.
+   end function
+
+   !> Read sourcesink blocks from new external forcings file.
+   function init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+      use messageHandling, only: err_flush, msgbuf
+      use tree_data_types, only: tree_data
+      use properties, only: prop_get
+      use unstruc_files, only: resolvePath
+      use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
+      use netcdf_utils, only: ncu_sanitize_name
+      use m_missing, only: dmiss
+      use m_addsorsin, only: addsorsin
+      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use dfm_error, only: DFM_NOERR
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, dzL
+      use m_reapol, only: reapol
+
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      character(len=INI_VALUE_LEN) :: sourcesink_id
+      character(len=INI_VALUE_LEN) :: sourcesink_name
+      character(len=INI_VALUE_LEN) :: discharge_input
+      character(len=INI_VALUE_LEN), dimension(:), allocatable :: constituent_delta_file
+      character(len=NAMLEN) :: const_name_with_prefix
+      character(len=INI_VALUE_LEN) :: quantity_id, property_name
+
+      real(kind=dp), dimension(:), allocatable :: x_coordinates
+      real(kind=dp), dimension(:), allocatable :: y_coordinates
+      integer, parameter :: num_range_points = 2 ! only constant profiles (1 value) or linear profiles (2 values) are allowed
+      real(kind=dp), dimension(num_range_points) :: z_range_source
+      real(kind=dp), dimension(num_range_points) :: z_range_sink
+      real(kind=dp) :: area
+      integer :: i_const
+      integer :: ierr
+      logical :: is_successful
+      logical :: is_read
+
+      is_successful = .false.
       z_range_source(:) = dmiss
       z_range_sink(:) = dmiss
-      call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, is_read)
-      call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, is_read)
+
+      sourcesink_id = ' '
+      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
+      if (.not. is_read .or. len_trim(sourcesink_id) == 0) then
+         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Field ''id'' is missing.'
+         call err_flush()
+         return
+      end if
+      call prop_get(block_ptr, '', 'name', sourcesink_name, is_read)
+
+      is_successful = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      if (.not. is_successful) then
+         return ! Error message already printed in sourcesink_parse_coordinates
+      end if
 
       call prop_get(block_ptr, '', 'discharge', discharge_input, is_read)
       if (.not. is_read) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Key "discharge" is missing.'
          call err_flush()
          return
       end if
@@ -1053,15 +1097,10 @@ contains
       area = 0.0_dp
       call prop_get(block_ptr, '', 'area', area, is_read)
 
-      if (have_location_file) then
-         call addsorsin_from_polyline_file(location_file, sourcesink_id, z_range_source, z_range_sink, area, ierr)
-      else
-         call addsorsin(sourcesink_id, x_coordinates, y_coordinates, &
-                        z_range_source, z_range_sink, area, ierr)
-      end if
-
+      ! Create the actual source/sink based on the parsed data
+      call addsorsin(sourcesink_id, x_coordinates, y_coordinates, z_range_source, z_range_sink, area, ierr)
       if (ierr /= DFM_NOERR) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name), ']. ' &
             //'Source sink with id='//trim(sourcesink_id)//'. could not be added.'
          call err_flush()
          return
@@ -1069,12 +1108,12 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, &
-                                                     1, qstss)
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
+                                                     1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for source sink with id='//trim(sourcesink_id)//'.'
+         write (msgbuf, '(a)') 'Error while processing '''//trim(file_name)//''': ['//trim(group_name)//']. ' &
+            //'Could not initialize discharge data in '''//trim(discharge_input)//''' for source sink with id='//trim(sourcesink_id)//'.'
          call err_flush()
          return
       end if
@@ -1082,18 +1121,18 @@ contains
       ! Constituents (salinity, temperature, sediments, tracers) may have a timeseries file
       ! specifying the difference in concentration added by the source/sink.
       ! All these files are optional, so no check on 'is_read' can be present below.
-      if (NUMCONST > 0) then
-         allocate (constituent_delta_file(NUMCONST), stat=ierr)
-         do i_const = 1, NUMCONST
+      if (numconst > 0) then
+         allocate (constituent_delta_file(numconst), stat=ierr)
+         do i_const = 1, numconst
             is_read = .false.
             const_name_with_prefix = const_names(i_const)
-            if (i_const == ISALT) then
+            if (i_const == isalt) then
                ! Rename 'salt' constituent to 'salinity' for source-sink input.
                const_name_with_prefix = 'salinity'
-            else if (i_const == ITEMP) then
+            else if (i_const == itemp) then
                ! temperature name is correct already
                continue
-            else if (i_const == ISPIR) then
+            else if (i_const == ispir) then
                ! Spiral flow intensity "constituent" not relevant for source-sinks.
                cycle
             else
@@ -1101,9 +1140,9 @@ contains
                call ncu_sanitize_name(const_name_with_prefix)
 
                ! Add correct "group" prefix to constituent name.
-               if (i_const >= ISED1 .and. i_const <= ISEDN) then
+               if (i_const >= ised1 .and. i_const <= isedn) then
                   const_name_with_prefix = 'sedFrac'//trim(const_name_with_prefix)
-               else if (i_const >= ITRA1 .and. i_const <= ITRAN) then
+               else if (i_const >= itra1 .and. i_const <= itran) then
                   const_name_with_prefix = 'tracer'//trim(const_name_with_prefix)
                end if
             end if
@@ -1114,8 +1153,8 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), (numconst + 1) * (numsrc - 1) + 1 + i_const, &
-                                                              1, qstss)
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
+                                                              1, source_sink_all_discharges(1 + i_const, :))
                continue
             end if
          end do
@@ -1125,62 +1164,224 @@ contains
 
    end function init_sourcesink_forcings
 
-   !> Read and initialize bubblescreen object from new external forcings file.
-   function init_bubblescreen_forcings(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
+   subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
+      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
-      use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
+      use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
+      use string_module, only: strcmpi, str_tolower
+      use m_polygon, only: npl
+      use network_data
+      use m_flow
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
+      use m_alloc, only: realloc
+      use m_find_flownode, only: find_nearest_flownodes
+      use m_GlobalParameters, only: INDTP_2D
+      use messageHandling, only: err_flush, msgbuf
+      use m_bubblescreen, only: compute_bubblescreen_area
+
+      ! Parameters
+      type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
+
+      ! Local variables
+      logical :: is_successful
+      integer :: file_pointer
+      integer :: i !< Loop index
+      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
+      integer :: num_bubblescreens
+      integer :: num_items_in_file
+      real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
+      real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
+      character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character, dimension(:), allocatable :: error
+
+      type(tree_data), pointer :: block_ptr
+      type(t_Bubblescreen) :: bubblescreen
+
+      ! Initialization
+      i_bubblescreen = 0
+      num_bubblescreen_source_sinks = 0
+      num_items_in_file = tree_num_nodes(bnd_ptr)
+
+      ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
+      num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
+      allocate (bubblescreens(num_bubblescreens))
+      allocate (bubblescreen_air_discharge(num_bubblescreens))
+
+      ! Initialize cache
+      call init_cell_geom_as_polylines()
+
+      ! Cycle through all [blocks] in the .ext file tree and find the [bubblescreen] blocks
+      do i = 1, num_items_in_file
+         block_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         group_name = trim(tree_get_name(block_ptr))
+
+         if (str_tolower(group_name) == 'bubblescreen') then
+            i_bubblescreen = i_bubblescreen + 1
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
+            bubblescreen%id = id
+
+            if (is_successful) then
+
+               ! Read the polyline file to polygon data and get the x,y coordinates of the polyline points
+               call savepol()
+               call oldfil(file_pointer, location_file)
+               call reapol(file_pointer, 0)
+               polygon_x_coordinates = xpl(1:npl)
+               polygon_y_coordinates = ypl(1:npl)
+               call restorepol()
+
+               ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
+               call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
+               bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
+               bubblescreen%total_area = compute_bubblescreen_area(bubblescreen)
+            end if
+
+            ! Add the pre-initialized bubblescreen to bubblescreens
+            bubblescreens(i_bubblescreen) = bubblescreen
+         end if
+      end do
+
+      call cleanup_cell_geom_polylines()
+
+   end subroutine initialize_bubblescreens
+
+   !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
+   !! Source-sinks need to be added globally.
+   function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
+      use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
+      use m_filez, only: oldfil
+      use m_reapol, only: reapol
+      use messageHandling, only: err_flush, msgbuf, msg_flush
+      use tree_data_types, only: tree_data
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use network_data
+      use m_flow
+      use fm_external_forcings_data
+      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
+      use m_setsorsin
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, idomain, my_rank
+      use m_alloc, only: realloc
+      use m_flowgeom, only: ndx
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
       character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+
+      ! Local variables
+      logical :: is_successful !< Success flag
+      integer :: cidx !< Index for crossed cells
+      integer :: i, bi !< Loop indices
+      integer :: ierr !< Error code
+      integer :: bubblescreen_source_sink_count
+      integer :: n_cells
+      integer, dimension(:), allocatable :: bubblescreen_cells
+      integer :: local_count
+
+      real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
+      real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
+      real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
+      real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
+      real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
+
       character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: srcid !< Source id
       character(len=:), allocatable :: location_file !< Bubblescreen location file
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
-      ! Local variables
-      integer :: file_pointer
-      logical :: is_successful
-
+      ! Initialization
       is_successful = .false.
+      bubblescreen_source_sink_count = 0
+      local_count = 0
 
-      ! Read bubblescreen attributes from the tree node
-      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, discharge_input)
+      ! Read bubble screen attributes from the tree node
+      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
+      if (is_successful) then
+         allocate (character(len=len_trim(id) + 50) :: srcid)
 
-      ! Read and initialize polygon data from location_file
-      call oldfil(file_pointer, location_file)
-      call reapol(file_pointer, 0)
+         ! Find the bubblescreen with matching id
+         do i = 1, size(bubblescreens)
+            if (trim(bubblescreens(i)%id) == trim(id)) then
+               bi = i
+               exit
+            end if
+         end do
 
-      ! ====================================================================================================
-      ! TODO: Use the polygon data to create the bubblescreen source/sinks objects
-      ! 
-      ! proposed workflow: 
-      ! 1) Use find_cells_crossed_by_polyline subroutine to find all crossed flowed nodes based on polyline (UNST-9561)
-      ! 2) Create source/sink objects, either on their own or as part of a bubblescreen object to keep track of discharge etc. (UNST-9562)
-      ! ====================================================================================================
+         associate (bubblescreen => bubblescreens(bi))
 
-      ! ====================================================================================================
-      ! TODO: Readout the .bc file containing the bubblescreen discharge timeseries and connect to EC module
-      ! See: UNST-9562, UNST-9564
-      !
-      ! Maybe start with something like this (copy-paste from init_sourcesink_forcings):
-      ! is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'bubble screen', trim(id), 'discharge', &
-      !                                                trim(discharge_input), (numconst + 1) * (numsrc - 1) + 1, 1, qstss)
-      ! if (.not. is_successful) then
-      !    write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-      !       //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
-      !    call err_flush()
-      !    return
-      ! end if
-      ! ====================================================================================================
+            n_cells = bubblescreen%num_flowcells
+            bubblescreen_cells = bubblescreen%flowcell_indices
+            ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+            if (jampi == 1) then
+               bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+               n_cells = size(bubblescreen_cells)
+            end if
+            call realloc(x_flowcell, n_cells, fill=0.0_dp)
+            call realloc(y_flowcell, n_cells, fill=0.0_dp)
+            do i = 1, n_cells
+               if (.not. bubblescreen_cells(i) == -1) then
+                  x_flowcell(i) = xzw(bubblescreen_cells(i))
+                  y_flowcell(i) = yzw(bubblescreen_cells(i))
+               end if
+            end do
+            if (jampi == 1) then
+               call reduce_double_array_max(n_cells, x_flowcell)
+               call reduce_double_array_max(n_cells, y_flowcell)
+            end if
+            z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
+            z_flowcell_sink = bubblescreen%z_level
+            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
+            ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
+            do cidx = 1, n_cells
+               ! Create the source/sink name
+               bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
+               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
+
+               ! Create a linked source/sink in the flow cell
+               call addsorsin(srcid, x_flowcell(cidx:cidx), y_flowcell(cidx:cidx), z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               if (bubblescreen_cells(cidx) /= -1) then
+                  local_count = local_count + 1
+                  bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
+                  source_sink_indices(1, num_source_sink) = bubblescreen_cells(cidx)
+                  source_sink_indices(4, num_source_sink) = bubblescreen_cells(cidx)
+                  if (jampi == 1) then
+                     if (idomain(bubblescreen_cells(cidx)) /= my_rank) then
+                        ! Ghost cell: owned by another partition, zero out indices so setsorsin
+                        ! skips the coupled branch and avoids double-counting source_sink_reduction
+                        source_sink_indices(1, num_source_sink) = 0
+                     end if
+                  end if
+               end if
+            end do
+         end associate
+      end if
+
+      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
+                                                     trim(discharge_input), bi, 1, bubblescreen_air_discharge)
+
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
+         call err_flush()
+         return
+      end if
 
       is_successful = .true.
 
-   end function init_bubblescreen_forcings
+   end function add_bubblescreen_source_sinks
 
    !> Get several target grid properties for a given location type.
    !!

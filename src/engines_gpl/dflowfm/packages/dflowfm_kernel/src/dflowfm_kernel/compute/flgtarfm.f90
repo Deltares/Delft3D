@@ -160,7 +160,7 @@ contains
       gatedoorheight = generalstruc(ng)%gatedoorheight
 
       !if (strdamf< - 0.5D0) strdamf = dynstructext
-      !if (lambda < - 0.5D0) lambda = extra_resist_genstruc
+      !if (lambda < - 0.5D0) lambda = EXTRA_RESISTANCE_GENERAL_STRUCTURE
 
       !
       !     Determine cgf, cgd, cwf, cwd, mugf

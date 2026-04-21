@@ -43,7 +43,6 @@
 /* */
 /*/------------------------------------------------------------------------------- */
 
-
 /*
  * INCLUDE FILES AND DEFINITIONS
  */
@@ -57,30 +56,29 @@
  * C-functions called from fortran
  */
 
-#if linux
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define PSEMINIT   FC_FUNC(pseminit,PSEMINIT)
-#   define VSEMINIT   FC_FUNC(vseminit,VSEMINIT)
-#   define PSEMLUN    FC_FUNC(psemlun,PSEMLUN)
-#   define VSEMLUN    FC_FUNC(vsemlun,VSEMLUN)
-#   define PSEMNEFIS  FC_FUNC(psemnefis,PSEMNEFIS)
-#   define VSEMNEFIS  FC_FUNC(vsemnefis,VSEMNEFIS)
-#   define PSEMFINISH FC_FUNC(psemfinish,PSEMFINISH)
-#   define VSEMFINISH FC_FUNC(vsemfinish,VSEMFINISH)
+#if defined(__linux__)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define PSEMINIT FC_FUNC(pseminit, PSEMINIT)
+    #define VSEMINIT FC_FUNC(vseminit, VSEMINIT)
+    #define PSEMLUN FC_FUNC(psemlun, PSEMLUN)
+    #define VSEMLUN FC_FUNC(vsemlun, VSEMLUN)
+    #define PSEMNEFIS FC_FUNC(psemnefis, PSEMNEFIS)
+    #define VSEMNEFIS FC_FUNC(vsemnefis, VSEMNEFIS)
+    #define PSEMFINISH FC_FUNC(psemfinish, PSEMFINISH)
+    #define VSEMFINISH FC_FUNC(vsemfinish, VSEMFINISH)
 #else
-/* WIN32 */
-#   define STDCALL  /* nothing */
-#   define PSEMINIT   PSEMINIT
-#   define VSEMINIT   VSEMINIT
-#   define PSEMLUN    PSEMLUN
-#   define VSEMLUN    VSEMLUN
-#   define PSEMNEFIS  PSEMNEFIS
-#   define VSEMNEFIS  VSEMNEFIS
-#   define PSEMFINISH PSEMFINISH
-#   define VSEMFINISH VSEMFINISH
+    /* WIN32 */
+    #define STDCALL /* nothing */
+    #define PSEMINIT PSEMINIT
+    #define VSEMINIT VSEMINIT
+    #define PSEMLUN PSEMLUN
+    #define VSEMLUN VSEMLUN
+    #define PSEMNEFIS PSEMNEFIS
+    #define VSEMNEFIS VSEMNEFIS
+    #define PSEMFINISH PSEMFINISH
+    #define VSEMFINISH VSEMFINISH
 #endif
-
 
 /*
  * Functions Declaration
@@ -104,80 +102,45 @@ void STDCALL SEMEXIT(void);
 }
 #endif
 
-
 /*
  * Global variables
  */
 
-static pthread_mutex_t inimutex =  PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t nfsmutex =  PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t lunmutex =  PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t finmutex =  PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t inimutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t nfsmutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t lunmutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t finmutex = PTHREAD_MUTEX_INITIALIZER;
 
+void STDCALL PSEMINIT(void) /* Initialize   */ { pthread_mutex_lock(&inimutex); }
+void STDCALL VSEMINIT(void) { pthread_mutex_unlock(&inimutex); }
 
+void STDCALL PSEMLUN(void) /* New Lun      */ { pthread_mutex_lock(&lunmutex); }
+void STDCALL VSEMLUN(void) { pthread_mutex_unlock(&lunmutex); }
 
+void STDCALL PSEMNEFIS(void) /* Nefis put/get r/c/l/i*/ { pthread_mutex_lock(&nfsmutex); }
+void STDCALL VSEMNEFIS(void) { pthread_mutex_unlock(&nfsmutex); }
 
-void STDCALL PSEMINIT(void)          /* Initialize   */
-{
-    pthread_mutex_lock(&inimutex);
-}
-void STDCALL VSEMINIT(void)
-{
-    pthread_mutex_unlock(&inimutex);
-}
-
-
-
-void STDCALL PSEMLUN(void)          /* New Lun      */
-{
-    pthread_mutex_lock(&lunmutex);
-}
-void STDCALL VSEMLUN(void)
-{
-    pthread_mutex_unlock(&lunmutex);
-}
-
-
-
-void STDCALL PSEMNEFIS(void)            /* Nefis put/get r/c/l/i*/
-{
-    pthread_mutex_lock(&nfsmutex);
-}
-void STDCALL VSEMNEFIS(void)
-{
-    pthread_mutex_unlock(&nfsmutex);
-}
-
-
-
-void STDCALL PSEMFINISH(void)           /* Finish up */
-{
-    pthread_mutex_lock(&finmutex);
-}
-void STDCALL VSEMFINISH(void)
-{
-    pthread_mutex_unlock(&finmutex);
-}
-
+void STDCALL PSEMFINISH(void) /* Finish up */ { pthread_mutex_lock(&finmutex); }
+void STDCALL VSEMFINISH(void) { pthread_mutex_unlock(&finmutex); }
 
 void STDCALL SEMEXIT(void)
 {
 // This function should be called by the main thread, after all sub threads are finished
 // Unfortunately, the main thread is stopped after initialization
 #if defined(WIN32)
-    if ( inimutex != 0 )
+    if (inimutex != 0)
     {
         pthread_mutex_destroy(&inimutex);
     }
-    if ( lunmutex != 0 )
+    if (lunmutex != 0)
     {
         pthread_mutex_destroy(&lunmutex);
     }
-    if ( nfsmutex != 0 )
+    if (nfsmutex != 0)
     {
         pthread_mutex_destroy(&nfsmutex);
     }
-    if ( finmutex != 0 )
+    if (finmutex != 0)
     {
         pthread_mutex_destroy(&finmutex);
     }

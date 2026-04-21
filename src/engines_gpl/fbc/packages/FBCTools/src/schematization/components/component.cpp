@@ -23,10 +23,9 @@
 
 #include <schematization/components/component.h>
 
-using namespace std;
 using namespace rtctools::schematization::components;
 
 component::component(string id, string name) : element(id, name)
 {
-	//
+    //
 }

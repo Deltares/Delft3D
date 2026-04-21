@@ -8145,43 +8145,43 @@ contains
       !
       if (jamapNearField == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = numsrc - numsrc_nf + 1, numsrc
+         do isrc = num_source_sink - num_source_sink_for_nearfield + 1, num_source_sink
             !
             ! Sinks
-            n = ksrc(1, isrc)
+            n = source_sink_indices(1, isrc)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < zsrc(1, isrc)) then
+                  if (zws(nk) < source_sink_z_bottom(1, isrc)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < zsrc2(1, isrc)) then
+                  if (zws(nk) < source_sink_z_top(1, isrc)) then
                      nktop = nk
                   end if
                end do
                do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) - qstss((1 + numconst) * (isrc - 1) + 1) / real(nktop - nkbot + 1, hp)
+                  work1d(nk) = work1d(nk) - source_sink_all_discharges(1, isrc) / real(nktop - nkbot + 1, hp)
                end do
             end if
             !
             ! Sources
-            n = ksrc(4, isrc)
+            n = source_sink_indices(4, isrc)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < zsrc(2, isrc)) then
+                  if (zws(nk) < source_sink_z_bottom(2, isrc)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < zsrc2(2, isrc)) then
+                  if (zws(nk) < source_sink_z_top(2, isrc)) then
                      nktop = nk
                   end if
                end do
                do nk = nkbot, nktop
-                  work1d(nk) = work1d(nk) + qstss((1 + numconst) * (isrc - 1) + 1) / real(nktop - nkbot + 1, hp)
+                  work1d(nk) = work1d(nk) + source_sink_all_discharges(1, isrc) / real(nktop - nkbot + 1, hp)
                end do
             end if
          end do
@@ -11865,6 +11865,9 @@ contains
       use m_set_nod_adm
       use m_inquire_link_type, only: is_valid_2d2d_netlink, is_valid_1d2d_netlink, is_valid_1D_netlink, count_1D_edges, count_1D_nodes
       use m_cell_geometry, only: blcell
+      use m_longculverts_data, only: longculverts, is_2D2D_longculvertlink
+      use array_module, only: convert_mask_to_indices
+
       implicit none
 
       integer, intent(in) :: ncid !< NetCDF file id
@@ -11885,6 +11888,7 @@ contains
       integer :: i, k, k1, k2, numl2d, numk2d, L, Lnew, nv, n1, n2, n
       integer :: num_1d_nodes, node_index
       logical :: jaInDefine
+      integer :: longculvertindex
       integer :: id_zf
       real(kind=hp), allocatable :: xn(:), yn(:), zn(:), xe(:), ye(:), zf(:)
       integer :: n1dedges, n1d2dcontacts, n2d2dcontacts, start_index
@@ -11941,18 +11945,23 @@ contains
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
-      temp_indices = [(l, l=1, numl)]
-      temp_indices = pack(temp_indices, is_valid_2d2d_netlink(temp_indices))
+      allocate(temp_indices(numl))
+      forall (l=1:numl) temp_indices(l) = l
+      temp_indices = convert_mask_to_indices(is_valid_2d2d_netlink(temp_indices))
       n2d2dcontacts = size(temp_indices)
       if (n2d2dcontacts > 0) then
          allocate (contacts_2D2D(2, n2d2dcontacts))
          call realloc(contacttype_2D2D, n2d2dcontacts, keepExisting=.false., fill=5)
-
+         call realloc(contactids_2D2D, n2d2dcontacts, keepExisting=.true., fill='')
          do i = 1, n2d2dcontacts
             L = temp_indices(i)
             n1 = abs(lne(1, L))
             n2 = abs(lne(2, L))
             contacts_2D2D(1:2, i) = [n1, n2]
+            call is_2D2D_longculvertlink(L, longculvertindex)
+            if (longculvertindex > 0) then
+               contactids_2D2D(i) = longculverts(longculvertindex)%contactID !< reuse branchid for long culvert contacts
+            end if
          end do
       end if
 
@@ -12283,8 +12292,9 @@ contains
          if (n2d2dcontacts > 0) then
             ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_2D2D, trim(contactname_2D2D), n2d2dcontacts, id_tsp%meshids2d, id_tsp%meshids2d, UG_LOC_FACE, UG_LOC_FACE, start_index)
             ierr = nf90_enddef(ncid)
+
             ! Put the contacts
-            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D)
+            ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_2D2D, contacts_2D2D(1, :), contacts_2D2D(2, :), contacttype_2D2D, contactsids=contactids_2D2D)
             ierr = nf90_redef(ncid) ! TODO: AvD: I know that all this redef is slow. Split definition and writing soon.
          end if
 
@@ -17697,7 +17707,7 @@ contains
       use m_GlobalParameters
       use m_flow, only: au
       use m_1d_structures
-      use m_General_Structure
+      use m_general_structure
       use fm_external_forcings_data
       use m_longculverts_data, only: longculverts, nlongculverts
       implicit none

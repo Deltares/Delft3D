@@ -5,11 +5,13 @@ Copyright (C)  Stichting Deltares, 2026
 
 import multiprocessing
 import os
+import shutil
 import sys
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from multiprocessing.pool import AsyncResult
 from multiprocessing.synchronize import Condition
+from pathlib import Path
 from typing import Iterable, List, Optional
 
 from src.config.location import Location
@@ -88,6 +90,21 @@ class TestSetRunner(ABC):
 
         self.__download_dependencies()
         log_sub_header("Running tests", self.__logger)
+
+        # Prepare cases (download input and reference data, validate etc.)
+        # Parallel download is not supported by DVC.
+        for config in self.__settings.configs_to_run:
+            if config.path and config.path.version == "DVC":
+                log_sub_header(
+                    f"Preparing test case name = '{config.name}' (skipping download of input and reference data due to DVC version)",
+                    self.__logger,
+                )
+                try:
+                    self.prepare_test_case(config, self.__logger)
+                except Exception as exception:
+                    self.__logger.error(f"Failed to prepare test case '{config.name}': {exception}")
+                    self.cleanup_failed_preparation(config)
+                log_separator(self.__logger, char="-")
 
         results = (
             self.run_tests_in_parallel()
@@ -222,11 +239,15 @@ class TestSetRunner(ABC):
         )
 
         try:
-            log_sub_header(f"Preparing test case name = '{config.name}'", logger)
-            self.__prepare_test_case(config, logger)
-            log_separator(logger, char="-")
+            # DVC will not download data as part of the run.
+            if not config.path or config.path.version != "DVC":
+                log_sub_header(f"Preparing test case name = '{config.name}'", logger)
+                self.prepare_test_case(config, logger)
+                log_separator(logger, char="-")
 
             # Run testcase
+            if not config.absolute_test_case_path or not config.absolute_test_case_reference_path:
+                raise TestBenchError("Test case paths are not prepared.")
             testcase = TestCase(config, logger)
 
             if self.__settings.command_line_settings.skip_run:
@@ -368,6 +389,34 @@ class TestSetRunner(ABC):
             skip_postprocessing = True
 
         return skip_testcase, skip_postprocessing
+
+    def cleanup_failed_preparation(self, config: TestCaseConfig) -> None:
+        """Clean up partially downloaded files after preparation failure.
+
+        Parameters
+        ----------
+        config : TestCaseConfig
+            Configuration of the test case that failed to prepare.
+        """
+        # Clean up input directory (without _work suffix)
+        if config.absolute_test_case_path:
+            input_path = Path(config.absolute_test_case_path)
+            if input_path.name.endswith("_work"):
+                original_input = input_path.with_name(input_path.name[:-5])  # Remove "_work"
+                if original_input.exists():
+                    self.__logger.debug(f"Cleaning up input directory: {original_input}")
+                    try:
+                        shutil.rmtree(original_input)
+                    except Exception as e:
+                        self.__logger.warning(f"Failed to remove input directory: {e}")
+
+        # Clean up reference directory if it was created
+        if config.absolute_test_case_reference_path and os.path.exists(config.absolute_test_case_reference_path):
+            self.__logger.debug(f"Cleaning up reference directory: {config.absolute_test_case_reference_path}")
+            try:
+                shutil.rmtree(config.absolute_test_case_reference_path)
+            except Exception as e:
+                self.__logger.warning(f"Failed to remove reference directory: {e}")
 
     def __download_dependencies(self) -> None:
         configs_to_handle = [c for c in self.__settings.configs_to_run if c.dependency]
@@ -520,7 +569,7 @@ class TestSetRunner(ABC):
             yield Program(program_configuration, self.settings)
         log_separator(self.__logger, char="-", with_new_line=True)
 
-    def __prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
+    def prepare_test_case(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Prepare test case based on provided config (download input & reference data).
 
         Parameters
@@ -559,6 +608,9 @@ class TestSetRunner(ABC):
             remote_path = self.__build_remote_path(config, location)
             local_path = self.__build_local_path(config, location)
             self.__download_location_with_retries(config, location, remote_path, local_path, logger)
+            if location.type == PathType.INPUT:
+                self.__copy_to_work_folder(Path(local_path), logger)
+
             self.__set_absolute_paths(config, location.type, local_path)
 
     def __validate_location(self, config: TestCaseConfig, location: Location) -> None:
@@ -637,6 +689,22 @@ class TestSetRunner(ABC):
                     error_message = f"Unable to download testcase: {error}"
                     raise TestBenchError(error_message) from e
 
+    def __copy_to_work_folder(self, local_path: Path, logger: ILogger) -> None:
+        """Copy downloaded files to work folder if needed."""
+        if not local_path.is_dir():
+            raise NotADirectoryError(f"Expected a directory to copy to work folder, but got: {local_path}")
+
+        # Add "_work" suffix.
+        copy_path = local_path.with_name(f"{local_path.name}_work")
+
+        # Clean work directory if it exists
+        if copy_path.exists():
+            shutil.rmtree(copy_path)
+
+        # copy input to work directory
+        logger.debug(f"Copying input from {local_path} to {copy_path}")
+        shutil.copytree(local_path, copy_path, symlinks=False, ignore_dangling_symlinks=True)
+
     def __download_single_location(
         self, config: TestCaseConfig, location: Location, remote_path: str, local_path: str, logger: ILogger
     ) -> None:
@@ -655,7 +723,8 @@ class TestSetRunner(ABC):
     def __set_absolute_paths(self, config: TestCaseConfig, location_type: PathType, local_path: str) -> None:
         """Set absolute paths on the config based on location type."""
         if location_type == PathType.INPUT:
-            config.absolute_test_case_path = local_path
+            input_path = Path(local_path)
+            config.absolute_test_case_path = str(input_path.with_name(f"{input_path.name}_work"))
         elif location_type == PathType.REFERENCE:
             config.absolute_test_case_reference_path = local_path
 

@@ -365,13 +365,21 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     ! === start for calculating morphological changes
     !
-    call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)
+    call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)       
+    !
+    call prop_get(mor_ptr, 'Morphology', 'IThresh', morpar%ithresh)
+    if (morpar%ithresh /= THRESH_CONSTANT .and. morpar%ithresh /= THRESH_BASED_ON_THICKNESS) then
+       write(errmsg, '(a,i0,a,i0,a,a)') 'IThresh should be ', THRESH_CONSTANT, ' (default) or ', THRESH_BASED_ON_THICKNESS, ' in ', trim(filmor)
+       call write_error(errmsg, unit=lundia)
+       error = .true.
+       return
+    endif
     !
     ! === start for calculating bed composition changes
     !
     morpar%tcmp = morpar%tmor  ! by default, composition update starts when morphological update starts
     !
-    call prop_get(mor_ptr, 'Morphology', 'CmpUpdStt', morpar%tcmp)
+    call prop_get(mor_ptr, 'Morphology', 'CmpUpdStt', morpar%tcmp)   
     !
     ! === threshold value for slowing erosion near a fixed layer (m)
     !
@@ -793,15 +801,15 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
     fluxlimstring = ' '
-    call prop_get(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)
+    call prop_get(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
     call str_lower(fluxlimstring)
     select case(fluxlimstring)
         case('minmod')
-            mornum%fluxlim = FLUX_LIMITER_MINMOD
+            mornum%fluxlim = FLUX_LIMITER_MINMOD  
         case('mc')     
-            mornum%fluxlim = FLUX_LIMITER_MC
+            mornum%fluxlim = FLUX_LIMITER_MC  
         case default 
-            mornum%fluxlim = FLUX_LIMITER_NONE
+            mornum%fluxlim = FLUX_LIMITER_NONE  
     end select
            
 end subroutine read_morphology_numerical_settings

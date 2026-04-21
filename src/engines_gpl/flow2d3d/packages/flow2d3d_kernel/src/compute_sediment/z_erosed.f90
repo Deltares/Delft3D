@@ -73,6 +73,9 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_sand_mud
     use globaldata
     use dfparall
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
+    use m_getfixfac, only: getfixfac
     !
     implicit none
     !
@@ -214,6 +217,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: depfac
     real(fp)         , dimension(:,:)    , pointer :: mfluff
     include 'flow_steps_f.inc'
+    integer                              , pointer :: ithresh
 !
 ! Local parameters
 !
@@ -532,6 +536,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     depfac              => gdp%gdmorpar%flufflyr%depfac
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     wetslope            => gdp%gdmorpar%wetslope
+    ithresh             => gdp%gdmorpar%ithresh
     !
     allocate (localpar (npar), stat = istat)
     !
@@ -637,7 +642,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dtmor = dt * morfac
     !
     call getfixfac(gdp%gdmorlyr, gdp%d%nmlb, gdp%d%nmub, lsedtot, &
-                 & nmmax       , fixfac    , ffthresh  )
+                 & nmmax       , fixfac    , ffthresh  , ithresh)
     !
     ! Set fixfac to 1.0 for tracer sediments and adjust frac
     !
@@ -900,8 +905,6 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        else
           temperature = temeqs
        endif
-       !
-       taks0 = 0.0_fp
        !
        ! Calculate Van Rijn's reference height
        !
@@ -1196,7 +1199,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                    klc=klc+1
                 enddo
              endif
-             taks = 0.0_fp
+             taks = taks0
              !
              klc    = 1
              do k = kfsmax(nm),kfsmin(nm),-1

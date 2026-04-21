@@ -44,26 +44,33 @@ contains
    ! ========================================================================================
    !
    subroutine inipointers_erosed()
-      use m_fm_erosed, only: stm_included, dzbdt, mtd, seddif, blchg, ws, uau, lsed, stmpar, lsedtot, nmudfrac
-      use m_fm_erosed, only: max_mud_sedtyp, cmpupdfrac, rhosol, cdryb, logseddia, logsedsig, sedd10, sedd50
-      use m_fm_erosed, only: sedd90, sedd50fld, dstar, taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp
-      use m_fm_erosed, only: anymud, sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, flocmod, nflocpop
-      use m_fm_erosed, only: nflocsizes, floclist, tbreakup, tfloc, thresh, sus, suscorfac, bed, susw, sedthr, bedw
-      use m_fm_erosed, only: i10, i15, i50, i90, nxx, xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp
-      use m_fm_erosed, only: asklhe, mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, epspar, camax
-      use m_fm_erosed, only: aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, iflufflyr, depfac, mfluff, alfabs
-      use m_fm_erosed, only: alfabn, wetslope, avaltime, duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld
-      use m_fm_erosed, only: cshld, dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, bedupd
-      use m_fm_erosed, only: neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, l_suscor, bermslopetransport
-      use m_fm_erosed, only: bermslopebed, bermslopesus, bermslope, bermslopefac, bermslopegamma, bermslopedepth
-      use m_fm_erosed, only: iform, par, npar, max_integers, max_reals, max_strings
-      use m_fm_erosed, only: dll_function, dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil
-      use m_fm_erosed, only: aks, sedtra, bc_mor_array, dbodsd, dcwwlc, dm, dg, dgsd, dxx, e_dzdn, e_dzdt
-      use m_fm_erosed, only: epsclc, epswlc, fixfac, frac, kfsed, kmxsed, mudfrac, sandfrac, hidexp, rsdqlc
-      use m_fm_erosed, only: rsedeq, sbcx, sbcy, e_sbcn, e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, e_scrn, e_scrt
-      use m_fm_erosed, only: sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, sswx, sswy, e_sswn, e_sswt, sxtot, sytot
-      use m_fm_erosed, only: sbxcum, sbycum, ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, ust2
-      use m_fm_erosed, only: umod, uuu, vvv, wslc, zumod, rca, statqnt, bedloadupwindorder
+      use m_fm_erosed, only : stm_included, dzbdt, mtd, seddif, blchg, ws, uau, lsed, stmpar, &
+                              lsedtot, nmudfrac, max_mud_sedtyp, cmpupdfrac, rhosol, cdryb, &
+                              logseddia, logsedsig, sedd10, sedd50, sedd90, sedd50fld, dstar, &
+                              taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, &
+                              sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, &
+                              flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, &
+                              sus, suscorfac, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, &
+                              xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, &
+                              mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, &
+                              epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, &
+                              iflufflyr, depfac, mfluff, alfabs, alfabn, wetslope, avaltime, &
+                              duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld, cshld, &
+                              dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, &
+                              bedupd, neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, &
+                              l_suscor, bermslopetransport, bermslopebed, bermslopesus, &
+                              bermslope, bermslopefac, bermslopegamma, bermslopedepth, iform, &
+                              par, npar, max_integers, max_reals, max_strings, dll_function, &
+                              dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil, &
+                              aks, sedtra, bc_mor_array, dbodsd, dcwwlc, dm, dg, dgsd, dxx, &
+                              e_dzdn, e_dzdt, epsclc, epswlc, fixfac, frac, kfsed, kmxsed, &
+                              mudfrac, sandfrac, hidexp, rsdqlc, rsedeq, sbcx, sbcy, e_sbcn, &
+                              e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, &
+                              e_scrn, e_scrt, sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, &
+                              sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, &
+                              ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
+                              ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
+                              dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, bedloadupwindorder
 
       if (.not. stm_included) then
          return
@@ -188,7 +195,9 @@ contains
       bermslopefac => stmpar%morpar%bermslopefac
       bermslopegamma => stmpar%morpar%bermslopegamma
       bermslopedepth => stmpar%morpar%bermslopedepth
+      ithresh => stmpar%morpar%ithresh
       bedloadupwindorder => stmpar%morpar%mornum%bedloadupwindorder
+
 
       ! trapar
       iform => stmpar%trapar%iform
@@ -210,18 +219,24 @@ contains
       dbodsd => sedtra%dbodsd
       dcwwlc => sedtra%dcwwlc
       dm => sedtra%dm
+      dm_he => sedtra%dm_he
       dg => sedtra%dg
+      dg_he => sedtra%dg_he
       dgsd => sedtra%dgsd
+      dgsd_he => sedtra%dgsd_he
       dxx => sedtra%dxx
+      dxx_he => sedtra%dxx_he
       e_dzdn => sedtra%e_dzdn
       e_dzdt => sedtra%e_dzdt
       epsclc => sedtra%epsclc
       epswlc => sedtra%epswlc
       fixfac => sedtra%fixfac
       frac => sedtra%frac
+      frac_he => sedtra%frac_he
       kfsed => sedtra%kfsed
       kmxsed => sedtra%kmxsed
       mudfrac => sedtra%mudfrac
+      mudfrac_he => sedtra%mudfrac_he
       sandfrac => sedtra%sandfrac
       hidexp => sedtra%hidexp
       rsdqlc => sedtra%rsdqlc
