@@ -37,7 +37,7 @@ module m_flowparameters
    use m_waveconst
    use messagehandling, only: idlen
 
-   implicit none
+   implicit none(type, external)
 
    integer :: itstep !< time step 0=no, 1 =step_explicit, 2=step_reduce, 3=step_jacobi, 4: explicit
    integer :: iadvec !< adv type, 0=no, 1 = Wenneker vol, qu-udzt array, 2=1, function,
@@ -469,52 +469,56 @@ module m_flowparameters
    integer :: jadpuopt !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean.
    integer :: jaextrapbl !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions.
 
-   ! written to his file yes or no
-   integer :: jahisbal !< Write mass balance/volume totals to his file, 0: no, 1: yes
-   integer :: jahissourcesink !< Write discharge/volume at sources/sinks, 0: no, 1: yest
-   integer :: jahistur !< Write k, eps and vicww to his file, 0: no, 1: yes
-   integer :: jahiswind !< Write wind velocities to his file, 0: no, 1: yes
-   integer :: jahisrain !< Write precipitation intensity  (depth per time) to this file, 0: no, 1: yes
-   integer :: jahisinfilt !< Write infiltration rate to this file, 0: no, 1: yes
-   integer :: jahistem !< Write temperature to his file, 0: no, 1: yes
-   integer :: jahisheatflux !< Write heatfluxes to his file, 0: no, 1: yes
-   integer :: jahissal !< Write salinity to his file, 0: no, 1: yes
-   integer :: jahisrho !< Write density  to his file, 0: no, 1: yes
-   integer :: jahis_airdensity !< Write air density  to his file, 0: no, 1: yes
-   integer :: jahiswatlev !< Write water level to his file, 0: no, 1: yes
-   integer :: jahisbedlev !< Write bed level to his file, 0: no, 1: yes
-   integer :: jahiswatdep !< Write waterd epth to his file, 0: no, 1: yes
-   integer :: jahisvelvec !< Write velocity vectors to his file, 0: no, 1: yes
-   integer :: jahisww !< Write upward velocity to his file, 0: no, 1: yes
-   integer :: jahissed !< Write sediment transport to his file, 0: no, 1: yes
-   integer :: jahiszcor !< Write the vertical coordinate to his file, 0: no, 1: yes
-   integer :: jahiswav !< Write wave data to his file, 0: no, 1: yes
-   integer :: jahislateral !< Write lateral data to his file, 0: no, 1: yes
-   integer :: jahistaucurrent !< Write bed shear stress to his file, 0: no, 1: yes
-   integer :: jahisvelocity !< Write velocity magnitude to his file, 0: no, 1: yes
-   integer :: jahisdischarge !< Write discharge magnitude to his file, 0: no, 1: yes
-   integer :: jahisrunupgauge !< Write runupgauge       to his file, 0: no, 1: yes
-   integer :: jahiswqbot !< Write wqbot to his file, 0: no, 1: yes
-   integer :: jahiswqbot3d !< Write wqbot3d to his file, 0: no, 1: yes
-   integer :: jahistracers !< Write tracers          to his file, 0: no, 1: yes
-   integer :: jahiscrs_flow !< Write crs_flow         to his file, 0: no, 1: yes
-   integer :: jahiscrs_constituents !< Write crs_constituents to his file, 0: no, 1: yes
-   integer :: jahiscrs_sediment !< Write crs_sediment     to his file, 0: no, 1: yes
-   integer :: jahisdred !< Write dred             to his file, 0: no, 1: yes
-   integer :: jahiswaq !< Write Water Quality    to his file, 0: no, 1: yes
-   ! His output structure keywords
-   integer :: jahiscgen !< Write structure parameters to his file, 0: n0, 1: yes
-   integer :: jahispump !< Write pump      parameters to his file, 0: n0, 1: yes
-   integer :: jahisgate !< Write gate      parameters to his file, 0: n0, 1: yes
-   integer :: jahiscdam !< Write dam       parameters to his file, 0: n0, 1: yes
-   integer :: jahisweir !< Write weir      parameters to his file, 0: n0, 1: yes
-   integer :: jahisdambreak !< Write dambreak  parameters to his file, 0: n0, 1: yes
-   integer :: jahisorif !< Write orifice   parameters to his file, 0: no, 1: yes
-   integer :: jahisbridge !< Write bridge    parameters to his file, 0: no, 1: yes
-   integer :: jahisculv !< Write culvert   parameters to his file, 0: no, 1: yes
-   integer :: jahisuniweir !< Write univeral weir parameters to his file, 0: no, 1: yes
-   integer :: jahiscmpstru !< Write compound structure parameters to his file, 0: no, 1: yes
-   integer :: jahislongculv !< Write long culverts parameters to his file, 0: no, 1:yes
+   type :: WriteHisOutput
+      integer :: bal !< Write mass balance/volume totals to his file, 0: no, 1: yes
+      integer :: sourcesink !< Write discharge/volume at sources/sinks, 0: no, 1: yest
+      integer :: tur !< Write k, eps and vicww to his file, 0: no, 1: yes
+      integer :: wind !< Write wind velocities to his file, 0: no, 1: yes
+      integer :: rain !< Write precipitation intensity  (depth per time) to this file, 0: no, 1: yes
+      integer :: infilt !< Write infiltration rate to this file, 0: no, 1: yes
+      integer :: tem !< Write temperature to his file, 0: no, 1: yes
+      integer :: heatflux !< Write heatfluxes to his file, 0: no, 1: yes
+      integer :: sal !< Write salinity to his file, 0: no, 1: yes
+      integer :: rho !< Write density  to his file, 0: no, 1: yes
+      integer :: airdensity !< Write air density  to his file, 0: no, 1: yes
+      integer :: watlev !< Write water level to his file, 0: no, 1: yes
+      integer :: bedlev !< Write bed level to his file, 0: no, 1: yes
+      integer :: watdep !< Write waterd epth to his file, 0: no, 1: yes
+      integer :: velvec !< Write velocity vectors to his file, 0: no, 1: yes
+      integer :: ww !< Write upward velocity to his file, 0: no, 1: yes
+      integer :: sed !< Write sediment transport to his file, 0: no, 1: yes
+      integer :: zcor !< Write the vertical coordinate to his file, 0: no, 1: yes
+      integer :: wav !< Write wave data to his file, 0: no, 1: yes
+      integer :: lateral !< Write lateral data to his file, 0: no, 1: yes
+      integer :: taucurrent !< Write bed shear stress to his file, 0: no, 1: yes
+      integer :: velocity !< Write velocity magnitude to his file, 0: no, 1: yes
+      integer :: discharge !< Write discharge magnitude to his file, 0: no, 1: yes
+      integer :: runupgauge !< Write runupgauge to his file, 0: no, 1: yes
+      integer :: wqbot !< Write wqbot to his file, 0: no, 1: yes
+      integer :: wqbot3d !< Write wqbot3d to his file, 0: no, 1: yes
+      integer :: tracers !< Write tracers to his file, 0: no, 1: yes
+      integer :: crs_flow !< Write crs_flow to his file, 0: no, 1: yes
+      integer :: crs_constituents !< Write crs_constituents to his file, 0: no, 1: yes
+      integer :: crs_sediment !< Write crs_sediment to his file, 0: no, 1: yes
+      integer :: dred !< Write dred to his file, 0: no, 1: yes
+      integer :: waq !< Write Water Quality to his file, 0: no, 1: yes
+
+      ! His output structure keywords
+      integer :: cgen !< Write structure parameters to his file, 0: n0, 1: yes
+      integer :: pump !< Write pump parameters to his file, 0: n0, 1: yes
+      integer :: gate !< Write gate parameters to his file, 0: n0, 1: yes
+      integer :: cdam !< Write dam parameters to his file, 0: n0, 1: yes
+      integer :: weir !< Write weir parameters to his file, 0: n0, 1: yes
+      integer :: dambreak !< Write dambreak parameters to his file, 0: n0, 1: yes
+      integer :: orifice !< Write orifice parameters to his file, 0: no, 1: yes
+      integer :: bridge !< Write bridge parameters to his file, 0: no, 1: yes
+      integer :: culvert !< Write culvert parameters to his file, 0: no, 1: yes
+      integer :: universal_weir !< Write univeral weir parameters to his file, 0: no, 1: yes
+      integer :: compound_structure !< Write compound structure parameters to his file, 0: no, 1: yes
+      integer :: long_culvert !< Write long culverts parameters to his file, 0: no, 1:yes
+   end type WriteHisOutput
+
+   type(WriteHisOutput) :: write_his_output
 
    ! written to map file yes or no
    integer :: jamaps0 !< previous step water levels to map file, 0: no, 1: yes
@@ -950,38 +954,38 @@ contains
       jalogsolverconvergence = 0
       jalogtransportsolverlimiting = 0
 
-      jahisbal = 1
-      jahissourcesink = 1
-      jahistur = 1
-      jahiswind = 1
-      jahisrain = 1
-      jahisinfilt = 1
-      jahistem = 1
-      jahisheatflux = 1
-      jahissal = 1
-      jahisrho = 1
-      jahis_airdensity = 0
-      jahiswatlev = 1
-      jahisbedlev = 1
-      jahiswatdep = 0
-      jahisvelvec = 1
-      jahisww = 0
-      jahissed = 1
-      jahiszcor = 1
-      jahiswav = 1
-      jahislateral = 1
-      jahistaucurrent = 1
-      jahisvelocity = 1
-      jahisdischarge = 1
-      jahisrunupgauge = 1
-      jahiswqbot = 1
-      jahiswqbot3d = 0
-      jahistracers = 1
-      jahiscrs_flow = 1
-      jahiscrs_constituents = 1
-      jahiscrs_sediment = 1
-      jahisdred = 1
-      jahiswaq = 1
+      write_his_output%bal = 1
+      write_his_output%sourcesink = 1
+      write_his_output%tur = 1
+      write_his_output%wind = 1
+      write_his_output%rain = 1
+      write_his_output%infilt = 1
+      write_his_output%tem = 1
+      write_his_output%heatflux = 1
+      write_his_output%sal = 1
+      write_his_output%rho = 1
+      write_his_output%airdensity = 0
+      write_his_output%watlev = 1
+      write_his_output%bedlev = 1
+      write_his_output%watdep = 0
+      write_his_output%velvec = 1
+      write_his_output%ww = 0
+      write_his_output%sed = 1
+      write_his_output%zcor = 1
+      write_his_output%wav = 1
+      write_his_output%lateral = 1
+      write_his_output%taucurrent = 1
+      write_his_output%velocity = 1
+      write_his_output%discharge = 1
+      write_his_output%runupgauge = 1
+      write_his_output%wqbot = 1
+      write_his_output%wqbot3d = 0
+      write_his_output%tracers = 1
+      write_his_output%crs_flow = 1
+      write_his_output%crs_constituents = 1
+      write_his_output%crs_sediment = 1
+      write_his_output%dred = 1
+      write_his_output%waq = 1
       jamaps0 = 1
       jamaps1 = 1
       jamapevap = 0

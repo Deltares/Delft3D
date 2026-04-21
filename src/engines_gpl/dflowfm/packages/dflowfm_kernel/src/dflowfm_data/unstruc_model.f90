@@ -65,7 +65,7 @@ module unstruc_model
    ! 1.08 (2019-07-27): Default option for density changed from Eckart to UNESCO (idensform=2 instead of 1)
    ! 1.07 (2019-06-13): Renamed [model] block as [General] block, replace keyword MDUFormatVersion by FileVersion
    ! 1.06 (2016-05-16): Removed 1 variable for secondary flow, EffectSpiral as it is given by Espir contained in .mor file
-   ! 1.05 (2015-07-22): The structure parameters are added (jahisstr, jahisdam, jahispump, jahisgate)
+   ! 1.05 (2015-07-22): The structure parameters are added (jahisstr, jahisdam, write_his_output%pump, write_his_output%gate)
    ! 1.04 (2015-03-19): Anti-Creep option is added
    ! 1.03 (2015-02-25): Added 2 variable for secondary flow, EffectSpiral and BetaSpiral
    ! 1.02 (2015-01-07): Remove [time] AutoTimestep (always automatic).
@@ -2020,61 +2020,61 @@ contains
 
       call prop_get(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
 
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', jahisbal, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', jahissourcesink, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', jahiscgen, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', jahiscdam, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', jahispump, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate', jahisgate, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir', jahisweir, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice', jahisorif, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge', jahisbridge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert', jahisculv, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak', jahisdambreak, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir', jahisuniweir, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound', jahiscmpstru, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', jahislongculv, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', jahistur, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', jahiswind, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', jahisrain, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', jahisinfilt, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', jahis_airdensity, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density', jahisrho, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1', jahiswatlev, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel', jahisbedlev, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth', jahiswatdep, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves', jahiswav, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector', jahisvelvec, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', jahisww, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', jahissed, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', jahiszcor, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', write_his_output%bal, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', write_his_output%sourcesink, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', write_his_output%cgen, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', write_his_output%cdam, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', write_his_output%pump, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate', write_his_output%gate, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir', write_his_output%weir, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice', write_his_output%orifice, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge', write_his_output%bridge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert', write_his_output%culvert, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak', write_his_output%dambreak, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir', write_his_output%universal_weir, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound', write_his_output%compound_structure, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', write_his_output%long_culvert, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', write_his_output%tur, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', write_his_output%wind, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', write_his_output%rain, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', write_his_output%infilt, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', write_his_output%airdensity, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density', write_his_output%rho, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1', write_his_output%watlev, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel', write_his_output%bedlev, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth', write_his_output%watdep, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves', write_his_output%wav, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector', write_his_output%velvec, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', write_his_output%ww, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', write_his_output%sed, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', write_his_output%zcor, success)
       if (.not. success .and. kmx == 0) then
          ! for 2D we don't write zLayers by default. However zlayers are important for nesting where you can nest 2d=>3d models
-         ! since jahiszcor is by default 1,this will make by default jahiszcor=0 if kmx=0 .and. jahiszcor=1 if kmx > 0
-         jahiszcor = 0
+         ! since write_his_output%zcor is by default 1,this will make by default write_his_output%zcor=0 if kmx=0 .and. write_his_output%zcor=1 if kmx > 0
+         write_his_output%zcor = 0
       end if
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', jahislateral, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', jahistaucurrent, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success, alternative_key='Wrihis_heatflux')
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', jahisrunupgauge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswqbot, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', jahiswqbot3d, success)
-      if (kmx == 0 .and. jahiswqbot3d == 1) then
-         jahiswqbot3d = 0
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', write_his_output%lateral, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', write_his_output%taucurrent, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', write_his_output%velocity, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', write_his_output%discharge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', write_his_output%heatflux, success, alternative_key='Wrihis_heatflux')
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', write_his_output%runupgauge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', write_his_output%wqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', write_his_output%wqbot3d, success)
+      if (kmx == 0 .and. write_his_output%wqbot3d == 1) then
+         write_his_output%wqbot3d = 0
          write (msgbuf, '(a)') 'MDU setting "wrihis_wqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
             //'but this is ignored since the simulation is 2D.'
          call warn_flush()
       end if
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', jahistracers, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', jahiscrs_flow, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', jahiscrs_constituents, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment', jahiscrs_sediment, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', jahisdred, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', jahissal, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', write_his_output%tracers, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', write_his_output%crs_flow, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', write_his_output%crs_constituents, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment', write_his_output%crs_sediment, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', write_his_output%dred, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', write_his_output%waq, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', write_his_output%tem, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', write_his_output%sal, success)
 
       call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', jamaps0, success)
       call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', jamaps1, success)
@@ -2175,19 +2175,19 @@ contains
 
       if (temperature_model == TEMPERATURE_MODEL_NONE .or. temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
          jamapheatflux = 0
-         jahisheatflux = 0
+         write_his_output%heatflux = 0
       end if
 
       ! If no temperature is involved, then do not write temperature to output map/his files
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
          jamaptem = 0
-         jahistem = 0
+         write_his_output%tem = 0
       end if
 
       ! If no salinity is involved, then do not write salinity to output map/his files
       if (jasal < 1) then
          jamapsal = 0
-         jahissal = 0
+         write_his_output%sal = 0
       end if
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
@@ -2667,7 +2667,7 @@ contains
       use m_heatfluxes
       use m_fm_wq_processes
       use m_trachy
-      use m_structures, only: jahiscgen, jahiscdam, jahispump, jahisgate, jahisweir, jahisorif, jahisbridge, jahisculv, jahisdambreak, jahisuniweir, jahiscmpstru, jahislongculv
+      use m_structures, only: write_his_output
       use m_1d2d_fixedweirs, only: lat_fix_weir_umin, lat_fix_weir_umin_method, lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
       use m_subsidence, only: sdu_update_s1
       use m_xbeach_data, only: swave
@@ -3936,8 +3936,8 @@ contains
 
       call set_properties(prop_ptr, 'Output', config_set_his)
 
-      if (writeall .or. jahiszcor /= 1) then
-         call prop_set(prop_ptr, 'output', 'Wrihis_zcor', jahiszcor, 'Write vertical coordinates to his file (1: yes, 0: no)')
+      if (writeall .or. write_his_output%zcor /= 1) then
+         call prop_set(prop_ptr, 'output', 'Wrihis_zcor', write_his_output%zcor, 'Write vertical coordinates to his file (1: yes, 0: no)')
       end if
 
       call set_properties(prop_ptr, 'Output', config_set_map)

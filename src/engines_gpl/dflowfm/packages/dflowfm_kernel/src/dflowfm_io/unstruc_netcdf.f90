@@ -2950,7 +2950,7 @@ contains
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
       use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, & 
-         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, jahiswqbot3d, &
+         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, write_his_output, &
          jamapwqbot3d, jawave, jasecflow, intmiss, s1, s0, no_waves, jamap_chezy_links, flow_without_waves, jawaveswartdelwaq, &
          jamaptaucurrent, taus, jamap_chezy_elements, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
          fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
@@ -3539,7 +3539,7 @@ contains
          ITRAN0 = ITRAN
       end if
 
-      is_wq_bot_3d = jahiswqbot3d == 1 .or. jamapwqbot3d == 1
+      is_wq_bot_3d = write_his_output%wqbot3d == 1 .or. jamapwqbot3d == 1
       ! water quality bottom variables
       if (numwqbots > 0) then
          call realloc(id_rwqb, numwqbots, keepExisting=.false., fill=0)
@@ -14126,7 +14126,7 @@ contains
       end if !ITRA1
 
       ! Read the water quality bottom variables
-      is_wq_bot_3d = jahiswqbot3d /= 0 .or. jamapwqbot3d /= 0
+      is_wq_bot_3d = write_his_output%wqbot3d /= 0 .or. jamapwqbot3d /= 0
       if (numwqbots > 0) then
          call realloc(tmpvar1D, ndkx, keepExisting=.false., fill=0.0_dp)
          do iwqbot = 1, numwqbots
@@ -15252,28 +15252,28 @@ contains
       select case (structuretype)
       case (ST_WEIR)
          structstring = 'weir'
-         jahis = jahisweir
+         jahis = write_his_output%weir
       case (ST_UNI_WEIR)
          structstring = 'uniweir'
-         jahis = jahisuniweir
+         jahis = write_his_output%universal_weir
       case (ST_CULVERT)
          structstring = 'culvert'
-         jahis = jahisculv
+         jahis = write_his_output%culvert
       case (ST_BRIDGE)
          structstring = 'bridge'
-         jahis = jahisbridge
+         jahis = write_his_output%bridge
       case (ST_PUMP)
          structstring = 'pump'
-         jahis = jahispump
+         jahis = write_his_output%pump
       case (ST_ORIFICE)
          structstring = 'orifice'
-         jahis = jahisorif
+         jahis = write_his_output%orifice
       case (ST_GATE)
          structstring = 'gate'
-         jahis = jahisgate
+         jahis = write_his_output%gate
       case (ST_GENERAL_ST)
          structstring = 'general_structure'
-         jahis = jahiscgen
+         jahis = write_his_output%cgen
       case default
          return
       end select

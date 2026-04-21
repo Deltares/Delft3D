@@ -1536,7 +1536,7 @@ contains
 
       ! If no source/sink exists, then do not write related statistics to His-file
       if (num_source_sink < 0) then
-         jahissourcesink = 0
+         write_his_output%sourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
 

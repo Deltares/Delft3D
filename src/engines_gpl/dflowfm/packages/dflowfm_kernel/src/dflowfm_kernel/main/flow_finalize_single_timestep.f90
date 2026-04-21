@@ -150,7 +150,7 @@ contains
                call updateValuesOnRunupGauges_mpi()
                !call reduce_particles()
             end if
-            if (jahisbal > 0) then ! Update WaterBalances etc.
+            if (write_his_output%bal > 0) then ! Update WaterBalances etc.
                call updateBalance()
             end if
             if (jacheckmonitor == 1) then
@@ -169,7 +169,7 @@ contains
          end if
       end if
 
-      if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      if (write_his_output%lateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
          call updateValuesOnLaterals(time1, dts)
       end if
 

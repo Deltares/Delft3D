@@ -39,7 +39,7 @@ contains
    !> Update the heatfluxes
    subroutine heatu(time_in_hours)
       use precision, only: dp
-      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, jamapheatflux, jahisheatflux, &
+      use m_flow, only: qtotmap, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, jamapheatflux, write_his_output, &
                         temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, hs, epshstem, chktempdep
       use m_flowgeom, only: ndxi, nd
       use m_sferic, only: anglon, anglat
@@ -55,7 +55,7 @@ contains
 
       heatsrc0(:) = 0.0_dp ! 2D or 3D heat source per cell, only set at timeuser (Km3/s)
 
-      if (jamapheatflux > 0 .or. jahisheatflux > 0) then
+      if (jamapheatflux > 0 .or. write_his_output%heatflux > 0) then
          if (temperature_model == TEMPERATURE_MODEL_EXCESS) then
             qtotmap(:) = 0.0_dp
          else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then

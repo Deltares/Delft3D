@@ -202,31 +202,31 @@ contains
 
       ! Fill geometry arrays for structures
       ngategen = network%sts%numgates
-      if (jahisweir > 0 .and. network%sts%numWeirs > 0) then
+      if (write_his_output%weir > 0 .and. network%sts%numWeirs > 0) then
          call fill_geometry_arrays_structure(ST_WEIR, network%sts%numWeirs, nNodesWeir, nodeCountWeir, geomXWeir, geomYWeir)
       end if
-      if (jahiscgen > 0 .and. network%sts%numGeneralStructures > 0) then
+      if (write_his_output%cgen > 0 .and. network%sts%numGeneralStructures > 0) then
          call fill_geometry_arrays_structure(ST_GENERAL_ST, network%sts%numGeneralStructures, nNodesGenstru, nodeCountGenstru, geomXGenstru, geomYGenstru)
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (write_his_output%orifice > 0 .and. network%sts%numOrifices > 0) then
          call fill_geometry_arrays_structure(ST_ORIFICE, network%sts%numOrifices, nNodesOrif, nodeCountOrif, geomXOrif, geomYOrif)
       end if
-      if (jahisgate > 0 .and. network%sts%numgates > 0) then
+      if (write_his_output%gate > 0 .and. network%sts%numgates > 0) then
          call fill_geometry_arrays_structure(ST_GATE, network%sts%numgates, nNodesgate, nodeCountgate, geomXgate, geomYgate)
       end if
-      if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (write_his_output%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          call fill_geometry_arrays_structure(ST_UNI_WEIR, network%sts%numuniweirs, nNodesUniweir, nodeCountUniweir, geomXUniweir, geomYUniweir)
       end if
-      if (jahisculv > 0 .and. network%sts%numculverts > 0) then
+      if (write_his_output%culvert > 0 .and. network%sts%numculverts > 0) then
          call fill_geometry_arrays_structure(ST_CULVERT, network%sts%numculverts, nNodesCulv, nodeCountCulv, geomXCulv, geomYCulv)
       end if
-      if (jahispump > 0 .and. network%sts%numPumps > 0) then
+      if (write_his_output%pump > 0 .and. network%sts%numPumps > 0) then
          call fill_geometry_arrays_structure(ST_PUMP, network%sts%numPumps, nNodesPump, nodeCountPump, geomXPump, geomYPump)
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (write_his_output%bridge > 0 .and. network%sts%numBridges > 0) then
          call fill_geometry_arrays_structure(ST_BRIDGE, network%sts%numBridges, nNodesBridge, nodeCountBridge, geomXBridge, geomYBridge)
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (write_his_output%long_culvert > 0 .and. nlongculverts > 0) then
          call fill_geometry_arrays_structure(ST_LONGCULVERT, nlongculverts, nNodesLongCulv, nodeCountLongCulv, geomXLongCulv, geomYLongCulv)
       end if
 
@@ -1361,31 +1361,31 @@ contains
       end if
 
 ! Fill geometry arrays for structures
-      if (jahisweir > 0 .and. network%sts%numWeirs > 0) then
+      if (write_his_output%weir > 0 .and. network%sts%numWeirs > 0) then
          call fill_geometry_arrays_structure(ST_WEIR, network%sts%numWeirs, nNodesWeir, nodeCountWeir, geomXWeir, geomYWeir)
       end if
-      if (jahiscgen > 0 .and. network%sts%numGeneralStructures > 0) then
+      if (write_his_output%cgen > 0 .and. network%sts%numGeneralStructures > 0) then
          call fill_geometry_arrays_structure(ST_GENERAL_ST, network%sts%numGeneralStructures, nNodesGenstru, nodeCountGenstru, geomXGenstru, geomYGenstru)
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (write_his_output%orifice > 0 .and. network%sts%numOrifices > 0) then
          call fill_geometry_arrays_structure(ST_ORIFICE, network%sts%numOrifices, nNodesOrif, nodeCountOrif, geomXOrif, geomYOrif)
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (write_his_output%orifice > 0 .and. network%sts%numOrifices > 0) then
          call fill_geometry_arrays_structure(ST_ORIFICE, network%sts%numOrifices, nNodesOrif, nodeCountOrif, geomXOrif, geomYOrif)
       end if
-      if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (write_his_output%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          call fill_geometry_arrays_structure(ST_UNI_WEIR, network%sts%numuniweirs, nNodesUniweir, nodeCountUniweir, geomXUniweir, geomYUniweir)
       end if
-      if (jahisculv > 0 .and. network%sts%numculverts > 0) then
+      if (write_his_output%culvert > 0 .and. network%sts%numculverts > 0) then
          call fill_geometry_arrays_structure(ST_CULVERT, network%sts%numculverts, nNodesCulv, nodeCountCulv, geomXCulv, geomYCulv)
       end if
-      if (jahispump > 0 .and. network%sts%numPumps > 0) then
+      if (write_his_output%pump > 0 .and. network%sts%numPumps > 0) then
          call fill_geometry_arrays_structure(ST_PUMP, network%sts%numPumps, nNodesPump, nodeCountPump, geomXPump, geomYPump)
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (write_his_output%bridge > 0 .and. network%sts%numBridges > 0) then
          call fill_geometry_arrays_structure(ST_BRIDGE, network%sts%numBridges, nNodesBridge, nodeCountBridge, geomXBridge, geomYBridge)
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (write_his_output%long_culvert > 0 .and. nlongculverts > 0) then
          call fill_geometry_arrays_structure(ST_LONGCULVERT, nlongculverts, nNodesLongCulv, nodeCountLongCulv, geomXLongCulv, geomYLongCulv)
       end if
 
