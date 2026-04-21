@@ -365,13 +365,13 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     ! === start for calculating morphological changes
     !
-    call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)       
+    call prop_get(mor_ptr, 'Morphology', 'BedUpdStt', morpar%tmor)
     !
     ! === start for calculating bed composition changes
     !
     morpar%tcmp = morpar%tmor  ! by default, composition update starts when morphological update starts
     !
-    call prop_get(mor_ptr, 'Morphology', 'CmpUpdStt', morpar%tcmp)   
+    call prop_get(mor_ptr, 'Morphology', 'CmpUpdStt', morpar%tcmp)
     !
     ! === threshold value for slowing erosion near a fixed layer (m)
     !

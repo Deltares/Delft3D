@@ -1,34 +1,34 @@
-   !----- AGPL --------------------------------------------------------------------
-   !
-   !  Copyright (C)  Stichting Deltares, 2017-2026.
-   !
-   !  This file is part of Delft3D (D-Flow Flexible Mesh component).
-   !
-   !  Delft3D is free software: you can redistribute it and/or modify
-   !  it under the terms of the GNU Affero General Public License as
-   !  published by the Free Software Foundation version 3.
-   !
-   !  Delft3D  is distributed in the hope that it will be useful,
-   !  but WITHOUT ANY WARRANTY; without even the implied warranty of
-   !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   !  GNU Affero General Public License for more details.
-   !
-   !  You should have received a copy of the GNU Affero General Public License
-   !  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-   !
-   !  contact: delft3d.support@deltares.nl
-   !  Stichting Deltares
-   !  P.O. Box 177
-   !  2600 MH Delft, The Netherlands
-   !
-   !  All indications and logos of, and references to, "Delft3D",
-   !  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-   !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-   !
-   !-------------------------------------------------------------------------------
+!----- AGPL --------------------------------------------------------------------
+!
+!  Copyright (C)  Stichting Deltares, 2017-2026.
+!
+!  This file is part of Delft3D (D-Flow Flexible Mesh component).
+!
+!  Delft3D is free software: you can redistribute it and/or modify
+!  it under the terms of the GNU Affero General Public License as
+!  published by the Free Software Foundation version 3.
+!
+!  Delft3D  is distributed in the hope that it will be useful,
+!  but WITHOUT ANY WARRANTY; without even the implied warranty of
+!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!  GNU Affero General Public License for more details.
+!
+!  You should have received a copy of the GNU Affero General Public License
+!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
+!
+!  contact: delft3d.support@deltares.nl
+!  Stichting Deltares
+!  P.O. Box 177
+!  2600 MH Delft, The Netherlands
+!
+!  All indications and logos of, and references to, "Delft3D",
+!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
+!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
+!
+!-------------------------------------------------------------------------------
 
-   !
-   !
+!
+!
 
 module m_fm_erosed_sub
    use m_xbeachwaves, only: rollerturbulence
@@ -123,6 +123,7 @@ contains
       use m_sand_mud
       use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
+      use m_upwbed_ho, only: fm_upwbed_ho
       !
       implicit none
       !
@@ -1325,7 +1326,7 @@ contains
       ! Upwind scheme for bed load and wave driven transport
       ! Convert sand bed load transport to velocity points using upwind scheme
       !
-      if (bedloadupwindorder==1) then
+      if (bedloadupwindorder == 1) then
          if (bed > 0.0_fp) then
             !
             ! Upwind bed load transport
@@ -1346,6 +1347,32 @@ contains
             !
             call fm_upwbed(lsedtot, sswx, sswy, sxtot, sytot, e_sswn, e_sswt)
          end if
+
+      else ! 2nd order bedload upwind order
+         if (bed > 0.0_fp) then
+            !
+            ! Upwind bed load transport
+            !
+            call fm_get_dsbdu()
+            call fm_upwbed_ho()
+         end if
+         !
+         if (bedw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
+            !
+            ! Upwind wave-related bed load load transports
+            !
+            call fm_get_dsbdu()
+            call fm_upwbed_ho()
+         end if
+         !
+         if (susw > 0.0_fp .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
+            !
+            ! Upwind wave-related suspended load transports
+            !
+            call fm_get_dsbdu()
+            call fm_upwbed_ho()
+         end if
+
       end if
       !
       ! Update sourse fluxes due to sand-mud interaction
