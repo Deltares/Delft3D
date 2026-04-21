@@ -11,28 +11,28 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-    std::string csumoConfigFileName;
-    std::string adapterConfigFileName;
+    std::string csumoSettingsFileName;
+    std::string preciceConfigFileName;
 
     boost::program_options::options_description description("Options");
     // clang-format off
     description.add_options()
         ("help,h",
             "Show this help message")
-        ("csumo-config-file,c", boost::program_options::value<std::string>(&csumoConfigFileName)->required(),
-            "Path and filename of C-SUMO configuration xml file")
-        ("adapter-config-file,a", boost::program_options::value<std::string>(&adapterConfigFileName)->default_value("precice_config.xml"),
+        ("csumo-settings-file,c", boost::program_options::value<std::string>(&csumoSettingsFileName)->required(),
+            "Path and filename of C-SUMO settings xml file")
+        ("precice-config-file,p", boost::program_options::value<std::string>(&preciceConfigFileName)->default_value("precice_config.xml"),
             "Path and filename of preCICE adapter configuration file");
-    // clang-format on
+    // clang-format on 
 
     boost::program_options::positional_options_description positionals;
-    positionals.add("csumo-config-file", 1);
-    positionals.add("adapter-config-file", 1);
+    positionals.add("csumo-settings-file", 1);
+    positionals.add("precice-config-file", 1);
 
     const auto usage = [&description] {
         std::ostringstream oss;
-        oss << "Usage: preC-SUMO -c <csumoConfigFile> -a <adapterConfigFile> [options]\n"
-            << "       preC-SUMO <csumoConfigFile> <adapterConfigFile> [options]\n\n"
+        oss << "Usage: preC-SUMO -c <csumoSettingsFile> -p <preciceConfigFile> [options]\n"
+            << "       preC-SUMO <csumoSettingsFile> <preciceConfigFile> [options]\n\n"
             << description << '\n';
         return oss.str();
     }();
@@ -59,5 +59,5 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    return pre_c_sumo::run(csumoConfigFileName, adapterConfigFileName);
+    return pre_c_sumo::run(csumoSettingsFileName, preciceConfigFileName);
 }
