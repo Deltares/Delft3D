@@ -253,17 +253,6 @@ contains
          if (num_points > 1) then
             call normalin(source_sink_x(num_source_sink, num_points - 1), source_sink_y(num_source_sink, num_points - 1), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), source_sink_discharge_cosine(2, num_source_sink), source_sink_discharge_sine(2, num_source_sink), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
          end if
-
-         do i = 1, num_source_sink - 1
-            if (source_sink_indices(1, i) /= 0 .and. kk2 == source_sink_indices(1, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(source_sink_name(num_source_sink)), ' coincides with FROM point of ', trim(source_sink_name(i))
-               call warn_flush()
-            else if (source_sink_indices(4, i) /= 0 .and. kk2 == source_sink_indices(4, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(source_sink_name(num_source_sink)), ' coincides with TO   point of ', trim(source_sink_name(i))
-               call warn_flush()
-            end if
-         end do
-
       end if
 
       ierr = DFM_NOERR
