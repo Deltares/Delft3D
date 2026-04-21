@@ -157,7 +157,7 @@ module unstruc_model
    character(len=max_prop_length) :: md_crsfile = ' ' !< File containing cross sections (e.g., *_crs.pli, observation cross section *_crs.ini)
    character(len=max_prop_length) :: md_rugfile = ' ' !< File containing runup gauges (e.g., *_rug.pli)
    character(len=max_prop_length) :: md_foufile = ' ' !< File containing fourier modes to be analyzed
-
+   character(len=max_prop_length) :: md_output_polygon = ' ' !< File containing output polygon (e.g., *_output.pol)
    character(len=max_prop_length) :: md_hisfile = ' ' !< Output history file for monitoring  (e.g., *_his.nc)
    character(len=max_prop_length) :: md_mapfile = ' ' !< Output map     file for full flow fields (e.g., *_map.nc)
    character(len=max_prop_length) :: md_classmapfile = ' ' !< Output classmap file for full flow fields in classes (formerly: incremental file) (e.g., *_clm.nc)
@@ -1937,6 +1937,8 @@ contains
       call prop_get(md_ptr, 'output', 'RugFile', md_rugfile, success)
       call prop_get(md_ptr, 'output', 'FouFile', md_foufile, success)
       call prop_get(md_ptr, 'output', 'FouUpdateStep', md_fou_step, success)
+
+      call prop_get(md_ptr, 'output', 'OutputPolygon', md_output_polygon, success)
 
       call prop_get(md_ptr, 'output', 'HisFile', md_hisfile, success)
       ti_his_array = 0.0_dp
@@ -3813,7 +3815,7 @@ contains
 
       call prop_set(prop_ptr, 'output', 'OutputDir', trim(md_OutputDir), 'Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.')
       call prop_set(prop_ptr, 'output', 'FlowGeomFile', trim(md_flowgeomfile), 'Flow geometry NetCDF *_flowgeom.nc')
-
+      
       call prop_set(prop_ptr, 'output', 'ObsFile', trim(md_obsfile), 'Points file *.xyn with observation stations with rows x, y, station name')
       call prop_set(prop_ptr, 'output', 'DeleteObsPointsOutsideGrid', md_delete_observation_points_outside_grid, '0 - do not delete, 1 - delete')
       call prop_set(prop_ptr, 'output', 'CrsFile', trim(md_crsfile), 'Polyline file *_crs.pli defining observation cross sections')

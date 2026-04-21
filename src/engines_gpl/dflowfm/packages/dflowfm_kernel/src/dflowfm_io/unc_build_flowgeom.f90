@@ -229,8 +229,16 @@ contains
       allocate(edge_included(numl2d))
       if (use_mask) then
          do l = 1, numl2d
-            edge_included(l) = (tmp_edge_faces(1, l) > 0 .and. face_compact(tmp_edge_faces(1, l)) > 0) .or. &
-                                (tmp_edge_faces(2, l) > 0 .and. face_compact(tmp_edge_faces(2, l)) > 0)
+            edge_included(l) = .false.
+            if (tmp_edge_faces(1, l) > 0) then
+               if (face_compact(tmp_edge_faces(1, l)) > 0) then
+                  edge_included(l) = .true.
+                  cycle
+               end if
+            end if
+            if (tmp_edge_faces(2, l) > 0) then
+               if (face_compact(tmp_edge_faces(2, l)) > 0) edge_included(l) = .true.
+            end if
          end do
       else
          edge_included = .true.
@@ -373,7 +381,14 @@ contains
 !! Populates flowgeom%mesh1D (coordinates, connectivity) and the 1D-specific mapping arrays
 !! (edgetoln, contactstoln, contacts, contacttype). The writer unc_write_1D_flowgeom_ugrid
 !! then calls ug_write_mesh_arrays using these plus the branch-metadata from m_save_ugrid_state.
-   subroutine build_flowgeom_1d(flowgeom, jabndnd)
+!!
+!! When node_mask is provided, only selected internal 1D nodes enter the output set.
+!! 1D edges follow an AND rule: both endpoint nodes must be in the output set.
+!! Contacts are dropped when either endpoint (1D node or 2D face) is excluded.
+!! All stored indices are output-mesh indices, not full-grid indices.
+!! flowgeom%node_map_1d(i) gives the full-grid flow node index for output 1D node i.
+!! flowgeom%edgetoln(i) gives the full-grid flow link number for output 1D edge i.
+   subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
       use m_flowgeom, only: ndxi, ndx, ndx2d, ndx1db, nd, xz, yz, &
                             lnx1d, lnxi, lnx1db, lnx, ln, kcu, xu, yu, ln2lne, t_fm_flowgeom
       use m_save_ugrid_state, only: mesh1dname, meshgeom1d
@@ -385,11 +400,26 @@ contains
 
       type(t_fm_flowgeom), intent(inout) :: flowgeom !< Populated 1D geometry object.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
+      logical, intent(in), optional :: node_mask(:) !< Selection mask over ndx1d internal 1D nodes; if absent, all are included.
 
-      integer :: ndx1d, n1d_write, last_1d, n1dedges, n1d2dcontacts
-      integer :: n, L, Li, k1, L1
+      integer :: ndx1d, n1d_write, last_1d, n1dedges, n1d2dcontacts, n1d_out
+      integer :: n, L, Li, k1, L1, face_2d, i
+      integer :: node_out_1, node_out_2 !< output node indices for the two endpoints of an edge
+      logical :: use_mask_1d
+      integer, allocatable :: node_compact(:) !< local-1D-node index (1:n1d_write) -> output node index (0 = excluded)
+      integer, allocatable :: face_compact(:) !< full-grid 2D face index -> output face index (0 = excluded)
 
-      ! --- Counts ---
+      use_mask_1d = present(node_mask)
+
+      ! Reconstruct face_compact from face_map (already populated by build_flowgeom_2d).
+      ! In the unmasked 2D case face_map is identity so face_compact(j) = j and no contact is dropped.
+      allocate(face_compact(ndx2d))
+      face_compact = 0
+      do i = 1, size(flowgeom%face_map)
+         face_compact(flowgeom%face_map(i)) = i
+      end do
+
+      ! --- Resolve ranges ---
       ndx1d = ndxi - ndx2d
       if (jabndnd == 1) then
          n1d_write = ndx1db - ndx2d
@@ -399,22 +429,93 @@ contains
          last_1d = ndxi
       end if
 
-      n1dedges = 0
-      n1d2dcontacts = 0
-      do L = 1, lnx1d
-         if (kcu(L) == 1) then
-            n1dedges = n1dedges + 1
-         else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
-            n1d2dcontacts = n1d2dcontacts + 1
-         end if
-      end do
-      if (jabndnd == 1) then
-         n1dedges = n1dedges + (lnx1db - lnxi)
+      ! =========================================================
+      ! Phase 1: Build 1D node index maps
+      ! =========================================================
+      ! node_map_1d(i) = full-grid flow node index for output 1D node i
+      ! node_compact(n) = output node index for local-1D node n (0 = excluded)
+      !
+      ! Internal 1D nodes (1:ndx1d) are subject to node_mask.
+      ! Boundary 1D nodes (ndx1d+1:n1d_write) are always included when jabndnd == 1.
+      ! In the unmasked case node_compact(n) = n for all n in 1:n1d_write.
+
+      allocate(node_compact(n1d_write))
+      node_compact = 0
+
+      if (use_mask_1d) then
+         n1d_out = count(node_mask(1:ndx1d))
+         if (jabndnd == 1) n1d_out = n1d_out + (ndx1db - ndxi)
+      else
+         n1d_out = n1d_write
       end if
 
+      call realloc(flowgeom%node_map_1d, n1d_out, keepExisting=.false., fill=0)
+
+      ! Internal nodes: subject to mask.
+      n = 0
+      do i = 1, ndx1d
+         if (use_mask_1d) then
+            if (.not. node_mask(i)) cycle
+         end if
+         n = n + 1
+         flowgeom%node_map_1d(n) = ndx2d + i
+         node_compact(i) = n
+      end do
+
+      ! Boundary nodes: always included when jabndnd == 1.
+      do i = ndx1d + 1, n1d_write
+         n = n + 1
+         flowgeom%node_map_1d(n) = ndx2d + i
+         node_compact(i) = n
+      end do
+
+      ! =========================================================
+      ! Phase 2: Count edges and contacts in the output set
+      ! =========================================================
+      ! 1D edge:  include if BOTH endpoint nodes are in the output set (AND rule, per partition.F90).
+      ! Contact:  include if BOTH the 1D node AND the 2D face are in their respective output sets.
+
+      n1dedges = 0
+      n1d2dcontacts = 0
+      do Li = 1, lnx1d + (lnx1db - lnxi)
+         if (Li <= lnx1d) then
+            L = Li
+         else if (jabndnd == 0) then
+            exit
+         else
+            L = lnxi + (Li - lnx1d)
+         end if
+
+         if (abs(kcu(L)) == 1) then
+            node_out_1 = ln(1, L) - ndx2d
+            node_out_2 = ln(2, L) - ndx2d
+            if (node_out_1 >= 1 .and. node_out_1 <= n1d_write .and. node_compact(node_out_1) > 0 .and. &
+                node_out_2 >= 1 .and. node_out_2 <= n1d_write .and. node_compact(node_out_2) > 0) then
+               n1dedges = n1dedges + 1
+            end if
+         else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+            if (ln(1, L) > ndx2d) then
+               node_out_1 = ln(1, L) - ndx2d
+               face_2d    = ln(2, L)
+            else
+               node_out_1 = ln(2, L) - ndx2d
+               face_2d    = ln(1, L)
+            end if
+            if (node_out_1 >= 1 .and. node_out_1 <= n1d_write) then
+               if (node_compact(node_out_1) > 0) then
+                  if (face_2d >= 1 .and. face_2d <= ndx2d) then
+                     if (face_compact(face_2d) > 0) then
+                        n1d2dcontacts = n1d2dcontacts + 1
+                     end if
+                  end if
+               end if
+            end if
+         end if
+      end do
+
       ! --- Allocate mesh1D geometry arrays ---
-      call reallocP(flowgeom%mesh1D%nodex, n1d_write, fill=dmiss, keepExisting=.false.)
-      call reallocP(flowgeom%mesh1D%nodey, n1d_write, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh1D%nodex, n1d_out, fill=dmiss, keepExisting=.false.)
+      call reallocP(flowgeom%mesh1D%nodey, n1d_out, fill=dmiss, keepExisting=.false.)
       call reallocP(flowgeom%mesh1D%edge_nodes, [2, n1dedges], fill=-999, keepExisting=.false.)
       call reallocP(flowgeom%mesh1D%edgex, n1dedges, fill=dmiss, keepExisting=.false.)
       call reallocP(flowgeom%mesh1D%edgey, n1dedges, fill=dmiss, keepExisting=.false.)
@@ -423,21 +524,26 @@ contains
       call realloc(flowgeom%contacts, [2, n1d2dcontacts], fill=-999, keepExisting=.false.)
       call realloc(flowgeom%contacttype, n1d2dcontacts, fill=0, keepExisting=.false.)
 
-      ! Branch topology remapping arrays (only when branch/network topology was read).
+      ! Branch topology arrays (only when branch/network topology was read).
       if (associated(meshgeom1d%ngeopointx)) then
-         call reallocP(flowgeom%mesh1D%nodebranchidx, n1d_write, keepExisting=.false.)
-         call reallocP(flowgeom%mesh1D%nodeoffsets, n1d_write, keepExisting=.false.)
+         call reallocP(flowgeom%mesh1D%nodebranchidx, n1d_out, keepExisting=.false.)
+         call reallocP(flowgeom%mesh1D%nodeoffsets, n1d_out, keepExisting=.false.)
          call reallocP(flowgeom%mesh1D%edgebranchidx, n1dedges, keepExisting=.false.)
          call reallocP(flowgeom%mesh1D%edgeoffsets, n1dedges, keepExisting=.false.)
       end if
 
-      ! --- Fill node coordinates (and branch topology remapping) ---
-      do n = 1, n1d_write
-         flowgeom%mesh1D%nodex(n) = xz(ndx2d + n)
-         flowgeom%mesh1D%nodey(n) = yz(ndx2d + n)
+      ! =========================================================
+      ! Phase 3: Fill node coordinates via node_map_1d
+      ! =========================================================
+      ! Iterating over node_map_1d keeps this loop independent of global indexing.
 
-         if (n <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then
-            k1 = nodePermutation(nd(ndx2d + n)%nod(1))
+      do n = 1, n1d_out
+         i = flowgeom%node_map_1d(n) - ndx2d ! local 1D index
+         flowgeom%mesh1D%nodex(n) = xz(flowgeom%node_map_1d(n))
+         flowgeom%mesh1D%nodey(n) = yz(flowgeom%node_map_1d(n))
+
+         if (i <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then
+            k1 = nodePermutation(nd(flowgeom%node_map_1d(n))%nod(1))
             if (size(meshgeom1d%nodeidx_inverse) > 0) then
                k1 = meshgeom1d%nodeidx_inverse(k1)
             end if
@@ -446,21 +552,32 @@ contains
          end if
       end do
 
-      ! --- Fill edges and contacts ---
+      ! =========================================================
+      ! Phase 4: Fill edges and contacts
+      ! =========================================================
+      ! All stored node indices are output-mesh indices (from node_compact / face_compact).
+      ! edgetoln stores the full-grid flow link number for use by the writer.
+
       n1dedges = 0
       n1d2dcontacts = 0
       do Li = 1, lnx1d + (lnx1db - lnxi)
          if (Li <= lnx1d) then
             L = Li
-         else if (n1d_write == ndx1d) then ! not writing boundary nodes: skip boundary links
+         else if (jabndnd == 0) then
             exit
          else
             L = lnxi + (Li - lnx1d)
          end if
 
          if (abs(kcu(L)) == 1) then
+            node_out_1 = ln(1, L) - ndx2d
+            node_out_2 = ln(2, L) - ndx2d
+            if (node_out_1 < 1 .or. node_out_1 > n1d_write .or. node_compact(node_out_1) == 0) cycle
+            if (node_out_2 < 1 .or. node_out_2 > n1d_write .or. node_compact(node_out_2) == 0) cycle
+
             n1dedges = n1dedges + 1
-            flowgeom%mesh1D%edge_nodes(1:2, n1dedges) = ln(1:2, L) - ndx2d
+            flowgeom%mesh1D%edge_nodes(1, n1dedges) = node_compact(node_out_1)
+            flowgeom%mesh1D%edge_nodes(2, n1dedges) = node_compact(node_out_2)
             flowgeom%mesh1D%edgex(n1dedges) = xu(L)
             flowgeom%mesh1D%edgey(n1dedges) = yu(L)
             flowgeom%edgetoln(n1dedges) = L
@@ -472,16 +589,23 @@ contains
             end if
 
          else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+            if (ln(1, L) > ndx2d) then
+               node_out_1 = ln(1, L) - ndx2d
+               face_2d    = ln(2, L)
+            else
+               node_out_1 = ln(2, L) - ndx2d
+               face_2d    = ln(1, L)
+            end if
+            if (node_out_1 < 1 .or. node_out_1 > n1d_write) cycle
+            if (node_compact(node_out_1) == 0) cycle
+            if (face_2d < 1 .or. face_2d > ndx2d) cycle
+            if (face_compact(face_2d) == 0) cycle
+
             n1d2dcontacts = n1d2dcontacts + 1
             flowgeom%contactstoln(n1d2dcontacts) = L
             flowgeom%contacttype(n1d2dcontacts) = kcu(L)
-            if (ln(1, L) > ndx2d) then ! first node is 1D
-               flowgeom%contacts(1, n1d2dcontacts) = ln(1, L) - ndx2d
-               flowgeom%contacts(2, n1d2dcontacts) = ln(2, L)
-            else ! second node is 1D
-               flowgeom%contacts(1, n1d2dcontacts) = ln(2, L) - ndx2d
-               flowgeom%contacts(2, n1d2dcontacts) = ln(1, L)
-            end if
+            flowgeom%contacts(1, n1d2dcontacts) = node_compact(node_out_1)
+            flowgeom%contacts(2, n1d2dcontacts) = face_compact(face_2d)
          end if
       end do
 
@@ -489,7 +613,7 @@ contains
       flowgeom%mesh1D%meshName = mesh1dname
       flowgeom%mesh1D%dim = 1
       flowgeom%mesh1D%start_index = 1
-      flowgeom%mesh1D%numNode = n1d_write
+      flowgeom%mesh1D%numNode = n1d_out
       flowgeom%mesh1D%numEdge = n1dedges
       flowgeom%mesh1D%numFace = 0
       flowgeom%mesh1D%maxNumFaceNodes = 0
@@ -510,15 +634,28 @@ contains
 !> Builds the complete flow geometry object for both 1D and 2D meshes.
 !! Delegates to build_flowgeom_2d and build_flowgeom_1d in order; the call site
 !! owns the t_fm_flowgeom object and receives a fully populated result.
-   function build_flowgeom(jabndnd) result(flowgeom)
-      use m_flowgeom, only: t_fm_flowgeom
+!! cell_mask covers all internal cells (1:ndxi): the 2D slice (1:ndx2d) is
+!! forwarded to build_flowgeom_2d and the 1D slice (ndx2d+1:ndxi) is forwarded
+!! to build_flowgeom_1d as the node mask.
+   function build_flowgeom(jabndnd, md_polygon_file) result(flowgeom)
+      use m_flowgeom, only: t_fm_flowgeom, ndx2d
+      use m_pol_to_cellmask, only: cell_mask_from_polygon_file
       implicit none
 
       type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
+      character(len=*), intent(in), optional :: md_polygon_file !< File containing output polygon (e.g., *_output.pol)
+      logical, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells; if absent, all cells are included.
 
-      call build_flowgeom_2d(flowgeom, jabndnd)
-      call build_flowgeom_1d(flowgeom, jabndnd)
+      if (present(md_polygon_file)) then
+
+         cell_mask = cell_mask_from_polygon_file(md_polygon_file)
+         call build_flowgeom_2d(flowgeom, jabndnd, cell_mask(1:ndx2d))
+         call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
+      else
+         call build_flowgeom_2d(flowgeom, jabndnd)
+         call build_flowgeom_1d(flowgeom, jabndnd)
+      end if
 
    end function build_flowgeom
 

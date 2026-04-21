@@ -70,7 +70,8 @@ module m_flowgeom
          integer, dimension(:), allocatable :: face_map !< 2D: mapping from mesh2D UGRID face index to flow cell number.
          integer, dimension(:), allocatable :: edge_map !< 2D: mapping from mesh2D UGRID node index to flow node number.
          integer, dimension(:), allocatable :: node_map !< 2D: mapping from mesh2D UGRID node index to flow node number.
-
+         integer, allocatable :: node_map_1d(:) !< 1D: mapping from mesh1D UGRID node index to flow node number.
+         
          integer, allocatable :: edge_type(:)     !< Edge type array (size numl2d): encodes the flow-link relation for each 2D mesh edge.
          integer, allocatable :: edgetoln(:)      !< 1D: mapping from mesh1D UGRID edge index to flow link number.
          integer, allocatable :: contactstoln(:)  !< 1D2D: mapping from contact index to flow link number.

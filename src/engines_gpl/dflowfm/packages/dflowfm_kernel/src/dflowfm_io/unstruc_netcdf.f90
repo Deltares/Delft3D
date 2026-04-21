@@ -15442,6 +15442,7 @@ contains
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
       use fm_location_types
+      use unstruc_model, only: md_output_polygon
       implicit none(type, external)
 
       integer, intent(in) :: ncid
@@ -15544,8 +15545,11 @@ contains
             waterlevelname = 's1max'
          end if
       end if
-
-      flowgeom = build_flowgeom(jabndnd_)
+      if (len_trim(md_output_polygon) > 0) then
+         flowgeom = build_flowgeom(jabndnd_, md_output_polygon)
+      else
+         flowgeom = build_flowgeom(jabndnd_)
+      end if
       numFace2d = flowgeom%mesh2d%numFace
 
       associate (ndx2d => flowgeom%ndx2d, &
@@ -15626,10 +15630,10 @@ contains
          ierr = nf90_enddef(ncid)
 
          !-- Start data writing (time-independent data) ------------
-         ! 1D: index range is unaffected by any 2D cell mask.
-         if (ndx1d > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(ndx2d + 1:last_1d))
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(ndx2d + 1:last_1d))
+         ! 1D: gather through node_map_1d to support both full and masked output sets.
+         if (flowgeom%mesh1D%numNode > 0) then
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(flowgeom%node_map_1d))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(flowgeom%node_map_1d))
          end if
          ! 2D: gather through face_map so that a reduced output set is written correctly.
          if (ndx2d > 0 .and. ja2D_) then
@@ -15666,11 +15670,9 @@ contains
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(flowgeom%face_map))
             end if
             ! 1D: index range unaffected by 2D cell mask.
-            if (ndx1d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(ndx2d + 1:last_1d))
-            end if
-            if (ndx1d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(ndx2d + 1:last_1d))
+            if (flowgeom%mesh1D%numNode > 0) then
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(flowgeom%node_map_1d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(flowgeom%node_map_1d))
             end if
          end if
 
@@ -15849,10 +15851,10 @@ contains
             end if
          end if
 
-         ! --- Flow element contours (nd from m_flowgeom, offset by ndx2d) ---
+         ! --- Flow element contours (accessed via node_map_1d to support masked output) ---
          numContPts = 0
-         do i = 1, ndx1d
-            numContPts = max(numContPts, size(nd(ndx2d + i)%x))
+         do i = 1, mesh1d%numNode
+            numContPts = max(numContPts, size(nd(flowgeom1d%node_map_1d(i))%x))
          end do
 
          if (numContPts > 0) then
@@ -15874,15 +15876,15 @@ contains
             allocate (work2(numContPts, mesh1d%numNode))
             work2 = dmiss
             do i = 1, mesh1d%numNode
-               nn = size(nd(ndx2d + i)%x)
-               work2(1:nn, i) = nd(ndx2d + i)%x(1:nn)
+               nn = size(nd(flowgeom1d%node_map_1d(i))%x)
+               work2(1:nn, i) = nd(flowgeom1d%node_map_1d(i))%x(1:nn)
             end do
             ierr = nf90_put_var(ncid, id_flowelemcontourx, work2, [1, 1], [numContPts, mesh1d%numNode])
 
             work2 = dmiss
             do i = 1, mesh1d%numNode
-               nn = size(nd(ndx2d + i)%x)
-               work2(1:nn, i) = nd(ndx2d + i)%y(1:nn)
+               nn = size(nd(flowgeom1d%node_map_1d(i))%x)
+               work2(1:nn, i) = nd(flowgeom1d%node_map_1d(i))%y(1:nn)
             end do
             ierr = nf90_put_var(ncid, id_flowelemcontoury, work2, [1, 1], [numContPts, mesh1d%numNode])
 
