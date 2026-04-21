@@ -162,8 +162,8 @@ end function
 
    end subroutine get_2d_edge_data
 
-     subroutine build_flowgeom_2d(flowgeom, jabndnd, cell_mask)
-      use m_flowgeom, only: ndxi, ndx, ndx2d, nd, xz, yz, t_fm_flowgeom
+     subroutine build_flowgeom_2d(flowgeom, cell_mask)
+      use m_flowgeom, only: ndx2d, nd, xz, yz, t_fm_flowgeom
       use network_data, only: xk, yk, zk, kc, numk, numl, numl1d
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
@@ -172,10 +172,9 @@ end function
       implicit none
 
       type(t_fm_flowgeom), intent(inout) :: flowgeom !< Populated flow geometry object.
-      integer, intent(in) :: jabndnd !< Include boundary cells (1) or not (0).
       logical, intent(in), optional :: cell_mask(:) !< Selection mask over ndx2d cells; if absent, all cells are included.
 
-      integer :: numl2d, numNodes, numFace, numEdge, ndxndxi
+      integer :: numl2d, numNodes, numFace, numEdge
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
       logical :: use_mask
 
@@ -183,16 +182,9 @@ end function
       integer, pointer     :: tmp_edge_faces(:, :)
       real(kind=dp), allocatable :: tmp_xue(:), tmp_yue(:)
       logical, allocatable :: edge_included(:)
-      integer, allocatable :: edge_compact(:) !< full-grid edge index -> output index (0 = excluded)
       integer, allocatable :: face_compact(:) !< full-grid face index -> output index (0 = excluded)
 
       use_mask = present(cell_mask)
-
-      if (jabndnd == 1) then
-         ndxndxi = ndx
-      else
-         ndxndxi = ndxi
-      end if
 
       numl2d = numl - numl1d
 
@@ -262,14 +254,11 @@ end function
       numEdge = count(edge_included)
 
       call realloc(flowgeom%edge_map, numEdge, keepExisting=.false., fill=0)
-      allocate(edge_compact(numl2d))
-      edge_compact = 0
       n = 0
       do l = 1, numl2d
          if (edge_included(l)) then
             n = n + 1
             flowgeom%edge_map(n) = l
-            edge_compact(l)      = n
          end if
       end do
 
@@ -654,10 +643,10 @@ subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
       if (present(md_polygon_file)) then
 
          cell_mask = cell_mask_from_polygon_file(md_polygon_file)
-         call build_flowgeom_2d(flowgeom, jabndnd, cell_mask(1:ndx2d))
+         call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
       else
-         call build_flowgeom_2d(flowgeom, jabndnd)
+         call build_flowgeom_2d(flowgeom)
          call build_flowgeom_1d(flowgeom, jabndnd)
       end if
 
