@@ -15452,10 +15452,6 @@ contains
       logical, optional, intent(in) :: ja2D !< Whether to include the 2D grid (default = .true.)
 
       integer :: jabndnd_
-      integer :: ndxndxi
-      integer :: last_1d
-      integer :: ndx1d
-      integer :: numFace2d !< Number of 2D faces in the output set (may be < ndx2d when a cell mask is active).
 
       integer, allocatable :: contacts(:, :), contacttype(:)
       integer :: layer_count, layer_type
@@ -15550,43 +15546,26 @@ contains
       else
          flowgeom = build_flowgeom(jabndnd_)
       end if
-      numFace2d = flowgeom%mesh2d%numFace
 
-      associate (ndx2d => flowgeom%ndx2d, &
-                 z2dn => flowgeom%mesh2d%nodez, &
-                 ndx1db => flowgeom%ndx1db, &
-                 ndxi => flowgeom%ndxi, &
-                 ndx => flowgeom%ndx)
+      ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
+      ! All other counters (ndx, ndxi, ndx1db, lnx...) are always the global values; use m_flowgeom directly.
+      associate (ndx2d => flowgeom%mesh2d%numFace, &
+                 z2dn  => flowgeom%mesh2d%nodez)
 
          call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
-         if (flowgeom%ndx2d > 0 .and. ja2D_) then
-            ! Attach layer data (write-time concern: depends on jafou_ / sigma-z path).
+         if (ndx2d > 0 .and. ja2D_) then
             flowgeom%mesh2d%num_layers = layer_count
-            flowgeom%mesh2d%layertype = layer_type
-            flowgeom%mesh2d%numtopsig = numtopsig
+            flowgeom%mesh2d%layertype  = layer_type
+            flowgeom%mesh2d%numtopsig  = numtopsig
             if (layer_count > 0) then
-               flowgeom%mesh2d%layer_zs => layer_zs
+               flowgeom%mesh2d%layer_zs     => layer_zs
                flowgeom%mesh2d%interface_zs => interface_zs
             end if
 
             ierr = ug_write_mesh_struct(ncid, id_tsp%meshids2d, networkids_dummy, crs, flowgeom%mesh2d)
-            ! Add edge type variable (edge-flowlink relation)
             call write_edge_type_variable(ncid, id_tsp%meshids2d, mesh2dname, flowgeom%edge_type)
 
-            ndx1d = ndxi - ndx2d
-
-            if (jabndnd_ == 1) then
-               ndxndxi = ndx
-               last_1d = ndx1db
-            else
-               ndxndxi = ndxi
-               last_1d = ndxi
-            end if
-            last_1d = merge(flowgeom%ndx1db, flowgeom%ndxi, jabndnd_ == 1)
-
-            ! Write optionally required bldepth and when needed s1max arrays for sigma- and sigma-z layer models.
-            ! face_map gathers the correct subset when a cell mask is active (identity otherwise).
             if (layer_type == LAYERTYPE_OCEAN_SIGMA_Z .or. layer_type == LAYERTYPE_OCEAN_SIGMA) then
                ierr = nf90_def_var(ncid, trim(mesh2dname)//'_'//trim(bldepthname), nf90_double, id_tsp%meshids2d%dimids(mdim_face), id_tsp%id_bldepth(2))
                ierr = nf90_put_att(ncid, id_tsp%id_bldepth(2), 'standard_name', "sea_floor_depth_below_geoid")
@@ -15609,7 +15588,6 @@ contains
                   ierr = nf90_redef(ncid)
                end if
             end if
-
          end if
 
          ierr = ug_inq_varid(ncid, id_tsp%meshids2d, 'node_z', id_tsp%id_netnodez(2))
@@ -15617,61 +15595,43 @@ contains
          ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemba(:), nf90_double, UNC_LOC_S, 'flowelem_ba', 'cell_area', '', 'm2', 0, jabndnd=jabndnd_)
          ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelembl(:), nf90_double, UNC_LOC_S, 'flowelem_bl', 'altitude', 'flow element center bedlevel (bl)', 'm', 0, jabndnd=jabndnd_)
 
-         !define 1d2dcontacts only after mesh2d is completly defined
          if (n1d2dcontacts > 0 .and. ja2D_) then
             ierr = ug_def_mesh_contact(ncid, id_tsp%meshcontact_1D2D, trim(contactname_1D2D), n1d2dcontacts, id_tsp%meshids1d, id_tsp%meshids2d, UG_LOC_NODE, UG_LOC_FACE, start_index)
          end if
 
-         ! Define domain numbers when it is a parallel run
          if (jampi == 1) then
-            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:), nf90_int, UNC_LOC_S, 'flowelem_domain', 'cell_domain_number', 'domain number of flow element', '', 0, jabndnd=jabndnd_, ivalid_max=ndomains)
-            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemglobalnr(:), nf90_int, UNC_LOC_S, 'flowelem_globalnr', 'cell_global_number', 'global flow element numbering', '', 0, jabndnd=jabndnd_, ivalid_max=Nglobal_s)
+            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:),  nf90_int, UNC_LOC_S, 'flowelem_domain',   'cell_domain_number', 'domain number of flow element',  '', 0, jabndnd=jabndnd_, ivalid_max=ndomains)
+            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemglobalnr(:), nf90_int, UNC_LOC_S, 'flowelem_globalnr', 'cell_global_number',  'global flow element numbering', '', 0, jabndnd=jabndnd_, ivalid_max=Nglobal_s)
          end if
          ierr = nf90_enddef(ncid)
 
          !-- Start data writing (time-independent data) ------------
-         ! 1D: gather through node_map_1d to support both full and masked output sets.
          if (flowgeom%mesh1D%numNode > 0) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(flowgeom%node_map_1d))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(flowgeom%node_map_1d))
          end if
-         ! 2D: gather through face_map so that a reduced output set is written correctly.
          if (ndx2d > 0 .and. ja2D_) then
             ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(flowgeom%face_map))
             ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(flowgeom%face_map))
-            ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn) ! already remapped inside build_flowgeom_2d
+            ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
          end if
 
-         ! Put the contacts
          if (n1d2dcontacts > 0) then
             ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
          end if
 
-         if (associated(layer_zs)) then
-            deallocate (layer_zs)
-         end if
-         if (associated(interface_zs)) then
-            deallocate (interface_zs)
-         end if
-         if (allocated(contacts)) then
-            deallocate (contacts)
-         end if
-         if (allocated(contacttype)) then
-            deallocate (contacttype)
-         end if
+         if (associated(layer_zs))    deallocate(layer_zs)
+         if (associated(interface_zs)) deallocate(interface_zs)
+         if (allocated(contacts))     deallocate(contacts)
+         if (allocated(contacttype))  deallocate(contacttype)
 
-         ! domain numbers
          if (jampi == 1) then
-            ! 2D: gather through face_map for reduced output set compatibility.
             if (ndx2d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(flowgeom%face_map))
-            end if
-            if (ndx2d > 0) then
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2),   idomain(flowgeom%face_map))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(flowgeom%face_map))
             end if
-            ! 1D: index range unaffected by 2D cell mask.
             if (flowgeom%mesh1D%numNode > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(flowgeom%node_map_1d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1),   idomain(flowgeom%node_map_1d))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(flowgeom%node_map_1d))
             end if
          end if
@@ -15680,12 +15640,8 @@ contains
             ierr = ionc_add_geospatial_bounds(ncid, mb_latmin, mb_latmax, mb_lonmin, mb_lonmax)
          end if
 
-         ! Leave the dataset in the same mode as we got it.
          ierr = ncu_restore_mode(ncid, jaInDefine)
-         if (timon) then
-            call timstop(handle_extra(69))
-         end if
-
+         if (timon) call timstop(handle_extra(69))
          return
 
       end associate
