@@ -98,7 +98,7 @@ contains
 
       call getLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
-      call f90_expect_true(error_message == "Error in source sink initialization, source/sink z information cannot be specified bothin the ext file and in the polyline file. Make sure the polyline file only contains x and y columns")
+      call f90_expect_true(error_message == "Error in source sink initialization, source/sink z information cannot be specified both in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns")
 
       call tree_destroy(tree)
    end subroutine test_double_z_data_specification
