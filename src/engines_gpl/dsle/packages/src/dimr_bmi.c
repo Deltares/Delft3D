@@ -92,7 +92,7 @@ void copy_key(const char *src, char *dst) {
 inline static int match_key(char *key, char *defined_key) { return !strcmp(key, defined_key); }
 
 // Returns a pointer to the constituent name after the prefix, or NULL if no match.
-static inline char *match_key_prefix(char *key, const char *prefix) {
+static inline const char *match_key_prefix(const char *key, const char *prefix) {
   size_t length = strlen(prefix);
   if (strncmp(key, prefix, length) == 0) {
     return &key[length];
@@ -130,7 +130,7 @@ int set_var(const char *key, void *src_ptr) {
   char *quantity = NULL;
   char *vartype = NULL;
   char *lock_id = NULL;
-  char *constituent = NULL;
+  const char *constituent = NULL;
 
   if (src_ptr == NULL) {
     log_debug("set_var('%s') called with NULL src_ptr, ignoring.\n", key);
@@ -218,7 +218,7 @@ int get_var(const char *key, void **dst_ptr) {
   char *quantity = NULL;
   char *vartype = NULL;
   char *lock_id = NULL;
-  char *constituent = NULL;
+  const char *constituent = NULL;
   char keystr[BMI_MAX_VAR_NAME + 1];
 
   log_info("%s( \"%s\", %p ) called.\n", __func__, key, dst_ptr);
