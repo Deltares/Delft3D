@@ -111,6 +111,7 @@ typedef struct dsle_phase_transports_t {
   double discharge_from_sea;
   double discharge_to_sea;
   double salinity_to_sea;
+  double volume_flush_passthrough;
 } dsle_phase_transports_t;
 
 typedef struct dsle_aux_results_t {

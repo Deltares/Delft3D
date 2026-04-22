@@ -466,7 +466,7 @@ contains
       integer, intent(out) :: filetype !< File type of current quantity.
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
       integer, intent(out) :: iloctype !< The spatial type of the target locations: 1D, 2D or all.
-      character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(out) :: operand !< Operand w.r.t. previous data
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< Variable name within filename; only in case of NetCDF. Will be empty string if not specified in input.
@@ -480,6 +480,7 @@ contains
       character(len=ini_value_len) :: friction_type
       integer :: iav, averagingNumMin, int_friction_type
       character(len=ini_value_len) :: extrapolation
+      character(len=ini_value_len) :: operand_ini
       logical :: retVal
       ja = 0
       groupname = tree_get_name(node_ptr)
@@ -670,20 +671,18 @@ contains
       end if ! .not. strcmpi(dataFileType, '1dField'))
 
       ! read operand, for any filetype
-      call prop_get(node_ptr, '', 'operand ', operand, retVal)
-      if (.not. retVal) then
-         operand = 'O'
-      else
-         if ((.not. strcmpi(operand, 'O')) .and. (.not. strcmpi(operand, 'A')) .and. (.not. strcmpi(operand, '+')) .and. &
-             (.not. strcmpi(operand, '*')) .and. (.not. strcmpi(operand, 'X')) .and. (.not. strcmpi(operand, 'N')) .and. &
-             (.not. strcmpi(operand, 'V'))) then
+      operand = OPERAND_OVERRIDE ! default
+      call prop_get(node_ptr, '', 'operand', operand_ini, retVal)
+      if (retVal) then
+         operand = convert_operand_string_to_integer(operand_ini)
+         if (operand == OPERAND_UNKNOWN) then
             write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-               //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand)//'''. Ignoring this block.'
+            //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand_ini)//'''. Ignoring this block.'
             call warn_flush()
             return
          end if
       end if
-
+      
       if (strcmpi(quantity, 'frictioncoefficient')) then
          friction_type = ''
          call prop_get(node_ptr, '', 'frictionType', friction_type)
@@ -1156,12 +1155,13 @@ contains
       use m_flow, only: ifrctypuni, ifrcutp, frcu
       use m_flowgeom, only: lnx
       use m_missing, only: dmiss
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       implicit none
 
       integer :: link
 
-      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. (operand == 'O' .or. operand == 'V')) then
+      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
          do link = 1, lnx
             if (frcu(link) /= dmiss) then
                ! type array only must be used if different from uni
@@ -1741,7 +1741,7 @@ contains
          end if
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
-         call realloc(dicoww, ndx, constant_dicoww)
+         call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
          call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
@@ -2093,6 +2093,7 @@ contains
       use m_missing, only: dmiss
       use m_flow, only: ndkx
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< The array to be filled with values. (in case of a 2d array)
       real(kind=dp), dimension(:, :), pointer, intent(inout) :: target_array_3d !< The array to be filled with values. (in case of a 3d array)
@@ -2101,7 +2102,7 @@ contains
       character(len=*), intent(in) :: filename !< The name of the file containing the field values.
       integer, intent(in) :: filetype !< The type of the file containing the field values.
       integer, intent(in) :: method !< The method to be used for filling the field values.
-      character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
+      integer, intent(in) :: operand !< The operand to be used for filling the field values.
       real(kind=dp), dimension(:), intent(in) :: transformcoef !< The transformation coefficients.
       integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
@@ -2110,7 +2111,7 @@ contains
 
       integer :: num_items !< The number of target locations.
       real(kind=dp), dimension(:), pointer :: x_loc, y_loc !< The x and y coordinates of the target locations.
-      character(len=1) :: used_operand !< The operand to be used for filling the field values.
+      integer :: used_operand !< The operand to be used for filling the field values.
 
       if (target_location_type == UNC_LOC_3DV) then
          call setinitialverticalprofile(target_array, ndkx, filename)
@@ -2120,7 +2121,7 @@ contains
          call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, num_items, iloctype, kcsini)
 
          if (target_location_type == UNC_LOC_S3D) then
-            used_operand = 'O'
+            used_operand = OPERAND_OVERRIDE
             call reallocP(target_array, num_items, fill=dmiss, keepExisting=.false.)
             loc_type = UNC_LOC_S ! timespaceinitialfield expects UNC_LOC_S in stead of UNC_LOC_S3D
          else
@@ -2196,7 +2197,7 @@ contains
       real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells (1:ndkx).
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
-      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
+      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp), dimension(:, :), pointer :: output_array_3d_tmp
 
@@ -2225,7 +2226,7 @@ contains
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
-      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
+      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp) :: lower_limit, upper_limit, level_at_pressure_point
       integer :: n, k, kb, kt
