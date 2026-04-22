@@ -54,7 +54,7 @@ namespace
                                {.position = {.x_coordinate = 587.4, .y_coordinate = 509.2},
                                 .water_depth = 10.0,
                                 .layers = default_layers}},
-        };
+            .settings_xml_node = {}};
     }
 
     // Parse generated XML and return the root <COSUMO> child, failing the test
@@ -698,6 +698,5 @@ TEST(FF2NFWriterTest, SettingsSectionIsIndentedAtSameLevelAsSubgridModel)
     const auto settings_close_line_start = text.rfind('\n', settings_close);
     ASSERT_NE(settings_close_line_start, std::string::npos);
     const auto settings_close_indent = settings_close - settings_close_line_start - 1;
-    EXPECT_EQ(settings_close_indent, 4u)
-        << "Expected </settings> indent of 4 spaces, got " << settings_close_indent;
+    EXPECT_EQ(settings_close_indent, 4u) << "Expected </settings> indent of 4 spaces, got " << settings_close_indent;
 }
