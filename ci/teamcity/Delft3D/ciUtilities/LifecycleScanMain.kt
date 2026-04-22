@@ -2,7 +2,7 @@ package Delft3D.ciUtilities
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
+import Delft3D.template.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
 object LifecycleScanMain : BuildType({
@@ -12,6 +12,10 @@ object LifecycleScanMain : BuildType({
     vcs {
         root(DslContext.settingsRoot)
     }
+
+    templates(
+        TemplateDockerRegistry
+    )
 
     artifactRules = """
             syft-bom.json => sbom
@@ -62,14 +66,6 @@ object LifecycleScanMain : BuildType({
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
             param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
-        }
-    }
-
-    features {
-        dockerRegistryConnections {
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_304"
-            }
         }
     }
 
