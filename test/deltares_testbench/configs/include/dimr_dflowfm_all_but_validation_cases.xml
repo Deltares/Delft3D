@@ -4633,7 +4633,7 @@
       <path version="2026-04-20T15:50:00">e02_dflowfm/f015_spatial_interpolation/c045_friccoef_xyz_spherical</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="DFM_OUTPUT_model/friccoeff_map.nc" type="netCDF">
+        <file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_cfu" toleranceAbsolute="0.0001" />
           </parameters>
