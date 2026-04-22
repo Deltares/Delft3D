@@ -23,7 +23,8 @@
 module test_mdu_file_read_write
    use precision
    use assertions_gtest
-
+   use messagehandling, only: LEVEL_FATAL
+   use unstruc_messages, only: threshold_abort
    implicit none
 
 contains
@@ -52,6 +53,7 @@ contains
       call resetFullFlowModel()
 
       call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
+      threshold_abort = LEVEL_FATAL
       call readMDUFile('stretch_example.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when reading MDU file.')
 
@@ -90,6 +92,7 @@ contains
 
       call F90_ASSERT_TRUE(CHANGEDIRQQ('MDUversion'), '')
       ! read MDU
+      threshold_abort = LEVEL_FATAL
       call readMDUFile('old_model.mdu', ierr)
       call F90_ASSERT_TRUE(CHANGEDIRQQ('..'), '')
 
@@ -114,6 +117,7 @@ contains
 
       call F90_ASSERT_TRUE(CHANGEDIRQQ("MDUversion"), '')
       ! read MDU
+      threshold_abort = LEVEL_FATAL
       call readMDUFile('new_general.mdu', ierr)
       call F90_ASSERT_TRUE(CHANGEDIRQQ(".."), '')
 
@@ -140,7 +144,7 @@ contains
       call resetFullFlowModel()
 
       call F90_ASSERT_TRUE(CHANGEDIRQQ("MDUversion"), '')
-      ! read MDU
+      threshold_abort = LEVEL_FATAL
       call readMDUFile('stretch_example.mdu', ierr)
       call F90_ASSERT_TRUE(CHANGEDIRQQ(".."), '')
 

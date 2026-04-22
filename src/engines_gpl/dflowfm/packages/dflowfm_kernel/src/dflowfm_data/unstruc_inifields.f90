@@ -1753,7 +1753,7 @@ contains
          end if
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
-         call realloc(dicoww, ndx, constant_dicoww)
+         call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
          call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
