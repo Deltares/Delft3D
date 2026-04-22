@@ -361,7 +361,7 @@ contains
             farea = -max(point(kf) - ztop, 0.0_dp) & ! to find the flux area between the flux pieces and the sigma layer
                     + max(point(kf) - zbot, 0.0_dp) &
                     - max(point(kf - 1) - zbot, 0.0_dp)
-            if (comparereal(farea, 0.0_dp) == 1) then
+            if (comparereal(farea, 0.0_dp) == -1) then
                kfmax1 = kf
                exit
             end if
