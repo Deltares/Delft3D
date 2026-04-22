@@ -42,7 +42,6 @@
 #include "dimr_lib_version.h"
 
 #ifndef _WIN32
-    #include "config.h"
     #include <dlfcn.h>
     #include <libgen.h>
 #endif

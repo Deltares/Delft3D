@@ -36,21 +36,8 @@
 
 #include "dimr.h"
 
-#if HAVE_CONFIG_H
-    #include "config.h"
-    #define STDCALL /* nothing */
-    #define Dimr_CoreDump FC_FUNC(dimr_coredump, DIMR_COREDUMP)
-#else
-    // WIN32
-    #define STDCALL /* nothing */
-    #define Dimr_CoreDump DIMR_COREDUMP
-#endif
-
-#if (defined(__cplusplus) || defined(_cplusplus))
-extern "C" {
-#endif
-
-void STDCALL Dimr_CoreDump(void)
+// Callable from Fortran via: subroutine dimr_coredump() bind(C, name="dimr_coredump")
+extern "C" void dimr_coredump()
 {
     // ToDo: Check whether the core dump was actually requested.
     //       Only activate the printf statement when a core dump is actually requested
@@ -62,7 +49,3 @@ void STDCALL Dimr_CoreDump(void)
     // int * null = NULL;
     // int never = *null;
 }
-
-#if (defined(__cplusplus) || defined(_cplusplus))
-}
-#endif

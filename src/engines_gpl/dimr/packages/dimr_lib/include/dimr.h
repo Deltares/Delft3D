@@ -41,10 +41,6 @@
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
 
-#ifndef _WIN32
-    #include "config.h"
-#endif
-
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>

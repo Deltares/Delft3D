@@ -6,11 +6,6 @@
 
 #define MOD_NAME DIMR_LIB
 #define modname_program "DIMR_LIB"
-#if HAVE_CONFIG_H
-    #define F90_MOD_NAME FC_FUNC(dimr, DIMR)
-#else
-    #define F90_MOD_NAME MOD_NAME
-#endif
 
 #include "version_definition.h"
 
