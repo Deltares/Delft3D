@@ -27,7 +27,7 @@ namespace pre_c_sumo
         }
         auto csumo_settings = std::move(expectedCsumoSettings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
-        return std::move(csumo_settings);
+        return csumo_settings;
     }
 
     void receiveFFData() { std::println("Receiving far-field data..."); }
