@@ -509,6 +509,11 @@ contains
          allocate (ncstdnames(1))
          ncvarnames(1) = 'friction_coefficient'
          ncstdnames(1) = 'friction_coefficient'
+      case ('secchidepth')
+         allocate (ncvarnames(1))
+         allocate (ncstdnames(1))
+         ncvarnames(1) = 'secchi_depth'
+         ncstdnames(1) = 'secchi_depth'
       case ('waterlevelbnd')
          allocate (ncvarnames(1))
          allocate (ncstdnames(1))

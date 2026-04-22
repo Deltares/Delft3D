@@ -66,6 +66,8 @@ get_fortran_source_files(${dflowfm_kernel_timespace_path} dflowfm_kernel_timespa
 # Gather source files
 set(dflowfm_manager_path ${src_path}/dflowfm_manager/)
 get_fortran_source_files(${dflowfm_manager_path} dflowfm_manager)
+set(dflowfm_manager_precice_adapter_path ${src_path}/dflowfm_manager/precice_adapter)
+get_fortran_source_files(${dflowfm_manager_precice_adapter_path} dflowfm_manager_precice_adapter)
 
 # Gather source files
 set(dflowfm_rgf_path ${src_path}/dflowfm_rgf/)
@@ -104,6 +106,7 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_kernel_prepost}
                             ${dflowfm_kernel_timespace}
                             ${dflowfm_manager}
+                            ${dflowfm_manager_precice_adapter}
                             ${dflowfm_rgf}
                             ${dflowfm_utils}
                             ${dflowfm_utils_rest_f90}
@@ -166,7 +169,7 @@ if (UNIX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                           interacter_stub
                           PkgConfig::PETSC
                           uuid
@@ -183,18 +186,18 @@ if (WIN32)
         if(NOT lib_interacter)
            message(SEND_ERROR "Required Interacter library (intmwi64.lib) is missing for dflowfm_kernel.")
         else()
-           target_link_libraries(${library_name} PUBLIC ${lib_interacter})
-           target_link_libraries(${library_name} PUBLIC interacter_utils)
+           target_link_libraries(${library_name} PRIVATE ${lib_interacter})
+           target_link_libraries(${library_name} PRIVATE interacter_utils)
         endif()
     else()
-        target_link_libraries(${library_name} PUBLIC interacter_stub)
+        target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
     target_link_directories(${library_name} PUBLIC
                                 "${mpi_library_path}"
     )
 
-    target_link_libraries(${library_name} PUBLIC
+    target_link_libraries(${library_name} PRIVATE
                             "${mpi_fortran_library}"
                             petsc
     )
@@ -257,6 +260,7 @@ set_source_files_properties(${fortran_version_files}
 
 # Define preprocessor definitions
 set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+target_compile_definitions(${library_name} PRIVATE DFLOWFM_STACK_SIZE_BYTES=${DFLOWFM_STACK_SIZE_BYTES})
 if (WIN32)
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
