@@ -17,13 +17,12 @@ digraph PreCSumoPreCiceMeshLifecycle {
 
     s1 [label="1. Read C-SUMO settings\nreadCsumoSettingsFile(...)\n(positions from XYdiff/XYintake/XYambient)"];
     s2 [label="2. Construct Participant\nprecice::Participant(...) "];
-    s3 [label="3. Build 2D points\nbuild2DMeshPointsFromSettings(...)\n=> base_2d_coordinates"];
-    s4 [label="4. Register meshes\nregister2DAndInitial3DMeshes(...)\nsetMeshVertices(2D) + setMeshVertices(3D, 1 layer)"];
+    s3 [label="3. Build 2D points + layout\nbuild2DMeshPointsFromSettings(...)\n=> base_2d_coordinates + CsumoMeshLayout"];
+    s4 [label="4. Register meshes\nregister2DAndInitial3DMeshes(...)\nsetMeshVertices(2D) + setMeshVertices(3D, 1 placeholder layer z=0)"];
     s6 [label="5. initialize()"];
-    s7 [label="6. Read initial 2D data\nreadInitial2DData(...)\nread bed_level_z + water_level_z"];
-    s8 [label="7. Build operational 3D mesh\nrecreate3DMeshFrom2DLevels(..., 10)\nresetMesh + setMeshVertices"];
+    s7 [label="6. Read 2D levels + build initial 3D mesh\nupdateMeshesForCouplingStep(..., 10)\nread bed_level_z + water_level_z\nresetMesh + setMeshVertices(3D, N layers)"];
 
-    s1 -> s2 -> s3 -> s4 -> s6 -> s7 -> s8;
+    s1 -> s2 -> s3 -> s4 -> s6 -> s7;
   }
 
   subgraph cluster_loop {
@@ -34,7 +33,7 @@ digraph PreCSumoPreCiceMeshLifecycle {
 
     l1 [label="A. getMaxTimeStepSize()"];
     l2 [label="B. Read 3D coupling data\nreceiveFFData(state)\n(read rho on csumo_3d_nodes)"];
-    l3 [label="C. Write FF2NF + NF/FF exchange\nwriteFF2NFFiles(...) + existing steps"];
+    l3 [label="C. Write FF2NF + NF/FF exchange\nwriteFF2NFFiles(settings, state, mesh_layout)\n(uses CsumoMeshLayout for role lookup)"];
     l4 [label="D. Read 2D levels\nread bed_level_z + water_level_z"];
     l5a [label="E. Reset and rebuild 3D mesh\nrecreate3DMeshFrom2DLevels(...)"];
     l6 [label="F. advance(dt)"];
@@ -44,11 +43,13 @@ digraph PreCSumoPreCiceMeshLifecycle {
     l5 -> l1 [label="yes"];
   }
 
-  s8 -> l1;
+  s7 -> l1;
   l5 -> end [label="no", style=dashed];
   end [label="Finish", shape=oval, fillcolor="#EDEDED", color="#A0A0A0"];
 
   layers [shape=note, fillcolor="#FFFDF0", color="#C8B66A", label="Shared 3D layer policy:\n0 => empty mesh\n1 => z_min only\nN>=2 => uniform z in [z_min, z_max]"];
-  s8 -> layers [style=dashed];
+  layout_note [shape=note, fillcolor="#FFFDF0", color="#C8B66A", label="CsumoMeshLayout:\nbuilt once at startup\nper point: flat_index, diffuser_index,\nrole (Diffuser/Intake/Ambient), ambient_index"];
+  s7 -> layers [style=dashed];
   l5a -> layers [style=dashed];
+  s3 -> layout_note [style=dashed];
 }

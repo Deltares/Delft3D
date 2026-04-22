@@ -12,6 +12,7 @@ set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
     ${include_dir}/coupling_steps.hpp
+    ${include_dir}/csumo_mesh_layout.hpp
     ${include_dir}/csumo_settings_reader.hpp
     ${include_dir}/endpoints.hpp
     ${include_dir}/monadic_utils.hpp

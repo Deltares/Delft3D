@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "csumo_mesh_layout.hpp"
 #include "csumo_settings_reader.hpp"
 #include "FF2NF_writer.hpp"
 #include "parsing_types.hpp"
@@ -107,37 +108,49 @@ namespace pre_c_sumo
                                             precice_state.csumo_3d_node_ids, dt, precice_state.rho_3d);
     }
 
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, const PreCICEState& precice_state)
+    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, const PreCICEState& precice_state,
+                         const CsumoMeshLayout& mesh_layout)
     {
         const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
         const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
         const int layers_per_point = precice_state.current_3d_layer_count;
 
-        int point_index = 0;
-
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
-            const auto subgrid_model_nr = static_cast<int>(index + 1);
+            const int diffuser_idx = static_cast<int>(index);
+            const auto subgrid_model_nr = diffuser_idx + 1;
 
-            const auto diffuser_point =
-                makePoint2DFrom3D(diffuser.position, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
-                                point_index++, layers_per_point, diffuser.discharge.constituents);
+            // Look up each role's flat_index from the layout — safe regardless of intake presence
+            // or varying ambient counts between diffusers.
+            auto points_for = [&](CsumoMeshLayout::PointRole role) {
+                return mesh_layout.points | std::views::filter([diffuser_idx, role](const auto& p) {
+                    return p.diffuser_index == diffuser_idx && p.role == role;
+                });
+            };
+
+            auto diffuser_range = points_for(CsumoMeshLayout::PointRole::Diffuser);
+            const auto diffuser_point = makePoint2DFrom3D(
+                diffuser.position, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
+                diffuser_range.begin()->flat_index, layers_per_point, diffuser.discharge.constituents);
 
             std::optional<FarFieldPoint2D> intake_point = std::nullopt;
-            if (diffuser.intake.has_value())
+            auto intake_range = points_for(CsumoMeshLayout::PointRole::Intake);
+            if (auto it = intake_range.begin(); it != intake_range.end())
             {
-                intake_point = makePoint2DFrom3D(*diffuser.intake, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
-                                               point_index++, layers_per_point, diffuser.discharge.constituents);
+                intake_point = makePoint2DFrom3D(*diffuser.intake, precice_state.csumo_3d_coordinates,
+                                                 precice_state.rho_3d, it->flat_index, layers_per_point,
+                                                 diffuser.discharge.constituents);
             }
 
             std::vector<FarFieldPoint2D> ambient_points;
             ambient_points.reserve(diffuser.ambient_positions.size());
-            for (const auto& ambient_position : diffuser.ambient_positions)
+            for (const auto& ambient_info : points_for(CsumoMeshLayout::PointRole::Ambient))
             {
-                ambient_points.push_back(makePoint2DFrom3D(ambient_position, precice_state.csumo_3d_coordinates,
-                                                         precice_state.rho_3d, point_index++, layers_per_point,
-                                                         diffuser.discharge.constituents));
+                ambient_points.push_back(
+                    makePoint2DFrom3D(diffuser.ambient_positions[static_cast<std::size_t>(ambient_info.ambient_index)],
+                                     precice_state.csumo_3d_coordinates, precice_state.rho_3d,
+                                     ambient_info.flat_index, layers_per_point, diffuser.discharge.constituents));
             }
 
             const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,

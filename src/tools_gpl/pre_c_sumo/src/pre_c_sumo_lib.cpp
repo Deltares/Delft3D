@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "coupling_steps.hpp"
+#include "csumo_mesh_layout.hpp"
 #include "csumo_settings_reader.hpp"
 #include "precice_mesh_manager.hpp"
 #include "precice_state.hpp"
@@ -29,7 +30,7 @@ namespace pre_c_sumo
         precice_state.participant =
             std::make_unique<precice::Participant>("preC-SUMO", precice_config_file_name, mpi_rank, mpi_size);
 
-        build2DMeshPointsFromSettings(csumo_settings.value(), precice_state);
+        const auto mesh_layout = build2DMeshPointsFromSettings(csumo_settings.value(), precice_state);
         register2DAndInitial3DMeshes(precice_state);
         precice_state.participant->initialize();
         updateMeshesForCouplingStep(precice_state, 10);
@@ -39,7 +40,7 @@ namespace pre_c_sumo
         {
             coupling_time_step = precice_state.participant->getMaxTimeStepSize();
             receiveFFData(precice_state);
-            writeFF2NFFiles(csumo_settings.value(), precice_state);
+            writeFF2NFFiles(csumo_settings.value(), precice_state, mesh_layout);
             waitForNF2FFFiles(csumo_settings.value());
             readNF2FFFiles(csumo_settings.value());
             convertNFToSourcesSinks(csumo_settings.value());

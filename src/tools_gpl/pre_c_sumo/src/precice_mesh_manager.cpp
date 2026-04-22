@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <ranges>
 #include <vector>
 
 namespace
@@ -79,25 +80,33 @@ namespace
 
 namespace pre_c_sumo
 {
-    void build2DMeshPointsFromSettings(const CSumoSettingsReader& csumo_settings, PreCICEState& precice_state)
+    CsumoMeshLayout build2DMeshPointsFromSettings(const CSumoSettingsReader& csumo_settings, PreCICEState& precice_state)
     {
         precice_state.base_2d_coordinates.clear();
         precice_state.csumo_2d_nodes_ids.clear();
         precice_state.bed_level_z.clear();
         precice_state.water_level_z.clear();
 
-        for (const auto& diffuser : csumo_settings.diffusers())
+        CsumoMeshLayout layout;
+        int flat_index = 0;
+
+        for (const auto& [diffuser_index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
+            const int di = static_cast<int>(diffuser_index);
+
             appendXY(precice_state.base_2d_coordinates, diffuser.position);
+            layout.points.push_back({flat_index++, di, CsumoMeshLayout::PointRole::Diffuser, -1});
 
             if (diffuser.intake.has_value())
             {
                 appendXY(precice_state.base_2d_coordinates, diffuser.intake.value());
+                layout.points.push_back({flat_index++, di, CsumoMeshLayout::PointRole::Intake, -1});
             }
 
-            for (const auto& ambient : diffuser.ambient_positions)
+            for (const auto& [ambient_index, ambient] : diffuser.ambient_positions | std::views::enumerate)
             {
                 appendXY(precice_state.base_2d_coordinates, ambient);
+                layout.points.push_back({flat_index++, di, CsumoMeshLayout::PointRole::Ambient, static_cast<int>(ambient_index)});
             }
         }
 
@@ -107,6 +116,7 @@ namespace pre_c_sumo
         precice_state.water_level_z.assign(point_count, 0.0);
 
         std::cout << "Prepared " << point_count << " 2D coupling points from C-SUMO settings.\n";
+        return layout;
     }
 
     void register2DAndInitial3DMeshes(PreCICEState& precice_state)
@@ -115,7 +125,6 @@ namespace pre_c_sumo
                                            precice_state.csumo_2d_nodes_ids);
 
         // Initial 3D mesh: same XY points with one placeholder z layer.
-        // No resetMesh here — the mesh does not exist yet before initialize().
         rebuild3DMesh(precice_state, 1, false);
 
         std::cout << "Registered " << precice_state.csumo_2d_nodes_ids.size() << " 2D vertices and "

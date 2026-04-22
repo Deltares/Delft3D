@@ -3,6 +3,7 @@
 
 #include <string_view>
 
+#include "csumo_mesh_layout.hpp"
 #include "csumo_settings_reader.hpp"
 #include "precice_state.hpp"
 
@@ -30,8 +31,10 @@ namespace pre_c_sumo
      * @param csumo_settings Parsed C-SUMO settings.
      * @param precice_state Mutable coupling state receiving generated coordinates
      * and resized data/id buffers.
+     * @return Layout mapping each coupling point to its flat buffer index, diffuser
+     *         index, role, and ambient index. Must be passed to @ref writeFF2NFFiles.
      */
-    void build2DMeshPointsFromSettings(const CSumoSettingsReader& csumo_settings, PreCICEState& precice_state);
+    CsumoMeshLayout build2DMeshPointsFromSettings(const CSumoSettingsReader& csumo_settings, PreCICEState& precice_state);
 
     /**
      * @brief Register both provided meshes (2D and initial 3D) with preCICE.

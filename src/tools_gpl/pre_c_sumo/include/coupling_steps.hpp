@@ -4,6 +4,7 @@
 #include <expected>
 #include <string_view>
 
+#include "csumo_mesh_layout.hpp"
 #include "csumo_settings_reader.hpp"
 #include "parsing_types.hpp"
 #include "precice_state.hpp"
@@ -48,7 +49,8 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, const PreCICEState& precice_state);
+    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, const PreCICEState& precice_state,
+                         const CsumoMeshLayout& mesh_layout);
 
     /**
      * @brief Wait until NF2FF files become available.
