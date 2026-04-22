@@ -4625,7 +4625,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f015_c045_friccoef_xyz_spherical" ref="dflowfm_default">
-      <path version="2026-04-20T15:50:00">e02_dflowfm/f015_spatial_interpolation/c045_friccoef_xyz_spherical</path>
+      <path version="2026-04-22T16:16:00">e02_dflowfm/f015_spatial_interpolation/c045_friccoef_xyz_spherical</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
