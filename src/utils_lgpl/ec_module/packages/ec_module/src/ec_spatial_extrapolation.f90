@@ -41,7 +41,8 @@ module m_ec_spatial_extrapolation
 
    public :: extrapolate_missing, init_spatial_extrapolation, updateInterpolation, extrapolateValue
 
-   real(kind=hp) :: max_search_radius = 1.0e6_hp  !< in meter
+   real(kind=hp), parameter :: MAX_SEARCH_RADIUS_DEFAULT = 1.0e6_hp  !< in meter
+   real(kind=hp) :: max_search_radius = MAX_SEARCH_RADIUS_DEFAULT  !< in meter
    integer       :: jsferic           = 1
 
    contains
@@ -56,7 +57,9 @@ module m_ec_spatial_extrapolation
 
           if (rvalue > 0.0_hp) then
              max_search_radius = rvalue
-          endif
+          else
+             max_search_radius = MAX_SEARCH_RADIUS_DEFAULT
+          end if
           jsferic = ivalue
        end subroutine init_spatial_extrapolation
 
