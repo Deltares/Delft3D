@@ -466,7 +466,7 @@ module m_flowparameters
    integer :: jadpuopt !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean.
    integer :: jaextrapbl !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions.
 
-   type :: WriteHisOutput
+   type :: HisWriteSettings
       integer :: bal = 1 !< Write mass balance/volume totals to his file, 0: no, 1: yes
       integer :: sourcesink = 1 !< Write discharge/volume at sources/sinks, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
@@ -513,9 +513,9 @@ module m_flowparameters
       integer :: universal_weir = 1 !< Write univeral weir parameters to his file, 0: no, 1: yes
       integer :: compound_structure = 1 !< Write compound structure parameters to his file, 0: no, 1: yes
       integer :: long_culvert = 1 !< Write long culverts parameters to his file, 0: no, 1:yes
-   end type WriteHisOutput
+   end type HisWriteSettings
 
-   type :: WriteMapOutput
+   type :: MapWriteSettings
       integer :: s0 = 1 !< previous step water levels to map file, 0: no, 1: yes
       integer :: s1 = 1 !< water levels to map file, 0: no, 1: yes
       integer :: evap = 0 !< evaporation to map file, 0: no, 1: yes
@@ -577,10 +577,10 @@ module m_flowparameters
       integer :: flow_analysis = 0 !< Write flow analysis output to map file
       integer :: near_field = 0 !< Nearfield related output
       integer :: wqbot3d = 0 !< Write wqbot3d to map file, 0: no, 1: yes
-   end type WriteMapOutput
+   end type MapWriteSettings
 
-   type(WriteHisOutput) :: write_his_output
-   type(WriteMapOutput) :: write_map_output
+   type(HisWriteSettings) :: his_write_settings
+   type(MapWriteSettings) :: map_write_settings
 
    logical :: write_numlimdt_file !< Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file
    integer :: jatekcd !< tek output with wind cd coefficients, 0=no (default), 1=yes

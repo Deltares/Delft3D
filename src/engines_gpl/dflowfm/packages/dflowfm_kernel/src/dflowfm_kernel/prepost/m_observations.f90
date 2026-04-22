@@ -80,7 +80,7 @@ contains
 !! IPNT_XXX are the pointers in the "valobs" array,
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
-      use m_flowparameters, only: jawave, write_his_output, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
+      use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
                                   TEMPERATURE_MODEL_COMPOSITE, jased, jasal
       use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
@@ -235,7 +235,7 @@ contains
          IVAL_WAVER = next_index(i)
          IVAL_WAVEU = next_index(i)
       end if
-      if (write_his_output%taucurrent > 0) then
+      if (his_write_settings%taucurrent > 0) then
          IVAL_TAUX = next_index(i)
          IVAL_TAUY = next_index(i)
       end if
@@ -259,13 +259,13 @@ contains
          IVAL_QTOT = next_index(i)
       end if
       call set_value_indices_for_ice(i)
-      if (write_his_output%rain > 0) then
+      if (his_write_settings%rain > 0) then
          IVAL_RAIN = next_index(i)
       end if
-      if (write_his_output%airdensity > 0) then
+      if (his_write_settings%airdensity > 0) then
          IVAL_AIRDENSITY = next_index(i)
       end if
-      if (write_his_output%infilt > 0) then
+      if (his_write_settings%infilt > 0) then
          IVAL_INFILTCAP = next_index(i)
          IVAL_INFILTACT = next_index(i)
       end if
@@ -350,7 +350,7 @@ contains
          IVAL_HWQ1 = next_index(i)
          IVAL_HWQN = next_index(i, noout - 1) !< All waq history outputs
       end if
-      if (numwqbots > 0 .and. write_his_output%wqbot3d == 1) then
+      if (numwqbots > 0 .and. his_write_settings%wqbot3d == 1) then
          IVAL_WQB3D1 = next_index(i)
          IVAL_WQB3DN = next_index(i, numwqbots - 1) !< All 3D waqbot history outputs
       end if
@@ -371,7 +371,7 @@ contains
             IVAL_RHO = next_index(i)
          end if
       end if
-      if (write_his_output%tur > 0) then
+      if (his_write_settings%tur > 0) then
          IVAL_VIU = next_index(i)
       end if
       MAXNUMVALOBS3D = i - i0
@@ -385,7 +385,7 @@ contains
       end if
       if (kmx > 0) then
          IVAL_BRUV = next_index(i)
-         if (iturbulencemodel > 0 .and. write_his_output%tur > 0) then
+         if (iturbulencemodel > 0 .and. his_write_settings%tur > 0) then
             IVAL_TKIN = next_index(i)
             IVAL_TEPS = next_index(i)
             IVAL_VICWWS = next_index(i)

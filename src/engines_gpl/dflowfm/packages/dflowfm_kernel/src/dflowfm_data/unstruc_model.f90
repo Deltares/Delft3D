@@ -65,7 +65,7 @@ module unstruc_model
    ! 1.08 (2019-07-27): Default option for density changed from Eckart to UNESCO (idensform=2 instead of 1)
    ! 1.07 (2019-06-13): Renamed [model] block as [General] block, replace keyword MDUFormatVersion by FileVersion
    ! 1.06 (2016-05-16): Removed 1 variable for secondary flow, EffectSpiral as it is given by Espir contained in .mor file
-   ! 1.05 (2015-07-22): The structure parameters are added (jahisstr, jahisdam, write_his_output%pump, write_his_output%gate)
+   ! 1.05 (2015-07-22): The structure parameters are added (jahisstr, jahisdam, his_write_settings%pump, his_write_settings%gate)
    ! 1.04 (2015-03-19): Anti-Creep option is added
    ! 1.03 (2015-02-25): Added 2 variable for secondary flow, EffectSpiral and BetaSpiral
    ! 1.02 (2015-01-07): Remove [time] AutoTimestep (always automatic).
@@ -2020,145 +2020,145 @@ contains
 
       call prop_get(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
 
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', write_his_output%bal, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', write_his_output%sourcesink, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', write_his_output%cgen, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', write_his_output%cdam, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', write_his_output%pump, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate', write_his_output%gate, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir', write_his_output%weir, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice', write_his_output%orifice, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge', write_his_output%bridge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert', write_his_output%culvert, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak', write_his_output%dambreak, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir', write_his_output%universal_weir, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound', write_his_output%compound_structure, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', write_his_output%long_culvert, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', write_his_output%tur, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', write_his_output%wind, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', write_his_output%rain, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', write_his_output%infilt, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', write_his_output%airdensity, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density', write_his_output%rho, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1', write_his_output%watlev, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel', write_his_output%bedlev, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth', write_his_output%watdep, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves', write_his_output%wav, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector', write_his_output%velvec, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', write_his_output%ww, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', write_his_output%sed, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', write_his_output%zcor, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', his_write_settings%bal, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', his_write_settings%sourcesink, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', his_write_settings%cgen, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', his_write_settings%cdam, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', his_write_settings%pump, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate', his_write_settings%gate, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir', his_write_settings%weir, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice', his_write_settings%orifice, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge', his_write_settings%bridge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert', his_write_settings%culvert, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak', his_write_settings%dambreak, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir', his_write_settings%universal_weir, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound', his_write_settings%compound_structure, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', his_write_settings%long_culvert, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', his_write_settings%tur, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', his_write_settings%wind, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', his_write_settings%rain, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', his_write_settings%infilt, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', his_write_settings%airdensity, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density', his_write_settings%rho, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1', his_write_settings%watlev, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel', his_write_settings%bedlev, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth', his_write_settings%watdep, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves', his_write_settings%wav, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector', his_write_settings%velvec, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', his_write_settings%ww, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', his_write_settings%sed, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', his_write_settings%zcor, success)
       if (.not. success .and. kmx == 0) then
          ! for 2D we don't write zLayers by default. However zlayers are important for nesting where you can nest 2d=>3d models
-         ! since write_his_output%zcor is by default 1,this will make by default write_his_output%zcor=0 if kmx=0 .and. write_his_output%zcor=1 if kmx > 0
-         write_his_output%zcor = 0
+         ! since his_write_settings%zcor is by default 1,this will make by default his_write_settings%zcor=0 if kmx=0 .and. his_write_settings%zcor=1 if kmx > 0
+         his_write_settings%zcor = 0
       end if
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', write_his_output%lateral, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', write_his_output%taucurrent, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', write_his_output%velocity, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', write_his_output%discharge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', write_his_output%heatflux, success, alternative_key='Wrihis_heatflux')
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', write_his_output%runupgauge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', write_his_output%wqbot, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', write_his_output%wqbot3d, success)
-      if (kmx == 0 .and. write_his_output%wqbot3d == 1) then
-         write_his_output%wqbot3d = 0
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', his_write_settings%lateral, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', his_write_settings%taucurrent, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', his_write_settings%velocity, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', his_write_settings%discharge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', his_write_settings%heatflux, success, alternative_key='Wrihis_heatflux')
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', his_write_settings%runupgauge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', his_write_settings%wqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', his_write_settings%wqbot3d, success)
+      if (kmx == 0 .and. his_write_settings%wqbot3d == 1) then
+         his_write_settings%wqbot3d = 0
          write (msgbuf, '(a)') 'MDU setting "wrihis_wqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
             //'but this is ignored since the simulation is 2D.'
          call warn_flush()
       end if
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', write_his_output%tracers, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', write_his_output%crs_flow, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', write_his_output%crs_constituents, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment', write_his_output%crs_sediment, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', write_his_output%dred, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', write_his_output%waq, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', write_his_output%tem, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', write_his_output%sal, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', his_write_settings%tracers, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', his_write_settings%crs_flow, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', his_write_settings%crs_constituents, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment', his_write_settings%crs_sediment, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', his_write_settings%dred, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', his_write_settings%waq, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', his_write_settings%tem, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', his_write_settings%sal, success)
 
-      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', write_map_output%s0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', write_map_output%s1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', write_map_output%evap, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_volume1', write_map_output%vol1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', write_map_output%hs, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', write_map_output%hu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', write_map_output%anc, success)
-      if (write_map_output%anc > 0) then
-         if (write_map_output%s1 <= 0) then
-            write_map_output%s1 = 1 ! Enable writing s1, necessary for writing ancillary variables
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', map_write_settings%s0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', map_write_settings%s1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', map_write_settings%evap, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume1', map_write_settings%vol1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', map_write_settings%hs, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', map_write_settings%hu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', map_write_settings%anc, success)
+      if (map_write_settings%anc > 0) then
+         if (map_write_settings%s1 <= 0) then
+            map_write_settings%s1 = 1 ! Enable writing s1, necessary for writing ancillary variables
          end if
-         if (write_map_output%hs <= 0) then
-            write_map_output%hs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
+         if (map_write_settings%hs <= 0) then
+            map_write_settings%hs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
          end if
-         if (write_map_output%hu <= 0) then
-            write_map_output%hu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
+         if (map_write_settings%hu <= 0) then
+            map_write_settings%hu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
          end if
       end if
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', write_map_output%flow_analysis, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', write_map_output%au, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', write_map_output%u1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', write_map_output%u0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', write_map_output%ucvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', map_write_settings%flow_analysis, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', map_write_settings%au, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', map_write_settings%u1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', map_write_settings%u0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', map_write_settings%ucvec, success)
       !
-      if (jawave == WAVE_SWAN_ONLINE .and. write_map_output%ucvec == 0) then ! only needed for 2 way coupling
-         write_map_output%ucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
+      if (jawave == WAVE_SWAN_ONLINE .and. map_write_settings%ucvec == 0) then ! only needed for 2 way coupling
+         map_write_settings%ucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
       end if
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', write_map_output%ucmag, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', write_map_output%ucqvec, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', write_map_output%ww1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', write_map_output%rho, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', write_map_output%viu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', write_map_output%diu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', write_map_output%q1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', write_map_output%q1main, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', write_map_output%fw, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', write_map_output%spir, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', write_map_output%numlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', map_write_settings%ucmag, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', map_write_settings%ucqvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', map_write_settings%ww1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', map_write_settings%rho, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', map_write_settings%viu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', map_write_settings%diu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', map_write_settings%q1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', map_write_settings%q1main, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', map_write_settings%fw, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', map_write_settings%spir, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', map_write_settings%numlimdt, success)
       call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', write_map_output%taucurrent, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_z0', write_map_output%z0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_salinity', write_map_output%sal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy', write_map_output%chezy_elements, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', write_map_output%chezy_links, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', write_map_output%chezy_input, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_temperature', write_map_output%tem, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_constituents', write_map_output%const, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_sediment', write_map_output%sed, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', write_map_output%tur, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', write_map_output%trachy, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_calibration', write_map_output%cali, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_rain', write_map_output%rain, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_interception', write_map_output%icept, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_wind', write_map_output%wind, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_windstress', write_map_output%windstress, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', write_map_output%airdensity, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', map_write_settings%taucurrent, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_z0', map_write_settings%z0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_salinity', map_write_settings%sal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy', map_write_settings%chezy_elements, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', map_write_settings%chezy_links, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', map_write_settings%chezy_input, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_temperature', map_write_settings%tem, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_constituents', map_write_settings%const, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sediment', map_write_settings%sed, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', map_write_settings%tur, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', map_write_settings%trachy, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_calibration', map_write_settings%cali, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_rain', map_write_settings%rain, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_interception', map_write_settings%icept, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_wind', map_write_settings%wind, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_windstress', map_write_settings%windstress, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', map_write_settings%airdensity, success)
       call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', write_map_output%tidep, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', write_map_output%selfal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', write_map_output%int_tides_diss, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_nudging', write_map_output%nudge, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', write_map_output%pure_1D_debug, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waves', write_map_output%wav, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', write_map_output%dtcell, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', map_write_settings%tidep, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', map_write_settings%selfal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', map_write_settings%int_tides_diss, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_nudging', map_write_settings%nudge, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', map_write_settings%pure_1D_debug, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waves', map_write_settings%wav, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', map_write_settings%dtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', write_map_output%time_wet_on_ground, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', write_map_output%free_board, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', write_map_output%depth_on_ground, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', write_map_output%vol_on_ground, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', write_map_output%total_inflow_1d2d, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', write_map_output%total_inflow_lat, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', write_map_output%s1gradient, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', map_write_settings%time_wet_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', map_write_settings%free_board, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', map_write_settings%depth_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', map_write_settings%vol_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', map_write_settings%total_inflow_1d2d, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', map_write_settings%total_inflow_lat, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', map_write_settings%s1gradient, success)
       call prop_get(md_ptr, 'output', 'Writek_CdWind', jatekcd, success)
       call prop_get(md_ptr, 'output', 'Wrirst_bnd', jarstbnd, success)
       call prop_get(md_ptr, 'output', 'Writepart_domain', japartdomain, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_bnd', write_map_output%bnd, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_Qin', write_map_output%qin, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_bnd', map_write_settings%bnd, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_Qin', map_write_settings%qin, success)
       call prop_get(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_NearField', write_map_output%near_field, success)
-      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', write_map_output%wqbot3d, success)
-      if (kmx == 0 .and. write_map_output%wqbot3d == 1) then
-         write_map_output%wqbot3d = 0 ! Disable wqbot3d map output if model is 2D
+      call prop_get(md_ptr, 'output', 'Wrimap_NearField', map_write_settings%near_field, success)
+      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', map_write_settings%wqbot3d, success)
+      if (kmx == 0 .and. map_write_settings%wqbot3d == 1) then
+         map_write_settings%wqbot3d = 0 ! Disable wqbot3d map output if model is 2D
       end if
 
       ! Output
@@ -2166,25 +2166,25 @@ contains
       call scan_input_tree(md_ptr, 'Output', config_set_his)
       call scan_input_tree(md_ptr, 'Output', config_set_map)
       call scan_input_tree(md_ptr, 'Output', config_set_clm)
-      !if (md_mapformat /= 4 .and. write_map_output%windstress /= 0) then
+      !if (md_mapformat /= 4 .and. map_write_settings%windstress /= 0) then
       !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
       !endif
 
       if (temperature_model == TEMPERATURE_MODEL_NONE .or. temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
          jamapheatflux = 0
-         write_his_output%heatflux = 0
+         his_write_settings%heatflux = 0
       end if
 
       ! If no temperature is involved, then do not write temperature to output map/his files
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
-         write_map_output%tem = 0
-         write_his_output%tem = 0
+         map_write_settings%tem = 0
+         his_write_settings%tem = 0
       end if
 
       ! If no salinity is involved, then do not write salinity to output map/his files
       if (jasal < 1) then
-         write_map_output%sal = 0
-         write_his_output%sal = 0
+         map_write_settings%sal = 0
+         his_write_settings%sal = 0
       end if
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
@@ -2664,7 +2664,7 @@ contains
       use m_heatfluxes
       use m_fm_wq_processes
       use m_trachy
-      use m_structures, only: write_his_output
+      use m_structures, only: his_write_settings
       use m_1d2d_fixedweirs, only: lat_fix_weir_umin, lat_fix_weir_umin_method, lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
       use m_subsidence, only: sdu_update_s1
       use m_xbeach_data, only: swave
@@ -3933,23 +3933,23 @@ contains
 
       call set_properties(prop_ptr, 'Output', config_set_his)
 
-      if (writeall .or. write_his_output%zcor /= 1) then
-         call prop_set(prop_ptr, 'output', 'Wrihis_zcor', write_his_output%zcor, 'Write vertical coordinates to his file (1: yes, 0: no)')
+      if (writeall .or. his_write_settings%zcor /= 1) then
+         call prop_set(prop_ptr, 'output', 'Wrihis_zcor', his_write_settings%zcor, 'Write vertical coordinates to his file (1: yes, 0: no)')
       end if
 
       call set_properties(prop_ptr, 'Output', config_set_map)
 
-      if (write_map_output%bnd > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_bnd', write_map_output%bnd, 'Write boundary points to map file (1: yes, 0: no)')
+      if (map_write_settings%bnd > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_bnd', map_write_settings%bnd, 'Write boundary points to map file (1: yes, 0: no)')
       end if
-      if (write_map_output%qin > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_Qin', write_map_output%qin, 'Write sum of all influxes to map file (1: yes, 0: no)')
+      if (map_write_settings%qin > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_Qin', map_write_settings%qin, 'Write sum of all influxes to map file (1: yes, 0: no)')
       end if
       if (jaeverydt > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_every_dt', jaeverydt, 'Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes')
       end if
-      if (write_map_output%wqbot3d > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', write_map_output%wqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
+      if (map_write_settings%wqbot3d > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', map_write_settings%wqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
       end if
       if (writeall .or. epswetout /= 0.1_dp) then
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')

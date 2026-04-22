@@ -408,7 +408,7 @@ contains
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
-         if (write_map_output%vol_on_ground > 0) then
+         if (map_write_settings%vol_on_ground > 0) then
             call set_max_volume_for_1d_nodes() ! set maximal volume, it will be used to update the volume on ground level for the output
          end if
       end if

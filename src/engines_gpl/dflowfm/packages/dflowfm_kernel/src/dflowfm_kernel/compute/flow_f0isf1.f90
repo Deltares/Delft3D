@@ -38,7 +38,7 @@ module m_flow_f0isf1
 contains
    subroutine flow_f0isf1() ! Todo: make pointer stucture and reset pointers
       use m_flowgeom, only: ndxi
-      use m_flow, only : hsaver, a1tot, vol1tot, vinbnd, qinbnd, voutbnd, qoutbnd, vincel, qincel, voutcel, qoutcel, vinbndcum, voutbndcum, vincelcum, voutcelcum, volerr, vol0tot, volerrcum, write_his_output, vinrain, qinrain, vinrainground, qinrainground, vouteva, qouteva, voutevaicept, qoutevaicept, vinlat, qinlat, voutlat, qoutlat, vingrw, qingrw, voutgrw, qoutgrw, qinsrc, qoutsrc, num_source_sink, source_sink_water_discharge, source_sink_indices, vinsrc, voutsrc, vinext, qinext, voutext, qoutext, vinraincum, voutevacum, vinlatcum, voutlatcum, vingrwcum, voutgrwcum, vinsrccum, voutsrccum, vinextcum, voutextcum, volcur, idx_stor, idx_voltot, idx_volerr, idx_bndin, idx_bndout, idx_bndtot, idx_exchin, idx_exchout, idx_exchtot, q1, idx_precip_total, idx_precip_ground, idx_evap, idx_sour, idx_icept, vol1icept, idx_evap_icept, jafrcinternaltides2d, idx_internaltidesdissipation, dissinternaltides, jatidep, jaselfal, idx_gravinput, gravinput, idx_salinput, salinput, idx_salinput2, salinput2, idx_grwin, idx_grwout, idx_grwtot, idx_latin, idx_latout, idx_lattot, idx_latin1d, idx_latout1d, idx_lattot1d, idx_latin2d, idx_latout2d, idx_lattot2d, idx_extin, idx_extout, idx_exttot, idx_extin1d, idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
+      use m_flow, only : hsaver, a1tot, vol1tot, vinbnd, qinbnd, voutbnd, qoutbnd, vincel, qincel, voutcel, qoutcel, vinbndcum, voutbndcum, vincelcum, voutcelcum, volerr, vol0tot, volerrcum, his_write_settings, vinrain, qinrain, vinrainground, qinrainground, vouteva, qouteva, voutevaicept, qoutevaicept, vinlat, qinlat, voutlat, qoutlat, vingrw, qingrw, voutgrw, qoutgrw, qinsrc, qoutsrc, num_source_sink, source_sink_water_discharge, source_sink_indices, vinsrc, voutsrc, vinext, qinext, voutext, qoutext, vinraincum, voutevacum, vinlatcum, voutlatcum, vingrwcum, voutgrwcum, vinsrccum, voutsrccum, vinextcum, voutextcum, volcur, idx_stor, idx_voltot, idx_volerr, idx_bndin, idx_bndout, idx_bndtot, idx_exchin, idx_exchout, idx_exchtot, q1, idx_precip_total, idx_precip_ground, idx_evap, idx_sour, idx_icept, vol1icept, idx_evap_icept, jafrcinternaltides2d, idx_internaltidesdissipation, dissinternaltides, jatidep, jaselfal, idx_gravinput, gravinput, idx_salinput, salinput, idx_salinput2, salinput2, idx_grwin, idx_grwout, idx_grwtot, idx_latin, idx_latout, idx_lattot, idx_latin1d, idx_latout1d, idx_lattot1d, idx_latin2d, idx_latout2d, idx_lattot2d, idx_extin, idx_extout, idx_exttot, idx_extin1d, idx_extout1d, idx_exttot1d, idx_extin2d, idx_extout2d, idx_exttot2d, cumvolcur, kmx, volerror, vol1, vol0, sqi, squ, a0tot
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_drawthis, only: ndraw
       use m_get_kbot_ktop, only: getkbotktop
@@ -85,7 +85,7 @@ contains
       volerr = vol1tot - vol0tot - vinbnd + voutbnd - vincel + voutcel !+ dvolbot
       volerrcum = volerrcum + volerr
 
-      if (write_his_output%bal > 0) then
+      if (his_write_settings%bal > 0) then
          ! extra
          vinrain = qinrain * dts
          vinrainground = qinrainground * dts

@@ -46,7 +46,7 @@ contains
       use m_heatfluxes, only: em, albedo, cpa, secchi_depth_is_spatially_varying, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
-      use m_flowparameters, only: write_his_output, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
+      use m_flowparameters, only: his_write_settings, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                                   ja_solar_radiation_factor
       use m_missing, only: dmiss
       use m_flowgeom, only: ba, nd, ln, yz, xz
@@ -143,7 +143,7 @@ contains
          heat_capacity_water_cell_area = rcpi * ba(n)
          heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction ! fill heat source array
 
-         if (jamapheatflux > 0 .or. write_his_output%heatflux > 0) then ! todo, only at mapintervals
+         if (jamapheatflux > 0 .or. his_write_settings%heatflux > 0) then ! todo, only at mapintervals
             qtotmap(n) = total_heat_flux
          end if
 
@@ -364,7 +364,7 @@ contains
             end if
          end if
 
-         if (jamapheatflux > 0 .or. write_his_output%heatflux > 0) then ! todo, only at mapintervals
+         if (jamapheatflux > 0 .or. his_write_settings%heatflux > 0) then ! todo, only at mapintervals
             qsunmap(n) = net_solar_radiation_in_cell
             qevamap(n) = evaporative_heat_flux
             qconmap(n) = convective_heat_flux

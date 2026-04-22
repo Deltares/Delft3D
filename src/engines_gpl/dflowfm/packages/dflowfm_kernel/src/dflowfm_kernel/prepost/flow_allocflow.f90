@@ -44,7 +44,7 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, write_map_output, mxlaydefs, kmx, kbotc, kmxc, layertype, &
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, map_write_settings, mxlaydefs, kmx, kbotc, kmxc, layertype, &
                         LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
                         zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
                         zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
@@ -61,7 +61,7 @@ contains
                         au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
                         u_to_umain, q1_main, cfclval, cftrt, czs, jarhoxu, rhou, fu, czu, bb, ru, dd, &
                         sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
-                        soiltempthick, write_his_output, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
+                        soiltempthick, his_write_settings, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
                         idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
                         dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
                         use_density
@@ -128,7 +128,7 @@ contains
       call realloc(cfs, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
       call aerr('cfs(ndx)', ierr, ndx)
 
-      if (write_map_output%flow_analysis > 0) then
+      if (map_write_settings%flow_analysis > 0) then
          call realloc(negativeDepths, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('negativeDepths(ndx)', ierr, ndx)
          call realloc(negativeDepths_cum, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -980,11 +980,11 @@ contains
          call aerr('cftrt(numl,3)', ierr, numl)
       end if
 
-      if (write_map_output%chezy_elements > 0) then
+      if (map_write_settings%chezy_elements > 0) then
          call realloc(czs, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czs(ndx)', ierr, ndx)
       end if
-      if (write_map_output%chezy_links > 0) then
+      if (map_write_settings%chezy_links > 0) then
          call realloc(czu, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('czu(lnx)', ierr, lnx)
       end if
@@ -1069,7 +1069,7 @@ contains
             end if
          end if
 
-         if (jamapheatflux > 0 .or. write_his_output%heatflux > 0) then
+         if (jamapheatflux > 0 .or. his_write_settings%heatflux > 0) then
             if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
@@ -1080,7 +1080,7 @@ contains
             call realloc(cdwcof, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('cdwcof(lnx)', ierr, lnx)
 
-            if (jamapheatflux > 0 .or. write_his_output%heatflux > 0) then ! his or map output
+            if (jamapheatflux > 0 .or. his_write_settings%heatflux > 0) then ! his or map output
                call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
                call aerr('qtotmap(ndx)', ierr, ndx)
                call realloc(Qsunmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)

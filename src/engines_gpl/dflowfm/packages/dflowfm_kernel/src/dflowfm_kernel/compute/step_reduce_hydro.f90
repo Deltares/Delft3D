@@ -230,7 +230,7 @@ contains
                      nums1it = nums1it + 1
 
                      if (nums1it > maxNonlinearIterations) then
-                        if (write_map_output%flow_analysis > 0) then
+                        if (map_write_settings%flow_analysis > 0) then
                            noiterations(noddifmaxlev) = noiterations(noddifmaxlev) + 1
                         end if
 

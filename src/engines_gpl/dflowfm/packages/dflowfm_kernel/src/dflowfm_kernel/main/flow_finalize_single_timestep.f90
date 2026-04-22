@@ -107,14 +107,14 @@ contains
 
       if (jaeverydt > 0) then
          if ((comparereal(time1, ti_maps, EPS10) >= 0) .and. (comparereal(time1, ti_mape, EPS10) <= 0)) then
-            if (write_map_output%flow_analysis > 0) then
+            if (map_write_settings%flow_analysis > 0) then
                ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
                call updateFlowAnalysisParameters()
             end if
 
             call wrimap(time1)
 
-            if (write_map_output%flow_analysis > 0) then
+            if (map_write_settings%flow_analysis > 0) then
                ! Reset the interval related flow analysis arrays
                negativeDepths = 0
                noiterations = 0
@@ -150,7 +150,7 @@ contains
                call updateValuesOnRunupGauges_mpi()
                !call reduce_particles()
             end if
-            if (write_his_output%bal > 0) then ! Update WaterBalances etc.
+            if (his_write_settings%bal > 0) then ! Update WaterBalances etc.
                call updateBalance()
             end if
             if (jacheckmonitor == 1) then
@@ -169,19 +169,19 @@ contains
          end if
       end if
 
-      if (write_his_output%lateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
          call updateValuesOnLaterals(time1, dts)
       end if
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
-         if (write_map_output%time_wet_on_ground > 0) then
+         if (map_write_settings%time_wet_on_ground > 0) then
             call updateTimeWetOnGround(dts)
          end if
-         if (write_map_output%total_inflow_1d2d > 0) then
+         if (map_write_settings%total_inflow_1d2d > 0) then
             call updateTotalInflow1d2d(dts)
          end if
-         if (write_map_output%total_inflow_lat > 0) then
+         if (map_write_settings%total_inflow_lat > 0) then
             call updateTotalInflowLat(dts)
          end if
       end if

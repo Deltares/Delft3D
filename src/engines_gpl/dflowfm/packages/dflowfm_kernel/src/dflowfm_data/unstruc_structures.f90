@@ -35,7 +35,7 @@ module m_structures
    use properties
    use unstruc_channel_flow, only: network
    use MessageHandling
-   use m_flowparameters, only: write_his_output
+   use m_flowparameters, only: his_write_settings
    use m_structures_indices ! all of these indices are used in the module
 
    use precision, only: dp
@@ -178,14 +178,14 @@ contains
       use m_dambreak_breach, only: n_db_signals
       implicit none
 
-      if ((ti_rst > 0 .or. write_his_output%pump > 0) .and. npumpsg > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%pump > 0) .and. npumpsg > 0) then
          if (allocated(valpump)) then
             deallocate (valpump)
          end if
          allocate (valpump(NUMVALS_PUMP, npumpsg))
          valpump = 0.0_dp
       end if
-      if (ti_rst > 0 .or. write_his_output%cgen > 0) then
+      if (ti_rst > 0 .or. his_write_settings%cgen > 0) then
          if (ncgensg > 0) then
             if (allocated(valcgen)) then
                deallocate (valcgen)
@@ -205,7 +205,7 @@ contains
             valgenstru = 0.0_dp
          end if
       end if
-      if (write_his_output%gate > 0) then
+      if (his_write_settings%gate > 0) then
          if (ngatesg > 0) then
             if (allocated(valgate)) then
                deallocate (valgate)
@@ -221,7 +221,7 @@ contains
             valgategen = 0.0_dp
          end if
       end if
-      if (write_his_output%cdam > 0 .and. ncdamsg > 0) then
+      if (his_write_settings%cdam > 0 .and. ncdamsg > 0) then
          if (allocated(valcdam)) then
             deallocate (valcdam)
          end if
@@ -232,55 +232,55 @@ contains
          nweirgen = network%sts%numWeirs
       end if
 
-      if ((ti_rst > 0 .or. write_his_output%weir > 0) .and. nweirgen > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%weir > 0) .and. nweirgen > 0) then
          if (allocated(valweirgen)) then
             deallocate (valweirgen)
          end if
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen))
          valweirgen = 0.0_dp
       end if
-      if (write_his_output%dambreak > 0 .and. n_db_signals > 0) then
+      if (his_write_settings%dambreak > 0 .and. n_db_signals > 0) then
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
          allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source=0.0_dp)
       end if
-      if ((ti_rst > 0 .or. write_his_output%orifice > 0) .and. network%sts%numOrifices > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%orifice > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then
             deallocate (valorifgen)
          end if
          allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices))
          valorifgen = 0.0_dp
       end if
-      if (write_his_output%bridge > 0 .and. network%sts%numBridges > 0) then
+      if (his_write_settings%bridge > 0 .and. network%sts%numBridges > 0) then
          if (allocated(valbridge)) then
             deallocate (valbridge)
          end if
          allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges))
          valbridge = 0.0_dp
       end if
-      if ((ti_rst > 0 .or. write_his_output%culvert > 0) .and. network%sts%numCulverts > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%culvert > 0) .and. network%sts%numCulverts > 0) then
          if (allocated(valculvert)) then
             deallocate (valculvert)
          end if
          allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts))
          valculvert = 0.0_dp
       end if
-      if (write_his_output%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (his_write_settings%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          if (allocated(valuniweir)) then
             deallocate (valuniweir)
          end if
          allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs))
          valuniweir = 0.0_dp
       end if
-      if (write_his_output%compound_structure > 0 .and. network%cmps%count > 0) then
+      if (his_write_settings%compound_structure > 0 .and. network%cmps%count > 0) then
          if (allocated(valcmpstru)) then
             deallocate (valcmpstru)
          end if
          allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count))
          valcmpstru = 0.0_dp
       end if
-      if (write_his_output%long_culvert > 0 .and. nlongculverts > 0) then
+      if (his_write_settings%long_culvert > 0 .and. nlongculverts > 0) then
          if (allocated(vallongculvert)) then
             deallocate (vallongculvert)
          end if
@@ -1565,7 +1565,7 @@ contains
 !> Determine the combined number of geometry nodes for all pumps
 !! (used to determine the size of geometry variables in the his-file)
    integer function number_of_pump_nodes()
-      use m_flowparameters, only: write_his_output
+      use m_flowparameters, only: his_write_settings
       use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
       use unstruc_channel_flow, only: network
 
@@ -1573,7 +1573,7 @@ contains
 
       number_of_pump_nodes = 0
 
-      if (write_his_output%pump > 0 .and. npumpsg > 0) then
+      if (his_write_settings%pump > 0 .and. npumpsg > 0) then
          if (network%sts%numPumps > 0) then ! newpump
             number_of_pump_nodes = nNodesPump
          else ! old pump

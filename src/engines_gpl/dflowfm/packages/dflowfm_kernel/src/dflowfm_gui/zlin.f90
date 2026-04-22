@@ -169,7 +169,7 @@ contains
       else if (linval == 27) then
          if (jawind > 0) then
             zlin = wdsu_x(LL)
-            write_map_output%windstress = 1
+            map_write_settings%windstress = 1
          end if
       else if (linval == 28) then
          zlin = abs(cosphiu(LL))
