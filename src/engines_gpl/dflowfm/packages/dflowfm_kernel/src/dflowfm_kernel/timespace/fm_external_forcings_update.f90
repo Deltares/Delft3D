@@ -91,6 +91,7 @@ contains
       use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
       use m_heatu, only: heatu
       use m_flow_trachyupdate, only: flow_trachyupdate
       use m_flow_trachy_needs_update, only: flow_trachy_needs_update
@@ -100,7 +101,7 @@ contains
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
        item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature, &
-       item_bubblescreen_discharge
+       item_bubblescreen_discharge, item_secchi_depth
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
 
@@ -109,7 +110,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
       integer :: i_const
-      real(kind=dp), dimension(:), pointer :: source_sink_discharge_1d !< 1D pointer view of 2D source_sink_all_discharges array
+      real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
 
       call timstrt('External forcings', handle_ext)
 
@@ -168,6 +169,10 @@ contains
          call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
       end if
 
+      if (secchi_depth_is_time_varying) then
+         call get_timespace_value_by_item_and_array(item_secchi_depth, spatial_secchi_depth, time_in_seconds)
+      end if
+
       call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
 
       call set_wave_parameters(initialization)
@@ -213,9 +218,9 @@ contains
       if (num_source_sink > 0) then
          ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
          ! This avoids copying while satisfying the 1D array interface requirement
-         source_sink_discharge_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
+         source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
          
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_discharge_1d)
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_all_discharges_1d)
 
          !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)

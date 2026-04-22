@@ -31,6 +31,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2', DEPRECATED, 'Use SecchiDepthNonPenetrative instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'SecchiDepth2Fraction', DEPRECATED, 'Use SecchiDepthNonPenetrativeFraction instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'ThetaVertical', DEPRECATED, 'Use VerticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'dtMassBalance', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'type', DEPRECATED, 'Use [Lateral] locationType instead.')
