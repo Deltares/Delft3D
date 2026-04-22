@@ -479,9 +479,9 @@ end function
 !! Returns the integer level as the function's return value, and stores the accompanying message in the message dummy argument.
 integer function GetMessage_MH(imessage, message)
    integer,            intent(in)  :: imessage  !< Position in the message queue.
-   character(len=200), intent(out) :: message   !< The message text.
+   character(len=*),   intent(out) :: message   !< The message text.
 
-   message=messages(imessage)(1:200)
+   message = messages(imessage)(1:len(message))
    GetMessage_MH = levels(imessage)
 end function
 
