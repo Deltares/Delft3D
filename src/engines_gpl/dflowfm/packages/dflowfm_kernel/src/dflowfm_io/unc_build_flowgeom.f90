@@ -1,5 +1,7 @@
 module unc_build_flowgeom
+
    implicit none(type, external)
+   
 contains
 
 !> Returns the output index of a full-grid face in face_map, or -999 if not found.
@@ -189,7 +191,7 @@ end function
       numl2d = numl - numl1d
 
       ! =========================================================
-      ! Phase 1: Resolve output set — build index maps
+      ! Phase 1: Resolve output set  build index maps
       ! =========================================================
       ! face_map(i)    = full-grid face index for output face i
       ! face_compact(n)= output face index for full-grid face n  (0 = excluded)
@@ -263,7 +265,7 @@ end function
       end do
 
       ! =========================================================
-      ! Phase 2: Build geometry — common path through the maps
+      ! Phase 2: Build geometry
       ! =========================================================
 
       call realloc(flowgeom%edge_type,           numEdge,        fill=-999,  keepExisting=.false.)
