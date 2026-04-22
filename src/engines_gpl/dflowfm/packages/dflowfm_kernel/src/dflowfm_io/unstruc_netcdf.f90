@@ -15442,7 +15442,8 @@ contains
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
       use fm_location_types
-      use unstruc_model, only: md_output_polygon
+      use unc_build_flowgeom, only: build_flowgeom, output_polygon
+
       implicit none(type, external)
 
       integer, intent(in) :: ncid
@@ -15541,8 +15542,8 @@ contains
             waterlevelname = 's1max'
          end if
       end if
-      if (len_trim(md_output_polygon) > 0) then
-         flowgeom = build_flowgeom(jabndnd_, md_output_polygon)
+      if (len_trim(output_polygon) > 0) then
+         flowgeom = build_flowgeom(jabndnd_, output_polygon)
       else
          flowgeom = build_flowgeom(jabndnd_)
       end if

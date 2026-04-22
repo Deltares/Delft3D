@@ -736,6 +736,7 @@ contains
       use m_check_positive_value, only: check_positive_value
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_flow_validatestate_data
+      use unc_build_flowgeom, only: output_polygon
       character(*), intent(in) :: filename !< Name of file to be read (the MDU file must be in current working directory).
       integer, intent(out) :: istat !< Return status (0=success)
 
@@ -1939,6 +1940,7 @@ contains
       call prop_get(md_ptr, 'output', 'FouUpdateStep', md_fou_step, success)
 
       call prop_get(md_ptr, 'output', 'OutputPolygon', md_output_polygon, success)
+      output_polygon = md_output_polygon !> Ugly assignment to avoid passing md_output_polygon to other subroutines. only for POC
 
       call prop_get(md_ptr, 'output', 'HisFile', md_hisfile, success)
       ti_his_array = 0.0_dp

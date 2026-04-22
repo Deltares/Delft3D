@@ -2,6 +2,9 @@ module unc_build_flowgeom
 
    implicit none(type, external)
    
+
+   character(len=1024) :: output_polygon = ' ' !< ugly module variable to avoid having to route this from the clal site, only for POC.
+
 contains
 
 !> Returns the output index of a full-grid face in face_map, or -999 if not found.
