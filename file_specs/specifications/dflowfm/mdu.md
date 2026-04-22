@@ -334,9 +334,9 @@ In this field, physical model parameters can be inserted, for instance related t
 | `initialTemperature` | Initial temperature. | `6.0` |  | [°C] |  |
 | `backgroundWaterTemperature` | Background water temperature for eqn. of state if temperature not computed. | `20.0` |  | [°C] |  |
 | `SecchiDepth` | Water clarity parameter. | `1.0` |  | [m] |  |
-| `SecchiDepth2` ⚠️ | Water clarity parameter for non-penetrative radiation. Use SecchiDepthNonPenetrative instead. | `0.0` |  | [m] | deprecated |
+| `SecchiDepth2` ⚠️ | Water clarity parameter for non-penetrative radiation. | `0.0` |  | [m] | deprecated: Use `SecchiDepthNonPenetrative` instead. |
 | `SecchiDepthNonPenetrative` 🔬 | Water clarity parameter for non-penetrative radiation. | `0.0` |  | [m] | research |
-| `SecchiDepth2Fraction` ⚠️ | Fraction of solar radiation that falls in non-penetrative spectrum. Use SecchiDepthNonPenetrativeFraction instead. | `0.0` |  | [-] | deprecated |
+| `SecchiDepth2Fraction` ⚠️ | Fraction of solar radiation that falls in non-penetrative spectrum. | `0.0` |  | [-] | deprecated: Use `SecchiDepthNonPenetrativeFraction` instead. |
 | `SecchiDepthNonPenetrativeFraction` 🔬 | Fraction of solar radiation that falls in non-penetrative spectrum. | `0.0` |  | [-] | research |
 | `stanton` | Coefficient for convective heat flux, if negative, then Cd wind is used. | `0.0013` |  | [-] |  |
 | `dalton` | Coefficient for evaporative heat flux, if negative, then Cd wind is used. | `0.0013` |  | [-] |  |

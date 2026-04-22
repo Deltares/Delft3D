@@ -2346,10 +2346,11 @@
                     "key": "SecchiDepth2",
                     "default_value": 0.0,
                     "value_type": "float",
-                    "description": "Water clarity parameter for non-penetrative radiation. Use SecchiDepthNonPenetrative instead.",
+                    "description": "Water clarity parameter for non-penetrative radiation.",
                     "unit": "m",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Use `SecchiDepthNonPenetrative` instead."
                     }
                 },
                 {
@@ -2366,10 +2367,11 @@
                     "key": "SecchiDepth2Fraction",
                     "default_value": 0.0,
                     "value_type": "float",
-                    "description": "Fraction of solar radiation that falls in non-penetrative spectrum. Use SecchiDepthNonPenetrativeFraction instead.",
+                    "description": "Fraction of solar radiation that falls in non-penetrative spectrum.",
                     "unit": "-",
                     "status": {
-                        "value": "deprecated"
+                        "value": "deprecated",
+                        "comment": "Use `SecchiDepthNonPenetrativeFraction` instead."
                     }
                 },
                 {
