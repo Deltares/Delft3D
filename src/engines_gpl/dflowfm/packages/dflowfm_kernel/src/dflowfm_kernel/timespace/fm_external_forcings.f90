@@ -134,7 +134,7 @@ contains
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flow_without_waves, eps10
+      use m_flowparameters, only: jawave, flow_without_waves, EPS10
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
@@ -257,7 +257,7 @@ contains
 
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
-            if (comparereal(air_pressure(k), dmiss, eps10) == 0) then
+            if (comparereal(air_pressure(k), dmiss, EPS10) == 0) then
                air_pressure(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do

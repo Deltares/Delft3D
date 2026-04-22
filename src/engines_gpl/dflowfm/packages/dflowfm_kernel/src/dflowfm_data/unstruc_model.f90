@@ -2139,9 +2139,6 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_nudging', write_map_output%nudge, success)
       call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', write_map_output%pure_1D_debug, success)
       call prop_get(md_ptr, 'output', 'Wrimap_waves', write_map_output%wav, success)
-      write_map_output%wav_hwav = 0
-      write_map_output%wav_twav = 0
-      write_map_output%wav_phiwav = 0
       call prop_get(md_ptr, 'output', 'Wrimap_DTcell', write_map_output%dtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
@@ -4262,7 +4259,7 @@ contains
 !> Check if time interval is not multiple of DtUser
    logical function is_not_multiple(time_interval, user_time_step)
       use precision_basics, only: comparereal
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       implicit none
 
       real(kind=hp), intent(in) :: time_interval !< Time interval to be checked.
@@ -4271,7 +4268,7 @@ contains
       real(kind=dp) :: nearest_user_time_step
 
       nearest_user_time_step = nint(time_interval / user_time_step) * user_time_step
-      if (comparereal(nearest_user_time_step, time_interval, eps10) /= 0) then
+      if (comparereal(nearest_user_time_step, time_interval, EPS10) /= 0) then
          is_not_multiple = .true.
       else
          is_not_multiple = .false.

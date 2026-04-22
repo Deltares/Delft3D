@@ -8040,7 +8040,7 @@ contains
                end if
             end if
          end do
-         if (comparereal(tim, ti_mape, eps10) == 0) then
+         if (comparereal(tim, ti_mape, EPS10) == 0) then
             do j = 1, noout_state
                jj = noout_user + noout_statt + j
                if (outvar(jj) > 0) then
@@ -10545,7 +10545,7 @@ contains
                   end if
                end if
             end do
-            if (comparereal(tim, ti_mape, eps10) == 0) then
+            if (comparereal(tim, ti_mape, EPS10) == 0) then
                do j = 1, noout_state
                   jj = noout_user + noout_statt + j
                   if (outvar(jj) > 0) then

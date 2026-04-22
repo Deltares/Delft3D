@@ -43,7 +43,7 @@ contains
    subroutine fm_mor_maxtimestep()
       use precision, only: dp
       use m_flowtimes, only: dts
-      use m_flow, only: eps10, write_map_output, kkcflmx, limitingTimestepEstimation
+      use m_flow, only: EPS10, write_map_output, kkcflmx, limitingTimestepEstimation
       use m_flowgeom, only: acl, ba, csu, snu, wu
       use m_sediment, only: dzbdtmax, kcsmor
       use m_fm_erosed, only: sxtot, sytot, cdryb, morfac, lsedtot
@@ -88,7 +88,7 @@ contains
          end do
          !
          if (dum > tiny(0.0_dp)) then
-            dt = dzbdtmax * ba(k) / max(dum, eps10) ! safety
+            dt = dzbdtmax * ba(k) / max(dum, EPS10) ! safety
             if (dt < dtmaxmor) then
                dtmaxmor = dt
                kkcflmxloc = k

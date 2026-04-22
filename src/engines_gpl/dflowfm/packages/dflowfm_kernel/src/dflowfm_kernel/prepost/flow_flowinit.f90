@@ -879,14 +879,14 @@ contains
 !! to restart from mapfile, then make sure that the morphological start
 !! time corresponds to the hydrodynamic start time. This includes TStart!
    subroutine initialize_morphological_start_time()
-      use m_flowparameters, only: jased, eps10
+      use m_flowparameters, only: jased, EPS10
       use m_sediment, only: stm_included, stmpar
       use m_flowtimes, only: tstart_user
 
       implicit none
 
       if (jased > OFF .and. stm_included) then
-         if (stmpar%morpar%morft < eps10) then
+         if (stmpar%morpar%morft < EPS10) then
             stmpar%morpar%morft = tstart_user / 86400.0_dp
             stmpar%morpar%morft0 = stmpar%morpar%morft
          end if

@@ -106,7 +106,7 @@ contains
       hs = s1 - bl
 
       if (jaeverydt > 0) then
-         if ((comparereal(time1, ti_maps, eps10) >= 0) .and. (comparereal(time1, ti_mape, eps10) <= 0)) then
+         if ((comparereal(time1, ti_maps, EPS10) >= 0) .and. (comparereal(time1, ti_mape, EPS10) <= 0)) then
             if (write_map_output%flow_analysis > 0) then
                ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
                call updateFlowAnalysisParameters()
@@ -145,7 +145,7 @@ contains
             call updateValuesOnObservationStations()
          end if
 
-         if (comparereal(time1, time_his, eps10) >= 0) then
+         if (comparereal(time1, time_his, EPS10) >= 0) then
             if (jampi == 1) then
                call updateValuesOnRunupGauges_mpi()
                !call reduce_particles()

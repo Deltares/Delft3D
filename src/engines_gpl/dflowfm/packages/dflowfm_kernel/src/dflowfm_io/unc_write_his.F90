@@ -1315,7 +1315,7 @@ contains
 
          do statistics_index = 1, noout_statt + noout_state
             if (statistics_index == noout_statt + 1) then
-               if (comparereal(tim, ti_hise, eps10) < 0) then
+               if (comparereal(tim, ti_hise, EPS10) < 0) then
                   return ! The end statistic outputs (stat-e) are only written in the last his time step
                end if
                if (model_is_3D()) then

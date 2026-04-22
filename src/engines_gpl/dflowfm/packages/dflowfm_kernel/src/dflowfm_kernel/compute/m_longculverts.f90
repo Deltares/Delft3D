@@ -1275,7 +1275,7 @@ contains
       use network_data, only: lne
       use m_GlobalParameters, only: INDTP_1D, INDTP_2D, INDTP_ALL
       use precision_basics, only: comparereal
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_partitioninfo, only: jampi, reduce_int_max
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use m_hash_search
@@ -1402,7 +1402,7 @@ contains
                         othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                         if (j <= ie) then
-                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j + 1), eps10) == 0 .and. comparereal(yz(othernode), ypl(j + 1), eps10) == 0)) then
+                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), ypl(j + 1), EPS10) == 0)) then
                               longculvert%flowlinks(j) = -1 * linknum
                               exit
                            end if

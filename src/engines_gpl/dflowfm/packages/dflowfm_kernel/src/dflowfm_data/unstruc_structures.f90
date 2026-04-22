@@ -292,29 +292,15 @@ contains
 
    end subroutine init_structure_hisvalues
 
-!> Sets ALL (scalar) variables in this module to their default values.
-!! For a reinit prior to flow computation, only call reset_structures() instead.
+   !> Sets ALL (scalar) variables in this module to their default values.
+   !! For a reinit prior to flow computation, only call reset_structures() instead.
    subroutine default_structures()
 
       call tree_destroy(strs_ptr)
 
       call reset_structures()
 
-! TIDAL TURBINES: Insert calls to deallocate_turbines and init_turbines here
-
-      ! default settings for structure output to history file
-      write_his_output%cgen = 1
-      write_his_output%pump = 1
-      write_his_output%gate = 1
-      write_his_output%cdam = 1
-      write_his_output%weir = 1
-      write_his_output%orifice = 1
-      write_his_output%culvert = 1
-      write_his_output%bridge = 1
-      write_his_output%dambreak = 1
-      write_his_output%universal_weir = 1
-      write_his_output%compound_structure = 1
-      write_his_output%long_culvert = 1
+      ! TIDAL TURBINES: Insert calls to deallocate_turbines and init_turbines here
 
    end subroutine default_structures
 
@@ -1076,7 +1062,7 @@ contains
       use m_alloc
       use m_partitioninfo
       use m_GlobalParameters
-      use m_flowparameters, only: eps6
+      use m_flowparameters, only: EPS6
       use precision_basics
       implicit none
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT). May differ from the struct%type
@@ -1254,7 +1240,7 @@ contains
                                        ! coincide with another start/end node maximal ONCE.
                                        xOld = geomXStruMPI(indLocalStartEndMPI(j1))
                                        yOld = geomYStruMPI(indLocalStartEndMPI(j1))
-                                       if (comparereal(xNew, xOld, eps6) == 0 .and. comparereal(xNew, xOld, eps6) == 0) then
+                                       if (comparereal(xNew, xOld, EPS6) == 0 .and. comparereal(xNew, xOld, EPS6) == 0) then
                                           jaexist = 1
                                           jaCoincide(j1) = 1
                                           exit

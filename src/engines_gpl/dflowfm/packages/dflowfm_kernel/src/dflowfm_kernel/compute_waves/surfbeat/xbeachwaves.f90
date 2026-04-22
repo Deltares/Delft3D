@@ -2393,7 +2393,7 @@ contains
       use m_sferic
       use m_physcoef
       use m_flowgeom
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_dlimiter_nonequi
       use m_dslim
 
@@ -2466,14 +2466,14 @@ contains
                   ds2 = quant(itheta, kd) - quant(itheta, k) ! ds1 = voorlopende slope, ds2 = eigen slope
                   ds1 = (quant(itheta, k) - waku) * sl3
 
-                  if (abs(ds2) > eps10 .and. abs(ds1) > eps10) then
+                  if (abs(ds2) > EPS10 .and. abs(ds1) > EPS10) then
                      ds = cf * dslim(ds1, ds2, limtypw) ! reconstructie van totale slope volgens 1 van de 4 schema's                                            ! centraal schema
                      !
                      if (limtypw == 99) then
                         ds = cf * dlimiter_nonequi(ds1, ds2, half, 1.0_dp) * ds2
                      end if
                      !
-                     if (abs(ds) > eps10) then ! als celgemiddelde niet volstaat
+                     if (abs(ds) > EPS10) then ! als celgemiddelde niet volstaat
                         qds = ds * fluxvel1 ! slope * linkse celbijdrage
                         advec(itheta, kd) = advec(itheta, kd) - qds ! downwind cel krijgt bijdrage
                         advec(itheta, k) = advec(itheta, k) + qds ! cel verliest bijdrage
@@ -3549,7 +3549,7 @@ contains
                           * (betanp1 - umean + 2.0_dp * cg0 &
                              - uin_loc * (cos(thetai) - 1.0_dp) / cos(thetai))
                   else ! assuming incoming long wave propagates at group velocity (bound wave)
-                     cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), eps10)
+                     cgbound = max(0.5_dp * (cgwav(kb) + cgwav(ki)), EPS10)
                      dum = uin_loc * (cgbound * cos(thetai) - cg0) / (cgbound * cos(thetai))
                      ur = cos(alpha2) / (cos(alpha2) + 1.0_dp) &
                           * (betanp1 - umean + 2.0_dp * cg0 - dum)
@@ -3907,7 +3907,7 @@ contains
 !   use m_sferic
 !   use m_physcoef
 !   use m_flowgeom
-!   use m_flowparameters, only:eps10
+!   use m_flowparameters, only:EPS10
 !
 !   implicit none
 !
@@ -4033,7 +4033,7 @@ contains
 !   use m_sferic
 !   use m_physcoef
 !   use m_flowgeom
-!   use m_flowparameters, only:eps10
+!   use m_flowparameters, only:EPS10
 !
 !   implicit none
 !
@@ -4091,10 +4091,10 @@ contains
 !                    ds2  =  quant(itheta,kd) - quant(itheta,k)        ! ds1 = voorlopende slope, ds2 = eigen slope
 !                    ds1  = (quant(itheta,k)  - waku )*sl3
 !
-!                    if (abs(ds2)  > eps10 .and. abs(ds1) > eps10) then
+!                    if (abs(ds2)  > EPS10 .and. abs(ds1) > EPS10) then
 !                        ds  =  cf*dslim(ds1, ds2, limtypw)                  ! reconstructie van totale slope volgens 1 van de 4 schema's                                            ! centraal schema
 !
-!                        if (abs(ds) > eps10) then                           ! als celgemiddelde niet volstaat
+!                        if (abs(ds) > EPS10) then                           ! als celgemiddelde niet volstaat
 !                            qds      =  ds*fluxvel1                         ! slope * linkse celbijdrage
 !                            advec(itheta,kd) =  advec(itheta,kd) - qds        ! downwind cel krijgt bijdrage
 !                            advec(itheta,k ) =  advec(itheta,k ) + qds        ! cel verliest bijdrage

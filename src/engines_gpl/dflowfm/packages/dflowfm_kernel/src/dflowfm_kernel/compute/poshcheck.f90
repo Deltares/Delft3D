@@ -38,7 +38,7 @@ contains
 
    subroutine poshcheck(key)
       use m_rcirc, only: rcirc
-      use m_flow, only: s1, hu, nodneg, jposhchk, s0, vol1, vol0, dp, testdryflood, epshu, numnodneg, au, eps6, u1, write_map_output, negativedepths
+      use m_flow, only: s1, hu, nodneg, jposhchk, s0, vol1, vol0, dp, testdryflood, epshu, numnodneg, au, EPS6, u1, write_map_output, negativedepths
       use m_flowgeom, only: bl, ndxi, kfs, xz, yz, nd
       use m_flowtimes, only: dts, dsetb, dtmin
       use m_partitioninfo, only: jampi, reduce_int_max
@@ -152,7 +152,7 @@ contains
                         do link_index = 1, nd(node)%lnx
                            link = abs(nd(node)%ln(link_index))
                            if (upwind_waterheight(link) > 0) then
-                              if (REDUCTION_FACTOR * au(link) < eps6) then
+                              if (REDUCTION_FACTOR * au(link) < EPS6) then
                                  upwind_waterheight(link) = SET_VALUE
                                  key = FLAG_REDO_TIMESTEP
                                  is_hu_changed = .true.
