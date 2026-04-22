@@ -413,14 +413,11 @@ int get_var_shape(char *key, int dims[DIMR_BMI_MAXDIMS]) { // dims -> int[6]
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
   } else if (match_key(quantity, "water_volume_to_sea")) {
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
-  } else if (strncmp(quantity, "constituent_lake_", 17) == 0 ||
-             strncmp(quantity, "constituent_sea_", 16) == 0) {
+  } else if (match_key_prefix(quantity, "constituent_lake_") || match_key_prefix(quantity, "constituent_sea_")) {
     source_len = config.locks[lock_index].from_lake_volumes.num_volumes;
-  } else if (strncmp(quantity, "constituent_to_lake_", 20) == 0 ||
-             match_key(quantity, "temperature_to_lake")) {
+  } else if (match_key_prefix(quantity, "constituent_to_lake_") || match_key(quantity, "temperature_to_lake")) {
     source_len = config.locks[lock_index].to_lake_volumes.num_volumes;
-  } else if (strncmp(quantity, "constituent_to_sea_", 19) == 0 ||
-             match_key(quantity, "temperature_to_sea")) {
+  } else if (match_key_prefix(quantity, "constituent_to_sea_") || match_key(quantity, "temperature_to_sea")) {
     source_len = config.locks[lock_index].to_sea_volumes.num_volumes;
   } else {
     log_debug("Unhandled get_var('%s', @%p)\n", key, dims);
