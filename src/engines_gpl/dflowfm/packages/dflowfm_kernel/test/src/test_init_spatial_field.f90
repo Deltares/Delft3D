@@ -157,6 +157,77 @@ contains
       block_ptr => bnd_ptr%child_nodes(1)%node_ptr
    end subroutine parse_spatial_block
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
+   !> When no averaging keywords are present, read_averaging_params must return
+   !! the documented defaults: type=1 (mean), relSize=-1, numMin=1, percentile=0.
+   subroutine test_averaging_params_defaults() bind(C)
+      use m_spatial_field, only: t_averaging_input, read_averaging_params
+      use tree_data_types, only: tree_data
+      use tree_structures, only: tree_create, tree_destroy
+      use properties, only: prop_file
+
+      type(tree_data), pointer :: tree
+      type(t_averaging_input) :: avg
+      integer :: istat
+
+      ! ARRANGE: an empty ini block with no averaging keywords.
+      call tree_create('empty', tree)
+
+      ! ACT
+      call read_averaging_params(tree, avg)
+      call tree_destroy(tree)
+
+      ! ASSERT
+      call f90_expect_eq(avg%averaging_type, 1,         "default averaging_type should be 1 (mean)")
+      call f90_expect_lt(avg%rel_size,       0.0_dp,    "default rel_size should be negative (use EC default)")
+      call f90_expect_eq(avg%num_min,        1,         "default num_min should be 1")
+      call f90_expect_eq(avg%percentile,     0.0_dp,    "default percentile should be 0")
+   end subroutine test_averaging_params_defaults
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_to_transformcoef, test_averaging_params_to_transformcoef,
+   !> averaging_params_to_transformcoef must write the four averaging values
+   !! into the correct transformcoef slots (4, 5, 7, 8) without touching others.
+   subroutine test_averaging_params_to_transformcoef() bind(C)
+      use m_spatial_field, only: t_averaging_input, averaging_params_to_transformcoef
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+
+      type(t_averaging_input) :: avg
+      real(dp) :: tc(NTRANSFORMCOEF)
+
+      avg%averaging_type = 4      ! e.g. nearestNb
+      avg%rel_size       = 2.5_dp
+      avg%num_min        = 3
+      avg%percentile     = 50.0_dp
+
+      tc = -999.0_dp
+      call averaging_params_to_transformcoef(avg, tc)
+
+      call f90_expect_eq(tc(4), 4.0_dp,  "transformcoef(4) should hold averagingType")
+      call f90_expect_eq(tc(5), 2.5_dp,  "transformcoef(5) should hold relSize")
+      call f90_expect_eq(tc(7), 50.0_dp, "transformcoef(7) should hold percentile")
+      call f90_expect_eq(tc(8), 3.0_dp,  "transformcoef(8) should hold numMin")
+      ! Slots not written by the helper must be untouched.
+      call f90_expect_eq(tc(1), -999.0_dp, "transformcoef(1) should be untouched")
+      call f90_expect_eq(tc(2), -999.0_dp, "transformcoef(2) should be untouched")
+   end subroutine test_averaging_params_to_transformcoef
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_parse_location_type, test_parse_location_type,
+   !> parse_location_type must map all recognized strings and default to ALL for unknown/empty.
+   subroutine test_parse_location_type() bind(C)
+      use m_spatial_field, only: parse_location_type
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+
+      call f90_expect_eq(parse_location_type('1d'),   ILATTP_1D,  "'1d' should map to ILATTP_1D")
+      call f90_expect_eq(parse_location_type('2d'),   ILATTP_2D,  "'2d' should map to ILATTP_2D")
+      call f90_expect_eq(parse_location_type('1d2d'), ILATTP_ALL, "'1d2d' should map to ILATTP_ALL")
+      call f90_expect_eq(parse_location_type('all'),  ILATTP_ALL, "'all' should map to ILATTP_ALL")
+      call f90_expect_eq(parse_location_type(' '),    ILATTP_ALL, "empty string should default to ILATTP_ALL")
+      call f90_expect_eq(parse_location_type('bogus'),ILATTP_ALL, "unknown string should default to ILATTP_ALL")
+   end subroutine test_parse_location_type
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_rainfall_bcascii_registers_ec_connection, test_rainfall_bcascii_registers_ec_connection,
    !> Verifies that a [Spatial] block with forcingFileType=bcascii sets up the
    !! EC connection via the 'global' location path and activates jarain.

@@ -860,52 +860,42 @@ contains
 
    end function enable_quantity
 
-   !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
+     !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
    !! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
    !! qext requires forcingFileType=sample and QExt=1 in the MDU.
    function init_qext_forcings(block_ptr, input) result(is_successful)
       use tree_data_types, only: tree_data
-      use string_module, only: str_tolower
       use properties, only: prop_get
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_wind, only: qext
       use m_flowgeom, only: ndx, xz, yz
       use timespace, only: timespaceinitialfield
       use fm_location_types, only: UNC_LOC_S
       use fm_external_forcings_data, only: NTRANSFORMCOEF
-      use m_spatial_field, only: t_spatial_field_input
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to the [Meteo] block in the ext file
-      type(t_spatial_field_input), intent(in) :: input !< Already validated input (quantity, forcing_file, filetype, method, oper)
+      use m_spatial_field, only: t_spatial_field_input, t_averaging_input, &
+                                 read_averaging_params, averaging_params_to_transformcoef, &
+                                 parse_location_type
+
+      type(tree_data), pointer, intent(in) :: block_ptr !< [Spatial] block tree node
+      type(t_spatial_field_input), intent(in) :: input  !< Already validated spatial field input
 
       logical :: is_successful
 
       integer, allocatable :: mask(:)
       real(dp) :: transformcoef(NTRANSFORMCOEF)
-      character(len=INI_VALUE_LEN) :: location_type
-      integer :: qext_ilattype
+      character(len=256) :: location_type_string
+      type(t_averaging_input) :: avg
       logical :: is_read
 
+      call read_averaging_params(block_ptr, avg)
+
       transformcoef = -999.0_dp
-      call prop_get(block_ptr, '', 'averagingType ', transformcoef(4), is_successful)
-      call prop_get(block_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
-      call prop_get(block_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
-      call prop_get(block_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
+      call averaging_params_to_transformcoef(avg, transformcoef)
 
-      location_type = ' '
-      call prop_get(block_ptr, '', 'locationType', location_type, is_read)
-      select case (str_tolower(trim(location_type)))
-      case ('1d')
-         qext_ilattype = ILATTP_1D
-      case ('2d')
-         qext_ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         qext_ilattype = ILATTP_ALL
-      case default
-         qext_ilattype = ILATTP_ALL
-      end select
-
-      call prepare_lateral_mask(mask, qext_ilattype)
+      ! Parse locationType= to determine which flow nodes to include in the mask.
+      location_type_string = ' '
+      call prop_get(block_ptr, '', 'locationType', location_type_string, is_read)
+      call prepare_lateral_mask(mask, parse_location_type(location_type_string))
 
       is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
                                             input%method, input%oper, transformcoef, UNC_LOC_S, mask)
