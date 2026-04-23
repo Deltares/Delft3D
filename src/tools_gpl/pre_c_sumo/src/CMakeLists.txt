@@ -1,12 +1,21 @@
 set(source_files
+    endpoints.cpp
     pre_c_sumo_lib.cpp
+    coupling_steps.cpp
     csumo_settings_reader.cpp
+    FF2NF_writer.cpp
+    parsing_utils.cpp
 )
 set(include_dir ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 set(header_files
     ${include_dir}/pre_c_sumo_lib.hpp
+    ${include_dir}/coupling_steps.hpp
     ${include_dir}/csumo_settings_reader.hpp
+    ${include_dir}/endpoints.hpp
     ${include_dir}/monadic_utils.hpp
+    ${include_dir}/FF2NF_writer.hpp
+    ${include_dir}/parsing_utils.hpp
+    ${include_dir}/parsing_types.hpp
 )
 
 add_library(pre_c_sumo_lib ${source_files} ${header_files})

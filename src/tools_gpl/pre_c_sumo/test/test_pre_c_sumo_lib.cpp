@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "test_utilities.hpp"
 #include "pre_c_sumo_lib.hpp"
 
 // Basic test to verify the library function executes successfully

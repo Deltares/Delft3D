@@ -31,7 +31,7 @@ module m_timespace_data_tables
    use precision
    implicit none
 
-   real(kind=dp), parameter :: LOVE_NUMBERS_H(0:1024) = [ &
+   real(kind=dp), parameter :: LOAD_LOVE_NUMBERS_H(0:1024) = [ &
                                0.0000000000e+00_dp, &
                                -0.1285877758e+01_dp, &
                                -0.9915810331e+00_dp, &
@@ -1058,7 +1058,7 @@ module m_timespace_data_tables
                                -0.5906776200e+01_dp, &
                                -0.5907759788e+01_dp]
 
-   real(dp), parameter :: LOVE_NUMBERS_K(0:1024) = [ &
+   real(dp), parameter :: LOAD_LOVE_NUMBERS_K(0:1024) = [ &
                           -1.0000000000e+00_dp, &
                           -0.1000000000e+01_dp, &
                           -0.3054020195e+00_dp, &
