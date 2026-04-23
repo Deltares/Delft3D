@@ -96,6 +96,7 @@ contains
       integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs, i_neighbours
+      integer :: i_tmp, kb_tmp, kt_tmp, kk_tmp
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens
       real(kind=dp) :: ux, uy, um
@@ -107,6 +108,7 @@ contains
       real(kind=dp), allocatable :: water_depth(:)
       real(kind=dp), allocatable :: ship_level(:)
       real(kind=dp), allocatable :: cell_z_centers(:)
+      real(kind=dp), allocatable :: waq_tmp(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
       integer      , allocatable :: wet_or_dry(:)
       
@@ -338,6 +340,46 @@ contains
                valobs(i, IPNT_ZWS + 1) = valobs(i, IPNT_S1)
                valobs(i, IPNT_ZCS) = 0.5_dp * (valobs(i, IPNT_BL) + valobs(i, IPNT_S1))
             end if
+            
+            ! Water quality parameters
+            ! Must be more elegant way of doing this
+            ! Start with allocating temporary arry
+            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0) then
+               call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp) 
+            end if
+            
+            if (IVAL_HWQ1 > 0) then
+               do j = IVAL_HWQ1, IVAL_HWQN
+                  ii = j - IVAL_HWQ1 + 1
+                  do i_tmp = 1, 3
+                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
+                      do kk_tmp = kb_tmp, kt_tmp
+                         waq_tmp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
+                      end do
+                  end do
+                  call interpolate_and_fill_valobs(waq_tmp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D,wet_or_dry)
+               end do
+            end if
+
+            if (IVAL_WQB3D1 > 0) then
+               do j = IVAL_WQB3D1, IVAL_WQB3DN
+                  ii = j - IVAL_WQB3D1 + 1
+                  waq_tmp = wqbot(ii, :)
+                  call interpolate_and_fill_valobs (waq_tmp,i,IPNT_WQB3D1 + ii - 1, UNC_LOC_S3D,wet_or_dry)
+               end do
+            end if
+
+            if (IVAL_SF1 > 0) then
+               do j = IVAL_SF1, IVAL_SFN
+                  ii = j - IVAL_SF1 + 1
+                  waq_tmp = constituents(ISED1 + ii - 1, :)
+                  call interpolate_and_fill_valobs (waq_tmp,i,IPNT_SF1 + ii - 1, UNC_LOC_S3D,wet_or_dry)
+                end do
+            end if                            
+            
+            
+            
+            
 
             ! Frome here: everything as snapped!!!
             if (jawind > 0) then
@@ -543,26 +585,26 @@ contains
                   end do
                end if
 
-               if (IVAL_HWQ1 > 0) then
-                  do j = IVAL_HWQ1, IVAL_HWQN
-                     ii = j - IVAL_HWQ1 + 1
-                     valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
-                  end do
-               end if
+!               if (IVAL_HWQ1 > 0) then
+!                  do j = IVAL_HWQ1, IVAL_HWQN
+!                     ii = j - IVAL_HWQ1 + 1
+!                     valobs(i, IPNT_HWQ1 + (ii - 1) * kmx_const + klay - 1) = waqoutputs(ii, kk - kbx + 1)
+!                  end do
+!               end if
 
-               if (IVAL_WQB3D1 > 0) then
-                  do j = IVAL_WQB3D1, IVAL_WQB3DN
-                     ii = j - IVAL_WQB3D1 + 1
-                     valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
-                  end do
-               end if
+!               if (IVAL_WQB3D1 > 0) then
+!                  do j = IVAL_WQB3D1, IVAL_WQB3DN
+!                     ii = j - IVAL_WQB3D1 + 1
+!                     valobs(i, IPNT_WQB3D1 + (ii - 1) * kmx_const + klay - 1) = wqbot(ii, kk)
+!                  end do
+!               end if
 
-               if (IVAL_SF1 > 0) then
-                  do j = IVAL_SF1, IVAL_SFN
-                     ii = j - IVAL_SF1 + 1
-                     valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
-                  end do
-               end if
+!               if (IVAL_SF1 > 0) then
+!                  do j = IVAL_SF1, IVAL_SFN
+!                     ii = j - IVAL_SF1 + 1
+!                     valobs(i, IPNT_SF1 + (ii - 1) * kmx_const + klay - 1) = constituents(ISED1 + ii - 1, kk)
+!                  end do
+!               end if
 
                if (kmx == 0 .and. IVAL_WS1 > 0) then
                   do j = IVAL_WS1, IVAL_WSN
@@ -688,8 +730,12 @@ contains
          deallocate (wa)
       end if
       
-       if (allocated(wet_or_dry)) then
+      if (allocated(wet_or_dry)) then
          deallocate (wet_or_dry)
+      end if
+      
+      if (allocated(waq_tmp)) then
+         deallocate (waq_tmp)
       end if
 
       if (timon) then
