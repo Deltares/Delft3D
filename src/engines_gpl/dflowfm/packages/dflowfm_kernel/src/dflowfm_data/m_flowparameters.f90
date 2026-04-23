@@ -513,6 +513,7 @@ module m_flowparameters
       integer :: universal_weir = 1 !< Write univeral weir parameters to his file, 0: no, 1: yes
       integer :: compound_structure = 1 !< Write compound structure parameters to his file, 0: no, 1: yes
       integer :: long_culvert = 1 !< Write long culverts parameters to his file, 0: no, 1:yes
+      integer :: sigwav = 1 !< 1: sign wave height on his output; 0: hrms wave height on his output
    end type HisWriteSettings
 
    type :: MapWriteSettings
@@ -536,8 +537,9 @@ module m_flowparameters
       integer :: chezy_elements = 0 !< chezy roughness in flow elements to map file, 0: no, 1: yes
       integer :: chezy_links = 0 !< chezy roughness on flow links to map file, 0: no, 1: yes
       integer :: chezy_input = 0 !< chezy input roughness on flow links to map file, 0: no, 1: yes
-      integer :: sal = 1 !< salinity to map file, 0: no, 1: yes
       integer :: tem = 1 !< temperature to map file, 0: no, 1: yes
+      integer :: heatflux = 0 !< heatflux to map file, 0: no, 1: yes
+      integer :: sal = 1 !< salinity to map file, 0: no, 1: yes
       integer :: cali = 1 !< roughness calibration factors to map file, 0: no, 1: yes
       integer :: const = 1 !< constituents to map file, 0: no, 1: yes
       integer :: sed = 1 !< sediment fractions to map file, 0: no, 1: yes
@@ -577,6 +579,7 @@ module m_flowparameters
       integer :: flow_analysis = 0 !< Write flow analysis output to map file
       integer :: near_field = 0 !< Nearfield related output
       integer :: wqbot3d = 0 !< Write wqbot3d to map file, 0: no, 1: yes
+      integer :: sigwav = 0 !< 1: sign wave height on his output; 0: hrms wave height on his output
    end type MapWriteSettings
 
    type(HisWriteSettings) :: his_write_settings

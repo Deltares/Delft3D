@@ -686,7 +686,7 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_dambreak_breach, only: set_dambreak_widening_method
-      use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
+      use m_waves, only: rouwav, gammax, hminlw, jauorb
       use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
                         jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext, jaevap, jawind, &
                         wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
@@ -1685,8 +1685,8 @@ contains
       if (jawave > NO_WAVES .and. (jawave < WAVE_SWAN_ONLINE .or. flow_without_waves)) then
          jauorb = 1
       end if
-      call prop_get(md_ptr, 'waves', 'jahissigwav', jahissigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
-      call prop_get(md_ptr, 'waves', 'jamapsigwav', jamapsigwav) ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
+      call prop_get(md_ptr, 'waves', 'jahissigwav', his_write_settings%sigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
+      call prop_get(md_ptr, 'waves', 'jamapsigwav', map_write_settings%sigwav) ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
       call prop_get(md_ptr, 'waves', 'jauorbfromswan', jauorbfromswan) ! 1: use orbital velocities from com file; 0=internal uorb calculation. Default=0
       call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
@@ -2132,7 +2132,7 @@ contains
       call prop_get(md_ptr, 'output', 'Wrimap_wind', map_write_settings%wind, success)
       call prop_get(md_ptr, 'output', 'Wrimap_windstress', map_write_settings%windstress, success)
       call prop_get(md_ptr, 'output', 'Wrimap_airdensity', map_write_settings%airdensity, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', map_write_settings%heatflux, success)
       call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', map_write_settings%tidep, success)
       call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', map_write_settings%selfal, success)
       call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', map_write_settings%int_tides_diss, success)
@@ -2171,7 +2171,7 @@ contains
       !endif
 
       if (temperature_model == TEMPERATURE_MODEL_NONE .or. temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
-         jamapheatflux = 0
+         map_write_settings%heatflux = 0
          his_write_settings%heatflux = 0
       end if
 
@@ -3648,8 +3648,8 @@ contains
          call prop_set(prop_ptr, 'waves', 'Rouwav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
          call prop_set(prop_ptr, 'waves', 'Gammax', gammax, 'Maximum wave height/water depth ratio')
          call prop_set(prop_ptr, 'waves', 'uorbfac', jauorb, 'Orbital velocities: 0=D3D style; 1=Guza style')
-         call prop_set(prop_ptr, 'waves', 'jahissigwav', jahissigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
-         call prop_set(prop_ptr, 'waves', 'jamapsigwav', jamapsigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
+         call prop_set(prop_ptr, 'waves', 'jahissigwav', his_write_settings%sigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
+         call prop_set(prop_ptr, 'waves', 'jamapsigwav', map_write_settings%sigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
          call prop_set(prop_ptr, 'waves', 'hminlw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
          if (flow_without_waves) then
             fww = 1

@@ -5269,7 +5269,7 @@ contains
       use m_sediment
       use m_bedform
       use m_wind
-      use m_flowparameters, only: jatrt, ibedlevtyp
+      use m_flowparameters, only: jatrt, ibedlevtyp, map_write_settings
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_xbeach_data, hminlw_xb => hminlw
@@ -5860,7 +5860,7 @@ contains
          end if
 
          ! Heat fluxes
-         if (jamapheatflux > 0) then ! here less verbose
+         if (map_write_settings%heatflux > 0) then ! here less verbose
             if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, nc_precision, UNC_LOC_S, 'Tair', 'surface_temperature', 'Air temperature near surface', 'degC', jabndnd=jabndnd_)
@@ -6275,7 +6275,7 @@ contains
          if (jawave > NO_WAVES .and. map_write_settings%wav > 0) then
             if (flow_without_waves) then ! Check the external forcing wave quantities and their associated arrays
                if (map_write_settings%wav_hwav > 0 .and. allocated(hwav)) then
-                  if (jamapsigwav == 0) then
+                  if (map_write_settings%sigwav == 0) then
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_rms_height', 'RMS wave height', 'm', jabndnd=jabndnd_) ! not CF
                   else
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
@@ -6290,7 +6290,7 @@ contains
             else ! flow with waves
                !
                ! First def all common quantities
-               if (jamapsigwav == 0) then
+               if (map_write_settings%sigwav == 0) then
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_rms_height', 'RMS wave height', 'm', jabndnd=jabndnd_) ! not CF
                else
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_hwav, nc_precision, UNC_LOC_S, 'hwav', 'sea_surface_wave_significant_height', 'Significant wave height', 'm', jabndnd=jabndnd_)
@@ -7704,7 +7704,7 @@ contains
       end if
 
       ! Heat flux models
-      if (jamapheatflux > 0) then ! here less verbose
+      if (map_write_settings%heatflux > 0) then ! here less verbose
          if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
 
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_air_temperature, UNC_LOC_S, air_temperature, jabndnd=jabndnd_)
@@ -7726,7 +7726,7 @@ contains
 
       if (jawave > NO_WAVES .and. map_write_settings%wav > 0) then
          !
-         if (jamapsigwav == 0) then
+         if (map_write_settings%sigwav == 0) then
             wavfac = 1.0_dp
          else
             wavfac = sqrt(2.0_dp)
@@ -8435,7 +8435,7 @@ contains
                call definencvar(imapfile, id_hs(iid), nf90_double, idims, 'waterdepth', 'water depth', 'm', 'FlowElem_xcc FlowElem_ycc')
             end if
 
-            if (jamapheatflux > 0) then ! Heat modelling only
+            if (map_write_settings%heatflux > 0) then ! Heat modelling only
                if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                   call definencvar(imapfile, id_air_temperature(iid), nf90_double, idims, 'Tair', 'air temperature', 'degC', 'FlowElem_xcc FlowElem_ycc')
                   call definencvar(imapfile, id_relative_humidity(iid), nf90_double, idims, 'rhum', 'Relative humidity', ' ', 'FlowElem_xcc FlowElem_ycc')
@@ -11072,7 +11072,7 @@ contains
          end if
       end if
       
-      if (jamapheatflux > 0) then ! Heat modelling only
+      if (map_write_settings%heatflux > 0) then ! Heat modelling only
          if (temperature_model  == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
