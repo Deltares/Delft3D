@@ -158,10 +158,10 @@ contains
    end subroutine parse_spatial_block
 
    !$f90tw TESTCODE(TEST, test_init_spatial_field, test_averaging_params_defaults, test_averaging_params_defaults,
-   !> When no averaging keywords are present, read_averaging_params must return
+   !> When no averaging keywords are present, read_averaging_input must return
    !! the documented defaults: type=1 (mean), relSize=-1, numMin=1, percentile=0.
    subroutine test_averaging_params_defaults() bind(C)
-      use m_spatial_field, only: t_averaging_input, read_averaging_params
+      use m_spatial_field, only: t_averaging_input, read_averaging_input
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_create, tree_destroy
       use properties, only: prop_file
@@ -174,7 +174,7 @@ contains
       call tree_create('empty', tree)
 
       ! ACT
-      call read_averaging_params(tree, avg)
+      call read_averaging_input(tree, avg)
       call tree_destroy(tree)
 
       ! ASSERT

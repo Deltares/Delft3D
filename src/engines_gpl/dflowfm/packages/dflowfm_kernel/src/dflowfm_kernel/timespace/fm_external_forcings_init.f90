@@ -622,9 +622,6 @@ contains
 
    end function init_lateral_forcings
 
-   !> Read the current [Spatial] or [Meteo] block from new external forcings file
-   !! and do required initialisation for that quantity.
-   !! [Meteo] is the legacy block name and is handled identically to [Spatial].
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
@@ -634,27 +631,34 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
       use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
                         ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, &
-                        air_pressure, pseudo_air_pressure, water_level_correction
+                        air_pressure, pseudo_air_pressure, water_level_correction, qext, jaqin
       use m_flowgeom, only: ndx, lnx
-      use m_meteo, only: ec_addtimespacerelation
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_ec_parameters, only: ec_undef_int
       use properties, only: prop_get
       use m_alloc, only: realloc
-      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
+                                 parse_location_type
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
 
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
+      type(tree_data), pointer, intent(in) :: block_ptr
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
 
       logical :: res
 
       integer, allocatable :: mask(:)
-      integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set
-      integer :: target_num_points !< Number of points in target element set
-      real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set
-      real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
+      integer :: target_location_type
+      integer :: target_num_points
+      real(dp), dimension(:), pointer :: target_x
+      real(dp), dimension(:), pointer :: target_y
       integer :: ierr
       integer :: kx
+      integer :: ec_item                              ! [CHANGE 1] needed for the immediate read
       logical :: success
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
@@ -663,10 +667,7 @@ contains
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-
-      if (.not. res) then !> Validation failed, error will be printed at the call site
-         return
-      end if
+      if (.not. res) return
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -676,12 +677,13 @@ contains
                  invert_mask => input%invert_mask, &
                  oper => input%oper, &
                  method => input%method, &
-                 is_variable_name_available => input%is_variable_name_available, &
-                 variable_name => input%variable_name)
+                 variable_name => input%variable_name, &
+                 is_static_field => input%is_static_field) ! [CHANGE 1] expose the new flag
 
-         ! Default location type: s-points. Only cases below that need u-points or different, will override.
          target_location_type = UNC_LOC_S
          kx = 1
+         ec_item = ec_undef_int
+
          success = scan_for_heat_quantities(quantity, kx)
          if (.not. success) then
             select case (quantity)
@@ -693,7 +695,6 @@ contains
                call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
             case ('waterLevelCorrection')
                call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
-
             case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
                call allocatewindarrays()
                call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
@@ -701,26 +702,31 @@ contains
                call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
                jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
                jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-
                if (jaspacevarcharn == 1) then
                   call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
                   call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
                end if
-
             case ('charnock')
                call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
                call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
-
             case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
                target_location_type = UNC_LOC_U
                jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
                call allocatewindarrays()
-            case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
+            case ('rainfall', 'rainfall_rate')
                call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
 
+            ! [CHANGE 2] qext no longer returns early; it falls through to the shared EC path below.
+            ! The mask comes from locationType (not targetMaskFile) and is built here.
             case ('qext')
-               res = init_qext_forcings(block_ptr, input)
-               return ! This was a special case, don't continue with timespace processing below.
+               call realloc(qext, ndx, keepExisting=.true., fill=0.0_dp)
+               jaqin = 1
+               block
+                  character(len=INI_VALUE_LEN) :: location_type_str
+                  logical :: is_read
+                  call prop_get(block_ptr, '', 'locationType', location_type_str, is_read)
+                  call prepare_lateral_mask(mask, parse_location_type(location_type_str))
+               end block
 
             case default
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
@@ -730,31 +736,41 @@ contains
          end if
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-         call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         ! Push search radius into EC module before registering the relation.
+
+         ! For qext the mask was already set from locationType above; all other quantities use targetMaskFile.
+         if (.not. allocated(mask)) then
+            call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+         end if
+
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
-            ! NOTE: Currently, we only support name=global meteo in .bc files, later maybe station time series as well.
             success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                              method, oper, forcingfile=forcing_file)
+                                              method, oper, forcingfile=forcing_file, tgt_item1=ec_item)
          case default
-            if (is_variable_name_available) then
+            if (len_trim(variable_name) > 0) then
                success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper, varname=variable_name)
+                                                 method, oper, varname=variable_name, tgt_item1=ec_item)
             else
                success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper)
+                                                 method, oper, tgt_item1=ec_item)
             end if
          end select
 
          if (success) then
-            res = enable_quantity(quantity)
+            ! [CHANGE 3] Unified timing branch: same EC relation, different update frequency.
+            if (is_static_field) then
+               success = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
+               res = success
+            else
+               res = enable_quantity(quantity)
+            end if
          else
             res = .false.
-            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity )//''' from file '''//file_name//''': ['//group_name//']. Check previous log lines for details.'
-            call err_flush()  
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
+               ''': ['//group_name//']. Check previous log lines for details.'
+            call err_flush()
          end if
       end associate
 
@@ -860,47 +876,47 @@ contains
 
    end function enable_quantity
 
-     !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
-   !! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
-   !! qext requires forcingFileType=sample and QExt=1 in the MDU.
-   function init_qext_forcings(block_ptr, input) result(is_successful)
-      use tree_data_types, only: tree_data
-      use properties, only: prop_get
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use m_wind, only: qext
-      use m_flowgeom, only: ndx, xz, yz
-      use timespace, only: timespaceinitialfield
-      use fm_location_types, only: UNC_LOC_S
-      use fm_external_forcings_data, only: NTRANSFORMCOEF
-      use m_spatial_field, only: t_spatial_field_input, t_averaging_input, &
-                                 read_averaging_params, averaging_params_to_transformcoef, &
-                                 parse_location_type
-
-      type(tree_data), pointer, intent(in) :: block_ptr !< [Spatial] block tree node
-      type(t_spatial_field_input), intent(in) :: input  !< Already validated spatial field input
-
-      logical :: is_successful
-
-      integer, allocatable :: mask(:)
-      real(dp) :: transformcoef(NTRANSFORMCOEF)
-      character(len=256) :: location_type_string
-      type(t_averaging_input) :: avg
-      logical :: is_read
-
-      call read_averaging_params(block_ptr, avg)
-
-      transformcoef = -999.0_dp
-      call averaging_params_to_transformcoef(avg, transformcoef)
-
-      ! Parse locationType= to determine which flow nodes to include in the mask.
-      location_type_string = ' '
-      call prop_get(block_ptr, '', 'locationType', location_type_string, is_read)
-      call prepare_lateral_mask(mask, parse_location_type(location_type_string))
-
-      is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
-                                            input%method, input%oper, transformcoef, UNC_LOC_S, mask)
-
-   end function init_qext_forcings
+   !  !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
+   !!! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
+   !!! qext requires forcingFileType=sample and QExt=1 in the MDU.
+   !function init_qext_forcings(block_ptr, input) result(is_successful)
+   !   use tree_data_types, only: tree_data
+   !   use properties, only: prop_get
+   !   use m_lateral_helper_fuctions, only: prepare_lateral_mask
+   !   use m_wind, only: qext
+   !   use m_flowgeom, only: ndx, xz, yz
+   !   use timespace, only: timespaceinitialfield
+   !   use fm_location_types, only: UNC_LOC_S
+   !   use fm_external_forcings_data, only: NTRANSFORMCOEF
+   !   use m_spatial_field, only: t_spatial_field_input, t_averaging_input, &
+   !                              read_averaging_input, averaging_params_to_transformcoef, &
+   !                              parse_location_type
+   !
+   !   type(tree_data), pointer, intent(in) :: block_ptr !< [Spatial] block tree node
+   !   type(t_spatial_field_input), intent(in) :: input  !< Already validated spatial field input
+   !
+   !   logical :: is_successful
+   !
+   !   integer, allocatable :: mask(:)
+   !   real(dp) :: transformcoef(NTRANSFORMCOEF)
+   !   character(len=256) :: location_type_string
+   !   type(t_averaging_input) :: avg
+   !   logical :: is_read
+   !
+   !   !call read_averaging_input(block_ptr, avg)
+   !
+   !   transformcoef = -999.0_dp
+   !   call averaging_params_to_transformcoef(avg, transformcoef)
+   !
+   !   ! Parse locationType= to determine which flow nodes to include in the mask.
+   !   location_type_string = ' '
+   !   call prop_get(block_ptr, '', 'locationType', location_type_string, is_read)
+   !   call prepare_lateral_mask(mask, parse_location_type(location_type_string))
+   !
+   !   is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
+   !                                         input%method, input%oper, transformcoef, UNC_LOC_S, mask)
+   !
+   !end function init_qext_forcings
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
    module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)

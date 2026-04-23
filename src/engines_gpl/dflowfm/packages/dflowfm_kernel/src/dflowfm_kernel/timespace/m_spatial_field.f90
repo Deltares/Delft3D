@@ -46,10 +46,22 @@ module m_spatial_field
 
    public :: t_spatial_field_input, t_averaging_input
    public :: read_spatial_field_block, validate_spatial_field_input
-   public :: read_averaging_params, averaging_params_to_transformcoef
+   public :: read_averaging_input, averaging_params_to_transformcoef
    public :: parse_location_type
 
    integer, parameter :: INI_VALUE_LEN = 256
+
+   !> Averaging parameters, only meaningful when method = averaging.
+   !! averagingType uses the EC integer enum (AVGTP_MEAN=1, etc.) because
+   !! that is what averagingType= in the ext file contains and what
+   !! transformcoef(4) expects. Use averaging_params_to_transformcoef to
+   !! populate the transformcoef array before calling timespaceinitialfield.
+   type :: t_averaging_input
+      integer  :: averaging_type = 1       !< averagingType=   EC integer enum; 1 = mean (default).
+      real(dp) :: rel_size       = -1.0_dp !< averagingRelSize= negative = use EC default.
+      integer  :: num_min        = 1       !< averagingNumMin=
+      real(dp) :: percentile     = 0.0_dp  !< averagingPercentile=
+   end type t_averaging_input
 
    !> All parsed keyword values from a single [Spatial] or [Meteo] block.
    type :: t_spatial_field_input
@@ -63,23 +75,12 @@ module m_spatial_field
       integer                      :: oper                = OPERAND_OVERRIDE
       real(dp)                     :: max_search_radius   = -1.0_dp
       logical                      :: invert_mask         = .false.
-      logical                      :: is_variable_name_available = .false.
       logical                      :: is_extrapolation_allowed   = .false.
       integer                      :: method              = -1
       integer                      :: filetype            = -1
+      logical                      :: is_static_field     = .false.
+      type(t_averaging_input)      :: averaging_input     = t_averaging_input()
    end type t_spatial_field_input
-
-   !> Averaging parameters, only meaningful when method = averaging.
-   !! averagingType uses the EC integer enum (AVGTP_MEAN=1, etc.) because
-   !! that is what averagingType= in the ext file contains and what
-   !! transformcoef(4) expects. Use averaging_params_to_transformcoef to
-   !! populate the transformcoef array before calling timespaceinitialfield.
-   type :: t_averaging_input
-      integer  :: averaging_type = 1       !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size       = -1.0_dp !< averagingRelSize= negative = use EC default.
-      integer  :: num_min        = 1       !< averagingNumMin=
-      real(dp) :: percentile     = 0.0_dp  !< averagingPercentile=
-   end type t_averaging_input
 
 contains
 
@@ -96,17 +97,18 @@ contains
       call prop_get(block_ptr, '', 'forcingFile',             res%forcing_file)
       call prop_get(block_ptr, '', 'targetMaskFile',          res%target_mask_file)
       call prop_get(block_ptr, '', 'targetMaskInvert',        res%invert_mask)
-      call prop_get(block_ptr, '', 'forcingVariableName',     res%variable_name, res%is_variable_name_available)
+      call prop_get(block_ptr, '', 'forcingVariableName',     res%variable_name)
       call prop_get(block_ptr, '', 'interpolationMethod',     res%interpolation_method)
       call prop_get(block_ptr, '', 'extrapolationAllowed',    res%is_extrapolation_allowed)
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ',                res%operand_string)
+      call read_averaging_input(block_ptr, res%averaging_input)
 
    end function read_spatial_field_block
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
    !! averagingType is read as an integer matching the EC enum.
-   subroutine read_averaging_params(block_ptr, avg)
+   subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
 
@@ -129,7 +131,7 @@ contains
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
       if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
 
-   end subroutine read_averaging_params
+   end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
    !! transformcoef slots expected by timespaceinitialfield / the EC module.
@@ -146,6 +148,23 @@ contains
       transformcoef(8) = real(avg%num_min, dp)        !< numMin         (slot 8)
 
    end subroutine averaging_params_to_transformcoef
+
+   !> Returns .true. when the given forcingFileType string describes a static
+   !! spatial field (no time dimension). Static fields are read once at
+   !! initialisation; the EC relation is never updated during the time loop.
+   pure function is_static_file_type(forcing_file_type) result(is_static)
+      use string_module, only: str_tolower
+      character(len=*), intent(in) :: forcing_file_type
+      logical :: is_static
+
+      select case (str_tolower(trim(forcing_file_type)))
+      case ('sample', 'arcinfo', 'd3darcinfo', 'geotiff')
+         is_static = .true.
+      case default
+         is_static = .false.
+      end select
+
+   end function is_static_file_type
 
    !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
    !! ILATTP_* enum used by prepare_lateral_mask.
@@ -229,6 +248,8 @@ contains
          call err_flush()
          return
       end if
+
+      input%is_static_field = is_static_file_type(input%forcing_file_type)
 
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
