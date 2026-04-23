@@ -52,12 +52,17 @@ module m_integration_scheme_26
 
 contains
 
-    !>  FCT horizontal, central implicit vertical, with adaptive timestep (24)
+    !>  FCT horizontal, central implicit vertical, with adaptive timestep (26)
     !!  Performs time dependent integration. Flux Corrected Transport
     !!  (Boris and Book) horizontally, central implicit vertically.
     !!  The timestep is locally adjusted if the stability for a segment requires this.
     !!  Method has the option to treat additional velocities, like
     !!  settling of suspended matter, upwind to avoid wiggles.
+    !!
+    !!  Difference with method 24: the concentrations are first updated based on the
+    !!  processes and then the transport step is excuted. This may improve the
+    !!  results (less pronounced negative concentrations) if the processes have
+    !!  a short time scale.
     subroutine scheme_26_adaptive_time_step_fractional_step(buffer, file_unit_list, file_name_list, action, dlwqd, gridps)
 
         use m_calculate_new_volumes, only: calculate_new_volumes
@@ -106,7 +111,7 @@ contains
 
             if (action == ACTION_FINALISATION) then
                 call dlwqdata_restore(dlwqd)
-                if (timon) call timstrt("scheme_24_adaptive_time_step_flux_corrected_transport", ithandl)
+                if (timon) call timstrt("scheme_26_adaptive_time_step_fractional_step", ithandl)
                 goto 20
             end if
 
@@ -146,7 +151,7 @@ contains
             ! Note: the handle to the timer (ithandl) needs to be
             ! properly initialised and restored
             if (ACTION == ACTION_INITIALISATION) then
-                if (timon) call timstrt("scheme_24_adaptive_time_step_flux_corrected_transport", ithandl)
+                if (timon) call timstrt("scheme_26_adaptive_time_step_fractional_step", ithandl)
                 call dlwqdata_save(dlwqd)
                 if (timon) call timstop(ithandl)
                 return
@@ -173,7 +178,7 @@ contains
             lxpnt = ixpnt + noqt * 4
             lqdmp = iqdmp + noqt
 
-            if (timon) call timstrt("scheme_24_adaptive_time_step_flux_corrected_transport", ithandl)
+            if (timon) call timstrt("scheme_26_adaptive_time_step_fractional_step", ithandl)
 
             !======================= simulation loop ============================
             10 continue
@@ -230,8 +235,13 @@ contains
             ! Caveat: this must be checked for the case that the processes run on a different
             ! time step than the transport
             !
-            ! Integration (derivs are zeroed)
-            a(iderv:iderv-1+num_substances_total*num_cells) = a(iderv:iderv-1+num_substances_total*num_cells) / 86400.0 ! Nasty hack!
+            ! Integrate the fluxes due to processes at this stage. The derivatives are zeroed
+            ! to prevent a double contribution. This is the main difference with integration
+            ! scheme 24 and there is an opportunity here to unify this scheme with scheme 24.
+
+            do i = iderv,iderv-1+num_substances_total*num_cells
+               a(i) = a(i) / itfact
+            enddo
             call accumulate_process_terms( a(iderv:), num_substances_total,num_cells, idt, a(imas2) )
 
             call set_explicit_time_step_for_derivatives(a(iconc:), a(imass:), a(iderv:), a(ivol), idt, &
@@ -242,11 +252,7 @@ contains
             if (ibflag > 0) then
                call integrate_fluxes_for_dump_areas(num_fluxes, ndmpar, idt, itfact, a(iflxd:), &
                                                     a(iflxi:), j(isdmp:), j(ipdmp:), ntdmpq)
-               !a(iflxd:iflxd-1+num_monitoring_cells*num_fluxes) = 0.0
             end if
-
-
-
 
             ! set new boundaries
             if (itime >= 0) then
