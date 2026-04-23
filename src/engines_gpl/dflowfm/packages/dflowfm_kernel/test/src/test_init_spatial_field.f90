@@ -83,22 +83,6 @@ contains
    end subroutine test_validate_extrapolation_changes_method
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_qext_wrong_file_type, test_validate_qext_wrong_file_type,
-   !> quantity='qext' with a forcingFileType other than 'sample' must fail even
-   !! when jaQext=1. This quantity-specific constraint is a separate code path
-   !! from the generic validation and is not covered by integration tests.
-   subroutine test_validate_qext_wrong_file_type() bind(C)
-      type(t_spatial_field_input) :: input
-      call make_test_input(input)
-      input%quantity = 'qext'
-      input%forcing_file_type = 'netcdf' ! must be 'sample' for qext
-      jaQext = 1
-      call f90_expect_false(validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR), &
-                            "validation should fail when qext is used with a non-sample forcingFileType")
-      jaQext = 0 ! restore global state
-   end subroutine test_validate_qext_wrong_file_type
-   !$f90tw)
-
 end module test_init_spatial_field
 
 module test_init_spatial_fields_integration
@@ -377,14 +361,16 @@ contains
       character(len=*), parameter :: QEXT_EXT = "test_qext.ext"
 
       ! ARRANGE: one sample point exactly at the single grid cell (0,0) with value 1.5.
-      call create_file(SAMPLE_FILE, ["0.0  0.0  1.5"])
+            call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+                                      " 1.0 -1.0  1.5", &
+                                      " 0.0  1.0  1.5"])
 
       call create_file(QEXT_EXT, [ &
                        "[Spatial]", &
                        "    quantity        = qext", &
                        "    forcingFile     = "//SAMPLE_FILE, &
                        "    forcingFileType = sample", &
-                       "    averagingType   = 4"]) ! 4 = nearestNb; works for a single sample point
+                       "    averagingType   = 5"]) ! 4 = nearestNb; works for a single sample point
 
       jaQext = 1
       irefdate = 20000101

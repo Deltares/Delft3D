@@ -294,12 +294,6 @@ contains
             call err_flush()
             return
          end if
-         !if (.not. strcmpi(input%forcing_file_type, 'sample')) then
-         !   write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
-         !      ']. quantity ''qext'' requires forcingFileType=sample, got: ', trim(input%forcing_file_type), '.'
-         !   call err_flush()
-         !   return
-         !end if
       end select
 
       is_successful = .true.

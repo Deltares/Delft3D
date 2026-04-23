@@ -634,7 +634,7 @@ contains
                         air_pressure, pseudo_air_pressure, water_level_correction, qext, jaqin
       use m_flowgeom, only: ndx, lnx
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
-      use m_flowtimes, only: tzone, tunit 
+      use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
       use properties, only: prop_get
       use m_alloc, only: realloc
@@ -660,7 +660,6 @@ contains
       integer :: ierr
       integer :: kx
       integer :: ec_item ! [CHANGE 1] needed for the immediate read
-      logical :: success
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
       real(dp), dimension(:), pointer :: target_data => null()
@@ -686,8 +685,8 @@ contains
          kx = 1
          ec_item = ec_undef_int
 
-         success = scan_for_heat_quantities(quantity, kx)
-         if (.not. success) then
+         res = scan_for_heat_quantities(quantity, kx)
+         if (.not. res) then
             select case (quantity)
             case ('airdensity')
                call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
@@ -741,36 +740,33 @@ contains
          end if
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
-
-         select case (trim(str_tolower(forcing_file_type)))
-         case ('bcascii')
-            success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                              method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
-         case default
-            if (len_trim(variable_name) > 0) then
-               success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
-            else
-               success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper, tgt_item1=ec_item, tgt_data1=target_data)
-            end if
-         end select
-
-         if (success) then
-            if (is_static_field) then
-               block
-                  real(dp) :: transformcoef(NTRANSFORMCOEF)
-                  transformcoef = -999.0_dp
-                  call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
-                  res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
-                                              forcing_file, filetype, method, oper, &
-                                              transformcoef, target_location_type, mask)
-               end block
-            else
-               res = enable_quantity(quantity)
-            end if
+         if (is_static_field) then
+            block
+               real(dp) :: transformcoef(NTRANSFORMCOEF)
+               transformcoef = -999.0_dp
+               call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+               res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
+                                           forcing_file, filetype, method, oper, &
+                                           transformcoef, target_location_type, mask)
+            end block
          else
-            res = .false.
+            select case (trim(str_tolower(forcing_file_type)))
+            case ('bcascii')
+               res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
+                                                 method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
+            case default
+               if (len_trim(variable_name) > 0) then
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                    method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+               else
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                    method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+               end if
+            end select
+         end if
+         if (res) then
+            res = enable_quantity(quantity)
+         else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
                ''': ['//group_name//']. Check previous log lines for details.'
             call err_flush()
