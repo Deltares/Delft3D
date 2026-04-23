@@ -1733,10 +1733,10 @@ contains
       use m_sferic, only: pi
       use precision, only: dp, fp
       use sediment_basics_module, only: TRA_COMBINE
-      use m_flowgeom, only: lnxi, wu_mor
+      use m_flowgeom, only: acl, csu, lnxi, ndx, snu, wcx1, wcx2, wcy1, wcy2, wu_mor
       use m_flow, only: hu
-      use m_fm_erosed, only: lsed, sedtyp, tratyp, max_mud_sedtyp, e_dzdn, e_ssn, e_sswn, e_sswt, &
-                           & fixfac, alfasusslope, l_susslope, bermslopetransport, bermslopesus
+      use m_fm_erosed, only: lsed, sedtyp, tratyp, max_mud_sedtyp, e_dzdn, e_dzdt, e_ssn, e_sswn, e_sswt, &
+                           & fixfac, alfasusslope, betasusslope, l_susslope, bermslopetransport, bermslopesus
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
       use m_sediment, only: sedtot2sedsus, susslopeflux, bermslopeindexsus
@@ -1748,8 +1748,16 @@ contains
       real(kind=dp) :: dq
       real(kind=dp) :: fixf
       real(kind=dp) :: maxslope
-      real(kind=dp) :: qmag
-      real(kind=dp) :: slope
+      real(kind=dp) :: qn
+      real(kind=dp) :: qt
+      real(kind=dp) :: qx
+      real(kind=dp) :: qy
+      real(kind=dp) :: scalefac
+      real(kind=dp) :: slopen
+      real(kind=dp) :: slopet
+      real(kind=dp) :: ssqmag
+      real(kind=dp), allocatable :: ssx(:)
+      real(kind=dp), allocatable :: ssy(:)
 
       if (.not. allocated(susslopeflux)) then
          return
@@ -1757,7 +1765,7 @@ contains
 
       susslopeflux(:, :) = 0.0_dp
 
-      if (.not. l_susslope .or. lsed <= 0 .or. alfasusslope == 0.0_fp) then
+      if (.not. l_susslope .or. lsed <= 0 .or. (alfasusslope == 0.0_fp .and. betasusslope == 0.0_fp)) then
          return
       end if
 
@@ -1767,6 +1775,8 @@ contains
 
       maxslope = 0.9_dp * tan(30.0_dp / 180.0_dp * pi)
 
+      allocate(ssx(ndx), ssy(ndx))
+
       do lsus = 1, min(lsed, size(sedtot2sedsus))
          l = sedtot2sedsus(lsus)
          if (l < 1 .or. l > size(susslopeflux, 2)) then
@@ -1775,6 +1785,16 @@ contains
          if (sedtyp(l) <= max_mud_sedtyp .or. tratyp(l) /= TRA_COMBINE) then
             cycle
          end if
+         ssx(:) = 0.0_dp
+         ssy(:) = 0.0_dp
+         do lf = 1, lnx
+            k1 = ln(1, lf)
+            k2 = ln(2, lf)
+            ssx(k1) = ssx(k1) + wcx1(lf) * e_ssn(lf, lsus)
+            ssx(k2) = ssx(k2) + wcx2(lf) * e_ssn(lf, lsus)
+            ssy(k1) = ssy(k1) + wcy1(lf) * e_ssn(lf, lsus)
+            ssy(k2) = ssy(k2) + wcy2(lf) * e_ssn(lf, lsus)
+         end do
          do lf = 1, lnx
             if (wu_mor(lf) == 0.0_dp .or. hu(lf) <= 0.0_dp) then
                cycle
@@ -1786,18 +1806,32 @@ contains
                   end if
                end if
             end if
-            qmag = abs(e_ssn(lf, lsus)) + hypot(e_sswn(lf, l), e_sswt(lf, l))
-            if (qmag <= 0.0_dp) then
-               cycle
-            end if
-            slope = max(-maxslope, min(maxslope, e_dzdn(lf)))
-            dq = alfasusslope * qmag * slope
-            if (dq == 0.0_dp) then
-               cycle
+            slopen = e_dzdn(lf)
+            slopet = e_dzdt(lf)
+            ssqmag = hypot(slopen, slopet)
+            if (ssqmag > maxslope) then
+               scalefac = maxslope / ssqmag
+               slopen = scalefac * slopen
+               slopet = scalefac * slopet
             end if
 
             k1 = ln(1, lf)
             k2 = ln(2, lf)
+            if (lf > lnxi) then
+               qx = ssx(k2)
+               qy = ssy(k2)
+            else
+               qx = acl(lf) * ssx(k1) + (1.0_dp - acl(lf)) * ssx(k2)
+               qy = acl(lf) * ssy(k1) + (1.0_dp - acl(lf)) * ssy(k2)
+            end if
+            qn = e_ssn(lf, lsus)
+            qt = -snu(lf) * qx + csu(lf) * qy
+            dq = suspended_slope_normal_flux(qn, qt, slopen, slopet)
+            dq = dq + suspended_slope_normal_flux(e_sswn(lf, l), e_sswt(lf, l), slopen, slopet)
+            if (dq == 0.0_dp) then
+               cycle
+            end if
+
             if (lf > lnxi) then
                fixf = fixfac(k2, l)
             elseif (dq > 0.0_dp) then
@@ -1811,6 +1845,37 @@ contains
             e_ssn(lf, lsus) = e_ssn(lf, lsus) + dq
          end do
       end do
+
+      deallocate(ssx, ssy)
+
+   contains
+
+      function suspended_slope_normal_flux(qn, qt, slopen, slopet) result(dq)
+         real(kind=dp), intent(in) :: qn
+         real(kind=dp), intent(in) :: qt
+         real(kind=dp), intent(in) :: slopen
+         real(kind=dp), intent(in) :: slopet
+         real(kind=dp) :: dq
+
+         real(kind=dp), parameter :: eps = 1.0e-12_dp
+         real(kind=dp) :: qhatn
+         real(kind=dp) :: qhatt
+         real(kind=dp) :: qmag
+         real(kind=dp) :: slopepar
+         real(kind=dp) :: slopeperp
+
+         qmag = hypot(qn, qt)
+         if (qmag <= eps) then
+            dq = 0.0_dp
+            return
+         end if
+
+         qhatn = qn / qmag
+         qhatt = qt / qmag
+         slopepar = slopen * qhatn + slopet * qhatt
+         slopeperp = -slopen * qhatt + slopet * qhatn
+         dq = qmag * (alfasusslope * slopepar * qhatn - betasusslope * slopeperp * qhatt)
+      end function suspended_slope_normal_flux
 
    end subroutine fm_adjust_suspended_bedslope
 

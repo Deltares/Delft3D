@@ -50,7 +50,7 @@ contains
                               taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, &
                               sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, &
                               flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, &
-                              sus, suscorfac, alfasusslope, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, &
+                              sus, suscorfac, alfasusslope, betasusslope, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, &
                               xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, &
                               mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, &
                               epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, &
@@ -128,6 +128,7 @@ contains
       sus => stmpar%morpar%sus
       suscorfac => stmpar%morpar%suscorfac
       alfasusslope => stmpar%morpar%alfasusslope
+      betasusslope => stmpar%morpar%betasusslope
       bed => stmpar%morpar%bed
       susw => stmpar%morpar%susw
       sedthr => stmpar%morpar%sedthr

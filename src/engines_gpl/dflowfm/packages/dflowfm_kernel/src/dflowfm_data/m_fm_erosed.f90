@@ -111,6 +111,7 @@ module m_fm_erosed
    real(fp), pointer :: sus
    real(fp), pointer :: suscorfac
    real(fp), pointer :: alfasusslope
+   real(fp), pointer :: betasusslope
    real(fp), pointer :: bed
    real(fp), pointer :: susw
    real(fp), pointer :: sedthr

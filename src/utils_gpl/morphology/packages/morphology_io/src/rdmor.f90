@@ -552,8 +552,14 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'SusSlope', morpar%l_susslope)
     call prop_get(mor_ptr, 'Morphology', 'AlfaSusSlope', morpar%alfasusslope)
+    call prop_get(mor_ptr, 'Morphology', 'BetaSusSlope', morpar%betasusslope)
     if (morpar%alfasusslope < 0.0_fp) then
        call write_error('AlfaSusSlope should be non-negative in '//trim(filmor), unit = lundia)
+       error = .true.
+       return
+    end if
+    if (morpar%betasusslope < 0.0_fp) then
+       call write_error('BetaSusSlope should be non-negative in '//trim(filmor), unit = lundia)
        error = .true.
        return
     end if
@@ -1427,6 +1433,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: dzmaxdune
     real(fp)                               , pointer :: suscorfac
     real(fp)                               , pointer :: alfasusslope
+    real(fp)                               , pointer :: betasusslope
     real(fp)              , dimension(:)   , pointer :: xx
     logical                                , pointer :: bedupd
     logical                                , pointer :: cmpupd
@@ -1571,6 +1578,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     thetsduni           => morpar%thetsduni
     suscorfac           => morpar%suscorfac
     alfasusslope        => morpar%alfasusslope
+    betasusslope        => morpar%betasusslope
     upwindbedload       => mornum%upwindbedload
     bedloadupwindorder  => mornum%bedloadupwindorder
     pure1d_mor          => mornum%pure1d
@@ -1761,8 +1769,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     end if
     write (lundia, '(3a)') txtput3(1:56), ':', txtput2
     if (l_susslope) then
-       txtput1 = 'Tuning param. suspended bed-slope correction (ALFASUSSLOPE)'
+       txtput1 = 'Susp. bed-slope factor (ALFASUSSLOPE)'
        write (lundia, '(2a,e20.4)') txtput1, ':', alfasusslope
+       txtput1 = 'Susp. transverse slope factor (BETASUSSLOPE)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', betasusslope
     end if
     txtput3 = 'EPSPAR: Always use Van Rijns param. mix. dist.'
     if (epspar) then

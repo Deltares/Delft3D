@@ -422,6 +422,7 @@ type morpar_type
     real(fp):: sus        !  calibration factor for suspended load transport
     real(fp):: suscorfac  !  calibration factor for near-bed suspended load transport correction
     real(fp):: alfasusslope !  factor for suspended load bed-slope transport correction
+    real(fp):: betasusslope !  transverse factor for suspended load bed-slope transport correction
     real(fp):: bed        !  calibration factor for bed load transport
     real(fp):: pangle     !  phase lead angle acc. to Nielsen (1992) for TR2004 expression
     real(fp):: fpco       !  coefficient for phase llag effects
@@ -1440,6 +1441,7 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: sus
     real(fp)                             , pointer :: suscorfac
     real(fp)                             , pointer :: alfasusslope
+    real(fp)                             , pointer :: betasusslope
     real(fp)                             , pointer :: bed
     real(fp)                             , pointer :: ti_sedtrans
     real(fp)                             , pointer :: tmor
@@ -1531,6 +1533,7 @@ subroutine nullmorpar(morpar)
     sus                 => morpar%sus
     suscorfac           => morpar%suscorfac
     alfasusslope        => morpar%alfasusslope
+    betasusslope        => morpar%betasusslope
     bed                 => morpar%bed
     ti_sedtrans         => morpar%ti_sedtrans
     tmor                => morpar%tmor
@@ -1726,6 +1729,7 @@ subroutine nullmorpar(morpar)
     l_susslope         = .false.
     suscorfac          = 1.0_fp
     alfasusslope       = 1.0_fp
+    betasusslope       = 1.5_fp
     densin             = .true.
     rouse              = .false.
     epspar             = .false.
