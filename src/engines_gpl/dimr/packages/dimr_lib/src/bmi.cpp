@@ -6,7 +6,6 @@
 #ifndef _WIN32
     #include "config.h"
     #include <dlfcn.h>
-    #include <libgen.h>
 #endif
 #include <limits.h>
 
@@ -15,18 +14,12 @@
 #endif
 
 #ifdef _WIN32
-    #include <Strsafe.h>
     #include <windows.h>
-    #include <direct.h>
     #define strdup _strdup
-    #define chdir _chdir
-    #define getcwd _getcwd
-    #define dup2 _dup2
-#else
-    #include <unistd.h>
 #endif
 
 #include <cstring>
+#include <filesystem>
 #include <string>
 #include <sstream>
 
@@ -90,37 +83,14 @@ BMI_API int initialize(const char* configfile)
 
         if (thisDimr->redirectFile != NULL)
         {
-            // RedirectFile must be including the full path:
-            // - Get the basename (platform dependent implementation)
-            // - if (redirectfile == basename) then
-            //       Make copy of redirectfile
-            //       Put CWD in redirectfile
-            //       redirectfile = redirectfile + / + copy
-            char* fileBasename = new char[MAXSTRING];
-#ifndef _WIN32
-            fileBasename = strdup(basename(thisDimr->redirectFile));
-#else
-            char* ext = new char[5];
-            _splitpath(thisDimr->redirectFile, NULL, NULL, fileBasename, ext);
-            StringCbCatA(fileBasename, MAXSTRING, ext);
-            delete[] ext;
-#endif
-            if (strcmp(thisDimr->redirectFile, fileBasename) == 0)
+            // If redirectFile is just a filename (no directory component), prepend CWD
+            std::filesystem::path redirectPath(thisDimr->redirectFile);
+            if (redirectPath.filename() == redirectPath)
             {
-                char* filenameCopy = new char[MAXSTRING];
-                strcpy(filenameCopy, thisDimr->redirectFile);
-
-                delete[] thisDimr->redirectFile;
-                thisDimr->redirectFile = (char*)malloc((MAXSTRING) * sizeof(char));
-
-                if (!getcwd(thisDimr->redirectFile, MAXSTRING))
-                {
-                    throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (init)");
-                }
-
-                strcat(thisDimr->redirectFile, thisDimr->dirSeparator);
-                strcat(thisDimr->redirectFile, filenameCopy);
-                delete[] filenameCopy;
+                redirectPath = std::filesystem::current_path() / redirectPath;
+                free(thisDimr->redirectFile);
+                const std::string fullPath = redirectPath.string();
+                thisDimr->redirectFile = strdup(fullPath.c_str());
             }
             // Redirection to file is currently handled in the logger by writing directly to the specified file
             thisDimr->log->redirectFile = thisDimr->redirectFile;
@@ -129,7 +99,6 @@ BMI_API int initialize(const char* configfile)
             // Create an empty file
             FILE* fp = fopen(thisDimr->redirectFile, "w+");
             fclose(fp);
-            delete[] fileBasename;
         }
 
         thisDimr->log->Write(INFO, thisDimr->my_rank, getfullversionstring_dimr_lib());
@@ -169,8 +138,13 @@ BMI_API int initialize(const char* configfile)
         thisDimr->timersInit();
 
         // Store dimr absolute path
-        thisDimr->dimrWorkingDirectory = new char[MAXSTRING];
-        if (!getcwd(thisDimr->dimrWorkingDirectory, MAXSTRING))
+        try
+        {
+            const std::string dimrWorkingDirectory = std::filesystem::current_path().string();
+            thisDimr->dimrWorkingDirectory = new char[dimrWorkingDirectory.size() + 1];
+            std::strcpy(thisDimr->dimrWorkingDirectory, dimrWorkingDirectory.c_str());
+        }
+        catch (const std::filesystem::filesystem_error&)
         {
             thisDimr->log->Write(FATAL, thisDimr->my_rank, "Cannot get the current working directory");
         }
@@ -208,7 +182,7 @@ BMI_API int initialize(const char* configfile)
                 *waveModePtr = 0;
             }
 
-            chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
+            std::filesystem::current_path(thisDimr->control->subBlocks[0].unit.component->workingDir);
             thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Initialize(%s)",
                                  thisDimr->control->subBlocks[0].unit.component->name,
                                  thisDimr->control->subBlocks[0].unit.component->inputFile);
@@ -272,7 +246,7 @@ BMI_API int update(double tStep)
         else
         {
             // Start block
-            chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
+            std::filesystem::current_path(thisDimr->control->subBlocks[0].unit.component->workingDir);
             thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Update(%6.1f)",
                                  thisDimr->control->subBlocks[0].unit.component->name, tStep);
             thisDimr->timerStart(thisDimr->control->subBlocks[0].unit.component);
@@ -327,7 +301,7 @@ BMI_API int finalize(void)
         else
         {
             // Start block
-            chdir(thisDimr->control->subBlocks[0].unit.component->workingDir);
+            std::filesystem::current_path(thisDimr->control->subBlocks[0].unit.component->workingDir);
             thisDimr->log->Write(INFO, thisDimr->my_rank, "%s.Finalize()",
                                  thisDimr->control->subBlocks[0].unit.component->name);
             thisDimr->timerStart(thisDimr->control->subBlocks[0].unit.component);

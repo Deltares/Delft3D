@@ -67,11 +67,14 @@ contains
       use m_statistical_output, only: update_source_input
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_flow_trachy_needs_update
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, precice_adapter_interface_t
+      use MessageHandling, only: mess, LEVEL_DEBUG
 
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
       real(kind=dp) :: tem_dif
       logical :: do_fourier
+      class(precice_adapter_interface_t), pointer :: fm_precice_adapter
 
       iresult = DFM_GENERICERROR
 
@@ -168,6 +171,13 @@ contains
 
       if (do_fourier) then
          call update_fourier(merge(dt_user, ti_his, md_fou_step == 0))
+      end if
+
+      ! Communicate trough precice_adapter if anabled.
+      if (precice_adapter_is_enabled()) then
+         call mess(LEVEL_DEBUG, "Updating preCICE adapter.")
+         fm_precice_adapter => precice_adapter_get_adapter()
+         call fm_precice_adapter%update(dt_user)
       end if
 
       iresult = DFM_NOERR

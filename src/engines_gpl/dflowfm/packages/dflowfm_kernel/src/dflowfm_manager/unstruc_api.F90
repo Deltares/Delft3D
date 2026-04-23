@@ -278,8 +278,10 @@ contains
       use m_statistical_output, only: update_source_input, update_statistical_output
       use m_wall_clock_time
       use m_flow_modelinit, only: flow_modelinit
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, precice_adapter_interface_t
 
       integer :: timerHandle, inner_timerhandle
+      class(precice_adapter_interface_t), pointer :: fm_precice_adapter
 
       !call inidia('api')
 
@@ -336,6 +338,12 @@ contains
       end if
       !call update_statistical_output(out_variable_set_map%configs,dts)
       !call update_statistical_output(out_variable_set_clm%configs,dts)
+
+      ! Build and initialize precice adapter if enabled.
+      if (precice_adapter_is_enabled()) then
+         fm_precice_adapter => precice_adapter_get_adapter()
+         call fm_precice_adapter%initialize()
+      end if
 
       call mess(LEVEL_INFO, 'Writing initial output to file(s)...')
       inner_timerhandle = 0
@@ -424,6 +432,15 @@ contains
       use m_nearfield
       use m_laterals
       use fm_statistical_output, only: close_fm_statistical_output
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, &
+                                        precice_adapter_interface_t
+
+      class(precice_adapter_interface_t), pointer :: fm_precice_adapter
+
+      if (precice_adapter_is_enabled()) then
+         fm_precice_adapter => precice_adapter_get_adapter()
+         call fm_precice_adapter%finalize()
+      end if
 
       call dealloc_nfarrays()
       call dealloc_lateraldata()

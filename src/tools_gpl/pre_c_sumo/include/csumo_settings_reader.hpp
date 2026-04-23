@@ -8,25 +8,10 @@
 #include <string_view>
 #include <vector>
 
+#include "parsing_types.hpp"
+
 namespace pre_c_sumo
 {
-    /**
-     * @brief Error returned when a csumo settings XML cannot be parsed.
-     */
-    struct ParseError
-    {
-        std::string message;
-    };
-
-    /**
-     * @brief A 2-D coordinate pair (x, y).
-     */
-    struct Point2D
-    {
-        double x{};
-        double y{};
-    };
-
     /**
      * @brief Operator applied to constituent concentrations.
      *
@@ -67,13 +52,14 @@ namespace pre_c_sumo
         std::optional<std::string> far_field_model; ///< Far-field model name (&lt;farFieldModel&gt;, optional)
 
         // --- data section ---
-        Point2D position;                       ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
-        std::vector<Point2D> ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
-        std::optional<Point2D> intake;          ///< Intake location (&lt;XYintake&gt;, optional)
-        Discharge discharge;                    ///< Discharge characteristics (&lt;discharge&gt;)
-        double nozzle_diameter{};               ///< Nozzle diameter [m] (&lt;D0&gt;)
-        double nozzle_elevation{};              ///< Height above the bed [m] (&lt;H0&gt;)
-        double vertical_angle{};                ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
+        parsing_utils::Point2D position; ///< Diffuser position in the flow grid (&lt;XYdiff&gt;)
+        std::vector<parsing_utils::Point2D>
+            ambient_positions; ///< Ambient condition sample points (&lt;XYambient&gt;, zero or more)
+        std::optional<parsing_utils::Point2D> intake; ///< Intake location (&lt;XYintake&gt;, optional)
+        Discharge discharge;                          ///< Discharge characteristics (&lt;discharge&gt;)
+        double nozzle_diameter{};                     ///< Nozzle diameter [m] (&lt;D0&gt;)
+        double nozzle_elevation{};                    ///< Height above the bed [m] (&lt;H0&gt;)
+        double vertical_angle{};                      ///< Vertical discharge angle [degrees] (&lt;Theta0&gt;)
         double horizontal_angle{}; ///< Horizontal discharge angle, 0=east, 90=north [degrees] (&lt;Sigma0&gt;)
         std::optional<std::string> nf2ff_file; ///< Path to the NF2FF definition file (&lt;NF2FFFile&gt;, optional)
 
@@ -99,7 +85,7 @@ namespace pre_c_sumo
          * @param csumo_config_file Path to the C-SUMO configuration xml file.
          * @return The reader on success, or a @ref ParseError describing the failure.
          */
-        [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromFile(
+        [[nodiscard]] static std::expected<CSumoSettingsReader, parsing_utils::ParseError> fromFile(
             const std::filesystem::path& csumo_config_file);
 
         /**
@@ -111,7 +97,8 @@ namespace pre_c_sumo
          * @param xml Raw UTF-8 XML content.
          * @return The reader on success, or a @ref ParseError describing the failure.
          */
-        [[nodiscard]] static std::expected<CSumoSettingsReader, ParseError> fromString(std::string_view xml);
+        [[nodiscard]] static std::expected<CSumoSettingsReader, parsing_utils::ParseError> fromString(
+            std::string_view xml);
 
         /**
          * @brief The file format version (value of &lt;fileVersion&gt;).
