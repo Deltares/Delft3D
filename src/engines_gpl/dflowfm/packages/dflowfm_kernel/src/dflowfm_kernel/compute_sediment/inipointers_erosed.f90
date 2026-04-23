@@ -50,7 +50,7 @@ contains
                               taucr, tetacr, mudcnt, pmcrit, nseddia, sedtyp, tratyp, anymud, &
                               sedtrcfac, bsskin, thcmud, tpsnumber, dss, min_dxx_sedtyp, &
                               flocmod, nflocpop, nflocsizes, floclist, tbreakup, tfloc, thresh, &
-                              sus, suscorfac, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, &
+                              sus, suscorfac, alfasusslope, bed, susw, sedthr, bedw, i10, i15, i50, i90, nxx, &
                               xx, multi, eqmbcsand, eqmbcmud, factcr, factsd, ihidexp, asklhe, &
                               mwwjhe, ffthresh, morfac, varyingmorfac, morft, hydrt, espir, &
                               epspar, camax, aksfac, rdc, iopkcw, oldmudfrac, sinkf, sourf, &
@@ -58,7 +58,7 @@ contains
                               duneavalan, dryslope, hswitch, dzmaxdune, ashld, bshld, cshld, &
                               dshld, alfpa, thcrpa, islope, ti_sedtrans, tmor, tcmp, itmor, &
                               bedupd, neglectentrainment, dzmax, hmaxth, thetsd, eulerisoglm, &
-                              l_suscor, bermslopetransport, bermslopebed, bermslopesus, &
+                              l_suscor, l_susslope, bermslopetransport, bermslopebed, bermslopesus, &
                               bermslope, bermslopefac, bermslopegamma, bermslopedepth, iform, &
                               par, npar, max_integers, max_reals, max_strings, dll_function, &
                               dll_handle, dll_integers, dll_reals, dll_strings, dll_usrfil, &
@@ -127,6 +127,7 @@ contains
       thresh => stmpar%morpar%thresh
       sus => stmpar%morpar%sus
       suscorfac => stmpar%morpar%suscorfac
+      alfasusslope => stmpar%morpar%alfasusslope
       bed => stmpar%morpar%bed
       susw => stmpar%morpar%susw
       sedthr => stmpar%morpar%sedthr
@@ -188,6 +189,7 @@ contains
       thetsd => stmpar%morpar%thetsd
       eulerisoglm => stmpar%morpar%eulerisoglm
       l_suscor => stmpar%morpar%l_suscor
+      l_susslope => stmpar%morpar%l_susslope
       bermslopetransport => stmpar%morpar%bermslopetransport
       bermslopebed => stmpar%morpar%bermslopebed
       bermslopesus => stmpar%morpar%bermslopesus

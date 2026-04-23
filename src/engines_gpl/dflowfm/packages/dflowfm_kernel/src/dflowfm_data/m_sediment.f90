@@ -83,6 +83,7 @@ module m_sediment
    real(kind=dp), allocatable :: sbwy_raw(:, :)
 
    real(kind=dp), allocatable :: avalflux(:, :)
+   real(kind=dp), allocatable :: susslopeflux(:, :) !< suspended load bed-slope correction transport (kg/s/m)
 
    integer, allocatable :: kcsmor(:)
    real(kind=dp), allocatable :: mergebodsed(:, :)

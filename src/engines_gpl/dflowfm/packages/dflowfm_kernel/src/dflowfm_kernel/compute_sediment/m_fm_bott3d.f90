@@ -158,6 +158,7 @@ contains
             call write_error(errmsg, unit=mdia)
          end if
       end if
+      call fm_adjust_suspended_bedslope()
       call timstop(handle_extra(89))
       !
       ! BEGIN: Moved parts from `fm_erosed`
@@ -958,8 +959,9 @@ contains
       use m_flowgeom, only: bai_mor, ndxi, bl, wu, wu_mor, xz, yz
       use m_flow, only: kmx, s1, vol1
       use m_fm_erosed, only: dbodsd, lsedtot, cdryb, tratyp, e_sbn, sus, neglectentrainment, duneavalan, bed, bedupd, e_scrn, iflufflyr, kmxsed, sourf, sourse, mfluff, ndxi_mor
+      use m_fm_erosed, only: l_susslope
       use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp, ndx => ndx_mor
-      use m_sediment, only: avalflux, ssccum
+      use m_sediment, only: avalflux, ssccum, susslopeflux
       use m_flowtimes, only: dts, dnt
       use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
       use unstruc_files, only: mdia
@@ -1059,6 +1061,16 @@ contains
                      end do
                   end if
                   trndiv = trndiv + sumflux * bai_mor(nm)
+                  if (l_susslope .and. allocated(susslopeflux)) then
+                     sumflux = 0_dp
+                     do ii = 1, nd(nm)%lnx
+                        LL = nd(nm)%ln(ii)
+                        Lf = abs(LL)
+                        flux = susslopeflux(Lf, l) * wu_mor(Lf)
+                        call fm_sumflux(LL, sumflux, flux)
+                     end do
+                     trndiv = trndiv + sumflux * bai_mor(nm)
+                  end if
                else
                   !
                   ! mass balance includes entrainment and deposition
@@ -1119,6 +1131,16 @@ contains
                      call fm_sumflux(LL, sumflux, flux)
                   end do
                   trndiv = trndiv + sumflux * bai_mor(nm)
+                  if (l_susslope .and. allocated(susslopeflux)) then
+                     sumflux = 0_dp
+                     do ii = 1, nd(nm)%lnx
+                        LL = nd(nm)%ln(ii)
+                        Lf = abs(LL)
+                        flux = susslopeflux(Lf, l) * wu_mor(Lf)
+                        call fm_sumflux(LL, sumflux, flux)
+                     end do
+                     trndiv = trndiv + sumflux * bai_mor(nm)
+                  end if
                end if
             end if
             if (bed /= 0.0_dp) then
@@ -1704,6 +1726,93 @@ contains
       end do
 
    end subroutine fm_total_face_normal_suspended_transport
+
+   !> Add morphology-only suspended load transport correction in downslope direction.
+   subroutine fm_adjust_suspended_bedslope()
+
+      use m_sferic, only: pi
+      use precision, only: dp, fp
+      use sediment_basics_module, only: TRA_COMBINE
+      use m_flowgeom, only: lnxi, wu_mor
+      use m_flow, only: hu
+      use m_fm_erosed, only: lsed, sedtyp, tratyp, max_mud_sedtyp, e_dzdn, e_ssn, e_sswn, e_sswt, &
+                           & fixfac, alfasusslope, l_susslope, bermslopetransport, bermslopesus
+      use m_fm_erosed, only: lnx => lnx_mor
+      use m_fm_erosed, only: ln => ln_mor
+      use m_sediment, only: sedtot2sedsus, susslopeflux, bermslopeindexsus
+
+      implicit none
+
+      integer :: l, lf, lsus, k1, k2
+
+      real(kind=dp) :: dq
+      real(kind=dp) :: fixf
+      real(kind=dp) :: maxslope
+      real(kind=dp) :: qmag
+      real(kind=dp) :: slope
+
+      if (.not. allocated(susslopeflux)) then
+         return
+      end if
+
+      susslopeflux(:, :) = 0.0_dp
+
+      if (.not. l_susslope .or. lsed <= 0 .or. alfasusslope == 0.0_fp) then
+         return
+      end if
+
+      if (.not. allocated(sedtot2sedsus)) then
+         return
+      end if
+
+      maxslope = 0.9_dp * tan(30.0_dp / 180.0_dp * pi)
+
+      do lsus = 1, min(lsed, size(sedtot2sedsus))
+         l = sedtot2sedsus(lsus)
+         if (l < 1 .or. l > size(susslopeflux, 2)) then
+            cycle
+         end if
+         if (sedtyp(l) <= max_mud_sedtyp .or. tratyp(l) /= TRA_COMBINE) then
+            cycle
+         end if
+         do lf = 1, lnx
+            if (wu_mor(lf) == 0.0_dp .or. hu(lf) <= 0.0_dp) then
+               cycle
+            end if
+            if (bermslopetransport .and. bermslopesus) then
+               if (allocated(bermslopeindexsus)) then
+                  if (bermslopeindexsus(lf)) then
+                     cycle
+                  end if
+               end if
+            end if
+            qmag = abs(e_ssn(lf, lsus)) + hypot(e_sswn(lf, l), e_sswt(lf, l))
+            if (qmag <= 0.0_dp) then
+               cycle
+            end if
+            slope = max(-maxslope, min(maxslope, e_dzdn(lf)))
+            dq = alfasusslope * qmag * slope
+            if (dq == 0.0_dp) then
+               cycle
+            end if
+
+            k1 = ln(1, lf)
+            k2 = ln(2, lf)
+            if (lf > lnxi) then
+               fixf = fixfac(k2, l)
+            elseif (dq > 0.0_dp) then
+               fixf = fixfac(k1, l)
+            else
+               fixf = fixfac(k2, l)
+            end if
+
+            dq = dq * fixf
+            susslopeflux(lf, l) = dq
+            e_ssn(lf, lsus) = e_ssn(lf, lsus) + dq
+         end do
+      end do
+
+   end subroutine fm_adjust_suspended_bedslope
 
    !> Summation of current-related and wave-related transports on links
    subroutine sum_current_wave_transport_links()

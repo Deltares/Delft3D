@@ -110,6 +110,7 @@ module m_fm_erosed
    real(fp), pointer :: thresh
    real(fp), pointer :: sus
    real(fp), pointer :: suscorfac
+   real(fp), pointer :: alfasusslope
    real(fp), pointer :: bed
    real(fp), pointer :: susw
    real(fp), pointer :: sedthr
@@ -155,6 +156,7 @@ module m_fm_erosed
    logical, pointer :: eqmbcmud
    logical, pointer :: eulerisoglm
    logical, pointer :: l_suscor
+   logical, pointer :: l_susslope
    logical, pointer :: bermslopetransport !< switch on bermslope transport or not
    logical, pointer :: bermslopebed !< include bermslope nudging on bedload
    logical, pointer :: bermslopesus !< include bermslope nudging on suspended load

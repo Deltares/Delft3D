@@ -466,6 +466,15 @@ contains
          end if
       end if
 
+      if (allocated(susslopeflux)) then
+         deallocate (susslopeflux)
+      end if
+      call realloc(susslopeflux, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+      if (.not. (ierr == 0)) then
+         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Could not allocate suspended slope array. SusSlope switched off.')
+         stmpar%morpar%l_susslope = .false.
+      end if
+
       if (stmpar%morpar%duneavalan) then
          if (allocated(avalflux)) then
             deallocate (avalflux)

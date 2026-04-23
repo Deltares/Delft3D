@@ -548,6 +548,16 @@ subroutine read_morphology_properties(mor_ptr, morpar, griddim, filmor, fmttmp, 
     !
     call prop_get(mor_ptr, 'Morphology', 'SusCor', morpar%l_suscor)
     !
+    ! === flag/factor for suspended load bed-slope transport correction
+    !
+    call prop_get(mor_ptr, 'Morphology', 'SusSlope', morpar%l_susslope)
+    call prop_get(mor_ptr, 'Morphology', 'AlfaSusSlope', morpar%alfasusslope)
+    if (morpar%alfasusslope < 0.0_fp) then
+       call write_error('AlfaSusSlope should be non-negative in '//trim(filmor), unit = lundia)
+       error = .true.
+       return
+    end if
+    !
     ! === phase lead for bed shear stress of Nielsen (1992) in TR2004
     !
     call prop_get(mor_ptr, 'Morphology', 'Pangle', morpar%pangle)
@@ -1416,6 +1426,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     real(fp)                               , pointer :: hswitch
     real(fp)                               , pointer :: dzmaxdune
     real(fp)                               , pointer :: suscorfac
+    real(fp)                               , pointer :: alfasusslope
     real(fp)              , dimension(:)   , pointer :: xx
     logical                                , pointer :: bedupd
     logical                                , pointer :: cmpupd
@@ -1431,7 +1442,8 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     logical                                , pointer :: multi
     logical                                , pointer :: eulerisoglm
     logical                                , pointer :: glmisoeuler
-    logical                                , pointer :: l_suscor    
+    logical                                , pointer :: l_suscor
+    logical                                , pointer :: l_susslope
     logical                                , pointer :: upwindbedload
     logical                                , pointer :: bedloadupwindorder
     logical                                , pointer :: pure1d_mor
@@ -1555,8 +1567,10 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     eulerisoglm         => morpar%eulerisoglm
     glmisoeuler         => morpar%glmisoeuler
     l_suscor            => morpar%l_suscor
+    l_susslope          => morpar%l_susslope
     thetsduni           => morpar%thetsduni
     suscorfac           => morpar%suscorfac
+    alfasusslope        => morpar%alfasusslope
     upwindbedload       => mornum%upwindbedload
     bedloadupwindorder  => mornum%bedloadupwindorder
     pure1d_mor          => mornum%pure1d
@@ -1739,6 +1753,17 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
        txtput2 = '                  NO'
     end if
     write (lundia, '(3a)') txtput3(1:82), ':', txtput2 
+    txtput3 = 'Apply suspended load bed-slope correction (SUSSLOPE)'
+    if (l_susslope) then
+       txtput2 = '                 YES'
+    else
+       txtput2 = '                  NO'
+    end if
+    write (lundia, '(3a)') txtput3(1:56), ':', txtput2
+    if (l_susslope) then
+       txtput1 = 'Tuning param. suspended bed-slope correction (ALFASUSSLOPE)'
+       write (lundia, '(2a,e20.4)') txtput1, ':', alfasusslope
+    end if
     txtput3 = 'EPSPAR: Always use Van Rijns param. mix. dist.'
     if (epspar) then
        txtput2 = '                 YES'

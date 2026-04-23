@@ -421,6 +421,7 @@ type morpar_type
     real(fp):: dzmax      !  factor for limiting source and sink term in EROSED (percentage of water depth)
     real(fp):: sus        !  calibration factor for suspended load transport
     real(fp):: suscorfac  !  calibration factor for near-bed suspended load transport correction
+    real(fp):: alfasusslope !  factor for suspended load bed-slope transport correction
     real(fp):: bed        !  calibration factor for bed load transport
     real(fp):: pangle     !  phase lead angle acc. to Nielsen (1992) for TR2004 expression
     real(fp):: fpco       !  coefficient for phase llag effects
@@ -532,6 +533,7 @@ type morpar_type
     logical :: multi               !  Flag for merging bottoms of different parallel runs
     logical :: duneavalan          !  Flag for avalanching using wetslope and dryslope
     logical :: l_suscor            !  Flag for applying correction to doublecounting of sus/bed transport in 3d
+    logical :: l_susslope          !  Flag for applying suspended load bed-slope transport correction
     logical :: bermslopetransport  !  Flag to turn on bermslope swash transport model
     logical :: bermslopebed        !  Flag to turn on bermslope swash transport model for bedload
     logical :: bermslopesus        !  Flag to turn on bermslope swash transport model for suspended load
@@ -1437,6 +1439,7 @@ subroutine nullmorpar(morpar)
     real(fp)                             , pointer :: dzmax
     real(fp)                             , pointer :: sus
     real(fp)                             , pointer :: suscorfac
+    real(fp)                             , pointer :: alfasusslope
     real(fp)                             , pointer :: bed
     real(fp)                             , pointer :: ti_sedtrans
     real(fp)                             , pointer :: tmor
@@ -1497,6 +1500,7 @@ subroutine nullmorpar(morpar)
     logical                              , pointer :: eulerisoglm
     logical                              , pointer :: glmisoeuler
     logical                              , pointer :: l_suscor
+    logical                              , pointer :: l_susslope
     character(256)                       , pointer :: bcmfilnam
     character(256)                       , pointer :: flcomp
     character(256)                       , pointer :: mmsyncfilnam
@@ -1526,6 +1530,7 @@ subroutine nullmorpar(morpar)
     dzmax               => morpar%dzmax
     sus                 => morpar%sus
     suscorfac           => morpar%suscorfac
+    alfasusslope        => morpar%alfasusslope
     bed                 => morpar%bed
     ti_sedtrans         => morpar%ti_sedtrans
     tmor                => morpar%tmor
@@ -1617,6 +1622,7 @@ subroutine nullmorpar(morpar)
     eulerisoglm         => morpar%eulerisoglm
     glmisoeuler         => morpar%glmisoeuler
     l_suscor            => morpar%l_suscor
+    l_susslope          => morpar%l_susslope
     !
     call initmoroutput(morpar%moroutput)
     !
@@ -1717,7 +1723,9 @@ subroutine nullmorpar(morpar)
     eulerisoglm        = .false.    
     glmisoeuler        = .false.    
     l_suscor           = .true.    
+    l_susslope         = .false.
     suscorfac          = 1.0_fp
+    alfasusslope       = 1.0_fp
     densin             = .true.
     rouse              = .false.
     epspar             = .false.
