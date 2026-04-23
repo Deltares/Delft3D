@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,13 +33,12 @@
 
 extern BInt4 nefis_errcnt;
 extern BInt4 nefis_errno;
-extern BChar error_text[LENGTH_ERROR_MESSAGE+1];
+extern BChar error_text[LENGTH_ERROR_MESSAGE + 1];
 
-extern BInt4  convert_ieee        ( voidp *, charp *, BUInt8 , BInt4  , BText  ,
-                                    BInt4  );
-extern BUInt8 GP_read_file        ( BInt4  , BText  , BUInt8 , BUInt8  );
+extern BInt4 convert_ieee(voidp*, charp*, BUInt8, BInt4, BText, BInt4);
+extern BUInt8 GP_read_file(BInt4, BText, BUInt8, BUInt8);
 #if DO_DEBUG
-extern BInt4 DBG_nefis_tree ( BInt4  , BText  );
+extern BInt4 DBG_nefis_tree(BInt4, BText);
 #endif
 
 #endif

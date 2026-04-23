@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,7 +54,12 @@ contains
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
       integer :: openmp_threads
+      character(len=20) :: value
+      integer :: env_num_threads
+      integer :: status
+
       iresult = DFM_NOERR
+
 #ifndef _OPENMP
       associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
       end associate
@@ -68,15 +73,35 @@ contains
       else ! user defined OpenMP threads
          openmp_threads = maxnumthreads
       end if
-      if (openmp_threads > 0) then
-         call omp_set_num_threads(openmp_threads)
+      if (openmp_threads == 0) then !> no user defined numthreads, use OMP_NUM_THREADS environment variable
+         call get_environment_variable("OMP_NUM_THREADS", value, status=status)
+         if (status == 0) then
+            read (value, *, iostat=status) env_num_threads
+            if (status == 0 .and. env_num_threads > 0) then
+               openmp_threads = env_num_threads
+            end if
+         end if
       end if
-      openmp_threads = omp_get_max_threads() !check number of threads set by environment before reporting
       if (openmp_threads > 1) then
          call mess(LEVEL_INFO, 'OpenMP enabled, number of threads = ', openmp_threads)
+         call omp_set_num_threads(openmp_threads)
       else
          call mess(LEVEL_INFO, 'OpenMP disabled.')
+         call omp_set_num_threads(1)
       end if
+
+      ! Set OpenMP worker thread stack size to the same as the windows main thread (typically 20 MB)
+      ! if not set by the user explicitly.
+      ! Must be called before the first parallel region.
+      ! On Windows, the default (4 MB for Intel OpenMP) is too small for Fortran
+      ! subroutines with large automatic arrays, causing random stack overflows.
+#ifdef __INTEL_COMPILER
+      call get_environment_variable("OMP_STACKSIZE", status=status)
+      if (status /= 0) then
+         call kmp_set_stacksize_s(DFLOWFM_STACK_SIZE_BYTES)
+         call mess(LEVEL_INFO, 'OpenMP worker thread stack size (in bytes) set to ', DFLOWFM_STACK_SIZE_BYTES)
+      end if
+#endif
 #endif
 
    end function init_openmp

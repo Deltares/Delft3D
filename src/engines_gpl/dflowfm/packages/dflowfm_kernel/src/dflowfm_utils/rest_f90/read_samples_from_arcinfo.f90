@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,6 @@
 !> Read samples from an ASCII file.
 !! Samples are being stored in a global dataset of m_samples.
 module m_read_samples_from_arcinfo
-
 
    use precision, only: dp
    implicit none
@@ -86,7 +85,7 @@ contains
 ! SPvdP: j needs to be fastest running index
       do i = 1, mca
          if (mod(i, istep) == 0) then
-            call READYY('Filtering '//trim(TEX)//' Samples Points', min(1.0_dp, dble(i) / mca))
+            call READYY('Filtering '//trim(TEX)//' Samples Points', min(1.0_dp, real(i, kind=dp) / mca))
          end if
 
          do j = nca, 1, -1 ! SPvdP: first line needs to be nca'th row
@@ -110,8 +109,12 @@ contains
 
       ! deallocate(d) ! Save memory, arcinfo block is no longer needed.
 
-      if (NS > 100000) NDRAW(32) = 7 ! Squares (faster than circles)
-      if (NS > 500000) NDRAW(32) = 3 ! Small dots (fastest)
+      if (NS > 100000) then
+         NDRAW(32) = 7 ! Squares (faster than circles)
+      end if
+      if (NS > 500000) then
+         NDRAW(32) = 3 ! Small dots (fastest)
+      end if
 
       ! No TIDYSAMPLES required: arcinfo grid was already loaded in correctly sorted order.
       do i = 1, NS

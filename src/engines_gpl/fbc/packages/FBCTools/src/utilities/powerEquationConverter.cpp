@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -31,36 +31,40 @@ using namespace rtctools::utilities;
 
 powerEquationConverter::powerEquationConverter(double a, double b, double c)
 {
-	this->a = a;
-	this->b = b;
+    this->a = a;
+    this->b = b;
     this->c = c;
 }
 
-powerEquationConverter::~powerEquationConverter(void)
-{
-}
+powerEquationConverter::~powerEquationConverter(void) {}
 
 double powerEquationConverter::convert(double xVal)
 {
-	double y;
+    double y;
 
-	if (xVal<-b) {
-		y = 0.0;
-	} else {
-	    y = a*pow(xVal+b,c);
-	}
+    if (xVal < -b)
+    {
+        y = 0.0;
+    }
+    else
+    {
+        y = a * pow(xVal + b, c);
+    }
 
     return y;
 }
 
 double powerEquationConverter::convertDer(double xVal)
 {
-	double dy;
+    double dy;
 
-    if (xVal<-b) {
+    if (xVal < -b)
+    {
         dy = 0.0;
-    } else {
-        dy = a*c*pow(std::max(xVal+b, 0.0), c-1.0);
+    }
+    else
+    {
+        dy = a * c * pow(std::max(xVal + b, 0.0), c - 1.0);
     }
 
     return dy;
@@ -68,12 +72,15 @@ double powerEquationConverter::convertDer(double xVal)
 
 double powerEquationConverter::reverseConvert(double yVal)
 {
-	double x;
+    double x;
 
-    if (yVal<0.0) {
-    	x = -b;
-    } else {
-        x = pow(yVal/a, 1.0/c) - b;
+    if (yVal < 0.0)
+    {
+        x = -b;
+    }
+    else
+    {
+        x = pow(yVal / a, 1.0 / c) - b;
     }
 
     return x;
@@ -81,12 +88,15 @@ double powerEquationConverter::reverseConvert(double yVal)
 
 double powerEquationConverter::reverseConvertDer(double yVal)
 {
-	double dx;
+    double dx;
 
-    if (yVal<=0.0) {
-    	dx = 0.0;
-    } else {
-        dx = 1/a * pow(yVal/a, 1.0/c-1.0);
+    if (yVal <= 0.0)
+    {
+        dx = 0.0;
+    }
+    else
+    {
+        dx = 1 / a * pow(yVal / a, 1.0 / c - 1.0);
     }
 
     return dx;
@@ -94,6 +104,6 @@ double powerEquationConverter::reverseConvertDer(double yVal)
 
 converter* powerEquationConverter::getIntegrator()
 {
-	// TODO
+    // TODO
     return 0;
 }

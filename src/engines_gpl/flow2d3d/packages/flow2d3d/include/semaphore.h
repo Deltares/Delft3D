@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: semaphore.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/semaphore.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/semaphore.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Semaphore built on Pthreads - DEFINITIONS
@@ -34,40 +36,32 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
 #include "flow2d3d.h"
 
+class Semaphore
+{
+public:
+    Semaphore(const char* name = "<anonymous>", const int initialValue = 0, Log* log = NULL);
 
-class Semaphore {
-    public:
-        Semaphore       (
-            const char *    name = "<anonymous>",
-            const int       initialValue = 0,
-            Log *           log = NULL
-            );
+    ~Semaphore(void);
 
-        ~Semaphore (
-            void
-            );
+    void PSem(void);
+    void VSem(void);
 
-        void    PSem    (void);
-        void    VSem    (void);
-
-    private:
-
-    private:
-       enum {
-            MAXSTRING  = 1000           // max string length in bytes
-            };
-
-        char *          name;           // for identification purposes
-        int             value;          // semaphore counter
-        Log *           log;            // logging facility
-
-        int             waiting;        // number of waiting threads
-        pthread_mutex_t mutex;          // semaphore mutex
-        pthread_cond_t  syncv;          // synchronization cond var
+private:
+private:
+    enum
+    {
+        MAXSTRING = 1000 // max string length in bytes
     };
 
+    char* name; // for identification purposes
+    int value;  // semaphore counter
+    Log* log;   // logging facility
+
+    int waiting;           // number of waiting threads
+    pthread_mutex_t mutex; // semaphore mutex
+    pthread_cond_t syncv;  // synchronization cond var
+};

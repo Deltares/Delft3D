@@ -6,6 +6,12 @@ enable_testing()
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Globally disable min and max macro's defined in the windows.h header. These often lead to name clashes with 
+# std::min and std::max and only still exist for legacy reasons. Disable globally to prevent accidental use.
+if (WIN32)
+    add_compile_definitions(NOMINMAX)
+endif()
+
 message(STATUS "Configuring")
 if (UNIX)
     include(linux_scripts.cmake)
@@ -21,11 +27,14 @@ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the locat
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)
 
-
 # Set unit and integration test root directory
 set(unit_tests_dir ${dir}/test/unit_test)
 set(integration_tests_dir ${dir}/test/integration_test)
-set(nefis_tests_dir ${dir}/test/nefis_test)
+
+# Specify C++ standard for all targets, disable compiler specific extentions
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(modules.cmake)
 
@@ -38,6 +47,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Set compiler flags
 enable_language(Fortran C CXX)
 
+# DFlowFM stack size in bytes, used for OpenMP thread stack and Windows linker /STACK flag
+set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes")
+
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
@@ -47,7 +59,7 @@ else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
 include(compiler_options/compiler_warning_targets.cmake)
-include(compiler_options/automatic_conversions.cmake)
+include(compiler_options/fortran_styler.cmake)
 
 # Set available build configurations
 set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
@@ -96,14 +108,8 @@ if (WIN32)
 
     list(POP_BACK CMAKE_MESSAGE_INDENT)
 
-    if(intel_version EQUAL 23)
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.19.4/include)
-    else()
-        set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.21.3/include)
-    endif()
-
-    #also set PETSC library directory
-    set (petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
+    set(petsc_path ${checkout_src_root}/third_party_open/petsc/petsc-3.24.5/include)
+    set(petsc_libdir ${petsc_path}/../lib/x64/Release-oneAPI/)
     message(STATUS "PETSC")
     list(APPEND CMAKE_MESSAGE_INDENT "  ")
     message(STATUS "path ${petsc_path}")
@@ -172,6 +178,14 @@ if (WIN32)
     set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
 endif(WIN32)
 
+# getopt:
+#     Windows: use prebuild library in ".../getopt/x64"
+#     Linux  : compile source code  using ".../getopt/cmake_deltares/CMakeLists.txt"
+set(getopt_include_path ${checkout_src_root}/third_party_open/getopt)
+if (WIN32)
+    set(getopt_library_path_win ${checkout_src_root}/third_party_open/getopt/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
+endif(WIN32)
+
 ### Configuration names
 
 string(TOUPPER ${CONFIGURATION_TYPE} configuration_type)
@@ -206,6 +220,7 @@ set(tools_gpl_configuration "TOOLS_GPL")
 set(drr_configuration "DRR")
 set(rtc_configuration "RTC")
 set(fbc_configuration "FBC")
+set(dsle_configuration "DSLE")
 
 # Combined (multi-component) configurations for running specific testbenches
 # These are equivalent to our branch-prefixes
@@ -238,6 +253,7 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
      OR ${configuration_type} STREQUAL ${drr_configuration}
      OR ${configuration_type} STREQUAL ${rtc_configuration}
      OR ${configuration_type} STREQUAL ${fbc_configuration}
+     OR ${configuration_type} STREQUAL ${dsle_configuration}
      OR ${configuration_type} STREQUAL ${fm-suite_configuration}
      OR ${configuration_type} STREQUAL ${d3d4-suite_configuration}
      OR ${configuration_type} STREQUAL ${all_configuration}
@@ -255,6 +271,9 @@ if(NOT (${configuration_type} STREQUAL ${dflowfm_configuration}
 endif()
 
 ### Component configurations
+
+# Unit test configuration, should be findable for every configuration
+include(configurations/miscellaneous/unit_test_configuration.cmake)
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})
@@ -327,6 +346,11 @@ endif()
 if(${configuration_type} STREQUAL ${fbc_configuration})
     message(STATUS "Generating solution for FBC-tools ...")
     include(configurations/components/fbc_configuration.cmake)
+endif()
+
+if(${configuration_type} STREQUAL ${dsle_configuration})
+    message(STATUS "Generating solution for D-SLE ...")
+    include(configurations/components/dsle_configuration.cmake)
 endif()
 
 ### Composed configurations for testbenches
@@ -402,3 +426,10 @@ endif()
 if(UNIX)
     add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
 endif()
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-3.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../agpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../gpl-3.0.txt
+              ${CMAKE_CURRENT_SOURCE_DIR}/../../lgpl-2.1.txt
+              DESTINATION share)

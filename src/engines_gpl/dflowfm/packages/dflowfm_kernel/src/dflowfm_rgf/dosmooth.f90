@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -66,7 +66,9 @@ contains
 
       allocate (XH(MMAX, NMAX), YH(MMAX, NMAX))
 
-      if (NDRAW(8) == 0) call READYY('SMOOTHING GRID', 0.0_dp)
+      if (NDRAW(8) == 0) then
+         call READYY('SMOOTHING GRID', 0.0_dp)
+      end if
 !      CALL ISITU(      X,      Y,     MC,   NC,    IJC,  IJYES)!!!Oud
       ! Deze routine dosmooth wordt alleen uit editgridlineblock aangeroepen
       ! met de xc, ijyes, etc. uit m_grid. Diezelfde m_grid wordt in isitu gebruikt
@@ -258,7 +260,8 @@ contains
                         else
                            Xc(I, J) = (X41 + X42) / 2
                            Yc(I, J) = (Y41 + Y42) / 2
-                           write (msgbuf, *) 'BLOCK VORM VERLIES'; call dbg_flush()
+                           write (msgbuf, *) 'BLOCK VORM VERLIES'
+                           call dbg_flush()
                         end if
                      end if
                   end if
@@ -270,7 +273,7 @@ contains
          call PUTARR(Xc, XH, MMAX, NMAX)
          call PUTARR(Yc, YH, MMAX, NMAX)
          if (NDRAW(8) == 0) then
-            call READYY(' ', dble(K) / dble(ITSMO))
+            call READYY(' ', real(K, kind=dp) / real(ITSMO, kind=dp))
          else
             call TEKGRD(Xc, Yc, mmax, nmax, M1, N1, M2, N2, NCOLDG, NDRAW(38), -1, mc) ! key=-1 is unknown (but unused anyway)
          end if
@@ -280,7 +283,9 @@ contains
       call PUTARR(XH, Xc, MMAX, NMAX)
       call PUTARR(YH, Yc, MMAX, NMAX)
       deallocate (XH, YH)
-      if (NDRAW(8) == 0) call READYY(' ', -1.0_dp)
+      if (NDRAW(8) == 0) then
+         call READYY(' ', -1.0_dp)
+      end if
 
       return
    end subroutine dosmooth

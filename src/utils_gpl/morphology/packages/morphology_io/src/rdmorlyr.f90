@@ -1,7 +1,7 @@
 module m_rdmorlyr
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -29,6 +29,9 @@ module m_rdmorlyr
 !
 !-------------------------------------------------------------------------------
    use m_depfil_stm
+   use message_module, only: write_error, write_warning, FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
+   use MessageHandling, only: mess, LEVEL_ERROR
+
 contains
 
    subroutine rdmorlyr(lundia, error, filmor, &
@@ -46,7 +49,6 @@ contains
       use table_handles
       use morphology_data_module
       use grid_dimens_module, only: griddimtype
-      use message_module, only: write_error
       use dfparall, only: parll
       !
       implicit none
@@ -83,15 +85,29 @@ contains
       integer :: nval
       character(11) :: fmttmp !< Format file ('formatted  ')
       character(20) :: parname
+      character(45) :: txtput1
       character(20) :: txtput2
-      character(40) :: txtput1
       character(80) :: bndname
       character(256) :: errmsg
-      character(256) :: fildiff
+      character(:), allocatable :: filename
       logical :: ex
       logical :: found
+      logical :: is_float
       type(tree_data), pointer :: morbound_ptr
       character(MAXTABLECLENGTH), dimension(:), allocatable :: parnames
+      !
+      ! HANNEKE: morlyr settings
+      !
+      logical, pointer :: crslyr
+      real(fp), pointer :: a_max
+      real(fp), pointer :: sinkfrac_max
+      real(fp), pointer :: asfm
+      real(fp), pointer :: bsfm
+      real(fp), pointer :: sigma_sfm
+      integer, pointer :: imobility
+      integer, pointer :: isedcrs2tr
+      integer, pointer :: ihidexptrcrs
+      real(fp), dimension(:), pointer :: thclyr
       !
       logical, pointer :: exchlyr
       logical, pointer :: track_shortage
@@ -113,11 +129,12 @@ contains
       integer, pointer :: nlalyr
       integer, pointer :: updbaselyr
       type(cmpbndtype), dimension(:), pointer :: cmpbnd
-      real(fp), parameter :: EPS=0.000000001_fp !used is `comparereal`
+      real(fp), parameter :: EPS = 0.000000001_fp !used is `comparereal`
 !
 !! executable statements -------------------------------------------------------
 !
       istat = bedcomp_getpointer_integer(morlyr, 'IUnderLyr', iunderlyr)
+      if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'CrsLyr', crslyr)
       if (istat == 0) istat = bedcomp_getpointer_logical(morlyr, 'ExchLyr', exchlyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NLaLyr', nlalyr)
       if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'NEuLyr', neulyr)
@@ -202,6 +219,26 @@ contains
       !
       select case (iunderlyr)
       case (2)
+         !
+         ! flag for coarse layer
+         !
+         call prop_get(mor_ptr, 'Underlayer', 'CrsLyr', crslyr)
+         txtput1 = 'Coarse layer'
+         if (crslyr) then
+            txtput2 = '                 YES'
+         else
+            txtput2 = '                  NO'
+         end if
+         write (lundia, '(3a)') txtput1, ':', txtput2
+         !
+         if (crslyr) then
+            if (.not. lfbedfrm) then
+               errmsg = 'Coarse layer functionality requires bed forms to be activated'
+               call write_error(errmsg, unit=lundia)
+               error = .true.
+               return
+            end if
+         end if
          !
          ! flag for exchange layer
          !
@@ -402,16 +439,9 @@ contains
             !
             ! Diffusion coefficient
             !
-            associate(kdiff=>morlyr%settings%kdiff)
-               !
-               fildiff = ''
-               call prop_get(mor_ptr, 'Underlayer', 'Diffusion', fildiff)
-               !
-               ! Intel 7.0 crashes on an inquire statement when file = ' '
-               !
-               if (fildiff == ' ') fildiff = 'dummyname'
-               inquire (file=fildiff, exist=ex)
-               if (.not. ex) then
+            associate (kdiff => morlyr%settings%kdiff)
+               call prop_get(mor_ptr, 'Underlayer', 'Diffusion', filmor, is_float, temp, filename)
+               if (is_float) then
                   txtput1 = 'Constant diffusion coefficient'
                   temp = 0.0_fp
                   call prop_get(mor_ptr, 'Underlayer', 'Diffusion', temp)
@@ -419,12 +449,19 @@ contains
                   zdiff = 0.0_fp
                   write (lundia, '(2a,e20.4)') txtput1, ':', temp
                else
-                  txtput1 = 'Diffusion coefficient from file'
-                  write (lundia, '(3a)') txtput1, ':', trim(fildiff)
-                  !
-                  call rdinidiff(lundia, fildiff, ndiff, kdiff, &
-                               & zdiff, griddim, error)
-                  if (error) return
+                  inquire (file=filename, exist=ex)
+                  if (ex) then
+                     txtput1 = 'Diffusion coefficient from file'
+                     write (lundia, '(3a)') txtput1, ':', filename
+                     !
+                     call rdinidiff(lundia, filename, ndiff, kdiff, &
+                                  & zdiff, griddim, error)
+                     if (error) return
+                  else
+                     call write_error('Diffusion file '//filename//' does not exist', unit=lundia)
+                     error = .true.
+                     return
+                  end if
                end if
             end associate !kdiff
          end if
@@ -433,7 +470,7 @@ contains
          !
          !
          txtput1 = 'Thickness transport layer'
-         associate(ttlform=>morpar%ttlform)
+         associate (ttlform => morpar%ttlform)
             call prop_get(mor_ptr, 'Underlayer', 'TTLForm', ttlform)
             select case (ttlform)
             case (1)
@@ -441,43 +478,37 @@ contains
                ! Transport layer thickness constant in time:
                ! uniform or spatially varying thickness
                !
-               associate (thtrlyr=>morlyr%settings%thtrlyr, ttlfil=>morpar%ttlfil)
-                  ttlfil = ''
-                  call prop_get(mor_ptr, 'Underlayer', 'ThTrLyr', ttlfil)
-                  !
-                  ! Intel 7.0 crashes on an inquire statement when file = ' '
-                  !
-                  if (ttlfil == ' ') ttlfil = 'dummyname'
-                  inquire (file=ttlfil, exist=ex)
-                  !
-                  if (ex) then
+               associate (thtrlyr => morlyr%settings%thtrlyr, ttlfil => morpar%ttlfil)
+                  call prop_get(mor_ptr, 'Underlayer', 'ThTrLyr', filmor, is_float, thtrlyr(1), filename)
+                  if (is_float) then
+                     write (lundia, '(2a,e20.4)') txtput1, ':', thtrlyr(1)
                      !
-                     ! read data from file
-                     !
-                     write (lundia, '(3a)') txtput1, ':', ttlfil
-                     !
-                     call depfil_stm(lundia, error, ttlfil, fmttmp, &
-                                   & thtrlyr, 1, 1, griddim, errmsg)
-                     if (error) then
-                        call write_error(errmsg, unit=lundia)
-                        errmsg = 'Unable to read transport layer thickness from '//trim(ttlfil)
-                        call write_error(errmsg, unit=lundia)
-                        return
-                     end if
-                  else
-                     ttlfil = ' '
-                     call prop_get(mor_ptr, 'Underlayer', 'ThTrLyr', thtrlyr(1))
-                     if (thtrlyr(1) <= 0) then
-                        errmsg = 'ThTrLyr should be positive in '//trim(filmor)
-                        call write_error(errmsg, unit=lundia)
+                     if (thtrlyr(1) <= 0.0_fp) then
+                        call write_error('ThTrLyr should be positive in '//trim(filmor), unit=lundia)
                         error = .true.
                         return
                      end if
                      do it = nmlb, nmub
                         thtrlyr(it) = thtrlyr(1)
                      end do
-                     !
-                     write (lundia, '(2a,e20.4)') txtput1, ':', thtrlyr(1)
+                  else
+                     inquire (file=filename, exist=ex)
+                     if (ex) then
+                        write (lundia, '(3a)') txtput1, ':', filename
+                        ttlfil = filename
+                        !
+                        call depfil_stm(lundia, error, filename, fmttmp, &
+                                      & thtrlyr, 1, 1, griddim, errmsg)
+                        if (error) then
+                           call write_error(errmsg, unit=lundia)
+                           call write_error('Unable to read transport layer thickness from '//filename, unit=lundia)
+                           return
+                        end if
+                     else
+                        call write_error('Transport layer thickness file '//filename//' does not exist', unit=lundia)
+                        error = .true.
+                        return
+                     end if
                   end if
                end associate !thtrlyr, ttlfil
             case (2, 3)
@@ -485,7 +516,7 @@ contains
                ! Transport layer thickness proportional to
                ! the water depth (2) or dune height (3)
                !
-               associate(ttlalpha=>morpar%ttlalpha,ttlmin=>morpar%ttlmin)
+               associate (ttlalpha => morpar%ttlalpha, ttlmin => morpar%ttlmin)
                   call prop_get(mor_ptr, 'Underlayer', 'TTLAlpha', ttlalpha)
                   call prop_get(mor_ptr, 'Underlayer', 'TTLMin', ttlmin)
                   !
@@ -514,7 +545,7 @@ contains
          end associate !ttlform
          !
          if (exchlyr) then
-            associate(thexlyr=>morlyr%settings%thexlyr , telfil=>morpar%telfil, telform=>morpar%telform) 
+            associate (thexlyr => morlyr%settings%thexlyr, telfil => morpar%telfil, telform => morpar%telform)
                txtput1 = 'Thickness exchange layer'
                call prop_get(mor_ptr, 'Underlayer', 'TELForm', telform)
                select case (telform)
@@ -523,31 +554,11 @@ contains
                   ! Exchange layer thickness constant in time:
                   ! uniform or spatially varying thickness
                   !
-                  telfil = ''
-                  call prop_get(mor_ptr, 'Underlayer', 'ThExLyr', telfil)
-                  !
-                  ! Intel 7.0 crashes on an inquire statement when file = ' '
-                  !
-                  if (telfil == ' ') telfil = 'dummyname'
-                  inquire (file=telfil, exist=ex)
-                  !
-                  if (ex) then
-                     write (lundia, '(3a)') txtput1, ':', telfil
+                  call prop_get(mor_ptr, 'Underlayer', 'ThExLyr', filmor, is_float, thexlyr(1), filename)
+                  if (is_float) then
+                     write (lundia, '(2a,e20.4)') txtput1, ':', thexlyr(1)
                      !
-                     ! read data from file
-                     !
-                     call depfil_stm(lundia, error, telfil, fmttmp, &
-                                   & thexlyr, 1, 1, griddim, errmsg)
-                     if (error) then
-                        call write_error(errmsg, unit=lundia)
-                        errmsg = 'Unable to read exchange layer thickness from '//trim(telfil)
-                        call write_error(errmsg, unit=lundia)
-                        return
-                     end if
-                  else
-                     telfil = ' '
-                     call prop_get(mor_ptr, 'Underlayer', 'ThExLyr', thexlyr(1))
-                     if (thexlyr(1) <= 0) then
+                     if (thexlyr(1) <= 0.0_fp) then
                         errmsg = 'ThExLyr should be positive in '//trim(filmor)
                         call write_error(errmsg, unit=lundia)
                         error = .true.
@@ -556,8 +567,24 @@ contains
                      do it = nmlb, nmub
                         thexlyr(it) = thexlyr(1)
                      end do
-                     !
-                     write (lundia, '(2a,e20.4)') txtput1, ':', thexlyr(1)
+                  else
+                     inquire (file=filename, exist=ex)
+                     if (ex) then
+                        write (lundia, '(3a)') txtput1, ':', filename
+                        telfil = filename
+                        !
+                        call depfil_stm(lundia, error, filename, fmttmp, &
+                                      & thexlyr, 1, 1, griddim, errmsg)
+                        if (error) then
+                           call write_error(errmsg, unit=lundia)
+                           call write_error('Unable to read exchange layer thickness from '//trim(filename), unit=lundia)
+                           return
+                        end if
+                     else
+                        call write_error('Exchange layer thickness file '//filename//' does not exist', unit=lundia)
+                        error = .true.
+                        return
+                     end if
                   end if
                case default
                   errmsg = 'Invalid exchange layer thickness option specified in '//trim(filmor)
@@ -568,71 +595,174 @@ contains
             end associate !thexlyr, telfil, telform
          end if
          !
+         ! HANNEKE
+         !
+         istat = bedcomp_getpointer_integer(morlyr, 'ISedCrs2Tr', isedcrs2tr)
+         if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IHidExpTrCrs', ihidexptrcrs)
+         if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'IMobility', imobility)
+         if (istat /= 0) then
+            errmsg = 'Memory problem in RDMORLYR'
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         end if
+         !
+         call prop_get(mor_ptr, 'Underlayer', 'ISedCrs2Tr', isedcrs2tr)
+         call prop_get(mor_ptr, 'Underlayer', 'IHidExpTrCrs', ihidexptrcrs)
+         call prop_get(mor_ptr, 'Underlayer', 'IMobility', imobility)
+         !
+         write (lundia, '(a,i2)') 'ISedCrs2Tr: ', isedcrs2tr
+         write (lundia, '(a,i2)') 'IHidExpTrCrs:', ihidexptrcrs
+         write (lundia, '(a,i2)') 'IMobility:', imobility
+         !
+         txtput1 = 'Mobility model for vertical sorting'
+         select case (imobility)
+         case (0)
+            txtput2 = ' not used'
+         case (1)
+            txtput2 = ' Critical bed shear stress based on Shields curve and discrete mobility'
+         case (2)
+            txtput2 = ' Critical bed shear stress based on Shields curve and continuous mobility'
+         case (3)
+            txtput2 = ' Wilcock and McArdell (1997)'
+         case (4)
+            txtput2 = ' Critical bed shear stress based considering hiding and discrete mobility'
+         case default
+            txtput2 = ' not used'
+            errmsg = 'Unknown [UnderLayer] IMobility specified in .mor file'
+            write (lundia, '(3a)') txtput1, ':', txtput2
+            call write_error(errmsg, unit=lundia)
+            error = .true.
+            return
+         end select
+         write (lundia, '(3a)') txtput1, ':', txtput2
+         if (crslyr) then
+            associate (telfil => morpar%telfil)
+               istat = bedcomp_getpointer_realfp(morlyr, 'A_max', a_max)
+               if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'SinkFrac_max', sinkfrac_max)
+               if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'asfm', asfm)
+               if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'bsfm', bsfm)
+               if (istat == 0) istat = bedcomp_getpointer_realfp(morlyr, 'sigma_sfm', sigma_sfm)
+               if (istat /= 0) then
+                  errmsg = 'Memory problem in RDMORLYR'
+                  call write_error(errmsg, unit=lundia)
+                  error = .true.
+                  return
+               end if
+               call prop_get(mor_ptr, 'Underlayer', 'Amax', a_max)
+               call prop_get(mor_ptr, 'Underlayer', 'SinkFracMax', sinkfrac_max)
+               !
+               call prop_get(mor_ptr, 'Underlayer', 'Asfm', asfm)
+               call prop_get(mor_ptr, 'Underlayer', 'Bsfm', bsfm)
+               call prop_get(mor_ptr, 'Underlayer', 'Sigsfm', sigma_sfm)
+               !
+               istat = bedcomp_getpointer_realfp(morlyr, 'ThCLyr', thclyr)
+               if (istat /= 0) then
+                  errmsg = 'Memory problem in RDMORLYR'
+                  call write_error(errmsg, unit=lundia)
+                  error = .true.
+                  return
+               end if
+               !
+               ! Coarse layer thickness constant in time:
+               ! uniform or spatially varying thickness
+               !
+               txtput1 = 'Thickness coarse layer'
+               telfil = ''
+               call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', telfil)
+               !
+               ! Intel 7.0 crashes on an inquire statement when file = ' '
+               !
+               if (telfil == ' ') telfil = 'dummyname'
+               inquire (file=telfil, exist=ex)
+               !
+               if (ex) then
+                  write (lundia, '(3a)') txtput1, ':', telfil
+                  !
+                  ! read data from file
+                  !
+                  call depfil(lundia, error, telfil, fmttmp, &
+                            & thclyr, 1, 1, griddim)
+                  if (error) then
+                     errmsg = 'Unable to read transport layer thickness from '//trim(telfil)
+                     call write_error(errmsg, unit=lundia)
+                     return
+                  end if
+               else
+                  telfil = ' '
+                  call prop_get(mor_ptr, 'Underlayer', 'ThCLyr', thclyr(1))
+                  if (thclyr(1) <= 0) then
+                     errmsg = 'ThCLyr should be positive in '//trim(filmor)
+                     call write_error(errmsg, unit=lundia)
+                     error = .true.
+                     return
+                  end if
+                  thclyr(:) = thclyr(1)
+                  !
+                  write (lundia, '(2a,e20.4)') txtput1, ':', thclyr(1)
+               end if
+            end associate !telfil
+         end if
+         !
+         !
          ! Active-layer diffusion
          !
-         associate (aldiff=>morlyr%settings%aldiff, aldifffil=>morpar%aldifffil)
-            select case(active_layer_diffusion)                
+         associate (aldiff => morlyr%settings%aldiff, aldifffil => morpar%aldifffil)
+            select case (active_layer_diffusion)
             case (0)
                !
-               !NO diffusion in active-layer model    
+               !NO diffusion in active-layer model
                !
                txtput1 = 'Diffusion in active-layer model'
-               write (lundia, '(3a)') txtput1, ':', '                  NO'   
-               morpar%moroutput%aldiff=.false. !if you request the output but there is no diffusion, we do no write it. 
-            case(1)
+               write (lundia, '(3a)') txtput1, ':', '                  NO'
+               morpar%moroutput%aldiff = .false. !if you request the output but there is no diffusion, we do no write it.
+            case (1)
                !
-               !YES diffusion in active-layer mode    
+               !YES diffusion in active-layer mode
                !
                txtput1 = 'Diffusion in active-layer model'
                write (lundia, '(3a)') txtput1, ':', '                 YES'
                !
                ! constant value or xy-val file (use of flag `ALDiff`)
                !
-               !
-               !check if file or value
-               aldifffil = ''
-               call prop_get(mor_ptr, 'Underlayer', 'ALDiff', aldifffil)
-               if (aldifffil == ' ') aldifffil = 'dummyname'
-               inquire (file=aldifffil, exist=ex)
-               
-               if (ex) then
-                  !
-                  ! read data from file
-                  !
-                  txtput1 = 'Active-layer diffusion from file'
-                  write (lundia, '(3a)') txtput1, ':', aldifffil
-                  !
-                  call depfil_stm(lundia, error, aldifffil, fmttmp, &
-                                & ALDiff, 1, 1, griddim, errmsg)
-                  if (error) then
-                     call write_error(errmsg, unit=lundia)
-                     errmsg = 'Unable to read active-layer diffusion from file'//trim(aldifffil)
-                     call write_error(errmsg, unit=lundia)
-                     return
-                  end if
-               else
-                  !
-                  ! constant value
-                  !
-                  ALDiff(1)=rmissval
-                  call prop_get(mor_ptr, 'Underlayer', 'ALDiff', ALDiff(1))
-                  if (comparereal(ALDiff(1), rmissval, EPS) == 0) then
-                     errmsg = 'File in ALDiff '//trim(aldifffil)// ' not found in '//trim(filmor)
+               aldiff(1) = rmissval
+               call prop_get(mor_ptr, 'Underlayer', 'ALDiff', filmor, is_float, aldiff(1), filename)
+               if (is_float) then
+                  if (comparereal(aldiff(1), rmissval, EPS) == 0) then
+                     errmsg = 'File in ALDiff '//filename//' not found in '//trim(filmor)
                      call write_error(errmsg, unit=lundia)
                      error = .true.
                      return
-                  elseif (ALDiff(1) <= 0) then
-                     errmsg = 'ALDiff should be positive in '//trim(filmor)
-                     call write_error(errmsg, unit=lundia)
+                  elseif (aldiff(1) <= 0.0_fp) then
+                     call write_error('ALDiff should be positive in '//trim(filmor), unit=lundia)
                      error = .true.
                      return
                   end if
                   do it = nmlb, nmub
-                     ALDiff(it) = ALDiff(1)
+                     aldiff(it) = aldiff(1)
                   end do
                   !
                   txtput1 = 'Constant active-layer diffusion'
-                  write (lundia, '(2a,e20.4)') txtput1, ':', ALDiff(1)
+                  write (lundia, '(2a,e20.4)') txtput1, ':', aldiff(1)
+               else
+                  inquire (file=filename, exist=ex)
+                  if (ex) then
+                     txtput1 = 'Active-layer diffusion from file'
+                     write (lundia, '(3a)') txtput1, ':', filename
+                     aldifffil = filename
+                     !
+                     call depfil_stm(lundia, error, filename, fmttmp, &
+                                   & ALDiff, 1, 1, griddim, errmsg)
+                     if (error) then
+                        call write_error(errmsg, unit=lundia)
+                        call write_error('Unable to read active-layer diffusion from file '//filename, unit=lundia)
+                        return
+                     end if
+                  else
+                     call write_error('Active-layer diffusion file '//filename//' does not exist', unit=lundia)
+                     error = .true.
+                     return
+                  end if
                end if
             case default
                !
@@ -642,7 +772,7 @@ contains
                call write_error(errmsg, unit=lundia)
                error = .true.
                return
-            endselect !active_layer_diffusion   
+            end select !active_layer_diffusion
          end associate !aldiff
       case default
       end select !iunderlyr
@@ -718,105 +848,105 @@ contains
          ! Check boundary conditions
          !
          if (parname /= ' ') then
-            associate(bcmfile=>morpar%bcmfile,bcmfilnam=>morpar%bcmfilnam)    
-            if (bcmfilnam /= ' ') then
-               !
-               ! Find entries in table
-               !
-               call gettable(bcmfile, nambnd(j), trim(parname), &
-                               & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
-                           & cmpbnd(j)%ibcmt(3), 1, errmsg)
-               if (errmsg /= ' ') then
-                  call write_error(errmsg, unit=lundia)
-                  error = .true.
-                  return
-               end if
-               cmpbnd(j)%ibcmt(4) = 1
-               txtput1 = '  Variation along boundary'
-               !
-               ! Check entries in table
-               !
-               if (cmpbnd(j)%ibcmt(3) == nval) then
+            associate (bcmfile => morpar%bcmfile, bcmfilnam => morpar%bcmfilnam)
+               if (bcmfilnam /= ' ') then
                   !
-                  ! Uniform values
+                  ! Find entries in table
                   !
-                  txtput2 = '             uniform'
-                  write (lundia, '(3a)') txtput1, ':', txtput2
-                  i = 0
-                  do l = 1, lsedtot
-                     i = i + 1
-                     parnames(i) = trim(parname)//' '//trim(namsed(l))
-                  end do
-                  !
-                  call checktableparnames(bcmfile, parnames, &
-                                            & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
-                                        & cmpbnd(j)%ibcmt(3), errmsg)
+                  call gettable(bcmfile, nambnd(j), trim(parname), &
+                                  & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
+                              & cmpbnd(j)%ibcmt(3), 1, errmsg)
                   if (errmsg /= ' ') then
                      call write_error(errmsg, unit=lundia)
                      error = .true.
                      return
                   end if
-                  call checktable(bcmfile, &
-                                    & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
-                                & cmpbnd(j)%ibcmt(3), CHKTAB_POSITIVE, errmsg)
-                  if (errmsg /= ' ') then
-                     call write_error(errmsg, unit=lundia)
-                     error = .true.
-                     return
-                  end if
-               elseif (cmpbnd(j)%ibcmt(3) == nval * 2) then
+                  cmpbnd(j)%ibcmt(4) = 1
+                  txtput1 = '  Variation along boundary'
                   !
-                  ! Values at "end A" and "end B"
+                  ! Check entries in table
                   !
-                  txtput2 = '              linear'
-                  write (lundia, '(3a)') txtput1, ':', txtput2
-                  i = 0
-                  do l = 1, lsedtot
-                     i = i + 1
-                     parnames(i) = trim(parname)//' '//trim(namsed(l))//' end A'
-                     parnames(nval + i) = trim(parname)//' '//trim(namsed(l))//' end B'
-                  end do
-                  !
-                  call checktableparnames(bcmfile, parnames, &
-                                            & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
-                                        & cmpbnd(j)%ibcmt(3), errmsg)
-                  if (errmsg /= ' ') then
-                     call write_error(errmsg, unit=lundia)
-                     error = .true.
-                     return
-                  end if
-                  call checktable(bcmfile, &
-                                    & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
-                                & cmpbnd(j)%ibcmt(3), CHKTAB_POSITIVE, errmsg)
-                  if (errmsg /= ' ') then
+                  if (cmpbnd(j)%ibcmt(3) == nval) then
+                     !
+                     ! Uniform values
+                     !
+                     txtput2 = '             uniform'
+                     write (lundia, '(3a)') txtput1, ':', txtput2
+                     i = 0
+                     do l = 1, lsedtot
+                        i = i + 1
+                        parnames(i) = trim(parname)//' '//trim(namsed(l))
+                     end do
+                     !
+                     call checktableparnames(bcmfile, parnames, &
+                                               & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
+                                           & cmpbnd(j)%ibcmt(3), errmsg)
+                     if (errmsg /= ' ') then
+                        call write_error(errmsg, unit=lundia)
+                        error = .true.
+                        return
+                     end if
+                     call checktable(bcmfile, &
+                                       & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
+                                   & cmpbnd(j)%ibcmt(3), CHKTAB_POSITIVE, errmsg)
+                     if (errmsg /= ' ') then
+                        call write_error(errmsg, unit=lundia)
+                        error = .true.
+                        return
+                     end if
+                  elseif (cmpbnd(j)%ibcmt(3) == nval * 2) then
+                     !
+                     ! Values at "end A" and "end B"
+                     !
+                     txtput2 = '              linear'
+                     write (lundia, '(3a)') txtput1, ':', txtput2
+                     i = 0
+                     do l = 1, lsedtot
+                        i = i + 1
+                        parnames(i) = trim(parname)//' '//trim(namsed(l))//' end A'
+                        parnames(nval + i) = trim(parname)//' '//trim(namsed(l))//' end B'
+                     end do
+                     !
+                     call checktableparnames(bcmfile, parnames, &
+                                               & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
+                                           & cmpbnd(j)%ibcmt(3), errmsg)
+                     if (errmsg /= ' ') then
+                        call write_error(errmsg, unit=lundia)
+                        error = .true.
+                        return
+                     end if
+                     call checktable(bcmfile, &
+                                       & cmpbnd(j)%ibcmt(1), cmpbnd(j)%ibcmt(2), &
+                                   & cmpbnd(j)%ibcmt(3), CHKTAB_POSITIVE, errmsg)
+                     if (errmsg /= ' ') then
+                        call write_error(errmsg, unit=lundia)
+                        error = .true.
+                        return
+                     end if
+                  else
+                     !
+                     ! Invalid number of values specified
+                     !
+                     errmsg = 'Invalid number of parameters specified for '''// &
+                            & trim(parname)//''' at '''//nambnd(j)//''' in '// &
+                            & trim(bcmfilnam)
                      call write_error(errmsg, unit=lundia)
                      error = .true.
                      return
                   end if
                else
-                  !
-                  ! Invalid number of values specified
-                  !
-                  errmsg = 'Invalid number of parameters specified for '''// &
-                         & trim(parname)//''' at '''//nambnd(j)//''' in '// &
-                         & trim(bcmfilnam)
+                  errmsg = 'Missing input file for morphological boundary conditions'
                   call write_error(errmsg, unit=lundia)
                   error = .true.
                   return
                end if
-            else
-               errmsg = 'Missing input file for morphological boundary conditions'
-               call write_error(errmsg, unit=lundia)
-               error = .true.
-               return
-            end if
             end associate !bcmfile
          end if
       end do
       !
       ! Initial Bed Composition (Overrules)
       !
-      associate(flcomp=>morpar%flcomp)
+      associate (flcomp => morpar%flcomp)
          flcomp = ''
          call prop_get(mor_ptr, 'Underlayer', 'IniComp', flcomp)
          !
@@ -878,7 +1008,6 @@ contains
 !!--declarations----------------------------------------------------------------
       use precision
       use properties
-      use message_module
       use grid_dimens_module, only: griddimtype
       !
       implicit none
@@ -899,12 +1028,13 @@ contains
       integer :: ilyr
       integer :: istat
       logical :: ex
+      logical :: is_float
       real(fp) :: rmissval
       real(fp) :: temp
       character(10) :: versionstring
       character(80) :: parname
       character(11) :: fmttmp ! Format file ('formatted  ')
-      character(256) :: filename
+      character(:), allocatable :: filename
       character(300) :: message
       type(tree_data), pointer :: mor_ptr
       type(tree_data), pointer :: layer_ptr
@@ -962,18 +1092,9 @@ contains
                return
             end if
             filename = ' '
-            call prop_get(layer_ptr, '*', 'Kdiff', filename)
-            !
-            ! Intel 7.0 crashes on an inquire statement when file = ' '
-            !
-            if (filename == ' ') filename = 'dummyname'
-            inquire (file=filename, exist=ex)
-            if (.not. ex) then
-               !
-               ! Constant diffusion
-               !
-               temp = rmissval
-               call prop_get(layer_ptr, '*', 'Kdiff', temp)
+            temp = rmissval
+            call prop_get(layer_ptr, '*', 'Kdiff', fildiff, is_float, temp, filename)
+            if (is_float) then
                if (comparereal(temp, rmissval) == 0) then
                   write (message, '(a,i2,a,a)')  &
                       & 'Missing KDIFF keyword for level ', ilyr, ' in file ', trim(fildiff)
@@ -983,18 +1104,22 @@ contains
                end if
                kdiff(ilyr, :) = temp
             else
-               !
-               ! Spatially varying diffusion coefficient
-               !
-               call depfil_stm(lundia, error, filename, fmttmp, &
-                             & kdiff(ilyr, griddim%nmlb), 1, 1, griddim, message)
-               if (error) then
-                  call write_error(message, unit=lundia)
-                  message = 'Unable to read diffusion coefficients from '//trim(filename)
-                  call write_error(message, unit=lundia)
+               inquire (file=filename, exist=ex)
+               if (ex) then
+                  call depfil_stm(lundia, error, filename, fmttmp, &
+                                & kdiff(ilyr, griddim%nmlb), 1, 1, griddim, message)
+                  if (error) then
+                     call write_error(message, unit=lundia)
+                     call write_error('Unable to read diffusion coefficients from '//filename, unit=lundia)
+                     return
+                  end if
+               else
+                  call write_error('Diffusion coefficients file '//filename//' does not exist', unit=lundia)
+                  error = .true.
                   return
                end if
             end if
+            !
             temp = rmissval
             call prop_get(layer_ptr, '*', 'Zdiff', temp)
             if (comparereal(temp, rmissval) == 0) then
@@ -1049,8 +1174,6 @@ contains
       use properties
       use string_module, only: remove_leading_spaces
       use grid_dimens_module, only: griddimtype
-      use message_module, only: FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
-      use MessageHandling, only: mess, LEVEL_ERROR
       use morphology_data_module, only: sedpar_type, morpar_type
       use m_depfil_stm
       !
@@ -1099,13 +1222,14 @@ contains
       logical :: anysedbed
       logical :: err2
       logical :: ex
+      logical :: is_float
       logical :: success
       character(10) :: lstr
       character(10) :: versionstring
       character(11) :: fmttmp ! Format file ('formatted  ')
       character(80) :: parname
       character(80) :: layertype
-      character(256) :: filename
+      character(:), allocatable :: filename
       character(300) :: message
       type(tree_data), pointer :: mor_ptr
       type(tree_data), pointer :: layer_ptr
@@ -1127,6 +1251,8 @@ contains
       real(fp), dimension(:), pointer :: mfluni
       character(20), dimension(:), pointer :: namsed
       character(256), dimension(:), pointer :: mflfil
+      character(45) :: txtput1
+      character(100) :: txtput3
 !
 !! executable statements -------------------------------------------------------
 !
@@ -1148,6 +1274,7 @@ contains
       ! Fluff layer
       !
       if (morpar%flufflyr%iflufflyr > 0 .and. .not. rst_fluff) then
+         write (lundia, '(a)') '*** Reading fluff layer input'
          !
          ! If not restart then initialize using values specified in input file
          !
@@ -1159,24 +1286,34 @@ contains
          !
          do ised = 1, lsed
             if (sedpar%sedtyp(ised) > sedpar%max_mud_sedtyp) cycle ! check for IFORM == -3 instead?
-            inquire (file=mflfil(ised), exist=ex)
-            if (ex) then
-               call depfil_stm(lundia, error, mflfil(ised), &
-                             & fmttmp, mfluff, lsed, ised, &
-                             & dims, message)
-               if (error) then
-                  call mess(LEVEL_ERROR, message)
-                  return
+            ! combinepaths already called in rdmor
+            if (mfluni(ised) < 0.0_fp) then ! -999 flags filename specified
+               inquire (file=mflfil(ised), exist=ex)
+               if (ex) then
+                  write (lundia, '(a,i0,a)') '   Fraction: ', ised, ' File: '//trim(mflfil(ised))
+                  call depfil_stm(lundia, error, mflfil(ised), &
+                                & fmttmp, mfluff, lsed, ised, &
+                                & dims, message)
+                  if (error) then
+                     call mess(LEVEL_ERROR, message)
+                     return
+                  end if
+               else
+                  call write_error('Fluff mass file '//trim(mflfil(ised))//' does not exist', unit=lundia)
                end if
             else
+               write (lundia, '(a,i0,a,f0.3,a)') '   Fraction: ', ised, ' : ', mfluni(ised), trim(inisedunit(ised))
                mfluff(ised, :) = mfluni(ised)
             end if
          end do
+         write (lundia, '(a)') '*** End of fluff layer input'
+         write (lundia, *)
       end if
       !
       ! Bed layers
       !
       if (.not. rst_bedcmp) then
+         write (lundia, '(a,a)') '*** Reading bed layer input from ', trim(flcomp)
          istat = bedcomp_getpointer_integer(morlyr, 'iunderlyr', iunderlyr)
          if (istat == 0) istat = bedcomp_getpointer_integer(morlyr, 'nlyr', nlyr)
          if (istat == 0) istat = bedcomp_getpointer_realprec(morlyr, 'bodsed', bodsed)
@@ -1196,12 +1333,14 @@ contains
             !
             ! If not restart and no layer administration, then use the bed composition specified in the sed file.
             !
+            write (lundia, '(a)') 'Source: .sed file'
             error = .false.
             do ised = 1, lsedtot
                if (flsdbd(ised) == ' ') then
                   !
                   ! Uniform data has been specified
                   !
+                  write (lundia, '(a,i0,a,f0.3,a)') '   Fraction ', ised, ' : ', real(sdbuni(ised), prec), trim(inisedunit(ised))
                   do nm = 1, nmmax
                      bodsed(ised, nm) = real(sdbuni(ised), prec)
                   end do
@@ -1210,6 +1349,7 @@ contains
                   ! Space varying data has been specified
                   ! Use routine that also read the depth file to read the data
                   !
+                  write (lundia, '(a,i0,a,a,a)') '   Fraction ', ised, ' : ', trim(flsdbd(ised)), ' in '//trim(inisedunit(ised))
                   call depfil_stm_double(lundia, error, flsdbd(ised), &
                                        & fmttmp, bodsed, lsedtot, &
                                        & ised, dims, message)
@@ -1404,6 +1544,7 @@ contains
                   ! Increment ilyr, but do not exceed nlyr
                   !
                   ilyr = min(nlyr, ilyr + 1)
+                  write (lundia, '(a,i0)') 'Layer ', ilyr
                   !
                   ! Initialize/reset the temporary array
                   !
@@ -1415,6 +1556,9 @@ contains
                   layertype = ' '
                   call prop_get(layer_ptr, '*', 'Type', layertype)
                   call small(layertype, len(layertype))
+                  txtput1 = '  '//'Type'
+                  txtput3 = trim(layertype)
+                  write (lundia, '(3a)') txtput1, ':', txtput3
                   if (layertype == ' ') then
                      !
                      ! no Type field found
@@ -1430,28 +1574,15 @@ contains
                      ! mass or volume fraction and layer thickness specified
                      !
                      parname = 'Thick'
+                     sedbed = rmissval
                      filename = ' '
-                     call prop_get(layer_ptr, '*', parname, filename)
-                     !
-                     ! Intel 7.0 crashes on an inquire statement when file = ' '
-                     !
-                     if (filename == ' ') filename = 'dummyname'
-                     inquire (file=filename, exist=ex)
-                     if (.not. ex) then
-                        !
-                        ! Constant thickness
-                        !
-                        sedbed = rmissval
-                        success = .true.
-                        call prop_get(layer_ptr, '*', parname, sedbed, success, valuesfirst=.true.)
-                        if (.not. success) then
-                           if (filename == 'dummyname') then ! string was empty or key not found
-                              write (message, '(a,i2,2a)')  &
-                                 & 'No value assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
-                           else
-                              write (message, '(3a,i2,2a)')  &
-                                 & 'Invalid file or value "', trim(filename), '" assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
-                           end if
+                     call prop_get(layer_ptr, '*', parname, flcomp, is_float, sedbed, filename)
+                     if (is_float) then
+                        txtput1 = '  '//trim(parname)
+                        write (lundia, '(2a,f0.3)') txtput1, ': ', sedbed
+                        if (comparereal(sedbed, rmissval) == 0) then ! string was empty or key not found
+                           write (message, '(a,i2,2a)')  &
+                              & 'No value assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
                            call mess(LEVEL_ERROR, message)
                            error = .true.
                            return
@@ -1460,17 +1591,26 @@ contains
                            thtemp(nm) = sedbed
                         end do
                      else
-                        !
-                        ! Spatially varying thickness
-                        !
-                        call depfil_stm(lundia, error, filename, fmttmp, &
-                                      & thtemp, 1, 1, dims, message)
-                        if (error) then
-                           call mess(LEVEL_ERROR, message)
+                        inquire (file=filename, exist=ex)
+                        if (ex) then
+                           txtput1 = '  '//trim(parname)
+                           txtput3 = trim(filename)
+                           write (lundia, '(3a)') txtput1, ':', txtput3
+                           call depfil_stm(lundia, error, filename, fmttmp, &
+                                         & thtemp, 1, 1, dims, message)
+                           if (error) then
+                              call mess(LEVEL_ERROR, message)
+                              write (message, '(3a,i2,2a)')  &
+                                  & 'Error reading thickness from ', trim(filename), &
+                                  & ' for layer ', ilyr, ' in file ', trim(flcomp)
+                              call mess(LEVEL_ERROR, message)
+                              return
+                           end if
+                        else
                            write (message, '(3a,i2,2a)')  &
-                               & 'Error reading thickness from ', trim(filename), &
-                               & ' for layer ', ilyr, ' in file ', trim(flcomp)
+                              & 'File not found: "', trim(filename), '" assigned to Thick for layer ', ilyr, ' in file ', trim(flcomp)
                            call mess(LEVEL_ERROR, message)
+                           error = .true.
                            return
                         end if
                      end if
@@ -1505,30 +1645,18 @@ contains
                         else
                            parname = namsed(ised)
                         end if
+                        !
                         filename = ' '
-                        call prop_get(layer_ptr, '*', parname, filename)
-                        !
-                        ! Intel 7.0 crashes on an inquire statement when file = ' '
-                        !
-                        if (filename == ' ') filename = 'dummyname'
-                        inquire (file=filename, exist=ex)
-                        if (.not. ex) then
+                        fraction = rmissval
+                        call prop_get(layer_ptr, '*', parname, flcomp, is_float, fraction, filename)
+                        if (is_float) then
                            !
                            ! Constant fraction
                            !
-                           fraction = rmissval
-                           success = .true.
-                           call prop_get(layer_ptr, '*', parname, fraction, success, valuesfirst=.true.)
-                           if (.not. success) then
-                              if (filename == 'dummyname') then ! string was empty or key not found
-                                 fraction = 0.0_fp
-                              else
-                                 write (message, '(7a,i2,2a)')  &
-                                    & 'Invalid file or value "', trim(filename), '" assigned to ', trim(parname), ' of ', trim(layertype), ' layer ', ilyr, ' in file ', trim(flcomp)
-                                 call mess(LEVEL_ERROR, message)
-                                 error = .true.
-                                 return
-                              end if
+                           txtput1 = '  '//trim(parname)
+                           write (lundia, '(2a,f0.3)') txtput1, ': ', fraction
+                           if (comparereal(fraction, rmissval) == 0) then
+                              fraction = 0.0_fp
                            else
                               anyfrac = .true.
                            end if
@@ -1536,19 +1664,31 @@ contains
                               rtemp(nm, ised) = fraction
                            end do
                         else
-                           !
-                           ! Spatially varying fraction
-                           !
-                           anyfrac = .true.
-                           call depfil_stm(lundia, error, filename, fmttmp, &
-                                         & rtemp(nmlb, ised), 1, 1, dims, message)
-                           if (error) then
+                           inquire (file=filename, exist=ex)
+                           if (ex) then
+                              !
+                              ! Spatially varying fraction
+                              !
+                              anyfrac = .true.
+                              txtput1 = '  '//trim(parname)
+                              txtput3 = trim(filename)
+                              write (lundia, '(3a)') txtput1, ':', txtput3
+                              call depfil_stm(lundia, error, filename, fmttmp, &
+                                            & rtemp(nmlb, ised), 1, 1, dims, message)
+                              if (error) then
+                                 call mess(LEVEL_ERROR, message)
+                                 write (message, '(a,i2,3a,i2,2a)')  &
+                                     & 'Error reading fraction ', ised, 'from ', &
+                                     & trim(filename), ' for layer ', ilyr, ' in file ', &
+                                     & trim(flcomp)
+                                 call mess(LEVEL_ERROR, message)
+                                 return
+                              end if
+                           else
+                              write (message, '(7a,i2,2a)')  &
+                                 & 'File not found: "', trim(filename), '" assigned to ', trim(parname), ' of ', trim(layertype), ' layer ', ilyr, ' in file ', trim(flcomp)
                               call mess(LEVEL_ERROR, message)
-                              write (message, '(a,i2,3a,i2,2a)')  &
-                                  & 'Error reading fraction ', ised, 'from ', &
-                                  & trim(filename), ' for layer ', ilyr, ' in file ', &
-                                  & trim(flcomp)
-                              call mess(LEVEL_ERROR, message)
+                              error = .true.
                               return
                            end if
                         end if
@@ -1790,19 +1930,16 @@ contains
                         else
                            parname = namsed(ised)
                         end if
+                        !
                         filename = ' '
-                        call prop_get(layer_ptr, '*', parname, filename)
-                        !
-                        ! Intel 7.0 crashes on an inquire statement when file = ' '
-                        !
-                        if (filename == ' ') filename = 'dummyname'
-                        inquire (file=filename, exist=ex)
-                        if (.not. ex) then
+                        sedbed = rmissval
+                        call prop_get(layer_ptr, '*', parname, flcomp, is_float, sedbed, filename)
+                        txtput1 = '  '//trim(parname)
+                        write (lundia, '(2a,f0.3)') txtput1, ': ', sedbed
+                        if (is_float) then
                            !
                            ! Constant thickness or mass
                            !
-                           sedbed = rmissval
-                           call prop_get(layer_ptr, '*', parname, sedbed)
                            if (comparereal(sedbed, rmissval) == 0) then
                               sedbed = 0.0_fp
                            elseif (sedbed < 0.0_fp) then
@@ -1825,6 +1962,9 @@ contains
                            ! Spatially varying thickness or mass
                            !
                            anysedbed = .true.
+                           txtput1 = '  '//trim(parname)
+                           txtput3 = trim(filename)
+                           write (lundia, '(3a)') txtput1, ':', txtput3
                            call depfil_stm(lundia, error, filename, fmttmp, &
                                          & rtemp(nmlb, ised), 1, 1, dims, message)
                            if (error) then
@@ -2023,6 +2163,8 @@ contains
                return
             end if
          end if
+         write (lundia, '(a)') '*** End of bed layer input'
+         write (lundia, *)
       end if
    end subroutine rdinimorlyr
 

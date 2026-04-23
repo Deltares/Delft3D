@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -100,7 +100,9 @@ contains
 
             if (mod(k, 100) == 0) then
                call HALT2(KEY)
-               if (KEY == 1) return
+               if (KEY == 1) then
+                  return
+               end if
             end if
 
             if (xpl(k) /= dmiss .and. xpl(k + 1) /= dmiss) then
@@ -114,15 +116,20 @@ contains
 
                   k2 = max(2, int(d / (3.0_dp * rcir)))
                   do kk = 1, k2
-                     a = 1.0_dp - dble(kk) / dble(k2)
+                     a = 1.0_dp - real(kk, kind=dp) / real(k2, kind=dp)
                      b = 1.0_dp - a
                      x = a * xpl(k) + b * xpl(k + 1)
                      y = a * ypl(k) + b * ypl(k + 1)
                      z = a * zpl(k) + b * zpl(k + 1)
 
-                     dc = a * dcrest(k) + b * dcrest(k + 1); dc = 0.5_dp * dc ! crest width
-                     dy = dc * c; dcyR = dy; dcyL = dy
-                     dx = -dc * s; dcxR = dx; dcxL = dx
+                     dc = a * dcrest(k) + b * dcrest(k + 1)
+                     dc = 0.5_dp * dc ! crest width
+                     dy = dc * c
+                     dcyR = dy
+                     dcyL = dy
+                     dx = -dc * s
+                     dcxR = dx
+                     dcxL = dx
 
                      dL = a * dzL(k) + b * dzL(k + 1) ! step left
                      dR = a * dzR(k) + b * dzR(k + 1) ! step right
@@ -131,11 +138,15 @@ contains
                      sR = a * dtR(k) + b * dtR(k + 1) ! slope right
 
                      if (dL > 0.0_dp .and. dR == 0.0_dp) then ! baseline is probably wrong with slope, set 1 instead of 10
-                        sL = 1.0_dp; dcxL = 0; dcyL = 0.0_dp
+                        sL = 1.0_dp
+                        dcxL = 0
+                        dcyL = 0.0_dp
                      end if
 
                      if (dR > 0.0_dp .and. dL == 0.0_dp) then ! baseline is probably wrong with slope, set 1 instead of 10
-                        sR = 1.0_dp; dcxR = 0; dcyR = 0.0_dp
+                        sR = 1.0_dp
+                        dcxR = 0
+                        dcyR = 0.0_dp
                      end if
 
                      dc = dR * sR
@@ -168,10 +179,10 @@ contains
          call DISP2C(XPL, YPL, NPL, RCIR, NCOLPL)
          do k = 1, npl
             if (inview(xpl(k), ypl(k))) then
-               call HTEXT(dble(k), Xpl(k), Ypl(k))
+               call HTEXT(real(k, kind=dp), Xpl(k), Ypl(k))
             end if
          end do
-         call hTEXT(dble(k), Xpl(k), Ypl(k))
+         call hTEXT(real(k, kind=dp), Xpl(k), Ypl(k))
 
       end if
    end subroutine tekpolygon

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -41,6 +41,7 @@
 #define no_warning_unused_variable(x) associate( x => x ); end associate
 
 module bmi
+
    use m_cosphiunetcheck, only: cosphiunetcheck
    use m_flow_run_usertimestep, only: flow_run_usertimestep
    use m_flow_run_sometimesteps, only: flow_run_sometimesteps
@@ -87,6 +88,7 @@ module bmi
    use m_VolumeTables, only: vltb, vltbonlinks, ndx1d
    use m_update_land_nodes
    use m_find_name, only: find_name
+   use precision, only: dp
 
    implicit none
 
@@ -237,6 +239,7 @@ contains
       use unstruc_files
       use m_partitioninfo
       use check_mpi_env
+      use m_init_openmp, only: init_openmp
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -246,6 +249,7 @@ contains
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
+      integer :: ierr
       logical :: mpi_initd
 
       c_iresult = 0 ! TODO: is this return value BMI-compliant?
@@ -291,6 +295,8 @@ contains
       write (sdmn, '(I4.4)') my_rank
 
 #endif
+
+      ierr = init_openmp(md_numthreads, jampi)
 
       ! do this until default has changed
       jaGUI = 0
@@ -624,7 +630,7 @@ contains
       att_name = char_array_to_string(c_att_name, strlen(c_att_name))
 
       ! Look up the value of att_name
-      value = -1.0d0
+      value = -1.0_dp
    end subroutine get_double_attribute
 
    subroutine get_int_attribute(c_att_name, value) bind(C, name="get_int_attribute")
@@ -1045,7 +1051,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = numsrc
+         shape(1) = num_source_sink
          shape(2) = 3
          return
       case ("observations")
@@ -1431,6 +1437,7 @@ contains
       use morphology_data_module, only: PARSOURCE_FIELD
       use string_module, only: str_token
       use m_init_openmp, only: init_openmp
+      use messagehandling, only: stringtolevel
 
       character(kind=c_char), intent(in) :: c_var_name(*)
       type(c_ptr), value, intent(in) :: xptr
@@ -2015,6 +2022,7 @@ contains
       use m_observations
       use m_monitoring_crosssections
       use m_strucs
+      use m_longculverts_data, only: longculverts
       use m_structures, only: valdambreak
       use m_1d_structures
       use m_wind
@@ -2267,19 +2275,19 @@ contains
          end if
          select case (field_name)
          case ("discharge")
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + 1))
+            x = c_loc(source_sink_all_discharges(1, item_index))
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1))
+            x = c_loc(source_sink_all_discharges(isalt + 1, item_index))
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
-            x = c_loc(qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1))
+            x = c_loc(source_sink_all_discharges(itemp + 1, item_index))
             return
          end select
          ! Dambreak
@@ -2432,8 +2440,8 @@ contains
 
    !> Returns the c_ptr for a variable on a lateral location
    function get_pointer_to_lateral_variable(item_name, field_name) result(c_lateral_pointer)
-      use m_laterals, only: qplat, nnlat, n1latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
-                            lateral_volume_per_layer, num_layers
+      use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
+                            lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
       use string_module, only: str_token
 
@@ -2444,6 +2452,9 @@ contains
 
       integer :: item_index, k1, constituent_index
       character(len=MAXSTRLEN) :: constituent_name, direction_string
+
+      c_lateral_pointer = c_null_ptr
+
       call getLateralIndex(item_name, item_index)
       if (item_index <= 0) then
          return
@@ -2458,10 +2469,24 @@ contains
          end if
          return
       case ("water_level")
-         ! NOTE: Return the "point-value", not an area-averaged water level (in case of lateral polygons).
-         k1 = nnlat(n1latsg(item_index))
-         if (k1 > 0) then
-            c_lateral_pointer = c_loc(s1(k1))
+         if (.not. average_waterlevels_per_lateral%is_used) then
+            ! The updating of the average water levels is only required, when other engines
+            ! request water levels via BMI. Only then we want the averaging to be performed 
+            ! in flow_run_some_timesteps. This is the only place to identify if water levels
+            ! for laterals is required by other engines.
+            ! average_waterlevels_per_lateral contains the logical is_used, to identify 
+            ! whether this derived type is initialized. 
+            call average_waterlevels_per_lateral%initialize(num_elements=numlatsg, &
+                                                            input_variable=s1, &
+                                                            weighing_variable=a1, &
+                                                            index_start=n1latsg, &
+                                                            index_end=n2latsg, &
+                                                            index_to_node=nnlat)
+            call average_waterlevels_per_lateral%update()
+         end if
+
+         if (item_index > 0) then
+            c_lateral_pointer = c_loc(average_waterlevels_per_lateral%values(item_index))
          else
             c_lateral_pointer = c_null_ptr
          end if
@@ -2527,7 +2552,7 @@ contains
       use m_1d_structures
       use m_wind
       use unstruc_channel_flow, only: network
-      use m_General_Structure, only: update_widths
+      use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
       use string_module, only: str_token
@@ -2730,21 +2755,21 @@ contains
          select case (field_name)
          case ("discharge")
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + 1) = x_0d_double_ptr
+            source_sink_all_discharges(1, item_index) = x_0d_double_ptr
             return
          case ("change_in_salinity")
-            if (ISALT == 0) then
+            if (isalt == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ISALT + 1) = x_0d_double_ptr
+            source_sink_all_discharges(isalt + 1, item_index) = x_0d_double_ptr
             return
          case ("change_in_temperature")
-            if (ITEMP == 0) then
+            if (itemp == 0) then
                return
             end if
             call c_f_pointer(xptr, x_0d_double_ptr)
-            qstss((item_index - 1) * (NUMCONST + 1) + ITEMP + 1) = x_0d_double_ptr
+            source_sink_all_discharges(itemp + 1, item_index) = x_0d_double_ptr
             return
          end select
 

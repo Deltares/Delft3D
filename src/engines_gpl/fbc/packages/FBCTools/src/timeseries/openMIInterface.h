@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -34,55 +34,56 @@ using namespace std;
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-/**
-  * @brief The class contains the OpenMI interface.
-  */
-class openMIInterface
-{
-	private:
-		/**
-		 * @brief Array with information about the input exchange items.
-		 */
-		vector<openMIExchangeItem> input;
+        /**
+         * @brief The class contains the OpenMI interface.
+         */
+        class openMIInterface
+        {
+        private:
+            /**
+             * @brief Array with information about the input exchange items.
+             */
+            vector<openMIExchangeItem> input;
 
-		/**
-		 * @brief Array with information about the output exchange items.
-		 */
-		vector<openMIExchangeItem> output;
+            /**
+             * @brief Array with information about the output exchange items.
+             */
+            vector<openMIExchangeItem> output;
 
-		timeSeriesMatrixInterface *tsMatrix;
-		int iStep;
-		long long dTime;
+            timeSeriesMatrixInterface* tsMatrix;
+            int iStep;
+            long long dTime;
 
-	public:
-		/**
-		 * @brief Constructor.
-		 */
-		openMIInterface();
-		openMIInterface(timeSeriesMatrixInterface *tsMatrix, vector<openMIExchangeItem> input, vector<openMIExchangeItem> output);
+        public:
+            /**
+             * @brief Constructor.
+             */
+            openMIInterface();
+            openMIInterface(timeSeriesMatrixInterface* tsMatrix, vector<openMIExchangeItem> input,
+                            vector<openMIExchangeItem> output);
 
-		/**
-		 * @brief Destructor.
-		 */
-		~openMIInterface() {};
+            /**
+             * @brief Destructor.
+             */
+            ~openMIInterface() {};
 
-		int getInputExchangeItemCount();
-		openMIExchangeItem* getInputExchangeItem(int index);
-		int getOutputExchangeItemCount();
-		openMIExchangeItem* getOutputExchangeItem(int index);
+            int getInputExchangeItemCount();
+            openMIExchangeItem* getInputExchangeItem(int index);
+            int getOutputExchangeItemCount();
+            openMIExchangeItem* getOutputExchangeItem(int index);
 
-		void prepare();
-		long long getCurrentTime();
-		int getCurrentTimeStep();
-		double getValue(int sIndex);
-		void setValue(int sIndex, double value, int timeStepCount=1);
-		int performTimeStep();
-};
+            void prepare();
+            long long getCurrentTime();
+            int getCurrentTimeStep();
+            double getValue(int sIndex);
+            void setValue(int sIndex, double value, int timeStepCount = 1);
+            int performTimeStep();
+        };
 
-} // end namespace timeseries
+    } // end namespace timeseries
 } // end namespace rtctools
 
-#endif //OPENMIINTERFACE_H
+#endif // OPENMIINTERFACE_H

@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -538,7 +538,7 @@ module m_ec_module
          ! Construct a new Converter.
          convtype = ec_filetype_to_conv_type(filetype, name)
          if (convtype == convType_undefined) then
-            call setECMessage("Unsupported converter for file '"//filename//"'.")
+            call set_ec_message("Unsupported converter for file '"//filename//"'.")
             return
          end if
          
@@ -546,12 +546,12 @@ module m_ec_module
          if (present(srcmaskfile)) then 
             if (filetype == provFile_arcinfo .or. filetype == provFile_curvi) then
                if (.not.ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
-                  !LC: to substitute with setECMessage?
+                  !LC: to substitute with set_ec_message?
                   !call setMessage("Error while reading mask file '"//trim(srcmaskfile)//"'.")
                   return
                endif 
                if (.not.ecConverterInitialize(instancePtr, converterId, convtype, operand, method, srcmask=srcmask)) then 
-                  !LC: to substitute with setECMessage?
+                  !LC: to substitute with set_ec_message?
                   !call setMessage("Error while setting mask to converter (file='"//trim(srcmaskfile)//      &
                   !                "', associated with meteo file '"//trim(filename)//"'.")
                   return
@@ -670,7 +670,7 @@ module m_ec_module
          success = .true.                    ! in which case we simply ignore the Get-request
          return
       else
-         call clearECMessage()
+         call clear_ec_message()
          tUnitFactor = ecSupportTimeUnitConversionFactor(tgt_tunit)
          success = ymd2modified_jul(tgt_refdate, tgt_mjd)
          success = .false.
@@ -678,7 +678,7 @@ module m_ec_module
          if (.not. ecGetValues(instancePtr, itemId, ecReqTime, target_array)) then
             datestring = datetime_to_string(ecReqTime%mjd(), ierr)
             if (ierr==0) then
-               call setECMessage('Requested time was: '//datestring//' ! ')
+               call set_ec_message('Requested time was: '//datestring//' ! ')
             end if
             return
          end if

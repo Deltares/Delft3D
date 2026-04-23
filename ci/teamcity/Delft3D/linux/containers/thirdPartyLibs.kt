@@ -14,6 +14,7 @@ object LinuxThirdPartyLibs : BuildType({
     buildNumberPattern = "%build.vcs.number%"
 
     templates(
+        TemplateLinuxAgent,
         TemplatePublishStatus,
         TemplateMergeRequest,
         TemplateMonitorPerformance,
@@ -53,7 +54,6 @@ object LinuxThirdPartyLibs : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
         }
@@ -106,9 +106,5 @@ object LinuxThirdPartyLibs : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -25,17 +25,12 @@
 
 using namespace rtctools::schematization::rules;
 
-rule::rule(string id, string name) : element(id, name)
-{
-	activate();
-}
+rule::rule(string id, string name) : element(id, name) { activate(); }
 
-rule::~rule(void)
-{
-}
+rule::~rule(void) {}
 
 void rule::activate() { active = true; }
 
 void rule::deactivate() { active = false; }
 
-void rule::stateTransfer(double *stateOld, double *stateNew, long long t, double dt) { }
+void rule::stateTransfer(double* stateOld, double* stateNew, long long t, double dt) {}

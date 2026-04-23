@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,11 +51,18 @@ contains
       real(kind=dp) :: vtot, roav, zz, rhok, bmin
       integer k, kk
 
-      upot = 0.0_dp; ukin = 0.0_dp; ueaa = 0.0_dp; vtot = 0.0_dp; roav = 0.0_dp; bmin = 1.0e9_dp
+      upot = 0.0_dp
+      ukin = 0.0_dp
+      ueaa = 0.0_dp
+      vtot = 0.0_dp
+      roav = 0.0_dp
+      bmin = 1.0e9_dp
 
       do kk = 1, ndx
          bmin = min(bmin, bl(kk))
-         if (hs(kk) == 0) cycle
+         if (hs(kk) == 0) then
+            cycle
+         end if
          do k = kbot(kk), ktop(kk)
             vtot = vtot + vol1(k) ! m3
             if (jasal > 0) then
@@ -72,7 +79,9 @@ contains
       roav = roav / vtot ! kg/m3
 
       do kk = 1, ndx
-         if (hs(kk) == 0) cycle
+         if (hs(kk) == 0) then
+            cycle
+         end if
          do k = kbot(kk), ktop(kk)
             if (kmx > 0) then
                zz = (zws(k) + zws(k - 1)) * 0.5_dp - bmin ! m
@@ -94,8 +103,12 @@ contains
       upot = upot * ag / vtot
       ukin = ukin * 0.5 / vtot
 
-      if (upot0 == dmiss) upot0 = upot
-      if (ukin0 == dmiss) ukin0 = ukin
+      if (upot0 == dmiss) then
+         upot0 = upot
+      end if
+      if (ukin0 == dmiss) then
+         ukin0 = ukin
+      end if
 
 ! upot = upot - upot0
       !

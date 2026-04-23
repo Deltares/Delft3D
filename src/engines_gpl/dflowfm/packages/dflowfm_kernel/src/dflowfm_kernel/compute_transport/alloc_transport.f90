@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -33,7 +33,6 @@
 !> allocate transport arrays
 module m_alloc_transport
 
-
    use precision, only: dp
    implicit none
 
@@ -50,7 +49,7 @@ contains
       use m_transport
       use m_alloc
       use m_meteo, only: numtracers, numfracs, item_sourcesink_constituent_delta
-      use fm_external_forcings_data, only: numsrc, qcsrc, vcsrc, wstracers
+      use fm_external_forcings_data, only: wstracers
       use m_sediment, only: stm_included
       use m_ec_module, only: ec_undef_int
       implicit none
@@ -116,7 +115,9 @@ contains
       allocate (rhs(NUMCONST, Ndkx))
 
       if (kmx > 0) then ! 3D
-         if (allocated(a)) deallocate (a, b, c, d, e, sol)
+         if (allocated(a)) then
+            deallocate (a, b, c, d, e, sol)
+         end if
          allocate (a(kmx, NUMCONST), b(kmx, NUMCONST), c(kmx, NUMCONST), d(kmx, NUMCONST), e(kmx), sol(kmx))
          a = 0.0_dp
          b = 0.0_dp
@@ -128,9 +129,6 @@ contains
 !  tracer boundary condition
       call realloc(itrac2const, numtracers, keepExisting=KeepExisting, fill=0)
       call realloc(ifrac2const, numfracs, keepExisting=KeepExisting, fill=0)
-
-      call realloc(qcsrc, [NUMCONST, numsrc], keepExisting=.false., fill=0.0_dp)
-      call realloc(vcsrc, [2 * NUMCONST, numsrc], keepExisting=.false., fill=0.0_dp)
 
       if (jawaqproc > 0) then
 !     WAQ

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,6 @@
 !!
 !!  caution: will overwrite nudge_rate in 1/s
 module m_set_nudgerate
-
 
    use precision, only: dp
    implicit none

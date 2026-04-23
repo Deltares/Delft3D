@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -71,16 +71,14 @@ contains
       ccr = 0.0_dp
       dd = 0.0_dp
 
-      if (jagrw > 0 .or. numsrc > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
+      if (jagrw > 0 .or. num_source_sink > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
          jaqin = 1
       end if
 
-      if (jatem > 0) then
-         if (jatem > 1) then
-            heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
-         else
-            heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
-         end if
+      if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
+         heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
+      else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
       end if
 
       if (jaqin > 0) then ! sources and sinks through meteo
@@ -248,12 +246,13 @@ contains
                if (kmx > 0) then
                   qin(kt) = qin(kt) + qin(k)
                end if
-               if (jatem >= 1) then
+
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   if (qin(kt) > 0) then
-                     if (jatem > 1) then
-                        heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
-                     else if (jatem == 1) then
+                     if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
+                     else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                        heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
                      end if
                   else
                      heatsrc(kt) = heatsrc(kt) + qin(kt) * constituents(itemp, kt) ! extract top layer temp
@@ -266,12 +265,12 @@ contains
             call setgrwflowexpl() ! add grw-flow exchange to the qin array
          end if
 
-         if (numsrc > 0) then
+         if (num_source_sink > 0) then
             call setsorsin() ! add sources and sinks
          end if
 
          if (wrwaqon) then ! Update waq output
-            if (numsrc > 0) then
+            if (num_source_sink > 0) then
                call update_waq_sink_source_fluxes()
             end if
             if (numlatsg > 0) then
@@ -348,7 +347,8 @@ contains
 
          do LL = 1, lnx
             if (hu(LL) > 0) then
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
 
                do L = Lbot(LL), Ltop(LL)
 

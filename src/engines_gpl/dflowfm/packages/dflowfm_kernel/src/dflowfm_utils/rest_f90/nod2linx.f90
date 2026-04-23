@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_nod2linx
 
    private
 
-   public :: nod2linx
+   public :: nod2linx, nod2linx_fast
 
 contains
 
@@ -58,5 +58,17 @@ contains
 
       return
    end function nod2linx
+
+   !> fast version of nod2linx, for use in vectorized loops where jsferic=1 and jasfer3D=1 is guaranteed. Avoids indirect array access to csb and snb, which are expensive in vectorized loops.
+   elemental function nod2linx_fast(csb, snb, ux, uy)
+      use precision, only: dp
+
+      real(kind=dp), intent(in) :: ux, uy !< vector components in flowlnode coordinate frame
+      real(kind=dp), intent(in) :: csb, snb !< cosine and sine of angle between link and x-axis in node coordinate frame
+      real(kind=dp) :: nod2linx_fast
+
+      nod2linx_fast = csb * ux + snb * uy
+
+   end function nod2linx_fast
 
 end module m_nod2linx

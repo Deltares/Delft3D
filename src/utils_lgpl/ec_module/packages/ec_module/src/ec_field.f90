@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -64,7 +64,7 @@ module m_ec_field
          ! allocation
          allocate(fieldPtr, stat = istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_field::ecFieldCreate: Unable to allocate additional memory")
+            call set_ec_message("ERROR: ec_field::ecFieldCreate: Unable to allocate additional memory")
             fieldPtr => null()
             return
          end if
@@ -115,7 +115,7 @@ module m_ec_field
          success = .true.
          !
          if (.not. associated(fieldPtr)) then
-            call setECMessage("WARNING: ec_field::ecFieldFree1dArray: Dummy argument fieldPtr is already disassociated.")
+            call set_ec_message("WARNING: ec_field::ecFieldFree1dArray: Dummy argument fieldPtr is already disassociated.")
          else
             ! Free and deallocate all tEcFieldPtrs in the 1d array.
             do i=1, nFields
@@ -153,7 +153,7 @@ module m_ec_field
             fieldPtr%missingValue = missingValue
             success = .true.
          else
-            call setECMessage("ERROR: ec_field::ecFieldSetMissingValue: Cannot find a Field with the supplied id.")
+            call set_ec_message("ERROR: ec_field::ecFieldSetMissingValue: Cannot find a Field with the supplied id.")
          end if
       end function ecFieldSetMissingValue
       
@@ -177,7 +177,7 @@ module m_ec_field
             fieldPtr%arr1dPtr => arrayPtr
             success = .true.
          else
-            call setECMessage("ERROR: ec_field::ecFieldSet1dArray: Cannot find a Field with the supplied id.")
+            call set_ec_message("ERROR: ec_field::ecFieldSet1dArray: Cannot find a Field with the supplied id.")
          end if
       end function ecFieldSet1dArray
       
@@ -202,20 +202,20 @@ module m_ec_field
             if (allocated(fieldPtr%arr1d)) then
                deallocate(fieldPtr%arr1d, stat = istat)
                if (istat /= 0) then
-                  call setECMessage("ERROR: ec_field::ecFieldCreate1dArray: Unable to deallocate memory.")
+                  call set_ec_message("ERROR: ec_field::ecFieldCreate1dArray: Unable to deallocate memory.")
                   return
                end if
             end if
             allocate(fieldPtr%arr1d(arraySize), stat = istat)
             if (istat /= 0) then
-               call setECMessage("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
+               call set_ec_message("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
                return
             else
                fieldPtr%arr1d = ec_undef_hp
             end if
             fieldPtr%arr1dPtr => fieldPtr%arr1d
          else
-            call setECMessage("ERROR: ec_field::ecFieldCreate1dArray: Cannot find a Field with the supplied id.")
+            call set_ec_message("ERROR: ec_field::ecFieldCreate1dArray: Cannot find a Field with the supplied id.")
             return
          end if
          success = .true.
@@ -238,7 +238,7 @@ module m_ec_field
          if (associated(fieldPtr)) then
             fieldPtr%arr1Dptr => arr1D
          else
-            call setECMessage("ERROR: ec_field::ecFieldSet1dArrayPointer: Cannot find a Field with the supplied id.")
+            call set_ec_message("ERROR: ec_field::ecFieldSet1dArrayPointer: Cannot find a Field with the supplied id.")
             return
          end if
          success = .true.
@@ -261,7 +261,7 @@ module m_ec_field
          if (associated(fieldPtr)) then
             fieldPtr%scalarptr => scalar
          else
-            call setECMessage("ERROR: ec_field::ecFieldSetScalarPointer: Cannot find a Field with the supplied id.")
+            call set_ec_message("ERROR: ec_field::ecFieldSetScalarPointer: Cannot find a Field with the supplied id.")
             return
          end if
          success = .true.

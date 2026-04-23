@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
    subroutine disable_higherorder_at_sorsin()
       use precision, only: dp
       use m_flowgeom
-      use fm_external_forcings_data, only: numsrc, ksrc
+      use fm_external_forcings_data, only: num_source_sink, source_sink_indices
       use m_partitioninfo
       use m_alloc
       implicit none
@@ -61,11 +61,13 @@ contains
 
       if (jaall == 1) then
 !        disable all flowlink attached to flownodes with sources/sinks
-         do n = 1, numsrc
+         do n = 1, num_source_sink
             do i = 1, 4, 3 ! 1 and 4
 !              get 2D flow nodes
-               kk = ksrc(i, n)
-               if (kk <= 0) cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
+               kk = source_sink_indices(i, n)
+               if (kk <= 0) then
+                  cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
+               end if
 
 !              loop over all attached flow links
                do iL = 1, nd(kk)%lnx
@@ -84,9 +86,9 @@ contains
          call realloc(imask, Ndx, keepExisting=.false., fill=0)
 
 !        mask flownodes with sources
-         do n = 1, numsrc
-            imask(ksrc(1, n)) = 1
-            imask(ksrc(4, n)) = 1
+         do n = 1, num_source_sink
+            imask(source_sink_indices(1, n)) = 1
+            imask(source_sink_indices(4, n)) = 1
          end do
 
 !        disable flowlinks
@@ -106,7 +108,7 @@ contains
 
       if (jampi == 1) then
 !        source/sink could have been in ghost region
-         allocate (dum(6, Lnx)); 
+         allocate (dum(6, Lnx))
          do LL = 1, Lnx
             do i = 1, 6
                dum(i, LL) = klnup(i, LL)

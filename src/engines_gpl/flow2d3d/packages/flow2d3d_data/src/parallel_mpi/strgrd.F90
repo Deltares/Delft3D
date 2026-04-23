@@ -2,7 +2,7 @@ subroutine strgrd ( icom, runid, mmax, nmax, mmaxgl, nmaxgl, &
                   & nfg , nlg  , mfg , mlg , gdp   )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -95,8 +95,8 @@ subroutine strgrd ( icom, runid, mmax, nmax, mmaxgl, nmaxgl, &
     ! define length of runid and put in fixed size array
     ! size is tested in iniid
     !
-    call remove_leading_spaces(runid     ,lrid      )
-    fixid(1:lrid) = runid(1:lrid)
+    fixid = runid
+    call remove_leading_spaces(fixid     ,lrid      )
     !
     ! open scratch file
     !

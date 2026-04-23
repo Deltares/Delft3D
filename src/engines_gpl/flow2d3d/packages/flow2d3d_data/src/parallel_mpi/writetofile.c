@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,39 +26,41 @@
 //------------------------------------------------------------------------------
 // $Id$
 // $HeadURL$
-#include<assert.h>
-#include<math.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
+#include <assert.h>
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-void writetofilef_(float *a, int *n1, int *n2, int *n3, int *it, char *jtname)
+void writetofilef_(float* a, int* n1, int* n2, int* n3, int* it, char* jtname)
 {
-    FILE *fp;
-    float *data;
-    int i,j;
+    FILE* fp;
+    float* data;
+    int i, j;
     size_t nmemb, nwrite;
     char filename[1024];
 
-    fprintf(stderr,"Float n1=%d n2=%d n3=%d timestep=%d jtname=%s\n",*n1, *n2, *n3, *it, jtname);
-    sprintf(filename,"Array%03d_%03d_%03d_%03d_%s.bin",*it, *n1, *n2, *n3, jtname);
+    fprintf(stderr, "Float n1=%d n2=%d n3=%d timestep=%d jtname=%s\n", *n1, *n2, *n3, *it, jtname);
+    sprintf(filename, "Array%03d_%03d_%03d_%03d_%s.bin", *it, *n1, *n2, *n3, jtname);
 
-    fprintf(stderr,"filename = %s\n", filename);
+    fprintf(stderr, "filename = %s\n", filename);
 
     nmemb = (*n1);
-    data = (float *)calloc(nmemb,sizeof(float));
+    data = (float*)calloc(nmemb, sizeof(float));
     fp = fopen(filename, "w+");
-    for (i=0; i<(*n2)*(*n3); i++) {
-        for (j=0; j<(*n1); j++) {
-            data[j] = (float)a[i*(*n1)+j];
-//            fprintf(stderr,"data[%d]=%e, %e\n", j, data[j], a[i*(*n1)+j]);
-//            if ( fpclassify(data[j]) != FP_NORMAL) {
-//              fprintf(stderr,"nan for time %d at point n=%d m=%d\n", *it, j, i);
-//              data[j] = -1.0;
-//            }
+    for (i = 0; i < (*n2) * (*n3); i++)
+    {
+        for (j = 0; j < (*n1); j++)
+        {
+            data[j] = (float)a[i * (*n1) + j];
+            //            fprintf(stderr,"data[%d]=%e, %e\n", j, data[j], a[i*(*n1)+j]);
+            //            if ( fpclassify(data[j]) != FP_NORMAL) {
+            //              fprintf(stderr,"nan for time %d at point n=%d m=%d\n", *it, j, i);
+            //              data[j] = -1.0;
+            //            }
         }
         nwrite = fwrite(data, sizeof(float), nmemb, fp);
-        assert(nwrite==nmemb);
+        assert(nwrite == nmemb);
     }
     fflush(fp);
     fclose(fp);
@@ -67,33 +69,35 @@ void writetofilef_(float *a, int *n1, int *n2, int *n3, int *it, char *jtname)
     return;
 }
 
-void writetofilei_(int *a, int *n1, int *n2, int *n3, int *it, char *jtname)
+void writetofilei_(int* a, int* n1, int* n2, int* n3, int* it, char* jtname)
 {
-    FILE *fp;
-    float *data;
-    int i,j;
+    FILE* fp;
+    float* data;
+    int i, j;
     size_t nmemb, nwrite;
     char filename[1024];
 
-    fprintf(stderr,"Float n1=%d n2=%d n3=%d timestep=%d jtname=%s\n",*n1, *n2, *n3, *it, jtname);
-    sprintf(filename,"ArrayI%03d_%03d_%03d_%03d_%s.bin",*it, *n1, *n2, *n3, jtname);
+    fprintf(stderr, "Float n1=%d n2=%d n3=%d timestep=%d jtname=%s\n", *n1, *n2, *n3, *it, jtname);
+    sprintf(filename, "ArrayI%03d_%03d_%03d_%03d_%s.bin", *it, *n1, *n2, *n3, jtname);
 
-    fprintf(stderr,"filename = %s\n", filename);
+    fprintf(stderr, "filename = %s\n", filename);
 
     nmemb = (*n1);
-    data = (float *)calloc(nmemb,sizeof(float));
+    data = (float*)calloc(nmemb, sizeof(float));
     fp = fopen(filename, "w+");
-    for (i=0; i<(*n2)*(*n3); i++) {
-        for (j=0; j<(*n1); j++) {
-            data[j] = (float)a[i*(*n1)+j];
-//            fprintf(stderr,"data[%d]=%e, %e\n", j, data[j], a[i*(*n1)+j]);
-//            if ( fpclassify(data[j]) != FP_NORMAL) {
-//              fprintf(stderr,"nan for time %d at point n=%d m=%d\n", *it, j, i);
-//              data[j] = -1.0;
-//            }
+    for (i = 0; i < (*n2) * (*n3); i++)
+    {
+        for (j = 0; j < (*n1); j++)
+        {
+            data[j] = (float)a[i * (*n1) + j];
+            //            fprintf(stderr,"data[%d]=%e, %e\n", j, data[j], a[i*(*n1)+j]);
+            //            if ( fpclassify(data[j]) != FP_NORMAL) {
+            //              fprintf(stderr,"nan for time %d at point n=%d m=%d\n", *it, j, i);
+            //              data[j] = -1.0;
+            //            }
         }
         nwrite = fwrite(data, sizeof(float), nmemb, fp);
-        assert(nwrite==nmemb);
+        assert(nwrite == nmemb);
     }
     fflush(fp);
     fclose(fp);
@@ -102,8 +106,4 @@ void writetofilei_(int *a, int *n1, int *n2, int *n3, int *it, char *jtname)
     return;
 }
 
-
-void random_nmbr_(float *r)
-{
-    *r = (float)drand48();
-}
+void random_nmbr_(float* r) { *r = (float)drand48(); }

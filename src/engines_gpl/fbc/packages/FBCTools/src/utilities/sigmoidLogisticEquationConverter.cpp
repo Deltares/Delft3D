@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -28,44 +28,40 @@
 using namespace rtctools;
 using namespace rtctools::utilities;
 
-sigmoidLogisticEquationConverter::sigmoidLogisticEquationConverter()
-{
-}
+sigmoidLogisticEquationConverter::sigmoidLogisticEquationConverter() {}
 
-sigmoidLogisticEquationConverter::~sigmoidLogisticEquationConverter(void)
-{
-}
+sigmoidLogisticEquationConverter::~sigmoidLogisticEquationConverter(void) {}
 
 double sigmoidLogisticEquationConverter::convert(double x)
 {
-	double y = 1.0/(1.0+exp(-x));
+    double y = 1.0 / (1.0 + exp(-x));
     return y;
 }
 
 double sigmoidLogisticEquationConverter::convertDer(double x)
 {
-	// derivative of y = 1.0/(1.0+exp(-x));
-    double dy = exp(-x)/pow(1.0+exp(-x),2.0);
+    // derivative of y = 1.0/(1.0+exp(-x));
+    double dy = exp(-x) / pow(1.0 + exp(-x), 2.0);
     return dy;
 }
 
 double sigmoidLogisticEquationConverter::reverseConvert(double y)
 {
-    double x = -log(1.0/y-1.0);
+    double x = -log(1.0 / y - 1.0);
     return x;
 }
 
 double sigmoidLogisticEquationConverter::reverseConvertDer(double yVal)
 {
-	// TODO
+    // TODO
 
-	return 0.0;
+    return 0.0;
 }
 
 converter* sigmoidLogisticEquationConverter::getIntegrator()
 {
-	/**
-	 * @todo implement converter* sigmoidLogisticEquationConverter::getIntegrator()
-	 */
+    /**
+     * @todo implement converter* sigmoidLogisticEquationConverter::getIntegrator()
+     */
     return 0;
 }

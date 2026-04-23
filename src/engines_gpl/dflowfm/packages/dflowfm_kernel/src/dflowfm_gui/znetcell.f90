@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,9 +64,11 @@ contains
       else if (ndraw(33) == 6) then ! cell area
          znetcell = ba(k)
       else if (ndraw(33) == 2) then ! cell numbers
-         if (netcell(k)%N > 0) znetcell = dble(k)
+         if (netcell(k)%N > 0) then
+            znetcell = real(k, kind=dp)
+         end if
       else if (ndraw(33) == 8) then ! cell tri, 4, 5etc
-         znetcell = dble(netcell(k)%n)
+         znetcell = real(netcell(k)%n, kind=dp)
       else if (ndraw(33) == 9) then ! cell normalised centre of gravity - circumcentre distance
          if (ba(k) > 0) then
             znetcell = dbdistance(xz(k), yz(k), xzw(k), yzw(k), jsferic, jasfer3D, dmiss) / sqrt(ba(k))

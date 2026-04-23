@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 !! *.ext file for quantities such as initialwaterlevel,
 !! frictioncoefficient, etc.
 module unstruc_inifields
+
    use m_setinitialverticalprofile, only: setinitialverticalprofile
    use m_add_tracer, only: add_tracer
    use m_setzcs, only: setzcs
@@ -40,6 +41,7 @@ module unstruc_inifields
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
 
+   use precision, only: dp
    implicit none
    private
 
@@ -185,7 +187,7 @@ contains
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
-      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr, quantity_name_config_file_to_internal_name
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
       use fm_external_forcings_utils, only: get_tracername
 
@@ -264,6 +266,9 @@ contains
          !! Step 1: Read each block
          call readIniFieldProvider(inifilename, node_ptr, groupname, qid, filename, filetype, method, &
                                    iloctype, operand, transformcoef, ja, varname)
+         ! convert quantity name used in configuration file to a consistent internal name
+         qid = quantity_name_config_file_to_internal_name(qid)
+
          if (ja == 1) then
             call resolvePath(filename, basedir)
             ib = ib + 1
@@ -314,7 +319,8 @@ contains
                                           target_array_3d, first_index, method)
             else
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count)
+                                            target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count, &
+                                            filetype)
             end if
 
             ! This part of the code might be moved or changed. (See UNST-8247)
@@ -460,7 +466,7 @@ contains
       integer, intent(out) :: filetype !< File type of current quantity.
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
       integer, intent(out) :: iloctype !< The spatial type of the target locations: 1D, 2D or all.
-      character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(out) :: operand !< Operand w.r.t. previous data
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< Variable name within filename; only in case of NetCDF. Will be empty string if not specified in input.
@@ -474,6 +480,7 @@ contains
       character(len=ini_value_len) :: friction_type
       integer :: iav, averagingNumMin, int_friction_type
       character(len=ini_value_len) :: extrapolation
+      character(len=ini_value_len) :: operand_ini
       logical :: retVal
       ja = 0
       groupname = tree_get_name(node_ptr)
@@ -565,7 +572,7 @@ contains
             end if
             call averagingTypeStringToInteger(averagingType, iav)
             if (iav >= 0) then
-               transformcoef(4) = dble(iav)
+               transformcoef(4) = real(iav, kind=dp)
             else
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity='// &
                   trim(quantity)//'. Field ''averagingType'' has invalid value '''//trim(averagingType)//'''. Ignoring this block.'
@@ -599,7 +606,7 @@ contains
                   call warn_flush()
                   transformcoef(8) = 1.0_dp
                else
-                  transformcoef(8) = dble(averagingNumMin)
+                  transformcoef(8) = real(averagingNumMin, kind=dp)
                end if
             end if
 
@@ -652,7 +659,7 @@ contains
          end if
 
          ! read value
-         if (filetype == inside_polygon) then
+         if (filetype == inside_polygon .and. method == METHOD_CONSTANT) then
             call prop_get(node_ptr, '', 'value', transformcoef(1), retVal)
             if (.not. retVal) then
                write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), &
@@ -664,20 +671,18 @@ contains
       end if ! .not. strcmpi(dataFileType, '1dField'))
 
       ! read operand, for any filetype
-      call prop_get(node_ptr, '', 'operand ', operand, retVal)
-      if (.not. retVal) then
-         operand = 'O'
-      else
-         if ((.not. strcmpi(operand, 'O')) .and. (.not. strcmpi(operand, 'A')) .and. (.not. strcmpi(operand, '+')) .and. &
-             (.not. strcmpi(operand, '*')) .and. (.not. strcmpi(operand, 'X')) .and. (.not. strcmpi(operand, 'N')) .and. &
-             (.not. strcmpi(operand, 'V'))) then
+      operand = OPERAND_OVERRIDE ! default
+      call prop_get(node_ptr, '', 'operand', operand_ini, retVal)
+      if (retVal) then
+         operand = convert_operand_string_to_integer(operand_ini)
+         if (operand == OPERAND_UNKNOWN) then
             write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-               //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand)//'''. Ignoring this block.'
+            //trim(quantity)//'. Field ''operand'' has invalid value '''//trim(operand_ini)//'''. Ignoring this block.'
             call warn_flush()
             return
          end if
       end if
-
+      
       if (strcmpi(quantity, 'frictioncoefficient')) then
          friction_type = ''
          call prop_get(node_ptr, '', 'frictionType', friction_type)
@@ -688,7 +693,7 @@ contains
       end if
 
       if (strcmpi(quantity(1:13), 'initialtracer')) then
-          call read_tracer_properties(node_ptr, transformcoef)
+         call read_tracer_properties(node_ptr, transformcoef)
       end if
 
       ! We've made it to here, success!
@@ -1150,12 +1155,13 @@ contains
       use m_flow, only: ifrctypuni, ifrcutp, frcu
       use m_flowgeom, only: lnx
       use m_missing, only: dmiss
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       implicit none
 
       integer :: link
 
-      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. (operand == 'O' .or. operand == 'V')) then
+      if (transformcoef(3) /= -999.0_dp .and. int(transformcoef(3)) /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
          do link = 1, lnx
             if (frcu(link) /= dmiss) then
                ! type array only must be used if different from uni
@@ -1286,8 +1292,8 @@ contains
 
       use m_flow, only: s1, hs, sabot, satop, sa1, ndkx, tem1, h_unsat, kmx
       use m_flowgeom, only: ndx, lnx
-      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, jatem, &
-                                  initem2D, inivel
+      use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, temperature_model, &
+                                  TEMPERATURE_MODEL_NONE, initem2D, inivel
 
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
@@ -1426,7 +1432,7 @@ contains
          end if
 
       case ('initialtemperature')
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             target_location_type = UNC_LOC_S
             target_array => tem1
             initem2D = 1
@@ -1478,7 +1484,7 @@ contains
          end if
 
       case ('initialverticaltemperatureprofile')
-         if (jatem > 0 .and. kmx > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. kmx > 0) then
             target_location_type = UNC_LOC_3DV
             target_array => tem1
          end if
@@ -1558,7 +1564,7 @@ contains
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
    subroutine process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count)
+                                      target_array_integer, target_array_3d, target_array_3d_sp, target_quantity_index, quantity_value_count, filetype)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1566,17 +1572,18 @@ contains
       use messageHandling
       use m_alloc, only: realloc, aerr
       use unstruc_files, only: resolvePath
+      use timespace_parameters, only: NCGRID
       use m_missing, only: dmiss
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, UNC_LOC_GLOBAL, UNC_LOC_S3D
-      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, waveforcing
-      use m_flow, only: frcu
-      use m_flow, only: jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
+      use m_flowparameters, only: jatrt, javiusp, jafrcInternalTides2D, jadiusp, jafrculin, jaCdwusp, ibedlevtyp, jawave, &
+         waveforcing, ja_friction_coefficient_time_dependent
+      use m_flow, only: frcu, jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
-      use m_heatfluxes, only: secchisp
-      use m_wind, only: ICdtyp
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
+      use m_wind, only: wind_drag_type, CD_TYPE_CONST
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemdiam, stemdens, stemheight
@@ -1602,6 +1609,7 @@ contains
       real(kind=sp), dimension(:, :), pointer, intent(out) :: target_array_3d_sp !< pointer to the array that corresponds to the quantity (real(kind=sp)), if it has an extra dimension.
       integer, intent(out) :: target_quantity_index !< Index of the quantity in the first dimension of target_array_3d, if applicable.
       integer, intent(out) :: quantity_value_count !< The number of values for this quantity on a single location. E.g. 1 for scalar fields, 2 for vector fields.
+      integer, intent(in) :: filetype !< Type of the file being read (NCGRID, etc).
 
       integer, parameter :: enum_field1D = 1, enum_field2D = 2, enum_field3D = 3, enum_field4D = 4, enum_field5D = 5, &
                             enum_field6D = 6
@@ -1629,6 +1637,10 @@ contains
       case ('frictioncoefficient')
          target_location_type = UNC_LOC_U
          target_array => frcu
+         if (filetype == NCGRID) then
+            time_dependent_array = .true.
+            ja_friction_coefficient_time_dependent = 1
+         end if
       case ('advectiontype')
          target_location_type = UNC_LOC_U
          target_array_integer => iadv
@@ -1636,7 +1648,7 @@ contains
          target_location_type = UNC_LOC_U
          target_array => grounlay
          jagrounlay = 1
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          call initialize_subsupl()
          time_dependent_array = .true.
          select case (ibedlevtyp)
@@ -1713,19 +1725,23 @@ contains
          target_location_type = UNC_LOC_U
          target_array => frculin
          jafrculin = 1
-      case ('seaiceareafraction', 'seaicethickness')
+      case ('sea_ice_area_fraction', 'sea_ice_thickness')
          if (ja_ice_area_fraction_read == 0 .and. ja_ice_thickness_read == 0) then
             call fm_ice_activate_by_ext_forces(ndx, md_ptr)
          end if
          target_location_type = UNC_LOC_S
          time_dependent_array = .true.
       case ('secchidepth')
-         call realloc(secchisp, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
+         call realloc(spatial_secchi_depth, ndx, keepExisting=.true., fill=dmiss, stat=ierr)
          target_location_type = UNC_LOC_S
-         target_array => secchisp
+         target_array => spatial_secchi_depth
+         if (filetype == NCGRID) then
+            time_dependent_array = .true.
+            secchi_depth_is_time_varying = .true.
+         end if
       case ('backgroundverticaleddydiffusivitycoefficient')
          target_location_type = UNC_LOC_S
-         call realloc(dicoww, ndx, constant_dicoww)
+         call realloc(dicoww, ndx, keepExisting=.true., fill=constant_dicoww, stat=ierr)
          call assign_pointer_to_t_array(dicoww, target_array, ierr)
       case ('stemdiameter')
          if (.not. allocated(stemdiam)) then
@@ -1763,7 +1779,7 @@ contains
          end if
          target_location_type = UNC_LOC_U
          target_array => Cdwusp
-         iCdtyp = 1 ! only 1 coeff
+         wind_drag_type = CD_TYPE_CONST
       case ('wavesignificantheight', 'waveperiod', 'wavedirection')
          if (jawave == WAVE_NC_OFFLINE) then
             target_location_type = UNC_LOC_S
@@ -1915,7 +1931,7 @@ contains
       use m_flowgeom, only: ndx
       use fm_external_forcings_data, only: success
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
-                                  HortonMinInfCap, HortonMaxInfCap, HortonDecreaseRate, HortonRecoveryRate, &
+                                  horton_infiltration_config, &
                                   InterceptThickness, interceptionmodel, DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, InterceptHs, &
                                   infiltcap, infiltrationmodel
@@ -1931,16 +1947,16 @@ contains
       select case (str_tolower(qid))
       case ('hortonmininfcap')
          target_location_type = UNC_LOC_S
-         target_array => HortonMinInfCap
+         target_array => horton_infiltration_config%min_inf_cap
       case ('hortonmaxinfcap')
          target_location_type = UNC_LOC_S
-         target_array => HortonMaxInfCap
+         target_array => horton_infiltration_config%max_inf_cap
       case ('hortondecreaserate')
          target_location_type = UNC_LOC_S
-         target_array => HortonDecreaseRate
+         target_array => horton_infiltration_config%decrease_rate
       case ('hortonrecoveryrate')
          target_location_type = UNC_LOC_S
-         target_array => HortonRecoveryRate
+         target_array => horton_infiltration_config%recovery_rate
       case ('interceptionlayerthickness')
          target_location_type = UNC_LOC_S
          call realloc(InterceptHs, ndx, keepExisting=.true., fill=0.0_dp)
@@ -1995,8 +2011,8 @@ contains
       use m_grw, only: jaintercept2D
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
 
-      use m_heatfluxes, only: jasecchisp, secchisp
-      use m_physcoef, only: secchidepth
+      use m_heatfluxes, only: secchi_depth_is_spatially_varying, spatial_secchi_depth
+      use m_physcoef, only: secchi_depth
       use m_meteo, only: ec_addtimespacerelation
       use m_vegetation, only: stemheight, stemheightstd
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -2019,7 +2035,7 @@ contains
       select case (str_tolower(qid_base))
       case ('initialwaterdepth', 'waterdepth')
          s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
-      case ('bedrocksurfaceelevation')
+      case ('bedrock_surface_elevation')
          jasubsupl = 1
       case ('infiltrationcapacity')
          where (infiltcap /= dmiss)
@@ -2048,15 +2064,15 @@ contains
          if (qid == 'interceptionlayerthickness') then
             jaintercept2D = 1
          end if
-      case ('seaiceareafraction')
+      case ('sea_ice_area_fraction')
          ja_ice_area_fraction_read = 1
-      case ('seaicethickness')
+      case ('sea_ice_thickness')
          ja_ice_thickness_read = 1
       case ('secchidepth')
-         jaSecchisp = 1
+         secchi_depth_is_spatially_varying = .true.
          do n = 1, ndx
-            if (secchisp(n) == dmiss) then
-               secchisp(n) = secchidepth
+            if (spatial_secchi_depth(n) == dmiss) then
+               spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
       case ('stemheight')
@@ -2069,14 +2085,15 @@ contains
 
    end subroutine finish_initialization
 
-   subroutine fill_field_values(target_array, target_array_3d, target_location_type, first_index, filename, filetype, method, operand, &
-                                transformcoef, iloctype, kcsini, success)
+   subroutine fill_field_values(target_array, target_array_3d, target_location_type, first_index, filename, filetype, method, &
+                                operand, transformcoef, iloctype, kcsini, success)
 
       use m_alloc, only: reallocP
       use timespace, only: timespaceinitialfield
       use m_missing, only: dmiss
       use m_flow, only: ndkx
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_3DV
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       real(kind=dp), dimension(:), pointer, intent(inout) :: target_array !< The array to be filled with values. (in case of a 2d array)
       real(kind=dp), dimension(:, :), pointer, intent(inout) :: target_array_3d !< The array to be filled with values. (in case of a 3d array)
@@ -2085,7 +2102,7 @@ contains
       character(len=*), intent(in) :: filename !< The name of the file containing the field values.
       integer, intent(in) :: filetype !< The type of the file containing the field values.
       integer, intent(in) :: method !< The method to be used for filling the field values.
-      character(len=*), intent(in) :: operand !< The operand to be used for filling the field values.
+      integer, intent(in) :: operand !< The operand to be used for filling the field values.
       real(kind=dp), dimension(:), intent(in) :: transformcoef !< The transformation coefficients.
       integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
@@ -2094,7 +2111,7 @@ contains
 
       integer :: num_items !< The number of target locations.
       real(kind=dp), dimension(:), pointer :: x_loc, y_loc !< The x and y coordinates of the target locations.
-      character(len=1) :: used_operand !< The operand to be used for filling the field values.
+      integer :: used_operand !< The operand to be used for filling the field values.
 
       if (target_location_type == UNC_LOC_3DV) then
          call setinitialverticalprofile(target_array, ndkx, filename)
@@ -2104,7 +2121,7 @@ contains
          call set_coordinates_for_location_type(target_location_type, x_loc, y_loc, num_items, iloctype, kcsini)
 
          if (target_location_type == UNC_LOC_S3D) then
-            used_operand = 'O'
+            used_operand = OPERAND_OVERRIDE
             call reallocP(target_array, num_items, fill=dmiss, keepExisting=.false.)
             loc_type = UNC_LOC_S ! timespaceinitialfield expects UNC_LOC_S in stead of UNC_LOC_S3D
          else
@@ -2112,7 +2129,7 @@ contains
          end if
 
          success = timespaceinitialfield(x_loc, y_loc, target_array, num_items, filename, filetype, method, used_operand, &
-                                         transformcoef, loc_type)
+                                         transformcoef, loc_type, kcsini)
 
          if (associated(target_array_3d)) then
             call initialfield2Dto3D_dbl_indx(target_array, target_array_3d, first_index, transformcoef(13), transformcoef(14), &
@@ -2180,7 +2197,7 @@ contains
       real(kind=dp), dimension(:), intent(inout), target :: output_array_3d !< The output array on 3d grid cells (1:ndkx).
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
-      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
+      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp), dimension(:, :), pointer :: output_array_3d_tmp
 
@@ -2209,7 +2226,7 @@ contains
       integer, intent(in) :: first_index !< The value for the first "constituent" index of the output array.
       real(kind=dp), intent(in) :: vertical_range_min !< Lower limit for the optional vertical range. Use dmiss for no custom range.
       real(kind=dp), intent(in) :: vertical_range_max !< Upper limit for the optional vertical range. Use dmiss for no custom range.
-      character(len=*), intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
+      integer, intent(in) :: operand !< The operand to be used for combining the input field values with any previously set values.
 
       real(kind=dp) :: lower_limit, upper_limit, level_at_pressure_point
       integer :: n, k, kb, kt
@@ -2227,7 +2244,8 @@ contains
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
             else
-               kb = kbot(n); kt = ktop(n)
+               kb = kbot(n)
+               kt = ktop(n)
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)
                do k = kb, kt
                   level_at_pressure_point = 0.5_dp * (zws(k) + zws(k - 1))

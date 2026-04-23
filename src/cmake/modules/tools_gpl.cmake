@@ -63,3 +63,10 @@ set(checkhydbal_module ${tools_gpl_path}/waq_tools/internal/checkhydbal)
 
 # cosumo_bmi
 set(cosumo_bmi_module "${tools_gpl_path}/cosumo_bmi")
+
+# csumo_nfio
+set(csumo_nfio_module "${tools_gpl_path}/csumo_nfio")
+
+# preC-SUMO
+set(preC-SUMO_module "${tools_gpl_path}/pre_c_sumo")
+

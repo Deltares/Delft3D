@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,7 +31,6 @@
 !
 
 module m_iadvecini
-
 
    use precision, only: dp
    implicit none
@@ -71,12 +70,16 @@ contains
          end if
       end if
 
-      if (kmx > 0 .or. iadvec == 0) iadvec1D = iadvec ! for now, same if 3D
+      if (kmx > 0 .or. iadvec == 0) then
+         iadvec1D = iadvec ! for now, same if 3D
+      end if
       do L = 1, lnx
          if (iadv(L) /= -1) then
             iadv(L) = iadvec
             if (L <= Lnx1D) then
-               if (iadvec /= 0) iadv(L) = iadvec1D ! voorlopig altijd piacz impl 4 voor 1D
+               if (iadvec /= 0) then
+                  iadv(L) = iadvec1D ! voorlopig altijd piacz impl 4 voor 1D
+               end if
             end if
          end if
       end do

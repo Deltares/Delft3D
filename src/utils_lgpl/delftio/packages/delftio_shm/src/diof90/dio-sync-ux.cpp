@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,57 +33,53 @@
 #include <errno.h>
 #include <unistd.h>
 
-#define MAX_FILE_LEN    256
+#define MAX_FILE_LEN 256
 
-int makeFifo(
-    char * name
-    )
+int makeFifo(char* name)
 {
-    int retVal=1;
+    int retVal = 1;
 
-    if ( mkfifo(name, S_IRWXU) != 0 )
+    if (mkfifo(name, S_IRWXU) != 0)
     {
-    retVal = ( errno == EEXIST );
+        retVal = (errno == EEXIST);
     }
 
     return retVal;
 }
 
-
-void DIOSYNCcMKFIFO(
-    int *retVal,
-    char * name,
-    int nameLen
-    )
+void DIOSYNCcMKFIFO(int* retVal, char* name, int nameLen)
 {
-    char locName[MAX_FILE_LEN+1];
-    char *p;
+    char locName[MAX_FILE_LEN + 1];
+    char* p;
 
-    strncpy(locName, name, nameLen); locName[nameLen] = '\0';
-    p = locName + nameLen - 1; while(*p==' '&&p>locName){*p--='\0';}
+    strncpy(locName, name, nameLen);
+    locName[nameLen] = '\0';
+    p = locName + nameLen - 1;
+    while (*p == ' ' && p > locName)
+    {
+        *p-- = '\0';
+    }
 
     *retVal = makeFifo(locName);
 }
 
-
-void DIOSYNCcRMFIFO(
-    char * name,
-    int nameLen
-    )
+void DIOSYNCcRMFIFO(char* name, int nameLen)
 {
-    char locName[MAX_FILE_LEN+1];
-    char *p;
+    char locName[MAX_FILE_LEN + 1];
+    char* p;
 
-    strncpy(locName, name, nameLen); locName[nameLen] = '\0';
-    p = locName + nameLen - 1; while(*p==' '&&p>locName){*p--='\0';}
+    strncpy(locName, name, nameLen);
+    locName[nameLen] = '\0';
+    p = locName + nameLen - 1;
+    while (*p == ' ' && p > locName)
+    {
+        *p-- = '\0';
+    }
 
-    (void) unlink(locName);
+    (void)unlink(locName);
 }
 
-
-void DIOSYNCcSLEEP(
-    int * numMillisec
-    )
+void DIOSYNCcSLEEP(int* numMillisec)
 {
 #if (defined(HAVE_CONFIG_H))
     unsigned long loc_microSec;
@@ -94,5 +90,3 @@ void DIOSYNCcSLEEP(
     loc_microSec = *numMillisec * 1000;
     usleep(loc_microSec);
 }
-
-

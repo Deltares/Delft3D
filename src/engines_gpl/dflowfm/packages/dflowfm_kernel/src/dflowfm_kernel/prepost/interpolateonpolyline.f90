@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,7 +57,9 @@ contains
       JA = 1
       DT = T(I) - T(I - 1)
       TI = 0.0_dp
-      if (DT /= 0.0_dp) TI = (TP - T(I - 1)) / DT
+      if (DT /= 0.0_dp) then
+         TI = (TP - T(I - 1)) / DT
+      end if
       XP = (1.0_dp - TI) * X(I - 1) + TI * X(I)
       YP = (1.0_dp - TI) * Y(I - 1) + TI * Y(I)
       ZP = (1.0_dp - TI) * Z(I - 1) + TI * Z(I)

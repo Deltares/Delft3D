@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -89,7 +89,8 @@ contains
       call VOL12D(japerim) ! and add area's and volumes of 1D links
 
       do L = lnxi + 1, Lnx
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          a1(k1) = ba(k2) ! set bnd a1 to ba of inside point
          vol1(k1) = vol1(k2) ! a1(k1)*(s1(k1) - bl(k1))
       end do

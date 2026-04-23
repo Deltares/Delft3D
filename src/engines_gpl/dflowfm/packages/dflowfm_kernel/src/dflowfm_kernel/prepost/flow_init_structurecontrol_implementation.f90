@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -26,6 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+
 !> submodule that contains the implementation of flow_init_structurecontrol.
 submodule(m_flow_init_structurecontrol) flow_init_structurecontrol_implementation
    use precision_basics, only: dp
@@ -50,10 +51,10 @@ contains
       use unstruc_model, only: md_structurefile_dir
       use unstruc_files, only: resolvePath
       use string_module, only: strcmpi
-      use m_longculverts, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts
       use m_partitioninfo, only: jampi
       use messagehandling, only: IDLEN
-      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
+      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration, remove_1d_links_from_dambreak_polygon_list
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       use m_1d_structures, only: update_bedlevels_for_bridges
 
@@ -122,6 +123,7 @@ contains
             ! NOTE: kegen below does not apply to general structures. Just a placeholder for the link snapping of all structure types.
             select case (pstru%type)
             case (ST_DAMBREAK)
+               call remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
                num_dambreak_links = num_dambreak_links + numgen
                call update_counters_for_dambreaks(pstru%id, numgen, dambridx, i, kedb, kegen)
             case (ST_PUMP)
@@ -249,14 +251,15 @@ contains
       use m_readstructures, only: readpump
       use unstruc_model, only: md_structurefile_dir
       use unstruc_files, only: resolvePath
-      use string_module, only: str_lower, strcmpi
-      use m_longculverts, only: nlongculverts
+      use string_module, only: str_tolower, strcmpi
+      use m_longculverts_data, only: nlongculverts
       use m_partitioninfo, only: jampi
       use m_qnerror, only: qnerror
       use m_read_property, only: read_property
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: add_dambreak_signal, update_dambreak_administration_old
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       logical :: status
       character(len=256) :: plifile
@@ -265,7 +268,7 @@ contains
       character(len=256) :: fnam, rec, key
       integer, allocatable :: pumpidx(:), gateidx(:), cdamidx(:), cgenidx(:), dambridx(:) ! temp
       real(kind=dp) :: tmpval
-      integer :: istrtype, itmp
+      integer :: istrtype, num_stages
       integer :: numg, numd, npum, ngs, numgen, ndambr
       type(tree_data), pointer :: str_ptr
       real(kind=dp), allocatable :: widths(:)
@@ -414,9 +417,11 @@ contains
 
          ! check if this structure concerns Flow1D type structure
          call prop_get(str_ptr, '', 'branchid', branchid, success)
-         if (.not. success) call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
+         if (.not. success) then
+            call prop_get(str_ptr, '', 'numCoordinates', branchid, success)
+         end if
          if (success) then
-            if (trim(strtype) /= 'pump' .and. trim(strtype) /= 'dambreak') then
+            if (.not. strcmpi(strtype, 'pump') .and. .not. strcmpi(strtype, 'dambreak')) then
                cycle
             end if
          end if
@@ -460,7 +465,7 @@ contains
 
          end if
 
-         select case (strtype)
+         select case (str_tolower(strtype))
          case ('gateloweredgelevel') ! Old-style controllable gateloweredgelevel
             !else if (qid == 'gateloweredgelevel' ) then
 
@@ -562,7 +567,7 @@ contains
 
             ncgen = ncgen + numgen
             ! For later usage split up the set of all generalstructures into weirs, gates or true general structures (in user input)
-            select case (strtype)
+            select case (str_tolower(strtype))
             case ('weir')
                nweirgen = nweirgen + 1
             case ('gate')
@@ -709,7 +714,7 @@ contains
             call resolvePath(plifile, md_structurefile_dir)
 
             ! Start with some general structure default params, and thereafter, make changes depending on actual strtype
-            if (strtype /= 'generalstructure') then
+            if (.not. strcmpi(strtype, 'generalstructure')) then
                hulp(idx_upstream1width, n) = huge(1.0_dp) ! Upstream1Width
                hulp(idx_upstream1level, n) = -huge(1.0_dp) ! Upstream1Level
                hulp(idx_upstream2width, n) = huge(1.0_dp) ! Upstream2Width
@@ -738,7 +743,7 @@ contains
                hulp(idx_gateopeningwidth, n) = 0.0_dp ! GateOpeningWidth
             end if
 
-            select case (strtype)
+            select case (str_tolower(strtype))
       !! WEIR !!
             case ('weir')
                rec = ' '
@@ -765,10 +770,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -826,10 +831,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -875,10 +880,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+2) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -909,10 +914,10 @@ contains
                         call resolvePath(fnam, md_structurefile_dir)
                         ! Time-interpolated value will be placed in zcgen((n-1)*3+3) when calling ec_gettimespacevalue.
                         if (index(trim(fnam)//'|', '.tim|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
                         end if
                         if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
                         end if
                      end if
                   end if
@@ -924,8 +929,7 @@ contains
                   write (msgbuf, '(a,a,a)') 'Optional field ''GateOpeningHorizontalDirection'' not available for gate ''', trim(strid), '''. Use default value.'
                   call msg_flush()
                end if
-               call str_lower(rec)
-               select case (trim(rec))
+               select case (str_tolower(trim(rec)))
                case ('from_left', 'fromleft')
                   istrtmp = IOPENDIR_FROMLEFT
                case ('from_right', 'fromright')
@@ -993,10 +997,10 @@ contains
                            fnam = trim(rec)
                            call resolvePath(fnam, md_structurefile_dir)
                            if (index(trim(fnam)//'|', '.tim|') > 0) then
-                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
+                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                            end if
                            if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
+                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                            end if
                         end if
                      end if
@@ -1098,11 +1102,11 @@ contains
                   call resolvePath(fnam, md_structurefile_dir)
                   if (index(trim(fnam)//'|', '.tim|') > 0) then
                      ! Time-interpolated value will be placed in zgate(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                   if (index(trim(fnam)//'|', '.cmp|') > 0) then
                      ! Evaluated harmonic signals value will be placed in zgate(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                end if
             end if
@@ -1179,11 +1183,11 @@ contains
                   call resolvePath(fnam, md_structurefile_dir)
                   if (index(trim(fnam)//'|', '.tim|') > 0) then
                      ! Time-interpolated value will be placed in zcdam(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                   if (index(trim(fnam)//'|', '.cmp|') > 0) then
                      ! Evaluated harmonic signals value will be placed in zcdam(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                end if
             end if
@@ -1274,8 +1278,8 @@ contains
             istrtype = getStructype_from_string(strtype)
 
             ! Do a try-read to determine whether this is a staged flow1d pump. If not, just continue (capacity is enough then).
-            call prop_get(str_ptr, 'structure', 'numStages', itmp, success) ! UNST-2709: new consistent keyword
-            if (success) then
+            call prop_get(str_ptr, 'structure', 'numStages', num_stages, success)
+            if (success .and. num_stages > 0) then
                ! flow1d_io library: add and read SOBEK pump
                ! just use the first link of the the structure (the network%sts%struct(istrtmp)%link_number  is not used in computations)
                if (L1pumpsg(n) <= L2pumpsg(n)) then
@@ -1286,6 +1290,8 @@ contains
                      call readPump(network%sts%struct(istrtmp)%pump, str_ptr, strid, network%forcinglist, success)
                   end if
                end if
+            else
+               success = .false.
             end if
 
             ! mapping for qpump array
@@ -1323,17 +1329,17 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         ! Time-interpolated value will be placed in qpump(n) when calling ec_gettimespacevalue.
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                         if (.not. success) then
-                           message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                           message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
                         end if
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
                         ! Evaluated harmonic signals value will be placed in qpump(n) when calling ec_gettimespacevalue.
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                         if (.not. success) then
-                           message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                           message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
                         end if
                      end if

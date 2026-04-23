@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -73,8 +73,12 @@ contains
       ND = N2 - N1
       MFAA = MFAC
       NFAA = NFAC
-      if (MD == 0) MFAA = 1
-      if (ND == 0) NFAA = 1
+      if (MD == 0) then
+         MFAA = 1
+      end if
+      if (ND == 0) then
+         NFAA = 1
+      end if
 
       IR = 1
       INOW = 1

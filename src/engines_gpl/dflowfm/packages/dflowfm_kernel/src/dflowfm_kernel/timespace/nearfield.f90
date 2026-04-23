@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.!
+!  Copyright (C)  Stichting Deltares, 2017-2026.!
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -37,18 +37,24 @@ module m_nearfield
    use MessageHandling
    use fm_external_forcings_data
    use m_transport
-   !
-   implicit none
-   !
+
+   implicit none(type, external)
+   private
+
+   public :: default_nearfieldData
+   public :: reset_nearfieldData
+   public :: setNFEntrainmentMomentum
+   public :: addNearfieldData
+   public :: dealloc_nfarrays
+
    ! constants
-   !
-   integer, parameter :: NEARFIELD_DISABLED = 0 !< If nearfield_mode is NEARFIELD_DISABLED (default), then nearfield/COSUMO is disabled
-   integer, parameter :: NEARFIELD_ENABLED = 1 !< After call addNearfieldData, nearfield_mode is set to NEARFIELD_ENABLED. This ensures:
+   integer, parameter, public :: NEARFIELD_DISABLED = 0 !< If nearfield_mode is NEARFIELD_DISABLED (default), then nearfield/COSUMO is disabled
+   integer, parameter, public :: NEARFIELD_ENABLED = 1 !< After call addNearfieldData, nearfield_mode is set to NEARFIELD_ENABLED. This ensures:
    !< - addNearfieldData does not need to be called again, until the data is updated and
    !<   passes the pointers again.
    !< - that subroutine setNFEntrainmentMomentum can be called if flag NearFieldEntrainmentMomentum
    !<   is switched on
-   integer, parameter :: NEARFIELD_UPDATED = 2 !< nearfield_mode is set to NEARFIELD_UPDATED, everytime DIMR passes a data pointer
+   integer, parameter, public :: NEARFIELD_UPDATED = 2 !< nearfield_mode is set to NEARFIELD_UPDATED, everytime DIMR passes a data pointer
    !< from cosumo_bmi to D-Flow FM. This is the trigger to call addNearfieldData in
    !< set_external_forcings.
    integer, parameter :: NF_IX = 1 !< Column 1 in COSUMO data          : x-coordinate
@@ -67,38 +73,38 @@ module m_nearfield
    !
    ! integers
    !
-   integer :: nearfield_mode !< Switch to enable/disable COSUMO
-   integer :: nf_num_dif !< Number of diffusers     as obtained from COSUMO_BMI
-   integer :: nf_numconst !< Number of constituents  as obtained from COSUMO_BMI
-   integer :: nf_numintake !< Number of intake points as obtained from COSUMO_BMI
-   integer :: nf_numsour !< Number of source points as obtained from COSUMO_BMI
-   integer :: nf_numsink !< Number of sink points   as obtained from COSUMO_BMI
-   integer :: nf_namlen !< Length of character strings in nf_const_operator as obtained from COSUMO_BMI
+   integer, public :: nearfield_mode !< Switch to enable/disable COSUMO
+   integer, public :: nf_num_dif !< Number of diffusers     as obtained from COSUMO_BMI
+   integer, public :: nf_numconst !< Number of constituents  as obtained from COSUMO_BMI
+   integer, public :: nf_numintake !< Number of intake points as obtained from COSUMO_BMI
+   integer, public :: nf_numsour !< Number of source points as obtained from COSUMO_BMI
+   integer, public :: nf_numsink !< Number of sink points   as obtained from COSUMO_BMI
+   integer, public :: nf_namlen !< Length of character strings in nf_const_operator as obtained from COSUMO_BMI
    integer :: nf_sour_track_max !< Maximum (over all diffusers) of all source track flow cells
    integer :: nf_intake_cnt_max !< Maximum (over all diffusers) of all number of intake points
    integer :: nf_entr_max !< Maximum (over all diffusers) of all entrainment points (coupled sink source points)
    !
    ! Pointers to data inside COSUMO_BMI, allocated in COSUMO_BMI
    !
-   real(fp), dimension(:), pointer :: nf_q_source !< Qsource
-   real(fp), dimension(:), pointer :: nf_q_intake !< Qintake
-   real(fp), dimension(:, :), pointer :: nf_const !< Constituent values
+   real(fp), dimension(:), pointer, public :: nf_q_source !< Qsource
+   real(fp), dimension(:), pointer, public :: nf_q_intake !< Qintake
+   real(fp), dimension(:, :), pointer, public :: nf_const !< Constituent values
    !< DIM 1: diffuser
    !< DIM 2: constituent
-   real(fp), dimension(:, :, :), pointer :: nf_intake !< Intake
+   real(fp), dimension(:, :, :), pointer, public :: nf_intake !< Intake
    !< DIM 1: diffuser
    !< DIM 2: intake point id
    !< DIM 3: X, Y, Z
-   real(fp), dimension(:, :, :), pointer :: nf_sink !< Sinks
+   real(fp), dimension(:, :, :), pointer, public :: nf_sink !< Sinks
    !< DIM 1: diffuser
    !< DIM 2: sink point id
    !< DIM 3: X, Y, Z, S, H, B
-   real(fp), dimension(:, :, :), pointer :: nf_sour !< Sources
+   real(fp), dimension(:, :, :), pointer, public :: nf_sour !< Sources
    !< DIM 1: diffuser
    !< DIM 2: source point id
    !< DIM 3: X, Y, Z, S, H, B, Umag, Udir
-   character(:), dimension(:), pointer :: nf_const_operator !< Constituent operator
-   logical(kind=c_bool), dimension(:), pointer :: nf_src_mom !< true: Umag and Udir in nf_sour are filled
+   character(:), dimension(:), pointer, public :: nf_const_operator !< Constituent operator
+   logical(kind=c_bool), dimension(:), pointer, public :: nf_src_mom !< true: Umag and Udir in nf_sour are filled
    !
    ! NearField arrays on FM domain, allocated in FM
    !
@@ -115,6 +121,12 @@ module m_nearfield
    real(fp), dimension(:, :), allocatable :: nf_intake_wght !< Fraction * nf_numintake of each intake point of all diffusers
    real(fp), dimension(:, :), allocatable :: nf_intake_z !< Z coordinate            of each intake point of all diffusers
 
+   type :: intake_location_t
+      integer :: index_2d
+      integer :: index_3d
+      real(kind=dp) :: z_coordinate
+      integer :: weight_count
+   end type intake_location_t
 contains
 !
 !
@@ -125,7 +137,7 @@ contains
 !! arrays used during the D-Flow FM computation
    subroutine addNearfieldData()
       call desa()
-      call nearfieldToFM() !ksrc(1,:),ksrc(4,:),qstss, srcnames, zsrc, zsrc2, later also area
+      call nearfieldToFM() !source_sink_indices(1,:),source_sink_indices(4,:),source_sink_all_discharges, srcnames, source_sink_z_bottom, source_sink_z_top, later also area
       nearfield_mode = NEARFIELD_ENABLED
    end subroutine addNearfieldData
 !
@@ -147,7 +159,7 @@ contains
       nf_numintake = 0
       nf_numsour = 0
       nf_numsink = 0
-      numsrc_nf = 0
+      num_source_sink_for_nearfield = 0
       nf_entr_start = 0
       nf_entr_end = 0
       !
@@ -175,18 +187,42 @@ contains
       integer :: istat
       !
       ! Body
-      if (allocated(nf_sink_n)) deallocate (nf_sink_n, stat=istat)
-      if (allocated(nf_sour_n)) deallocate (nf_sour_n, stat=istat)
-      if (allocated(nf_intake_n)) deallocate (nf_intake_n, stat=istat)
-      if (allocated(nf_intake_nk)) deallocate (nf_intake_nk, stat=istat)
-      if (allocated(nf_numintake_idif)) deallocate (nf_numintake_idif, stat=istat)
-      if (allocated(nf_sinkid)) deallocate (nf_entr_start, stat=istat)
-      if (allocated(nf_sinkid)) deallocate (nf_entr_end, stat=istat)
-      if (allocated(nf_sinkid)) deallocate (nf_sinkid, stat=istat)
-      if (allocated(nf_sour_wght)) deallocate (nf_sour_wght, stat=istat)
-      if (allocated(nf_sour_wght_sum)) deallocate (nf_sour_wght_sum, stat=istat)
-      if (allocated(nf_intake_wght)) deallocate (nf_intake_wght, stat=istat)
-      if (allocated(nf_intake_z)) deallocate (nf_intake_z, stat=istat)
+      if (allocated(nf_sink_n)) then
+         deallocate (nf_sink_n, stat=istat)
+      end if
+      if (allocated(nf_sour_n)) then
+         deallocate (nf_sour_n, stat=istat)
+      end if
+      if (allocated(nf_intake_n)) then
+         deallocate (nf_intake_n, stat=istat)
+      end if
+      if (allocated(nf_intake_nk)) then
+         deallocate (nf_intake_nk, stat=istat)
+      end if
+      if (allocated(nf_numintake_idif)) then
+         deallocate (nf_numintake_idif, stat=istat)
+      end if
+      if (allocated(nf_sinkid)) then
+         deallocate (nf_entr_start, stat=istat)
+      end if
+      if (allocated(nf_sinkid)) then
+         deallocate (nf_entr_end, stat=istat)
+      end if
+      if (allocated(nf_sinkid)) then
+         deallocate (nf_sinkid, stat=istat)
+      end if
+      if (allocated(nf_sour_wght)) then
+         deallocate (nf_sour_wght, stat=istat)
+      end if
+      if (allocated(nf_sour_wght_sum)) then
+         deallocate (nf_sour_wght_sum, stat=istat)
+      end if
+      if (allocated(nf_intake_wght)) then
+         deallocate (nf_intake_wght, stat=istat)
+      end if
+      if (allocated(nf_intake_z)) then
+         deallocate (nf_intake_z, stat=istat)
+      end if
    end subroutine dealloc_nfarrays
 !
 !
@@ -196,22 +232,23 @@ contains
 !> Result: "NearField arrays on FM domain" are filled (nf_sink_n, nf_sour_n, ..., nf_intake_z)
    subroutine desa()
       use m_alloc, only: realloc
-      use m_GlobalParameters, only: INDTP_2D
-      !
-      ! Locals
+
       integer :: idif
       integer :: istat
       integer :: jakdtree = 1 !< use kdtree (1) or not (other)
-      integer :: jaoutside = 0 !< allow outside cells (for 1D) (1) or not (0)
-      !
-      ! Body
-      !
+
       ! Initialization
       !
       ! During debugging, sometimes arrays contain strange values. Clean the most important once.
-      if (allocated(nf_sink_n)) deallocate (nf_sink_n, stat=istat)
-      if (allocated(nf_sour_n)) deallocate (nf_sour_n, stat=istat)
-      if (allocated(nf_intake_n)) deallocate (nf_intake_n, stat=istat)
+      if (allocated(nf_sink_n)) then
+         deallocate (nf_sink_n, stat=istat)
+      end if
+      if (allocated(nf_sour_n)) then
+         deallocate (nf_sour_n, stat=istat)
+      end if
+      if (allocated(nf_intake_n)) then
+         deallocate (nf_intake_n, stat=istat)
+      end if
       !
       ! Sink: dimension is read from NearField and is fixed: allocate
       call realloc(nf_sink_n, [nf_num_dif, nf_numsink], keepExisting=.false., fill=0)
@@ -235,13 +272,13 @@ contains
       do idif = 1, nf_num_dif
          !
          ! Sinks
-         call getSinkLocations(idif, jakdtree, jaoutside, INDTP_2D)
+         call getSinkLocations(idif, jakdtree)
          !
          ! Intakes
-         call getIntakeLocations(idif, jakdtree, jaoutside, INDTP_2D)
+         call getIntakeLocations(idif, jakdtree)
          !
          ! Sources
-         call getSourceLocations(idif, jakdtree, jaoutside, INDTP_2D)
+         call getSourceLocations(idif, jakdtree)
       end do !idiffuser
    end subroutine desa
 !
@@ -250,17 +287,17 @@ contains
 !> Convert Nearfield data into arrays actually used during the D-Flow FM computation
 !> Input:  All "nf_" arrays
 !> Result: Filled:
-!>            ksrc  : (1,i) horizontal cell index of sink
+!>            source_sink_indices  : (1,i) horizontal cell index of sink
 !>                    (4,i) horizontal cell index of source
-!>            zsrc  : (1,i) bottom z-coordinate of sink
+!>            source_sink_z_bottom  : (1,i) bottom z-coordinate of sink
 !>                    (2,i) bottom z-coordinate of source
-!>            zsrc2 : (1,i) top    z-coordinate of sink
+!>            source_sink_z_top : (1,i) top    z-coordinate of sink
 !>                    (2,i) top    z-coordinate of source
-!>            qstss : discharge volumes and constituents
+!>            source_sink_all_discharges : discharge volumes and constituents
 !>         For momentum:
-!>            arsrc : area of discharge. Velocity = qstss_volume / arsrc
-!>            cssrc : cosine of angle of discharge
-!>            snsrc : sinus  of angle of discharge
+!>            source_sink_area : area of discharge. Velocity = qstss_volume / source_sink_area
+!>            source_sink_discharge_cosine : cosine of angle of discharge
+!>            source_sink_discharge_sine : sinus  of angle of discharge
    subroutine nearfieldToFM()
       use m_alloc, only: realloc
       use m_physcoef, only: NFEntrainmentMomentum
@@ -268,37 +305,34 @@ contains
       ! Locals
       integer :: i
       integer :: idif
-      integer :: iintake
       real(fp) :: sum_weight_intakes
       !
       ! Body
       !
       ! Reset the FM dimensions:
-      !     numsrc   : without numsrc_nf
-      !     numsrc_nf: 0
+      !     num_source_sink   : without num_source_sink_for_nearfield
+      !     num_source_sink_for_nearfield: 0
       ! They will be redefined in this subroutine
-      do i = numsrc + 1, numsrc_nf
-         arsrc(i) = 0.0_hp
+      do i = num_source_sink + 1, num_source_sink_for_nearfield
+         source_sink_area(i) = 0.0_hp
       end do
-      numsrc = numsrc - numsrc_nf
-      numsrc_nf = 0
+      num_source_sink = num_source_sink - num_source_sink_for_nearfield
+      num_source_sink_for_nearfield = 0
       nf_entr_max = 0
       if (NFEntrainmentMomentum > 0) then
          call realloc(nf_entr_start, nf_num_dif, keepExisting=.false., fill=0)
          call realloc(nf_entr_end, nf_num_dif, keepExisting=.false., fill=0)
       end if
-      if (allocated(nf_sinkid)) nf_sinkid = 0
+      if (allocated(nf_sinkid)) then
+         nf_sinkid = 0
+      end if
       !
       ! For each diffuser
       do idif = 1, nf_num_dif
          !
          ! Intake preparations:
          ! sum_weight_intakes is needed to compute the discharge in each intake point
-         sum_weight_intakes = 0.0_fp
-         do iintake = 1, nf_intake_cnt_max
-            if (nf_intake_n(idif, iintake) == 0) exit
-            sum_weight_intakes = sum_weight_intakes + nf_intake_wght(idif, iintake)
-         end do
+         sum_weight_intakes = real(nf_numintake_idif(idif), kind=dp)
          !
          ! ENTRAINMENT:
          call entrainmentToSrc(idif)
@@ -315,90 +349,71 @@ contains
 !==============================================================================
 !> Use find_flownode to convert x,y-coordinates of each sink location into nf_sink_n index
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
-   subroutine getSinkLocations(idif, jakdtree, jaoutside, iLocTp)
+   subroutine getSinkLocations(idif, jakdtree)
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
+      use m_GlobalParameters, only: INDTP_2D
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
       integer, intent(inout) :: jakdtree
-      integer, intent(in) :: jaoutside
-      integer, intent(in) :: iLocTp
       !
       ! Locals
       integer :: i
-      integer :: istat
       real(hp), dimension(:), allocatable :: find_x !< array containing x-coordinates of locations for which the cell index n is searched for by calling find_flownode
       real(hp), dimension(:), allocatable :: find_y !< array containing y-coordinates of locations for which the cell index n is searched for by calling find_flownode
       character(IdLen), dimension(:), allocatable :: find_name !< array containing names         of locations for which the cell index n is searched for by calling find_flownode
       integer, dimension(:), allocatable :: find_n !< array containing the result of a call to find_flownode
-      !
-      ! Body
+
       call realloc(find_x, nf_numsink, keepExisting=.false., fill=0.0_hp)
       call realloc(find_y, nf_numsink, keepExisting=.false., fill=0.0_hp)
       call realloc(find_n, nf_numsink, keepExisting=.false., fill=0)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      allocate (character(IdLen) :: find_name(nf_numsink), stat=istat)
-      find_name = ' '
+      call realloc(find_name, nf_numsink, keepExisting=.false., fill=' ')
       do i = 1, nf_numsink
          find_x(i) = nf_sink(idif, i, NF_IX)
          find_y(i) = nf_sink(idif, i, NF_IY)
          write (find_name(i), '(i0.4,a,i0.4)') idif, "sink", i
       end do
-      call find_nearest_flownodes(nf_numsink, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+      call find_nearest_flownodes(nf_numsink, find_x, find_y, find_name, find_n, jakdtree, jaoutside=0, iLocTp=INDTP_2D)
       do i = 1, nf_numsink
          if (find_n(i) == 0) then
             call mess(LEVEL_ERROR, "Sink point '", trim(find_name(i)), "' not found")
          end if
          nf_sink_n(idif, i) = find_n(i)
       end do
-      !
-      if (allocated(find_x)) deallocate (find_x, stat=istat)
-      if (allocated(find_y)) deallocate (find_y, stat=istat)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      if (allocated(find_n)) deallocate (find_n, stat=istat)
    end subroutine getSinkLocations
 !
 !
 !==============================================================================
 !> Use find_flownode to convert x,y-coordinates of each intake location into nf_intake_n index
 !> Also get nk-index, sum for each nk, define weights
-   subroutine getIntakeLocations(idif, jakdtree, jaoutside, iLocTp)
+   subroutine getIntakeLocations(idif, jakdtree)
       use m_alloc, only: realloc
-      use m_get_kbot_ktop, only: getkbotktop
-      use m_flow, only: zws
       use m_find_flownode, only: find_nearest_flownodes
+      use m_GlobalParameters, only: INDTP_2D
+
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
       integer, intent(inout) :: jakdtree
-      integer, intent(in) :: jaoutside
-      integer, intent(in) :: iLocTp
       !
       ! Locals
       integer :: i
-      integer :: j
-      integer :: istat
       integer :: nf_intake_cnt
       integer :: nk
-      integer :: kbot
-      integer :: ktop
-      real(hp), dimension(:), allocatable :: find_x !< array containing x-coordinates of locations for which the cell index n is searched for by calling find_flownode
-      real(hp), dimension(:), allocatable :: find_y !< array containing y-coordinates of locations for which the cell index n is searched for by calling find_flownode
+      real(dp), dimension(:), allocatable :: find_x !< array containing x-coordinates of locations for which the cell index n is searched for by calling find_flownode
+      real(dp), dimension(:), allocatable :: find_y !< array containing y-coordinates of locations for which the cell index n is searched for by calling find_flownode
       character(IdLen), dimension(:), allocatable :: find_name !< array containing names         of locations for which the cell index n is searched for by calling find_flownode
       integer, dimension(:), allocatable :: find_n !< array containing the result of a call to find_flownode
+      type(intake_location_t), dimension(:), allocatable :: map_cell_index_to_intake_weight !< Count how many c-sumo intakes lie in each 3D FM cell in this partition
       !
       ! Body
-      call realloc(find_x, nf_numintake, keepExisting=.false., fill=0.0_hp)
-      call realloc(find_y, nf_numintake, keepExisting=.false., fill=0.0_hp)
+      call realloc(find_x, nf_numintake, keepExisting=.false., fill=0.0_dp)
+      call realloc(find_y, nf_numintake, keepExisting=.false., fill=0.0_dp)
       call realloc(find_n, nf_numintake, keepExisting=.false., fill=0)
-      !call realloc(nf_numintake_idif, nf_num_dif, keepExisting=.false., fill = 0)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      allocate (character(IdLen) :: find_name(nf_numintake), stat=istat)
-      find_name = ' '
+      call realloc(find_name, nf_numintake, keepExisting=.false., fill=' ')
       do i = 1, nf_numintake
-         if (comparereal(nf_intake(idif, i, NF_IX), 0.0_hp) == 0 .and. &
-             comparereal(nf_intake(idif, i, NF_IY), 0.0_hp) == 0) then
+         if (has_intake_end_marker(idif, i)) then
             nf_numintake_idif(idif) = i - 1
             exit
          end if
@@ -406,98 +421,98 @@ contains
          find_y(i) = nf_intake(idif, i, NF_IY)
          write (find_name(i), '(i0.4,a,i0.4)') idif, "intake", i
       end do
-      call find_nearest_flownodes(nf_numintake_idif(idif), find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
-      !
-      if (nf_numintake_idif(idif) /= 0) then
-         !
-         ! First handle the first intake point of this diffuser: it will always result in an additional intake point
-         ! Copy nf_intake(:,:,NF_IZ) to nf_intake_z: administration index has changed
-         nf_intake_cnt = 1
-         call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-         call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-         call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-         call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-         if (find_n(1) == 0) then
-            call mess(LEVEL_ERROR, "Intake point '", trim(find_name(1)), "' not found")
+      call find_nearest_flownodes(nf_numintake_idif(idif), find_x, find_y, find_name, find_n, jakdtree, jaoutside=0, iLocTp=INDTP_2D)
+
+      allocate (map_cell_index_to_intake_weight(0))
+
+      do i = 1, nf_numintake_idif(idif)
+         if (find_n(i) /= 0) then
+            nk = find_3d_layer_index_intake(find_n(i), idif, i)
+            call add_to_map(map_cell_index_to_intake_weight, find_n(i), nk, -nf_intake(idif, i, NF_IZ))
          end if
-         call getkbotktop(find_n(1), kbot, ktop)
-         do nk = kbot, ktop
-            if (zws(nk) > -nf_intake(idif, 1, NF_IZ) .or. nk == ktop) then
-               exit
-            end if
-         end do
-         nf_intake_n(idif, 1) = find_n(1)
-         nf_intake_nk(idif, 1) = nk
-         nf_intake_z(idif, 1) = -nf_intake(idif, 1, NF_IZ)
-         nf_intake_wght(idif, 1) = nf_intake_wght(idif, 1) + 1.0_fp
-         !
-         ! Now handle the rest of the intake points of this diffuser
-         do i = 2, nf_numintake_idif(idif)
-            if (comparereal(nf_intake(idif, i, NF_IX), 0.0_hp) == 0 .and. &
-                comparereal(nf_intake(idif, i, NF_IY), 0.0_hp) == 0 .and. &
-                comparereal(nf_intake(idif, i, NF_IZ), 0.0_hp) == 0) then
-               exit
-            end if
-            if (find_n(i) == 0) then
-               call mess(LEVEL_ERROR, "Intake point '", trim(find_name(i)), "' not found")
-            end if
-            call getkbotktop(find_n(i), kbot, ktop)
-            do nk = kbot, ktop
-               if (zws(nk) > -nf_intake(idif, i, NF_IZ) .or. nk == ktop) then
-                  exit
-               end if
-            end do
-            !
-            ! Check whether this nk-point is already in array nf_intake_nk
-            ! If yes: increase wght, set nk=0
-            do j = 1, nf_intake_cnt
-               if (nf_intake_nk(idif, j) == nk) then
-                  nf_intake_wght(idif, j) = nf_intake_wght(idif, j) + 1.0_fp ! weight/wght_tot: relative withdrawal from this cell
-                  nk = 0
-                  exit
-               end if
-            end do
-            !
-            ! nk /= 0: This nk-point is not yet in array nf-intake_nk, so this is a new flow node:
-            ! Increase arrays and add the new point
-            if (nk /= 0) then
-               nf_intake_cnt = nf_intake_cnt + 1 ! For this diffuser
-               nf_intake_cnt_max = max(nf_intake_cnt_max, nf_intake_cnt) ! Of all diffusers
-               call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-               call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
-               call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-               call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
-               nf_intake_n(idif, nf_intake_cnt) = find_n(i)
-               nf_intake_nk(idif, nf_intake_cnt) = nk
-               nf_intake_z(idif, nf_intake_cnt) = -nf_intake(idif, i, NF_IZ)
-               nf_intake_wght(idif, nf_intake_cnt) = 1.0_hp
-            end if
-         end do
-      end if
-      !
-      if (allocated(find_x)) deallocate (find_x, stat=istat)
-      if (allocated(find_y)) deallocate (find_y, stat=istat)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      if (allocated(find_n)) deallocate (find_n, stat=istat)
+      end do
+
+      nf_intake_cnt = size(map_cell_index_to_intake_weight, 1)
+      nf_intake_cnt_max = max(nf_intake_cnt_max, nf_intake_cnt) ! Of all diffusers
+      call realloc(nf_intake_n, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+      call realloc(nf_intake_nk, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0)
+      call realloc(nf_intake_z, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
+      call realloc(nf_intake_wght, [nf_num_dif, nf_intake_cnt_max], keepExisting=.true., fill=0.0_hp)
+      do i = 1, nf_intake_cnt
+         nf_intake_n(idif, i) = map_cell_index_to_intake_weight(i)%index_2d
+         nf_intake_nk(idif, i) = map_cell_index_to_intake_weight(i)%index_3d
+         nf_intake_z(idif, i) = map_cell_index_to_intake_weight(i)%z_coordinate
+         nf_intake_wght(idif, i) = real(map_cell_index_to_intake_weight(i)%weight_count, kind=dp)
+      end do
    end subroutine getIntakeLocations
+
+   !> Update array that maps a cell index to the number of intake points in that cell
+   subroutine add_to_map(map_cell_to_count, index_2d, index_3d, z_coordinate)
+      type(intake_location_t), dimension(:), allocatable, intent(inout) :: map_cell_to_count !< keep track of the cells and z-locations of intake points and count how many intakes are represented
+      integer, intent(in) :: index_2d !< 2D cell index
+      integer, intent(in) :: index_3d !< 3D cell index
+      real(kind=dp), intent(in) :: z_coordinate !< z-coordinate of intake point
+
+      integer :: i
+
+      do i = 1, size(map_cell_to_count)
+         if (map_cell_to_count(i)%index_3d == index_3d) then
+            map_cell_to_count(i)%weight_count = map_cell_to_count(i)%weight_count + 1
+            return
+         end if
+      end do
+      ! Key not found: add new row
+      map_cell_to_count = [map_cell_to_count, intake_location_t(index_2d, index_3d, z_coordinate, weight_count=1)]
+   end subroutine add_to_map
+
+   !> Check whether the intake point for this diffuser has position (0,0,0),
+   !! which marks that there are no more intake points for this diffuser.
+   pure function has_intake_end_marker(diffuser_id, intake_id) result(at_origin)
+      integer, intent(in) :: diffuser_id !< Diffuser id
+      integer, intent(in) :: intake_id !< Intake point id
+      logical :: at_origin
+
+      at_origin = (comparereal(nf_intake(diffuser_id, intake_id, NF_IX), 0.0_hp) == 0 .and. &
+                   comparereal(nf_intake(diffuser_id, intake_id, NF_IY), 0.0_hp) == 0 .and. &
+                   comparereal(nf_intake(diffuser_id, intake_id, NF_IZ), 0.0_hp) == 0)
+   end function has_intake_end_marker
+
+   !> Find the 3D layer index (nk) for an intake point, given its 2D cell index (n)
+   pure function find_3d_layer_index_intake(cell_index_2d, diffuser_id, intake_id) result(cell_index_3d)
+      use m_flow, only: zws
+      use m_get_kbot_ktop, only: getkbotktop
+      integer, intent(in) :: cell_index_2d !< 2D cell index (n)
+      integer, intent(in) :: diffuser_id !< Diffuser id
+      integer, intent(in) :: intake_id !< Intake point id
+      integer :: cell_index_3d
+
+      integer :: kbot, ktop, k
+
+      call getkbotktop(cell_index_2d, kbot, ktop)
+      do k = kbot, ktop
+         if (zws(k) > -nf_intake(diffuser_id, intake_id, NF_IZ)) then
+            cell_index_3d = k
+            return
+         end if
+      end do
+      cell_index_3d = ktop
+   end function find_3d_layer_index_intake
 !
 !
 !==============================================================================
 !> Use find_flownode to convert x,y-coordinates of each sink location into nf_sink_n index
 !> Keep all sinks separated, even if the n-index is the same: height varying is allowed
-   subroutine getSourceLocations(idif, jakdtree, jaoutside, iLocTp)
+   subroutine getSourceLocations(idif, jakdtree)
       use m_alloc, only: realloc
       use mathconsts, only: pi
       use m_find_flownode, only: find_nearest_flownodes
+      use m_GlobalParameters, only: INDTP_2D
       !
       ! Arguments
       integer, intent(in) :: idif !< Diffuser id
       integer, intent(inout) :: jakdtree
-      integer, intent(in) :: jaoutside
-      integer, intent(in) :: iLocTp
       !
       ! Locals
-      integer :: istat
       integer :: isour
       integer :: itrack
       real(hp), dimension(:), allocatable :: find_x !< array containing x-coordinates of locations for which the cell index n is searched for by calling find_flownode
@@ -548,15 +563,13 @@ contains
             call realloc(find_x, NUM_TRACK, keepExisting=.false., fill=0.0_hp)
             call realloc(find_y, NUM_TRACK, keepExisting=.false., fill=0.0_hp)
             call realloc(find_n, NUM_TRACK, keepExisting=.false., fill=0)
-            if (allocated(find_name)) deallocate (find_name, stat=istat)
-            allocate (character(IdLen) :: find_name(NUM_TRACK), stat=istat)
-            find_name = ' '
+            call realloc(find_name, NUM_TRACK, keepExisting=.false., fill=' ')
             do itrack = 1, NUM_TRACK
                find_x(itrack) = xstart + (itrack - 1) * dx
                find_y(itrack) = ystart + (itrack - 1) * dy
                write (find_name(itrack), '(i0.4,a,i0.4)') idif, "sour track", itrack
             end do
-            call find_nearest_flownodes(NUM_TRACK, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+            call find_nearest_flownodes(NUM_TRACK, find_x, find_y, find_name, find_n, jakdtree, jaoutside=0, iLocTp=INDTP_2D)
             !
             ! First handle the first source_track point of this diffuser: it will always result in an additional source point
             nf_sour_track = 1
@@ -586,20 +599,18 @@ contains
                nf_sour_wght(idif, nf_sour_track) = nf_sour_wght(idif, nf_sour_track) + 1.0_fp ! weight/wght_tot: relative discharge in this cell
             end do
          else
-            ! nf_numsour > 1
+            ! nf_numsour > 1 .or. nf_numsink == 0
             !
             call realloc(find_x, nf_numsour, keepExisting=.false., fill=0.0_hp)
             call realloc(find_y, nf_numsour, keepExisting=.false., fill=0.0_hp)
             call realloc(find_n, nf_numsour, keepExisting=.false., fill=0)
-            if (allocated(find_name)) deallocate (find_name, stat=istat)
-            allocate (character(IdLen) :: find_name(nf_numsour), stat=istat)
-            find_name = ' '
+            call realloc(find_name, nf_numsour, keepExisting=.false., fill=' ')
             do isour = 1, nf_numsour
                find_x(isour) = nf_sour(idif, isour, NF_IX)
                find_y(isour) = nf_sour(idif, isour, NF_IY)
                write (find_name(isour), '(i0.4,a,i0.4)') idif, "sour", isour
             end do
-            call find_nearest_flownodes(nf_numsour, find_x, find_y, find_name, find_n, jakdtree, jaoutside, iLocTp)
+            call find_nearest_flownodes(nf_numsour, find_x, find_y, find_name, find_n, jakdtree, jaoutside=0, iLocTp=INDTP_2D)
             !
             ! Keep the sources separated, even if they are in the same cell: momentum specification might differ
             !
@@ -616,11 +627,6 @@ contains
             end do
          end if
       end if
-      !
-      if (allocated(find_x)) deallocate (find_x, stat=istat)
-      if (allocated(find_y)) deallocate (find_y, stat=istat)
-      if (allocated(find_name)) deallocate (find_name, stat=istat)
-      if (allocated(find_n)) deallocate (find_n, stat=istat)
    end subroutine getSourceLocations
 !
 !
@@ -646,7 +652,7 @@ contains
       !
       ! Body
       if (NFEntrainmentMomentum > 0) then
-         nf_entr_start(idif) = numsrc + 1
+         nf_entr_start(idif) = num_source_sink + 1
          nf_entr_end(idif) = nf_entr_start(idif) - 1
       end if
       ! Start with isink=2: For isink=1, q is zero, because nf_sink(i,isink-1,IS) is undefined
@@ -654,43 +660,45 @@ contains
          do isour = 1, nf_sour_track_max
             !
             ! Create a new entry in the src arrays for each combination of a sink_flow_node and source_flow_node
-            if (nf_sour_n(idif, isour) == 0) exit ! This might happen if the number of sources is not the same for each diffuser
-            numsrc_nf = numsrc_nf + 1
-            numsrc = numsrc + 1
+            if (nf_sour_n(idif, isour) == 0) then
+               exit ! This might happen if the number of sources is not the same for each diffuser
+            end if
+            num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
+            num_source_sink = num_source_sink + 1
             if (NFEntrainmentMomentum > 0) then
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call reallocsrc(numsrc, 2)
+            call reallocsrc(num_source_sink, 2)
             !
             ! Name
-            write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
+            write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
             !
             ! Sink
-            ksrc(1, numsrc) = nf_sink_n(idif, isink)
-            zsrc(1, numsrc) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
-            zsrc2(1, numsrc) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
+            source_sink_indices(1, num_source_sink) = nf_sink_n(idif, isink)
+            source_sink_z_bottom(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) - nf_sink(idif, isink, NF_IH)
+            source_sink_z_top(1, num_source_sink) = -nf_sink(idif, isink, NF_IZ) + nf_sink(idif, isink, NF_IH)
             !
             ! Source
-            ksrc(4, numsrc) = nf_sour_n(idif, isour)
+            source_sink_indices(4, num_source_sink) = nf_sour_n(idif, isour)
             if (nf_numsour == 1) then
-               zsrc(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-               zsrc2(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+               source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+               source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
             else
                !
                ! Do not use NF_IH, but just NF_IZ
-               zsrc(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
-               zsrc2(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
+               source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+               source_sink_z_top(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
             end if
-            call check_mixed_source_sink(numsrc)
+            call check_mixed_source_sink(num_source_sink)
             !
             ! q = delta_IS * Q_TOT * this_cell_fraction
-            qstss((1 + numconst) * (numsrc - 1) + 1) = (nf_sink(idif, isink, NF_IS) - nf_sink(idif, isink - 1, NF_IS)) * nf_q_source(idif) &
+            source_sink_all_discharges(1, num_source_sink) = (nf_sink(idif, isink, NF_IS) - nf_sink(idif, isink - 1, NF_IS)) * nf_q_source(idif) &
                                                       & * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
             !
             ! Constituents: Entrainment does not cause addition
             do iconst = 1, numconst
-               qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = 0.0_hp
+               source_sink_all_discharges(iconst + 1, num_source_sink) = 0.0_hp
             end do
             !
             if (NFEntrainmentMomentum > 0) then
@@ -728,7 +736,6 @@ contains
       integer :: iintake
       integer :: isour
       integer :: iconst_operator
-      integer :: istat
       integer :: sourId
       real(fp) :: area
       real(fp), dimension(:), allocatable :: intake_avg_consts !< If CONST_OPERATOR = EXCESS: Constituent values, averaged over all intake points
@@ -743,7 +750,9 @@ contains
          end if
          call realloc(intake_avg_consts, numconst, keepExisting=.false., fill=0.0_hp)
          do iintake = 1, nf_intake_cnt_max
-            if (nf_intake_n(idif, iintake) == 0) exit
+            if (nf_intake_n(idif, iintake) == 0) then
+               exit
+            end if
             do iconst = 1, numconst
                intake_avg_consts(iconst) = intake_avg_consts(iconst) + constituents(iconst, nf_intake_nk(idif, iintake)) * nf_intake_wght(idif, iintake)
             end do
@@ -756,10 +765,12 @@ contains
       end if
       !
       do isour = 1, nf_sour_track_max
-         if (nf_sour_n(idif, isour) == 0) exit
-         numsrc_nf = numsrc_nf + 1
-         numsrc = numsrc + 1
-         call reallocsrc(numsrc, 2)
+         if (nf_sour_n(idif, isour) == 0) then
+            exit
+         end if
+         num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
+         num_source_sink = num_source_sink + 1
+         call reallocsrc(num_source_sink, 2)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -767,36 +778,36 @@ contains
          end if
          !
          ! Name
-         write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
+         write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , discharge at source_track ", isour
          !
          ! Sink
-         ksrc(1, numsrc) = 0
-         zsrc(1, numsrc) = 0.0_hp
-         zsrc2(1, numsrc) = 0.0_hp
+         source_sink_indices(1, num_source_sink) = 0
+         source_sink_z_bottom(1, num_source_sink) = 0.0_hp
+         source_sink_z_top(1, num_source_sink) = 0.0_hp
          !
          ! Source
-         ksrc(4, numsrc) = nf_sour_n(idif, isour)
+         source_sink_indices(4, num_source_sink) = nf_sour_n(idif, isour)
          if (nf_numsour == 1) then
-            zsrc(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
-            zsrc2(2, numsrc) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
+            source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) - nf_sour(idif, nf_numsour, NF_IH)
+            source_sink_z_top(2, num_source_sink) = -nf_sour(idif, nf_numsour, NF_IZ) + nf_sour(idif, nf_numsour, NF_IH)
          else
             !
             ! Do not use NF_IH, but just NF_IZ
-            zsrc(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
-            zsrc2(2, numsrc) = -nf_sour(idif, isour, NF_IZ)
+            source_sink_z_bottom(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
+            source_sink_z_top(2, num_source_sink) = -nf_sour(idif, isour, NF_IZ)
          end if
-         call check_mixed_source_sink(numsrc)
+         call check_mixed_source_sink(num_source_sink)
          !
          ! q = Q_TOT * this_cell_fraction
-         qstss((1 + numconst) * (numsrc - 1) + 1) = nf_q_source(idif) * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
+         source_sink_all_discharges(1, num_source_sink) = nf_q_source(idif) * nf_sour_wght(idif, isour) / nf_sour_wght_sum(idif)
          !
          ! Constituents: Additions as specified by NearField
          do iconst = 1, numconst
             if (iconst_operator == CONST_OPERATOR_ABSOLUTE) then
-               qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = nf_const(idif, iconst)
+               source_sink_all_discharges(iconst + 1, num_source_sink) = nf_const(idif, iconst)
             else
                ! Excess
-               qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = nf_const(idif, iconst) + intake_avg_consts(iconst)
+               source_sink_all_discharges(iconst + 1, num_source_sink) = nf_const(idif, iconst) + intake_avg_consts(iconst)
             end if
          end do
          !
@@ -821,14 +832,13 @@ contains
          ! =>
          !         ai = Atot / wi
          !
-         arsrc(numsrc) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
+         source_sink_area(num_source_sink) = area * nf_sour_wght_sum(idif) / nf_sour_wght(idif, isour)
          ! Direction:
          ! nf_sour(:,:,NF_IUDIR)                           : 0=east , 90=north
          ! To be consistent with Delft3D4, change this into: 0=north, 90=east
-         cssrc(2, numsrc) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
-         snsrc(2, numsrc) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sink_discharge_cosine(2, num_source_sink) = cos(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
+         source_sink_discharge_sine(2, num_source_sink) = sin(degrad * (90.0_hp - nf_sour(idif, sourId, NF_IUDIR)))
       end do
-      if (allocated(intake_avg_consts)) deallocate (intake_avg_consts, stat=istat)
    end subroutine dischargeToSrc
 !
 !
@@ -848,32 +858,34 @@ contains
       ! Body
       !
       do iintake = 1, nf_intake_cnt_max
-         if (nf_intake_n(idif, iintake) == 0) exit
-         numsrc_nf = numsrc_nf + 1
-         numsrc = numsrc + 1
-         call reallocsrc(numsrc, 2)
+         if (nf_intake_n(idif, iintake) == 0) then
+            exit
+         end if
+         num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
+         num_source_sink = num_source_sink + 1
+         call reallocsrc(num_source_sink, 2)
          !
          ! Name
-         write (srcname(numsrc), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
+         write (source_sink_name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake
          !
          ! Sink
-         ksrc(1, numsrc) = nf_intake_n(idif, iintake)
-         zsrc(1, numsrc) = nf_intake_z(idif, iintake)
-         zsrc2(1, numsrc) = nf_intake_z(idif, iintake)
+         source_sink_indices(1, num_source_sink) = nf_intake_n(idif, iintake)
+         source_sink_z_bottom(1, num_source_sink) = nf_intake_z(idif, iintake)
+         source_sink_z_top(1, num_source_sink) = nf_intake_z(idif, iintake)
          !
          ! Source
-         ksrc(4, numsrc) = 0
-         zsrc(2, numsrc) = 0.0_hp
-         zsrc2(2, numsrc) = 0.0_hp
+         source_sink_indices(4, num_source_sink) = 0
+         source_sink_z_bottom(2, num_source_sink) = 0.0_hp
+         source_sink_z_top(2, num_source_sink) = 0.0_hp
          !
-         call check_mixed_source_sink(numsrc)
+         call check_mixed_source_sink(num_source_sink)
          !
          ! q = Q_TOT * this_cell_fraction
-         qstss((1 + numconst) * (numsrc - 1) + 1) = nf_q_intake(idif) * nf_intake_wght(idif, iintake) / sum_weight_intakes
+         source_sink_all_discharges(1, num_source_sink) = nf_q_intake(idif) * nf_intake_wght(idif, iintake) / sum_weight_intakes
          !
          ! Constituents, not relevant for pure sinks
          do iconst = 1, numconst
-            qstss((1 + numconst) * (numsrc - 1) + 1 + iconst) = 0.0_hp
+            source_sink_all_discharges(iconst + 1, num_source_sink) = 0.0_hp
          end do
       end do
    end subroutine intakesToSrc
@@ -905,7 +917,7 @@ contains
 !==============================================================================
 !> If "NearFieldEntrainmentMomentum" is switched on:
 !> Every timestep:
-!> Update arsrc, cssrc, snsrc based on ucx/ucy in the sink point
+!> Update source_sink_area, source_sink_discharge_cosine, source_sink_discharge_sine based on ucx/ucy in the sink point
 !> The nk index of the sink point is stored in nf_sinkid
 !> Keep in mind that the number of entrainment (coupled sink/source) points may vary per diffuser. As a result,
 !> the values in nf_sinkid are shifted: instead of using "i", use "i-nf_entr_start(idif)+1"
@@ -929,11 +941,11 @@ contains
             nk = nf_sinkid(idif, i - nf_entr_start(idif) + 1)
             umag = sqrt(ucx(nk)**2 + ucy(nk)**2)
             if (umag < eps_fp) then
-               arsrc(i) = 0.0_hp
+               source_sink_area(i) = 0.0_hp
             else
-               arsrc(i) = qstss((1 + numconst) * (i - 1) + 1) / umag
-               cssrc(2, i) = ucx(nk) / umag
-               snsrc(2, i) = ucy(nk) / umag
+               source_sink_area(i) = source_sink_all_discharges(1, i) / umag
+               source_sink_discharge_cosine(2, i) = ucx(nk) / umag
+               source_sink_discharge_sine(2, i) = ucy(nk) / umag
             end if
          end do
       end do
@@ -945,38 +957,38 @@ contains
 !> - Check whether the new sink   location coincides with an existing source location
 !> - Check whether the new source location coincides with an existing sink   location
 !> Generate a warning if this happens
-   subroutine check_mixed_source_sink(numsrc)
-      integer, intent(in) :: numsrc
+   subroutine check_mixed_source_sink(num_source_sink)
+      integer, intent(in) :: num_source_sink
       !
       ! Locals
       integer :: i
       character(300) :: message
       !
       ! Body
-      do i = 1, numsrc - 1
+      do i = 1, num_source_sink - 1
          !
          ! Check if new sink coincides with an already existing source
          ! Horizontally:
-         if (ksrc(1, numsrc) == ksrc(4, i) .and. ksrc(1, numsrc) /= 0) then
+         if (source_sink_indices(1, num_source_sink) == source_sink_indices(4, i) .and. source_sink_indices(1, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (zsrc2(1, numsrc) > zsrc(2, i) .and. zsrc2(2, i) > zsrc(1, numsrc)) then
-               write (message, '(5a,i0)') "The sink location of '", trim(srcname(numsrc)), &
-                                      & "' coincides with the source location of '", trim(srcname(i)), &
-                                      & "'. Horizontal cell index: ", ksrc(1, numsrc)
+            if (source_sink_z_top(1, num_source_sink) > source_sink_z_bottom(2, i) .and. source_sink_z_top(2, i) > source_sink_z_bottom(1, num_source_sink)) then
+               write (message, '(5a,i0)') "The sink location of '", trim(source_sink_name(num_source_sink)), &
+                                      & "' coincides with the source location of '", trim(source_sink_name(i)), &
+                                      & "'. Horizontal cell index: ", source_sink_indices(1, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if
          !
          ! Check if new source coincides with an already existing sink
          ! Horizontally:
-         if (ksrc(4, numsrc) == ksrc(1, i) .and. ksrc(4, numsrc) /= 0) then
+         if (source_sink_indices(4, num_source_sink) == source_sink_indices(1, i) .and. source_sink_indices(4, num_source_sink) /= 0) then
             ! Vertically:
             ! If ktop1>kbot2 and ktop2>kbot1 then they coincide
-            if (zsrc2(2, numsrc) > zsrc(1, i) .and. zsrc2(1, i) > zsrc(2, numsrc)) then
-               write (message, '(5a,i0)') "The source location of '", trim(srcname(numsrc)), &
-                                      & "' coincides with the sink location of '", trim(srcname(i)), &
-                                      & "'. Horizontal cell index: ", ksrc(4, numsrc)
+            if (source_sink_z_top(2, num_source_sink) > source_sink_z_bottom(1, i) .and. source_sink_z_top(1, i) > source_sink_z_bottom(2, num_source_sink)) then
+               write (message, '(5a,i0)') "The source location of '", trim(source_sink_name(num_source_sink)), &
+                                      & "' coincides with the sink location of '", trim(source_sink_name(i)), &
+                                      & "'. Horizontal cell index: ", source_sink_indices(4, num_source_sink)
                call mess(LEVEL_WARN, trim(message))
             end if
          end if

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -40,66 +40,67 @@
 
 /*  @@  allocate memory for a cell structure and initialize
  */
-static VsCelData CL_alloc_memory_for_cell ( BVoid )
+static VsCelData CL_alloc_memory_for_cell(BVoid)
 {
-    int       i;
+    int i;
     VsCelData p;
-    p = ( VsCelData ) GEN_malloc ( sizeof ( VsCel ));
+    p = (VsCelData)GEN_malloc(sizeof(VsCel));
 
-    strcpy (p->celnam,"");
+    strcpy(p->celnam, "");
     p->nelems = MAX_CEL_DIM;
-    for ( i=0; i<MAX_CEL_DIM; i++)
+    for (i = 0; i < MAX_CEL_DIM; i++)
     {
-      strcpy (p->elmnms[i],"");
+        strcpy(p->elmnms[i], "");
     }
-/*
-    p->left  = NULL;
-    p->right = NULL;
-*/
+    /*
+        p->left  = NULL;
+        p->right = NULL;
+    */
 
     return p;
 }
 
-
 /*  @@  add a cell-structure to binary tree and fill this
  *      structure
  */
-VsCelData CL_add_cell_to_tree (
-          VsCelData p,
-    const BText     celnam
-    )
+VsCelData CL_add_cell_to_tree(VsCelData p, const BText celnam)
 {
-    if ( p == NULL ) {
+    if (p == NULL)
+    {
         /* here we are at the right spot in the tree,
            so allocate memory */
-        p = CL_alloc_memory_for_cell ();
+        p = CL_alloc_memory_for_cell();
 
-        if ( p != NULL ) {
+        if (p != NULL)
+        {
             /* there is room, so place info in structure */
-            (BVoid)strcpy ( p->celnam, celnam );
-            p->left  = NULL;
+            (BVoid) strcpy(p->celnam, celnam);
+            p->left = NULL;
             p->right = NULL;
-
         }
-        else {
+        else
+        {
             /* no memory available */
-            (BVoid)GEN_message_to_errorfile ( 1 );
+            (BVoid) GEN_message_to_errorfile(1);
         }
-
     }
 
-    else {
+    else
+    {
         BInt4 cond;
 
-        cond = GEN_string_compare ( celnam, p->celnam );
-        if ( cond < 0 ) {
-            p->left = CL_add_cell_to_tree ( p->left, celnam );
+        cond = GEN_string_compare(celnam, p->celnam);
+        if (cond < 0)
+        {
+            p->left = CL_add_cell_to_tree(p->left, celnam);
         }
 
-        else if ( cond > 0 ) {
-            p->right = CL_add_cell_to_tree ( p->right, celnam );
+        else if (cond > 0)
+        {
+            p->right = CL_add_cell_to_tree(p->right, celnam);
         }
-        else {
+        else
+        {
             /* DO NOTHING */
         }
     }
@@ -107,48 +108,47 @@ VsCelData CL_add_cell_to_tree (
     return p;
 }
 
-
 /*  @@  find cell with name celnam in tree of cell-structures.
  *      if found, return pointer to that structure, else NULL.
  */
-VsCelData CL_find_cell_in_tree (
-          VsCelData p,
-    const BText     celnam
-    )
+VsCelData CL_find_cell_in_tree(VsCelData p, const BText celnam)
 {
-    VsCelData retval=NULL;
+    VsCelData retval = NULL;
 
-    if ( p != NULL ) {
-
+    if (p != NULL)
+    {
         BInt4 cond;
 
-        cond = GEN_string_compare ( celnam, p->celnam );
-        if ( cond == 0 ) {
+        cond = GEN_string_compare(celnam, p->celnam);
+        if (cond == 0)
+        {
             retval = p;
         }
 
-        else if ( cond < 0 ) {
+        else if (cond < 0)
+        {
             /* go to the left branche */
-            retval = CL_find_cell_in_tree ( p->left, celnam );
+            retval = CL_find_cell_in_tree(p->left, celnam);
         }
 
-        else {
+        else
+        {
             /* go to the right branche */
-            retval = CL_find_cell_in_tree ( p->right, celnam );
+            retval = CL_find_cell_in_tree(p->right, celnam);
         }
     }
     /* not found */
     return retval;
 }
 
-
 /*  @@  remove a complete branch of cells
  */
-BVoid CL_remove_cell_branche ( VsCelData p )
+BVoid CL_remove_cell_branche(VsCelData p)
 {
-    if ( p != NULL ) {
-        CL_remove_cell_branche ( p->left );
-        CL_remove_cell_branche ( p->right );
-        GEN_free ( p );
+    if (p != NULL)
+    {
+        CL_remove_cell_branche(p->left);
+        CL_remove_cell_branche(p->right);
+        GEN_free(p);
     }
 }

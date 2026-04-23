@@ -19,7 +19,7 @@ object ReportVerschilanalyse: BuildType({
     """.trimIndent()
 
     params {
-        param("current_prefix", "output/weekly/latest")
+        param("current_prefix", "output/weekly/development")
         param("reference_prefix", "output/release/2025.01")
         param("send_email", "true")
 
@@ -40,12 +40,13 @@ object ReportVerschilanalyse: BuildType({
             name = "Download logs and verschillentool output"
             val script = File(DslContext.baseDir, "verschilanalyse/scripts/download_reports.sh")
             scriptContent = Util.readScript(script)
-            dockerImage = "containers.deltares.nl/docker-proxy/amazon/aws-cli:2.22.7"
+            dockerImage = "containers.deltares.nl/docker-proxy/amazon/aws-cli:2.32.14"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = """
                 --rm
                 --entrypoint=/bin/bash
                 --volume="%env.AWS_SHARED_CREDENTIALS_FILE%:/root/.aws/credentials:ro"
+                -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
             """.trimIndent()
         }
         script {

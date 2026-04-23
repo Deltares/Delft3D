@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,62 +27,62 @@
 #include <string>
 #include "schematization/rules/rule.h"
 
-
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class limiterRule : public rule
-{
+            class limiterRule : public rule
+            {
+            public:
+                /**
+                 * @brief Enum for switching between relative [0-100] and absolute mode
+                 * [m3/s] for spill target
+                 */
+                enum Mode
+                {
+                    ABSOLUTE,
+                    PERCENTAGE
+                };
 
-public:
-	/**
-	  * @brief Enum for switching between relative [0-100] and absolute mode
-	  * [m3/s] for spill target
-	  */
-	enum Mode {
-		ABSOLUTE,
-		PERCENTAGE
-	};
+                enum inputSelectionEnum
+                {
+                    VALUE,
+                    TIMESERIES
+                };
 
-	enum inputSelectionEnum {
-		VALUE,
-		TIMESERIES
-	};
+                struct inputSelection
+                {
+                    inputSelectionEnum source;
+                    int indx;
+                    double value;
+                };
 
-	struct inputSelection {
-		inputSelectionEnum source;
-		int indx;
-		double value;
-	};
+                struct INPUT
+                {
+                    inputSelection threshold;
+                    int x;
+                };
 
-	struct INPUT {
-		inputSelection threshold;
-		int x;
-	};
+                /** Default constructor */
+                limiterRule(string id, string name, Mode mode, INPUT iInput);
 
-	/** Default constructor */
-	limiterRule(string id,
-				string name,
-				Mode mode,
-				INPUT iInput);
+                /** Default destructor */
+                ~limiterRule() {};
 
-	/** Default destructor */
-	~limiterRule() {};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld,
+                              double* objNew);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew);
+            private:
+                Mode mode;
+                INPUT iInput;
+            };
 
-private:
-    Mode mode;
-	INPUT iInput;
-};
-
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // LIMITER_H

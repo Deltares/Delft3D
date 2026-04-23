@@ -1,6 +1,6 @@
 """Handler type.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 from enum import Enum
@@ -16,3 +16,4 @@ class HandlerType(Enum):
     NET = 4
     PATH = 5
     MINIO = 6
+    DVC = 7

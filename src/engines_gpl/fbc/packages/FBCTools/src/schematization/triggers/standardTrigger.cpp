@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,40 +27,37 @@
 
 using namespace rtctools::schematization::triggers;
 
-standardTrigger::standardTrigger(string id,
-								 string name,
-								 condition con,
-								 bool yDefaultPresent,
-								 bool yDefaultValue,
-								 int iYOut,
-								 int iTimeTrue,
-								 int iTimeFalse) : trigger(id, name, iYOut, iTimeTrue, iTimeFalse)
+standardTrigger::standardTrigger(string id, string name, condition con, bool yDefaultPresent, bool yDefaultValue,
+                                 int iYOut, int iTimeTrue, int iTimeFalse)
+    : trigger(id, name, iYOut, iTimeTrue, iTimeFalse)
 {
-	this->con = con;
-	this->yDefaultPresent = yDefaultPresent;
-	this->yDefaultValue = yDefaultValue;
+    this->con = con;
+    this->yDefaultPresent = yDefaultPresent;
+    this->yDefaultValue = yDefaultValue;
 }
 
-standardTrigger::~standardTrigger(void)
+standardTrigger::~standardTrigger(void) {}
+
+void standardTrigger::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
-}
+    // check for default value
+    double yNew = numeric_limits<double>::quiet_NaN();
+    if (yDefaultPresent)
+    {
+        if (yDefaultValue)
+            yNew = 1.0;
+        else
+            yNew = 0.0;
+    }
 
-void standardTrigger::solve(double *stateOld, double *stateNew, long long t, double dt)
-{
-	// check for default value
-	double yNew = numeric_limits<double>::quiet_NaN();
-	if (yDefaultPresent) {
-		if (yDefaultValue) yNew = 1.0; else yNew = 0.0;
-	} 
+    // apply condition result if valid
+    double yNew2 = con.evaluate(stateOld, stateNew);
+    if (yNew2 == yNew2) yNew = yNew2;
 
-	// apply condition result if valid
-	double yNew2 = con.evaluate(stateOld, stateNew);
-	if (yNew2==yNew2) yNew = yNew2;
+    // write new status (NaN if no default is provided and the condition can not be evaluated)
+    stateNew[iYOut] = yNew;
 
-	// write new status (NaN if no default is provided and the condition can not be evaluated)
-	stateNew[iYOut] = yNew;
-
-	// evaluate true/false times and sub-triggers
-	evaluateTimes(stateOld, stateNew, t, dt);
-	evaluateSubtriggers(stateOld, stateNew, t, dt);
+    // evaluate true/false times and sub-triggers
+    evaluateTimes(stateOld, stateNew, t, dt);
+    evaluateSubtriggers(stateOld, stateNew, t, dt);
 }

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -33,24 +33,14 @@
 //  2 jun 11
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
-namespace String {
-    void
-    Chomp (
-        char * string
-        );
+namespace String
+{
+    void Chomp(char* string);
 
-    void
-    CollapseAllWhitespace (
-        char * string
-        );
+    void CollapseAllWhitespace(char* string);
 
-    void
-    Tidy (
-        char * string
-        );
+    void Tidy(char* string);
 
-    };
-
+}; // namespace String

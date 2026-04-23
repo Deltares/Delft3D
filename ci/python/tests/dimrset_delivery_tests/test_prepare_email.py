@@ -5,9 +5,9 @@ from unittest.mock import Mock, patch
 
 from ci_tools.dimrset_delivery.common_utils import ResultTestBankParser, SummaryResults, parse_version
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
+from ci_tools.dimrset_delivery.prepare_email import EmailHelper
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.step_5_prepare_email import EmailHelper
 
 
 class TestEmailHelper:
@@ -46,9 +46,7 @@ class TestEmailHelper:
             SummaryResults.EXCEPTION: exceptions,
         }.get(key)
 
-        with patch(
-            "ci_tools.dimrset_delivery.step_5_prepare_email.get_testbank_result_parser", return_value=mock_parser
-        ):
+        with patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser", return_value=mock_parser):
             return EmailHelper(mock_context, mock_services)  # type: ignore
 
     def test_generate_template_calls_all(self) -> None:
@@ -70,7 +68,7 @@ class TestEmailHelper:
 
     def test_load_and_save_template(self, tmp_path: Path) -> None:
         # Integration-style: test that generate_template creates an output file
-        template_content = "Hello @@@DIMR_VERSION@@@ @@@LINK_TO_PUBLIC_WIKI@@@ @@@SUMMARY_TABLE_BODY@@@"
+        template_content = "Hello @@@DIMR_VERSION@@@ @@@SUMMARY_TABLE_BODY@@@"
         template_path = tmp_path / "template.html"
         template_path.write_text(template_content)
         helper = self.make_helper(template_path=template_path)
@@ -87,36 +85,14 @@ class TestEmailHelper:
         content = out_files[0].read_text()
         assert "Hello" in content
 
-    def test_generate_wiki_link(self) -> None:
-        """Test wiki link generation for different version formats."""
-        helper = self.make_helper(dimr_version="1.2.3")
-        # Access the private method using name mangling
-        wiki_link = helper._EmailHelper__generate_wiki_link()  # type: ignore
-
-        expected_url = "https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+1.2.3"
-        expected_link = f'<a href="{expected_url}">{expected_url}</a>'
-        assert wiki_link == expected_link
-
-    def test_generate_wiki_link_with_different_versions(self) -> None:
-        """Test wiki link generation with different version formats."""
-        test_cases = ["2025.01", "10.20.30", "1.0.0", "2.29.03"]
-
-        for version in test_cases:
-            helper = self.make_helper(dimr_version=version)
-            wiki_link = helper._EmailHelper__generate_wiki_link()  # type: ignore
-
-            expected_url = f"https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+{version}"
-            expected_link = f'<a href="{expected_url}">{expected_url}</a>'
-            assert wiki_link == expected_link
-
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS", [])
+    @patch("ci_tools.dimrset_delivery.prepare_email.KERNELS", [])
     def test_get_email_friendly_kernel_name_empty_kernels(self) -> None:
         """Test kernel name mapping with empty KERNELS list."""
         helper = self.make_helper()
         result = helper._EmailHelper__get_email_friendly_kernel_name("unknown_kernel")  # type: ignore
         assert result == ""
 
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS")
+    @patch("ci_tools.dimrset_delivery.prepare_email.KERNELS")
     def test_get_email_friendly_kernel_name_found(self, mock_kernels: Mock) -> None:
         """Test kernel name mapping when kernel is found."""
         # Mock kernel config object
@@ -129,7 +105,7 @@ class TestEmailHelper:
         result = helper._EmailHelper__get_email_friendly_kernel_name("kernel_internal")  # type: ignore
         assert result == "Kernel Display Name"
 
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.KERNELS")
+    @patch("ci_tools.dimrset_delivery.prepare_email.KERNELS")
     def test_get_email_friendly_kernel_name_not_found(self, mock_kernels: Mock) -> None:
         """Test kernel name mapping when kernel is not found."""
         # Mock kernel config object that doesn't match
@@ -191,7 +167,7 @@ class TestEmailHelper:
         }.get(key)
 
         with patch(
-            "ci_tools.dimrset_delivery.step_5_prepare_email.get_previous_testbank_result_parser",
+            "ci_tools.dimrset_delivery.prepare_email.get_previous_testbank_result_parser",
             return_value=mock_prev_parser,
         ):
             helper = self.make_helper(
@@ -222,12 +198,10 @@ class TestEmailHelper:
     def test_insert_summary_table_header(self) -> None:
         """Test summary table header insertion."""
         helper = self.make_helper(dimr_version="2.29.03")
-        helper._EmailHelper__template = "Version: @@@DIMR_VERSION@@@ Link: @@@LINK_TO_PUBLIC_WIKI@@@"  # type: ignore
+        helper._EmailHelper__template = "Version: @@@DIMR_VERSION@@@"  # type: ignore
 
         helper._EmailHelper__insert_summary_table_header()  # type: ignore
-
-        expected_link = '<a href="https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+2.29.03">https://publicwiki.deltares.nl/display/PROJ/DIMRset+release+2.29.03</a>'
-        expected_template = f"Version: 2.29.03 Link: {expected_link}"
+        expected_template = "Version: 2.29.03"
 
         assert helper._EmailHelper__template == expected_template  # type: ignore
 
@@ -275,8 +249,8 @@ class TestParseVersion:
 class TestIntegration:
     """Integration tests for prepare_email functionality."""
 
-    # @patch("ci_tools.dimrset_delivery.step_5_prepare_email.EmailHelper")
-    @patch("ci_tools.dimrset_delivery.step_5_prepare_email.get_testbank_result_parser")
+    # @patch("ci_tools.dimrset_delivery.prepare_email.EmailHelper")
+    @patch("ci_tools.dimrset_delivery.prepare_email.get_testbank_result_parser")
     def test_prepare_email_with_no_previous_parser(self, mock_get_parser: Mock) -> None:
         """Test email preparation when no previous parser is available."""
         # Arrange

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -104,7 +104,7 @@ contains
       use m_turbulence, only: sigdifi
       use m_transport
       use m_mass_balance_areas
-      use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flowwithoutwaves
+      use m_flowparameters, only: limtypsa, limtyptm, limtypsed, flow_without_waves
       use m_alloc
       use m_partitioninfo
       use m_timer
@@ -129,15 +129,20 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (NUMCONST == 0) return ! nothing to do
-      if (timon) call timstrt("update_constituents", ithndl)
+      if (NUMCONST == 0) then
+         return ! nothing to do
+      end if
+      if (timon) then
+         call timstrt("update_constituents", ithndl)
+      end if
 
       ierror = 1
 
       limtyp = max(limtypsa, limtyptm, limtypsed)
 
       if (jarhoonly == 1) then
-         call fill_rho(); numconst_store = numconst
+         call fill_rho()
+         numconst_store = numconst
       else if (jarhoonly == 2) then
          ! call fill_ucxucy() ; numconst_store = numconst
       else
@@ -191,7 +196,7 @@ contains
          end if
 
 !     compute horizontal fluxes, explicit part
-         if ((.not. stm_included) .or. flowwithoutwaves) then ! just do the normal stuff
+         if ((.not. stm_included) .or. flow_without_waves) then ! just do the normal stuff
             call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
          else
             if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
@@ -250,13 +255,17 @@ contains
          if (jampi > 0) then
 !        communicate every numstepssync'th or last subtimestep
             if (mod(istep + 1, numstepssync) == 0 .or. istep + 1 == nsubsteps) then
-               if (jatimer == 1) call starttimer(IUPDSALL)
+               if (jatimer == 1) then
+                  call starttimer(IUPDSALL)
+               end if
                if (kmx < 1) then ! 2D
                   call update_ghosts(ITYPE_Sall, NUMCONST, Ndx, constituents, ierror)
                else ! 3D
                   call update_ghosts(ITYPE_Sall3D, NUMCONST, Ndkx, constituents, ierror)
                end if
-               if (jatimer == 1) call stoptimer(IUPDSALL)
+               if (jatimer == 1) then
+                  call stoptimer(IUPDSALL)
+               end if
             end if
          end if
 
@@ -280,7 +289,8 @@ contains
       dts = dts_store
 
       if (jarhoonly == 1) then
-         call extract_rho(); numconst = numconst_store
+         call extract_rho()
+         numconst = numconst_store
       else
          if (jadecaytracers > 0) then ! because tracerdecay is normally not done in DFM we do it here so as not to cause overhead elsewhere
             call decaytracers()
@@ -291,7 +301,9 @@ contains
       ierror = 0
 1234  continue
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine update_constituents
 

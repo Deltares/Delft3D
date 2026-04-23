@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2021-2025.
+!!  Copyright (C)  Stichting Deltares, 2021-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -33,7 +33,7 @@ program agrhyd
     use time_module
     use io_ugrid
     use system_utils, only: makedir
-    use m_date_time_utils_external, only: write_date_time
+    use m_date_time_utils_external, only: fill_in_date_time
     use agrhyd_version_module, only: getfullversionstring_agrhyd
 
     implicit none
@@ -121,9 +121,10 @@ program agrhyd
         read (*, '(a)') input_file
         write (*, *)
     end if
+
     if (input_file == ' ') then
         open (lunrep, file='agrhyd.rep', recl=132)
-        call write_date_time(rundat)
+        call fill_in_date_time(rundat)
         write (lunrep, '(a,a)') ' (c) ', trim(version)
         write (lunrep, '(a,a)') ' execution start: ', rundat
         write (lunrep, '(a)') ' error: no command line argument or interactive input with name of ini-filename'
@@ -135,7 +136,7 @@ program agrhyd
     inquire (file=input_file, exist=exist_ini)
     if (.not. exist_ini) then
         open (lunrep, file='agrhyd.rep', recl=132)
-        call write_date_time(rundat)
+        call fill_in_date_time(rundat)
         write (lunrep, '(a,a)') ' (c) ', trim(version)
         write (lunrep, '(a,a)') ' execution start: ', rundat
         write (lunrep, '(a,a)') ' error: ini-file not found: ', trim(input_file)
@@ -166,7 +167,7 @@ program agrhyd
     call set_log_unit_number(lunrep)
     call SetMessageHandling(lunMessages=lunrep)
     write (lunrep, '(a,a)') ' (c) ', trim(version)
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, '(2a)') ' execution start: ', rundat
     write (lunrep, *)
     write (lunrep, *) 'input file name          : ', trim(input_file)
@@ -479,7 +480,7 @@ program agrhyd
         allocate (ipnt_b(1), stat=ierr_alloc)
         ipnt_b(1) = 0
     end if
-    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error(); 
+    if (ierr_alloc /= 0) then; write (*, *) ' error allocating memory'; call stop_with_error();
     end if
 
     call set_aggr_pnts(input_hyd, ipnt_h, ipnt_v, ipnt, ipnt_vdf, &
@@ -698,7 +699,7 @@ program agrhyd
 
     ! finished
 
-    call write_date_time(rundat)
+    call fill_in_date_time(rundat)
     write (lunrep, *)
     write (lunrep, '(a)') ' normal end of execution'
     write (lunrep, '(2a)') ' execution stop : ', rundat

@@ -13,15 +13,15 @@
             <referenceDir>./data/reference_results</referenceDir>
         </localPaths>
         <locations>
-			<location name="reference_results">
+            <location name="reference_results">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
             </location>
-			<location name="cases">
+            <location name="cases">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/cases</root>
             </location>
-			<location name="reference_engines">
+            <location name="reference_engines">
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references/bin</root>
             </location>
@@ -92,6 +92,29 @@
             </programs>
             <location ref="reference_results" type="reference">
                 <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform independent results -->
+        <testCase name="generic">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>60.0</maxRunTime> <!-- seconds -->
+        </testCase>
+        <!-- a generic testCase configuration for running tests with arbitrary programs and platform dependent results -->
+        <!-- check the actual testCase why the results are platform dependent -->
+        <testCase name="generic_platform_specific">
+            <!-- programs specified in test case -->
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>

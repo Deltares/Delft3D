@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,9 @@ contains
       if (allocated(D90)) then
          deallocate (D90, rhodelta, sqsgd50, dstar, dstar03, Accr, Awcr)
       end if
-      if (mxgr == 0) return
+      if (mxgr == 0) then
+         return
+      end if
       m = mxgr
       allocate (D90(m), rhodelta(m), sqsgd50(m), dstar(m), dstar03(m), Accr(m), Awcr(m))
 

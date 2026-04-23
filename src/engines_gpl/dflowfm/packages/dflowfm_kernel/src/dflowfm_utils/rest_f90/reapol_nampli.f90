@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ contains
       !! A dmiss line starts a new polyline without a name. Multiple dmiss lines are skipped.
    module subroutine REAPOL_NAMPLI(MPOL, jadoorladen, janampl, ipli)
       use precision, only: dp
-      use m_polygon, only: xpl, ypl, zpl, npl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
+      use m_polygon, only: xpl, ypl, zpl, npl, colpl, nampli, jakol45, increasepol, dzl, maxpol, dzr, iweirt, dcrest, dtl, dtr, dveg
       use m_alloc, only: realloc
       use m_readyy, only: readyy
       use m_qnerror, only: qnerror
@@ -57,7 +57,6 @@ contains
       integer, intent(inout) :: ipli
 
       integer :: i
-      integer :: nkol
       integer :: nrow
       integer :: nmiss
       integer :: ierr
@@ -69,28 +68,35 @@ contains
       character(len=256) :: REC
 
       if (jadoorladen /= 1) then
-         if (.not. allocated(XPL)) allocate (XPL(1), YPL(1), ZPL(1))
+         if (.not. allocated(XPL)) then
+            allocate (XPL(1), YPL(1), ZPL(1))
+         end if
          XPL = XYMIS
          YPL = XYMIS
          ZPL = XYMIS
          NPL = 0
+         colpl = 0
          call realloc(nampli, 20, keepExisting=.false., fill=' ')
       end if
 
       call READYY('READING POLYGON / land boundary / CRS-FILE', 0.0_dp)
 10    continue
       read (MPOL, '(A)', end=999, ERR=888) MATR
-      if (MATR(1:1) == '*' .or. len_trim(matr) == 0) goto 10
+      if (MATR(1:1) == '*' .or. len_trim(matr) == 0) then
+         goto 10
+      end if
       read (MPOL, '(A)', end=999) REC
-      read (REC, *, iostat=ierr) NROW, NKOL
-      if (ierr /= 0) goto 888
+      read (REC, *, iostat=ierr) nrow, colpl
+      if (ierr /= 0) then
+         goto 888
+      end if
       jaKol45 = 0
-      if (nkol < 2) then
-         call QNERROR('File should contain at least 2 or 3 columns, but got:', ' ', ' ') ! nkol)
+      if (colpl < 2) then
+         call QNERROR('File should contain at least 2 or 3 columns, but got:', ' ', ' ')
          goto 999
-      else if (nkol > 3 .and. nkol <= 8) then
+      else if (colpl > 3 .and. colpl <= 8) then
          jaKol45 = 1
-      else if (nkol >= 9) then
+      else if (colpl >= 9) then
          jaKol45 = 2
       end if
       call INCREASEPOL(NPL + NROW + 1, 1) ! previous pols (if any) + 1 dmiss + new polyline
@@ -117,37 +123,57 @@ contains
       I = 0
       row: do
          I = I + 1
-         if (I > NROW) exit
+         if (I > NROW) then
+            exit
+         end if
 
          nmiss = 0
          do ! Read a single line, or multiple until a NON-dmiss line is found
             read (MPOL, '(A)', end=999) REC
-            ZZ = DMISS; dz1 = dmiss; dz2 = dmiss
-            if (nkol == 10) then
+            ZZ = DMISS
+            dz1 = dmiss
+            dz2 = dmiss
+            if (colpl == 10) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg, weirtype ! read weir data from Baseline format plus weirtype
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
                ZZ = zcrest ! dummy value for zz to guarantee that ZPL will be filled
-            else if (nkol == 9) then
+            else if (colpl == 9) then
                read (REC, *, iostat=ierr) XX, YY, zcrest, sillup, silldown, crestl, taludl, taludr, veg ! read weir data from Baseline format
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
                ZZ = zcrest ! dummy value for zz to guarantee that ZPL will be filled
-            else if (nkol == 5) then
+            else if (colpl == 5) then
                read (REC, *, iostat=ierr) XX, YY, ZZ, dz1, dz2
-               if (ierr /= 0) goto 777
-            else if (nkol == 4) then
+               if (ierr /= 0) then
+                  goto 777
+               end if
+            else if (colpl == 4) then
                read (REC, *, iostat=ierr) XX, YY, ZZ, dz1
-               if (ierr /= 0) goto 777
-            else if (nkol == 3) then
+               if (ierr /= 0) then
+                  goto 777
+               end if
+            else if (colpl == 3) then
                read (REC, *, iostat=ierr) XX, YY, ZZ
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
             else
                read (REC, *, iostat=ierr) XX, YY
-               if (ierr /= 0) goto 777
+               if (ierr /= 0) then
+                  goto 777
+               end if
             end if
-            if (XX /= dmiss .and. XX /= 999.999_dp) exit
+            if (XX /= dmiss .and. XX /= 999.999_dp) then
+               exit
+            end if
             nmiss = nmiss + 1
             I = I + 1
-            if (I > NROW) exit row ! Last row was also dmiss, now exit outer 'row' loop.
+            if (I > NROW) then
+               exit row ! Last row was also dmiss, now exit outer 'row' loop.
+            end if
          end do
          if (nmiss > 0) then
             backspace (MPOL) ! Last one was NON-dmiss, preceded by one or more dmiss lines
@@ -161,7 +187,9 @@ contains
             ZPL(NPL) = ZZ
             if (jakol45 == 1) then
                if (.not. allocated(DZL)) then
-                  allocate (DZL(MAXPOL), DZR(MAXPOL)); DZL = DMISS; DZR = DMISS
+                  allocate (DZL(MAXPOL), DZR(MAXPOL))
+                  DZL = DMISS
+                  DZR = DMISS
                end if
                DZL(NPL) = DZ1
                DZR(NPL) = DZ2
@@ -183,13 +211,13 @@ contains
                DTR(NPL) = taludr
                DVEG(NPL) = veg
                IWEIRT(NPL) = -999 ! if no weirtype has been specified
-               if (nkol == 10) then
+               if (colpl == 10) then
                   if (weirtype == 't' .or. weirtype == 'T') then
                      IWEIRT(NPL) = 1
                   elseif (weirtype == 'v' .or. weirtype == 'V') then
                      IWEIRT(NPL) = 2
                   end if
-               else if (nkol == 9) then
+               else if (colpl == 9) then
                   if (ifixedweirscheme == 8) then
                      IWEIRT(NPL) = 1
                   elseif (ifixedweirscheme == 9) then
@@ -200,7 +228,7 @@ contains
 
          end if
          if (mod(NPL, 100) == 0) then
-            call READYY(' ', min(1.0_dp, dble(I) / MAXPOL))
+            call READYY(' ', min(1.0_dp, real(I, kind=dp) / MAXPOL))
          end if
 
       end do row

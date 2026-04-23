@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,7 +21,6 @@
  * @date 2014
  */
 
-
 #include "timeSeriesInterface.h"
 
 using namespace rtctools::timeseries;
@@ -30,13 +29,10 @@ using namespace rtctools::timeseries;
 timeSeriesInterface::timeSeriesInterface(void) {};
 
 // constructor
-timeSeriesInterface::timeSeriesInterface(int nTimeStep, vector<long long> time,
-								   int nSeries, vector<string> seriesID,
-								   vector<validationEnum> seriesValidation,
-								   map<string,int> scalarIDMap,
-								   map<string,pair<int,int> > vectorIDMap)
-	: timeSeriesBasics(time, seriesID, seriesValidation, scalarIDMap, vectorIDMap)
+timeSeriesInterface::timeSeriesInterface(int nTimeStep, vector<long long> time, int nSeries, vector<string> seriesID,
+                                         vector<validationEnum> seriesValidation, map<string, int> scalarIDMap,
+                                         map<string, pair<int, int>> vectorIDMap)
+    : timeSeriesBasics(time, seriesID, seriesValidation, scalarIDMap, vectorIDMap)
 {
-	//
+    //
 }
-

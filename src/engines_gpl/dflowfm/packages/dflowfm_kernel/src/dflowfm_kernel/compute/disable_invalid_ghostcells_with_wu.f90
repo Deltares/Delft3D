@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,6 @@
 !>     -is not a member of ghostlist_sall
 module m_disable_invalid_ghostcells_with_wu
 
-
    use precision, only: dp
    implicit none
 
@@ -58,7 +57,9 @@ contains
       integer :: ierror
 
       ierror = 0 ! so far, so good
-      if (jampi == 0) return ! nothing to do
+      if (jampi == 0) then
+         return ! nothing to do
+      end if
 
       ierror = 1
 

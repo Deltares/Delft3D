@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,22 +36,20 @@ module m_fm_adjust_bedload
 
    private
 
-   public :: fm_adjust_bedload
+   public :: fm_adjust_bedload, compute_ftheta
 
 contains
 
    subroutine fm_adjust_bedload(sbn, sbt, avalan, slopecor)
-      use m_physcoef, only: ag
       use m_sferic, only: pi
-      use m_flowgeom, only: lnxi, kcs, ba, bl, Dx, wu_mor
+      use m_flowgeom, only: lnxi, ba, bl, Dx, wu_mor
       use m_flow, only: hu
       use m_flowtimes, only: dp
       use precision, only: fp, comparereal
       use m_alloc, only: realloc
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_turbulence, only: rhou
-      use m_fm_erosed, only: stmpar, has_bedload, alfabn, alfabs, ashld, bshld, cshld, dm, dshld, e_dzdn, e_dzdt, alfpa, avaltime, duneavalan, fixfac
-      use m_fm_erosed, only: frac, hidexp, islope, morfac, rhosol, sedd50fld, sedd50, taurat, tratyp, ust2, wetslope, lsedtot, thcrpa
+      use m_fm_erosed, only: stmpar, has_bedload, alfabn, alfabs, e_dzdn, e_dzdt, avaltime, duneavalan, fixfac
+      use m_fm_erosed, only: frac, islope, morfac, rhosol, taurat, tratyp, wetslope, lsedtot
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
       use m_sediment, only: bermslopeindexbed, bermslopeindexsus
@@ -70,12 +68,11 @@ contains
    !!
    !! Local variables
    !!
-      logical :: di50spatial
       integer :: l, Lf, k1, k2, lb, lt
 
-      real(kind=dp) :: di50, phi, tphi, sbedm, depth, dzdp, dzds, bagnol, alfas
-      real(kind=dp) :: delta, dmloc, ftheta, hidexploc, shield, sina, cosa, tnorm, frc, fixf
-      real(kind=dp) :: sbedn, sbedt, tratio, sbedcorr, fnorm, ust2avg, slp, avflux
+      real(kind=dp) :: phi, tphi, sbedm, dzdp, dzds, bagnol, alfas
+      real(kind=dp) :: ftheta, sina, cosa, tnorm, frc, fixf
+      real(kind=dp) :: sbedn, sbedt, tratio, sbedcorr, fnorm, slp, avflux
       real(kind=dp) :: eps = 1.0e-6_dp
       !
    !! executable statements -------------------------------------------------------
@@ -92,24 +89,27 @@ contains
 
       do Lf = 1, Lnx
          ! for cutcell
-         if (wu_mor(Lf) == 0.0_dp) cycle
+         if (wu_mor(Lf) == 0.0_dp) then
+            cycle
+         end if
          !
          ! no bed slope effects on links with bermslope adjustments
          ! fixfac and frac applied in bermslopenudging()
          if (stmpar%morpar%bermslopetransport) then
-            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) cycle
+            if (bermslopeindexbed(Lf) .or. bermslopeindexsus(Lf)) then
+               cycle
+            end if
          end if
          !
          if (hu(Lf) > 0.0_dp) then
             k1 = ln(1, Lf)
             k2 = ln(2, Lf)
             call getLbotLtop(Lf, Lb, Lt)
-            if (Lt < Lb) cycle
+            if (Lt < Lb) then
+               cycle
+            end if
             do l = 1, lsedtot
                if (has_bedload(tratyp(l))) then
-                  di50 = sedd50(l)
-                  di50spatial = .false.
-                  if (di50 < 0.0_fp .and. lsedtot == 1) di50spatial = .true.
                   !
                   ! Initialize variables
                   !
@@ -121,7 +121,6 @@ contains
                   !
                   sbedn = sbn(Lf, l) ! e_sxxn
                   sbedt = sbt(Lf, l) ! e_sxxt
-                  depth = hu(Lf)
                   sbedm = sqrt(sbn(Lf, l)**2 + sbt(Lf, l)**2)
                   sbncor(Lf) = sbedn
                   sbtcor(Lf) = sbedt
@@ -179,33 +178,7 @@ contains
                         !
                         ! 4: Formulation according Parker & Andrews (1985)
                         !
-                        ust2avg = (ust2(k1) + ust2(k2)) / 2d0
-                        if (di50spatial) then
-                           di50 = sqrt(sedd50fld(k1) * sedd50fld(k2))
-                        end if
-                        delta = (rhosol(l) - rhou(lb)) / rhou(lb)
-                        shield = ust2avg / ag / delta / di50
-                        !
-                        if (shield /= 0.0_fp) then
-                           if (islope == 3) then
-                              dmloc = sqrt(dm(k1) * dm(k2))
-                              if (comparereal(dmloc, 0d0) == 0) then
-                                 if (kcs(k1) > 0) then
-                                    dmloc = dm(k1)
-                                 elseif (kcs(k2) > 0) then
-                                    dmloc = dm(k2)
-                                 end if
-                              end if
-                              ftheta = ashld * (shield**bshld) * &
-                                 & ((di50 / depth)**cshld) * ((di50 / dmloc)**dshld)
-                           else ! islope==4
-                              hidexploc = (hidexp(k1, l) + hidexp(k2, l)) / 2.0_fp
-                              ftheta = alfpa * sqrt(shield / &
-                                 & max(shield * 0.1_fp, hidexploc * thcrpa))
-                           end if
-                        else
-                           ftheta = 0.0_fp
-                        end if
+                        call compute_ftheta(ftheta,l,Lf)
                         !
                         ! deal with exeptional case when ftheta, dzdv and dzdu are exactly
                         ! equal to zero
@@ -274,5 +247,70 @@ contains
       end do ! Lf
 
    end subroutine fm_adjust_bedload
+
+subroutine compute_ftheta(ftheta,lsed,Lf)
+   use m_fm_erosed, only: dm, ashld, bshld, cshld, dshld, alfpa, hidexp, thcrpa, ust2, lsedtot, sedd50, sedd50fld, rhosol, islope
+   use m_turbulence, only: rhou
+   use m_flow, only: hu
+   use m_flowgeom, only: kcs
+   use m_fm_erosed, only: ln => ln_mor
+   use precision, only: dp, comparereal
+   use m_physcoef, only: ag
+   use m_get_Lbot_Ltop, only: getlbotltop
+   use Messagehandling, only: LEVEL_FATAL, mess, errmsg
+   
+   implicit none
+   
+   integer, intent(in) :: lsed !< sediment index
+   integer, intent(in) :: Lf !< link index
+   real(kind=dp), intent(out) :: ftheta !< f(\theta)
+   
+   ! Variables from calling context or modules
+   logical :: di50spatial
+   integer :: k1, k2, lb, lt
+   real(kind=dp) :: ust2avg, di50, depth, dmloc, hidexploc, shield, delta
+
+   k1 = ln(1, Lf)
+   k2 = ln(2, Lf)
+   depth = hu(Lf)
+   call getLbotLtop(Lf, Lb, Lt)
+   
+   di50 = sedd50(lsed)
+   di50spatial = .false.
+   if (di50 < 0.0_dp .and. lsedtot == 1) then
+      di50spatial = .true.
+   end if
+                  
+   ust2avg = (ust2(k1) + ust2(k2)) / 2.0_dp
+   if (di50spatial) then
+      di50 = sqrt(sedd50fld(k1) * sedd50fld(k2))
+   end if
+   delta = (rhosol(lsed) - rhou(lb)) / rhou(lb)
+   shield = ust2avg / ag / delta / di50
+
+   if (shield /= 0.0_dp) then
+      if (islope == 3) then
+         dmloc = sqrt(dm(k1) * dm(k2))
+         if (comparereal(dmloc, 0.0_dp) == 0) then
+            if (kcs(k1) > 0) then
+               dmloc = dm(k1)
+            elseif (kcs(k2) > 0) then
+               dmloc = dm(k2)
+            end if
+         end if
+         ftheta = ashld * (shield**bshld) * &
+            ((di50 / depth)**cshld) * ((di50 / dmloc)**dshld)
+      elseif (islope == 4) then
+         hidexploc = (hidexp(k1, lsed) + hidexp(k2, lsed)) / 2.0_dp
+         ftheta = alfpa * sqrt(shield / &
+            max(shield * 0.1_dp, hidexploc * thcrpa))
+      else
+         write (errmsg, '(a)') '`islope` method not supported for ftheta calculation in fm_adjust_bedload'
+         call mess(LEVEL_FATAL, errmsg)
+      end if
+   else
+      ftheta = 0.0_dp
+   end if
+end subroutine compute_ftheta
 
 end module m_fm_adjust_bedload

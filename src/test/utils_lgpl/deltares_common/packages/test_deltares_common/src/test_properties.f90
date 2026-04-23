@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2025.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -34,6 +34,7 @@ contains
       call test(test_properties_version, 'Checking if the fileversion get loaded correctly')
       call test(test_properties_get_single_values, 'Checking if single values are returned correctly')
       call test(test_properties_get_strings, 'Checking if strings are returned correctly')
+      call test(test_parse_pound_wrapped_value, 'Checking if pound-wrapped values cause a warning')
    end subroutine tests_properties
 
    subroutine test_properties_load
@@ -135,8 +136,6 @@ contains
          call assert_comparable(doubleValue, 2.2_dp, 1.0_dp, "The double value (from 'realValue') should be 2.2 (chapter: "//trim(chapter(i))//")")
       end do
 
-      ! The rest of this subroutine is disabled. Please only add green tests
-      return
       !
       ! Get the string values from any chapter
       !
@@ -149,17 +148,17 @@ contains
          stringValue = '?'
          call prop_get(tree, chapter(i), 'plainString', stringValue, success)
          call assert_true(success, "Retrieving the string value should succeed (chapter: "//trim(chapter(i))//")")
-         call assert_equal(stringValue, "plain", "Single words should be treated correctly (chapter: "//trim(chapter(i))//")")
+         call assert_equal(stringValue, "single-word", "Single words should be treated correctly (chapter: "//trim(chapter(i))//")")
 
-         stringValue = '?'
-         call prop_get(tree, chapter(i), 'stringValue1', stringValue, success)
-         call assert_true(success, "Retrieving the string value should succeed (chapter: "//trim(chapter(i))//")")
-         call assert_equal(stringValue, expectedString, "Strings in double quotes should be treated correctly (chapter: "//trim(chapter(i))//")")
+         !stringValue = '?'
+         !call prop_get(tree, chapter(i), 'stringValue1', stringValue, success)
+         !call assert_true(success, "Retrieving the string value should succeed (chapter: "//trim(chapter(i))//")")
+         !call assert_equal(stringValue, expectedString, "Strings in double quotes should be treated correctly (chapter: "//trim(chapter(i))//")")
 
-         stringValue = '?'
-         call prop_get(tree, chapter(i), 'stringValue2', stringValue, success)
-         call assert_true(success, "Retrieving the string value should succeed (chapter: "//trim(chapter(i))//")")
-         call assert_equal(stringValue, expectedString, "Strings in single quotes should be treated correctly (chapter: "//trim(chapter(i))//")")
+         !stringValue = '?'
+         !call prop_get(tree, chapter(i), 'stringValue2', stringValue, success)
+         !call assert_true(success, "Retrieving the string value should succeed (chapter: "//trim(chapter(i))//")")
+         !call assert_equal(stringValue, expectedString, "Strings in single quotes should be treated correctly (chapter: "//trim(chapter(i))//")")
 
          stringValue = '?'
          call prop_get(tree, chapter(i), 'stringValue3', stringValue, success)
@@ -302,5 +301,49 @@ contains
          call assert_equal(string(i), expected(i), "Substring should be parsed correctly (non-default separator)")
       end do
    end subroutine test_properties_get_strings
+
+   subroutine test_parse_pound_wrapped_value()
+      use MessageHandling, only: getLastMessage, resetMessageCount_MH, LEVEL_WARN, LEVEL_NONE
+
+      integer :: error_code
+      character(len=256) :: value
+      logical :: is_read
+      integer :: error_level
+      character(len=256) :: error_message
+      type(tree_data), pointer :: tree
+
+      open (unit=10, file="my_file.ini", status="replace")
+      write (10, *) "id = #pound#"
+      close (10)
+
+      call tree_create("big_green_tree", tree)
+      call prop_inifile("my_file.ini", tree, error_code)
+      call assert_equal(error_code, 0, "Failed to read ini file")
+
+      ! Deprecation warning disabled by default, so no warning expected here
+      call resetMessageCount_MH()
+      call prop_get(tree%child_nodes(1)%node_ptr, '', 'id', value, is_read)
+      call assert_true(is_read, "")
+      call assert_equal(value, "pound", "")
+
+      call getLastMessage(error_level, error_message)
+      call assert_equal(error_level, LEVEL_NONE, "")
+
+      ! Deprecation warning enabled
+      deprecate_pound_wrapped_values = .true.
+      value = ''
+
+      call prop_get(tree%child_nodes(1)%node_ptr, '', 'id', value, is_read)
+      call assert_true(is_read, "")
+      call assert_equal(value, "pound", "")
+
+      call getLastMessage(error_level, error_message)
+      call assert_equal(error_level, LEVEL_WARN, "")
+      call assert_equal(error_message, "Encountered value '#pound#'. Parsing values enclosed in '#' is deprecated" &
+                        //" and will be removed in a future release. Please remove the '#' characters to ensure compatibility.", "")
+
+      ! Reset setting back to default
+      deprecate_pound_wrapped_values = .false.
+   end subroutine test_parse_pound_wrapped_value
 
 end module test_properties

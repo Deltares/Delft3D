@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,40 +30,27 @@
 #include "dimr_exe_version.h"
 
 #ifndef min
-#  define min(a,b) (a)<(b) ? (a) : (b)
-#  define max(a,b) (a)>(b) ? (a) : (b)
+    #define min(a, b) (a) < (b) ? (a) : (b)
+    #define max(a, b) (a) > (b) ? (a) : (b)
 #endif
 
 #if defined(_WIN64)
-static char modname_version_id [] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Win64), " __DATE__ ", " __TIME__ ""};
+static char modname_version_id[] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor
+                                    "." modname_build " (Win64), " __DATE__ ", " __TIME__ ""};
 #elif defined(LINUX64)
-static char modname_version_id [] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Linux64), " __DATE__ ", " __TIME__ ""};
+static char modname_version_id[] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor
+                                    "." modname_build " (Linux64), " __DATE__ ", " __TIME__ ""};
 #else
-static char modname_version_id[] = { "@(#)Deltares, " modname_program " Version " modname_major "." modname_minor "." modname_build " (Unknown), " __DATE__ ", " __TIME__ "" };
+static char modname_version_id[] = {"@(#)Deltares, " modname_program " Version " modname_major "." modname_minor
+                                    "." modname_build " (Unknown), " __DATE__ ", " __TIME__ ""};
 #endif
 
+const char* getversionstring_dimr_exe(void) { return modname_version; }
 
-char * getversionstring_dimr_exe(void)
-{
-    return modname_version;
-}
+const char* getfullversionstring_dimr_exe(void) { return modname_version_full; }
 
-char * getfullversionstring_dimr_exe(void)
-{
-    return modname_version_full;
-}
+const char* getshortversionstring_dimr_exe(void) { return modname_version_short; }
 
-char * getshortversionstring_dimr_exe(void)
-{
-    return modname_version_short;
-}
+const char* geturlstring_dimr_exe(void) { return modname_url; }
 
-char * geturlstring_dimr_exe(void)
-{
-    return modname_url;
-}
-
-char * getversionidstring_dimr_exe(void)
-{
-	return modname_version_id;
-}
+const char* getversionidstring_dimr_exe(void) { return modname_version_id; }

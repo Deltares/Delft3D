@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,7 @@ contains
       use precision, only: dp
       use m_averagediff, only: averagediff
       use m_accumulatedistance, only: accumulatedistance
-      use M_POLYGON, only: savepol, npl, xpl, ypl, zpl, dxuni, xph, yph, zph, maxpol
+      use M_POLYGON, only: savepol, npl, xpl, ypl, zpl, dxuni, maxpol
       use M_MISSING, only: dmiss, dxymis
       use m_alloc, only: aerr, realloc
 
@@ -77,7 +77,8 @@ contains
       integer :: NX, JDLA
 
       JDLA = 1
-      THIRD = 1.0_dp / 3.0_dp; TWOTHIRD = 1.0_dp - THIRD
+      THIRD = 1.0_dp / 3.0_dp
+      TWOTHIRD = 1.0_dp - THIRD
 
       call SAVEPOL()
 
@@ -109,9 +110,13 @@ contains
       end if
 
       if (jauniform /= 1) then
-         if (NO < 4) return
+         if (NO < 4) then
+            return
+         end if
       else
-         if (NO < 2) return
+         if (NO < 2) then
+            return
+         end if
       end if
 
       NPLO = NPL ! Back up current poly length
@@ -126,7 +131,10 @@ contains
          ZPLO(kk - i1 + 1) = ZPL(kk)
       end do
 
-      allocate (XH(NX), YH(NX), ZH(NX), STAT=IERR); XH = DXYMIS; YH = DXYMIS; ZH = dxymis
+      allocate (XH(NX), YH(NX), ZH(NX), STAT=IERR)
+      XH = DXYMIS
+      YH = DXYMIS
+      ZH = dxymis
       call AERR('XH(NX), YH(NX) , ZH(NX)', IERR, 2 * NX)
       allocate (DPLA(NX), DXA(NX), DXS(NX), STAT=IERR)
       call AERR('DPLA(NX), DXA(NX), DXS(NX)', IERR, 3 * NX)
@@ -166,8 +174,11 @@ contains
             call SMODPLA(DPLA, DXS, NPL) ! SMOOTH WITH WEIGHTFACTOR DESIRED
          end do
 
-         RMN = 1e9; NMN = 0
-         RMX = -1e9; NMX = 0; DXSM = 1e30
+         RMN = 1e9
+         NMN = 0
+         RMX = -1e9
+         NMX = 0
+         DXSM = 1e30
          do N = 1, NPL - 1 ! CHECK SMALLEST AND LARGEST RATIOS OF ACTUAL VS DESIRED
             DXSM = min(DXS(N), DXSM)
 
@@ -175,11 +186,13 @@ contains
 
             if (N > 1) then
                if (RMA < RMN) then ! ZOEK BESTE WEGGOOIER
-                  NMN = N; RMN = RMA ! POTENTIEEL WEGGOOIPUNT, KLEINE GRIDSIZE VS STREEFSIZE
+                  NMN = N
+                  RMN = RMA ! POTENTIEEL WEGGOOIPUNT, KLEINE GRIDSIZE VS STREEFSIZE
                end if
             end if
             if (RMA > RMX) then
-               NMX = N; RMX = RMA ! POTENTIEEL BIJZETPUNT, GROTE GRIDSIZE VS STREEFSIZE
+               NMX = N
+               RMX = RMA ! POTENTIEEL BIJZETPUNT, GROTE GRIDSIZE VS STREEFSIZE
             end if
          end do
 
@@ -222,9 +235,6 @@ contains
          call REALLOC(XPL, NX)
          call REALLOC(YPL, NX)
          call REALLOC(ZPL, NX)
-         call REALLOC(XPH, NX)
-         call REALLOC(YPH, NX)
-         call REALLOC(ZPH, NX)
          MAXPOL = NX
       end if
       do kk = nplo, i2 + 1, -1

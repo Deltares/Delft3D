@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
 !  Delft3D is free software: you can redistribute it and/or modify
@@ -269,7 +269,9 @@ contains
       do ibr = 1, branch_count
          pbranch => network%brs%branch(ibr)
 
-         if (pbranch%gridPointsCount == 0) cycle
+         if (pbranch%gridPointsCount == 0) then
+            cycle
+         end if
 
          ! If it is branch start node and first grid point is also on that start of branch:
          if (pbranch%fromnode%index == nodeindex &

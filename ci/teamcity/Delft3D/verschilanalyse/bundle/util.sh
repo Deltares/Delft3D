@@ -9,7 +9,7 @@
 # # Zero exit code.
 # util.check_vars_are_set FOO BAR BAZ
 #
-# # Error: QUX is not set. 
+# # Error: QUX is not set.
 # util.check_vars_are_set FOO BAR BAZ QUX
 # ```
 function util.check_vars_are_set {

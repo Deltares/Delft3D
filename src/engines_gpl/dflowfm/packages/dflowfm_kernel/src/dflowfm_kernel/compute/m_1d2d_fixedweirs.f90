@@ -412,7 +412,8 @@ contains
             ! For 2d no additional correction is necessary (off diagonal to 0 is already done for 1d).
             tetau = teta(L) * au(L)
             aufu = tetau * fu(L)
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             bbr(k1d) = bbr(k1d) - aufu
             cc_cfi = ccr(lv2(L))
             ccr(Lv2(L)) = ccr(Lv2(L)) + aufu
@@ -469,7 +470,8 @@ contains
             ! must be set to 0.
             tetau = teta(L) * au(L)
             aufu = tetau * fu(L)
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             bbr(k1) = bbr(k1) - aufu
             bbr(k2) = bbr(k2) - aufu
             ccr(Lv2(L)) = 0.0_dp

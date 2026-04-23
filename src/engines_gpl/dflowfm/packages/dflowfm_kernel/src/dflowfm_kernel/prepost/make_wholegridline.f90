@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -84,7 +84,9 @@ contains
       ig = 0 ! index in gridline array
       numcentersplines = 0
       do is = 1, mcs
-         if (splineprops(is)%id /= 0) cycle ! center splines only
+         if (splineprops(is)%id /= 0) then
+            cycle ! center splines only
+         end if
          numcentersplines = numcentersplines + 1
 
 !     determine the number of control points in the spline
@@ -112,7 +114,7 @@ contains
 
 !     reallocate if necessary
          if (num > ubound(xlist, 1)) then
-            numnew = int(1.2_dp * dble(num)) + 1
+            numnew = int(1.2_dp * real(num, kind=dp)) + 1
             call realloc(xlist, numnew)
             call realloc(ylist, numnew)
          end if

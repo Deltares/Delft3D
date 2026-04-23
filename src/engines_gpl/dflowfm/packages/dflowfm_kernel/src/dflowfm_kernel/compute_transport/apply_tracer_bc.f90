@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,9 @@ contains
       integer :: L, LL, Lb, Lt
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("apply_tracer_bc", ithndl)
+      if (timon) then
+         call timstrt("apply_tracer_bc", ithndl)
+      end if
 
 !  loop over the tracer boundary conditions
       do itrac = 1, numtracers
@@ -94,7 +96,9 @@ contains
          end do
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine apply_tracer_bc
 

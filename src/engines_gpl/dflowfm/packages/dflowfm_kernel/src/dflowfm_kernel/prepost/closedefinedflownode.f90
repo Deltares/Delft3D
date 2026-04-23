@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -59,7 +59,8 @@ contains
          if (laydefnr(n) > 0) then
             dis = dbdistance(XP1, YP1, XZ(n), YZ(n), jsferic, jasfer3D, dmiss)
             if (dis < dismin) then
-               n1 = n; dismin = dis
+               n1 = n
+               dismin = dis
             end if
          end if
       end do

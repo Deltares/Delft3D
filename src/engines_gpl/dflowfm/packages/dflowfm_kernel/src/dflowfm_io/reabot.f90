@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -77,7 +77,7 @@ contains
       end if
 
       do M = M1, M2
-         AF = dble(M) / dble(MC)
+         AF = real(M, kind=dp) / real(MC, kind=dp)
          call READYY('Reading SIMONA *.bottom File', AF)
 
          read (MMDD, '(A)', end=777) REC

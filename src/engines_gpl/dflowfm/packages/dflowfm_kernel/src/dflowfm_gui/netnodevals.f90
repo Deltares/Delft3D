@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,7 +51,9 @@ contains
       real(kind=dp) :: x, y, z, uar
       real(kind=dp) :: xn, yn, dis, rL ! for smallest distance to land boundary (method=7)
 
-      if (MET == 1) return
+      if (MET == 1) then
+         return
+      end if
 
       if (MET == 9 .and. allocated(ban)) then
          RNOD = 0.0_dp

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,23 +29,23 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace components
-{
+    namespace schematization
+    {
+        namespace components
+        {
 
-class component : public element
-{
-public:
-	component(string id, string name);
-	virtual ~component(void) {};
+            class component : public element
+            {
+            public:
+                component(string id, string name);
+                virtual ~component(void) {};
 
-	void activate() {};
-	void deactivate() {};
-};
+                void activate() {};
+                void deactivate() {};
+            };
 
-} // end namespace components
-} // end namespace schematization
+        } // end namespace components
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* COMPONENT_H */

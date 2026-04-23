@@ -18,6 +18,26 @@ set(stdlib_source src/stdlib/stdlib_kinds.f90
                   src/stdlib/stdlib_sorting_radix_sort.f90
                   src/stdlib/stdlib_sorting_sort_index.f90
 )
+if(NOT Python_FOUND)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
+endif()
+
+set(malloc_output_file    "${CMAKE_CURRENT_BINARY_DIR}/generated/m_alloc_generated.f90")
+set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
+
+# Build-time regeneration rule
+add_custom_command(
+    OUTPUT  "${malloc_output_file}"
+    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_output_file}
+    DEPENDS "${malloc_generator_file}"
+    COMMENT "Regenerating m_alloc_generated.f90"
+    VERBATIM
+)
+
+# Force build graph to consider this generation step explicitly
+add_custom_target(generate_m_alloc_generated DEPENDS "${malloc_output_file}")
+set_target_properties(generate_m_alloc_generated PROPERTIES FOLDER utils_lgpl/deltares_common)
+set_source_files_properties("${malloc_output_file}" PROPERTIES GENERATED TRUE)
 
 get_fortran_source_files(src source)
 
@@ -25,8 +45,11 @@ set(library_name deltares_common)
 add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
+                            ${malloc_output_file}
+                            ${malloc_generator_file}
                             ${fortran_version_file}
 )
+add_dependencies(${library_name} generate_m_alloc_generated)
 
 target_link_libraries(${library_name} PRIVATE deltares_common_c)
 
@@ -43,9 +66,23 @@ set_source_files_properties(${fortran_version_file}
 )
 
 # Create the folder structure in vfproj
+source_group("src\\malloc_includes" FILES ${malloc_output_file})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
                                                     ${rd_token_source}
                                                     ${stdlib_source}
-                                                    ${fortran_version_file})
+                                                    ${fortran_version_file}
+                                                    ${malloc_generator_file})
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
+
+set(gtest_path ${CMAKE_CURRENT_SOURCE_DIR}/../../gtest)
+f90twtest(test_deltares_common_gtest
+    CFILES ${gtest_path}/test_deltares_common_gtest.cpp
+    F90FILES ${gtest_path}/test_deltares_common_gtest.f90
+             ${gtest_path}/test_malloc.f90
+    F2HFILES ${gtest_path}/test_deltares_common_gtest.f90
+             ${gtest_path}/test_malloc.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES deltares_common
+    VISUAL_STUDIO_PATH utils_lgpl/deltares_common/gtest
+)

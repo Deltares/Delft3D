@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -62,14 +62,18 @@ contains
 
       IERR = 0
       if (M >= MAXSPL) then
-         maxspl = max(10, int(1.2 * m)); IERR = 1
+         maxspl = max(10, int(1.2 * m))
+         IERR = 1
       end if
 
       if (N >= MAXSPLEN) then
-         MAXSPLEN = max(100, int(1.2 * N)); IERR = 1
+         MAXSPLEN = max(100, int(1.2 * N))
+         IERR = 1
       end if
 
-      if (IERR == 0) return
+      if (IERR == 0) then
+         return
+      end if
 
       ibounds = [maxspl, maxsplen]
       call realloc(xsp, ibounds, stat=ierr, fill=dxymis)
@@ -143,7 +147,9 @@ contains
 
       integer :: j
 
-      if (m < 0 .or. m > mcs + 1) return
+      if (m < 0 .or. m > mcs + 1) then
+         return
+      end if
       if (m == 0 .or. m > mcs .or. n == 0) then
 !       EEN NIEUWE SPLINE
          call newSpline()
@@ -202,7 +208,9 @@ contains
 
       integer :: k
 
-      if (m > mcs) return
+      if (m > mcs) then
+         return
+      end if
       do k = m, mcs - 1
          xsp(k, :) = xsp(k + 1, :)
          ysp(k, :) = ysp(k + 1, :)
@@ -300,7 +308,9 @@ contains
             end if
          end do
       end do
-      if (ISHOT == 1) goto 666
+      if (ISHOT == 1) then
+         goto 666
+      end if
       MVold = 0
       NVold = 0
       call DISPNODE2(MVold, NVold)
@@ -359,7 +369,7 @@ contains
       call FIRSTLIN(MSPL)
       call READYY('Writing Spline File', 0.0_dp)
       do I = 1, mcs
-         call READYY('Writing Spline File', dble(I) / dble(mcs))
+         call READYY('Writing Spline File', real(I, kind=dp) / real(mcs, kind=dp))
          write (MATR(2:5), '(I4.4)') I
          write (MSPL, '(A5)') MATR
          write (MSPL, '(I4,A4)') lensp(i), '   2'

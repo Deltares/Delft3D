@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -35,93 +35,102 @@ using namespace rtctools::schematization::triggers;
 
 namespace rtctools
 {
-namespace schematization
-{
+    namespace schematization
+    {
 
-/**
-  * @brief Mathematical expression
-  *
-  * The class combines two input values (either constant or from a time series)
-  * and a mathematical operator (+,-,*,/,min,max).
-  */
-class expression : public trigger, public rule, public component
-{
-public:
-	/**
-	  * @brief Mathematical operator
-	  */
-	enum OPERATOR{PLUS, MINUS, MULTIPLY, DIVIDE, MIN, MAX, POWER};
+        /**
+         * @brief Mathematical expression
+         *
+         * The class combines two input values (either constant or from a time series)
+         * and a mathematical operator (+,-,*,/,min,max).
+         */
+        class expression : public trigger, public rule, public component
+        {
+        public:
+            /**
+             * @brief Mathematical operator
+             */
+            enum OPERATOR
+            {
+                PLUS,
+                MINUS,
+                MULTIPLY,
+                DIVIDE,
+                MIN,
+                MAX,
+                POWER
+            };
 
-	/**
-	  * @brief Struct of input variable, either value or time series reference
-      */
-	struct INPUT {
-		/**
-		  * @brief Constant value
-		  */
-		double val;
-		/**
-		  * @brief Vector with time series indices
-		  */
-		vector<int> iVal;
-	};
+            /**
+             * @brief Struct of input variable, either value or time series reference
+             */
+            struct INPUT
+            {
+                /**
+                 * @brief Constant value
+                 */
+                double val;
+                /**
+                 * @brief Vector with time series indices
+                 */
+                vector<int> iVal;
+            };
 
-private:
-	/**
-	  * @brief Array length of input vector
-	  */
-	int nVec;
-	/**
-	  * @brief First input
-	  */
-	INPUT x1In;
-	/**
-	  * @brief Mathematical operator
-	  */
-	OPERATOR op;
-	/**
-	  * @brief Second input
-	  */
-	INPUT x2In;
-	/**
-	  * @brief Vector with output indices
-	  */
-	vector<int> iYOut;
+        private:
+            /**
+             * @brief Array length of input vector
+             */
+            int nVec;
+            /**
+             * @brief First input
+             */
+            INPUT x1In;
+            /**
+             * @brief Mathematical operator
+             */
+            OPERATOR op;
+            /**
+             * @brief Second input
+             */
+            INPUT x2In;
+            /**
+             * @brief Vector with output indices
+             */
+            vector<int> iYOut;
 
-    /**
-    * @brief the number of messages 
-    */
-    int diagnosticMessagesCounter = 0;
+            /**
+             * @brief the number of messages
+             */
+            int diagnosticMessagesCounter = 0;
 
-    /**
-    * @brief maximum number of messages
-    */
-    int maxNumDiagnostic = 3;
+            /**
+             * @brief maximum number of messages
+             */
+            int maxNumDiagnostic = 3;
 
-public:
-	/**
-	  * @brief Constructor
-	  *
-	  * @param id		Identifyer
-	  * @param name		Name
-	  * @param nVec		Array length of input and output vectors
-	  * @param x1		First input indices
-	  * @param op		Mathematical operator
-	  * @param x2		Second input indices
-	  * @param iYOut	Output indices
-	  */
-	expression(string id, string name, 
-		        int nVec, INPUT x1, OPERATOR op, INPUT x2, vector<int> iYOut);
-	/**
-	  * @brief Destructor
-	  */
-	~expression(void) {};
+        public:
+            /**
+             * @brief Constructor
+             *
+             * @param id		Identifyer
+             * @param name		Name
+             * @param nVec		Array length of input and output vectors
+             * @param x1		First input indices
+             * @param op		Mathematical operator
+             * @param x2		Second input indices
+             * @param iYOut	Output indices
+             */
+            expression(string id, string name, int nVec, INPUT x1, OPERATOR op, INPUT x2, vector<int> iYOut);
+            /**
+             * @brief Destructor
+             */
+            ~expression(void) {};
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-    void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew);
-};
+            void solve(double* stateOld, double* stateNew, long long t, double dt);
+            void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld, double* objNew);
+        };
 
-} // end namespace schematization
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* EXPRESSION_H */

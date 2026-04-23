@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,6 @@
 //  6 mar 13
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
 #include <stdio.h>
@@ -41,150 +40,88 @@
 #include <string>
 #include <cstdlib>
 
-
-using namespace std;
 #include <list>
 #include <vector>
 
 #include "exception.h"
-struct keyValueLL{
-	char * key;
-	char * val;
-	keyValueLL * nextkv;
+struct keyValueLL
+{
+    char* key;
+    char* val;
+    keyValueLL* nextkv;
 };
 
-struct keyValue{
-	char * key;
-	char * val;
+struct keyValue
+{
+    char* key;
+    char* val;
 };
 
-typedef std::list<keyValue>	keyValueList;
+typedef std::list<keyValue> keyValueList;
 
-class XmlTree {
-    public:
-        XmlTree (
-            FILE * input
-            );
+class XmlTree
+{
+public:
+    XmlTree(FILE* input);
 
-        XmlTree (
-            XmlTree * parent,
-            const char * name
-            );
+    XmlTree(XmlTree* parent, const char* name);
 
-        ~XmlTree ();
+    ~XmlTree();
 
-        void
-        AddAttrib (
-            const char * name,
-            const char * value
-            );
+    void AddAttrib(const char* name, const char* value);
 
-        void
-        AddChild (
-            XmlTree * child
-            );
+    void AddChild(XmlTree* child);
 
-		void
-		ExpandEnvironmentVariables (
-		);
+    void ExpandEnvironmentVariables();
 
-		void
-		ExpandEnvironmentVariables (
-		   int instance
-		);
+    void ExpandEnvironmentVariables(int instance);
 
-        bool
-        GetBoolAttrib (
-            const char * name
-            );
+    bool GetBoolAttrib(const char* name);
 
-        long int
-        GetIntegerAttrib (
-            const char * name
-            );
+    long int GetIntegerAttrib(const char* name);
 
-        double
-        GetFloatAttrib (
-            const char * name
-            );
+    double GetFloatAttrib(const char* name);
 
-        XmlTree *
-        Lookup (
-            const char * pathname
-            );
+    XmlTree* Lookup(const char* pathname);
 
-        XmlTree *
-        Lookup (
-            const char * pathname,
-            int instance
-            );
+    XmlTree* Lookup(const char* pathname, int instance);
 
-        int
-        Lookup (
-            const char * pathname,
-            int instance,
-	        keyValueLL * &kvlist 					// key-value pairs linked list
-            );
+    int Lookup(const char* pathname, int instance,
+               keyValueLL*& kvlist // key-value pairs linked list
+    );
 
-        const char *
-        GetAttrib (
-            const char * name
-            );
+    const char* GetAttrib(const char* name);
 
-        const char *
-        GetElement (
-            const char * name
-            );
+    const char* GetElement(const char* name);
 
-        bool
-        GetBoolElement (
-            const char * name,
-            bool defaultValue
-            );
+    bool GetBoolElement(const char* name, bool defaultValue);
 
-        void
-        Print (
-            void
-            );
+    void Print(void);
 
-    private:
-        void
-        init (
-            void
-            );
+private:
+    void init(void);
 
-        void
-        print (
-            int level
-            );
+    void print(int level);
 
-        string 
-        SubstEnvVar(
-            string instr 
-        );
+    std::string SubstEnvVar(std::string instr);
 
-		static string
-        EnvSubst(
-	       std::string instr
-	    );
+    static std::string EnvSubst(std::string instr);
 
-    public:
-        static const int maxCharData = 1000000;  // maximum size of an XML character data block
-        static const int maxPathname = 2560;     // maximum length of a full path name
+public:
+    static const int maxCharData = 1000000; // maximum size of an XML character data block
+    static const int maxPathname = 2560;    // maximum length of a full path name
 
-        XmlTree *   parent;
-        char *      name;
-        char *      pathname;
+    XmlTree* parent;
+    char* name;
+    char* pathname;
 
-        vector<char *>   attribNames;
-        vector<char *>   attribValues;
+    std::vector<char*> attribNames;
+    std::vector<char*> attribValues;
 
-        vector<XmlTree *>   children;
+    std::vector<XmlTree*> children;
 
-        char *      charData;
-        int         charDataLen;
+    char* charData;
+    int charDataLen;
 
-    private:
-    };
-
-
+private:
+};

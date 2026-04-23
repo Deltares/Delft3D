@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -107,7 +107,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_fluxhor3D", ithndl)
+      if (timon) then
+         call timstrt("comp_fluxhor3D", ithndl)
+      end if
 
       if (present(background_diffusion_factor)) then
          background_diffusion_factor_local = background_diffusion_factor
@@ -119,9 +121,11 @@ contains
 
       if (limtyp == 6) then
 
-         dsedx = 0.0_dp; dsedy = 0.0_dp
+         dsedx = 0.0_dp
+         dsedy = 0.0_dp
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -169,12 +173,12 @@ contains
             kk2R = (1 - iswitchR) * klnup(5, LL) + iswitchR * kk1R ! make kk2R safe for when it is not intented to be used
 
 !        get the weights in the stencil
-            sl1L = (dble(1 - iswitchL) * slnup(1, LL) + dble(iswitchL) * 1.0_dp)
-            sl2L = dble(1 - iswitchL) * slnup(2, LL)
+            sl1L = (real(1 - iswitchL, kind=dp) * slnup(1, LL) + real(iswitchL, kind=dp) * 1.0_dp)
+            sl2L = real(1 - iswitchL, kind=dp) * slnup(2, LL)
             sl3L = slnup(3, LL)
 
-            sl1R = (dble(1 - iswitchR) * slnup(4, LL) + dble(iswitchR) * 1.0_dp)
-            sl2R = dble(1 - iswitchR) * slnup(5, LL)
+            sl1R = (real(1 - iswitchR, kind=dp) * slnup(4, LL) + real(iswitchR, kind=dp) * 1.0_dp)
+            sl2R = real(1 - iswitchR, kind=dp) * slnup(5, LL)
             sl3R = slnup(6, LL)
 
 !        make cell indices safe
@@ -233,16 +237,22 @@ contains
             end if
 
             if (u1(L) > 0.0_dp) then
-               is = 1; ku = k1; half = acL(LL)
+               is = 1
+               ku = k1
+               half = acL(LL)
             else
-               is = -1; ku = k2; half = 1.0_dp - acl(LL)
+               is = -1
+               ku = k2
+               half = 1.0_dp - acl(LL)
             end if
 
             QL = max(q1(L), 0.0_dp)
             QR = min(q1(L), 0.0_dp)
 
             do j = 1, NUMCONST
-               if (jaupdateconst(j) /= 1) cycle
+               if (jaupdateconst(j) /= 1) then
+                  cycle
+               end if
 
                sedL = sed(j, k1)
                sedR = sed(j, k2)
@@ -322,8 +332,8 @@ contains
                !dfac1 = 0.2d0
                !dfac2 = 0.2d0
 
-               dfac1 = 1.0_dp / dble(nd(ln(1, LL))%lnx)
-               dfac2 = 1.0_dp / dble(nd(ln(2, LL))%lnx)
+               dfac1 = 1.0_dp / real(nd(ln(1, LL))%lnx, kind=dp)
+               dfac2 = 1.0_dp / real(nd(ln(2, LL))%lnx, kind=dp)
             end if
 
             if (jadiusp == 1) then
@@ -343,7 +353,9 @@ contains
                end if
                do j = 1, NUMCONST
 
-                  if (jaupdateconst(j) /= 1) cycle
+                  if (jaupdateconst(j) /= 1) then
+                     cycle
+                  end if
 
                   if (present(difsedsp)) then
                      difsed_const = difsedsp(j, LL)
@@ -397,7 +409,9 @@ contains
          end if
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
 
    end subroutine comp_fluxhor3D

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -53,72 +53,72 @@ using namespace std;
 
 namespace rtctools
 {
-namespace schematization
-{
+    namespace schematization
+    {
 
-class schematisation
-{
-private:
-	// time series reference
-	timeSeriesTensorInterface *tsTensor;
+        class schematisation
+        {
+        private:
+            // time series reference
+            timeSeriesTensorInterface* tsTensor;
 
-	// parameter interface
-	parameterInterface *parInt;
+            // parameter interface
+            parameterInterface* parInt;
 
-    // runtime configuration settings
-    rtcRuntimeConfigSettings *runtimeSettings;
+            // runtime configuration settings
+            rtcRuntimeConfigSettings* runtimeSettings;
 
-	// pointer to data binding model
-	auto_ptr<RtcToolsConfigComplexType> rtcToolsConfig;
+            // pointer to data binding model
+            auto_ptr<RtcToolsConfigComplexType> rtcToolsConfig;
 
-	// schematization components
-	int nComponent;
-	component **components;
-	int nRule;
-	rule **rules;
-	int nTrigger;
-	trigger **triggers;
+            // schematization components
+            int nComponent;
+            component** components;
+            int nRule;
+            rule** rules;
+            int nTrigger;
+            trigger** triggers;
 
-public:
-	schematisation(boost::filesystem::path schemaLocation, string filename,
-		           timeSeriesTensorInterface *tsTensor, parameterInterface *parInt,
-                   rtcRuntimeConfigSettings *runtimeSettings);
-	~schematisation(void);
+        public:
+            schematisation(boost::filesystem::path schemaLocation, string filename, timeSeriesTensorInterface* tsTensor,
+                           parameterInterface* parInt, rtcRuntimeConfigSettings* runtimeSettings);
+            ~schematisation(void);
 
-	void deleteElements();
-	void initialize(parameterInterface *parInt);
-	void initialize();
+            void deleteElements();
+            void initialize(parameterInterface* parInt);
+            void initialize();
 
-	// network related
-	int getNComponent() const;
-	component** getComponents() const;
-	component* getComponent(string id) const;
+            // network related
+            int getNComponent() const;
+            component** getComponents() const;
+            component* getComponent(string id) const;
 
-	// rule related
-	int getNRule() const;
-	rule** getRules() const;
+            // rule related
+            int getNRule() const;
+            rule** getRules() const;
 
-	// trigger related
-	int getNTrigger() const;
-	trigger** getTriggers() const;
-    timeSeriesTensorInterface * getTsTensor() const { return tsTensor; }
-private:
-	// network related
-	component* getComponent(ComponentComplexType cType);
+            // trigger related
+            int getNTrigger() const;
+            trigger** getTriggers() const;
+            timeSeriesTensorInterface* getTsTensor() const { return tsTensor; }
 
-	// rule related
-	rule* getRule(RuleComplexType rule);
-	dateLookupTableConverter* getdateLookupTableConverter(DateTableComplexType::DataSequence table);
+        private:
+            // network related
+            component* getComponent(ComponentComplexType cType);
 
-	// trigger related
-	trigger* getTrigger(TriggerComplexType trigger);
-	condition getCondition(RelationalConditionComplexType con);
+            // rule related
+            rule* getRule(RuleComplexType rule);
+            dateLookupTableConverter* getdateLookupTableConverter(DateTableComplexType::DataSequence table);
 
-   // general utilities
-   expression* getExpression(ExpressionComplexType type);
-};
+            // trigger related
+            trigger* getTrigger(TriggerComplexType trigger);
+            condition getCondition(RelationalConditionComplexType con);
 
-} // end namespace schematization
+            // general utilities
+            expression* getExpression(ExpressionComplexType type);
+        };
+
+    } // end namespace schematization
 } // end namespace rtctools
 
-#endif //SCHEMATISATION_H
+#endif // SCHEMATISATION_H

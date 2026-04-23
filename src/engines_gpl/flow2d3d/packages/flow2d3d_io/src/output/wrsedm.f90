@@ -6,7 +6,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 & iarrc     ,kfsmin    ,kfsmax    )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -75,9 +75,11 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     real(fp), dimension(:)               , pointer :: dzdvv
     real(fp), dimension(:,:)             , pointer :: fixfac
     real(fp), dimension(:,:)             , pointer :: frac
+    real(fp), dimension(:,:)             , pointer :: frac_he
     real(fp), dimension(:)               , pointer :: sdu_t0
     real(fp), dimension(:)               , pointer :: sdu_tn
     real(fp), dimension(:)               , pointer :: mudfrac
+    real(fp), dimension(:)               , pointer :: mudfrac_he
     real(fp), dimension(:)               , pointer :: sandfrac
     real(fp), dimension(:,:)             , pointer :: hidexp
     real(fp), dimension(:,:)             , pointer :: aks
@@ -198,7 +200,9 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
     dzdvv          => gdp%gderosed%e_dzdt
     fixfac         => gdp%gderosed%fixfac
     frac           => gdp%gderosed%frac
+    frac_he        => gdp%gderosed%frac_he
     mudfrac        => gdp%gderosed%mudfrac
+    mudfrac_he     => gdp%gderosed%mudfrac_he
     sandfrac       => gdp%gderosed%sandfrac
     hidexp         => gdp%gderosed%hidexp
     aks            => gdp%gderosed%aks

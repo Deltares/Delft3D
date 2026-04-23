@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -31,29 +31,29 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class polygonTrigger : public trigger
-{
-private:
-	int iX1In;
-	int iX2In;
-	vector<polygon> polygons;
-	double yDefaultValue;
+            class polygonTrigger : public trigger
+            {
+            private:
+                int iX1In;
+                int iX2In;
+                vector<polygon> polygons;
+                double yDefaultValue;
 
-public:
-	polygonTrigger(string id, string name, int iX1In, int iX2In, int iYOut,
-		vector<polygon> polygons, double yDefaultValue, int iTimeTrueOut, int iTimeFalseOut);
-	~polygonTrigger(void) {};
+            public:
+                polygonTrigger(string id, string name, int iX1In, int iX2In, int iYOut, vector<polygon> polygons,
+                               double yDefaultValue, int iTimeTrueOut, int iTimeFalseOut);
+                ~polygonTrigger(void) {};
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
-#endif //POLYGON_TRIGGER_H
+#endif // POLYGON_TRIGGER_H

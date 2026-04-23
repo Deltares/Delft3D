@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -70,7 +70,7 @@ program unstruc
    use unstruc_model, only: md_jaopengl, md_pressakey, md_jatest, md_nruns, md_soltest, md_cfl, md_icgsolver, md_maxmatvecs, md_epsdiff, &
                             md_epscg, md_convnetcells, md_netfile, md_jasavenet, md_jamake1d2dlinks, md_japartition, md_partugrid, md_ident, md_ndomains, &
                             md_jacontiguous, md_pmethod, md_genpolygon, md_partseed, md_restartfile, md_mapfile, md_classmap_file, md_flowgeomfile, md_partitionfile, &
-                            md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts
+                            md_jagridgen, md_jarefine, md_cutcells, md_cfgfile, md_convertlongculverts, md_numthreads
    use unstruc_netcdf, only: unc_conv_ugrid, level_info, unc_write_net
    use unstruc_api, only: flow
    use messagehandling, only: warn_flush, msgbuf, mess, msg_flush
@@ -99,13 +99,12 @@ program unstruc
    use m_qnrgf, only: jqn
    use m_read_commandline, only: read_commandline
    use m_flow_modelinit, only: flow_modelinit
-   use m_makelongculverts_commandline, only: makelongculverts_commandline
    use m_makenet_sub, only: makenet
    use m_partition_from_commandline, only: partition_from_commandline
    use m_refine_from_commandline, only: refine_from_commandline
    use m_resetFullFlowModel, only: resetFullFlowModel
    use m_dobatch, only: dobatch
-   use m_generatepartitionmdufile, only: generatepartitionmdufile
+   use m_generatepartitionmdufile, only: generate_partition_mdu_file
    use m_soltest, only: soltest
    use m_start_program, only: start_program
    use m_pressakey, only: pressakey
@@ -119,6 +118,7 @@ program unstruc
    use m_inidat, only: inidat
    use m_iset_jaopengl, only: iset_jaopengl
    use m_resetb, only: resetb
+   use m_init_openmp, only: init_openmp
 
    implicit none
 
@@ -135,7 +135,7 @@ program unstruc
    character(len=maxnamelen) :: md_flowgeomfile_base !< storing the user-defined flowgeom file
    character(len=maxnamelen) :: md_classmapfile_base !< storing the user-defined class map file
    real(kind=dp) :: tstartall, tstopall
-
+   
    call wall_clock_time(tstartall)
 #if HAVE_DISPLAY==0
 ! For dflowfm-cli executable, switch off all GUI calls here at *runtime*,
@@ -203,6 +203,9 @@ program unstruc
    end if
 
    call iset_jaopengl(md_jaopengl)
+
+   ierr = init_openmp(md_numthreads, jampi)
+
    call START_PROGRAM()
    call resetFullFlowModel()
    call INIDAT()
@@ -285,6 +288,8 @@ program unstruc
       end if
 
       if (len_trim(md_ident) > 0) then ! partitionmduparse
+         md_icgsolver = 6 ! Use the parallel petsc solver.
+         md_convertlongculverts = 0 ! The longculvert conversion is done before the partitioning of the net-file and the mdu-file.
          call partition_from_commandline(md_netfile, md_Ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
          L = index(md_netfile, '_net') - 1
          if (len_trim(md_restartfile) > 0) then ! If there is a restart file
@@ -329,7 +334,7 @@ program unstruc
             if (len_trim(md_classmapfile_base) > 0) then
                md_classmap_file = md_classmapfile_base(1:index(md_classmapfile_base, '.nc', back=.true.) - 1)//'_'//sdmn_loc//".nc"
             end if
-            call generatePartitionMDUFile(trim(md_ident)//'.mdu', trim(md_ident)//'_'//sdmn_loc//'.mdu')
+            call generate_partition_mdu_file(trim(md_ident)//'.mdu', trim(md_ident)//'_'//sdmn_loc//'.mdu')
          end do
       else
          call partition_from_commandline(md_netfile, md_ndomains, md_jacontiguous, md_icgsolver, md_pmethod, md_genpolygon, md_partugrid, md_partseed)
@@ -359,11 +364,6 @@ program unstruc
 
    if (jagui == 1 .and. len_trim(md_cfgfile) > 0) then
       call load_displaysettings(md_cfgfile)
-   end if
-   if (md_convertlongculverts == 1) then
-      call findcells(0)
-      call makelongculverts_commandline()
-      goto 1234 !      stop
    end if
 
    if (len_trim(md_ident) > 0) then

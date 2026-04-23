@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,31 +44,34 @@ contains
    subroutine setcornervelocities()
       use precision, only: dp
       use m_flow, only: kmx, jacomp, ucx, ucy, jased, ustbc, ustb, kbotc, kmxc
-      use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln
+      use m_flowgeom, only: ucnx, ucny, lnx1d, lnx, ln, lncn, wcnx3, wcny3, wcnx4, wcny4, mxban, nban, banf, ban, nrcnw, cscnw, sncnw, kcnw, kcu, wcln, csb, snb
       use m_sferic, only: jasfer3d
       use m_get_Lbot_Ltop, only: getlbotltop
-      use m_nod2linx, only: nod2linx
-      use m_nod2liny, only: nod2liny
+      use m_nod2linx, only: nod2linx, nod2linx_fast
+      use m_nod2liny, only: nod2liny, nod2liny_fast
 
       integer :: L, k1, k2, k3, k4, k, kk, LL, Lb, Lt, kw
       integer :: m, n
       real(kind=dp) :: uLx, uLy, csk, snk, sg
 
-      ucnx = 0; ucny = 0
+      ucnx = 0
+      ucny = 0
 
       if (kmx == 0) then
 
          if (jacomp <= 1) then
 
             do L = lnx1D + 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
-               k3 = lncn(1, L); k4 = lncn(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
                if (jasfer3D == 0) then
                   uLx = 0.5_dp * (ucx(k1) + ucx(k2))
                   uLy = 0.5_dp * (ucy(k1) + ucy(k2))
                else
-                  uLx = 0.5_dp * (nod2linx(L, 1, ucx(k1), ucy(k1)) + nod2linx(L, 2, ucx(k2), ucy(k2)))
-                  uLy = 0.5_dp * (nod2liny(L, 1, ucx(k1), ucy(k1)) + nod2liny(L, 2, ucx(k2), ucy(k2)))
+                  uLx = 0.5_dp * (nod2linx_fast(csb(1, L), snb(1, L), ucx(k1), ucy(k1)) + nod2linx_fast(csb(2, L), snb(2, L), ucx(k2), ucy(k2)))
+                  uLy = 0.5_dp * (nod2liny_fast(csb(1, L), snb(1, L), ucx(k1), ucy(k1)) + nod2liny_fast(csb(2, L), snb(2, L), ucx(k2), ucy(k2)))
                end if
 
                ucnx(k3) = ucnx(k3) + uLx * wcnx3(L)
@@ -111,8 +114,10 @@ contains
                if (abs(kcu(LL)) == 2) then
                   call getLbotLtop(LL, Lb, Lt)
                   do L = Lb, Lt
-                     k1 = ln(1, L); k2 = ln(2, L)
-                     k3 = lncn(1, L); k4 = lncn(2, L)
+                     k1 = ln(1, L)
+                     k2 = ln(2, L)
+                     k3 = lncn(1, L)
+                     k4 = lncn(2, L)
                      if (jasfer3D == 0) then
                         uLx = 0.5_dp * (ucx(k1) + ucx(k2))
                         uLy = 0.5_dp * (ucy(k1) + ucy(k2))
@@ -126,7 +131,8 @@ contains
                      ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)
                      ucny(k4) = ucny(k4) + uLy * wcny4(LL)
                      if (L == Lb) then
-                        k3 = lncn(1, LL); k4 = lncn(2, LL)
+                        k3 = lncn(1, LL)
+                        k4 = lncn(2, LL)
                         ucnx(k3) = ucnx(k3) + uLx * wcnx3(LL)
                         ucny(k3) = ucny(k3) + uLy * wcny3(LL)
                         ucnx(k4) = ucnx(k4) + uLx * wcnx4(LL)

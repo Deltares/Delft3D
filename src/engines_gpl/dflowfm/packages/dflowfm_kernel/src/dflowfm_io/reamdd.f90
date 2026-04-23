@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,11 +56,13 @@ contains
       call READYY('Reading md-Dept File', 0.0_dp)
 5     continue
       read (MMDD, '(A)', end=999) REC
-      if (REC(1:1) == '*') goto 5
+      if (REC(1:1) == '*') then
+         goto 5
+      end if
       backspace (MMDD)
 
       do N = 1, NC
-         AF = dble(N) / dble(NC)
+         AF = real(N, kind=dp) / real(NC, kind=dp)
          call READYY('Reading md-Dept File', AF)
          read (MMDD, *, end=999, ERR=888) (RD1(M, N), M=1, MC)
       end do

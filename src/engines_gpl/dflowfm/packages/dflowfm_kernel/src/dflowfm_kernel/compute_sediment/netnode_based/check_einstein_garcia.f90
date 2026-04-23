@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,7 +40,7 @@ contains
       ein = 0.0_dp
       z = aref
       num = 10000
-      dz = (h - z) / dble(num)
+      dz = (h - z) / real(num, kind=dp)
       z = z - 0.5_dp * dz
       do k = 1, num
          z = z + dz

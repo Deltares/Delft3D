@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,6 +67,7 @@ contains
       call realloc(incoming_lat_concentration, [num_layers, num_const, numlatsg])
       incoming_lat_concentration = 0._dp
       call realloc(outgoing_lat_concentration, [num_layers, num_const, numlatsg])
+      call realloc(outgoing_lat_volume, [num_layers, numlatsg])
       call realloc(lateral_volume_per_layer, [num_layers, numlatsg])
       call realloc(qqlat, [num_layers, nlatnd], fill=0._dp)
 
@@ -78,6 +79,7 @@ contains
       if (allocated(incoming_lat_concentration)) then
          deallocate (incoming_lat_concentration)
          deallocate (outgoing_lat_concentration)
+         deallocate (outgoing_lat_volume)
          deallocate (lateral_volume_per_layer)
          deallocate (qqlat)
       end if
@@ -91,6 +93,7 @@ contains
 
       use m_alloc, only: aerr
       use m_get_kbot_ktop, only: getkbotktop
+      use m_partitioninfo, only: is_ghost_node
 
       integer, intent(in) :: num_const !< Number or constituents.
       integer, intent(in) :: kmx !< Number of layers (0 means 2D computation).
@@ -117,42 +120,46 @@ contains
          do k1 = n1latsg(i_lat), n2latsg(i_lat)
             i_node = nnlat(k1)
             if (i_node > 0) then
-               if (kmx < 1) then
-                  total_volume = total_volume + cell_volume(i_node)
-                  do i_const = 1, num_const
-                     total_time_weighted_quantity(1, i_const, i_lat) = total_time_weighted_quantity(1, i_const, i_lat) + &
-                                                                       dt * cell_volume(i_node) * constituents(i_const, i_node)
-                  end do
-               else
-                  i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
-                  call getkbotktop(i_node, kb, kt)
-                  do k = kb, kt ! loop over active layers under base node(i_node)
-                     total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
-                     do i_const = 1, num_const
-                        total_time_weighted_quantity(i_layer, i_const, i_lat) = total_time_weighted_quantity(i_layer, i_const, i_lat) + &
-                                                                                dt * cell_volume(k) * constituents(i_const, k)
-                     end do
-                     i_layer = i_layer + 1
-                  end do
-               end if
+                if (.not. is_ghost_node(i_node)) then
+                   if (kmx < 1) then
+                      total_volume = total_volume + cell_volume(i_node)
+                      do i_const = 1, num_const
+                         total_time_weighted_quantity(1, i_const, i_lat) = total_time_weighted_quantity(1, i_const, i_lat) + &
+                                                                           dt * cell_volume(i_node) * constituents(i_const, i_node)
+                      end do
+                   else
+                      i_layer = kmx - kmxn(i_node) + 1 ! initialize i_layer to the index of first active bottom layer of base node(i_node)
+                      call getkbotktop(i_node, kb, kt)
+                      do k = kb, kt ! loop over active layers under base node(i_node)
+                         total_volume(i_layer) = total_volume(i_layer) + cell_volume(k)
+                         do i_const = 1, num_const
+                            total_time_weighted_quantity(i_layer, i_const, i_lat) = total_time_weighted_quantity(i_layer, i_const, i_lat) + &
+                                                                                    dt * cell_volume(k) * constituents(i_const, k)
+                         end do
+                         i_layer = i_layer + 1
+                      end do
+                   end if
+                end if
             end if
          end do
          do i_layer = 1, num_layers
             if (total_volume(i_layer) > 0) then
                outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) + &
-                                                               total_time_weighted_quantity(i_layer, :, i_lat) / total_volume(i_layer)
+                                                               total_time_weighted_quantity(i_layer, :, i_lat)
+               outgoing_lat_volume(i_layer, i_lat) = outgoing_lat_volume(i_layer, i_lat)  + dt * total_volume(i_layer)
             else
                outgoing_lat_concentration(i_layer, :, i_lat) = 0.0_dp
+               outgoing_lat_volume(i_layer, i_lat) = 0.0_dp
             end if
          end do
       end do
 
    end subroutine average_concentrations_for_laterals
-
    ! Add lateral input contribution to the load being transported
    module subroutine add_lateral_load_and_sink(transport_load, transport_sink, cell_volume, dtol)
       use m_transportdata, only: numconst
       use m_flow, only: kbot, kmx, kmxn
+      use m_partitioninfo, only: is_ghost_node
       real(kind=dp), dimension(:, :), intent(inout) :: transport_load !< Load being transported into domain.
       !< Sign-convention: positive means load being transported into model.
       real(kind=dp), dimension(:, :), intent(inout) :: transport_sink !< Load being transported out.
@@ -168,34 +175,39 @@ contains
             do i_lateral = 1, numlatsg
                do k1 = n1latsg(i_lateral), n2latsg(i_lateral)
                   i_cell = nnlat(k1)
-                  delta_cell_volume = 1._dp / max(cell_volume(i_cell), dtol)
-                  ! Transport_load is added to RHS of transport equation, sink is added to diagonal:
-                  ! only multiply transport_load with concentration.
-                  qlat = qqlat(i_layer, k1)
-                  if (comparereal(qlat, 0._dp, eps10) > 0) then
-                     if (kmx == 0) then
-                        transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
-                                                          + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
-
-                     else
-                        index_active_bottom_layer = kmx - kmxn(i_cell) + 1
-                        if (i_layer >= index_active_bottom_layer) then
-                           cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
-                           delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
-                           transport_load(i_const, cell_layer_index) = transport_load(i_const, cell_layer_index) &
-                                                                       + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
-                        end if
-                     end if
+                  if (is_ghost_node(i_cell)) then
+                      qlat = 0.0_dp
                   else
-                     if (kmx == 0) then
-                        ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
-                        transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
+                     delta_cell_volume = 1._dp / max(cell_volume(i_cell), dtol)
+                     ! Transport_load is added to RHS of transport equation, sink is added to diagonal:
+                     ! only multiply transport_load with concentration.
+                     qlat = qqlat(i_layer, k1)
+                     if (comparereal(qlat, 0._dp, eps10) > 0) then
+                        if (kmx == 0) then
+                           transport_load(i_const, i_cell) = transport_load(i_const, i_cell) &
+                                                             + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
+   
+                        else
+                           index_active_bottom_layer = kmx - kmxn(i_cell) + 1
+                           if (i_layer >= index_active_bottom_layer) then
+                              cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
+                              delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
+                              transport_load(i_const, cell_layer_index) = transport_load(i_const, cell_layer_index) &
+                                                                          + delta_cell_volume * qlat * incoming_lat_concentration(i_layer, i_const, i_lateral)
+                           end if
+                        end if
+                        
                      else
-                        index_active_bottom_layer = kmx - kmxn(i_cell) + 1
-                        if (i_layer >= index_active_bottom_layer) then
-                           cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
-                           delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
-                           transport_sink(i_const, cell_layer_index) = transport_sink(i_const, cell_layer_index) - delta_cell_volume * qlat
+                        if (kmx == 0) then
+                           ! Sink sign-convention: positive means flux going out of model, hence the negative sign here
+                           transport_sink(i_const, i_cell) = transport_sink(i_const, i_cell) - delta_cell_volume * qlat
+                        else
+                           index_active_bottom_layer = kmx - kmxn(i_cell) + 1
+                           if (i_layer >= index_active_bottom_layer) then
+                              cell_layer_index = kbot(i_cell) + i_layer - index_active_bottom_layer
+                              delta_cell_volume = 1._dp / max(cell_volume(cell_layer_index), dtol)
+                              transport_sink(i_const, cell_layer_index) = transport_sink(i_const, cell_layer_index) - delta_cell_volume * qlat
+                           end if
                         end if
                      end if
                   end if
@@ -213,7 +225,8 @@ contains
 
       use m_flow, only: vol1, kmx, kmxn
       use m_get_kbot_ktop, only: getkbotktop
-
+      use m_partitioninfo, only: is_ghost_node
+      
       real(kind=dp), dimension(:, :), intent(out) :: lateral_volume_per_layer !< Water volume per layer in laterals, dimension = (number_of_layer,number_of_lateral) = (kmx,numlatsg)
 
       integer :: i_node, i_lateral, i_layer, i_nnlat, i_vol1, index_vol1_bottom_layer, index_vol1_top_layer, index_active_bottom_layer
@@ -222,35 +235,93 @@ contains
       do i_lateral = 1, numlatsg
          do i_nnlat = n1latsg(i_lateral), n2latsg(i_lateral)
             i_node = nnlat(i_nnlat)
-            if (kmx > 0) then
-               call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
-               index_active_bottom_layer = kmx - kmxn(i_node) + 1
-               i_layer = index_active_bottom_layer
-               do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
-                  lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
-                  i_layer = i_layer + 1
-               end do
-            else
-               lateral_volume_per_layer(1, i_lateral) = lateral_volume_per_layer(1, i_lateral) + vol1(i_node)
+            if (.not. is_ghost_node(i_node)) then
+               if (kmx > 0) then
+                  call getkbotktop(i_node, index_vol1_bottom_layer, index_vol1_top_layer)
+                  index_active_bottom_layer = kmx - kmxn(i_node) + 1
+                  i_layer = index_active_bottom_layer
+                  do i_vol1 = index_vol1_bottom_layer, index_vol1_top_layer
+                     lateral_volume_per_layer(i_layer, i_lateral) = lateral_volume_per_layer(i_layer, i_lateral) + vol1(i_vol1)
+                     i_layer = i_layer + 1
+                  end do
+               else
+                  lateral_volume_per_layer(1, i_lateral) = lateral_volume_per_layer(1, i_lateral) + vol1(i_node)
+               end if
             end if
          end do
       end do
-
+      
    end subroutine get_lateral_volume_per_layer
+
+   !> !< Initialize flow_parameter, allocate arrays and set pointers
+   module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
+                                               index_start, index_end, index_to_node)
+      class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
+      integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+      real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+      integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+
+      allocate (this%values(num_elements))
+      allocate (this%cumulative_value(num_elements))
+      allocate (this%cumulative_weight(num_elements))
+      this%num_elements = num_elements
+      this%input_variable => input_variable
+      this%weighing_variable => weighing_variable
+      this%is_used = .true.
+      this%index_start => index_start
+      this%index_end => index_end
+      this%index_to_node => index_to_node
+   end subroutine initialize_flow_parameter
+
+   !> !< Update flow_parameter, perform averaging.
+   module subroutine update_flow_parameter(this)
+      use m_partitioninfo, only: is_ghost_node
+      class(t_flow_parameter), intent(inout) :: this !< General structure for Flow parameters that require averaging.
+      integer :: i_element, i_index, i_node
+
+      if (.not. this%is_used) then
+         return
+      end if
+
+      do i_element = 1, this%num_elements
+         this%cumulative_value(i_element) = 0.0_dp
+         this%cumulative_weight(i_element) = 0.0_dp
+         do i_index = this%index_start(i_element), this%index_end(i_element)
+            i_node = this%index_to_node(i_index)
+            if (.not. is_ghost_node(i_node)) then
+               this%cumulative_value(i_element) = this%cumulative_value(i_element) + this%input_variable(i_node) * this%weighing_variable(i_node)
+               this%cumulative_weight(i_element) = this%cumulative_weight(i_element) + this%weighing_variable(i_node)
+            end if
+         end do
+         this%values(i_element) = this%cumulative_value(i_element) / max(this%cumulative_weight(i_element), eps10)
+      end do
+   end subroutine update_flow_parameter
 
    !> At the start of the update, the out_going_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
    !!In  average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    module subroutine reset_outgoing_lat_concentration()
-      outgoing_lat_concentration = 0._dp
-   end subroutine reset_outgoing_lat_concentration
+      outgoing_lat_concentration = 0.0_dp
+      outgoing_lat_volume = 0.0_dp
+    end subroutine reset_outgoing_lat_concentration
 
    !> At the start of the update, the outgoing_lat_concentration must be set to 0 (reset_outgoing_lat_concentration).
-   !! In  average_concentrations_for_laterals in outgoing_lat_concentration the concentrations*timestep are aggregated.
+   !! In average_concentrations_for_laterals, in outgoing_lat_concentration and outgoing_lat_volume, the 'mass' and 'volume' 
+   !! are aggregated, weighted by timestep.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
-   module subroutine finish_outgoing_lat_concentration(time_interval)
-      real(kind=dp), intent(in) :: time_interval
-      outgoing_lat_concentration = outgoing_lat_concentration / time_interval
+   module subroutine finish_outgoing_lat_concentration()
+      integer :: i_lat, i_layer
+
+      do i_layer = 1, num_layers
+          do i_lat = 1, numlatsg
+              if (outgoing_lat_volume(i_layer, i_lat) > 0) then
+                 outgoing_lat_concentration(i_layer, :, i_lat) = outgoing_lat_concentration(i_layer, :, i_lat) / &
+                                                                 outgoing_lat_volume(i_layer, i_lat) 
+              end if
+          end do
+      end do
    end subroutine finish_outgoing_lat_concentration
 
    !> Distributes provided lateral discharge across flow nodes.
@@ -259,13 +330,14 @@ contains
 
       use m_flow, only: vol1, kmx, kmxn
       use m_get_kbot_ktop, only: getkbotktop
+      use m_partitioninfo, only: is_ghost_node
 
       real(kind=dp), dimension(:, :), intent(in) :: provided_lateral_discharge !< Provided lateral discharge per layer
       real(kind=dp), dimension(:, :), intent(out) :: lateral_discharge_per_layer_lateral_cell !< Real lateral discharge per layer
                                                                                                  !! per lateral, per cell
       integer :: i_lateral, i_layer, i_nnlat, i_node, i_flownode
       integer :: i_node_bottom_layer, i_node_top_layer, i_active_bottom_layer
-
+      
       lateral_discharge_per_layer_lateral_cell(:, :) = 0.0_dp
       do i_lateral = 1, numlatsg
          if (apply_transport(i_lateral) > 0) then

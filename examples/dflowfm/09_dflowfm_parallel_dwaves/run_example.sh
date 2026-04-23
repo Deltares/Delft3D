@@ -6,7 +6,7 @@ set -e
 
 # Set numbers of hosts and cores per host
 nNodes=1
-nProc=8
+nProc=4
 
 nPart=$((nNodes * nProc))
 

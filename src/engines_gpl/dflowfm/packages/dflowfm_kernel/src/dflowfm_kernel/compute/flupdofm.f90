@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -95,7 +95,8 @@ contains
       uu = 0.0_dp
       ud = 0.0_dp
       if (velheight) then
-         uu = 0.0_dp; ud = 0.0_dp
+         uu = 0.0_dp
+         ud = 0.0_dp
          do k = 1, nd(il)%lnx
             LL = abs(nd(il)%ln(k))
             if (iadv(LL) /= IADV_GENERAL_STRUCTURE) then ! any non-structure point
@@ -125,12 +126,16 @@ contains
       elseif (s1(iL) < s1(ir)) then
          teken = -1.0_dp
       else ! s1(iL) == s1(ir)
-         teken = -dble(sign(1, m)) ! account for orientation of flow link w.r.t. structure
+         teken = -real(sign(1, m), kind=dp) ! account for orientation of flow link w.r.t. structure
       end if
 
       if (teken < 0) then
-         tem = hdsb; hdsb = husb; husb = tem
-         tem = ud; ud = uu; uu = tem
+         tem = hdsb
+         hdsb = husb
+         husb = tem
+         tem = ud
+         ud = uu
+         uu = tem
       end if
 
    end subroutine flupdofm

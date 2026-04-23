@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -124,7 +124,7 @@ contains
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowgeom, only: ndx, bl, ba
       use m_transport, only: constituents, ISED1
-      use m_flowparameters, only: jawave, flowWithoutWaves, jawaveswartdelwaq, epshu
+      use m_flowparameters, only: jawave, flow_without_waves, jawaveswartdelwaq, epshu
       use sed_support_routines, only: ruessink_etal_2012
       use m_waves, only: rlabda, hwav, uorb, phiwav
       use m_sferic, only: pi
@@ -155,7 +155,7 @@ contains
          return
       end if
 
-      if (jawave == 0 .or. flowWithoutWaves) then ! do not overwrite current+wave induced bed shear stresses from tauwave
+      if (jawave == 0 .or. flow_without_waves) then ! do not overwrite current+wave induced bed shear stresses from tauwave
          call gettaus(1, 1)
       else
          call gettauswave(jawaveSwartdelwaq)
@@ -193,7 +193,9 @@ contains
          else
             do l = 1, lsed
                do k = 1, ndx
-                  if (hs(k) <= epshu) cycle
+                  if (hs(k) <= epshu) then
+                     cycle
+                  end if
                   call getkbotktop(k, kbot, ktop)
                   ssc = 0.0_dp
                   do kk = kbot, ktop

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,6 @@
 
 module m_flow_sedmorinit
 
-
    use precision, only: dp
    implicit none
 
@@ -59,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, eps4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -98,7 +97,9 @@ contains
 !
 !   activate morphology if sediment file has been specified in the mdu file
 !
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
 
       !
       inquire (file=trim(md_sedfile), exist=ex)
@@ -144,7 +145,7 @@ contains
          ln_mor = ln
       end if
 
-      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=jatem, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
+      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
       if (error) then
          call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
          return
@@ -188,10 +189,14 @@ contains
       morbnd => stmpar%morpar%morbnd
       do k = 1, nopenbndsect
          j0 = 0
-         if (k > 1) j0 = nopenbndlin(k - 1)
+         if (k > 1) then
+            j0 = nopenbndlin(k - 1)
+         end if
          npnt = nopenbndlin(k) - j0
          morbnd(k)%npnt = npnt
-         if (associated(morbnd(k)%nm)) deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         if (associated(morbnd(k)%nm)) then
+            deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         end if
          allocate (morbnd(k)%nm(npnt))
          allocate (morbnd(k)%nxmx(npnt))
          allocate (morbnd(k)%lm(npnt))
@@ -212,12 +217,8 @@ contains
       end do
 
       if (jased == 4 .and. ibedlevtyp /= 1) then
-         if (stmpar%morpar%bedupd) then
-            call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
-            return
-         else
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ')
-         end if
+         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
+         return
       end if
 
       nbr = network%brs%count
@@ -268,7 +269,9 @@ contains
                      node_processed(k1) = node_processed(k1) + 1
                      j = node_processed(k1)
                      ic = gridpoint2cross(k1)%cross(j)
-                     if (ic == -999) cycle
+                     if (ic == -999) then
+                        cycle
+                     end if
                      if (network%crs%cross(ic)%itabdef == icd) then
                         write (chstr, '(F12.3)') network%crs%cross(ic)%chainage
                         call mess(LEVEL_WARN, '  It is used for grid point '//trim(pbr%gridPointIDs(i))//' via cross section '//trim(network%crs%cross(ic)%csid)//' on branch '//trim(pbr%id)//' at chainage '//trim(adjustl(chstr))//' m.')
@@ -293,7 +296,6 @@ contains
          deallocate (mtd%uau)
 
          deallocate (mtd%seddif)
-         deallocate (mtd%sed)
          deallocate (mtd%ws)
          deallocate (mtd%blchg)
 
@@ -305,7 +307,6 @@ contains
       allocate (mtd%dzbdt(ndx_mor))
       allocate (mtd%uau(lnx))
       allocate (mtd%seddif(stmpar%lsedsus, ndkx_mor))
-      allocate (mtd%sed(stmpar%lsedsus, ndkx_mor))
       allocate (mtd%ws(ndkx_mor, stmpar%lsedsus))
       allocate (mtd%blchg(Ndx_mor))
       allocate (mtd%messages)
@@ -314,7 +315,6 @@ contains
       mtd%dzbdt = 0.0_fp
       mtd%uau = 0.0_fp
       mtd%seddif = 0.0_fp
-      mtd%sed = 0.0_fp
       mtd%ws = 0.0_fp
       mtd%blchg = 0.0_fp
       !
@@ -327,9 +327,7 @@ contains
          deallocate (ssccum)
       end if
       if (stmpar%lsedsus > 0) then
-         allocate (sed(stmpar%lsedsus, Ndkx))
          allocate (ssccum(stmpar%lsedsus, Ndkx))
-         sed = 0.0_dp
          ssccum = 0.0_dp
       end if
       !
@@ -416,7 +414,7 @@ contains
          if (.not. size(stmpar%morpar%moroutput%avgintv, 1) == 3) then
             success = .false.
          end if
-         call getOutputTimeArrays(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, success)
+         call set_time_interval(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, tstart_user, tstop_user, success)
          if (ti_sed > (tstop_user - tstart_user)) then
             ti_sed = tstop_user - tstart_user
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - The averaging interval for time averaged sedmor output is larger than output duration in the simulation.')

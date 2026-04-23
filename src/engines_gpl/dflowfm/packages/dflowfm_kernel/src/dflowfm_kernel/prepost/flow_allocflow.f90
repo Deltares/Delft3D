@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,32 +44,36 @@ contains
       use m_flowgeom, only: ndx, ln, lnx, lnx1d, ln2lne, bl, bob, kcu, lncn, ucnx, ucny, ndx2d, ndxi, lnxi
       use m_flow, only: s0, s00, s1, hs, a0, a1, cfs, negativedepths, negativedepths_cum, noiterations, noiterations_cum, &
                         limitingTimestepEstimation, limitingTimestepEstimation_cum, flowCourantNumber, kbot, ktop, ktop0, kmxn, Lbot, Ltop, &
-                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, layertype, kmx, kbotc, kmxc, &
-                        numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, zlaytop, Floorlevtoplay, jaorgFloorlevtoplaydef, dztop, dztopuniabovez, &
-                        sini, sigmagrowthfactor, numtopsig, janumtopsiguniform, mxlayz, zlaybot, zlaytop, Floorlevtoplay, &
-                        kbotc, kmxc, kbot, ktop, ktop0, kmxn, Lbot, Ltop, kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, kmxx, zslay, &
-                        dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, sqi, dvyc, &
-                        uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, ucy_mor, &
-                        uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, volonground, &
-                        qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, jatem, jasal, &
-                        jacreep, baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, keepzlayeringatbed, kmxd, &
-                        workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, spirucm, ht_xx, spirfx, spirsrc, spiratx, &
-                        spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, dsady, dsall, dteml, jatidep, jaselfal, tidep, &
-                        limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, &
-                        turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, &
-                        v, ucxu, ucyu, hu, huvli, au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, &
-                        frculin, u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, sa1, &
-                        salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, soiltempthick, &
-                        jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, idensform, jarichardsononoutput, &
-                        q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, dfm_hyd_infilt_const, infiltcap, infiltcapuni, &
-                        jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, use_density
-      use m_flowtimes, only: dtcell, time_wetground, ja_timestep_auto, ja_timestep_nostruct, ti_waq
+                        kmxL, ustb, ustw, laydefnr, laytyp, laymx, nlaybn, nrlayn, jamapflowanalysis, mxlaydefs, kmx, kbotc, kmxc, layertype, &
+                        LAYTP_SIGMA, LAYTP_DENS_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, numvertdis, mxlays, sdkx, dkx, zlaybot, iStrchType, &
+                        zlaytop, Floorlevtoplay, dztop, dztopuniabovez, sini, z_layer_growth_factor, numtopsig, janumtopsiguniform, mxlayz, kmxx, &
+                        zslay, dzslay, strch_user, laycof, strch_exponent, indlaynod, wflaynod, ndkx, jazlayeratubybob, lnkx, ln0, ucx, squ, &
+                        sqi, dvyc, uqcx, uqcy, vol0, ucyq, vol1, ucy, qin, ucxq, vih, dvxc, vol1_f, sqa, volerror, sq, ucmag, jatrt, ucx_mor, &
+                        ucy_mor, uc1d, u1du, japure1d, alpha_mom_1d, alpha_ene_1d, q1d, au1d, wu1d, sar1d, volu1d, freeboard, hsonground, &
+                        volonground, qcur1d2d, vtot1d2d, qcurlat, vtotlat, s1gradient, squ2d, squcor, icorio, hus, ucz, rho, rhomean, rhowat, &
+                        temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jasal, jacreep, &
+                        baroclinic_force_prev, baroclinic_pressures, integrated_baroclinic_pressures, rhosww, qw, zws, ww1, zws0, &
+                        keepzlayeringatbed, kmxd, workx, work1, work0, worky, jasecflow, spirint, zwsbtol, czusf, czssf, spircrv, ht_xy, spirfy, &
+                        spirucm, ht_xx, spirfx, spirsrc, spiratx, spiraty, jabarrieradvection, struclink, ducxdx, ducydy, ducxdy, ducydx, dsadx, &
+                        dsady, dsall, dteml, jatidep, jaselfal, tidep, limtypmom, limtypsa, tidef, s1init, jaselfalcorrectwlwithini, turkin0, &
+                        tureps0, vicwws, turkin1, vicwwu, tureps1, tke_min, eps_min, turkinws, turepsws, sqcu, tqcu, eqcu, epsz0, z0ucur, &
+                        z0urou, taus, taubxu, taubu, cfuhi, frcu, ifrcutp, u0, u1, q1, qa, map_fixed_weir_energy_loss, v, ucxu, ucyu, hu, huvli, &
+                        au, au_nostrucs, viu, viclu, suu, advi, adve, plotlin, frcu_bkp, frcu_mor, jacali, ifrctypuni, jafrculin, frculin, &
+                        u_to_umain, q1_main, cfclval, cftrt, jamap_chezy_elements, czs, jamap_chezy_links, jarhoxu, rhou, fu, czu, bb, ru, dd, &
+                        sa1, salini, sam0, sam1, same, tem1, temini, background_air_temperature, background_humidity, background_cloudiness, &
+                        soiltempthick, jahisheatflux, qtotmap, jamapheatflux, qevamap, qfrevamap, qconmap, qfrconmap, qsunmap, qlongmap, ustbc, &
+                        idensform, jarichardsononoutput, q1waq, qwwaq, itstep, sqwave, infiltrationmodel, dfm_hyd_noinfilt, infilt, &
+                        dfm_hyd_infilt_const, infiltcap, infiltcapuni, jagrw, pgrw, bgrw, sgrw1, sgrw0, h_aquiferuni, bgrwuni, janudge, zcs, &
+                        use_density
+      use m_flowtimes, only: dtcell, time_wetground, autotimestep, AUTO_TIMESTEP_2D_OUT, AUTO_TIMESTEP_3D_HOR_OUT, &
+                             AUTO_TIMESTEP_3D_HOR_INOUT, ja_timestep_nostruct, ti_waq
       use m_missing, only: dmiss
       use unstruc_model, only: md_netfile, md_vertplizfile
       use m_netw, only: numk, numl
       use m_alloc, only: aerr, realloc
       use m_sediment, only: stm_included, jased, sed, grainlay, mxgr, sdupq, jaceneqtr, blinc, sedi
-      use m_ship, only: nshiptxy, zsp0, zspc, zspc0, v0ship, v1ship, qinship, shl, shb, shd, stuw, stuwmx, roer, fstuw, froer, roermx
+      use m_ship, only: nshiptxy, zsp0, zspc, zspc0, v0ship, v1ship, qinship, shl, shb, shd, stuw, stuwmx, roer, fstuw, froer, &
+                        roermx
       use m_sferic, only: jsferic
       use m_partitioninfo, only: jampi, reduce_double_min
       use m_integralstats, only: is_numndvals, is_maxvalsnd, is_sumvalsnd, is_valnamesnd
@@ -81,8 +85,9 @@ contains
       use m_get_zlayer_indices, only: getzlayerindices
       use m_get_zlayer_indices_bobL, only: getzlayerindicesbobL
       use m_filez, only: oldfil
-      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, cloudiness, rain, evap, air_temperature, heatsrc, heatsrc0, &
-                        air_pressure, dew_point_temperature, relative_humidity, solar_radiation, net_solar_radiation, tbed, qext, qextreal, vextcum, cdwcof
+      use m_wind, only: jarain, jaevap, jaqext, ja_computed_airdensity, cloudiness, rain, evap, air_temperature, heatsrc, &
+                        heatsrc0, air_pressure, dew_point_temperature, relative_humidity, solar_radiation, net_solar_radiation, tbed, qext, &
+                        qextreal, vextcum, cdwcof
       use m_nudge, only: nudge_temperature, nudge_salinity, nudge_time, nudge_rate
       use m_polygonlayering, only: polygonlayering
       use m_turbulence, only: potential_density, in_situ_density, difwws, rich, richs, drhodz
@@ -101,7 +106,9 @@ contains
       real(kind=dp) :: gf, w1, w2, w3, zbt, zbb, dzb, gfi, gfk
       logical :: jawel
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       call ilowercase(md_netfile) ! INTERACTOR!
 
@@ -165,7 +172,7 @@ contains
       call realloc(laymx, mxlaydefs, stat=ierr, keepexisting=.false.)
       call aerr('laymx(mxlaydefs)', ierr, mxlaydefs)
 
-      if (layertype >= 2) then
+      if (layertype /= LAYTP_SIGMA) then
          call realloc(nlaybn, ndx, stat=ierr, fill=0, keepexisting=.false.)
          call aerr('nlaybn(ndx)', ierr, ndx)
          call realloc(nrlayn, ndx, stat=ierr, fill=0, keepexisting=.false.)
@@ -216,27 +223,27 @@ contains
          mx = 0
          laydefnr = 1
 
-         if (layertype == 3) then
+         if (layertype == LAYTP_POLYGON_MIXED) then
             inquire (file=md_vertplizfile, exist=jawel)
             if (jawel) then
                call oldfil(mpol, md_vertplizfile)
             else
                call qnerror('vertical_layering.pliz not found, switch back to sigma', ' ', ' ')
-               layertype = 1
+               layertype = LAYTP_SIGMA
             end if
          end if
 
-         if (layertype == 1 .or. layertype == 4) then ! all sigma
+         if (layertype == LAYTP_SIGMA .or. layertype == LAYTP_DENS_SIGMA) then ! pure and density controlled sigma-layers
             mxlaydefs = 1
             laytyp(1) = 1
             laymx(1) = kmx
-            if (layertype == 4) then
+            if (layertype == LAYTP_DENS_SIGMA) then
                call realloc(sdkx, ndx, stat=ierr, keepexisting=.false.)
                call aerr('sdkx(ndx)', ierr, ndx)
                call realloc(dkx, ndx, stat=ierr, keepexisting=.false.)
                call aerr('dkx(ndx)', ierr, ndx)
             end if
-         else if (layertype == 2) then ! all z
+         else if (layertype == LAYTP_Z) then ! all z
             mxlaydefs = 1
             laytyp(1) = 2
 
@@ -263,14 +270,10 @@ contains
                if (Floorlevtoplay == dmiss) then
                   zmx = sini
                else
-                  if (jaorgFloorlevtoplaydef == 1) then
+                  if (dztop == dmiss) then
                      zmx = Floorlevtoplay
                   else
-                     if (dztop == dmiss) then
-                        zmx = Floorlevtoplay
-                     else
-                        zmx = Floorlevtoplay + dztop
-                     end if
+                     zmx = Floorlevtoplay + dztop
                   end if
                end if
             end if
@@ -297,7 +300,7 @@ contains
                zbb = zbt
                dzb = dzm
                do while (zbb > zmn .and. mx < kmxx - 1)
-                  dzb = dzb * sigmagrowthfactor
+                  dzb = dzb * z_layer_growth_factor
                   zbb = zbb - dzb
                   mx = mx + 1
                end do
@@ -307,7 +310,7 @@ contains
             mxlayz = mx
             kmx = mx ! repair code
             laymx(1) = mx
-         else if (layertype == 3) then ! combination in polygons
+         else if (layertype == LAYTP_POLYGON_MIXED) then ! polygon defined z-layers
             call polygonlayering(mpol)
          end if
          do k = 1, mxlaydefs
@@ -390,7 +393,7 @@ contains
 
                   dzb = dzm
                   do k = mx - kuni - 1, 1, -1
-                     dzb = dzb * sigmagrowthfactor
+                     dzb = dzb * z_layer_growth_factor
                      zslay(k, j) = zslay(k + 1, j) - dzb
                   end do
                end if
@@ -689,12 +692,12 @@ contains
          end if
       end if
 
-      if (kmx > 0 .and. (ja_timestep_auto == 3 .or. ja_timestep_auto == 4)) then
+      if (kmx > 0 .and. (autotimestep == AUTO_TIMESTEP_3D_HOR_OUT .or. autotimestep == AUTO_TIMESTEP_3D_HOR_INOUT)) then
          call realloc(squ2D, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('squ2D(ndkx)', ierr, ndkx)
       end if
 
-      if (ja_timestep_auto == 1 .and. ja_timestep_nostruct > 0) then
+      if (autotimestep == AUTO_TIMESTEP_2D_OUT .and. ja_timestep_nostruct > 0) then
          call realloc(squcor, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('squcor(ndx)', ierr, ndx)
       end if
@@ -1033,7 +1036,7 @@ contains
          call aerr('cloudiness(ndx)', ierr, ndx)
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          call realloc(tem1, ndkx, stat=ierr, fill=temini, keepexisting=.false.)
          call aerr('tem1(ndkx)', ierr, ndkx)
          call realloc(heatsrc, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
@@ -1041,7 +1044,7 @@ contains
          call realloc(heatsrc0, ndkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('heatsrc0(ndkx)', ierr, ndkx)
 
-         if (jatem > 1) then ! also heat modelling involved
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
             call realloc(air_temperature, ndx, stat=ierr, fill=BACKGROUND_AIR_TEMPERATURE, keepexisting=.false.)
             call aerr('air_temperature(ndx)', ierr, ndx)
 
@@ -1066,12 +1069,14 @@ contains
             end if
          end if
 
-         if ((jamapheatflux > 0 .or. jahisheatflux > 0) .and. jatem > 1) then
-            call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('qtotmap(ndx)', ierr, ndx)
+         if (jamapheatflux > 0 .or. jahisheatflux > 0) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+               call realloc(qtotmap, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+               call aerr('qtotmap(ndx)', ierr, ndx)
+            end if
          end if
 
-         if (jatem == 5) then ! save cd coeff if heat modelling also involved
+         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! save cd coeff if heat modelling also involved
             call realloc(cdwcof, lnx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
             call aerr('cdwcof(lnx)', ierr, lnx)
 

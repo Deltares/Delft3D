@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -66,7 +66,9 @@ contains
 
       do i = 4, 1, -1
          ndegree = i
-         if (abs(coeffs(5 - ndegree)) < dtol) cycle
+         if (abs(coeffs(5 - ndegree)) < dtol) then
+            cycle
+         end if
          call rpoly(coeffs(5 - ndegree:5), ndegree, re(1:ndegree), im(1:ndegree), Lfail)
          exit
 !      if ( .not.Lfail ) exit

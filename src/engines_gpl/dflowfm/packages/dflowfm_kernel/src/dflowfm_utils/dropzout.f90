@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,9 @@ contains
       integer :: n, nn, in, ncol, k, kb, kt
       real(kind=dp) :: dropstep
 
-      if (ndx == 0) return
+      if (ndx == 0) then
+         return
+      end if
 
       dropstep = idir * sdropstep
 

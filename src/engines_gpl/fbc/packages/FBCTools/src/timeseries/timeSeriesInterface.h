@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,7 +21,6 @@
  * @date 2014
  */
 
-
 #ifndef TIMESERIESINTERFACE_H
 #define TIMESERIESINTERFACE_H
 
@@ -29,27 +28,23 @@
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-class timeSeriesInterface : public timeSeriesBasics
-{
-public:
-	timeSeriesInterface();
-	timeSeriesInterface(int nTimeStep,
-		vector<long long> time,
-		int nSeries,
-		vector<string> seriesID,
-		vector<validationEnum> seriesValidation,
-		map<string,int> scalarIDMap,
-		map<string,pair<int,int> > vectorIDMap);
+        class timeSeriesInterface : public timeSeriesBasics
+        {
+        public:
+            timeSeriesInterface();
+            timeSeriesInterface(int nTimeStep, vector<long long> time, int nSeries, vector<string> seriesID,
+                                vector<validationEnum> seriesValidation, map<string, int> scalarIDMap,
+                                map<string, pair<int, int>> vectorIDMap);
 
-	virtual int getNEnsemble() = 0; 
-	virtual double getValue(int ensembleIndx, int timeIndx, int seriesIndx) = 0;
-	virtual void setValue(int ensembleIndx, int timeIndx, int seriesIndx, double value) = 0;
-};
+            virtual int getNEnsemble() = 0;
+            virtual double getValue(int ensembleIndx, int timeIndx, int seriesIndx) = 0;
+            virtual void setValue(int ensembleIndx, int timeIndx, int seriesIndx, double value) = 0;
+        };
 
-} // end namespace timeseries
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* TIMESERIESINTERFACE_H */

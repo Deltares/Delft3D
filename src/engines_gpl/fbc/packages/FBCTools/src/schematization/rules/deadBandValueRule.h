@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,36 +21,36 @@
  * @date 2010
  */
 
-
 #pragma once
 #ifndef DEADBANDVALUERULE_H
-#define DEADBANDVALUERULE_H
+    #define DEADBANDVALUERULE_H
 
-#include "rule.h"
+    #include "rule.h"
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class deadBandValueRule : public rule
-{
-private:
-	int yIn;
-	double threshold;
+            class deadBandValueRule : public rule
+            {
+            private:
+                int yIn;
+                double threshold;
 
-public:
-	deadBandValueRule(string id, string name, double threshold, int yIn);
-	~deadBandValueRule(void);
+            public:
+                deadBandValueRule(string id, string name, double threshold, int yIn);
+                ~deadBandValueRule(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* DEADBANDVALUERULE_H */

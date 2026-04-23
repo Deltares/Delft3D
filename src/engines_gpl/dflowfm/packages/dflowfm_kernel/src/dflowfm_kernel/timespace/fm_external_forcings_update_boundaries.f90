@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -102,9 +102,13 @@ contains
 
          ! do communication between domains
          if (jampi == 1) then
-            if (jatimer == 1) call starttimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call starttimer(IMPIREDUCE)
+            end if
             call reduce_atqh_all()
-            if (jatimer == 1) call stoptimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call stoptimer(IMPIREDUCE)
+            end if
          end if
 
          ! First step calculate the water level, using the QH-relation for a outflowing discharge + dQ
@@ -289,7 +293,7 @@ contains
 
       ! Error handling:
 888   continue
-      msgbuf = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      msgbuf = dump_ec_message_stack(LEVEL_WARN, callback_msg)
       iresult = DFM_EXTFORCERROR
       write (msgbuf, '(a,f13.3)') 'Error while updating boundary forcing at time=', time
       call mess(LEVEL_WARN, trim(msgbuf))

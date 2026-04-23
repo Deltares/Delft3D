@@ -1,6 +1,6 @@
 """Resolve Handler helper.
 
-Copyright (C)  Stichting Deltares, 2025
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import re
@@ -37,7 +37,9 @@ class ResolveHandler(ABC):
         """
         logger.debug(f"detecting handler for {path}")
 
-        if re.search(
+        if path.endswith(".dvc"):
+            return HandlerType.DVC
+        elif re.search(
             r"^\\(\\)?[A-Za-z0-9]+|^\/\/[A-Za-z0-9]+", path
         ):  # assume network path starts with either [//] or [\\]
             return HandlerType.NET

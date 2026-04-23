@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: category.h 962 2011-10-31 21:52:47Z elshoff $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/category.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/category.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Category Class - DEFINITIONS
@@ -34,36 +36,25 @@
 //  25 oct 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
 #include "flow2d3d.h"
 
+class Category
+{
+public:
+    Category(DD* dd, const char* name);
 
-class Category {
-    public:
-        Category (
-            DD *         dd,
-            const char * name
-            );
+    ~Category(void);
 
-        ~Category (
-            void
-            );
+public:
+    int id;     // index in DD category table
+    char* name; // category name
 
-    public:
-        int     id;         // index in DD category table
-        char *  name;       // category name
-
-    private:
-        DD *    dd;         // domain decomposition object
-    };
-
+private:
+    DD* dd; // domain decomposition object
+};
 
 //-------------------------------------------------------------------------------
 
-
-Category *
-LookupCategory (
-    const char * catname
-    );
+Category* LookupCategory(const char* catname);

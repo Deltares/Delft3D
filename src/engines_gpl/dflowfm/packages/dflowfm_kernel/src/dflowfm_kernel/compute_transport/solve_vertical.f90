@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -99,7 +99,9 @@ contains
       real(kind=dp), parameter :: dtol = 1.0e-8_dp
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("solve_vertical", ithndl)
+      if (timon) then
+         call timstrt("solve_vertical", ithndl)
+      end if
 
       dt_loc = dts
       rhs = 0.0_dp
@@ -127,7 +129,9 @@ contains
 
          kb = kbot(kk)
          kt = ktop(kk)
-         if (kfs(kk) <= 0) cycle
+         if (kfs(kk) <= 0) then
+            cycle
+         end if
 
          ktx = kb + kmxn(kk) - 1
          a = 0.0_dp
@@ -153,9 +157,13 @@ contains
          do k = kb, kt - 1 ! assume zero-fluxes at boundary and top
             n = k - kb + 1 ! layer number
             dvol1i = 1.0_dp / max(vol1(k), dtol) ! dtol: safety
-            if (testdryflood == 2) dvol1i = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            if (testdryflood == 2) then
+               dvol1i = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            end if
             dvol2i = 1.0_dp / max(vol1(k + 1), dtol) ! dtol: safety
-            if (testdryflood == 2) dvol2i = 1.0_dp / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
+            if (testdryflood == 2) then
+               dvol2i = 1.0_dp / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
+            end if
             dtba = dt_loc * ba(kk)
             dtbazi = dtba / max(1.0e-4_dp, 0.5_dp * (zws(k + 1) - zws(k - 1))) ! another safety check
             ozmid = 0.0_dp
@@ -257,7 +265,9 @@ contains
          end do
       end do
       !$OMP END PARALLEL DO
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine solve_vertical
 
    !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.

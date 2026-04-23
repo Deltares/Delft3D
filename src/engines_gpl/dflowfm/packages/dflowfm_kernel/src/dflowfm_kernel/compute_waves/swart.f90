@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,9 @@ contains
       real(kind=dp) :: astar
 
       if (uorbu == 0.0_dp) then
-         fw = 0.0_dp; ustw2 = 0.0_dp; return
+         fw = 0.0_dp
+         ustw2 = 0.0_dp
+         return
       end if
 
       astar = Tsig * uorbu / z00

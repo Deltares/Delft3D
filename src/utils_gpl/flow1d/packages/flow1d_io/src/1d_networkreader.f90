@@ -1,7 +1,7 @@
 module m_1d_networkreader
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2025.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -109,12 +109,6 @@ module m_1d_networkreader
    endif
    if (meshgeom%nbranches .eq. -1) then
       call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nbranches')
-   endif
-   if (.not.associated(meshgeom%nodex)) then
-      call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nodex')
-   endif
-   if (.not.associated(meshgeom%nodey)) then
-      call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in meshgeom%nodey')
    endif
    if (.not.allocated(nodeids)) then
       call SetMessage(LEVEL_FATAL, 'Network UGRID-File: Error in nodeids')

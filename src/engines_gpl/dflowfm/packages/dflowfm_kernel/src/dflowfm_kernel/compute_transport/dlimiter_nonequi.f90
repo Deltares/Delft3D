@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,7 +46,9 @@ contains
       real(kind=dp) :: TWO1, TWO2
 
       dlimiter_nonequi = 0.0_dp
-      if (d1 * d2 < dtol) return
+      if (d1 * d2 < dtol) then
+         return
+      end if
 
       r = d1 / d2 ! d1/d2
 

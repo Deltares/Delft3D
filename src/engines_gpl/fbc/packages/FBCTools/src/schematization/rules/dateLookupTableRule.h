@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -34,46 +34,40 @@ using namespace rtctools::utilities;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class dateLookupTableRule : public rule
-{
+            class dateLookupTableRule : public rule
+            {
+            public:
+                /**
+                    Default constructor
+                */
+                dateLookupTableRule(string id, string name, int nDateRecord, lookupTableConverter** dateRecord,
+                                    int iXIn, int iYIn, int iYOut);
 
-public:
+                /**
+                    Default destructor
+                */
+                ~dateLookupTableRule() {};
 
-	/** 
-		Default constructor 
-	*/
-	dateLookupTableRule(string id,
-						string name,
-						int nDateRecord,
-						lookupTableConverter **dateRecord,
-						int iXIn,
-						int iYIn,
-						int iYOut);
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
 
-	/** 
-		Default destructor 
-	*/
-	~dateLookupTableRule() {};
+            private:
+                // members
+                int nDateRecord;
+                lookupTableConverter** dateRecord;
+                int iXIn;
+                int iYIn;
+                int iYOut;
+            };
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew);
-
-private:
-	// members
-	int nDateRecord;
-	lookupTableConverter **dateRecord;
-    int iXIn;
-    int iYIn;
-    int iYOut;  
-};
-
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // DATELOOKUPTABLERULE_H

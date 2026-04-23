@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,6 @@
  * Stef.Hummel@deltares.nl
  */
 
-
 /*
  *  Include files and definitions
  */
@@ -47,19 +46,18 @@
  *  Function names for FORTRAN-C interface.
  */
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define DIOSYNCcMKFIFO FC_FUNC(diosynccmkfifo,DIOSYNCCMKFIFO)
-#   define DIOSYNCcRMFIFO FC_FUNC(diosynccrmfifo,DIOSYNCCRMFIFO)
-#   define DIOSYNCcSLEEP  FC_FUNC(diosynccsleep,DIOSYNCCSLEEP)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define DIOSYNCcMKFIFO FC_FUNC(diosynccmkfifo, DIOSYNCCMKFIFO)
+    #define DIOSYNCcRMFIFO FC_FUNC(diosynccrmfifo, DIOSYNCCRMFIFO)
+    #define DIOSYNCcSLEEP FC_FUNC(diosynccsleep, DIOSYNCCSLEEP)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define DIOSYNCcMKFIFO DIOSYNCCMKFIFO
-#   define DIOSYNCcRMFIFO DIOSYNCCRMFIFO
-#   define DIOSYNCcSLEEP  DIOSYNCCSLEEP
+    // WIN32
+    #define STDCALL /* nothing */
+    #define DIOSYNCcMKFIFO DIOSYNCCMKFIFO
+    #define DIOSYNCcRMFIFO DIOSYNCCRMFIFO
+    #define DIOSYNCcSLEEP DIOSYNCCSLEEP
 #endif
-
 
 /*
  *  Function definitions
@@ -69,11 +67,10 @@
 extern "C" {
 #endif
 
-void  STDCALL   DIOSYNCcMKFIFO(int *, char * name, int nameLen);
-void  STDCALL   DIOSYNCcRMFIFO(char * name, int nameLen);
-void  STDCALL   DIOSYNCcSLEEP(int *);
+void STDCALL DIOSYNCcMKFIFO(int*, char* name, int nameLen);
+void STDCALL DIOSYNCcRMFIFO(char* name, int nameLen);
+void STDCALL DIOSYNCcSLEEP(int*);
 
 #if defined(__cplusplus)
 }
 #endif
-

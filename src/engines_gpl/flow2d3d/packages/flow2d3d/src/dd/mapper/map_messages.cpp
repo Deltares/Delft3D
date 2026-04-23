@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: map_messages.cpp 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/map_messages.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/map_messages.cpp
+// $
 //------------------------------------------------------------------------------
 // Class: MapMess
 // Message object for a Mapper Class
@@ -34,9 +36,7 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
-
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -47,27 +47,24 @@ MapMess::MapMess(void)
 {
     MAPDBG_FUN2("MapMess::MapMess");
 
-    numIn  = 0;
+    numIn = 0;
     numOut = 0;
 }
-
 
 void MapMess::InitOutMess(void)
 {
     MAPDBG_FUN3("MapMess::InitOutMess");
 
-    if ( numOut != 0 )
+    if (numOut != 0)
     {
-    FLOW2D3D->dd->log->Write (Log::WARN, "%d Out-Messages not processed", numOut);
+        FLOW2D3D->dd->log->Write(Log::WARN, "%d Out-Messages not processed", numOut);
     }
 
     numOut = 0;
 }
 
-
-void MapMess::PutOutMess(
-    DDMesg  mess        // message
-    )
+void MapMess::PutOutMess(DDMesg mess // message
+)
 {
     MAPDBG_FUN3("MapMess::PutOutMess");
 
@@ -75,14 +72,13 @@ void MapMess::PutOutMess(
     numOut++;
 }
 
-
-DDMesg * MapMess::GetOutMess(void)
+DDMesg* MapMess::GetOutMess(void)
 {
-    DDMesg * mess = NULL;   // Return value
+    DDMesg* mess = NULL; // Return value
 
     MAPDBG_FUN3("MapMess::GetOutMess");
 
-    if ( numOut > 0 )
+    if (numOut > 0)
     {
         numOut--;
         mess = &outMess[numOut];
@@ -90,23 +86,20 @@ DDMesg * MapMess::GetOutMess(void)
     return mess;
 }
 
-
 void MapMess::InitInMess(void)
 {
     MAPDBG_FUN3("MapMess::InitInMess");
 
-    if ( numIn != 0 )
+    if (numIn != 0)
     {
-        FLOW2D3D->dd->log->Write (Log::WARN, "%d In-Messages not processed", numIn);
+        FLOW2D3D->dd->log->Write(Log::WARN, "%d In-Messages not processed", numIn);
     }
 
     numIn = 0;
 }
 
-
-void MapMess::PutInMess(
-    DDMesg  mess        // message
-    )
+void MapMess::PutInMess(DDMesg mess // message
+)
 {
     MAPDBG_FUN3("MapMess::PutInMess");
 
@@ -114,11 +107,10 @@ void MapMess::PutInMess(
     numIn++;
 }
 
-
-DDMesg * MapMess::GetInMess()
+DDMesg* MapMess::GetInMess()
 {
-    DDMesg *  retVal=NULL;      // Return message
-    int mess, moveMess;         // loop counters
+    DDMesg* retVal = NULL; // Return message
+    int mess, moveMess;    // loop counters
 
     MAPDBG_FUN3("MapMess::GetInMess");
 
@@ -126,7 +118,7 @@ DDMesg * MapMess::GetInMess()
     // Search for message type
     //
 
-    for ( mess = 0 ; mess < numIn ; mess++ )
+    for (mess = 0; mess < numIn; mess++)
     {
         //
         // Return first message from message store.
@@ -135,9 +127,9 @@ DDMesg * MapMess::GetInMess()
         retMess = inMess[mess];
         retVal = &retMess;
 
-        for ( moveMess = mess + 1 ; moveMess < numIn ; moveMess++ )
+        for (moveMess = mess + 1; moveMess < numIn; moveMess++)
         {
-            inMess[moveMess-1] = inMess[moveMess];
+            inMess[moveMess - 1] = inMess[moveMess];
         }
         numIn--;
     }
@@ -145,8 +137,4 @@ DDMesg * MapMess::GetInMess()
     return retVal;
 }
 
-
-MapMess::~MapMess(void)
-{
-    MAPDBG_FUN2("MapMess::~MapMess");
-}
+MapMess::~MapMess(void) { MAPDBG_FUN2("MapMess::~MapMess"); }

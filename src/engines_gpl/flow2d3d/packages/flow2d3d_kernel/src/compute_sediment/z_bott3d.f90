@@ -14,7 +14,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                   & kfvmax    ,dt        ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -114,6 +114,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(fp), dimension(:)               , pointer :: dg
     real(fp), dimension(:,:)             , pointer :: fixfac
     real(fp), dimension(:,:)             , pointer :: frac
+    real(fp), dimension(:,:)             , pointer :: frac_he
     integer , dimension(:)               , pointer :: kfsed
     integer , dimension(:,:)             , pointer :: kmxsed
     real(fp), dimension(:)               , pointer :: mudfrac
@@ -267,6 +268,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     real(hp) :: dim_real
     real(fp) :: cellht
     real(fp) :: zusum
+    real(fp) , dimension(:)   , allocatable :: dunelngth  !  Copy of dune length in case of 
+    real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
+
 !
 !! executable statements -------------------------------------------------------
 !
@@ -307,6 +311,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
     dg                  => gdp%gderosed%dg
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
+    frac_he             => gdp%gderosed%frac_he
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
@@ -900,7 +905,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              gsqsmin    = gsqs(nm)
              totfixfrac = 0.0_fp
              !
-             from_ndm = kfsed(ndm)==0 .and. kcs(ndm) /= 0 .and. kcs(ndm)<3 .and. kcv(ndm)==1 .and. dps(ndm)<dps(nm)
+             from_ndm = kfsed(ndm)==0 .and. kcs(ndm) /= 0 .and. kcs(ndm)<3 .and. abs(kcv(ndm))==1 .and. dps(ndm)<dps(nm)
              if (from_ndm) then
                 gsqsmin = min(gsqsmin,gsqs(ndm))
                 do l = 1, lsedtot
@@ -908,7 +913,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 enddo
              endif
              !
-             from_nmd = kfsed(nmd)==0 .and. kcs(nmd) /= 0 .and. kcs(nmd)<3 .and. kcu(nmd)==1 .and. dps(nmd)<dps(nm)
+             from_nmd = kfsed(nmd)==0 .and. kcs(nmd) /= 0 .and. kcs(nmd)<3 .and. abs(kcu(nmd))==1 .and. dps(nmd)<dps(nm)
              if (from_nmd) then
                 gsqsmin = min(gsqsmin,gsqs(nmd))
                 do l = 1, lsedtot
@@ -916,7 +921,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 enddo
              endif
              !
-             from_nmu = kfsed(nmu)==0 .and. kcs(nmu) /= 0 .and. kcs(nmu)<3 .and. kcu(nm)==1 .and. dps(nmu)<dps(nm)
+             from_nmu = kfsed(nmu)==0 .and. kcs(nmu) /= 0 .and. kcs(nmu)<3 .and. abs(kcu(nm))==1 .and. dps(nmu)<dps(nm)
              if (from_nmu) then
                 gsqsmin = min(gsqsmin,gsqs(nmu))
                 do l = 1, lsedtot
@@ -924,7 +929,7 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                 enddo
              endif
              !
-             from_num = kfsed(num)==0 .and. kcs(num) /= 0 .and. kcs(num)<3 .and. kcv(nm)==1 .and. dps(num)<dps(nm)
+             from_num = kfsed(num)==0 .and. kcs(num) /= 0 .and. kcs(num)<3 .and. abs(kcv(nm))==1 .and. dps(num)<dps(nm)
              if (from_num) then
                 gsqsmin = min(gsqsmin,gsqs(num))
                 do l = 1, lsedtot
@@ -1049,10 +1054,14 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
              endif
           enddo
           !
+          allocate(sbot     (gdp%d%nmlb:gdp%d%nmub, lsedtot))
+          allocate(dunelngth(gdp%d%nmlb:gdp%d%nmub))
+          sbot      = 0.0_fp 
+          dunelngth = 1.0e10_fp
           ! Update layers and obtain the depth change
           !
           call morstats(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, ssvv, gdp%d%nmlb, gdp%d%nmub, lsedtot, lsed)
-          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, gdp%messages) /= 0) then
+          if (updmorlyr(gdp%gdmorlyr, dbodsd, depchg, dunelngth, sbot, dtmor, gdp%messages) /= 0) then
              call writemessages(gdp%messages, lundia)
              call d3stop(1, gdp)
           else
@@ -1065,6 +1074,10 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           call bndmorlyr(lsedtot   ,timhr        , &
                        & nto       ,bc_mor_array , &
                        & gdp       )
+          !
+          deallocate(sbot)
+          deallocate(dunelngth)
+          !
        endif
     endif ! nst >= itcmp
     !

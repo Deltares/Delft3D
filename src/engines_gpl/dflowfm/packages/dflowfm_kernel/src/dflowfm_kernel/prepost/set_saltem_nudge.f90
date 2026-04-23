@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,8 +64,12 @@ contains
          end do
 
          do k = kt + 1, kb + kmxn(kk) - 1
-            if (ITEMP > 0) tem1(k) = tem1(kt)
-            if (ISALT > 0) sa1(k) = sa1(kt)
+            if (ITEMP > 0) then
+               tem1(k) = tem1(kt)
+            end if
+            if (ISALT > 0) then
+               sa1(k) = sa1(kt)
+            end if
          end do
 
       end do

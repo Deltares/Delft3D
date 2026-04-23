@@ -1,7 +1,7 @@
 module read_grids
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -575,7 +575,10 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
                          & filename_tmp, flowLinkConnectivity)
     use netcdf
+    use nc_check, only : nc_check_err
     use dwaves_version_module
+    use m_ec_basic_interpolation, only: tricall
+
     implicit none
 !
 ! Parameters
@@ -674,11 +677,13 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     character(10)                          :: ctime
     character(5)                           :: czone
     character(256)                         :: full_version
+    integer :: nh_
 !
 !! executable statements -------------------------------------------------------
 !
     ! Default value for missing value: zero
     !
+    nh_ = nh
     nmax   = 1   ! Unstructured grid: use only mmax to count the elements
     xymiss = 0.0_hp
     !
@@ -1005,7 +1010,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
           ! Not used: edgeindx, numedge, triedge, xh, yh, nh, trisize
           !
           call tricall(jatri, xcc, ycc, nelm, elemconntmp, maxelem, &
-                     & edgeindx, numedge, triedge, xh, yh, nh, trisize)
+                     & edgeindx, numedge, triedge, xh, yh, nh_, trisize)
           !
           ! Turn the triangles in elemconn into quadrilaterals (rectangles):
           ! point4 == point3

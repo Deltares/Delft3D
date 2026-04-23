@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: mapper_general.cpp 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/mapper_general.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/mapper_general.cpp
+// $
 //------------------------------------------------------------------------------
 //  Class: D3dFlowMapper
 //  Mapper for DELFT3D-FLOW Domain Decomposition
@@ -36,12 +38,9 @@
 //  1 jun 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
 
-
-#define LOG_INIT    0
-
+#define LOG_INIT 0
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -50,11 +49,9 @@
 // Mapper for DELFT3D-FLOW Domain Decomposition
 //
 
-
 //////////////////////
 // Public functions
 //
-
 
 D3dFlowMapper::D3dFlowMapper(void)
 {
@@ -69,35 +66,31 @@ D3dFlowMapper::D3dFlowMapper(void)
 
     MAPDBG_FUN("D3dFlowMapper::D3dFlowMapper");
 
-    logFile  = NULL;
+    logFile = NULL;
 }
-
 
 D3dFlowMapper::~D3dFlowMapper(void)
 {
-    int     ctx;           // context loop counter
+    int ctx; // context loop counter
 
     MAPDBG_FUN("D3dFlowMapper::~D3dFlowMapper");
 
     delete mapMess;
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx ++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
         delete C[ctx];
     }
 }
 
-
-int D3dFlowMapper::Setup(
-    Iterator * mapper,                // current mapper
-    char     * configString,          // configuration string
-    Iterator * neighbors[NR_CNTXTS],  // neighbor flow processes
-    MemType    memType[NR_CNTXTS]     // SharedMem or Distributed dd-data
-    )
+int D3dFlowMapper::Setup(Iterator* mapper,               // current mapper
+                         char* configString,             // configuration string
+                         Iterator* neighbors[NR_CNTXTS], // neighbor flow processes
+                         MemType memType[NR_CNTXTS]      // SharedMem or Distributed dd-data
+)
 {
-    int retVal = HY_OK;         // return value
-    int ctx, oCtx;              // current and other context index
-    int eq;                     // equation loop counter
-
+    int retVal = HY_OK; // return value
+    int ctx, oCtx;      // current and other context index
+    int eq;             // equation loop counter
 
     MAPDBG_FUN("Mapper::Setup");
 
@@ -109,44 +102,39 @@ int D3dFlowMapper::Setup(
 
     retVal = InitAndParseConfigString(configString);
 
-    if ( retVal != HY_ERR )
+    if (retVal != HY_ERR)
     {
         //
         // Initialize Mapper Loops
         //
 
-        for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+        for (ctx = 0; ctx < NR_CNTXTS; ctx++)
         {
             oCtx = 1 - ctx;
-            for ( eq = 0 ; eq < NR_EQ ; eq++ )
+            for (eq = 0; eq < NR_EQ; eq++)
             {
-                if (this->Edge[ctx] == Edge_Left ||
-                    this->Edge[ctx] == Edge_Right   )
+                if (this->Edge[ctx] == Edge_Left || this->Edge[ctx] == Edge_Right)
                 {
-                    nStart   [ctx][eq] = GetStartCell(ctx , eq);
-                    nEnd     [ctx][eq] = GetEndCell  (ctx , eq);
+                    nStart[ctx][eq] = GetStartCell(ctx, eq);
+                    nEnd[ctx][eq] = GetEndCell(ctx, eq);
                     nOthStart[ctx][eq] = GetStartCell(oCtx, eq);
-                    nOthEnd  [ctx][eq] = GetEndCell  (oCtx, eq);
+                    nOthEnd[ctx][eq] = GetEndCell(oCtx, eq);
 
-                    mStart[ctx][eq] = mEnd[ctx][eq] =
-                            GetNormalCell(ctx,  eq, CtxType_Target);
-                    mOthStart[ctx][eq] = mOthEnd[ctx][eq] =
-                            GetNormalCell(oCtx, eq, CtxType_Source);
+                    mStart[ctx][eq] = mEnd[ctx][eq] = GetNormalCell(ctx, eq, CtxType_Target);
+                    mOthStart[ctx][eq] = mOthEnd[ctx][eq] = GetNormalCell(oCtx, eq, CtxType_Source);
 
                     l2r = 1;
                     b2t = 0;
                 }
                 else
                 {
-                    mStart   [ctx][eq] = GetStartCell(ctx , eq);
-                    mEnd     [ctx][eq] = GetEndCell  (ctx , eq);
+                    mStart[ctx][eq] = GetStartCell(ctx, eq);
+                    mEnd[ctx][eq] = GetEndCell(ctx, eq);
                     mOthStart[ctx][eq] = GetStartCell(oCtx, eq);
-                    mOthEnd  [ctx][eq] = GetEndCell  (oCtx, eq);
+                    mOthEnd[ctx][eq] = GetEndCell(oCtx, eq);
 
-                    nStart[ctx][eq] = nEnd[ctx][eq] =
-                            GetNormalCell(ctx,  eq, CtxType_Target);
-                    nOthStart[ctx][eq] = nOthEnd[ctx][eq] =
-                            GetNormalCell(oCtx, eq, CtxType_Source);
+                    nStart[ctx][eq] = nEnd[ctx][eq] = GetNormalCell(ctx, eq, CtxType_Target);
+                    nOthStart[ctx][eq] = nOthEnd[ctx][eq] = GetNormalCell(oCtx, eq, CtxType_Source);
 
                     l2r = 0;
                     b2t = 1;
@@ -158,12 +146,10 @@ int D3dFlowMapper::Setup(
     //
     // Initialize context objects and there data
     //
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
         C[ctx] = new D3dFlowContextMapSide();
-        C[ctx]->Setup( mapper, neighbors[ctx],
-                        memType[ctx], Edge[ctx],
-                        mStart[ctx], nStart[ctx], mEnd[ctx], nEnd[ctx]);
+        C[ctx]->Setup(mapper, neighbors[ctx], memType[ctx], Edge[ctx], mStart[ctx], nStart[ctx], mEnd[ctx], nEnd[ctx]);
 
         //
         // Receive Sizes / Flags
@@ -171,7 +157,7 @@ int D3dFlowMapper::Setup(
         // due to the blob order in case of 1 subdomain
         //
 
-        if ( C[ctx]->memType == Mem_Distributed )
+        if (C[ctx]->memType == Mem_Distributed)
         {
             C[ctx]->ReceiveSizesAndFlagsFromFlow();
             C[ctx]->DetermineStripSize();
@@ -182,9 +168,9 @@ int D3dFlowMapper::Setup(
     // Send info on mapper strips
     //
 
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
-        if ( C[ctx]->memType == Mem_Distributed )
+        if (C[ctx]->memType == Mem_Distributed)
         {
             C[ctx]->SendMapperInfoToFlow();
             C[ctx]->varInfoColl = new VarInfoCollection(NUM_BLOCK_INFO_S, NUM_VAR_IDS, NUM_MAP_DISTRIB_TYPES);
@@ -197,84 +183,73 @@ int D3dFlowMapper::Setup(
     //
     // Receive initial data
     //
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
         UpdateHeader updateHeader;
-        updateHeader.nextStep    = STEP_UNDEF;
-        updateHeader.distribGroup= -1;
+        updateHeader.nextStep = STEP_UNDEF;
+        updateHeader.distribGroup = -1;
         updateHeader.numMessages = -1;
-        updateHeader.intValue    = -1;
+        updateHeader.intValue = -1;
 
         C[ctx]->UpdateMapperFromFlow(updateHeader);
 
-        if ( updateHeader.numMessages != 0 )
+        if (updateHeader.numMessages != 0)
         {
-            throw new Exception (true, "D3dFlowMapper::Setup: # incoming messages must be zero");
+            throw new Exception("D3dFlowMapper::Setup: # incoming messages must be zero");
         }
-
     }
 
     //
     // Let Contexts refer to each other, set refinement factors
     //
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
         oCtx = 1 - ctx;
         C[ctx]->SetOtherContext(C[oCtx]);
     }
 
 #if LOG_INIT
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
-        for ( eq = 0 ; eq < NR_EQ ; eq++ )
+        for (eq = 0; eq < NR_EQ; eq++)
         {
-            printf("ctx: %d, EQ: %d\n",ctx,eq);
-            printf("OTH: %2d-%2d, %2d-%2d\n",
-                mOthStart[ctx][eq] ,
-                mOthEnd  [ctx][eq] ,
-                nOthStart[ctx][eq] ,
-                nOthEnd  [ctx][eq] );
-            printf("Trg: %2d-%2d, %2d-%2d\n",
-                mStart[ctx][eq] ,
-                mEnd  [ctx][eq] ,
-                nStart[ctx][eq] ,
-                nEnd  [ctx][eq] );
+            printf("ctx: %d, EQ: %d\n", ctx, eq);
+            printf("OTH: %2d-%2d, %2d-%2d\n", mOthStart[ctx][eq], mOthEnd[ctx][eq], nOthStart[ctx][eq],
+                   nOthEnd[ctx][eq]);
+            printf("Trg: %2d-%2d, %2d-%2d\n", mStart[ctx][eq], mEnd[ctx][eq], nStart[ctx][eq], nEnd[ctx][eq]);
         }
     }
 #endif
 
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "MAPPER \"%s\" Setup, retVal %d, Checking config", IteratorSelf()->name, retVal);
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MINOR, "MAPPER \"%s\" Setup, retVal %d, Checking config",
+                             IteratorSelf()->name, retVal);
 
     retVal = this->CheckConfig();
 
-    FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "MAPPER \"%s\" Setup, Checked config, retVal %d", IteratorSelf()->name, retVal);
+    FLOW2D3D->dd->log->Write(Log::DDMAPPER_MINOR, "MAPPER \"%s\" Setup, Checked config, retVal %d",
+                             IteratorSelf()->name, retVal);
 
     return retVal;
 }
 
-
-int D3dFlowMapper::NextStep(
-    int         myStep,     // I: Step caller just completed
-    int         neighborStep,       // I: Step neighbor(s) should go to
-    int         myNxtStep   // I: Next step
-    )
+int D3dFlowMapper::NextStep(int myStep,       // I: Step caller just completed
+                            int neighborStep, // I: Step neighbor(s) should go to
+                            int myNxtStep     // I: Next step
+)
 {
     //
     // Next-Step called without Alternative for resulting NextStep.
     // Call Next-Step with STEP_UNDEF as alternative
     //
 
-    return this->NextStep( myStep, neighborStep, myNxtStep, STEP_UNDEF);
-
+    return this->NextStep(myStep, neighborStep, myNxtStep, STEP_UNDEF);
 }
 
-
-int D3dFlowMapper::NextStep(
-    int         myStep,     // I: Step caller just completed
-    int         neighborStep,       // I: Step neighbor(s) should go to
-    int         myNxtStep,  // I: Next step
-    int         myNxtStepAlt    // I: Next step Alternative
-    )
+int D3dFlowMapper::NextStep(int myStep,       // I: Step caller just completed
+                            int neighborStep, // I: Step neighbor(s) should go to
+                            int myNxtStep,    // I: Next step
+                            int myNxtStepAlt  // I: Next step Alternative
+)
 {
     //
     // Read outgoing messages from Mappers message store
@@ -282,42 +257,42 @@ int D3dFlowMapper::NextStep(
     // Check resulting step
     //
 
-    DDMesg * outMess = NULL;   // Messages to neighbors
-    int      outMesgValue;     // Value of messages to neighbors
-    int      numOut=0;
+    DDMesg* outMess = NULL; // Messages to neighbors
+    int outMesgValue;       // Value of messages to neighbors
+    int numOut = 0;
 
-    if ( ( outMess = mapMess->GetOutMess() ) != NULL )
+    if ((outMess = mapMess->GetOutMess()) != NULL)
     {
         outMesgValue = outMess->value;
-        numOut=1;
+        numOut = 1;
     }
-        else
-        {
-                outMesgValue = -1;
-        }
+    else
+    {
+        outMesgValue = -1;
+    }
 
     //
     // Send adjusted data and messages to flow side.
     // TODORE: Optimize groups (limited #vars per NextStep)
     //
 
-    if ( myStep != STEP_UNDEF )
+    if (myStep != STEP_UNDEF)
     {
-        for ( int ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+        for (int ctx = 0; ctx < NR_CNTXTS; ctx++)
         {
             //
             // Send next neighbor step and messages to flow
             //
 
-            FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "MAPPER NEXTSTEP to Flow \"%s\": myStep %s, neighborStep %s, numOut %d",
-                                C[ctx]->flowIterator->name,
-                                PrintNextStepName(myStep), PrintNextStepName(neighborStep), numOut);
+            FLOW2D3D->dd->log->Write(
+                Log::DDMAPPER_MINOR, "MAPPER NEXTSTEP to Flow \"%s\": myStep %s, neighborStep %s, numOut %d",
+                C[ctx]->flowIterator->name, PrintNextStepName(myStep), PrintNextStepName(neighborStep), numOut);
 
             UpdateHeader updateHeader;
-            updateHeader.nextStep    = neighborStep;
-            updateHeader.distribGroup= DetermineDistribGroup(myStep);
+            updateHeader.nextStep = neighborStep;
+            updateHeader.distribGroup = DetermineDistribGroup(myStep);
             updateHeader.numMessages = numOut;
-            updateHeader.intValue    = outMesgValue;
+            updateHeader.intValue = outMesgValue;
 
             C[ctx]->UpdateMapperToFlow(updateHeader);
         }
@@ -327,34 +302,34 @@ int D3dFlowMapper::NextStep(
     // D3d flow Processes perform action, wait for result
     //
 
-    DDMesg      inMess[NR_CNTXTS];
-    int         totNumIn=0;
-    int         nextStep = STEP_UNDEF;
+    DDMesg inMess[NR_CNTXTS];
+    int totNumIn = 0;
+    int nextStep = STEP_UNDEF;
 
-    if ( myStep != STEP_UNDEF ) // TODO Select group on myStep
+    if (myStep != STEP_UNDEF) // TODO Select group on myStep
     {
-        for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+        for (ctx = 0; ctx < NR_CNTXTS; ctx++)
         {
             //
             // Receive next step and messages from flow
             //
 
             UpdateHeader updateHeader;
-            updateHeader.nextStep    = STEP_UNDEF;
-            updateHeader.distribGroup= -1;
+            updateHeader.nextStep = STEP_UNDEF;
+            updateHeader.distribGroup = -1;
             updateHeader.numMessages = -1;
-            updateHeader.intValue    = -1;
+            updateHeader.intValue = -1;
 
             C[ctx]->UpdateMapperFromFlow(updateHeader);
 
-            if ( updateHeader.numMessages < 0 )
+            if (updateHeader.numMessages < 0)
             {
-                throw new Exception (true, "D3dFlowMapper::NextStep: # incoming messages must >= 0");
+                throw new Exception("D3dFlowMapper::NextStep: # incoming messages must >= 0");
             }
 
             nextStep = updateHeader.nextStep;
 
-            if ( updateHeader.numMessages == 1 )
+            if (updateHeader.numMessages == 1)
             {
                 inMess[totNumIn].value = updateHeader.intValue;
                 totNumIn++;
@@ -362,18 +337,17 @@ int D3dFlowMapper::NextStep(
         }
     }
 
-    if ( nextStep == D3dFlowMap_Finish ) // TODORE: check if it can be removed
+    if (nextStep == D3dFlowMap_Finish) // TODORE: check if it can be removed
     {
         return nextStep;
     }
 
-    if ( nextStep != myNxtStep )
+    if (nextStep != myNxtStep)
     {
-        if (    ( myNxtStepAlt == STEP_UNDEF   )
-             || ( nextStep     != myNxtStepAlt ) )
+        if ((myNxtStepAlt == STEP_UNDEF) || (nextStep != myNxtStepAlt))
         {
-#if 0       // TODORE: CHECK
-            throw new Exception (true, "Unexpected step (%d) after step %d; UNEXPECT %s after %s",
+#if 0 // TODORE: CHECK
+            throw new Exception("Unexpected step (%d) after step %d; UNEXPECT %s after %s",
                             nextStep,
                             myStep,
                             PrintNextStepName(nextStep),
@@ -388,21 +362,20 @@ int D3dFlowMapper::NextStep(
 
     mapMess->InitInMess();
 
-    if ( totNumIn > 0 )
+    if (totNumIn > 0)
     {
-        if ( totNumIn != NR_CNTXTS )
+        if (totNumIn != NR_CNTXTS)
         {
-            throw new Exception (true, "D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
+            throw new Exception("D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
         }
         else
         {
-            for ( int m = 0 ; m < totNumIn ; m++ )
+            for (int m = 0; m < totNumIn; m++)
             {
                 mapMess->PutInMess(inMess[m]);
             }
         }
     }
-
 
     //
     // Reset outgoing messages before next step starts
@@ -411,87 +384,79 @@ int D3dFlowMapper::NextStep(
     mapMess->InitOutMess();
 
     return nextStep;
-
 }
 
-
-void D3dFlowMapper::FMapLog(
-    char      * format,     // I: 'fprintf-format' for print of log
-    ...                     // I: arguments of log message (should be
-                            //  terminated with NULL)
-    )
+void D3dFlowMapper::FMapLog(char* format, // I: 'fprintf-format' for print of log
+                            ...           // I: arguments of log message (should be
+                                          //  terminated with NULL)
+)
 {
-    char    name[100];  // filename
-    va_list arguments;  // var-arg list
+    char name[100];    // filename
+    va_list arguments; // var-arg list
 
-    if ( ! DoLoggingFor(Log_Mapper) )
+    if (!DoLoggingFor(Log_Mapper))
     {
         return;
     }
 
-    va_start ( arguments, format );
+    va_start(arguments, format);
 
-    if ( DoLoggingToFileFor(Log_Mapper) )
+    if (DoLoggingToFileFor(Log_Mapper))
     {
         if (logFile == NULL)
         {
             sprintf(name, "mapuitvoer.%d", this->mapperObjID);
-            logFile = fopen(name,"w");
+            logFile = fopen(name, "w");
             if (logFile == NULL)
             {
-                throw new Exception (true, "Couldn't open logfile %s", name);
+                throw new Exception("Couldn't open logfile %s", name);
             }
         }
-        if ( logFile != NULL )
+        if (logFile != NULL)
         {
-            vfprintf ( logFile, format, arguments );
+            vfprintf(logFile, format, arguments);
             fflush(logFile);
         }
     }
     else
     {
-    vprintf ( format, arguments );
-    fflush(stdout);
+        vprintf(format, arguments);
+        fflush(stdout);
     }
 
-    va_end ( arguments );
-
+    va_end(arguments);
 }
 
-
-void D3dFlowMapper::FMapLog2DIndex(
-    char      * messStr,// message string
-    int         ctx,    // context counter
-    int         mIndex, // M index
-    int         nIndex  // N index
-    )
+void D3dFlowMapper::FMapLog2DIndex(char* messStr, // message string
+                                   int ctx,       // context counter
+                                   int mIndex,    // M index
+                                   int nIndex     // N index
+)
 {
-    if ( DoLoggingFor(Log_Mapper) )
+    if (DoLoggingFor(Log_Mapper))
     {
-        FILE * logHandle = stdout;
+        FILE* logHandle = stdout;
 
-        if ( DoLoggingToFileFor(Log_Mapper) ) logHandle = logFile;
+        if (DoLoggingToFileFor(Log_Mapper)) logHandle = logFile;
 
-        if ( logHandle != NULL )
+        if (logHandle != NULL)
         {
-            printf("%s[%d]=%5d in %3d*%3d=%5d (m=%d + (mArrayOffset=%d)) * (nArraySize=%d) + (n=%d + (nArrayOffset==%d))\n",
+            printf(
+                "%s[%d]=%5d in %3d*%3d=%5d (m=%d + (mArrayOffset=%d)) * (nArraySize=%d) + (n=%d + "
+                "(nArrayOffset==%d))\n",
                 messStr, ctx,
                 (mIndex + (C[ctx]->mArrayOffset)) * (C[ctx]->nArraySize) + (nIndex + (C[ctx]->nArrayOffset)),
-                C[ctx]->mArraySize, C[ctx]->nArraySize, C[ctx]->mArraySize * C[ctx]->nArraySize,
-                mIndex, C[ctx]->mArrayOffset , C[ctx]->nArraySize, nIndex, C[ctx]->nArrayOffset);
+                C[ctx]->mArraySize, C[ctx]->nArraySize, C[ctx]->mArraySize * C[ctx]->nArraySize, mIndex,
+                C[ctx]->mArrayOffset, C[ctx]->nArraySize, nIndex, C[ctx]->nArrayOffset);
 
             fflush(logHandle);
         }
-
     }
-
 }
 
-
-void D3dFlowMapper::SendDataToFlow(
-    int         myStep,       // I: Step caller just completed
-    int         neighborStep  // I: Step neighbor(s) should go to
-        )
+void D3dFlowMapper::SendDataToFlow(int myStep,      // I: Step caller just completed
+                                   int neighborStep // I: Step neighbor(s) should go to
+)
 {
     //
     // Read outgoing messages from Mappers message store
@@ -499,38 +464,38 @@ void D3dFlowMapper::SendDataToFlow(
     // Check resulting step
     //
 
-    DDMesg * outMess = NULL;   // Messages to neighbors
-    int      outMesgValue=0;   // Value of messages to neighbors
-    int      numOut=0;
+    DDMesg* outMess = NULL; // Messages to neighbors
+    int outMesgValue = 0;   // Value of messages to neighbors
+    int numOut = 0;
 
-    if ( ( outMess = mapMess->GetOutMess() ) != NULL )
+    if ((outMess = mapMess->GetOutMess()) != NULL)
     {
         outMesgValue = outMess->value;
-        numOut=1;
+        numOut = 1;
     }
 
     //
     // Send adjusted data and messages to flow side.
     // TODORE: Optimize groups (limited #vars per NextStep)
     //
-    //printf("%20d <- mapper (%d)\n",myStep,neighborStep);
-    if ( myStep != STEP_UNDEF )
+    // printf("%20d <- mapper (%d)\n",myStep,neighborStep);
+    if (myStep != STEP_UNDEF)
     {
-        for ( int ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+        for (int ctx = 0; ctx < NR_CNTXTS; ctx++)
         {
             //
             // Send next neighbor step and messages to flow
             //
 
-            FLOW2D3D->dd->log->Write (Log::DDMAPPER_MINOR, "MAPPER NEXTSTEP to Flow \"%s\": myStep %s, neighborStep %s, numOut %d",
-                                C[ctx]->flowIterator->name,
-                                PrintNextStepName(myStep), PrintNextStepName(neighborStep), numOut);
+            FLOW2D3D->dd->log->Write(
+                Log::DDMAPPER_MINOR, "MAPPER NEXTSTEP to Flow \"%s\": myStep %s, neighborStep %s, numOut %d",
+                C[ctx]->flowIterator->name, PrintNextStepName(myStep), PrintNextStepName(neighborStep), numOut);
 
             UpdateHeader updateHeader;
-            updateHeader.nextStep    = neighborStep;
-            updateHeader.distribGroup= DetermineDistribGroup(myStep);
+            updateHeader.nextStep = neighborStep;
+            updateHeader.distribGroup = DetermineDistribGroup(myStep);
             updateHeader.numMessages = numOut;
-            updateHeader.intValue    = outMesgValue;
+            updateHeader.intValue = outMesgValue;
 
             C[ctx]->UpdateMapperToFlow(updateHeader);
         }
@@ -543,40 +508,40 @@ int D3dFlowMapper::ReceiveDataFromFlow(void)
     // D3d flow Processes perform action, wait for result
     //
 
-    DDMesg      inMess[NR_CNTXTS];
-    int         totNumIn=0;
-    int         nextStep = STEP_UNDEF;
+    DDMesg inMess[NR_CNTXTS];
+    int totNumIn = 0;
+    int nextStep = STEP_UNDEF;
 
-    for ( ctx = 0 ; ctx < NR_CNTXTS ; ctx++ )
+    for (ctx = 0; ctx < NR_CNTXTS; ctx++)
     {
         //
         // Receive next step and messages from flow
         //
 
         UpdateHeader updateHeader;
-        updateHeader.nextStep    = STEP_UNDEF;
-        updateHeader.distribGroup= -1;
+        updateHeader.nextStep = STEP_UNDEF;
+        updateHeader.distribGroup = -1;
         updateHeader.numMessages = -1;
-        updateHeader.intValue    = -1;
+        updateHeader.intValue = -1;
 
         C[ctx]->UpdateMapperFromFlow(updateHeader);
 
-        if ( updateHeader.numMessages < 0 )
+        if (updateHeader.numMessages < 0)
         {
-            throw new Exception (true, "D3dFlowMapper::NextStep: # incoming messages must >= 0");
+            throw new Exception("D3dFlowMapper::NextStep: # incoming messages must >= 0");
         }
 
         nextStep = updateHeader.nextStep;
 
-        if ( updateHeader.numMessages == 1 )
+        if (updateHeader.numMessages == 1)
         {
             inMess[totNumIn].value = updateHeader.intValue;
             totNumIn++;
         }
     }
-    //printf("%20d -> mapper\n",nextStep);
+    // printf("%20d -> mapper\n",nextStep);
 
-    if ( nextStep == D3dFlowMap_Finish ) // TODORE: check if it can be removed
+    if (nextStep == D3dFlowMap_Finish) // TODORE: check if it can be removed
     {
         return nextStep;
     }
@@ -587,21 +552,20 @@ int D3dFlowMapper::ReceiveDataFromFlow(void)
 
     mapMess->InitInMess();
 
-    if ( totNumIn > 0 )
+    if (totNumIn > 0)
     {
-        if ( totNumIn != NR_CNTXTS )
+        if (totNumIn != NR_CNTXTS)
         {
-            throw new Exception (true, "D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
+            throw new Exception("D3dFlowMapper::NextStep: #inmessages inconsistent with #flow processes");
         }
         else
         {
-            for ( int m = 0 ; m < totNumIn ; m++ )
+            for (int m = 0; m < totNumIn; m++)
             {
                 mapMess->PutInMess(inMess[m]);
             }
         }
     }
-
 
     //
     // Reset outgoing messages before next step starts

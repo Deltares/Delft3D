@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -174,7 +174,7 @@ contains
       ns = 0
       do i = 1, nx
          if (mod(i, istep) == 0) then
-            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * dble(i) / nx))
+            call readyy('Reading GeoTIFF file', min(1.0_dp, 0.5_dp + 0.5_dp * real(i, kind=dp) / nx))
          end if
          do j = ny, 1, -1
             ns = ns + 1
@@ -195,12 +195,20 @@ contains
       ! new sample set: no Hessians computed yet
       iHesstat = iHesstat_DIRTY
 
-      if (allocated(fbuffer)) deallocate (fbuffer)
-      if (allocated(dbuffer)) deallocate (dbuffer)
+      if (allocated(fbuffer)) then
+         deallocate (fbuffer)
+      end if
+      if (allocated(dbuffer)) then
+         deallocate (dbuffer)
+      end if
       call gdalclose(dataset)
 
-      if (ns > 100000) ndraw(32) = 7 ! Squares (faster than circles)
-      if (ns > 500000) ndraw(32) = 3 ! Small dots (fastest)
+      if (ns > 100000) then
+         ndraw(32) = 7 ! Squares (faster than circles)
+      end if
+      if (ns > 500000) then
+         ndraw(32) = 3 ! Small dots (fastest)
+      end if
 
       ! No TIDYSAMPLES required: GeoTiff grid was already loaded in correctly sorted order.
       do i = 1, ns
@@ -220,8 +228,12 @@ contains
          call gdalclose(dataset)
       end if
 
-      if (allocated(fbuffer)) deallocate (fbuffer)
-      if (allocated(dbuffer)) deallocate (dbuffer)
+      if (allocated(fbuffer)) then
+         deallocate (fbuffer)
+      end if
+      if (allocated(dbuffer)) then
+         deallocate (dbuffer)
+      end if
 
       return
 #else

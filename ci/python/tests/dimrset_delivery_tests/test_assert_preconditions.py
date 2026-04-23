@@ -2,13 +2,13 @@
 
 from unittest.mock import Mock, patch
 
+from ci_tools.dimrset_delivery.assert_preconditions import PreconditionsChecker
 from ci_tools.dimrset_delivery.dimr_context import DimrAutomationContext
 from ci_tools.dimrset_delivery.lib.git_client import GitClient
 from ci_tools.dimrset_delivery.lib.ssh_client import SshClient
 from ci_tools.dimrset_delivery.lib.teamcity import TeamCity
 from ci_tools.dimrset_delivery.services import Services
 from ci_tools.dimrset_delivery.settings.teamcity_settings import Settings
-from ci_tools.dimrset_delivery.step_0_assert_preconditions import PreconditionsChecker
 from ci_tools.example_utils.logger import LogLevel
 
 
@@ -120,6 +120,8 @@ class TestAssertPreconditionsFunction:
             "Git connection successful",
             "Testing SSH connection...",
             "SSH connection successful",
+            "Testing Jira connection...",
+            "Jira connection successful",
             "Asserted all preconditions.",
             "Preconditions check completed and returned 0 errors!",
         ]

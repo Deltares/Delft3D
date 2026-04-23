@@ -1,6 +1,0 @@
-      subroutine DMPatchCreate(a,b,z)
-       import tDM
-       MPI_Comm a ! MPI_Comm
-       DM b ! DM
-       PetscErrorCode z
-       end subroutine DMPatchCreate

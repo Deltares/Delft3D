@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: context-flowside.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/context-flowside.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/context-flowside.h
+// $
 //------------------------------------------------------------------------------
 //  Class: D3dFlowContextFlowSide
 //  Additional DELFT3D-FLOW context variables used by mapper in case of distributed memory
@@ -37,13 +39,10 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
-
 
 #include "context.h"
 #include "iterator.h"
-
 
 //////////////////////////////////////////////////////////////////////
 //
@@ -52,11 +51,9 @@
 // Public Functions on D3dFlowContextFlowSide data
 //
 
-
 class D3dFlowContextFlowSide : public D3dFlowContext
 {
-    public:
-
+public:
     ////////////////////////
     //
     // PUBLIC FUNCTIONS
@@ -66,20 +63,17 @@ class D3dFlowContextFlowSide : public D3dFlowContext
 
     ~D3dFlowContextFlowSide(void);
 
-    int Setup(
-        Iterator * flow,        // d3dflow process iterator
-        Iterator * mapper,      // mapper iterator
-        int        aContextID,  // esm context-ID
-        MemType    aMemType     // Shared mem or distributed
-        );
+    int Setup(Iterator* flow,   // d3dflow process iterator
+              Iterator* mapper, // mapper iterator
+              int aContextID,   // esm context-ID
+              MemType aMemType  // Shared mem or distributed
+    );
 
-    int SetupForGaws(
-        Iterator * flow,        // d3dflow process iterator
-        Iterator * gaws,        // gaws iterator
-        int        aContextID,  // esm context-ID
-        MemType    aMemType     // Shared mem or distributed
-        );
-
+    int SetupForGaws(Iterator* flow,  // d3dflow process iterator
+                     Iterator* gaws,  // gaws iterator
+                     int aContextID,  // esm context-ID
+                     MemType aMemType // Shared mem or distributed
+    );
 
     //
     // Distributed Data Communication,
@@ -89,20 +83,12 @@ class D3dFlowContextFlowSide : public D3dFlowContext
     void SendSizesAndFlagsToMapper(void);
     void ReceiveAndCreateMapperStrips(void);
 
-    void UpdateFlowToMapper  (UpdateHeader &updateHeader);
-    void UpdateFlowFromMapper(UpdateHeader &updateHeader);
+    void UpdateFlowToMapper(UpdateHeader& updateHeader);
+    void UpdateFlowFromMapper(UpdateHeader& updateHeader);
 
-    void SendBlobToMapper(
-        DDBlobID    blobID,
-        int         numBytes,
-        char      * bytes
-        );
+    void SendBlobToMapper(DDBlobID blobID, int numBytes, char* bytes);
 
-    int ReceiveBlobFromMapper(
-        DDBlobID    blobID,
-        int         numBytes,
-        char      * bytes
-        );
+    int ReceiveBlobFromMapper(DDBlobID blobID, int numBytes, char* bytes);
 
     //
     // Distributed Data Communication,
@@ -111,26 +97,21 @@ class D3dFlowContextFlowSide : public D3dFlowContext
 
     void ReceiveAndCreateCommPoints(void);
 
-    void UpdateFlowToGaws  (GawsDistribGroup distribGroup);
+    void UpdateFlowToGaws(GawsDistribGroup distribGroup);
     void UpdateFlowFromGaws(bool left_2_right, GawsDistribGroup distribGroup);
 
-    protected:
-
+protected:
     void SendSizesToGaws(void);
 
-    int BufferVarOnCommPoints(
-        char          * buffer,        // buffer to be filled or read
-        bool            left_2_right,  // L2R (true) or bottom->top (false)
-        REAL_FP       * var,           // var (2D-array) to be stored or read
-        BufferAction    bufferAction   // Fill or Read buffer
+    int BufferVarOnCommPoints(char* buffer,             // buffer to be filled or read
+                              bool left_2_right,        // L2R (true) or bottom->top (false)
+                              REAL_FP* var,             // var (2D-array) to be stored or read
+                              BufferAction bufferAction // Fill or Read buffer
     );
 
-    int BufferVarOnCommPoints_PREC(
-        char          * buffer,        // buffer to be filled or read
-        bool            left_2_right,  // L2R (true) or bottom->top (false)
-        REAL_PREC     * var,           // var (2D-array) to be stored or read
-        BufferAction    bufferAction   // Fill or Read buffer
+    int BufferVarOnCommPoints_PREC(char* buffer,             // buffer to be filled or read
+                                   bool left_2_right,        // L2R (true) or bottom->top (false)
+                                   REAL_PREC* var,           // var (2D-array) to be stored or read
+                                   BufferAction bufferAction // Fill or Read buffer
     );
-
-
 };

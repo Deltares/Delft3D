@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares, University of Duisburg-Essen
+// Copyright (C) 2026 Deltares, University of Duisburg-Essen
 // Institute of Hydraulic Engineering and Water Resources Management
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,17 +25,15 @@
 #ifndef LINEAREQUATIONSOLVERS_H
 #define LINEAREQUATIONSOLVERS_H
 
-
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-void gj(int n, double** A, double* b, double* x);
-void gj(int n, double** Ab);
+        void gj(int n, double** A, double* b, double* x);
+        void gj(int n, double** Ab);
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
 #endif /* LINEAREQUATIONSOLVERS_H */
-

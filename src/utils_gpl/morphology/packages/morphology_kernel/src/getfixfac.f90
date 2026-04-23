@@ -1,8 +1,16 @@
+module m_getfixfac
+    
+private
+
+public getfixfac
+
+contains
+
 subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
-                   & fixfac    ,ffthresh  )
+                   & fixfac    ,ffthresh  ,ithresh)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -37,6 +45,7 @@ subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
 !!--declarations----------------------------------------------------------------
     use precision 
     use bedcomposition_module
+    use morphology_data_module, only: THRESH_BASED_ON_THICKNESS, THRESH_CONSTANT
     !
     implicit none
 !
@@ -49,22 +58,39 @@ subroutine getfixfac(bedcomp   ,nmlb      ,nmub      ,nval      ,nmmax     , &
     type(bedcomp_data)                                 , intent(in)  :: bedcomp
     real(fp)                                           , intent(in)  :: ffthresh
     real(fp), dimension(nmlb:nmub, nval)               , intent(out) :: fixfac
+    integer                                            , intent(in)  :: ithresh
 !
 ! Local variables
 !
     integer  :: l
     integer  :: nm
     real(fp) :: thresh
+    real(fp) :: thick
+    real(fp)   , dimension(:)     , pointer :: thtrlyr  
 !
 !! executable statements -------------------------------------------------------
 !
-    call getalluvthick(bedcomp, fixfac, nmlb, nmub, nval)
-    ! The FIXFAC array contains at this stage the sediment thickness!
     !
-    thresh = max(1.0e-10_fp,ffthresh)
-    do l = 1, nval
-       do nm = max(nmlb,1), min(nmmax,nmub)
-          fixfac(nm, l) = min(max(fixfac(nm, l)/thresh, 0.0_fp), 1.0_fp)
+    if (ithresh == THRESH_BASED_ON_THICKNESS) then
+       thtrlyr     => bedcomp%settings%thtrlyr
+       do l = 1, nval
+          do nm = nmlb, nmub
+             call getthicklayer(bedcomp, nm, 1, thick)
+             thresh = max(1.0e-10_fp,thtrlyr(nm))
+             fixfac(nm, l) = min(max(thick/thresh, 0.0_fp), 1.0_fp)
+          enddo
        enddo
-    enddo
+    elseif (ithresh == THRESH_CONSTANT) then
+       call getalluvthick(bedcomp, fixfac, nmlb, nmub, nval)
+       !call getsedthick(bedcomp, fixfac)  <- new call 
+       ! The FIXFAC array contains at this stage the sediment thickness!
+       thresh = max(1.0e-10_fp,ffthresh)
+       do l = 1, nval
+          do nm = nmlb, nmub
+             fixfac(nm, l) = min(max(fixfac(nm, l)/thresh, 0.0_fp), 1.0_fp)
+          enddo
+       enddo
+    endif !no need for `elseif`, as it is already checked in the input reading.    
 end subroutine getfixfac
+
+end module m_getfixfac

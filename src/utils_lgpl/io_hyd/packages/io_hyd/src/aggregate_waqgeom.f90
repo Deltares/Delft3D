@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -278,7 +278,7 @@ contains
             return
          end if
       end if
-      
+
       success = .true.
 
    end function aggregate_ugrid_geometry
@@ -306,10 +306,15 @@ contains
 
       ! Check the validity of the layer mapping table
       ! Is the size equal to the number of layer ins the input?
-      if (size(layer_mapping_table) /= input%num_layers) then
-         write (message, *) 'Definition of vertical layer mapping does not match the number of layers.'
-         call mess(LEVEL_ERROR, trim(message))
-         return
+      if (input%num_layers /= -1) then
+         if (size(layer_mapping_table) /= input%num_layers) then
+            write (message, *) 'Definition of vertical layer mapping does not match the number of layers.'
+            call mess(LEVEL_ERROR, trim(message))
+            return
+         end if
+      else
+         write (message, *) 'WAQGEOM file is lacking layer information, relying on hyd-file.'
+         call mess(LEVEL_WARN, trim(message))
       end if
 
       ! Does it start with one?
@@ -363,13 +368,13 @@ contains
          success = .true.
          return
       end if
-      
+
       ! The layer type always stays the same
       output%layertype = input%layertype
-      
+
       ! The new number of layers is equal to the last value in the layer mapping table.
       output%num_layers = layer_mapping_table(input%num_layers)
-      
+
       ! For z-sigma-layers, the new numtopsig is equal to the value in the layer mapping table of the old numtopsig.
       if (input%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          output%numtopsig = layer_mapping_table(input%numtopsig)
@@ -409,14 +414,14 @@ contains
       do i = 1, output%num_layers
          output%layer_zs(i) = (output%interface_zs(i) + output%interface_zs(i + 1)) / 2.0d0
       end do
-      
+
       ! Correct the last sigma layer in layer_zs in case of z-sigma-layers. We need this because the bottom interface of
       ! the last sigma-layer of -1.0 is not in interface_zs. It overlaps with the top interface of the first z-layer.
       if (output%layertype == LAYERTYPE_OCEAN_SIGMA_Z) then
          if (top_to_bottom) then
             output%layer_zs(output%numtopsig) = (output%interface_zs(output%numtopsig) - 1.0d0) / 2.0d0
          else
-            output%layer_zs(output%num_layers - output%numtopsig + 1) = & 
+            output%layer_zs(output%num_layers - output%numtopsig + 1) = &
                (output%interface_zs(output%num_layers - output%numtopsig + 2) - 1.0d0) / 2.0d0
          end if
       end if

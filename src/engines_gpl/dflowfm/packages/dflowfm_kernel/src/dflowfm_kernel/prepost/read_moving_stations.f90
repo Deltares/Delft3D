@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
       use precision, only: hp
       use m_GlobalParameters, only: maxlenpar
       use properties, only: prop_file, prop_get, get_version_number, tree_data, tree_get_name, tree_create, tree_destroy
-      use timespace_parameters, only: convert_file_type_string_to_integer, UNIFORM, BCASCII, SPACEANDTIME
+      use timespace_parameters, only: convert_file_type_string_to_integer, UNIFORM, BCASCII, SPACEANDTIME, OPERAND_OVERRIDE
       use m_meteo, only: ec_addtimespacerelation, initialize_ec_module
       use m_missing, only: dmiss
       use string_module, only: strcmpi, strsplit
@@ -146,7 +146,7 @@ contains
                ! Converter will put 'x' in array(2*nummovobs-1) and 'y' in array(2*nummovobs).
                if (location_file_type == UNIFORM) then
                   is_successful = ec_addtimespacerelation(quantity, xdum, ydum, kdum, VECTOR_MAX, location_file, &
-                                                          filetype=UNIFORM, method=SPACEANDTIME, operand='O', &
+                                                          filetype=UNIFORM, method=SPACEANDTIME, operand=OPERAND_OVERRIDE, &
                                                           targetIndex=nummovobs)
                   if (.not. is_successful) then
                      call SetMessage(LEVEL_ERROR, 'Error initializing locationFile '''//trim(location_file)//''', referenced in file''' &
@@ -157,7 +157,7 @@ contains
                   is_successful = ec_addtimespacerelation(quantity, xdum, ydum, kdum, VECTOR_MAX, station_name, &
                                                           filetype=bcascii, &
                                                           method=spaceandtime, &
-                                                          operand='O', &
+                                                          operand=OPERAND_OVERRIDE, &
                                                           targetIndex=nummovobs, &
                                                           forcingFile=location_file)
                else

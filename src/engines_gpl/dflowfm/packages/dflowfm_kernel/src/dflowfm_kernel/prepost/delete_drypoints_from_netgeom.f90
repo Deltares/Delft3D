@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,15 +45,16 @@ module m_delete_drypoints_from_netgeom
 
 contains
 
-   subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside)
+   subroutine delete_drypoints_from_netgeom(dryptsfilelist, jaconfirm, jinside, update_blcell)
       use precision, only: dp
       use m_cutcell_list, only: cutcell_list
-      use m_samples_to_cellmask2
+      use m_samples_to_cellmask
       use m_confrm
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_sferic, only: jsferic
       use string_module
-      use m_polygon, only: NPL, ZPL, savepol, restorepol
+      use m_polygon, only: NPL,  xpl, ypl, zpl, savepol, restorepol
+      use network_data, only: cellmask, nump1d2d, nump, xzw, yzw
       use m_tpoly
       use m_samples
       use m_wall_clock_time
@@ -62,10 +63,12 @@ contains
       use m_delsam
       use m_reasam
       use m_filez, only: oldfil
-
+      use m_alloc, only: realloc
+      
       character(*), intent(inout) :: dryptsfilelist !< List of file names to process for deleting dry parts. (Supported formats: .xyz, .pol)
       integer, intent(in) :: jaconfirm !< Whether (1) or not (0) to interactively prompt for inclusion of each individual file from the list.
       integer, intent(in) :: jinside !< Override the inside check of polygon files. 0: use ZPL polygon (no override), 1: Always delete inside polygon, -1: always delete outside polygon.
+      logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
       character(len=128) :: ext
 
       character(len=255) :: dryptsfile
@@ -87,6 +90,8 @@ contains
 
       type(tpoly), dimension(:), allocatable :: pli_save !< tpoly-type polygons
       integer :: numpols_save
+
+      integer, dimension(:), allocatable :: local_cell_mask
 
 !  store global polygon
       numpols = 0
@@ -152,8 +157,12 @@ contains
                   if (jsferic == 1) then
                      call fix_global_polygons(1, 0)
                   end if
-
-                  call pol_to_cellmask() ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+                  ! cellmask somehow needs to contain both 2d and 1d points (even if 1d points are not masked / mask is 0)
+                  ! if you know why this is the case it would be nice to change the behaviour so that cellmask only has nump entries
+                  ! and get rid of local_cell_mask
+                  call realloc(cellmask, nump1d2d, keepexisting=.false., fill=0)
+                  local_cell_mask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw, yzw) ! third column in pol-file may be used to specify inside (1), or outside (0) mode, only 0 or 1 allowed.
+                  cellmask(1:nump) = local_cell_mask(1:nump)
                   call delpol()
                   call restorepol()
 
@@ -162,13 +171,13 @@ contains
                   call oldfil(minp, dryptsfile)
                   call savesam()
                   call reasam(minp, 0)
-                  call samples_to_cellmask2()
+                  call samples_to_cellmask()
                   call delsam(0)
 
                   ierror = 0
                end if
 
-               call remove_masked_netcells()
+               call remove_masked_netcells(update_blcell)
 
             end if
          else

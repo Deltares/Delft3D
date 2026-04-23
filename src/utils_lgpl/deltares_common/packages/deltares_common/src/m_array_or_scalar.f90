@@ -1,7 +1,7 @@
 module m_array_or_scalar
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -89,37 +89,60 @@ contains
    end function get_t_array
 
 !> (Re)allocate array_or_scalar object as scalar regardless of previous status.
-   subroutine realloc_t_scalar(array_or_scalar, fill_value)
+   subroutine realloc_t_scalar(array_or_scalar, fill)
       class(t_array_or_scalar), allocatable, intent(inout) :: array_or_scalar !< Array_or_scalar object to be reallocated.
-      real(kind=dp), intent(in), optional :: fill_value !< Value to be set in the scalar array_or_scalar.
+      real(kind=dp), intent(in), optional :: fill !< Value to be set in the scalar array_or_scalar.
 
       if (allocated(array_or_scalar)) then
          deallocate (array_or_scalar)
       end if
 
       allocate (t_scalar :: array_or_scalar)
-      if (present(fill_value)) then
+      if (present(fill)) then
          select type (array_or_scalar)
          type is (t_scalar)
-            array_or_scalar%value = fill_value
+            array_or_scalar%value = fill
          end select
       end if
    end subroutine realloc_t_scalar
 
-!> (Re)allocate array_or_scalar as array regardless of previous status, optionally with a fill_value and a pointer to the values array.
-   subroutine realloc_t_array(array_or_scalar, n, fill_value)
-      use m_alloc, only: realloc
-      class(t_array_or_scalar), allocatable, target, intent(inout) :: array_or_scalar !< Array_or_scalar object to be reallocated.
-      integer, intent(in) :: n !< Size of the array to allocate
-      real(kind=dp), optional, intent(in) :: fill_value !< Value to fill the array with, if present.
+!> (Re)allocate array_or_scalar as array regardless of previous status, optionally with a fill value and a pointer to the values array.
+   subroutine realloc_t_array(array_or_scalar, n, keepExisting, fill, stat)
+      use m_alloc, only: m_alloc_realloc => realloc
 
-      if (allocated(array_or_scalar)) then
-         deallocate (array_or_scalar)
+      class(t_array_or_scalar), allocatable, target, intent(inout) :: array_or_scalar !< Array_or_scalar object to be reallocated.
+      integer, intent(in) :: n !< Size of the array to allocate.
+      logical, optional, intent(in) :: keepExisting !< Array_or_scalar object to be reallocated.
+      real(kind=dp), optional, intent(in) :: fill !< Value to fill the array with, if present.
+      integer, optional, intent(inout) :: stat !< Result status of the realloc operation.
+
+      logical :: keepExisting_
+      real(kind=dp) :: fill_
+      integer :: stat_
+
+      if (present(keepExisting)) then
+         keepExisting_ = keepExisting
+      else
+         keepExisting_ = .false.
       end if
-      allocate (t_array :: array_or_scalar)
+      if (present(fill)) then
+         fill_ = fill
+      else
+         fill_ = 0.0_dp
+      end if
+      if (present(stat)) then
+         stat_ = stat
+      else
+         stat_ = 0
+      end if
+
+      if (.not. allocated(array_or_scalar)) then
+         allocate (t_array :: array_or_scalar)
+      end if
+
       select type (array => array_or_scalar)
       type is (t_array)
-         call realloc(array%values, n, fill=fill_value)
+         call m_alloc_realloc(array%values, n, keepExisting=keepExisting_, fill=fill_, stat=stat_)
       end select
    end subroutine realloc_t_array
 

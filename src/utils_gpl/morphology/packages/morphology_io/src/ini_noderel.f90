@@ -1,7 +1,7 @@
 module m_ini_noderel
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -35,7 +35,7 @@ public clr_noderel
 
 contains
 
-subroutine ini_noderel(nrd, sedpar, lsedtot)
+subroutine ini_noderel(lundia, nrd, sedpar, lsedtot)
 
 !
 !    Function: - Read and Initialize NodeRelation Data
@@ -46,12 +46,14 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
    use tree_data_types
    use properties
    use string_module, only:str_lower
-   use messageHandling
+   use messageHandling, only: LEVEL_FATAL, LEVEL_WARN, LEVEL_INFO, SetMessage, mess
+   use m_combinepaths, only: combinepaths
     
    implicit none
    
    ! Global variables
    
+   integer, intent(in)                    :: lundia
    type(t_nodereldata)                    :: nrd
    type(sedpar_type)                      :: sedpar
    integer                                :: lsedtot
@@ -70,9 +72,30 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
    integer                                :: istat
    character(256)                         :: fileName
    logical                                :: errFound
+   character(256)                         :: msg
+
 
    ! executable statements -------------------------------------------------------
 
+   !One would like to skip the nodal point relation data initialization when the grid has no 1D data, since it is not applicable. 
+   !This could be done by using the `ndx2D` and `ndxi` variables, but these are FM-only. Hence, the following does not compile
+   ! for `all`.  
+   !```
+   !use m_flowgeom, only: ndxi, ndx2D
+   !
+   ! if (ndx2D==ndxi) then
+   !    call SetMessage(LEVEL_INFO, 'No 1D network, skipping Nodal Point Relation Data Initialization.')
+   !    return
+   ! endif
+   !```
+   !
+   !An alternative could be to use variable `griddim`, which is available in the caller. The problem is that this variable has
+   !no information whether the grid has 1D data or not.  See `grid_dimens_module::griddimtype`. 
+   !The solution could be to add 1D information to the `griddimtype` and use that here.
+
+   write (lundia, *)
+   write (lundia, '(a)') '*** Start  of nodal point relation data'
+      
    call GetAndCheckFileNames(nrd, sedpar, lsedtot)
    
    allocate(nrd%nodefractions(nrd%nFractions), stat=istat)
@@ -83,7 +106,7 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
    do iFrac = 1, nrd%nFractions
    
       fileName = nrd%flnrd(iFrac)
-      
+          
       if (nrd%NRD_Overall) then
          nrd%nodefractions(1)%Name = 'Overall'
       else
@@ -92,6 +115,14 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
 
       pFrac => nrd%nodefractions(iFrac)
       
+      write (lundia, '(3a)') 'Sediment fraction     ', ':  ', pFrac%Name
+
+      if (trim(fileName) == ' ') then
+         write (lundia, '(3a)') '  File                ', ':  ', 'None'
+      else
+         write (lundia, '(3a)') '  File                ', ':  ', trim(fileName)
+      endif
+
       if (.not. nrd%NRD_Default) then   
       
          ! Read File
@@ -142,7 +173,7 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
             if (trim(block_name) == 'general') then
                call prop_get(block_ptr, '*', 'TableFile', pFrac%tableFile)
                if (pFrac%tableFile .ne. ' ') then
-                  call combinepaths(fileName, pFrac%tableFile)
+                  pFrac%tableFile = combinepaths(fileName, pFrac%tableFile)
                endif
                exit
             endif
@@ -150,7 +181,7 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
                     
          icount = 0
          do inod = 1, size(nrd_ptr%child_nodes)
-
+            
             block_ptr => nrd_ptr%child_nodes(inod)%node_ptr
             block_name = tree_get_name(block_ptr )
             call str_lower(block_name)
@@ -164,12 +195,14 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
                if (pNodRel%Node .eq. ' ') then
                   call SetMessage(LEVEL_FATAL, 'No Node Specified for Nodal Point Relation in File: '//trim(fileName))
                endif
+               write (lundia, '(3a)') '  Node                ', ':  ', trim(pNodRel%Node)
                
                call prop_get(block_ptr, '*', 'Method', pNodRel%Method)
                if (pNodRel%Method .eq. ' ') then
                   call SetMessage(LEVEL_FATAL, 'No Method Specified for Nodal Point Relation in File: '//trim(fileName))
                endif
                call str_lower(pNodRel%Method)
+               write (lundia, '(3a)') '  Method              ', ':  ', trim(pNodRel%Method)
                
                if (pNodRel%Method == 'table') then
 
@@ -177,35 +210,51 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
                   if (pNodRel%BranchIn .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Incoming Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
+                  write (lundia, '(3a)') '  BranchIn            ', ':  ', trim(pNodRel%BranchIn)
 
                   call prop_get(block_ptr, '*', 'BranchOut1', pNodRel%Branchout1)
                   if (pNodRel%BranchOut1 .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No First Outgoing Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
+                  write (lundia, '(3a)') '  BranchOut1          ', ':  ', trim(pNodRel%Branchout1)
 
                   call prop_get(block_ptr, '*', 'BranchOut2', pNodRel%Branchout2)
                   if (pNodRel%BranchOut2 .eq. ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Second Outgoing Branch Specified for Nodal Point Relation in File: '//trim(fileName))
                   endif
+                  write (lundia, '(3a)') '  BranchOut2          ', ':  ', trim(pNodRel%Branchout2)
 
                   call prop_get(block_ptr, '*', 'Table', pNodRel%tableName)
                   if (pNodRel%tableName == ' ') then
                      call SetMessage(LEVEL_FATAL, 'No Table Specified for Table Method in File: '//trim(fileName))
                   endif
                   call str_lower(pNodRel%tableName)
+                  write (lundia, '(3a)') '  Table               ', ':  ', trim(pNodRel%tableName)
                   call GetTableData(pNodRel, pFrac)      ! Read the Table
                   
                elseif (pNodRel%Method == 'function') then
                   call prop_get(block_ptr, '*', 'k', pNodRel%expQ)
+                  write (lundia, '(2a,e12.4)') '  K                   ', ':', pNodRel%expQ
                   call prop_get(block_ptr, '*', 'm', pNodRel%expW)
+                  write (lundia, '(2a,e12.4)') '  M                   ', ':', pNodRel%expW
+               elseif (pNodRel%Method == 'bollapittaluga') then   
+                  call prop_get(block_ptr, '*', 'alpha_BP', pNodRel%alpha_BP)
+                  write (lundia, '(2a,e12.4)') '  alpha_BP            ', ':', pNodRel%alpha_BP
+                  !The fallback option when there is more than one incoming branch or different than 2 outgoing branches is the function method.
+                  write (lundia, '(a)') 'Function parameters (fallback option):'
+                  call prop_get(block_ptr, '*', 'k', pNodRel%expQ)
+                  write (lundia, '(2a,e12.4)') '  K                   ', ':', pNodRel%expQ
+                  call prop_get(block_ptr, '*', 'm', pNodRel%expW)
+                  write (lundia, '(2a,e12.4)') '  M                   ', ':', pNodRel%expW
                else
-                 call SetMessage(LEVEL_FATAL, 'Unknown Method Specified in File: '//trim(fileName))
+                 call SetMessage(LEVEL_FATAL, 'Unknown Method Specified in File: '//trim(fileName)//' Method: '//trim(pNodRel%Method))  
                endif
                
             elseif (trim(block_name) == 'general') then
                continue     ! Already Done Above
             else
-               call SetMessage(LEVEL_WARN, 'Unknown Data Block in File: '//trim(fileName))
+               write(msg, '(A,A,A,A)') 'Unknown data block "',trim(block_name),'" in file: ', trim(fileName)
+               call mess(LEVEL_WARN,trim(msg))
             endif
                      
          enddo
@@ -224,13 +273,14 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
          do icount = 0, 1
             pNodRel => pFrac%noderelations(icount)
             pNodRel%Method = 'function'
-      
             pNodRel%expQ = 1.0_fp
-            pNodRel%expw = 0.0_fp
+            pNodRel%expW = 0.0_fp
          enddo
-         
-         call SetMessage(LEVEL_WARN, 'Exponent of Discharge Ratio Set to Default: k = 1')
-         call SetMessage(LEVEL_WARN, 'Exponent of Width Ratio Set to Default    : m = 0')
+
+         !We are only writing the values for the latest pointed `pNodRel`, which is `pFrac%noderelations(1)`.
+         write (lundia, '(3a)') '  Method              ', ':  ', trim(pNodRel%Method) 
+         write (lundia, '(2a,e12.4)') '  K                   ', ':', pNodRel%expQ
+         write (lundia, '(2a,e12.4)') '  M                   ', ':', pNodRel%expW
    
       endif
    
@@ -249,9 +299,11 @@ subroutine ini_noderel(nrd, sedpar, lsedtot)
       call SetMessage(LEVEL_FATAL, 'Double/Redundant Data Found')
    endif
    
+   write (lundia, '(a)') '*** End    of nodal point relation data'
+   write (lundia, *)
 end subroutine ini_noderel
 
-integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, branInIDLn, nodbrt)
+integer function get_noderel_idx(pFrac, nodeIDIdx, number_links_out, number_links_in, link_in)
 !
 !    Function: - Get the Nodal Point Relation for the Current Node/Branch
 !                If nothing Found return 0 (zero which means default)
@@ -260,11 +312,11 @@ integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, branInIDLn, nodbrt)
    use messageHandling
    
    ! Global variables
-   integer                                :: iNod     !< Index of Actual Node
    type(t_nodefraction)                   :: pFrac
    integer                                :: nodeIDIdx
-   integer                                :: branInIDLn
-   integer                                :: nodbrt
+   integer                                :: number_links_out
+   integer                                :: number_links_in
+   integer                                :: link_in
 
    ! Local variables
    integer                                :: iNodeRel
@@ -277,14 +329,14 @@ integer function get_noderel_idx(iNod, pFrac, nodeIDIdx, branInIDLn, nodbrt)
    getFunctionRelation = .true.
    
    
-   if (branInIDLn .ne. 0 .and. branInIDLn .ne. -444 .and. nodbrt == 3) then
+   if (number_links_in == 1 .and. number_links_out == 2) then
       
       ! Only One Incoming Branch at a Real Bifurcation
       do iNodeRel = 1, pFrac%nNodeRelations
       
          pNodRel => pFrac%noderelations(iNodeRel)
          
-         if (pNodRel%NodeIdx == nodeIDIdx .and. pNodRel%BranchInLn == branInIDLn) then
+         if (pNodRel%NodeIdx == nodeIDIdx .and. pNodRel%BranchInLn == link_in) then
          
             ! Found/Bingo
             get_noderel_idx = iNodeRel
@@ -377,7 +429,6 @@ subroutine GetAndCheckFileNames(nrd, sedpar, lsedtot)
    enddo
    
    if (noFiles) then
-      call SetMessage(LEVEL_WARN, 'No Nodal Point Relations Specified, Set to (Default) Proportional.')
       nrd%NRD_Overall = .true.
       nrd%NRD_Default = .true.
    else

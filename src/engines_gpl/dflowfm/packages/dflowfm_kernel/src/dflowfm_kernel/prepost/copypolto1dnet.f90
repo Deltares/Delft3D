@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,8 @@ contains
 
       integer :: k, L, kn3o
 
-      kn3o = kn3typ; kn3typ = 1
+      kn3o = kn3typ
+      kn3typ = 1
 
       ! CALL INCREASENETW(NUMK+NPL, NUML+NPL-1)
       do K = 2, NPL

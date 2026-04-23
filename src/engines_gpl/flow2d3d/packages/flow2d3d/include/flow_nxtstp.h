@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: flow_nxtstp.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/flow_nxtstp.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/flow_nxtstp.h
+// $
 //------------------------------------------------------------------------------
 //  Module: 3dflwnxt    (DELFT3D-FLOW NextStep)
 //  DELFT3D-FLOW / Hydra interface, local include file.
@@ -34,19 +36,16 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
-
-#include "flow_steps_c.h"        // step-enumerations for DELFT3D-FLOW and it's D3dFlow-Mapper
-#include "context-flowside.h"    // Flow side part of distr. ctx.
-
+#include "flow_steps_c.h"     // step-enumerations for DELFT3D-FLOW and it's D3dFlow-Mapper
+#include "context-flowside.h" // Flow side part of distr. ctx.
 
 /*----------------------------------------------------------------------
  *  Functions for externals (mapper.cpp)
  *----------------------------------------------------------------------*/
 
-extern char * PrintNextStepName(int step);
+extern char* PrintNextStepName(int step);
 extern MapDistribGroup DetermineDistribGroup(int step);
 
 /*----------------------------------------------------------------------
@@ -58,34 +57,32 @@ extern MapDistribGroup DetermineDistribGroup(int step);
  */
 
 #if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define COMMUNICATENEXTSTEPWITHMAPPER FC_FUNC(communicatenextstepwithmapper,COMMUNICATENEXTSTEPWITHMAPPER)
-#   define GWSSLV FC_FUNC(gwsslv,GWSSLV)
-#   define WRITEFMESSAGE FC_FUNC(writefmessage,WRITEFMESSAGE)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define COMMUNICATENEXTSTEPWITHMAPPER FC_FUNC(communicatenextstepwithmapper, COMMUNICATENEXTSTEPWITHMAPPER)
+    #define GWSSLV FC_FUNC(gwsslv, GWSSLV)
+    #define WRITEFMESSAGE FC_FUNC(writefmessage, WRITEFMESSAGE)
 #else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define COMMUNICATENEXTSTEPWITHMAPPER COMMUNICATENEXTSTEPWITHMAPPER
-#   define GWSSLV GWSSLV
-#   define WRITEFMESSAGE WRITEFMESSAGE
+    // WIN32
+    #define STDCALL /* nothing */
+    #define COMMUNICATENEXTSTEPWITHMAPPER COMMUNICATENEXTSTEPWITHMAPPER
+    #define GWSSLV GWSSLV
+    #define WRITEFMESSAGE WRITEFMESSAGE
 #endif
-
 
 /*
  *  Function definitions
  */
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 extern "C" {
 #endif
 
-int     STDCALL COMMUNICATENEXTSTEPWITHMAPPER(int * curStep, int * driedOrNot);
-void    STDCALL GWSSLV(int * leftToRight);
+int STDCALL COMMUNICATENEXTSTEPWITHMAPPER(int* curStep, int* driedOrNot);
+void STDCALL GWSSLV(int* leftToRight);
 
-void    STDCALL WRITEFMESSAGE(const char * message, int messLen);
+void STDCALL WRITEFMESSAGE(const char* message, int messLen);
 
-#if (defined(__cplusplus)||defined(_cplusplus))
+#if (defined(__cplusplus) || defined(_cplusplus))
 }
 #endif
-

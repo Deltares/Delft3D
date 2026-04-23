@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,31 +34,31 @@
 #include "so_fortran_api.h"
 
 #ifndef min
-#  define min(a,b) (a)<(b) ? (a) : (b)
-#  define max(a,b) (a)>(b) ? (a) : (b)
+    #define min(a, b) (a) < (b) ? (a) : (b)
+    #define max(a, b) (a) > (b) ? (a) : (b)
 #endif
 
 #if defined(WIN32)
-#  include <windows.h>
+    #include <windows.h>
 #elif defined(salford32)
-#  include <windows.h>
+    #include <windows.h>
 #elif defined(linux)
-#  include <dlfcn.h>
+    #include <dlfcn.h>
 #endif
 
 #if defined(WIN32)
-#  define OPEN_SHARED_LIBRARY  OPEN_SHARED_LIBRARY
-#  define CLOSE_SHARED_LIBRARY CLOSE_SHARED_LIBRARY
-#  define STDCALL
+    #define OPEN_SHARED_LIBRARY OPEN_SHARED_LIBRARY
+    #define CLOSE_SHARED_LIBRARY CLOSE_SHARED_LIBRARY
+    #define STDCALL
 #elif defined(salford32)
-#  define OPEN_SHARED_LIBRARY  OPEN_SHARED_LIBRARY
-#  define CLOSE_SHARED_LIBRARY CLOSE_SHARED_LIBRARY
-#  define STDCALL __stdcall
+    #define OPEN_SHARED_LIBRARY OPEN_SHARED_LIBRARY
+    #define CLOSE_SHARED_LIBRARY CLOSE_SHARED_LIBRARY
+    #define STDCALL __stdcall
 #elif defined(linux)
-#   include "config.h"
-#  define OPEN_SHARED_LIBRARY      FC_FUNC(open_shared_library,OPEN_SHARED_LIBRARY)
-#  define CLOSE_SHARED_LIBRARY     FC_FUNC(close_shared_library,CLOSE_SHARED_LIBRARY)
-#  define STDCALL
+    #include "config.h"
+    #define OPEN_SHARED_LIBRARY FC_FUNC(open_shared_library, OPEN_SHARED_LIBRARY)
+    #define CLOSE_SHARED_LIBRARY FC_FUNC(close_shared_library, CLOSE_SHARED_LIBRARY)
+    #define STDCALL
 #endif
 
 /*
@@ -69,62 +69,61 @@
  */
 
 #if defined(WIN32)
-    typedef HMODULE DllHandle;
+typedef HMODULE DllHandle;
 #elif defined(salford32)
-    typedef HMODULE DllHandle;
+typedef HMODULE DllHandle;
 #elif defined(linux)
-    typedef void * DllHandle;
+typedef void* DllHandle;
 #endif
 
-typedef struct {
-    DllHandle   dllHandle;
+typedef struct
+{
+    DllHandle dllHandle;
 } SharedDLL;
 
 /*
  * ============================================================================
  */
-char * strFcpy(char * str_1, int len)
+char* strFcpy(char* str_1, int len)
 {
     int m;
-    char * str_2;
-    m = min( len, (int) strlen(str_1));
-    str_2 = (char *) malloc( sizeof(char)*(m+1));
+    char* str_2;
+    m = min(len, (int)strlen(str_1));
+    str_2 = (char*)malloc(sizeof(char) * (m + 1));
     strncpy(str_2, str_1, m);
     str_2[m] = '\0';
     return str_2;
 }
 
-void RemoveTrailingBlanks_dll(char * String)
+void RemoveTrailingBlanks_dll(char* String)
 {
-  size_t i;
-  i = strlen(String)-1;
-  while ( String[i] == ' '  ||
-          String[i] == '\n' ||
-          String[i] == '\t'    )
-  {
-    String[i] = '\0';
-    i--;
-  }
-  return;
+    size_t i;
+    i = strlen(String) - 1;
+    while (String[i] == ' ' || String[i] == '\n' || String[i] == '\t')
+    {
+        String[i] = '\0';
+        i--;
+    }
+    return;
 }
 /*
  * ============================================================================
  */
-#if defined(WIN32) || defined (linux)
-long STDCALL OPEN_SHARED_LIBRARY(long long int * sharedDLLHandle, char * library, long length_lib)
-#elif defined (salford32)
-extern "C" OPEN_SHARED_LIBRARY(int64_t * sharedDLLHandle, char * library, long length_lib)
+#if defined(WIN32) || defined(linux)
+long STDCALL OPEN_SHARED_LIBRARY(long long int* sharedDLLHandle, char* library, long length_lib)
+#elif defined(salford32)
+extern "C" OPEN_SHARED_LIBRARY(int64_t* sharedDLLHandle, char* library, long length_lib)
 #endif
 {
     long error = 1;
-    SharedDLL * tmpSharedDLL = NULL;
-    char * lib_name = strFcpy(library, length_lib);
+    SharedDLL* tmpSharedDLL = NULL;
+    char* lib_name = strFcpy(library, length_lib);
 
     *sharedDLLHandle = 0;
 
     RemoveTrailingBlanks_dll(lib_name);
 
-    tmpSharedDLL = (SharedDLL *) malloc(sizeof(SharedDLL));
+    tmpSharedDLL = (SharedDLL*)malloc(sizeof(SharedDLL));
 #if defined(WIN32)
     tmpSharedDLL->dllHandle = LoadLibrary(lib_name);
 #elif defined(salford32)
@@ -136,10 +135,11 @@ extern "C" OPEN_SHARED_LIBRARY(int64_t * sharedDLLHandle, char * library, long l
     if (tmpSharedDLL->dllHandle != NULL)
     {
         error = 0;
-        *sharedDLLHandle = (long long int) tmpSharedDLL;
+        *sharedDLLHandle = (long long int)tmpSharedDLL;
     }
 
-    free(lib_name); lib_name = NULL;
+    free(lib_name);
+    lib_name = NULL;
 
     return error;
 }
@@ -147,20 +147,20 @@ extern "C" OPEN_SHARED_LIBRARY(int64_t * sharedDLLHandle, char * library, long l
  * ============================================================================
  */
 
-#if defined (WIN32) || defined (linux)
-long STDCALL CLOSE_SHARED_LIBRARY(int64_t * sharedDLLHandle)
-#elif defined (salford32)
-extern "C" CLOSE_SHARED_LIBRARY(int64_t * sharedDLLHandle)
+#if defined(WIN32) || defined(linux)
+long STDCALL CLOSE_SHARED_LIBRARY(int64_t* sharedDLLHandle)
+#elif defined(salford32)
+extern "C" CLOSE_SHARED_LIBRARY(int64_t* sharedDLLHandle)
 #endif
 {
-    SharedDLL * sharedDLL = (SharedDLL *) (*sharedDLLHandle);
+    SharedDLL* sharedDLL = (SharedDLL*)(*sharedDLLHandle);
 
 #if defined(WIN32)
-    (void) FreeLibrary(sharedDLL->dllHandle);
+    (void)FreeLibrary(sharedDLL->dllHandle);
 #elif defined(salford32)
-    (void) FreeLibrary(sharedDLL->dllHandle);
+    (void)FreeLibrary(sharedDLL->dllHandle);
 #elif defined(linux)
-    (void) dlclose(sharedDLL->dllHandle);
+    (void)dlclose(sharedDLL->dllHandle);
 #endif
 
     /*

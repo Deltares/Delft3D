@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,6 @@
 
 module m_setsigmabnds
 
-
    use precision, only: dp
    implicit none
 
@@ -52,13 +51,19 @@ contains
 
       integer :: i, k, ki, kb, kt, itrac, isf
 
-      !   if (layertype == 2) return
+      !   if (layertype == LAYTP_Z) return
 
       if (kmx == 0) then ! 2D, set dummy values
-         if (allocated(sigmabnds)) sigmabnds = 0.5_dp
-         if (allocated(sigmabndTM)) sigmabndTM = 0.5_dp
+         if (allocated(sigmabnds)) then
+            sigmabnds = 0.5_dp
+         end if
+         if (allocated(sigmabndTM)) then
+            sigmabndTM = 0.5_dp
+         end if
 !      if ( allocated(sigmabndtr) ) sigmabndtr = 0.5d0
-         if (allocated(sigmabndu)) sigmabndu = 0.5_dp
+         if (allocated(sigmabndu)) then
+            sigmabndu = 0.5_dp
+         end if
       else ! 3D
          do i = 1, nbnds
             ki = kbnds(2, i)

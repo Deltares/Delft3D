@@ -1,7 +1,7 @@
 subroutine tricom_finish(gdp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -101,6 +101,7 @@ subroutine tricom_finish(gdp)
     real(fp)          , dimension(:)    , pointer :: dm
     real(fp)          , dimension(:)    , pointer :: dg
     real(fp)          , dimension(:,:)  , pointer :: frac
+    real(fp)          , dimension(:,:)  , pointer :: frac_he
     real(fp)                            , pointer :: cp
     real(fp)                            , pointer :: sarea
     real(fp)                            , pointer :: fclou
@@ -418,6 +419,7 @@ subroutine tricom_finish(gdp)
     dm                  => gdp%gderosed%dm
     dg                  => gdp%gderosed%dg
     frac                => gdp%gderosed%frac
+    frac_he             => gdp%gderosed%frac_he
     cp                  => gdp%gdheat%cp
     sarea               => gdp%gdheat%sarea
     fclou               => gdp%gdheat%fclou

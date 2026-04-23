@@ -1,7 +1,7 @@
 module m_compound
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2025.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -37,7 +37,7 @@ module m_compound
    use m_CrossSections
    use m_Culvert
    use m_pump
-   use m_General_Structure
+   use m_general_structure
    use m_Universal_Weir
    use m_Bridge
    use m_hash_search

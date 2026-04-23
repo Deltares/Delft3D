@@ -12,6 +12,7 @@ object LinuxRuntimeContainers : BuildType({
     description = "Build two separate container images: one for running the Delft3D software and the other for executing its tests."
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance,
@@ -36,13 +37,44 @@ object LinuxRuntimeContainers : BuildType({
         }
     }
 
+    params {
+        param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
     }
 
     steps {
-        mergeTargetBranch {}
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusLinux2"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("download_to", "/downloads")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+        }
+        script {
+            name = "Extract artifact"
+            enabled = false
+            scriptContent = """
+                echo "Extracting %file_path%..."
+
+                tar -xzf %file_path%
+
+                mkdir dimrset
+
+                cp -r lnx64/bin dimrset/bin
+
+                cp -r lnx64/lib dimrset/lib
+
+                cp -r lnx64/share dimrset/share
+            """.trimIndent()
+        }
         exec {
             name = "Copy example and readme.txt"
             path = "ci/teamcity/Delft3D/linux/scripts/copyExampleAndReadMe.sh"
@@ -111,15 +143,13 @@ object LinuxRuntimeContainers : BuildType({
                 """.trimIndent()
             }
         }
-        artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
-            cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "Bin64.zip!/Release/Wandadef.dat=>wanda/bin/Wandadef.dat"
-        }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64LinuxAlma8")) {
             cleanDestination = true
-            buildRule = lastSuccessful()
-            artifactRules = "build.zip!/lib/*=>wanda/lib"
+            buildRule = build("939")
+            artifactRules = """
+                build.zip!/lib/*.so=>wanda/lib
+                build.zip!/lib/Wandadef.dat=>wanda/bin/Wandadef.dat
+            """.trimIndent()
         }
     }
 })

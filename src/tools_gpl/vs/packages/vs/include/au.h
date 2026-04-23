@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,85 +31,86 @@
 #include "neftyp.h"
 #include "nefis.h"
 
+typedef struct St_cel* VsCelData;
 
-
-typedef struct St_cel  * VsCelData;
-
-typedef struct St_cel {
-        BChar                   celnam[MAX_NAME+1];
-        BInt4                   nelems;
-        BChar                   elmnms[MAX_CEL_DIM][MAX_NAME+1];
-        VsCelData left;
-        VsCelData right;
+typedef struct St_cel
+{
+    BChar celnam[MAX_NAME + 1];
+    BInt4 nelems;
+    BChar elmnms[MAX_CEL_DIM][MAX_NAME + 1];
+    VsCelData left;
+    VsCelData right;
 } VsCel;
 
-typedef struct St_var * VsVarData;
+typedef struct St_var* VsVarData;
 
-typedef struct St_var {
-        BChar                   varnam[MAX_NAME+1];
-        BChar                   grpnam[MAX_NAME+1];
-        BInt4                   grpndm;
-        BInt4                   grpdms[MAX_DIM];
-        BChar                   elmnam[MAX_NAME+1];
-        BChar                   elmtyp[MAX_TYPE+1];
-        BInt4                   nbytsg;
-        BChar                   elmqty[MAX_NAME+1];
-        BChar                   elmunt[MAX_NAME+1];
-        BChar                   elmdes[MAX_DESC+1];
-        BInt4                   elmndm;
-        BInt4                   elmdms[MAX_DIM];
-        BData                   varpnt;
+typedef struct St_var
+{
+    BChar varnam[MAX_NAME + 1];
+    BChar grpnam[MAX_NAME + 1];
+    BInt4 grpndm;
+    BInt4 grpdms[MAX_DIM];
+    BChar elmnam[MAX_NAME + 1];
+    BChar elmtyp[MAX_TYPE + 1];
+    BInt4 nbytsg;
+    BChar elmqty[MAX_NAME + 1];
+    BChar elmunt[MAX_NAME + 1];
+    BChar elmdes[MAX_DESC + 1];
+    BInt4 elmndm;
+    BInt4 elmdms[MAX_DIM];
+    BData varpnt;
 
-        VsVarData               next;
+    VsVarData next;
 } VsVar;
 
-typedef struct St_grp * VsGrpData;
+typedef struct St_grp* VsGrpData;
 
-typedef struct St_grp {
-        BData                   next;
-        BInt4                   grpdms[MAX_DIM];
-        BInt4                   nintat;
-        BInt4                   nreaat;
-        BInt4                   nstrat;
-        BInt4                   IntAttrValue[MAX_DIM];
-        BRea4                   RealAttrValue[MAX_DIM];
-        BChar                   grpdef[MAX_NAME+1];
-        BChar                   grpnam[MAX_NAME+1];
-        BChar                   IntAttrName [MAX_DIM][MAX_NAME+1];
-        BChar                   RealAttrName [MAX_DIM][MAX_NAME+1];
-        BChar                   StringAttrName [MAX_DIM][MAX_NAME+1];
-        BChar                   StringAttrValue[MAX_DIM][MAX_NAME+1];
+typedef struct St_grp
+{
+    BData next;
+    BInt4 grpdms[MAX_DIM];
+    BInt4 nintat;
+    BInt4 nreaat;
+    BInt4 nstrat;
+    BInt4 IntAttrValue[MAX_DIM];
+    BRea4 RealAttrValue[MAX_DIM];
+    BChar grpdef[MAX_NAME + 1];
+    BChar grpnam[MAX_NAME + 1];
+    BChar IntAttrName[MAX_DIM][MAX_NAME + 1];
+    BChar RealAttrName[MAX_DIM][MAX_NAME + 1];
+    BChar StringAttrName[MAX_DIM][MAX_NAME + 1];
+    BChar StringAttrValue[MAX_DIM][MAX_NAME + 1];
 
-/*      VsGrpData               next; */
-}VsGrp ;
+    /*      VsGrpData               next; */
+} VsGrp;
 
-typedef struct St_def  * VsDefData;
-typedef struct St_def {
-        BInt4                   grpndm;
-        BInt4                   grpord[MAX_DIM];
-        BChar                   grpdef[MAX_NAME+1];
-        BChar                   celnam[MAX_NAME+1];
+typedef struct St_def* VsDefData;
+typedef struct St_def
+{
+    BInt4 grpndm;
+    BInt4 grpord[MAX_DIM];
+    BChar grpdef[MAX_NAME + 1];
+    BChar celnam[MAX_NAME + 1];
 
-        VsDefData               left;
-        VsDefData               right;
+    VsDefData left;
+    VsDefData right;
 } VsDef;
 
-typedef struct St_elm * VsElmData;
-typedef struct St_elm {
-        BInt4                   elmndm;
-        BInt4                   elmdms[MAX_DIM];
-        BChar                   elmnam[MAX_NAME+1];
-        BChar                   elmtyp[MAX_TYPE+1];
-        BInt4                   nbytsg;
-        BChar                   elmqty[MAX_NAME+1];
-        BChar                   elmunt[MAX_NAME+1];
-        BChar                   elmdes[MAX_DESC+1];
+typedef struct St_elm* VsElmData;
+typedef struct St_elm
+{
+    BInt4 elmndm;
+    BInt4 elmdms[MAX_DIM];
+    BChar elmnam[MAX_NAME + 1];
+    BChar elmtyp[MAX_TYPE + 1];
+    BInt4 nbytsg;
+    BChar elmqty[MAX_NAME + 1];
+    BChar elmunt[MAX_NAME + 1];
+    BChar elmdes[MAX_DESC + 1];
 
-        VsElmData               left;
-        VsElmData               right;
-}VsElm;
-
-
+    VsElmData left;
+    VsElmData right;
+} VsElm;
 
 #include "atts.h"
 #include "gen.h"
@@ -122,4 +123,3 @@ typedef struct St_elm {
 #include "fm.h"
 #include "vr.h"
 #include "sm.h"
-

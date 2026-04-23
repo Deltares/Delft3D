@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -40,118 +40,117 @@ static bool diagWriterInitialized = false;
 static bool includeError = false;
 static boost::filesystem::path diagWorkDir;
 
-struct logMessage {
-	logMessage(int level, string message, string eventCode) 
-		: level(level), message(message), eventCode(eventCode) {};
-	int level;
-	string message;
-	string eventCode;
+struct logMessage
+{
+    logMessage(int level, string message, string eventCode) : level(level), message(message), eventCode(eventCode) {};
+    int level;
+    string message;
+    string eventCode;
 };
 
 vector<logMessage> logging;
 
 void piDiagInterface::initializeRtcDiagWriter(boost::filesystem::path workDir, bool codeOutput)
 {
-	#pragma omp critical (initializeWriter)
-	{
-	    if (!diagWriterInitialized)
-	    {
-    		diagWorkDir = workDir;
-		    eventCodeOutput = codeOutput;
+#pragma omp critical(initializeWriter)
+    {
+        if (!diagWriterInitialized)
+        {
+            diagWorkDir = workDir;
+            eventCodeOutput = codeOutput;
 
-		    logging = vector<logMessage>();
+            logging = vector<logMessage>();
 
-		    diagWriterInitialized = true;
-		    includeError = false;
-	    }
-	}
+            diagWriterInitialized = true;
+            includeError = false;
+        }
+    }
 }
 
-int piDiagInterface::getLogLevel()
-{
-	return logLevel;
-}
+int piDiagInterface::getLogLevel() { return logLevel; }
 
-bool piDiagInterface::getIncludeError()
-{
-	return includeError;
-}
+bool piDiagInterface::getIncludeError() { return includeError; }
 
 void piDiagInterface::setLogLevel(int myLogLevel)
 {
-	#pragma omp critical
-	{
-		logLevel = myLogLevel;
-	}
+#pragma omp critical
+    {
+        logLevel = myLogLevel;
+    }
 }
 
 void piDiagInterface::setEventCode(bool myEventCode)
 {
-	#pragma omp critical
-	{
-		eventCodeOutput = myEventCode;
-	}
+#pragma omp critical
+    {
+        eventCodeOutput = myEventCode;
+    }
 }
 
-void piDiagInterface::setFlush(bool flag) 
+void piDiagInterface::setFlush(bool flag)
 {
-	#pragma omp critical
-	{
-		flushActive = flag;
-	}
+#pragma omp critical
+    {
+        flushActive = flag;
+    }
 }
 
 void piDiagInterface::addLine(int level, string message, string eventCode)
 {
-	#pragma omp critical
-	{
-		if (!diagWriterInitialized) {
-			piDiagInterface::initializeRtcDiagWriter();
-		}
-		if (level<2) includeError = true;
+#pragma omp critical
+    {
+        if (!diagWriterInitialized)
+        {
+            piDiagInterface::initializeRtcDiagWriter();
+        }
+        if (level < 2) includeError = true;
 
-		logging.push_back(logMessage(level, message, eventCode));
-	}
+        logging.push_back(logMessage(level, message, eventCode));
+    }
     if (flushActive) piDiagInterface::write();
 }
 
 void piDiagInterface::write(void)
 {
-	#pragma omp critical
-	{
-		// initialize the data binding class
-		DiagComplexType* diag = new DiagComplexType();;
+#pragma omp critical
+    {
+        // initialize the data binding class
+        DiagComplexType* diag = new DiagComplexType();
+        ;
 
-		// and set the xsd references
-		xml_schema::NamespaceInfomap myMap;
-		myMap[""].name = "http://www.wldelft.nl/fews/PI";
+        // and set the xsd references
+        xml_schema::NamespaceInfomap myMap;
+        myMap[""].name = "http://www.wldelft.nl/fews/PI";
 
-		// add lines
-		for (int i=0; i<(int)logging.size(); i++) {
-			if (logging[i].level<=logLevel) {
-				LineComplexType newLine(logging[i].level, logging[i].message);
-				if (eventCodeOutput && logging[i].eventCode.size()>0) {
-				    newLine.setEventCode(logging[i].eventCode);
-			    }
-				diag->getLine().push_back(newLine);
-			}
-		}
+        // add lines
+        for (int i = 0; i < (int)logging.size(); i++)
+        {
+            if (logging[i].level <= logLevel)
+            {
+                LineComplexType newLine(logging[i].level, logging[i].message);
+                if (eventCodeOutput && logging[i].eventCode.size() > 0)
+                {
+                    newLine.setEventCode(logging[i].eventCode);
+                }
+                diag->getLine().push_back(newLine);
+            }
+        }
 
-		// serialize the modified object model to XML file
-		string filename = string(utils::getAbsoluteFilename(diagWorkDir, "diag.xml"));
-		ofstream ofs(filename.c_str());
-		serializeDiag(ofs, *diag, myMap, "UTF-8");
-		ofs.close();
-		delete diag;
-	}
+        // serialize the modified object model to XML file
+        string filename = string(utils::getAbsoluteFilename(diagWorkDir, "diag.xml"));
+        ofstream ofs(filename.c_str());
+        serializeDiag(ofs, *diag, myMap, "UTF-8");
+        ofs.close();
+        delete diag;
+    }
 }
 
 void piDiagInterface::freeRtcDiagWriter(void)
 {
-	#pragma omp critical
-	{
-		logging.clear();
-		diagWriterInitialized = false;
-		includeError = false;
-	}
+#pragma omp critical
+    {
+        logging.clear();
+        diagWriterInitialized = false;
+        includeError = false;
+    }
 }

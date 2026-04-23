@@ -2,9 +2,15 @@ package Delft3D.ciUtilities
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
+import Delft3D.template.*
 
 object SigCi : BuildType({
     name = "Sig Ci"
+    buildNumberPattern = "%build.vcs.number%"
+
+    templates(
+        TemplateDockerRegistry
+    )
     
     vcs {
         root(DslContext.settingsRoot)
@@ -13,17 +19,12 @@ object SigCi : BuildType({
     steps {
         step {
             name = "Upload to sigrid using recipe"
-            type = "SigridCiUploadTemplate"
-            param("sourceDir", ".")
+            type = "SigridCiUploadTemplateLinux"
+            param("sourceDir", "/workspace")
             param("system", "dflow-flexible")
-            param("plugin.docker.imagePlatform", "")
             param("targetquality", "3.5")
-            param("plugin.docker.imageId", "")
             param("publish", "--publish")
             param("showupload", "--showupload")
-            param("sigridciRepoUrl", "https://github.com/Software-Improvement-Group/sigridci")
-            param("teamcity.step.phase", "")
-            param("plugin.docker.run.parameters", "")
             param("customer", "deltares")
             param(
                 "include",

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: dd_messages.h 883 2011-10-07 16:32:16Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/dd_messages.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/dd_messages.h
+// $
 //------------------------------------------------------------------------------
 //  Flow2D3D Mapper definitions
 //
@@ -34,30 +36,25 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
-
-#define MAX_NR_DD_MESS  100   /* max # of messages for an object */
-#define HY_MESS_TO_ALL  (-1)        /* special object ID for message */
-
+#define MAX_NR_DD_MESS 100  /* max # of messages for an object */
+#define HY_MESS_TO_ALL (-1) /* special object ID for message */
 
 typedef int ObjID;
-
 
 /*
  *  Message Types
  */
 
-typedef enum {
+typedef enum
+{
     HyMesg_Undefined,
     HyMesgFrom_DDproces,
     HyMesgFrom_DDmapper,
-    HyMesg_TS_Done,     /* mapper to exec: timestep done */
-    HyMesg_Sim_Done     /* exec to mapper: simulation done */
-    }  HyMesgType;
-
-
+    HyMesg_TS_Done, /* mapper to exec: timestep done */
+    HyMesg_Sim_Done /* exec to mapper: simulation done */
+} HyMesgType;
 
 /*
  *  Application (process) specific message body formats
@@ -65,19 +62,18 @@ typedef enum {
  *  For the time being, each application uses a catch-all default.
  */
 
-#define MAX_INT_MESS    2   /* max # of integer values in a message */
-#define HY_DEFAULT_MESG_BODY \
-    int     intval   [MAX_INT_MESS];
+#define MAX_INT_MESS 2 /* max # of integer values in a message */
+#define HY_DEFAULT_MESG_BODY int intval[MAX_INT_MESS];
 
-
-typedef struct D3dFlowMess_STR {    /* DELFT3D-FLOW */
+typedef struct D3dFlowMess_STR
+{ /* DELFT3D-FLOW */
     HY_DEFAULT_MESG_BODY
-    }   D3dFlowMess;
+} D3dFlowMess;
 
-typedef struct D3dWaqMess_STR {     /* DELFT3D-WAQ */
+typedef struct D3dWaqMess_STR
+{ /* DELFT3D-WAQ */
     HY_DEFAULT_MESG_BODY
-    }   D3dWaqMess;
-
+} D3dWaqMess;
 
 /*
  *  Hydra Message Structure
@@ -86,12 +82,13 @@ typedef struct D3dWaqMess_STR {     /* DELFT3D-WAQ */
  *  union.
  */
 
-typedef struct HyMesg_STR {
-    ObjID   objectId;       /* sender/recipient of the message */
-    HyMesgType  type;
-    union {             /* message contents */
-    D3dFlowMess d3dFlow;
-    D3dWaqMess  d3dWaq;
+typedef struct HyMesg_STR
+{
+    ObjID objectId; /* sender/recipient of the message */
+    HyMesgType type;
+    union
+    { /* message contents */
+        D3dFlowMess d3dFlow;
+        D3dWaqMess d3dWaq;
     } mesg;
-    }   HyMesg;
-
+} HyMesg;

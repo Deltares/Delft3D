@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,27 +29,25 @@
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class equidistantAggregation : public aggregation
-{
-public:
-	equidistantAggregation(
-		interpolationOption intOpt,
-		int nStep);
-	~equidistantAggregation(void) {};
+        class equidistantAggregation : public aggregation
+        {
+        public:
+            equidistantAggregation(interpolationOption intOpt, int nStep);
+            ~equidistantAggregation(void) {};
 
-	int getNStep() { return nStep; };
-	void aggregate(std::vector<double> &largeArray, std::vector<double> &smallArray, bool accumulative = true);
-	void deaggregate(std::vector<double> &smallArray, double large0, std::vector<double> &largeArray);
+            int getNStep() { return nStep; };
+            void aggregate(std::vector<double>& largeArray, std::vector<double>& smallArray, bool accumulative = true);
+            void deaggregate(std::vector<double>& smallArray, double large0, std::vector<double>& largeArray);
 
-private:
-	interpolationOption intOpt;
-	int nStep;
-};
+        private:
+            interpolationOption intOpt;
+            int nStep;
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
 #endif // EQUIDISTANT_AGGREGATION_H

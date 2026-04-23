@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -416,7 +416,7 @@ module m_ec_bccollect
                   case ('ASTRONOMIC')
                      bc%func = BC_FUNC_ASTRO
                   case default
-                     call setECMessage("Unknown function """//trim(hdrvals(ifld))//"""")
+                     call set_ec_message("Unknown function """//trim(hdrvals(ifld))//"""")
                   return
                end select 
           case ('OFFSET')                           

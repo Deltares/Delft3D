@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,68 +42,69 @@
 
 /*  @@  allocate memory for an element strcuture
  */
-static VsElmData EL_alloc_memory_for_element ( BVoid )
+static VsElmData EL_alloc_memory_for_element(BVoid)
 {
-    int       i;
+    int i;
     VsElmData p;
-    p = (VsElmData) GEN_malloc ( sizeof ( VsElm ));
+    p = (VsElmData)GEN_malloc(sizeof(VsElm));
 
     p->elmndm = MAX_DIM;
     p->nbytsg = -1;
-    strcpy (p->elmnam,"");
-    strcpy (p->elmtyp,"");
-    strcpy (p->elmqty,"");
-    strcpy (p->elmunt,"");
-    strcpy (p->elmdes,"");
-    for ( i=0; i<MAX_DIM; i++)
+    strcpy(p->elmnam, "");
+    strcpy(p->elmtyp, "");
+    strcpy(p->elmqty, "");
+    strcpy(p->elmunt, "");
+    strcpy(p->elmdes, "");
+    for (i = 0; i < MAX_DIM; i++)
     {
-      p->elmdms[i] = -1;
+        p->elmdms[i] = -1;
     }
-    p->left  = NULL;
+    p->left = NULL;
     p->right = NULL;
 
     return p;
 }
 
-
 /*  @@  Add an element-structure to binary tree
  */
-VsElmData EL_add_element_to_tree (
-          VsElmData p,
-    const BText     elmnam )
+VsElmData EL_add_element_to_tree(VsElmData p, const BText elmnam)
 {
-    if ( p == NULL ) {
+    if (p == NULL)
+    {
         /* here we are at the right spot in the tree,
            so allocate memory */
-        p = EL_alloc_memory_for_element ();
+        p = EL_alloc_memory_for_element();
 
-        if ( p != NULL ) {
+        if (p != NULL)
+        {
             /* there is room, so place info in strcuture */
-            (void)strcpy ( p->elmnam, elmnam );
-            p->left  = NULL;
+            (void)strcpy(p->elmnam, elmnam);
+            p->left = NULL;
             p->right = NULL;
-
         }
-        else {
+        else
+        {
             /* no memory available */
-            (void)GEN_message_to_errorfile ( 1 );
+            (void)GEN_message_to_errorfile(1);
         }
-
     }
-    else {
-
+    else
+    {
         BInt4 cond;
 
-        cond = GEN_string_compare ( elmnam, p->elmnam );
+        cond = GEN_string_compare(elmnam, p->elmnam);
 
-        if ( cond < 0 ) {
-            p->left = EL_add_element_to_tree ( p->left, elmnam );
+        if (cond < 0)
+        {
+            p->left = EL_add_element_to_tree(p->left, elmnam);
         }
 
-        else if ( cond > 0 ) {
-            p->right = EL_add_element_to_tree ( p->right, elmnam );
+        else if (cond > 0)
+        {
+            p->right = EL_add_element_to_tree(p->right, elmnam);
         }
-        else {
+        else
+        {
             /* DO NOTHING */
         }
     }
@@ -111,50 +112,49 @@ VsElmData EL_add_element_to_tree (
     return p;
 }
 
-
 /*  @@  find element with name elmnam in tree of element-structures.
  *      If found, return pointer to structure, else NULL.
  */
-VsElmData EL_find_element_in_tree (
-          VsElmData p,
-    const BText     elmnam )
+VsElmData EL_find_element_in_tree(VsElmData p, const BText elmnam)
 {
-    VsElmData retval=NULL;
+    VsElmData retval = NULL;
 
-    if ( p != NULL ) {
-
+    if (p != NULL)
+    {
         BInt4 cond;
 
         /* not at end of branche, so compare */
-        cond = GEN_string_compare ( elmnam, p->elmnam );
+        cond = GEN_string_compare(elmnam, p->elmnam);
 
-        if (cond == 0 ) {
+        if (cond == 0)
+        {
             /* found !!!!!! */
             retval = p;
-
         }
-        else if ( cond < 0 ) {
+        else if (cond < 0)
+        {
             /* traverse the left branche */
-            retval = EL_find_element_in_tree ( p->left, elmnam );
+            retval = EL_find_element_in_tree(p->left, elmnam);
         }
 
-        else {
+        else
+        {
             /* traverse the right branche */
-            retval = EL_find_element_in_tree ( p->right, elmnam );
+            retval = EL_find_element_in_tree(p->right, elmnam);
         }
     }
     /* not found */
     return retval;
 }
 
-
 /*  @@  remove a complete branche of elements.
  */
-BVoid EL_remove_element_branche ( VsElmData p )
+BVoid EL_remove_element_branche(VsElmData p)
 {
-    if ( p != NULL ) {
-        EL_remove_element_branche ( p->left );
-        EL_remove_element_branche ( p->right );
-        GEN_free ( p );
+    if (p != NULL)
+    {
+        EL_remove_element_branche(p->left);
+        EL_remove_element_branche(p->right);
+        GEN_free(p);
     }
 }

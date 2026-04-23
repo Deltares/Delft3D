@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: map_messages.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/map_messages.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/map_messages.h
+// $
 //------------------------------------------------------------------------------
 // Message object for a Mapper Class Stores in/out messages for mapper
 //
@@ -33,15 +35,11 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
-
 
 #include "flow_in_hydra.h"
 
-
-#define MAX_NUM_MESSAGES    20
-
+#define MAX_NUM_MESSAGES 20
 
 //
 // MapMess Class
@@ -49,8 +47,7 @@
 
 class MapMess
 {
-    public:
-
+public:
     ////////////////////////
     //
     // PUBLIC FUNCTIONS
@@ -59,16 +56,14 @@ class MapMess
     MapMess(void);
 
     void InitOutMess(void);
-    void PutOutMess(
-        DDMesg  mess        // out message to be stored
-        );
-    DDMesg * GetOutMess(void);
+    void PutOutMess(DDMesg mess // out message to be stored
+    );
+    DDMesg* GetOutMess(void);
 
     void InitInMess(void);
-    void PutInMess(
-        DDMesg  mess        // in message to be stored
-        );
-    DDMesg * GetInMess(void);
+    void PutInMess(DDMesg mess // in message to be stored
+    );
+    DDMesg* GetInMess(void);
 
     ~MapMess(void);
 
@@ -76,13 +71,11 @@ class MapMess
     //
     // PRIVATE DATA
     //
-    private:
+private:
+    DDMesg outMess[MAX_NUM_MESSAGES]; // outgoing messages
+    int numOut;                       // #outgoing messages
+    DDMesg inMess[MAX_NUM_MESSAGES];  // incoming messages
+    int numIn;                        // #incoming messages
 
-    DDMesg  outMess[MAX_NUM_MESSAGES];   // outgoing messages
-    int numOut;                          // #outgoing messages
-    DDMesg  inMess[MAX_NUM_MESSAGES];    // incoming messages
-    int numIn;                           // #incoming messages
-
-    DDMesg retMess;                      // Return message
-
+    DDMesg retMess; // Return message
 };

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,7 +49,7 @@ contains
       use fm_external_forcings_data
       use m_hash_search, only: hashsearch
       use unstruc_channel_flow, only: network
-      use m_longculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
       use m_dambreak_breach, only: get_active_dambreak_index
 
       character(len=*), intent(in) :: strtypename !< the type of the structure: 'pumps', 'weirs', 'gates', ...
@@ -85,8 +85,8 @@ contains
             end if
          end do
       else if (trim(strtypename) == 'sourcesinks') then
-         do i = 1, numsrc
-            if (trim(srcname(i)) == trim(strname)) then
+         do i = 1, num_source_sink
+            if (trim(source_sink_name(i)) == trim(strname)) then
                index = i
                exit
             end if

@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,21 +28,20 @@
 // $HeadURL$
 
 #ifndef _SM_INCLUDED
-#   define _SM_INCLUDED
-    extern BVoid     SM_remove_file_info      ( BVoid ) ;
-    extern VsGrpData SM_get_group_pointer     ( BVoid ) ;
-    extern VsDefData SM_get_definition_pointer( BVoid ) ;
-    extern VsCelData SM_get_cell_pointer      ( BVoid ) ;
-    extern VsElmData SM_get_element_pointer   ( BVoid ) ;
-    extern BVoid     SM_read_nefis_meta_data  ( BInt4 ) ;
+#define _SM_INCLUDED
+extern BVoid SM_remove_file_info(BVoid);
+extern VsGrpData SM_get_group_pointer(BVoid);
+extern VsDefData SM_get_definition_pointer(BVoid);
+extern VsCelData SM_get_cell_pointer(BVoid);
+extern VsElmData SM_get_element_pointer(BVoid);
+extern BVoid SM_read_nefis_meta_data(BInt4);
 
-    extern BVoid  GR_remove_groups_from_chain ( VsGrpData );
-    extern BVoid  DF_remove_definition_branche( VsDefData );
-    extern VsDefData DF_add_definition_to_tree( VsDefData, const BText );
-    extern BVoid  CL_remove_cell_branche      ( VsCelData );
-    extern BVoid  EL_remove_element_branche   ( struct St_elm * );
+extern BVoid GR_remove_groups_from_chain(VsGrpData);
+extern BVoid DF_remove_definition_branche(VsDefData);
+extern VsDefData DF_add_definition_to_tree(VsDefData, const BText);
+extern BVoid CL_remove_cell_branche(VsCelData);
+extern BVoid EL_remove_element_branche(struct St_elm*);
 
-    extern BVoid            PR_groups_print         ( FILE * ) ;
-    extern BVoid            PR_print_group_info     ( FILE *,
-                                                      struct St_grp * );
+extern BVoid PR_groups_print(FILE*);
+extern BVoid PR_print_group_info(FILE*, struct St_grp*);
 #endif

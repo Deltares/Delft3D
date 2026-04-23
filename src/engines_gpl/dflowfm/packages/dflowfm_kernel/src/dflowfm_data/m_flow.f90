@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,18 +31,18 @@
 !
 
 module m_flow ! flow arrays-999
-   use m_flowparameters
    use fm_external_forcings_data
+   use m_alloc
+   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, &
+                                   max_iterations_pressure_density, jabarocponbnd
+   use m_flowparameters
    use m_flowoutput
-   use m_physcoef
-   use m_density_parameters, only: idensform, apply_thermobaricity, thermobaricity_in_pressure_gradient, max_iterations_pressure_density, jabarocponbnd
-   use m_turbulence
    use m_grw
    use m_heatfluxes
-   use m_alloc
-   use m_vegetation
+   use m_physcoef
    use m_ship
-   use precision, only: sp
+   use m_turbulence
+   use m_vegetation
 
    implicit none
 
@@ -61,15 +61,16 @@ module m_flow ! flow arrays-999
    integer :: nplot !< vertical profile to be plotted at node nr
    integer :: kplotfrombedorsurface = 2 !< up or down k
    integer :: kplotordepthaveraged = 1 !< 1 = kplot, 2 = averaged
-   integer :: layertype !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
-   real(kind=dp) :: Tsigma = 100 !< relaxation period density controlled sigma
-   integer, parameter :: LAYTP_SIGMA = 1
-   integer, parameter :: LAYTP_Z = 2
-   integer, parameter :: LAYTP_LEFTSIGMA = 3
-   integer, parameter :: LAYTP_LEFTZ = 4
+   real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+
+   integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters
+   integer, parameter :: LAYTP_SIGMA = 1 !< Sigma-layers
+   integer, parameter :: LAYTP_Z = 2 !< Fixed z- or z-sigma-layers
+   integer, parameter :: LAYTP_POLYGON_MIXED = 3 !< Mixed layering in polygon regions (layer count + layertype in each polygon's z-values)
+   integer, parameter :: LAYTP_DENS_SIGMA = 4 !< Density controlled sigma-layers
 
    integer :: iStrchType = -1 !< Stretching type for non-uniform layers, 1=user defined, 2=exponential, otherwise=uniform
    integer, parameter :: STRCH_USER = 1
@@ -79,11 +80,10 @@ module m_flow ! flow arrays-999
    integer :: ieps !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
    real(kind=dp) :: tur_time_int_factor = 0 !< Turbulence time integration factor for using LAX-based-scheme (0.0 - 1.0) for turbulent quantities (0.0: flow links, 0.5: fifty-fifty, 1.0: flow nodes)
    integer :: tur_time_int_method = TURB_LAX_CONNECTED !< Where to apply tur_time_int_factor (1: apply to all cells, 2: only when vertical layers are horizontally connected)
-   real(kind=dp) :: sigmagrowthfactor !<layer thickness growth factor from bed up
+   real(kind=dp) :: z_layer_growth_factor !< z-layer thickness growth factor from DzTopUniAboveZ downwards
    real(kind=dp) :: dztopuniabovez = -999.0_dp !< bottom level of lowest uniform layer == blmin if not specified
    real(kind=dp) :: Floorlevtoplay = -999.0_dp !< floor  level of top zlayer, == sini if not specified
    real(kind=dp) :: dztop = -999.0_dp !< if specified, dz of top layer, kmx = computed, if not, dz = (ztop-zbot)/kmx
-   integer :: jaorgFloorlevtoplaydef = 0 !< 0=correct floorlevtoplay, 1 = org wrong floorlevtoplay
    real(kind=dp) :: zlaybot = -999.0_dp !< if specified, first zlayer starts from zlaybot, if not, it starts from the lowest bed point
    real(kind=dp) :: zlaytop = -999.0_dp !< if specified, highest zlayer ends at zlaytop, if not, it ends at the initial water level
    real(kind=dp), allocatable :: aak(:) !< coefficient vertical mom exchange of kmx layers
@@ -144,10 +144,10 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable :: zslay(:, :) !< dim = (: , maxlaydefs) z or s coordinate,
    real(kind=dp), allocatable :: wflaynod(:, :) !< dim = (3 , ndx) weight factors to flownodes indlaynod
    integer, allocatable :: indlaynod(:, :) !< dim = (3 , ndx)
-   real(kind=dp), allocatable :: dkx(:) !< dim = ndx, density controlled sigma, sigma level of interface height
-   real(kind=dp), allocatable :: sdkx(:) !< dim = ndx, density controlled sigma, sum of .., only layertype == 4
+   real(kind=dp), allocatable :: dkx(:) !< dim = ndx, sigma level of interface height; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
+   real(kind=dp), allocatable :: sdkx(:) !< dim = ndx, sum of ..; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
-   real(kind=dp), allocatable :: asig(:) !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty
+   real(kind=dp), allocatable :: asig(:) !< alfa of sigma at nodes, 1d0=full sigma, 0d0=full z, 0.5d0=fifty/fifty; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
    real(kind=dp), allocatable :: ustb(:) !< ustar at Lbot, dim=Lnx,
    real(kind=dp), allocatable :: ustw(:) !< ustar at Ltop, dim=Lnx
    real(kind=dp), allocatable :: ustbc(:) !< ustar at bed at netnodes, dim=numk
@@ -161,11 +161,11 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target :: s1(:) !< [m] waterlevel    (m ) at end   of timestep {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable, target :: s1max(:) !< [m] maximum waterlevel (m ) at end   of timestep for Fourier output {"location": "face", "shape": ["ndx"]}
    real(kind=dp), allocatable :: s00(:) !< waterlevel    (m ) for checking iteration in nonlin
-   real(kind=dp), allocatable, target :: a0(:) !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: a1(:) !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndx"]}
-   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndx"]}
+   real(kind=dp), allocatable, target :: a0(:) !< [m2] storage area at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: a1(:) !< [m2] storage area at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: vol1(:) !< [m3] total volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: vol0(:) !< [m3] total volume at start of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
+   real(kind=dp), allocatable, target :: vol1_f(:) !< [m3] flow volume volume at end of timestep {"location": "face", "shape": ["ndkx"]}; in 2D models ndkx=ndx
    real(kind=dp), allocatable :: sq(:) !< total  influx (m3/s) at water level point
    real(kind=dp), allocatable :: sqa(:) !< total  out! flux (m3/s) at s point, u1 based, non-conservative for iadvec == 38
    real(kind=dp), allocatable, target :: hs(:) !< [m] waterdepth at cell centre = s1 - bl  (m) {"location": "face", "shape": ["ndx"]}
@@ -187,8 +187,6 @@ module m_flow ! flow arrays-999
    !< Note: these variables are real(kind=dp) (in stead of integers) because post processing is
    !<       based on real(kind=dp) variables.
    real(kind=dp), allocatable :: flowCourantNumber(:) !< Courant number
-
-! node related, dim = ndkx
 
    real(kind=dp), allocatable :: volau(:) !< trial, au based cell volume (m3)
    real(kind=dp), allocatable, target :: ucx(:) !< [m/s] cell center velocity, global x-dir (m/s) {"location": "face", "shape": ["ndkx"]}
@@ -356,7 +354,7 @@ module m_flow ! flow arrays-999
    real(kind=dp), allocatable, target :: viusp(:) !< [m2/s] user defined spatial eddy viscosity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    real(kind=dp), allocatable, target :: diusp(:) !< [m2/s] user defined spatial eddy diffusivity coefficient at u point (m2/s) {"location": "edge", "shape": ["lnx"]}
    !< so in transport, total diffusivity = viu*sigdifi + diusp
-   real, allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
+   real(kind=dp), allocatable :: fcori(:) !< spatially variable fcorio coeff at u point (1/s)
    real(kind=dp), allocatable :: fvcoro(:) !< 3D adamsbashford u point (m/s2)
 
    real(kind=dp), allocatable :: plotlin(:) !< for plotting on u points
@@ -561,10 +559,10 @@ contains
       mxlays = 1 ! max nr of sigma layers in flow domain
       kplot = 1 ! layer nr to be plotted
       nplot = 1 ! vertical profile to be plotted at node nr
-      layertype = 1 !< 1 = all sigma, 2 = z or z-sigma, 3 = left sigma, 4 = left z
+      layertype = LAYTP_SIGMA !< 1 = sigma-layers, 2 = z- or z-sigma-layers, 3 = polygon defined mixed layers, 4 = density controlled sigma-layers
       iturbulencemodel = 3 !< 0=no, 1 = constant, 2 = algebraic, 3 = k-eps, 4 = k-tau
       ieps = 2 !< bottom boundary type eps. eqation, 1=dpmorg, 2 = dpmsandpit, 3=D3D, 4=Dirichlethdzb
-      sigmagrowthfactor = 1.0_dp !<layer thickness growth factor from bed up
+      z_layer_growth_factor = 1.0_dp
 
       ! Remaining of variables is handled in reset_flow()
       call reset_flow()
@@ -725,11 +723,11 @@ contains
 
    !> Check if salinity, temperature or sediment are simulated, i.e. density needs to be incorporated
    pure function use_density() result(res)
-      use m_flowparameters, only: jasal, jatem, jased
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jased
 
       logical :: res !< Return value
 
-      res = (jasal > 0 .or. jatem > 0 .or. jased > 0)
+      res = (jasal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0)
    end function use_density
 
 end module m_flow

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_step_reduce_transport_morpho
    use m_u1q1, only: u1q1
    use m_transport_sub, only: transport
 
-use precision, only: dp
+   use precision, only: dp
    implicit none
 
    private
@@ -53,6 +53,7 @@ contains
    subroutine step_reduce_transport_morpho()
       use m_equili_spiralintensity
       use m_flow
+      use m_laterals, only: qlatwaq, qlatwaq0
       use m_flowgeom
       use m_sediment, only: stm_included
       use Timers
@@ -81,9 +82,9 @@ contains
 
       numnodneg = 0
       if (wrwaqon) then
-         ! store current cumulative qsrc and qlat for waq at the beginning of this time step
-         if (allocated(qsrcwaq)) then
-            qsrcwaq0 = qsrcwaq
+         ! store current cumulative source_sink_water_discharge and qlat for waq at the beginning of this time step
+         if (allocated(source_sink_cumulative_discharge_waq)) then
+            source_sink_cumulative_discharge_waq_previous = source_sink_cumulative_discharge_waq
          end if
          if (allocated(qlatwaq)) then
             qlatwaq0 = qlatwaq
@@ -111,7 +112,9 @@ contains
 
       if (jased > 0 .and. stm_included) then
          if (time1 >= tstart_user + ti_sedtrans * tfac) then
-            if (jatimer == 1) call starttimer(IEROSED)
+            if (jatimer == 1) then
+               call starttimer(IEROSED)
+            end if
             !
             call setucxucy_mor(u1)
             call fm_flocculate() ! fraction transitions due to flocculation
@@ -125,7 +128,9 @@ contains
             call timstop(handle_extra(88))
 
             call comp_bedload_fluxmba()
-            if (jatimer == 1) call stoptimer(IEROSED)
+            if (jatimer == 1) then
+               call stoptimer(IEROSED)
+            end if
          end if
       end if
 
@@ -139,9 +144,13 @@ contains
 
       !SPvdP: timestep is now based on u0, q0
       !       transport is with u1,q1 with timestep based on u0,q0
-      if (jatimer == 1) call starttimer(ITRANSPORT)
+      if (jatimer == 1) then
+         call starttimer(ITRANSPORT)
+      end if
       call transport()
-      if (jatimer == 1) call stoptimer(ITRANSPORT)
+      if (jatimer == 1) then
+         call stoptimer(ITRANSPORT)
+      end if
 
       if (jased > 0 .and. stm_included) then
          call fm_bott3d() ! bottom update
@@ -160,14 +169,6 @@ contains
          if (kmx > 0) then
             call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
          end if
-      end if
-
-      ! Moved to flow_finalize_single_timestep: call flow_f0isf1()                                  ! mass balance and vol0 = vol1
-
-      if (layertype > 1 .and. kmx > 0) then
-
-         ! ln = ln0 ! was ok.
-
       end if
 
    end subroutine step_reduce_transport_morpho

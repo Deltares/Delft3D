@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -37,29 +37,26 @@
 
 #include <stdio.h>
 #ifdef _WIN32
-#   include <windows.h>
+    #include <windows.h>
 #else
-#   include <sys/time.h>
+    #include <sys/time.h>
 #endif
 
+class Clock
+{
+public:
+    Clock();
+    ~Clock();
 
-class Clock {
-    public:
-        Clock ();
-        ~Clock ();
+    typedef unsigned long long Timestamp;
 
-        typedef unsigned long long Timestamp;
+    char* Now(char*);        // current epoch time as string
+    Timestamp Epoch(void);   // current epoch time (in usec)
+    Timestamp Start(void);   // epoch time of clock start
+    Timestamp Elapsed(void); // elapsed time since start
+    void Set(Timestamp);     // set clock start to specific time
+    void Reset(void);        // reset clock start time to now
 
-        char *      Now     (char *);       // current epoch time as string
-        Timestamp   Epoch   (void);         // current epoch time (in usec)
-        Timestamp   Start   (void);         // epoch time of clock start
-        Timestamp   Elapsed (void);         // elapsed time since start
-        void        Set     (Timestamp);    // set clock start to specific time
-        void        Reset   (void);         // reset clock start time to now
-
-    private:
-        Timestamp   starttime;              // for timer
-
-    };
-
-
+private:
+    Timestamp starttime; // for timer
+};

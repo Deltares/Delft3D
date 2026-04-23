@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -81,10 +81,12 @@ contains
          end do
 
          do i = 1, 2
-            if (lownew(i) /= lowold(i)) &
-               blocklow(i) = ceiling(dble(blocklow(i)) * FAC)
-            if (uppnew(i) /= uppold(i)) &
-               blockupp(i) = ceiling(dble(blockupp(i)) * FAC)
+            if (lownew(i) /= lowold(i)) then
+               blocklow(i) = ceiling(real(blocklow(i), kind=dp) * FAC)
+            end if
+            if (uppnew(i) /= uppold(i)) then
+               blockupp(i) = ceiling(real(blockupp(i), kind=dp) * FAC)
+            end if
          end do
 
          call realloc(ijc, uppnew, lownew, fill=IMISS)

@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: xmltree.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/xmltree.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/utils_lgpl/d_hydro_lib/include/xmltree.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro
 //  Tree-representation of an XML file - DEFINITIONS
@@ -33,7 +35,6 @@
 //  Irv.Elshoff@Deltares.NL
 //  6 mar 13
 //------------------------------------------------------------------------------
-
 
 #pragma once
 
@@ -43,110 +44,61 @@
 
 #include "exception.h"
 
+class XmlTree
+{
+public:
+    XmlTree(FILE* input);
 
-class XmlTree {
-    public:
-        XmlTree (
-            FILE * input
-            );
+    XmlTree(XmlTree* parent, const char* name);
 
-        XmlTree (
-            XmlTree * parent,
-            const char * name
-            );
+    ~XmlTree();
 
-        ~XmlTree ();
+    void AddAttrib(const char* name, const char* value);
 
-        void
-        AddAttrib (
-            const char * name,
-            const char * value
-            );
+    void AddChild(XmlTree* child);
 
-        void
-        AddChild (
-            XmlTree * child
-            );
+    bool GetBoolAttrib(const char* name);
 
-        bool
-        GetBoolAttrib (
-            const char * name
-            );
+    long int GetIntegerAttrib(const char* name);
 
-        long int
-        GetIntegerAttrib (
-            const char * name
-            );
+    double GetFloatAttrib(const char* name);
 
-        double
-        GetFloatAttrib (
-            const char * name
-            );
+    XmlTree* Lookup(const char* pathname);
 
-        XmlTree *
-        Lookup (
-            const char * pathname
-            );
+    XmlTree* Lookup(const char* pathname, int instance);
 
-        XmlTree *
-        Lookup (
-            const char * pathname,
-            int instance
-            );
+    const char* GetAttrib(const char* name);
 
-        const char *
-        GetAttrib (
-            const char * name
-            );
+    const char* GetElement(const char* name);
 
-        const char *
-        GetElement (
-            const char * name
-            );
+    bool GetBoolElement(const char* name, bool defaultValue);
 
-        bool
-        GetBoolElement (
-            const char * name,
-            bool defaultValue
-            );
+    void Print(void);
 
-        void
-        Print (
-            void
-            );
+private:
+    void init(void);
 
-    private:
-        void
-        init (
-            void
-            );
+    void print(int level);
 
-        void
-        print (
-            int level
-            );
+public:
+    static const int maxCharData = 100000; // maximum size of an XML character data block
+    static const int maxAttrib = 10;       // maximum number of attributes a start tag can have
+    static const int maxChildren = 100;    // maximum number of children a tag can have
+    static const int maxPathname = 256;    // maximum length of a full path name
 
-    public:
-        static const int maxCharData = 100000;  // maximum size of an XML character data block
-        static const int maxAttrib   = 10;      // maximum number of attributes a start tag can have
-        static const int maxChildren = 100;     // maximum number of children a tag can have
-        static const int maxPathname = 256;     // maximum length of a full path name
+    XmlTree* parent;
+    char* name;
+    char* pathname;
 
-        XmlTree *   parent;
-        char *      name;
-        char *      pathname;
+    int numAttrib;
+    char* attribNames[maxAttrib];
+    char* attribValues[maxAttrib];
 
-        int         numAttrib;
-        char *      attribNames [maxAttrib];
-        char *      attribValues [maxAttrib];
+    int numChildren;
+    XmlTree* children[maxChildren];
 
-        int         numChildren;
-        XmlTree *   children [maxChildren];
+    char* charData;
+    int charDataLen;
 
-        char *      charData;
-        int         charDataLen;
-
-    private:
-    };
-
-
+private:
+};

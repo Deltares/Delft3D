@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -36,40 +36,38 @@ using namespace std;
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-class timeSeriesMatrix : public timeSeriesMatrixInterface
-{
-private:
-	double **valueMatrix;
-	double **objMatrix;
-	int iState;
-	double *state;
+        class timeSeriesMatrix : public timeSeriesMatrixInterface
+        {
+        private:
+            double** valueMatrix;
+            double** objMatrix;
+            int iState;
+            double* state;
 
-public:
-	timeSeriesMatrix(
-			int nTimeStep, vector<long long> time,
-			int nSeries, vector<string> seriesID, vector<validationEnum> seriesValidation,
-			map<string,int> scalarIDMap, map<string,pair<int,int> > vectorIDMap,
-			double **valueMatrix, double **objMatrix);
-	virtual ~timeSeriesMatrix(void);
+        public:
+            timeSeriesMatrix(int nTimeStep, vector<long long> time, int nSeries, vector<string> seriesID,
+                             vector<validationEnum> seriesValidation, map<string, int> scalarIDMap,
+                             map<string, pair<int, int>> vectorIDMap, double** valueMatrix, double** objMatrix);
+            virtual ~timeSeriesMatrix(void);
 
-	double* getState(int tIndex);
-	double* getStateObj(int tIndex);
-	double** getValueMatrix();
-	double** getObjMatrix();
-	double getValue(int tIndex, int sIndex);
-	bool setValue(int tIndex, int sIndex, double value);
-	void initializeValue(double val);
-	void initializeValue(int startIndex, int endIndex, double val);
-	void initializeObj(double val);
-	void initializeObj(int startIndex, int endIndex, double val);
-	void incrementTimeStep();
-	void validate(int nSeriesEnd, int nTimeStepT0);
-};
+            double* getState(int tIndex);
+            double* getStateObj(int tIndex);
+            double** getValueMatrix();
+            double** getObjMatrix();
+            double getValue(int tIndex, int sIndex);
+            bool setValue(int tIndex, int sIndex, double value);
+            void initializeValue(double val);
+            void initializeValue(int startIndex, int endIndex, double val);
+            void initializeObj(double val);
+            void initializeObj(int startIndex, int endIndex, double val);
+            void incrementTimeStep();
+            void validate(int nSeriesEnd, int nTimeStepT0);
+        };
 
-} // end namespace timeseries
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* TIMESERIESMATRIX_H */

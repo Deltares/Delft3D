@@ -1,10 +1,18 @@
-subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
+    module m_compdiam
+    
+    private
+    
+    public compdiam
+    
+    contains
+    
+    subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
                   & logsedsig, nseddia, logseddia, nmmax, nmlb, &
                   & nmub, xx, nxx, max_mud_sedtyp, min_dxx_sedtyp, &
                   & sedd50fld, dm, dg, dxx, dgsd)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -350,3 +358,6 @@ subroutine compdiam(frac, seddm, sedd50, sedtyp, lsedtot, &
        enddo
     endif
 end subroutine compdiam
+
+end module m_compdiam
+    

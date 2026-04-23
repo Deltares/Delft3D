@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,20 +43,22 @@ contains
 
    subroutine fill_constituents(jas) ! if jas == 1 do sources
       use m_apply_sediment_bc, only: apply_sediment_bc
-      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, molecular_diffusion_coeff
+      use m_transport, only: ISED1, ISPIR, NUMCONST, ISALT, ITEMP, ITRA1, ITRAN, constituents, const_sour, const_sink, difsedu, &
+                             molecular_diffusion_coeff
       use m_flowgeom, only: ndx, ndxi, ba
       use m_flow, only: kmx, ndkx, zws, hs, sq, vol1, spirint, spirucm, spircrv, fcoris, czssf
       use m_wind, only: heatsrc
       use m_physcoef, only: dicouv, constant_dicoww, difmolsal, difmoltem, difmoltracer, use_salinity_freezing_point, ag, vonkar
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
-      use fm_external_forcings_data, only: wstracers, numsrc, ksrc, qsrc, ccsrc
+      use fm_external_forcings_data, only: wstracers, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_constituents
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
       use m_sferic, only: jsferic, fcorio
-      use m_flowtimes, only: dts, time1, tstart_user, tfac
-      use m_flowparameters, only: janudge, jasecflow, jatem, jaequili, epshu, epshs, testdryflood, icorio
+      use m_flowtimes, only: dts
+      use m_flowparameters, only: janudge, jasecflow, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
+                                  TEMPERATURE_MODEL_COMPOSITE, jaequili, epshu, epshs, testdryflood, icorio
       use m_laterals, only: add_lateral_load_and_sink, apply_transport_is_used
       use m_missing, only: dmiss
       use timers, only: timon, timstrt, timstop
@@ -78,7 +80,9 @@ contains
       real(kind=dp) :: Trefi
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("fill_constituents", ithndl)
+      if (timon) then
+         call timstrt("fill_constituents", ithndl)
+      end if
 
       const_sour = 0.0_dp
       const_sink = 0.0_dp
@@ -89,7 +93,7 @@ contains
             constituents(ISPIR, k) = spirint(k)
          end if
 
-         if (ISED1 /= 0) then
+         if (ISED1 /= 0 .and. .not. stm_included) then
             do jsed = 1, mxgr
                iconst = ISED1 + jsed - 1
                constituents(iconst, k) = sed(jsed, k)
@@ -97,23 +101,9 @@ contains
          end if
       end do
 
-      if (stm_included) then
-         if (stmpar%morpar%bedupd .and. time1 >= tstart_user + stmpar%morpar%tmor * tfac) then
-            if (ISED1 /= 0) then
-               do k = 1, ndx
-                  if (hs(k) < stmpar%morpar%sedthr) then
-                     do jsed = 1, mxgr
-                        iconst = ISED1 + jsed - 1
-                        call getkbotktop(k, kb, kt)
-                        constituents(iconst, kb:kt) = 0.0_dp
-                     end do
-                  end if
-               end do
-            end if
-         end if
-      end if
-
-      difsedu = 0.0_dp; molecular_diffusion_coeff = 0.0_dp; sigdifi = 0.0_dp
+      difsedu = 0.0_dp
+      molecular_diffusion_coeff = 0.0_dp
+      sigdifi = 0.0_dp
 
 !  diffusion coefficients
 
@@ -146,12 +136,16 @@ contains
       if (ISED1 /= 0) then
          do jsed = 1, mxgr
             iconst = ISED1 + jsed - 1
-            if (dicouv >= 0.0_dp) difsedu(iconst) = 0.0_dp
+            if (dicouv >= 0.0_dp) then
+               difsedu(iconst) = 0.0_dp
+            end if
             if (constant_dicoww >= 0) then
                molecular_diffusion_coeff(iconst) = 0.0_dp
                sigdifi(iconst) = 1.0_dp / sigsed(jsed)
             end if
-            if (jased < 4) wsf(iconst) = ws(jsed)
+            if (jased < 4) then
+               wsf(iconst) = ws(jsed)
+            end if
          end do
       end if
 
@@ -184,10 +178,12 @@ contains
          call getkbotktop(kk, kb, kt)
          do k = kb, kt
             dvoli = 1.0_dp / max(vol1(k), dtol)
-            if (testdryflood == 2) dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            if (testdryflood == 2) then
+               dvoli = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            end if
 
 !        temperature
-            if (jatem > 1) then
+            if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
                if (use_salinity_freezing_point) then ! allowing cooling below 0 degrees
                   const_sour(ITEMP, k) = heatsrc(k) * dvoli
                else ! default behaviour since 2017
@@ -228,7 +224,10 @@ contains
                ! const_sour(ISPIR,kk) = 0.0_dp
                ! const_sink(ISPIR,kk) = 0.0_dp
             else
-               fcoriocof = fcorio; if (icorio > 0 .and. jsferic == 1) fcoriocof = fcoris(kk)
+               fcoriocof = fcorio
+               if (icorio > 0 .and. jsferic == 1) then
+                  fcoriocof = fcoris(kk)
+               end if
                alpha = sqrt(ag) / vonkar / max(czssf(kk), 20.0_dp)
                spir_ce = fcorio * hs(kk) * 0.5_dp
                spir_be = hs(kk) * spircrv(kk) * spirucm(kk)
@@ -263,7 +262,7 @@ contains
          end if
       end do
 
-      if (jamba > 0 .and. jatem > 0) then ! Positive and negative sums for jamba, checking just once
+      if (jamba > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then ! Positive and negative sums for jamba, checking just once
 
          do kk = 1, Ndx
             imba = mbadefdomain(kk)
@@ -284,22 +283,30 @@ contains
       ! NOTE: apply_tracer_bc has been moved earlier to transport() routine,
       !       but apply_sediment_bc must still be done here, since above the boundary
       !       nodes's constituents(kb,:) = sed(kb,:) has reset it to 0.
-      if (stm_included) call apply_sediment_bc()
-      if (jas == 0) goto 1234 ! no sources from initialise
+      if (stm_included) then
+         call apply_sediment_bc()
+      end if
+      if (jas == 0) then
+         goto 1234 ! no sources from initialise
+      end if
 
-      do n = 1, numsrc
-         kk = ksrc(1, n) ! 2D pressure cell nr FROM
-         kk2 = ksrc(4, n) ! 2D pressure cell nr TO
-         qsrckk = qsrc(n)
+      do n = 1, num_source_sink
+         kk = source_sink_indices(1, n) ! 2D pressure cell nr FROM
+         kk2 = source_sink_indices(4, n) ! 2D pressure cell nr TO
+         qsrckk = source_sink_water_discharge(n)
          qsrck = qsrckk
 
          jamba_src = jamba
          if (jampi == 1) then
             if (kk > 0) then
-               if (idomain(kk) /= my_rank) jamba_src = 0
+               if (idomain(kk) /= my_rank) then
+                  jamba_src = 0
+               end if
             else
                if (kk2 > 0) then
-                  if (idomain(kk2) /= my_rank) jamba_src = 0
+                  if (idomain(kk2) /= my_rank) then
+                     jamba_src = 0
+                  end if
                else
                   jamba_src = 0
                end if
@@ -307,14 +314,17 @@ contains
          end if
 
          if (kk > 0) then ! FROM Point
-            do k = ksrc(2, n), ksrc(3, n)
+            do k = source_sink_indices(2, n), source_sink_indices(3, n)
+               if (k == 0) then
+                  cycle
+               end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(ksrc(3, n)) - zws(ksrc(2, n) - 1)
+                  dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (ksrc(3, n) - ksrc(2, n) + 1)
+                     qsrck = qsrckk / (source_sink_indices(3, n) - source_sink_indices(2, n) + 1)
                   end if
                end if
                if (qsrck > 0) then ! FROM k to k2
@@ -326,14 +336,17 @@ contains
          end if
 
          if (kk2 > 0) then ! TO Point
-            do k = ksrc(5, n), ksrc(6, n)
+            do k = source_sink_indices(5, n), source_sink_indices(6, n)
+               if (k == 0) then
+                  cycle
+               end if
                dvoli = 1.0_dp / max(vol1(k), dtol)
                if (kmx > 0) then
-                  dzss = zws(ksrc(6, n)) - zws(ksrc(5, n) - 1)
+                  dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
-                     qsrck = qsrckk / (ksrc(6, n) - ksrc(5, n) + 1)
+                     qsrck = qsrckk / (source_sink_indices(6, n) - source_sink_indices(5, n) + 1)
                   end if
                end if
                if (qsrck > 0) then
@@ -348,7 +361,9 @@ contains
 
 1234  continue
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
 
    contains
 
@@ -369,8 +384,8 @@ contains
 
          do iconst = 1, numconst
             if (i1 == i2) then ! on outflow side
-               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * ccsrc(iconst, n) * dvoli
-               flux = qsrck * ccsrc(iconst, n)
+               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * source_sink_constituents(iconst, n) * dvoli
+               flux = qsrck * source_sink_constituents(iconst, n)
             else ! on inflow side
                const_sour(iconst, k) = const_sour(iconst, k) + qsrck * constituents(iconst, k) * dvoli
                flux = qsrck * constituents(iconst, k)

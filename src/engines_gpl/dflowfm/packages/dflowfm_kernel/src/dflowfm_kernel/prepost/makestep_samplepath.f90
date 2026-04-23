@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -90,30 +90,38 @@ contains
 !  i-dir
       ip1 = i0 + (jcur - 1) * MXSAM
       ip2 = i1 + (jcur - 1) * MXSAM
-      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(i1 - i0), 1.0_dp)
+      Dh = dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(real(i1 - i0, kind=dp), 1.0_dp)
 !  j-dir
       ip1 = icur + (j1 - 1) * MXSAM
       ip2 = icur + (j1 - 1) * MXSAM
-      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(dble(j1 - j0), 1.0_dp))
+      Dh = max(dh, dbdistance(xs(ip1), ys(ip1), xs(ip2), ys(ip2), jsferic, jasfer3D, dmiss) / max(real(j1 - j0, kind=dp), 1.0_dp))
 
       do i = i0, i1
          do j = j0, j1
 !         if ( i.ne.i0 .and. i.ne.i1 .and. j.ne.j0 .and. j.ne.j1 ) cycle
 
-            if (i - i0 > 1 .and. i1 - i > 1 .and. j - j0 > 1 .and. j1 - j > 1) cycle
+            if (i - i0 > 1 .and. i1 - i > 1 .and. j - j0 > 1 .and. j1 - j > 1) then
+               cycle
+            end if
 
             ip = i + (j - 1) * MXSAM
 
-            if (ip == ipcur) cycle
+            if (ip == ipcur) then
+               cycle
+            end if
 
 !        next sample may never have DMISS coordinates/value
-            if (xs(ip) == DMISS .or. zs(ip) == DMISS) cycle
+            if (xs(ip) == DMISS .or. zs(ip) == DMISS) then
+               cycle
+            end if
 
 !        check angle with previous step
             if (ipprev /= ipcur .and. ipprev > 0) then
                dcsphi = dcosphi(xs(ipprev), ys(ipprev), xs(ipcur), ys(ipcur), xs(ipcur), ys(ipcur), xs(ip), ys(ip), jsferic, jasfer3D, dxymis)
 
-               if (dcsphi < 0.5_dp) cycle
+               if (dcsphi < 0.5_dp) then
+                  cycle
+               end if
             end if
 
 !        make subbath
@@ -125,13 +133,13 @@ contains
 
             do isub = i00, i11
                if (i /= icur) then
-                  djsub = dble(isub - icur) / dble(i - icur) * dble(j - jcur) + jcur
+                  djsub = real(isub - icur, kind=dp) / real(i - icur, kind=dp) * real(j - jcur, kind=dp) + jcur
                else
                   djsub = 0.0_dp
                end if
                do jsub = j00, j11
                   if (j /= jcur) then
-                     disub = dble(jsub - jcur) / dble(j - jcur) * dble(i - icur) + icur
+                     disub = real(jsub - jcur, kind=dp) / real(j - jcur, kind=dp) * real(i - icur, kind=dp) + icur
                   else
                      disub = 0.0_dp
                   end if
@@ -154,7 +162,7 @@ contains
                   zs_ave = zs_ave + zs(iploc)
                end if
             end do
-            zs_ave = zs_ave / dble(max(num, 1))
+            zs_ave = zs_ave / real(max(num, 1), kind=dp)
 
 !!       plot samples in subpath
 !        do isub=1,Nlist
@@ -194,7 +202,7 @@ contains
                zs_max = zs_ave
 !          reallocate if necessary
                if (Nlist > ubound(ipsub, 1)) then
-                  Nsub = int(1.2_dp * dble(Nlist)) + 1
+                  Nsub = int(1.2_dp * real(Nlist, kind=dp)) + 1
                   ierror = -Nsub
                   goto 1234
                end if

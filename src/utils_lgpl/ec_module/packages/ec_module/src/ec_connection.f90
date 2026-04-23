@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This library is free software; you can redistribute it and/or
 !  modify it under the terms of the GNU Lesser General Public
@@ -70,7 +70,7 @@ contains
          end if
       end if
       if (istat /= 0) then
-         call setECMessage("ERROR: ec_converter::ecConnectionCreate: Unable to allocate additional memory.")
+         call set_ec_message("ERROR: ec_converter::ecConnectionCreate: Unable to allocate additional memory.")
          connectionPtr => null()
          return
       end if
@@ -121,7 +121,7 @@ contains
       success = .true.
       !
       if (.not. associated(connectionPtr)) then
-         call setECMessage("WARNING: ec_connection::ecConnectionFree1dArray: Dummy argument connectionPtr is already disassociated.")
+         call set_ec_message("WARNING: ec_connection::ecConnectionFree1dArray: Dummy argument connectionPtr is already disassociated.")
       else
          ! Free and deallocate all tEcConnectionPtrs in the 1d array.
          do i = 1, nConnections
@@ -163,7 +163,7 @@ contains
          connectionPtr%converterPtr => converterPtr
          success = .true.
       else
-         call setECMessage("ERROR: ec_connection::ecConnectionSetConverter: Cannot find a Connection or Converter with the supplied id.")
+         call set_ec_message("ERROR: ec_connection::ecConnectionSetConverter: Cannot find a Connection or Converter with the supplied id.")
       end if
    end function ecConnectionSetConverter
 
@@ -196,7 +196,7 @@ contains
          connectionPtr%sourceItemsPtr(connectionPtr%nSourceItems)%ptr => itemPtr
          success = .true.
       else
-         call setECMessage("ERROR: ec_connection::ecConnectionAddSourceItem: Cannot find a Connection or Item with the supplied id.")
+         call set_ec_message("ERROR: ec_connection::ecConnectionAddSourceItem: Cannot find a Connection or Item with the supplied id.")
       end if
    end function ecConnectionAddSourceItem
 
@@ -229,7 +229,7 @@ contains
          connectionPtr%targetItemsPtr(connectionPtr%nTargetItems)%ptr => itemPtr
          success = .true.
       else
-         call setECMessage("ERROR: ec_connection::ecConnectionAddTargetItem: Cannot find a Connection or Item with the supplied id.")
+         call set_ec_message("ERROR: ec_connection::ecConnectionAddTargetItem: Cannot find a Connection or Item with the supplied id.")
       end if
    end function ecConnectionAddTargetItem
 

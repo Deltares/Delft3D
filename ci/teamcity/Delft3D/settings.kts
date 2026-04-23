@@ -4,13 +4,14 @@ import jetbrains.buildServer.configs.kotlin.projectFeatures.*
 import Delft3D.*
 import Delft3D.linux.*
 import Delft3D.linux.containers.*
+import Delft3D.linux.container_smoketest.*
 import Delft3D.windows.*
 import Delft3D.template.*
 
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.07"
+version = "2025.11"
 
 project {
 
@@ -23,10 +24,17 @@ project {
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
 
+        param("nexus_username", DslContext.getParameter("nexus_username"))
+        password("nexus_password", DslContext.getParameter("nexus_password"))
+        password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
+        param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
     }
 
+    template(TemplateLinuxAgent)
+    template(TemplateLinuxAgentFips)
+    template(TemplateLinuxAgentNoFips)
     template(TemplateMergeRequest)
     template(TemplateDetermineProduct)
     template(TemplatePublishStatus)
@@ -45,9 +53,21 @@ project {
             name = "Build-environment Containers"
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
+            buildType(LinuxDevContainer)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
+                LinuxDevContainer,
+            )
+        }        
+        subProject {
+            id("SmokeTestsContainerH7")
+            name = "Smoke tests container on H7"
+            buildType(LinuxSubmitH7ContainerSmokeTest)
+            buildType(LinuxReceiveH7ContainerSmokeTest)
+            buildTypesOrder = listOf(
+                LinuxSubmitH7ContainerSmokeTest,
+                LinuxReceiveH7ContainerSmokeTest,
             )
         }        
         buildType(LinuxBuild)
@@ -55,7 +75,6 @@ project {
         buildType(LinuxCollect)
         buildType(LinuxRuntimeContainers)
         buildType(LinuxRunAllContainerExamples)
-        buildType(LinuxLegacyDockerTest)
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
@@ -64,7 +83,6 @@ project {
             LinuxCollect,
             LinuxRuntimeContainers,
             LinuxRunAllContainerExamples,
-            LinuxLegacyDockerTest,
             LinuxUnitTest,
             LinuxTest
         )
@@ -74,8 +92,8 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironment)
         buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsTestEnvironment)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -83,8 +101,8 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironment,
             WindowsBuildEnvironmentI24,
+            WindowsTestEnvironment,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,
@@ -115,11 +133,14 @@ project {
 
         buildType(TestPythonCiTools)
         buildType(TestBenchValidation)
+        buildType(TestFortranStyler)
         buildType(CopyExamples)
         buildType(SigCi)
+        buildType(RunBashBatonUtilities)
+        buildType(DvcDiffComment)
 
         buildTypesOrder = arrayListOf(
-            TestPythonCiTools, TestBenchValidation, CopyExamples, SigCi
+            TestPythonCiTools, TestBenchValidation, TestFortranStyler, CopyExamples, SigCi, RunBashBatonUtilities, DvcDiffComment
         )
     }
 
@@ -137,11 +158,13 @@ project {
     buildType(PublishToGui)
     buildType(DIMRbak)
     buildType(Publish)
+    buildType(PinAndTag)
     buildTypesOrder = arrayListOf(
         Trigger,
         PublishToGui,
         DIMRbak,
-        Publish
+        Publish,
+        PinAndTag
     )
         
     features {

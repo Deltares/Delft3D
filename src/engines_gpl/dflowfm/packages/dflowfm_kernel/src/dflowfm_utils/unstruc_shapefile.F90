@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -323,8 +323,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -551,8 +553,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -721,8 +725,10 @@ contains
                L = openbndlin(Lb) ! Net link
                k1 = kn(1, L)
                k2 = kn(2, L)
-               tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-               tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+               tmp_x(1) = xk(k1)
+               tmp_x(2) = xk(k2)
+               tmp_y(1) = yk(k1)
+               tmp_y(2) = yk(k2)
                shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
                ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -883,8 +889,10 @@ contains
          k = ln2lne(La) ! netnode
          k1 = kn(1, k)
          k2 = kn(2, k)
-         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         tmp_x(1) = xk(k1)
+         tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1)
+         tmp_y(2) = yk(k2)
          shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
          ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1020,9 +1028,10 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: ksrc, numsrc, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
+      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, &
+         source_sink_max_xy_points, source_sink_name, source_sink_area, source_sink_all_discharges
       use m_flowgeom, only: xz, yz
-      use m_transportdata, only: NUMCONST
+      
       implicit none
 
       integer, parameter :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)
@@ -1084,26 +1093,30 @@ contains
          return
       end if
 
-      do i = 1, numsrc
-         objectid = srcname(i)
+      do i = 1, num_source_sink
+         objectid = source_sink_name(i)
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
 
          ! create a shape object with the "simple" method, for each shape 2 components are added x, y
-         k1 = ksrc(1, i) ! flownode
-         k2 = ksrc(4, i)
+         k1 = source_sink_indices(1, i) ! flownode
+         k2 = source_sink_indices(4, i)
          if (k1 <= 0 .and. k2 <= 0) then ! if both points are not in the domain
             cycle
          else
-            maxnr = nxsrc(i)
+            maxnr = source_sink_max_xy_points(i)
             if (k1 > 0) then
-               tmp_x(1) = xz(k1); tmp_y(1) = yz(k1)
+               tmp_x(1) = xz(k1)
+               tmp_y(1) = yz(k1)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(1) = xsrc(i, 1); tmp_y(1) = ysrc(i, 1)
+               tmp_x(1) = source_sink_x(i, 1)
+               tmp_y(1) = source_sink_y(i, 1)
             end if
             if (k2 > 0) then
-               tmp_x(2) = xz(k2); tmp_y(2) = yz(k2)
+               tmp_x(2) = xz(k2)
+               tmp_y(2) = yz(k2)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(2) = xsrc(i, maxnr); tmp_y(2) = ysrc(i, maxnr)
+               tmp_x(2) = source_sink_x(i, maxnr)
+               tmp_y(2) = source_sink_y(i, maxnr)
             end if
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
@@ -1126,8 +1139,8 @@ contains
             end if
 
             ! write area
-            if (allocated(arsrc)) then
-               j = dbfwriteattribute(shphandle, ishape, id_area, arsrc(i))
+            if (allocated(source_sink_area)) then
+               j = dbfwriteattribute(shphandle, ishape, id_area, source_sink_area(i))
             end if
 
             if (j /= 1) then
@@ -1136,16 +1149,16 @@ contains
             end if
 
             ! determine source and sink points
-            if (qstss((NUMCONST + 1) * (i - 1) + 1) > 0) then
-               snkx = xsrc(i, 1)
-               snky = ysrc(i, 1)
-               srcx = xsrc(i, maxnr)
-               srcy = ysrc(i, maxnr)
+            if (source_sink_all_discharges(1, i) > 0) then
+               snkx = source_sink_x(i, 1)
+               snky = source_sink_y(i, 1)
+               srcx = source_sink_x(i, maxnr)
+               srcy = source_sink_y(i, maxnr)
             else
-               snkx = xsrc(i, maxnr)
-               snky = ysrc(i, maxnr)
-               srcx = xsrc(i, 1)
-               srcy = ysrc(i, 1)
+               snkx = source_sink_x(i, maxnr)
+               snky = source_sink_y(i, maxnr)
+               srcx = source_sink_x(i, 1)
+               srcy = source_sink_y(i, 1)
             end if
             ! write ORIGXSNK
             j = dbfwriteattribute(shphandle, ishape, id_origxsnk, snkx)
@@ -1237,8 +1250,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1334,8 +1349,10 @@ contains
          k = kdryarea(L)
          k1 = kn(1, k)
          k2 = kn(2, k)
-         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         tmp_x(1) = xk(k1)
+         tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1)
+         tmp_y(2) = yk(k2)
          shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
          ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1487,8 +1504,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1632,7 +1651,9 @@ contains
          do link_index = 1, ubound(dambreak_links, 1)
             ! create a shape object with the "simple" method, for each shape 2 components are added x, y
             flow_link = dambreak_links(link_index)
-            if (flow_link == 0) cycle
+            if (flow_link == 0) then
+               cycle
+            end if
 
             write (string_shape_element, '(I4.4)') shape_element
             object_name = trim(dambreak_names(dambreak_index))//'_'//string_shape_element

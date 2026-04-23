@@ -1,6 +1,6 @@
 !----- LGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This library is free software; you can redistribute it and/or                
 !  modify it under the terms of the GNU Lesser General Public                   
@@ -64,7 +64,7 @@ module m_ec_quantity
          ! allocation
          allocate(quantityPtr, stat = istat)
          if (istat /= 0) then
-            call setECMessage("ERROR: ec_quantity::ecQuantityCreate: Unable to allocate additional memory.")
+            call set_ec_message("ERROR: ec_quantity::ecQuantityCreate: Unable to allocate additional memory.")
             quantityPtr => null()
             return
          end if
@@ -88,7 +88,7 @@ module m_ec_quantity
          success = .true.
          !
          if (.not. associated(quantityPtr)) then
-            call setECMessage("WARNING: ec_quantity::ecQuantityFree1dArray: Dummy argument quantityPtr is already disassociated.")
+            call set_ec_message("WARNING: ec_quantity::ecQuantityFree1dArray: Dummy argument quantityPtr is already disassociated.")
          else
             ! Free(nothing to do) and deallocate all tEcQuantityPtrs in the 1d array.
             do i=1, nQuantities
@@ -138,11 +138,11 @@ module m_ec_quantity
          !
          quantityPtr => ecSupportFindQuantity(instancePtr, quantityId)
          if (.not.associated(quantityPtr)) then
-            call setECMessage("ERROR: ec_quantity::ecQuantitySet: Cannot find a Quantity with the supplied id.")
+            call set_ec_message("ERROR: ec_quantity::ecQuantitySet: Cannot find a Quantity with the supplied id.")
          end if
          if (present(name)) then 
             if (len_trim(name) > maxNameLen) then
-               call setECMessage("ERROR: ec_quantity::ecQuantitySetName: The new name string is too long, unable to change name.")
+               call set_ec_message("ERROR: ec_quantity::ecQuantitySetName: The new name string is too long, unable to change name.")
             else
                quantityPtr%name = name  
             end if
@@ -201,7 +201,7 @@ module m_ec_quantity
          ierr = nf90_get_att(ncid, varid, '_FillValue', fillvalue)
          if (ierr==NF90_NOERR) then
             if (.not.(ecQuantitySet(instancePtr, quantityId, fillvalue=fillvalue))) then
-               call setECMessage("Unable to set fillValue for quantity ", quantityId)
+               call set_ec_message("Unable to set fillValue for quantity ", quantityId)
                return
             end if
          end if
@@ -209,7 +209,7 @@ module m_ec_quantity
          ierr = nf90_get_att(ncid, varid, 'scale_factor', scalefactor)
          if (ierr==NF90_NOERR) then
             if (.not.(ecQuantitySet(instancePtr, quantityId, factor=scalefactor))) then
-               call setECMessage("Unable to set scale factor for quantity ", quantityId)
+               call set_ec_message("Unable to set scale factor for quantity ", quantityId)
                return
             end if
          end if
@@ -224,7 +224,7 @@ module m_ec_quantity
 
          if (add_offset /= 0.0_hp) then
             if (.not.(ecQuantitySet(instancePtr, quantityId, offset=add_offset))) then
-               call setECMessage("Unable to set offset for quantity ", quantityId)
+               call set_ec_message("Unable to set offset for quantity ", quantityId)
                return
             end if
          end if
@@ -250,7 +250,7 @@ module m_ec_quantity
          quantityPtr => null()
          !
          if (len_trim(newName) > maxNameLen) then
-            call setECMessage("ERROR: ec_quantity::ecQuantitySetName: The new name string is too long, unable to change name.")
+            call set_ec_message("ERROR: ec_quantity::ecQuantitySetName: The new name string is too long, unable to change name.")
          else
             name = newName
          end if
@@ -259,7 +259,7 @@ module m_ec_quantity
             quantityPtr%name = name
             success = .true.
          else
-            call setECMessage("ERROR: ec_quantity::ecQuantitySetName: Cannot find a Quantity with the supplied id.")
+            call set_ec_message("ERROR: ec_quantity::ecQuantitySetName: Cannot find a Quantity with the supplied id.")
          end if
       end function ecQuantitySetName
 
@@ -290,7 +290,7 @@ module m_ec_quantity
             endif
             success = .True.
          else
-            call setECMessage("ERROR: ec_quantity::ecQuantitySetTimeint: Cannot find a Quantity with the supplied id.")
+            call set_ec_message("ERROR: ec_quantity::ecQuantitySetTimeint: Cannot find a Quantity with the supplied id.")
          end if
       end function ecQuantitySetTimeint
       

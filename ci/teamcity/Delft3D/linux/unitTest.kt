@@ -20,6 +20,7 @@ object LinuxUnitTest : BuildType({
     """.trimIndent()
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance
@@ -28,6 +29,7 @@ object LinuxUnitTest : BuildType({
     params {
         param("env.PATH", "%teamcity.build.checkoutDir%/lnx64/bin:%env.PATH%")
         param("env.LD_LIBRARY_PATH", "%teamcity.build.checkoutDir%/lnx64/lib:%env.LD_LIBRARY_PATH%")
+        param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
     }
 
     vcs {
@@ -36,7 +38,26 @@ object LinuxUnitTest : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusLinux2"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("download_to", "/downloads")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_url", "https://artifacts.deltares.nl/repository")
+        }
+        script {
+            name = "Extract artifact"
+            enabled = false
+            scriptContent = """
+                echo "Extracting %file_path%..."
+
+                tar -xzf %file_path%
+            """.trimIndent()
+        }
         python {
             conditions {
                 matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
@@ -148,9 +169,5 @@ object LinuxUnitTest : BuildType({
                 onDependencyCancel = FailureAction.CANCEL
             }
         }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

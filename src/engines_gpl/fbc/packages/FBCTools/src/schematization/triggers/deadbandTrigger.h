@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,29 +29,29 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class deadbandTrigger : public trigger
-{
-private:
-	condition conOn;
-	condition conOff;
-	bool yDefaultPresent;
-	bool yDefaultValue;
+            class deadbandTrigger : public trigger
+            {
+            private:
+                condition conOn;
+                condition conOff;
+                bool yDefaultPresent;
+                bool yDefaultValue;
 
-public:
-	deadbandTrigger(string id, string name, condition conOn, condition conOff, 
-		bool yDefaultPresent, bool yDefaultValue, int iYOut, int iTimeTrueOut, int iTimeFalseOut);
-	~deadbandTrigger(void);
+            public:
+                deadbandTrigger(string id, string name, condition conOn, condition conOff, bool yDefaultPresent,
+                                bool yDefaultValue, int iYOut, int iTimeTrueOut, int iTimeFalseOut);
+                ~deadbandTrigger(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* DEADBANDTRIGGER */

@@ -1,7 +1,7 @@
 module morphology_data_module
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -223,6 +223,11 @@ integer,parameter,public   :: MOR_STAT_BODS= 2
 !
 integer,parameter,public   :: SC_MUDTHC  = 1
 integer,parameter,public   :: SC_MUDFRAC = 2
+!
+! Threshold options for FIXFAC calculation
+!
+integer, parameter, public :: THRESH_CONSTANT = 1 ! constant value specified using Thresh
+integer, parameter, public :: THRESH_BASED_ON_THICKNESS = 2 !value based on thickness of alluvial transport layer
 !
 ! collection of morphology output options
 !
@@ -478,6 +483,7 @@ type morpar_type
                            !  1: none
                            !  2: Bagnold, Ikeda/Van Rijn
                            !  3: Van Bendegom, Koch&Flokstra
+    integer :: ithresh     !  switch for threshold for reduction of sediment thickness
     integer :: morfacpar   ! parameter index of morfac in table structure
                            ! only used when varyingmorfac=true
     integer :: morfacrec   ! record index of morfac in table structure
@@ -538,7 +544,7 @@ type morpar_type
     character(256) :: telfil       !  name of file containing exchange layer thickness
     character(256) :: ttlfil       !  name of file containing transport layer thickness
     character(256) :: aldifffil    !  name of file containing active-layer diffusion
-    character(256) :: flsthetsd    !  name of file containing dry cell erosion factor
+    character(:), allocatable :: flsthetsd    !  name of file containing dry cell erosion factor
     !
 end type morpar_type
 
@@ -553,8 +559,9 @@ type t_noderelation
    integer                                        :: BranchOut2Ln = 0   !< Link index 
    character(len=CHARLEN)                         :: tableName  = ' '
    character(len=CHARLEN)                         :: Method     = ' '
-   real(fp)                                       :: expQ       = -1.0_fp
-   real(fp)                                       :: expW       = -1.0_fp
+   real(fp)                                       :: expQ       = -999.0_fp ! initialized in `ini_noderel`
+   real(fp)                                       :: expW       = -999.0_fp ! initialized in `ini_noderel`
+   real(fp)                                       :: alpha_BP   = 2.5_fp
    type(t_table), pointer                         :: Table
 end type t_noderelation
 
@@ -770,14 +777,20 @@ type sedtra_type
     real(fp)         , dimension(:,:)    , pointer :: e_ssnc   !(nu1:nu2,lsed)    ssuuc in structured Delft3D-FLOW
     real(fp)         , dimension(:,:)    , pointer :: e_sstc   !(nu1:nu2,lsed)    ssvvc in structured Delft3D-FLOW
     !
+    real(fp)         , dimension(:,:)    , pointer :: frac_he  !(nu1:nu2,lsedtot) effective fraction of sediment for computing hiding exposure (transport)
+    real(fp)         , dimension(:)      , pointer :: dm_he    !(nu1:nu2)         arithmetic mean sediment diameter for computing hiding exposure (transport)
+    real(fp)         , dimension(:)      , pointer :: dg_he    !(nu1:nu2)         geometric mean sediment diameter for computing hiding exposure (transport) (dummy, not used)
     real(fp)         , dimension(:,:)    , pointer :: frac     !< (nc1:nc2,lsedtot) effective fraction of sediment in bed available for transport
     real(fp)         , dimension(:)      , pointer :: mudfrac  !< (nc1:nc2)         effective mud fraction in the part of the bed exposed to transport
     real(fp)         , dimension(:)      , pointer :: sandfrac !< (nc1:nc2)         effective sand fraction in the part of the bed exposed to transport (mud excluded)
     real(fp)         , dimension(:)      , pointer :: dm       !< (nc1:nc2)         arithmetic mean sediment diameter of the part of the bed exposed to transport (mud excluded)
     real(fp)         , dimension(:)      , pointer :: dg       !< (nc1:nc2)         geometric mean sediment diameter of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:)      , pointer :: dgsd     !< (nc1:nc2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: dxx      !< (nc1:nc2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
-    real(fp)         , dimension(:,:)    , pointer :: hidexp   !< (nc1:nc2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
+    real(fp)         , dimension(:)      , pointer :: dgsd     !(nu1:nu2)         geometric standard deviation of particle size mix of the part of the bed exposed to transport (mud excluded)
+    real(fp)         , dimension(:)      , pointer :: dgsd_he  !(nu1:nu2)         geometric standard deviation of for computing hiding exposure (transport) (dummy, not used)
+    real(fp)         , dimension(:,:)    , pointer :: dxx      !(nu1:nu2,nxx)     sediment diameter corresponding to percentile xx (mud excluded)
+    real(fp)         , dimension(:,:)    , pointer :: dxx_he   !(nu1:nu2,nxx)     sediment diameter corresponding for computing hiding exposure (transport) (dummy, not used)
+    real(fp)         , dimension(:,:)    , pointer :: hidexp   !(nu1:nu2,lsedtot) hiding-exposure factor correcting the shear stress (sand-gravel mixtures)
+    real(fp)         , dimension(:)      , pointer :: mudfrac_he  !(nu1:nu2)      effective mud fraction for computing hiding exposure (dummy, not used)
     !
     real(fp)         , dimension(:)      , pointer :: uuu      !(nc1:nc2)
     real(fp)         , dimension(:)      , pointer :: vvv      !(nc1:nc2)
@@ -874,6 +887,13 @@ subroutine nullsedtra(sedtra)
     nullify(sedtra%dgsd)
     nullify(sedtra%dxx)
     nullify(sedtra%hidexp)
+    !
+    nullify(sedtra%frac_he)
+    nullify(sedtra%mudfrac_he)
+    nullify(sedtra%dm_he)
+    nullify(sedtra%dg_he)
+    nullify(sedtra%dgsd_he)
+    nullify(sedtra%dxx_he)
     !
     nullify(sedtra%uuu)
     nullify(sedtra%vvv)
@@ -990,6 +1010,14 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     if (istat==0) allocate(sedtra%dgsd    (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%dxx     (nc1:nc2,nxx), STAT = istat)
     if (istat==0) allocate(sedtra%hidexp  (nc1:nc2,lsedtot), STAT = istat)
+    !
+    ! hiding exposure computed on the basis of transport and coarse layer
+    if (istat==0) allocate(sedtra%frac_he (nu1:nu2,lsedtot), STAT = istat)
+    if (istat==0) allocate(sedtra%mudfrac_he (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dm_he   (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dg_he   (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dgsd_he (nu1:nu2), STAT = istat)
+    if (istat==0) allocate(sedtra%dxx_he  (nu1:nu2,nxx), STAT = istat)
     !
     if (istat==0) allocate(sedtra%uuu     (nc1:nc2), STAT = istat)
     if (istat==0) allocate(sedtra%vvv     (nc1:nc2), STAT = istat)
@@ -1185,6 +1213,14 @@ subroutine clrsedtra(istat, sedtra)
     if (associated(sedtra%dxx     ))   deallocate(sedtra%dxx     , STAT = istat)
     if (associated(sedtra%hidexp  ))   deallocate(sedtra%hidexp  , STAT = istat)
     !
+    ! hiding exposure on the basis of transport and coarse layer
+    if (associated(sedtra%frac_he ))   deallocate(sedtra%frac_he , STAT = istat)
+    if (associated(sedtra%mudfrac_he ))   deallocate(sedtra%mudfrac_he , STAT = istat)
+    if (associated(sedtra%dm_he   ))   deallocate(sedtra%dm_he   , STAT = istat)
+    if (associated(sedtra%dg_he   ))   deallocate(sedtra%dg_he   , STAT = istat)
+    if (associated(sedtra%dgsd_he ))   deallocate(sedtra%dgsd_he , STAT = istat)
+    if (associated(sedtra%dxx_he  ))   deallocate(sedtra%dxx_he  , STAT = istat)
+    !
     if (associated(sedtra%uuu     ))   deallocate(sedtra%uuu     , STAT = istat)
     if (associated(sedtra%vvv     ))   deallocate(sedtra%vvv     , STAT = istat)
     if (associated(sedtra%umod    ))   deallocate(sedtra%umod    , STAT = istat)
@@ -1378,6 +1414,7 @@ subroutine nullmorpar(morpar)
     integer                              , pointer :: iopkcw
     integer                              , pointer :: iopsus
     integer                              , pointer :: islope
+    integer                              , pointer :: ithresh
     integer                              , pointer :: morfacpar
     integer                              , pointer :: morfacrec
     integer                              , pointer :: morfactable
@@ -1465,7 +1502,6 @@ subroutine nullmorpar(morpar)
     character(256)                       , pointer :: ttlfil
     character(256)                       , pointer :: telfil
     character(256)                       , pointer :: aldifffil
-    character(256)                       , pointer :: flsthetsd
     type (bedbndtype)     , dimension(:) , pointer :: morbnd
     type (cmpbndtype)     , dimension(:) , pointer :: cmpbnd
     !
@@ -1536,6 +1572,7 @@ subroutine nullmorpar(morpar)
     iopkcw              => morpar%iopkcw
     iopsus              => morpar%iopsus
     islope              => morpar%islope
+    ithresh             => morpar%ithresh
     morfacpar           => morpar%morfacpar
     morfacrec           => morpar%morfacrec
     morfactable         => morpar%morfactable
@@ -1566,7 +1603,6 @@ subroutine nullmorpar(morpar)
     ttlfil              => morpar%ttlfil
     telfil              => morpar%telfil
     aldifffil           => morpar%aldifffil
-    flsthetsd           => morpar%flsthetsd
     !
     istat = 0
     allocate (morpar%moroutput  , STAT = istat)
@@ -1603,7 +1639,7 @@ subroutine nullmorpar(morpar)
     ttlfil             = ' '
     telfil             = ' '
     aldifffil          = ' '
-    flsthetsd          = ' '
+    morpar%flsthetsd = ' '
     !
     morfac             = 1.0_fp
     thresh             = 0.1_fp
@@ -1664,6 +1700,7 @@ subroutine nullmorpar(morpar)
     iopkcw             = 1
     iopsus             = 0
     islope             = 2
+    ithresh            = THRESH_CONSTANT
     morfacpar          = imissval
     morfacrec          = imissval
     morfactable        = imissval

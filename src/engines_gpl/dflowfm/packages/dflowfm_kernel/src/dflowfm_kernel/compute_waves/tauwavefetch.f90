@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,7 +64,7 @@ contains
       use m_getfetch, only: getfetch
       use m_hurdlestive, only: hurdlestive
       use m_ian_young_pt, only: ian_young_pt
-      use m_tauwavehk, only: tauwavehk
+      use m_wave_shear_velocity, only: compute_wave_shear_velocity
       use m_fetch_operation_utils, only: initialise_fetch_proc_data, stop_fetch_computation, stop_fetch_computation, &
                                          stop_fetch_computation, send_s1_to_fetch_proc, get_fetch_values_from_fetch_proc
       use m_waveconst
@@ -117,7 +117,9 @@ contains
             end if
 
             time_fetch = max(tim, time_fetch + tifetch)
-            if (tifetch == 0.0_dp) time_fetch = 1.0e30_dp
+            if (tifetch == 0.0_dp) then
+               time_fetch = 1.0e30_dp
+            end if
 
             if (use_fetch_proc == 0 .or. my_rank == fetch_proc_rank) then
                call calculate_fetch_values_for_all_wind_directions(total_nr_cells)
@@ -154,7 +156,7 @@ contains
 
                Hwav(cell) = Hsig * rsqrt2 ! Hwav === hrms
                Twav(cell) = Tsig
-               call tauwavehk(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum) ! basically now just a dispersion function with 2DH stokes drift magnitude
+               call compute_wave_shear_velocity(Hwav(cell), Twav(cell), hs(cell), Uorb(cell), rlabda(cell), dum) ! basically now just a dispersion function with 2DH stokes drift magnitude
             end if
          end if
 
@@ -222,7 +224,7 @@ contains
          fetch_temp = dmiss
          calculate_for = .true.
 
-         wind_direction = twopi * (index_wind_direction - 1) / dble(nwf - 1)
+         wind_direction = twopi * (index_wind_direction - 1) / real(nwf - 1, kind=dp)
          u_wind = cos(wind_direction)
          v_wind = sin(wind_direction)
 
@@ -244,7 +246,9 @@ contains
             nr_cells_done = nr_cells_done_red
          end if
 
-         if (jagui > 0) call setcol(31)
+         if (jagui > 0) then
+            call setcol(31)
+         end if
 
          call make_list_of_upwind_cells(u_wind, v_wind)
 
@@ -285,10 +289,15 @@ contains
          if (calculate_for(cell)) then
             do cell_link = 1, nd(cell)%lnx
                link = abs(nd(cell)%ln(cell_link))
-               cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
+               cell2 = ln(1, link)
+               if (cell2 == cell) then
+                  cell2 = ln(2, link)
+               end if
                if (kcs(cell2) == 2) then ! internal
                   cs = u_wind * csu(link) + v_wind * snu(link)
-                  if (link /= nd(cell)%ln(cell_link)) cs = -cs
+                  if (link /= nd(cell)%ln(cell_link)) then
+                     cs = -cs
+                  end if
 
                   if (cs > 0) then ! internal upwind cell
                      number_of_upwind_cells(cell) = number_of_upwind_cells(cell) + 1
@@ -320,10 +329,15 @@ contains
             index = 0
             do cell_link = 1, nd(cell)%lnx
                link = abs(nd(cell)%ln(cell_link))
-               cell2 = ln(1, link); if (cell2 == cell) cell2 = ln(2, link)
+               cell2 = ln(1, link)
+               if (cell2 == cell) then
+                  cell2 = ln(2, link)
+               end if
                if (kcs(cell2) == 2) then ! internal
                   cs = u_wind * csu(link) + v_wind * snu(link)
-                  if (link /= nd(cell)%ln(cell_link)) cs = -cs
+                  if (link /= nd(cell)%ln(cell_link)) then
+                     cs = -cs
+                  end if
 
                   if (cs > 0) then ! internal upwind cell
                      index = index + 1
@@ -397,7 +411,9 @@ contains
             max_cell_size = max(max_cell_size, dbdistance(xk(node1), yk(node1), xk(node2), yk(node2), jsferic, jasfer3D, dmiss))
             node2 = node1
          end do
-         if (jsferic == 1) max_cell_size = max_cell_size * rd2dg / ra
+         if (jsferic == 1) then
+            max_cell_size = max_cell_size * rd2dg / ra
+         end if
 
          jaopen = 0
          do cell_link = 1, nd(cell)%lnx
@@ -408,7 +424,8 @@ contains
             end if
          end do
 
-         min_distance_node = 0; min_distance = 1.0e10_dp; 
+         min_distance_node = 0
+         min_distance = 1.0e10_dp
          do index_cell_node = 1, netcell(cell)%n
             link = netcell(cell)%lin(index_cell_node)
             node1 = netcell(cell)%nod(index_cell_node)
@@ -422,7 +439,9 @@ contains
                call normalout(xk(node1), yk(node1), xk(node2), yk(node2), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
                prin = u_wind * xn + v_wind * yn
                if (prin < 0.0_dp) then ! if upwind
-                  crp = xn; xn = -yn; yn = crp
+                  crp = xn
+                  xn = -yn
+                  yn = crp
                   crp = 0.0_dp
                   xnode1 = xk(node1) - 2 * max_cell_size * xn
                   ynode1 = yk(node1) - 2 * max_cell_size * yn
@@ -433,7 +452,8 @@ contains
                   if (jacros == 1) then
                      dist = dbdistance(xz(cell), yz(cell), xcr, ycr, jsferic, jasfer3D, dmiss)
                      if (dist < min_distance) then
-                        min_distance = dist; min_distance_node = index_cell_node ! closest crossed upwind edge
+                        min_distance = dist
+                        min_distance_node = index_cell_node ! closest crossed upwind edge
                      end if
                   end if
                end if
@@ -553,9 +573,11 @@ contains
 
       call realloc(wxc, ndx, keepExisting=.false.)
       call realloc(wyc, ndx, keepExisting=.false.)
-      wxc = 0.0_dp; wyc = 0.0_dp
+      wxc = 0.0_dp
+      wyc = 0.0_dp
       do link = 1, lnx
-         k1 = ln(1, link); k2 = ln(2, link)
+         k1 = ln(1, link)
+         k2 = ln(2, link)
          wxc(k1) = wxc(k1) + wcL(1, link) * wx(link)
          wxc(k2) = wxc(k2) + wcL(2, link) * wx(link)
          wyc(k1) = wyc(k1) + wcL(1, link) * wy(link)

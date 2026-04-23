@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,13 +37,16 @@ submodule(m_delete_dry_points_and_areas) m_delete_dry_points_and_areas_
 contains
 
    ! Delete dry points from netgeom based on drypoints files and grid enclosure file
-   module subroutine delete_dry_points_and_areas()
+   module subroutine delete_dry_points_and_areas(update_blcell)
       use m_delete_drypoints_from_netgeom, only: delete_drypoints_from_netgeom
       use unstruc_model, only: md_dryptsfile, md_encfile
       use gridoperations, only: update_cell_circumcenters
+      use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_method
       use unstruc_caching
       use network_data, only: nump, nump1d2d, lne, lnn, xzw, yzw, netcell
       use m_flowgeom, only: xz, yz, ba
+
+      logical, intent(in) :: update_blcell !< Flag specifying whether the blcell array should be updated after removing dry cells.
 
       logical cache_success
       cache_success = .false.
@@ -53,12 +56,12 @@ contains
       end if
 
       if (.not. cache_success) then
-         call delete_drypoints_from_netgeom(md_dryptsfile, 0, 0)
-         call delete_drypoints_from_netgeom(md_encfile, 0, -1)
+         call delete_drypoints_from_netgeom(md_dryptsfile, 0, 0, update_blcell)
+         call delete_drypoints_from_netgeom(md_encfile, 0, -1, update_blcell)
 
-         ! for issue UNST-3381, compute circumcenter after deleting dry areas
-         ! TODO: UNST-3436 must be done as a better solution
-         if (len_trim(md_dryptsfile) > 0 .or. len_trim(md_encfile) > 0) then
+         ! Note: code below should stay as long as the old circumcenter method is still available (INTERNAL_NETLINKS_EDGE).
+         ! For the new methods, it is no longer needed (implemented in UNST-8546).
+         if (circumcenter_method /= ALL_NETLINKS_LOOP .and. (len_trim(md_dryptsfile) > 0 .or. len_trim(md_encfile) > 0)) then         ! for issue UNST-3381, compute circumcenter after deleting dry areas
             call update_cell_circumcenters()
          end if
 

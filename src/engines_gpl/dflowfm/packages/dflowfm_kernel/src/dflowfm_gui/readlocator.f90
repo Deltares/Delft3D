@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -107,8 +107,8 @@ contains
 !     muisbeweging
       Xloc = InfoGraphics(5)
       Yloc = InfoGraphics(6)
-      X = dble(xloc)
-      y = dble(yloc)
+      X = real(xloc, kind=dp)
+      y = real(yloc, kind=dp)
 
       call IGRUNITSTOPIXELS(Xloc, Yloc, IXP, IYP)
       call dPROJECT(X, Y, XLC, YLC, 2)

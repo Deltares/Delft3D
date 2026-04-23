@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,34 +36,32 @@
 
 #include "util_mf.h"
 #if !defined(WIN32)
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <inttypes.h>
+    #include <sys/time.h>
+    #include <sys/resource.h>
+    #include <inttypes.h>
 #endif
 
 #if defined(_WIN32)
-#define FILE_READ _read
-#define FILE_WRITE _write
-#define FILE_SEEK _fseeki64
-#define FILE_TELL _ftelli64
+    #define FILE_READ _read
+    #define FILE_WRITE _write
+    #define FILE_SEEK _fseeki64
+    #define FILE_TELL _ftelli64
 #elif defined(linux)
-#define FILE_READ read
-#define FILE_WRITE write
-#define FILE_SEEK fseeko
-#define FILE_TELL ftello
+    #define FILE_READ read
+    #define FILE_WRITE write
+    #define FILE_SEEK fseeko
+    #define FILE_TELL ftello
 #else
-#define FILE_READ FILE_READ_not_defined
-#define FILE_WRITE FILE_WRITE_not_defined
-#define FILE_SEEK FILE_SEEK_not_defined
-#define FILE_TELL FILE_TELL_not_defined
+    #define FILE_READ FILE_READ_not_defined
+    #define FILE_WRITE FILE_WRITE_not_defined
+    #define FILE_SEEK FILE_SEEK_not_defined
+    #define FILE_TELL FILE_TELL_not_defined
 #endif
 
 /*----- Function to determine with a path name is a directory or not.*/
 
-int isdir(
-    char *path)
+int isdir(char* path)
 {
-
 #if defined(WIN32)
     struct _stat statbuf;
     if (_stat(path, &statbuf) == 0 && (statbuf.st_mode & _S_IFDIR))
@@ -78,71 +76,53 @@ int isdir(
 
 /*----- Function to convert a space-padded FORTRAN string to a null-terminated C string.*/
 
-void fstr2cstr(
-    char *fstr,
-    int len,
-    char *cstr)
+void fstr2cstr(char* fstr, int len, char* cstr)
 {
-
     int i;
 
     /*  Look for the last non-space character in the character array */
 
     for (i = len; i >= 0; i--)
-        if (fstr[i] != ' ')
-            break;
+        if (fstr[i] != ' ') break;
 
     /*  Copy backwards all the relevant characters */
 
     cstr[i + 1] = '\0';
-    for (; i >= 0; i--)
-        cstr[i] = fstr[i];
+    for (; i >= 0; i--) cstr[i] = fstr[i];
 }
 
 /*----- Function to convert a null-terminated C string to a space-padded FORTRAN string. */
 
-void cstr2fstr(
-    char *cstr,
-    int len,
-    char *fstr)
+void cstr2fstr(char* cstr, int len, char* fstr)
 {
-
     int i;
 
     /*  Copy to to but not including the C string terminator */
 
-    for (i = 0; i < len && cstr[i] != '\0'; i++)
-        fstr[i] = cstr[i];
+    for (i = 0; i < len && cstr[i] != '\0'; i++) fstr[i] = cstr[i];
 
     /*  Pad the FORTRAN character array with spaces */
 
-    for (; i < len; i++)
-        fstr[i] = ' ';
+    for (; i < len; i++) fstr[i] = ' ';
 }
 
 /*------------------------------------------------------------------------------*/
 
-void STDCALL
-CUTIL_CDATE(
+void STDCALL CUTIL_CDATE(
 #if defined(WIN32)
-    char *date,
-    int date_length
+    char* date, int date_length
 #else
-    char *date
+    char* date
 #endif
 )
 {
-
     time_t timer = time(NULL);
     size_t max_len = 30;
     strncpy(date, asctime(localtime(&timer)), max_len);
 }
 
-void STDCALL
-CUTIL_CGETCP(
-    double *cpu)
+void STDCALL CUTIL_CGETCP(double* cpu)
 {
-
 #if defined(WIN32)
     *cpu = (double)clock() / CLOCKS_PER_SEC;
 #else
@@ -153,66 +133,45 @@ CUTIL_CGETCP(
 #endif
 }
 
-void STDCALL
-CUTIL_CSTOP(
+void STDCALL CUTIL_CSTOP(
 #if defined(WIN32)
-    long *exitcode,
-    char *message,
-    int message_length
+    long* exitcode, char* message, int message_length
 #else
-    long *exitcode,
-    char *message
+    long* exitcode, char* message
 #endif
 )
 {
-
     printf("%s\n", message);
     exit(*exitcode);
 }
 
-void STDCALL
-CUTIL_GETENV(
+void STDCALL CUTIL_GETENV(
 #if !defined(WIN32)
-    char *name,
-    int *lenname,
-    char *value,
-    int *lenvalue
+    char* name, int* lenname, char* value, int* lenvalue
 #else
-    char *name,
-    int *lenname,
-    char *value,
-    int *lenvalue,
-    int name_LENGTH,
-    int value_LENGTH
+    char* name, int* lenname, char* value, int* lenvalue, int name_LENGTH, int value_LENGTH
 #endif
 )
 {
-
     char buf[10000];
-    char *enval;
+    char* enval;
 
     /*----  Convert environment variable name to a C string, look it up,
             and if the result exists convert it to a Fortran string. */
 
     fstr2cstr(name, *lenname, buf);
 
-    if ((enval = getenv(buf)) != NULL)
-        cstr2fstr(enval, *lenvalue, value);
+    if ((enval = getenv(buf)) != NULL) cstr2fstr(enval, *lenvalue, value);
 }
 
-void STDCALL
-CUTIL_SYSTEM(
+void STDCALL CUTIL_SYSTEM(
 #if !defined(WIN32)
-    char *command,
-    int *len
+    char* command, int* len
 #else
-    char *command,
-    int *len,
-    int command_LENGTH
+    char* command, int* len, int command_LENGTH
 #endif
 )
 {
-
     char localcmd[MAX_CMD + 1];
 #if defined(WIN32)
     int success;
@@ -236,8 +195,7 @@ CUTIL_SYSTEM(
     start.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
     start.hStdError = GetStdHandle(STD_ERROR_HANDLE);
 
-    success = CreateProcess(NULL, localcmd, NULL, NULL, 1, 0,
-                            NULL, NULL, &start, &process);
+    success = CreateProcess(NULL, localcmd, NULL, NULL, 1, 0, NULL, NULL, &start, &process);
     if (success)
     {
         WaitForSingleObject(process.hProcess, INFINITE);
@@ -249,11 +207,8 @@ CUTIL_SYSTEM(
 #endif
 }
 
-void STDCALL
-CUTIL_SLEEP(
-    int *millisec)
+void STDCALL CUTIL_SLEEP(int* millisec)
 {
-
 #if defined(WIN32)
     Sleep(*millisec);
 #else
@@ -339,9 +294,7 @@ CUTIL_SLEEP(
 
 #define _MAX_LENGTH_ 6666
 
-int STDCALL
-CUTIL_MF_SETMAXSTDIO(
-    int *max_size)
+int STDCALL CUTIL_MF_SETMAXSTDIO(int* max_size)
 {
 #if !defined(WIN32)
     struct rlimit old, new;
@@ -362,68 +315,50 @@ CUTIL_MF_SETMAXSTDIO(
 #endif
 }
 
-long long int STDCALL
-CUTIL_MF_OPEN(
-    char *fname)
+long long int STDCALL CUTIL_MF_OPEN(char* fname)
 {
-    FILE *fh;
+    FILE* fh;
     fh = fopen(fname, "rb");
     /*---- Open file, return filepointer */
     return ((long long int)fh);
 }
 
-int STDCALL
-CUTIL_MF_BACKSPACE(
-    long long int *ifh,
-    long long int *prevpos)
+int STDCALL CUTIL_MF_BACKSPACE(long long int* ifh, long long int* prevpos)
 {
-    FILE_SEEK((FILE *)*ifh, *prevpos, SEEK_SET);
+    FILE_SEEK((FILE*)*ifh, *prevpos, SEEK_SET);
     return (0);
 }
 
-int STDCALL
-CUTIL_MF_EOF(
-    long long int *ifh)
+int STDCALL CUTIL_MF_EOF(long long int* ifh)
 {
     /*---- EOF reached ? */
-    return (feof((FILE *)*ifh));
+    return (feof((FILE*)*ifh));
 }
 
-int STDCALL
-CUTIL_MF_REWIND(
-    long long int *ifh)
+int STDCALL CUTIL_MF_REWIND(long long int* ifh)
 {
     /*---- rewind file */
-    rewind((FILE *)*ifh);
+    rewind((FILE*)*ifh);
     return (0);
 }
 
-int STDCALL
-CUTIL_MF_READ(
-    long long int *ifh,
-    char *resultstr,
-    long long int *currentpos)
+int STDCALL CUTIL_MF_READ(long long int* ifh, char* resultstr, long long int* currentpos)
 {
-    *currentpos = FILE_TELL((FILE *)*ifh);                    /*---- save current pos in the file b4 reading */
-    resultstr = fgets(resultstr, _MAX_LENGTH_, (FILE *)*ifh); /*---- read a line from file */
+    *currentpos = FILE_TELL((FILE*)*ifh);                    /*---- save current pos in the file b4 reading */
+    resultstr = fgets(resultstr, _MAX_LENGTH_, (FILE*)*ifh); /*---- read a line from file */
     return (0);
 }
 
-int STDCALL
-CUTIL_MF_GETPOS(
-    long long int *ifh,
-    long long int *currentpos)
+int STDCALL CUTIL_MF_GETPOS(long long int* ifh, long long int* currentpos)
 {
-    *currentpos = FILE_TELL((FILE *)*ifh); /*---- save current pos in the file */
+    *currentpos = FILE_TELL((FILE*)*ifh); /*---- save current pos in the file */
     return (0);
 }
 
-int STDCALL
-CUTIL_MF_CLOSE(
-    long long int *ifh)
+int STDCALL CUTIL_MF_CLOSE(long long int* ifh)
 {
     /*---- close file */
-    fclose((FILE *)*ifh);
+    fclose((FILE*)*ifh);
     return (0);
 }
 
@@ -432,33 +367,21 @@ CUTIL_MF_CLOSE(
 // These two are for testing equality between floats by using integers (as a cheaper alternative
 // to comparedouble in fortran) and WILL be removed as soon as they are deemed obsolete.
 
-int STDCALL
-CUTIL_CMP_DOUBLE(
-    double *val1,
-    double *val2,
-    int *eps)
+int STDCALL CUTIL_CMP_DOUBLE(double* val1, double* val2, int* eps)
 {
     long longDiff;
-    if (*val1 == *val2)
-        return 0; // exactly equal
-    longDiff = labs(*(long *)val1 - *(long *)val2);
-    if (longDiff <= *eps)
-        return 0;                        // equal within tolerance
+    if (*val1 == *val2) return 0; // exactly equal
+    longDiff = labs(*(long*)val1 - *(long*)val2);
+    if (longDiff <= *eps) return 0;      // equal within tolerance
     return ((*val1) > (*val2) ? 1 : -1); // greater than, less than
 }
 
-int STDCALL
-CUTIL_CMP_SINGLE(
-    float *val1,
-    float *val2,
-    int *eps)
+int STDCALL CUTIL_CMP_SINGLE(float* val1, float* val2, int* eps)
 {
     long longDiff;
-    if (*val1 == *val2)
-        return 0; // exactly equal
-    longDiff = labs(*(long *)val1 - *(long *)val2);
-    if (longDiff <= *eps)
-        return 0;                        // equal within tolerance
+    if (*val1 == *val2) return 0; // exactly equal
+    longDiff = labs(*(long*)val1 - *(long*)val2);
+    if (longDiff <= *eps) return 0;      // equal within tolerance
     return ((*val1) > (*val2) ? 1 : -1); // greater than, less than
 }
 
@@ -469,35 +392,28 @@ CUTIL_CMP_SINGLE(
 #define SUCCESS 0
 #define FAILURE 1
 
-static void report_error(char *);
+static void report_error(char*);
 
 /* FTN_CAPITAL is assumed to be the default value */
 
 #if linux
-#include "config.h"
-#define STDCALL /* nothing */
-#define CUTIL_GETEXEDIR FC_FUNC(cutil_getexedir, CUTIL_GETEXEDIR)
+    #include "config.h"
+    #define STDCALL /* nothing */
+    #define CUTIL_GETEXEDIR FC_FUNC(cutil_getexedir, CUTIL_GETEXEDIR)
 #else
-// WIN32
-#define STDCALL /* nothing */
-#define CUTIL_GETEXEDIR CUTIL_GETEXEDIR
+    // WIN32
+    #define STDCALL /* nothing */
+    #define CUTIL_GETEXEDIR CUTIL_GETEXEDIR
 #endif
 
-void STDCALL
-CUTIL_GETMP(
+void STDCALL CUTIL_GETMP(
 #if !defined(WIN32)
-    char *path,
-    int *lenpath,
-    int *result
+    char* path, int* lenpath, int* result
 #else
-    char *path,
-    int *lenpath,
-    int *result,
-    int path_LENGTH
+    char* path, int* lenpath, int* result, int path_LENGTH
 #endif
 )
 {
-
     char slash; /* UNIX or Windows directory separator */
     char buf[1000];
     char path_buffer[1000];
@@ -546,21 +462,14 @@ CUTIL_GETMP(
     *result = SUCCESS;
 }
 
-void STDCALL
-CUTIL_GETEXEDIR(
+void STDCALL CUTIL_GETEXEDIR(
 #if !defined(WIN32)
-    char *path,
-    int *lenpath,
-    int *result
+    char* path, int* lenpath, int* result
 #else
-    char *path,
-    int *lenpath,
-    int *result,
-    int path_LENGTH
+    char* path, int* lenpath, int* result, int path_LENGTH
 #endif
 )
 {
-
     char slash; /* UNIX or Windows directory separator */
     char path_buffer[1000];
     char drive[1000];
@@ -592,9 +501,7 @@ CUTIL_GETEXEDIR(
     *result = SUCCESS;
 }
 
-static void
-report_error(
-    char *message)
+static void report_error(char* message)
 {
     printf("*** ERROR %s. Check installation procedure\n", message);
     fflush(stdout);

@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -35,14 +35,14 @@ enum runModeEnum
 
 enum simPeriodEnum
 {
-	COMPLETE,
+    COMPLETE,
     UPDATE,
     FORECAST
 };
 
 enum optimizerEnum
 {
-	GAMS,
+    GAMS,
     IPOPT,
     SA
 };
@@ -61,16 +61,16 @@ enum fileTypeEnum
 
 enum interpolationOption
 {
-	NONE,
-	BLOCK,
-	LINEAR,
-	PERIODIC
+    NONE,
+    BLOCK,
+    LINEAR,
+    PERIODIC
 };
 
 enum prefixEnum
 {
-	PREFIX_NONE,
-	PREFIX_LOCATIONID
+    PREFIX_NONE,
+    PREFIX_LOCATIONID
 };
 
-#endif //RTCTOOLSENUMS_H
+#endif // RTCTOOLSENUMS_H

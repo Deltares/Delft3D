@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -94,7 +94,9 @@ contains
 
       intersection_count = 0
 
-      if (NPL < 1) goto 1234 ! nothing to do
+      if (NPL < 1) then
+         goto 1234 ! nothing to do
+      end if
 
       LnxiORLnx = 0
 
@@ -155,7 +157,7 @@ contains
 
       do L = 1, LnxiORLnx
          if (mod(L, kint) == 0) then
-            af = dble(L) / dble(LnxiORLnx)
+            af = real(L, kind=dp) / real(LnxiORLnx, kind=dp)
             call readyy('Finding crossed links', af)
 !            write(6,"(F4.1, ' %')") af*100d0
          end if
@@ -171,9 +173,12 @@ contains
                cycle
             end if
          else if (itype == ITYPE_FLOWLINK) then ! flowlinks
-            n1 = ln(1, L); n2 = ln(2, L)
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
+            n1 = ln(1, L)
+            n2 = ln(2, L)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
          else if (itype == ITYPE_NETLINK) then ! netlinks, cross with netlinks
             n1 = kn(1, L)
             n2 = kn(2, L)
@@ -183,9 +188,12 @@ contains
             yb = yk(n2)
          else if (itype == ITYPE_FLOWLINK_1D_DUAL) then
             if (L <= lnx1D) then ! flowlinks, cross with perpendicular in 1D
-               n1 = ln(1, L); n2 = ln(2, L)
-               xc = xz(n1); yc = yz(n1)
-               xd = xz(n2); yd = yz(n2)
+               n1 = ln(1, L)
+               n2 = ln(2, L)
+               xc = xz(n1)
+               yc = yz(n1)
+               xd = xz(n2)
+               yd = yz(n2)
                xa = 0.5_dp * (xc + xd) - 0.5_dp * (yd - yc)
                ya = 0.5_dp * (yc + yd) + 0.5_dp * (xd - xc)
                xb = 0.5_dp * (xc + xd) + 0.5_dp * (yd - yc)
@@ -212,7 +220,9 @@ contains
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
 
-         if (NN == 0) cycle ! no links found
+         if (NN == 0) then
+            cycle ! no links found
+         end if
 
 !        reallocate if necessary
          call realloc_results_kdtree(treeinst, NN)
@@ -249,7 +259,9 @@ contains
 1234  continue
 
 !     deallocate
-      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
+      if (treeinst%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeinst)
+      end if
       if (allocated(ipolsection)) then
          deallocate (ipolsection)
       end if

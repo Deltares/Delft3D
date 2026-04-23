@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -34,25 +34,25 @@ using namespace rtctools::schematization;
 namespace rtctools
 {
 
-class rtcToolsSimulator
-{
-public:
-	rtcToolsSimulator() {};
-	rtcToolsSimulator(int iEnsemble, timeSeriesMatrixInterface* tsMatrix, schematisation *schema, 
-		double p, rtcRuntimeConfigSettings* runtimeSettings);
-	~rtcToolsSimulator(void) {};
+    class rtcToolsSimulator
+    {
+    public:
+        rtcToolsSimulator() {};
+        rtcToolsSimulator(int iEnsemble, timeSeriesMatrixInterface* tsMatrix, schematisation* schema, double p,
+                          rtcRuntimeConfigSettings* runtimeSettings);
+        ~rtcToolsSimulator(void) {};
 
-    double simulate(int iStart, int iEnd, double** JInc2DArray = (double**)0);
-	void simulate(int iStep);
-    void evaluateGradient(int iStart, int iEnd); 
+        double simulate(int iStart, int iEnd, double** JInc2DArray = (double**)0);
+        void simulate(int iStep);
+        void evaluateGradient(int iStart, int iEnd);
 
-private:
-	int iEnsemble;
-	double p;
-	timeSeriesMatrixInterface* tsMatrix;
-	schematisation* schema;
-	rtcRuntimeConfigSettings* runtimeSettings;
-};
+    private:
+        int iEnsemble;
+        double p;
+        timeSeriesMatrixInterface* tsMatrix;
+        schematisation* schema;
+        rtcRuntimeConfigSettings* runtimeSettings;
+    };
 
-}
-#endif //RTCTOOLS_SIMULATOR_H
+} // namespace rtctools
+#endif // RTCTOOLS_SIMULATOR_H

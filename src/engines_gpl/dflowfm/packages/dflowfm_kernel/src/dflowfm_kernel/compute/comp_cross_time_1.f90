@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -82,7 +82,7 @@ contains
          f = 2.0_dp * dot_product(x34, v34)
          g = dot_product(x34, x34)
 
-         coeffs = coeffs - dclear * dclear * [0.0_dp, 0.0_dp, e, f, g]
+         coeffs = coeffs - dclear * dclear*[0.0_dp, 0.0_dp, e, f, g]
       end if
 
       t = DMISS
@@ -92,8 +92,12 @@ contains
 
 !   if ( t(1).ne.DMISS .and. t(2).ne.DMISS ) then
       do i = 1, 4
-         if (t(i) == DMISS) cycle
-         if (t(i) < dtol) cycle ! positive times only
+         if (t(i) == DMISS) then
+            cycle
+         end if
+         if (t(i) < dtol) then
+            cycle ! positive times only
+         end if
          xs = x4 - x3 + (v4 - v3) * t(i)
          det = dot_product(xs, xs)
          if (abs(det) > dtol) then
@@ -110,7 +114,9 @@ contains
             else
                DdDt = -1.0e99_dp
             end if
-            if (DdDt < 0.0_dp) time = min(time, t(i))
+            if (DdDt < 0.0_dp) then
+               time = min(time, t(i))
+            end if
          end if
       end do
 

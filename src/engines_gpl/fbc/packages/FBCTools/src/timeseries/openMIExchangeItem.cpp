@@ -1,4 +1,4 @@
-// Copyright (C) 2025 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -25,25 +25,20 @@
 
 #include <sstream>
 
-using namespace std;
 using namespace rtctools::timeseries;
 
-openMIExchangeItem::openMIExchangeItem()
-{
-}
+openMIExchangeItem::openMIExchangeItem() {}
 
 openMIExchangeItem::openMIExchangeItem(string id, int index, string elementID, string quantityID, string unit)
 {
-	this->id = string(id);
-	this->index = index;
-	this->elementID = string(elementID);
-	this->quantityID = string(quantityID);
-	this->unit = string(unit);
+    this->id = string(id);
+    this->index = index;
+    this->elementID = string(elementID);
+    this->quantityID = string(quantityID);
+    this->unit = string(unit);
 }
 
-openMIExchangeItem::~openMIExchangeItem()
-{
-}
+openMIExchangeItem::~openMIExchangeItem() {}
 
 string openMIExchangeItem::getID() { return id; }
 
@@ -57,7 +52,7 @@ string openMIExchangeItem::getElementID() { return elementID; }
 
 void openMIExchangeItem::setElementID(string elementID) { this->elementID = string(elementID); }
 
-string openMIExchangeItem::getQuantityID() { return	quantityID; }
+string openMIExchangeItem::getQuantityID() { return quantityID; }
 
 void openMIExchangeItem::setQuantityID(string quantityID) { this->quantityID = string(quantityID); }
 
@@ -67,8 +62,8 @@ void openMIExchangeItem::setUnit(string unit) { this->unit = string(unit); }
 
 string openMIExchangeItem::toString()
 {
-	stringstream out;
-	out << "id[" << index << "] = '" << id;
-	out << "', elementID = '" << elementID << "', quantityID = '" << quantityID << "'";
-	return out.str();
+    stringstream out;
+    out << "id[" << index << "] = '" << id;
+    out << "', elementID = '" << elementID << "', quantityID = '" << quantityID << "'";
+    return out.str();
 }

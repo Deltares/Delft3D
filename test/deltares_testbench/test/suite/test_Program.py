@@ -52,7 +52,7 @@ class TestProgram:
         config.absolute_bin_path = str(script.absolute())
         config.log_output_to_file = True
         settings = TestBenchSettings()
-        settings.log_level = LogLevel.DEBUG
+        settings.command_line_settings.log_level = LogLevel.DEBUG
         program = Program(config, settings)
         logger = mocker.Mock(spec=ILogger)
         log_folder = mocker.patch("src.suite.program.get_default_logging_folder_path")
@@ -88,7 +88,7 @@ class TestProgram:
         config.absolute_bin_path = str(script.absolute())
         config.log_output_to_file = True
         settings = TestBenchSettings()
-        settings.log_level = LogLevel.DEBUG
+        settings.command_line_settings.log_level = LogLevel.DEBUG
         program = Program(config, settings)
         logger = mocker.Mock(spec=ILogger)
         log_folder = mocker.patch("src.suite.program.get_default_logging_folder_path")

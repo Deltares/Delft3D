@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -55,7 +55,9 @@ contains
          end if
       end do
       IPT = NPT + 1
-      if (NPT == 4) JA = -1
+      if (NPT == 4) then
+         JA = -1
+      end if
       return
    end subroutine newblockpoint
 

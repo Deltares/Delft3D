@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: dictionary.cpp 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/dictionary.cpp $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/dictionary.cpp
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Dictionary Class - IMPLEMENTATION
@@ -36,88 +38,71 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #include "flow2d3d.h"
-
 
 //------------------------------------------------------------------------------
 //  A dictionary implemented as a hash table
 //  Keys are strings, values arbitrary pointers
 
-
-Dictionary::Dictionary (
-    const char * name
-    ) {
-
-    for (int i = 0 ; i < SIZE ; i++) {
-        this->table[i].key   = NULL;
-        this->table[i].value = (void *) NOTFOUND;
-        }
+Dictionary::Dictionary(const char* name)
+{
+    for (int i = 0; i < SIZE; i++)
+    {
+        this->table[i].key = NULL;
+        this->table[i].value = (void*)NOTFOUND;
+    }
 
     this->name = name;
-    }
+}
 
+Dictionary::~Dictionary(void)
+{
+    for (int i = 0; i < SIZE; i++)
+        if (this->table[i].key != NULL) delete[] this->table[i].key;
+}
 
-Dictionary::~Dictionary (
-    void
-    ) {
-
-    for (int i = 0 ; i < SIZE ; i++)
-        if (this->table[i].key != NULL)
-            delete [] this->table[i].key;
-    }
-
-
-void
-Dictionary::Insert (
-    const char *  key,
-    void *  value
-    ) {
-
-    //int hashcode = hash (key, SIZE);
+void Dictionary::Insert(const char* key, void* value)
+{
+    // int hashcode = hash (key, SIZE);
     int i;
 
-    for (i = 0 ; i < SIZE ; i++) {
-        if (this->table[i].key == NULL) {       // free slot
-            this->table[i].key = new char [strlen (key) + 1];
-            strcpy (this->table[i].key, key);
+    for (i = 0; i < SIZE; i++)
+    {
+        if (this->table[i].key == NULL)
+        { // free slot
+            this->table[i].key = new char[strlen(key) + 1];
+            strcpy(this->table[i].key, key);
             this->table[i].value = value;
             return;
-            }
-
-        if (strcmp (this->table[i].key, key) == 0)
-            throw new Exception (true, "Duplicate key \"%s\" in %s dictionary", key, this->name);
-
-        i = (i+1) % SIZE;
         }
 
-    if (i == SIZE)
-        throw new Exception (true, "%s dictionary is full (%d keys)", this->name, SIZE);
+        if (strcmp(this->table[i].key, key) == 0)
+            throw new Exception("Duplicate key \"%s\" in %s dictionary", key, this->name);
+
+        i = (i + 1) % SIZE;
     }
 
+    if (i == SIZE) throw new Exception("%s dictionary is full (%d keys)", this->name, SIZE);
+}
 
-void *
-Dictionary::Lookup (
-    const char *  key
-    ) {
+void* Dictionary::Lookup(const char* key)
+{
+    // int hashcode = hash (key, SIZE);
 
-    //int hashcode = hash (key, SIZE);
-
-    for (int i = 0 ; i < SIZE ; i++) {
+    for (int i = 0; i < SIZE; i++)
+    {
         if (this->table[i].key == NULL) // free slot
-            return (void *) NOTFOUND;
-        else if (strcmp (this->table[i].key, key) == 0)   // key found
+            return (void*)NOTFOUND;
+        else if (strcmp(this->table[i].key, key) == 0) // key found
             return this->table[i].value;
 
-        i = (i+1) % SIZE;
-        }
-
-    return (void *) NOTFOUND;    // table full and key not found
+        i = (i + 1) % SIZE;
     }
 
+    return (void*)NOTFOUND; // table full and key not found
+}
 
 //------------------------------------------------------------------------------
-
 
 /*
 int
@@ -137,4 +122,3 @@ Dictionary::hash (
     return hashcode % size;
     }
 */
-

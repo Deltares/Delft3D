@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,10 +29,10 @@
 #ifndef _NEF_DEF_H_
 #define _NEF_DEF_H_
 
-#define MAX_CEL_DIM          100
-#define MAX_DESC              64
-#define MAX_DIM                5
-#define MAX_NAME              16
-#define MAX_TYPE               8
+#define MAX_CEL_DIM 100
+#define MAX_DESC 64
+#define MAX_DIM 5
+#define MAX_NAME 16
+#define MAX_TYPE 8
 
 #endif

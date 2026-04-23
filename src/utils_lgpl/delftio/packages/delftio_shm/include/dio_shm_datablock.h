@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,26 +31,24 @@
 //
 //  stef.hummel@deltares.nl
 //
-//  (c) Deltares, 2025
+//  (c) Deltares, 2026
 //
 
-
 #if (!defined(DIOSHM_DATASET_H))
-#define DIOSHM_DATASET_H
+    #define DIOSHM_DATASET_H
 
 //
 // Put/Get bytes to/from a Named Datablock
 //
 
-void DioShmPutDataBlock(char * name, int dSize, char * data);
-int DioShmGetDataBlock(char * name, int dSize, char * data);
-void DioShmFreeDataBlock(char * name);
+void DioShmPutDataBlock(char* name, int dSize, char* data);
+int DioShmGetDataBlock(char* name, int dSize, char* data);
+void DioShmFreeDataBlock(char* name);
 
 //
 // Cleanup the Named Datablock administration
 //
 
 void DioShmDataBlockCleanup(void);
-
 
 #endif

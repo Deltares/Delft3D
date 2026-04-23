@@ -5,6 +5,10 @@
             "issuedTo": "Stichting Deltares"
         },
         {
+            "file": "lib\\dsle.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
             "file": "bin\\ddcouple.exe",
             "issuedTo": "Stichting Deltares"
         },
@@ -18,6 +22,10 @@
         },
         {
             "file": "bin\\dflowfm-cli.exe",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "bin\\preC-SUMO.exe",
             "issuedTo": "Stichting Deltares"
         },
         {
@@ -491,8 +499,43 @@
         {
             "file": "lib\\gdal.dll",
             "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_date_time-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_filesystem-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_thread-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\libxml2.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_log_setup-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_log-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\precice.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\boost_program_options-vc143-mt-x64-1_90.dll",
+            "issuedTo": "Stichting Deltares"
+        },
+        {
+            "file": "lib\\pugixml.dll",
+            "issuedTo": "Stichting Deltares"
         }
-
     ],
     "notSigned": [
         "bin\\tclkitsh852.exe"

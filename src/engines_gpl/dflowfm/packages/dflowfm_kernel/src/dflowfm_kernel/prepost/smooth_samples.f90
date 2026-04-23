@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -64,7 +64,9 @@ contains
       ierror = 1
 
 !  check if samples are structured
-      if (MXSAM * MYSAM /= NS) goto 1234
+      if (MXSAM * MYSAM /= NS) then
+         goto 1234
+      end if
 
 !  allocate
       allocate (zsdum(MXSAM, MYSAM))
@@ -80,7 +82,7 @@ contains
 
 !  Elliptic smoothing
       do iter = 1, Nsamplesmooth
-         af = dble(iter - 1) / dble(max(Nsamplesmooth - 1, 1))
+         af = real(iter - 1, kind=dp) / real(max(Nsamplesmooth - 1, 1), kind=dp)
          call readyy('Smoothing samples', af)
 
 !     copy zss(1,:,:) to zsdum
@@ -92,22 +94,36 @@ contains
 
          do j = 2, MYSAM - 1 ! inner nodes only
             do i = 2, MXSAM - 1 ! inner nodes only
-               if (zsdum(i, j) == DMISS) cycle
+               if (zsdum(i, j) == DMISS) then
+                  cycle
+               end if
 
 !           compute weights
                ciL = 1.0_dp
                ciR = 1.0_dp
                cjL = 1.0_dp
                cjR = 1.0_dp
-               if (zsdum(i - 1, j) == DMISS) ciL = 0.0_dp
-               if (zsdum(i + 1, j) == DMISS) ciR = 0.0_dp
-               if (zsdum(i, j - 1) == DMISS) cjL = 0.0_dp
-               if (zsdum(i, j + 1) == DMISS) cjR = 0.0_dp
+               if (zsdum(i - 1, j) == DMISS) then
+                  ciL = 0.0_dp
+               end if
+               if (zsdum(i + 1, j) == DMISS) then
+                  ciR = 0.0_dp
+               end if
+               if (zsdum(i, j - 1) == DMISS) then
+                  cjL = 0.0_dp
+               end if
+               if (zsdum(i, j + 1) == DMISS) then
+                  cjR = 0.0_dp
+               end if
 
-               if (ciL * ciR * cjL * cjR == 0.0_dp) cycle ! inner samples only
+               if (ciL * ciR * cjL * cjR == 0.0_dp) then
+                  cycle ! inner samples only
+               end if
 
                c0 = ciL + ciR + cjL + cjR
-               if (abs(c0) < 0.5_dp) cycle
+               if (abs(c0) < 0.5_dp) then
+                  cycle
+               end if
 
                zss(1, i, j) = (1.0_dp - sigma) * zsdum(i, j) + &
                               sigma * ( &

@@ -15,7 +15,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                 & icall     ,deltau    ,deltav    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2025.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -71,6 +71,9 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_sand_mud
     use globaldata
     use dfparall
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
+    use m_getfixfac, only: getfixfac
     !
     implicit none
     !
@@ -120,18 +123,24 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: dbodsd
     real(fp)         , dimension(:)      , pointer :: dcwwlc
     real(fp)         , dimension(:)      , pointer :: dm
+    real(fp)         , dimension(:)      , pointer :: dm_he
     real(fp)         , dimension(:)      , pointer :: dg
+    real(fp)         , dimension(:)      , pointer :: dg_he
     real(fp)         , dimension(:)      , pointer :: dgsd
+    real(fp)         , dimension(:)      , pointer :: dgsd_he
     real(fp)         , dimension(:,:)    , pointer :: dxx
+    real(fp)         , dimension(:,:)    , pointer :: dxx_he
     real(fp)         , dimension(:)      , pointer :: dzduu
     real(fp)         , dimension(:)      , pointer :: dzdvv
     real(fp)         , dimension(:)      , pointer :: epsclc
     real(fp)         , dimension(:)      , pointer :: epswlc
     real(fp)         , dimension(:,:)    , pointer :: fixfac
     real(fp)         , dimension(:,:)    , pointer :: frac
+    real(fp)         , dimension(:,:)    , pointer :: frac_he
     integer          , dimension(:)      , pointer :: kfsed
     integer          , dimension(:,:)    , pointer :: kmxsed
     real(fp)         , dimension(:)      , pointer :: mudfrac
+    real(fp)         , dimension(:)      , pointer :: mudfrac_he ! dummy not used
     real(fp)         , dimension(:)      , pointer :: sandfrac
     real(fp)         , dimension(:,:)    , pointer :: hidexp
     real(fp)         , dimension(:)      , pointer :: rsdqlc
@@ -211,6 +220,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     integer                              , pointer :: iunderlyr
     real(fp)         , dimension(:,:)    , pointer :: depfac
     real(fp)         , dimension(:,:)    , pointer :: mfluff
+    integer                              , pointer :: ihidexptrcrs
+    integer                              , pointer :: ithresh
     include 'flow_steps_f.inc'
 !
 ! Local parameters
@@ -390,7 +401,9 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !       & 0.0375, 0.0300/
 !    data sig2d/-0.1122,-0.3140,-0.4754,-0.6045,-0.7077,-0.7902,-0.8563,-0.9090, &
 !       & -0.9512,-0.9850/
-    
+    integer, parameter :: BED_LAYER_FROM = 1 !< Start index of the bed layer to compute mean grain size and derived variables. 
+    integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
+    integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
 !
 !! executable statements -------------------------------------------------------
 !
@@ -441,18 +454,24 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dbodsd              => gdp%gderosed%dbodsd
     dcwwlc              => gdp%gderosed%dcwwlc
     dm                  => gdp%gderosed%dm
+    dm_he               => gdp%gderosed%dm_he
     dg                  => gdp%gderosed%dg
+    dg_he               => gdp%gderosed%dg_he
     dgsd                => gdp%gderosed%dgsd
+    dgsd_he             => gdp%gderosed%dgsd_he
     dxx                 => gdp%gderosed%dxx
+    dxx_he              => gdp%gderosed%dxx_he
     dzduu               => gdp%gderosed%e_dzdn
     dzdvv               => gdp%gderosed%e_dzdt
     epsclc              => gdp%gderosed%epsclc
     epswlc              => gdp%gderosed%epswlc
     fixfac              => gdp%gderosed%fixfac
     frac                => gdp%gderosed%frac
+    frac_he             => gdp%gderosed%frac_he
     kfsed               => gdp%gderosed%kfsed
     kmxsed              => gdp%gderosed%kmxsed
     mudfrac             => gdp%gderosed%mudfrac
+    mudfrac_he          => gdp%gderosed%mudfrac_he
     sandfrac            => gdp%gderosed%sandfrac
     hidexp              => gdp%gderosed%hidexp
     rsdqlc              => gdp%gderosed%rsdqlc
@@ -526,6 +545,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     depfac              => gdp%gdmorpar%flufflyr%depfac
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     wetslope            => gdp%gdmorpar%wetslope
+    ihidexptrcrs        => gdp%gdmorlyr%settings%ihidexptrcrs
+    ithresh             => gdp%gdmorpar%ithresh
     !
     allocate (localpar (npar), stat = istat)
     !
@@ -630,7 +651,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dtmor = dt * morfac
     !
     call getfixfac(gdp%gdmorlyr, gdp%d%nmlb, gdp%d%nmub, lsedtot, &
-                 & nmmax       , fixfac    , ffthresh  )
+                 & nmmax       , fixfac    , ffthresh  , ithresh)
     !
     ! Set fixfac to 1.0 for tracer sediments and adjust frac
     !
@@ -679,16 +700,37 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! calculate geometric mean sediment diameter Dg
        ! calculate percentiles Dxx
        !
+
+       
        call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                    & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                    & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
                    & sedd50fld ,dm        ,dg        ,dxx       ,dgsd      )
+
        !
        ! determine hiding & exposure factors
        !
-       call comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
-                     & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
-                     & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
+       if (ihidexptrcrs == HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER) then 
+          !In this case, the hiding and exposure factors are computed based on the mean grain
+          !size of the sediment in both the active layer (which is the top layer in the bed) and
+          !of the coarse layer (which is the layer under the active layer). I.e., coarse sediment
+          !in the second layer (the coarse layer) will influence the sediment transport rate. 
+          !`frac` is used for computing the sediment transport rate for each fraction. This should
+          !depend only on the sediment in the active layer, and therefore `frac` is not overwritten. 
+          call getfrac(gdp%gdmorlyr,frac_he    ,anymud    ,mudcnt    , &
+                     & mudfrac_he   ,gdp%d%nmlb,gdp%d%nmub, BED_LAYER_FROM, BED_LAYER_TO)
+          call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
+                      & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
+                      & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
+                      & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+          call comphidexp(frac_he   ,dm_he     ,nmmax     ,lsedtot   , &
+                        & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                        & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
+       else
+          call comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
+                        & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
+                        & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
+       endif
        !
        ! compute sand fraction
        !
@@ -878,8 +920,6 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           temperature = temeqs
        endif
        !
-       taks0 = 0.0_fp
-       !
        ! Calculate Van Rijn's reference height
        !
        if (iopkcw==1) then
@@ -889,9 +929,11 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        endif
        taks0 = max(aksfac*rc, 0.01_fp*h1)
        !
-       if (wave .and. tp(nm)>0.0_fp) then
-          delr  = 0.025_fp
-          taks0 = max(0.5_fp*delr, taks0)
+       if (wave) then
+          if (tp(nm)>0.0_fp) then
+             delr  = 0.025_fp
+             taks0 = max(0.5_fp*delr, taks0)
+          endif
        endif
        !
        ! Limit maximum aks to 20% of water depth
@@ -1048,10 +1090,16 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                    sinkse(nm,l) = 0.0_fp
                 endif
                 !
-                sourf(l,nm)  = sourfluff
+                ! prevent fluff layer source exceeding available mass
+                !
+                if (mfltot <= 0.0_fp) then
+                   sourf(l,nm) = 0.0_fp
+                else
+                   sourf(l,nm) = min(sourfluff, mfltot/dt)
+                end if
              else
                 sinkse(nm,l) = sinktot
-                sourse(nm,l) = sourse(nm,l) + sourfluff ! sourfluff should actually always be 0 already
+                ! sourse(nm,l) already set (sourfluff = 0)
              endif
              !
              if (kmax > 1) then 

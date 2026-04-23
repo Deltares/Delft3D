@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -65,11 +65,14 @@ contains
 
       integer, external :: OMP_GET_THREAD_NUM
 
-      XV = XX; YV = YY
+      XV = XX
+      YV = YY
 
       jout = -999
       rlout = -1.0_dp
-      if (MXLAN == 0) return
+      if (MXLAN == 0) then
+         return
+      end if
 
       DISMIN = 9e+33
       inb = IMISS

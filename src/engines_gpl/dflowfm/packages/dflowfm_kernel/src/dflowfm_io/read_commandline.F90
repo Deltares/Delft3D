@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -61,7 +61,9 @@ contains
       use m_circumcenter_method, only: circumcenter_method, extract_circumcenter_method
       use m_missing, only: jadelnetlinktyp
       use m_start_parameters, only: MD_AUTOSTART, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
-      implicit none
+      use precice, only: precicef_get_version_information
+      use precice_adapter_facade, only: precice_adapter_enable
+      implicit none(type, external)
 
       integer :: istat !< Returned result status
       integer :: ncount
@@ -212,7 +214,8 @@ contains
             do ikey = 1, Nkeys
                call str_lower(Skeys(ikey))
                if (trim(Skeys(ikey)) == 'hmin') then
-                  read (Svals(ikey), *) hmin; Dx_mincour = hmin
+                  read (Svals(ikey), *) hmin
+                  Dx_mincour = hmin
                else if (trim(Skeys(ikey)) == 'dtmax') then
                   read (Svals(ikey), *) Dt_maxcour
                else if (trim(Skeys(ikey)) == 'maxlevel') then
@@ -231,6 +234,11 @@ contains
                   circumcenter_method = extract_circumcenter_method(svals(ikey))
                end if
             end do
+
+         case ('precice')
+            call precicef_get_version_information(msgbuf, LEN(msgbuf))
+            write (*, '(a)') 'Using preCICE: '//trim(msgbuf)
+            call precice_adapter_enable()
 
          case ('h', 'help')
             call print_help_commandline()
@@ -444,11 +452,7 @@ contains
             call mess(LEVEL_INFO, 'Using bloom species definition file: '//trim(md_blmfile))
 
          case ('convertlongculverts')
-            md_convertlongculverts = 1
-            k = k + 1
-            call get_command_argument(k, inarg)
-            md_culvertprefix = inarg
-            call mess(LEVEL_INFO, 'Generating culvert files with prefix: '//trim(md_culvertprefix))
+            call mess(LEVEL_ERROR, '--convertlongculverts has been made obsolete, work in progress!')
 
          case default
             inquire (FILE=trim(inarg), EXIST=JAWEL)

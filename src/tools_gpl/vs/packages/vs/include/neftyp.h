@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,8 +28,19 @@
 // $HeadURL$
 
 #ifndef _NEFTYP_INCLUDED
-    enum STORAGE_TYPE {DBLCMPL, COMPLEX, DOUBLE, FLOAT, INT, SHORT, \
-                       BOOL, BOOLSHRT, CHAR, UNDEF} ;
-        typedef enum STORAGE_TYPE NfDtp;
-#   define _NEFTYP_INCLUDED
+enum STORAGE_TYPE
+{
+    DBLCMPL,
+    COMPLEX,
+    DOUBLE,
+    FLOAT,
+    INT,
+    SHORT,
+    BOOL,
+    BOOLSHRT,
+    CHAR,
+    UNDEF
+};
+typedef enum STORAGE_TYPE NfDtp;
+    #define _NEFTYP_INCLUDED
 #endif

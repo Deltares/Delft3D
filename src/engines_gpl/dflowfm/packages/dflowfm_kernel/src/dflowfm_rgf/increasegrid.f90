@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,7 +49,9 @@ contains
 !      ibounds   = [ mmax, nmax ]
 !      iboundsp1 = [ mmax+1, nmax+1 ]
 
-      mmax = m + 1; nmax = n + 1; MNMAX = max(M, N)
+      mmax = m + 1
+      nmax = n + 1
+      MNMAX = max(M, N)
       ibounds = [mmax, nmax]
       iboundsp1 = ibounds
 

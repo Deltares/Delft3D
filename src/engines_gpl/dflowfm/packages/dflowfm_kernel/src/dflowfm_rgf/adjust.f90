@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -62,14 +62,18 @@ contains
       IFIRST = 0
       do J = 1, NC
          do I = 1, MC
-            if (XH(I, J) /= XYMIS .and. IFIRST == 0) IFIRST = I
+            if (XH(I, J) /= XYMIS .and. IFIRST == 0) then
+               IFIRST = I
+            end if
          end do
       end do
 
       JFIRST = 0
       do J = 1, NC
          do I = 1, MC
-            if (XH(I, J) /= XYMIS .and. JFIRST == 0) JFIRST = J
+            if (XH(I, J) /= XYMIS .and. JFIRST == 0) then
+               JFIRST = J
+            end if
          end do
       end do
 

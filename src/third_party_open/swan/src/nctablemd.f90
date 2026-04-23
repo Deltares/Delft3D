@@ -319,39 +319,39 @@
              nctable(69) / nctable_record("fx",&
                             "eastward_wave_force",&
                             "x component of wave force", &
-                            "kg m s-2", NF90_SHORT, -1.E5, 1.E5, variddum) /, &
+                            "kg m s-2", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(70) / nctable_record("fy",&
                             "northward_wave_force",&
                             "y component of wave force", &
-                            "kg m s-2", NF90_SHORT, -1.E5, 1.E5, variddum) /, &
+                            "kg m s-2", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(71) / nctable_record("transpx",&
                             "eastward_wave_energy_transport",&
                             "x component of wave energy transport", &
-                            "m3 s-1", NF90_SHORT, -100., 100., variddum) /, &
+                            "m3 s-1", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(72) / nctable_record("transpy",&
                             "northward_wave_energy_transport",&
                             "y component of wave energy transport", &
-                            "m3 s-1", NF90_SHORT, -100., 100., variddum) /, &
+                            "m3 s-1", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(73) / nctable_record("disbot",&
                             "wave_energy_dissipation_due_to_bottom_friction",&
                             "wave energy dissipation due to bottom friction", &
-                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+                            "m2 s-1", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(74) / nctable_record("dissip",&
                             "total_wave_energy_dissipation",&
                             "total wave energy dissipation", &
-                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+                            "m2 s-1", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(75) / nctable_record("dissurf",&
                             "wave_energy_dissipation_due_to_surf_breaking",&
                             "wave energy dissipation due to surf breaking", &
-                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+                            "m2 s-1", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(76) / nctable_record("diswcap",&
                             "wave_energy_dissipation_due_to_white_capping",&
                             "wave energy dissipation due to white capping", &
-                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /, &
+                            "m2 s-1", NF90_FLOAT, 0, 0, variddum) /, &
              nctable(77) / nctable_record("disveg",&
                             "wave_energy_dissipation_due_to_vegetation",&
                             "wave energy dissipation due to vegetation", &
-                            "m2 s-1", NF90_SHORT, 0., 1000., variddum) /
+                            "m2 s-1", NF90_FLOAT, 0, 0, variddum) /
 
 
     contains

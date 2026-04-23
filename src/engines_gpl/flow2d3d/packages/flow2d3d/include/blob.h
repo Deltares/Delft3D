@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: blob.h 932 2011-10-25 09:41:59Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/blob.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/blob.h
+// $
 //------------------------------------------------------------------------------
 //  d_hydro Flow2D3D Component
 //  Blob Class - DEFINITIONS
@@ -34,32 +36,22 @@
 //  31 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
 
+class Blob
+{
+public:
+    Blob(const void* address,    // start of data
+         const unsigned int size // size of data (in bytes)
+    );
 
-class Blob {
-    public:
-        Blob (
-            const void * address,             // start of data
-            const unsigned int size     // size of data (in bytes)
-            );
+    ~Blob(void);
 
-        ~Blob (
-            void
-            );
+    void* Address(void);
 
-        void *
-        Address (
-            void
-            );
+    unsigned int Size(void);
 
-        unsigned int
-        Size (
-            void
-            );
-
-    private:
-        void * address;         // pointer to allocated storage
-        unsigned int size;      // buffer size in bytes
-    };
+private:
+    void* address;     // pointer to allocated storage
+    unsigned int size; // buffer size in bytes
+};

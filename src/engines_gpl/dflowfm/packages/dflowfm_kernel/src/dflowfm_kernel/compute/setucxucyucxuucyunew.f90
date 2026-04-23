@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,8 +54,8 @@ contains
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
-      use m_nod2linx, only: nod2linx
-      use m_nod2liny, only: nod2liny
+      use m_nod2linx, only: nod2linx, nod2linx_fast
+      use m_nod2liny, only: nod2liny, nod2liny_fast
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
       implicit none
 
@@ -66,20 +66,23 @@ contains
       real(kind=dp) :: u1correction
       real(kind=dp) :: uinx, uiny
 
-      ucxq = 0.0_dp; ucyq = 0.0_dp ! zero arrays
+      ucxq = 0.0_dp
+      ucyq = 0.0_dp ! zero arrays
 
       ! keep track of depth averaged flow velocity
       make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
 
       if (Perot_type /= NOT_DEFINED) then
-         ucx = 0.0_dp; ucy = 0.0_dp
+         ucx = 0.0_dp
+         ucy = 0.0_dp
 
          if (make2dh) then ! original 2D coding
 
             do i = 1, wetLink2D - 1
                L = onlyWetLinks(i)
                if (kcu(L) /= 3) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
                   ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
                   ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
@@ -90,9 +93,12 @@ contains
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
                if (jabarrieradvection == 3) then
-                  if (struclink(L) == 1) cycle
+                  if (struclink(L) == 1) then
+                     cycle
+                  end if
                end if
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
                ucy(k1) = ucy(k1) + wcy1(L) * u1(L)
                ucx(k2) = ucx(k2) + wcx2(L) * u1(L)
@@ -106,24 +112,38 @@ contains
                do i = 1, size(structuresAndWeirsList)
                   L = structuresAndWeirsList(i)
                   if (jabarrieradvection == 3 .and. L > lnx1D) then
-                     if (struclink(L) == 1) cycle
+                     if (struclink(L) == 1) then
+                        cycle
+                     end if
                   end if
                   if (comparereal(au_nostrucs(L), 0.0_dp) == 1) then
-                     k1 = ln(1, L)
-                     k2 = ln(2, L)
+                     !There is flow over the weir crest. Hence, `hu>0`, so `au>0` and `au_nostrucs>0`.
                      u1correction = q1(L) / au_nostrucs(L) - u1(L)
-                     ucx(k1) = ucx(k1) + wcx1(L) * u1correction
-                     ucy(k1) = ucy(k1) + wcy1(L) * u1correction
-                     ucx(k2) = ucx(k2) + wcx2(L) * u1correction
-                     ucy(k2) = ucy(k2) + wcy2(L) * u1correction
+                  elseif (comparereal(q1(L), 0.0_dp) /= 0) then
+                     !There is no flow over the weir crest, but there is flow at the link because, for
+                     !instance, there is a pump.
+                     u1correction = -u1(L)
+                  else
+                     !There is no flow at the link, so no correction.
+                     cycle !to next structure
+                     !It would be the same as:
+                     !u1correction=0.0_dp
+                     !But this way we skip the rest of the loop.
                   end if
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
+                  ucx(k1) = ucx(k1) + wcx1(L) * u1correction
+                  ucy(k1) = ucy(k1) + wcy1(L) * u1correction
+                  ucx(k2) = ucx(k2) + wcx2(L) * u1correction
+                  ucy(k2) = ucy(k2) + wcy2(L) * u1correction
                end do
             end if
          end if
 
          if (kmx > 0) then
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
@@ -157,9 +177,12 @@ contains
 
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = hu(L)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor)
+               end if
                uhu = u1(L) * huL
                ucxq(k1) = ucxq(k1) + wcx1(L) * uhu
                ucyq(k1) = ucyq(k1) + wcy1(L) * uhu
@@ -170,13 +193,16 @@ contains
          else
 
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
                      k2 = ln0(2, L)
                      huL = hu(L) - hu(L - 1)
-                     if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+                     if (hhtrshcor > 0) then
+                        huL = max(huL, hhtrshcor)
+                     end if
                      uhu = u1(L) * huL
                      ucxq(k1) = ucxq(k1) + wcx1(LL) * uhu
                      ucyq(k1) = ucyq(k1) + wcy1(LL) * uhu
@@ -194,9 +220,12 @@ contains
 
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = hu(L)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor)
+               end if
                uhu = u1(L) * huL
                ucxq(k1) = ucxq(k1) + wcx1(L) * uhu
                ucyq(k1) = ucyq(k1) + wcy1(L) * uhu
@@ -207,9 +236,12 @@ contains
          else
 
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
                huL = hu(LL)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor)
+               end if
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
@@ -231,9 +263,12 @@ contains
 
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = acl(L) * hs(k1) + (1.0_dp - acl(L)) * hs(k2)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor)
+               end if
                uhu = u1(L) * huL
                ucxq(k1) = ucxq(k1) + wcx1(L) * uhu
                ucyq(k1) = ucyq(k1) + wcy1(L) * uhu
@@ -244,13 +279,16 @@ contains
          else
 
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
                      k2 = ln0(2, L)
                      huL = acl(LL) * (zws(k1) - zws(k1 - 1)) + (1.0_dp - acl(LL)) * (zws(k2) - zws(k2 - 1))
-                     if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+                     if (hhtrshcor > 0) then
+                        huL = max(huL, hhtrshcor)
+                     end if
                      uhu = u1(L) * huL
                      ucxq(k1) = ucxq(k1) + wcx1(LL) * uhu
                      ucyq(k1) = ucyq(k1) + wcy1(LL) * uhu
@@ -268,9 +306,12 @@ contains
 
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = acl(L) * hs(k1) + (1.0_dp - acl(L)) * hs(k2)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor)
+               end if
                uhu = u1(L) * huL
                ucxq(k1) = ucxq(k1) + wcx1(L) * uhu
                ucyq(k1) = ucyq(k1) + wcy1(L) * uhu
@@ -281,10 +322,14 @@ contains
          else
 
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
                huL = acl(LL) * hs(k1) + (1.0_dp - acl(LL)) * hs(k2)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor)
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor)
+               end if
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
@@ -306,9 +351,12 @@ contains
 
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor * (acl(L) * ba(k1) + (1.0_dp - acl(L)) * ba(k2)))
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor * (acl(L) * ba(k1) + (1.0_dp - acl(L)) * ba(k2)))
+               end if
                uhu = u1(L) * huL
                ucxq(k1) = ucxq(k1) + wcx1(L) * uhu
                ucyq(k1) = ucyq(k1) + wcy1(L) * uhu
@@ -319,15 +367,21 @@ contains
          else
 
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
-               n1 = ln(1, LL); n2 = ln(2, LL)
-               if (hhtrshcor > 0) htrs = hhtrshcor * (acl(LL) * ba(n1) + (1.0_dp - acl(LL)) * ba(n2))
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
+               n1 = ln(1, LL)
+               n2 = ln(2, LL)
+               if (hhtrshcor > 0) then
+                  htrs = hhtrshcor * (acl(LL) * ba(n1) + (1.0_dp - acl(LL)) * ba(n2))
+               end if
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
                      k2 = ln0(2, L)
                      huL = acl(LL) * vol1(k1) + (1.0_dp - acl(LL)) * vol1(k2)
-                     if (hhtrshcor > 0) huL = max(huL, htrs)
+                     if (hhtrshcor > 0) then
+                        huL = max(huL, htrs)
+                     end if
                      uhu = u1(L) * huL
                      ucxq(k1) = ucxq(k1) + wcx1(LL) * uhu
                      ucyq(k1) = ucyq(k1) + wcy1(LL) * uhu
@@ -345,9 +399,12 @@ contains
 
             do i = wetLink2D, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor * (acl(L) * ba(k1) + (1.0_dp - acl(L)) * ba(k2)))
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor * (acl(L) * ba(k1) + (1.0_dp - acl(L)) * ba(k2)))
+               end if
                uhu = u1(L) * huL
                ucxq(k1) = ucxq(k1) + wcx1(L) * uhu
                ucyq(k1) = ucyq(k1) + wcy1(L) * uhu
@@ -358,10 +415,14 @@ contains
          else
 
             do LL = 1, lnx
-               Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               Lb = Lbot(LL)
+               Lt = Lb - 1 + kmxL(LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
                huL = acl(LL) * vol1(k1) + (1.0_dp - acl(LL)) * vol1(k2)
-               if (hhtrshcor > 0) huL = max(huL, hhtrshcor * (acl(LL) * ba(k1) + (1.0_dp - acl(LL)) * ba(k2)))
+               if (hhtrshcor > 0) then
+                  huL = max(huL, hhtrshcor * (acl(LL) * ba(k1) + (1.0_dp - acl(LL)) * ba(k2)))
+               end if
                do L = Lb, Lt
                   if (u1(L) /= 0.0_dp) then ! link flows
                      k1 = ln0(1, L) ! use ln0 in reconstruction and in computing ucxu, use ln when fluxing
@@ -384,7 +445,8 @@ contains
          if (kmx < 1) then ! original 2D coding
             do i = 1, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = acl(L) * hs(k1) + (1.0_dp - acl(L)) * hs(k2)
                hus(k1) = hus(k1) + wcl(1, L) * huL
                hus(k2) = hus(k2) + wcl(2, L) * huL
@@ -392,7 +454,8 @@ contains
          else
             do LL = 1, lnx
                do L = Lbot(LL), Ltop(LL)
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
                   huL = acl(LL) * (zws(k1) - zws(k1 - 1)) + (1.0_dp - acl(LL)) * (zws(k2) - zws(k2 - 1))
                   hus(k1) = hus(k1) + wcl(1, LL) * huL
                   hus(k2) = hus(k2) + wcl(2, LL) * huL
@@ -404,14 +467,16 @@ contains
          if (kmx < 1) then ! original 2D coding
             do i = 1, wetLinkCount
                L = onlyWetLinks(i)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                huL = acl(L) * hs(k1) + (1.0_dp - acl(L)) * hs(k2)
                hus(k1) = hus(k1) + wcl(1, L) * huL
                hus(k2) = hus(k2) + wcl(2, L) * huL
             end do
          else
             do LL = 1, lnx
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
                huL = acl(LL) * hs(k1) + (1.0_dp - acl(LL)) * hs(k2)
                do L = Lbot(LL), Ltop(LL)
                   hus(k1) = hus(k1) + wcl(1, LL) * huL
@@ -428,7 +493,9 @@ contains
             do k = 1, ndxi
                hsk = hs(k)
                if (hsk > 0.0_dp) then
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor)
+                  end if
                   ucxq(k) = ucxq(k) / hsk
                   ucyq(k) = ucyq(k) / hsk
                end if
@@ -442,7 +509,9 @@ contains
                   do k = kb, kt
                      hsk = zws(k) - zws(k - 1)
                      if (hsk > 0.0_dp) then
-                        if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                        if (hhtrshcor > 0) then
+                           hsk = max(hsk, hhtrshcor)
+                        end if
                         ucxq(k) = ucxq(k) / hsk
                         ucyq(k) = ucyq(k) / hsk
                      end if
@@ -458,7 +527,9 @@ contains
             do k = 1, ndxi
                hsk = hs(k)
                if (hsk > 0.0_dp) then
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor)
+                  end if
                   ucxq(k) = ucxq(k) / hsk
                   ucyq(k) = ucyq(k) / hsk
                end if
@@ -468,7 +539,9 @@ contains
             do nn = 1, ndxi
                hsk = hs(nn)
                if (hsk > 0.0_dp) then
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor)
+                  end if
                   kb = kbot(nn)
                   kt = ktop(nn)
                   do k = kb, kt
@@ -487,7 +560,9 @@ contains
             do k = 1, ndxi
                if (hus(k) > 0.0_dp) then
                   hsk = hus(k)
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor)
+                  end if
                   ucxq(k) = ucxq(k) / hsk
                   ucyq(k) = ucyq(k) / hsk
                end if
@@ -501,7 +576,9 @@ contains
                   do k = kb, kt
                      hsk = hus(k)
                      if (hsk > 0.0_dp) then
-                        if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                        if (hhtrshcor > 0) then
+                           hsk = max(hsk, hhtrshcor)
+                        end if
                         ucxq(k) = ucxq(k) / hsk
                         ucyq(k) = ucyq(k) / hsk
                      end if
@@ -518,7 +595,9 @@ contains
             do k = 1, ndxi
                if (hus(k) > 0.0_dp) then
                   hsk = hus(k)
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor)
+                  end if
                   ucxq(k) = ucxq(k) / hsk
                   ucyq(k) = ucyq(k) / hsk
                end if
@@ -531,7 +610,9 @@ contains
                   kt = ktop(nn)
                   hsk = hus(nn)
                   if (hsk > 0) then
-                     if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor)
+                     if (hhtrshcor > 0) then
+                        hsk = max(hsk, hhtrshcor)
+                     end if
                      do k = kb, kt
                         ucxq(k) = ucxq(k) / hsk
                         ucyq(k) = ucyq(k) / hsk
@@ -549,7 +630,9 @@ contains
             do k = 1, ndxi
                if (vol1(k) > 0.0_dp) then
                   hsk = vol1(k)
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor * ba(k))
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor * ba(k))
+                  end if
                   ucxq(k) = ucxq(k) / hsk
                   ucyq(k) = ucyq(k) / hsk
                end if
@@ -563,7 +646,9 @@ contains
                   do k = kb, kt
                      hsk = vol1(k)
                      if (hsk > 0.0_dp) then
-                        if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor * ba(nn))
+                        if (hhtrshcor > 0) then
+                           hsk = max(hsk, hhtrshcor * ba(nn))
+                        end if
                         ucxq(k) = ucxq(k) / hsk
                         ucyq(k) = ucyq(k) / hsk
                      end if
@@ -579,7 +664,9 @@ contains
             do k = 1, ndxi
                if (vol1(k) > 0.0_dp) then
                   hsk = vol1(k)
-                  if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor * ba(k))
+                  if (hhtrshcor > 0) then
+                     hsk = max(hsk, hhtrshcor * ba(k))
+                  end if
                   ucxq(k) = ucxq(k) / hsk
                   ucyq(k) = ucyq(k) / hsk
                end if
@@ -592,7 +679,9 @@ contains
                   kt = ktop(nn)
                   hsk = vol1(nn)
                   if (hsk > 0) then
-                     if (hhtrshcor > 0) hsk = max(hsk, hhtrshcor * ba(nn))
+                     if (hhtrshcor > 0) then
+                        hsk = max(hsk, hhtrshcor * ba(nn))
+                     end if
                      do k = kb, kt
                         ucxq(k) = ucxq(k) / hsk
                         ucyq(k) = ucyq(k) / hsk
@@ -610,7 +699,8 @@ contains
       if (icorio > 0) then ! and no more touching after this
          do LL = Lnxi + 1, Lnx
             do L = lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ucxq(k1) = ucxq(k2)
                ucyq(k1) = ucyq(k2)
             end do
@@ -622,7 +712,8 @@ contains
          k2 = kbndz(2, n)
          LL = kbndz(3, n)
          itpbn = kbndz(4, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
                if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then ! Neumann: always
@@ -652,7 +743,8 @@ contains
          if (kmx > 0) then
             call getLbotLtop(LL, Lb, Lt)
             do L = Lb, Lt
-               kbk = ln(1, L); k2k = ln(2, L)
+               kbk = ln(1, L)
+               k2k = ln(2, L)
                if (jacstbnd == 0 .and. itpbn /= BOUNDARY_WATER_LEVEL_NEUMANN) then
                   if (jasfer3D == 1) then
                      uin = nod2linx(LL, 2, ucx(k2k), ucy(k2k)) * cs + nod2liny(LL, 2, ucx(k2k), ucy(k2k)) * sn
@@ -684,7 +776,8 @@ contains
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
                if (u1(LL) > 0) then
-                  ucx(k1) = 0.0_dp; ucy(k1) = 0.0_dp
+                  ucx(k1) = 0.0_dp
+                  ucy(k1) = 0.0_dp
                end if
             end do
          end do
@@ -693,7 +786,8 @@ contains
             LL = kbndz(3, n)
             do L = Lbot(LL), Ltop(LL)
                k1 = ln(1, L)
-               ucx(k1) = 0.0_dp; ucy(k1) = 0.0_dp
+               ucx(k1) = 0.0_dp
+               ucy(k1) = 0.0_dp
             end do
          end do
       end if
@@ -702,7 +796,8 @@ contains
          kb = kbndu(1, n)
          k2 = kbndu(2, n)
          LL = kbndu(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          if (make2dh) then
             if (hs(kb) > epshs) then
                if (jacstbnd == 0) then
@@ -762,12 +857,14 @@ contains
          kb = kbndt(1, n)
          k2 = kbndt(2, n)
          LL = kbndt(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = u0(L); vv = zbndt(kk) ! v(L)
+            uu = u0(L)
+            vv = zbndt(kk) ! v(L)
             uucx = uu * cs - vv * sn
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then
@@ -809,12 +906,14 @@ contains
          kb = kbndn(1, n)
          k2 = kbndn(2, n)
          LL = kbndn(3, n)
-         cs = csu(LL); sn = snu(LL)
+         cs = csu(LL)
+         sn = snu(LL)
          call getLbotLtop(LL, Lb, Lt)
          do L = Lb, Lt
             kbk = ln(1, L)
             kk = kmxd * (n - 1) + L - Lb + 1
-            uu = zbndn(kk); vv = 0.0_dp
+            uu = zbndn(kk)
+            vv = 0.0_dp
             uucx = uu * cs - vv * sn !
             uucy = uu * sn + vv * cs
             if (jasfer3D == 1) then
@@ -849,10 +948,13 @@ contains
 
       if (limtypmom == 6) then
 
-         ducxdx = 0.0_dp; ducxdy = 0.0_dp
-         ducydx = 0.0_dp; ducydy = 0.0_dp
+         ducxdx = 0.0_dp
+         ducxdy = 0.0_dp
+         ducydx = 0.0_dp
+         ducydy = 0.0_dp
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -898,11 +1000,11 @@ contains
                do i = 1, wetLinkCount
                   L = onlyWetLinks(i)
                   if (qa(L) > 0) then ! set upwind ucxu, ucyu  on links
-                     ucxu(L) = nod2linx(L, 1, ucx(ln(1, L)), ucy(ln(1, L)))
-                     ucyu(L) = nod2liny(L, 1, ucx(ln(1, L)), ucy(ln(1, L)))
+                     ucxu(L) = nod2linx_fast(csb(1, L), snb(1, L), ucx(ln(1, L)), ucy(ln(1, L)))
+                     ucyu(L) = nod2liny_fast(csb(1, L), snb(1, L), ucx(ln(1, L)), ucy(ln(1, L)))
                   else if (qa(L) < 0) then
-                     ucxu(L) = nod2linx(L, 2, ucx(ln(2, L)), ucy(ln(2, L)))
-                     ucyu(L) = nod2liny(L, 2, ucx(ln(2, L)), ucy(ln(2, L)))
+                     ucxu(L) = nod2linx_fast(csb(2, L), snb(2, L), ucx(ln(2, L)), ucy(ln(2, L)))
+                     ucyu(L) = nod2liny_fast(csb(2, L), snb(2, L), ucx(ln(2, L)), ucy(ln(2, L)))
                   end if
                end do
                !$OMP END PARALLEL DO

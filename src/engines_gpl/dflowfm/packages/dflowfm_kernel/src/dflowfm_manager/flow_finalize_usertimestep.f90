@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,11 +67,14 @@ contains
       use m_statistical_output, only: update_source_input
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_flow_trachy_needs_update
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, precice_adapter_interface_t
+      use MessageHandling, only: mess, LEVEL_DEBUG
 
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
 
       real(kind=dp) :: tem_dif
       logical :: do_fourier
+      class(precice_adapter_interface_t), pointer :: fm_precice_adapter
 
       iresult = DFM_GENERICERROR
 
@@ -80,9 +83,13 @@ contains
 !   call fm_wq_processes_step(dt_user,time_user)
       if (ti_waqproc > 0) then
          if (comparereal(time_user, time_waqproc, eps10) == 0) then
-            if (jatimer == 1) call starttimer(IFMWAQ)
+            if (jatimer == 1) then
+               call starttimer(IFMWAQ)
+            end if
             call fm_wq_processes_step(ti_waqproc, time_user)
-            if (jatimer == 1) call stoptimer(IFMWAQ)
+            if (jatimer == 1) then
+               call stoptimer(IFMWAQ)
+            end if
             tem_dif = (time_user - tstart_user) / ti_waqproc
             time_waqproc = tstart_user + (floor(tem_dif + 0.001_dp) + 1) * ti_waqproc
          end if
@@ -103,7 +110,9 @@ contains
             time1 = time_user
             time0 = time1
          end if
-         if (jatimer == 1) call starttimer(IOUTPUT)
+         if (jatimer == 1) then
+            call starttimer(IOUTPUT)
+         end if
 
          call timstrt('Output', handle_extra(53)) ! output
 
@@ -154,12 +163,21 @@ contains
          call timstop(handle_extra(79))
 
          call timstop(handle_extra(53)) ! output
-         if (jatimer == 1) call stoptimer(IOUTPUT)
+         if (jatimer == 1) then
+            call stoptimer(IOUTPUT)
+         end if
 
       end if
 
       if (do_fourier) then
          call update_fourier(merge(dt_user, ti_his, md_fou_step == 0))
+      end if
+
+      ! Communicate trough precice_adapter if anabled.
+      if (precice_adapter_is_enabled()) then
+         call mess(LEVEL_DEBUG, "Updating preCICE adapter.")
+         fm_precice_adapter => precice_adapter_get_adapter()
+         call fm_precice_adapter%update(dt_user)
       end if
 
       iresult = DFM_NOERR

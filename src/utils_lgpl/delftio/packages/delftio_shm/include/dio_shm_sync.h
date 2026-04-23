@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -31,15 +31,14 @@
 //
 //  stef.hummel@deltares.nl
 //
-//  (c) Deltares, 2025
+//  (c) Deltares, 2026
 //
 
-
 #if (!defined(DIOSHM_SYNC_H))
-#define DIOSHM_SYNC_H
+    #define DIOSHM_SYNC_H
 
-
-typedef enum {	// enum for synchr., Not Yet Used Yet
+typedef enum
+{                           // enum for synchr., Not Yet Used Yet
     DioSyncOK,              // data received / consumed
     DioSyncNotAvailableYet, // data not available yet, time out
     DioSyncNotConsumedYet,  // data not consumed yet, time out
@@ -48,42 +47,40 @@ typedef enum {	// enum for synchr., Not Yet Used Yet
     DIO_SYNC_NUM_RETVALS
 } DioShmSyncRetVal;
 
-
 //
 // Enumeration for Dataset part to synchronize
 //
 
-typedef enum  _DioShmPart {
+typedef enum _DioShmPart
+{
     DioShmHeaderPart, // dataset's header data
     DioShmDataPart,   // dataset's 'timestep' data
     DIO_NUM_PARTS
 } DioShmPart;
 
-
 //
 // Dataset Synchronisation information
 //
 
-typedef struct _DioShmSync_STR {
-
+typedef struct _DioShmSync_STR
+{
     int infoAvailable;                // is info complete
     int dataAvailable[DIO_NUM_PARTS]; // has header/data been provided?
     int putterDone;                   // Putter cleans up
 
-}DioShmSync_STR;
-typedef DioShmSync_STR * DioShmSync;
-
+} DioShmSync_STR;
+typedef DioShmSync_STR* DioShmSync;
 
 //
 // Enumeration for DataStored/DataConsumed functions
 //
 
-typedef enum _DsStoreFlag{
-    DsConfirm,       // Confirm Storage/Consumation of header or data part
-    DsCheck,         // Check if header or data part has been stored/consumed
+typedef enum _DsStoreFlag
+{
+    DsConfirm, // Confirm Storage/Consumation of header or data part
+    DsCheck,   // Check if header or data part has been stored/consumed
     NR_STORE_TYPES
 } DsStoreFlag;
-
 
 ///
 /// PUBLIC Functions
@@ -92,7 +89,7 @@ typedef enum _DsStoreFlag{
 //
 // Set sleep time / Sleep
 //
-void DioSetSyncTimeOut  (int timeOutTime);
+void DioSetSyncTimeOut(int timeOutTime);
 void DioSetSyncSleepTime(int sleepTime);
 void DioSleep(int sleepTime);
 
@@ -109,38 +106,34 @@ int DioShmDataStored(DioShmSync sync, DioShmPart part, DsStoreFlag flag);
 //
 int DioShmInfoAvailable(DioShmSync sync);
 
-
-//
-// Function names for FORTRAN-C interface.
-//
-#if HAVE_CONFIG_H
-#   include "config.h"
-#   define STDCALL  /* nothing */
-#   define DIOSETSYNCTIMEOUT_C   FC_FUNC(diosetsynctimeout_c,DIOSETSYNCTIMEOUT_C)
-#   define DIOSETSYNCSLEEPTIME_C FC_FUNC(diosetsyncsleeptime_c,DIOSETSYNCSLEEPTIME_C)
-#else
-// WIN32
-#   define STDCALL  /* nothing */
-#   define DIOSETSYNCTIMEOUT_C   DIOSETSYNCTIMEOUT_C
-#   define DIOSETSYNCSLEEPTIME_C DIOSETSYNCSLEEPTIME_C
-#endif
+    //
+    // Function names for FORTRAN-C interface.
+    //
+    #if HAVE_CONFIG_H
+        #include "config.h"
+        #define STDCALL /* nothing */
+        #define DIOSETSYNCTIMEOUT_C FC_FUNC(diosetsynctimeout_c, DIOSETSYNCTIMEOUT_C)
+        #define DIOSETSYNCSLEEPTIME_C FC_FUNC(diosetsyncsleeptime_c, DIOSETSYNCSLEEPTIME_C)
+    #else
+        // WIN32
+        #define STDCALL /* nothing */
+        #define DIOSETSYNCTIMEOUT_C DIOSETSYNCTIMEOUT_C
+        #define DIOSETSYNCSLEEPTIME_C DIOSETSYNCSLEEPTIME_C
+    #endif
 
 /*------------------------------------------------------------------------------
  *    Function definitions
  */
 
-#if ( defined(__cplusplus) || defined(salford32) )
+    #if (defined(__cplusplus) || defined(salford32))
 extern "C" {
-#endif
+    #endif
 
-void STDCALL DIOSETSYNCTIMEOUT_C  (int * timeOutTime);
-void STDCALL DIOSETSYNCSLEEPTIME_C(int * sleepTime  );
+void STDCALL DIOSETSYNCTIMEOUT_C(int* timeOutTime);
+void STDCALL DIOSETSYNCSLEEPTIME_C(int* sleepTime);
 
-#if ( defined(__cplusplus) || defined(salford32) )
+    #if (defined(__cplusplus) || defined(salford32))
 }
-#endif
-
-
+    #endif
 
 #endif
-

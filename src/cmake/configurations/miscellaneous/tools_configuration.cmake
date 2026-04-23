@@ -15,6 +15,7 @@ if(NOT TARGET deltares_common_mpi)
     add_subdirectory(${checkout_src_root}/${deltares_common_mpi_module} deltares_common_mpi)
 endif()
 
+# Third party libraries
 # triangle
 if(NOT TARGET triangle_c)
     add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
@@ -29,7 +30,6 @@ if(NOT TARGET gridgeom_dll)
     add_subdirectory(${checkout_src_root}/${gridgeom_dll_module} gridgeom_dll)
 endif()
 
-# Third party libraries
 # kdtree2
 if(NOT TARGET kdtree2)
     add_subdirectory(${checkout_src_root}/${kdtree_module} kdtree2)
@@ -37,6 +37,14 @@ endif()
 
 if(NOT TARGET kdtree_wrapper)
     add_subdirectory(${checkout_src_root}/${kdtree_wrapper_module} kdtree_wrapper)
+endif()
+
+if(NOT TARGET precice::precice)
+    add_subdirectory(${checkout_src_root}/${precice_module} precice)
+endif()
+
+if (NOT TARGET pugixml::pugixml)
+    add_subdirectory(${checkout_src_root}/${pugixml_module} pugixml)
 endif()
 
 # Tools_gpl
@@ -63,6 +71,16 @@ endif()
 # cosumo_bmi
 if(NOT TARGET cosumo_bmi)
     add_subdirectory(${checkout_src_root}/${cosumo_bmi_module} cosumo_bmi)
+endif()
+
+# csumo_nfio (csumo helper)
+if (NOT TARGET csumo_nfio)
+    add_subdirectory(${checkout_src_root}/${csumo_nfio_module} csumo_nfio)
+endif()
+
+# preC-SUMO
+if (NOT TARGET preC-SUMO)
+    add_subdirectory(${checkout_src_root}/${preC-SUMO_module} preC-SUMO)
 endif()
 
 # Third party

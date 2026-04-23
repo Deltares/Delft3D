@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -90,9 +90,43 @@ module timespace_parameters
    integer, parameter :: METHOD_CONSTANT = 4
    integer, parameter :: METHOD_TRIANGULATION = 5
    integer, parameter :: METHOD_AVERAGING = 6
+   integer, parameter :: NEAREST_NEIGHBOUR = 11
    integer, parameter :: WEIGHTFACTORS_EXTRAPOLATION = 103
 
+   ! enumeration for interpolation methods of providers
+   integer, parameter :: OPERAND_UNKNOWN = -1 !< Unknown operand type.
+   integer, parameter :: OPERAND_OVERRIDE = 0 !< Override existing value with new value.
+   integer, parameter :: OPERAND_OVERRIDE_IF_MISSING = 1 !< Override existing value, but only if missing.
+   integer, parameter :: OPERAND_ADD = 2 !< Add new value to existing value.
+   integer, parameter :: OPERAND_MULTIPLY = 3 !< Multiply existing value by new value.
+   integer, parameter :: OPERAND_MINIMUM = 4 !< Take the minimum of existing and new value.
+   integer, parameter :: OPERAND_MAXIMUM = 5 !< Take the maximum of existing and new value.
 contains
+
+   function convert_operand_string_to_integer(string) result(operand)
+      character(len=*), intent(in) :: string !< file type string
+      integer :: operand !< operand enumeration integer
+
+      select case (trim(str_tolower(string)))
+      case ('o')
+         operand = OPERAND_OVERRIDE
+      case ('a')
+         operand = OPERAND_OVERRIDE_IF_MISSING
+      case ('+')
+         operand = OPERAND_ADD
+      case ('*')
+         operand = OPERAND_MULTIPLY
+      case ('v')
+         ! This used to map to operand_replace_if_value in the ec module, but this has been replaced by regular overriding behavior.
+         operand = OPERAND_OVERRIDE
+      case ('n')
+         operand = OPERAND_MINIMUM
+      case ('x')
+         operand = OPERAND_MAXIMUM
+      case default
+         operand = OPERAND_UNKNOWN
+      end select
+   end function convert_operand_string_to_integer
 
 !> Converts fileType string to an integer.
 !! Returns -1 when an invalid type string is given.
@@ -146,7 +180,7 @@ contains
          method = WEIGHTFACTORS
       case ('nearestnb')
          ! Nearest neighbour is currently automatically selected by ec_converter under standard method "weightfactors".
-         method = WEIGHTFACTORS
+         method = NEAREST_NEIGHBOUR
       case ('triangulation')
          method = METHOD_TRIANGULATION
       case default
@@ -210,7 +244,9 @@ contains
       integer, intent(inout) :: method !< method integer
       logical, intent(in) :: is_extrapolation_allowed !< is extrapolation allowed
 
-      if (.not. is_extrapolation_allowed) return
+      if (.not. is_extrapolation_allowed) then
+         return
+      end if
 
       if (method == WEIGHTFACTORS) then
          method = WEIGHTFACTORS_EXTRAPOLATION

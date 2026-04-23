@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -34,17 +34,14 @@
 //  29 jun 12
 //------------------------------------------------------------------------------
 
-
 #pragma once
 
 // The following definition is needed since VisualStudio2015 before including <pthread.h>:
 #define HAVE_STRUCT_TIMESPEC
 
-
 #ifndef _WIN32
-#   include "config.h"
+    #include "config.h"
 #endif
-
 
 #include <assert.h>
 #include <errno.h>
@@ -58,8 +55,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #ifndef _WIN32
-#   include <sys/wait.h>
-#   include <unistd.h>
+    #include <sys/wait.h>
+    #include <unistd.h>
 // #else
 // #   include <sys/syscall.h>.
 #endif
@@ -69,12 +66,10 @@
 #include <string>
 #include <mpi.h>
 
-
 class DimrExe;
 class Clock;
 class Exception;
 class Log;
-
 
 #include "clock.h"
 #include "exception.h"
@@ -82,70 +77,64 @@ class Log;
 #include "stringutils.h"
 #include "dimr.h"
 
-
 //------------------------------------------------------------------------------
 
+class DimrExe
+{
+public:
+    DimrExe(void);
+    void initialize(int argc, char* argv[], char* envp[]);
+    ~DimrExe(void);
+    void openLibrary(void);
+    void freeLib(void);
+    void lib_initialize(void);
+    int lib_update(void);
+    void lib_update_test(void);
+    void lib_finalize(void);
+    void timerFinish(void);
 
-class DimrExe {
-    public:
-        DimrExe(void);
-        void initialize(
-            int     argc,
-            char *  argv [],
-            char *  envp []
-            );
-        ~DimrExe(void);
-        void openLibrary(void);
-        void freeLib (void);
-        void lib_initialize(void);
-        int lib_update(void);
-        void lib_update_test(void);
-        void lib_finalize(void);
-        void timerFinish(void);
+public:
+    bool ready;     // true means constructor succeeded and DH ready to run
+    char* exePath;  // name of running dimr executable (argv[0])
+    char* exeName;  // short name of executable
+    Clock* clock;   // timing facility
+    Log* log;       // logging facility
+    char* mainArgs; // reassembled command-line arguments (argv[1...])
+    char* slaveArg; // command-line argument for slave mode
 
-    public:
-        bool       ready;          // true means constructor succeeded and DH ready to run
-        char  *    exePath;        // name of running dimr executable (argv[0])
-        char  *    exeName;        // short name of executable
-        Clock *    clock;          // timing facility
-        Log   *    log;            // logging facility
-        char  *    mainArgs;       // reassembled command-line arguments (argv[1...])
-        char  *    slaveArg;       // command-line argument for slave mode
-
-    private:
-        char  *    configfile;     // name of configuration file
-        bool       done;           // set to true when it's time to stop
-        char  *    library;        // Component library name, without extension/prefix
-        Clock::Timestamp  timerStartStamp;
-        Clock::Timestamp  timerSumStamp;
+private:
+    char* configfile; // name of configuration file
+    bool done;        // set to true when it's time to stop
+    char* library;    // Component library name, without extension/prefix
+    Clock::Timestamp timerStartStamp;
+    Clock::Timestamp timerSumStamp;
 
 #ifndef _WIN32
-    void          *    libHandle;         // (Linux) Handle to the loaded library for this component.
+    void* libHandle; // (Linux) Handle to the loaded library for this component.
 #else
-    HINSTANCE          libHandle;         // (Windows) Handle to the loaded library for this component.
+    HINSTANCE libHandle; // (Windows) Handle to the loaded library for this component.
 #endif
-    BMI_INITIALIZE     dllInitialize;     // entry point in dll
-    BMI_UPDATE         dllUpdate;         // entry point in dll
-    BMI_FINALIZE       dllFinalize;       // entry point in dll
-    BMI_GETSTARTTIME   dllGetStartTime;   // entry point in dll
-    BMI_GETENDTIME     dllGetEndTime;     // entry point in dll
-    BMI_GETTIMESTEP    dllGetTimeStep;    // entry point in dll
+    BMI_INITIALIZE dllInitialize;         // entry point in dll
+    BMI_UPDATE dllUpdate;                 // entry point in dll
+    BMI_FINALIZE dllFinalize;             // entry point in dll
+    BMI_GETSTARTTIME dllGetStartTime;     // entry point in dll
+    BMI_GETENDTIME dllGetEndTime;         // entry point in dll
+    BMI_GETTIMESTEP dllGetTimeStep;       // entry point in dll
     BMI_GETCURRENTTIME dllGetCurrentTime; // entry point in dll
-    BMI_GETVAR         dllGetVar;         // entry point in dll
-    BMI_SETVAR         dllSetVar;         // entry point in dll
-    Level              logLevel;
-    private:
-    };
+    BMI_GETVAR dllGetVar;                 // entry point in dll
+    BMI_SETVAR dllSetVar;                 // entry point in dll
+    Level logLevel;
 
+private:
+};
 
 //------------------------------------------------------------------------------
 
-
 #ifdef DIMR_MAIN
-    DimrExe * DHE;     // global pointer to single object instance
+DimrExe* DHE; // global pointer to single object instance
 
 #else
-    extern DimrExe * DHE;
+extern DimrExe* DHE;
 #endif
 
 // -- MPI settings -------------------------------------------------------------
@@ -153,7 +142,6 @@ static bool use_mpi; // Whether MPI-mode is active for this run.
 static int my_rank;  // Rank# of current process
 static int numranks; // Total nr of MPI processes for dimr main.
 
-void initialize_parallel(int, char **);
+void initialize_parallel(int, char**);
 void finalize_parallel(void);
 void abort_parallel(void);
-

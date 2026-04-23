@@ -1,7 +1,7 @@
 subroutine nf_2_flow(filename, error, gdp)
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2025.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -241,12 +241,12 @@ subroutine nf_2_flow(filename, error, gdp)
           call prop_get(file_ptr, 'NF2FF/NFResult/sources', line)
        endif
        numrealonline = count_words(trim(line))
-       if (numrealonline == 6) then
+       if (numrealonline == 6 .or. numrealonline == 7) then
           nf_src_mom = .false.
-       elseif (numrealonline == 8) then
+       elseif (numrealonline == 8 .or. numrealonline == 9) then
           nf_src_mom = .true.
        else
-          write(lundia, '(a,i0,a)') "ERROR: <NF2FF> / <NFResult> / <sources> has ", numrealonline, " columns; expecting 6 (X,Y,Z,S,H,B) or 8 (+Umag, Udir)."
+          write(lundia, '(a,i0,a)') "ERROR: <NF2FF> / <NFResult> / <sources> has ", numrealonline, " columns; expecting 6 (X,Y,Z,S,H,B), 7 (X,Y,Z,S,H,B,Weight), 8 (6 col +Umag, Udir) or 9 (8 col, +Weight) columns."
           error = .true.
        endif
        if (associated(gdp%gdnfl%nf_sour)) then

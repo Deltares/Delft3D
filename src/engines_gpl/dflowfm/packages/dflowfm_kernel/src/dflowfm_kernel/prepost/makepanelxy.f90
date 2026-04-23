@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -94,13 +94,17 @@ contains
       data INI/0/
       JaNET = 1 - JPANEL
 
-      if (NPL <= 1 .or. NPL > 4) return
+      if (NPL <= 1 .or. NPL > 4) then
+         return
+      end if
 
       call SAVENET()
 
       do I = 1, NPL
          I2 = I + 1
-         if (I == 4) I2 = 1
+         if (I == 4) then
+            I2 = 1
+         end if
          DX = XPL(I) - XPL(I2)
          DY = YPL(I) - YPL(I2)
          DR(I) = sqrt(DX * DX + DY * DY)
@@ -166,9 +170,9 @@ contains
 
 !     knoopnummers uitdelen
       do J = 1, NC
-         Y = dble(J - 1) / dble(NC - 1)
+         Y = real(J - 1, kind=dp) / real(NC - 1, kind=dp)
          do I = 1, MC
-            X = dble(I - 1) / dble(MC - 1)
+            X = real(I - 1, kind=dp) / real(MC - 1, kind=dp)
             K = (J - 1) * MC + I + K0
             XKK = XPL(1) * (1 - X) * (1 - Y) + XPL(2) * (X) * (1 - Y) + &
                   XPL(3) * (X) * (Y) + XPL(4) * (1 - X) * (Y)

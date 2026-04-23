@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
       use m_flow, only: kmx, zws, BACKGROUNDWATERTEMPERATURE, BACKGROUNDSALINITY, ag, rhomean, adve, baroclinic_force_prev, dsall, dteml
       use m_flowgeom, only: ln, bob, acl, dx
       use m_transport, only: isalt, itemp, constituents
-      use m_flowparameters, only: jasal, jatem
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, epshs
       use m_get_kbot_ktop, only: getkbotktop
       use m_get_Lbot_Ltop, only: getLbotLtop
       use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
@@ -71,7 +71,7 @@ contains
       allocate (poflu(0:2 * kmx + 1), kicol(0:2 * kmx + 1), kicor(0:2 * kmx + 1))
       allocate (point(0:2 * kmx + 1), drho(0:2 * kmx + 1), dsal(0:2 * kmx + 1), dtem(0:2 * kmx + 1))
 
-      if (jasal == 0 .and. jatem == 0) then
+      if (jasal == 0 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
          return
       end if
 
@@ -80,6 +80,11 @@ contains
       call getkbotktop(k1, kbl, ktl)
       call getkbotktop(k2, kbr, ktr)
       call getLbotLtop(L, Lb, Lt)
+
+      if (zws(ktl) - zws(kbl - 1) < epshs .or. zws(ktr) - zws(kbr - 1) < epshs) then
+         return
+      end if
+
       zbed = (bob(1, L) + bob(2, L)) * 0.5_dp ! interpolates the bed level on flow link
       !
       !***position horizontal interfaces left and right
@@ -243,7 +248,7 @@ contains
             end if
             sal = acl(L) * constituents(isalt, kl) + (1.0_dp - acl(L)) * constituents(isalt, kr)
             temp = backgroundwatertemperature
-            if (jatem > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                temp = acl(L) * constituents(itemp, kl) + (1.0_dp - acl(L)) * constituents(itemp, kr)
             end if
             drho_dsalinity = derivative_density_to_salinity_eckart(sal, temp)
@@ -251,7 +256,7 @@ contains
             dsal(kf) = grad
          end if
 
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             cl = constituents(itemp, kl2)
             if (kl1 >= kbl .and. kl1 <= ktl) then
                cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(itemp, kl1) &

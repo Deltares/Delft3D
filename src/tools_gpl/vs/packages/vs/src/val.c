@@ -1,6 +1,6 @@
 //---- GPL ---------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,47 +35,49 @@
 
 /*  @@
  */
-void FU_set_value (
-    BText varnam,
-    BRea4 value
-    )
+void FU_set_value(BText varnam, BRea4 value)
 {
     VsVarData p;
 
     /* check if variable not already exists */
-    if ( VR_get_pointer_to_variable ( varnam ) != NULL ) {
-        GEN_message_to_errorfile ( 9 );
+    if (VR_get_pointer_to_variable(varnam) != NULL)
+    {
+        GEN_message_to_errorfile(9);
         return;
     }
 
     /* allocate memory for a variable structure */
-    if (( p = VR__alloc_memory_for_variable ()) != NULL ) {
-
+    if ((p = VR__alloc_memory_for_variable()) != NULL)
+    {
         BInt4 i;
 
-        (void)strcpy ( p->varnam, varnam );
-        (void)strcpy ( p->elmtyp, "REAL" );
+        (void)strcpy(p->varnam, varnam);
+        (void)strcpy(p->elmtyp, "REAL");
         p->nbytsg = 4;
-        (void)strcpy ( p->grpnam, "--User Defined--" );
-        (void)strcpy ( p->elmnam, "--" );
+        (void)strcpy(p->grpnam, "--User Defined--");
+        (void)strcpy(p->elmnam, "--");
         p->grpndm = 1;
         p->elmndm = 1;
-        for ( i = 0 ; i < 5 ; i++) {
+        for (i = 0; i < 5; i++)
+        {
             p->grpdms[i] = 1;
             p->elmdms[i] = 1;
         }
-        p->varpnt = (void *)GEN_malloc ( sizeof ( float ));
+        p->varpnt = (void*)GEN_malloc(sizeof(float));
 
-        if ( p->varpnt != NULL ) {
-            ((float *)p->varpnt)[0] = value;
-            VR_add_variable_to_memo ( p ) ;
+        if (p->varpnt != NULL)
+        {
+            ((float*)p->varpnt)[0] = value;
+            VR_add_variable_to_memo(p);
         }
-        else {
-            GEN_message_to_errorfile ( 1 );
-            GEN_free ( p );
+        else
+        {
+            GEN_message_to_errorfile(1);
+            GEN_free(p);
         }
     }
-    else {
-        GEN_message_to_errorfile ( 1 );
+    else
+    {
+        GEN_message_to_errorfile(1);
     }
 }

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -85,9 +85,11 @@ contains
       end if
       netstat = NETSTAT_OK
 
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.true.)
 
-      if (nump1d2d < 1) return
+      if (nump1d2d < 1) then
+         return
+      end if
 
       call cosphiunetcheck(1)
 
@@ -103,6 +105,7 @@ contains
          call generate_partitioning_from_pol()
       end if
 
+      netstat = NETSTAT_OK !> reset netstat before writing partitions
       if (ndomains > 1) then
          call partition_write_domains(trim(fnam), md_icgsolver, jacells, japolygon, md_partugrid)
       end if

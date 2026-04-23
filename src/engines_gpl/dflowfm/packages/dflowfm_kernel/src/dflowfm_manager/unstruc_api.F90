@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2025.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,7 @@
 !
 !
 module unstruc_api
+
    use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
    use m_updatebalance, only: updatebalance
    use m_flow_usertimestep, only: flow_usertimestep
@@ -48,6 +49,7 @@ module unstruc_api
    use m_flowgeom
    use unstruc_files, only: mdia
 
+   use precision, only: dp
    implicit none
 
    real(kind=dp) :: cpuall0
@@ -155,7 +157,8 @@ contains
       if (index(rec, 'CHOICES') > 0) then ! first check your choices
          L1 = index(rec, '=') + 1
          read (rec(L1:), *, err=888) NUM, NWHAT
-         MODE = 1; KEY = 3
+         MODE = 1
+         KEY = 3
          call CHOICES(NUM, NWHAT, KEY)
       end if
 
@@ -176,14 +179,22 @@ contains
 
          if (ncrs > 0) then
 
-            QQQ = crs(1)%sumvalcur(1); i = 1
-            write (tex(i:), '(i2.0)') kmx; i = i + 5
-            write (tex(i:), '(i2.0)') numtopsig; i = i + 5
-            write (tex(i:), '(i2.0)') janumtopsiguniform; i = i + 5
-            write (tex(i:), '(i2.0)') keepzlayeringatbed; i = i + 5
-            write (tex(i:), '(i2.0)') ihuz; i = i + 5
-            write (tex(i:), '(i2.0)') ihuzcsig; i = i + 5
-            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1d0, dnt); i = i + 5
+            QQQ = crs(1)%sumvalcur(1)
+            i = 1
+            write (tex(i:), '(i2.0)') kmx
+            i = i + 5
+            write (tex(i:), '(i2.0)') numtopsig
+            i = i + 5
+            write (tex(i:), '(i2.0)') janumtopsiguniform
+            i = i + 5
+            write (tex(i:), '(i2.0)') keepzlayeringatbed
+            i = i + 5
+            write (tex(i:), '(i2.0)') ihuz
+            i = i + 5
+            write (tex(i:), '(i2.0)') ihuzcsig
+            i = i + 5
+            write (tex(i:), '(F5.2)') (time1 - tstart_user) / max(1.0_dp, dnt)
+            i = i + 5
 
             call upotukinueaa(upot, ukin, ueaa)
             write (mout, '(A30,A, 5F14.3)') filnam(1:30), ' :    '//trim(tex)//' : ', QQQ, ueaa, upot, ukin, upot + ukin
@@ -267,8 +278,10 @@ contains
       use m_statistical_output, only: update_source_input, update_statistical_output
       use m_wall_clock_time
       use m_flow_modelinit, only: flow_modelinit
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, precice_adapter_interface_t
 
       integer :: timerHandle, inner_timerhandle
+      class(precice_adapter_interface_t), pointer :: fm_precice_adapter
 
       !call inidia('api')
 
@@ -326,6 +339,12 @@ contains
       !call update_statistical_output(out_variable_set_map%configs,dts)
       !call update_statistical_output(out_variable_set_clm%configs,dts)
 
+      ! Build and initialize precice adapter if enabled.
+      if (precice_adapter_is_enabled()) then
+         fm_precice_adapter => precice_adapter_get_adapter()
+         call fm_precice_adapter%initialize()
+      end if
+
       call mess(LEVEL_INFO, 'Writing initial output to file(s)...')
       inner_timerhandle = 0
       call timstrt('Write external output', inner_timerhandle)
@@ -355,7 +374,9 @@ contains
       jastop = 0
       iresult = DFM_GENERICERROR
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
       if (ndx == 0) then ! No valid flow network was initialized
          jastop = 1
@@ -411,6 +432,15 @@ contains
       use m_nearfield
       use m_laterals
       use fm_statistical_output, only: close_fm_statistical_output
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_adapter, &
+                                        precice_adapter_interface_t
+
+      class(precice_adapter_interface_t), pointer :: fm_precice_adapter
+
+      if (precice_adapter_is_enabled()) then
+         fm_precice_adapter => precice_adapter_get_adapter()
+         call fm_precice_adapter%finalize()
+      end if
 
       call dealloc_nfarrays()
       call dealloc_lateraldata()

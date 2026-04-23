@@ -1,6 +1,6 @@
 //---- LGPL --------------------------------------------------------------------
 //
-// Copyright (C)  Stichting Deltares, 2011-2025.
+// Copyright (C)  Stichting Deltares, 2011-2026.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,73 +36,70 @@
 //
 //------------------------------------------------------------------------------
 
-
 #include "esm.h"
 
 #include <stdlib.h>
 
 #if defined(HAVE_CONFIG_H)
-#   include <sys/wait.h>
-#   include <unistd.h>
+    #include <sys/wait.h>
+    #include <unistd.h>
 #endif
 
-
-//#define ESMFLAGS      0
-#define ESMFLAGS        ESM_TRACE
-
+// #define ESMFLAGS      0
+#define ESMFLAGS ESM_TRACE
 
 //------------------------------------------------------------------------------
 
-
-int
-main (
-    int     argc,
-    char *  argv[],
-    char *  envp[]
-    ) {
-
+int main(int argc, char* argv[], char* envp[])
+{
     int blocksize = 0;
     int numblocks = 0;
 
     // Process command-line arguments
 
-    if (argc != 3) {
-        fprintf (stderr, "Usage: %s <blocksize> <numblocks>\n", argv[0]);
-        exit (1);
-        }
+    if (argc != 3)
+    {
+        fprintf(stderr, "Usage: %s <blocksize> <numblocks>\n", argv[0]);
+        exit(1);
+    }
 
-    if ((blocksize = atoi (argv[1])) <= 0) {
-        fprintf (stderr, "%s: Invalid block size (%s)\n", argv[0], argv[1]);
-        exit (1);
-        }
+    if ((blocksize = atoi(argv[1])) <= 0)
+    {
+        fprintf(stderr, "%s: Invalid block size (%s)\n", argv[0], argv[1]);
+        exit(1);
+    }
 
-    if ((numblocks = atoi (argv[2])) <= 0) {
-        fprintf (stderr, "%s: Invalid number of blocks (%s)\n", argv[0], argv[2]);
-        exit (1);
-        }
+    if ((numblocks = atoi(argv[2])) <= 0)
+    {
+        fprintf(stderr, "%s: Invalid number of blocks (%s)\n", argv[0], argv[2]);
+        exit(1);
+    }
 
     // Initialize ESM
 
-    if (ESM_Init (ESMFLAGS) != ESM_OK) {
-        fprintf (stderr, "ESM initialization fails: %s\n", ESM_Error ());
-        exit (1);
-        }
+    if (ESM_Init(ESMFLAGS) != ESM_OK)
+    {
+        fprintf(stderr, "ESM initialization fails: %s\n", ESM_Error());
+        exit(1);
+    }
 
-    int context = ESM_Create (0, 0);    // local memory
+    int context = ESM_Create(0, 0); // local memory
 
     // Allocate blocks
 
     int block;
-    for (block = 0 ; block < numblocks ; block++) {
-        char name [100];
-        sprintf (name, "block-%d", block);
-        if (ESM_Alloc (context, name, blocksize) == 0) {
+    for (block = 0; block < numblocks; block++)
+    {
+        char name[100];
+        sprintf(name, "block-%d", block);
+        if (ESM_Alloc(context, name, blocksize) == 0)
+        {
             break;
-            }
         }
+    }
 
-    printf ("%d/%d blocks of %d bytes allocated\n", block, numblocks, blocksize);
-    printf ("%ld/%ld bytes total allocated\n", (long) block * blocksize, (long) numblocks * blocksize);
+    printf("%d/%d blocks of %d bytes allocated\n", block, numblocks, blocksize);
+    printf("%ld/%ld bytes total allocated\n", (long)block * blocksize, (long)numblocks * blocksize);
 
     return 0;
-    }
+}
