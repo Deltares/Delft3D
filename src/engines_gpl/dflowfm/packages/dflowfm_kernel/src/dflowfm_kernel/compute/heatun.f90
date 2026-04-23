@@ -44,6 +44,8 @@ contains
                             jadelvappos, free_convection_coefficient, secchi_radiation_fraction, diffuse_attenuation_coefficient, &
                             DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
       use m_heatfluxes, only: em, albedo, cpa, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
+                            POOLE_ATKINS_PARAMETER
+      use m_heatfluxes, only: em, albedo, cpa, secchi_depth_is_spatially_varying, spatial_secchi_depth, jamapheatflux, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav
       use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
       use m_flowparameters, only: his_write_settings, map_write_settings, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
@@ -218,7 +220,7 @@ contains
                do j = j2, 1, -1
 
                   if (j == 1 .and. secchi_depth_is_spatially_varying) then
-                     diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / DIFFUSE_ATTENUATION_COEFFICIENT_FACTOR
+                     diffuse_attenuation_coefficient_in_cell(1) = spatial_secchi_depth(n) / POOLE_ATKINS_PARAMETER
                   end if
 
                   zlo = 0.0_dp
