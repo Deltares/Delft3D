@@ -7264,7 +7264,7 @@
         </checks>
     </testCase>
     <testCase name="e03_f10_c01_viruses" ref="dwaq_default">
-        <path version="2025-06-25T22:20:00">e03_waq/f10_additional_modules/c01_viruses</path>
+        <path version="2026-04-22T11:52:00.377000">e03_waq/f10_additional_modules/c01_viruses</path>
         <checks>
             <file name="d3d-waq-virus.ada" type="NEFIS">
                 <parameters name="DELWAQ_RESULTS">
