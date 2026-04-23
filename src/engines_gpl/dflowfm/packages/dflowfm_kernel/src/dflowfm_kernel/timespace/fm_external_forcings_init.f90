@@ -1293,8 +1293,6 @@ contains
 
       real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
       real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
-      real(kind=dp), dimension(2) :: x_flowcell_2element !< x-coordinate of flow cell source, 2-elements long for addsorsin input
-      real(kind=dp), dimension(2) :: y_flowcell_2element !< y-coordinate of flow cell source, 2-elements long for addsorsin input
       real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
       real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
       real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
@@ -1353,9 +1351,7 @@ contains
                write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
-               x_flowcell_2element = [x_flowcell(cidx), x_flowcell(cidx)]
-               y_flowcell_2element = [y_flowcell(cidx), y_flowcell(cidx)]
-               call addsorsin(srcid, x_flowcell_2element, y_flowcell_2element, z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
                if (bubblescreen_cells(cidx) /= -1) then
                   local_count = local_count + 1
                   bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
