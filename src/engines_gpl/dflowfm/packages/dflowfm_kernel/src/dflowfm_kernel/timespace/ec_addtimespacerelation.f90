@@ -360,10 +360,17 @@ contains
       ! Construct the target field and the target item
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
-      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
-                                             targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
-         return
+      if (present(tgt_item1) .and. present(tgt_data1)) then
+         ! Caller provides target item and data array directly; bypass the hard-coded lookup.
+         ! This is the path for quantities not registered in fm_ext_force_name_to_ec_item.
+         targetItemPtr1 => tgt_item1
+         dataPtr1       => tgt_data1
+      else
+         if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
+                                                targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
+                                                dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
+            return
+         end if
       end if
       continue
 

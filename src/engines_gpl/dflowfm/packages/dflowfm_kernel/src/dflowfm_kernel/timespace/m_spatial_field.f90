@@ -72,6 +72,7 @@ module m_spatial_field
       character(len=INI_VALUE_LEN) :: variable_name       = ' '
       character(len=INI_VALUE_LEN) :: interpolation_method = ' '
       character(len=INI_VALUE_LEN) :: operand_string      = ' '
+      character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
       integer                      :: oper                = OPERAND_OVERRIDE
       real(dp)                     :: max_search_radius   = -1.0_dp
       logical                      :: invert_mask         = .false.
@@ -102,6 +103,7 @@ contains
       call prop_get(block_ptr, '', 'extrapolationAllowed',    res%is_extrapolation_allowed)
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
       call prop_get(block_ptr, '', 'operand ',                res%operand_string)
+      call prop_get(block_ptr, '', 'locationType', res%location_type)
       call read_averaging_input(block_ptr, res%averaging_input)
 
    end function read_spatial_field_block
@@ -292,12 +294,12 @@ contains
             call err_flush()
             return
          end if
-         if (.not. strcmpi(input%forcing_file_type, 'sample')) then
-            write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
-               ']. quantity ''qext'' requires forcingFileType=sample, got: ', trim(input%forcing_file_type), '.'
-            call err_flush()
-            return
-         end if
+         !if (.not. strcmpi(input%forcing_file_type, 'sample')) then
+         !   write (msgbuf, '(7a)') 'Invalid block in file ''', file_name, ''': [', group_name, &
+         !      ']. quantity ''qext'' requires forcingFileType=sample, got: ', trim(input%forcing_file_type), '.'
+         !   call err_flush()
+         !   return
+         !end if
       end select
 
       is_successful = .true.

@@ -178,10 +178,10 @@ contains
       call tree_destroy(tree)
 
       ! ASSERT
-      call f90_expect_eq(avg%averaging_type, 1,         "default averaging_type should be 1 (mean)")
-      call f90_expect_lt(avg%rel_size,       0.0_dp,    "default rel_size should be negative (use EC default)")
-      call f90_expect_eq(avg%num_min,        1,         "default num_min should be 1")
-      call f90_expect_eq(avg%percentile,     0.0_dp,    "default percentile should be 0")
+      call f90_expect_eq(avg%averaging_type, 1, "default averaging_type should be 1 (mean)")
+      call f90_expect_lt(avg%rel_size, 0.0_dp, "default rel_size should be negative (use EC default)")
+      call f90_expect_eq(avg%num_min, 1, "default num_min should be 1")
+      call f90_expect_eq(avg%percentile, 0.0_dp, "default percentile should be 0")
    end subroutine test_averaging_params_defaults
    !$f90tw)
 
@@ -195,18 +195,18 @@ contains
       type(t_averaging_input) :: avg
       real(dp) :: tc(NTRANSFORMCOEF)
 
-      avg%averaging_type = 4      ! e.g. nearestNb
-      avg%rel_size       = 2.5_dp
-      avg%num_min        = 3
-      avg%percentile     = 50.0_dp
+      avg%averaging_type = 4 ! e.g. nearestNb
+      avg%rel_size = 2.5_dp
+      avg%num_min = 3
+      avg%percentile = 50.0_dp
 
       tc = -999.0_dp
       call averaging_params_to_transformcoef(avg, tc)
 
-      call f90_expect_eq(tc(4), 4.0_dp,  "transformcoef(4) should hold averagingType")
-      call f90_expect_eq(tc(5), 2.5_dp,  "transformcoef(5) should hold relSize")
+      call f90_expect_eq(tc(4), 4.0_dp, "transformcoef(4) should hold averagingType")
+      call f90_expect_eq(tc(5), 2.5_dp, "transformcoef(5) should hold relSize")
       call f90_expect_eq(tc(7), 50.0_dp, "transformcoef(7) should hold percentile")
-      call f90_expect_eq(tc(8), 3.0_dp,  "transformcoef(8) should hold numMin")
+      call f90_expect_eq(tc(8), 3.0_dp, "transformcoef(8) should hold numMin")
       ! Slots not written by the helper must be untouched.
       call f90_expect_eq(tc(1), -999.0_dp, "transformcoef(1) should be untouched")
       call f90_expect_eq(tc(2), -999.0_dp, "transformcoef(2) should be untouched")
@@ -219,12 +219,12 @@ contains
       use m_spatial_field, only: parse_location_type
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
 
-      call f90_expect_eq(parse_location_type('1d'),   ILATTP_1D,  "'1d' should map to ILATTP_1D")
-      call f90_expect_eq(parse_location_type('2d'),   ILATTP_2D,  "'2d' should map to ILATTP_2D")
+      call f90_expect_eq(parse_location_type('1d'), ILATTP_1D, "'1d' should map to ILATTP_1D")
+      call f90_expect_eq(parse_location_type('2d'), ILATTP_2D, "'2d' should map to ILATTP_2D")
       call f90_expect_eq(parse_location_type('1d2d'), ILATTP_ALL, "'1d2d' should map to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type('all'),  ILATTP_ALL, "'all' should map to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type(' '),    ILATTP_ALL, "empty string should default to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type('bogus'),ILATTP_ALL, "unknown string should default to ILATTP_ALL")
+      call f90_expect_eq(parse_location_type('all'), ILATTP_ALL, "'all' should map to ILATTP_ALL")
+      call f90_expect_eq(parse_location_type(' '), ILATTP_ALL, "empty string should default to ILATTP_ALL")
+      call f90_expect_eq(parse_location_type('bogus'), ILATTP_ALL, "unknown string should default to ILATTP_ALL")
    end subroutine test_parse_location_type
    !$f90tw)
 
@@ -297,7 +297,7 @@ contains
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
       call initialize_ec_module()
-      
+
       ! ACT: parse the block and initialize the spatial fields.
       call parse_spatial_block(EXT_FILENAME, bnd_ptr, block_ptr)
       success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILENAME, 'Spatial')
@@ -359,6 +359,132 @@ contains
 
       call teardown_minimal_grid()
    end subroutine test_solarradiation_conflicts_with_netsolarradiation
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_qext_static_field_populated_at_init, test_qext_static_field_populated_at_init,
+   !> Verifies that a qext [Spatial] block with forcingFileType=sample populates
+   !! the qext array immediately at initialisation (static_field=.true. path).
+   !! This is the regression test for the unified EC path introduced in Step 2:
+   !! ec_addtimespacerelation + ec_gettimespacevalue_by_itemID replaces the old
+   !! init_qext_forcings/timespaceinitialfield call.
+   subroutine test_qext_static_field_populated_at_init() bind(C)
+      use m_wind, only: qext, jaQext
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: SAMPLE_FILE = "test_qext.xyz"
+      character(len=*), parameter :: QEXT_EXT = "test_qext.ext"
+
+      ! ARRANGE: one sample point exactly at the single grid cell (0,0) with value 1.5.
+      call create_file(SAMPLE_FILE, ["0.0  0.0  1.5"])
+
+      call create_file(QEXT_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = qext", &
+                       "    forcingFile     = "//SAMPLE_FILE, &
+                       "    forcingFileType = sample", &
+                       "    averagingType   = 4"]) ! 4 = nearestNb; works for a single sample point
+
+      jaQext = 1
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      ! ACT
+      call parse_spatial_block(QEXT_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, QEXT_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for a valid qext sample block")
+      call f90_assert_true(allocated(qext), "qext array should be allocated after init")
+      call f90_expect_near(qext(1), 1.5_dp, 1.0e-6_dp, "qext(1) should match the sample point value")
+
+      ! CLEANUP
+      jaQext = 0
+      if (allocated(qext)) deallocate (qext)
+      call teardown_minimal_grid()
+   end subroutine test_qext_static_field_populated_at_init
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_qext_bcascii_registers_ec_connection, test_qext_bcascii_registers_ec_connection,
+   !> Verifies that qext with forcingFileType=bcascii sets up a time-varying EC relation
+   !! via the tgt_data1 bypass path (quantity not registered in fm_ext_force_name_to_ec_item).
+   !! This proves that user freedom is preserved: qext is not locked to sample files.
+   subroutine test_qext_bcascii_registers_ec_connection() bind(C)
+      use m_wind, only: qext, jaQext
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ecInstancePtr, ec_gettimespacevalue_by_itemID
+      use m_ec_typedefs, only: tEcItemPtr
+
+      type(tEcItemPtr), dimension(:), pointer :: ecItemsPtr => null()
+      integer :: ec_item
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      real(dp) :: value_at_t0, value_at_t50
+      character(len=*), parameter :: QEXT_BC = "test_qext_tv.bc"
+      character(len=*), parameter :: QEXT_EXT = "test_qext_tv.ext"
+
+      call create_file(QEXT_BC, [ &
+                       "[General]", &
+                       "    fileVersion = 1.01", &
+                       "    fileType    = boundConds", &
+                       "", &
+                       "[forcing]", &
+                       "    name              = global", &
+                       "    function          = timeseries", &
+                       "    timeInterpolation = linear", &
+                       "    quantity          = time", &
+                       "    unit              = seconds since 2000-01-01", &
+                       "    quantity          = qext", &
+                       "    unit              = m3/s", &
+                       "    0    1.0", &
+                       "    100  3.0"])
+
+      call create_file(QEXT_EXT, [ &
+                       "[Spatial]", &
+                       "    quantity        = qext", &
+                       "    forcingFile     = "//QEXT_BC, &
+                       "    forcingFileType = bcascii"])
+
+      jaQext = 1
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      ! ACT
+      call parse_spatial_block(QEXT_EXT, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, QEXT_EXT, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT: EC relation established
+      call f90_expect_true(success, "init_spatial_fields should succeed for qext bcascii block")
+      call f90_assert_true(allocated(qext), "qext should be allocated")
+
+      ! Get the qext EC item ID directly from the instance after init
+      ec_item = ecInstancePtr%ecItemsPtr(ecInstancePtr%nItems)%ptr%id
+      ! ASSERT: values update correctly over time (proves EC relation is live, not one-shot)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, &
+                                               irefdate, tzone, tunit, 0.0_dp)
+      value_at_t0 = qext(1)
+      success = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, &
+                                               irefdate, tzone, tunit, 50.0_dp)
+      value_at_t50 = qext(1)
+
+      call f90_expect_near(value_at_t0, 1.0_dp, 1.0e-6_dp, "qext at t=0 should be 1.0")
+      call f90_expect_near(value_at_t50, 2.0_dp, 1.0e-6_dp, "qext at t=50 should be 2.0 (linearly interpolated)")
+
+      jaQext = 0
+      if (allocated(qext)) deallocate (qext)
+      call teardown_minimal_grid()
+   end subroutine test_qext_bcascii_registers_ec_connection
    !$f90tw)
 
 end module test_init_spatial_fields_integration

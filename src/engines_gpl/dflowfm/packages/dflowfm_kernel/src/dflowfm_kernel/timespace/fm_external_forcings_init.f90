@@ -634,7 +634,7 @@ contains
                         air_pressure, pseudo_air_pressure, water_level_correction, qext, jaqin
       use m_flowgeom, only: ndx, lnx
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
-      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_flowtimes, only: tzone, tunit 
       use m_ec_parameters, only: ec_undef_int
       use properties, only: prop_get
       use m_alloc, only: realloc
@@ -643,6 +643,7 @@ contains
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
                                  parse_location_type
       use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use timespace, only: timespaceinitialfield
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -658,10 +659,11 @@ contains
       real(dp), dimension(:), pointer :: target_y
       integer :: ierr
       integer :: kx
-      integer :: ec_item                              ! [CHANGE 1] needed for the immediate read
+      integer :: ec_item ! [CHANGE 1] needed for the immediate read
       logical :: success
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
+      real(dp), dimension(:), pointer :: target_data => null()
 
       res = .false.
 
@@ -716,17 +718,10 @@ contains
             case ('rainfall', 'rainfall_rate')
                call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
 
-            ! [CHANGE 2] qext no longer returns early; it falls through to the shared EC path below.
-            ! The mask comes from locationType (not targetMaskFile) and is built here.
             case ('qext')
                call realloc(qext, ndx, keepExisting=.true., fill=0.0_dp)
+               target_data => qext
                jaqin = 1
-               block
-                  character(len=INI_VALUE_LEN) :: location_type_str
-                  logical :: is_read
-                  call prop_get(block_ptr, '', 'locationType', location_type_str, is_read)
-                  call prepare_lateral_mask(mask, parse_location_type(location_type_str))
-               end block
 
             case default
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
@@ -737,8 +732,11 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
 
-         ! For qext the mask was already set from locationType above; all other quantities use targetMaskFile.
-         if (.not. allocated(mask)) then
+         ! Mask strategy: locationType= uses node-type masking (1d/2d/all);
+         ! targetMaskFile= uses polygon masking; empty = accept all active nodes.
+         if (len_trim(input%location_type) > 0) then
+            call prepare_lateral_mask(mask, parse_location_type(input%location_type))
+         else
             call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
          end if
 
@@ -747,22 +745,27 @@ contains
          select case (trim(str_tolower(forcing_file_type)))
          case ('bcascii')
             success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                              method, oper, forcingfile=forcing_file, tgt_item1=ec_item)
+                                              method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
          case default
             if (len_trim(variable_name) > 0) then
                success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper, varname=variable_name, tgt_item1=ec_item)
+                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
             else
                success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper, tgt_item1=ec_item)
+                                                 method, oper, tgt_item1=ec_item, tgt_data1=target_data)
             end if
          end select
 
          if (success) then
-            ! [CHANGE 3] Unified timing branch: same EC relation, different update frequency.
             if (is_static_field) then
-               success = ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, tunit, tstart_user)
-               res = success
+               block
+                  real(dp) :: transformcoef(NTRANSFORMCOEF)
+                  transformcoef = -999.0_dp
+                  call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+                  res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
+                                              forcing_file, filetype, method, oper, &
+                                              transformcoef, target_location_type, mask)
+               end block
             else
                res = enable_quantity(quantity)
             end if
