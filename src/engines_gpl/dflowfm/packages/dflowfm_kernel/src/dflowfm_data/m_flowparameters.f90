@@ -667,6 +667,10 @@ contains
       iadvec1D = 33 ! same, now for 1D links
       iadveccorr1D2D = 0 ! Advection correction of 1D2D link volume (0: none, 1: link volume au*dx')
 
+      ! Reset his and map write settings to default
+      his_write_settings = HisWriteSettings()
+      map_write_settings = MapWriteSettings()
+
       maxNonlinearIterations = 100 !< maximal iterations in non linear iteration loop before a time step reduction is applied
       setHorizontalBobsFor1d2d = .false. !< bobs are set to 2d bedlevel, to prevent incorrect storage in sewer system.
       dxDoubleAt1DEndNodes = .true. !< indicates whether a 1D grid cell at the end of a network has to be extended with 0.5*dx
