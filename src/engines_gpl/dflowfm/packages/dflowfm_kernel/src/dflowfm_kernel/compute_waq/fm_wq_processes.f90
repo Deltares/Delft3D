@@ -856,7 +856,7 @@ contains
       end if
       call realloc(iconst2fallwaq, numconst, keepExisting=.true., fill=0)
       if (nfallwaq > 0) then
-         call realloc(wfallwaq, (/nfallwaq, Ndkx/), keepExisting=.false., fill=0.0_hp)
+         call realloc(wfallwaq, [nfallwaq, Ndkx], keepExisting=.false., fill=0.0_hp)
          call realloc(ifall2const, nfallwaq, keepExisting=.true., fill=0)
          call realloc(ifall2vpnw, nfallwaq, keepExisting=.true., fill=0)
          nfallwaq = 0
