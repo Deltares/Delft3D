@@ -24,6 +24,7 @@ object LifecycleScanMain : BuildType({
     
     params {
         param("nexus_iq_application_id", "Delft3D-main")
+        param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
     }
     
     steps {   
@@ -32,32 +33,26 @@ object LifecycleScanMain : BuildType({
             scriptContent = """
                 set -euo pipefail
 
-                # Explicitly read the TeamCity branch parameter
                 BRANCH="%teamcity.build.branch%"
-
                 echo "Branch: ${'$'}BRANCH"
 
-                # Extract last path segment: all/release/2026.01 -> 2026.01
                 VERSION="${'$'}{BRANCH##*/}"
 
-                # Build a valid Nexus IQ application ID
                 LIFECYCLE_ID="Delft3D-${'$'}VERSION"
-
                 echo "Lifecycle ID: ${'$'}LIFECYCLE_ID"
 
-                # Expose it to later steps
                 echo "##teamcity[setParameter name='nexus_iq_application_id' value='${'$'}LIFECYCLE_ID']"
             """.trimIndent()
         }
         step {
             id = "LifecycleSyftLinux"
             type = "LifecycleSyftLinux"
-            param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
+            param("exclude_dirs", "%exclude_dirs%")
         }
         step {
             id = "LifecycleCdxgenLinux"
             type = "LifecycleCdxgenLinux"
-            param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
+            param("exclude_dirs", "%exclude_dirs%")
         }
         step {
             id = "LifecycleNexusIqLinux"
@@ -65,7 +60,7 @@ object LifecycleScanMain : BuildType({
             param("nexus_iq_application_id", "%nexus_iq_application_id%")
             param("nexus_iq_username", "%nexus_iq_username%")
             param("nexus_iq_password", "%nexus_iq_password%")
-            param("exclude_dirs", "test/deltares_testbench/**,ci/python/**")
+            param("exclude_dirs", "%exclude_dirs%")
         }
     }
 
