@@ -78,8 +78,8 @@ object LifecycleScanMain : BuildType({
             schedule {
                 schedulingPolicy = weekly {
                     dayOfWeek = ScheduleTrigger.DAY.Sunday
-                    hour = 03
-                    minute = 00
+                    hour = 3
+                    minute = 30
                 }
 
                 branchFilter = """
