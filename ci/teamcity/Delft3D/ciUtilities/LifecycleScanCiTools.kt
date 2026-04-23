@@ -18,7 +18,7 @@ object LifecycleScanCiTools : BuildType({
 
     artifactRules = """
             ci/python/syft-bom.json => sbom
-            ci/python/cyclonedx-bom.json => sbom
+            ci/python/cdxgen-bom.json => sbom
     """.trimIndent()
 
     steps {

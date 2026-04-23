@@ -19,7 +19,7 @@ object LifecycleScanMain : BuildType({
 
     artifactRules = """
             syft-bom.json => sbom
-            cyclonedx-bom.json => sbom
+            cdxgen-bom.json => sbom
     """.trimIndent()
     
     params {
