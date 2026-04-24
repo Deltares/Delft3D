@@ -354,11 +354,12 @@ contains
    subroutine test_qext_static_field_populated_at_init() bind(C)
       use m_wind, only: qext, jaQext
       use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-
+      use m_polygon, only: m_polygon_destructor
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
       character(len=*), parameter :: SAMPLE_FILE = "test_qext.xyz"
       character(len=*), parameter :: QEXT_EXT = "test_qext.ext"
+      integer ierr
 
       ! ARRANGE: one sample point exactly at the single grid cell (0,0) with value 1.5.
             call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
@@ -379,6 +380,7 @@ contains
       threshold_abort = LEVEL_FATAL
       call setup_minimal_grid()
       call initialize_ec_module()
+      ierr = m_polygon_destructor()
 
       ! ACT
       call parse_spatial_block(QEXT_EXT, bnd_ptr, block_ptr)
