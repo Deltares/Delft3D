@@ -1470,6 +1470,16 @@
     </file>
   </checks>
 </testCase>
+<testCase name="e02_f030_c116_latitude_from_fm_to_waq" ref="dflowfm_default">
+  <path version="2026-04-14T17:04:14">e02_dflowfm/f030_water_quality_processes/c116_latitude_from_fm_to_waq</path>
+  <checks>
+    <file name="dflowfmoutput/HK-FM_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
 <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
   <path version="2025-10-16T07:13:15.591000">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
   <programs>
