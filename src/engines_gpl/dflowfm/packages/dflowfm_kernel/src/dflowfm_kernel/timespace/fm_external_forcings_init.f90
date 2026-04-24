@@ -663,7 +663,7 @@ contains
       integer :: ec_item
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
-      real(dp), dimension(:), pointer :: target_data => null()
+      real(dp), dimension(:), pointer :: target_data
 
       res = .false.
 
@@ -685,18 +685,19 @@ contains
          target_location_type = UNC_LOC_S
          kx = 1
          ec_item = ec_undef_int
+         target_data => null()
 
          res = scan_for_heat_quantities(quantity, kx)
-         res = process_hydrological_quantities(quantity, file_name, target_location_type, target_data)
+         if (.not. res) then
+            res = process_hydrological_quantities(quantity, file_name, target_location_type, target_data)
+         end if
+         if (.not. res) then
+            res = resolve_parameter_target(quantity, file_name, target_location_type, target_data)
+         end if
+         if (.not. res) then
+            res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
+         end if
 
-         if (.not. res) then
-            call resolve_parameter_target(quantity, file_name, target_location_type, target_data)
-            res = associated(target_data)
-         end if
-         if (.not. res) then
-            call resolve_initial_target(quantity, file_name, target_location_type, target_data)
-            res = associated(target_data)
-         end if
          if (.not. res) then
             select case (quantity)
             case ('airdensity')

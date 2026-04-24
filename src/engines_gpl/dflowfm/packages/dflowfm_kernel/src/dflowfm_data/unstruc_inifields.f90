@@ -1866,7 +1866,7 @@ contains
    !! Handles all quantities that map to a plain real(dp) 1D array.
    !! Returns with target_array unassociated if the quantity is not recognized here,
    !! or requires a 3D constituent array (salinity, tracers, sediment, WAQ).
-   subroutine resolve_initial_target(qid, inifilename, target_location_type, target_array)
+   function resolve_initial_target(qid, inifilename, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -1886,9 +1886,11 @@ contains
       integer, intent(out) :: target_location_type  !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
 
+      logical :: success
+   
       target_array => null()
       target_location_type = 0
-
+      success = .true.
       select case (str_tolower(qid))
       case ('waterlevel', 'initialwaterlevel')
          if (str_tolower(qid) == 'waterlevel') then
@@ -1976,15 +1978,17 @@ contains
       ! initialwaqbot → all require target_array_3d + constituent index.
       ! bedlevel → set elsewhere (setbedlevelfromextfile).
       ! initialvelocity → unsupported, error emitted in process_initial_block.
+      case default
+            success = .false.
       end select
 
-   end subroutine resolve_initial_target
+   end function resolve_initial_target
 
 !> Resolve the target array and location type for a [Parameter] quantity.
 !! Handles all quantities that map to a plain real(dp) 1D array.
 !! Returns with target_array unassociated if the quantity is not recognized
 !! or is not a plain 1D spatial field (e.g. integer arrays, WAQ, time-dependent only).
-subroutine resolve_parameter_target(qid, inifilename, target_location_type, target_array)
+function resolve_parameter_target(qid, inifilename, target_location_type, target_array) result(success)
    use messageHandling
    use m_alloc, only: realloc, aerr
    use m_missing, only: dmiss
@@ -1998,7 +2002,6 @@ subroutine resolve_parameter_target(qid, inifilename, target_location_type, targ
    use m_nudge, only: nudge_time, nudge_rate
    use m_physcoef, only: constant_dicoww, dicoww
    use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
-   use fm_external_forcings_data, only: success
    use unstruc_model, only: md_extfile, md_ptr
    use m_flowparameters, only: jafrcInternalTides2D
    use string_module, only: str_tolower
@@ -2009,12 +2012,12 @@ subroutine resolve_parameter_target(qid, inifilename, target_location_type, targ
    character(len=*), intent(in) :: inifilename        !< Name of the ini file, used for warning messages.
    integer, intent(out) :: target_location_type       !< Location type (UNC_LOC_S or UNC_LOC_U).
    real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled.
-
+   logical :: success
    integer :: ierr
 
    target_array => null()
    target_location_type = 0
-
+   success = .true.
    select case (str_tolower(qid))
    case ('frictioncoefficient')
       target_location_type = UNC_LOC_U
@@ -2145,9 +2148,11 @@ subroutine resolve_parameter_target(qid, inifilename, target_location_type, targ
    ! Quantities intentionally not handled here (time-dependent only, integer, WAQ, 3D):
    ! frictioncoefficient with NCGRID, advectiontype, ibedlevtype, bedrock_surface_elevation,
    ! sea_ice_*, wave*, waq*, nudgesalinitytemperature handled separately in process_parameter_block.
+   case default
+      success = .false.
    end select
 
-end subroutine resolve_parameter_target
+end function resolve_parameter_target
 
    !> Allocate nudging arrays.
    subroutine alloc_nudging()
@@ -2229,7 +2234,7 @@ end subroutine resolve_parameter_target
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< pointer to the array that corresponds to the quantity (real(kind=dp)).
       logical :: success
 
-      success = .false.
+      success = .true.
       select case (str_tolower(qid))
       case ('hortonmininfcap')
          target_location_type = UNC_LOC_S
@@ -2265,8 +2270,11 @@ end subroutine resolve_parameter_target
          target_location_type = UNC_LOC_S
          call realloc(potEvap, ndx, keepExisting=.true., fill=0.0_dp)
          target_array => PotEvap
+      case default
+         success = .false.
+         return
       end select
-      success = .true.
+      
    end function process_hydrological_quantities
 
    !> Perform finalization after reading the input file.
