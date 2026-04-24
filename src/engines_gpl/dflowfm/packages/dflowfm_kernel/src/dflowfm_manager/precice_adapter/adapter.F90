@@ -12,16 +12,21 @@ module precice_adapter
       character(kind=c_char, len=:), allocatable :: config_file
       character(kind=c_char, len=:), allocatable :: name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_name
+      character(kind=c_char, len=:), allocatable :: cell_center_mesh_3d_name
       character(kind=c_char, len=10) :: bed_levels_name = "bed_levels"
       character(kind=c_char, len=12) :: water_levels_name = "water_levels"
       character(kind=c_char, len=12) :: water_depths_name = "water_depths"
+      character(kind=c_char, len=27) :: density_name = "sea_water_potential_density"
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids
+      integer(kind=c_int), dimension(:), allocatable :: vertex_ids_3d
       logical :: is_communicator_set = .false.
       integer(kind=c_int) :: communicator
       integer(kind=c_int) :: my_rank = 0_c_int
       integer(kind=c_int) :: number_of_ranks = 1_c_int
       real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_2d ! Mesh coordinates: x1,y1,x2,y2,...,xN,yN
+      real(kind=c_double), dimension(:), allocatable :: cell_center_mesh_coordinates_3d ! Mesh coordinates: x1,y1,z1,x2,y2,z2,...,xN,yN,zN
       integer(kind=c_int) :: mesh_size = 0_c_int ! Number of vertices in the mesh: N
+      integer(kind=c_int) :: mesh_3d_size = 0_c_int ! Number of vertices in the 3D mesh: N*kmax
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -34,8 +39,8 @@ module precice_adapter
 
 contains
 
-   function precice_adapter_constructor(config_file, name, is_communicator_set, communicator, my_rank, number_of_ranks, cell_center_mesh_name, &
-                                        mesh_size, cell_center_mesh_coordinates_2d) result(adapter_instance)
+   function precice_adapter_constructor(config_file, name, is_communicator_set, communicator, my_rank, number_of_ranks, cell_center_mesh_name, cell_center_mesh_3d_name, &
+                                        mesh_size, mesh_3d_size, cell_center_mesh_coordinates_2d, cell_center_mesh_coordinates_3d) result(adapter_instance)
       use precision, only: dp
       use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
 
@@ -48,8 +53,11 @@ contains
       integer(kind=c_int), intent(in) :: my_rank
       integer(kind=c_int), intent(in) :: number_of_ranks
       character(kind=c_char, len=*), intent(in) :: cell_center_mesh_name
+      character(kind=c_char, len=*), intent(in) :: cell_center_mesh_3d_name
       integer(kind=c_int), intent(in) :: mesh_size
+      integer(kind=c_int), intent(in) :: mesh_3d_size
       real(kind=c_double), dimension(:), intent(in), allocatable :: cell_center_mesh_coordinates_2d
+      real(kind=c_double), dimension(:), intent(in), allocatable :: cell_center_mesh_coordinates_3d
       type(precice_adapter_t), pointer :: adapter_instance
 
       allocate (adapter_instance)
@@ -60,9 +68,12 @@ contains
       adapter_instance%number_of_ranks = number_of_ranks
       adapter_instance%communicator = communicator
       adapter_instance%cell_center_mesh_name = cell_center_mesh_name
+      adapter_instance%cell_center_mesh_3d_name = cell_center_mesh_3d_name
 
       adapter_instance%mesh_size = mesh_size
+      adapter_instance%mesh_3d_size = mesh_3d_size
       adapter_instance%cell_center_mesh_coordinates_2d = cell_center_mesh_coordinates_2d
+      adapter_instance%cell_center_mesh_coordinates_3d = cell_center_mesh_coordinates_3d
 
    end function precice_adapter_constructor
 
@@ -85,7 +96,9 @@ contains
       end if
 
       allocate (self%vertex_ids(self%mesh_size))
+      allocate (self%vertex_ids_3d(self%mesh_3d_size))
       call precicef_set_vertices(self%cell_center_mesh_name, self%mesh_size, self%cell_center_mesh_coordinates_2d, self%vertex_ids, len(self%cell_center_mesh_name))
+      call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
@@ -99,10 +112,13 @@ contains
    subroutine precice_adapter_update(self, timestep)
       use precice, only: precicef_get_max_time_step_size, precicef_advance, &
                          precicef_is_coupling_ongoing, &
-                         precicef_get_max_time_step_size, precicef_write_data
+         precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, precicef_set_vertices
+      use precice_adapter_utils, only: set_cell_center_mesh_zcoords
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs
+      use m_flow, only: hs, kmx, zws
+      use m_turbulence, only: potential_density
+
       ! TODO: Import more (global) data structs here.
 
       implicit none(type, external)
@@ -124,6 +140,12 @@ contains
       call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
                                size(self%vertex_ids), self%vertex_ids, &
                                hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
+      call precicef_reset_mesh(self%cell_center_mesh_3d_name, len(self%cell_center_mesh_3d_name))
+      call set_cell_center_mesh_zcoords(self%mesh_size, kmx, zws, self%cell_center_mesh_coordinates_3d)
+      call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
+      call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
+                               size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                               potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
 
       ! Actually advance time
       call precicef_get_max_time_step_size(max_timestep)
