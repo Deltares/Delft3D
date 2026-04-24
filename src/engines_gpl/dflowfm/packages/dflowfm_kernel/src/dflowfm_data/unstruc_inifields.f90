@@ -1206,14 +1206,12 @@ contains
       friction_type_str = ''
       call prop_get(block_ptr, '', 'frictionType', friction_type_str, res)
       call frictionTypeStringToInteger(friction_type_str, friction_type_int)
-      if (friction_type_int /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
+      if (res .and. friction_type_int /= ifrctypuni .and. operand == OPERAND_OVERRIDE) then
          do link = 1, lnx
             if (frcu(link) /= dmiss) then
                ifrcutp(link) = friction_type_int
             end if
          end do
-      else
-         res = .false.
       end if
 
       end function set_friction_type_values_explicit

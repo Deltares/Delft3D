@@ -819,6 +819,7 @@ contains
                   res = set_friction_type_values_explicit(block_ptr, input%oper)
                end if
             end if
+            res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
                ''': ['//group_name//']. Check previous log lines for details.'
@@ -967,6 +968,7 @@ contains
       end select
 
       if (success == .false.) then
+         success = .true. 
          select case (str_tolower(qid_base))
          case ('initialwaterdepth', 'waterdepth')
             s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
