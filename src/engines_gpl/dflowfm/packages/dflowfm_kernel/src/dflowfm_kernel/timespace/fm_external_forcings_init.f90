@@ -642,6 +642,7 @@ contains
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
                                  parse_location_type
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield
 
@@ -659,7 +660,7 @@ contains
       real(dp), dimension(:), pointer :: target_y
       integer :: ierr
       integer :: kx
-      integer :: ec_item ! [CHANGE 1] needed for the immediate read
+      integer :: ec_item
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
       real(dp), dimension(:), pointer :: target_data => null()
@@ -686,6 +687,16 @@ contains
          ec_item = ec_undef_int
 
          res = scan_for_heat_quantities(quantity, kx)
+         res = process_hydrological_quantities(quantity, file_name, target_location_type, target_data)
+
+         if (.not. res) then
+            call resolve_parameter_target(quantity, file_name, target_location_type, target_data)
+            res = associated(target_data)
+         end if
+         if (.not. res) then
+            call resolve_initial_target(quantity, file_name, target_location_type, target_data)
+            res = associated(target_data)
+         end if
          if (.not. res) then
             select case (quantity)
             case ('airdensity')
@@ -753,14 +764,14 @@ contains
             select case (trim(str_tolower(forcing_file_type)))
             case ('bcascii')
                res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                                 method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
+                                             method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
             case default
                if (len_trim(variable_name) > 0) then
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                    method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                    method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if
