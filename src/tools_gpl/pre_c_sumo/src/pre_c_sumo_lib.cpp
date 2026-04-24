@@ -24,9 +24,7 @@ namespace pre_c_sumo
         // constexpr int dim = 2;
         std::vector<double> csumo_2d_nodes = {823.0, 344.8, 465.8, 793.2};
         std::vector<int> csumo_2d_nodes_ids(csumo_2d_nodes_size);
-        std::vector<double> csumo_waterlevels(csumo_2d_nodes_size);
-        std::vector<double> csumo_bedlevels(csumo_2d_nodes_size);
-        std::vector<double> csumo_waterdepths(csumo_2d_nodes_size);
+        std::vector<double> precsumo_waterlevels(csumo_2d_nodes_size);
         participant.setMeshVertices("csumo_2d_nodes", csumo_2d_nodes, csumo_2d_nodes_ids);
 
         // TESTDATA: set sources_sinks mesh
@@ -48,8 +46,8 @@ namespace pre_c_sumo
         {
             coupling_time_step = participant.getMaxTimeStepSize();
             const auto csumo_settings = readCsumoSettingsFile(csumo_settings_file_name);
-            participant.readData("csumo_2d_nodes", "sea_floor_depth_below_sea_surface", csumo_2d_nodes_ids,
-                                 coupling_time_step, csumo_waterdepths);
+            participant.readData("csumo_2d_nodes", "water_depths", csumo_2d_nodes_ids, coupling_time_step,
+                                 precsumo_waterlevels);
             receiveFFData();
             writeFF2NFFiles(csumo_settings.value());
             waitForNF2FFFiles(csumo_settings.value());
