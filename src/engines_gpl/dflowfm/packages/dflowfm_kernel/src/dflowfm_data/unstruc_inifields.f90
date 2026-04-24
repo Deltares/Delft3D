@@ -2237,7 +2237,7 @@ end function resolve_parameter_target
       success = .true.
       select case (str_tolower(qid))
       case ('hortonmininfcap')
-         target_location_type = UNC_LOC_S
+      target_location_type = UNC_LOC_S
          target_array => horton_infiltration_config%min_inf_cap
       case ('hortonmaxinfcap')
          target_location_type = UNC_LOC_S

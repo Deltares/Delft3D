@@ -622,6 +622,82 @@ contains
 
    end function init_lateral_forcings
 
+   !> Resolve the target array and location type for a meteo/spatial quantity.
+   !! Handles allocation and flag setup for all meteo quantities.
+   !! target_array remains null for most quantities (EC module writes directly
+   !! into named arrays); only set for quantities that need an explicit target pointer (e.g. qext).
+   function resolve_meteo_target(quantity, file_name, target_location_type, target_array) result(success)
+      use messageHandling
+      use m_alloc, only: realloc
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
+                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
+                        rain, air_pressure, pseudo_air_pressure, water_level_correction, &
+                        qext, jaqin
+      use m_flowgeom, only: ndx, lnx
+      use string_module, only: str_tolower
+
+      implicit none
+
+      character(len=*), intent(in) :: quantity           !< Name of the quantity.
+      character(len=*), intent(in) :: file_name          !< Name of the file, used for warning messages.
+      integer, intent(out) :: target_location_type       !< Location type (UNC_LOC_S or UNC_LOC_U).
+      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to model array. Null for most meteo quantities.
+      logical :: success
+
+      real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
+      associate( dummy => file_name )
+      end associate
+      target_array => null()
+      target_location_type = UNC_LOC_S   ! default for all meteo quantities except wind
+      success = .true.
+      select case (str_tolower(quantity))
+      case ('airdensity')
+         call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
+
+      case ('airpressure', 'atmosphericpressure')
+         call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
+
+      case ('pseudoairpressure')
+         call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
+
+      case ('waterlevelcorrection')
+         call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
+
+      case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+         call allocatewindarrays()
+         call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
+         call realloc(ec_pwxwy_x, ndx, keepexisting=.true., fill=0.0_dp)
+         call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
+         jawindstressgiven = merge(1, 0, str_tolower(quantity) == 'airpressure_stressx_stressy')
+         jaspacevarcharn = merge(1, 0, str_tolower(quantity) == 'airpressure_windx_windy_charnock')
+         if (jaspacevarcharn == 1) then
+            call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
+            call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+         end if
+
+      case ('charnock')
+         call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
+         call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+
+      case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+         target_location_type = UNC_LOC_U
+         jawindstressgiven = merge(1, 0, str_tolower(quantity(1:6)) == 'stress')
+         call allocatewindarrays()
+
+      case ('rainfall', 'rainfall_rate')
+         call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
+
+      case ('qext')
+         call realloc(qext, ndx, keepExisting=.true., fill=0.0_dp)
+         target_array => qext 
+         jaqin = 1
+      case default
+         success = .false.
+      end select
+
+   end function resolve_meteo_target
+
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
@@ -629,10 +705,6 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
-                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, &
-                        air_pressure, pseudo_air_pressure, water_level_correction, qext, jaqin
-      use m_flowgeom, only: ndx, lnx
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
@@ -682,7 +754,6 @@ contains
                  variable_name => input%variable_name, &
                  is_static_field => input%is_static_field) ! [CHANGE 1] expose the new flag
 
-         target_location_type = UNC_LOC_S
          kx = 1
          ec_item = ec_undef_int
          target_data => null()
@@ -697,48 +768,13 @@ contains
          if (.not. res) then
             res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
          end if
-
          if (.not. res) then
-            select case (quantity)
-            case ('airdensity')
-               call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
-            case ('airpressure', 'atmosphericpressure')
-               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
-            case ('pseudoAirPressure')
-               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
-            case ('waterLevelCorrection')
-               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               call allocatewindarrays()
-               call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
-               call realloc(ec_pwxwy_x, ndx, keepexisting=.true., fill=0.0_dp)
-               call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
-               jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
-               jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-               if (jaspacevarcharn == 1) then
-                  call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
-                  call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
-               end if
-            case ('charnock')
-               call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
-               call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
-            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-               target_location_type = UNC_LOC_U
-               jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-               call allocatewindarrays()
-            case ('rainfall', 'rainfall_rate')
-               call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
-
-            case ('qext')
-               call realloc(qext, ndx, keepExisting=.true., fill=0.0_dp)
-               target_data => qext
-               jaqin = 1
-
-            case default
+            res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
+         end if
+         if (.not. res) then
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
                call err_flush()
                return
-            end select
          end if
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
