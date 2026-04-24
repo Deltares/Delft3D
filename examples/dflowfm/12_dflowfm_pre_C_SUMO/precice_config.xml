@@ -60,7 +60,7 @@
   <m2n:sockets acceptor="fm" connector="preC-SUMO" exchange-directory=".." />
 
   <coupling-scheme:parallel-explicit>
-    <time-window-size value="300"/>
+    <time-window-size value="1200"/>
     <max-time value="21600" />
     <participants first="fm" second="preC-SUMO" />
     <exchange data="water_depths" mesh="fm_flow_cells" from="fm" to="preC-SUMO" initialize="true" />

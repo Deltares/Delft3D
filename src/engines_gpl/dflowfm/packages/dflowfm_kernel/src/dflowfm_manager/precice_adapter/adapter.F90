@@ -6,6 +6,8 @@ module precice_adapter
    implicit none(type, external)
 
    private
+   real(kind=dp), save ::  summed_time_progress
+   logical, save :: do_write
    public :: precice_adapter_t
 
    type, extends(precice_adapter_interface_t) :: precice_adapter_t
@@ -107,6 +109,8 @@ contains
 
       ! Finally, call initialise.
       call precicef_initialize()
+      summed_time_progress = 0.0
+      do_write = .true.
    end subroutine precice_adapter_initialize
 
    subroutine precice_adapter_update(self, timestep)
@@ -134,20 +138,26 @@ contains
          return ! Skip if the connection is no longer ongoing.
       end if
 
-      ! Write water depths (do we need to consider active nodes?)
-      call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
-                               size(self%vertex_ids), self%vertex_ids, &
-                               hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
-      call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
-                               size(self%vertex_ids_3d), self%vertex_ids_3d, &
-                               potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
-
+      if (do_write) then
+         ! Write water depths (do we need to consider active nodes?)
+         call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
+                                  size(self%vertex_ids), self%vertex_ids, &
+                                  hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
+         do_write = .false.
+      end if
+      
       ! Actually advance time
       call precicef_get_max_time_step_size(max_timestep)
-      if (timestep > max_timestep) then
-         call mess(LEVEL_ERROR, "User time step will skip end of preCICE coupling window!")
+      summed_time_progress = summed_time_progress + timestep
+      if (summed_time_progress - max_timestep > 1.0) then
+         call mess(LEVEL_ERROR, "Summed user time steps are beyond the preCICE coupling window!")
       end if
-
+      if (summed_time_progress - max_timestep < -1.0e-5) then
+         return
+      end if
 
       call precicef_is_time_window_complete(is_time_window_complete)
       if (is_time_window_complete == 1) then
@@ -155,12 +165,9 @@ contains
          call set_cell_center_mesh_zcoords(self%mesh_size, kmx, zws, self%cell_center_mesh_coordinates_3d)
          call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
       end if
-
-      if (abs(max_timestep - timestep) <= 1E-5) then
-         call precicef_advance(max_timestep)
-      else
-         call precicef_advance(timestep)
-      end if
+      call precicef_advance(max_timestep)
+      summed_time_progress = 0.0
+      do_write = .true.
 
       ! TODO: Read latest state here ?
    end subroutine precice_adapter_update
