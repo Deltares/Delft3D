@@ -59,14 +59,6 @@ module unstruc_inifields
    !!   need to be converted/updated by user), then the major version number
    !!   is incremented.
 
-   type :: t_target_pointer
-      real(dp), pointer, dimension(:) :: dp1d => null()
-      real(dp), pointer, dimension(:, :) :: dp2d => null()
-      real(sp), pointer, dimension(:, :) :: sp2d => null()
-      integer, pointer, dimension(:) :: int1d => null()
-      integer :: index = 1
-   end type t_target_pointer
-
    ! IniFieldFile current version: 2.02
    integer, parameter :: IniFieldMajorVersion = 2
    integer, parameter :: IniFieldMinorVersion = 2

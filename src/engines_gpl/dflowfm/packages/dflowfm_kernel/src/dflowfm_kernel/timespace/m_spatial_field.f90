@@ -29,14 +29,6 @@
 !-------------------------------------------------------------------------------
 
 !> Struct definitions and block readers for spatial/meteo and initial/parameter fields.
-!!
-!! Design rules:
-!!  - t_spatial_field_input carries exactly what ec_addtimespacerelation needs.
-!!    Nothing quantity-specific lives here.
-!!  - t_averaging_input groups the four averaging keywords. averagingType is
-!!    stored as the EC integer enum (same encoding used in transformcoef(4)).
-!!    Never embedded in t_spatial_field_input.
-!!  - Quantity-specific keywords are read locally in the branch that needs them.
 module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
@@ -52,35 +44,32 @@ module m_spatial_field
    integer, parameter :: INI_VALUE_LEN = 256
 
    !> Averaging parameters, only meaningful when method = averaging.
-   !! averagingType uses the EC integer enum (AVGTP_MEAN=1, etc.) because
-   !! that is what averagingType= in the ext file contains and what
-   !! transformcoef(4) expects. Use averaging_params_to_transformcoef to
-   !! populate the transformcoef array before calling timespaceinitialfield.
    type :: t_averaging_input
-      integer  :: averaging_type = 1       !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size       = -1.0_dp !< averagingRelSize= negative = use EC default.
-      integer  :: num_min        = 1       !< averagingNumMin=
-      real(dp) :: percentile     = 0.0_dp  !< averagingPercentile=
+      integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
+      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      integer :: num_min = 1 !< averagingNumMin=
+      real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
 
    !> All parsed keyword values from a single [Spatial] or [Meteo] block.
    type :: t_spatial_field_input
-      character(len=INI_VALUE_LEN) :: quantity            = ' '
-      character(len=INI_VALUE_LEN) :: forcing_file        = ' '
-      character(len=INI_VALUE_LEN) :: forcing_file_type   = ' '
-      character(len=INI_VALUE_LEN) :: target_mask_file    = ' '
-      character(len=INI_VALUE_LEN) :: variable_name       = ' '
-      character(len=INI_VALUE_LEN) :: interpolation_method = ' '
-      character(len=INI_VALUE_LEN) :: operand_string      = ' '
-      character(len=INI_VALUE_LEN) :: location_type = ' ' !< locationType= keyword: '1d', '2d', '1d2d', 'all'. Empty means no type-based masking.
-      integer                      :: oper                = OPERAND_OVERRIDE
-      real(dp)                     :: max_search_radius   = -1.0_dp
-      logical                      :: invert_mask         = .false.
-      logical                      :: is_extrapolation_allowed   = .false.
-      integer                      :: method              = -1
-      integer                      :: filetype            = -1
-      logical                      :: is_static_field     = .false.
-      type(t_averaging_input)      :: averaging_input     = t_averaging_input()
+      character(len=INI_VALUE_LEN) :: quantity = ' ' !< Physical quantity name, e.g. 'windx', 'rainfall_rate'.
+      character(len=INI_VALUE_LEN) :: forcing_file = ' ' !< Path to the forcing data file; resolved relative to base_dir during validation.
+      character(len=INI_VALUE_LEN) :: forcing_file_type = ' ' !< File format identifier, e.g. 'netcdf', 'arcinfo', 'bcascii'.
+      character(len=INI_VALUE_LEN) :: target_mask_file = ' ' !< Optional polygon file (.pol) masking the target element set. Empty means no masking.
+      character(len=INI_VALUE_LEN) :: variable_name = ' ' !< Optional variable name within the forcing file. Only meaningful when is_variable_name_available is .true..
+      character(len=INI_VALUE_LEN) :: interpolation_method = ' ' !< Optional interpolation method string, e.g. 'triangulation'. When absent, a default is derived from forcing_file_type.
+      character(len=INI_VALUE_LEN) :: operand_string = ' ' !< Optional operand string, e.g. 'override'. When absent, OPERAND_OVERRIDE is used.
+      integer :: oper = OPERAND_OVERRIDE !< Operand enum, derived from operand_string, defaulting to OPERAND_OVERRIDE.
+      real(dp) :: max_search_radius = -1.0_dp !< Maximum search radius (m) for spatial extrapolation. Negative means no limit.
+      logical :: invert_mask = .false. !< .true., the mask polygon selection must be inverted.
+      logical :: is_variable_name_available = .false. !< .true. when the forcingVariableName= keyword was present in the block.
+      logical :: is_extrapolation_allowed = .false. !< .true. when extrapolation beyond the source data extent is permitted.
+      integer :: method = -1 !< FM interpolation method enum, derived by validate_spatial_field_input. -1 = not yet derived.
+      integer :: filetype = -1 !< FM file type enum, derived by validate_spatial_field_input. -1 = not yet derived.
+      logical :: is_static_field = .false. !< .true. when the forcingFileType= describes a static field (no time dimension). Static fields are read once at initialisation; the EC relation is never updated during the time loop.
+      type(t_averaging_input) :: averaging_input = t_averaging_input() !< Averaging parameters, only meaningful when method = averaging.
+      integer :: location_type = -1 !< ILATTP_* enum used by prepare_lateral_mask, derived from locationType= string. -1 = not yet derived.
    end type t_spatial_field_input
 
 contains
@@ -93,16 +82,16 @@ contains
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_spatial_field_input) :: res
 
-      call prop_get(block_ptr, '', 'quantity',                res%quantity)
-      call prop_get(block_ptr, '', 'forcingFileType',         res%forcing_file_type)
-      call prop_get(block_ptr, '', 'forcingFile',             res%forcing_file)
-      call prop_get(block_ptr, '', 'targetMaskFile',          res%target_mask_file)
-      call prop_get(block_ptr, '', 'targetMaskInvert',        res%invert_mask)
-      call prop_get(block_ptr, '', 'forcingVariableName',     res%variable_name)
-      call prop_get(block_ptr, '', 'interpolationMethod',     res%interpolation_method)
-      call prop_get(block_ptr, '', 'extrapolationAllowed',    res%is_extrapolation_allowed)
+      call prop_get(block_ptr, '', 'quantity', res%quantity)
+      call prop_get(block_ptr, '', 'forcingFileType', res%forcing_file_type)
+      call prop_get(block_ptr, '', 'forcingFile', res%forcing_file)
+      call prop_get(block_ptr, '', 'targetMaskFile', res%target_mask_file)
+      call prop_get(block_ptr, '', 'targetMaskInvert', res%invert_mask)
+      call prop_get(block_ptr, '', 'forcingVariableName', res%variable_name)
+      call prop_get(block_ptr, '', 'interpolationMethod', res%interpolation_method)
+      call prop_get(block_ptr, '', 'extrapolationAllowed', res%is_extrapolation_allowed)
       call prop_get(block_ptr, '', 'extrapolationSearchRadius', res%max_search_radius)
-      call prop_get(block_ptr, '', 'operand ',                res%operand_string)
+      call prop_get(block_ptr, '', 'operand ', res%operand_string)
       call prop_get(block_ptr, '', 'locationType', res%location_type)
       call read_averaging_input(block_ptr, res%averaging_input)
 
@@ -121,13 +110,13 @@ contains
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType',       avg%averaging_type, is_read)
+      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
       if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
 
-      call prop_get(block_ptr, '', 'averagingRelSize',    avg%rel_size, is_read)
+      call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
       if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
 
-      call prop_get(block_ptr, '', 'averagingNumMin',     avg%num_min, is_read)
+      call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
       if (is_read .and. avg%num_min < 1) avg%num_min = 1
 
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
@@ -141,13 +130,13 @@ contains
    subroutine averaging_params_to_transformcoef(avg, transformcoef)
       use fm_external_forcings_data, only: NTRANSFORMCOEF
 
-      type(t_averaging_input), intent(in)     :: avg
+      type(t_averaging_input), intent(in) :: avg
       real(dp), intent(inout) :: transformcoef(NTRANSFORMCOEF)
 
       transformcoef(4) = real(avg%averaging_type, dp) !< averagingType  (slot 4)
-      transformcoef(5) = avg%rel_size                 !< relSize        (slot 5)
-      transformcoef(7) = avg%percentile               !< percentile     (slot 7)
-      transformcoef(8) = real(avg%num_min, dp)        !< numMin         (slot 8)
+      transformcoef(5) = avg%rel_size !< relSize        (slot 5)
+      transformcoef(7) = avg%percentile !< percentile     (slot 7)
+      transformcoef(8) = real(avg%num_min, dp) !< numMin         (slot 8)
 
    end subroutine averaging_params_to_transformcoef
 
@@ -204,9 +193,9 @@ contains
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
 
       type(t_spatial_field_input), intent(inout) :: input
-      character(len=*), intent(in)               :: file_name
-      character(len=*), intent(in)               :: group_name
-      character(len=*), intent(in)               :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
+      character(len=*), intent(in) :: base_dir
 
       logical :: is_successful
       logical :: has_interpolation_method, target_mask_file_exists
