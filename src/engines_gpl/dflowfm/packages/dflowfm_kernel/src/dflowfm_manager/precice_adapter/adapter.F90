@@ -111,7 +111,7 @@ contains
 
    subroutine precice_adapter_update(self, timestep)
       use precice, only: precicef_get_max_time_step_size, precicef_advance, &
-                         precicef_is_coupling_ongoing, &
+                         precicef_is_coupling_ongoing, precicef_is_time_window_complete, &
          precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, precicef_set_vertices
       use precice_adapter_utils, only: set_cell_center_mesh_zcoords
       use precision, only: dp
@@ -126,23 +126,18 @@ contains
       class(precice_adapter_t), intent(inout) :: self
       real(kind=dp), intent(in) :: timestep
 
-      integer(kind=c_int) :: is_ongoing
+      integer(kind=c_int) :: is_ongoing, is_time_window_complete
       real(kind=c_double) :: max_timestep
 
       call precicef_is_coupling_ongoing(is_ongoing)
-      if (.not. is_ongoing) then
+      if (is_ongoing == 0) then
          return ! Skip if the connection is no longer ongoing.
       end if
-
-      ! TODO: Implement precice stuff including possible read/write etc.
 
       ! Write water depths (do we need to consider active nodes?)
       call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
                                size(self%vertex_ids), self%vertex_ids, &
                                hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
-      call precicef_reset_mesh(self%cell_center_mesh_3d_name, len(self%cell_center_mesh_3d_name))
-      call set_cell_center_mesh_zcoords(self%mesh_size, kmx, zws, self%cell_center_mesh_coordinates_3d)
-      call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
       call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
                                size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
@@ -151,6 +146,14 @@ contains
       call precicef_get_max_time_step_size(max_timestep)
       if (timestep > max_timestep) then
          call mess(LEVEL_ERROR, "User time step will skip end of preCICE coupling window!")
+      end if
+
+
+      call precicef_is_time_window_complete(is_time_window_complete)
+      if (is_time_window_complete == 1) then
+         call precicef_reset_mesh(self%cell_center_mesh_3d_name, len(self%cell_center_mesh_3d_name))
+         call set_cell_center_mesh_zcoords(self%mesh_size, kmx, zws, self%cell_center_mesh_coordinates_3d)
+         call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
       end if
 
       if (abs(max_timestep - timestep) <= 1E-5) then
