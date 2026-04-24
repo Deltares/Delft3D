@@ -4,7 +4,7 @@ module test_init_spatial_field
    use m_wind, only: jaQext
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL
-   use m_alloc, only: realloc
+   use m_alloc, only: realloc, reallocP
    use precision_basics, only: dp
 
    implicit none(type, external)
@@ -85,7 +85,7 @@ contains
    end subroutine test_validate_extrapolation_changes_method
    !$f90tw)
 
-     !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_unknown_quantity_returns_null, test_resolve_parameter_target_unknown_quantity_returns_null,
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_unknown_quantity_returns_null, test_resolve_parameter_target_unknown_quantity_returns_null,
    !> An unrecognized quantity must return .false., leave target_array null and
    !! target_location_type at the sentinel value 0.
    !! This is the regression guard for the intent(out) bug: before the fix,
@@ -97,10 +97,10 @@ contains
       real(dp), dimension(:), pointer :: target_array
       integer :: target_location_type
       logical :: success
-      integer :: kx 
+      integer :: kx
       kx = 1
       target_array => null()
-      target_location_type = UNC_LOC_S   ! must be overwritten to sentinel 0
+      target_location_type = UNC_LOC_S ! must be overwritten to sentinel 0
 
       success = resolve_parameter_target('this_quantity_does_not_exist', 'test.ext', target_location_type, target_array, kx)
 
@@ -119,11 +119,11 @@ contains
       use fm_location_types, only: UNC_LOC_U
       use m_flowgeom, only: lnx
       use m_flow, only: frcu
-   
+
       real(dp), dimension(:), pointer :: target_array
       integer :: target_location_type
       logical :: success
-      integer :: kx 
+      integer :: kx
       kx = 1
       lnx = 1
       target_array => null()
@@ -136,7 +136,7 @@ contains
       call f90_expect_eq(target_location_type, UNC_LOC_U, "frictioncoefficient must map to UNC_LOC_U, not UNC_LOC_S")
 
       lnx = 0
-      if (associated(target_array)) nullify(target_array)
+      if (associated(target_array)) nullify (target_array)
    end subroutine test_resolve_parameter_target_friction_uses_loc_u
    !$f90tw)
 
@@ -167,7 +167,7 @@ contains
       call f90_expect_true(associated(target_array, s1), "target_array must point directly to s1, not a copy")
 
       ndx = 0
-      if (allocated(s1)) deallocate(s1)
+      if (allocated(s1)) deallocate (s1)
    end subroutine test_resolve_initial_target_waterlevel_points_to_s1
    !$f90tw)
 
@@ -186,6 +186,12 @@ contains
       integer :: kx
 
       ! ARRANGE: mark ice as already activated to skip fm_ice_activate_by_ext_forces side effect
+      if (.not. associated(ja_ice_area_fraction_read)) then
+         allocate(ja_ice_area_fraction_read)
+      end if
+      if (.not. associated(ja_ice_thickness_read)) then
+         allocate(ja_ice_thickness_read)
+      end if
       ja_ice_area_fraction_read = 1
       ja_ice_thickness_read = 1
       target_array => null()

@@ -489,6 +489,7 @@ contains
       if (allocated(xu)) deallocate(xu)
       if (allocated(yu)) deallocate(yu)
       allocate(xu(lnx), yu(lnx))
+      call realloc(frcu,ndx, fill=0.0_dp, keepExisting=.false.)
       xu = [0.0_dp]
       yu = [0.0_dp]
       irefdate    = 20000101
