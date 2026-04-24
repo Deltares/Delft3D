@@ -639,17 +639,17 @@ contains
 
       implicit none
 
-      character(len=*), intent(in) :: quantity           !< Name of the quantity.
-      character(len=*), intent(in) :: file_name          !< Name of the file, used for warning messages.
-      integer, intent(out) :: target_location_type       !< Location type (UNC_LOC_S or UNC_LOC_U).
+      character(len=*), intent(in) :: quantity !< Name of the quantity.
+      character(len=*), intent(in) :: file_name !< Name of the file, used for warning messages.
+      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S or UNC_LOC_U).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to model array. Null for most meteo quantities.
       logical :: success
 
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
-      associate( dummy => file_name )
+      associate (dummy => file_name)
       end associate
       target_array => null()
-      target_location_type = UNC_LOC_S   ! default for all meteo quantities except wind
+      target_location_type = UNC_LOC_S ! default for all meteo quantities except wind
       success = .true.
       select case (str_tolower(quantity))
       case ('airdensity')
@@ -690,7 +690,7 @@ contains
 
       case ('qext')
          call realloc(qext, ndx, keepExisting=.true., fill=0.0_dp)
-         target_array => qext 
+         target_array => qext
          jaqin = 1
       case default
          success = .false.
@@ -701,7 +701,7 @@ contains
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower
+      use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
@@ -714,7 +714,7 @@ contains
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
                                  parse_location_type
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield
 
@@ -772,9 +772,9 @@ contains
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
-               write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
-               call err_flush()
-               return
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+            call err_flush()
+            return
          end if
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
@@ -814,6 +814,11 @@ contains
          end if
          if (res) then
             res = enable_quantity(quantity)
+            if (.not. res) then !> Friction coefficient is a special case, requires additional reading
+               if (strcmpi(quantity, 'frictioncoefficient')) then
+                  res = set_friction_type_values_explicit(block_ptr, input%oper)
+               end if
+            end if
          else
             write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
                ''': ['//group_name//']. Check previous log lines for details.'
@@ -826,23 +831,62 @@ contains
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
    !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
    !! Returns .false. on a conflict (e.g. solarradiation + netsolarradiation).
-   function enable_quantity(quantity) result(is_successful)
-      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+   function enable_quantity(quantity) result(success)
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
                         pseudo_air_pressure_available, water_level_correction_available
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
                                   btempforcingtypS, itempforcingtyp
 
+      use stdlib_kinds, only: c_bool
+      use tree_data_types
+      use tree_structures
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
+      use messageHandling
+
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use unstruc_files, only: resolvePath
+      use system_utils, only: split_filename
+
+      use timespace_parameters, only: FIELD1D
+      use timespace, only: timespaceinitialfield, timespaceinitialfield_int
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+
+      use m_flow, only: s1, hs, h_unsat
+      use m_flowparameters, only: janudge
+      use m_flowgeom, only: ndxi, ndx, bl
+      use m_wind, only: jaevap, evap
+
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
+                                  DFM_HYD_INTERCEPT_LAYER, jadhyd, &
+                                  PotEvap, ActEvap
+      use m_grw, only: jaintercept2D
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+
+      use m_heatfluxes, only: secchi_depth_is_spatially_varying, spatial_secchi_depth
+      use m_physcoef, only: secchi_depth
+      use m_meteo, only: ec_addtimespacerelation
+      !use m_vegetation, only: stemheight, stemheightstd
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use m_subsidence, only: jasubsupl
+      use string_module, only: str_tolower
+      use m_find_name, only: find_name
+
+      use fm_external_forcings_utils, only: split_qid
+
       character(len=*), intent(in) :: quantity !< The quantity name as read from the [Meteo] block.
+      character(len=idlen) :: qid_base, qid_specific
 
-      logical :: is_successful
+      integer n
+      logical :: success
 
-      is_successful = .true.
+      success = .true.
+      call split_qid(quantity, qid_base, qid_specific)
 
       select case (trim(quantity))
       case ('airdensity')
-         call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
          ja_airdensity = 1
 
       case ('airpressure', 'atmosphericpressure')
@@ -885,7 +929,7 @@ contains
          if (net_solar_radiation_available) then
             write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
             call err_flush()
-            is_successful = .false.
+            success = .false.
             return
          end if
          btempforcingtypS = .true.
@@ -895,7 +939,7 @@ contains
          if (solar_radiation_available) then
             write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
             call err_flush()
-            is_successful = .false.
+            success = .false.
             return
          end if
          btempforcingtypS = .true.
@@ -918,8 +962,63 @@ contains
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
          itempforcingtyp = 4
          solar_radiation_available = .true.
-
+      case default
+         success = .false.
       end select
+
+      if (success == .false.) then
+         select case (str_tolower(qid_base))
+         case ('initialwaterdepth', 'waterdepth')
+            s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
+         case ('bedrock_surface_elevation')
+            jasubsupl = 1
+         case ('infiltrationcapacity')
+            where (infiltcap /= dmiss)
+               infiltcap = infiltcap * 1e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m/s
+            end where
+         case ('potentialevaporation')
+            where (PotEvap /= dmiss)
+               PotEvap = PotEvap * 1e-3_dp / (3600.0_dp) ! mm/hr => m/s
+            end where
+            jaevap = 1
+            if (.not. allocated(evap)) then
+               call realloc(evap, ndx, keepExisting=.false., fill=0.0_dp)
+            end if
+            evap = -PotEvap ! evap and PotEvap are now still doubling
+
+            if (.not. allocated(ActEvap)) then
+               call realloc(ActEvap, ndx, keepExisting=.false., fill=0.0_dp)
+            end if
+            jadhyd = 1
+         case ('initialunsaturedzonethickness', 'interceptionlayerthickness')
+            where (h_unsat == -999.0_dp)
+               h_unsat = 0.0_dp
+            end where
+            if (quantity == 'interceptionlayerthickness') then
+               jaintercept2D = 1
+            end if
+         case ('sea_ice_area_fraction')
+            ja_ice_area_fraction_read = 1
+         case ('sea_ice_thickness')
+            ja_ice_thickness_read = 1
+         case ('secchidepth')
+            secchi_depth_is_spatially_varying = .true.
+            do n = 1, ndx
+               if (spatial_secchi_depth(n) == dmiss) then
+                  spatial_secchi_depth(n) = secchi_depth(1)
+               end if
+            end do
+            ! TODO: fix this buggy legacy mess
+            !case ('stemheight')
+            !   if (stemheightstd > 0.0_dp) then
+            !      stemheight = stemheight * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
+            !   end if
+         case ('nudgesalinitytemperature')
+            janudge = 1
+         case default
+            success = .false.
+         end select
+      end if
 
    end function enable_quantity
 
