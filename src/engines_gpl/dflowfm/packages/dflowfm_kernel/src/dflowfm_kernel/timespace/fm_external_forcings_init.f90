@@ -169,7 +169,7 @@ contains
          case ('lateral')
             res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
 
-         case ('spatial', 'meteo')
+         case ('spatial', 'meteo', 'parameter', 'initial')
             res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
 
          case ('sourcesink')

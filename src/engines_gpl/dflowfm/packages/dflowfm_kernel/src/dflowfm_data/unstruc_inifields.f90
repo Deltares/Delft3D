@@ -315,8 +315,8 @@ contains
             end if
          else
             if (strcmpi(groupname, 'Initial')) then
-               !call process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-!                                          target_array_3d, first_index, method)
+               call process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
+                                         target_array_3d, first_index, method)
             else
                call process_parameter_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
                                             target_array_integer, target_array_3d, target_array_3d_sp, first_index, quantity_value_count, &
@@ -1268,8 +1268,8 @@ contains
 
    !> Set the control parameters for the actual reading of either the [Initial] type items from the input file or
    !! connecting the input to the EC-module.
-   function process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
-                                    target_array_3d, indx, method) result(success)
+   subroutine process_initial_block(qid, inifilename, target_location_type, time_dependent_array, target_array, &
+                                    target_array_3d, indx, method)
       use stdlib_kinds, only: c_bool
       use system_utils, only: split_filename
       use tree_data_types
@@ -1557,7 +1557,7 @@ contains
          success = .false.
       end select
 
-   end function process_initial_block
+   end subroutine process_initial_block
 
    !> Set the control parameters for the actual reading of the items from the input file or
    !! connecting the input to the EC-module.
