@@ -1730,9 +1730,9 @@ contains
       integer :: iresult
 
       call setup(iresult)
-      if (iresult == DFM_NOERR) then
-         call init_new(md_inifieldfile, iresult)
-      end if
+      !if (iresult == DFM_NOERR) then
+      !   call init_new(md_inifieldfile, iresult)
+      !end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
@@ -1827,7 +1827,7 @@ contains
          call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
          inquire (file=trim(md_inifieldfile), exist=exist)
          if (exist) then
-            iresult = DFM_NOERR!initialize_initial_fields(md_inifieldfile)
+            iresult = initialize_initial_fields(md_inifieldfile)
             if (iresult /= DFM_NOERR) then
                call timstop(handle_extra(49)) ! initialize_initial_fields
                return
