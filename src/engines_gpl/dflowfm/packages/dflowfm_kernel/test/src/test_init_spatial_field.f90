@@ -5,6 +5,7 @@ module test_init_spatial_field
    use unstruc_messages, only: threshold_abort
    use messagehandling, only: LEVEL_FATAL
    use m_alloc, only: realloc
+   use precision_basics, only: dp
 
    implicit none(type, external)
 
@@ -82,6 +83,197 @@ contains
       call f90_expect_true(input_with_extrap%method /= input_without_extrap%method, &
                            "enabling extrapolation should produce a different method value")
    end subroutine test_validate_extrapolation_changes_method
+   !$f90tw)
+
+     !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_unknown_quantity_returns_null, test_resolve_parameter_target_unknown_quantity_returns_null,
+   !> An unrecognized quantity must return .false., leave target_array null and
+   !! target_location_type at the sentinel value 0.
+   !! This is the regression guard for the intent(out) bug: before the fix,
+   !! calling a resolver for an unhandled quantity would leave target_location_type undefined.
+   subroutine test_resolve_parameter_target_unknown_quantity_returns_null() bind(C)
+      use unstruc_inifields, only: resolve_parameter_target
+      use fm_location_types, only: UNC_LOC_S
+
+      real(dp), dimension(:), pointer :: target_array
+      integer :: target_location_type
+      logical :: success
+      integer :: kx 
+      kx = 1
+      target_array => null()
+      target_location_type = UNC_LOC_S   ! must be overwritten to sentinel 0
+
+      success = resolve_parameter_target('this_quantity_does_not_exist', 'test.ext', target_location_type, target_array, kx)
+
+      call f90_expect_false(success, "resolve_parameter_target should return .false. for an unrecognized quantity")
+      call f90_expect_false(associated(target_array), "target_array should be null for an unrecognized parameter quantity")
+      call f90_expect_eq(target_location_type, 0, "target_location_type should be sentinel 0 for an unrecognized quantity")
+   end subroutine test_resolve_parameter_target_unknown_quantity_returns_null
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_friction_uses_loc_u, test_resolve_parameter_target_friction_uses_loc_u,
+   !> frictioncoefficient must resolve to UNC_LOC_U (flow links), not the default UNC_LOC_S.
+   !! This is the key parameter quantity where getting the location type wrong would silently
+   !! apply friction values to the wrong element set.
+   subroutine test_resolve_parameter_target_friction_uses_loc_u() bind(C)
+      use unstruc_inifields, only: resolve_parameter_target
+      use fm_location_types, only: UNC_LOC_U
+      use m_flowgeom, only: lnx
+      use m_flow, only: frcu
+   
+      real(dp), dimension(:), pointer :: target_array
+      integer :: target_location_type
+      logical :: success
+      integer :: kx 
+      kx = 1
+      lnx = 1
+      target_array => null()
+      target_location_type = 0
+      call realloc(frcu, 1, fill=0.0_dp, keepExisting=.false.)
+      success = resolve_parameter_target('frictioncoefficient', 'test.ext', target_location_type, target_array, kx)
+
+      call f90_expect_true(success, "resolve_parameter_target should return .true. for frictioncoefficient")
+      call f90_expect_true(associated(target_array), "target_array should be associated for frictioncoefficient")
+      call f90_expect_eq(target_location_type, UNC_LOC_U, "frictioncoefficient must map to UNC_LOC_U, not UNC_LOC_S")
+
+      lnx = 0
+      if (associated(target_array)) nullify(target_array)
+   end subroutine test_resolve_parameter_target_friction_uses_loc_u
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_initial_target_waterlevel_points_to_s1, test_resolve_initial_target_waterlevel_points_to_s1,
+   !> initialwaterlevel must return .true. and resolve to a pointer associated with s1 itself.
+   !! Pointer identity proves the resolver wired the correct target.
+   subroutine test_resolve_initial_target_waterlevel_points_to_s1() bind(C)
+      use unstruc_inifields, only: resolve_initial_target
+      use fm_location_types, only: UNC_LOC_S
+      use m_flow, only: s1
+      use m_flowgeom, only: ndx
+      use m_alloc, only: realloc
+
+      real(dp), dimension(:), pointer :: target_array
+      integer :: target_location_type
+      logical :: success
+
+      ndx = 1
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      target_array => null()
+      target_location_type = 0
+
+      success = resolve_initial_target('initialwaterlevel', 'test.ext', target_location_type, target_array)
+
+      call f90_expect_true(success, "resolve_initial_target should return .true. for initialwaterlevel")
+      call f90_expect_true(associated(target_array), "target_array should be associated for initialwaterlevel")
+      call f90_expect_eq(target_location_type, UNC_LOC_S, "initialwaterlevel must map to UNC_LOC_S")
+      call f90_expect_true(associated(target_array, s1), "target_array must point directly to s1, not a copy")
+
+      ndx = 0
+      if (allocated(s1)) deallocate(s1)
+   end subroutine test_resolve_initial_target_waterlevel_points_to_s1
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_null_target, test_resolve_parameter_null_target,
+   !> EC-driven quantities (sea_ice_area_fraction) must return success=.true.,
+   !! null target_array and UNC_LOC_S. The null target is the key correctness
+   !! invariant for the whole EC-only pattern: EC writes directly, no pointer needed.
+   subroutine test_resolve_parameter_null_target() bind(C)
+      use unstruc_inifields, only: resolve_parameter_target
+      use fm_location_types, only: UNC_LOC_S
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+
+      real(dp), dimension(:), pointer :: target_array
+      integer :: target_location_type
+      logical :: success
+      integer :: kx
+
+      ! ARRANGE: mark ice as already activated to skip fm_ice_activate_by_ext_forces side effect
+      ja_ice_area_fraction_read = 1
+      ja_ice_thickness_read = 1
+      target_array => null()
+      target_location_type = 0
+      kx = 1
+
+      ! ACT
+      success = resolve_parameter_target('sea_ice_area_fraction', 'test.ext', target_location_type, target_array, kx)
+
+      ! ASSERT
+      call f90_expect_true(success, "sea_ice_area_fraction should be recognized by resolve_parameter_target")
+      call f90_expect_false(associated(target_array), &
+                            "target_array must be null for EC-driven quantities - EC writes directly via quantity name")
+      call f90_expect_eq(target_location_type, UNC_LOC_S, "sea_ice_area_fraction must map to UNC_LOC_S")
+
+      ja_ice_area_fraction_read = 0
+      ja_ice_thickness_read = 0
+   end subroutine test_resolve_parameter_null_target
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_wave_requires_wave_nc_offline, test_resolve_parameter_target_wave_requires_wave_nc_offline,
+   !> wavesignificantheight must fail with success=.false. when jawave /= WAVE_NC_OFFLINE.
+   !! This validation guard prevents silently ignoring wave quantities when the wave
+   !! model is not configured, which would be a hard-to-diagnose runtime error.
+   subroutine test_resolve_parameter_target_wave_requires_wave_nc_offline() bind(C)
+      use unstruc_inifields, only: resolve_parameter_target
+      use m_flowparameters, only: jawave
+      use m_waveconst, only: WAVE_NC_OFFLINE
+
+      real(dp), dimension(:), pointer :: target_array
+      integer :: target_location_type
+      logical :: success
+      integer :: kx
+
+      ! ARRANGE: wave model not configured
+      jawave = 0
+      target_array => null()
+      target_location_type = 0
+      kx = 1
+
+      ! ACT
+      success = resolve_parameter_target('wavesignificantheight', 'test.ext', target_location_type, target_array, kx)
+
+      ! ASSERT
+      call f90_expect_false(success, &
+                            "wavesignificantheight must fail when WaveModelNr /= WAVE_NC_OFFLINE")
+      call f90_expect_false(associated(target_array), &
+                            "target_array must remain null on validation failure")
+   end subroutine test_resolve_parameter_target_wave_requires_wave_nc_offline
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_nudge_saltemp_sets_kx_2, test_resolve_parameter_target_nudge_saltemp_sets_kx_2,
+   !> nudgesalinitytemperature must set kx=2 because it carries two values per location
+   !! (salinity + temperature). Any other value would cause EC to allocate the wrong
+   !! number of target slots and silently corrupt one of the two fields.
+   subroutine test_resolve_parameter_target_nudge_saltemp_sets_kx_2() bind(C)
+      use unstruc_inifields, only: resolve_parameter_target
+      use fm_location_types, only: UNC_LOC_S3D
+      use m_flow, only: ndkx
+      use m_cell_geometry, only: ndx
+
+      real(dp), dimension(:), pointer :: target_array
+      integer :: target_location_type
+      logical :: success
+      integer :: kx
+
+      ! ARRANGE: minimal ndx/ndkx so alloc_nudging does not dereference null
+      ndx = 1
+      ndkx = 1
+      target_array => null()
+      target_location_type = 0
+      kx = 1
+
+      ! ACT
+      success = resolve_parameter_target('nudgesalinitytemperature', 'test.ext', target_location_type, target_array, kx)
+
+      ! ASSERT
+      call f90_expect_true(success, "nudgesalinitytemperature should be recognized")
+      call f90_expect_eq(kx, 2, &
+                         "nudgesalinitytemperature must set kx=2 (salinity + temperature per location)")
+      call f90_expect_eq(target_location_type, UNC_LOC_S3D, &
+                         "nudgesalinitytemperature must map to UNC_LOC_S3D")
+      call f90_expect_false(associated(target_array), &
+                            "target_array must be null - EC drives nudging directly")
+
+      ndx = 0
+      ndkx = 0
+   end subroutine test_resolve_parameter_target_nudge_saltemp_sets_kx_2
    !$f90tw)
 
 end module test_init_spatial_field
@@ -477,90 +669,6 @@ contains
    end subroutine test_qext_bcascii_registers_ec_connection
    !$f90tw)
 
-     !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_unknown_quantity_returns_null, test_resolve_parameter_target_unknown_quantity_returns_null,
-   !> An unrecognized quantity must return .false., leave target_array null and
-   !! target_location_type at the sentinel value 0.
-   !! This is the regression guard for the intent(out) bug: before the fix,
-   !! calling a resolver for an unhandled quantity would leave target_location_type undefined.
-   subroutine test_resolve_parameter_target_unknown_quantity_returns_null() bind(C)
-      use unstruc_inifields, only: resolve_parameter_target
-      use fm_location_types, only: UNC_LOC_S
-
-      real(dp), dimension(:), pointer :: target_array
-      integer :: target_location_type
-      logical :: success
-
-      target_array => null()
-      target_location_type = UNC_LOC_S   ! must be overwritten to sentinel 0
-
-      success = resolve_parameter_target('this_quantity_does_not_exist', 'test.ext', target_location_type, target_array)
-
-      call f90_expect_false(success, "resolve_parameter_target should return .false. for an unrecognized quantity")
-      call f90_expect_false(associated(target_array), "target_array should be null for an unrecognized parameter quantity")
-      call f90_expect_eq(target_location_type, 0, "target_location_type should be sentinel 0 for an unrecognized quantity")
-   end subroutine test_resolve_parameter_target_unknown_quantity_returns_null
-   !$f90tw)
-
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_parameter_target_friction_uses_loc_u, test_resolve_parameter_target_friction_uses_loc_u,
-   !> frictioncoefficient must resolve to UNC_LOC_U (flow links), not the default UNC_LOC_S.
-   !! This is the key parameter quantity where getting the location type wrong would silently
-   !! apply friction values to the wrong element set.
-   subroutine test_resolve_parameter_target_friction_uses_loc_u() bind(C)
-      use unstruc_inifields, only: resolve_parameter_target
-      use fm_location_types, only: UNC_LOC_U
-      use m_flowgeom, only: lnx
-      use m_flow, only: frcu
-   
-      real(dp), dimension(:), pointer :: target_array
-      integer :: target_location_type
-      logical :: success
-
-      lnx = 1
-      target_array => null()
-      target_location_type = 0
-      call realloc(frcu, 1, fill=0.0_dp, keepExisting=.false.)
-      success = resolve_parameter_target('frictioncoefficient', 'test.ext', target_location_type, target_array)
-
-      call f90_expect_true(success, "resolve_parameter_target should return .true. for frictioncoefficient")
-      call f90_expect_true(associated(target_array), "target_array should be associated for frictioncoefficient")
-      call f90_expect_eq(target_location_type, UNC_LOC_U, "frictioncoefficient must map to UNC_LOC_U, not UNC_LOC_S")
-
-      lnx = 0
-      if (associated(target_array)) nullify(target_array)
-   end subroutine test_resolve_parameter_target_friction_uses_loc_u
-   !$f90tw)
-
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_resolve_initial_target_waterlevel_points_to_s1, test_resolve_initial_target_waterlevel_points_to_s1,
-   !> initialwaterlevel must return .true. and resolve to a pointer associated with s1 itself.
-   !! Pointer identity proves the resolver wired the correct target.
-   subroutine test_resolve_initial_target_waterlevel_points_to_s1() bind(C)
-      use unstruc_inifields, only: resolve_initial_target
-      use fm_location_types, only: UNC_LOC_S
-      use m_flow, only: s1
-      use m_flowgeom, only: ndx
-      use m_alloc, only: realloc
-
-      real(dp), dimension(:), pointer :: target_array
-      integer :: target_location_type
-      logical :: success
-
-      ndx = 1
-      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
-      target_array => null()
-      target_location_type = 0
-
-      success = resolve_initial_target('initialwaterlevel', 'test.ext', target_location_type, target_array)
-
-      call f90_expect_true(success, "resolve_initial_target should return .true. for initialwaterlevel")
-      call f90_expect_true(associated(target_array), "target_array should be associated for initialwaterlevel")
-      call f90_expect_eq(target_location_type, UNC_LOC_S, "initialwaterlevel must map to UNC_LOC_S")
-      call f90_expect_true(associated(target_array, s1), "target_array must point directly to s1, not a copy")
-
-      ndx = 0
-      if (allocated(s1)) deallocate(s1)
-   end subroutine test_resolve_initial_target_waterlevel_points_to_s1
-   !$f90tw)
-
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterlevel_static_field_populated_at_init, test_initialwaterlevel_static_field_populated_at_init,
    !> Verifies that an initialwaterlevel [Spatial] block populates s1 immediately at
    !! initialisation via the new init_spatial_fields static field path.
@@ -690,6 +798,197 @@ contains
       if (allocated(frcu)) deallocate(frcu)
       call teardown_minimal_grid()
    end subroutine test_frictioncoefficient_static_field_populated_at_init
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialwaterdepth_derives_s1, test_initialwaterdepth_derives_s1,
+   !> Verifies that an initialwaterdepth [Spatial] block fills hs AND derives s1 = bl + hs.
+   !! The s1 derivation is post-processing performed by enable_quantity, not by
+   !! timespaceinitialfield itself. This proves enable_quantity fires correctly on the
+   !! new init_spatial_fields path.
+   subroutine test_initialwaterdepth_derives_s1() bind(C)
+      use m_flow, only: s1, hs
+      use m_flowgeom, only: ndx2D, ndxi, bl
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: SAMPLE_FILE = "test_wd.xyz"
+      character(len=*), parameter :: EXT_FILE    = "test_wd.ext"
+
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  2.0", &
+                                     " 1.0 -1.0  2.0", &
+                                     " 0.0  1.0  2.0"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = initialwaterdepth", &
+                       "    forcingFile         = "//SAMPLE_FILE, &
+                       "    forcingFileType     = sample", &
+                       "    interpolationMethod = triangulation"])
+
+      ! ARRANGE: bl=0 everywhere, so expected hs=2.0 and s1 = bl + hs = 2.0
+      ndxi  = ndx
+      ndx2D = 0
+      call realloc(bl, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(s1, ndx, fill=0.0_dp, keepExisting=.false.)
+      call realloc(hs, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for initialwaterdepth")
+      call f90_expect_near(hs(1), 2.0_dp, 1.0e-6_dp, &
+                           "hs(1) should be filled with the sample value")
+      call f90_expect_near(s1(1), 2.0_dp, 1.0e-6_dp, &
+                           "s1(1) must equal bl+hs=2.0 via enable_quantity post-processing")
+
+      ndxi  = 0
+      ndx2D = 0
+      if (allocated(bl)) deallocate (bl)
+      if (allocated(s1)) deallocate (s1)
+      if (allocated(hs)) deallocate (hs)
+      call teardown_minimal_grid()
+   end subroutine test_initialwaterdepth_derives_s1
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_secchidepth_static_field_and_post_processing, test_secchidepth_static_field_and_post_processing,
+   !> Verifies that a secchidepth [Spatial] block fills spatial_secchi_depth and sets
+   !! secchi_depth_is_spatially_varying=.true. via enable_quantity post-processing.
+   !! Both must fire together: a filled array with the flag still false would silently
+   !! cause the model to use the uniform fallback value instead.
+   subroutine test_secchidepth_static_field_and_post_processing() bind(C)
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_spatially_varying
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: SAMPLE_FILE = "test_sd.xyz"
+      character(len=*), parameter :: EXT_FILE    = "test_sd.ext"
+
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  3.5", &
+                                     " 1.0 -1.0  3.5", &
+                                     " 0.0  1.0  3.5"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = secchidepth", &
+                       "    forcingFile         = "//SAMPLE_FILE, &
+                       "    forcingFileType     = sample", &
+                       "    interpolationMethod = triangulation"])
+
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      secchi_depth_is_spatially_varying = .false.
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for secchidepth")
+      call f90_expect_true(secchi_depth_is_spatially_varying, &
+                           "secchi_depth_is_spatially_varying must be .true. after init")
+      call f90_assert_true(allocated(spatial_secchi_depth), &
+                           "spatial_secchi_depth must be allocated")
+      call f90_expect_near(spatial_secchi_depth(1), 3.5_dp, 1.0e-6_dp, &
+                           "spatial_secchi_depth(1) should match the sample value")
+
+      secchi_depth_is_spatially_varying = .false.
+      if (allocated(spatial_secchi_depth)) deallocate (spatial_secchi_depth)
+      call teardown_minimal_grid()
+   end subroutine test_secchidepth_static_field_and_post_processing
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_frictioncoefficient_with_explicit_frictiontype, test_frictioncoefficient_with_explicit_frictiontype,
+   !> Verifies that a frictioncoefficient [Spatial] block with an explicit frictionType=
+   !! keyword causes set_friction_type_values_explicit to populate ifrcutp.
+   !! This is the only quantity that triggers a third call after enable_quantity and
+   !! is the regression test for set_friction_type_values_explicit being wired correctly.
+   subroutine test_frictioncoefficient_with_explicit_frictiontype() bind(C)
+      use m_flow, only: frcu, ifrcutp
+      use m_flowgeom, only: lnx, xu, yu
+      use m_physcoef, only: ifrctypuni
+      use m_Roughness, only: frictionTypeStringToInteger
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+      use m_alloc, only: aerr
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr, expected_friction_type
+      character(len=*), parameter :: SAMPLE_FILE = "test_frtype.xyz"
+      character(len=*), parameter :: EXT_FILE    = "test_frtype.ext"
+
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  0.02", &
+                                     " 1.0 -1.0  0.02", &
+                                     " 0.0  1.0  0.02"])
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity            = frictioncoefficient", &
+                       "    forcingFile         = "//SAMPLE_FILE, &
+                       "    forcingFileType     = sample", &
+                       "    interpolationMethod = triangulation", &
+                       "    frictionType        = Manning"])
+
+      ! ARRANGE: get expected integer for Manning and force ifrctypuni /= it
+      call frictionTypeStringToInteger('Manning', expected_friction_type)
+      ifrctypuni = 0
+
+      call setup_minimal_grid()
+      lnx = 1
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx), stat=ierr)
+      call aerr('xu/yu(lnx)', ierr, lnx)
+      xu = [0.0_dp]
+      yu = [0.0_dp]
+      if (allocated(ifrcutp)) deallocate (ifrcutp)
+      allocate (ifrcutp(lnx), stat=ierr)
+      call aerr('ifrcutp(lnx)', ierr, lnx)
+      ifrcutp = 0
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for frictioncoefficient with frictionType")
+      call f90_assert_true(allocated(ifrcutp), "ifrcutp should be allocated")
+      call f90_expect_eq(ifrcutp(1), expected_friction_type, &
+                         "ifrcutp(1) must equal the Manning integer from frictionTypeStringToInteger")
+
+      lnx = 0
+      if (allocated(xu))     deallocate (xu)
+      if (allocated(yu))     deallocate (yu)
+      if (allocated(frcu))   deallocate (frcu)
+      if (allocated(ifrcutp)) deallocate (ifrcutp)
+      call teardown_minimal_grid()
+   end subroutine test_frictioncoefficient_with_explicit_frictiontype
    !$f90tw)
 
 end module test_init_spatial_fields_integration

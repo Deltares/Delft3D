@@ -763,7 +763,7 @@ contains
             res = process_hydrological_quantities(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
-            res = resolve_parameter_target(quantity, file_name, target_location_type, target_data)
+            res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
          end if
          if (.not. res) then
             res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
@@ -1542,16 +1542,18 @@ contains
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+      subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
       use fm_location_types
       use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
+      use network_data, only: xk, yk, numk
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
-      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      integer, intent(out) :: target_num_points !< Number of points in target element set.
-      real(dp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
-      real(dp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
-      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if unknown quantity location was given).
+
+      integer, intent(in) :: target_location_type
+      integer, intent(out) :: target_num_points
+      real(dp), dimension(:), pointer, intent(out) :: target_x
+      real(dp), dimension(:), pointer, intent(out) :: target_y
+      integer, intent(out) :: ierr
 
       ierr = DFM_NOERR
 
@@ -1564,6 +1566,14 @@ contains
          target_num_points = lnx
          target_x => xu(1:target_num_points)
          target_y => yu(1:target_num_points)
+      case (UNC_LOC_CN)
+         target_num_points = numk
+         target_x => xk(1:target_num_points)
+         target_y => yk(1:target_num_points)
+      case (UNC_LOC_GLOBAL)
+         target_num_points = 0
+         target_x => null()
+         target_y => null()
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
