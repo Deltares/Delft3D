@@ -973,7 +973,7 @@ contains
                         rhs(substance_i, ifrom) = rhs(substance_i, ifrom) - q4 ! q4 == dlt_mass
                     end if
                 end if
-            end do
+            end do ! end of loop over substances
 
             ! End of loop over exchanges
         end do
