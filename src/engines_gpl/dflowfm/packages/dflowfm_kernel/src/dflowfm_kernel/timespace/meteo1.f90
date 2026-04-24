@@ -180,7 +180,7 @@ contains
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
       character(len=*), intent(out) :: filename !< Name of data file for current quantity.
       character(len=*), intent(out) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
-      character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(out) :: operand !< Operand w.r.t. previous data
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
@@ -312,12 +312,16 @@ contains
       end if
 
       keywrd = 'OPERAND'
-      OPERAND = 'O' ! hk : default =O
+      operand = OPERAND_OVERRIDE
       call zoekja(minp, rec, keywrd, ja)
       if (ja == 1) then
-         l1 = index(rec, '=') + 1
-         call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
-         read (rec(l2:l2), '(a1)', err=990) operand
+         block
+            character(len=256) :: temp
+            l1 = index(rec, '=') + 1
+            call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
+            read (rec(l2:l2), '(a1)', err=990) temp
+            operand = convert_operand_string_to_integer(temp)
+         end block
       else
          return
       end if
@@ -1114,7 +1118,7 @@ contains
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
       use spherepack, only: shaec, shaeci, shsec, shseci
-      use m_timespace_data_tables, only: LOVE_NUMBERS_H, LOVE_NUMBERS_K
+      use m_timespace_data_tables, only: LOAD_LOVE_NUMBERS_H, LOAD_LOVE_NUMBERS_K
       implicit none
 
       ! Input\Output parameter
@@ -1176,8 +1180,8 @@ contains
       end if
       if (jaselfal == 1) then
          do l = 1, ndab
-            a(1:mdab, l) = 3 * g * rhow * (1 + LOVE_NUMBERS_K(l - 1) - LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * a(1:mdab, l)
-            b(1:mdab, l) = 3 * g * rhow * (1 + LOVE_NUMBERS_K(l - 1) - LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * b(1:mdab, l)
+            a(1:mdab, l) = 3 * g * rhow * (1 + LOAD_LOVE_NUMBERS_K(l - 1) - LOAD_LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * a(1:mdab, l)
+            b(1:mdab, l) = 3 * g * rhow * (1 + LOAD_LOVE_NUMBERS_K(l - 1) - LOAD_LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * b(1:mdab, l)
          end do
       end if
 
@@ -3206,27 +3210,25 @@ contains
    !> Combine a newly computed (external forcings-)value with an existing one, based on the operand type.
    subroutine operate(a, b, operand)
       use precision
-      implicit none
+
       real(kind=dp), intent(inout) :: a !< Current value, will be updated based on b and operand.
       real(kind=dp), intent(in) :: b !< New value, to be combined with existing value a.
-      character(len=1), intent(in) :: operand !< Operand type, valid values: 'O', 'A', '+', '*', 'X', 'N'.
+      integer, intent(in) :: operand !< Operand type
 
-      ! b = factor*b + offset ! todo doorplussen
-
-      if (operand == 'O' .or. operand == 'V') then ! Override, regardless of what was specified before
+      if (operand == OPERAND_OVERRIDE) then ! Override, regardless of what was specified before
          a = b
-      else if (operand == 'A') then ! Add, means: only if nothing was specified before
+      else if (operand == OPERAND_OVERRIDE_IF_MISSING) then ! Override, but only if nothing was specified before
          if (a == dmiss_default) then
             a = b
          end if
       else if (a /= dmiss_default) then ! algebra only if not missing
-         if (operand == '+') then
+         if (operand == OPERAND_ADD) then
             a = a + b
-         else if (operand == '*') then
+         else if (operand == OPERAND_MULTIPLY) then
             a = a * b
-         else if (operand == 'X') then
+         else if (operand == OPERAND_MAXIMUM) then
             a = max(a, b)
-         else if (operand == 'N') then
+         else if (operand == OPERAND_MINIMUM) then
             a = min(a, b)
          end if
       end if
@@ -3281,7 +3283,7 @@ contains
       ! 7 : index triangulation
       ! 8 : smoothing
       ! 9 : internal diffusion
-      character(1), intent(in) :: operand ! override, add
+      integer, intent(in) :: operand
       real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
       ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
@@ -3607,6 +3609,7 @@ contains
       use geometry_module, only: dbpinpol
       use m_reapol
       use m_filez, only: oldfil
+      use timespace_parameters, only: OPERAND_ADD
       implicit none
 
       logical :: success
@@ -3617,7 +3620,7 @@ contains
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      character(1), intent(in) :: operand ! file name for meteo data file
+      integer, intent(in) :: operand
       real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
 
@@ -3633,7 +3636,7 @@ contains
             call dbpinpol(xz(k), yz(k), inside, &
                           dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inside == 1) then
-               if (operand == '+' .and. zz(k) /= imiss) then
+               if (operand == OPERAND_ADD .and. zz(k) /= imiss) then
                   zz(k) = zz(k) + transformcoef(1)
                else
                   zz(k) = transformcoef(1)
@@ -3693,6 +3696,7 @@ module m_meteo
    integer, target :: item_stressxy_y !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
 
    integer, target :: item_frcu !< Unique Item id of the ext-file's 'frcu' quantity's component.
+   integer, target :: item_secchi_depth !< Unique Item id of the ext-file's 'secchidepth' quantity's component.
 
    integer, target :: item_apwxwy_p !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
@@ -3821,7 +3825,7 @@ module m_meteo
          character(len=*), intent(in) :: filename !< File name of meteo data file.
          integer, intent(in) :: filetype !< FM's filetype enumeration.
          integer, intent(in) :: method !< FM's method enumeration.
-         character(len=1), intent(in) :: operand !< FM's operand enumeration.
+         integer, intent(in) :: operand !< FM's operand enumeration.
          real(hp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
          real(hp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
          real(hp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
@@ -3869,6 +3873,7 @@ contains
       item_stressxy_y = ec_undef_int
 
       item_frcu = ec_undef_int
+      item_secchi_depth = ec_undef_int
 
       item_apwxwy_p = ec_undef_int
       item_apwxwy_x = ec_undef_int
@@ -4092,15 +4097,14 @@ contains
 
    !> Translate FM's meteo1 'operand' enum to EC's 'operand' enum.
    subroutine operand_fm_to_ec(operand, ec_operand)
-      character, intent(in) :: operand
+      use timespace_parameters, only: FM_OVERRIDE => OPERAND_OVERRIDE, FM_ADD => OPERAND_ADD
+      integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
-      !
+      
       select case (operand)
-      case ('O')
+      case (FM_OVERRIDE)
          ec_operand = operand_replace
-      case ('V')
-         ec_operand = operand_replace_if_value
-      case ('+')
+      case (FM_ADD)
          ec_operand = operand_add
       case default
          ec_operand = operand_undefined
@@ -4218,6 +4222,9 @@ contains
       case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
+      case ('secchidepth')
+         itemPtr1 => item_secchi_depth
+         dataPtr1 => spatial_secchi_depth
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
          itemPtr1 => item_apwxwy_p
          dataPtr1 => air_pressure

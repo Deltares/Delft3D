@@ -1,10 +1,9 @@
-
 #include "log.h"
 
 #include <assert.h>
 #include <string.h>
 
-logger_t logger;
+logger_t logger = {.name = "dsle", .fp = NULL, .level = logWARNING};
 const char *level_strings[logERROR + 1] = {"DEBUG", "INFO", "WARNING", "ERROR"};
 
 void log_init(char *name, FILE *fp) {

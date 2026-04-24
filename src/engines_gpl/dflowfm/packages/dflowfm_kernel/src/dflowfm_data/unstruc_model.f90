@@ -1421,15 +1421,19 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Temperature', temperature_model)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
-      call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
-      call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
-      call prop_get(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
-      zab(1) = Secchidepth / 1.7_dp
-      sfr(1) = 1.0_dp
-      if (Secchidepth2 > 0) then
-         zab(2) = Secchidepth2 / 1.7_dp
-         sfr(2) = Secchidepth2fraction
-         sfr(1) = 1.0_dp - sfr(2)
+
+      ! Secchi parameter readout
+      call prop_get(md_ptr, 'physics', 'SecchiDepth', secchi_depth(1))
+      call prop_get(md_ptr, 'physics', 'SecchiDepth2', secchi_depth(2)) ! Deprecated, use SecchiDepthNonPenetrative instead
+      call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrative', secchi_depth(2))
+      call prop_get(md_ptr, 'physics', 'SecchiDepth2Fraction', secchi_radiation_fraction(2)) ! Deprecated, use SecchiDepthNonPenetrativeFraction instead
+      call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2))
+
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
+      
+      if (secchi_depth(2) > 0) then
+         diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
+         secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
       end if
 
       call prop_get(md_ptr, 'physics', 'Stanton', Stanton)
@@ -3443,12 +3447,10 @@ contains
 
       call prop_set(prop_ptr, 'physics', 'Temperature', temperature_model, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
       if (writeall .or. (temperature_model /= TEMPERATURE_MODEL_NONE)) then
-         call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (degC)')
-         call prop_set(prop_ptr, 'physics', 'Secchidepth', Secchidepth, 'Water clarity parameter (m)')
-         if (Secchidepth2 > 0) then
-            call prop_set(prop_ptr, 'physics', 'Secchidepth2', Secchidepth2, 'Water clarity parameter 2 (m), only used if > 0')
-            call prop_set(prop_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction, 'Fraction of total absorbed by profile 2')
-         end if
+         call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (deg C)')
+         call prop_set(prop_ptr, 'physics', 'SecchiDepth', secchi_depth(1), 'Water clarity parameter (m)')
+         call prop_set(prop_ptr, 'physics', 'SecchiDepthNonPenetrative', secchi_depth(2), 'Water clarity parameter for non-penetrative radiation (m).')
+         call prop_set(prop_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2), 'Fraction of solar radiation that is non-penetrative (-).')
 
          call prop_set(prop_ptr, 'physics', 'Stanton', Stanton, 'Coefficient for convective heat flux, if negative, Ccon = abs(Stanton)*Cdwind')
          call prop_set(prop_ptr, 'physics', 'Dalton', Dalton, 'Coefficient for evaporative heat flux, if negative, Ceva = abs(Dalton)*Cdwind')
