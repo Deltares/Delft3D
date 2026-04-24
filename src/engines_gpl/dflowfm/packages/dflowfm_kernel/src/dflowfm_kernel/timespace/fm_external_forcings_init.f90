@@ -1271,7 +1271,7 @@ contains
       use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
       use m_setsorsin
       use m_missing, only: dmiss
-      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, idomain, my_rank
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
 
@@ -1351,19 +1351,10 @@ contains
                write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
-               call addsorsin(srcid, x_flowcell(cidx:cidx), y_flowcell(cidx:cidx), z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
                if (bubblescreen_cells(cidx) /= -1) then
                   local_count = local_count + 1
                   bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
-                  source_sink_indices(1, num_source_sink) = bubblescreen_cells(cidx)
-                  source_sink_indices(4, num_source_sink) = bubblescreen_cells(cidx)
-                  if (jampi == 1) then
-                     if (idomain(bubblescreen_cells(cidx)) /= my_rank) then
-                        ! Ghost cell: owned by another partition, zero out indices so setsorsin
-                        ! skips the coupled branch and avoids double-counting source_sink_reduction
-                        source_sink_indices(1, num_source_sink) = 0
-                     end if
-                  end if
                end if
             end do
          end associate

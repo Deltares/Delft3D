@@ -39,26 +39,25 @@ contains
 
    subroutine setextforcechkadvec()
       use precision, only: dp
-      use m_get_spiralforce
-      use m_get_spiral3d
-      use m_comp_gravinput, only: comp_GravInput
+      use m_get_spiralforce, only: get_spiralforce
+      use m_get_spiral3d, only: get_spiral3d
+      use m_comp_gravinput, only: comp_gravinput
       use m_anticreep, only: anticreep
-      use m_add_internaltidesfrictionforces, only: add_InternalTidesFrictionForces
+      use m_add_internaltidesfrictionforces, only: add_internaltidesfrictionforces
       use m_add_baroclinic_pressure, only: add_baroclinic_pressure
-      use m_flow
+      use m_flow, only: kmx, hu, adve, wdsu, huvli, ltop, ktop, zws, lbot, u1, v, flow_without_waves, wavfu, ag, jatidep, rhomean, jaselfal, tidep, tidef, jacreep, use_density, dsalL, dtemL, &
+          jasecflow, czusf, frcu, ifrcutp, czssf, spirbeta, jafrcinternaltides2d, chkadvd, hs, epshu
       use m_flowparameters, only: trshcorio
-      use m_flowgeom
-      use m_netw
-      use MessageHandling
-      use m_alloc
-      use m_wind
-      use m_sferic
+      use m_flowgeom, only: lnx, lncn, ln, acl, csu, snu, jawave, dxi
+      use m_netw, only: zk
+      use MessageHandling, only: mess, LEVEL_INFO
+      use m_wind, only: jawind, jawindpartialdry, jawindhuorzwsbased, air_pressure_available, air_pressure, pseudo_air_pressure_available, pseudo_air_pressure, water_level_correction_available, water_level_correction
       use m_xbeach_data, only: Lwave
       use m_fm_icecover, only: ice_pressure, fm_ice_update_press, ice_apply_pressure, ice_reduce_waves, ice_area_fraction, ice_apply_friction, ice_frict_type, ice_frcuni, FRICT_AS_DRAG_COEFF
-      use m_get_Lbot_Ltop
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_chezy, only: get_chezy
       use m_links_to_centers, only: links_to_centers
-      use m_waveconst
+      use m_waveconst, only: WAVE_SWAN_ONLINE, WAVE_NC_OFFLINE, WAVE_SURFBEAT
 
       integer :: L, LL, Lb, Lt, k1, k2, kt1, kt2
       real(kind=dp) :: dptot, tidp, trshcorioi, dzt, dztm, alf
@@ -274,7 +273,7 @@ contains
             dsalL = 0.0_dp
             dtemL = 0.0_dp
             do L = 1, lnx
-               if (hu(L) > 0.0_dp) then
+               if (hu(L) > epshu) then
                   call anticreep(L)
                end if
             end do

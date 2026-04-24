@@ -1736,7 +1736,7 @@ itemid,itemse,itemex,itemde,itemun,itemnm,itemag,itemda,itemwk,itemgr
 "DmCfMPB1  ","x"," ",    2.50000    ,"(gDM/gC)            ","DM:C ratio MPB epipelic                           ","volume    ","volume    "," ","                              "
 "DmCfMPB2  ","x"," ",    2.50000    ,"(gDM/gC)            ","DM:C ratio MPB epipsammic                         ","volume    ","volume    "," ","                              "
 "RhoOM     ","x"," ",   0.130000E+07,"(gDM/m3OM)          ","dry bulk density organic matter                   ","volume    ","volume    "," ","                              "
-"DMS1      ","x"," ",   0.100000E-05,"(gDM/m2)            ","total amount of dry matter in layer S1            ","volume    ","volume    "," ","                              "
+"DMS1      ","x"," ",   -999.000    ,"(gDM/m2)            ","total amount of dry matter in layer S1            ","volume    ","volume    "," ","                              "
 "TIMS1     ","x"," ",   -999.000    ,"(gDM/m2)            ","total inorganic matter in layer S1                ","volume    ","volume    "," ","                              "
 "POCS1     ","x"," ",    0.00000    ,"(gC/m2)             ","total POC in layer S1                             ","volume    ","volume    "," ","                              "
 "PHYTS1    ","x"," ",    0.00000    ,"(gC/m2)             ","total carbon in phytoplankton in layer S1         ","volume    ","volume    "," ","                              "
