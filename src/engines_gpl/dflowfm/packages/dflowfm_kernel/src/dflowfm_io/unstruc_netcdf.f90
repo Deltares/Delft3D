@@ -6924,41 +6924,18 @@ contains
 
       ! Salinity
       if (jasal > 0 .and. jamapsal > 0) then
-
-         if (.not. write_surface_data_to_map_file) then ! Write full vertical profile to map file
-            do k = 1, ndkx
-               sa1(k) = constituents(isalt, k)
-            end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, iLocS, sa1, jabndnd=jabndnd_)
-         else ! Only write surface data to map file
-            do k = 1, ndx
-               sa1(k) = constituents(isalt, ktop(k))
-            end do
-            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, UNC_LOC_S, sa1, jabndnd=jabndnd_)
-         end if
-         
+         do k = 1, ndkx
+            sa1(k) = constituents(isalt, k)
+         end do
+         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, iLocS, sa1, jabndnd=jabndnd_)
       end if
 
       ! Temperature
       if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jamaptem > 0) then
-
          do k = 1, ndkx
             tem1(k) = constituents(itemp, k)
          end do
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, iLocS, tem1, jabndnd=jabndnd_)
-
-         ! if (.not. write_surface_data_to_map_file) then ! Write full vertical profile to map file
-         !    do k = 1, ndkx
-         !       tem1(k) = constituents(itemp, k)
-         !    end do
-         !    ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, iLocS, tem1, jabndnd=jabndnd_)
-         ! else ! Only write surface data to map file
-         !    do k = 1, ndx
-         !       tem1(k) = constituents(itemp, ktop(k))
-         !    end do
-         !    ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, UNC_LOC_S, tem1, jabndnd=jabndnd_)
-         ! end if
-         
       end if
 
       if (jasecflow > 0 .and. jamapspir > 0) then
