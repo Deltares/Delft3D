@@ -11,6 +11,7 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "monadic_utils.hpp"
@@ -203,6 +204,7 @@ namespace
             .nf2ff_file = std::move(data.nf2ff_file),
             .ff2nf_dir = std::move(comm.ff2nf_dir),
             .ff_run_dir = std::move(comm.ff_run_dir),
+            .settings_xml_node = settings_node,
         };
     }
 
@@ -275,11 +277,12 @@ namespace pre_c_sumo
         ASSIGN_OR_RETURN(const auto root, validateRoot(doc));
         ASSIGN_OR_RETURN(auto file_version, parseFileVersion(root));
         ASSIGN_OR_RETURN(auto diffusers, parseAllDiffusers(root));
-        return CSumoSettingsReader{std::move(file_version), std::move(diffusers)};
+        return CSumoSettingsReader{std::move(file_version), std::move(diffusers), std::move(doc)};
     }
 
-    CSumoSettingsReader::CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers)
-        : file_version_{std::move(file_version)}, diffusers_{std::move(diffusers)}
+    CSumoSettingsReader::CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers,
+                                             pugi::xml_document document)
+        : file_version_{std::move(file_version)}, diffusers_{std::move(diffusers)}, document_{std::move(document)}
     {
     }
 
