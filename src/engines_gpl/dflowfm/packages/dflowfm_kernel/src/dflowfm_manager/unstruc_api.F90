@@ -272,7 +272,7 @@ contains
       use m_wind, only: jawind
       use dfm_error
       use m_partitioninfo, only: jampi
-      use m_flowparameters, only: jahisbal, jatekcd, jahislateral, jawriteDetailedTimers
+      use m_flowparameters, only: his_write_settings, jatekcd, jawriteDetailedTimers
       use fm_statistical_output, only: out_variable_set_his, out_variable_set_map, out_variable_set_clm
       use m_update_values_on_cross_sections, only: update_values_on_cross_sections
       use m_statistical_output, only: update_source_input, update_statistical_output
@@ -315,12 +315,12 @@ contains
 
       call update_values_on_cross_sections
       call updateValuesOnRunupGauges()
-      if (jahisbal > 0) then ! Update WaterBalances etc.
+      if (his_write_settings%bal > 0) then ! Update WaterBalances etc.
          call updateBalance()
       end if
       call updateValuesonSourceSinks(time1)
 
-      if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
          call updateValuesOnLaterals(time1, dts)
       end if
 
