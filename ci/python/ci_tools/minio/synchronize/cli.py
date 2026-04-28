@@ -86,7 +86,6 @@ class CommandLine:
         "jobs": "The number of threads to use for synchronization.",
         "queue-size": "The maximum size of the queue for synchronization. This will limit memory usage.",
         "part-size": "The size of the parts to use for multipart uploads.",
-        "profile": "The AWS profile to use to authenticate with MinIO.",
         "endpoint-url": "The endpoint URL to use for MinIO.",
     }
 
@@ -204,8 +203,7 @@ class CommandLine:
             jobs=DEFAULT_WORKER_COUNT,
             queue_size=DEFAULT_QUEUE_SIZE,
             log_level=cls.DEFAULT_LOG_LEVEL,
-            endpoint_url=os.environ.get("ENDPOINT_URL", f"https://{const.DEFAULT_MINIO_HOSTNAME}"),
-            profile=os.environ.get("AWS_PROFILE"),
+            endpoint_url=os.environ.get("ENDPOINT_URL", f"https://{const.DEFAULT_MINIO_HOSTNAME}")
         )
 
         return parser
