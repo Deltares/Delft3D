@@ -62,7 +62,7 @@ type wave_time_type
    integer  :: calctimtscale_prev ! calctimtscale from "previous" time point
                                   ! Only used when sr%modsim == 3 for output at the start of the simulation
    integer  :: calccount       ! [-]        Counts the number of calculations. Used for naming the sp2 output files
-   real     :: tscale          ! [sec]      Basic time unit: default = 60.0,
+   real(hp) :: tscale          ! [sec]      Basic time unit: default = 60.0,
                                ! when running online with FLOW tscale = FLOW_time_step
    real(hp) :: timsec          ! [sec]      Current time of simulation since reference date (0:00h)
    real(hp) :: timmin          ! [min]      Current time of simulation since reference date (0:00h)
@@ -75,7 +75,7 @@ type wave_output_type
                                   !            containing valid Wave data only. This parameter stores the last field containing valid flow information,
                                   !            normally it's value will be 1, except when Flow also writes with append_com is true
    integer  :: ncmode             ! [3 or 4]   NetCDF creation mode: NetCDF3 (NF90_CLASSIC_MODEL) or NetCDF4 (NF90_NETCDF4)
-   real     :: nexttim            ! [sec]      Next time to write to wavm-file
+   real(hp) :: nexttim            ! [sec]      Next time to write to wavm-file
    real(hp) :: timseckeephot      ! [sec]      seconds since ref date on which time the hotfile should not be deleted
    logical  :: write_wavm         ! [y/n]      True when writing to wavm file
 end type wave_output_type
@@ -100,7 +100,7 @@ subroutine initialize_wavedata(wavedata)
    wavedata%time%calctimtscale        =  0
    wavedata%time%calctimtscale_prev   =  -999
    wavedata%time%calccount            =  0
-   wavedata%time%tscale               = 60.0
+   wavedata%time%tscale               =  60.0_hp
    wavedata%time%timsec               =  0.0_hp
    wavedata%time%timmin               =  0.0_hp
    wavedata%output%count              =  0
@@ -135,14 +135,14 @@ end subroutine setrefdate
 subroutine settimtscale(wavetime, timtscale_in, modsim, nonstat_interval)
    integer :: timtscale_in
    integer :: modsim                ! 1: stationary, 2: quasi-stationary, 3: non-stationary
-   real    :: nonstat_interval      ! used when modsim = 3: Interval of communication FLOW-WAVE
+   real(hp):: nonstat_interval      ! used when modsim = 3: Interval of communication FLOW-WAVE
    type(wave_time_type) :: wavetime
 
    wavetime%timtscale = timtscale_in
    wavetime%timsec    = real(wavetime%timtscale,hp) * wavetime%tscale
    wavetime%timmin    = wavetime%timsec / 60.0_hp
    if (modsim == 3) then
-      wavetime%calctimtscale = wavetime%timtscale + int(nonstat_interval*60.0/wavetime%tscale)
+      wavetime%calctimtscale = wavetime%timtscale + nint(nonstat_interval*60.0_hp/wavetime%tscale)
       wavetime%calctimtscale_prev = wavetime%timtscale
    else
       wavetime%calctimtscale = wavetime%timtscale
@@ -172,7 +172,7 @@ subroutine settimsec(wavetime, timsec_in, modsim, nonstat_interval)
    wavetime%timmin    = wavetime%timsec / 60.0_hp
    wavetime%timtscale = nint(wavetime%timsec / wavetime%tscale)
    if (modsim == 3) then
-      wavetime%calctimtscale = wavetime%timtscale + int(nonstat_interval*60.0/wavetime%tscale)
+      wavetime%calctimtscale = wavetime%timtscale + nint(nonstat_interval*60.0_hp/wavetime%tscale)
       wavetime%calctimtscale_prev = wavetime%timtscale
    else
       wavetime%calctimtscale = wavetime%timtscale
@@ -191,7 +191,7 @@ subroutine settimmin(wavetime, timmin_in, modsim, nonstat_interval)
    wavetime%timsec    = wavetime%timmin * 60.0_hp
    wavetime%timtscale = nint(wavetime%timsec / wavetime%tscale)
    if (modsim == 3) then
-      wavetime%calctimtscale = wavetime%timtscale + int(nonstat_interval*60.0/wavetime%tscale)
+      wavetime%calctimtscale = wavetime%timtscale + nint(nonstat_interval*60.0_hp/wavetime%tscale)
       wavetime%calctimtscale_prev = wavetime%timtscale
    else
       wavetime%calctimtscale = wavetime%timtscale
