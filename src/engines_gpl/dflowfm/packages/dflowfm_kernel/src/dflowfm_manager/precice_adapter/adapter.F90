@@ -109,6 +109,7 @@ contains
 
       ! Finally, call initialise.
       call precicef_initialize()
+      call precice_adapter_write_data(self)
       summed_time_progress = 0.0
       do_write = .true.
    end subroutine precice_adapter_initialize
@@ -137,10 +138,10 @@ contains
          return ! Skip if the connection is no longer ongoing.
       end if
 
-      if (do_write) then
-         call precice_adapter_write_data(self)
-         do_write = .false.
-      end if
+      !if (do_write) then
+      !   call precice_adapter_write_data(self)
+      !   do_write = .false.
+      !end if
       
       ! Actually advance time
       call precicef_get_max_time_step_size(max_timestep)
@@ -148,19 +149,23 @@ contains
       if (summed_time_progress - max_timestep > 1.0) then
          call mess(LEVEL_ERROR, "Summed user time steps are beyond the preCICE coupling window!")
       end if
-      if (summed_time_progress - max_timestep < -1.0e-5) then
-         return
+      if (summed_time_progress - max_timestep > -1.0e-5) then
+         call precicef_is_time_window_complete(is_time_window_complete)
+         if (is_time_window_complete == 1) then
+            call precicef_reset_mesh(self%cell_center_mesh_3d_name, len(self%cell_center_mesh_3d_name))
+            call set_cell_center_mesh_zcoords(self%mesh_size, kmx, zws, self%cell_center_mesh_coordinates_3d)
+            call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
+         end if
+         call precicef_advance(max_timestep)
+         call precice_adapter_write_data(self)
+         summed_time_progress = 0.0
+         do_write = .true.
       end if
-
-      call precicef_is_time_window_complete(is_time_window_complete)
-      if (is_time_window_complete == 1) then
-         call precicef_reset_mesh(self%cell_center_mesh_3d_name, len(self%cell_center_mesh_3d_name))
-         call set_cell_center_mesh_zcoords(self%mesh_size, kmx, zws, self%cell_center_mesh_coordinates_3d)
-         call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
-      end if
-      call precicef_advance(max_timestep)
-      summed_time_progress = 0.0
-      do_write = .true.
+      !call precicef_is_coupling_ongoing(is_ongoing)
+      !if (is_ongoing == 1 .and. do_write) then
+      !   call precice_adapter_write_data(self)
+      !   do_write = .false.
+      !end if
 
       ! TODO: Read latest state here ?
    end subroutine precice_adapter_update
