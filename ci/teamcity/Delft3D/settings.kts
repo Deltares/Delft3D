@@ -180,17 +180,17 @@ project {
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
         }
-        awsConnection {
-            id = "doc_download_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
-                secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
-        }
+        // awsConnection {
+        //     id = "doc_download_connection"
+        //     name = "Deltares MinIO connection"
+        //     credentialsType = static {
+        //         accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
+        //         secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
+        //         useSessionCredentials = false
+        //     }
+        //     allowInSubProjects = true
+        //     allowInBuilds = true
+        // }
         feature {
             type = "OAuthProvider"
             param("displayName", "Keeper Vault Delft3d")
