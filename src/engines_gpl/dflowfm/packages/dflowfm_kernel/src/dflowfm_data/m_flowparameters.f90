@@ -480,7 +480,7 @@ module m_flowparameters
       integer :: airdensity = 0 !< Write air density  to his file, 0: no, 1: yes
       integer :: watlev = 1 !< Write water level to his file, 0: no, 1: yes
       integer :: bedlev = 1 !< Write bed level to his file, 0: no, 1: yes
-      integer :: watdep = 1 !< Write waterd epth to his file, 0: no, 1: yes
+      integer :: watdep = 0 !< Write waterd epth to his file, 0: no, 1: yes
       integer :: velvec = 1 !< Write velocity vectors to his file, 0: no, 1: yes
       integer :: ww = 0 !< Write upward velocity to his file, 0: no, 1: yes
       integer :: sed = 1 !< Write sediment transport to his file, 0: no, 1: yes
