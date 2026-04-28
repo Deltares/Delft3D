@@ -674,8 +674,8 @@ contains
 
    end function ug_write_meshtopology
 
-!> Defines a new variable in an existing dataset.
-!! Does not write the actual data yet.
+   !> Defines a new variable in an existing dataset.
+   !! Does not write the actual data yet.
    function ug_def_var(ncid, id_var, id_dims, itype, iloctype, mesh_name, var_name, standard_name, long_name, &
                        units, cell_method, cell_measures, crs, ifill, dfill, writeopts, do_deflate) result(ierr)
       use precision, only: sp

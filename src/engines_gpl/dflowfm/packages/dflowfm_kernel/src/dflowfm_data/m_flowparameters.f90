@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_flowparameters
    use precision, only: dp
    use m_sediment, only: jased
@@ -37,7 +34,7 @@ module m_flowparameters
    use m_waveconst
    use messagehandling, only: idlen
 
-   implicit none
+   implicit none(type, external)
 
    integer :: itstep !< time step 0=no, 1 =step_explicit, 2=step_reduce, 3=step_jacobi, 4: explicit
    integer :: iadvec !< adv type, 0=no, 1 = Wenneker vol, qu-udzt array, 2=1, function,
@@ -586,6 +583,8 @@ module m_flowparameters
    integer :: jamapNearField !< Nearfield related output
    integer :: jamapwqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
 
+   logical :: write_surface_data_to_map_file !< Write surface data instead of full vertical profile to map file
+
 ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
 
@@ -1039,6 +1038,8 @@ contains
       jamapFlowAnalysis = 0
       jamapNearField = 0
       jamapwqbot3d = 0
+
+      write_surface_data_to_map_file = .false.
 
       jarstignorebl = 0
 

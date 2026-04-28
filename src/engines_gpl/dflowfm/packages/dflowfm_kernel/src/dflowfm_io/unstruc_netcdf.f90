@@ -591,7 +591,7 @@ module unstruc_netcdf
 
 contains
 
-!> Initializes some global variables needed for writing NetCDF files during a run.
+   !> Initializes some global variables needed for writing NetCDF files during a run.
    subroutine init_unstruc_netcdf()
       use dflowfm_version_module, only: company, product_name, company_url, version_full
 
@@ -617,24 +617,26 @@ contains
       unc_uuidgen = 1
    end subroutine init_unstruc_netcdf
 
-!> Sets the default NetCDF cmode flag values for all D-Flow FM's created files.
-!! Recommended use via calling unc_set_ncformat.
+   !> Sets the default NetCDF cmode flag values for all D-Flow FM's created files.
+   !! Recommended use via calling unc_set_ncformat.
    subroutine unc_set_cmode(cmode)
       integer, intent(in) :: cmode !< NetCDF creation mode flags value, intended for use in nf90_create calls.
       unc_cmode = cmode
    end subroutine unc_set_cmode
 
-!> Sets the default NetCDF format for all D-Flow FM's created files (NetCDF 3 or 4).
+      !> Sets the default NetCDF format for all D-Flow FM's created files (NetCDF 3 or 4).
    subroutine unc_set_ncformat(iformatnumber)
       use netcdf_utils, only: ncu_format_to_cmode
+
       integer, intent(in) :: iformatnumber !< The NetCDF format version (3 or 4, colloquially speaking)
 
       call unc_set_cmode(ncu_format_to_cmode(iformatnumber))
    end subroutine unc_set_ncformat
 
-!> Sets the default NetCDF compression setting (only applied when ncformat = NetCDF 4)
+   !> Sets the default NetCDF compression setting (only applied when ncformat = NetCDF 4)
    subroutine unc_set_nccompress(md_nccompress)
       logical, intent(in) :: md_nccompress !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
+      
       if (md_nccompress .and. unc_cmode /= nf90_netcdf4) then
          call mess(LEVEL_ERROR, 'NetCDF compression (deflation) is a NetCDF4 feature; make sure NcFormat is set to 4.')
       end if
@@ -656,16 +658,16 @@ contains
       ierr = nf90_put_att(ncid, nf90_global, "uuid", uuid)
    end function unc_add_uuid
 
-!> Wrapper function around ionc_add_time_coverage() to set the time coverage
-!! attributes for dflowfm's various output files (map/his, etc.).
-!! Input are parameters in seconds since refdat; this subroutine will take
-!! care of date calculations, time zones and string conversion.
+   !> Wrapper function around ionc_add_time_coverage() to set the time coverage
+   !! attributes for dflowfm's various output files (map/his, etc.).
+   !! Input are parameters in seconds since refdat; this subroutine will take
+   !! care of date calculations, time zones and string conversion.
    function unc_add_time_coverage(ncid, start_since_ref, end_since_ref, resolution) result(ierr)
       use precision, only: dp
       use time_module, only: duration_to_string, datetime_to_string, ymd2modified_jul
       use m_flowtimes, only: refdat, tzone
       use dfm_error, only: dfm_noerr, dfm_wronginput
-      implicit none
+
       integer, intent(in) :: ncid !< NetCDF dataset id
       real(kind=dp), intent(in) :: start_since_ref !< Start of time coverage/output [seconds since refdat]
       real(kind=dp), intent(in) :: end_since_ref !< End   of time coverage/output [seconds since refdat]
@@ -688,7 +690,7 @@ contains
                                     duration_to_string(end_since_ref - start_since_ref), duration_to_string(resolution))
    end function unc_add_time_coverage
 
-!> Adds additional metadata into an output file, given a separate metadata NetCDF file.
+   !> Adds additional metadata into an output file, given a separate metadata NetCDF file.
    function unc_meta_add_from_file(ncid, ncmeta_filename) result(ierr)
       use dfm_error, only: dfm_noerr
       use netcdf_utils, only: ncu_copy_atts
@@ -717,7 +719,7 @@ contains
 
    end function unc_meta_add_from_file
 
-!> Adds some standard metadata into an output file, if set as environment variables.
+   !> Adds some standard metadata into an output file, if set as environment variables.
    function unc_meta_add_from_environment(ncid) result(ierr)
       use dfm_error, only: dfm_noerr
       use m_alloc, only: realloc
@@ -756,13 +758,13 @@ contains
 
    end function unc_meta_add_from_environment
 
-!> Returns the given valuetext with any placeholder variables substituted by the actual value.
-!! Currently supported placeholders:
-!!  * ${dfm_md_ident}: Model identifier (MDU name without extension)
-!!  * ${dfm_net_file}: Net/grid filename (as specified via MDU NetFile, without the full directory path if present.)
-!!  * ${dfm_program_name}: "D-Flow FM"
-!!
-!! NOTE: this function is an implementation of the netcdf_utils::ncu_apply_to_att interface.
+   !> Returns the given valuetext with any placeholder variables substituted by the actual value.
+   !! Currently supported placeholders:
+   !!  * ${dfm_md_ident}: Model identifier (MDU name without extension)
+   !!  * ${dfm_net_file}: Net/grid filename (as specified via MDU NetFile, without the full directory path if present.)
+   !!  * ${dfm_program_name}: "D-Flow FM"
+   !!
+   !! NOTE: this function is an implementation of the netcdf_utils::ncu_apply_to_att interface.
    function unc_meta_fill_placeholders(valuetext) result(ierr)
       use dfm_error, only: dfm_noerr
       use dflowfm_version_module, only: product_name
@@ -778,12 +780,13 @@ contains
       valuetext = replace_string(valuetext, '${dfm_program_name}', trim(product_name))
    end function unc_meta_fill_placeholders
 
-!> Adds user-defined metadata into an output file.
-!! Done in two steps:
-!! 1. read from a NetCDF metadata file (if provided).
-!! 2. read from some environment variables (if set).
+   !> Adds user-defined metadata into an output file.
+   !! Done in two steps:
+   !! 1. read from a NetCDF metadata file (if provided).
+   !! 2. read from some environment variables (if set).
    function unc_meta_add_user_defined(ncid) result(ierr)
       use dfm_error, only: dfm_noerr
+
       integer, intent(in) :: ncid !< NetCDF dataset ID to write into
       integer :: ierr !< Result status (DFM_NOERR if successful)
 
@@ -803,13 +806,12 @@ contains
 
    end function unc_meta_add_user_defined
 
-!> Defines a NetCDF variable that has no spatial dimension, also setting the most used attributes.
-!! Typically only used for variables without a space dimension.
-!! For variables with either his-station-range or map-grid-range in the dimensions:
-!! @see unc_def_var_map @see unc_def_var_his
+   !> Defines a NetCDF variable that has no spatial dimension, also setting the most used attributes.
+   !! Typically only used for variables without a space dimension.
+   !! For variables with either his-station-range or map-grid-range in the dimensions:
+   !! @see unc_def_var_map @see unc_def_var_his
    function unc_def_var_nonspatial(ncid, id_var, itype, idims, var_name, standard_name, long_name, unit) result(ierr)
       use dfm_error, only: dfm_noerr
-      implicit none
 
       integer, intent(in) :: ncid !< NetCDF file unit
       integer, intent(inout) :: id_var !< Returned variable id.
@@ -836,10 +838,10 @@ contains
 
    end function unc_def_var_nonspatial
 
-!> Defines a NetCDF variable inside a map file, taking care of proper attributes and coordinate references.
-!! Produces a UGRID-compliant map file.
-!! Typical call: unc_def_var(mapids, mapids%id_s1(:), nf90_double, UNC_LOC_S, 's1', 'sea_surface_height', 'water level', 'm')
-!! Space-dependent variables will be multiply defined: on mesh1d and mesh2d-based variables (unless specified otherwise via which_meshdim argument).
+   !> Defines a NetCDF variable inside a map file, taking care of proper attributes and coordinate references.
+   !! Produces a UGRID-compliant map file.
+   !! Typical call: unc_def_var(mapids, mapids%id_s1(:), nf90_double, UNC_LOC_S, 's1', 'sea_surface_height', 'water level', 'm')
+   !! Space-dependent variables will be multiply defined: on mesh1d and mesh2d-based variables (unless specified otherwise via which_meshdim argument).
    function unc_def_var_map(ncid, id_tsp, id_var, itype, iloc, var_name, standard_name, long_name, unit, is_timedep, dimids, cell_method, which_meshdim, jabndnd, ivalid_max) result(ierr)
       use m_save_ugrid_state, only: mesh2dname, mesh1dname, contactname_1D2D
       use netcdf_utils, only: ncu_append_atts
@@ -847,13 +849,13 @@ contains
       use dfm_error, only: dfm_noerr
       use m_missing, only: dmiss
       use fm_location_types, only: unc_loc_s3d, unc_loc_u3d, unc_loc_w, unc_loc_wu, unc_loc_cn, unc_loc_s, unc_loc_u, unc_loc_l
-      use m_flowparameters, only: jamapvol1, jamapau, jamaphs, jamaphu, jamapanc
+      use m_flowparameters, only: jamapvol1, jamapau, jamaphs, jamaphu, jamapanc, write_surface_data_to_map_file
+      use m_transport, only: const_names, ITRA1, ITRAN
       use network_data, only: numl, numl1d
 
-      implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
-      integer, intent(out) :: id_var(:) !< Resulting variable ids, one for each submesh (1d/2d/3d/1d2d-contact if applicable)
+      integer, dimension(:), intent(out) :: id_var !< Resulting variable ids, one for each submesh (1d/2d/3d/1d2d-contact if applicable)
       integer, intent(in) :: itype !< NetCDF data type (e.g. nf90_double).
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W, UNC_LOC_WU).
       character(len=*), intent(in) :: var_name !< Variable name for in NetCDF variable, will be prefixed with mesh name.
@@ -861,7 +863,7 @@ contains
       character(len=*), intent(in) :: long_name !< Long name for 'long_name' attribute in this variable (use empty string if not wanted).
       character(len=*), intent(in) :: unit !< Unit of this variable (CF-compliant) (use empty string for dimensionless quantities).
       integer, optional, intent(in) :: is_timedep !< (Optional) Whether or not (1/0) this variable is time-dependent. (Default: 1)
-      integer, optional, intent(in) :: dimids(:) !< (Optional) Array with dimension ids, replaces default dimension ordering. Default: ( layerdim, spatialdim, timedim ).
+      integer, dimension(:), optional, intent(in) :: dimids !< (Optional) Array with dimension ids, replaces default dimension ordering. Default: ( layerdim, spatialdim, timedim ).
                                                  !! This array may contain special dummy values: -1 will be replaced by time dim, -2 by spatial dim, -3 by layer dim. Example: [ -2, id_seddim, -1 ].
       character(len=*), optional, intent(in) :: cell_method !< cell_method for this variable (one of 'mean', 'point', see CF for details). Default: mean
       integer, optional, intent(in) :: which_meshdim !< Selects which (horizontal) mesh dimension(s) need to be defined and written (1: 1D, 2: 2D, 4: 1D2D contacts, 7: all) Default: 7: all.
@@ -869,7 +871,7 @@ contains
       integer, optional, intent(in) :: ivalid_max !< valid_max attribute for integer variables
 
       integer :: ierr !< Result status, DFM_NOERR if successful.
-! TODO: AvD: inject vectormax dim here AND timedim!!
+      ! TODO: AvD: inject vectormax dim here AND timedim!!
       character(len=10) :: cell_method_ !< cell_method for this variable (one of 'mean', 'point', see CF for details).
       character(len=50) :: cell_measures !< cell_measures for this variable (e.g. 'area: mesh2d_ba', see CF for details).
       integer :: ndx1d !< Number of 1D nodes.
@@ -883,16 +885,42 @@ contains
       integer :: idx_fastdim !< Will point to the first used position in idims (i.e. the fastest varying dimension).
       integer :: is_timedep_
       integer :: is_layerdep_
+      integer :: local_iloc !< Local variable for location, may be modified if this is a surface variable
+      character(len=:), allocatable :: local_long_name !< Local variable for long name, may be modified if this is a surface variable
       integer :: ndims, i
       integer :: which_meshdim_
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
       integer :: ndxndxi !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
       integer :: varid
       character(len=50) :: checkvars(5) ! small array to check on presence of some variables.
+      logical :: is_surface_variable !< Flag indicating whether the variable is a surface variable.
 
       ierr = DFM_NOERR
+      is_surface_variable = .false.
+
+      local_iloc = iloc
+      local_long_name = long_name
 
       idims = 0
+
+      if (write_surface_data_to_map_file) then
+
+         if (any(var_name == ['tem1', 'sa1', 'ucx', 'ucy'])) then
+            ! Check if var_name is temperature, salinity, or velocity vector
+            is_surface_variable = .true.
+         else if (ITRA1 /= 0) then
+            if (any(var_name == const_names(ITRA1:ITRAN))) then
+               ! Check if var_name is a tracer name
+               is_surface_variable = .true.
+            end if
+         end if
+
+         if (is_surface_variable) then
+            local_iloc = UNC_LOC_S
+            local_long_name = trim(long_name) // ' at surface'
+         end if
+
+      end if
 
       if (present(is_timedep)) then
          is_timedep_ = is_timedep
@@ -906,7 +934,7 @@ contains
          which_meshdim_ = 1 + 2 + 4 ! 1D and 2D and 1d2d contacts (if applicable)
       end if
 
-      if (iloc == UNC_LOC_S3D .or. iloc == UNC_LOC_U3D .or. iloc == UNC_LOC_W .or. iloc == UNC_LOC_WU) then
+      if (any(local_iloc == [UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W, UNC_LOC_WU])) then
          is_layerdep_ = 1
       else
          is_layerdep_ = 0
@@ -988,7 +1016,7 @@ contains
 
       ndx1d = ndxi - ndx2d
 
-      select case (iloc)
+      select case (local_iloc)
       case (UNC_LOC_CN) ! Corner point location
          ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
          if (iand(which_meshdim_, 1) > 0 .and. ndx1d > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
@@ -1000,7 +1028,7 @@ contains
             cell_method_ = 'point' ! NOTE: for now don't allow user-defined cell_method for corners, always point.
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_node)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_NODE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
 
@@ -1010,7 +1038,7 @@ contains
             cell_measures = 'area: '//trim(mesh1dname)//'_flowelem_ba' ! relies on unc_write_flowgeom_ugrid_filepointer
             idims(idx_spacedim) = id_tsp%meshids1d%dimids(mdim_node)
             ierr = ug_def_var(ncid, id_var(1), idims(idx_fastdim:maxrank), itype, UG_LOC_NODE, &
-                              trim(mesh1dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh1dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
@@ -1018,7 +1046,7 @@ contains
             cell_measures = 'area: '//trim(mesh2dname)//'_flowelem_ba' ! relies on unc_write_flowgeom_ugrid_filepointer
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_face)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_FACE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
          if (jamapanc > 0 .and. jamaphs > 0 .and. .not. strcmpi(var_name, 'waterdepth')) then
@@ -1033,7 +1061,7 @@ contains
                !cell_measures = 'area: '//trim(mesh1dname)//'_au' ! TODO: AvD: UNST-1100: au is not yet in map file at all.
                idims(idx_spacedim) = id_tsp%meshids1d%dimids(mdim_edge)
                ierr = ug_def_var(ncid, id_var(1), idims(idx_fastdim:maxrank), itype, UG_LOC_EDGE, &
-                                 trim(mesh1dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                                 trim(mesh1dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                                  do_deflate=unc_nccompress)
             end if
          end if
@@ -1042,7 +1070,7 @@ contains
             if (size(id_tsp%contactstoln, 1) > 0) then
                idims(idx_spacedim) = id_tsp%meshcontact_1D2D%dimids(cdim_ncontacts)
                ierr = ug_def_var(ncid, id_var(4), idims(idx_fastdim:maxrank), itype, UG_LOC_CONTACT, &
-                                 trim(contactname_1D2D), var_name, standard_name, long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                                 trim(contactname_1D2D), var_name, standard_name, local_long_name, unit, ' ', cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                                  do_deflate=unc_nccompress)
             end if
          end if
@@ -1052,7 +1080,7 @@ contains
             !cell_measures = 'area: '//trim(mesh2dname)//'_au' ! TODO: AvD: UNST-1100: au is not yet in map file at all.
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_edge)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_EDGE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
 
@@ -1070,7 +1098,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids1d%dimids(mdim_node)
             idims(idx_layerdim) = id_tsp%meshids1d%dimids(mdim_layer)
             ierr = ug_def_var(ncid, id_var(1), idims(idx_fastdim:maxrank), itype, UG_LOC_NODE, &
-                              trim(mesh1dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh1dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
          ! Internal 3d flownodes. Horizontal position: faces in 2d mesh. Vertical position: layer centers.
@@ -1082,7 +1110,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_face)
             idims(idx_layerdim) = id_tsp%meshids2d%dimids(mdim_layer)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_FACE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
 
          end if
@@ -1100,7 +1128,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids1d%dimids(mdim_edge)
             idims(idx_layerdim) = id_tsp%meshids1d%dimids(mdim_layer)
             ierr = ug_def_var(ncid, id_var(1), idims(idx_fastdim:maxrank), itype, UG_LOC_EDGE, &
-                              trim(mesh1dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh1dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
          ! TODO: AvD: 1d2d links as mesh contacts in layered 3D are not handled here yet.
@@ -1114,7 +1142,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_edge)
             idims(idx_layerdim) = id_tsp%meshids2d%dimids(mdim_layer)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_EDGE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
 
@@ -1129,7 +1157,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids1d%dimids(mdim_node)
             idims(idx_layerdim) = id_tsp%meshids1d%dimids(mdim_interface)
             ierr = ug_def_var(ncid, id_var(1), idims(idx_fastdim:maxrank), itype, UG_LOC_NODE, &
-                              trim(mesh1dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, &
+                              trim(mesh1dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, &
                               do_deflate=unc_nccompress)
          end if
          ! Internal 3d vertical flowlinks. Horizontal position: faces in 2d mesh. Vertical position: layer interfaces.
@@ -1138,7 +1166,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_face)
             idims(idx_layerdim) = id_tsp%meshids2d%dimids(mdim_interface)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_FACE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
 
@@ -1148,7 +1176,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids1d%dimids(mdim_edge)
             idims(idx_layerdim) = id_tsp%meshids1d%dimids(mdim_interface)
             ierr = ug_def_var(ncid, id_var(1), idims(idx_fastdim:maxrank), itype, UG_LOC_EDGE, &
-                              trim(mesh1dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh1dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
          ! TODO: AvD: 1d2d links as mesh contacts in layered 3D are not handled here yet.
@@ -1159,7 +1187,7 @@ contains
             idims(idx_spacedim) = id_tsp%meshids2d%dimids(mdim_edge)
             idims(idx_layerdim) = id_tsp%meshids2d%dimids(mdim_interface)
             ierr = ug_def_var(ncid, id_var(2), idims(idx_fastdim:maxrank), itype, UG_LOC_EDGE, &
-                              trim(mesh2dname), var_name, standard_name, long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
+                              trim(mesh2dname), var_name, standard_name, local_long_name, unit, cell_method_, cell_measures, crs, ifill=-999, dfill=dmiss, writeopts=unc_writeopts, &
                               do_deflate=unc_nccompress)
          end if
 
@@ -1173,7 +1201,7 @@ contains
          ierr = nf90_put_att(ncid, id_var(2), 'valid_max', ivalid_max)
       end if
 
-      select case (iloc)
+      select case (local_iloc)
       case (UNC_LOC_S3D)
          ! Check which vertical coordinate variable is present in the file, and add it to the :coordinate attribute.
          checkvars(1:4) = [character(len=50) :: 'layer_sigma_z', 'layer_z', 'layer_sigma', 'flowelem_zcc']
@@ -1194,7 +1222,7 @@ contains
          end do
       end select
 
-! RL: separate cases needed for iloc==UNC_LOC_U3D and UNC_LOC_WU, see Issue UNST-4880
+      ! RL: separate cases needed for iloc==UNC_LOC_U3D and UNC_LOC_WU, see Issue UNST-4880
 
       return ! Successful return.
 
@@ -1420,15 +1448,15 @@ contains
       use m_get_layer_indices_l_max, only: getlayerindiceslmax
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
       use network_data, only: numk, numl, numl1d
-      use m_flow, only: kmx
-
-      implicit none
+      use m_flow, only: kmx, ktop
+      use m_flowparameters, only: write_surface_data_to_map_file
+      use m_transport, only: const_names
 
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
-      integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
+      integer, dimension(:), intent(in) :: id_var !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
       integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
-      real(kind=dp), intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
+      real(kind=dp), dimension(:), intent(in) :: values !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
       real(kind=dp), optional, intent(in) :: default_value !< Optional default value, used for writing dummy data on closed edges (i.e. netlinks with no flowlink). NOTE: is not a _FillValue!
       integer, optional, intent(in) :: jabndnd
 
@@ -1436,15 +1464,43 @@ contains
 
       integer :: n1d_write !< Number of 1D nodes to write.
       integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
-!TODO remove save and deallocate?
-      real(kind=dp), allocatable, save :: workL(:)
-      real(kind=dp), allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
-! temporary UGRID fix
+      ! TODO remove save and deallocate?
+      real(kind=dp), dimension(:), allocatable, save :: workL
+      real(kind=dp), dimension(:,:), allocatable, save :: workS3D, workU3D, workW, workWU
+      ! temporary UGRID fix
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
       integer :: ndxndxi !< Last 2/3D node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
       integer :: last_1d !< Last 1D node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
+      integer :: local_iloc !< Local variable for location, may be modified if this is a surface variable
+      real(kind=dp), dimension(:), allocatable :: local_values !< Local values, may be modified if this is a surface variable
+      character(len=100) :: standard_name
+      logical :: is_surface_variable
 
       ierr = DFM_NOERR
+      local_iloc = iloc
+      local_values = values
+      is_surface_variable = .false.
+
+      if (write_surface_data_to_map_file) then
+         ierr = nf90_get_att(ncid, id_var(2), 'standard_name', standard_name)
+
+         if (any(trim(standard_name) == ['sea_water_temperature', 'sea_water_salinity', 'sea_water_x_eulerian_velocity', & 
+                                         'sea_water_y_eulerian_velocity', 'sea_water_x_velocity', 'sea_water_y_velocity', &
+                                         'eastward_sea_water_velocity', 'northward_sea_water_velocity'])) then
+            is_surface_variable = .true.
+         else if (any(trim(standard_name) == const_names)) then
+            is_surface_variable = .true.
+         end if
+         
+         if (is_surface_variable) then
+            if (size(values) > ndx) then
+               do k = 1, ndx
+                  local_values(k) = values(ktop(k))
+               end do
+            end if
+            local_iloc = UNC_LOC_S
+         end if
+      end if
 
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
@@ -1459,7 +1515,7 @@ contains
          last_1d = ndxi
       end if
 
-      select case (iloc)
+      select case (local_iloc)
       case (UNC_LOC_CN) ! Corner point location
          ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
          if (id_var(1) > 0 .and. ndxi > ndx2d) then ! If there are 1d flownodes, then there are 1d netnodes.
@@ -1468,18 +1524,18 @@ contains
          end if
          ! Internal 2d netnodes. Horizontal position: nodes in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
-            ierr = nf90_put_var(ncid, id_var(2), values(1:numk), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), local_values(1:numk), start=[1, id_tsp%idx_curtime])
          end if
 
       case (UNC_LOC_S) ! Pressure point location
          n1d_write = last_1d - ndx2d
          ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
          if (id_var(1) > 0 .and. n1d_write > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:last_1d), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(1), local_values(ndx2d + 1:last_1d), start=[1, id_tsp%idx_curtime])
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then
-            ierr = nf90_put_var(ncid, id_var(2), values(1:ndx2d), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), local_values(1:ndx2d), start=[1, id_tsp%idx_curtime])
          end if
 
       case (UNC_LOC_U) ! Horizontal velocity point location
@@ -1487,26 +1543,26 @@ contains
          if (id_var(1) > 0 .and. lnx1d > 0) then
             ! 1d mesh
             if (size(id_tsp%edgetoln, 1) > 0) then
-               ierr = nf90_put_var(ncid, id_var(1), values(id_tsp%edgetoln(:)), start=[1, id_tsp%idx_curtime])
+               ierr = nf90_put_var(ncid, id_var(1), local_values(id_tsp%edgetoln(:)), start=[1, id_tsp%idx_curtime])
             end if
          end if
 
          if (id_var(4) > 0 .and. lnx1d > 0) then
             ! 1d2d contacts
             if (size(id_tsp%contactstoln, 1) > 0) then
-               ierr = nf90_put_var(ncid, id_var(4), values(id_tsp%contactstoln(:)), start=[1, id_tsp%idx_curtime])
+               ierr = nf90_put_var(ncid, id_var(4), local_values(id_tsp%contactstoln(:)), start=[1, id_tsp%idx_curtime])
             end if
          end if
 
          lnx2d = lnxi - lnx1d
          ! Internal 2d flowlinks. Horizontal position: edges in 2d mesh.
          if (id_var(2) > 0 .and. lnx2d > 0) then
-            ierr = nf90_put_var(ncid, id_var(2), values(lnx1d + 1:lnxi), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), local_values(lnx1d + 1:lnxi), start=[1, id_tsp%idx_curtime])
          end if
          ! External 2d flowlinks. Horizontal position: edges in 2d mesh.
          lnx2db = lnx - lnx1db
          if (id_var(2) > 0 .and. lnx2db > 0) then
-            ierr = nf90_put_var(ncid, id_var(2), values(lnx1db + 1:lnx), start=[lnx2d + 1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), local_values(lnx1db + 1:lnx), start=[lnx2d + 1, id_tsp%idx_curtime])
          end if
          ! Default value is different from a fill value, use for example for zero velocities on closed edges.
          if (present(default_value)) then
@@ -1523,19 +1579,19 @@ contains
 
          call realloc(workL, numl, keepExisting=.false.)
 
-         ! Permute the input values(:) from netlink ordering to flow link ordering.
+         ! Permute the input local_values(:) from netlink ordering to flow link ordering.
          ! TODO: AvD: cache this permutation for all future map writes in a flow() run.
          do Lf = 1, lnx1d
             L = abs(ln2lne(Lf))
-            workL(Lf) = values(L)
+            workL(Lf) = local_values(L)
          end do
 
-         ! 1D: write all values on 1D flow links. ! TODO: AvD: for 1D I now assume that all net links are also a flow link. This is not always true (thin dams), so make code below equal to 2D code hereafter.
+         ! 1D: write all local_values on 1D flow links. ! TODO: AvD: for 1D I now assume that all net links are also a flow link. This is not always true (thin dams), so make code below equal to 2D code hereafter.
          if (id_var(1) > 0 .and. lnx1d > 0) then ! TODO: AvD: along with previous TODO, this should become numl1d
             ierr = nf90_put_var(ncid, id_var(1), workL(1:lnx1d), start=[1, id_tsp%idx_curtime])
          end if
 
-         ! 2D: permute all values on net links such that flow links come first, followed by remaining non-flowlink net links.
+         ! 2D: permute all local_values on net links such that flow links come first, followed by remaining non-flowlink net links.
          lnx2d = lnxi - lnx1d
          lnx2db = lnx - lnx1db
          i = lnx2d + lnx2db ! last position in permuted array of a written non-flowlink net link (none as a start, i.e., last 2d flow link)
@@ -1543,15 +1599,15 @@ contains
             Lf = lne2ln(L) ! If negative, then no flow link
 
             if (Lf > lnx1db) then ! 2D open boundary flow link
-               ! Values on netlinks that are also flowlinks come first.
-               workL(Lf - lnx1db + lnx2d) = values(L)
+               ! local_values on netlinks that are also flowlinks come first.
+               workL(Lf - lnx1db + lnx2d) = local_values(L)
             else if (Lf > lnx1d) then ! 2D internal flow link. This intentionally excludes 2D net links that are 1D2D flow links.
-               ! Values on netlinks that are also flowlinks come first.
-               workL(Lf - lnx1d) = values(L)
+               ! local_values on netlinks that are also flowlinks come first.
+               workL(Lf - lnx1d) = local_values(L)
             else
-               ! Values on netlinks that are no flowlinks come as a last block (in remaining net link order).
+               ! local_values on netlinks that are no flowlinks come as a last block (in remaining net link order).
                i = i + 1
-               workL(i) = values(L)
+               workL(i) = local_values(L)
             end if
          end do
          if (id_var(2) > 0 .and. numl - numl1d > 0) then
@@ -1563,17 +1619,17 @@ contains
          call realloc(workS3D, [kmx, ndxndxi], keepExisting=.false.)
          ! Loop over horizontal flownodes.
          do n = 1, ndxndxi
-            ! Store missing values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode n).
+            ! Store missing local_values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode n).
             workS3D(:, n) = dmiss
             ! The current horizontal flownode n has active layers nlayb:nlayb+nrlay-1.
             call getlayerindices(n, nlayb, nrlay)
-            ! The current horizontal flownode n has indices kb:kt in values array (one value per active layer).
+            ! The current horizontal flownode n has indices kb:kt in local_values array (one value per active layer).
             call getkbotktop(n, kb, kt)
             ! The range kb:kt can have a different length for each flownode due to inactive layers.
             ! Here kb corresponds to nlayb and kt corresponds to nlayb+nrlay-1
             ! Loop over active layers.
             do k = kb, kt
-               workS3D(k - kb + nlayb, n) = values(k)
+               workS3D(k - kb + nlayb, n) = local_values(k)
             end do
          end do
 
@@ -1594,17 +1650,17 @@ contains
          call realloc(workU3D, [kmx, lnx], keepExisting=.false.)
          ! Loop over horizontal flowlinks.
          do LL = 1, lnx
-            ! Store missing values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flowlink LL).
+            ! Store missing local_values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flowlink LL).
             workU3D(:, LL) = dmiss
             ! The current horizontal flowlink LL has active layers nlaybL:nlaybL+nrlayLx-1.
             call getlayerindicesLmax(LL, nlaybL, nrlayLx)
-            ! The current horizontal flowlink LL has indices Lb:Ltx in values array (one value per active layer).
+            ! The current horizontal flowlink LL has indices Lb:Ltx in local_values array (one value per active layer).
             call getLbotLtopmax(LL, Lb, Ltx)
             ! The range Lb:Ltx can have a different length for each flowlink due to inactive layers.
             ! Here Lb corresponds to nlaybL and Ltx corresponds to nlaybL+nrlayLx-1
             ! Loop over active layers.
             do L = Lb, Ltx
-               workU3D(L - Lb + nlaybL, LL) = values(L)
+               workU3D(L - Lb + nlaybL, LL) = local_values(L)
             end do
          end do
 
@@ -1633,17 +1689,17 @@ contains
          call realloc(workW, [kmx, ndxndxi], lindex=[0, 1], keepExisting=.false.)
          ! Loop over horizontal flownodes.
          do n = 1, ndxndxi
-            ! Store missing values for inactive layer interfaces (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode n).
+            ! Store missing local_values for inactive layer interfaces (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode n).
             workW(:, n) = dmiss
             ! The current horizontal flownode n has active layers nlayb:nlayb+nrlay-1.
             call getlayerindices(n, nlayb, nrlay)
-            ! The current horizontal flownode n has indices kb:kt in values array (one value per active layer).
+            ! The current horizontal flownode n has indices kb:kt in local_values array (one value per active layer).
             call getkbotktop(n, kb, kt)
             ! The range kb:kt can have a different length for each flownode due to inactive layers.
             ! Here kb corresponds to nlayb and kt corresponds to nlayb+nrlay-1
             ! Loop over active layer interfaces. First active layer interface has index of first active layer - 1.
             do k = kb - 1, kt
-               workW(k - kb + nlayb, n) = values(k)
+               workW(k - kb + nlayb, n) = local_values(k)
             end do
          end do
 
@@ -1663,17 +1719,17 @@ contains
          call realloc(workWU, [kmx, lnx], lindex=[0, 1], keepExisting=.false.)
          ! Loop over horizontal flowlinks.
          do LL = 1, lnx
-            ! Store missing values for inactive layer interfaces (i.e. z layers below bottomlevel or above waterlevel for current horizontal flowlink LL).
+            ! Store missing local_values for inactive layer interfaces (i.e. z layers below bottomlevel or above waterlevel for current horizontal flowlink LL).
             workWU(:, LL) = dmiss
             ! The current horizontal flowlink LL has active layers nlaybL:nlaybL+nrlayLx-1.
             call getlayerindicesLmax(LL, nlaybL, nrlayLx)
-            ! The current horizontal flowlink LL has indices Lb:Ltx in values array (one value per active layer).
+            ! The current horizontal flowlink LL has indices Lb:Ltx in local_values array (one value per active layer).
             call getLbotLtopmax(LL, Lb, Ltx)
             ! The range Lb:Ltx can have a different length for each flowlink due to inactive layers.
             ! Here Lb corresponds to nlaybL and Ltx corresponds to nlaybL+nrlayLx-1
             ! Loop over active layer interfaces. First active layer interface has index of first active layer - 1.
             do L = Lb - 1, Ltx
-               workWU(L - Lb + nlaybL, LL) = values(L)
+               workWU(L - Lb + nlaybL, LL) = local_values(L)
             end do
          end do
 
@@ -1687,7 +1743,7 @@ contains
          if (id_var(2) > 0 .and. lnx2d > 0) then
             ierr = nf90_put_var(ncid, id_var(2), workWU(0:kmx, lnx1d + 1:lnx), start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, lnx2d, 1])
          end if
-         ! Default value is different from a fill value, use for example for zero values on closed edges.
+         ! Default value is different from a fill value, use for example for zero local_values on closed edges.
          if (id_var(2) > 0 .and. present(default_value)) then
             ! Number of netlinks can be > number of flowlinks, if there are closed edges.
             numl2d = numl - numl1d
@@ -2416,8 +2472,8 @@ contains
       ! Some error occurred
    end function unc_put_var_map_dble3
 
-!> Puts global attributes in NetCDF data set.
-!! This includes: institution, Conventions, etc.
+   !> Puts global attributes in NetCDF data set.
+   !! This includes: institution, Conventions, etc.
    subroutine unc_addglobalatts(ncid)
       use messagehandling, only: err_flush
       integer, intent(in) :: ncid
@@ -2459,13 +2515,13 @@ contains
       ierr = ncu_restore_mode(ncid, jaInDefine)
    end subroutine unc_addglobalatts
 
-! TODO: AvD: add these  (incrementally) to map/his files:
-!>       :time_coverage_start = "2010-04-23T00:00:00+01:00" ;
-!>       :time_coverage_end = "2010-05-20T00:00:00+01:00" ;
-! (can be done outside of definition mode, if att was already created before.)
+   ! TODO: AvD: add these  (incrementally) to map/his files:
+   !>       :time_coverage_start = "2010-04-23T00:00:00+01:00" ;
+   !>       :time_coverage_end = "2010-05-20T00:00:00+01:00" ;
+   ! (can be done outside of definition mode, if att was already created before.)
 
-!> Opens a NetCDF file for reading.
-!! The file is maintained in the open-file-list.
+   !> Opens a NetCDF file for reading.
+   !! The file is maintained in the open-file-list.
    function unc_open(filename, cmode, ncid)
       character(len=*), intent(in) :: filename
       integer, intent(in) :: cmode
@@ -2485,8 +2541,8 @@ contains
       end if
    end function unc_open
 
-!> Creates or opens a NetCDF file for writing.
-!! The file is maintained in the open-file-list.
+   !> Creates or opens a NetCDF file for writing.
+   !! The file is maintained in the open-file-list.
    function unc_create(filename, cmode, ncid)
       character(len=*), intent(in) :: filename !< Filename to be created
       integer, intent(in) :: cmode !< Creation mode, must be a valid NetCDF flags integer.
@@ -2513,8 +2569,8 @@ contains
 
    end function unc_create
 
-!> Closes a NetCDF file.
-!! The file is removed from the open-file-list
+   !> Closes a NetCDF file.
+   !! The file is removed from the open-file-list
    integer function unc_close(ncid)
       integer, intent(inout) :: ncid
       integer :: i, j
@@ -2549,7 +2605,7 @@ contains
       end if
    end function unc_close
 
-!> Closes all NetCDF files that are still open.
+   !> Closes all NetCDF files that are still open.
    subroutine unc_closeall()
       integer :: i, istat
       do i = nopen_files_, 1, -1
@@ -2557,8 +2613,8 @@ contains
       end do
    end subroutine unc_closeall
 
-!> Adds coordinate attributes according to CF conventions, based on jsferic.
-!! Non-standard attributes (such as long_name) should be set elsewhere.
+   !> Adds coordinate attributes according to CF conventions, based on jsferic.
+   !! Non-standard attributes (such as long_name) should be set elsewhere.
    function unc_addcoordatts(ncid, id_varx, id_vary, jsferic)
       integer, intent(in) :: ncid !< NetCDF dataset id
       integer, intent(in) :: id_varx !< NetCDF horizontal variable id
@@ -5266,10 +5322,10 @@ contains
 
    end subroutine unc_write_rst_filepointer
 
-!> Writes a single snapshot of the unstructured flow net + flow data to a netCDF file.
-!! If file exists, it will be overwritten. Therefore, only use this routine
-!! for separate snapshots, the automated map file should be filled by calling
-!! unc_write_map_filepointer directly instead!
+   !> Writes a single snapshot of the unstructured flow net + flow data to a netCDF file.
+   !! If file exists, it will be overwritten. Therefore, only use this routine
+   !! for separate snapshots, the automated map file should be filled by calling
+   !! unc_write_map_filepointer directly instead!
    subroutine unc_write_map(filename, iconventions)
       use m_flowparameters, only: jamapbnd
       implicit none
@@ -5592,12 +5648,15 @@ contains
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u1, nc_precision, iLocU, 'u1', '', 'Velocity at velocity point, n-component', 'm s-1', jabndnd=jabndnd_)
             ierr = unc_put_att(mapids%ncid, mapids%id_u1, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
+
          if (jamapu0 > 0) then
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_u0, nc_precision, iLocU, 'u0', '', 'Velocity at velocity point at previous time step, n-component', 'm s-1', jabndnd=jabndnd_)
             ierr = unc_put_att(mapids%ncid, mapids%id_u0, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
+
          if (jamapucvec > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucx, nc_precision, iLocS, 'ucx', 'sea_water_x_eulerian_velocity', 'Flow element center eulerian velocity vector, x-component', 'm s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucy, nc_precision, iLocS, 'ucy', 'sea_water_y_eulerian_velocity', 'Flow element center eulerian velocity vector, y-component', 'm s-1', jabndnd=jabndnd_)
             else
@@ -5609,11 +5668,12 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucy, nc_precision, iLocS, 'ucy', 'northward_sea_water_velocity', 'Flow element center velocity vector, y-component', 'm s-1', jabndnd=jabndnd_)
                end if
             end if
+
             if (kmx > 0) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucz, nc_precision, UNC_LOC_S3D, 'ucz', 'upward_sea_water_velocity', 'Flow element center velocity vector, z-component', 'm s-1', jabndnd=jabndnd_)
                ! Depth-averaged cell-center velocities in 3D:
                if (jsferic == 0) then
-                  if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then
+                  if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES) then
                      ! GLM indication needed to report that depth-averaged values are always GLM, even when eulervelocities==1
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucxa, nc_precision, UNC_LOC_S, 'ucxa', 'sea_water_glm_x_velocity', 'Flow element center GLM depth-averaged velocity, x-component', 'm s-1', jabndnd=jabndnd_) ! depth-averaged magnitude has no stokes drift
                      ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucya, nc_precision, UNC_LOC_S, 'ucya', 'sea_water_glm_y_velocity', 'Flow element center GLM depth-averaged velocity, y-component', 'm s-1', jabndnd=jabndnd_)
@@ -5626,23 +5686,26 @@ contains
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucya, nc_precision, UNC_LOC_S, 'ucya', 'northward_sea_water_velocity', 'Flow element center depth-averaged velocity, y-component', 'm s-1', jabndnd=jabndnd_)
                end if
             end if
+
          end if
+
          if (jamapucmag > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmag, nc_precision, iLocS, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center eulerian velocity magnitude', 'm s-1', jabndnd=jabndnd_)
             else
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmag, nc_precision, iLocS, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', 'm s-1', jabndnd=jabndnd_)
             end if
             if (kmx > 0) then
-               if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+               if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmaga, nc_precision, UNC_LOC_S, 'ucmaga', 'sea_water_speed', 'Flow element center depth-averaged GLM velocity magnitude', 'm s-1', jabndnd=jabndnd_) ! depth-averaged magnitude has no stokes drift
                else
                   ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmaga, nc_precision, UNC_LOC_S, 'ucmaga', 'sea_water_speed', 'Flow element center depth-averaged velocity magnitude', 'm s-1', jabndnd=jabndnd_)
                end if
             end if
          end if
+
          if (jamapucqvec > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucxq, nc_precision, iLocS, 'ucxq', 'ucxq_eulerian_velocity', 'Flow element center eulerian velocity vector based on discharge, x-component', 'm s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucyq, nc_precision, iLocS, 'ucyq', 'ucyq_eulerian_velocity', 'Flow element center eulerian velocity vector based on discharge, y-component', 'm s-1', jabndnd=jabndnd_)
             else
@@ -5650,6 +5713,7 @@ contains
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucyq, nc_precision, iLocS, 'ucyq', 'ucyq_velocity', 'Flow element center velocity vector based on discharge, y-component', 'm s-1', jabndnd=jabndnd_)
             end if
          end if
+
          if (kmx > 0) then
             if (jamapww1 > 0) then
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ww1, nc_precision, UNC_LOC_W, 'ww1', 'upward_sea_water_velocity', 'Upward velocity on vertical interface, n-component', 'm s-1', jabndnd=jabndnd_)
@@ -6860,18 +6924,41 @@ contains
 
       ! Salinity
       if (jasal > 0 .and. jamapsal > 0) then
-         do k = 1, ndkx
-            sa1(k) = constituents(isalt, k)
-         end do
-         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, iLocS, sa1, jabndnd=jabndnd_)
+
+         if (.not. write_surface_data_to_map_file) then ! Write full vertical profile to map file
+            do k = 1, ndkx
+               sa1(k) = constituents(isalt, k)
+            end do
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, iLocS, sa1, jabndnd=jabndnd_)
+         else ! Only write surface data to map file
+            do k = 1, ndx
+               sa1(k) = constituents(isalt, ktop(k))
+            end do
+            ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_sa1, UNC_LOC_S, sa1, jabndnd=jabndnd_)
+         end if
+         
       end if
 
       ! Temperature
       if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jamaptem > 0) then
+
          do k = 1, ndkx
             tem1(k) = constituents(itemp, k)
          end do
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, iLocS, tem1, jabndnd=jabndnd_)
+
+         ! if (.not. write_surface_data_to_map_file) then ! Write full vertical profile to map file
+         !    do k = 1, ndkx
+         !       tem1(k) = constituents(itemp, k)
+         !    end do
+         !    ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, iLocS, tem1, jabndnd=jabndnd_)
+         ! else ! Only write surface data to map file
+         !    do k = 1, ndx
+         !       tem1(k) = constituents(itemp, ktop(k))
+         !    end do
+         !    ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_tem1, UNC_LOC_S, tem1, jabndnd=jabndnd_)
+         ! end if
+         
       end if
 
       if (jasecflow > 0 .and. jamapspir > 0) then
@@ -6883,37 +6970,28 @@ contains
 
       ! Constituents
 
-!   The following is not stack-safe:
-!   if (jamapconst > 0 .and. ITRA1 > 0) then
-!      do j=ITRA1,ITRAN
-!         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_const(:,j), iLocS, constituents(j,:))
-!      enddo
-!   endif
-
-!   The following is (almost) copied from unc_wite_map_filepointer
+      ! The following is (almost) copied from unc_wite_map_filepointer
       if (jamapconst > 0 .and. ITRA1 > 0) then
 
          do j = ITRA1, ITRAN
             workx = DMISS ! For proper fill values in z-model runs.
             if (kmx > 0) then
-!            3D
+               ! 3D
                do kk = 1, ndxndxi
                   call getkbotktop(kk, kb, kt)
                   do k = kb, kt
                      workx(k) = constituents(j, k)
                   end do
                end do
-!             ierr = nf90_put_var(imapfile, mapids%id_const(:,j), work1(1:kmx,1:ndxndxi), [ 1, 1, itim ], [ kmx, ndxndxi, 1 ])
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_const(:, j), UNC_LOC_S3D, workx, jabndnd=jabndnd_)
-               !   if ( ierr.ne.0 ) exit  ! probably newly added tracer in the GUI
             else
                do kk = 1, NdxNdxi
                   workx(kk) = constituents(j, kk)
                end do
-!             ierr = nf90_put_var(imapfile, id_const(iid,j), dum, [ 1, itim ], [ NdxNdxi, 1 ] )
                ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_const(:, j), UNC_LOC_S, workx, jabndnd=jabndnd_)
             end if
          end do
+
       end if
 
       ! Turbulence.
@@ -8757,7 +8835,7 @@ contains
             end if
 
             if (jamaptem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
-               if (kmx > 0) then !        3D
+               if (kmx > 0) then ! 3D
                   ierr = nf90_def_var(imapfile, 'tem1', nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_tem1(iid))
                else
                   ierr = nf90_def_var(imapfile, 'tem1', nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_tem1(iid))
@@ -8769,7 +8847,7 @@ contains
                ierr = nf90_put_att(imapfile, id_tem1(iid), '_FillValue', dmiss)
             end if
 
-!          tracers
+            ! tracers
             if (jamapconst > 0 .and. ITRA1 > 0) then
                do j = ITRA1, ITRAN
                   tmpstr = const_names(j)
