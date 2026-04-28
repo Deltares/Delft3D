@@ -120,8 +120,7 @@ contains
       use precice_adapter_utils, only: set_cell_center_mesh_zcoords
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_flow, only: hs, kmx, zws
-      use m_turbulence, only: potential_density
+      use m_flow, only: kmx, zws
 
       ! TODO: Import more (global) data structs here.
 
@@ -139,13 +138,6 @@ contains
       end if
 
       if (do_write) then
-         ! Write water depths (do we need to consider active nodes?)
-         call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
-                                  size(self%vertex_ids), self%vertex_ids, &
-                                  hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
-         call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
-                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
-                                  potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
          call precice_adapter_write_data(self)
          do_write = .false.
       end if
@@ -189,6 +181,7 @@ contains
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_flow, only: hs, s1
       use m_flowgeom, only: bl, ndx2d
+      use m_turbulence, only: potential_density
       implicit none(type, external)
       class(precice_adapter_t), intent(in) :: self
 
@@ -202,6 +195,9 @@ contains
       call precicef_write_data(self%cell_center_mesh_name, self%bed_levels_name, &
                                size(self%vertex_ids), self%vertex_ids, &
                                -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(self%bed_levels_name))
+      call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
+                                 size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                 potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
    end subroutine precice_adapter_write_data
 
 end module precice_adapter
