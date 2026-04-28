@@ -49,8 +49,6 @@ object TemplateDownloadFromS3 : Template({
             command = module {
                 module = "ci_tools.minio.synchronize.cli"
                 scriptArguments = """
-                    --aws-access-key-id=%env.AWS_ACCESS_KEY_ID%
-                    --aws-secret-access-key=%env.AWS_SECRET_ACCESS_KEY%
                     --source=s3://dsc-testbench/cases/%engine_dir%/
                     --destination=%engine_dir%
                     "--timestamp=%env.TIME_ISO_8601%"

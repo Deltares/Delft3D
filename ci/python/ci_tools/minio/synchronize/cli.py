@@ -107,9 +107,7 @@ class CommandLine:
             minio_client = cls._make_minio_client(
                 endpoint_url=args.endpoint_url,
                 max_pool_size=args.jobs,
-                profile=args.profile,
-                aws_access_key_id=args.aws_access_key_id,
-                aws_secret_access_key=args.aws_secret_access_key,
+                profile=args.profile
             )
 
             cls._check_minio_connection(minio_client)
@@ -163,8 +161,6 @@ class CommandLine:
             description=cls.CLI_DESCRIPTION,
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )
-        parser.add_argument("-a", "--aws-access-key-id", type=str, help="MinIO access key ID")
-        parser.add_argument("-k", "--aws-secret-access-key", type=str, help="MinIO secret access key")
         parser.add_argument("-s", "--source", required=True, type=cls._location, help=cls.HELP["source"])
         parser.add_argument("-d", "--destination", required=True, type=cls._location, help=cls.HELP["destination"])
         parser.add_argument("-t", "--timestamp", type=cls._timestamp, help=cls.HELP["timestamp"])
@@ -229,10 +225,7 @@ class CommandLine:
     def _make_minio_client(
         cls,
         endpoint_url: str,
-        profile: str | None = None,
         max_pool_size: int | None = None,
-        aws_access_key_id: str | None = None,
-        aws_secret_access_key: str | None = None,
     ) -> minio.Minio:
         parsed_url = urlparse(endpoint_url)
         secure = parsed_url.scheme != "http"
@@ -251,14 +244,12 @@ class CommandLine:
             ),
         )
 
-        access_key = aws_access_key_id or os.environ.get("AWS_ACCESS_KEY_ID")
-        secret_key = aws_secret_access_key or os.environ.get("AWS_SECRET_ACCESS_KEY")
+        access_key = os.environ.get("AWS_ACCESS_KEY_ID")
+        secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
         if not access_key or not secret_key:
             raise CommandLineError(
-                "Missing MinIO credentials. Provide --aws-access-key-id and "
-                "--aws-secret-access-key, or set AWS_ACCESS_KEY_ID and "
-                "AWS_SECRET_ACCESS_KEY."
+                "Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
             )
 
         return minio.Minio(
