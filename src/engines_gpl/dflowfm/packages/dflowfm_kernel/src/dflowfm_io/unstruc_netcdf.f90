@@ -903,6 +903,7 @@ contains
 
       idims = 0
 
+      ! Check if only surface data needs to be written to map file
       if (write_surface_data_to_map_file) then
 
          if (any(var_name == ['tem1', 'sa1', 'ucx', 'ucy'])) then
@@ -915,6 +916,7 @@ contains
             end if
          end if
 
+         ! If it is a surface variable, set the location to 2D pressure point and append 'at surface' to long_name
          if (is_surface_variable) then
             local_iloc = UNC_LOC_S
             local_long_name = trim(long_name) // ' at surface'
@@ -1481,9 +1483,12 @@ contains
       local_values = values
       is_surface_variable = .false.
 
+      ! Check if surface data needs to be written to map file
       if (write_surface_data_to_map_file) then
+         ! Get the standard name of the id_var, to check later on if it is a surface variable
          ierr = nf90_get_att(ncid, id_var(2), 'standard_name', standard_name)
 
+         ! Check on surface variable
          if (any(trim(standard_name) == ['sea_water_temperature', 'sea_water_salinity', 'sea_water_x_eulerian_velocity', & 
                                          'sea_water_y_eulerian_velocity', 'sea_water_x_velocity', 'sea_water_y_velocity', &
                                          'eastward_sea_water_velocity', 'northward_sea_water_velocity'])) then
@@ -1492,6 +1497,7 @@ contains
             is_surface_variable = .true.
          end if
          
+         ! If it is a surface variable, take ktop values (if not already done) and set location to 2D pressure points
          if (is_surface_variable) then
             if (size(values) > ndx) then
                do k = 1, ndx
