@@ -18,12 +18,40 @@ namespace pre_c_sumo
 
     namespace
     {
+        /**
+         * @brief Decode one 2D coupling point's vertical layer stack from flat preCICE buffers
+         *        into a `FarFieldPoint2D` ready for the FF2NF writer.
+         *
+         * The preCICE 3D mesh stores all points of all diffusers in a single flat buffer,
+         * packed as: point 0 layers 0..N-1, point 1 layers 0..N-1, ...
+         * This function extracts the slice belonging to `point_index` and converts it.
+         *
+         * Index arithmetic:
+         * @code
+         *   global_vertex = point_index * layers_per_point + layer
+         *   z   = csumo_3d_coordinates[global_vertex * 3 + 2]
+         *   rho = rho_3d[global_vertex]
+         * @endcode
+         *
+         * @param position          X,Y position of this coupling point (from C-SUMO settings).
+         * @param csumo_3d_coordinates Flat XYZ buffer of all 3D mesh vertices [x0,y0,z0, x1,y1,z1, ...].
+         * @param rho_3d            Flat density buffer, one value per 3D vertex.
+         * @param point_index       Zero-based index of this 2D point (its `flat_index` from `CsumoMeshLayout`).
+         * @param layers_per_point  Number of vertical layers per 2D point (`PreCICEState::current_3d_layer_count`).
+         * @param constituents      Constituent values (e.g. temperature) attached to every layer.
+         *
+         * @return `FarFieldPoint2D` with:
+         *   - `position` set to the provided x,y.
+         *   - one `FarFieldLayer` per vertical level carrying z, density, zeroed velocities, and constituents.
+         *   - `water_depth` = z_max - z_min across all layers.
+         *
+         * @note If `layers_per_point <= 0`, returns a single placeholder layer at z=0, rho=1000.
+         * @note Out-of-bounds buffer accesses fall back to z=0 or rho=1000 rather than crashing.
+         */
         FarFieldPoint2D makePoint2DFrom3D(const parsing_utils::Point2D& position,
-                                        const std::vector<double>& csumo_3d_coordinates,
-                                        const std::vector<double>& rho_3d,
-                                        const int point_index,
-                                        const int layers_per_point,
-                                        const std::vector<double>& constituents)
+                                          const std::vector<double>& csumo_3d_coordinates,
+                                          const std::vector<double>& rho_3d, const int point_index,
+                                          const int layers_per_point, const std::vector<double>& constituents)
         {
             FarFieldPoint2D point{};
             point.position = position;
@@ -50,8 +78,8 @@ namespace pre_c_sumo
                 const auto global_index = (point_index * layers_per_point) + layer;
                 const auto global_index_size = static_cast<std::size_t>(global_index);
                 const auto coord_index = global_index_size * 3;
-                const double z = (coord_index + 2) < csumo_3d_coordinates.size() ? csumo_3d_coordinates[coord_index + 2]
-                                                                                  : 0.0;
+                const double z =
+                    (coord_index + 2) < csumo_3d_coordinates.size() ? csumo_3d_coordinates[coord_index + 2] : 0.0;
                 const double rho = global_index_size < rho_3d.size() ? rho_3d[global_index_size] : 1000.0;
 
                 if (layer == 0)
@@ -123,24 +151,28 @@ namespace pre_c_sumo
 
             // Look up each role's flat_index from the layout — safe regardless of intake presence
             // or varying ambient counts between diffusers.
+
+            // Based on example for build2DMeshPointsFromSettings
+            // For diffuser_idx=1, role=Ambient this filters
+            // layout.points down to just {flat_index=5, di=1, Ambient, 0}.
             auto points_for = [&](CsumoMeshLayout::PointRole role) {
                 return mesh_layout.points | std::views::filter([diffuser_idx, role](const auto& p) {
-                    return p.diffuser_index == diffuser_idx && p.role == role;
-                });
+                           return p.diffuser_index == diffuser_idx && p.role == role;
+                       });
             };
 
             auto diffuser_range = points_for(CsumoMeshLayout::PointRole::Diffuser);
-            const auto diffuser_point = makePoint2DFrom3D(
-                diffuser.position, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
-                diffuser_range.begin()->flat_index, layers_per_point, diffuser.discharge.constituents);
+            const auto diffuser_point = makePoint2DFrom3D(diffuser.position, precice_state.csumo_3d_coordinates,
+                                                          precice_state.rho_3d, diffuser_range.begin()->flat_index,
+                                                          layers_per_point, diffuser.discharge.constituents);
 
             std::optional<FarFieldPoint2D> intake_point = std::nullopt;
             auto intake_range = points_for(CsumoMeshLayout::PointRole::Intake);
             if (auto it = intake_range.begin(); it != intake_range.end())
             {
-                intake_point = makePoint2DFrom3D(*diffuser.intake, precice_state.csumo_3d_coordinates,
-                                                 precice_state.rho_3d, it->flat_index, layers_per_point,
-                                                 diffuser.discharge.constituents);
+                intake_point =
+                    makePoint2DFrom3D(*diffuser.intake, precice_state.csumo_3d_coordinates, precice_state.rho_3d,
+                                      it->flat_index, layers_per_point, diffuser.discharge.constituents);
             }
 
             std::vector<FarFieldPoint2D> ambient_points;
@@ -149,8 +181,8 @@ namespace pre_c_sumo
             {
                 ambient_points.push_back(
                     makePoint2DFrom3D(diffuser.ambient_positions[static_cast<std::size_t>(ambient_info.ambient_index)],
-                                     precice_state.csumo_3d_coordinates, precice_state.rho_3d,
-                                     ambient_info.flat_index, layers_per_point, diffuser.discharge.constituents));
+                                      precice_state.csumo_3d_coordinates, precice_state.rho_3d, ambient_info.flat_index,
+                                      layers_per_point, diffuser.discharge.constituents));
             }
 
             const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,

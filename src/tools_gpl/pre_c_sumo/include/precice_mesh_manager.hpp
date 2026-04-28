@@ -1,4 +1,4 @@
-#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_MESH_MANAGER_HPP
+﻿#ifndef SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_MESH_MANAGER_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_PRECICE_MESH_MANAGER_HPP
 
 #include <string_view>
@@ -16,8 +16,8 @@ namespace pre_c_sumo
      * This module owns the mesh orchestration sequence used by preC-SUMO:
      * 1) Build base 2D points from C-SUMO settings.
      * 2) Register 2D mesh and an initial 3D mesh.
-   * 3) Read 2D levels and (re)construct 3D mesh layers.
-   * 4) During coupling, refresh 2D levels and recreate 3D mesh.
+     * 3) Read 2D levels and (re)construct 3D mesh layers.
+     * 4) During coupling, refresh 2D levels and recreate 3D mesh.
      */
 
     /**
@@ -33,8 +33,20 @@ namespace pre_c_sumo
      * and resized data/id buffers.
      * @return Layout mapping each coupling point to its flat buffer index, diffuser
      *         index, role, and ambient index. Must be passed to @ref writeFF2NFFiles.
+     *
+     * Example, if there are2 diffusers, first has no intake and 2 ambients, second has 1 intake and 1 ambient
+     * C-SUMO settings               layout.points built            base_2d_coordinates
+     * ─────────────────────────────  ──────────────────────────────  ───────────────────
+     * diffuser[0].position        →  {flat_index=0, di=0, Diffuser, -1}   [x0,y0]
+     * diffuser[0].ambient[0]      →  {flat_index=1, di=0, Ambient,   0}   [x1,y1]
+     * diffuser[0].ambient[1]      →  {flat_index=2, di=0, Ambient,   1}   [x2,y2]
+     * diffuser[1].position        →  {flat_index=3, di=1, Diffuser, -1}   [x3,y3]
+     * diffuser[1].intake          →  {flat_index=4, di=1, Intake,   -1}   [x4,y4]
+     * diffuser[1].ambient[0]      →  {flat_index=5, di=1, Ambient,   0}   [x5,y5]
+     *
      */
-    CsumoMeshLayout build2DMeshPointsFromSettings(const CSumoSettingsReader& csumo_settings, PreCICEState& precice_state);
+    CsumoMeshLayout build2DMeshPointsFromSettings(const CSumoSettingsReader& csumo_settings,
+                                                  PreCICEState& precice_state);
 
     /**
      * @brief Register both provided meshes (2D and initial 3D) with preCICE.
@@ -55,14 +67,14 @@ namespace pre_c_sumo
      *
      * Creates z-layers for every 2D coupling point between bed level `z_min`
      * and water level `z_max`, then re-registers all 3D vertices.
-        *
-        * @pre The latest 2D levels have been read into
-        *      @ref PreCICEState::bed_level_z and
-        *      @ref PreCICEState::water_level_z.
-        *
-        * @note 2D levels must always be read before resetting the 3D mesh.
-        *       The convenience function @ref updateMeshesForCouplingStep enforces
-        *       this order.
+     *
+     * @pre The latest 2D levels have been read into
+     *      @ref PreCICEState::bed_level_z and
+     *      @ref PreCICEState::water_level_z.
+     *
+     * @note 2D levels must always be read before resetting the 3D mesh.
+     *       The convenience function @ref updateMeshesForCouplingStep enforces
+     *       this order.
      *
      * Layer semantics:
      * - `number_of_layers == 0`: create an empty 3D mesh.
@@ -77,12 +89,12 @@ namespace pre_c_sumo
     /**
      * @brief Read latest 2D levels and update/recreate the 3D mesh.
      *
-        * Reads latest `bed_level_z` and `water_level_z` on the 2D mesh first,
-        * then calls @ref recreate3DMeshFrom2DLevels.
-        *
-        * This function exists to guarantee the required order:
-        * 1) read 2D levels,
-        * 2) reset/recreate 3D mesh.
+     * Reads latest `bed_level_z` and `water_level_z` on the 2D mesh first,
+     * then calls @ref recreate3DMeshFrom2DLevels.
+     *
+     * This function exists to guarantee the required order:
+     * 1) read 2D levels,
+     * 2) reset/recreate 3D mesh.
      *
      * @param precice_state Mutable coupling state.
      * @param number_of_layers Number of vertical layers used for 3D rebuild.
