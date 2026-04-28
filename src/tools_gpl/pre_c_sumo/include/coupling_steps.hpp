@@ -1,8 +1,11 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
 
+#include <precice/precice.hpp>
 #include <expected>
 #include <string_view>
+#include <vector>
+#include <unordered_map>
 
 #include "csumo_settings_reader.hpp"
 #include "parsing_types.hpp"
@@ -17,6 +20,25 @@ namespace pre_c_sumo
      * preC-SUMO library. They handle timestepping control, configuration and settings
      * files parsing and the conversion/communication of NF/FF data.
      */
+    // TODO?: Move/fold into class(es)?
+    typedef struct
+    {
+        size_t diffuser_index;
+        bool has_intake;
+        size_t intake_index;
+        size_t number_of_ambient_points;
+        size_t first_ambient_point_index;
+    } DiffuserMapping;
+
+    typedef struct
+    {
+        std::string name;
+        std::vector<double> coordinates;
+        std::vector<int> vertex_ids;
+        std::vector<DiffuserMapping> forward_map;
+        size_t number_of_nodes;
+        std::unordered_map<std::string, std::vector<double>> quantities;
+    } Mesh;
 
     /**
      * @brief Read and parse the C-SUMO settings file.
@@ -37,7 +59,7 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receiveFFData();
+    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, const double coupling_time_step);
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.

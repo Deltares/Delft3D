@@ -30,7 +30,14 @@ namespace pre_c_sumo
         return csumo_settings;
     }
 
-    void receiveFFData() { std::println("Receiving far-field data..."); }
+    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, const double coupling_time_step)
+    {
+        for (auto& quantity : csumo_2d_mesh.quantities)
+        {
+            participant.readData(csumo_2d_mesh.name, quantity.first, csumo_2d_mesh.vertex_ids, coupling_time_step,
+                                 quantity.second);
+        }
+    }
 
     void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings)
     {
