@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 import certifi
 import minio
 import urllib3
-from minio.credentials.providers import AWSConfigProvider
+from minio.credentials.providers import StaticProvider
 from s3_path_wrangler.paths import S3Path
 
 from ci_tools import minio as const
@@ -108,6 +108,8 @@ class CommandLine:
                 endpoint_url=args.endpoint_url,
                 max_pool_size=args.jobs,
                 profile=args.profile,
+                aws_access_key_id=args.aws_access_key_id,
+                aws_secret_access_key=args.aws_secret_access_key,
             )
 
             cls._check_minio_connection(minio_client)
@@ -161,7 +163,8 @@ class CommandLine:
             description=cls.CLI_DESCRIPTION,
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )
-
+        parser.add_argument("-a", "--aws-access-key-id", type=str, help="MinIO access key ID")
+        parser.add_argument("-k", "--aws-secret-access-key", type=str, help="MinIO secret access key")
         parser.add_argument("-s", "--source", required=True, type=cls._location, help=cls.HELP["source"])
         parser.add_argument("-d", "--destination", required=True, type=cls._location, help=cls.HELP["destination"])
         parser.add_argument("-t", "--timestamp", type=cls._timestamp, help=cls.HELP["timestamp"])
@@ -228,9 +231,11 @@ class CommandLine:
         endpoint_url: str,
         profile: str | None = None,
         max_pool_size: int | None = None,
+        aws_access_key_id: str | None = None,
+        aws_secret_access_key: str | None = None,
     ) -> minio.Minio:
         parsed_url = urlparse(endpoint_url)
-        secure = False if parsed_url.scheme == "http" else True
+        secure = parsed_url.scheme != "http"
 
         max_pool_size = max_pool_size or cls.HTTP_DEFAULT_POOL_SIZE
         timeout = cls.HTTP_TIMEOUT_SECONDS
@@ -245,9 +250,20 @@ class CommandLine:
                 status_forcelist=[500, 502, 503, 504],
             ),
         )
+
+        access_key = aws_access_key_id or os.environ.get("AWS_ACCESS_KEY_ID")
+        secret_key = aws_secret_access_key or os.environ.get("AWS_SECRET_ACCESS_KEY")
+
+        if not access_key or not secret_key:
+            raise CommandLineError(
+                "Missing MinIO credentials. Provide --aws-access-key-id and "
+                "--aws-secret-access-key, or set AWS_ACCESS_KEY_ID and "
+                "AWS_SECRET_ACCESS_KEY."
+            )
+
         return minio.Minio(
             parsed_url.netloc,
-            credentials=AWSConfigProvider(profile=profile),
+            credentials=StaticProvider(access_key, secret_key),
             http_client=pool_manager,
             secure=secure,
         )
