@@ -117,7 +117,7 @@ namespace pre_c_sumo
             std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
             return expectedCsumoSettings;
         }
-        const auto csumo_settings = std::move(expectedCsumoSettings).value();
+        auto csumo_settings = std::move(expectedCsumoSettings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
         return csumo_settings;
     }
@@ -202,6 +202,7 @@ namespace pre_c_sumo
                 .diffuser = diffuser_point,
                 .intake = intake_point,
                 .ambient_points = ambient_points,
+                .settings_xml_node = diffuser.settings_xml_node,
             };
 
             const auto result = FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename);

@@ -215,6 +215,7 @@ static forceinline void step_phase_1(const dsle_param_t *p, const derived_parame
   results->volume_to_sea = 0.0;
   results->discharge_from_sea = 0.0;
   results->discharge_to_sea = 0.0;
+  results->volume_flush_passthrough = 0.0;
   results->salinity_to_sea = sal_lock_4;
 
   // Update state variables of the lock
@@ -391,7 +392,7 @@ static forceinline void step_phase_2(const dsle_param_t *p, const derived_parame
   results->discharge_to_sea = o->flushing_discharge;
   results->salinity_to_sea =
       (results->volume_to_sea > 0.0) ? mt_sea_2 / results->volume_to_sea : sal_lock_1;
-
+  results->volume_flush_passthrough = volume_flush_passthrough;
   // Update state variables of the lock
   state->saltmass_lock = saltmass_lock_2;
   state->salinity_lock = sal_lock_2;
@@ -622,6 +623,7 @@ static forceinline void step_phase_4(const dsle_param_t *p, const derived_parame
       (results->volume_to_sea > 0.0)
           ? (mt_sea_4 + results->volume_from_sea * p->salinity_sea) / results->volume_to_sea
           : sal_lock_3;
+  results->volume_flush_passthrough = volume_flush_passthrough;
 
   // Update state variables of the lock
   state->saltmass_lock = saltmass_lock_4;
@@ -700,6 +702,8 @@ static forceinline void step_flush_doors_closed(const dsle_param_t *p,
   // Update state variables of the lock
   state->saltmass_lock = saltmass_lock;
   state->salinity_lock = sal_lock;
+  results->volume_flush_passthrough = 0.0;
+
   // state->head_lock = state->head_lock;  /* Unchanged */
   // state->volume_ship_in_lock = state->ship_volume_lake_to_sea; /* Unchanged */
 }
@@ -863,7 +867,9 @@ int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *result
       double disch_to_lake = vol_to_lake / o.t_cycle;
 
       double salt_load_lake = mt_lake / o.t_cycle;
-      double sal_to_lake = -1 * (mt_lake - vol_from_lake * p->salinity_lake) / vol_to_lake;
+      double sal_to_lake = (vol_to_lake > 0.0)
+                               ? -1 * (mt_lake - vol_from_lake * p->salinity_lake) / vol_to_lake
+                               : p->salinity_lake;
 
       // Sea side
       double mt_sea = tp1.mass_transport_sea + tp2.mass_transport_sea + tp3.mass_transport_sea +
@@ -878,7 +884,9 @@ int DSLE_CALLCONV dsle_calc_steady(const dsle_param_t *p, dsle_results_t *result
       double disch_to_sea = vol_to_sea / o.t_cycle;
 
       double salt_load_sea = mt_sea / o.t_cycle;
-      double sal_to_sea = (mt_sea + vol_from_sea * p->salinity_sea) / vol_to_sea;
+      double sal_to_sea = (vol_to_sea > 0.0)
+                              ? (mt_sea + vol_from_sea * p->salinity_sea) / vol_to_sea
+                              : p->salinity_sea;
 
       // Put the main results in the output stucture
       results->mass_transport_lake = mt_lake;

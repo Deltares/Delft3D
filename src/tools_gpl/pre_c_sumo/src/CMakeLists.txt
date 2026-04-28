@@ -28,8 +28,10 @@ add_library(pre_c_sumo_lib ${source_files} ${header_files})
 target_link_libraries(pre_c_sumo_lib PRIVATE
     compiler_warnings_settings
     precice::precice
-    pugixml::pugixml
     Boost::headers
+)
+target_link_libraries(pre_c_sumo_lib PUBLIC
+    pugixml::pugixml
 )
 
 target_include_directories(pre_c_sumo_lib PUBLIC ${include_dir})
