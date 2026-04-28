@@ -54,7 +54,7 @@ namespace
                                {.position = {.x_coordinate = 587.4, .y_coordinate = 509.2},
                                 .water_depth = 10.0,
                                 .layers = default_layers}},
-        };
+            .settings_xml_node = {}};
     }
 
     // Parse generated XML and return the root <COSUMO> child, failing the test
@@ -602,4 +602,101 @@ TEST(FF2NFWriterTest, DISABLED_WriteToFile)
     const auto result = pre_c_sumo::FF2NFWriter(buildExampleConfig()).toFile("FF2NF_test_output.xml");
     ASSERT_TRUE(result.has_value()) << result.error().message;
     EXPECT_TRUE(std::filesystem::exists("FF2NF_test_output.xml"));
+}
+
+// ---------------------------------------------------------------------------
+// Settings section (copied from the C-SUMO configuration file)
+// ---------------------------------------------------------------------------
+
+TEST(FF2NFWriterTest, NoSettingsSectionWhenNodeNotSet)
+{
+    // Default config has no settings_xml_node — the <settings> element must be absent.
+    const auto document = generateDocument(buildExampleConfig());
+    EXPECT_FALSE(document.select_node("COSUMO/settings")) << "<settings> should not appear when node is not set";
+}
+
+TEST(FF2NFWriterTest, SettingsSectionIsPresentWhenNodeIsSet)
+{
+    // Build a minimal <settings> node and attach it to the config.
+    pugi::xml_document settings_document;
+    settings_document.load_string("<settings><general><id>Diffusor_1</id></general></settings>");
+
+    auto config = buildExampleConfig();
+    config.settings_xml_node = settings_document.document_element();
+
+    const auto document = generateDocument(std::move(config));
+    expectNodeExists(document, "COSUMO/settings");
+}
+
+TEST(FF2NFWriterTest, SettingsSectionContentIsCorrectlyCopied)
+{
+    // All child elements and their text values must survive the copy.
+    pugi::xml_document settings_document;
+    settings_document.load_string(
+        R"(<settings><general><id>Diffusor_1</id></general><data><XYdiff>550.0 350.0</XYdiff></data></settings>)");
+
+    auto config = buildExampleConfig();
+    config.settings_xml_node = settings_document.document_element();
+
+    const auto document = generateDocument(std::move(config));
+    EXPECT_EQ(nodeText(document, "COSUMO/settings/general/id"), "Diffusor_1");
+    EXPECT_EQ(nodeText(document, "COSUMO/settings/data/XYdiff"), "550.0 350.0");
+}
+
+TEST(FF2NFWriterTest, SettingsSectionComesAfterSubgridModelInOutput)
+{
+    pugi::xml_document settings_document;
+    settings_document.load_string("<settings><general><id>A</id></general></settings>");
+
+    auto config = buildExampleConfig();
+    config.settings_xml_node = settings_document.document_element();
+
+    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    ASSERT_TRUE(xml.has_value()) << xml.error().message;
+
+    const auto subgrid_pos = (*xml).find("<SubgridModel>");
+    const auto settings_pos = (*xml).find("<settings>");
+    ASSERT_NE(subgrid_pos, std::string::npos);
+    ASSERT_NE(settings_pos, std::string::npos);
+    EXPECT_LT(subgrid_pos, settings_pos) << "<SubgridModel> must appear before <settings>";
+}
+
+TEST(FF2NFWriterTest, SettingsSectionIsIndentedAtSameLevelAsSubgridModel)
+{
+    // <settings> and <SubgridModel> are both direct children of <COSUMO> (depth 1),
+    // so they must both be preceded by 4 spaces (1 level × 4 spaces).
+    // Their direct children sit at depth 2, so 8 spaces.
+    pugi::xml_document settings_document;
+    settings_document.load_string("<settings><general><id>A</id></general></settings>");
+
+    auto config = buildExampleConfig();
+    config.settings_xml_node = settings_document.document_element();
+
+    const auto xml = pre_c_sumo::FF2NFWriter(std::move(config)).generate();
+    ASSERT_TRUE(xml.has_value()) << xml.error().message;
+    const auto& text = *xml;
+
+    // <settings> open tag should be indented at depth 1 (4 spaces)
+    const auto settings_open = text.find("<settings>");
+    ASSERT_NE(settings_open, std::string::npos);
+    const auto settings_line_start = text.rfind('\n', settings_open);
+    ASSERT_NE(settings_line_start, std::string::npos);
+    const auto settings_indent = settings_open - settings_line_start - 1;
+    EXPECT_EQ(settings_indent, 4u) << "Expected <settings> indent of 4 spaces, got " << settings_indent;
+
+    // <general> is a direct child of <settings> (depth 2), so 8 spaces
+    const auto general_open = text.find("<general>", settings_open);
+    ASSERT_NE(general_open, std::string::npos);
+    const auto general_line_start = text.rfind('\n', general_open);
+    ASSERT_NE(general_line_start, std::string::npos);
+    const auto general_indent = general_open - general_line_start - 1;
+    EXPECT_EQ(general_indent, 8u) << "Expected <general> indent of 8 spaces, got " << general_indent;
+
+    // </settings> closing tag should also be at depth 1 (4 spaces)
+    const auto settings_close = text.find("</settings>");
+    ASSERT_NE(settings_close, std::string::npos);
+    const auto settings_close_line_start = text.rfind('\n', settings_close);
+    ASSERT_NE(settings_close_line_start, std::string::npos);
+    const auto settings_close_indent = settings_close - settings_close_line_start - 1;
+    EXPECT_EQ(settings_close_indent, 4u) << "Expected </settings> indent of 4 spaces, got " << settings_close_indent;
 }

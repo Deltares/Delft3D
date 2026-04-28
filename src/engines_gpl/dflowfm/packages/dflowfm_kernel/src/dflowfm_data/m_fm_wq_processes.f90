@@ -121,6 +121,7 @@ module m_fm_wq_processes
    real(hp), allocatable, dimension(:, :) :: waqoutputs !< waq outputs, dim(noout,Ndkx)
 
    integer :: isfsurf !< pointer to surface         segment function
+   integer :: isflatitude !< pointer to latitude         segment function
    integer :: isftau !< pointer to tau             segment function
    integer :: isfvel !< pointer to velocity        segment function
    integer :: isfsal !< pointer to Salinity        segment function

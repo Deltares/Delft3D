@@ -27,12 +27,13 @@ If you are interested in using these products, and do not (yet) want to compile 
 - **Delft3D 4 Suite website:** https://www.deltares.nl/en/software-and-data/products/delft3d-4-suite
 - **Delft3D FM Suite:** https://www.deltares.nl/en/software-and-data/products/delft3d-flexible-mesh-suite
 
-and contact our **sales team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
+and contact our **sales services team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
 
-## Bug reports
+## Community support
 
-To limit the number of parallel communication channels and issue trackers, the issues tab has been removed on the Delft3D GitHub site.
-In case you encounter bugs, please report them to our **support team:** https://www.deltares.nl/en/software-and-data/software-sales-and-support-teams
+Clients with Service Packages have access to the support team.
+For the wider open source community, we recommend the use of the [GitHub Discussions](https://github.com/Deltares/Delft3D/discussions) tab.
+Please post questions and suggestions there in the Q&A sections.
 
 ## Open Source Community
 
