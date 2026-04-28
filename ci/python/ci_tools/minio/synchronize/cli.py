@@ -106,8 +106,7 @@ class CommandLine:
             logger = cls._make_logger("minio-sync", args.log_level)
             minio_client = cls._make_minio_client(
                 endpoint_url=args.endpoint_url,
-                max_pool_size=args.jobs,
-                profile=args.profile
+                max_pool_size=args.jobs
             )
 
             cls._check_minio_connection(minio_client)
@@ -190,7 +189,6 @@ class CommandLine:
         parser.add_argument("-j", "--jobs", type=int, help=cls.HELP["jobs"])
         parser.add_argument("--queue-size", type=int, help=cls.HELP["queue-size"])
         parser.add_argument("--part-size", type=int, help=cls.HELP["part-size"])
-        parser.add_argument("--profile", help=cls.HELP["profile"])
         parser.add_argument("--endpoint-url", type=cls._endpoint_url, help=cls.HELP["endpoint-url"])
 
         parser.set_defaults(
