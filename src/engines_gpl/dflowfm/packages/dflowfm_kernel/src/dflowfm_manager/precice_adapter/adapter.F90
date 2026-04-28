@@ -15,9 +15,9 @@ module precice_adapter
       character(kind=c_char, len=:), allocatable :: name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_3d_name
-      character(kind=c_char, len=10) :: bed_levels_name = "bed_levels"
-      character(kind=c_char, len=12) :: water_levels_name = "water_levels"
-      character(kind=c_char, len=12) :: water_depths_name = "water_depths"
+      character(kind=c_char, len=27) :: bed_levels_name = "sea_floor_depth_below_geoid" ! unstruc_netcdf:id_bldepth
+      character(kind=c_char, len=18) :: water_levels_name = "sea_surface_height" ! unstruc_netcdf:id_s1
+      character(kind=c_char, len=33) :: water_depths_name = "sea_floor_depth_below_sea_surface" ! unstruc_netcdf:id_hs
       character(kind=c_char, len=27) :: density_name = "sea_water_potential_density"
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids_3d
@@ -104,7 +104,7 @@ contains
 
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then
-         ! TODO: Write initial data
+         call precice_adapter_write_data(self)
       end if
 
       ! Finally, call initialise.
@@ -146,6 +146,7 @@ contains
          call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
                                   size(self%vertex_ids_3d), self%vertex_ids_3d, &
                                   potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
+         call precice_adapter_write_data(self)
          do_write = .false.
       end if
       
@@ -177,9 +178,30 @@ contains
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
-      if ( loc(self) >=0 ) continue ! Suppress unused error.
+      if (loc(self) >= 0) continue ! Suppress unused error.
 
       call precicef_finalize()
    end subroutine precice_adapter_finalize
+
+   subroutine precice_adapter_write_data(self)
+      use precice, only: precicef_write_data
+      use precision, only: dp
+      use MessageHandling, only: mess, LEVEL_ERROR
+      use m_flow, only: hs, s1
+      use m_flowgeom, only: bl, ndx2d
+      implicit none(type, external)
+      class(precice_adapter_t), intent(in) :: self
+
+      ! Write water depths (do we need to consider active nodes?)
+      call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
+                               size(self%vertex_ids), self%vertex_ids, &
+                               hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
+      call precicef_write_data(self%cell_center_mesh_name, self%water_levels_name, &
+                               size(self%vertex_ids), self%vertex_ids, &
+                               s1, len(self%cell_center_mesh_name), len(self%water_levels_name))
+      call precicef_write_data(self%cell_center_mesh_name, self%bed_levels_name, &
+                               size(self%vertex_ids), self%vertex_ids, &
+                               -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(self%bed_levels_name))
+   end subroutine precice_adapter_write_data
 
 end module precice_adapter
