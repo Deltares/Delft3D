@@ -1780,8 +1780,7 @@ contains
                      from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                      thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
                      if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_element) .or. &
-                         (connection%converterPtr%operandType == operand_replace_if_value)) then
+                         (connection%converterPtr%operandType == operand_replace_element) ) then
                          connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
 
                      else if (connection%converterPtr%operandType == operand_add) then
@@ -1878,8 +1877,7 @@ contains
                      val = wL * valL1 + wR * valR1
                      do k = kbegin, kend ! Set the average value for all vertical positions
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
-                            (connection%converterPtr%operandType == operand_replace_element) .or. &
-                            (connection%converterPtr%operandType == operand_replace_if_value)) then
+                            (connection%converterPtr%operandType == operand_replace_element) ) then 
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
                         else if (connection%converterPtr%operandType == operand_add) then
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
@@ -1921,8 +1919,7 @@ contains
                         end select
                         !
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
-                            (connection%converterPtr%operandType == operand_replace_element) .or. &
-                            (connection%converterPtr%operandType == operand_replace_if_value)) then
+                            (connection%converterPtr%operandType == operand_replace_element) ) then      
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
                         else if (connection%converterPtr%operandType == operand_add) then
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
