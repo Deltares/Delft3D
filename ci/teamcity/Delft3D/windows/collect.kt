@@ -30,7 +30,7 @@ object WindowsCollect : BuildType({
 
     params {
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "collect-environment")
     }
 
     vcs {
@@ -41,73 +41,65 @@ object WindowsCollect : BuildType({
     steps {
         python {
             name = "Run artifacts_cleaner.py"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
             command = file {
                 filename = "src/scripts_lgpl/artifacts_cleaner.py"
                 scriptArguments = "--product dimrset --root ."
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
-            dockerPull = true
             conditions {
                 equals("dep.${WindowsBuild.id}.product", "fm-suite")
             }
         }      
-        powerShell {
+        script {
             name = "Copy DLLs"
-            scriptMode = script {
-            content = """
-                Copy-Item "C:\Windows\System32\vcomp140.dll" -Destination "x64\lib" -Force
-                Copy-Item "C:\Windows\System32\ucrtbased.dll" -Destination "x64\lib" -Force
-            """.trimIndent()
-            }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = PowerShellBuildStep.ImagePlatform.Windows
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
+            scriptContent = """
+                copy /Y C:\Windows\System32\vcomp140.dll x64\lib\
+            """.trimIndent()
         }
         python {
             name = "Generate list of version numbers (from what-strings)"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
             command = file {
                 filename = """ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py"""
                 scriptArguments = "--srcdir x64 --output dimrset_version_x64.txt"
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
-            dockerPull = true
         }
         python {
             name = "Verify (un)signed binaries and directory structure"
+            dockerImage = "containers.deltares.nl/delft3d-dev/collect-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
             command = file {
                 filename = "ci/python/ci_tools/dimrset_delivery/validate_signing.py"
                 scriptArguments = """
-                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json" 
-                    "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\Tools\\VsDevCmd.bat"
+                    "ci\\python\\ci_tools\\dimrset_delivery\\%dep.${WindowsBuild.id}.product%-binaries.json"
                     "x64"
                 """.trimIndent()
             }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
-            dockerPull = true
             conditions {
                 matches("dep.${WindowsBuild.id}.product", "(fm-suite|all-testbench)")
                 matches("dep.${WindowsBuild.id}.build_type", "Release")
             }
         }
-        powerShell {
+        script {
             name = "Prepare artifact to upload"
-            scriptMode = script {
-                content = """
-                    ${'$'}ErrorActionPreference = "Stop"
-
-                    Write-Host "Creating %file_path% ..."
-
-                    Compress-Archive -Path "x64", "dimrset_version_x64.txt" -DestinationPath %file_path% -Force
-
-                    Write-Host "ZIP created: %file_path%"
-                """.trimIndent()
-            }
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = PowerShellBuildStep.ImagePlatform.Windows
+            dockerImage = "containers.deltares.nl/base_windows_containers/server:ltsc2022"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
+            scriptContent = """
+                powershell -ExecutionPolicy Bypass -Command ^
+                    "${'$'}ErrorActionPreference = 'Stop';" ^
+                    "Write-Host 'Creating %file_path% ...';" ^
+                    "Compress-Archive -Path 'x64', 'dimrset_version_x64.txt' -DestinationPath %file_path% -Force;" ^
+                    "Write-Host 'ZIP created: %file_path%'"
+            """.trimIndent()
         }
         step {
             name = "Upload artifact to Nexus"
@@ -157,6 +149,6 @@ object WindowsCollect : BuildType({
         }
     }
     requirements {
-        contains("teamcity.agent.jvm.os.name", "Windows")
+        equals("docker.server.osType", "windows")
     }
 })
