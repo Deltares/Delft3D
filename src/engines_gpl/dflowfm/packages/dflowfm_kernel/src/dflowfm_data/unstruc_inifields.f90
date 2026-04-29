@@ -1591,6 +1591,7 @@ contains
          call warn_flush()
          success = .false.
       end select
+      success = .true.
 
    end subroutine process_initial_block
 
@@ -1894,6 +1895,7 @@ contains
          call warn_flush()
          success = .false.
       end select
+      success = .true.
 
    end subroutine process_parameter_block
 
