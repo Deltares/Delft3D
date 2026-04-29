@@ -44,14 +44,14 @@ contains
    subroutine fill_valobs()
       use precision, only: dp
       use m_linkstocentercartcomp, only: linkstocentercartcomp
-      use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, jahistaucurrent, jahisvelocity, jahisvelvec, ucmag, jaeulervel, &
-                        flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, jahistur, javiusp, viclu, viusp, &
+      use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, his_write_settings, ucmag, jaeulervel, &
+                        flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, javiusp, viclu, viusp, &
                         vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
-                        TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jahisrho, &
+                        TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                         potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
-                        rich, jahisrain, jahis_airdensity, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
-                        jahisinfilt, infiltcap, infilt, jahisheatflux, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
+                        rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
+                        infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
                         use_density
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
@@ -72,7 +72,7 @@ contains
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs
-      use m_sediment, only: jahissigwav, stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
+      use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
       use m_gettauswave, only: gettauswave
@@ -143,7 +143,7 @@ contains
       end if
 
       if (jawave > NO_WAVES) then
-         if (jahissigwav == 0) then
+         if (his_write_settings%sigwav == 0) then
             wavfac = 1.0_dp
          else
             wavfac = sqrt(2.0_dp)
@@ -155,11 +155,11 @@ contains
       end if
 
       ! get velocities here (and not at velocity writing)
-      if (jahistaucurrent > 0 .or. jahisvelocity > 0 .or. jahisvelvec > 0) then
-         call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, jahisvelocity)
+      if (his_write_settings%taucurrent > 0 .or. his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
+         call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, his_write_settings%velocity)
       end if
 
-      if (jahistaucurrent > 0) then
+      if (his_write_settings%taucurrent > 0) then
          if ((jawave == NO_WAVES .or. flow_without_waves)) then
             ! fill taus
             call gettaus(1, 1)
@@ -201,7 +201,7 @@ contains
          end if
       end if
 
-      if (jahistur > 0) then
+      if (his_write_settings%tur > 0) then
          if (.not. allocated(vius)) then
             allocate (vius(ndkx))
             ! Set initial value of horizontal viscosity to user-defined value
@@ -285,7 +285,7 @@ contains
             ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
 
             ! Horizontal velocities (3D)
-            if (jahisvelocity > 0 .or. jahisvelvec > 0) then
+            if (his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
                call interpolate_and_fill_valobs(ueux, i, IPNT_UCX, UNC_LOC_S3D)
                call interpolate_and_fill_valobs(ueuy, i, IPNT_UCY, UNC_LOC_S3D)
             end if
@@ -296,7 +296,7 @@ contains
             end if
 
             ! Velocity magnitude (3D)
-            if (jahisvelocity > 0) then
+            if (his_write_settings%velocity > 0) then
                call interpolate_and_fill_valobs(ucmag, i, IPNT_UMAG, UNC_LOC_S3D)
             end if
 
@@ -366,7 +366,7 @@ contains
                end if
             end if
 
-            if (jahistaucurrent > 0) then
+            if (his_write_settings%taucurrent > 0) then
                valobs(i, IPNT_TAUX) = workx(k)
                valobs(i, IPNT_TAUY) = worky(k)
             end if
@@ -515,10 +515,10 @@ contains
                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
 
-               if (jahistur > 0) then
+               if (his_write_settings%tur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
-               if (use_density() .and. jahisrho > 0) then
+               if (use_density() .and. his_write_settings%rho > 0) then
                   valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
                   if (apply_thermobaricity) then
                      valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
@@ -576,11 +576,11 @@ contains
                   klay = kk - kb + nlayb + 1
                   ! Taken care of by interpolate_horizontal
 !                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                  if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                  if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
                   end if
-                  if (use_density() .and. jahisrho > 0) then
+                  if (use_density() .and. his_write_settings%rho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
                         valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
                      end if
@@ -609,10 +609,10 @@ contains
                   do L = Lb - 1, Lt
                      klay = L - Lb + nlaybL + 1
                      valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
-                     if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                     if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
                      end if
-                     if (iturbulencemodel >= 3 .and. jahistur > 0) then
+                     if (iturbulencemodel >= 3 .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
                         valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
                      end if
@@ -624,16 +624,16 @@ contains
             end if
 
 !        Rainfall
-            if (jarain > 0 .and. jahisrain > 0) then
+            if (jarain > 0 .and. his_write_settings%rain > 0) then
                valobs(i, IPNT_RAIN) = rain(k)
             end if
 
-            if (allocated(air_density) .and. jahis_airdensity > 0) then
+            if (allocated(air_density) .and. his_write_settings%airdensity > 0) then
                valobs(i, IPNT_AIRDENSITY) = air_density(k)
             end if
 
 !        Infiltration
-            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
+            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. his_write_settings%infilt > 0) then
                valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
                if (ba(k) > 0.0_dp) then
                   valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
@@ -643,7 +643,7 @@ contains
             end if
 
 !        Heatflux
-            if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jahisheatflux > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE .and. his_write_settings%heatflux > 0) then
                call getlink1(k, LL)
                if (jawind > 0) then
                   valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
