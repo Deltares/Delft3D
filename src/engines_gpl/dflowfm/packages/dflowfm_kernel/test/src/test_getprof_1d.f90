@@ -10,13 +10,15 @@ module m_test_getprof_1d
    implicit none
 contains
 
-    subroutine disable_timers_and_mpi()
+    subroutine disable_timers_logging_and_mpi()
         use Timers, only: timini, timon
         use m_partitioninfo, only: jampi
+        use MessageHandling, only: SetMessageHandling
 
         call timini() ! Initialize timers (otherwise `flow_geominit` crashes)
         timon = .false. ! Disable timers because we're running unit tests.
         jampi = 0 ! Disable MPI because we're running unit tests.
+        call SetMessageHandling(write2screen=.false.) ! Disable logging.
     end subroutine
 
     !> Initialize a simple rectangular cross section for testing
@@ -249,6 +251,7 @@ contains
         real(kind=dp) :: area, width, perim
 
         
+        call disable_timers_logging_and_mpi()
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
@@ -256,7 +259,6 @@ contains
         call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
         
-        call disable_timers_and_mpi()
         call flow_geominit(0)
 
         call default_channel_flow()
@@ -302,6 +304,7 @@ contains
         integer :: i, new_link, error_code
         real(kind=dp) :: area, width, perim, hydrad, chezy
 
+        call disable_timers_logging_and_mpi()
         call default_physcoef()
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -310,7 +313,6 @@ contains
         call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
         
-        call disable_timers_and_mpi()
         call flow_geominit(0)
 
         call realloc(u1, lnx, fill=1.0_dp)
@@ -368,6 +370,7 @@ contains
         real(kind=dp) :: area, width, perim
 
         
+        call disable_timers_logging_and_mpi()
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
@@ -375,7 +378,6 @@ contains
         call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
         
-        call disable_timers_and_mpi()
         call flow_geominit(0)
 
         call default_channel_flow()
@@ -416,6 +418,7 @@ contains
         real(kind=dp) :: area, width, perim
 
         ! Arrange
+        call disable_timers_logging_and_mpi()
         ! Generate mesh
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -425,7 +428,6 @@ contains
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
 
         ! Initialize flow geometry
-        call disable_timers_and_mpi()
         call flow_geominit(0)
 
         ! Initialize `prof1d` without `profiles1D`
@@ -464,6 +466,7 @@ contains
         real(kind=dp) :: area, width, perim, hydrad, chezy
 
         ! Arrange
+        call disable_timers_logging_and_mpi()
         ! Generate mesh
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -473,7 +476,6 @@ contains
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
 
         ! Initialize flow geometry
-        call disable_timers_and_mpi()
         call flow_geominit(0)
 
         ! Initialize `prof1d` without `profiles1D`
@@ -519,6 +521,7 @@ contains
         real(kind=dp) :: area, width, perim
 
         ! Arrange
+        call disable_timers_logging_and_mpi()
         ! Generate mesh
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -528,7 +531,6 @@ contains
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
 
         ! Initialize flow geometry
-        call disable_timers_and_mpi()
         call flow_geominit(0)
 
         ! Initialize `prof1d` without `profiles1D`
@@ -562,8 +564,7 @@ contains
         integer :: new_link, error_code
         real(kind=dp) :: area, width, perim
 
-        call disable_timers_and_mpi()
-
+        call disable_timers_logging_and_mpi()
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
@@ -605,8 +606,8 @@ contains
         integer :: new_link, error_code
         real(kind=dp) :: area, width, perim, hydrad, chezy
 
+        call disable_timers_logging_and_mpi()
         call default_physcoef()
-        call disable_timers_and_mpi()
 
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
@@ -654,8 +655,7 @@ contains
         integer :: new_link, error_code
         real(kind=dp) :: area, width, perim
 
-        call disable_timers_and_mpi()
-
+        call disable_timers_logging_and_mpi()
         call generate_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
