@@ -1930,12 +1930,12 @@ contains
 
          yp = yp - dyp
          tex = 'Upot/Ut0:                   ( )'
-         write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, eps4)
+         write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, EPS4)
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
          tex = 'Ukin/Ut0:                   ( )'
-         write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, eps4)
+         write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, EPS4)
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp

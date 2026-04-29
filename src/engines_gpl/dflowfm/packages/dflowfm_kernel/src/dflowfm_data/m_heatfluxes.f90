@@ -54,7 +54,6 @@ module m_heatfluxes
    real(kind=dp) :: sarea !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, lake area
    real(kind=dp) :: fwind !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, wind factor
 
-   integer :: jamapheatflux !< write heatfluxes to map
    integer :: jarichardsononoutput !< write Richardson nr to his
    integer :: rho_water_in_wind_stress !< Use rhomean or local (surface) density of model in windstress: 0,1
    integer, parameter :: RHO_MEAN = 0 !< Use rhomean in windstress
@@ -80,7 +79,6 @@ contains
       em = 0.985_dp
       cpa = 1004.0_dp
       cpw = 3986.0_dp
-      jamapheatflux = 0
       jarichardsononoutput = 0
       rho_water_in_wind_stress = RHO_MEAN
 

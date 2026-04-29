@@ -35,7 +35,7 @@ module m_structures
    use properties
    use unstruc_channel_flow, only: network
    use MessageHandling
-   use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
+   use m_flowparameters, only: his_write_settings
    use m_structures_indices ! all of these indices are used in the module
 
    use precision, only: dp
@@ -178,14 +178,14 @@ contains
       use m_dambreak_breach, only: n_db_signals
       implicit none
 
-      if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%pump > 0) .and. npumpsg > 0) then
          if (allocated(valpump)) then
             deallocate (valpump)
          end if
          allocate (valpump(NUMVALS_PUMP, npumpsg))
          valpump = 0.0_dp
       end if
-      if (ti_rst > 0 .or. jahiscgen > 0) then
+      if (ti_rst > 0 .or. his_write_settings%cgen > 0) then
          if (ncgensg > 0) then
             if (allocated(valcgen)) then
                deallocate (valcgen)
@@ -205,7 +205,7 @@ contains
             valgenstru = 0.0_dp
          end if
       end if
-      if (jahisgate > 0) then
+      if (his_write_settings%gate > 0) then
          if (ngatesg > 0) then
             if (allocated(valgate)) then
                deallocate (valgate)
@@ -221,7 +221,7 @@ contains
             valgategen = 0.0_dp
          end if
       end if
-      if (jahiscdam > 0 .and. ncdamsg > 0) then
+      if (his_write_settings%cdam > 0 .and. ncdamsg > 0) then
          if (allocated(valcdam)) then
             deallocate (valcdam)
          end if
@@ -232,55 +232,55 @@ contains
          nweirgen = network%sts%numWeirs
       end if
 
-      if ((ti_rst > 0 .or. jahisweir > 0) .and. nweirgen > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%weir > 0) .and. nweirgen > 0) then
          if (allocated(valweirgen)) then
             deallocate (valweirgen)
          end if
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen))
          valweirgen = 0.0_dp
       end if
-      if (jahisdambreak > 0 .and. n_db_signals > 0) then
+      if (his_write_settings%dambreak > 0 .and. n_db_signals > 0) then
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
          allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source=0.0_dp)
       end if
-      if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%orifice > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then
             deallocate (valorifgen)
          end if
          allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices))
          valorifgen = 0.0_dp
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (his_write_settings%bridge > 0 .and. network%sts%numBridges > 0) then
          if (allocated(valbridge)) then
             deallocate (valbridge)
          end if
          allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges))
          valbridge = 0.0_dp
       end if
-      if ((ti_rst > 0 .or. jahisculv > 0) .and. network%sts%numCulverts > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%culvert > 0) .and. network%sts%numCulverts > 0) then
          if (allocated(valculvert)) then
             deallocate (valculvert)
          end if
          allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts))
          valculvert = 0.0_dp
       end if
-      if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (his_write_settings%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          if (allocated(valuniweir)) then
             deallocate (valuniweir)
          end if
          allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs))
          valuniweir = 0.0_dp
       end if
-      if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
+      if (his_write_settings%compound_structure > 0 .and. network%cmps%count > 0) then
          if (allocated(valcmpstru)) then
             deallocate (valcmpstru)
          end if
          allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count))
          valcmpstru = 0.0_dp
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (his_write_settings%long_culvert > 0 .and. nlongculverts > 0) then
          if (allocated(vallongculvert)) then
             deallocate (vallongculvert)
          end if
@@ -292,29 +292,15 @@ contains
 
    end subroutine init_structure_hisvalues
 
-!> Sets ALL (scalar) variables in this module to their default values.
-!! For a reinit prior to flow computation, only call reset_structures() instead.
+   !> Sets ALL (scalar) variables in this module to their default values.
+   !! For a reinit prior to flow computation, only call reset_structures() instead.
    subroutine default_structures()
 
       call tree_destroy(strs_ptr)
 
       call reset_structures()
 
-! TIDAL TURBINES: Insert calls to deallocate_turbines and init_turbines here
-
-      ! default settings for structure output to history file
-      jahiscgen = 1
-      jahispump = 1
-      jahisgate = 1
-      jahiscdam = 1
-      jahisweir = 1
-      jahisorif = 1
-      jahisculv = 1
-      jahisbridge = 1
-      jahisdambreak = 1
-      jahisuniweir = 1
-      jahiscmpstru = 1
-      jahislongculv = 1
+      ! TIDAL TURBINES: Insert calls to deallocate_turbines and init_turbines here
 
    end subroutine default_structures
 
@@ -1076,7 +1062,7 @@ contains
       use m_alloc
       use m_partitioninfo
       use m_GlobalParameters
-      use m_flowparameters, only: eps6
+      use m_flowparameters, only: EPS6
       use precision_basics
       implicit none
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT). May differ from the struct%type
@@ -1254,7 +1240,7 @@ contains
                                        ! coincide with another start/end node maximal ONCE.
                                        xOld = geomXStruMPI(indLocalStartEndMPI(j1))
                                        yOld = geomYStruMPI(indLocalStartEndMPI(j1))
-                                       if (comparereal(xNew, xOld, eps6) == 0 .and. comparereal(xNew, xOld, eps6) == 0) then
+                                       if (comparereal(xNew, xOld, EPS6) == 0 .and. comparereal(xNew, xOld, EPS6) == 0) then
                                           jaexist = 1
                                           jaCoincide(j1) = 1
                                           exit
@@ -1579,7 +1565,7 @@ contains
 !> Determine the combined number of geometry nodes for all pumps
 !! (used to determine the size of geometry variables in the his-file)
    integer function number_of_pump_nodes()
-      use m_flowparameters, only: jahispump
+      use m_flowparameters, only: his_write_settings
       use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
       use unstruc_channel_flow, only: network
 
@@ -1587,7 +1573,7 @@ contains
 
       number_of_pump_nodes = 0
 
-      if (jahispump > 0 .and. npumpsg > 0) then
+      if (his_write_settings%pump > 0 .and. npumpsg > 0) then
          if (network%sts%numPumps > 0) then ! newpump
             number_of_pump_nodes = nNodesPump
          else ! old pump
