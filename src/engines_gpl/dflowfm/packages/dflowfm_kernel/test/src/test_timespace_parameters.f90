@@ -14,6 +14,15 @@ contains
       call f90_expect_eq(convert_operand_string_to_integer('MULTIPLY'), OPERAND_MULTIPLY)
       call f90_expect_eq(convert_operand_string_to_integer('minimum'), OPERAND_MINIMUM)
       call f90_expect_eq(convert_operand_string_to_integer('MaXiMuM'), OPERAND_MAXIMUM)
+      
+      ! Legacy single-character values should also be supported for backwards compatibility
+      call f90_expect_eq(convert_operand_string_to_integer('o'), OPERAND_OVERRIDE)
+      call f90_expect_eq(convert_operand_string_to_integer('A'), OPERAND_OVERRIDE_IF_MISSING)
+      call f90_expect_eq(convert_operand_string_to_integer('+'), OPERAND_ADD)
+      call f90_expect_eq(convert_operand_string_to_integer('*'), OPERAND_MULTIPLY)
+      call f90_expect_eq(convert_operand_string_to_integer('v'), OPERAND_OVERRIDE)
+      call f90_expect_eq(convert_operand_string_to_integer('N'), OPERAND_MINIMUM)
+      call f90_expect_eq(convert_operand_string_to_integer('x'), OPERAND_MAXIMUM)
    end subroutine test_convert_operand_string_to_integer_known_values
 !$f90tw)
 

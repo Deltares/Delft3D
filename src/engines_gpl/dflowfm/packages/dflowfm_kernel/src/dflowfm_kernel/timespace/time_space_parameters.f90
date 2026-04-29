@@ -121,7 +121,8 @@ contains
       case ('maximum')
          operand = OPERAND_MAXIMUM
       case default
-         operand = OPERAND_UNKNOWN
+         ! Try to parse the string as a legacy operand string (single character) as a fallback
+         operand = convert_legacy_operand_string_to_integer(string)
       end select
    end function convert_operand_string_to_integer
 

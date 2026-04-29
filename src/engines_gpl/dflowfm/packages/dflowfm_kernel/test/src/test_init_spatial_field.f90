@@ -2,8 +2,9 @@ module test_init_spatial_field
    use assertions_gtest
    use m_spatial_field, only: t_spatial_field_input, validate_spatial_field_input
    use m_wind, only: jaQext
+   use timespace_parameters, only: OPERAND_ADD
    use unstruc_messages, only: threshold_abort
-   use messagehandling, only: LEVEL_FATAL
+   use messagehandling, only: LEVEL_FATAL, LEVEL_WARN, GetMessageCount, GetMessage_MH, SetMessageHandling
 
    implicit none(type, external)
 
@@ -97,6 +98,52 @@ contains
                             "validation should fail when qext is used with a non-sample forcingFileType")
       jaQext = 0 ! restore global state
    end subroutine test_validate_qext_wrong_file_type
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_legacy_operand_warns_but_succeeds, test_validate_legacy_operand_warns_but_succeeds,
+   !> Legacy single-character operand values remain supported for backward
+   !! compatibility, but they must produce a deprecation warning.
+   subroutine test_validate_legacy_operand_warns_but_succeeds() bind(C)
+      type(t_spatial_field_input) :: input
+      logical :: success
+      integer :: log_level
+      character(len=512) :: message
+
+      call make_test_input(input)
+      input%operand_string = '+'
+
+      threshold_abort = LEVEL_FATAL
+      call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
+
+      success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
+
+      call f90_expect_true(success, "validation should succeed for legacy single-character operand values")
+      call f90_expect_eq(input%oper, OPERAND_ADD)
+      call f90_expect_eq(GetMessageCount(), 1)
+
+      log_level = GetMessage_MH(1, message)
+      call f90_expect_eq(log_level, LEVEL_WARN)
+      call f90_expect_true(index(message, 'deprecated') > 0)
+   end subroutine test_validate_legacy_operand_warns_but_succeeds
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_validate_nonlegacy_operand_does_not_warn, test_validate_nonlegacy_operand_does_not_warn,
+   subroutine test_validate_nonlegacy_operand_does_not_warn() bind(C)
+      type(t_spatial_field_input) :: input
+      logical :: success
+
+      call make_test_input(input)
+      input%operand_string = 'add'
+
+      threshold_abort = LEVEL_FATAL
+      call SetMessageHandling(write2screen=.false., useLog=.true., reset_counters=.true.)
+
+      success = validate_spatial_field_input(input, EXT_FILENAME, GROUP_NAME, BASE_DIR)
+
+      call f90_expect_true(success, "validation should succeed for non-legacy operand values")
+      call f90_expect_eq(input%oper, OPERAND_ADD)
+      call f90_expect_eq(GetMessageCount(), 0)
+   end subroutine test_validate_nonlegacy_operand_does_not_warn
    !$f90tw)
 
 end module test_init_spatial_field
