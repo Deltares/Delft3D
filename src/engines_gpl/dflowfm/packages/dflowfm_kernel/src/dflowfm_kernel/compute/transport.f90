@@ -53,7 +53,7 @@ contains
       use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, temperature_model, TEMPERATURE_MODEL_NONE, &
                         maxitverticalforestertem, limtyptm, limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, &
                         kbndu, nbndsd, kbndsd, kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, vol1, &
-                        eps10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
+                        EPS10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
                         ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
       use Timers, only: timstrt, timstop
       use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, &
@@ -200,7 +200,7 @@ contains
             if (kt < kb) then
                cycle
             end if
-            if (vol1(kb) < eps10) then
+            if (vol1(kb) < EPS10) then
                cycle
             end if
             km = kt - kb + 1

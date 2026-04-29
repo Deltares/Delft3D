@@ -58,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, eps4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -456,12 +456,12 @@ contains
          end if
          if (jawave > NO_WAVES .and. jawave /= 4) then
             if (comparereal(gammax, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4 ! if they are exactly the same, rounding errors set index to false wrongly
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4 ! if they are exactly the same, rounding errors set index to false wrongly
             end if
          end if
          if (jawave == WAVE_SURFBEAT) then
             if (comparereal(gammaxxb, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4
             end if
          end if
       end if
