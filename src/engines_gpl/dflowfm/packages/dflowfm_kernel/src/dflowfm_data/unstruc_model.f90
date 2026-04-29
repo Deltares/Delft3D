@@ -1209,9 +1209,15 @@ contains
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
 
-      call prop_get(md_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal)
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal) ! Deprecated, use maxItVerticalForester instead
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem) ! Deprecated, use maxItVerticalForester instead
+
+      ! Set max_iterations_vertical_forester to the maximum of max_iterations_vertical_forester_sal/tem
+      max_iterations_vertical_forester = max(max_iterations_vertical_forester_sal, max_iterations_vertical_forester_tem)
+
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester)
+
       call prop_get(md_ptr, 'numerics', 'cstbnd', jacstbnd)
-      call prop_get(md_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem)
       call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
 
       call prop_get(md_ptr, 'numerics', 'c1e', c1e)
@@ -3192,11 +3198,7 @@ contains
       call prop_set(prop_ptr, 'numerics', 'cstbnd', jacstbnd, 'Delft-3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)')
 
       if (writeall .or. kmx > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal, 'Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)')
-      end if
-
-      if (writeall .or. (kmx > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem, 'Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)')
+         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester, 'Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations)')
       end if
 
       if (writeall .or. kmx > 0) then

@@ -27,12 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_doforester
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -43,37 +40,42 @@ contains
    subroutine doforester()
       use precision, only: dp
       use m_foresterpoint2, only: foresterpoint2
-      use m_flow, only: kbot, ktop, maxitverticalforestersal, ndkx, vol1, kmxn, maxitverticalforestertem
-      use m_transportdata, only: constituents, numconst, isalt, itemp
+      use m_flow, only: kbot, ktop, max_iterations_vertical_forester, ndkx, vol1, kmxn
+      use m_transportdata, only: constituents, numconst
       use timers, only: timon, timstrt, timstop
       use m_flowgeom, only: ndxi
       use m_turbulence, only: kmxx
 
-      implicit none
+      ! Local variables
+      integer :: i_bottom_layer
+      integer :: i_constituent
+      integer :: i_flowcell
+      integer :: number_of_layers
+      integer(4) :: timer_handle
+      real(kind=dp), dimension(kmxx) :: a
+      real(kind=dp), dimension(kmxx) :: d
 
-      integer :: kk, km, kb
-      real(kind=dp) :: a(kmxx), d(kmxx)
-
-      integer(4) :: ithndl = 0
+      ! Initialization
+      timer_handle = 0
 
       if (timon) then
-         call timstrt("doforester", ithndl)
+         call timstrt("doforester", timer_handle)
       end if
 
-      do kk = 1, ndxi
-         kb = kbot(kk)
-         km = ktop(kk) - kb + 1
-         if (maxitverticalforestersal > 0) then
-            call foresterpoint2(constituents, numconst, ndkx, isalt, vol1(kb:), a, d, km, kmxn(kk), kb, maxitverticalforestersal, 1)
-         end if
-         if (maxitverticalforestertem > 0) then
-            call foresterpoint2(constituents, numconst, ndkx, itemp, vol1(kb:), a, d, km, kmxn(kk), kb, maxitverticalforestertem, -1)
-         end if
+      do i_flowcell = 1, ndxi
+         i_bottom_layer = kbot(i_flowcell)
+         number_of_layers = ktop(i_flowcell) - i_bottom_layer + 1
+
+         ! Apply Forester vertical filter for all constituents
+         do i_constituent = 1, numconst
+            call foresterpoint2(constituents, numconst, ndkx, i_constituent, vol1(i_bottom_layer:), a, d, number_of_layers, kmxn(i_flowcell), i_bottom_layer, max_iterations_vertical_forester, 1)
+         end do
       end do
 
       if (timon) then
-         call timstop(ithndl)
+         call timstop(timer_handle)
       end if
+
    end subroutine doforester
 
 end module m_doforester
