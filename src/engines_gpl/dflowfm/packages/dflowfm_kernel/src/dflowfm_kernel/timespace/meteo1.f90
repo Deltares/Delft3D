@@ -601,7 +601,7 @@ contains
    !>
    subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
-      use m_flowparameters, only: jatidep, jaselfal, jamaptidep
+      use m_flowparameters, only: jatidep, jaselfal, map_write_settings
       use m_partitioninfo
       use m_flow
       use m_flowgeom
@@ -745,7 +745,7 @@ contains
                           (td2(m1, n2) + self(m1, n2)) * f12
 
 !        for output only
-            if (jamaptidep > 0 .and. Np > 1) then ! store SAL potential seperately
+            if (map_write_settings%tidep > 0 .and. Np > 1) then ! store SAL potential seperately
                tidep(2, n) = (self(m1, n1)) * f11 + &
                              (self(m2, n1)) * f21 + &
                              (self(m2, n2)) * f22 + &
@@ -4441,15 +4441,15 @@ contains
       case ('hrms', 'wavesignificantheight')
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
-         jamapwav_hwav = 1
+         map_write_settings%wav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
-         jamapwav_twav = 1
+         map_write_settings%wav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
-         jamapwav_phiwav = 1
+         map_write_settings%wav_phiwav = 1
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom

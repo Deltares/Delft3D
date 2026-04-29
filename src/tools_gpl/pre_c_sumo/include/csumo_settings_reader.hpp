@@ -4,6 +4,7 @@
 #include <expected>
 #include <filesystem>
 #include <optional>
+#include <pugixml.hpp>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -66,6 +67,11 @@ namespace pre_c_sumo
         // --- comm section ---
         std::filesystem::path ff2nf_dir;  ///< Directory for FF2NF communication files (&lt;FF2NFdir&gt;)
         std::filesystem::path ff_run_dir; ///< Far-field model run directory (&lt;FFrundir&gt;)
+
+        // --- raw XML ---
+        pugi::xml_node settings_xml_node; ///< The raw &lt;settings&gt; XML node from the parsed document.
+                                          ///< Valid for as long as the owning CSumoSettingsReader is alive.
+                                          ///< Use pugi::xml_node::append_copy() to insert it into another document.
     };
 
     /**
@@ -107,14 +113,19 @@ namespace pre_c_sumo
 
         /**
          * @brief All diffuser settings blocks read from the XML, in document order.
+         *
+         * Each @ref DiffuserSettings also carries its raw @c settings_xml_node, which is valid
+         * for as long as this CSumoSettingsReader object is alive.
          */
         [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const;
 
     private:
-        explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers);
+        explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers,
+                                     pugi::xml_document document);
 
         std::string file_version_;
         std::vector<DiffuserSettings> diffusers_;
+        pugi::xml_document document_;
     };
 } // namespace pre_c_sumo
 

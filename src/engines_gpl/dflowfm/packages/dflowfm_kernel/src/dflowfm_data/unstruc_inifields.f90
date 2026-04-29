@@ -1057,7 +1057,7 @@ contains
       use m_inquire_flowgeom
       use unstruc_channel_flow
       use m_flowgeom, only: ndx2d
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use precision_basics
       use m_hash_search
       use dfm_error
@@ -1126,11 +1126,11 @@ contains
                k = pbr%grd(j) - ndx2d
             end if
             ! Constant value before the first data segment and after the last data segment.
-            if (comparereal(chai, minsChai, eps10) <= 0) then
+            if (comparereal(chai, minsChai, EPS10) <= 0) then
                res(k) = sValues(1)
                modified_elements(k) = .true.
                cycle
-            else if (comparereal(chai, maxsChai, eps10) >= 0) then
+            else if (comparereal(chai, maxsChai, EPS10) >= 0) then
                res(k) = sValues(ns)
                modified_elements(k) = .true.
                cycle
@@ -1143,8 +1143,8 @@ contains
                sValPrev = sValues(i - 1)
                sVal = sValues(i)
 
-               if (comparereal(chai, sChaiPrev, eps10) >= 0 .and. comparereal(chai, sChai, eps10) < 0) then
-                  if (comparereal(sChai, sChaiPrev, eps10) /= 0) then
+               if (comparereal(chai, sChaiPrev, EPS10) >= 0 .and. comparereal(chai, sChai, EPS10) < 0) then
+                  if (comparereal(sChai, sChaiPrev, EPS10) /= 0) then
                      res(k) = sValPrev + (sVal - sValPrev) / (sChai - sChaiPrev) * (chai - sChaiPrev)
                      modified_elements(k) = .true.
                   else
