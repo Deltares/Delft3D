@@ -77,7 +77,7 @@ object WindowsTest : BuildType({
     steps {
         step {
             name = "Download artifact from Nexus"
-            type = "RawDownloadNexusWindows"
+            type = "RawDownloadNexusWindows2"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("artifact_path", "/07_day_retention/dimrset/%file_path%")
             param("nexus_repo", "/delft3d-dev")
