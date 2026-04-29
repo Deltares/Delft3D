@@ -43,7 +43,7 @@ contains
    !> limited higher-order correction of vector data
    subroutine dslimvec(ds1x, ds1y, ds2x, ds2y, csu, snu, limtyp, dsx, dsy)
       use precision, only: dp
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_dslim, only: dslim
       use m_sferic, only: jasfer3d
 
@@ -73,11 +73,11 @@ contains
          dsn = 0.0_dp
          dst = 0.0_dp
 
-         if (abs(ds2n) > eps10 .and. abs(ds1n) > eps10) then
+         if (abs(ds2n) > EPS10 .and. abs(ds1n) > EPS10) then
             dsn = dslim(ds1n, ds2n, limtyp)
          end if
 
-         if (abs(ds2y) > eps10 .and. abs(ds1y) > eps10) then
+         if (abs(ds2y) > EPS10 .and. abs(ds1y) > EPS10) then
             dst = dslim(ds1t, ds2t, limtyp)
          end if
 
