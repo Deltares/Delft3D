@@ -94,7 +94,7 @@ object WindowsCollect : BuildType({
         }
         step {
             name = "Upload artifact to Nexus"
-            type = "RawUploadNexusWindows1_1"
+            type = "RawUploadNexusWindows2"
             executionMode = BuildStep.ExecutionMode.DEFAULT
             param("file_path", "%file_path%")
             param("nexus_username", "%nexus_username%")
