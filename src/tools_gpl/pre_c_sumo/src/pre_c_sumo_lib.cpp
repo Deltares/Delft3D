@@ -85,9 +85,6 @@ namespace pre_c_sumo
         participant.setMeshVertices(csumo_2d_mesh.name, csumo_2d_mesh.coordinates, csumo_2d_mesh.vertex_ids);
 
         // Add preCICE quantity data buffers.
-        const std::string water_levels_id = "sea_surface_height";
-        const std::string bed_levels_id = "sea_floor_depth_below_geoid";
-        const std::string water_depth_id = "sea_floor_depth_below_sea_surface";
         csumo_2d_mesh.quantities[water_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
         csumo_2d_mesh.quantities[bed_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
         csumo_2d_mesh.quantities[water_depth_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
@@ -112,7 +109,7 @@ namespace pre_c_sumo
             coupling_time_step = participant.getMaxTimeStepSize();
 
             receiveFFData(participant, csumo_2d_mesh, coupling_time_step);
-            writeFF2NFFiles(csumo_settings.value());
+            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh);
             waitForNF2FFFiles(csumo_settings.value());
             readNF2FFFiles(csumo_settings.value());
             convertNFToSourcesSinks(csumo_settings.value());

@@ -21,6 +21,10 @@ namespace pre_c_sumo
      * files parsing and the conversion/communication of NF/FF data.
      */
     // TODO?: Move/fold into class(es)?
+    const std::string water_levels_id = "sea_surface_height";
+    const std::string bed_levels_id = "sea_floor_depth_below_geoid";
+    const std::string water_depth_id = "sea_floor_depth_below_sea_surface";
+
     typedef struct
     {
         size_t diffuser_index;
@@ -69,7 +73,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings);
+    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, const Mesh& csumo_2d_mesh);
 
     /**
      * @brief Wait until NF2FF files become available.
