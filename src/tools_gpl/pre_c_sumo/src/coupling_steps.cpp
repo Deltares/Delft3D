@@ -46,7 +46,7 @@ namespace pre_c_sumo
         const std::string run_id = "FlowFM";
         const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
 
-        for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
+        for (const auto&& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[index];
@@ -79,7 +79,7 @@ namespace pre_c_sumo
             };
 
             std::vector<FarFieldPoint2D> ambient_points{};
-            for (auto&& [ambient_index, ambient_point] : std::views::enumerate(diffuser.ambient_positions))
+            for (const auto&& [ambient_index, ambient_point] : std::views::enumerate(diffuser.ambient_positions))
             {
                 ambient_points.emplace_back(
                     make_point(ambient_point, get_ambient_value(water_levels_id, ambient_index) -
