@@ -72,9 +72,7 @@ if __name__ == "__main__":
     secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
     if not access_key or not secret_key:
-        raise ValueError(
-            "Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
-        )
+        raise ValueError("Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.")
 
     client = minio.Minio(endpoint=ENDPOINT, credentials=StaticProvider(access_key, secret_key))
     reporter = VerschilAnalyseReporter(minio=client, bucket_name=BUCKET_NAME, prefix=PREFIX)
