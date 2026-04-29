@@ -849,9 +849,8 @@ contains
       use dfm_error, only: dfm_noerr
       use m_missing, only: dmiss
       use fm_location_types, only: unc_loc_s3d, unc_loc_u3d, unc_loc_w, unc_loc_wu, unc_loc_cn, unc_loc_s, unc_loc_u, unc_loc_l
-      use m_flowparameters, only: jamapvol1, jamapau, jamaphs, jamaphu, jamapanc, write_surface_data_to_map_file
+      use m_flowparameters, only: jamapvol1, jamapau, jamaphs, jamaphu, jamapanc, write_surface_data_to_map_file, map_write_settings
       use m_transport, only: const_names, ITRA1, ITRAN
-      use m_flowparameters, only: map_write_settings
       use network_data, only: numl, numl1d
 
       integer, intent(in) :: ncid
@@ -5660,7 +5659,7 @@ contains
             ierr = unc_put_att(mapids%ncid, mapids%id_u0, 'comment', 'Positive direction is from first to second neighbouring face (flow element).')
          end if
          if (map_write_settings%ucvec > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucx, nc_precision, iLocS, 'ucx', 'sea_water_x_eulerian_velocity', 'Flow element center eulerian velocity vector, x-component', 'm s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucy, nc_precision, iLocS, 'ucy', 'sea_water_y_eulerian_velocity', 'Flow element center eulerian velocity vector, y-component', 'm s-1', jabndnd=jabndnd_)
             else
@@ -5693,7 +5692,7 @@ contains
 
          end if
          if (map_write_settings%ucmag > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmag, nc_precision, iLocS, 'ucmag', 'sea_water_eulerian_speed', 'Flow element center eulerian velocity magnitude', 'm s-1', jabndnd=jabndnd_)
             else
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucmag, nc_precision, iLocS, 'ucmag', 'sea_water_speed', 'Flow element center velocity magnitude', 'm s-1', jabndnd=jabndnd_)
@@ -5707,7 +5706,7 @@ contains
             end if
          end if
          if (map_write_settings%ucqvec > 0) then
-            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave > NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
+            if (jaeulervel == WAVE_EULER_VELOCITIES_OUTPUT_ON .and. jawave /= NO_WAVES .and. .not. flow_without_waves) then ! TODO: AvD:refactor such that yes<->no Eulerian velocities are in parameters below:
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucxq, nc_precision, iLocS, 'ucxq', 'ucxq_eulerian_velocity', 'Flow element center eulerian velocity vector based on discharge, x-component', 'm s-1', jabndnd=jabndnd_)
                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_ucyq, nc_precision, iLocS, 'ucyq', 'ucyq_eulerian_velocity', 'Flow element center eulerian velocity vector based on discharge, y-component', 'm s-1', jabndnd=jabndnd_)
             else
@@ -6949,14 +6948,7 @@ contains
 
       ! Constituents
 
-!   The following is not stack-safe:
-!   if (map_write_settings%const > 0 .and. ITRA1 > 0) then
-!      do j=ITRA1,ITRAN
-!         ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_const(:,j), iLocS, constituents(j,:))
-!      enddo
-!   endif
-
-!   The following is (almost) copied from unc_wite_map_filepointer
+      ! The following is (almost) copied from unc_wite_map_filepointer
       if (map_write_settings%const > 0 .and. ITRA1 > 0) then
 
          do j = ITRA1, ITRAN
@@ -6990,9 +6982,7 @@ contains
          end if
       end if
 
-      !
       ! Sediment transport (via morphology module)
-      !
       if ((map_write_settings%sed > 0 .and. jased > 0 .and. stm_included) .or. (jasubsupl > 0)) then
          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_mor_bl, UNC_LOC_S, bl, jabndnd=jabndnd_)
       end if
@@ -8808,7 +8798,7 @@ contains
 
          if (jaseparate_ /= 2) then
             if (map_write_settings%sal > 0 .and. jasal > 0) then
-               if (kmx > 0) then !        3D
+               if (kmx > 0) then ! 3D
                   ierr = nf90_def_var(imapfile, 'sa1', nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_sa1(iid))
                else
                   ierr = nf90_def_var(imapfile, 'sa1', nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_sa1(iid))
@@ -8821,7 +8811,7 @@ contains
             end if
 
             if (map_write_settings%tem > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE) then
-               if (kmx > 0) then !        3D
+               if (kmx > 0) then ! 3D
                   ierr = nf90_def_var(imapfile, 'tem1', nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_tem1(iid))
                else
                   ierr = nf90_def_var(imapfile, 'tem1', nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_tem1(iid))
@@ -8833,12 +8823,12 @@ contains
                ierr = nf90_put_att(imapfile, id_tem1(iid), '_FillValue', dmiss)
             end if
 
-!          tracers
+            ! tracers
             if (map_write_settings%const > 0 .and. ITRA1 > 0) then
                do j = ITRA1, ITRAN
                   tmpstr = const_names(j)
                   call ncu_sanitize_name(tmpstr)
-                  if (kmx > 0) then !        3D
+                  if (kmx > 0) then ! 3D
                      ierr = nf90_def_var(imapfile, trim(tmpstr), nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_const(iid, j))
                   else
                      ierr = nf90_def_var(imapfile, trim(tmpstr), nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_const(iid, j))
@@ -8856,7 +8846,7 @@ contains
                end do
             end if
 
-!          water quality bottom variables
+            ! water quality bottom variables
             if (numwqbots > 0) then
                call realloc(id_wqb, [3, numwqbots], keepExisting=.false., fill=0)
                do j = 1, numwqbots
@@ -8886,14 +8876,14 @@ contains
                end if
             end if
 
-!          waq output
+            ! waq output
             if (jawaqproc > 0) then
                if (noout_map > 0) then
                   call realloc(id_waq, [3, noout_map], keepExisting=.false., fill=0)
                   do j = 1, noout_map
                      tmpstr = ' '
                      write (tmpstr, "('water_quality_output_',I0)") j
-                     if (kmx > 0) then !        3D
+                     if (kmx > 0) then ! 3D
                         ierr = nf90_def_var(imapfile, tmpstr, nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_waq(iid, j))
                      else
                         ierr = nf90_def_var(imapfile, tmpstr, nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_waq(iid, j))
@@ -8913,7 +8903,7 @@ contains
                      jj = noout_user + j
                      tmpstr = ' '
                      write (tmpstr, "('water_quality_stat_',I0)") j
-                     if (kmx > 0) then !        3D
+                     if (kmx > 0) then ! 3D
                         ierr = nf90_def_var(imapfile, tmpstr, nf90_double, [id_laydim(iid), id_flowelemdim(iid), id_timedim(iid)], id_wqst(iid, j))
                      else
                         ierr = nf90_def_var(imapfile, tmpstr, nf90_double, [id_flowelemdim(iid), id_timedim(iid)], id_wqst(iid, j))
@@ -8933,7 +8923,7 @@ contains
                      jj = noout_user + noout_statt + j
                      tmpstr = ' '
                      write (tmpstr, "('water_quality_stat_',I0)") noout_statt + j
-                     if (kmx > 0) then !        3D
+                     if (kmx > 0) then ! 3D
                         ierr = nf90_def_var(imapfile, tmpstr, nf90_double, [id_laydim(iid), id_flowelemdim(iid)], id_wqse(iid, j))
                      else
                         ierr = nf90_def_var(imapfile, tmpstr, nf90_double, [id_flowelemdim(iid)], id_wqse(iid, j))
