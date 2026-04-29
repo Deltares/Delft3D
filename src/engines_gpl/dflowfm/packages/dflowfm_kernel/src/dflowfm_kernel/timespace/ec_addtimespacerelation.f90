@@ -360,46 +360,69 @@ contains
       ! Construct the target field and the target item
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
-      if (present(tgt_item1) .and. present(tgt_data1)) then
-         ! Caller provides target item and data array directly; bypass the hard-coded lookup.
-         ! This is the path for quantities not registered in fm_ext_force_name_to_ec_item.
-         targetItemPtr1 => tgt_item1
-         dataPtr1       => tgt_data1
-      else
-         if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
-                                                targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                                dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
-            return
+
+      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
+                                             targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
+                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
+
+         if (present(tgt_item1) .and. present(tgt_data1)) then
+            if (associated(tgt_data1)) then
+               ! Caller provides a single target item and data array directly; bypass the hard-coded lookup.
+               ! This is the path for quantities not registered in fm_ext_force_name_to_ec_item.
+               targetItemPtr1 => tgt_item1
+               dataPtr1 => tgt_data1
+            else
+               return !> item and data pointer not associated
+            end if
+         else
+            return !> no known name and also no data pointer provided for lookup bypass
          end if
       end if
       continue
 
       ! Overrule hard-coded pointers to target data by optional pointers passed in the call
       if (present(tgt_data1)) then
-         dataPtr1 => tgt_data1
+         if (associated(tgt_data1)) then
+            dataPtr1 => tgt_data1
+         end if
       end if
       if (present(tgt_data2)) then
-         dataPtr2 => tgt_data2
+         if (associated(tgt_data2)) then
+            dataPtr2 => tgt_data2
+         end if
       end if
       if (present(tgt_data3)) then
-         dataPtr3 => tgt_data3
+         if (associated(tgt_data3)) then
+            dataPtr3 => tgt_data3
+         end if
       end if
       if (present(tgt_data4)) then
-         dataPtr4 => tgt_data4
+         if (associated(tgt_data4)) then
+            dataPtr4 => tgt_data4
+         end if
       end if
 
-      ! Overrule hard-coded pointers to target items by optional pointers passed in the call
+      ! Overrule hard-coded pointers to target items by optional pointers passed in the call,
+      ! but only when the caller supplies a valid, already-created item id.
       if (present(tgt_item1)) then
-         targetItemPtr1 => tgt_item1
+         if (tgt_item1 /= ec_undef_int) then
+            targetItemPtr1 => tgt_item1
+         end if
       end if
       if (present(tgt_item2)) then
-         targetItemPtr2 => tgt_item2
+         if (tgt_item2 /= ec_undef_int) then
+            targetItemPtr2 => tgt_item2
+         end if
       end if
       if (present(tgt_item3)) then
-         targetItemPtr3 => tgt_item3
+         if (tgt_item3 /= ec_undef_int) then
+            targetItemPtr3 => tgt_item3
+         end if
       end if
       if (present(tgt_item4)) then
-         targetItemPtr4 => tgt_item4
+         if (tgt_item4 /= ec_undef_int) then
+            targetItemPtr4 => tgt_item4
+         end if
       end if
 
       ! Create the field and the target item, and if needed additional ones.
