@@ -199,9 +199,7 @@ class SyncBuilder:
         secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
         if not access_key or not secret_key:
-            raise ValueError(
-                "Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
-            )
+            raise ValueError("Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.")
 
         return Minio(
             endpoint=DEFAULT_MINIO_HOSTNAME,

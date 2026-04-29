@@ -103,10 +103,7 @@ class CommandLine:
             args = parser.parse_args()
 
             logger = cls._make_logger("minio-sync", args.log_level)
-            minio_client = cls._make_minio_client(
-                endpoint_url=args.endpoint_url,
-                max_pool_size=args.jobs
-            )
+            minio_client = cls._make_minio_client(endpoint_url=args.endpoint_url, max_pool_size=args.jobs)
 
             cls._check_minio_connection(minio_client)
         except CommandLineError as exc:
@@ -203,7 +200,7 @@ class CommandLine:
             jobs=DEFAULT_WORKER_COUNT,
             queue_size=DEFAULT_QUEUE_SIZE,
             log_level=cls.DEFAULT_LOG_LEVEL,
-            endpoint_url=os.environ.get("ENDPOINT_URL", f"https://{const.DEFAULT_MINIO_HOSTNAME}")
+            endpoint_url=os.environ.get("ENDPOINT_URL", f"https://{const.DEFAULT_MINIO_HOSTNAME}"),
         )
 
         return parser
@@ -244,9 +241,7 @@ class CommandLine:
         secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
         if not access_key or not secret_key:
-            raise CommandLineError(
-                "Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
-            )
+            raise CommandLineError("Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.")
 
         return minio.Minio(
             parsed_url.netloc,
