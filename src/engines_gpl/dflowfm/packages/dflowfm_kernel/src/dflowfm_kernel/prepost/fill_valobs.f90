@@ -230,10 +230,9 @@ contains
          link_id_nearest = lobs(i)
          if ((intobs(i) == 0) .or. (neighbour_nodes_obs(1, i) == 0)) then
             ! Treat snapped stations as interpolated ones!
-            ! ..and interpolated ones that could not have been interpolated as snapped ones 
-            !  (because they are out of interpolation boundaries)
-            if (intobs(i) /=0) then
-               write (msgbuf, '(a, i0, a, f0.10, a, f0.10, a)') "Unable to interpolate #", i, " (", xobs(i), ", ", yobs(i), "). Is probably at the edge and will be snapped!"
+            ! And treat interpolated ones that could not have been interpolated as snapped ones (because they are out of interpolation boundaries)
+            if (intobs(i) /= 0) then
+               write (msgbuf, '(a, i0, a, f0.10, a, f0.10, a)') "Unable to interpolate #", i, " (", xobs(i), ", ", yobs(i), "). It's probably at the edge and will be snapped!"
                call mess(LEVEL_WARN, msgbuf)
             end if
             neighbour_nodes_obs(1, i) = k
