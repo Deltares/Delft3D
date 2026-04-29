@@ -44,7 +44,7 @@ contains
    subroutine fill_valobs()
       use precision, only: dp
       use m_linkstocentercartcomp, only: linkstocentercartcomp
-      use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, his_write_settings, ucmag, jaeulervel, &
+      use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, ucmag, jaeulervel, &
                         flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, javiusp, viclu, viusp, &
                         vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
                         TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
@@ -90,6 +90,7 @@ contains
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
       use fm_location_types
+      use m_flowparameters, only: his_write_settings
 
       implicit none
 
