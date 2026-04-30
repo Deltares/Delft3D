@@ -1,7 +1,7 @@
 @ echo off
 
 set usePreCICE=1
-set startFM=0
+set startFM=1
 set startPreCSUMO=1
 
 set bindir=..\..\..\..\install_fm-suite\bin

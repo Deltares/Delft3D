@@ -89,7 +89,7 @@ contains
       self%cell_center_mesh_size = cell_center_mesh_size
 
       if (allocated(self%cell_center_mesh_coordinates_2d)) then
-         deallocate(self%cell_center_mesh_coordinates_2d)
+         deallocate (self%cell_center_mesh_coordinates_2d)
       end if
       allocate (self%cell_center_mesh_coordinates_2d(cell_center_mesh_size * 2))
 
@@ -100,13 +100,13 @@ contains
 
    end subroutine builder_set_cell_center_mesh_2d
 
-   subroutine builder_set_cell_center_mesh_3d(self, cell_center_mesh_3d_name, cell_center_mesh_2d_size, count_layers, cell_center_mesh_coordinates_3d_x, cell_center_mesh_coordinates_3d_y, zws)
+   subroutine builder_set_cell_center_mesh_3d(self, cell_center_mesh_3d_name, count_2d_cells, count_layers, cell_center_mesh_coordinates_3d_x, cell_center_mesh_coordinates_3d_y, zws)
       use precision, only: dp
       use precice_adapter_utils, only: set_cell_center_mesh_zcoords
 
       class(precice_adapter_builder_t), intent(inout) :: self
       character(len=*) :: cell_center_mesh_3d_name
-      integer(kind=c_int), intent(in) :: cell_center_mesh_2d_size
+      integer(kind=c_int), intent(in) :: count_2d_cells
       integer(kind=c_int), intent(in) :: count_layers
       real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_3d_x
       real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_3d_y
@@ -117,15 +117,15 @@ contains
       integer :: id_3d
 
       self%cell_center_mesh_3d_name = cell_center_mesh_3d_name
-      self%cell_center_mesh_3d_size = cell_center_mesh_2d_size * count_layers
+      self%cell_center_mesh_3d_size = count_2d_cells * count_layers
 
       if (allocated(self%cell_center_mesh_coordinates_3d)) then
-         deallocate(self%cell_center_mesh_coordinates_3d)
+         deallocate (self%cell_center_mesh_coordinates_3d)
       end if
       allocate (self%cell_center_mesh_coordinates_3d(self%cell_center_mesh_3d_size * 3))
 
       ! Add 2D coordinates
-      do i = 1, cell_center_mesh_2d_size
+      do i = 1, count_2d_cells
          do k = 1, count_layers
             id_3d = (i - 1) * count_layers + k
             self%cell_center_mesh_coordinates_3d(3 * id_3d - 2) = cell_center_mesh_coordinates_3d_x(i)
@@ -133,7 +133,7 @@ contains
          end do
       end do
       ! Add z coordinates
-      call set_cell_center_mesh_zcoords(cell_center_mesh_2d_size, count_layers, zws, self%cell_center_mesh_coordinates_3d)
+      call set_cell_center_mesh_zcoords(count_2d_cells, count_layers, zws, self%cell_center_mesh_coordinates_3d)
    end subroutine builder_set_cell_center_mesh_3d
 
    function builder_build(self) result(adapter_instance)

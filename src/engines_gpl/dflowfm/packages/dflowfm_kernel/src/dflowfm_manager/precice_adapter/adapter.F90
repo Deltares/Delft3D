@@ -1,6 +1,6 @@
 !> @file adapter.F90
 !! @brief preCICE adapter implementation for D-Flow FM.
-!! 
+!!
 !! This module implements a concrete adapter that extends the
 !! `precice_adapter_interface_t` and provides routines to construct,
 !! initialize, update (advance) and finalize a preCICE coupling instance.
@@ -13,7 +13,7 @@ module precice_adapter
    implicit none(type, external)
 
    private
-   real(kind=dp), save ::  summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
+   real(kind=dp), save :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
 
    !> Maximum length for preCICE standard name strings stored in quantity_t.
@@ -24,7 +24,7 @@ module precice_adapter
       character(kind=c_char, len=MAX_STANDARD_NAME_LENGTH) :: standard_name
       logical :: is_active !> Flag indicating if this quantity should be published to preCICE
    end type quantity_t
-   
+
    !> Container with all quantities used by the adapter.
    type :: quantities_t
       type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
@@ -32,7 +32,7 @@ module precice_adapter
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
    end type quantities_t
-   
+
    !> Concrete preCICE adapter implementation.
    !! Extends `precice_adapter_interface_t`.
    type, extends(precice_adapter_interface_t) :: precice_adapter_t
@@ -148,7 +148,7 @@ contains
    subroutine precice_adapter_update(self, timestep)
       use precice, only: precicef_get_max_time_step_size, precicef_advance, &
                          precicef_is_coupling_ongoing, precicef_is_time_window_complete, &
-         precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, precicef_set_vertices
+                         precicef_get_max_time_step_size, precicef_write_data, precicef_reset_mesh, precicef_set_vertices
       use precice_adapter_utils, only: set_cell_center_mesh_zcoords
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
@@ -187,7 +187,7 @@ contains
          ! Reset summed_time_progress after advancing
          summed_time_progress = 0.0
       else
-         write(*,*) "Not advancing preCICE yet, summed_time_progress = ", summed_time_progress, " max_timestep = ", max_timestep
+         write (*, *) "Not advancing preCICE yet, summed_time_progress = ", summed_time_progress, " max_timestep = ", max_timestep
       end if
    end subroutine precice_adapter_update
 
@@ -230,8 +230,8 @@ contains
       end if
       if (self%quantities%bl%is_active) then
          call precicef_write_data(self%cell_center_mesh_name, self%quantities%bl%standard_name, &
-                               size(self%vertex_ids), self%vertex_ids, &
-                               -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(trim(self%quantities%bl%standard_name)))
+                                  size(self%vertex_ids), self%vertex_ids, &
+                                  -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(trim(self%quantities%bl%standard_name)))
       end if
       if (self%quantities%rho%is_active) then
          call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%rho%standard_name, &
@@ -240,5 +240,4 @@ contains
       end if
    end subroutine precice_adapter_write_data
 
-   end module precice_adapter
-   
+end module precice_adapter
