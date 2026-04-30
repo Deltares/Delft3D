@@ -166,8 +166,8 @@ module m_fm_erosed
    real(fp), pointer :: bermslopegamma !< bermslope nudging applied for region where Hrms/h>bermslopegamma
    real(fp), pointer :: bermslopedepth !< minimum depth to apply nudging
    real(fp), pointer :: ti_sedtrans !< sediment transport computation start time in TUnits
-   integer, pointer :: ithresh !< switch for method to compute the `fixfac` array.
-   logical, pointer  :: bedloadupwindorder
+   integer, pointer  :: ithresh !< switch for method to compute the `fixfac` array.
+   logical, pointer  :: higherorderbedload
    
    ! trapar
    integer, dimension(:), pointer :: iform

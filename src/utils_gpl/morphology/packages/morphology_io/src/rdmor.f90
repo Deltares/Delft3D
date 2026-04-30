@@ -812,7 +812,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     
     call prop_get(mor_ptr, 'Numerics', 'Pure1D', mornum%pure1d)
     call prop_get(mor_ptr, 'Numerics', 'UpwindBedload', mornum%upwindbedload)
-    call prop_get(mor_ptr, 'Numerics', 'BedloadUpwindOrder', mornum%bedloadupwindorder)
+    call prop_get(mor_ptr, 'Numerics', 'HigherOrderBedload', mornum%higherorderbedload)
     call prop_get(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
@@ -1452,7 +1452,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     logical                                , pointer :: l_suscor
     logical                                , pointer :: l_susslope
     logical                                , pointer :: upwindbedload
-    logical                                , pointer :: bedloadupwindorder
+    logical                                , pointer :: higherorderbedload
     logical                                , pointer :: pure1d_mor
     character(256)                         , pointer :: bcmfilnam
     character(20)          , dimension(:)  , pointer :: namsed
@@ -1580,7 +1580,7 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     alfasusslope        => morpar%alfasusslope
     betasusslope        => morpar%betasusslope
     upwindbedload       => mornum%upwindbedload
-    bedloadupwindorder  => mornum%bedloadupwindorder
+    higherorderbedload  => mornum%higherorderbedload
     pure1d_mor          => mornum%pure1d
     !
     ! output values to file
@@ -1900,17 +1900,17 @@ subroutine echomor(lundia    ,error     ,lsec      ,lsedtot   ,nto       , &
     !
     txtput1 = 'Numerical parameters:'
     write (lundia, '(a)') txtput1
-    txtput1 = '   Upwind scheme for bedload'
+    txtput1 = '   Discretisation for bedload'
     if (upwindbedload) then
+       txtput2 = '                 UPWIND'
+    else
+       txtput2 = '                 CENTRAL'
+    end if
+    txtput1 = '   Higher order for bedload scheme'
+    if (higherorderbedload) then
        txtput2 = '                 YES'
     else
-       txtput2 = '                  NO'
-    end if
-    txtput1 = '   Upwind order for bedload'
-    if (bedloadupwindorder == 1) then
-       txtput2 = '                 1'
-    else
-       txtput2 = '                 2'
+       txtput2 = '                 NO'
     end if
     write (lundia, '(3a)') txtput1, ':', txtput2
     txtput1 = '   Pure1D for morphodynamics'

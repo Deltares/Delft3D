@@ -43,7 +43,7 @@ contains
    ! Interpolate flownode-based vector (sx,sy) to edge-based vector (e_sn, e_st)
    subroutine fm_upwbed(lsedtot, sx, sy, sxtot, sytot, e_sn, e_st)
       use precision, only: dp
-      use m_flowgeom, only: acl, snu, csu, kcu
+      use m_flowgeom, only: acl, snu, csu, kcu!, xz, yz, xu, yu
       use m_flow, only: u1, epshu, hu
       use m_sediment, only: stmpar, jabndtreatment
       use sediment_basics_module, only: has_bedload
@@ -52,6 +52,7 @@ contains
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       use m_fm_erosed, only: ndx => ndx_mor
+      use m_comp_gradc, only: comp_gradC
 
       implicit none
 
@@ -65,12 +66,13 @@ contains
       integer :: k1, k2, Lf, l, lnxlnxi
       logical :: pure1d_mor
       logical :: upwindbedload
+      logical :: higherorderbedload
+      integer :: fluxlim
 
       upwindbedload = stmpar%morpar%mornum%upwindbedload
+      higherorderbedload = stmpar%morpar%mornum%higherorderbedload
+      fluxlim = stmpar%morpar%mornum%fluxlim
       pure1d_mor = stmpar%morpar%mornum%pure1d
-      !if ( laterallyaveragedbedload ) then
-      !   call mess(LEVEL_ERROR, 'upwbed: laterally averaged bedload not supported')
-      !end if
 
       if (jabndtreatment == 0) then
          lnxlnxi = lnx
@@ -125,12 +127,12 @@ contains
                      e_sn(Lf, l) = 0.5_dp * (sx(k1, l) + sx(k2, l))
                   end if
                   e_st(Lf, l) = 0.0_dp
-               else
-                  ! project the fluxes in flowlink direction
-                  sutot1 = csu(Lf) * sxtot(k1, l) + snu(Lf) * sytot(k1, l)
-                  sutot2 = csu(Lf) * sxtot(k2, l) + snu(Lf) * sytot(k2, l)
-
+               else ! 2D
+                  ! legacy code: donor-cell upwind
                   if (upwindbedload .or. Lf > Lnxi) then
+                     ! project the fluxes in flowlink direction
+                     sutot1 = csu(Lf) * sxtot(k1, l) + snu(Lf) * sytot(k1, l)
+                     sutot2 = csu(Lf) * sxtot(k2, l) + snu(Lf) * sytot(k2, l)
                      ! upwind approximation (also at boundary cells for central scheme if jabndtreatment==0)
                      if (sutot1 > 0.0_dp .and. sutot2 > 0.0_dp) then
                         e_sn(Lf, l) = csu(Lf) * sx(k1, l) + snu(Lf) * sy(k1, l)
@@ -139,11 +141,14 @@ contains
                      else
                         e_sn(Lf, l) = csu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + snu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l))
                      end if
+                     e_st(Lf, l) = -snu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + csu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l)) ! to check
+                  !
+                  ! Higher order central or upwind
                   else
                      ! central approximation
                      e_sn(Lf, l) = csu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + snu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l))
                   end if
-                  e_st(Lf, l) = -snu(Lf) * (acl(Lf) * sx(k1, l) + (1.0_dp - acl(Lf)) * sx(k2, l)) + csu(Lf) * (acl(Lf) * sy(k1, l) + (1.0_dp - acl(Lf)) * sy(k2, l)) ! to check
+                  
                end if
             end do
          else ! dry
