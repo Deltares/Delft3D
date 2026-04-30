@@ -38,7 +38,7 @@ contains
 
    subroutine foresterpoint2(constituents, numconst, ndkx, itemp, vol, a, d, km, kmxx, kb, maxit, ip)
       use precision, only: dp
-      use m_flow, only: eps6, eps10
+      use m_flow, only: EPS6, EPS10
       implicit none
 
       integer :: numconst, ndkx, itemp, km, kmxx, kb, maxit, ip
@@ -58,8 +58,8 @@ contains
 
          do k = 1, km - 1
             dif = d(k + 1) - d(k)
-            if (dif * ip > eps6 .or. d(k) < 0.0_dp .or. d(k + 1) < 0.0_dp) then
-               if (vol(k) > eps10 .and. vol(k + 1) > eps10) then
+            if (dif * ip > EPS6 .or. d(k) < 0.0_dp .or. d(k + 1) < 0.0_dp) then
+               if (vol(k) > EPS10 .and. vol(k + 1) > EPS10) then
                   ja = 1
                   dif = 0.1666666666667_dp * dif * (vol(k + 1) + vol(k))
                   a(k) = a(k) + dif / vol(k)
