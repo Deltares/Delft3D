@@ -18,6 +18,11 @@
             "source": "delft3d-aws",
             "target": "/home/dev/.aws",
         },
+        {
+            "type": "volume",
+            "source": "delft3d-conan",
+            "target": "/home/dev/.conan2",
+        },
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],
     "customizations": {
