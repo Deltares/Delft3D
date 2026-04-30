@@ -51,9 +51,9 @@ namespace pre_c_sumo
             const auto subgrid_model_nr = static_cast<int>(index + 1);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[index];
 
-            auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](const std::string& name,
-                                                                                            const std::size_t& index) {
-                return quantities[name][m.first_ambient_point_index + index];
+            auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
+                                         const std::string& name, const auto& ambient_point_index) {
+                return quantities[name][m.first_ambient_point_index + ambient_point_index];
             };
 
             auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](const std::string& name) {
@@ -79,7 +79,7 @@ namespace pre_c_sumo
             };
 
             std::vector<FarFieldPoint2D> ambient_points{};
-            for (const auto&& [ambient_index, ambient_point] : std::views::enumerate(diffuser.ambient_positions))
+            for (const auto&& [ambient_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
             {
                 ambient_points.emplace_back(
                     make_point(ambient_point, get_ambient_value(water_levels_id, ambient_index) -
