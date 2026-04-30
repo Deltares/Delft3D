@@ -70,7 +70,7 @@ contains
       ucyq = 0.0_dp ! zero arrays
 
       ! keep track of depth averaged flow velocity
-      make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
+      make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. map_write_settings%ucmag > 0 .or. map_write_settings%ucvec > 0))
 
       if (Perot_type /= NOT_DEFINED) then
          ucx = 0.0_dp

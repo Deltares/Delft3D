@@ -50,7 +50,7 @@ contains
 
    subroutine sedtrails_write_stats(tim)
       use precision, only: dp
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_flowtimes, only: ti_st, ti_sts, ti_ste, tstop_user, time_st
       use precision_basics
       use m_sedtrails_stats
@@ -62,7 +62,7 @@ contains
 
       ierr = 1
       if (ti_st > 0) then
-         if (comparereal(tim, time_st, eps10) >= 0) then
+         if (comparereal(tim, time_st, EPS10) >= 0) then
             call sedtrails_write_nc(time_st)
             call reset_sedtrails_stats()
             if (ti_st > 0) then
@@ -70,7 +70,7 @@ contains
             else
                time_st = tstop_user
             end if
-            if (comparereal(time_st, ti_ste, eps10) == 1) then
+            if (comparereal(time_st, ti_ste, EPS10) == 1) then
                time_st = tstop_user
             end if
          end if
