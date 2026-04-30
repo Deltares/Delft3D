@@ -1,7 +1,8 @@
 [core]
     remote = storage
     autostage = true
-    cache_dir = /dvc-cache
+[cache]
+    dir = /dvc-cache
 ['remote "storage"']
     url = s3://delft3d-testbench
     endpointurl = https://s3.deltares.nl
