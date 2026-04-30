@@ -1897,11 +1897,14 @@ contains
             if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
             if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
          else
-            ! Old exicting nc files 
+            ! Old existing nc files 
             if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevelbnd'
             if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'so'
             if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'thetao'
-            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'ux' 
+            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'ux'
+            ! Old existing nc files (temporary fix for Tom, durban)
+            ! if (strcmpi(quantityname,'so'                      )) quantityname = 'salinity'
+            ! if (strcmpi(quantityname,'thetao'                  )) quantityname = 'temperature'
          end if
       else
          call set_ec_message("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
