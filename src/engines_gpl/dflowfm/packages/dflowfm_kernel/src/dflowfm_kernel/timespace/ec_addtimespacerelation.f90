@@ -378,6 +378,7 @@ contains
             return !> no known name and also no data pointer provided for lookup bypass
          end if
       end if
+
       continue
 
       ! Overrule hard-coded pointers to target data by optional pointers passed in the call
@@ -402,25 +403,27 @@ contains
          end if
       end if
 
-      ! Overrule hard-coded pointers to target items by optional pointers passed in the call,
-      ! but only when the caller supplies a valid, already-created item id.
-      if (present(tgt_item1)) then
-         if (tgt_item1 /= ec_undef_int) then
+      ! Overrule hard-coded pointers to target items, but ONLY when the caller also
+      ! explicitly provides the backing data — this distinguishes a caller that wants
+      ! a new item created (lateral/param, tgt_data1 associated) from one relying on
+      ! the hardcoded field (meteo compound, tgt_data1 null).
+      if (present(tgt_item1) .and. present(tgt_data1)) then
+         if (associated(tgt_data1)) then
             targetItemPtr1 => tgt_item1
          end if
       end if
-      if (present(tgt_item2)) then
-         if (tgt_item2 /= ec_undef_int) then
+      if (present(tgt_item2) .and. present(tgt_data2)) then
+         if (associated(tgt_data2)) then
             targetItemPtr2 => tgt_item2
          end if
       end if
-      if (present(tgt_item3)) then
-         if (tgt_item3 /= ec_undef_int) then
+      if (present(tgt_item3) .and. present(tgt_data3)) then
+         if (associated(tgt_data3)) then
             targetItemPtr3 => tgt_item3
          end if
       end if
-      if (present(tgt_item4)) then
-         if (tgt_item4 /= ec_undef_int) then
+      if (present(tgt_item4) .and. present(tgt_data4)) then
+         if (associated(tgt_data4)) then
             targetItemPtr4 => tgt_item4
          end if
       end if
