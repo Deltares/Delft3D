@@ -101,19 +101,8 @@ contains
    end subroutine builder_set_cell_center_mesh_2d
 
    subroutine builder_set_cell_center_mesh_3d(self, cell_center_mesh_3d_name, cell_center_mesh_2d_size, count_layers, cell_center_mesh_coordinates_3d_x, cell_center_mesh_coordinates_3d_y, zws)
-         ! Copied from unstruc_netcdf, tracking id_flowelemzcc:
-         !work1 = dmiss ! For zcc, can start at index 1 (kmx   vertical values)
-         !do kk = 1, ndxi
-         !   call getkbotktop(kk, kb, kt)
-         !   call getlayerindices(kk, nlayb, nrlay)
-         !   do k = kb, kt
-         !      work1(k - kb + nlayb, kk) = 0.5 * (zws(k) + zws(k - 1))
-         !   end do
-         !end do
-         !ierr = nf90_put_var(imapfile, id_flowelemzcc(iid), work1(1:kmx, 1:ndxi), start=[1, 1, itim], count=[kmx, ndxi, 1])
       use precision, only: dp
-      use m_get_kbot_ktop, only: getkbotktop
-      use m_get_layer_indices, only: getlayerindices
+      use precice_adapter_utils, only: set_cell_center_mesh_zcoords
 
       class(precice_adapter_builder_t), intent(inout) :: self
       character(len=*) :: cell_center_mesh_3d_name
@@ -123,7 +112,9 @@ contains
       real(kind=c_double), dimension(:), intent(in) :: cell_center_mesh_coordinates_3d_y
       real(kind=c_double), dimension(:), intent(in) :: zws
       ! Local variables
-      integer :: i, k, id_3d, kb, kt, nlayb, nrlay
+      integer :: i
+      integer :: k
+      integer :: id_3d
 
       self%cell_center_mesh_3d_name = cell_center_mesh_3d_name
       self%cell_center_mesh_3d_size = cell_center_mesh_2d_size * count_layers
@@ -133,21 +124,16 @@ contains
       end if
       allocate (self%cell_center_mesh_coordinates_3d(self%cell_center_mesh_3d_size * 3))
 
+      ! Add 2D coordinates
       do i = 1, cell_center_mesh_2d_size
-         call getkbotktop(i, kb, kt)
-         call getlayerindices(i, nlayb, nrlay)
          do k = 1, count_layers
             id_3d = (i - 1) * count_layers + k
             self%cell_center_mesh_coordinates_3d(3 * id_3d - 2) = cell_center_mesh_coordinates_3d_x(i)
             self%cell_center_mesh_coordinates_3d(3 * id_3d - 1) = cell_center_mesh_coordinates_3d_y(i)
-            if (k < nlayb .OR. k > nrlay) then
-               self%cell_center_mesh_coordinates_3d(3 * id_3d) = -999.0_dp ! or some other invalid value to indicate out-of-domain points
-            else
-               self%cell_center_mesh_coordinates_3d(3 * id_3d) = 0.5 * (zws(kb + k - 1) + zws(kb + k - 2)) ! TODO: replace with actual z coordinate, currently just a placeholder
-            end if
          end do
       end do
-
+      ! Add z coordinates
+      call set_cell_center_mesh_zcoords(cell_center_mesh_2d_size, count_layers, zws, self%cell_center_mesh_coordinates_3d)
    end subroutine builder_set_cell_center_mesh_3d
 
    function builder_build(self) result(adapter_instance)
