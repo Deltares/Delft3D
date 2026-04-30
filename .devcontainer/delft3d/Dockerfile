@@ -43,6 +43,7 @@ RUN <<"EOF"
 uv python install 3.12
 uv tool install fortls
 uv tool install fprettify
+uv tool install conan
 EOF
 
 # Configure interactive bash environment.
