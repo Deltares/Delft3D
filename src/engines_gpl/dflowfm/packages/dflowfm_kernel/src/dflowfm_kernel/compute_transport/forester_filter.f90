@@ -85,12 +85,12 @@ contains
       use m_flow, only: EPS6, EPS10
 
       ! Parameters
-      integer :: i_constituent !< Index of the constituent to apply the Forester filter to
-      real(kind=dp), dimension(number_of_active_layers) :: cell_volume !< Volume of the flow cells
-      integer :: number_of_layers !< Number of layers in the vertical column
-      integer :: number_of_active_layers !< Maximum number of active layers in the model
-      integer :: i_bottom_layer !< Index of the bottom layer in the constituents array
-      integer :: max_iterations !< Maximum number of iterations for Forester filter
+      integer, intent(in) :: i_constituent !< Index of the constituent to apply the Forester filter to
+      real(kind=dp), intent(in) :: cell_volume(number_of_active_layers) !< Volume of the flow cells
+      integer, intent(in) :: number_of_layers !< Number of layers in the vertical column
+      integer, intent(in) :: number_of_active_layers !< Maximum number of active layers in the model
+      integer, intent(in) :: i_bottom_layer !< Index of the bottom layer in the constituents array
+      integer, intent(in) :: max_iterations !< Maximum number of iterations for Forester filter
 
       ! Local variables
       real(kind=dp), dimension(number_of_layers) :: updated_constituent !< Array to hold the updated constituent values during filtering
