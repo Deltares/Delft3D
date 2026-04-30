@@ -92,7 +92,7 @@ contains
       call inctime_split(tim)
 
       if (ti_his > 0) then
-         if (comparereal(tim, time_his, eps10) >= 0) then
+         if (comparereal(tim, time_his, EPS10) >= 0) then
             if (out_variable_set_his%count > 0) then
                call finalize_average(out_variable_set_his%statout)
             end if
@@ -107,12 +107,12 @@ contains
                ! needs to be done at exactly ti_his, but over all domains, so cannot go in wrihis
                call clear_runup_gauges()
             end if
-            if (comparereal(time_his, ti_hise, eps10) == 0) then
+            if (comparereal(time_his, ti_hise, EPS10) == 0) then
                time_his = tstop_user + 1
             else
                tem_dif = (tim - ti_hiss) / ti_his
                time_his = max(ti_hiss + (floor(tem_dif + 0.001_dp) + 1) * ti_his, ti_hiss)
-               if (comparereal(time_his, ti_hise, eps10) == 1) then
+               if (comparereal(time_his, ti_hise, EPS10) == 1) then
                   ! next time_his would be beyond end of his-window, write one last his exactly at that end.
                   time_his = ti_hise
                end if
@@ -128,37 +128,37 @@ contains
 
       call timstrt('call wrimap', handle_extra(77))
       if (ti_map > 0.0_dp .or. ti_mpt(1) > 0) then
-         if (comparereal(tim, time_map, eps10) >= 0) then
+         if (comparereal(tim, time_map, EPS10) >= 0) then
             ! update for output, only for 1D
             if (network%loaded) then
                if (ndxi - ndx2d > 0) then
-                  if (jamapFreeboard > 0) then
+                  if (map_write_settings%free_board > 0) then
                      call updateFreeboard(network)
                   end if
-                  if (jamapDepthOnGround > 0) then
+                  if (map_write_settings%depth_on_ground > 0) then
                      call updateDepthOnGround(network)
                   end if
-                  if (jamapVolOnGround > 0) then
+                  if (map_write_settings%vol_on_ground > 0) then
                      call updateVolOnGround(network)
                   end if
                   ! NOTE: updateTotalInflow1d2d, updateTotalInflowLat done in flow_finalizesingletimestep().
                end if
             end if
             if (lnx1d > 0) then
-               if (jamapS1Gradient > 0) then
+               if (map_write_settings%s1gradient > 0) then
                   call updateS1Gradient()
                end if
             end if
 
             if (jaeverydt == 0) then
-               if (jamapFlowAnalysis > 0) then
+               if (map_write_settings%flow_analysis > 0) then
                   ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
                   call updateFlowAnalysisParameters()
                end if
 
                call wrimap(tim)
 
-               if (jamapFlowAnalysis > 0) then
+               if (map_write_settings%flow_analysis > 0) then
                   ! Reset the interval related flow analysis arrays
                   negativeDepths = 0
                   noiterations = 0
@@ -166,18 +166,18 @@ contains
                   flowCourantNumber = 0.0_dp
                end if
             end if
-            if (comparereal(time_map, ti_mape, eps10) == 0) then
+            if (comparereal(time_map, ti_mape, EPS10) == 0) then
                time_map = tstop_user + 1
             else
                tem_dif = (tim - ti_maps) / ti_map
                time_map = max(ti_maps + (floor(tem_dif + 0.001_dp) + 1) * ti_map, ti_maps)
                ti_mpt_rel = ti_mpt - tim
                time_map_mpt = tim + minval(ti_mpt_rel, mask=ti_mpt_rel > 0)
-               if (comparereal(time_map, time_map_mpt, eps10) == 1 .and. comparereal(tim, time_map_mpt, eps10) == -1) then
+               if (comparereal(time_map, time_map_mpt, EPS10) == 1 .and. comparereal(tim, time_map_mpt, EPS10) == -1) then
                   time_map = time_map_mpt
                end if
 
-               if (comparereal(time_map, ti_mape, eps10) == 1) then
+               if (comparereal(time_map, ti_mape, EPS10) == 1) then
                   ! next time_map would be beyond end of map-window, write one last map exactly at that end.
                   time_map = ti_mape
                end if
@@ -189,15 +189,15 @@ contains
 
       call timstrt('call wriclm', handle_extra(78))
       if (ti_classmap > 0) then
-         if (comparereal(tim, time_classmap, eps10) >= 0) then
+         if (comparereal(tim, time_classmap, EPS10) >= 0) then
             call write_map_classes_ugrid(m_incids, tim)
-            if (comparereal(time_classmap, ti_classmape, eps10) == 0) then
+            if (comparereal(time_classmap, ti_classmape, EPS10) == 0) then
                time_classmap = tstop_user + 1
             else
                tem_dif = (tim - ti_classmaps) / ti_classmap
                time_classmap = max(ti_classmaps + (floor(tem_dif + 0.001_dp) + 1) * ti_classmap, ti_classmaps)
 
-               if (comparereal(time_classmap, ti_classmape, eps10) == 1) then
+               if (comparereal(time_classmap, ti_classmape, EPS10) == 1) then
                   ! next time_classmap would be beyond end of incr-window, write one last incr exactly at that end.
                   time_classmap = ti_classmape
                end if
@@ -211,13 +211,13 @@ contains
          !
          if (ti_com /= dt_user .or. ti_ctv(1) > 0) then
             !
-            if (comparereal(tim, time_com, eps10) >= 0) then
+            if (comparereal(tim, time_com, EPS10) >= 0) then
                !
                call wricom(tim)
                !call mess(LEVEL_INFO,'com file written at t=', tim)
                !
                ! Update next com write instant
-               if (comparereal(time_com, ti_come, eps10) == 0) then
+               if (comparereal(time_com, ti_come, EPS10) == 0) then
                   time_com = tstop_user + 1
                else
                   tem_dif = (tim - ti_coms) / ti_com
@@ -227,11 +227,11 @@ contains
                   time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
                   ti_ctv_rel = ti_ctv - tim
                   time_com_ctv = tim + minval(ti_ctv_rel, mask=ti_ctv_rel > 0)
-                  if (comparereal(time_com, time_com_ctv, eps10) == 1 .and. comparereal(tim, time_com_ctv, eps10) == -1) then
+                  if (comparereal(time_com, time_com_ctv, EPS10) == 1 .and. comparereal(tim, time_com_ctv, EPS10) == -1) then
                      time_com = time_com_ctv
                   end if
                   !
-                  if (comparereal(time_com, ti_come, eps10) == 1) then
+                  if (comparereal(time_com, ti_come, EPS10) == 1) then
                      ! next time_com would be beyond end of com-window, write one last comfile exactly at that end.
                      time_com = ti_come
                   end if
@@ -253,16 +253,16 @@ contains
 
       call timstrt('call wrirst', handle_extra(76))
       if (ti_rst > 0) then
-         if (comparereal(tim, time_rst, eps10) == 0) then
+         if (comparereal(tim, time_rst, EPS10) == 0) then
             ! Update structure parameters
             call structure_parameters_rst()
             call wrirst(tim)
-            if (comparereal(time_rst, ti_rste, eps10) == 0) then
+            if (comparereal(time_rst, ti_rste, EPS10) == 0) then
                time_rst = tstop_user + 1
             else
                tem_dif = (tim - ti_rsts) / ti_rst
                time_rst = max(ti_rsts + (floor(tem_dif + 0.001_dp) + 1) * ti_rst, ti_rsts)
-               if (comparereal(time_rst, ti_rste, eps10) == 1) then
+               if (comparereal(time_rst, ti_rste, EPS10) == 1) then
                   ! We've come beyond the end time of restart window.
                   ! Write just a last one exactly on that end time (i.e. not at tstop_user).
                   time_rst = ti_rste
