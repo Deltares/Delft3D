@@ -49,7 +49,8 @@ namespace pre_c_sumo
         for (const auto&& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
-            DiffuserMapping& mapping = csumo_2d_mesh.forward_map[index];
+            const auto mapping_index = static_cast<std::size_t>(index);
+            DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
 
             auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
                                          const std::string& name, const auto& ambient_point_index) {
