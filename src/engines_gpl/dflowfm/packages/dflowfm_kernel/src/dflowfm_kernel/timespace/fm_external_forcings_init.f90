@@ -752,7 +752,7 @@ contains
                  oper => input%oper, &
                  method => input%method, &
                  variable_name => input%variable_name, &
-                 is_static_field => input%is_static_field) ! [CHANGE 1] expose the new flag
+                 is_static_field => input%is_static_field)
 
          kx = 1
          ec_item = ec_undef_int
