@@ -60,7 +60,7 @@ class netcdf_fortranRecipe(ConanFile):
     def build(self):
         cmake = CMake(self)
         cmake.configure()
-        cmake.bui
+        cmake.build()
 
     def package(self):
         cmake = CMake(self)
