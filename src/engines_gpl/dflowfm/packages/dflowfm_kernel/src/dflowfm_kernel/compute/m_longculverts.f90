@@ -1239,32 +1239,32 @@ contains
    end subroutine addlongculvertcrosssections
 
    !> add special 1D2D crossection for the longculvert and add it to the line2cross array
-   subroutine add_longculvert_1D2D_crosssection(network, flowlink, branchId, csdefId)
+   subroutine add_longculvert_1D2D_crosssection(network, flowlink, branch_id, cs_def_id)
       use precision, only: dp
       use m_hash_search
       use m_readCrossSections
       use m_network
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: flowlink !< Flowlink number on which to place the cross section. Should be 1D2D link belonging to the long culvert
-      character(len=IdLen), intent(in) :: branchId !< Branch id on which to place the cross section
-      character(len=IdLen), intent(in) :: csdefId !< Id of cross section definition
+      character(len=IdLen), intent(in) :: branch_id !< Branch id on which to place the cross section
+      character(len=IdLen), intent(in) :: cs_def_id !< Id of cross section definition
 
       integer :: iref, icrs
       integer :: indx
-      type(t_CrossSection), pointer :: pCrs
-      character(len=5) :: kchar
+      type(t_CrossSection), pointer :: crs_p
+      character(len=16) :: kchar
 
-      indx = hashsearch(network%brs%hashlist, branchId)
-      iref = hashsearch(network%CSDefinitions%hashlist, csdefId)
+      indx = hashsearch(network%brs%hashlist, branch_id)
+      iref = hashsearch(network%CSDefinitions%hashlist, cs_def_id)
       if (indx > 0 .and. iref > 0) then
          if (network%crs%count + 1 > network%crs%size) then
             call realloc(network%crs)
          end if
          icrs = network%crs%count + 1
-         pCrs => network%crs%cross(icrs)
+         crs_p => network%crs%cross(icrs)
          write (kchar, '(I0)') flowlink
-         pCrs%csid = trim(branchId)//'_1D2D_'//trim(kchar)
-         call finalizeCrs(network, pCrs, iref, icrs)
+         crs_p%csid = trim(branch_id)//'_1D2D_'//trim(kchar)
+         call finalizeCrs(network, crs_p, iref, icrs)
          network%adm%line2cross(flowlink, :)%c1 = icrs
          network%adm%line2cross(flowlink, :)%c2 = icrs
          network%adm%line2cross(flowlink, :)%f = 1.0_dp
