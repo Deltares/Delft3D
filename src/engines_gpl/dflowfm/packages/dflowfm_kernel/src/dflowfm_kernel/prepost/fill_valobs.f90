@@ -71,7 +71,7 @@ contains
                                      ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, &
                                      ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
-                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs
+                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
       use Timers, only: timon, timstrt, timstop
       use m_gettaus, only: gettaus
@@ -90,6 +90,7 @@ contains
       use m_links_to_centers, only: links_to_centers
       use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
       use fm_location_types
+      use messagehandling, only: LEVEL_WARN, msgbuf, mess      
 
       implicit none
 
@@ -227,8 +228,13 @@ contains
       do i = 1, numobs + nummovobs
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
-         if (intobs(i) == 0) then
+         if ((intobs(i) == 0) .or. (neighbour_nodes_obs(1, i) == 0)) then
             ! Treat snapped stations as interpolated ones!
+            ! And treat interpolated ones that could not have been interpolated as snapped ones (because they are out of interpolation boundaries)
+            if (intobs(i) /= 0) then
+               write (msgbuf, '(a, i0, a, f0.10, a, f0.10, a)') "Unable to interpolate #", i, " (", xobs(i), ", ", yobs(i), "). It's probably at the edge and will be snapped!"
+               call mess(LEVEL_WARN, msgbuf)
+            end if
             neighbour_nodes_obs(1, i) = k
             neighbour_nodes_obs(2, i) = k
             neighbour_nodes_obs(3, i) = k
