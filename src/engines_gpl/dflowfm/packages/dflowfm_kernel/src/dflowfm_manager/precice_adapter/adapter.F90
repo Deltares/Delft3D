@@ -6,19 +6,28 @@ module precice_adapter
    implicit none(type, external)
 
    private
-   real(kind=dp), save ::  summed_time_progress
-   logical, save :: do_write
+   real(kind=dp), save ::  summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
 
+   integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
+   type :: quantity_t
+      character(kind=c_char, len=MAX_STANDARD_NAME_LENGTH) :: standard_name
+      logical :: is_active
+   end type quantity_t
+   
+   type :: quantities_t
+      type(quantity_t) :: bl = quantity_t(standard_name="sea_floor_depth_below_geoid", is_active=.true.)
+      type(quantity_t) :: s1 = quantity_t(standard_name="sea_surface_height", is_active=.true.)
+      type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
+      type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
+   end type quantities_t
+   
    type, extends(precice_adapter_interface_t) :: precice_adapter_t
       character(kind=c_char, len=:), allocatable :: config_file
       character(kind=c_char, len=:), allocatable :: name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_name
       character(kind=c_char, len=:), allocatable :: cell_center_mesh_3d_name
-      character(kind=c_char, len=27) :: bed_levels_name = "sea_floor_depth_below_geoid" ! unstruc_netcdf:id_bldepth
-      character(kind=c_char, len=18) :: water_levels_name = "sea_surface_height" ! unstruc_netcdf:id_s1
-      character(kind=c_char, len=33) :: water_depths_name = "sea_floor_depth_below_sea_surface" ! unstruc_netcdf:id_hs
-      character(kind=c_char, len=27) :: density_name = "sea_water_potential_density"
+      type(quantities_t) :: quantities
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids
       integer(kind=c_int), dimension(:), allocatable :: vertex_ids_3d
       logical :: is_communicator_set = .false.
@@ -107,10 +116,8 @@ contains
          call precice_adapter_write_data(self)
       end if
 
-      ! Finally, call initialise.
       call precicef_initialize()
       summed_time_progress = 0.0
-      ! do_write = .true.
    end subroutine precice_adapter_initialize
 
    subroutine precice_adapter_update(self, timestep)
@@ -121,8 +128,6 @@ contains
       use precision, only: dp
       use MessageHandling, only: mess, LEVEL_ERROR
       use m_flow, only: kmx, zws
-
-      ! TODO: Import more (global) data structs here.
 
       implicit none(type, external)
 
@@ -137,11 +142,6 @@ contains
          return ! Skip if the connection is no longer ongoing.
       end if
 
-      !if (do_write) then
-      !   call precice_adapter_write_data(self)
-      !   do_write = .false.
-      !end if
-      
       ! Actually advance time
       call precicef_get_max_time_step_size(max_timestep)
       summed_time_progress = summed_time_progress + timestep
@@ -158,17 +158,9 @@ contains
          call precice_adapter_write_data(self)
          call precicef_advance(max_timestep)
          summed_time_progress = 0.0
-         ! do_write = .true.
       else
          write(*,*) "Not advancing preCICE yet, summed_time_progress = ", summed_time_progress, " max_timestep = ", max_timestep
       end if
-      !call precicef_is_coupling_ongoing(is_ongoing)
-      !if (is_ongoing == 1 .and. do_write) then
-      !   call precice_adapter_write_data(self)
-      !   do_write = .false.
-      !end if
-
-      ! TODO: Read latest state here ?
    end subroutine precice_adapter_update
 
    subroutine precice_adapter_finalize(self)
@@ -192,18 +184,26 @@ contains
       class(precice_adapter_t), intent(in) :: self
 
       ! Write water depths (do we need to consider active nodes?)
-      call precicef_write_data(self%cell_center_mesh_name, self%water_depths_name, &
+      if (self%quantities%hs%is_active) then
+         call precicef_write_data(self%cell_center_mesh_name, self%quantities%hs%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, &
+                                  hs, len(self%cell_center_mesh_name), len(trim(self%quantities%hs%standard_name)))
+      end if
+      if (self%quantities%s1%is_active) then
+         call precicef_write_data(self%cell_center_mesh_name, self%quantities%s1%standard_name, &
+                                  size(self%vertex_ids), self%vertex_ids, &
+                                  s1, len(self%cell_center_mesh_name), len(trim(self%quantities%s1%standard_name)))
+      end if
+      if (self%quantities%bl%is_active) then
+         call precicef_write_data(self%cell_center_mesh_name, self%quantities%bl%standard_name, &
                                size(self%vertex_ids), self%vertex_ids, &
-                               hs, len(self%cell_center_mesh_name), len(self%water_depths_name))
-      call precicef_write_data(self%cell_center_mesh_name, self%water_levels_name, &
-                               size(self%vertex_ids), self%vertex_ids, &
-                               s1, len(self%cell_center_mesh_name), len(self%water_levels_name))
-      call precicef_write_data(self%cell_center_mesh_name, self%bed_levels_name, &
-                               size(self%vertex_ids), self%vertex_ids, &
-                               -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(self%bed_levels_name))
-      call precicef_write_data(self%cell_center_mesh_3d_name, self%density_name, &
-                                 size(self%vertex_ids_3d), self%vertex_ids_3d, &
-                                 potential_density, len(self%cell_center_mesh_3d_name), len(self%density_name))
+                               -1 * bl(1:ndx2d), len(self%cell_center_mesh_name), len(trim(self%quantities%bl%standard_name)))
+      end if
+      if (self%quantities%rho%is_active) then
+         call precicef_write_data(self%cell_center_mesh_3d_name, self%quantities%rho%standard_name, &
+                                  size(self%vertex_ids_3d), self%vertex_ids_3d, &
+                                  potential_density, len(self%cell_center_mesh_3d_name), len(trim(self%quantities%rho%standard_name)))
+      end if
    end subroutine precice_adapter_write_data
 
 end module precice_adapter
