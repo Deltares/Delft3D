@@ -1411,7 +1411,8 @@ contains
 
    function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
       use precision, only: dp
-      use m_flowgeom, only: ndx, ndx1db, ndxi, ndx2d, lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln
+      use m_flowgeom, only: lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln, t_fm_flowgeom
+      use unc_build_flowgeom, only: flowgeom
       use dfm_error, only: dfm_noerr
       use m_alloc, only: realloc
       use m_missing, only: dmiss
@@ -1420,7 +1421,7 @@ contains
       use m_get_layer_indices, only: getlayerindices
       use m_get_layer_indices_l_max, only: getlayerindiceslmax
       use m_get_Lbot_Ltop_max, only: getlbotltopmax
-      use network_data, only: numk, numl, numl1d
+      use network_data, only: numl, numl1d
       use m_flow, only: kmx
 
       implicit none
@@ -1435,48 +1436,37 @@ contains
 
       integer :: ierr !< Result status, DFM_NOERR if successful.
 
-      integer :: n1d_write !< Number of 1D nodes to write.
+      !These two will be removed once 2d edge2ln and face2ln are properly built in flowgeom.
+      integer :: ndx2d !< Number of 2D faces in the output set (from flowgeom).
+      integer :: n1d_write !< Number of 1D nodes to write (from flowgeom).
       integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
 !TODO remove save and deallocate?
       real(kind=dp), allocatable, save :: workL(:)
       real(kind=dp), allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
-! temporary UGRID fix
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndxndxi !< Last 2/3D node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1D node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
 
       ierr = DFM_NOERR
-
-      if (present(jabndnd)) then
-         jabndnd_ = jabndnd
-      else
-         jabndnd_ = 0
+      if (jabndnd == 1) then
       end if
-      if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
-      else
-         ndxndxi = ndxi
-         last_1d = ndxi
-      end if
+      ! Output-set counts from the flowgeom object (already account for jabndnd via build_flowgeom).
+      ndx2d = flowgeom%mesh2d%numFace
+      n1d_write = flowgeom%mesh1D%numNode
 
       select case (iloc)
       case (UNC_LOC_CN) ! Corner point location
          ! Internal 1d netnodes. Horizontal position: nodes in 1d mesh.
-         if (id_var(1) > 0 .and. ndxi > ndx2d) then ! If there are 1d flownodes, then there are 1d netnodes.
+         if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes, then there are 1d netnodes.
             ierr = UG_NOTIMPLEMENTED ! TODO: AvD putting data on 1D corners not implemented yet.
             goto 888
          end if
          ! Internal 2d netnodes. Horizontal position: nodes in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes, then there are 2d netnodes.
-            ierr = nf90_put_var(ncid, id_var(2), values(1:numk), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(2), values(1:flowgeom%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
          end if
 
       case (UNC_LOC_S) ! Pressure point location
-         n1d_write = last_1d - ndx2d
          ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
          if (id_var(1) > 0 .and. n1d_write > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:last_1d), start=[1, id_tsp%idx_curtime])
+            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then
@@ -1485,17 +1475,17 @@ contains
 
       case (UNC_LOC_U) ! Horizontal velocity point location
          ! Internal 1d flowlinks. Horizontal position: edges in 1d mesh.
-         if (id_var(1) > 0 .and. lnx1d > 0) then
+         if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
             ! 1d mesh
-            if (size(id_tsp%edgetoln, 1) > 0) then
-               ierr = nf90_put_var(ncid, id_var(1), values(id_tsp%edgetoln(:)), start=[1, id_tsp%idx_curtime])
+            if (size(flowgeom%edgetoln, 1) > 0) then
+               ierr = nf90_put_var(ncid, id_var(1), values(flowgeom%edgetoln(:)), start=[1, id_tsp%idx_curtime])
             end if
          end if
 
-         if (id_var(4) > 0 .and. lnx1d > 0) then
+         if (id_var(4) > 0 .and. flowgeom%n1d2dcontacts > 0) then
             ! 1d2d contacts
-            if (size(id_tsp%contactstoln, 1) > 0) then
-               ierr = nf90_put_var(ncid, id_var(4), values(id_tsp%contactstoln(:)), start=[1, id_tsp%idx_curtime])
+            if (size(flowgeom%contactstoln, 1) > 0) then
+               ierr = nf90_put_var(ncid, id_var(4), values(flowgeom%contactstoln(:)), start=[1, id_tsp%idx_curtime])
             end if
          end if
 
@@ -1561,9 +1551,9 @@ contains
 
       case (UNC_LOC_S3D) ! Pressure point location in all layers.
          ! Fill work array.
-         call realloc(workS3D, [kmx, ndxndxi], keepExisting=.false.)
+         call realloc(workS3D, [kmx, flowgeom%ndx_out], keepExisting=.false.)
          ! Loop over horizontal flownodes.
-         do n = 1, ndxndxi
+         do n = 1, flowgeom%ndx_out
             ! Store missing values for inactive layers (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode n).
             workS3D(:, n) = dmiss
             ! The current horizontal flownode n has active layers nlayb:nlayb+nrlay-1.
@@ -1579,10 +1569,9 @@ contains
          end do
 
          ! Write work array.
-         n1d_write = last_1d - ndx2d
          ! Internal 2dv flownodes. Horizontal position: nodes in 1d mesh. Vertical position: layer centers.
          if (id_var(1) > 0 .and. n1d_write > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), workS3D(1:kmx, ndx2d + 1:last_1d), start=[1, 1, id_tsp%idx_curtime], count=[kmx, n1d_write, 1])
+            ierr = nf90_put_var(ncid, id_var(1), workS3D(1:kmx, ndx2d + 1:ndx2d + n1d_write), start=[1, 1, id_tsp%idx_curtime], count=[kmx, n1d_write, 1])
          end if
          ! Internal 3d flownodes. Horizontal position: faces in 2d mesh. Vertical position: layer centers.
          if (id_var(2) > 0 .and. ndx2d > 0) then
@@ -1611,9 +1600,9 @@ contains
 
          ! Write work array.
          ! Internal 2dv horizontal flowlinks. Horizontal position: edges in 1d mesh. Vertical position: layer centers.
-         if (id_var(1) > 0 .and. lnx1d > 0) then
-            if (size(id_tsp%edgetoln, 1) > 0) then
-               ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, id_tsp%edgetoln(:)), start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(id_tsp%edgetoln, 1), 1])
+         if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
+            if (size(flowgeom%edgetoln, 1) > 0) then
+               ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, flowgeom%edgetoln(:)), start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom%edgetoln, 1), 1])
             end if
          end if
          lnx2d = lnx - lnx1d ! TODO: AvD: now also includes 1D bnds, dont want that.
@@ -1631,9 +1620,9 @@ contains
 
       case (UNC_LOC_W) ! Vertical velocity point location on all layer interfaces.
          ! Fill work array.
-         call realloc(workW, [kmx, ndxndxi], lindex=[0, 1], keepExisting=.false.)
+         call realloc(workW, [kmx, flowgeom%ndx_out], lindex=[0, 1], keepExisting=.false.)
          ! Loop over horizontal flownodes.
-         do n = 1, ndxndxi
+         do n = 1, flowgeom%ndx_out
             ! Store missing values for inactive layer interfaces (i.e. z layers below bottomlevel or above waterlevel for current horizontal flownode n).
             workW(:, n) = dmiss
             ! The current horizontal flownode n has active layers nlayb:nlayb+nrlay-1.
@@ -1649,10 +1638,9 @@ contains
          end do
 
          ! Write work array.
-         n1d_write = last_1d - ndx2d
          ! Internal 2dv vertical flowlinks. Horizontal position: nodes in 1d mesh. Vertical position: layer interfaces.
          if (id_var(1) > 0 .and. n1d_write > 0) then ! If there are 1d flownodes and layers, then there are 2dv vertical flowlinks.
-            ierr = nf90_put_var(ncid, id_var(1), workW(0:kmx, ndx2d + 1:last_1d), start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, n1d_write, 1])
+            ierr = nf90_put_var(ncid, id_var(1), workW(0:kmx, ndx2d + 1:ndx2d + n1d_write), start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, n1d_write, 1])
          end if
          ! Internal 3d vertical flowlinks. Horizontal position: faces in 2d mesh. Vertical position: layer interfaces.
          if (id_var(2) > 0 .and. ndx2d > 0) then ! If there are 2d flownodes and layers, then there are 3d vertical flowlinks.
@@ -15427,6 +15415,7 @@ contains
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: t_fm_flowgeom, bl, bl_min, ba
+      use unc_build_flowgeom, only: flowgeom
       use m_sferic
       use m_missing
       use netcdf
@@ -15471,7 +15460,6 @@ contains
       integer :: n1dedges, n1d2dcontacts, start_index
 
       ! meshgeom2d is built by build_flowgeom_2d and then written here
-      type(t_fm_flowgeom) :: flowgeom
       type(t_ug_network) :: networkids_dummy
 
       jaInDefine = 0
@@ -15551,16 +15539,16 @@ contains
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
       ! All other counters (ndx, ndxi, ndx1db, lnx...) are always the global values; use m_flowgeom directly.
       associate (ndx2d => flowgeom%mesh2d%numFace, &
-                 z2dn  => flowgeom%mesh2d%nodez)
+                 z2dn => flowgeom%mesh2d%nodez)
 
          call unc_write_1D_flowgeom_ugrid(flowgeom, id_tsp, ncid, jabndnd_, jafou_, ja2D_, layer_count, layer_type, layer_zs, interface_zs, contacts, contacttype, n1d2dcontacts)
 
          if (ndx2d > 0 .and. ja2D_) then
             flowgeom%mesh2d%num_layers = layer_count
-            flowgeom%mesh2d%layertype  = layer_type
-            flowgeom%mesh2d%numtopsig  = numtopsig
+            flowgeom%mesh2d%layertype = layer_type
+            flowgeom%mesh2d%numtopsig = numtopsig
             if (layer_count > 0) then
-               flowgeom%mesh2d%layer_zs     => layer_zs
+               flowgeom%mesh2d%layer_zs => layer_zs
                flowgeom%mesh2d%interface_zs => interface_zs
             end if
 
@@ -15601,8 +15589,8 @@ contains
          end if
 
          if (jampi == 1) then
-            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:),  nf90_int, UNC_LOC_S, 'flowelem_domain',   'cell_domain_number', 'domain number of flow element',  '', 0, jabndnd=jabndnd_, ivalid_max=ndomains)
-            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemglobalnr(:), nf90_int, UNC_LOC_S, 'flowelem_globalnr', 'cell_global_number',  'global flow element numbering', '', 0, jabndnd=jabndnd_, ivalid_max=Nglobal_s)
+            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemdomain(:), nf90_int, UNC_LOC_S, 'flowelem_domain', 'cell_domain_number', 'domain number of flow element', '', 0, jabndnd=jabndnd_, ivalid_max=ndomains)
+            ierr = unc_def_var_map(ncid, id_tsp, id_tsp%id_flowelemglobalnr(:), nf90_int, UNC_LOC_S, 'flowelem_globalnr', 'cell_global_number', 'global flow element numbering', '', 0, jabndnd=jabndnd_, ivalid_max=Nglobal_s)
          end if
          ierr = nf90_enddef(ncid)
 
@@ -15621,18 +15609,18 @@ contains
             ierr = ug_put_mesh_contact(ncid, id_tsp%meshcontact_1D2D, contacts(1, :), contacts(2, :), contacttype)
          end if
 
-         if (associated(layer_zs))    deallocate(layer_zs)
-         if (associated(interface_zs)) deallocate(interface_zs)
-         if (allocated(contacts))     deallocate(contacts)
-         if (allocated(contacttype))  deallocate(contacttype)
+         if (associated(layer_zs)) deallocate (layer_zs)
+         if (associated(interface_zs)) deallocate (interface_zs)
+         if (allocated(contacts)) deallocate (contacts)
+         if (allocated(contacttype)) deallocate (contacttype)
 
          if (jampi == 1) then
             if (ndx2d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2),   idomain(flowgeom%face_map))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(flowgeom%face_map))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(flowgeom%face_map))
             end if
             if (flowgeom%mesh1D%numNode > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1),   idomain(flowgeom%node_map_1d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(flowgeom%node_map_1d))
                ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(flowgeom%node_map_1d))
             end if
          end if
@@ -15735,8 +15723,8 @@ contains
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
       end if
 
-      associate (mesh1d         => flowgeom1d%mesh1D, &
-                 n1d2dcontacts  => flowgeom1d%n1d2dcontacts)
+      associate (mesh1d => flowgeom1d%mesh1D, &
+                 n1d2dcontacts => flowgeom1d%n1d2dcontacts)
 
          if (mesh1d%numNode <= 0) goto 999
 

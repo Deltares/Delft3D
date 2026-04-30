@@ -1,7 +1,8 @@
 module unc_build_flowgeom
-
+   use m_flowgeom, only: t_fm_flowgeom
    implicit none(type, external)
    
+   type(t_fm_flowgeom) :: flowgeom
 
    character(len=1024) :: output_polygon = ' ' !< ugly module variable to avoid having to route this from the clal site, only for POC.
 
@@ -167,12 +168,13 @@ end function
 
    end subroutine get_2d_edge_data
 
-     subroutine build_flowgeom_2d(flowgeom, cell_mask)
+          subroutine build_flowgeom_2d(flowgeom, cell_mask)
       use m_flowgeom, only: ndx2d, nd, xz, yz, t_fm_flowgeom
       use network_data, only: xk, yk, zk, kc, numk, numl, numl1d
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
       use m_save_ugrid_state, only: mesh2dname
+      use io_ugrid, only: UG_EDGETYPE_INTERNAL, UG_EDGETYPE_BND, UG_EDGETYPE_INTERNAL_CLOSED, UG_EDGETYPE_BND_CLOSED
       use precision, only: dp
       implicit none
 
@@ -376,6 +378,21 @@ end function
          flowgeom%mesh2d%numEdge         = numEdge
          flowgeom%mesh2d%numFace         = numFace
          flowgeom%mesh2d%maxNumFaceNodes = numNodes
+
+         ! Derive 2D edge category counts from edge_type in the output set.
+         flowgeom%lnx2d_int     = 0
+         flowgeom%lnx2d_bnd     = 0
+         flowgeom%numl2d_closed = 0
+         do i = 1, numEdge
+            select case (edge_type(i))
+            case (UG_EDGETYPE_INTERNAL)
+               flowgeom%lnx2d_int = flowgeom%lnx2d_int + 1
+            case (UG_EDGETYPE_BND)
+               flowgeom%lnx2d_bnd = flowgeom%lnx2d_bnd + 1
+            case (UG_EDGETYPE_INTERNAL_CLOSED, UG_EDGETYPE_BND_CLOSED)
+               flowgeom%numl2d_closed = flowgeom%numl2d_closed + 1
+            end select
+         end do
 
       end associate
 
@@ -626,6 +643,9 @@ subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
 
       ! --- Populate t_fm_flowgeom scalars ---
       flowgeom%n1d2dcontacts = n1d2dcontacts
+
+      ! Total output node count (2D faces + 1D nodes), used as 3D work array loop bound.
+      flowgeom%ndx_out = flowgeom%mesh2d%numFace + n1d_out
 
    end subroutine build_flowgeom_1d
 

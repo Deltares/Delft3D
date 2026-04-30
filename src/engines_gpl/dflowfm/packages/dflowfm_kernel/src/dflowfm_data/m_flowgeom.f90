@@ -79,6 +79,13 @@ module m_flowgeom
          integer, allocatable :: contacttype(:)   !< 1D2D contact type per contact entry.
          integer :: n1d2dcontacts = 0             !< Number of 1D2D contacts.
 
+         !> fm-specific counters, difference between internal and boundary nodes/links, needed for output writing
+         integer :: lnx2d_int = 0       !< Number of internal 2D flow links in the output set.
+         integer :: lnx2d_bnd = 0       !< Number of boundary 2D flow links in the output set.
+         integer :: numl2d_closed = 0   !< Number of closed 2D edges in the output set.
+         integer :: ndx_out = 0         !< Total output nodes (3D work array loop bound).
+         integer, allocatable :: netlink_perm(:) !< Pre-computed permutation for UNC_LOC_L writing.
+
       end type t_fm_flowgeom
 
       real(kind=dp) :: bamin !< minimum 2D cell area
