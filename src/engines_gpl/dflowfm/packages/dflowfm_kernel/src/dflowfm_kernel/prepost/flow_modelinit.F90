@@ -130,7 +130,8 @@ contains
       use m_tauwavefetch, only: tauwavefetch
       use m_fill_constituents, only: fill_constituents
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
-
+      use m_flowparameters, only: map_write_settings
+      use m_unc_build_flowgeom, only: build_flowgeom, flowgeom
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
       ! Activate the following line (See also statements below)
@@ -590,6 +591,8 @@ contains
 
       call mess(LEVEL_INFO, '**')
       call timstop(handle_extra(34)) ! end writeMDUFilepointer
+
+      flowgeom = build_flowgeom(map_write_settings%bnd)
 
       call timstrt('Flowgeom            ', handle_extra(35)) ! write flowgeom ugrid
       if (len_trim(md_flowgeomfile) > 0) then ! Save initial flow geometry to file.

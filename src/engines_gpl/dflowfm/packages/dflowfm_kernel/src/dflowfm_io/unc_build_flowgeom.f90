@@ -4,8 +4,6 @@ module m_unc_build_flowgeom
    
    type(t_fm_flowgeom) :: flowgeom
 
-   character(len=1024) :: output_polygon = ' ' !< ugly module variable to avoid having to route this from the clal site, only for POC.
-
 contains
 
 !> Returns the output index of a full-grid face in face_map, or -999 if not found.
@@ -666,7 +664,6 @@ subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
       logical, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells; if absent, all cells are included.
 
       if (present(md_polygon_file)) then
-
          cell_mask = cell_mask_from_polygon_file(md_polygon_file)
          call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))

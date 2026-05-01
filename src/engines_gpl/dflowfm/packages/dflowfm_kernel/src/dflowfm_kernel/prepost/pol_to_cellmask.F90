@@ -79,7 +79,6 @@ contains
 !! 2D cell centers are taken from xzw/yzw (net cell circumcenters).
 !! 1D cell centers are taken from xz/yz (flow node circumcenters, offset by ndx2d).
 function cell_mask_from_polygon_file(md_polygon_file) result(mask)
-   !use m_pol_to_cellmask, only: pol_to_cellmask
    use m_flowgeom, only: ndxi, ndx2d, xz, yz
    use network_data, only: nump, xzw, yzw
    use m_polygon, only: npl, xpl, ypl, zpl, savepol, restorepol

@@ -13950,7 +13950,6 @@ contains
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
       use fm_location_types
-      use m_unc_build_flowgeom, only: build_flowgeom, output_polygon
 
       implicit none(type, external)
 
@@ -14048,11 +14047,6 @@ contains
          if (jafou_) then
             waterlevelname = 's1max'
          end if
-      end if
-      if (len_trim(output_polygon) > 0) then
-         flowgeom = build_flowgeom(jabndnd_, output_polygon)
-      else
-         flowgeom = build_flowgeom(jabndnd_)
       end if
 
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
