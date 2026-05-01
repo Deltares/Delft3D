@@ -854,7 +854,7 @@ contains
                wghtfac = 1.0_dp
                work2 = 0.0_dp
                if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
-                  wghtfac = 1.0_dp / max(morstatqnt(:, 1), eps10)
+                  wghtfac = 1.0_dp / max(morstatqnt(:, 1), EPS10)
                end if
             end if
 

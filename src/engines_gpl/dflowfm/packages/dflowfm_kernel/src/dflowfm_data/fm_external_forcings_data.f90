@@ -37,7 +37,8 @@ module fm_external_forcings_data
    integer :: mhis !< unit nr external forcings history *.exthis
    integer :: kx, filetype, mext
    character(len=256) :: qid
-   character(len=1) :: operand
+   integer :: operand
+
    integer :: numbnp !< total nr of open boundary cells for network extension
    integer :: jaoldrstfile !< using old-version rst file, which does not contain boundary info
    ! For postprocessing, each boundary polyline is named as a open boundary section.

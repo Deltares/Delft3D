@@ -54,7 +54,6 @@ module m_heatfluxes
    real(kind=dp) :: sarea !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, lake area
    real(kind=dp) :: fwind !< Only for excess temp model temperature_model=TEMPERATURE_MODEL_EXCESS, wind factor
 
-   integer :: jamapheatflux !< write heatfluxes to map
    integer :: jarichardsononoutput !< write Richardson nr to his
    integer :: rho_water_in_wind_stress !< Use rhomean or local (surface) density of model in windstress: 0,1
    integer, parameter :: RHO_MEAN = 0 !< Use rhomean in windstress
@@ -68,7 +67,8 @@ module m_heatfluxes
    real(kind=dp), dimension(:), allocatable :: qtotmap
 
    ! Secchi depth variables
-   logical :: spatial_secchi_depth_is_available !< Flag to indicate if spatially varying Secchi depth is available
+   logical :: secchi_depth_is_spatially_varying !< Flag to indicate if spatially varying Secchi depth is available
+   logical :: secchi_depth_is_time_varying !< Flag to indicate if time-varying Secchi depth is available
    real(kind=dp), dimension(:), allocatable, target :: spatial_secchi_depth !< [m] Space-varying Secchi depth {"location": "face", "shape": ["ndx"]}
 
 contains
@@ -79,7 +79,6 @@ contains
       em = 0.985_dp
       cpa = 1004.0_dp
       cpw = 3986.0_dp
-      jamapheatflux = 0
       jarichardsononoutput = 0
       rho_water_in_wind_stress = RHO_MEAN
 

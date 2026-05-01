@@ -19,3 +19,5 @@ Simple rectangular basin. Five constructed, artificial NF2FF files:
     1 intake, 42 sinks, 1 source. Desa spreading width is 150 m, resulting in all entrainments and discharges being lumped in 4 cells, 1 intake.
 
 The resulting sources and sinks on the D-Flow FM side are added as comments at the end of each NF2FF file.
+
+By enabling line "ExtForceFileNew = sources.ext" in the mdu file, the nearfield sources and sinks are mimicked using traditional sources and sinks.

@@ -73,7 +73,7 @@ contains
       use timers
       use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln, xz, yz
       use waq, only: reset_waq
-      use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag
+      use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag, zws
       use m_flowtimes
       use m_laterals, only: numlatsg
       use network_data, only: NETSTAT_CELLS_DIRTY
@@ -624,6 +624,7 @@ contains
          call fm_precice_adapter_builder%set_name("fm")
          call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
          call fm_precice_adapter_builder%set_cell_center_mesh_2d("fm_flow_cells", ndx, xz, yz)
+         call fm_precice_adapter_builder%set_cell_center_mesh_3d("fm_flow_cells_3d", ndx, kmx, xz, yz, zws)
       end if
 
       iresult = DFM_NOERR

@@ -184,7 +184,7 @@ contains
       else if (nodval == 30) then
          znod = dt_max
          do k = kbot(kk), ktop(kk)
-            znod = min(znod, vol1(k) / max(squ(k), eps10))
+            znod = min(znod, vol1(k) / max(squ(k), EPS10))
          end do
       else if (nodval == 31) then
          if (air_pressure_available) then
@@ -211,7 +211,7 @@ contains
 
          znod = dt_max
          do k = kbot(kk), ktop(kk)
-            if (squ(k) > eps10) then
+            if (squ(k) > EPS10) then
                znod = min(znod, cflmx * vol1(k) / squ(k))
             end if
          end do

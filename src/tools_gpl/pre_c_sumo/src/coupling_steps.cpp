@@ -25,7 +25,7 @@ namespace pre_c_sumo
             std::println(stderr, "Error parsing C-SUMO configuration: {}", expectedCsumoSettings.error().message);
             return expectedCsumoSettings;
         }
-        const auto csumo_settings = std::move(expectedCsumoSettings).value();
+        auto csumo_settings = std::move(expectedCsumoSettings).value();
         std::println("Successfully parsed C-SUMO configuration file version: {}", csumo_settings.fileVersion());
         return csumo_settings;
     }
@@ -69,13 +69,14 @@ namespace pre_c_sumo
                 .wait_for_file = nf2ff_wait_file,
                 .ff_run_directory = diffuser.ff_run_dir.string(),
                 .run_id = run_id,
-                .unique_id = diffuser.id.value_or(""),
+                .unique_id = "", // Do not use unique ID, run C-SUMO in different directories for now
                 .subgrid_model_nr = subgrid_model_nr,
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
                 .diffuser = make_point(diffuser.position),
                 .intake = diffuser.intake.has_value() ? std::optional{make_point(*diffuser.intake)} : std::nullopt,
                 .ambient_points = ambient_points,
+                .settings_xml_node = diffuser.settings_xml_node,
             };
 
             const auto result = FF2NFWriter(std::move(ff2nf_config)).toFile(ff2nf_filename);
