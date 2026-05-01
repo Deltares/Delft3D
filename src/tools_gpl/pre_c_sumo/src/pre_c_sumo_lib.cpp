@@ -14,12 +14,12 @@ namespace pre_c_sumo
     /**
      * @details Construct forward mapping from settings to data node indices.
      */
-    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const size_t diffuser_index)
+    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index)
     {
         const bool has_intake = diffuser_setting.intake.has_value();
-        const size_t intake_index = has_intake ? diffuser_index + 1 : 0;
-        const size_t number_of_ambient_points = diffuser_setting.ambient_positions.size();
-        const size_t first_ambient_point_index = has_intake ? diffuser_index + 2 : diffuser_index + 1;
+        const std::size_t intake_index = has_intake ? diffuser_index + 1 : 0;
+        const std::size_t number_of_ambient_points = diffuser_setting.ambient_positions.size();
+        const std::size_t first_ambient_point_index = has_intake ? diffuser_index + 2 : diffuser_index + 1;
 
         const DiffuserMapping diffuser_mapping = {.diffuser_index = diffuser_index,
                                                   .has_intake = has_intake,
@@ -39,7 +39,7 @@ namespace pre_c_sumo
         mesh.name = csumo_mesh_name;
         for (const DiffuserSettings& d : csumo_settings.diffusers())
         {
-            const size_t diffuser_index = mesh.coordinates.size() / dimensions;
+            const std::size_t diffuser_index = mesh.coordinates.size() / dimensions;
             mesh.coordinates.emplace_back(d.position.x_coordinate); // diffuser position x
             mesh.coordinates.emplace_back(d.position.y_coordinate); // diffuser position y
 
