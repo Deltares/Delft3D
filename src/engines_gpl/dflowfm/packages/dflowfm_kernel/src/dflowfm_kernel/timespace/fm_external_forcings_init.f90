@@ -758,7 +758,7 @@ contains
          ec_item = ec_undef_int
          target_data => null()
 
-         res = scan_for_heat_quantities(quantity, kx)
+         res = scan_for_heat_quantities(quantity, target_location_type, kx)
          if (.not. res) then
             res = process_hydrological_quantities(quantity, file_name, target_location_type, target_data)
          end if
@@ -1635,12 +1635,13 @@ contains
    end subroutine construct_target_mask
 
    !> Scan the quantity name for heat relatede quantities.
-   function scan_for_heat_quantities(quantity, kx) result(success)
+   function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
       use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
-
+      use fm_location_types, only: UNC_LOC_S
       character(len=*), intent(in) :: quantity !< Name of the data set.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
       integer, intent(out) :: kx !< Number of individual quantities in the data set
       logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
 
@@ -1648,7 +1649,7 @@ contains
 
       kx = 1
       success = .true.
-
+      target_location_type = UNC_LOC_S
       select case (quantity)
 
       case ('airtemperature')
