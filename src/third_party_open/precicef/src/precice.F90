@@ -356,6 +356,15 @@ module precice
       integer(kind=c_int), value, intent(in) :: dataNameLength
     end subroutine precicef_write_gradient_data
 
+    subroutine precicef_reset_mesh(meshName, meshNameLength) &
+      & bind(c, name='precicef_reset_mesh_')
+
+      import :: c_int, c_char, c_double
+      character(kind=c_char), dimension(*), intent(in) :: meshName
+      integer(kind=c_int), value, intent(in) :: meshNameLength
+    end subroutine precicef_reset_mesh
+
+
     subroutine precicef_start_profiling_section(sectionName, sectionNameLength) &
       & bind(c, name="precicef_start_profiling_section_")
 
