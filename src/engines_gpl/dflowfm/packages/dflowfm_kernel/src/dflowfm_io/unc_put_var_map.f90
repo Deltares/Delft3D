@@ -17,9 +17,11 @@ contains
 !> copy of unc_put_var_map_byte with buffered time
 !! TODO: only implemented for UNC_LOC_S
    function unc_put_var_map_byte_timebuffer(ncid, id_tsp, id_var, iloc, values, t1, tl, jabndnd) result(ierr)
-      use m_flowgeom, only: ndx, ndx1db, ndxi, ndx2d
+      
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s
+      use m_unc_build_flowgeom, only: flowgeom
+
       implicit none
       integer, intent(in) :: ncid
       type(t_unc_timespace_id), intent(in) :: id_tsp !< Map file and other NetCDF ids.
@@ -33,34 +35,23 @@ contains
       integer :: ierr !< Result status, DFM_NOERR if successful.
 
       integer :: tstart !< time index of t1
-      integer :: n1d_write !< Number of 1D nodes to write.
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndxndxi !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
+      integer :: n1d_write !< Number of 1D nodes to write.
+      integer :: ndx2d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
 
+      jabndnd_ = jabndnd
       ierr = DFM_NOERR
 
-      if (present(jabndnd)) then
-         jabndnd_ = jabndnd
-      else
-         jabndnd_ = 0
-      end if
-      if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
-      else
-         ndxndxi = ndxi
-         last_1d = ndxi
-      end if
+      ndx2d     = flowgeom%mesh2d%numFace
+      n1d_write = flowgeom%mesh1D%numNode
 
       select case (iloc)
 
       case (UNC_LOC_S) ! Pressure point location
-         n1d_write = last_1d - ndx2d
          tstart = id_tsp%idx_curtime - tl + t1
          ! Internal 1d flownodes. Horizontal position: nodes in 1d mesh.
          if (id_var(1) > 0 .and. n1d_write > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:last_1d, t1:tl), start=[1, tstart])
+            ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write, t1:tl), start=[1, tstart])
          end if
          ! Internal 2d flownodes. Horizontal position: faces in 2d mesh.
          if (id_var(2) > 0 .and. ndx2d > 0) then
@@ -80,7 +71,7 @@ contains
 !
    function unc_put_var_map_dble2(ncid, id_tsp, id_var, iloc, values, default_value, locdim, jabndnd) result(ierr)
       use precision, only: dp
-      use m_flowgeom, only: ndx, ndx1db, ndxi, ndx2d, lnx1d, lnxi, lnx, lnx1db
+      use m_flowgeom, only: lnx1d, lnxi, lnx, lnx1db
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s, unc_loc_u
       use network_data, only: numl, numl1d
@@ -103,29 +94,21 @@ contains
       integer, dimension(3) :: dimids_var
       real(kind=dp), allocatable :: work(:, :)
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndxndxi !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
+      integer :: ndx2d !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
       integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
 
       ierr = DFM_NOERR
+      jabndnd_ = jabndnd
+
       if (present(locdim)) then
          ilocdim = locdim
       else
          ilocdim = 1
       end if
 
-      if (present(jabndnd)) then
-         jabndnd_ = jabndnd
-      else
-         jabndnd_ = 0
-      end if
-      if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
-      else
-         ndxndxi = ndxi
-         last_1d = ndxi
-      end if
-
+      ndx2d     = flowgeom%mesh2d%numFace
+      n1d_write = flowgeom%mesh1D%numNode
+      last_1d = ndx2d + n1d_write
       select case (iloc)
       case (UNC_LOC_S) ! Pressure point location
          n1d_write = last_1d - ndx2d
@@ -240,7 +223,7 @@ contains
 
    function unc_put_var_map_dble3(ncid, id_tsp, id_var, iloc, values, default_value, locdim, jabndnd) result(ierr)
       use precision, only: dp
-      use m_flowgeom, only: ndx, ndx1db, ndxi, ndx2d, lnx1d, lnxi, lnx, lnx1db
+      use m_flowgeom, only: lnx1d, lnxi, lnx, lnx1db
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s, unc_loc_u
       use network_data, only: numl, numl1d
@@ -263,7 +246,7 @@ contains
       integer, dimension(4) :: dimids_var
       real(kind=dp), allocatable :: work(:, :, :)
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndxndxi !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
+      integer :: ndx2d !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
       integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
 
       ierr = DFM_NOERR
@@ -272,19 +255,11 @@ contains
       else
          ilocdim = 1
       end if
+      jabndnd_ = jabndnd
 
-      if (present(jabndnd)) then
-         jabndnd_ = jabndnd
-      else
-         jabndnd_ = 0
-      end if
-      if (jabndnd_ == 1) then
-         ndxndxi = ndx
-         last_1d = ndx1db
-      else
-         ndxndxi = ndxi
-         last_1d = ndxi
-      end if
+      ndx2d     = flowgeom%mesh2d%numFace
+      n1d_write = flowgeom%mesh1D%numNode
+      last_1d = ndx2d + n1d_write
 
       select case (iloc)
       case (UNC_LOC_S) ! Pressure point location
