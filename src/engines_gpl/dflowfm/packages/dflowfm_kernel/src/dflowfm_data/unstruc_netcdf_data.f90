@@ -1,4 +1,4 @@
-module unstruc_netcdf_data
+module m_unstruc_netcdf_data
 
 use m_ug_meta, only: t_ug_meta
 use m_ug_mesh, only: t_ug_mesh
@@ -510,4 +510,4 @@ use m_ug_crs, only: t_crs
 
    character(len=:), allocatable :: face_z_stdname
 
-end module unstruc_netcdf_data
+end module m_unstruc_netcdf_data

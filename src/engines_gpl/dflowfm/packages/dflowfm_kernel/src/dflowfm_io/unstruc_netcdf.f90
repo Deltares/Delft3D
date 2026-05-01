@@ -63,6 +63,7 @@ module unstruc_netcdf
    use m_unc_build_flowgeom
    use m_unstruc_netcdf_data
    use m_unc_put_var_map
+   use m_unc_put_var_map_generated
 
    implicit none
 

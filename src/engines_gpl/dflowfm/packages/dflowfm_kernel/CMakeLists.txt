@@ -84,6 +84,24 @@ list(REMOVE_ITEM dflowfm_utils ${CMAKE_CURRENT_SOURCE_DIR}/${dflowfm_utils_path}
 
 get_fortran_source_files(${src_path}/to_thirdparty to_thirdparty)
 
+# --- Generated unc_put_var_map ---
+if(NOT Python_FOUND)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
+endif()
+set(unc_put_var_map_output    "${CMAKE_CURRENT_BINARY_DIR}/generated/m_unc_put_var_map_generated.f90")
+set(unc_put_var_map_generator "${CMAKE_CURRENT_SOURCE_DIR}/src/python/generate_unc_put_var_map.py")
+
+add_custom_command(
+    OUTPUT  "${unc_put_var_map_output}"
+    COMMAND ${Python_EXECUTABLE} ${unc_put_var_map_generator} ${unc_put_var_map_output}
+    DEPENDS "${unc_put_var_map_generator}"
+    COMMENT "Regenerating m_unc_put_var_map_generated.f90"
+    VERBATIM
+)
+add_custom_target(generate_unc_put_var_map DEPENDS "${unc_put_var_map_output}")
+set_target_properties(generate_unc_put_var_map PROPERTIES FOLDER engines_gpl/dflowfm)
+set_source_files_properties("${unc_put_var_map_output}" PROPERTIES GENERATED TRUE)
+
 # Define library
 set(library_name dflowfm_kernel)
 set(library_source_list     ${fortran_version_files}
@@ -111,9 +129,13 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_utils}
                             ${dflowfm_utils_rest_f90}
                             ${dflowfm_utils_to_deltares_common}
-                            ${to_thirdparty})
+                            ${to_thirdparty}
+                            ${unc_put_var_map_generator}
+                            )
 
-add_library(${library_name} ${library_source_list})
+add_library(${library_name} ${library_source_list} ${unc_put_var_map_output})
+
+add_dependencies(${library_name} generate_unc_put_var_map)
 
 target_link_libraries(${library_name} PRIVATE
     mute_unwanted_compiler_warnings
@@ -281,6 +303,7 @@ if (UNIX)
 endif(UNIX)
 
 # Create the folder structure in vfproj
+source_group("src\\generated" FILES ${unc_put_var_map_output})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${library_source_list})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/dflowfm)
 
