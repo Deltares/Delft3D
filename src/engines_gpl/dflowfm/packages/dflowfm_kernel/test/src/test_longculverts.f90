@@ -1,7 +1,7 @@
 module test_longculverts
     use assertions_gtest
     use m_longculverts, only: convert1D2DLongCulverts
-    use m_network_helpers, only: generate_square_grid, cleanup_network_data
+    use m_network_helpers, only: t_grid_helper
     implicit none
 
 contains
@@ -23,13 +23,15 @@ contains
         use m_longculverts_data, only: longculverts
 
         integer, parameter :: COORD_COUNT = 4
+        type(t_grid_helper), allocatable :: grid_helper
         real(kind=dp) :: x_coords(COORD_COUNT)
         real(kind=dp) :: y_coords(COORD_COUNT)
         real(kind=dp) :: z_coords(COORD_COUNT)
         integer :: i
 
         ! Arrange
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
             rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
         )
@@ -61,8 +63,6 @@ contains
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, to_c_string("Expected middle link to be a 1D link."))
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, to_c_string("Expected last new link to be a 1D2D link."))
-        
-        call cleanup_network_data()
     end subroutine test_convert1d2dlongculverts__single_four_point
     !$f90tw )
 
@@ -78,6 +78,7 @@ contains
         implicit none
 
         integer, parameter :: COORD_COUNT = 2
+        type(t_grid_helper), allocatable :: grid_helper
         real(kind=dp) :: x_coords(COORD_COUNT)
         real(kind=dp) :: y_coords(COORD_COUNT)
         real(kind=dp) :: z_coords(COORD_COUNT)
@@ -85,7 +86,8 @@ contains
 
         npl = 0
         ! Arrange
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
             rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
         )
@@ -117,8 +119,6 @@ contains
         call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
 
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
-        
-        call cleanup_network_data()
     end subroutine test_convert1d2dlongculverts__single_two_point
     !$f90tw )
 
@@ -137,6 +137,7 @@ contains
         integer, parameter :: COORD_COUNT_LC1 = 4
         integer, parameter :: COORD_COUNT_LC2 = 2
         integer, parameter :: ARRAY_SIZE = COORD_COUNT_LC1 + COORD_COUNT_LC2 + 1
+        type(t_grid_helper), allocatable :: grid_helper
         real(kind=dp) :: x_coords(ARRAY_SIZE)
         real(kind=dp) :: y_coords(ARRAY_SIZE)
         real(kind=dp) :: z_coords(ARRAY_SIZE)
@@ -145,7 +146,8 @@ contains
         npl = 0
         ! Arrange
         ! 2 x 2 grid.
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
             rows=2, columns=2, side_length=10.0_dp, array_size_margin=16 &
         )
@@ -187,8 +189,6 @@ contains
         
         call F90_ASSERT_EQ(numk, 9 + 4 + 2) ! 9 Netnodes for the grid, 4 for LC1, 2 for LC2.
         call F90_ASSERT_EQ(numl, 12 + 3 + 1) ! 12 Netlinks for the grid, 3 for LC1, 1 for LC2.
-
-        call cleanup_network_data()
     end subroutine test_convert1d2dlongculverts__multiple_culverts
     !$f90tw )
 

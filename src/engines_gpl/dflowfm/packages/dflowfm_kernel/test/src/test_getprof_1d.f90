@@ -5,7 +5,7 @@ module m_test_getprof_1d
    use m_missing, only: dmiss
    use m_get_prof_1D
    use m_alloc, only: realloc
-   use m_network_helpers, only: generate_square_grid, cleanup_network_data
+   use m_network_helpers, only: t_grid_helper
 
    implicit none
 contains
@@ -245,14 +245,15 @@ contains
         use m_network, only: initialize_1dadmin
         use unstruc_channel_flow, only: network, default_channel_flow
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: i, new_link, error_code
         real(kind=dp) :: area, width, perim
-
         
         call disable_timers_logging_and_mpi()
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -274,8 +275,6 @@ contains
         network%loaded = .true.
         
         call getprof_1D(1, 1.0_dp, area, width, japerim, calcconv, perim)
-
-        call cleanup_network_data()
 
         ! We have a rectangular cross section 2 units wide. The water is 1 unit deep.
         ! Surface water width: 2 (Same as rectangular cross section width)
@@ -299,6 +298,7 @@ contains
         use m_Roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 1
         integer :: i, new_link, error_code
@@ -306,7 +306,8 @@ contains
 
         call disable_timers_logging_and_mpi()
         call default_physcoef()
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -339,8 +340,6 @@ contains
         
         call getprof_1D(1, 1.0_dp, area, width, japerim, calcconv, perim)
 
-        call cleanup_network_data()
-
         ! We have a rectangular cross section 2 units wide. The water is 1 unit deep.
         ! Surface water width: 2 (Same as rectangular cross section width)
         ! Water cross section area: 2x1 = 2
@@ -361,8 +360,8 @@ contains
         use m_flow_geominit, only: flow_geominit
         use m_network, only: initialize_1dadmin
         use unstruc_channel_flow, only: network, default_channel_flow
-        implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         real(kind=dp), parameter :: PREISMANN_SLOT_AREA = 1e-7_dp
@@ -371,7 +370,8 @@ contains
 
         
         call disable_timers_logging_and_mpi()
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -394,8 +394,6 @@ contains
         
         call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
 
-        call cleanup_network_data()
-
         ! We have a rectangular cross section 2m wide. The water is 3m deep, but the cross section is only 1.5m high.
         ! Surface water width is 0 for some reason. Maybe due to Preismann slot?
         ! Water cross section area: 2x1.5 = 3m^2
@@ -410,8 +408,8 @@ contains
     subroutine test_getprof_1d__prof1d_without_profile() bind(C)
         use m_flow_geominit, only: flow_geominit
         use unstruc_channel_flow, only: network
-        implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -420,7 +418,8 @@ contains
         ! Arrange
         call disable_timers_logging_and_mpi()
         ! Generate mesh
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -436,8 +435,6 @@ contains
         
         ! Act
         call getprof_1D(1, 1.0_dp, area, width, japerim, calcconv, perim)
-
-        call cleanup_network_data()
 
         ! We have a rectangular cross section 2 units wide. The water is 1 unit deep.
         ! Surface water width: 2 (Same as rectangular cross section width)
@@ -458,8 +455,8 @@ contains
         use unstruc_channel_flow, only: network
         use m_roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
-        implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -468,7 +465,8 @@ contains
         ! Arrange
         call disable_timers_logging_and_mpi()
         ! Generate mesh
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -492,8 +490,6 @@ contains
         ! Act
         call getprof_1D(1, 1.0_dp, area, width, japerim, calcconv, perim)
 
-        call cleanup_network_data()
-
         ! We have a rectangular cross section 2 units wide. The water is 1 unit deep.
         ! Surface water width: 2 (Same as rectangular cross section width)
         ! Water cross section area: 2x1 = 2
@@ -513,8 +509,8 @@ contains
         use m_flow_geominit, only: flow_geominit
         use unstruc_channel_flow, only: network
         use m_longculverts_data, only: newculverts
-        implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -523,7 +519,8 @@ contains
         ! Arrange
         call disable_timers_logging_and_mpi()
         ! Generate mesh
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -541,8 +538,6 @@ contains
         ! Act
         call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
 
-        call cleanup_network_data()
-
         ! We have a rectangular cross section 2m wide. The water is 3m deep, but the cross section is only 1.5m high.
         ! Surface water width: 2m (Same as rectangular cross section width)
         ! Water cross section area: 2x1.5 = 3m^2
@@ -559,13 +554,15 @@ contains
         use unstruc_channel_flow, only: network
         implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
         real(kind=dp) :: area, width, perim
 
         call disable_timers_logging_and_mpi()
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -577,8 +574,6 @@ contains
         network%loaded = .false. ! Trick to skip the branch
         
         call getprof_1D(1, 1.0_dp, area, width, japerim, calcconv, perim)
-
-        call cleanup_network_data()
 
         ! We have a rectangular cross section 2 units wide. The water is 1 unit deep.
         ! Surface water width: 2 (Same as rectangular cross section width)
@@ -599,8 +594,8 @@ contains
         use unstruc_channel_flow, only: network
         use m_roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
-        implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 1
         integer :: new_link, error_code
@@ -609,7 +604,8 @@ contains
         call disable_timers_logging_and_mpi()
         call default_physcoef()
 
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -626,8 +622,6 @@ contains
         call realloc(cfuhi, lnx)
         
         call getprof_1D(1, 1.0_dp, area, width, japerim, calcconv, perim)
-
-        call cleanup_network_data()
 
         ! We have a rectangular cross section 2 units wide. The water is 1 unit deep.
         ! Surface water width: 2 (Same as rectangular cross section width)
@@ -650,13 +644,15 @@ contains
         use m_longculverts_data, only: newculverts
         implicit none
 
+        type(t_grid_helper), allocatable :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
         real(kind=dp) :: area, width, perim
 
         call disable_timers_logging_and_mpi()
-        call generate_square_grid( &
+        grid_helper = t_grid_helper()
+        call grid_helper%make_square_grid( &
             bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
             rows=1, columns=2, array_size_margin=2 &
         )
@@ -669,8 +665,6 @@ contains
         newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
         
         call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)
-
-        call cleanup_network_data()
 
         ! We have a rectangular cross section 2m wide. The water is 3m deep, but the cross section is only 1.5m high.
         ! Surface water width: 2m (Same as rectangular cross section width)

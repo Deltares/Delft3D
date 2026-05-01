@@ -1,13 +1,21 @@
 module m_network_helpers
     implicit none
     private
-    public :: generate_square_grid, cleanup_network_data
+
+    !> Helps make grids for use in unit tests. Initializes arrays in `network_data` and `m_flow{geom}`.
+    !! It has a `final` subroutine to deallocate memory initialized by grid creation subroutines.
+    type, public :: t_grid_helper
+        logical :: grid_created = .false.
+    contains
+        procedure :: make_square_grid
+        final :: cleanup_grid
+    end type t_grid_helper
 contains
 
     !> Initializes network_data with a square grid consisting of `rows * columns` square cells.
     !! The square cells are axis-aligned and have side length `side_length`. Only the bottom left
     !! coordinates of the grid need to be specified.
-    subroutine generate_square_grid(bottom_left_x, bottom_left_y, side_length, rows, columns, array_size_margin)
+    subroutine make_square_grid(self, bottom_left_x, bottom_left_y, side_length, rows, columns, array_size_margin)
         use precision, only: dp
         use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod, LINK_2D
         use m_cell_geometry, only: xz, yz, ndx
@@ -15,14 +23,15 @@ contains
         use m_dimens, only: kmax, lmax
         use m_set_nod_adm, only: setnodadm
         use gridoperations, only: findcells
-        implicit none
         
+        class(t_grid_helper), intent(inout) :: self
         real(kind=dp), intent(in) :: bottom_left_x !< X-coordinate of cell center
         real(kind=dp), intent(in) :: bottom_left_y !< Y-coordinate of cell center
         real(kind=dp), intent(in) :: side_length !< Side length of square cell
         integer, intent(in) :: rows !< Number of rows
         integer, intent(in) :: columns !< Number of columns
-        integer, optional, intent(in) :: array_size_margin
+        integer, optional, intent(in) :: array_size_margin  !< Margin to add to some array sizes to avoid crashes in certain cases.
+
         integer :: array_size_margin_
         integer :: istat
         integer :: i, row, col, link_index, bottom_left_node_index, up_node_index, right_node_index, up_right_node_index
@@ -81,15 +90,21 @@ contains
         
         kmax = 100
         lmax = 100
-    end subroutine generate_square_grid
+        
+        self%grid_created = .true.
+    end subroutine make_square_grid
 
-    !> Cleanup network_data arrays allocated by setup_single_rectangular_netcell
-    subroutine cleanup_network_data()
+    !> Cleanup network_data arrays allocated by network helper.
+    subroutine cleanup_grid(self)
         use network_data, only: xk, yk, zk, kc, nmk, numk, kn, nump, nump1d2d, netcell, tface, lc, numl, xzw, yzw, nod, rnod
         use m_cell_geometry, only: xz, yz, ndx
-        implicit none
-        
+
+        type(t_grid_helper), intent(in) :: self
         integer :: i
+
+        if (.not. self%grid_created) then
+            return  ! No grid created, so nothing to clean up.
+        end if
         
         ! Deallocate node arrays
         if (allocated(xk)) then
@@ -159,6 +174,6 @@ contains
             deallocate(xz)
         end if
         ndx = 0
-    end subroutine cleanup_network_data
+    end subroutine cleanup_grid
 
 end module m_network_helpers

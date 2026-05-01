@@ -15,6 +15,7 @@ contains
       use network_data, only: kn, numl1d, LINK_1D2D_STREETINLET
       use m_GlobalParameters, only: t_chainage2cross
       use m_readcrosssections, only: finalizeCrs
+      use Messages, only: SetMessage, LEVEL_ERROR
 
       use m_flowgeom, only: wu1Duni5, hh1Duni5
       use m_physcoef, only: frcunistreetinlet
@@ -22,7 +23,7 @@ contains
 
       type(t_network), target, intent(inout) :: network !< The 1D channel administration.
 
-      integer :: idef, icrs, L
+      integer :: idef, icrs, L, stat
 
       call add_1d2d_cross_section_definition( &
          network%CSDefinitions, width=wu1Duni5, height=hh1Duni5, &
@@ -30,7 +31,12 @@ contains
       )
       call add_cross_section(network, idef, icrs)
 
-      call realloc_line2cross(network%adm%line2cross, [numl1d, 3])
+      call realloc_line2cross(network%adm%line2cross, [numl1d, 3], stat=stat)
+      if (stat /= 0) then
+         call SetMessage(LEVEL_ERROR, "Failed to reallocate line2cross")
+         return
+      end if
+
       do L = 1, numl1d
          associate (link_cross_sections => network%adm%line2cross(L, :))
             ! Street inlets share their link code `LINK_1D2D_STREETINLET` with long culverts. We assume that
@@ -107,13 +113,12 @@ contains
 
       type(t_chainage2cross), dimension(:,:), pointer, intent(inout) :: line2cross !< Link to cross sections administration.
       integer, dimension(2), intent(in) :: new_size !< New shape of the of the `line2cross` array.
-      integer, optional, intent(out) :: stat !< Status code returned to make error handling possible.
+      integer, intent(out) :: stat !< Status code returned to make error handling possible.
 
       type(t_chainage2cross), dimension(:,:), pointer :: temp
       integer, dimension(2) :: copy_size
-      integer :: stat_
 
-      stat_ = 0  ! Default `stat` value: No error
+      stat = 0  ! Default `stat` value: No error
 
       if (associated(line2cross)) then
          if (all(new_size == ubound(line2cross))) then
@@ -122,11 +127,8 @@ contains
       end if
 
       ! Reallocation required
-      allocate(temp(1:new_size(1), 1:new_size(2)), stat=stat_)
-      if (stat_ /= 0) then
-         if (present(stat)) then
-            stat = stat_
-         end if
+      allocate(temp(1:new_size(1), 1:new_size(2)), stat=stat)
+      if (stat /= 0) then
          return
       end if
 
@@ -134,13 +136,10 @@ contains
       if (associated(line2cross)) then
          copy_size = min(ubound(line2cross), new_size)
          temp(1:copy_size(1), 1:copy_size(2)) = line2cross(1:copy_size(1), 1:copy_size(2))
-         deallocate(line2cross, stat=stat_)
+         deallocate(line2cross, stat=stat)
       end if
 
       line2cross => temp
-      if (present(stat)) then
-         stat = stat_
-      end if
    end subroutine realloc_line2cross
 
 end module m_default1d2d
