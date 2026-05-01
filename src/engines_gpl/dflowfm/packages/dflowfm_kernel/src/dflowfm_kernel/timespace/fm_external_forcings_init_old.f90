@@ -1511,6 +1511,7 @@ contains
       use unstruc_files, only: resolvepath
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg, loglevel_StdOut
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
@@ -1535,7 +1536,7 @@ contains
 
       ! If no source/sink exists, then do not write related statistics to His-file
       if (num_source_sink < 0) then
-         jahissourcesink = 0
+         his_write_settings%sourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
 
@@ -1608,7 +1609,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ngatesg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ngatesg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity gateloweredgelevel and file ''', trim(filename), '''. Keeping fixed (open) gate level.'
                   call warn_flush()
@@ -1677,7 +1678,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = 1
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncdamsg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncdamsg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity damlevel and file ''', trim(filename), '''. Keeping fixed (closed) dam level.'
                   call warn_flush()
@@ -1836,7 +1837,7 @@ contains
                inquire (file=trim(filename0), exist=exist)
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = kx = 3
-                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand='O', targetIndex=ncgensg)
+                  success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method=spaceandtime, operand=OPERAND_OVERRIDE, targetIndex=ncgensg)
                else
                   write (msgbuf, '(a,a,a)') 'No .tim-series file found for quantity generalstructure and file ''', trim(filename), '''. Keeping fixed (closed) general structure.'
                   call warn_flush()
@@ -1971,7 +1972,7 @@ contains
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
                   ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
                   call clear_ec_message()
-                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand='O', targetIndex=num_source_sink)) then
+                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=num_source_sink)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
                               //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()

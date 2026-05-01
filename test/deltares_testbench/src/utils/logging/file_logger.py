@@ -31,13 +31,13 @@ class FileLogger(ILogger):
 
     def error(self, message: str, exc_info: bool = False) -> None:
         self.__logger.error(message, exc_info=exc_info)
-        sys.stderr.write(message + "\n")
+        sys.stderr.write(str(message) + "\n")
         if exc_info:
             sys.stderr.write(traceback.format_exc())
 
     def exception(self, message: str) -> None:
         self.__logger.exception(message)
-        sys.stderr.write(message + "\n")
+        sys.stderr.write(str(message) + "\n")
         sys.stderr.write(traceback.format_exc())
 
     def warning(self, message: str) -> None:

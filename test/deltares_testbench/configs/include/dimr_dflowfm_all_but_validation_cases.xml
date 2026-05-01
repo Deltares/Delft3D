@@ -1797,14 +1797,9 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c012_spatially_varying_dicoww" ref="dflowfm_default">
-        <path version="2026-03-04T13:35:28.939000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
+        <path version="2026-04-20T12:05:47.677000">e02_dflowfm/f006_external_forcing/c012_spatially_varying_dicoww</path>
         <maxRunTime>3600.0</maxRunTime>
-        <checks>
-            <file name="output/spatial_dicoww_map.nc" type="netcdf">
-                <parameters>
-                    <parameter name="mesh2d_sa1" toleranceRelative="0.1" />
-                </parameters>
-            </file>            
+        <checks>           
             <file name="output/spatial_dicoww_his.nc" type="netcdf">
                 <parameters>
                     <parameter name="difwws" toleranceRelative="0.01" />
@@ -2257,11 +2252,17 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_default">
-        <path version="2025-12-15T15:24:00">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+    <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_restart">
+        <path version="2026-04-21T13:06:44.515000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">
+                <parameters>
+                    <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.0001" />
+                    <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+            <file name="output/winter97_saltwater-2_rst_map.nc" type="netcdf">
                 <parameters>
                     <parameter name="mesh2d_ice_area_fraction" toleranceAbsolute="0.0001" />
                     <parameter name="mesh2d_ice_thickness" toleranceAbsolute="0.0001" />
@@ -4625,6 +4626,17 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f015_c045_friccoef_xyz_spherical" ref="dflowfm_default">
+      <path version="2026-04-22T16:16:00">e02_dflowfm/f015_spatial_interpolation/c045_friccoef_xyz_spherical</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_model/model_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_cfu" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>

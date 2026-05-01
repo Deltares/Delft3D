@@ -50,7 +50,7 @@ contains
       use fm_external_forcings_data, only: nbndz, nbndu, kbndu, kbndn, nbndt, kbndz, kbndt, kbnduxy, nbndn, zbndn, zbndt, zbnduxyval, zbnduxy
       use m_missing, only: dmiss
       use m_turbulence, only: rho
-      use m_flowparameters, only: jabarrieradvection, jasedtrails, jamapucmag, jamapucvec, Perot_type, NOT_DEFINED, changeVelocityAtStructures, jacstbnd, jaZerozbndinflowadvection, JaZlayercenterbedvel, PEROT_VOLUME_BASED, epshs, limtypmom, jarhoxu
+      use m_flowparameters, only: jabarrieradvection, jasedtrails, map_write_settings, Perot_type, NOT_DEFINED, changeVelocityAtStructures, jacstbnd, jaZerozbndinflowadvection, JaZlayercenterbedvel, PEROT_VOLUME_BASED, epshs, limtypmom, jarhoxu
       use m_sferic
       use m_get_Lbot_Ltop
       use m_lin2nodx, only: lin2nodx
@@ -73,7 +73,7 @@ contains
          ucx = 0.0_dp
          ucy = 0.0_dp
 
-         make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. jamapucmag > 0 .or. jamapucvec > 0))
+         make2dh = (kmx < 1) .or. (kmx > 0 .and. (jasedtrails > 0 .or. map_write_settings%ucmag > 0 .or. map_write_settings%ucvec > 0))
 
          if (make2dh) then ! original 2D coding
 
