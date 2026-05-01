@@ -320,10 +320,18 @@ contains
          ! In the unmasked case this is skipped; full-grid indices == output indices already.
          if (use_mask) then
             do i = 1, numEdge
-               if (edge_faces(1, i) > 0) edge_faces(1, i) = inverse_face_map(edge_faces(1, i))
-               if (edge_faces(2, i) > 0) edge_faces(2, i) = inverse_face_map(edge_faces(2, i))
-               if (edge_faces(1, i) == 0) edge_faces(1, i) = -999
-               if (edge_faces(2, i) == 0) edge_faces(2, i) = -999
+               if (edge_faces(1, i) > 0) then
+                  edge_faces(1, i) = inverse_face_map(edge_faces(1, i))
+               end if
+               if (edge_faces(2, i) > 0) then
+                  edge_faces(2, i) = inverse_face_map(edge_faces(2, i))
+               end if
+               if (edge_faces(1, i) == 0) then
+                  edge_faces(1, i) = -999
+               end if
+               if (edge_faces(2, i) == 0) then
+                  edge_faces(2, i) = -999
+               end if
             end do
          end if
 
@@ -350,8 +358,12 @@ contains
          end do
 
          do i = 1, numEdge
-            if (edge_nodes(1, i) > 0) edge_nodes(1, i) = kc(edge_nodes(1, i))
-            if (edge_nodes(2, i) > 0) edge_nodes(2, i) = kc(edge_nodes(2, i))
+            if (edge_nodes(1, i) > 0) then
+               edge_nodes(1, i) = kc(edge_nodes(1, i))
+            end if
+            if (edge_nodes(2, i) > 0) then
+               edge_nodes(2, i) = kc(edge_nodes(2, i))
+            end if
          end do
 
          do i = 1, numFace
@@ -363,14 +375,18 @@ contains
             nnSize = size(nd(n)%nod)
             do l = 1, nnSize
                nn = nd(n)%nod(l)
-               if (nn > 0) face_nodes(l, i) = kc(nn)
+               if (nn > 0) then
+                  face_nodes(l, i) = kc(nn)
+               end if
             end do
          end do
 
          if (use_mask) then
             call realloc(flowgeom%node_map, netNodeReMappedIndex, keepExisting=.false., fill=0)
             do nn = 1, numk
-               if (kc(nn) > 0) flowgeom%node_map(kc(nn)) = nn
+               if (kc(nn) > 0) then
+                  flowgeom%node_map(kc(nn)) = nn
+               end if
             end do
          end if
 
@@ -412,7 +428,7 @@ contains
 !! All stored indices are output-mesh indices, not full-grid indices.
 !! flowgeom%node_map_1d(i) gives the full-grid flow node index for output 1D node i.
 !! flowgeom%edgetoln(i) gives the full-grid flow link number for output 1D edge i.
-  subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
+   subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
       use m_flowgeom, only: ndxi, ndx2d, ndx1db, nd, xz, yz, &
                             lnx1d, lnxi, lnx1db, ln, kcu, xu, yu, ln2lne, t_fm_flowgeom
       use m_save_ugrid_state, only: mesh1dname, meshgeom1d
@@ -431,18 +447,23 @@ contains
       integer :: node_out_1, node_out_2
       logical :: use_mask
       integer, allocatable :: inverse_node_map_1D(:), inverse_face_map(:)
-      integer, allocatable :: links_1d(:)  !< flat list of all 1D-related flow link indices to process
+      integer, allocatable :: links_1d(:) !< flat list of all 1D-related flow link indices to process
       integer :: nlinks_1d
 
       use_mask = present(node_mask)
 
       ! Reconstruct inverse_face_map from face_map (already populated by build_flowgeom_2d).
-      ! In the unmasked 2D case face_map is identity so inverse_face_map(j) = j and no contact is dropped.
-      allocate(inverse_face_map(ndx2d))
-      inverse_face_map = 0
-      do i = 1, size(flowgeom%face_map)
-         inverse_face_map(flowgeom%face_map(i)) = i
-      end do
+      allocate (inverse_face_map(ndx2d))
+      if (allocated(flowgeom%face_map)) then
+         ! Masked case: face_map is a sparse subset; invert it.
+         inverse_face_map = 0
+         do i = 1, size(flowgeom%face_map)
+            inverse_face_map(flowgeom%face_map(i)) = i
+         end do
+      else
+         ! Unmasked case: identity mapping; all faces are in the output set.
+         inverse_face_map = [(i, i=1, ndx2d)]
+      end if
 
       ! --- Resolve ranges ---
       ndx1d = ndxi - ndx2d
@@ -455,16 +476,16 @@ contains
       end if
 
       ! =========================================================
-      ! Phase 1: Build 1D node index maps
+      ! Build 1D node index maps
       ! =========================================================
       ! node_map_1d(i) = full-grid flow node index for output 1D node i
       ! inverse_node_map_1D(n) = output node index for local-1D node n (0 = excluded)
       !
       ! Internal 1D nodes (1:ndx1d) are subject to node_mask.
       ! Boundary 1D nodes (ndx1d+1:n1d_write) are always included when jabndnd == 1.
-      ! In the unmasked case inverse_node_map_1D(n) = n for all n in 1:n1d_write.
+      ! In the unmasked case node_map and inverse_node_map are trivial mappings.
 
-      allocate(inverse_node_map_1D(n1d_write))
+      allocate (inverse_node_map_1D(n1d_write))
       inverse_node_map_1D = 0
 
       if (use_mask) then
@@ -502,13 +523,13 @@ contains
       else
          nlinks_1d = lnx1d
       end if
-      allocate(links_1d(nlinks_1d))
-      links_1d(1:lnx1d) = [(i, i = 1, lnx1d)]
+      allocate (links_1d(nlinks_1d))
+      links_1d(1:lnx1d) = [(i, i=1, lnx1d)]
       if (jabndnd == 1) then
-         links_1d(lnx1d + 1:) = [(lnxi + i, i = 1, lnx1db - lnxi)]
+         links_1d(lnx1d + 1:) = [(lnxi + i, i=1, lnx1db - lnxi)]
       end if
       ! =========================================================
-      ! Phase 2: Count edges and contacts in the output set
+      ! Count edges and contacts in the output set
       ! =========================================================
       ! 1D edge:  include if BOTH endpoint nodes are in the output set (AND rule, per partition.F90).
       ! Contact:  include if BOTH the 1D node AND the 2D face are in their respective output sets.
@@ -533,15 +554,17 @@ contains
          else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
             if (ln(1, L) > ndx2d) then
                node_out_1 = ln(1, L) - ndx2d
-               face_2d    = ln(2, L)
+               face_2d = ln(2, L)
             else
                node_out_1 = ln(2, L) - ndx2d
-               face_2d    = ln(1, L)
+               face_2d = ln(1, L)
             end if
             if (node_out_1 >= 1 .and. node_out_1 <= n1d_write) then
-               if (inverse_node_map_1D(node_out_1) > 0) then
+               if (inverse_node_map_1D(node_out_1) > 0) then !> valid 1D node
                   if (face_2d >= 1 .and. face_2d <= ndx2d) then
-                     if (any(flowgeom%face_map == face_2d)) n1d2dcontacts = n1d2dcontacts + 1
+                     if (inverse_face_map(face_2d) > 0) then !> valid 2D face
+                        n1d2dcontacts = n1d2dcontacts + 1
+                     end if
                   end if
                end if
             end if
@@ -568,7 +591,7 @@ contains
       end if
 
       ! =========================================================
-      ! Phase 3: Fill node coordinates via node_map_1d
+      ! Fill node coordinates via node_map_1d
       ! =========================================================
       ! Iterating over node_map_1d keeps this loop independent of global indexing.
 
@@ -587,19 +610,23 @@ contains
          end if
       end do
 
-     ! =========================================================
-      ! Phase 4: Fill edges and contacts
+      ! =========================================================
+      ! Fill edges and contacts
       ! =========================================================
       n1dedges = 0
       n1d2dcontacts = 0
       do i = 1, nlinks_1d
          L = links_1d(i)
 
-         if (abs(kcu(L)) == 1) then
+         if (abs(kcu(L)) == 1) then !> 1D edges
             node_out_1 = ln(1, L) - ndx2d
             node_out_2 = ln(2, L) - ndx2d
-            if (node_out_1 < 1 .or. node_out_1 > n1d_write .or. inverse_node_map_1D(node_out_1) == 0) cycle
-            if (node_out_2 < 1 .or. node_out_2 > n1d_write .or. inverse_node_map_1D(node_out_2) == 0) cycle
+            if (node_out_1 < 1 .or. node_out_1 > n1d_write .or. inverse_node_map_1D(node_out_1) == 0) then
+               cycle !> skip edge if node 1 is not in output set
+            end if
+            if (node_out_2 < 1 .or. node_out_2 > n1d_write .or. inverse_node_map_1D(node_out_2) == 0) then
+               cycle !> skip edge if node 2 is not in output set
+            end if
 
             n1dedges = n1dedges + 1
             flowgeom%mesh1D%edge_nodes(1, n1dedges) = inverse_node_map_1D(node_out_1)
@@ -609,29 +636,34 @@ contains
             flowgeom%edgetoln(n1dedges) = L
             if (associated(meshgeom1d%ngeopointx)) then
                L1 = Lperm(ln2lne(L))
-               if (L1 > size(meshgeom1d%edgebranchidx)) L1 = n1dedges
+               if (L1 > size(meshgeom1d%edgebranchidx)) then
+                  L1 = n1dedges
+               end if
                flowgeom%mesh1D%edgebranchidx(n1dedges) = meshgeom1d%edgebranchidx(L1)
-               flowgeom%mesh1D%edgeoffsets(n1dedges)   = meshgeom1d%edgeoffsets(L1)
+               flowgeom%mesh1D%edgeoffsets(n1dedges) = meshgeom1d%edgeoffsets(L1)
             end if
 
-         else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
+         else if (kcu(L) == 3 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then !> 1D-2D contacts
             if (ln(1, L) > ndx2d) then
                node_out_1 = ln(1, L) - ndx2d
-               face_2d    = ln(2, L)
+               face_2d = ln(2, L)
             else
                node_out_1 = ln(2, L) - ndx2d
-               face_2d    = ln(1, L)
+               face_2d = ln(1, L)
             end if
-            if (node_out_1 < 1 .or. node_out_1 > n1d_write) cycle
-            if (inverse_node_map_1D(node_out_1) == 0) cycle
-            if (face_2d < 1 .or. face_2d > ndx2d) cycle
-            if (.not. any(flowgeom%face_map == face_2d)) cycle
-
-            n1d2dcontacts = n1d2dcontacts + 1
-            flowgeom%contactstoln(n1d2dcontacts) = L
-            flowgeom%contacttype(n1d2dcontacts)  = kcu(L)
-            flowgeom%contacts(1, n1d2dcontacts)  = inverse_node_map_1D(node_out_1)
-            flowgeom%contacts(2, n1d2dcontacts)  = find_face_output_index(flowgeom%face_map, face_2d)
+            if (node_out_1 >= 1 .and. node_out_1 <= n1d_write) then
+               if (inverse_node_map_1D(node_out_1) > 0) then !> valid 1D node
+                  if (face_2d >= 1 .and. face_2d <= ndx2d) then
+                     if (inverse_face_map(face_2d) > 0) then !> valid 2D face
+                        n1d2dcontacts = n1d2dcontacts + 1
+                        flowgeom%contactstoln(n1d2dcontacts) = L
+                        flowgeom%contacttype(n1d2dcontacts) = kcu(L)
+                        flowgeom%contacts(1, n1d2dcontacts) = inverse_node_map_1D(node_out_1)
+                        flowgeom%contacts(2, n1d2dcontacts) = inverse_face_map(face_2d)
+                     end if
+                  end if
+               end if
+            end if
          end if
       end do
 
@@ -651,7 +683,7 @@ contains
       flowgeom%ndx_out = flowgeom%mesh2d%numFace + n1d_out
 
       if (.not. use_mask) then
-         deallocate(flowgeom%node_map_1D) ! was only used for construction, but is trivial map
+         deallocate (flowgeom%node_map_1D) ! was only used for construction, but is trivial map
       end if
 
    end subroutine build_flowgeom_1d
