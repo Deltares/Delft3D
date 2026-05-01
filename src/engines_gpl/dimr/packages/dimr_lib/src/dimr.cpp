@@ -63,6 +63,7 @@
 #include <netcdf.h>
 #include <ctime>
 #include <stdio.h>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 
@@ -98,8 +99,8 @@ Dimr::Dimr(void)
     clock = new Clock();
     logLevel = WARNING;
     feedbackLevel = INFO;
-    log = new Log(logFile, clock, logLevel, feedbackLevel);
-    logIsOwned = true;
+    ownedLog_ = std::make_unique<Log>(logFile, clock, logLevel, feedbackLevel);
+    log = ownedLog_.get();
     config = NULL;
     mainArgs = NULL;
     slaveArg = NULL;
@@ -189,10 +190,7 @@ Dimr::~Dimr(void)
     // to do:  (void) FreeLibrary(handle);
     freeLibs();
 
-    if (logIsOwned)
-    {
-        log->Write(DEBUG, my_rank, "dimr shutting down normally");
-    }
+    log->Write(DEBUG, my_rank, "dimr shutting down normally");
 
 #ifndef _WIN32
     free(exeName);
@@ -200,10 +198,7 @@ Dimr::~Dimr(void)
     delete[] exeName;
 #endif
 
-    if (logIsOwned)
-    {
-        delete log;
-    }
+    ownedLog_.reset();
     delete clock;
     delete config;
     free(exePath);
@@ -1406,8 +1401,8 @@ void Dimr::receive_ptr(const char* name, const char* sourceName, int compType, B
     strcat(nameShape, "_shape");
     if (compType != COMP_TYPE_DSLE)
     {
-       //Setting nameshape in DSLE registers it as a constituent, which we do not want.
-       (dllSetVar)(nameShape, shape);
+        // Setting nameshape in DSLE registers it as a constituent, which we do not want.
+        (dllSetVar)(nameShape, shape);
     }
     // Finally: call setvar(name, pointer)
     (dllSetVar)(name, (void*)sourceVarPtr);
@@ -1726,12 +1721,10 @@ void Dimr::scanUnits(XmlTree* rootXml)
 //------------------------------------------------------------------------------
 void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
 {
-    // Needed for path handling
-    char* curPath = new char[MAXSTRING];
-    if (!getcwd(curPath, MAXSTRING))
-        throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (scan)");
-    //
-    //
+    // Needed for path handling in case of relative paths in the component configuration (e.g. for workingDir and
+    // dllPath):
+    const auto curPath = std::filesystem::current_path();
+
     newComp->name = xmlComponent->GetAttrib("name");
     // Element library
     XmlTree* libraryElement = xmlComponent->Lookup("library");
@@ -1869,38 +1862,28 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     }
     // Element workingDir
     XmlTree* workingDirElement = xmlComponent->Lookup("workingDir");
-    const char* rawWorkingDir;
+    std::filesystem::path rawWorkingDir;
     if (workingDirElement == NULL)
     {
         rawWorkingDir = curPath;
         log->Write(INFO, my_rank, "WARNING: No workingDir specified for component %s.", newComp->name);
-        log->Write(INFO, my_rank, "         workingDir is set to %s", rawWorkingDir);
+        log->Write(INFO, my_rank, "         workingDir is set to %s", rawWorkingDir.string().c_str());
     }
     else
     {
         rawWorkingDir = workingDirElement->charData.c_str();
     }
-    // Is workingDir a valid relative path?
-    char* combinedPath = new char[MAXSTRING];
-    sprintf(combinedPath, "%s%s%s", curPath, dirSeparator, rawWorkingDir);
-    if (chdir(combinedPath))
+    // Resolve workingDir: operator/ handles both relative and absolute paths
+    // (appending an absolute path replaces rather than concatenates)
+    const std::filesystem::path resolvedDir = curPath / rawWorkingDir;
+    if (!std::filesystem::is_directory(resolvedDir))
     {
-        // CombinedPath is not correct. May be just workingDir?
-        delete[] combinedPath;
-        // Is workingDir a valid absolute path?
-        if (chdir(rawWorkingDir))
-        {
-            throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
-                            newComp->name, rawWorkingDir);
-        }
-        newComp->workingDir = new char[strlen(rawWorkingDir) + 1];
-        strcpy(newComp->workingDir, rawWorkingDir);
+        throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
+                        newComp->name, rawWorkingDir.string().c_str());
     }
-    else
-    {
-        newComp->workingDir = combinedPath;
-    }
-    chdir(curPath);
+    const std::string resolvedStr = std::filesystem::canonical(resolvedDir).string();
+    newComp->workingDir = new char[resolvedStr.size() + 1];
+    strcpy(newComp->workingDir, resolvedStr.c_str());
 
     // Hack for RTC-Tools:
     // inputFile is an input directory
@@ -1909,7 +1892,6 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     {
         newComp->inputFile = newComp->workingDir;
     }
-    delete[] curPath;
 }
 
 //------------------------------------------------------------------------------
@@ -2444,10 +2426,7 @@ void Dimr::freeLibs(void)
             continue;
         }
 
-        if (logIsOwned)
-        {
-            log->Write(ALL, my_rank, "Freeing library \"%s\"", componentsList.components[i].library);
-        }
+        log->Write(ALL, my_rank, "Freeing library \"%s\"", componentsList.components[i].library);
 #ifndef _WIN32
         dlerror(); /* clear error code */
         int ierr = dlclose(componentsList.components[i].libHandle);

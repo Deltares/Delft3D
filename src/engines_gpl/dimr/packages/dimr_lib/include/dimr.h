@@ -68,6 +68,7 @@
 #include <cstddef>
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <string>
 #include <mpi.h>
 #include <map>
@@ -120,14 +121,15 @@ public:
     double* send(const char* name, int compType, double* sourceVarPtr, int* processes, int nProc, double* transfer);
 
 public:
-    bool ready;                  // true means constructor succeeded and DH ready to run
-    char* exePath;               // name of running dimr executable (argv[0])
-    char* exeName;               // short name of executable
-    Clock* clock;                // timing facility
-    Log* log;                    // logging facility
-    XmlTree* config;             // top of entire XML configuration tree
-    char* mainArgs;              // reassembled command-line arguments (argv[1...])
-    char* slaveArg;              // command-line argument for slave mode
+    bool ready;                     // true means constructor succeeded and DH ready to run
+    char* exePath;                  // name of running dimr executable (argv[0])
+    char* exeName;                  // short name of executable
+    Clock* clock;                   // timing facility
+    std::unique_ptr<Log> ownedLog_; // non-null when Dimr owns the log
+    Log* log;                       // always points to the active log (owned or external)
+    XmlTree* config;                // top of entire XML configuration tree
+    char* mainArgs;                 // reassembled command-line arguments (argv[1...])
+    char* slaveArg;                 // command-line argument for slave mode
     dimr_control_block* control; // structure containing all information from the control block in the config.xml file
     dimr_components componentsList; // Array of all components
     dimr_couplers couplersList;     // Array of all couplers
@@ -140,7 +142,6 @@ public:
     Level feedbackLevel;
     const char* configfile; // name of configuration file
     bool done;              // set to true when it's time to stop
-    bool logIsOwned;        // false when log was injected via set_dimr_logger (owned by the caller)
     char* redirectFile;     // Name of file to redirect stdout/stderr to
                             // Default: Off when started via dimr-exe, On otherwise
 

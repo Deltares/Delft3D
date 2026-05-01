@@ -84,15 +84,62 @@
     #define strdup _strdup
 #endif
 
-struct ParseState
+namespace
 {
-    XmlTree** curnode;
-    std::string charDataStr;
-};
+    std::string trim(const std::string& text, const char* whiteSpace = " \t\n\r")
+    {
+        const auto first = text.find_first_not_of(whiteSpace);
+        if (first == std::string::npos)
+        {
+            return {};
+        }
+        return text.substr(first, text.find_last_not_of(whiteSpace) - first + 1);
+    }
 
-static void starttag(void*, const XML_Char*, const XML_Char**);
-static void endtag(void*, const XML_Char*);
-static void chardata(void*, const XML_Char*, int);
+    struct ParseState
+    {
+        XmlTree** curnode;
+        std::string charData;
+    };
+
+    void starttag(void* userdata, const XML_Char* name, const XML_Char* attr[])
+    {
+        XmlTree** curnode = static_cast<ParseState*>(userdata)->curnode;
+        XmlTree* node = new XmlTree(*curnode, name);
+        (*curnode)->AddChild(node);
+        *curnode = node;
+
+        for (int i = 0; attr[i] != NULL && attr[i + 1] != NULL; i += 2) node->AddAttrib(attr[i], attr[i + 1]);
+    }
+
+    void endtag(void* userdata, const XML_Char* name)
+    {
+        ParseState* state = static_cast<ParseState*>(userdata);
+        XmlTree** curnode = state->curnode;
+
+        if (!state->charData.empty())
+        {
+            std::string trimmed = trim(state->charData);
+            if (!trimmed.empty())
+            {
+                (*curnode)->charData = std::move(trimmed);
+            }
+            state->charData.clear();
+        }
+
+        *curnode = (*curnode)->parent;
+    }
+
+    void chardata(void* userdata, const XML_Char* data, int len)
+    {
+        // Chardata is stuff between tags, including "comments".
+        // Add it to the end of the buffer. When the end tag is reached
+        // the data will be added to the node.
+
+        static_cast<ParseState*>(userdata)->charData.append(data, len);
+    }
+
+} // namespace
 
 //------------------------------------------------------------------------------
 
@@ -119,59 +166,14 @@ XmlTree::XmlTree(FILE* input)
     delete[] buffer;
 }
 
-static void starttag(void* userdata, const XML_Char* name, const XML_Char* attr[])
-{
-    XmlTree** curnode = static_cast<ParseState*>(userdata)->curnode;
-    XmlTree* node = new XmlTree(*curnode, name);
-    (*curnode)->AddChild(node);
-    *curnode = node;
-
-    for (int i = 0; attr[i] != NULL && attr[i + 1] != NULL; i += 2) node->AddAttrib(attr[i], attr[i + 1]);
-}
-
-static void endtag(void* userdata, const XML_Char* name)
-{
-    ParseState* state = static_cast<ParseState*>(userdata);
-    XmlTree** curnode = state->curnode;
-
-    if (!state->charDataStr.empty())
-    {
-        // Trim leading whitespace
-        const size_t first = state->charDataStr.find_first_not_of(" \t\n\r");
-        if (first == std::string::npos)
-        {
-            state->charDataStr.clear();
-        }
-        else
-        {
-            const size_t last = state->charDataStr.find_last_not_of(" \t\n\r");
-            (*curnode)->charData = state->charDataStr.substr(first, last - first + 1);
-            state->charDataStr.clear();
-        }
-    }
-
-    *curnode = (*curnode)->parent;
-}
-
-static void chardata(void* userdata, const XML_Char* data, int len)
-{
-    // Chardata is stuff between tags, including "comments".
-    // Add it to the end of the buffer. When the end tag is reached
-    // the data will be added to the node.
-
-    static_cast<ParseState*>(userdata)->charDataStr.append(data, len);
-}
-
-//------------------------------------------------------------------------------
-
 XmlTree::XmlTree(XmlTree* parent, const char* name)
 {
     this->init();
 
-    const std::string& ppn = (parent == NULL) ? std::string() : parent->pathname;
+    const std::string parentPathName = (parent == NULL) ? std::string() : parent->pathname;
 
     this->name = name;
-    this->pathname = ppn + "/" + name;
+    this->pathname = parentPathName + "/" + name;
 
     this->parent = parent;
 }
@@ -423,9 +425,7 @@ std::string XmlTree::SubstEnvVar(std::string instr)
             pos1 = instr.length();
         }
         env_key = instr.substr(pos0 + 2, pos1 - pos0 - 2);
-        size_t first = env_key.find_first_not_of(' '); // trim spaces from name
-        size_t last = env_key.find_last_not_of(' ');
-        std::string env_key_trunc = env_key.substr(first, last - first + 1);
+        const std::string env_key_trunc = trim(env_key, " ");
         const char* env_name = env_key_trunc.c_str();
         env_value = getenv(env_name);
         std::string rest_in = instr.substr(pos1 + 1);
