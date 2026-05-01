@@ -67,11 +67,11 @@ module unstruc_netcdf
 
    implicit none
 
-   !private :: nerr_, err_firsttime_, err_firstline_, &
-   !           t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
-   !           unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
-   !           open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
-   !           read_mesh2d_face_z, face_z_stdname
+   private :: nerr_, err_firsttime_, err_firstline_, &
+              t_unc_netelem_ids, unc_def_net_elem, unc_write_net_elem, &
+              unc_def_idomain, unc_def_iglobal, fill_netlink_geometry, &
+              open_files_, open_datasets_, nopen_files_, unc_read_merged_map, t_unc_merged, &
+              read_mesh2d_face_z, face_z_stdname
 
    interface unc_put_var_rst
       module procedure unc_put_var_rst_dble
