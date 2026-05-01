@@ -190,7 +190,10 @@ Dimr::~Dimr(void)
     // to do:  (void) FreeLibrary(handle);
     freeLibs();
 
-    log->Write(DEBUG, my_rank, "dimr shutting down normally");
+    if (ownedLog_)
+    {
+        log->Write(DEBUG, my_rank, "dimr shutting down normally");
+    }
 
 #ifndef _WIN32
     free(exeName);
@@ -1723,7 +1726,12 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
 {
     // Needed for path handling in case of relative paths in the component configuration (e.g. for workingDir and
     // dllPath):
-    const auto curPath = std::filesystem::current_path();
+    std::error_code errorCode;
+    const auto curPath = std::filesystem::current_path(errorCode);
+    if (errorCode)
+    {
+        throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (scan)");
+    }
 
     newComp->name = xmlComponent->GetAttrib("name");
     // Element library
@@ -1875,13 +1883,13 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     }
     // Resolve workingDir: operator/ handles both relative and absolute paths
     // (appending an absolute path replaces rather than concatenates)
-    const std::filesystem::path resolvedDir = curPath / rawWorkingDir;
-    if (!std::filesystem::is_directory(resolvedDir))
+    std::filesystem::path resolvedDir = curPath / rawWorkingDir;
+    if (!std::filesystem::is_directory(resolvedDir, errorCode) || errorCode)
     {
         throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
                         newComp->name, rawWorkingDir.string().c_str());
     }
-    const std::string resolvedStr = std::filesystem::canonical(resolvedDir).string();
+    const std::string resolvedStr = resolvedDir.make_preferred().string();
     newComp->workingDir = new char[resolvedStr.size() + 1];
     strcpy(newComp->workingDir, resolvedStr.c_str());
 
@@ -2426,7 +2434,10 @@ void Dimr::freeLibs(void)
             continue;
         }
 
-        log->Write(ALL, my_rank, "Freeing library \"%s\"", componentsList.components[i].library);
+        if (ownedLog_)
+        {
+            log->Write(ALL, my_rank, "Freeing library \"%s\"", componentsList.components[i].library);
+        }
 #ifndef _WIN32
         dlerror(); /* clear error code */
         int ierr = dlclose(componentsList.components[i].libHandle);
@@ -2439,8 +2450,9 @@ void Dimr::freeLibs(void)
         DWORD ierr;
         SetLastError(0); /* clear error code */
         bool success = FreeLibrary(componentsList.components[i].libHandle);
-        if ((ierr = GetLastError()) != 0)
+        if (!success)
         {
+            ierr = GetLastError();
             throw Exception(Exception::ERR_OS, "Cannot free component library \"%s\". Return code: %d.",
                             componentsList.components[i].library, ierr);
         }
