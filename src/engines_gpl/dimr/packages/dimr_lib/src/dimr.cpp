@@ -1724,11 +1724,9 @@ void Dimr::scanUnits(XmlTree* rootXml)
 //------------------------------------------------------------------------------
 void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
 {
-    // Needed for path handling in case of relative paths in the component configuration (e.g. for workingDir and
-    // dllPath):
-    std::error_code errorCode;
-    const auto curPath = std::filesystem::current_path(errorCode);
-    if (errorCode)
+    // Needed for path handling
+    char* curPath = new char[MAXSTRING];
+    if (!getcwd(curPath, MAXSTRING))
     {
         throw Exception(Exception::ERR_OS, "ERROR obtaining the current working directory (scan)");
     }
@@ -1870,28 +1868,38 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     }
     // Element workingDir
     XmlTree* workingDirElement = xmlComponent->Lookup("workingDir");
-    std::filesystem::path rawWorkingDir;
+    const char* rawWorkingDir = nullptr;
     if (workingDirElement == NULL)
     {
         rawWorkingDir = curPath;
         log->Write(INFO, my_rank, "WARNING: No workingDir specified for component %s.", newComp->name);
-        log->Write(INFO, my_rank, "         workingDir is set to %s", rawWorkingDir.string().c_str());
+        log->Write(INFO, my_rank, "         workingDir is set to %s", rawWorkingDir);
     }
     else
     {
         rawWorkingDir = workingDirElement->charData.c_str();
     }
-    // Resolve workingDir: operator/ handles both relative and absolute paths
-    // (appending an absolute path replaces rather than concatenates)
-    std::filesystem::path resolvedDir = curPath / rawWorkingDir;
-    if (!std::filesystem::is_directory(resolvedDir, errorCode) || errorCode)
+    // Is workingDir a valid relative path?
+    char* combinedPath = new char[MAXSTRING];
+    sprintf(combinedPath, "%s%s%s", curPath, dirSeparator, rawWorkingDir);
+    if (chdir(combinedPath))
     {
-        throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
-                        newComp->name, rawWorkingDir.string().c_str());
+        // CombinedPath is not correct. May be just workingDir?
+        delete[] combinedPath;
+        // Is workingDir a valid absolute path?
+        if (chdir(rawWorkingDir))
+        {
+            throw Exception(Exception::ERR_INVALID_INPUT, "Component \"%s\" has an invalid workingDir \"%s\"",
+                            newComp->name, rawWorkingDir);
+        }
+        newComp->workingDir = new char[strlen(rawWorkingDir) + 1];
+        strcpy(newComp->workingDir, rawWorkingDir);
     }
-    const std::string resolvedStr = resolvedDir.make_preferred().string();
-    newComp->workingDir = new char[resolvedStr.size() + 1];
-    strcpy(newComp->workingDir, resolvedStr.c_str());
+    else
+    {
+        newComp->workingDir = combinedPath;
+    }
+    chdir(curPath);
 
     // Hack for RTC-Tools:
     // inputFile is an input directory
@@ -1900,6 +1908,7 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     {
         newComp->inputFile = newComp->workingDir;
     }
+    delete[] curPath;
 }
 
 //------------------------------------------------------------------------------
