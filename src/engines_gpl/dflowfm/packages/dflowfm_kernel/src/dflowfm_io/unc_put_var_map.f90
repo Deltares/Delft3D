@@ -1,7 +1,7 @@
 module m_unc_put_var_map
-use unstruc_netcdf_data, only: t_unc_timespace_id
+use m_unstruc_netcdf_data, only: t_unc_timespace_id
 use m_flowgeom, only: t_fm_flowgeom
-use unc_build_flowgeom, only: flowgeom
+use m_unc_build_flowgeom, only: flowgeom
 use io_ugrid, only: UG_NOTIMPLEMENTED, UG_INVALID_DATALOCATION
 use netcdf, only: nf90_put_var, nf90_inquire_variable, nf90_inquire_dimension
 
@@ -90,7 +90,7 @@ contains
    function unc_put_var_map_dble(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
       use precision, only: dp
       use m_flowgeom, only: lnx1d, lnxi, lnx, lnx1db, ln2lne, lne2ln, t_fm_flowgeom
-      use unc_build_flowgeom, only: flowgeom
+      use m_unc_build_flowgeom, only: flowgeom
       use dfm_error, only: dfm_noerr
       use m_alloc, only: realloc
       use m_missing, only: dmiss

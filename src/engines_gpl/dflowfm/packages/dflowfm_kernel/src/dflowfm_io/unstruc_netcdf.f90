@@ -60,8 +60,8 @@ module unstruc_netcdf
    use m_waveconst
    use m_get_Lbot_Ltop_max, only: getLbotLtopmax
    use m_reconstruct_hydrodynamics, only: reconstruct_hu_2D_from_3D
-   use unc_build_flowgeom
-   use unstruc_netcdf_data
+   use m_unc_build_flowgeom
+   use m_unstruc_netcdf_data
    use m_unc_put_var_map
 
    implicit none
@@ -13933,7 +13933,7 @@ contains
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: t_fm_flowgeom, bl, bl_min, ba
-      use unc_build_flowgeom, only: flowgeom
+      use m_unc_build_flowgeom, only: flowgeom
       use m_sferic
       use m_missing
       use netcdf
@@ -13949,7 +13949,7 @@ contains
       use m_modelbounds
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
       use fm_location_types
-      use unc_build_flowgeom, only: build_flowgeom, output_polygon
+      use m_unc_build_flowgeom, only: build_flowgeom, output_polygon
 
       implicit none(type, external)
 
