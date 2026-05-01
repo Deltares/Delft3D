@@ -773,7 +773,16 @@ contains
             end do
             Lf = abs(longculverts(ilongc)%flowlinks(1))
             if (Lf > 0) then
-               call add_longculvert_1D2D_crosssection(network, Lf, longculverts(ilongc)%branchid, longculverts(ilongc)%csdefId)
+               block
+                  character(len=idLen) :: link_id
+                  if (longculverts(ilongc)%is_2D2D()) then
+                     link_id = longculverts(ilongc)%contactId
+                  else
+                     link_id = longculverts(ilongc)%branchId
+                  end if
+                  call add_longculvert_1D2D_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
+               end block
+
                wu(Lf) = longculverts(ilongc)%width
                bob(1, Lf) = longculverts(ilongc)%bl(1)
                bob(2, Lf) = bl(ln(2, Lf))
@@ -1239,40 +1248,46 @@ contains
    end subroutine addlongculvertcrosssections
 
    !> add special 1D2D crossection for the longculvert and add it to the line2cross array
-   subroutine add_longculvert_1D2D_crosssection(network, flowlink, branch_id, cs_def_id)
+   subroutine add_longculvert_1D2D_crosssection(network, flowlink, link_id, cs_def_id)
       use precision, only: dp
-      use m_hash_search
-      use m_readCrossSections
-      use m_network
+      use m_hash_search, only: hashsearch
+      use m_CrossSections, only: realloc
+      use m_readCrossSections, only: finalizeCrs
+      use m_network, only: t_network
+      use m_GlobalParameters, only: t_chainage2cross
+
       type(t_network), intent(inout) :: network !< Network structure
       integer, intent(in) :: flowlink !< Flowlink number on which to place the cross section. Should be 1D2D link belonging to the long culvert
-      character(len=IdLen), intent(in) :: branch_id !< Branch id on which to place the cross section
+      character(len=IdLen), intent(in) :: link_id !< Branch id or contact id on which to place the cross section
       character(len=IdLen), intent(in) :: cs_def_id !< Id of cross section definition
 
-      integer :: iref, icrs
-      integer :: indx
-      type(t_CrossSection), pointer :: crs_p
+      integer :: idef, icrs
       character(len=16) :: kchar
 
-      indx = hashsearch(network%brs%hashlist, branch_id)
-      iref = hashsearch(network%CSDefinitions%hashlist, cs_def_id)
-      if (indx > 0 .and. iref > 0) then
-         if (network%crs%count + 1 > network%crs%size) then
-            call realloc(network%crs)
-         end if
-         icrs = network%crs%count + 1
-         crs_p => network%crs%cross(icrs)
-         write (kchar, '(I0)') flowlink
-         crs_p%csid = trim(branch_id)//'_1D2D_'//trim(kchar)
-         call finalizeCrs(network, crs_p, iref, icrs)
-         network%adm%line2cross(flowlink, :)%c1 = icrs
-         network%adm%line2cross(flowlink, :)%c2 = icrs
-         network%adm%line2cross(flowlink, :)%f = 1.0_dp
-         network%adm%line2cross(flowlink, :)%distance = 0.0_dp
+      ! Find cross section definition indices by ID.
+      idef = hashsearch(network%CSDefinitions%hashlist, cs_def_id)
+      if (idef <= 0) then
+         call SetMessage(LEVEL_ERROR, 'Cross-section definition not found: ' // trim(cs_def_id))
+         return
       end if
 
+      ! Create new cross section instance of cross section definition `idef`.
+      if (network%crs%count + 1 > network%crs%size) then
+         call realloc(network%crs)
+      end if
+      icrs = network%crs%count + 1
+      
+      associate(cross_section => network%crs%cross(icrs))
+         write (kchar, '(I0)') flowlink
+         cross_section%csid = trim(link_id) // "_" // trim(kchar)
+         call finalizeCrs(network, cross_section, idef, icrs)
+      end associate
+
+      ! Assign new cross section along flowlink.
+      network%adm%line2cross(flowlink, :) = t_chainage2cross(c1=icrs, c2=icrs, f=1.0_dp, distance=0.0_dp)
    end subroutine add_longculvert_1D2D_crosssection
-   !> Add new branch iformation to the network. Only add necessary information for long culverts (incomplete!)
+
+   !> Add new branch information to the network. Only add necessary information for long culverts (incomplete!)
    subroutine add_longculvert_branch(network, longculvert)
       use precision, only: dp
       use m_hash_search
