@@ -30,7 +30,9 @@ namespace pre_c_sumo
     }
 
     /**
-     * @details Construct preCICE 2d mesh coordinates from settings
+     * @details Construct both preCICE 2d mesh coordinates and forward mappings from settings.
+     * The latter allows us to find the index of values belonging to diffusers, intakes and ambient points
+     * in preCICE communication buffers in O(1) time.
      */
     Mesh getMesh2d(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings)
     {
@@ -59,7 +61,7 @@ namespace pre_c_sumo
         }
 
         mesh.number_of_nodes = mesh.coordinates.size() / dimensions;
-        mesh.vertex_ids.reserve(mesh.number_of_nodes);
+        mesh.vertex_ids.resize(mesh.number_of_nodes);
 
         return mesh;
     }
@@ -104,12 +106,13 @@ namespace pre_c_sumo
 
         participant.initialize();
         double coupling_time_step;
+        double current_time_seconds = 0.0;
         while (participant.isCouplingOngoing())
         {
             coupling_time_step = participant.getMaxTimeStepSize();
 
             receiveFFData(participant, csumo_2d_mesh, coupling_time_step);
-            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh);
+            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, current_time_seconds);
             waitForNF2FFFiles(csumo_settings.value());
             readNF2FFFiles(csumo_settings.value());
             convertNFToSourcesSinks(csumo_settings.value());
@@ -117,6 +120,7 @@ namespace pre_c_sumo
             sendSourcesSinksToFF(csumo_settings.value());
 
             participant.advance(coupling_time_step);
+            current_time_seconds += coupling_time_step;
         }
         std::println("preC-SUMO finished.");
         return 0;

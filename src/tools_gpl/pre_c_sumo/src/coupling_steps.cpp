@@ -39,12 +39,12 @@ namespace pre_c_sumo
         }
     }
 
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh)
+    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, double current_time_seconds)
     {
         // TODO: obtain these from the far-field model / coupling state
-        const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
+        const std::vector<std::string> constituent_names = {"temperature", "salinity",
+                                                            "tracer"}; // TODO: derive from settings
 
         for (const auto&& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
@@ -84,7 +84,7 @@ namespace pre_c_sumo
             {
                 const std::size_t ambient_index = static_cast<std::size_t>(position_index);
                 ambient_points.emplace_back(
-                    make_point(ambient_point, get_ambient_value(water_levels_id, ambient_index) -
+                    make_point(ambient_point, get_ambient_value(water_levels_id, ambient_index) +
                                                   get_ambient_value(bed_levels_id, ambient_index)));
             }
 
@@ -103,9 +103,9 @@ namespace pre_c_sumo
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
                 .diffuser = make_point(diffuser.position,
-                                       get_diffuser_value(water_levels_id) - get_diffuser_value(bed_levels_id)),
+                                       get_diffuser_value(water_levels_id) + get_diffuser_value(bed_levels_id)),
                 .intake = diffuser.intake.has_value()
-                              ? std::optional{make_point(*diffuser.intake, get_intake_value(water_levels_id) -
+                              ? std::optional{make_point(*diffuser.intake, get_intake_value(water_levels_id) +
                                                                                get_intake_value(bed_levels_id))}
                               : std::nullopt,
                 .ambient_points = ambient_points,
