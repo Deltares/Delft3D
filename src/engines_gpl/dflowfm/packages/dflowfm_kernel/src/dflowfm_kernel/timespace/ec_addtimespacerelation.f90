@@ -365,14 +365,12 @@ contains
                                              targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
                                              dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
 
-         if (present(tgt_item1) .and. present(tgt_data1)) then
-            if (associated(tgt_data1)) then
-               ! Caller provides a single target item and data array directly; bypass the hard-coded lookup.
-               ! This is the path for quantities not registered in fm_ext_force_name_to_ec_item.
-               targetItemPtr1 => tgt_item1
-               dataPtr1 => tgt_data1
-            else
-               return !> item and data pointer not associated
+         if (present(tgt_item1)) then
+            targetItemPtr1 => tgt_item1
+            if (present(tgt_data1)) then
+               if (associated(tgt_data1)) then
+                  dataPtr1 => tgt_data1
+               end if
             end if
          else
             return !> no known name and also no data pointer provided for lookup bypass
