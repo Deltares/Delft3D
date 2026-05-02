@@ -1455,7 +1455,7 @@ contains
       character(len=30) :: extra
       
       real(kind=dp) :: mbs, mbb, mba, v0, v1
-      integer :: k, klyr
+      integer :: k!, klyr
       integer :: unit
       integer :: values(8)
  
@@ -1493,9 +1493,9 @@ contains
       end if 
       mbb = 0.0_dp
       do k = 1, ndx
-          do klyr = 1, stmpar%morlyr%settings%nlyr
-             mbb = mbb+stmpar%morlyr%state%msed(1, klyr, k) * ba(k) ! kg in bed
-          end do
+          !do klyr = 1, stmpar%morlyr%settings%nlyr
+             mbb = mbb+stmpar%morlyr%state%bodsed(1, k) * ba(k) ! kg in bed
+          !end do
       end do
       mba = mbb + mbs
       if (first) then 
