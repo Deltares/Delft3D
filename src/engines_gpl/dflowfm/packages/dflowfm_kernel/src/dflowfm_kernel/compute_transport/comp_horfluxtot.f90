@@ -43,8 +43,8 @@ contains
    subroutine comp_horfluxtot()
       use m_flowgeom, only: Lnx
       use m_flow, only: Lbot, Ltop, kmx
-      use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot, deltaflux, jaupdatehorflux
-!      use m_flowtimes, only: dts
+      use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot
+      use m_flowtimes, only: dts
       use timers, only: timon, timstrt, timstop
       use precision, only: dp
 
@@ -60,23 +60,19 @@ contains
 
       if (kmx < 1) then
          do L = 1, Lnx
-            if (jaupdatehorflux(L) > 0) then
-               do j = ISED1, ISEDN
-                  fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * deltaflux(L)
-               end do
-            end if
+            do j = ISED1, ISEDN
+               fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts
+            end do
          end do
       else
          do LL = 1, Lnx
-            if (jaupdatehorflux(L) > 0) then
-               Lb = Lbot(LL)
-               Lt = Ltop(LL)
-               do L = Lb, Lt
-                  do j = ISED1, ISEDN
-                     fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * deltaflux(L)
-                  end do
+            Lb = Lbot(LL)
+            Lt = Ltop(LL)
+            do L = Lb, Lt
+               do j = ISED1, ISEDN
+                  fluxhortot(j, L) = fluxhortot(j, L) + fluxhor(j, L) * dts
                end do
-            end if
+            end do
          end do
       end if
 

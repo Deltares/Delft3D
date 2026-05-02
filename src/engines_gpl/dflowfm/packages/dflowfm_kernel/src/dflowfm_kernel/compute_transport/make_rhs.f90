@@ -153,7 +153,7 @@ contains
                end if
 
                do j = 1, NUMCONST
-                  rhs(j, k) = (sumhorflux(j, k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
+                  rhs(j, k) = (sumhorflux(j, k) / ndeltasteps(k) * dvoli + source(j, k)) * dt_loc + sed(j, k)
                   sumhorflux(j, k) = 0.0_dp
                end do
             end do

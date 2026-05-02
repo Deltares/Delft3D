@@ -41,7 +41,7 @@ module m_comp_sumhorflux
 
 contains
 
-   subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, deltaflux, jaupdatehorflux)
+   subroutine comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
       use precision, only: dp
       use m_flowgeom, only: Lnx, Ln ! static mesh information
       use timers, only: timon, timstrt, timstop
@@ -56,8 +56,6 @@ contains
       integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
       real(kind=dp), dimension(NUMCONST, Lnkx), intent(in) :: fluxhor !< horizontal advection fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux ! sum of horizontal fluxes, dim(NUMCONST,Ndkx)
-      real(kind=dp), dimension(Lnx), intent(in) :: deltaflux !< flow-link based weighting due to subtimesteps
-      integer, dimension(Lnx), intent(in) :: jaupdatehorflux !< flow-link based weighting due to subtimesteps
       integer :: LL, L, Lb, Lt
       integer :: j, k1, k2
 
@@ -70,32 +68,28 @@ contains
       if (kmx < 1) then
 !     add horizontal fluxes to right-hand side
          do L = 1, Lnx
-            if (jaupdatehorflux(L) > 0) then
-   !        get neighboring flownodes
-               k1 = ln(1, L)
-               k2 = ln(2, L)
-               do j = 1, NUMCONST
-                  sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) * deltaflux(L)
-                  sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) * deltaflux(L)
-               end do
-            end if
+!        get neighboring flownodes
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            do j = 1, NUMCONST
+               sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
+               sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
+            end do
          end do
       else
 !     add horizontal fluxes to right-hand side
          do LL = 1, Lnx
-            if (jaupdatehorflux(L) > 0) then
-               Lb = Lbot(LL)
-               Lt = Ltop(LL)
-               do L = Lb, Lt
+            Lb = Lbot(LL)
+            Lt = Ltop(LL)
+            do L = Lb, Lt
 !              get neighboring flownodes
-                  k1 = ln(1, L)
-                  k2 = ln(2, L)
-                  do j = 1, NUMCONST
-                     sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L) * deltaflux(L)
-                     sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L) * deltaflux(L)
-                  end do
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               do j = 1, NUMCONST
+                  sumhorflux(j, k1) = sumhorflux(j, k1) - fluxhor(j, L)
+                  sumhorflux(j, k2) = sumhorflux(j, k2) + fluxhor(j, L)
                end do
-            end if
+            end do
          end do
       end if
 

@@ -192,10 +192,6 @@ contains
             fluxver = 0.0_dp
          end if
 
-!     determine which cells need to be updated
-         if (nsubsteps > 1) then
-            call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
-         end if
 !     determine which fluxes need to be updated in a second step
          if (nsubsteps > 1) then
             call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
@@ -228,13 +224,36 @@ contains
 !        water advection velocity
                call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
             end if
+            if (jased == 4 .and. stmpar%lsedsus > 0 .and. &
+                stmpar%morpar%mornum%suspended_flux_factor /= 1.0_dp) then
+               if (kmx < 1) then
+                  do L = 1, Lnx
+                     if (jaupdatehorflux(L) == 0) then
+                        cycle
+                     end if
+                     do j = ISED1, ISEDN
+                        fluxhor(j, L) = fluxhor(j, L) * stmpar%morpar%mornum%suspended_flux_factor
+                     end do
+                  end do
+               else
+                  do LL = 1, Lnx
+                     if (jaupdatehorflux(LL) == 0) then
+                        cycle
+                     end if
+                     Lb = Lbot(LL)
+                     Lt = Ltop(LL)
+                     do L = Lb, Lt
+                        do j = ISED1, ISEDN
+                           fluxhor(j, L) = fluxhor(j, L) * stmpar%morpar%mornum%suspended_flux_factor
+                        end do
+                     end do
+                  end do
+               end if
+            end if
          end if
 
          call starttimer(IDEBUG)
-         if (stmpar%morpar%mornum%suspended_flux_factor /= 1.0_dp) then
-            fluxhor = fluxhor * stmpar%morpar%mornum%suspended_flux_factor
-         end if
-         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux, deltaflux, jaupdatehorflux)
+         call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
          call stoptimer(IDEBUG)
 
          if (jased == 4 .and. stmpar%lsedsus > 0) then ! at the moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
@@ -243,6 +262,11 @@ contains
 
          if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
             call comp_horfluxmba()
+         end if
+
+!     determine which cells need to be updated
+         if (nsubsteps > 1) then
+            call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
          end if
 
          if (kmx < 1) then ! 2D, call to 3D as well for now
@@ -283,7 +307,7 @@ contains
 
       if (jased == 4 .and. stmpar%lsedsus > 0) then
          do j = ISED1, ISEDN
-            fluxhortot(j, :) = fluxhortot(j, :)
+            fluxhortot(j, :) = fluxhortot(j, :) / dts_store
             sinksetot(j, :) = sinksetot(j, :) / dts_store
             sinkftot(j, :) = sinkftot(j, :) / dts_store
          end do
