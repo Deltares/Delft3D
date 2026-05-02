@@ -245,7 +245,7 @@ contains
         use m_network, only: initialize_1dadmin
         use unstruc_channel_flow, only: network, default_channel_flow
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: i, new_link, error_code
@@ -298,7 +298,7 @@ contains
         use m_Roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 1
         integer :: i, new_link, error_code
@@ -361,7 +361,7 @@ contains
         use m_network, only: initialize_1dadmin
         use unstruc_channel_flow, only: network, default_channel_flow
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         real(kind=dp), parameter :: PREISMANN_SLOT_AREA = 1e-7_dp
@@ -409,7 +409,7 @@ contains
         use m_flow_geominit, only: flow_geominit
         use unstruc_channel_flow, only: network
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -456,7 +456,7 @@ contains
         use m_roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -510,7 +510,7 @@ contains
         use unstruc_channel_flow, only: network
         use m_longculverts_data, only: newculverts
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -554,7 +554,7 @@ contains
         use unstruc_channel_flow, only: network
         implicit none
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code
@@ -595,7 +595,7 @@ contains
         use m_roughness, only: R_MANNING
         use m_get_chezy, only: get_chezy
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 1
         integer :: new_link, error_code
@@ -644,7 +644,7 @@ contains
         use m_longculverts_data, only: newculverts
         implicit none
 
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         integer, parameter :: japerim = 1
         integer, parameter :: calcconv = 0
         integer :: new_link, error_code

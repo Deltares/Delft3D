@@ -23,7 +23,7 @@ contains
         use m_longculverts_data, only: longculverts
 
         integer, parameter :: COORD_COUNT = 4
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         real(kind=dp) :: x_coords(COORD_COUNT)
         real(kind=dp) :: y_coords(COORD_COUNT)
         real(kind=dp) :: z_coords(COORD_COUNT)
@@ -78,7 +78,7 @@ contains
         implicit none
 
         integer, parameter :: COORD_COUNT = 2
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         real(kind=dp) :: x_coords(COORD_COUNT)
         real(kind=dp) :: y_coords(COORD_COUNT)
         real(kind=dp) :: z_coords(COORD_COUNT)
@@ -137,7 +137,7 @@ contains
         integer, parameter :: COORD_COUNT_LC1 = 4
         integer, parameter :: COORD_COUNT_LC2 = 2
         integer, parameter :: ARRAY_SIZE = COORD_COUNT_LC1 + COORD_COUNT_LC2 + 1
-        type(t_grid_helper), allocatable :: grid_helper
+        type(t_grid_helper) :: grid_helper
         real(kind=dp) :: x_coords(ARRAY_SIZE)
         real(kind=dp) :: y_coords(ARRAY_SIZE)
         real(kind=dp) :: z_coords(ARRAY_SIZE)
