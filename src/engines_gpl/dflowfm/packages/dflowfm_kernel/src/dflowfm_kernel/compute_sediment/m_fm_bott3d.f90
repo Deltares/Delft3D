@@ -1072,7 +1072,7 @@ contains
       use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
-      use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
+         use m_transport, only: fluxhortot, ised1, sinksetot, sourimtot, sinkftot
       use unstruc_files, only: mdia
       use m_get_kbot_ktop
       use m_get_Lbot_Ltop
@@ -1189,7 +1189,7 @@ contains
                   thick1 = vol1(k) * bai_mor(nm)
                   ! no fluff, everything to bed layer
                   if (iflufflyr == 0) then
-                     sedflx = sinksetot(j, nm) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
+                     sedflx = (sinksetot(j, nm) + sourimtot(j, nm)) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
                   else
                      !
                      ! Update sedflx icw fluff layer
@@ -1198,7 +1198,7 @@ contains
                      mfluff(l, nm) = mfluff(l, nm) + dts * (sinkftot(j, nm) * bai_mor(nm) - sourf(l, nm) * thick1)
                      !
                      ! 2. sand to bed layer
-                     sedflx = sinksetot(j, nm) * bai_mor(nm)
+                     sedflx = (sinksetot(j, nm) + sourimtot(j, nm)) * bai_mor(nm)
                      !
                      ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
                      if (ssccum(l, nm) > 0.0_fp) then

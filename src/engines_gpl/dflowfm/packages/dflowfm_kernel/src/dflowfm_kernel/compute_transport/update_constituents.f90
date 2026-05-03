@@ -162,8 +162,6 @@ contains
          q1sed = 0.0_dp
       end if
 
-      call comp_sinktot(1) !explicit sink takes the full step
-
       do istep = 0, nsubsteps - 1
          if (kmx > 0) then
             fluxver = 0.0_dp
@@ -219,6 +217,12 @@ contains
          if (nsubsteps > 1) then
             call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
          end if
+
+         if (jarhoonly == 0) then
+            call fill_constituents(1)
+         end if
+
+         call comp_sinktot(1)
 
          if (kmx < 1) then ! 2D, call to 3D as well for now
             call solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, nsubsteps, jaupdate, ndeltasteps, constituents, rhs)
@@ -276,7 +280,7 @@ contains
                      imba = mbadefdomain(kk)
                      if (imba > 0) then
                         bed_exchange_source = vol1(ksed) * sedtra%sourse(kk, jsed) * dts_store * morfac
-                        bed_exchange_sink = sinksetot(j, kk) * dts_store * morfac
+                           bed_exchange_sink = (sinksetot(j, kk) + sourimtot(j, kk)) * dts_store * morfac
                         mbasedsusexch(1, j, imba) = mbasedsusexch(1, j, imba) + bed_exchange_source
                         mbasedsusexch(2, j, imba) = mbasedsusexch(2, j, imba) + bed_exchange_sink
                      end if
