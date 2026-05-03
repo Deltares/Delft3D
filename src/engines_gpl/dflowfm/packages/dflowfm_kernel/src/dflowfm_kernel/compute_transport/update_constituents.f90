@@ -167,6 +167,11 @@ contains
             fluxver = 0.0_dp
          end if
 
+!     determine which cells need to be updated for the current substep
+         if (nsubsteps > 1) then
+            call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
+         end if
+
 !     determine which fluxes need to be updated in a second step
          if (nsubsteps > 1) then
             call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
@@ -211,11 +216,6 @@ contains
 
          if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
             call comp_horfluxmba()
-         end if
-
-!     determine which cells need to be updated
-         if (nsubsteps > 1) then
-            call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
          end if
 
          if (jarhoonly == 0) then
