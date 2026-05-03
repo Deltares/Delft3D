@@ -1635,10 +1635,9 @@ subroutine nullmorpar(morpar)
     morpar%mornum%maximumwaterdepth        = .false.
     morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
     morpar%mornum%sink_theta=1.0_fp
-    morpar%mornum%suspended_flux_factor=1.0_fp
     morpar%mornum%sink_factor=1.0_fp
     morpar%mornum%source_factor=1.0_fp
-    morpar%mornum%update_lts_flux=0
+    morpar%mornum%update_lts_flux=1
     !
     rmissval           = -999.0_fp
     imissval           = -999

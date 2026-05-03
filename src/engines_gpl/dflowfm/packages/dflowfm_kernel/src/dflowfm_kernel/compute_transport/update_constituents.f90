@@ -26,38 +26,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-!----- AGPL --------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2017-2026.
-!
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).
-!
-!  Delft3D is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU Affero General Public License as
-!  published by the Free Software Foundation version 3.
-!
-!  Delft3D  is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU Affero General Public License for more details.
-!
-!  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!  All indications and logos of, and references to, "Delft3D",
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!
-!-------------------------------------------------------------------------------
 !
 !
 !> This subroutine transports an array of scalars.
@@ -77,16 +45,6 @@ module m_update_constituents
    private
 
    public :: update_constituents
-
-   real(kind=dp), save :: transport_diag_storage_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_bnd_pos_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_bnd_neg_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_sinksetot_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_sourimtot_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_sourse_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_sinkse_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_sinkim_cum = 0.0_dp
-   real(kind=dp), save :: transport_diag_sourim_cum = 0.0_dp
 
 contains
 
@@ -110,9 +68,9 @@ contains
       use m_comp_fluxver, only: comp_fluxver
       use m_comp_fluxhor3d, only: comp_fluxhor3d
       use m_comp_dxiau, only: comp_dxiau
-      use m_flowgeom, only: Ndx, Ndxi, Lnx, Lnxi ! static mesh information
-      use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol0, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
-      use m_flowtimes, only: dts   , time1
+      use m_flowgeom, only: Ndx, Ndxi, Lnx ! static mesh information
+      use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
+      use m_flowtimes, only: dts
       use m_turbulence, only: sigdifi
       use m_transport
       use m_mass_balance_areas
@@ -135,22 +93,9 @@ contains
       integer :: ierror
 
       integer :: limtyp !< limiter type (>0), or first-order upwind (0)
-      real(kind=dp) :: dts_store, sourim_rate, sourim_mass
-      real(kind=dp) :: transport_diag_storage0
-      real(kind=dp) :: transport_diag_storage1
-      real(kind=dp) :: transport_diag_storage_step
-      real(kind=dp) :: transport_diag_bnd_pos_step
-      real(kind=dp) :: transport_diag_bnd_neg_step
-      real(kind=dp) :: transport_diag_sinksetot_step
-      real(kind=dp) :: transport_diag_sourimtot_step
-      real(kind=dp) :: transport_diag_sourse_step
-      real(kind=dp) :: transport_diag_sinkse_step
-      real(kind=dp) :: transport_diag_sinkim_step
-      real(kind=dp) :: transport_diag_sourim_step
-      real(kind=dp) :: transport_diag_flux
+      real(kind=dp) :: dts_store
       real(kind=dp) :: bed_exchange_source
       real(kind=dp) :: bed_exchange_sink
-      character(len=512) :: str
 
       integer :: LL, L, j, numconst_store, Lb, Lt
       integer :: kk, jsed, ksed
@@ -178,27 +123,6 @@ contains
          ! call fill_ucxucy() ; numconst_store = numconst
       else
          call fill_constituents(1)
-      end if
-
-      transport_diag_storage0 = 0.0_dp
-      if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
-         if (kmx < 1) then
-            do kk = 1, Ndxi
-               do jsed = 1, stmpar%lsedsus
-                  j = ISED1 + jsed - 1
-                  transport_diag_storage0 = transport_diag_storage0 + vol0(kk) * constituents(j, kk)
-               end do
-            end do
-         else
-            do kk = 1, Ndxi
-               do L = kbot(kk), ktop(kk)
-                  do jsed = 1, stmpar%lsedsus
-                     j = ISED1 + jsed - 1
-                     transport_diag_storage0 = transport_diag_storage0 + vol0(L) * constituents(j, L)
-                  end do
-               end do
-            end do
-         end if
       end if
 
 !     compute areas of horizontal diffusive fluxes divided by Dx
@@ -277,32 +201,6 @@ contains
 !        water advection velocity
                call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
             end if
-            if (jased == 4 .and. stmpar%lsedsus > 0 .and. &
-                stmpar%morpar%mornum%suspended_flux_factor /= 1.0_dp) then
-               if (kmx < 1) then
-                  do L = 1, Lnx
-                     if (jaupdatehorflux(L) == 0) then
-                        cycle
-                     end if
-                     do j = ISED1, ISEDN
-                        fluxhor(j, L) = fluxhor(j, L) * stmpar%morpar%mornum%suspended_flux_factor
-                     end do
-                  end do
-               else
-                  do LL = 1, Lnx
-                     if (jaupdatehorflux(LL) == 0) then
-                        cycle
-                     end if
-                     Lb = Lbot(LL)
-                     Lt = Ltop(LL)
-                     do L = Lb, Lt
-                        do j = ISED1, ISEDN
-                           fluxhor(j, L) = fluxhor(j, L) * stmpar%morpar%mornum%suspended_flux_factor
-                        end do
-                     end do
-                  end do
-               end if
-            end if
          end if
 
          call starttimer(IDEBUG)
@@ -353,7 +251,8 @@ contains
 
          call comp_sinktot(2)
 
-      end do
+      end do ! substeps
+      !
       if (jalimitdiff == 3 .and. kmx == 0) then
          call diffusionimplicit2D()
       end if
@@ -367,46 +266,12 @@ contains
          end do
       end if
 
-      transport_diag_storage1 = 0.0_dp
-      transport_diag_storage_step = 0.0_dp
-      transport_diag_bnd_pos_step = 0.0_dp
-      transport_diag_bnd_neg_step = 0.0_dp
-      transport_diag_sinksetot_step = 0.0_dp
-      transport_diag_sourimtot_step = 0.0_dp
-      transport_diag_sourse_step = 0.0_dp
-      transport_diag_sinkse_step = 0.0_dp
-      transport_diag_sinkim_step = 0.0_dp
-      transport_diag_sourim_step = 0.0_dp
       if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
-         if (kmx < 1) then
-            do kk = 1, Ndxi
-               do jsed = 1, stmpar%lsedsus
-                  j = ISED1 + jsed - 1
-                  transport_diag_storage1 = transport_diag_storage1 + vol1(kk) * constituents(j, kk)
-               end do
-            end do
-         else
-            do kk = 1, Ndxi
-               do L = kbot(kk), ktop(kk)
-                  do jsed = 1, stmpar%lsedsus
-                     j = ISED1 + jsed - 1
-                     transport_diag_storage1 = transport_diag_storage1 + vol1(L) * constituents(j, L)
-                  end do
-               end do
-            end do
-         end if
-
          do kk = 1, Ndxi
             do jsed = 1, stmpar%lsedsus
                j = ISED1 + jsed - 1
                ksed = sedtra%kmxsed(kk, jsed)
                if (ksed > 0) then
-                  transport_diag_sourse_step = transport_diag_sourse_step + vol1(ksed) * sedtra%sourse(kk, jsed) * dts_store
-                  transport_diag_sinkse_step = transport_diag_sinkse_step + vol1(ksed) * sedtra%sinkse(kk, jsed) * constituents(j, ksed) * dts_store
-                  transport_diag_sinkim_step = transport_diag_sinkim_step + vol1(ksed) * sedtra%sink_im(kk, jsed) * constituents(j, ksed) * dts_store
-                  transport_diag_sourim_step = transport_diag_sourim_step + vol1(ksed) * sedtra%sour_im(kk, jsed) * constituents(j, ksed) * dts_store
-                  transport_diag_sinksetot_step = transport_diag_sinksetot_step + sinksetot(j, kk) * dts_store
-                  transport_diag_sourimtot_step = transport_diag_sourimtot_step + sourimtot(j, kk) * dts_store
                   if (jamba > 0 .and. allocated(mbasedsusexch)) then
                      imba = mbadefdomain(kk)
                      if (imba > 0) then
@@ -419,44 +284,6 @@ contains
                end if
             end do
          end do
-
-         do LL = Lnxi + 1, Lnx
-            if (kmx < 1) then
-               do jsed = 1, stmpar%lsedsus
-                  j = ISED1 + jsed - 1
-                  transport_diag_flux = fluxhortot(j, LL) * dts_store
-                  if (transport_diag_flux >= 0.0_dp) then
-                     transport_diag_bnd_pos_step = transport_diag_bnd_pos_step + transport_diag_flux
-                  else
-                     transport_diag_bnd_neg_step = transport_diag_bnd_neg_step + transport_diag_flux
-                  end if
-               end do
-            else
-               call getLbotLtop(LL, Lb, Lt)
-               do L = Lb, Lt
-                  do jsed = 1, stmpar%lsedsus
-                     j = ISED1 + jsed - 1
-                     transport_diag_flux = fluxhortot(j, L) * dts_store
-                     if (transport_diag_flux >= 0.0_dp) then
-                        transport_diag_bnd_pos_step = transport_diag_bnd_pos_step + transport_diag_flux
-                     else
-                        transport_diag_bnd_neg_step = transport_diag_bnd_neg_step + transport_diag_flux
-                     end if
-                  end do
-               end do
-            end if
-         end do
-
-         transport_diag_storage_step = transport_diag_storage1 - transport_diag_storage0
-         transport_diag_storage_cum = transport_diag_storage_cum + transport_diag_storage_step
-         transport_diag_bnd_pos_cum = transport_diag_bnd_pos_cum + transport_diag_bnd_pos_step
-         transport_diag_bnd_neg_cum = transport_diag_bnd_neg_cum + transport_diag_bnd_neg_step
-         transport_diag_sinksetot_cum = transport_diag_sinksetot_cum + transport_diag_sinksetot_step
-         transport_diag_sourimtot_cum = transport_diag_sourimtot_cum + transport_diag_sourimtot_step
-         transport_diag_sourse_cum = transport_diag_sourse_cum + transport_diag_sourse_step
-         transport_diag_sinkse_cum = transport_diag_sinkse_cum + transport_diag_sinkse_step
-         transport_diag_sinkim_cum = transport_diag_sinkim_cum + transport_diag_sinkim_step
-         transport_diag_sourim_cum = transport_diag_sourim_cum + transport_diag_sourim_step
       end if
 
 !  Move here, needed in two following subroutines
@@ -471,34 +298,6 @@ contains
             call decaytracers()
          end if
          call extract_constituents()
-      end if
-
-      if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
-         sourim_rate = sum(sourimtot(ISED1:ISEDN, 1:Ndxi))
-         sourim_mass = sourim_rate * dts_store
-         if (sourim_rate /= 0.0_dp) then
-            write(str, '(A,F12.3,A,ES14.6,A,ES14.6,A,ES14.6)') 'sour_im diagnostic: time=', time1, &
-               & ' rate_kg_s=', sourim_rate, ' mass_kg=', sourim_mass, ' morph_mass_kg=', sourim_mass * morfac
-            call mess(LEVEL_INFO, trim(str))
-         end if
-         write(str, '(A,F12.3,5(A,ES14.6))') 'transport diagnostic step: time=', time1, &
-            & ' storage_kg=', transport_diag_storage_step, ' bnd_pos_kg=', transport_diag_bnd_pos_step, &
-            & ' bnd_neg_kg=', transport_diag_bnd_neg_step, ' sinksetot_kg=', transport_diag_sinksetot_step, &
-            & ' sourimtot_kg=', transport_diag_sourimtot_step
-         call mess(LEVEL_INFO, trim(str))
-         write(str, '(A,F12.3,4(A,ES14.6))') 'transport source split step: time=', time1, &
-            & ' sourse_kg=', transport_diag_sourse_step, ' sinkse_kg=', transport_diag_sinkse_step, &
-            & ' sink_im_kg=', transport_diag_sinkim_step, ' sour_im_kg=', transport_diag_sourim_step
-         call mess(LEVEL_INFO, trim(str))
-         write(str, '(A,F12.3,5(A,ES14.6))') 'transport diagnostic cumulative: time=', time1, &
-            & ' storage_kg=', transport_diag_storage_cum, ' bnd_pos_kg=', transport_diag_bnd_pos_cum, &
-            & ' bnd_neg_kg=', transport_diag_bnd_neg_cum, ' sinksetot_kg=', transport_diag_sinksetot_cum, &
-            & ' sourimtot_kg=', transport_diag_sourimtot_cum
-         call mess(LEVEL_INFO, trim(str))
-         write(str, '(A,F12.3,4(A,ES14.6))') 'transport source split cumulative: time=', time1, &
-            & ' sourse_kg=', transport_diag_sourse_cum, ' sinkse_kg=', transport_diag_sinkse_cum, &
-            & ' sink_im_kg=', transport_diag_sinkim_cum, ' sour_im_kg=', transport_diag_sourim_cum
-         call mess(LEVEL_INFO, trim(str))
       end if
 
       ierror = 0
