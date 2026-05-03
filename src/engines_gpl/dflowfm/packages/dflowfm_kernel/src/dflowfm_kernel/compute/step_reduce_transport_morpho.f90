@@ -72,7 +72,6 @@ contains
       use m_subsidence, only: jasubsupl
       use m_fm_bott3d, only: fm_bott3d
       use m_fm_erosed, only: ti_sedtrans
-      !use m_fm_erosed_sub, only: compute_sediment_mass
       use m_curvature, only: get_curvature
       use m_xbeach_netcdf, only: xbeach_mombalance
       use mass_balance_areas_routines, only: comp_bedload_fluxmba
@@ -136,8 +135,6 @@ contains
          end if
       end if
 
-      !call compute_sediment_mass(time1, 2) 
-
       ! secondary flow
       if (jasecflow > 0 .and. kmx == 0) then
          call get_curvature()
@@ -156,14 +153,10 @@ contains
          call stoptimer(ITRANSPORT)
       end if
 
-      !call compute_sediment_mass(time1, 3) 
-
       if (jased > 0 .and. stm_included) then
          call fm_bott3d() ! bottom update
          call comp_bedload_fluxmba()
       end if
-
-      !call compute_sediment_mass(time1, 4) 
 
       if (jasubsupl > 0) then
          call apply_subsupl()
@@ -179,7 +172,6 @@ contains
             call set_kbot_ktop(jazws0=0) ! and 3D for cell volumes
          end if
       end if
-      !call compute_sediment_mass(time1, 5) 
 
    end subroutine step_reduce_transport_morpho
 

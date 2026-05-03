@@ -46,12 +46,6 @@ module m_fm_bott3d
    private !Prevent used modules from being exported
    public :: fm_bott3d
 
-   real(kind=dp), save :: bott3d_diag_trndiv_cum = 0.0_dp
-   real(kind=dp), save :: bott3d_diag_sedflx_cum = 0.0_dp
-   real(kind=dp), save :: bott3d_diag_eroflx_cum = 0.0_dp
-   real(kind=dp), save :: bott3d_diag_ssccum_cum = 0.0_dp
-   real(kind=dp), save :: bott3d_diag_net_cum = 0.0_dp
-
 contains
 
    !< Computes suspended sediment transport correction
@@ -256,14 +250,14 @@ contains
             ! 
             if (stmpar%morlyr%settings%imobility > MOBILITY_OFF) then 
                call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
-            endif    
+            endif
             ! 
             if (stmpar%morlyr%settings%crslyr) then 
                !
                ! Compute average bed load transport in cel
                ! 
                sbtot(:, :) = hypot(sbcx(:, :), sbcy(:, :)) !sbtot(:, :) = sqrt(sbcx(:, :) * sbcx(:, :) + sbcy(:, :) * sbcy(:, :))
-            endif 
+            endif
             !
             ! Update layers and obtain the depth change
             !
@@ -1314,18 +1308,6 @@ contains
          write (mdia, '(12x,a,i0,a)') 'Bed change messages skipped (more than ', BEDCHANGEMESSMAX, ')'
          write (mdia, '(12x,2(a,i0))') 'Total number of Bed change messages for timestep ', int(dnt), ' : ', bedchangemesscount
       end if
-
-      bott3d_diag_trndiv_cum = bott3d_diag_trndiv_cum + diag_trndiv_step
-      bott3d_diag_sedflx_cum = bott3d_diag_sedflx_cum + diag_sedflx_step
-      bott3d_diag_eroflx_cum = bott3d_diag_eroflx_cum + diag_eroflx_step
-      bott3d_diag_ssccum_cum = bott3d_diag_ssccum_cum + diag_ssccum_step
-      bott3d_diag_net_cum = bott3d_diag_net_cum + diag_net_step
-      write (mdia, '(a,5(a,es14.6))') '*** BOTT3D mass diagnostic step:', &
-         & ' trndiv_kg=', diag_trndiv_step, ' sedflx_kg=', diag_sedflx_step, &
-         & ' eroflx_kg=', diag_eroflx_step, ' ssccum_kg=', diag_ssccum_step, ' net_kg=', diag_net_step
-      write (mdia, '(a,5(a,es14.6))') '*** BOTT3D mass diagnostic cumulative:', &
-         & ' trndiv_kg=', bott3d_diag_trndiv_cum, ' sedflx_kg=', bott3d_diag_sedflx_cum, &
-         & ' eroflx_kg=', bott3d_diag_eroflx_cum, ' ssccum_kg=', bott3d_diag_ssccum_cum, ' net_kg=', bott3d_diag_net_cum
 
    end subroutine fm_change_in_sediment_thickness
 
