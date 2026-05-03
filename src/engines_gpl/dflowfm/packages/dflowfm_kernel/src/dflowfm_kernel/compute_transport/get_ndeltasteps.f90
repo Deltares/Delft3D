@@ -73,8 +73,8 @@ contains
          nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
          dtmin = dts / real(nsubsteps, kind=dp)
          if (ja_transport_local_time_step==2) then
-            ! apply substeps everywhere
-            ndeltasteps = nsubsteps
+            ! apply the smallest substep everywhere
+            ndeltasteps = 1
             numnonglobal = ndxi
          else
             ! get number of substeps
