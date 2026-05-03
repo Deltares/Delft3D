@@ -1106,13 +1106,6 @@ contains
       real(kind=dp) :: h1
       real(kind=dp) :: sumflux
       real(kind=dp) :: thick1
-      real(kind=dp) :: diag_area
-      real(kind=dp) :: diag_ssccum
-      real(kind=dp) :: diag_trndiv_step
-      real(kind=dp) :: diag_sedflx_step
-      real(kind=dp) :: diag_eroflx_step
-      real(kind=dp) :: diag_ssccum_step
-      real(kind=dp) :: diag_net_step
 
    !!
    !! Execute
@@ -1126,11 +1119,6 @@ contains
       !
       dbodsd(:, :) = 0_dp
       !
-      diag_trndiv_step = 0.0_dp
-      diag_sedflx_step = 0.0_dp
-      diag_eroflx_step = 0.0_dp
-      diag_ssccum_step = 0.0_dp
-      diag_net_step = 0.0_dp
       ! compute change in bodsed (dbodsd)
       !
       bedchangemesscount = 0
@@ -1144,7 +1132,7 @@ contains
             trndiv = 0_dp
             sedflx = 0_dp
             eroflx = 0_dp
-            diag_ssccum = 0.0_dp
+            !
             !FM1DIMP2DO: I do not like this, but I cannot think of a better way.
             !The added flownodes at junctions are after the boundary ghost nodes.
             !We have to skip the boundaries but loop over the added flownodes.
@@ -1212,7 +1200,6 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
-                     diag_ssccum = ssccum(l, nm)
                      ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
                      if (ssccum(l, nm) > 0.0_fp) then
                         if (sedtyp(l) <= max_mud_sedtyp) then
@@ -1231,7 +1218,6 @@ contains
                         end if
                      end if
                   end if
-                  diag_ssccum = ssccum(l, nm)
                   ssccum(l, nm) = 0_dp
                   eroflx = sourse(nm, l) * thick1 ! mass conservation, different from D3D
                   !
@@ -1270,14 +1256,6 @@ contains
             end if
             !
             dsdnm = (trndiv + sedflx - eroflx) * dtmor
-            if (bai_mor(nm) > 0.0_dp) then
-               diag_area = 1.0_dp / bai_mor(nm)
-               diag_trndiv_step = diag_trndiv_step + trndiv * dtmor * diag_area
-               diag_sedflx_step = diag_sedflx_step + sedflx * dtmor * diag_area
-               diag_eroflx_step = diag_eroflx_step + eroflx * dtmor * diag_area
-               diag_ssccum_step = diag_ssccum_step + diag_ssccum * dtmor * diag_area
-               diag_net_step = diag_net_step + dsdnm * diag_area
-            end if
             !
             ! Warn if bottom changes are very large,
             ! depth change NOT LIMITED

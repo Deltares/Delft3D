@@ -298,11 +298,6 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     !
     deallocate(xxprog)
     
-    !if (loglevel_StdOut <= LEVEL_DEBUG) then
-       write (*, *) '** DEBUG  : This is the mor file that will be processed:' ! no MessageHandling, because tree_traverse does not (yet) support it.
-       call tree_traverse(mor_ptr, print_tree, dummychar, dummylog)
-       write (*, *) '** DEBUG  : This is the mor file that will be processed:' ! no MessageHandling, because tree_traverse does not (yet) support it.
-    !end if
 end subroutine rdmor
 
 !> put mor file in input tree 

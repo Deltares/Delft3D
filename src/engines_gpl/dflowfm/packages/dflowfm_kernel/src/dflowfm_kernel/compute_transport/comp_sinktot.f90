@@ -74,7 +74,7 @@ contains
             do k = 1, ndx
                do j = ISED1, ISEDN
                   ll = j - ISED1 + 1
-                  sinksetot(j, k) = sinksetot(j, k) + vol0(k) * sedtra%sinkse(k, ll) * constituents(j, k) * dts * real(nsubsteps, kind=dp)
+                  sinksetot(j, k) = sinksetot(j, k) + vol0(k) * sedtra%sinkse(k, ll) * constituents(j, k) * dts * real(ndeltasteps(k), kind=dp)
                   !if (stmpar%morpar%flufflyr%iflufflyr > 0) then
                   !   sinkftot(j, k) = sinkftot(j, k) + vol0(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dts
                   !end if
@@ -84,7 +84,7 @@ contains
             do k = 1, ndx
                do j = ISED1, ISEDN
                   ll = j - ISED1 + 1
-                  sinksetot(j, k) = sinksetot(j, k) + vol0(sedtra%kmxsed(k, ll)) * sedtra%sinkse(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dts * real(nsubsteps, kind=dp)
+                  sinksetot(j, k) = sinksetot(j, k) + vol0(sedtra%kmxsed(k, ll)) * sedtra%sinkse(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dts * real(ndeltasteps(k), kind=dp)
                   !if (stmpar%morpar%flufflyr%iflufflyr > 0) then
                   !   sinkftot(j, k) = sinkftot(j, k) + vol0(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dts
                   !end if

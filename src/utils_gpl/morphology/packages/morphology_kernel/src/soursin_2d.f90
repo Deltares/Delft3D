@@ -115,11 +115,11 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
        endif
        hots = wsl/(tsd*factsd)  ! (hots = h over ts)
        sour_ex = source_factor*rsedeq*hots/h0
-       sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  
-       sink_im = sink_factor*sink_theta * wsl/h1  
+       sink_ex = sink_factor*(1.0_fp - sink_theta)*hots/h0
+       sink_im = sink_factor*sink_theta*hots/h1
     else
-       sour_ex = source_factor*rsedeq*wsl/h0
-       sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  
+       sour_ex = 0.0_fp
+       sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  ! pure settling, no adaptation
        sink_im = sink_factor*sink_theta * wsl/h1
     endif
 end subroutine soursin_2d

@@ -320,7 +320,6 @@ type mornumericstype
     integer :: fluxlim                  ! flux limiter choice
     integer :: update_lts_flux          ! flux update choice for local time stepping
     double precision :: sink_theta      ! weighting factor for sink term in suspended sediment equation 0: explicit, 1: implicit
-    double precision :: suspended_flux_factor ! factor to scale horizontal suspended sediment fluxes
     double precision :: sink_factor ! factor to scale suspended sediment sink term 
     double precision :: source_factor ! factor to scale suspended sediment source term
 

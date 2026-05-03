@@ -1424,7 +1424,7 @@ contains
       elseif (jasourcesink == 3) then
          sourse = 0.0_dp
          sour_im = 0.0_dp
-      end if      
+      end if
       !
 
       deallocate (dzdx, dzdy, stat=istat)
