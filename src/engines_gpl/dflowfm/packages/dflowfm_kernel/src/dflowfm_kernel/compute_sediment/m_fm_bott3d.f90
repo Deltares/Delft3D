@@ -46,6 +46,12 @@ module m_fm_bott3d
    private !Prevent used modules from being exported
    public :: fm_bott3d
 
+   real(kind=dp), save :: bott3d_diag_trndiv_cum = 0.0_dp
+   real(kind=dp), save :: bott3d_diag_sedflx_cum = 0.0_dp
+   real(kind=dp), save :: bott3d_diag_eroflx_cum = 0.0_dp
+   real(kind=dp), save :: bott3d_diag_ssccum_cum = 0.0_dp
+   real(kind=dp), save :: bott3d_diag_net_cum = 0.0_dp
+
 contains
 
    !< Computes suspended sediment transport correction
@@ -1106,6 +1112,13 @@ contains
       real(kind=dp) :: h1
       real(kind=dp) :: sumflux
       real(kind=dp) :: thick1
+      real(kind=dp) :: diag_area
+      real(kind=dp) :: diag_ssccum
+      real(kind=dp) :: diag_trndiv_step
+      real(kind=dp) :: diag_sedflx_step
+      real(kind=dp) :: diag_eroflx_step
+      real(kind=dp) :: diag_ssccum_step
+      real(kind=dp) :: diag_net_step
 
    !!
    !! Execute
@@ -1119,6 +1132,11 @@ contains
       !
       dbodsd(:, :) = 0_dp
       !
+      diag_trndiv_step = 0.0_dp
+      diag_sedflx_step = 0.0_dp
+      diag_eroflx_step = 0.0_dp
+      diag_ssccum_step = 0.0_dp
+      diag_net_step = 0.0_dp
       ! compute change in bodsed (dbodsd)
       !
       bedchangemesscount = 0
@@ -1132,6 +1150,7 @@ contains
             trndiv = 0_dp
             sedflx = 0_dp
             eroflx = 0_dp
+            diag_ssccum = 0.0_dp
             !FM1DIMP2DO: I do not like this, but I cannot think of a better way.
             !The added flownodes at junctions are after the boundary ghost nodes.
             !We have to skip the boundaries but loop over the added flownodes.
@@ -1199,6 +1218,7 @@ contains
                      ! 2. sand to bed layer
                      sedflx = sinksetot(j, nm) * bai_mor(nm)
                      !
+                     diag_ssccum = ssccum(l, nm)
                      ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
                      if (ssccum(l, nm) > 0.0_fp) then
                         if (sedtyp(l) <= max_mud_sedtyp) then
@@ -1217,6 +1237,7 @@ contains
                         end if
                      end if
                   end if
+                  diag_ssccum = ssccum(l, nm)
                   ssccum(l, nm) = 0_dp
                   eroflx = sourse(nm, l) * thick1 ! mass conservation, different from D3D
                   !
@@ -1255,6 +1276,14 @@ contains
             end if
             !
             dsdnm = (trndiv + sedflx - eroflx) * dtmor
+            if (bai_mor(nm) > 0.0_dp) then
+               diag_area = 1.0_dp / bai_mor(nm)
+               diag_trndiv_step = diag_trndiv_step + trndiv * dtmor * diag_area
+               diag_sedflx_step = diag_sedflx_step + sedflx * dtmor * diag_area
+               diag_eroflx_step = diag_eroflx_step + eroflx * dtmor * diag_area
+               diag_ssccum_step = diag_ssccum_step + diag_ssccum * dtmor * diag_area
+               diag_net_step = diag_net_step + dsdnm * diag_area
+            end if
             !
             ! Warn if bottom changes are very large,
             ! depth change NOT LIMITED
@@ -1285,6 +1314,18 @@ contains
          write (mdia, '(12x,a,i0,a)') 'Bed change messages skipped (more than ', BEDCHANGEMESSMAX, ')'
          write (mdia, '(12x,2(a,i0))') 'Total number of Bed change messages for timestep ', int(dnt), ' : ', bedchangemesscount
       end if
+
+      bott3d_diag_trndiv_cum = bott3d_diag_trndiv_cum + diag_trndiv_step
+      bott3d_diag_sedflx_cum = bott3d_diag_sedflx_cum + diag_sedflx_step
+      bott3d_diag_eroflx_cum = bott3d_diag_eroflx_cum + diag_eroflx_step
+      bott3d_diag_ssccum_cum = bott3d_diag_ssccum_cum + diag_ssccum_step
+      bott3d_diag_net_cum = bott3d_diag_net_cum + diag_net_step
+      write (mdia, '(a,5(a,es14.6))') '*** BOTT3D mass diagnostic step:', &
+         & ' trndiv_kg=', diag_trndiv_step, ' sedflx_kg=', diag_sedflx_step, &
+         & ' eroflx_kg=', diag_eroflx_step, ' ssccum_kg=', diag_ssccum_step, ' net_kg=', diag_net_step
+      write (mdia, '(a,5(a,es14.6))') '*** BOTT3D mass diagnostic cumulative:', &
+         & ' trndiv_kg=', bott3d_diag_trndiv_cum, ' sedflx_kg=', bott3d_diag_sedflx_cum, &
+         & ' eroflx_kg=', bott3d_diag_eroflx_cum, ' ssccum_kg=', bott3d_diag_ssccum_cum, ' net_kg=', bott3d_diag_net_cum
 
    end subroutine fm_change_in_sediment_thickness
 

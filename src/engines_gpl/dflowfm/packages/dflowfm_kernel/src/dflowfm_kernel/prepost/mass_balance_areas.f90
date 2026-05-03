@@ -186,6 +186,8 @@ contains
       call realloc(mbafluxhortot, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxsorsin, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxsorsintot, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbasedsusexch, [2, numconst, nomba], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbasedsusexchtot, [2, numconst, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheat, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheattot, [2, nomba], keepExisting=.false., fill=0.0_dp)
 
@@ -202,6 +204,7 @@ contains
          call realloc(mbamassreduce, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxhorreduce, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxsorsinreduce, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbasedsusexchreduce, [2, numconst, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxheatreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
       end if
 
@@ -460,6 +463,8 @@ contains
          mbafluxhor(:, :, :, :) = mbafluxhorreduce(:, :, :, :)
          call reduce_double_sum(2 * 2 * numconst * num_source_sink, mbafluxsorsin, mbafluxsorsinreduce)
          mbafluxsorsin(:, :, :, :) = mbafluxsorsinreduce(:, :, :, :)
+         call reduce_double_sum(2 * numconst * nomba, mbasedsusexch, mbasedsusexchreduce)
+         mbasedsusexch(:, :, :) = mbasedsusexchreduce(:, :, :)
          call reduce_double_sum(2 * nomba, mbafluxheat, mbafluxheatreduce)
          mbafluxheat(:, :) = mbafluxheatreduce(:, :)
          if (num_fluxes > 0) then
@@ -483,6 +488,7 @@ contains
       mbaflowevatot(:) = mbaflowevatot(:) + mbafloweva(:)
       mbafluxhortot(:, :, :, :) = mbafluxhortot(:, :, :, :) + mbafluxhor(:, :, :, :)
       mbafluxsorsintot(:, :, :, :) = mbafluxsorsintot(:, :, :, :) + mbafluxsorsin(:, :, :, :)
+      mbasedsusexchtot(:, :, :) = mbasedsusexchtot(:, :, :) + mbasedsusexch(:, :, :)
       mbafluxheattot(:, :) = mbafluxheattot(:, :) + mbafluxheat(:, :)
       if (num_fluxes > 0) then
          flxdmptot(:, :, :) = flxdmptot(:, :, :) + flxdmp(:, :, :)
@@ -529,6 +535,7 @@ contains
       mbafloweva = 0.0_dp
       mbafluxhor = 0.0_dp
       mbafluxsorsin = 0.0_dp
+      mbasedsusexch = 0.0_dp
       mbafluxheat = 0.0_dp
       flxdmp = 0.0
 
@@ -844,8 +851,8 @@ contains
    subroutine comp_bedload_fluxmba()
       use m_flowtimes, only: dts
       use m_mass_balance_areas, only: nombaln, mbalnlist, mbalnfromto, mbasedflux
-      use m_fm_erosed, only: lsedtot, e_sbn, morfac
-      use m_flowgeom, only: wu_mor
+      use m_fm_erosed, only: lsedtot, lsed, e_sbn, e_scrn, morfac
+      use m_flowgeom, only: wu, wu_mor
 
       integer :: i !< balance link index
       integer :: ised !< sediment fraction index
@@ -862,6 +869,9 @@ contains
             k1 = mbalnfromto(1, i)
             k2 = mbalnfromto(2, i)
             flx = e_sbn(LL, ised) * wu_mor(LL)
+            if (ised <= lsed) then
+               flx = flx + e_scrn(LL, ised) * wu(LL)
+            end if
             if (flx > 0.0_dp) then
                mbasedflux(2, ised, k1, k2) = mbasedflux(2, ised, k1, k2) + flx * dtmor
                mbasedflux(1, ised, k2, k1) = mbasedflux(1, ised, k2, k1) + flx * dtmor
@@ -2398,17 +2408,17 @@ contains
 
          if (ised > 0) then ! sediment
             if (ised <= lsed .and. iflufflyr > 0) then ! not for bedload sediment
-               var(1:nomba) = mbafluffmassend(imbs, :)
-               var(nomba + 1) = sum(mbafluffmassend(imbs, :))
+               var(1:nomba) = mbafluffmassend(ised, :)
+               var(nomba + 1) = sum(mbafluffmassend(ised, :))
                ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_fluff_mass(imbs), var, [1, nc_bal_itime])
             end if
 
-            var(1:nomba) = mbabedmassend(imbs, :)
-            var(nomba + 1) = sum(mbabedmassend(imbs, :))
+            var(1:nomba) = mbabedmassend(ised, :)
+            var(nomba + 1) = sum(mbabedmassend(ised, :))
             ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_bed_mass(imbs), var, [1, nc_bal_itime])
 
-            var(1:nomba) = mbabedshortmassend(imbs, :)
-            var(nomba + 1) = sum(mbabedshortmassend(imbs, :))
+            var(1:nomba) = mbabedshortmassend(ised, :)
+            var(nomba + 1) = sum(mbabedshortmassend(ised, :))
             ierr = nf90_put_var(ncid_bal_file, ncid_bal_const_bedshort_mass(imbs), var, [1, nc_bal_itime])
          end if
 
@@ -2430,6 +2440,7 @@ contains
 
    subroutine mba_write_bal_time_step(lunbal, timestart, timeend, datestart, dateend, overall_balance)
       use m_mass_balance_areas
+      use m_fm_erosed, only: lsed, iflufflyr
       use m_fm_wq_processes, ifluxdummy => iflux
       use m_transport, only: numconst
       use m_step_to_screen, only: seconds_to_dhms
@@ -2443,10 +2454,12 @@ contains
       logical :: overall_balance !< balance period: use the total begin arrays, or just the last period
 
       character(len=:), allocatable :: units
-      integer :: imbs, imba, iflux
+      integer :: imbs, imba, iflux, ised
       real(kind=dp) :: totals(2) !< totals for both columns
       real(kind=dp) :: concbegin !< concentration begin
       real(kind=dp) :: concend !< concentration end
+      real(kind=dp) :: massbegin !< reported mass begin
+      real(kind=dp) :: massend !< reported mass end
       real(kind=dp) :: summbaarea !< sum area of mass balance area
       real(kind=dp) :: summbavolumebegin !< sum volume of mass balance area begin
       real(kind=dp) :: summbavolumeend !< sum volume of mass balance area end
@@ -2469,6 +2482,10 @@ contains
       real(kind=dp), pointer :: p_mbafluxsorsin(:, :, :, :)
       real(kind=dp), pointer :: p_mbafluxheat(:, :)
       real(kind=dp), pointer :: p_flxdmp(:, :, :)
+      real(kind=dp), pointer :: p_mbamorfacbegin
+      real(kind=dp), pointer :: p_mbabedmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbabedshortmassbegin(:, :)
+      real(kind=dp), pointer :: p_mbafluffmassbegin(:, :)
 
       if (overall_balance) then
          p_mbavolumebegin => mbavolumebegintot
@@ -2481,6 +2498,14 @@ contains
          p_mbafluxsorsin => mbafluxsorsintot
          p_mbafluxheat => mbafluxheattot
          p_flxdmp => flxdmptot
+         p_mbamorfacbegin => mbamorfacbegintot
+         if (allocated(mbabedmassbegintot)) then
+            p_mbabedmassbegin => mbabedmassbegintot
+            p_mbabedshortmassbegin => mbabedshortmassbegintot
+            if (allocated(mbafluffmassbegintot)) then
+               p_mbafluffmassbegin => mbafluffmassbegintot
+            end if
+         end if
       else
          p_mbavolumebegin => mbavolumebegin
          p_mbaflowhor => mbaflowhor
@@ -2492,6 +2517,14 @@ contains
          p_mbafluxsorsin => mbafluxsorsin
          p_mbafluxheat => mbafluxheat
          p_flxdmp => flxdmp
+         p_mbamorfacbegin => mbamorfacbegin
+         if (allocated(mbabedmassbegin)) then
+            p_mbabedmassbegin => mbabedmassbegin
+            p_mbabedshortmassbegin => mbabedshortmassbegin
+            if (allocated(mbafluffmassbegin)) then
+               p_mbafluffmassbegin => mbafluffmassbegin
+            end if
+         end if
       end if
 
       ! Output per mass balance area
@@ -2525,7 +2558,24 @@ contains
          do imbs = 1, nombs
             write (lunbal, 1010) seconds_to_dhms(nint(timestart, long)), datestart, seconds_to_dhms(nint(timeend, long)), &
                dateend, mbaname(imba), mbsname(imbs)
-            write (lunbal, 2000) p_mbamassbegin(imbs, imba), mbamassend(imbs, imba)
+            ised = imbs2sed(imbs)
+            massbegin = p_mbamassbegin(imbs, imba)
+            massend = mbamassend(imbs, imba)
+            if (ised > 0) then
+               massbegin = 0.0_dp
+               massend = 0.0_dp
+               if (ised <= lsed) then
+                  massbegin = p_mbamassbegin(imbs, imba) * p_mbamorfacbegin
+                  massend = mbamassend(imbs, imba) * mbamorfacend
+               end if
+               massbegin = massbegin + p_mbabedmassbegin(ised, imba) + p_mbabedshortmassbegin(ised, imba)
+               massend = massend + mbabedmassend(ised, imba) + mbabedshortmassend(ised, imba)
+               if (ised <= lsed .and. iflufflyr > 0) then
+                  massbegin = massbegin + p_mbafluffmassbegin(ised, imba)
+                  massend = massend + mbafluffmassend(ised, imba)
+               end if
+            end if
+            write (lunbal, 2000) massbegin, massend
             units = '('//get_units(imbs, CONC_UNIT)//')'
             write (lunbal, 1011) units
             if (imbs <= numconst) then
@@ -2558,7 +2608,18 @@ contains
             write (lunbal, 1004)
             write (lunbal, 2003) totals
             write (lunbal, 2020) mbsname(imbs), totals(2) - totals(1)
-            reference = max(abs(p_mbamassbegin(imbs, imba)), abs(mbamassend(imbs, imba)), totals(1), totals(2))
+            reference = max(abs(massbegin), abs(massend), totals(1), totals(2))
+            if (ised > 0) then
+               if (ised <= lsed) then
+                  reference = max(reference, abs(p_mbamassbegin(imbs, imba) * p_mbamorfacbegin), &
+                                  abs(mbamassend(imbs, imba) * mbamorfacend))
+               end if
+               reference = max(reference, abs(p_mbabedmassbegin(ised, imba)), abs(mbabedmassend(ised, imba)), &
+                               abs(p_mbabedshortmassbegin(ised, imba)), abs(mbabedshortmassend(ised, imba)))
+               if (ised <= lsed .and. iflufflyr > 0) then
+                  reference = max(reference, abs(p_mbafluffmassbegin(ised, imba)), abs(mbafluffmassend(ised, imba)))
+               end if
+            end if
             if (reference > tiny) then
                relative_error = 1.0e2_dp * abs(totals(2) - totals(1)) / reference
                write (lunbal, 2021) mbsname(imbs), relative_error
@@ -2601,9 +2662,26 @@ contains
       do imbs = 1, nombs
          write (lunbal, 1010) seconds_to_dhms(nint(timestart, long)), datestart, seconds_to_dhms(nint(timeend, long)), &
             dateend, 'Whole model', mbsname(imbs)
+         ised = imbs2sed(imbs)
          summbamassbegin = sum(p_mbamassbegin(imbs, :))
          summbamassend = sum(mbamassend(imbs, :))
-         write (lunbal, 2000) summbamassbegin, summbamassend
+         massbegin = summbamassbegin
+         massend = summbamassend
+         if (ised > 0) then
+            massbegin = 0.0_dp
+            massend = 0.0_dp
+            if (ised <= lsed) then
+               massbegin = summbamassbegin * p_mbamorfacbegin
+               massend = summbamassend * mbamorfacend
+            end if
+            massbegin = massbegin + sum(p_mbabedmassbegin(ised, :)) + sum(p_mbabedshortmassbegin(ised, :))
+            massend = massend + sum(mbabedmassend(ised, :)) + sum(mbabedshortmassend(ised, :))
+            if (ised <= lsed .and. iflufflyr > 0) then
+               massbegin = massbegin + sum(p_mbafluffmassbegin(ised, :))
+               massend = massend + sum(mbafluffmassend(ised, :))
+            end if
+         end if
+         write (lunbal, 2000) massbegin, massend
          units = '('//get_units(imbs, CONC_UNIT)//')'
          write (lunbal, 1011) units
          if (imbs <= numconst) then
@@ -2636,7 +2714,18 @@ contains
          write (lunbal, 1004)
          write (lunbal, 2003) totals
          write (lunbal, 2020) mbsname(imbs), totals(2) - totals(1)
-         reference = max(abs(summbamassbegin), abs(summbamassend), totals(1), totals(2))
+         reference = max(abs(massbegin), abs(massend), totals(1), totals(2))
+         if (ised > 0) then
+            if (ised <= lsed) then
+               reference = max(reference, abs(summbamassbegin * p_mbamorfacbegin), &
+                               abs(summbamassend * mbamorfacend))
+            end if
+            reference = max(reference, abs(sum(p_mbabedmassbegin(ised, :))), abs(sum(mbabedmassend(ised, :))), &
+                            abs(sum(p_mbabedshortmassbegin(ised, :))), abs(sum(mbabedshortmassend(ised, :))))
+            if (ised <= lsed .and. iflufflyr > 0) then
+               reference = max(reference, abs(sum(p_mbafluffmassbegin(ised, :))), abs(sum(mbafluffmassend(ised, :))))
+            end if
+         end if
          if (reference > tiny) then
             relative_error = 1.0e2_dp * abs(totals(2) - totals(1)) / reference
             write (lunbal, 2021) mbsname(imbs), relative_error
@@ -2690,6 +2779,7 @@ contains
 
    subroutine mba_write_csv_time_step(luncsvm, luncsvmb, datestart, dateend)
       use m_mass_balance_areas
+      use m_fm_erosed, only: lsed, iflufflyr
       use m_fm_wq_processes, ifluxdummy => iflux
 
       integer :: luncsvm ! logical unit mass
@@ -2699,7 +2789,7 @@ contains
       character(len=19) :: dateend ! end date of balance period
 
       character(len=20), external :: seconds_to_dhms
-      integer :: imbs, imba, iflux
+      integer :: imbs, imba, iflux, ised
       real(kind=dp) :: volchange ! volume change
       real(kind=dp) :: masschange ! mass change
       real(kind=dp) :: summbavolumebegin ! sum volume of mass balance area begin
@@ -2733,8 +2823,26 @@ contains
             write (datetimmbambs, 1) datestart, dateend, trim(mbaname(imba)), trim(mbsname(imbs))
 
             ! Constituents - mass
-            masschange = mbamassend(imbs, imba) - mbamassbegin(imbs, imba)
-            write (luncsvm, 2) trim(datetimmbambs), mbamassbegin(imbs, imba), mbamassend(imbs, imba)
+            ised = imbs2sed(imbs)
+            if (ised > 0) then
+               summbamassbegin = 0.0_dp
+               summbamassend = 0.0_dp
+               if (ised <= lsed) then
+                  summbamassbegin = mbamassbegin(imbs, imba) * mbamorfacbegin
+                  summbamassend = mbamassend(imbs, imba) * mbamorfacend
+               end if
+               summbamassbegin = summbamassbegin + mbabedmassbegin(ised, imba) + mbabedshortmassbegin(ised, imba)
+               summbamassend = summbamassend + mbabedmassend(ised, imba) + mbabedshortmassend(ised, imba)
+               if (ised <= lsed .and. iflufflyr > 0) then
+                  summbamassbegin = summbamassbegin + mbafluffmassbegin(ised, imba)
+                  summbamassend = summbamassend + mbafluffmassend(ised, imba)
+               end if
+               masschange = summbamassend - summbamassbegin
+               write (luncsvm, 2) trim(datetimmbambs), summbamassbegin, summbamassend
+            else
+               masschange = mbamassend(imbs, imba) - mbamassbegin(imbs, imba)
+               write (luncsvm, 2) trim(datetimmbambs), mbamassbegin(imbs, imba), mbamassend(imbs, imba)
+            end if
 
             balance => const_flux(imbs)%bal_area(imba)
             do iflux = 1, balance%n_entries
@@ -2766,8 +2874,24 @@ contains
          write (datetimmbambs, 1) datestart, dateend, labelwhole, trim(mbsname(imbs))
 
          ! Constituents - mass
-         summbamassbegin = sum(mbamassbegin(imbs, :))
-         summbamassend = sum(mbamassend(imbs, :))
+         ised = imbs2sed(imbs)
+         if (ised > 0) then
+            summbamassbegin = 0.0_dp
+            summbamassend = 0.0_dp
+            if (ised <= lsed) then
+               summbamassbegin = sum(mbamassbegin(imbs, :)) * mbamorfacbegin
+               summbamassend = sum(mbamassend(imbs, :)) * mbamorfacend
+            end if
+            summbamassbegin = summbamassbegin + sum(mbabedmassbegin(ised, :)) + sum(mbabedshortmassbegin(ised, :))
+            summbamassend = summbamassend + sum(mbabedmassend(ised, :)) + sum(mbabedshortmassend(ised, :))
+            if (ised <= lsed .and. iflufflyr > 0) then
+               summbamassbegin = summbamassbegin + sum(mbafluffmassbegin(ised, :))
+               summbamassend = summbamassend + sum(mbafluffmassend(ised, :))
+            end if
+         else
+            summbamassbegin = sum(mbamassbegin(imbs, :))
+            summbamassend = sum(mbamassend(imbs, :))
+         end if
          masschange = summbamassend - summbamassbegin
          write (luncsvm, 2) trim(datetimmbambs), summbamassbegin, summbamassend
 

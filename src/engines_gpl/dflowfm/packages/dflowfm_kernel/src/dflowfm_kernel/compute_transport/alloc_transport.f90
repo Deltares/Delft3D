@@ -63,6 +63,7 @@ contains
 
       call realloc(fluxhortot, [NUMCONST, Lnkx], keepExisting=KeepExisting, fill=0.0_dp)
       call realloc(sinksetot, [NUMCONST, Ndx], keepExisting=KeepExisting, fill=0.0_dp)
+      call realloc(sourimtot, [NUMCONST, Ndx], keepExisting=KeepExisting, fill=0.0_dp)
       call realloc(sinkftot, [NUMCONST, Ndx], keepExisting=KeepExisting, fill=0.0_dp)
 
       call realloc(difsedu, NUMCONST, keepExisting=KeepExisting, fill=0.0_dp)

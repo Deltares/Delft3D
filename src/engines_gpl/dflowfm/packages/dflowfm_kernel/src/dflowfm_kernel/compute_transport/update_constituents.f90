@@ -70,11 +70,23 @@
 !>     aaj(k) sedj(k-1) + bbj(k) sedj(k) + ccj(k) sedj(k+1) = ddj(k)
 module m_update_constituents
 
+   use precision, only: dp
+
    implicit none
 
    private
 
    public :: update_constituents
+
+   real(kind=dp), save :: transport_diag_storage_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_bnd_pos_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_bnd_neg_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_sinksetot_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_sourimtot_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_sourse_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_sinkse_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_sinkim_cum = 0.0_dp
+   real(kind=dp), save :: transport_diag_sourim_cum = 0.0_dp
 
 contains
 
@@ -98,9 +110,9 @@ contains
       use m_comp_fluxver, only: comp_fluxver
       use m_comp_fluxhor3d, only: comp_fluxhor3d
       use m_comp_dxiau, only: comp_dxiau
-      use m_flowgeom, only: Ndx, Ndxi, Lnx ! static mesh information
-      use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
-      use m_flowtimes, only: dts
+      use m_flowgeom, only: Ndx, Ndxi, Lnx, Lnxi ! static mesh information
+      use m_flow, only: Ndkx, Lnkx, u1, q1, au, qw, zws, sqi, vol0, vol1, kbot, ktop, Lbot, Ltop, kmxn, kmxL, kmx, viu, vicwws, wsf, jadecaytracers
+      use m_flowtimes, only: dts   , time1
       use m_turbulence, only: sigdifi
       use m_transport
       use m_mass_balance_areas
@@ -108,11 +120,13 @@ contains
       use m_alloc
       use m_partitioninfo
       use m_timer
-      use m_sediment, only: jatranspvel, jased, stmpar, stm_included
+      use m_sediment, only: jatranspvel, jased, stmpar, stm_included, sedtra
       use m_waves
       use timers
       use mass_balance_areas_routines, only: comp_horfluxmba
       use m_get_Lbot_Ltop
+      use m_fm_erosed, only: morfac
+      use messagehandling, only: LEVEL_INFO, mess
 
       implicit none
 
@@ -121,9 +135,26 @@ contains
       integer :: ierror
 
       integer :: limtyp !< limiter type (>0), or first-order upwind (0)
-      real(kind=dp) :: dts_store
+      real(kind=dp) :: dts_store, sourim_rate, sourim_mass
+      real(kind=dp) :: transport_diag_storage0
+      real(kind=dp) :: transport_diag_storage1
+      real(kind=dp) :: transport_diag_storage_step
+      real(kind=dp) :: transport_diag_bnd_pos_step
+      real(kind=dp) :: transport_diag_bnd_neg_step
+      real(kind=dp) :: transport_diag_sinksetot_step
+      real(kind=dp) :: transport_diag_sourimtot_step
+      real(kind=dp) :: transport_diag_sourse_step
+      real(kind=dp) :: transport_diag_sinkse_step
+      real(kind=dp) :: transport_diag_sinkim_step
+      real(kind=dp) :: transport_diag_sourim_step
+      real(kind=dp) :: transport_diag_flux
+      real(kind=dp) :: bed_exchange_source
+      real(kind=dp) :: bed_exchange_sink
+      character(len=512) :: str
 
       integer :: LL, L, j, numconst_store, Lb, Lt
+      integer :: kk, jsed, ksed
+      integer :: imba
       integer :: istep
       integer :: numstepssync
 
@@ -147,6 +178,27 @@ contains
          ! call fill_ucxucy() ; numconst_store = numconst
       else
          call fill_constituents(1)
+      end if
+
+      transport_diag_storage0 = 0.0_dp
+      if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
+         if (kmx < 1) then
+            do kk = 1, Ndxi
+               do jsed = 1, stmpar%lsedsus
+                  j = ISED1 + jsed - 1
+                  transport_diag_storage0 = transport_diag_storage0 + vol0(kk) * constituents(j, kk)
+               end do
+            end do
+         else
+            do kk = 1, Ndxi
+               do L = kbot(kk), ktop(kk)
+                  do jsed = 1, stmpar%lsedsus
+                     j = ISED1 + jsed - 1
+                     transport_diag_storage0 = transport_diag_storage0 + vol0(L) * constituents(j, L)
+                  end do
+               end do
+            end do
+         end if
       end if
 
 !     compute areas of horizontal diffusive fluxes divided by Dx
@@ -180,6 +232,7 @@ contains
       if (stm_included) then
          fluxhortot = 0.0_dp
          sinksetot = 0.0_dp
+         sourimtot = 0.0_dp
          sinkftot = 0.0_dp
          u1sed = 0.0_dp
          q1sed = 0.0_dp
@@ -309,8 +362,101 @@ contains
          do j = ISED1, ISEDN
             fluxhortot(j, :) = fluxhortot(j, :) / dts_store
             sinksetot(j, :) = sinksetot(j, :) / dts_store
+            sourimtot(j, :) = sourimtot(j, :) / dts_store
             sinkftot(j, :) = sinkftot(j, :) / dts_store
          end do
+      end if
+
+      transport_diag_storage1 = 0.0_dp
+      transport_diag_storage_step = 0.0_dp
+      transport_diag_bnd_pos_step = 0.0_dp
+      transport_diag_bnd_neg_step = 0.0_dp
+      transport_diag_sinksetot_step = 0.0_dp
+      transport_diag_sourimtot_step = 0.0_dp
+      transport_diag_sourse_step = 0.0_dp
+      transport_diag_sinkse_step = 0.0_dp
+      transport_diag_sinkim_step = 0.0_dp
+      transport_diag_sourim_step = 0.0_dp
+      if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
+         if (kmx < 1) then
+            do kk = 1, Ndxi
+               do jsed = 1, stmpar%lsedsus
+                  j = ISED1 + jsed - 1
+                  transport_diag_storage1 = transport_diag_storage1 + vol1(kk) * constituents(j, kk)
+               end do
+            end do
+         else
+            do kk = 1, Ndxi
+               do L = kbot(kk), ktop(kk)
+                  do jsed = 1, stmpar%lsedsus
+                     j = ISED1 + jsed - 1
+                     transport_diag_storage1 = transport_diag_storage1 + vol1(L) * constituents(j, L)
+                  end do
+               end do
+            end do
+         end if
+
+         do kk = 1, Ndxi
+            do jsed = 1, stmpar%lsedsus
+               j = ISED1 + jsed - 1
+               ksed = sedtra%kmxsed(kk, jsed)
+               if (ksed > 0) then
+                  transport_diag_sourse_step = transport_diag_sourse_step + vol1(ksed) * sedtra%sourse(kk, jsed) * dts_store
+                  transport_diag_sinkse_step = transport_diag_sinkse_step + vol1(ksed) * sedtra%sinkse(kk, jsed) * constituents(j, ksed) * dts_store
+                  transport_diag_sinkim_step = transport_diag_sinkim_step + vol1(ksed) * sedtra%sink_im(kk, jsed) * constituents(j, ksed) * dts_store
+                  transport_diag_sourim_step = transport_diag_sourim_step + vol1(ksed) * sedtra%sour_im(kk, jsed) * constituents(j, ksed) * dts_store
+                  transport_diag_sinksetot_step = transport_diag_sinksetot_step + sinksetot(j, kk) * dts_store
+                  transport_diag_sourimtot_step = transport_diag_sourimtot_step + sourimtot(j, kk) * dts_store
+                  if (jamba > 0 .and. allocated(mbasedsusexch)) then
+                     imba = mbadefdomain(kk)
+                     if (imba > 0) then
+                        bed_exchange_source = vol1(ksed) * sedtra%sourse(kk, jsed) * dts_store * morfac
+                        bed_exchange_sink = sinksetot(j, kk) * dts_store * morfac
+                        mbasedsusexch(1, j, imba) = mbasedsusexch(1, j, imba) + bed_exchange_source
+                        mbasedsusexch(2, j, imba) = mbasedsusexch(2, j, imba) + bed_exchange_sink
+                     end if
+                  end if
+               end if
+            end do
+         end do
+
+         do LL = Lnxi + 1, Lnx
+            if (kmx < 1) then
+               do jsed = 1, stmpar%lsedsus
+                  j = ISED1 + jsed - 1
+                  transport_diag_flux = fluxhortot(j, LL) * dts_store
+                  if (transport_diag_flux >= 0.0_dp) then
+                     transport_diag_bnd_pos_step = transport_diag_bnd_pos_step + transport_diag_flux
+                  else
+                     transport_diag_bnd_neg_step = transport_diag_bnd_neg_step + transport_diag_flux
+                  end if
+               end do
+            else
+               call getLbotLtop(LL, Lb, Lt)
+               do L = Lb, Lt
+                  do jsed = 1, stmpar%lsedsus
+                     j = ISED1 + jsed - 1
+                     transport_diag_flux = fluxhortot(j, L) * dts_store
+                     if (transport_diag_flux >= 0.0_dp) then
+                        transport_diag_bnd_pos_step = transport_diag_bnd_pos_step + transport_diag_flux
+                     else
+                        transport_diag_bnd_neg_step = transport_diag_bnd_neg_step + transport_diag_flux
+                     end if
+                  end do
+               end do
+            end if
+         end do
+
+         transport_diag_storage_step = transport_diag_storage1 - transport_diag_storage0
+         transport_diag_storage_cum = transport_diag_storage_cum + transport_diag_storage_step
+         transport_diag_bnd_pos_cum = transport_diag_bnd_pos_cum + transport_diag_bnd_pos_step
+         transport_diag_bnd_neg_cum = transport_diag_bnd_neg_cum + transport_diag_bnd_neg_step
+         transport_diag_sinksetot_cum = transport_diag_sinksetot_cum + transport_diag_sinksetot_step
+         transport_diag_sourimtot_cum = transport_diag_sourimtot_cum + transport_diag_sourimtot_step
+         transport_diag_sourse_cum = transport_diag_sourse_cum + transport_diag_sourse_step
+         transport_diag_sinkse_cum = transport_diag_sinkse_cum + transport_diag_sinkse_step
+         transport_diag_sinkim_cum = transport_diag_sinkim_cum + transport_diag_sinkim_step
+         transport_diag_sourim_cum = transport_diag_sourim_cum + transport_diag_sourim_step
       end if
 
 !  Move here, needed in two following subroutines
@@ -325,6 +471,34 @@ contains
             call decaytracers()
          end if
          call extract_constituents()
+      end if
+
+      if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
+         sourim_rate = sum(sourimtot(ISED1:ISEDN, 1:Ndxi))
+         sourim_mass = sourim_rate * dts_store
+         if (sourim_rate /= 0.0_dp) then
+            write(str, '(A,F12.3,A,ES14.6,A,ES14.6,A,ES14.6)') 'sour_im diagnostic: time=', time1, &
+               & ' rate_kg_s=', sourim_rate, ' mass_kg=', sourim_mass, ' morph_mass_kg=', sourim_mass * morfac
+            call mess(LEVEL_INFO, trim(str))
+         end if
+         write(str, '(A,F12.3,5(A,ES14.6))') 'transport diagnostic step: time=', time1, &
+            & ' storage_kg=', transport_diag_storage_step, ' bnd_pos_kg=', transport_diag_bnd_pos_step, &
+            & ' bnd_neg_kg=', transport_diag_bnd_neg_step, ' sinksetot_kg=', transport_diag_sinksetot_step, &
+            & ' sourimtot_kg=', transport_diag_sourimtot_step
+         call mess(LEVEL_INFO, trim(str))
+         write(str, '(A,F12.3,4(A,ES14.6))') 'transport source split step: time=', time1, &
+            & ' sourse_kg=', transport_diag_sourse_step, ' sinkse_kg=', transport_diag_sinkse_step, &
+            & ' sink_im_kg=', transport_diag_sinkim_step, ' sour_im_kg=', transport_diag_sourim_step
+         call mess(LEVEL_INFO, trim(str))
+         write(str, '(A,F12.3,5(A,ES14.6))') 'transport diagnostic cumulative: time=', time1, &
+            & ' storage_kg=', transport_diag_storage_cum, ' bnd_pos_kg=', transport_diag_bnd_pos_cum, &
+            & ' bnd_neg_kg=', transport_diag_bnd_neg_cum, ' sinksetot_kg=', transport_diag_sinksetot_cum, &
+            & ' sourimtot_kg=', transport_diag_sourimtot_cum
+         call mess(LEVEL_INFO, trim(str))
+         write(str, '(A,F12.3,4(A,ES14.6))') 'transport source split cumulative: time=', time1, &
+            & ' sourse_kg=', transport_diag_sourse_cum, ' sinkse_kg=', transport_diag_sinkse_cum, &
+            & ' sink_im_kg=', transport_diag_sinkim_cum, ' sour_im_kg=', transport_diag_sourim_cum
+         call mess(LEVEL_INFO, trim(str))
       end if
 
       ierror = 0

@@ -79,6 +79,7 @@ module m_transport
    real(kind=dp), dimension(:, :), allocatable :: fluxver ! vertical   fluxes
    real(kind=dp), dimension(:, :), allocatable :: fluxhortot ! sum of horizontal fluxes (fluxhor) at local time stepping
    real(kind=dp), dimension(:, :), allocatable :: sinksetot ! sum of sed sinks at local time stepping
+   real(kind=dp), dimension(:, :), allocatable :: sourimtot ! sum of implicit suspended source correction at local time stepping
    real(kind=dp), dimension(:, :), allocatable :: sinkftot ! sum of  fluff sinks at local time stepping
 
    real(kind=dp), dimension(:), allocatable :: thetavert ! vertical advection fluxes explicit (0) or implicit (1)

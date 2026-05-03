@@ -148,6 +148,8 @@ module m_mass_balance_areas
    real(kind=dp), allocatable, target :: mbafluxhortot(:, :, :, :) !< total fluxes between balance areas and between boundaries and balance areas
    real(kind=dp), allocatable, target :: mbafluxsorsin(:, :, :, :) !< periodical fluxes from source sinks
    real(kind=dp), allocatable, target :: mbafluxsorsintot(:, :, :, :) !< total fluxes from source sinks
+   real(kind=dp), allocatable, target :: mbasedsusexch(:, :, :) !< periodical suspended sediment bed exchange
+   real(kind=dp), allocatable, target :: mbasedsusexchtot(:, :, :) !< total suspended sediment bed exchange
    real(kind=dp), allocatable, target :: mbafluxheat(:, :) !< temperature heat flux
    real(kind=dp), allocatable, target :: mbafluxheattot(:, :) !< total temperature heat flux
 
@@ -159,6 +161,7 @@ module m_mass_balance_areas
    real(kind=dp), allocatable :: mbamassreduce(:, :) !< begin volume in mass balance area
    real(kind=dp), allocatable :: mbafluxhorreduce(:, :, :, :) !< periodical fluxes between balance areas and between boundaries and balance areas
    real(kind=dp), allocatable :: mbafluxsorsinreduce(:, :, :, :) !< periodical fluxes from source sinks
+   real(kind=dp), allocatable :: mbasedsusexchreduce(:, :, :) !< suspended sediment bed exchange (for MPI reduce)
    real(kind=dp), allocatable :: mbafluxheatreduce(:, :) !< temperature heat flux
 
    type balance_type

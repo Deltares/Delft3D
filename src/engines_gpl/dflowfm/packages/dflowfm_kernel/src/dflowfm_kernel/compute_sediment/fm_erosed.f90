@@ -44,7 +44,7 @@ module m_fm_erosed_sub
    private
 
    public :: fm_erosed
-   public :: compute_sediment_mass
+   !public :: compute_sediment_mass
 
 contains
 
@@ -1439,75 +1439,75 @@ contains
 
    end subroutine fm_erosed
 
-   subroutine compute_sediment_mass(time, pos)
-      use precision, only: dp
-      use m_sediment, only: stmpar
-      use m_flowgeom, only: ndx, ba
-      use m_transport
-      use m_flow, only: vol0, vol1
-      
-      implicit none 
-      logical, save :: first = .true.
-      character(len=30), save :: filename
-
-      real(kind=dp) :: time
-      integer :: pos
-      character(len=30) :: extra
-      
-      real(kind=dp) :: mbs, mbb, mba, v0, v1
-      integer :: k!, klyr
-      integer :: unit
-      integer :: values(8)
- 
-      call date_and_time(values=values) 
-    
-      if (pos == 1) then
-          extra = 'before erosed'
-      else if (pos == 2) then
-          extra = 'after erosed'
-      else if (pos == 3) then
-          extra = 'after transport'
-      else if (pos == 4) then
-          extra = 'after bed update'
-      else if (pos == 5) then
-          extra = 'after volsur'
-      else
-          pos = 1
-          extra = 'unknown'
-      end if
-      v0 = 0.0_dp
-      v1 = 0.0_dp
-      mbs = 0.0_dp
-      do k = 1, ndx
-         v0 = v0 + vol0(k)
-         v1 = v1 + vol1(k)
-      end do
-      if (pos < 3) then 
-         do k = 1, ndx
-             mbs = mbs+constituents(1,k)*vol0(k) ! kg suspended
-         end do
-      else
-         do k = 1, ndx
-             mbs = mbs+constituents(1,k)*vol1(k) ! kg suspended
-         end do
-      end if 
-      mbb = 0.0_dp
-      do k = 1, ndx
-          !do klyr = 1, stmpar%morlyr%settings%nlyr
-             mbb = mbb+stmpar%morlyr%state%bodsed(1, k) * ba(k) ! kg in bed
-          !end do
-      end do
-      mba = mbb + mbs
-      if (first) then 
-          write(filename, '(a,i4,i2.2,i2.2,a,i2.2,i2.2,a)') 'mass_', values(1),values(2),values(3),'_',values(5), values(6), '.csv'
-          open(newunit=unit, file=filename, status='replace')
-          write(unit,*) 'time, suspended [kg], bed [kg], total[kg], vol0[m3], vol1[m3], extra'
-          first = .false.
-      else 
-          open(newunit=unit, file=filename, access='append')
-      end if 
-      write(unit,'(F10.3,a,F20.4,a,F20.4,a,F20.4,a,F20.4,a,F20.4,a,a)') time, ',', mbs, ',', mbb, ',', mba, ', ', v0, ',', v1, ', ', extra
-      close(unit)
-   end subroutine compute_sediment_mass
+   !subroutine compute_sediment_mass(time, pos)
+   !   use precision, only: dp
+   !   use m_sediment, only: stmpar
+   !   use m_flowgeom, only: ndx, ba
+   !   use m_transport
+   !   use m_flow, only: vol0, vol1
+   !   
+   !   implicit none 
+   !   logical, save :: first = .true.
+   !   character(len=30), save :: filename
+   !
+   !   real(kind=dp) :: time
+   !   integer :: pos
+   !   character(len=30) :: extra
+   !   
+   !   real(kind=dp) :: mbs, mbb, mba, v0, v1
+   !   integer :: k!, klyr
+   !   integer :: unit
+   !   integer :: values(8)
+   !
+   !   call date_and_time(values=values) 
+   ! 
+   !   if (pos == 1) then
+   !       extra = 'before erosed'
+   !   else if (pos == 2) then
+   !       extra = 'after erosed'
+   !   else if (pos == 3) then
+   !       extra = 'after transport'
+   !   else if (pos == 4) then
+   !       extra = 'after bed update'
+   !   else if (pos == 5) then
+   !       extra = 'after volsur'
+   !   else
+   !       pos = 1
+   !       extra = 'unknown'
+   !   end if
+   !   v0 = 0.0_dp
+   !   v1 = 0.0_dp
+   !   mbs = 0.0_dp
+   !   do k = 1, ndx
+   !      v0 = v0 + vol0(k)
+   !      v1 = v1 + vol1(k)
+   !   end do
+   !   if (pos < 3) then 
+   !      do k = 1, ndx
+   !          mbs = mbs+constituents(1,k)*vol0(k) ! kg suspended
+   !      end do
+   !   else
+   !      do k = 1, ndx
+   !          mbs = mbs+constituents(1,k)*vol1(k) ! kg suspended
+   !      end do
+   !   end if 
+   !   mbb = 0.0_dp
+   !   do k = 1, ndx
+   !       !do klyr = 1, stmpar%morlyr%settings%nlyr
+   !          mbb = mbb+stmpar%morlyr%state%bodsed(1, k) * ba(k) ! kg in bed
+   !       !end do
+   !   end do
+   !   mba = mbb + mbs
+   !   if (first) then 
+   !       write(filename, '(a,i4,i2.2,i2.2,a,i2.2,i2.2,a)') 'mass_', values(1),values(2),values(3),'_',values(5), values(6), '.csv'
+   !       open(newunit=unit, file=filename, status='replace')
+   !       write(unit,*) 'time, suspended [kg], bed [kg], total[kg], vol0[m3], vol1[m3], extra'
+   !       first = .false.
+   !   else 
+   !       open(newunit=unit, file=filename, access='append')
+   !   end if 
+   !   write(unit,'(F10.3,a,F20.4,a,F20.4,a,F20.4,a,F20.4,a,F20.4,a,a)') time, ',', mbs, ',', mbb, ',', mba, ', ', v0, ',', v1, ', ', extra
+   !   close(unit)
+   !end subroutine compute_sediment_mass
    
 end module m_fm_erosed_sub

@@ -41,7 +41,8 @@ module m_comp_sinktot
 contains
 
    subroutine comp_sinktot(comp_sinktot_method)
-      use m_transport, only: ised1, isedn, sinksetot, constituents, sinkftot, jaupdate, ndeltasteps, nsubsteps
+      use m_transport, only: ised1, isedn, sinksetot, sourimtot, constituents, sinkftot, &
+                           & jaupdate, ndeltasteps, nsubsteps
       use m_sediment, only: stm_included, mxgr, sedtra, stmpar
       use timers, only: timon, timstrt, timstop
       use m_flow, only: vol0, vol1, kmx
@@ -101,6 +102,7 @@ contains
             do j = ISED1, ISEDN
                   ll = j - ISED1 + 1
                   sinksetot(j, k) = sinksetot(j, k) + vol1(k) * sedtra%sink_im(k, ll) * constituents(j, k) * dt_loc
+                  sourimtot(j, k) = sourimtot(j, k) + vol1(k) * sedtra%sour_im(k, ll) * constituents(j, k) * dt_loc
                   if (stmpar%morpar%flufflyr%iflufflyr > 0) then
                      sinkftot(j, k) = sinkftot(j, k) + vol1(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dt_loc
                   end if
@@ -116,6 +118,7 @@ contains
                do j = ISED1, ISEDN
                   ll = j - ISED1 + 1
                   sinksetot(j, k) = sinksetot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sink_im(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
+                  sourimtot(j, k) = sourimtot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sour_im(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
                   if (stmpar%morpar%flufflyr%iflufflyr > 0) then
                      sinkftot(j, k) = sinkftot(j, k) + vol1(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
                   end if
