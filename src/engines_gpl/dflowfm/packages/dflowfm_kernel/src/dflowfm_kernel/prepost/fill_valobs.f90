@@ -248,7 +248,13 @@ contains
             neighbour_weights_obs(2,i)           = 0.0_dp
             neighbour_weights_obs(3,i)           = 0.0_dp
             wet_or_dry(neighbour_nodes_obs(:,i)) = 1       ! normal stations always wet!
-         else ! check for drying or flooding for interpolated stations
+         else 
+            ! And treat interpolated ones that could not have been interpolated as snapped ones (because they are out of interpolation boundaries)
+            ! if (intobs(i) /= 0) then
+            !   write (msgbuf, '(a, i0, a, f0.10, a, f0.10, a)') "Unable to interpolate #", i, " (", xobs(i), ", ", yobs(i), "). It's probably at the edge and will be snapped!"
+            !  call mess(LEVEL_WARN, msgbuf)
+            ! end if
+            ! check for drying or flooding for interpolated stations
             if (neighbour_nodes_obs(1,i) /=0) then
                do i_neighbours = 1,3
                   ! Points that based on their depth are initially dry (epshs does not recognize temporary drying)
@@ -256,7 +262,7 @@ contains
                end do
             end if
          end if
-
+     
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
 
             if (model_is_3D()) then
