@@ -24,6 +24,9 @@ project {
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
 
+        param("dvc_testbench_accesskey", DslContext.getParameter("dvc_testbench_accesskey"))
+        password("dvc_testbench_secret", DslContext.getParameter("dvc_testbench_secret"))
+
         param("nexus_username", DslContext.getParameter("nexus_username"))
         password("nexus_password", DslContext.getParameter("nexus_password"))
         password("nexus_nuget_apikey", DslContext.getParameter("nexus_nuget_apikey"))
@@ -179,17 +182,6 @@ project {
             url = "https://containers.deltares.nl/"
             userName = "%delft3d-user%"
             password = "%delft3d-secret%"
-        }
-        awsConnection {
-            id = "doc_download_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = DslContext.getParameter("s3_dsctestbench_accesskey")
-                secretAccessKey = "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
         }
         feature {
             type = "OAuthProvider"
