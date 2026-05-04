@@ -7,8 +7,8 @@ import csv
 import getpass
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, List, Optional, TextIO
 from pathlib import Path
+from typing import Any, List, Optional, TextIO
 
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
