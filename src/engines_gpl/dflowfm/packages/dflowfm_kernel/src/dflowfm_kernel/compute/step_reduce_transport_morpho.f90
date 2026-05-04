@@ -71,7 +71,7 @@ contains
       use m_waves
       use m_subsidence, only: jasubsupl
       use m_fm_bott3d, only: fm_bott3d
-      use m_fm_erosed, only: ti_sedtrans
+      use m_fm_erosed, only: ti_sedtrans, tcmp
       use m_curvature, only: get_curvature
       use m_xbeach_netcdf, only: xbeach_mombalance
       use mass_balance_areas_routines, only: comp_bedload_fluxmba
@@ -155,7 +155,9 @@ contains
 
       if (jased > 0 .and. stm_included) then
          call fm_bott3d() ! bottom update
-         call comp_bedload_fluxmba()
+         if (time1 >= tstart_user + tcmp * tfac) then
+            call comp_bedload_fluxmba()
+         end if
       end if
 
       if (jasubsupl > 0) then

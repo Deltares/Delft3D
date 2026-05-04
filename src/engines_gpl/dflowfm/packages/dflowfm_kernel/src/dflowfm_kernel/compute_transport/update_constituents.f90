@@ -279,8 +279,8 @@ contains
                   if (jamba > 0 .and. allocated(mbasedsusexch)) then
                      imba = mbadefdomain(kk)
                      if (imba > 0) then
-                        bed_exchange_source = vol1(ksed) * sedtra%sourse(kk, jsed) * dts_store * morfac
-                           bed_exchange_sink = (sinksetot(j, kk) + sourimtot(j, kk)) * dts_store * morfac
+                        bed_exchange_source = vol1(ksed) * (sedtra%sourse(kk, jsed)+sourimtot(j, kk)) * dts_store * morfac
+                        bed_exchange_sink = sinksetot(j, kk) * dts_store * morfac
                         mbasedsusexch(1, j, imba) = mbasedsusexch(1, j, imba) + bed_exchange_source
                         mbasedsusexch(2, j, imba) = mbasedsusexch(2, j, imba) + bed_exchange_sink
                      end if
