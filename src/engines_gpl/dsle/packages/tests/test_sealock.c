@@ -1133,7 +1133,6 @@ test_sealock_update__phase_wise__constituent_flush_doors_closed__uniform_concent
   lock.phase_args.run_update = 1;
   lock.phase_args.time_duration_end = times[0] + 60;
 
-  // Uniform concentration everywhere: the flush must not perturb anything.
   const double c_uniform = 15.0;
   lock.constituent_lock[1] = c_uniform;
   lock.parameters3d.constituent_lake[1][0] = c_uniform;
