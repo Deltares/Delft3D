@@ -3,6 +3,7 @@
 Copyright (C)  Stichting Deltares, 2026
 """
 
+import csv
 import getpass
 import os
 from argparse import ArgumentParser, Namespace
@@ -63,7 +64,7 @@ class TestBenchParameterParser:
         # Additionally, extra TeamCity messages will be produced.
         settings.teamcity = cls.__get_argument_value("teamcity", args) or False
 
-        settings.filter = args.filter
+        settings.filter = cls.__resolve_filter(args.filter)
         # Determine type of run
         settings.run_mode = cls.__get_argument_value("run_mode", args) or ModeType.LIST
         settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
@@ -72,6 +73,70 @@ class TestBenchParameterParser:
         settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
         return settings
+
+    @classmethod
+    def __resolve_filter(cls, filter_arg: str) -> str:
+        """Resolve the filter argument.
+
+        If the filter argument points to an existing CSV file, extract all
+        test names from the 'Test Name' column where 'Status' equals 'Failure'
+        and convert them into a ``testcase=name1,name2,...`` filter string.
+        Otherwise the original value is returned unchanged.
+
+        Parameters
+        ----------
+        filter_arg : str
+            The raw value passed to ``--filter``.
+
+        Returns
+        -------
+        str
+            The resolved filter string.
+        """
+        if not filter_arg or not os.path.isfile(filter_arg):
+            return filter_arg
+
+        failed_names = cls.__read_failed_tests_from_csv(filter_arg)
+        if not failed_names:
+            return filter_arg
+
+        return f"testcase={','.join(failed_names)}"
+
+    @classmethod
+    def __read_failed_tests_from_csv(cls, csv_path: str) -> List[str]:
+        """Read test names with a 'Failure' status from a CSV file.
+
+        Parameters
+        ----------
+        csv_path : str
+            Path to the CSV file with columns including 'Test Name' and 'Status'.
+
+        Returns
+        -------
+        List[str]
+            Names of all tests whose status is 'Failure'.
+
+        Raises
+        ------
+        ValueError
+            If the CSV file is missing the required 'Test Name' or 'Status' columns.
+        """
+        failed: List[str] = []
+        with open(csv_path, newline="", encoding="utf-8") as csv_file:
+            reader = csv.DictReader(csv_file)
+            required_columns = {"Test Name", "Status"}
+            if not required_columns.issubset(reader.fieldnames or []):
+                missing = required_columns - set(reader.fieldnames or [])
+                raise ValueError(
+                    f"CSV file '{csv_path}' is missing required columns: {missing}. "
+                    f"Found: {reader.fieldnames}"
+                )
+            for row in reader:
+                if row.get("Status", "").strip() == "Failure":
+                    name = row.get("Test Name", "").strip()
+                    if name:
+                        failed.append(name)
+        return failed
 
     @classmethod
     def __get_argument_value(
@@ -175,7 +240,11 @@ class TestBenchParameterParser:
         parser.add_argument(
             "--filter",
             default="",
-            help="Specify what tests to run based on filter (--list for options)",
+            help=(
+                "Specify what tests to run based on filter (--list for options). "
+                "Alternatively, provide a path to a CSV file with 'Test Name' and 'Status' columns "
+                "to automatically filter on all tests with status 'Failure'."
+            ),
             dest="filter",
         )
         parser.add_argument(
