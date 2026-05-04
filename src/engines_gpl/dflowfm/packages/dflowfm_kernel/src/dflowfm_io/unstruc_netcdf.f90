@@ -13962,6 +13962,7 @@ contains
       integer :: jabndnd_
 
       integer, allocatable :: contacts(:, :), contacttype(:)
+      integer, allocatable, dimension(:) :: nodes_1d, faces
       integer :: layer_count, layer_type
 
       integer, parameter :: LAYERTYPE_OCEAN_SIGMA = 1
@@ -13975,8 +13976,8 @@ contains
 
       integer :: ierr
       logical :: jaInDefine
-      integer :: n1dedges, n1d2dcontacts, start_index
-
+      integer :: n1dedges, n1d2dcontacts, start_index, i
+      
       ! meshgeom2d is built by build_flowgeom_2d and then written here
       type(t_ug_network) :: networkids_dummy
 
@@ -14049,6 +14050,18 @@ contains
          end if
       end if
 
+      if (allocated(flowgeom%node_map_1d)) then
+         nodes_1d = flowgeom%node_map_1d
+      else    
+         nodes_1d = [(flowgeom%mesh2d%numFace + i, i = 1, flowgeom%mesh1D%numNode)]
+      end if
+
+      if (allocated(flowgeom%face_map)) then
+         faces = flowgeom%face_map
+      else
+         faces = [(i, i = 1, flowgeom%mesh2d%numFace)]
+      end if
+
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
       ! All other counters (ndx, ndxi, ndx1db, lnx...) are always the global values; use m_flowgeom directly.
       associate (ndx2d => flowgeom%mesh2d%numFace, &
@@ -14081,12 +14094,12 @@ contains
                   ierr = nf90_put_att(ncid, id_tsp%id_s1max(2), 'positive', "down")
 
                   ierr = nf90_enddef(ncid)
-                  ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(flowgeom%face_map))
-                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(flowgeom%face_map))
+                  ierr = nf90_put_var(ncid, id_tsp%id_s1max(2), s1max(faces))
+                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl_min(faces))
                   ierr = nf90_redef(ncid)
                else
                   ierr = nf90_enddef(ncid)
-                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(flowgeom%face_map))
+                  ierr = nf90_put_var(ncid, id_tsp%id_bldepth(2), -1 * bl(faces))
                   ierr = nf90_redef(ncid)
                end if
             end if
@@ -14109,12 +14122,12 @@ contains
 
          !-- Start data writing (time-independent data) ------------
          if (flowgeom%mesh1D%numNode > 0) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(flowgeom%node_map_1d))
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(flowgeom%node_map_1d))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(1), ba(nodes_1d))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(1), bl(nodes_1d))
          end if
          if (ndx2d > 0 .and. ja2D_) then
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(flowgeom%face_map))
-            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(flowgeom%face_map))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelemba(2), ba(faces))
+            ierr = nf90_put_var(ncid, id_tsp%id_flowelembl(2), bl(faces))
             ierr = nf90_put_var(ncid, id_tsp%id_netnodez(2), z2dn)
          end if
 
@@ -14129,12 +14142,12 @@ contains
 
          if (jampi == 1) then
             if (ndx2d > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(flowgeom%face_map))
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(flowgeom%face_map))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(2), idomain(faces))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(2), iglobal_s(faces))
             end if
             if (flowgeom%mesh1D%numNode > 0) then
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(flowgeom%node_map_1d))
-               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(flowgeom%node_map_1d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemdomain(1), idomain(nodes_1d))
+               ierr = nf90_put_var(ncid, id_tsp%id_flowelemglobalnr(1), iglobal_s(nodes_1d))
             end if
          end if
 
@@ -14193,6 +14206,7 @@ contains
       real(kind=dp), pointer :: interface_zs_(:)
 
       integer, allocatable :: face_nodes(:, :)
+      integer, allocatable, dimension(:) :: nodes_1d
       integer :: start_index, ierr, i, n, nn
       integer :: id_flowelemcontourptsdim, id_flowelemcontourx, id_flowelemcontoury
       integer :: numContPts
@@ -14234,6 +14248,12 @@ contains
       ! --- Build geometry object ---
       if (flowgeom1d%mesh1D%numNode <= 0 .or. flowgeom1d%mesh1D%numEdge <= 0) then
          call build_flowgeom_1d(flowgeom1d, jabndnd_)
+      end if
+
+      if (allocated(flowgeom%node_map_1d)) then
+         nodes_1d = flowgeom%node_map_1d
+      else    
+         nodes_1d = [(flowgeom%mesh2d%numFace + i, i = 1, flowgeom%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &
@@ -14309,7 +14329,7 @@ contains
          ! --- Flow element contours (accessed via node_map_1d to support masked output) ---
          numContPts = 0
          do i = 1, mesh1d%numNode
-            numContPts = max(numContPts, size(nd(flowgeom1d%node_map_1d(i))%x))
+            numContPts = max(numContPts, size(nd(nodes_1d(i))%x))
          end do
 
          if (numContPts > 0) then
@@ -14331,15 +14351,15 @@ contains
             allocate (work2(numContPts, mesh1d%numNode))
             work2 = dmiss
             do i = 1, mesh1d%numNode
-               nn = size(nd(flowgeom1d%node_map_1d(i))%x)
-               work2(1:nn, i) = nd(flowgeom1d%node_map_1d(i))%x(1:nn)
+               nn = size(nd(nodes_1d(i))%x)
+               work2(1:nn, i) = nd(nodes_1d(i))%x(1:nn)
             end do
             ierr = nf90_put_var(ncid, id_flowelemcontourx, work2, [1, 1], [numContPts, mesh1d%numNode])
 
             work2 = dmiss
             do i = 1, mesh1d%numNode
-               nn = size(nd(flowgeom1d%node_map_1d(i))%x)
-               work2(1:nn, i) = nd(flowgeom1d%node_map_1d(i))%y(1:nn)
+               nn = size(nd(nodes_1d(i))%x)
+               work2(1:nn, i) = nd(nodes_1d(i))%y(1:nn)
             end do
             ierr = nf90_put_var(ncid, id_flowelemcontoury, work2, [1, 1], [numContPts, mesh1d%numNode])
 
