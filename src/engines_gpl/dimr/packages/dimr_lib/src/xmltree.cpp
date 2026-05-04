@@ -84,12 +84,62 @@
     #define strdup _strdup
 #endif
 
-static void starttag(void*, const XML_Char*, const XML_Char**);
-static void endtag(void*, const XML_Char*);
-static void chardata(void*, const XML_Char*, int);
+namespace
+{
+    std::string trim(const std::string& text, const char* whiteSpace = " \t\n\r")
+    {
+        const auto first = text.find_first_not_of(whiteSpace);
+        if (first == std::string::npos)
+        {
+            return {};
+        }
+        return text.substr(first, text.find_last_not_of(whiteSpace) - first + 1);
+    }
 
-static char CharDataBuffer[XmlTree::maxCharData];
-static int CharDataLen = 0;
+    struct ParseState
+    {
+        XmlTree** curnode;
+        std::string charData;
+    };
+
+    void starttag(void* userdata, const XML_Char* name, const XML_Char* attr[])
+    {
+        XmlTree** curnode = static_cast<ParseState*>(userdata)->curnode;
+        XmlTree* node = new XmlTree(*curnode, name);
+        (*curnode)->AddChild(node);
+        *curnode = node;
+
+        for (int i = 0; attr[i] != NULL && attr[i + 1] != NULL; i += 2) node->AddAttrib(attr[i], attr[i + 1]);
+    }
+
+    void endtag(void* userdata, const XML_Char* name)
+    {
+        ParseState* state = static_cast<ParseState*>(userdata);
+        XmlTree** curnode = state->curnode;
+
+        if (!state->charData.empty())
+        {
+            std::string trimmed = trim(state->charData);
+            if (!trimmed.empty())
+            {
+                (*curnode)->charData = std::move(trimmed);
+            }
+            state->charData.clear();
+        }
+
+        *curnode = (*curnode)->parent;
+    }
+
+    void chardata(void* userdata, const XML_Char* data, int len)
+    {
+        // Chardata is stuff between tags, including "comments".
+        // Add it to the end of the buffer. When the end tag is reached
+        // the data will be added to the node.
+
+        static_cast<ParseState*>(userdata)->charData.append(data, len);
+    }
+
+} // namespace
 
 //------------------------------------------------------------------------------
 
@@ -97,9 +147,10 @@ XmlTree::XmlTree(FILE* input)
 {
     this->init();
     XmlTree* currentNode = this;
+    ParseState state{&currentNode, {}};
 
     XML_Parser parser = XML_ParserCreate(NULL);
-    XML_SetUserData(parser, (void*)&currentNode);
+    XML_SetUserData(parser, (void*)&state);
 
     XML_SetElementHandler(parser, &starttag, &endtag);
     XML_SetCharacterDataHandler(parser, &chardata);
@@ -115,112 +166,34 @@ XmlTree::XmlTree(FILE* input)
     delete[] buffer;
 }
 
-static void starttag(void* userdata, const XML_Char* name, const XML_Char* attr[])
-{
-    XmlTree** curnode = (XmlTree**)userdata;
-    XmlTree* node = new XmlTree(*curnode, name);
-    (*curnode)->AddChild(node);
-    *curnode = node;
-
-    for (int i = 0; attr[i] != NULL && attr[i + 1] != NULL; i += 2) node->AddAttrib(attr[i], attr[i + 1]);
-}
-
-#define IS_WHITESPACE(X) ((X) == ' ' || (X) == '\t' || (X) == '\n' || (X) == '\r')
-
-static void endtag(void* userdata, const XML_Char* name)
-{
-    XmlTree** curnode = (XmlTree**)userdata;
-
-    if (CharDataLen > 0)
-    {
-        char* begin = CharDataBuffer;
-        while (IS_WHITESPACE(*begin)) begin++;
-
-        char* end = CharDataBuffer + CharDataLen - 1;
-        while (IS_WHITESPACE(*end)) end--;
-        *++end = '\0';
-
-        int len = strlen(begin);
-        (*curnode)->charData = new char[len + 1];
-        memcpy((*curnode)->charData, begin, len);
-        (*curnode)->charData[len] = '\0';
-        (*curnode)->charDataLen = len + 1;
-        CharDataLen = 0;
-    }
-
-    *curnode = (*curnode)->parent;
-}
-
-static void chardata(void* userdata, const XML_Char* data, int len)
-{
-    // Chardata is stuff between tags, including "comments".
-    // Add it to the end of a static buffer.  When the end tag is reached
-    // the data will be added to the node.
-
-    XmlTree** curnode = (XmlTree**)userdata;
-
-    if (len + CharDataLen >= sizeof CharDataBuffer)
-        throw Exception(Exception::ERR_XML_PARSING, "XML charcter data block exceeds buffer size (%d bytes)",
-                        sizeof CharDataBuffer);
-
-    memcpy(CharDataBuffer + CharDataLen, data, len);
-    CharDataLen += len;
-}
-
-//------------------------------------------------------------------------------
-
 XmlTree::XmlTree(XmlTree* parent, const char* name)
 {
     this->init();
 
-    const char* ppn;
-    if (parent == NULL)
-        ppn = "";
-    else
-        ppn = parent->pathname;
+    const std::string parentPathName = (parent == NULL) ? std::string() : parent->pathname;
 
-    int pathlen = strlen(ppn) + strlen(name) + 2;
-    if (pathlen > this->maxPathname)
-        throw Exception(Exception::ERR_XML_PARSING, " XML pathname for node \"%s\" is too long", name);
-
-    this->name = new char[strlen(name) + 1];
-    strcpy(this->name, name);
-
-    this->pathname = new char[pathlen];
-    sprintf(this->pathname, "%s/%s", ppn, name);
+    this->name = name;
+    this->pathname = parentPathName + "/" + name;
 
     this->parent = parent;
 }
 
-void XmlTree::init(void)
-{
-    this->name = (char*)"";
-    this->pathname = (char*)"";
-    this->parent = NULL;
-    this->charData = NULL;
-    this->charDataLen = 0;
-}
+void XmlTree::init(void) { this->parent = NULL; }
 
 XmlTree::~XmlTree(void)
 {
-    if (this->parent != NULL && this->name != NULL)
+    for (XmlTree* child : children)
     {
-        delete[] this->name;
-        delete[] this->pathname;
+        delete child;
     }
-
-    if (this->charData != NULL) delete[] this->charData;
 }
 
 //------------------------------------------------------------------------------
 
 void XmlTree::AddAttrib(const char* name, const char* value)
 {
-    this->attribNames.push_back(new char[strlen(name) + 1]);
-    this->attribValues.push_back(new char[strlen(value) + 1]);
-
-    strcpy(this->attribNames.back(), name);
-    strcpy(this->attribValues.back(), value);
+    this->attribNames.push_back(std::string(name));
+    this->attribValues.push_back(std::string(value));
 }
 
 void XmlTree::AddChild(XmlTree* child) { this->children.push_back(child); }
@@ -235,7 +208,7 @@ XmlTree* XmlTree::Lookup(const char* pathname, int instance)
 
     if (pathname[0] == '/')
     {
-        if (this->name[0] != '\0') return NULL;
+        if (!this->name.empty()) return NULL;
 
         pathname++; // skip leading slash
     }
@@ -243,31 +216,31 @@ XmlTree* XmlTree::Lookup(const char* pathname, int instance)
     //  Copy pathname and split first component and the remainder
     //  (think of a backwards dirname/basename)
 
-    char* path = new char[strlen(pathname) + 1];
-    strcpy(path, pathname);
-    char* remainder = strchr(path, '/');
-    if (remainder == NULL)
-        remainder = (char*)"";
-    else
-        *remainder++ = '\0';
+    std::string path = pathname;
+    std::string remainder;
+    auto slash = path.find('/');
+    if (slash != std::string::npos)
+    {
+        remainder = path.substr(slash + 1);
+        path.resize(slash);
+    }
 
     XmlTree* node = NULL;
     for (int i = 0; i < children.size(); i++)
     {
-        if (strcmp(path, this->children[i]->name) == 0)
+        if (this->children[i]->name == path)
         {
-            if (remainder[0] == '\0')
+            if (remainder.empty())
             {
                 if (instance-- > 0) continue;
                 node = this->children[i];
             }
             else
-                node = this->children[i]->Lookup(remainder, instance);
+                node = this->children[i]->Lookup(remainder.c_str(), instance);
             break;
         }
     }
 
-    delete[] path;
     return node;
 }
 
@@ -282,7 +255,7 @@ int XmlTree::Lookup(const char* pathname, int instance,
 {
     if (pathname[0] == '/')
     {
-        if (this->name[0] != '\0') return (NULL);
+        if (!this->name.empty()) return (NULL);
 
         pathname++; // skip leading slash
     }
@@ -290,22 +263,23 @@ int XmlTree::Lookup(const char* pathname, int instance,
     //  Copy pathname and split first component and the remainder
     //  (think of a backwards dirname/basename)
 
-    char* path = new char[strlen(pathname) + 1];
-    strcpy(path, pathname);
-    char* remainder = strchr(path, '/');
-    if (remainder == NULL)
-        remainder = (char*)"";
-    else
-        *remainder++ = '\0';
+    std::string path = pathname;
+    std::string remainder;
+    auto slash = path.find('/');
+    if (slash != std::string::npos)
+    {
+        remainder = path.substr(slash + 1);
+        path.resize(slash);
+    }
 
     XmlTree* node = NULL;
     int ncount = 0;
     kvlist = NULL;
     for (int i = 0; i < children.size(); i++)
     {
-        if (strcmp(path, children[i]->name) == 0)
+        if (children[i]->name == path)
         {
-            if (remainder[0] == '\0')
+            if (remainder.empty())
             {
                 if (instance-- > 0) continue;
                 node = this->children[i]; // found a node
@@ -324,11 +298,10 @@ int XmlTree::Lookup(const char* pathname, int instance,
                 ncount++;
             }
             else
-                this->children[i]->Lookup(remainder, instance); // found a path to descend
+                this->children[i]->Lookup(remainder.c_str(), instance); // found a path to descend
         }
     }
 
-    delete[] path;
     return (ncount);
 }
 
@@ -350,7 +323,7 @@ const char* XmlTree::GetAttrib(const char* name)
     }
 
     for (int i = 0; i < attribNames.size(); i++)
-        if (strcmp(name, this->attribNames[i]) == 0) return this->attribValues[i];
+        if (this->attribNames[i] == name) return this->attribValues[i].c_str();
 
     return NULL;
 }
@@ -393,7 +366,7 @@ const char* XmlTree::GetElement(const char* name)
     if (node == NULL)
         return NULL;
     else
-        return node->charData;
+        return node->charData.empty() ? nullptr : node->charData.c_str();
 }
 
 bool XmlTree::GetBoolElement(const char* name, bool defaultValue)
@@ -426,9 +399,10 @@ void XmlTree::print(int level)
     if (this->parent == NULL)
         printf("/ [ ");
     else
-        printf("%s [ ", this->pathname);
+        printf("%s [ ", this->pathname.c_str());
 
-    for (int i = 0; i < attribNames.size(); i++) printf("%s=%s ", this->attribNames[i], this->attribValues[i]);
+    for (int i = 0; i < attribNames.size(); i++)
+        printf("%s=%s ", this->attribNames[i].c_str(), this->attribValues[i].c_str());
 
     printf("]\n");
 
@@ -451,9 +425,7 @@ std::string XmlTree::SubstEnvVar(std::string instr)
             pos1 = instr.length();
         }
         env_key = instr.substr(pos0 + 2, pos1 - pos0 - 2);
-        size_t first = env_key.find_first_not_of(' '); // trim spaces from name
-        size_t last = env_key.find_last_not_of(' ');
-        std::string env_key_trunc = env_key.substr(first, last - first + 1);
+        const std::string env_key_trunc = trim(env_key, " ");
         const char* env_name = env_key_trunc.c_str();
         env_value = getenv(env_name);
         std::string rest_in = instr.substr(pos1 + 1);
@@ -472,26 +444,13 @@ void XmlTree::ExpandEnvironmentVariables() { return this->ExpandEnvironmentVaria
 
 void XmlTree::ExpandEnvironmentVariables(int instance)
 {
-    XmlTree* node = NULL;
-    char* orgstr;
-    std::string instr, outstr;
     for (int iattrib = 0; iattrib < attribValues.size(); iattrib++)
     {
-        orgstr = this->attribValues[iattrib];
-        instr = orgstr;
-        outstr = SubstEnvVar(instr) + '\0';
-        delete[] this->attribValues[iattrib];
-        this->attribValues[iattrib] = new char[outstr.length()];
-        outstr.copy(this->attribValues[iattrib], outstr.length());
+        this->attribValues[iattrib] = SubstEnvVar(this->attribValues[iattrib]);
     }
-    if (this->charData != NULL)
+    if (!this->charData.empty())
     {
-        orgstr = this->charData;
-        instr = orgstr;
-        outstr = SubstEnvVar(instr) + '\0';
-        delete[] this->charData;
-        this->charData = new char[outstr.length()];
-        outstr.copy(this->charData, outstr.length());
+        this->charData = SubstEnvVar(this->charData);
     }
 
     for (int i = 0; i < children.size(); i++)

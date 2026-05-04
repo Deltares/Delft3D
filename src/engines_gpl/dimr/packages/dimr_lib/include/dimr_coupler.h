@@ -7,8 +7,8 @@ typedef struct dimr_coupler dimr_coupler;
 struct dimr_coupler
 {
     const char* name;                // Coupler name: must be unique in the config.xml file (e.g. rtc2flow)
-    char* sourceComponentName;       // Name of the component providing data to be communicated by the coupler
-    char* targetComponentName;       // Name of the component receiving data to be communicated by the coupler
+    const char* sourceComponentName; // Name of the component providing data to be communicated by the coupler
+    const char* targetComponentName; // Name of the component receiving data to be communicated by the coupler
     dimr_component* sourceComponent; // Pointer to the related component
     dimr_component* targetComponent; // idem
     unsigned int numItems;
