@@ -45,7 +45,7 @@ endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdff)
+                                            netcdf-fortran::netcdf-fortran)
 endif(WIN32)
 
 

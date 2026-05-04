@@ -23,6 +23,14 @@ include(functions.cmake)
 # Set checkout root
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 
+# TODO ------------------------- temporary conan stuff -------------------------
+list(PREPEND CMAKE_PREFIX_PATH
+     "${checkout_src_root}/conan_install/build/generators")
+	 
+find_package(netcdf-fortran REQUIRED)
+
+# TODO ----------------------- end temporary conan stuff -----------------------
+
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
 cmake_path(GET PARENT_DIR PARENT_PATH dir)

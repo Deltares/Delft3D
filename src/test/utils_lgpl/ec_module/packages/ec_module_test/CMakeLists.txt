@@ -34,7 +34,7 @@ if(WIN32)
                          io_netcdf_data
                          kdtree_wrapper
                          kdtree2
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     target_link_directories(${executable_name} PRIVATE
                                 "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")

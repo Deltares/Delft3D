@@ -60,7 +60,7 @@ set(oss_dependencies_general    deltares_common
 # Add dependencies
 if (UNIX)
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
@@ -68,7 +68,7 @@ if (UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
+                        netcdf-fortran::netcdf-fortran)
 
     add_definitions(-DHAVE_FC_FORM_BINARY)
 endif(WIN32)

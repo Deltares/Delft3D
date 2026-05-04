@@ -5,7 +5,7 @@ create_target(${library_name} ${CMAKE_CURRENT_SOURCE_DIR} src_dir .)
 # Set dependencies
 set(oss_dependencies waq_utils_f
         io_netcdf
-        netcdff
+        netcdf-fortran::netcdf-fortran
 )
 
 target_link_libraries(${library_name} ${oss_dependencies})

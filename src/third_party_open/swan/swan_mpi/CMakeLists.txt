@@ -31,7 +31,7 @@ add_executable(${executable_name}   ${headers}
 target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdff)
+    set(exe_dependencies netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
@@ -56,7 +56,7 @@ endif(WIN32)
 
 if(UNIX)
     target_link_libraries(${executable_name} PRIVATE
-         netcdff)
+         netcdf-fortran::netcdf-fortran)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}

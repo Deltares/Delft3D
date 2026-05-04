@@ -42,7 +42,7 @@ set(oss_dependencies_general
                              
 # Add dependencies
 if (UNIX)
-    set(oss_dependencies ${oss_dependencies_general} netcdff)
+    set(oss_dependencies ${oss_dependencies_general} netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${library_name}
          ${oss_dependencies}
@@ -51,7 +51,7 @@ endif(UNIX)
 
 if (WIN32)
     target_link_libraries(${library_name} ${oss_dependencies_general}
-                                            netcdff)
+                                            netcdf-fortran::netcdf-fortran)
 endif(WIN32)
 
 

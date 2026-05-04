@@ -31,7 +31,7 @@ if (WIN32)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdff)
+                            netcdf-fortran::netcdf-fortran)
     target_link_libraries(${library_name} ${oss_dependencies})
 
     include_directories(${mpi_module_path}
@@ -51,7 +51,7 @@ if (UNIX)
                             io_netcdf
                             io_netcdf_data
                             nefis
-                            netcdff
+                            netcdf-fortran::netcdf-fortran
     )
 
     target_link_libraries(${library_name} ${oss_dependencies})

@@ -148,7 +148,7 @@ target_link_libraries(${library_name} PRIVATE
                       morphology_io
                       morphology_kernel
                       morphology_plugins_c
-                      netcdff
+                      netcdf-fortran::netcdf-fortran
                       polypack
                       precicef
                       trachytopes_io

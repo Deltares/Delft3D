@@ -18,7 +18,7 @@ if (WIN32)
                                 kdtree2
                                 io_netcdf
                                 io_netcdf_data
-                                netcdff
+                                netcdf-fortran::netcdf-fortran
                                 csumo_nfio
                                 )
 

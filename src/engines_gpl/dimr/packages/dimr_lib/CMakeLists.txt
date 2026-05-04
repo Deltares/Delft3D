@@ -38,7 +38,7 @@ if(UNIX)
     set(oss_dependencies    deltares_common_c
                             getopt
                             expat
-                            netcdf
+                            netCDF::netcdf
     )
 
     target_compile_definitions(${library_name} PRIVATE LINUX64)
@@ -85,7 +85,7 @@ if(WIN32)
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name}   ${oss_dependencies}
-                                            netcdf
+                                            netCDF::netcdf
                                             "${mpi_c_library}"
                                             "libexpat.lib"
                                             "pthreadVC2.lib"

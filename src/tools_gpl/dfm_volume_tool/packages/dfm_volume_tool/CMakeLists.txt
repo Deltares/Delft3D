@@ -29,7 +29,7 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff
+                         netcdf-fortran::netcdf-fortran
                          dfm_api_access)
 
     target_link_libraries(${executable_name} PRIVATE
@@ -45,7 +45,7 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff
+                         netcdf-fortran::netcdf-fortran
                          dfm_api_access)
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})

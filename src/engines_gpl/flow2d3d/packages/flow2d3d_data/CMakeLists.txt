@@ -93,14 +93,14 @@ set(oss_dependencies_general    delftio
 # Add dependencies
 if (UNIX)
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+                         netcdf-fortran::netcdf-fortran)
 
     target_link_libraries(${library_name} ${oss_dependencies})
     add_definitions(-DHAVE_CONFIG_H)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
+                        netcdf-fortran::netcdf-fortran)
 endif(WIN32)
 
 target_link_libraries(${library_name} ${oss_dependencies})
