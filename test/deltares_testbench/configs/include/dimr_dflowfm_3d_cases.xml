@@ -730,7 +730,7 @@
     </testCase>
 
     <testCase name="e02_f021_c002_slopingbed_anticreep" ref="dflowfm_default">
-      <path version="2026-04-05T16:00:00">e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
+      <path version="2026-05-04T16:00:00">e02_dflowfm/f021_anti-creep/c002_slopingbed_anticreep</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
@@ -745,7 +745,7 @@
     </testCase>
 
     <testCase name="e02_f021_c003_slopingbed_anticreep_z" ref="dflowfm_default">
-      <path version="2026-04-05T16:00:00">e02_dflowfm/f021_anti-creep/c003_slopingbed_anticreep_z</path>
+      <path version="2026-05-04T16:00:00">e02_dflowfm/f021_anti-creep/c003_slopingbed_anticreep_z</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
