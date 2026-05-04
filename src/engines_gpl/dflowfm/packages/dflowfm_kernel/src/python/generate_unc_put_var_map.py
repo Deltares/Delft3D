@@ -64,8 +64,10 @@ def generate_rank1(ftype: FortranType) -> str:
 
       ierr = DFM_NOERR
 
-      associate(dummy => jabndnd)
-      end associate
+      if (present(jabndnd)) then
+         associate(dummy => jabndnd)
+         end associate
+      end if
 
       ndx2d     = flowgeom%mesh2d%numFace
       n1d_write = flowgeom%mesh1D%numNode

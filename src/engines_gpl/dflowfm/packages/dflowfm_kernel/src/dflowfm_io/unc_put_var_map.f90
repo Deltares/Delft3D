@@ -38,8 +38,12 @@ contains
       integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
       integer :: n1d_write !< Number of 1D nodes to write.
       integer :: ndx2d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
-
-      jabndnd_ = jabndnd
+      
+      if (present(jabndnd)) then
+         jabndnd_ = jabndnd
+      else
+         jabndnd_ = 0
+      end if
       ierr = DFM_NOERR
 
       ndx2d     = flowgeom%mesh2d%numFace
@@ -98,7 +102,12 @@ contains
       integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
 
       ierr = DFM_NOERR
-      jabndnd_ = jabndnd
+
+      if (present(jabndnd)) then
+         jabndnd_ = jabndnd
+      else
+         jabndnd_ = 0
+      end if
 
       if (present(locdim)) then
          ilocdim = locdim
@@ -255,7 +264,11 @@ contains
       else
          ilocdim = 1
       end if
-      jabndnd_ = jabndnd
+      if (present(jabndnd)) then
+         jabndnd_ = jabndnd
+      else
+         jabndnd_ = 0
+      end if
 
       ndx2d     = flowgeom%mesh2d%numFace
       n1d_write = flowgeom%mesh1D%numNode
