@@ -1,9 +1,7 @@
 import io
 import sys
-from pathlib import Path
-
 import pytest
-
+from pathlib import Path
 from src.utils.test_bench_parameter_parser import TestBenchParameterParser
 
 
