@@ -98,9 +98,14 @@ class HandlerFactory(ABC):
             Try to unzip file. Defaults to False.
         """
         rtp = Paths().rebuildToLocalPath(to_path)
-        os.makedirs(rtp, exist_ok=True)
 
         handler = cls.__get_handler(from_path, programs, logger, credentials)
+
+        # DVC manages file placement itself based on the .dvc file;
+        # creating to_path would leave an empty directory.
+        if not isinstance(handler, DvcHandler):
+            os.makedirs(rtp, exist_ok=True)
+
         handler.download(from_path, rtp, credentials, version, logger)
         if unzip:
             Unzipper().recursive(rtp, logger)

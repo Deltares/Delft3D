@@ -56,6 +56,11 @@ namespace pre_c_sumo
         FarFieldPoint2D diffuser;
         std::optional<FarFieldPoint2D> intake;
         std::vector<FarFieldPoint2D> ambient_points;
+        /// Optional copy of the raw &lt;settings&gt; XML node from the C-SUMO configuration file.
+        /// When set, the node is copied verbatim as a &lt;settings&gt; child of &lt;COSUMO&gt;
+        /// in the generated FF2NF file. The source document must remain alive until generate()
+        /// or toFile() has returned.
+        pugi::xml_node settings_xml_node;
     };
 
     /**
@@ -96,6 +101,7 @@ namespace pre_c_sumo
         void createFileVersionSection(pugi::xml_node& root) const;
         void createCommSection(pugi::xml_node& root) const;
         void createSubgridModelSection(pugi::xml_node& root) const;
+        void createSettingsSection(pugi::xml_node& root) const;
     };
 } // namespace pre_c_sumo
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_FF2NF_WRITER_HPP

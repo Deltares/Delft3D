@@ -3751,7 +3751,7 @@ contains
       use m_flow, only: kmx
       use m_transport, only: numconst
       use precision_basics, only: comparereal
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
 #ifdef HAVE_MPI
       use mpi
 #endif
@@ -3791,7 +3791,7 @@ contains
          if (my_rank == 0) then
             do i_element = 1, average_waterlevels_per_lateral%num_elements
                average_waterlevels_per_lateral%values(i_element) = average_waterlevels_per_lateral%cumulative_value(i_element) / &
-                                                                   max(average_waterlevels_per_lateral%cumulative_weight(i_element), eps10)
+                                                                   max(average_waterlevels_per_lateral%cumulative_weight(i_element), EPS10)
             end do
          else
             ! This is a work-around required to avoid issue in dimr.cpp send() i.e. when reducing negative values
@@ -5603,7 +5603,7 @@ contains
    subroutine fill_geometry_arrays_crs()
       use m_alloc
       use m_GlobalParameters
-      use m_flowparameters, only: eps6
+      use m_flowparameters, only: EPS6
       use precision_basics
       use m_monitoring_crosssections, only: nodecountcrs, ncrs, crs, nnodescrs, geomxcrs, geomycrs
       implicit none
@@ -5671,7 +5671,7 @@ contains
                do L0 = 2, nlinks
                   L = crs(i)%path%iperm(L0)
 
-                  if (comparereal(crs(i)%path%xk(1, L), geomX(k - 1), eps6) /= 0 .or. comparereal(crs(i)%path%yk(1, L), geomY(k - 1), eps6) /= 0) then
+                  if (comparereal(crs(i)%path%xk(1, L), geomX(k - 1), EPS6) /= 0 .or. comparereal(crs(i)%path%yk(1, L), geomY(k - 1), EPS6) /= 0) then
                      ! If the 1st node of link L is not the ending node of the previous link,
                      ! then this means that the flowlinks for this cross section are not successive, and
                      ! they have a break between Link L and the previous link.
@@ -5810,7 +5810,7 @@ contains
                                     ! coincide with another boundary node maximal ONCE.
                                     xOld = geomXCrsMPI(indBndMPI(j1))
                                     yOld = geomYCrsMPI(indBndMPI(j1))
-                                    if (comparereal(xNew, xOld, eps6) == 0 .and. comparereal(xNew, xOld, eps6) == 0) then
+                                    if (comparereal(xNew, xOld, EPS6) == 0 .and. comparereal(xNew, xOld, EPS6) == 0) then
                                        jaexist = 1
                                        jaCoincide(j1) = 1
                                        exit

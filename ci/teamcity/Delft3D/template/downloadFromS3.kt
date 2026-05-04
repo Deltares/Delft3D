@@ -2,7 +2,6 @@ package Delft3D.template
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
 
 
@@ -21,6 +20,8 @@ object TemplateDownloadFromS3 : Template({
             regex = """^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [+-]\d{4}$""",
             validationMessage = "format: 2025-04-03 14:25:08 +0000"
         )
+        param("env.AWS_ACCESS_KEY_ID", "%s3_dsctestbench_accesskey%")
+        param("env.AWS_SECRET_ACCESS_KEY", "%s3_dsctestbench_secret%")
     }
 
     steps {
@@ -55,12 +56,6 @@ object TemplateDownloadFromS3 : Template({
                     --no-progress
                 """.trimIndent()
             }
-        }
-    }
-
-    features {
-        provideAwsCredentials {
-            awsConnectionId = "doc_download_connection"
         }
     }
 })

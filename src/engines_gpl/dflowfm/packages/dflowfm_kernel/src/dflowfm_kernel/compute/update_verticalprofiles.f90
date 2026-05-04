@@ -47,10 +47,10 @@ contains
       use m_doaddksources, only: doaddksources
       use m_flow, only: iturbulencemodel, kmx, iadvec, javau, hu, lbot, ltop, ustb, cfuhi, advi, jawave, jawavestokes, flow_without_waves, adve, u1, qw, &
                         a1, vicwwu, vonkar, c2e, ndkx, javakeps, turkinws, turepsws, turkin1, tureps1, num_source_sink, source_sink_add_k_to_turkin, tqcu, eqcu, sqcu, q1, tetavkeps, &
-                        eps4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
+                        EPS4, trsh_u1lb, ustw, ieps, turkin0, zws, tureps0, ak, bk, ck, dk, &
                         jarichardsononoutput, sigrho, vol1, javeg, dke, rnveg, diaveg, jacdvegsp, cdvegsp, cdveg, clveg, r3, ek, tke_min, kmxl, &
-                        c1e, c1t, c2t, c9of1, eps6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
-                        vicwws, kmxx, tur_time_int_factor, eps20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
+                        c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
+                        vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
@@ -275,7 +275,7 @@ contains
                   k = L - Lb + 1
                   !k1   = ln(1,L)  ; k2  = ln(2,L)
                   !dzu(k) = acl(LL)*(zws(k1)-zws(k1-1)) + (1.0_dp-acl(LL))*(zws(k2)-zws(k2-1))
-                  dzu(k) = max(eps4, hu(L) - hu(L - 1))
+                  dzu(k) = max(EPS4, hu(L) - hu(L - 1))
 
                   ! if (dzu(k) < 1d-10) then
                   !   call qnerror('dzu(k) < 1d-10',' ',' ')
@@ -752,7 +752,7 @@ contains
                   bk(0) = 1.0_dp
                   ck(0) = 0.0_dp
                   if (ustb(LL) > 0) then
-                     dk(0) = vonkar * c9of1 * z00 / (max(ustb(LL), eps6) * 0.3_dp)
+                     dk(0) = vonkar * c9of1 * z00 / (max(ustb(LL), EPS6) * 0.3_dp)
                   else
                      dk(0) = 0.0_dp
                   end if
@@ -901,7 +901,7 @@ contains
          do L = Lb, Lt - 1
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (tur_node(k1) > eps20 .and. tur_node(k2) > eps20) then
+            if (tur_node(k1) > EPS20 .and. tur_node(k2) > EPS20) then
                if (tur_time_int_method == TURB_LAX_ALL .or. (zws(k1) > zws(k2 - 1) .and. zws(k1 - 1) < zws(k2))) then
                   dk(L - Lb + 1) = dtiL * ((1.0_dp - tur_time_int_factor) * tur_link(L) + 0.5_dp * tur_time_int_factor * (tur_node(k1) + tur_node(k2)))
                end if

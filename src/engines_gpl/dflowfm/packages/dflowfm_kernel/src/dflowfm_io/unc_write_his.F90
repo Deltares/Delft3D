@@ -166,7 +166,7 @@ contains
       character(len=16) :: stat_cell_methods
       character(len=43) :: stat_cell_methods_filter_postfix
 
-      if (jahiszcor > 0) then
+      if (his_write_settings%zcor > 0) then
          jawrizc = 1
          jawrizw = 1
       end if
@@ -197,7 +197,7 @@ contains
       end if
 
       ! When no crs/obs present, return immediately.
-      if (.not. model_has_obs_stations() .and. ncrs <= 0 .and. jahisbal <= 0 .and. jahiscgen <= 0 .and. num_rugs <= 0) then
+      if (.not. model_has_obs_stations() .and. ncrs <= 0 .and. his_write_settings%bal <= 0 .and. his_write_settings%cgen <= 0 .and. num_rugs <= 0) then
          if (ihisfile == 0) then
             call mess(LEVEL_WARN, 'No observations nor cross sections defined. Will not produce a history file.')
          end if
@@ -258,12 +258,12 @@ contains
 
          ! laydim and laydimw are always on for 3D models as are part of a lot of output variables packahes 
          ! (see fm_statistical_output::default_fm_statistical_output )
-         if ((kmx > 0) .or. (jahiszcor > 0)) then
+         if ((kmx > 0) .or. (his_write_settings%zcor > 0)) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'laydim', max(kmx,1)    , id_laydim))
             call check_netcdf_error(nf90_def_dim(ihisfile, 'laydimw',max(kmx,1) + 1, id_laydimw))
          end if
 
-         if (stm_included .and. jahissed > 0) then
+         if (stm_included .and. his_write_settings%sed > 0) then
             if (ISED1 > 0) then
                call check_netcdf_error(nf90_def_dim(ihisfile, 'nSedSus', stmpar%lsedsus, id_sedsusdim))
             end if
@@ -316,7 +316,7 @@ contains
                                                   id_rugdim, id_rugname) ! No geometry
 
          ! Source-sinks
-         if (jahissourcesink > 0 .and. num_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
             ! Define geometry related variables
             nNodeTot = 0
             do i = 1, num_source_sink
@@ -333,10 +333,10 @@ contains
             end do
          end if
 
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, jahissourcesink, num_source_sink, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, num_source_sink, 'line', nNodeTot, id_strlendim, &
                                                   id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
-         if (jahissourcesink > 0 .and. num_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', max_source_sink_polyline_points, id_srcptsdim))
             call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
             call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
@@ -353,7 +353,7 @@ contains
          else
             ngenstru_ = ngenstru
          end if
-         if (jahiscgen > 0 .and. ngenstru_ > 0) then
+         if (his_write_settings%cgen > 0 .and. ngenstru_ > 0) then
             nNodeTot = 0
             if (network%sts%numGeneralStructures > 0) then ! new general structure
                nNodeTot = nNodesGenstru
@@ -370,20 +370,20 @@ contains
                end do
             end if
          end if
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_GENERAL_ST, jahiscgen, ngenstru_, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_GENERAL_ST, his_write_settings%cgen, ngenstru_, 'line', nNodeTot, id_strlendim, &
                                                   id_genstrudim, id_genstru_id, id_genstrugeom_node_count, id_genstrugeom_node_coordx, id_genstrugeom_node_coordy, &
                                                   id_poly_xmid=id_genstru_xmid, id_poly_ymid=id_genstru_ymid)
 
          ! Pump
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_PUMP, jahispump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_PUMP, his_write_settings%pump, npumpsg, 'line', number_of_pump_nodes(), id_strlendim, &
                                                   id_pumpdim, id_pump_id, id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, &
                                                   id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
 
          ! Gate (Old .ext file, QUANTITY='gateloweredgelevel')
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATE, jahisgate, ngatesg, 'none', 0, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATE, his_write_settings%gate, ngatesg, 'none', 0, id_strlendim, &
                                                   id_gatedim, id_gate_id)
 
-         if (jahisgate > 0) then
+         if (his_write_settings%gate > 0) then
             nNodeTot = 0
             if (network%sts%numGates > 0) then ! new gate
                do n = 1, network%sts%numGates
@@ -411,16 +411,16 @@ contains
                end do
             end if
          end if
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATEGEN, jahisgate, ngategen, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_GATEGEN, his_write_settings%gate, ngategen, 'line', nNodeTot, id_strlendim, &
                                                   id_gategendim, id_gategen_id, id_gategengeom_node_count, id_gategengeom_node_coordx, id_gategengeom_node_coordy, &
                                                   id_poly_xmid=id_gategen_xmid, id_poly_ymid=id_gategen_ymid)
 
          ! Controllable dam (Old .ext file QUANTITY='damlevel')
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAM, jahiscdam, ncdamsg, 'none', 0, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAM, his_write_settings%cdam, ncdamsg, 'none', 0, id_strlendim, &
                                                   id_cdamdim, id_cdam_id)
 
          ! Weir
-         if (jahisweir > 0 .and. nweirgen > 0) then
+         if (his_write_settings%weir > 0 .and. nweirgen > 0) then
             ! Define geometry related variables
             nNodeTot = 0
             if (network%sts%numWeirs > 0) then ! new weir
@@ -438,45 +438,45 @@ contains
                end do
             end if
          end if
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_WEIR, jahisweir, nweirgen, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_WEIR, his_write_settings%weir, nweirgen, 'line', nNodeTot, id_strlendim, &
                                                   id_weirgendim, id_weirgen_id, id_weirgengeom_node_count, id_weirgengeom_node_coordx, id_weirgengeom_node_coordy, &
                                                   id_poly_xmid=id_weirgen_xmid, id_poly_ymid=id_weirgen_ymid)
 
          ! Orifice
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_ORIFICE, jahisorif, network%sts%numOrifices, 'line', nNodesOrif, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_ORIFICE, his_write_settings%orifice, network%sts%numOrifices, 'line', nNodesOrif, id_strlendim, &
                                                   id_orifgendim, id_orifgen_id, id_orifgengeom_node_count, id_orifgengeom_node_coordx, id_orifgengeom_node_coordy, &
                                                   id_poly_xmid=id_weirgen_xmid, id_poly_ymid=id_weirgen_ymid)
 
          ! Bridge
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_BRIDGE, jahisbridge, network%sts%numBridges, 'line', nNodesBridge, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_BRIDGE, his_write_settings%bridge, network%sts%numBridges, 'line', nNodesBridge, id_strlendim, &
                                                   id_bridgedim, id_bridge_id, id_bridgegeom_node_count, id_bridgegeom_node_coordx, id_bridgegeom_node_coordy, &
                                                   id_poly_xmid=id_bridge_xmid, id_poly_ymid=id_bridge_ymid)
 
          ! Culvert
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_CULVERT, jahisculv, network%sts%numculverts, 'line', nNodesCulv, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_CULVERT, his_write_settings%culvert, network%sts%numculverts, 'line', nNodesCulv, id_strlendim, &
                                                   id_culvertdim, id_culvert_id, id_culvertgeom_node_count, id_culvertgeom_node_coordx, id_culvertgeom_node_coordy, &
                                                   id_poly_xmid=id_culvert_xmid, id_poly_ymid=id_culvert_ymid)
 
          ! Dambreak
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, jahisdambreak, n_db_signals, 'none', 0, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_DAMBREAK, his_write_settings%dambreak, n_db_signals, 'none', 0, id_strlendim, &
                                                   id_dambreakdim, id_dambreak_id)
 
          ! Universal weir
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_UNI_WEIR, jahisuniweir, network%sts%numuniweirs, 'line', nNodesUniweir, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_UNI_WEIR, his_write_settings%universal_weir, network%sts%numuniweirs, 'line', nNodesUniweir, id_strlendim, &
                                                   id_uniweirdim, id_uniweir_id, id_uniweirgeom_node_count, id_uniweirgeom_node_coordx, id_uniweirgeom_node_coordy, &
                                                   id_poly_xmid=id_uniweir_xmid, id_poly_ymid=id_uniweir_ymid)
 
          ! compound structure
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_COMPOUND, jahiscmpstru, network%cmps%count, 'none', 0, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_COMPOUND, his_write_settings%compound_structure, network%cmps%count, 'none', 0, id_strlendim, &
                                                   id_cmpstrudim, id_cmpstru_id)
 
          ! Long culvert
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_LONGCULVERT, jahislongculv, nlongculverts, 'line', nNodesLongCulv, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_LONGCULVERT, his_write_settings%long_culvert, nlongculverts, 'line', nNodesLongCulv, id_strlendim, &
                                                   id_longculvertdim, id_longculvert_id, id_longculvertgeom_node_count, id_longculvertgeom_node_coordx, id_longculvertgeom_node_coordy, &
                                                   id_poly_xmid=id_longculvert_xmid, id_poly_ymid=id_longculvert_ymid)
 
          ! Lateral
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_LATERAL, jahislateral, numlatsg, 'point', nNodesLat, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_LATERAL, his_write_settings%lateral, numlatsg, 'point', nNodesLat, id_strlendim, &
                                                   id_latdim, id_lat_id, id_latgeom_node_count, id_latgeom_node_coordx, id_latgeom_node_coordy)
          ! TODO: UNST-7239: remove separate average IDX?
          if (timon) then
@@ -502,7 +502,7 @@ contains
             ierr = unc_def_his_station_waq_statistic_outputs(id_hwq)
          end if
 
-         if (jahisbedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included) then
+         if (his_write_settings%bedlev > 0 .and. model_has_obs_stations() .and. .not. stm_included) then
             call definencvar(ihisfile, id_varb, nc_precision, [id_statdim], 'bedlevel', 'bottom level', unit='m', namecoord=statcoordstring)
          end if
 
@@ -677,7 +677,7 @@ contains
             end if
 
             ! Source-sinks
-            if (jahissourcesink > 0 .and. num_source_sink > 0) then
+            if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, source_sink_x))
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, source_sink_y))
                j = 1
@@ -709,13 +709,13 @@ contains
             end if
 
             ! Lateral discharges
-            if (jahislateral > 0 .and. numlatsg > 0) then
+            if (his_write_settings%lateral > 0 .and. numlatsg > 0) then
                call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start=[1], count=[nlatnd]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordy, geomYLat(1:nNodesLat), start=[1], count=[nlatnd]))
                call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_count, nodeCountLat))
             end if
 
-            if (jased > 0 .and. stm_included .and. jahissed > 0 .and. ISED1 > 0) then
+            if (jased > 0 .and. stm_included .and. his_write_settings%sed > 0 .and. ISED1 > 0) then
                do i = 1, stmpar%lsedtot
                   call check_netcdf_error(nf90_put_var(ihisfile, id_frac_name, trimexact(stmpar%sedpar%namsed(i), strlen_netcdf), [1, i]))
                end do
@@ -766,7 +766,7 @@ contains
          end do
       end if
       !Bottom level is written separately from statout if it is static
-      if (ntot > 0 .and. .not. stm_included .and. jahisbedlev > 0) then
+      if (ntot > 0 .and. .not. stm_included .and. his_write_settings%bedlev > 0) then
          call check_netcdf_error(nf90_put_var(ihisfile, id_varb, valobs(:, IPNT_BL), start=[1]))
       end if
 
@@ -1315,7 +1315,7 @@ contains
 
          do statistics_index = 1, noout_statt + noout_state
             if (statistics_index == noout_statt + 1) then
-               if (comparereal(tim, ti_hise, eps10) < 0) then
+               if (comparereal(tim, ti_hise, EPS10) < 0) then
                   return ! The end statistic outputs (stat-e) are only written in the last his time step
                end if
                if (model_is_3D()) then
@@ -1491,7 +1491,7 @@ contains
       use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, num_source_sink, gate2cgen, ngategen
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
-      use m_flowparameters, only: jahisweir, jahisorif, jahispump, jahisgate, jahiscgen, jahisuniweir, jahisdambreak, jahisculv, jahisbridge, jahiscmpstru, jahislongculv, jahiscdam, jahissourcesink, jahislateral
+      use m_flowparameters, only: his_write_settings
       use m_longculverts_data, only: longculverts, nlongculverts
       use m_GlobalParameters, only: ST_PUMP
       use m_structures, only: number_of_pump_nodes, jaoldstr
@@ -1514,18 +1514,18 @@ contains
       else
          allocate (structure_names(0))
       end if
-      call unc_put_his_structure_names(ncid, jahisweir, id_weirgen_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%weir, id_weirgen_id, structure_names)
 
       indices = [(network%sts%orificeIndices(i), integer :: i=1, network%sts%numOrifices)]
       structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numOrifices)]
-      call unc_put_his_structure_names(ncid, jahisorif, id_orifgen_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%orifice, id_orifgen_id, structure_names)
 
       structure_names = [(pump_ids(i), integer :: i=1, npumpsg)]
-      call unc_put_his_structure_names(ncid, jahispump, id_pump_id, structure_names)
-      call unc_put_his_structure_mid_points(ncid, ST_PUMP, jahispump, npumpsg, 'line', id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
+      call unc_put_his_structure_names(ncid, his_write_settings%pump, id_pump_id, structure_names)
+      call unc_put_his_structure_mid_points(ncid, ST_PUMP, his_write_settings%pump, npumpsg, 'line', id_poly_xmid=id_pump_xmid, id_poly_ymid=id_pump_ymid)
 
       structure_names = [(gate_ids(i), integer :: i=1, ngatesg)]
-      call unc_put_his_structure_names(ncid, jahisgate, id_gate_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%gate, id_gate_id, structure_names)
 
       if (jaoldstr == 1) then
          structure_names = [(cgen_ids(i), integer :: i=1, ncgensg)]
@@ -1536,31 +1536,31 @@ contains
          indices = [(genstru2cgen(i), integer :: i=1, ngenstru)]
          structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngenstru)]
       end if
-      call unc_put_his_structure_names(ncid, jahiscgen, id_genstru_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%cgen, id_genstru_id, structure_names)
 
       indices = [(network%sts%uniweirIndices(i), integer :: i=1, network%sts%numuniweirs)]
       structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numuniweirs)]
-      call unc_put_his_structure_names(ncid, jahisuniweir, id_uniweir_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%universal_weir, id_uniweir_id, structure_names)
 
       structure_names = get_dambreak_names()
-      call unc_put_his_structure_names(ncid, jahisdambreak, id_dambreak_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%dambreak, id_dambreak_id, structure_names)
 
       indices = [(network%sts%culvertIndices(i), integer :: i=1, network%sts%numCulverts)]
       structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numCulverts)]
-      call unc_put_his_structure_names(ncid, jahisculv, id_culvert_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%culvert, id_culvert_id, structure_names)
 
       indices = [(network%sts%bridgeIndices(i), integer :: i=1, network%sts%numBridges)]
       structure_names = [(trimexact(network%sts%struct(indices(i))%id, strlen_netcdf), integer :: i=1, network%sts%numBridges)]
-      call unc_put_his_structure_names(ncid, jahisbridge, id_bridge_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%bridge, id_bridge_id, structure_names)
 
       structure_names = [(network%cmps%compound(i)%id, integer :: i=1, network%cmps%count)]
-      call unc_put_his_structure_names(ncid, jahiscmpstru, id_cmpstru_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%compound_structure, id_cmpstru_id, structure_names)
 
       structure_names = [(longculverts(i)%id, integer :: i=1, nlongculverts)]
-      call unc_put_his_structure_names(ncid, jahislongculv, id_longculvert_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%long_culvert, id_longculvert_id, structure_names)
 
       structure_names = [(cdam_ids(i), integer :: i=1, ncdamsg)]
-      call unc_put_his_structure_names(ncid, jahiscdam, id_cdam_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%cdam, id_cdam_id, structure_names)
 
       structure_names = [(namobs(i), integer :: i=1, numobs + nummovobs)]
       call unc_put_his_structure_names(ncid, 1, id_statname, structure_names)
@@ -1572,7 +1572,7 @@ contains
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
       structure_names = [(source_sink_name(i), integer :: i=1, num_source_sink)]
-      call unc_put_his_structure_names(ncid, jahissourcesink, id_srcname, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
       if (network%sts%numGates > 0) then
          indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]
@@ -1582,10 +1582,10 @@ contains
          structure_names = [(cgen_ids(indices(i)), integer :: i=1, ngategen)]
       end if
 
-      call unc_put_his_structure_names(ncid, jahisgate, id_gategen_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%gate, id_gategen_id, structure_names)
 
       structure_names = [(lat_ids(i), integer :: i=1, numlatsg)]
-      call unc_put_his_structure_names(ncid, jahislateral, id_lat_id, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%lateral, id_lat_id, structure_names)
    end subroutine unc_put_his_structure_static_vars
 
    !> Get the NetCDF variable prefix and human-readable name of a structure type from its type id

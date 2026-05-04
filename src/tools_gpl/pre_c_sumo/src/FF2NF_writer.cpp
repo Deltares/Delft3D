@@ -152,6 +152,10 @@ namespace
         return {};
     }
 
+    static constexpr size_t indent_size = 4;
+    static constexpr char indent_chars[] = "    "; // indent_size spaces
+    static_assert(std::char_traits<char>::length(indent_chars) == indent_size);
+
     struct IndentTextWalker : pugi::xml_tree_walker
     {
         bool for_each(pugi::xml_node& node) override
@@ -167,7 +171,6 @@ namespace
                 // Inline text does not need indentation
                 return true;
             }
-            constexpr size_t indent_size = 4;
             const auto current_depth = static_cast<size_t>(depth());
             const std::string indent(current_depth * indent_size, ' ');
             const std::string parent_indent(current_depth > 0 ? (current_depth - 1) * indent_size : 0, ' ');
@@ -199,10 +202,11 @@ namespace pre_c_sumo
         createFileVersionSection(root);
         createCommSection(root);
         createSubgridModelSection(root);
+        createSettingsSection(root);
         IndentTextWalker indent_walker;
         document.traverse(indent_walker);
         std::ostringstream oss;
-        document.save(oss);
+        document.save(oss, indent_chars);
         return oss.str();
     }
 
@@ -293,5 +297,16 @@ namespace pre_c_sumo
             addFarFieldPoints(subgrid_model, "FFIntake", std::vector{*config_.intake});
         }
         addFarFieldPoints(subgrid_model, "FFAmbient", config_.ambient_points);
+    }
+
+    void FF2NFWriter::createSettingsSection(pugi::xml_node& root) const
+    {
+        // The settings_xml_node is an unowned handle into the caller's pugi::xml_document.
+        // append_copy() performs a deep copy, so the source document can be released
+        // immediately after generate() / toFile() returns.
+        if (config_.settings_xml_node)
+        {
+            root.append_copy(config_.settings_xml_node);
+        }
     }
 } // namespace pre_c_sumo
