@@ -82,7 +82,7 @@ contains
 
 !   call fm_wq_processes_step(dt_user,time_user)
       if (ti_waqproc > 0) then
-         if (comparereal(time_user, time_waqproc, eps10) == 0) then
+         if (comparereal(time_user, time_waqproc, EPS10) == 0) then
             if (jatimer == 1) then
                call starttimer(IFMWAQ)
             end if
@@ -97,7 +97,7 @@ contains
 
 !   call mba_update(time_user)
       if (ti_mba > 0) then
-         if (comparereal(time_user, time_mba, eps10) == 0) then
+         if (comparereal(time_user, time_mba, EPS10) == 0) then
             call mba_update(time0)
             tem_dif = time_user / ti_mba
             tem_dif = (time_user - tstart_user) / ti_mba
@@ -105,8 +105,8 @@ contains
          end if
       end if
 
-      if (comparereal(time1, time_user, eps10) >= 0) then
-         if (comparereal(time1, time_user, eps10) <= 0) then
+      if (comparereal(time1, time_user, EPS10) >= 0) then
+         if (comparereal(time1, time_user, EPS10) <= 0) then
             time1 = time_user
             time0 = time1
          end if
@@ -120,7 +120,7 @@ contains
 !          alternative: move this to flow_externaloutput
          call timstrt('update HIS data DtUser', handle_extra(75))
          if (ti_his > 0) then
-            if (comparereal(time1, time_his, eps10) >= 0) then
+            if (comparereal(time1, time_his, EPS10) >= 0) then
                do_fourier = do_fourier .or. (md_fou_step == 2)
                call updateValuesOnObservationStations()
                if (jampi == 1) then
@@ -153,7 +153,7 @@ contains
          call update_source_input(out_variable_set_clm)
 
          if (ti_his > 0 .and. &
-             comparereal(time1, time_his, eps10) >= 0 .and. &
+             comparereal(time1, time_his, EPS10) >= 0 .and. &
              jampi == 1) then
             call reduce_statistical_output(out_variable_set_his)
          end if

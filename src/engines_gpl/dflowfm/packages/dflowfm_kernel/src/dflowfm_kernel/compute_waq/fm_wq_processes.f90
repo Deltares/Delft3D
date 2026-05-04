@@ -1749,7 +1749,7 @@ contains
       use m_flowgeom, only: Ndxi, ba
       use m_flow, only: vol1
       use m_flowtimes
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_fm_wq_processes
       use m_transport, only: constituents
       use precision_basics, only: comparereal
@@ -1794,16 +1794,16 @@ contains
       ! Ouputs to waq outputs array (only when his or map outputs will be written within the next timestep,
       ! and during first timestep)
       copyoutput = .false.
-      if (comparereal(tim, tstart_user, eps10) == 0) then
+      if (comparereal(tim, tstart_user, EPS10) == 0) then
          copyoutput = .true.
       end if
       if (ti_his > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_his, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_his, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
       if (ti_map > 0 .or. ti_mpt(1) > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_map, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_map, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
@@ -1847,12 +1847,12 @@ contains
 
       ! Copy wqbot data (when his or map, but also when rst or mba outputs will be written within the next timestep, and during first timestep)
       if (ti_rst > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_rst, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_rst, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
       if (ti_mba > 0) then
-         if (comparereal(tim + dt - 2.0_hp * eps10, time_mba, eps10) >= 0) then
+         if (comparereal(tim + dt - 2.0_hp * EPS10, time_mba, EPS10) >= 0) then
             copyoutput = .true.
          end if
       end if
