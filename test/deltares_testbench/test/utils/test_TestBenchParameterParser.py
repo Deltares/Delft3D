@@ -79,7 +79,7 @@ class TestTestBenchParameterParser:
 
     @staticmethod
     def test_filter_csv_nonexistent_file_aborts(override_command_line_args) -> None:
-        override_command_line_args.extend(["--filter-csv", "/nonexistent/path/tests.csv"])
+        override_command_line_args.extend(["--filter-tc-csv", "/nonexistent/path/tests.csv"])
 
         with pytest.raises(SystemExit) as exc_info:
             TestBenchParameterParser().parse_arguments_to_settings()
@@ -90,7 +90,7 @@ class TestTestBenchParameterParser:
     def test_filter_and_filter_csv_are_mutually_exclusive(override_command_line_args, tmp_path: Path) -> None:
         csv_file = tmp_path / "tests.csv"
         csv_file.write_text("Order#,Test Name,Status\n1,test_a,Failure\n", encoding="utf-8")
-        override_command_line_args.extend(["--filter", "testcase=something", "--filter-csv", str(csv_file)])
+        override_command_line_args.extend(["--filter", "testcase=something", "--filter-tc-csv", str(csv_file)])
 
         with pytest.raises(SystemExit) as exc_info:
             TestBenchParameterParser().parse_arguments_to_settings()

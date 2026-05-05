@@ -70,7 +70,7 @@ class TestBenchParameterParser:
         if filter_csv:
             filter_csv_path = Path(filter_csv)
             if not filter_csv_path.is_file():
-                parser.error(f"--filter-csv: file not found: '{filter_csv_path}'")
+                parser.error(f"--filter-tc-csv: file not found: '{filter_csv_path}'")
             with filter_csv_path.open(newline="", encoding="utf-8") as csv_file:
                 failed_names = cls.read_failed_tests_from_csv(csv_file)
             if failed_names:
@@ -222,7 +222,7 @@ class TestBenchParameterParser:
             dest="filter",
         )
         filter_group.add_argument(
-            "--filter-csv",
+            "--filter-tc-csv",
             default=None,
             help=(
                 "Path to a CSV file with 'Test Name' and 'Status' columns. "
