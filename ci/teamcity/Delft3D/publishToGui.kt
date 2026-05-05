@@ -21,6 +21,7 @@ object PublishToGui : BuildType({
         param("DIMR_nuget_version", "%release_version%")
         param("grid_geom_version", "1.0.0")
         param("ec_module_version", "1.0.0")
+        param("tc_build_number", "%build.number%")
     }
 
     vcs {
@@ -35,7 +36,7 @@ object PublishToGui : BuildType({
             name = "Pack DIMR NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/Dimr.Libs/Dimr.Libs.nuspec"
-            version = "%DIMR_nuget_version%"
+            version = "%DIMR_nuget_version%_%tc_build_number%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
@@ -61,7 +62,7 @@ object PublishToGui : BuildType({
             name = "Pack EC Module NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/ECModule.Native/ECModule.Native.nuspec"
-            version = "%ec_module_version%"
+            version = "%ec_module_version%_%tc_build_number%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
@@ -87,7 +88,7 @@ object PublishToGui : BuildType({
             name = "Pack GridGeom NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/GridGeom.Native/GridGeom.Native.nuspec"
-            version = "%grid_geom_version%"
+            version = "%grid_geom_version%_%tc_build_number%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
