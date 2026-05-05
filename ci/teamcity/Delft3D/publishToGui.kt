@@ -36,7 +36,7 @@ object PublishToGui : BuildType({
             name = "Pack DIMR NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/Dimr.Libs/Dimr.Libs.nuspec"
-            version = "%DIMR_nuget_version%_%tc_build_number%"
+            version = "%DIMR_nuget_version%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
@@ -47,7 +47,7 @@ object PublishToGui : BuildType({
             scriptMode = script {
                 content = """
                     ${'$'}pathToDll = "source\x64\lib\ec_module.dll"
-                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
+                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw_%tc_build_number%
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
                     	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion']"
@@ -62,7 +62,7 @@ object PublishToGui : BuildType({
             name = "Pack EC Module NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/ECModule.Native/ECModule.Native.nuspec"
-            version = "%ec_module_version%_%tc_build_number%"
+            version = "%ec_module_version%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
@@ -73,7 +73,7 @@ object PublishToGui : BuildType({
             scriptMode = script {
                 content = """
                     ${'$'}pathToDll = "source\x64\lib\gridgeom.dll"
-                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
+                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw_%tc_build_number%
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
                     	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion']"
@@ -88,7 +88,7 @@ object PublishToGui : BuildType({
             name = "Pack GridGeom NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/GridGeom.Native/GridGeom.Native.nuspec"
-            version = "%grid_geom_version%_%tc_build_number%"
+            version = "%grid_geom_version%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
