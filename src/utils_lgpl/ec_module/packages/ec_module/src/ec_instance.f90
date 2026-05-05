@@ -202,7 +202,6 @@ module m_ec_instance
             endif
                ! Finally deallocate the tEcInstance pointer.
             deallocate(ptr, stat = istat)
-            ptr => null()
             if (istat == 0) success = .true.
          end if
       end function ecInstanceFree
