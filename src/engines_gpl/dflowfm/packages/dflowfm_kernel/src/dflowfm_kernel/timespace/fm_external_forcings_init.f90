@@ -169,7 +169,7 @@ contains
          case ('lateral')
             res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major)
 
-         case ('spatial', 'meteo')
+         case ('spatial', 'meteo', 'parameter', 'initial')
             res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
 
          case ('sourcesink')
@@ -622,51 +622,126 @@ contains
 
    end function init_lateral_forcings
 
-   !> Read the current [Spatial] or [Meteo] block from new external forcings file
-   !! and do required initialisation for that quantity.
-   !! [Meteo] is the legacy block name and is handled identically to [Spatial].
+   !> Resolve the target array and location type for a meteo/spatial quantity.
+   !! Handles allocation and flag setup for all meteo quantities.
+   !! target_array remains null for most quantities (EC module writes directly
+   !! into named arrays); only set for quantities that need an explicit target pointer (e.g. qext).
+   function resolve_meteo_target(quantity, file_name, target_location_type, target_array) result(success)
+      use messageHandling
+      use m_alloc, only: realloc
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
+                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, &
+                        rain, air_pressure, pseudo_air_pressure, water_level_correction, &
+                        qext, jaqin
+      use m_flowgeom, only: ndx, lnx
+      use string_module, only: str_tolower
+
+      implicit none
+
+      character(len=*), intent(in) :: quantity !< Name of the quantity.
+      character(len=*), intent(in) :: file_name !< Name of the file, used for warning messages.
+      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S or UNC_LOC_U).
+      real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to model array. Null for most meteo quantities.
+      logical :: success
+
+      real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
+      associate (dummy => file_name)
+      end associate
+      target_array => null()
+      target_location_type = UNC_LOC_S ! default for all meteo quantities except wind
+      success = .true.
+      select case (str_tolower(quantity))
+      case ('airdensity')
+         call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
+
+      case ('airpressure', 'atmosphericpressure')
+         call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
+
+      case ('pseudoairpressure')
+         call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
+
+      case ('waterlevelcorrection')
+         call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
+
+      case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
+         call allocatewindarrays()
+         call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
+         call realloc(ec_pwxwy_x, ndx, keepexisting=.true., fill=0.0_dp)
+         call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
+         jawindstressgiven = merge(1, 0, str_tolower(quantity) == 'airpressure_stressx_stressy')
+         jaspacevarcharn = merge(1, 0, str_tolower(quantity) == 'airpressure_windx_windy_charnock')
+         if (jaspacevarcharn == 1) then
+            call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
+            call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+         end if
+
+      case ('charnock')
+         call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
+         call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
+
+      case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
+         target_location_type = UNC_LOC_U
+         jawindstressgiven = merge(1, 0, str_tolower(quantity(1:6)) == 'stress')
+         call allocatewindarrays()
+
+      case ('rainfall', 'rainfall_rate')
+         call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
+
+      case ('qext')
+         call realloc(qext, ndx, keepExisting=.true., fill=0.0_dp)
+         target_array => qext
+         jaqin = 1
+      case default
+         success = .false.
+      end select
+
+   end function resolve_meteo_target
+
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
-      use string_module, only: str_tolower
+      use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
-      use m_wind, only: air_density, jawindstressgiven, jaspacevarcharn, &
-                        ec_pwxwy_x, ec_pwxwy_y, ec_pwxwy_c, ec_charnock, wcharnock, rain, &
-                        air_pressure, pseudo_air_pressure, water_level_correction
-      use m_flowgeom, only: ndx, lnx
-      use m_meteo, only: ec_addtimespacerelation
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_flowtimes, only: tzone, tunit
+      use m_ec_parameters, only: ec_undef_int
       use properties, only: prop_get
       use m_alloc, only: realloc
-      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
+                                 parse_location_type
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit
+      use fm_external_forcings_data, only: NTRANSFORMCOEF
+      use timespace, only: timespaceinitialfield
 
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
+      type(tree_data), pointer, intent(in) :: block_ptr
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: group_name
 
       logical :: res
 
       integer, allocatable :: mask(:)
-      integer :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set
-      integer :: target_num_points !< Number of points in target element set
-      real(dp), dimension(:), pointer :: target_x !< Pointer to x-coordinates array of target element set
-      real(dp), dimension(:), pointer :: target_y !< Pointer to y-coordinates array of target element set
+      integer :: target_location_type
+      integer :: target_num_points
+      real(dp), dimension(:), pointer :: target_x
+      real(dp), dimension(:), pointer :: target_y
       integer :: ierr
       integer :: kx
-      logical :: success
+      integer :: ec_item
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
+      real(dp), dimension(:), pointer :: target_data
 
       res = .false.
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
-
-      if (.not. res) then !> Validation failed, error will be printed at the call site
-         return
-      end if
+      if (.not. res) return
 
       associate (quantity => input%quantity, &
                  forcing_file => input%forcing_file, &
@@ -676,85 +751,79 @@ contains
                  invert_mask => input%invert_mask, &
                  oper => input%oper, &
                  method => input%method, &
-                 is_variable_name_available => input%is_variable_name_available, &
-                 variable_name => input%variable_name)
+                 variable_name => input%variable_name, &
+                 is_static_field => input%is_static_field)
 
-         ! Default location type: s-points. Only cases below that need u-points or different, will override.
-         target_location_type = UNC_LOC_S
          kx = 1
-         success = scan_for_heat_quantities(quantity, kx)
-         if (.not. success) then
-            select case (quantity)
-            case ('airdensity')
-               call realloc(air_density, ndx, fill=0.0_dp, keepexisting=.true.)
-            case ('airpressure', 'atmosphericpressure')
-               call realloc(air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
-            case ('pseudoAirPressure')
-               call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=0.0_dp)
-            case ('waterLevelCorrection')
-               call realloc(water_level_correction, ndx, keepExisting=.true., fill=0.0_dp)
+         ec_item = ec_undef_int
+         target_data => null()
 
-            case ('airpressure_windx_windy', 'airpressure_stressx_stressy', 'airpressure_windx_windy_charnock')
-               call allocatewindarrays()
-               call realloc(air_pressure, ndx, keepexisting=.true., fill=DEFAULT_AIR_PRESSURE)
-               call realloc(ec_pwxwy_x, ndx, keepexisting=.true., fill=0.0_dp)
-               call realloc(ec_pwxwy_y, ndx, keepexisting=.true., fill=0.0_dp)
-               jawindstressgiven = merge(1, 0, quantity == 'airpressure_stressx_stressy')
-               jaspacevarcharn = merge(1, 0, quantity == 'airpressure_windx_windy_charnock')
-
-               if (jaspacevarcharn == 1) then
-                  call realloc(ec_pwxwy_c, ndx, keepexisting=.true., fill=0.0_dp)
-                  call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
-               end if
-
-            case ('charnock')
-               call realloc(ec_charnock, ndx, keepexisting=.true., fill=0.0_dp)
-               call realloc(wcharnock, lnx, keepexisting=.true., fill=0.0_dp)
-
-            case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
-               target_location_type = UNC_LOC_U
-               jawindstressgiven = merge(1, 0, quantity(1:6) == 'stress')
-               call allocatewindarrays()
-            case ('rainfall', 'rainfall_rate') ! case is zeer waarschijnlijk overbodig
-               call realloc(rain, ndx, keepexisting=.true., fill=0.0_dp)
-
-            case ('qext')
-               res = init_qext_forcings(block_ptr, input)
-               return ! This was a special case, don't continue with timespace processing below.
-
-            case default
-               write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
-               call err_flush()
-               return
-            end select
+         res = scan_for_heat_quantities(quantity, target_location_type, kx)
+         if (.not. res) then
+            res = process_hydrological_quantities(quantity, file_name, target_location_type, target_data)
+         end if
+         if (.not. res) then
+            res = resolve_parameter_target(quantity, file_name, target_location_type, target_data, kx)
+         end if
+         if (.not. res) then
+            res = resolve_initial_target(quantity, file_name, target_location_type, target_data)
+         end if
+         if (.not. res) then
+            res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
+         end if
+         if (.not. res) then
+            write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
+            call err_flush()
+            return
          end if
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
-         call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         ! Push search radius into EC module before registering the relation.
-         call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
-         select case (trim(str_tolower(forcing_file_type)))
-         case ('bcascii')
-            ! NOTE: Currently, we only support name=global meteo in .bc files, later maybe station time series as well.
-            success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
-                                              method, oper, forcingfile=forcing_file)
-         case default
-            if (is_variable_name_available) then
-               success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper, varname=variable_name)
-            else
-               success = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
-                                                 method, oper)
-            end if
-         end select
-
-         if (success) then
-            res = enable_quantity(quantity)
+         ! Mask strategy: locationType= uses node-type masking (1d/2d/all);
+         ! targetMaskFile= uses polygon masking; empty = accept all active nodes.
+         if (len_trim(input%location_type) > 0) then
+            call prepare_lateral_mask(mask, parse_location_type(input%location_type))
          else
-            res = .false.
-            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity )//''' from file '''//file_name//''': ['//group_name//']. Check previous log lines for details.'
-            call err_flush()  
+            call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+         end if
+
+         call init_spatial_extrapolation(input%max_search_radius, jsferic)
+         if (is_static_field) then
+            block
+               real(dp) :: transformcoef(NTRANSFORMCOEF)
+               transformcoef = -999.0_dp
+               call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+               res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
+                                           forcing_file, filetype, method, oper, &
+                                           transformcoef, target_location_type, mask)
+            end block
+         else
+            select case (trim(str_tolower(forcing_file_type)))
+            case ('bcascii')
+               res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, 'global', filetype, &
+                                             method, oper, forcingfile=forcing_file, tgt_item1=ec_item, tgt_data1=target_data)
+            case default
+               if (len_trim(variable_name) > 0) then
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+               else
+                  res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
+                                                method, oper, tgt_item1=ec_item, tgt_data1=target_data)
+               end if
+            end select
+         end if
+         if (res) then
+            res = enable_quantity(quantity)
+            if (.not. res) then !> Friction coefficient is a special case, requires additional reading
+               if (strcmpi(quantity, 'frictioncoefficient')) then
+                  res = set_friction_type_values_explicit(block_ptr, input%oper)
+               end if
+            end if
+            res = .true. ! For now if ec connection succeeded we don't care about enable_quantity.
+         else
+            write (msgbuf, '(a)') 'Failed to initialize quantity '''//trim(quantity)//''' from file '''//file_name// &
+               ''': ['//group_name//']. Check previous log lines for details.'
+            call err_flush()
          end if
       end associate
 
@@ -763,23 +832,62 @@ contains
    !> Activate the model flags corresponding to a successfully loaded meteo quantity.
    !! Called after a successful ec_addtimespacerelation in init_spatial_fields.
    !! Returns .false. on a conflict (e.g. solarradiation + netsolarradiation).
-   function enable_quantity(quantity) result(is_successful)
-      use messageHandling, only: err_flush, msgbuf, LEVEL_INFO, mess
+   function enable_quantity(quantity) result(success)
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
                         pseudo_air_pressure_available, water_level_correction_available
       use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
                                   btempforcingtypS, itempforcingtyp
 
+      use stdlib_kinds, only: c_bool
+      use tree_data_types
+      use tree_structures
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
+      use messageHandling
+
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use unstruc_files, only: resolvePath
+      use system_utils, only: split_filename
+
+      use timespace_parameters, only: FIELD1D
+      use timespace, only: timespaceinitialfield, timespaceinitialfield_int
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+
+      use m_flow, only: s1, hs, h_unsat
+      use m_flowparameters, only: janudge
+      use m_flowgeom, only: ndxi, ndx, bl
+      use m_wind, only: jaevap, evap
+
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
+                                  DFM_HYD_INTERCEPT_LAYER, jadhyd, &
+                                  PotEvap, ActEvap
+      use m_grw, only: jaintercept2D
+      use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read
+
+      use m_heatfluxes, only: secchi_depth_is_spatially_varying, spatial_secchi_depth
+      use m_physcoef, only: secchi_depth
+      use m_meteo, only: ec_addtimespacerelation
+      !use m_vegetation, only: stemheight, stemheightstd
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use m_subsidence, only: jasubsupl
+      use string_module, only: str_tolower
+      use m_find_name, only: find_name
+
+      use fm_external_forcings_utils, only: split_qid
+
       character(len=*), intent(in) :: quantity !< The quantity name as read from the [Meteo] block.
+      character(len=idlen) :: qid_base, qid_specific
 
-      logical :: is_successful
+      integer n
+      logical :: success
 
-      is_successful = .true.
+      success = .true.
+      call split_qid(quantity, qid_base, qid_specific)
 
       select case (trim(quantity))
       case ('airdensity')
-         call mess(LEVEL_INFO, 'Enabled variable air_density for windstress while reading external forcings.')
          ja_airdensity = 1
 
       case ('airpressure', 'atmosphericpressure')
@@ -822,7 +930,7 @@ contains
          if (net_solar_radiation_available) then
             write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with netsolarradiation.'
             call err_flush()
-            is_successful = .false.
+            success = .false.
             return
          end if
          btempforcingtypS = .true.
@@ -832,7 +940,7 @@ contains
          if (solar_radiation_available) then
             write (msgbuf, '(3a)') 'quantity = ', trim(quantity), ' cannot be combined with solarradiation.'
             call err_flush()
-            is_successful = .false.
+            success = .false.
             return
          end if
          btempforcingtypS = .true.
@@ -855,62 +963,108 @@ contains
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
          itempforcingtyp = 4
          solar_radiation_available = .true.
-
+      case default
+         success = .false.
       end select
+
+      if (success == .false.) then
+         success = .true. 
+         select case (str_tolower(qid_base))
+         case ('initialwaterdepth', 'waterdepth')
+            s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
+         case ('bedrock_surface_elevation')
+            jasubsupl = 1
+         case ('infiltrationcapacity')
+            where (infiltcap /= dmiss)
+               infiltcap = infiltcap * 1e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m/s
+            end where
+         case ('potentialevaporation')
+            where (PotEvap /= dmiss)
+               PotEvap = PotEvap * 1e-3_dp / (3600.0_dp) ! mm/hr => m/s
+            end where
+            jaevap = 1
+            if (.not. allocated(evap)) then
+               call realloc(evap, ndx, keepExisting=.false., fill=0.0_dp)
+            end if
+            evap = -PotEvap ! evap and PotEvap are now still doubling
+
+            if (.not. allocated(ActEvap)) then
+               call realloc(ActEvap, ndx, keepExisting=.false., fill=0.0_dp)
+            end if
+            jadhyd = 1
+         case ('initialunsaturedzonethickness', 'interceptionlayerthickness')
+            where (h_unsat == -999.0_dp)
+               h_unsat = 0.0_dp
+            end where
+            if (quantity == 'interceptionlayerthickness') then
+               jaintercept2D = 1
+            end if
+         case ('sea_ice_area_fraction')
+            ja_ice_area_fraction_read = 1
+         case ('sea_ice_thickness')
+            ja_ice_thickness_read = 1
+         case ('secchidepth')
+            secchi_depth_is_spatially_varying = .true.
+            do n = 1, ndx
+               if (spatial_secchi_depth(n) == dmiss) then
+                  spatial_secchi_depth(n) = secchi_depth(1)
+               end if
+            end do
+            ! TODO: fix this buggy legacy mess
+            !case ('stemheight')
+            !   if (stemheightstd > 0.0_dp) then
+            !      stemheight = stemheight * (1.0_dp + stemheightstd * (ran0(idum) - 0.5_dp))
+            !   end if
+         case ('nudgesalinitytemperature')
+            janudge = 1
+         case default
+            success = .false.
+         end select
+      end if
 
    end function enable_quantity
 
-   !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
-   !! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
-   !! qext requires forcingFileType=sample and QExt=1 in the MDU.
-   function init_qext_forcings(block_ptr, input) result(is_successful)
-      use tree_data_types, only: tree_data
-      use string_module, only: str_tolower
-      use properties, only: prop_get
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
-      use m_wind, only: qext
-      use m_flowgeom, only: ndx, xz, yz
-      use timespace, only: timespaceinitialfield
-      use fm_location_types, only: UNC_LOC_S
-      use fm_external_forcings_data, only: NTRANSFORMCOEF
-      use m_spatial_field, only: t_spatial_field_input
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to the [Meteo] block in the ext file
-      type(t_spatial_field_input), intent(in) :: input !< Already validated input (quantity, forcing_file, filetype, method, oper)
-
-      logical :: is_successful
-
-      integer, allocatable :: mask(:)
-      real(dp) :: transformcoef(NTRANSFORMCOEF)
-      character(len=INI_VALUE_LEN) :: location_type
-      integer :: qext_ilattype
-      logical :: is_read
-
-      transformcoef = -999.0_dp
-      call prop_get(block_ptr, '', 'averagingType ', transformcoef(4), is_successful)
-      call prop_get(block_ptr, '', 'averagingRelSize ', transformcoef(5), is_successful)
-      call prop_get(block_ptr, '', 'averagingNumMin ', transformcoef(8), is_successful)
-      call prop_get(block_ptr, '', 'averagingPercentile ', transformcoef(7), is_successful)
-
-      location_type = ' '
-      call prop_get(block_ptr, '', 'locationType', location_type, is_read)
-      select case (str_tolower(trim(location_type)))
-      case ('1d')
-         qext_ilattype = ILATTP_1D
-      case ('2d')
-         qext_ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         qext_ilattype = ILATTP_ALL
-      case default
-         qext_ilattype = ILATTP_ALL
-      end select
-
-      call prepare_lateral_mask(mask, qext_ilattype)
-
-      is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
-                                            input%method, input%oper, transformcoef, UNC_LOC_S, mask)
-
-   end function init_qext_forcings
+   !  !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
+   !!! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
+   !!! qext requires forcingFileType=sample and QExt=1 in the MDU.
+   !function init_qext_forcings(block_ptr, input) result(is_successful)
+   !   use tree_data_types, only: tree_data
+   !   use properties, only: prop_get
+   !   use m_lateral_helper_fuctions, only: prepare_lateral_mask
+   !   use m_wind, only: qext
+   !   use m_flowgeom, only: ndx, xz, yz
+   !   use timespace, only: timespaceinitialfield
+   !   use fm_location_types, only: UNC_LOC_S
+   !   use fm_external_forcings_data, only: NTRANSFORMCOEF
+   !   use m_spatial_field, only: t_spatial_field_input, t_averaging_input, &
+   !                              read_averaging_input, averaging_params_to_transformcoef, &
+   !                              parse_location_type
+   !
+   !   type(tree_data), pointer, intent(in) :: block_ptr !< [Spatial] block tree node
+   !   type(t_spatial_field_input), intent(in) :: input  !< Already validated spatial field input
+   !
+   !   logical :: is_successful
+   !
+   !   integer, allocatable :: mask(:)
+   !   real(dp) :: transformcoef(NTRANSFORMCOEF)
+   !   character(len=256) :: location_type_string
+   !   type(t_averaging_input) :: avg
+   !   logical :: is_read
+   !
+   !   !call read_averaging_input(block_ptr, avg)
+   !
+   !   transformcoef = -999.0_dp
+   !   call averaging_params_to_transformcoef(avg, transformcoef)
+   !
+   !   ! Parse locationType= to determine which flow nodes to include in the mask.
+   !   location_type_string = ' '
+   !   call prop_get(block_ptr, '', 'locationType', location_type_string, is_read)
+   !   call prepare_lateral_mask(mask, parse_location_type(location_type_string))
+   !
+   !   is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
+   !                                         input%method, input%oper, transformcoef, UNC_LOC_S, mask)
+   !
+   !end function init_qext_forcings
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
    module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
@@ -1379,16 +1533,18 @@ contains
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+      subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
       use fm_location_types
       use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
+      use network_data, only: xk, yk, numk
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
-      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      integer, intent(out) :: target_num_points !< Number of points in target element set.
-      real(dp), dimension(:), pointer, intent(out) :: target_x !< Pointer to x-coordinates array of target element set.
-      real(dp), dimension(:), pointer, intent(out) :: target_y !< Pointer to y-coordinates array of target element set.
-      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if unknown quantity location was given).
+
+      integer, intent(in) :: target_location_type
+      integer, intent(out) :: target_num_points
+      real(dp), dimension(:), pointer, intent(out) :: target_x
+      real(dp), dimension(:), pointer, intent(out) :: target_y
+      integer, intent(out) :: ierr
 
       ierr = DFM_NOERR
 
@@ -1401,6 +1557,14 @@ contains
          target_num_points = lnx
          target_x => xu(1:target_num_points)
          target_y => yu(1:target_num_points)
+      case (UNC_LOC_CN)
+         target_num_points = numk
+         target_x => xk(1:target_num_points)
+         target_y => yk(1:target_num_points)
+      case (UNC_LOC_GLOBAL)
+         target_num_points = 0
+         target_x => null()
+         target_y => null()
       case default
          ierr = DFM_NOTIMPLEMENTED
       end select
@@ -1462,12 +1626,13 @@ contains
    end subroutine construct_target_mask
 
    !> Scan the quantity name for heat relatede quantities.
-   function scan_for_heat_quantities(quantity, kx) result(success)
+   function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
       use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
-
+      use fm_location_types, only: UNC_LOC_S
       character(len=*), intent(in) :: quantity !< Name of the data set.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
       integer, intent(out) :: kx !< Number of individual quantities in the data set
       logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
 
@@ -1475,7 +1640,7 @@ contains
 
       kx = 1
       success = .true.
-
+      target_location_type = UNC_LOC_S
       select case (quantity)
 
       case ('airtemperature')

@@ -1103,6 +1103,51 @@ static void test_sealock_update__phase_wise__constituent_tracks_salinity_flush_d
 }
 
 static void
+test_sealock_update__phase_wise__constituent_flush_doors_closed__uniform_concentration__no_perturbation(
+    void) {
+  // Regression test for the c_mass_out bug in sealock_step_constituents_phase_wise.
+  //
+  // When c_lock == c_lake == c_sea (uniform concentration), a flush_doors_closed
+  // phase must produce NO perturbation: c_to_sea must equal c_lake, not zero.
+  //
+  // Setup: vol_lock = 5000 m3, Q = 10 m3/s, t = 60s, c = 15.0 everywhere.
+
+  csv_row_t rows[2];
+  time_t times[2];
+  sealock_state_t lock = {0};
+  setup_phase_wise_lock_without_file(&lock, rows, times);
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_init(&lock, times[0], 1));
+  lock.num_constituents = 2;
+
+  lock.parameters.head_lake = 0.0;
+  lock.parameters.head_sea = 1.0;
+  lock.parameters.flushing_discharge_high_tide = 10.0;
+  lock.phase_state.head_lock = 0.0; // at lake level
+  lock.phase_state.salinity_lock = 10.0;
+  lock.phase_state.saltmass_lock = 10.0 * lock.parameters.lock_length * lock.parameters.lock_width *
+                                   (0.0 - lock.parameters.lock_bottom);
+  lock.parameters3d.salinity_lake[0] = 10.0;
+  lock.parameters3d.salinity_sea[0] = 10.0;
+  lock.phase_args.routine = -1;
+  lock.phase_args.duration = 60.0;
+  lock.phase_args.run_update = 1;
+  lock.phase_args.time_duration_end = times[0] + 60;
+
+  const double c_uniform = 15.0;
+  lock.constituent_lock[1] = c_uniform;
+  lock.parameters3d.constituent_lake[1][0] = c_uniform;
+  lock.parameters3d.constituent_sea[1][0] = c_uniform;
+
+  // Act
+  TEST_ASSERT_EQUAL(SEALOCK_OK, sealock_update(&lock, times[0]));
+
+  // Assert: uniform concentration must be preserved in the lock and in both outflows.
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, c_uniform, lock.constituent_lock[1]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, c_uniform, lock.results3d.constituent_to_sea[1][0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-9, c_uniform, lock.results3d.constituent_to_lake[1][0]);
+}
+
+static void
 test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_concentration(void) {
   // Verifies the CSTR model correctly handles c_lock < c_lake — the concentration
   // in the lock is BELOW the inflow concentration, so flushing must INCREASE it.
@@ -1178,5 +1223,6 @@ int main(void) {
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_volume);
   RUN_TEST(test_sealock_update__phase_wise__constituent_tracks_salinity_flush_doors_closed);
   RUN_TEST(test_sealock_update__phase_wise__constituent_flush_doors_closed_below_lake_concentration);
+  RUN_TEST(test_sealock_update__phase_wise__constituent_flush_doors_closed__uniform_concentration__no_perturbation);
   return UNITY_END();
 }
