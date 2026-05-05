@@ -47,7 +47,7 @@ module unstruc_inifields
 
    public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
-             set_friction_type_values_explicit, finish_initialization
+             set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target
 
    !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -1898,6 +1898,134 @@ contains
       success = .true.
 
    end subroutine process_parameter_block
+
+   !> Resolve quantities with integer target arrays.
+   !! Returns .true. if the quantity was recognized and target_array is associated.
+   function resolve_integer_target(qid, target_location_type, target_array) result(success)
+      use fm_location_types, only: UNC_LOC_U
+      use m_flowgeom, only: iadv, ibot
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: qid
+      integer, intent(out) :: target_location_type
+      integer, dimension(:), pointer, intent(out) :: target_array
+      logical :: success
+
+      target_array => null()
+      target_location_type = 0
+      success = .true.
+
+      select case (str_tolower(qid))
+      case ('advectiontype')
+         target_location_type = UNC_LOC_U
+         target_array => iadv
+      case ('ibedlevtype')
+         target_location_type = UNC_LOC_U
+         target_array => ibot
+      case default
+         success = .false.
+      end select
+   end function resolve_integer_target
+
+function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
+   use string_module, only: str_tolower
+   use messagehandling, only: mess, LEVEL_WARN
+   use m_flow, only: sa1
+   use m_flowparameters, only: jasal
+   use m_transport, only: const_names, ISED1
+   use m_transportdata, only: itrac2const, constituents
+   use m_sediment, only: stm_included, sed, jased, sedh
+   use m_fm_wq_processes, only: wqbotnames, wqbot
+   use m_flowgeom, only: ndx
+   use m_missing, only: dmiss
+   use m_alloc, only: realloc
+   use fm_external_forcings_data, only: trnames, NAMTRACLEN
+   use fm_external_forcings_utils, only: split_qid, get_tracername
+   use m_find_name, only: find_name
+   use m_add_bndtracer, only: add_bndtracer
+   use m_add_tracer, only: add_tracer
+   use fm_location_types, only: UNC_LOC_S
+
+   character(len=*), intent(in) :: quantity
+   integer, intent(out) :: target_location_type
+   real(kind=dp), dimension(:,:), pointer, intent(out) :: target_array_3d
+   integer, intent(out) :: first_index
+   logical :: success
+
+   character(len=256) :: qid_base, qid_specific
+   character(len=NAMTRACLEN) :: tracnam, qidnam
+   character(len=20) :: tracunit
+   integer :: iconst, itrac, isednum, iwqbot, janew, iostat
+
+   target_array_3d => null()
+   first_index = 1
+   target_location_type = UNC_LOC_S
+   success = .true.
+
+   call split_qid(quantity, qid_base, qid_specific)
+
+   select case (str_tolower(qid_base))
+   case ('initialsalinity')
+      if (jasal <= 0) then
+         success = .false.
+         return
+      end if
+      target_array_3d(1:1, 1:size(sa1)) => sa1
+      first_index = 1
+
+   case ('initialsedfrac')
+      if (.not. stm_included) then
+         success = .false.
+         return
+      end if
+      iconst = find_name(const_names, qid_specific)
+      if (iconst <= 0) then
+         call mess(LEVEL_WARN, 'resolve_initial_3d_target: unknown sediment fraction '''//trim(qid_specific)//'''.')
+         success = .false.
+         return
+      end if
+      first_index = iconst - ISED1 + 1
+      target_array_3d => sed
+
+   case ('initialsediment')
+      if (jased <= 0) then
+         success = .false.
+         return
+      end if
+      call realloc(sedh, ndx, keepExisting=.false., fill=dmiss)
+      read (qid_specific(1:1), '(i1)', iostat=iostat) isednum
+      if (iostat /= 0) isednum = 1
+      first_index = isednum
+      target_array_3d => sed
+
+   case ('initialtracer')
+      call get_tracername(quantity, tracnam, qidnam)
+      tracunit = " "
+      call add_bndtracer(tracnam, tracunit, itrac, janew)
+      call add_tracer(qid_specific, iconst)
+      itrac = find_name(trnames, qid_specific)
+      if (itrac == 0) then
+         call mess(LEVEL_WARN, 'resolve_initial_3d_target: tracer '''//trim(qid_specific)//''' not found.')
+         success = .false.
+         return
+      end if
+      first_index = itrac2const(itrac)
+      target_array_3d => constituents
+
+   case ('initialwaqbot')
+      iwqbot = find_name(wqbotnames, qid_specific)
+      if (iwqbot == 0) then
+         call mess(LEVEL_WARN, 'resolve_initial_3d_target: WAQ bottom variable '''//trim(qid_specific)//''' not found.')
+         success = .false.
+         return
+      end if
+      first_index = iwqbot
+      target_array_3d => wqbot
+
+   case default
+      success = .false.
+   end select
+end function resolve_initial_3d_target
 
    !> Resolve the target array and location type for an [Initial] quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.

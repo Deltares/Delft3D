@@ -698,6 +698,38 @@ contains
 
    end function resolve_meteo_target
 
+!> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
+!! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
+function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
+                               filetype, method, oper, variable_name, ec_item, target_data) result(res)
+   use m_setzcs, only: setzcs
+   use m_flow, only: zcs, kbot, ktop, ndkx
+   use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+   use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+   use m_alloc, only: reallocP
+   use m_missing, only: dmiss
+
+   character(len=*), intent(in) :: quantity, forcing_file, variable_name
+   real(dp), intent(in) :: target_x(:), target_y(:)
+   integer, intent(in) :: mask(:), kx, filetype, method, oper
+   integer, intent(inout) :: ec_item
+   real(dp), pointer, intent(out) :: target_data(:)
+   logical :: res
+
+   integer, pointer :: pkbot(:), pktop(:)
+
+   call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+   call setzcs()
+   pkbot => kbot
+   pktop => ktop
+
+   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                  filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
+                                  varname=variable_name, tgt_item1=ec_item)
+   res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                   tunit, tstart_user, target_data)
+end function read_3d_sigma_field
+
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
@@ -708,15 +740,16 @@ contains
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
+      use timespace_parameters, only: WEIGHTFACTORS
       use properties, only: prop_get
       use m_alloc, only: realloc
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
                                  parse_location_type
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
       use fm_external_forcings_data, only: NTRANSFORMCOEF
-      use timespace, only: timespaceinitialfield
+      use timespace, only: timespaceinitialfield, timespaceinitialfield_int
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -731,11 +764,14 @@ contains
       real(dp), dimension(:), pointer :: target_x
       real(dp), dimension(:), pointer :: target_y
       integer :: ierr
-      integer :: kx
+      integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
+
       real(dp), dimension(:), pointer :: target_data
+      integer, dimension(:), pointer :: target_data_integer
+      real(kind=dp), dimension(:,:), pointer :: target_array_3d
 
       res = .false.
 
@@ -771,6 +807,12 @@ contains
          if (.not. res) then
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
+       if (.not. res) then
+            res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+         end if
+         if (.not. res) then
+            res = resolve_integer_target(quantity, target_location_type, target_data_integer)
+         end if
          if (.not. res) then
             write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
             call err_flush()
@@ -788,14 +830,31 @@ contains
          end if
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
+
          if (is_static_field) then
             block
                real(dp) :: transformcoef(NTRANSFORMCOEF)
                transformcoef = -999.0_dp
                call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
-               res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
-                                           forcing_file, filetype, method, oper, &
-                                           transformcoef, target_location_type, mask)
+
+               ! WEIGHTFACTORS + 3D, special case
+               if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                             filetype, method, oper, variable_name, ec_item, target_data)
+               else if (associated(target_data)) then
+                  res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
+                                           forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
+               else if (associated(target_data_integer)) then
+                  res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, &
+                                           forcing_file, filetype, oper, transformcoef)
+               end if
+
+               ! 2D3D expansion post-step (applies to both normal and WEIGHTFACTORS 3D paths)
+               if (res .and. associated(target_array_3d)) then
+                  call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, &
+                                                    transformcoef(13), transformcoef(14), oper)
+                  deallocate(target_data)
+               end if
             end block
          else
             select case (trim(str_tolower(forcing_file_type)))
