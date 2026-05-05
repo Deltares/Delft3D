@@ -1,0 +1,11 @@
+openfile 'DFM_OUTPUT_FlowFM\FlowFM_map.nc'
+selectfield 'Water level - mesh2d_nFaces: mean'
+quickview
+selectfield 'Flow element center depth-averaged velocity - mesh2d_nFaces: mean'
+component 'magnitude'
+quickview
+selectfield 'Temperature in flow element - mesh2d_nFaces: mean'
+allk 0
+quickview
+selectfield 'Tracer1 in flow element - mesh2d_nFaces: mean'
+quickview
