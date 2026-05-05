@@ -1364,12 +1364,12 @@ contains
 !! The netnode and -links have been written already.
    subroutine unc_write_rst_filepointer(irstfile, tim)
       use precision, only: dp
-      use m_flow, only : jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, & 
-         bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
-         jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
-         taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
-         fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
-         thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
+      use m_flow, only: jarstbnd, ndxbnd_own, kmx, threttim, jasal, nbnds, temperature_model, TEMPERATURE_MODEL_NONE, &
+                        bndsf, numtracers, nbndtr, dmiss, corioadamsbashfordfac, iturbulencemodel, ncdamsg, ifixedweirscheme, his_write_settings, map_write_settings, &
+                        jawave, jasecflow, intmiss, s1, s0, no_waves, flow_without_waves, jawaveswartdelwaq, &
+                        taus, czs, spirint, work1, ucx, ucy, ucz, ucxq, ucyq, work0, ww1, u1, u0, q1, hu, &
+                        fvcoro, vicwwu, tureps1, turkin1, qw, qa, sqi, squ, map_fixed_weir_energy_loss, sa1, tem1, thtbnds, thzbnds, kmxd, &
+                        thtbndtm, thzbndtm, thtbndsd, thzbndsd, bndsf, bndtr, ibnd_own, nbndtm, nbndsd, numfracs, nbndsf
       use m_fm_icecover, only: ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature, ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: tudunitstr, refdat, dts
@@ -1933,19 +1933,19 @@ contains
 
          ierr = nf90_def_var(irstfile, 'ice_thickness', nf90_double, [id_flowelemdim, id_timedim], id_ice_thickness)
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness') 
+         ierr = nf90_put_att(irstfile, id_ice_thickness, 'standard_name', 'ice_thickness')
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'long_name', 'Thickness of floating ice cover')
          ierr = nf90_put_att(irstfile, id_ice_thickness, 'units', 'm')
 
          ierr = nf90_def_var(irstfile, 'ice_area_fraction', nf90_double, [id_flowelemdim, id_timedim], id_ice_area_fraction)
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction') 
+         ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'standard_name', 'ice_area_fraction')
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'long_name', 'Fraction of the surface area covered by floating ice')
          ierr = nf90_put_att(irstfile, id_ice_area_fraction, 'units', 'm2 m-2')
 
          ierr = nf90_def_var(irstfile, 'snow_thickness', nf90_double, [id_flowelemdim, id_timedim], id_snow_thickness)
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'coordinates', 'FlowElem_xcc FlowElem_ycc')
-         ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness') 
+         ierr = nf90_put_att(irstfile, id_snow_thickness, 'standard_name', 'snow_thickness')
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'long_name', 'Thickness of the snow layer')
          ierr = nf90_put_att(irstfile, id_snow_thickness, 'units', 'm')
 
@@ -9537,9 +9537,9 @@ contains
             ierr = nf90_put_var(imapfile, id_snow_temperature(iid), snow_temperature, [1, itim], [ndxndxi, 1])
          end if
       end if
-      
+
       if (map_write_settings%heatflux > 0) then ! Heat modelling only
-         if (temperature_model  == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             ierr = nf90_put_var(imapfile, id_air_temperature(iid), air_temperature, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_relative_humidity(iid), relative_humidity, [1, itim], [ndxndxi, 1])
             ierr = nf90_put_var(imapfile, id_cloudiness(iid), cloudiness, [1, itim], [ndxndxi, 1])
@@ -10411,7 +10411,7 @@ contains
       if (jsferic == 1) then
          crs%epsg_code = 4326
       end if
-      allocate(temp_indices(numl))
+      allocate (temp_indices(numl))
       forall (l=1:numl) temp_indices(l) = l
       temp_indices = convert_mask_to_indices(is_valid_2d2d_netlink(temp_indices))
       n2d2dcontacts = size(temp_indices)
@@ -12217,7 +12217,7 @@ contains
                                um%inode_merge)
 
       call check_error(ierr, 'waterlevels old')
-      call readyy('Reading map data', 0.35_dp)      
+      call readyy('Reading map data', 0.35_dp)
 
       ! Read chezy roughness (flow elem)
       call gettaus(2, 1) ! It can happen that `czs` is not allocated at this point (e.g., if `map_write_settings%chezy_elements = 0`)
@@ -12574,41 +12574,41 @@ contains
       if (ja_icecover == ICECOVER_SEMTNER) then
          ! Read ice thickness (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_thickness', ice_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
 
          call check_error(ierr, 'ice thickness')
          call readyy('Reading map data', 0.351_dp)
 
          ! Read ice area fraction (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_area_fraction', ice_area_fraction, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'ice area fraction')
          call readyy('Reading map data', 0.352_dp)
 
          ! Read ice pressure (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_pressure', ice_pressure, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'ice pressure')
          call readyy('Reading map data', 0.353_dp)
 
          ! Read ice temperature (flow elem)
          ierr = get_var_and_shift(imapfile, 'ice_temperature', ice_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'ice temperature')
          call readyy('Reading map data', 0.354_dp)
 
          ! Read snow thickness (flow elem)
          ierr = get_var_and_shift(imapfile, 'snow_thickness', snow_thickness, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'snow thickness')
          call readyy('Reading map data', 0.355_dp)
 
          ! Read snow temperature (flow elem)
          ierr = get_var_and_shift(imapfile, 'snow_temperature', snow_temperature, tmpvar1, UNC_LOC_S, kmx, kstart, um%ndxi_own, it_read, um%jamergedmap, um%inode_own, &
-                                 um%inode_merge)
+                                  um%inode_merge)
          call check_error(ierr, 'snow temperature')
          call readyy('Reading map data', 0.356_dp)
-      end if      
+      end if
 
       ! Read the tracers
       if (ITRA1 > 0) then
@@ -13977,7 +13977,7 @@ contains
       integer :: ierr
       logical :: jaInDefine
       integer :: n1dedges, n1d2dcontacts, start_index, i
-      
+
       ! meshgeom2d is built by build_flowgeom_2d and then written here
       type(t_ug_network) :: networkids_dummy
 
@@ -14052,14 +14052,14 @@ contains
 
       if (allocated(flowgeom%node_map_1d)) then
          nodes_1d = flowgeom%node_map_1d
-      else    
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i = 1, flowgeom%mesh1D%numNode)]
+      else
+         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
       end if
 
       if (allocated(flowgeom%face_map)) then
          faces = flowgeom%face_map
       else
-         faces = [(i, i = 1, flowgeom%mesh2d%numFace)]
+         faces = [(i, i=1, flowgeom%mesh2d%numFace)]
       end if
 
       ! ndx2d aliases the output-set face count: flexible, may be < global ndx2d when a cell mask is active.
@@ -14223,11 +14223,6 @@ contains
       jaInDefine = .false.
       start_index = 1
 
-      !if (ndxi <= 0) then
-      !   call mess(LEVEL_WARN, 'No flow elements in model, will not write flow geometry.')
-      !   return
-      !end if
-
       if (timon) call timstrt("unc_write_flowgeom_filepointer_ugrid", handle_extra(69))
 
       ! --- Resolve optional arguments ---
@@ -14252,8 +14247,8 @@ contains
 
       if (allocated(flowgeom%node_map_1d)) then
          nodes_1d = flowgeom%node_map_1d
-      else    
-         nodes_1d = [(flowgeom%mesh2d%numFace + i, i = 1, flowgeom%mesh1D%numNode)]
+      else
+         nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
       end if
 
       associate (mesh1d => flowgeom1d%mesh1D, &
@@ -14267,18 +14262,18 @@ contains
          id_tsp%edgetoln = flowgeom1d%edgetoln
          id_tsp%contactstoln = flowgeom1d%contactstoln
 
-         ! --- Build string metadata remapping (branch node ids in flowgeom order) ---
+! --- Build string metadata remapping (branch node ids in flowgeom order) ---
          if (associated(meshgeom1d%ngeopointx)) then
             call realloc(nodeids_remap, mesh1d%numNode)
             call realloc(nodelongnames_remap, mesh1d%numNode)
             nodeids_remap = ' '
             nodelongnames_remap = ' '
             do n = 1, mesh1d%numNode
-               if (allocated(nodeids) .and. associated(mesh1d%nodebranchidx)) then
-                  if (mesh1d%nodebranchidx(n) > 0) nodeids_remap(n) = nodeids(mesh1d%nodebranchidx(n))
+               if (allocated(nodeids) .and. associated(mesh1d%nodeidx)) then
+                  nodeids_remap(n) = nodeids(mesh1d%nodeidx(n))
                end if
-               if (allocated(nodelongnames) .and. associated(mesh1d%nodebranchidx)) then
-                  if (mesh1d%nodebranchidx(n) > 0) nodelongnames_remap(n) = nodelongnames(mesh1d%nodebranchidx(n))
+               if (allocated(nodelongnames) .and. associated(mesh1d%nodeidx)) then
+                  nodelongnames_remap(n) = nodelongnames(mesh1d%nodeidx(n))
                end if
             end do
          end if
@@ -14326,7 +14321,7 @@ contains
             end if
          end if
 
-         ! --- Flow element contours (accessed via node_map_1d to support masked output) ---
+         ! --- Flow element contours ---
          numContPts = 0
          do i = 1, mesh1d%numNode
             numContPts = max(numContPts, size(nd(nodes_1d(i))%x))
