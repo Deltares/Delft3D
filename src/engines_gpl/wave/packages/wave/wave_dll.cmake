@@ -22,7 +22,7 @@ if (WIN32)
                                 wave_kernel
                                 wave_manager
                                 nefis
-                                netcdf-fortran::netcdf-fortran
+                                netCDF::netcdff
                                 triangle_c
                                 swan
                                 ) 
@@ -70,7 +70,7 @@ if(UNIX)
                                 triangle_c
                                 swan
                                 esmfsm
-                                netcdf-fortran::netcdf-fortran
+                                netCDF::netcdff
                                 )
 
     target_link_libraries(${library_name}

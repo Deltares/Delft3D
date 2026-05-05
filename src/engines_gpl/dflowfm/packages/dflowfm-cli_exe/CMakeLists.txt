@@ -19,7 +19,7 @@ target_link_libraries(${executable_name} PRIVATE
                       dflowfm_kernel
                       gridgeom
                       deltares_common
-                      netcdf-fortran::netcdf-fortran
+                      netCDF::netcdff
 )
 
 if(UNIX)

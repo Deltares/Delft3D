@@ -9,7 +9,7 @@ set(oss_dependencies    deltares_common
                         gridgeom
                         io_netcdf_data
                         io_netcdf
-						netcdf-fortran::netcdf-fortran)
+						netCDF::netcdff)
 
 target_link_libraries(${library_name} ${oss_dependencies})
 

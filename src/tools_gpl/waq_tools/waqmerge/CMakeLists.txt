@@ -25,7 +25,7 @@ if (UNIX)
 
     target_link_libraries(${executable_name}
          ${oss_dependencies}
-         netcdf-fortran::netcdf-fortran)
+         netCDF::netcdff)
 endif(UNIX)
 
 if (WIN32)
@@ -35,7 +35,7 @@ if (WIN32)
                          io_netcdf_data
                          io_hyd
                          waq_hyd_data
-                         netcdf-fortran::netcdf-fortran
+                         netCDF::netcdff
                          waq_utils_f)
 
     target_link_libraries(${executable_name} ${oss_dependencies})

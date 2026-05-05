@@ -23,7 +23,7 @@ if(UNIX)
     set(oss_dependencies deltares_common
                          io_netcdf_data
                          fortrangis
-                         netcdf-fortran::netcdf-fortran)
+                         netCDF::netcdff)
     target_compile_definitions(${library_name} PRIVATE LINUX64)
     target_link_libraries(${library_name} ${oss_dependencies})
 endif(UNIX)
@@ -37,7 +37,7 @@ if (WIN32)
     set(oss_dependencies deltares_common
                         fortrangis
                         io_netcdf_data
-                        netcdf-fortran::netcdf-fortran)
+                        netCDF::netcdff)
     target_compile_definitions(${library_name} PRIVATE WIN64)
 
     target_link_libraries(${library_name} ${oss_dependencies}

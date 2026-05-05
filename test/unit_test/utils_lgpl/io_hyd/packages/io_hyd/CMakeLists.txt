@@ -3,7 +3,7 @@ set(dependencies deltares_common
                  waq_hyd_data
                  io_netcdf_data
                  io_netcdf
-                 netcdf-fortran::netcdf-fortran
+                 netCDF::netcdff
                  io_hyd)
 
 create_test(

@@ -26,7 +26,7 @@ target_link_libraries(${library_name} PRIVATE
                       dflowfm_kernel
                       gridgeom
                       deltares_common
-                      netcdf-fortran::netcdf-fortran
+                      netCDF::netcdff
 )
 
 # Define additional compilation flags

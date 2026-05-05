@@ -25,7 +25,7 @@ add_library(${library_name} ${meteo_sources} ${sources})
                          kdtree_wrapper
                          io_netcdf
                          io_netcdf_data
-                         netcdf-fortran::netcdf-fortran)
+                         netCDF::netcdff)
 
 
 target_link_libraries(${library_name} ${oss_dependencies})
