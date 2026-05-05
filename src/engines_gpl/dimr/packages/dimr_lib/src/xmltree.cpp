@@ -109,7 +109,10 @@ namespace
         (*curnode)->AddChild(node);
         *curnode = node;
 
-        for (int i = 0; attr[i] != NULL && attr[i + 1] != NULL; i += 2) node->AddAttrib(attr[i], attr[i + 1]);
+        for (int i = 0; attr[i] != NULL && attr[i + 1] != NULL; i += 2)
+        {
+            node->AddAttrib(attr[i], attr[i + 1]);
+        }
     }
 
     void endtag(void* userdata, const XML_Char* name)
@@ -119,11 +122,7 @@ namespace
 
         if (!state->charData.empty())
         {
-            std::string trimmed = trim(state->charData);
-            if (!trimmed.empty())
-            {
-                (*curnode)->charData = std::move(trimmed);
-            }
+            (*curnode)->charData = trim(state->charData);
             state->charData.clear();
         }
 

@@ -2433,12 +2433,11 @@ void Dimr::freeLibs(void)
                             componentsList.components[i].library, err);
         }
 #else
-        DWORD ierr;
         SetLastError(0); /* clear error code */
         bool success = FreeLibrary(componentsList.components[i].libHandle);
         if (!success)
         {
-            ierr = GetLastError();
+            DWORD ierr = GetLastError();
             throw Exception(Exception::ERR_OS, "Cannot free component library \"%s\". Return code: %d.",
                             componentsList.components[i].library, ierr);
         }
