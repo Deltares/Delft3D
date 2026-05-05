@@ -41,7 +41,7 @@ namespace pre_c_sumo
         mesh.name = csumo_mesh_name;
         for (const DiffuserSettings& d : csumo_settings.diffusers())
         {
-            const std::size_t diffuser_index = mesh.coordinates.size() / dimensions;
+            const std::size_t diffuser_index_mapping = mesh.coordinates.size() / dimensions;
             mesh.coordinates.emplace_back(d.position.x_coordinate); // diffuser position x
             mesh.coordinates.emplace_back(d.position.y_coordinate); // diffuser position y
 
@@ -57,7 +57,7 @@ namespace pre_c_sumo
                 mesh.coordinates.emplace_back(p.y_coordinate);
             }
 
-            mesh.forward_map.emplace_back(makeDiffuserMapping(d, diffuser_index));
+            mesh.forward_map.emplace_back(makeDiffuserMapping(d, diffuser_index_mapping));
         }
 
         mesh.number_of_nodes = mesh.coordinates.size() / dimensions;
