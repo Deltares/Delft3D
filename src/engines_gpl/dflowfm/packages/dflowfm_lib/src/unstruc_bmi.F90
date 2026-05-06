@@ -2046,10 +2046,12 @@ contains
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
+      character(len=MAXSTRLEN) :: field_name_lateral !< special extra field name in original casing, as constituents are case-sensitive
       ! Store the name and convert var and field to lowercase to make them case-insensitive.
       var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
       field_name = str_tolower(char_array_to_string(c_field_name))
+      field_name_lateral = char_array_to_string(c_field_name)
 
       select case (var_name)
          ! PUMPS
@@ -2392,7 +2394,7 @@ contains
          end select
          ! LATERAL DISCHARGES
       case ("laterals")
-         x = get_pointer_to_lateral_variable(item_name, field_name)
+         x = get_pointer_to_lateral_variable(item_name, field_name_lateral)
          ! GEOMETRY
       case ("geometry")
          select case (item_name)
@@ -2518,7 +2520,7 @@ contains
          constituent_index = ITEMP
       case default
          constituent_index = find_name(const_names, constituent_name)
-         if (iconst == 0) then
+         if (constituent_index == 0) then
             !        tracer not found
             c_lateral_pointer = c_null_ptr
             return
@@ -2803,7 +2805,7 @@ contains
                constituent_index = ITEMP
             case default
                constituent_index = find_name(const_names, constituent_name)
-               if (iconst == 0) then
+               if (constituent_index == 0) then
                   !        tracer not found
                   return
                end if
