@@ -850,6 +850,7 @@ end function read_3d_sigma_field
                      res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
                                               forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
                   else if (associated(target_data_integer)) then
+                     call prop_get(block_ptr, '', 'value', transformcoef(1)) ! ugly extra reading for special case
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
                   else if( associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
                         res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)

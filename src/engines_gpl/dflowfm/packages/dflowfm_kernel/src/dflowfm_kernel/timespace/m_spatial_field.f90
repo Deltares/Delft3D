@@ -149,7 +149,7 @@ contains
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff')
+      case ('sample', 'geotiff','polygon')
          is_static = .true.
       case default
          is_static = .false.
@@ -311,6 +311,8 @@ contains
          conflicts = str_tolower(trim(forcing_file_type)) /= 'geotiff'
       case ('.spw')
          conflicts = str_tolower(trim(forcing_file_type)) /= 'spiderweb'
+      case ('.pol')
+         conflicts = str_tolower(trim(forcing_file_type)) /= 'polygon'
       end select
 
    end function file_extension_conflicts_with_type

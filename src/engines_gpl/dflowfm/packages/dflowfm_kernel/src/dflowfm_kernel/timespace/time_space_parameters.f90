@@ -205,6 +205,8 @@ contains
          method = METHOD_TRIANGULATION
       case ('uniform')
          method = SPACEANDTIME
+      case ('polygon')
+         method = INSIDE_POLYGON
       case default
          method = METHOD_UNKNOWN
       end select
