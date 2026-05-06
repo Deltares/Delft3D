@@ -736,13 +736,13 @@ end function read_3d_sigma_field
       use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
       use timespace_parameters, only: WEIGHTFACTORS
       use properties, only: prop_get
-      use m_alloc, only: realloc
+      use m_alloc, only: realloc, reallocP
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
@@ -750,6 +750,7 @@ end function read_3d_sigma_field
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
+      use m_setinitialverticalprofile, only: setinitialverticalprofile
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -832,30 +833,34 @@ end function read_3d_sigma_field
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
          if (is_static_field) then
-            block
-               real(dp) :: transformcoef(NTRANSFORMCOEF)
-               transformcoef = -999.0_dp
-               call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+            if (target_location_type == UNC_LOC_3DV) then !> vertical profiles are special
+               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               res = .true.
+            else !> normal spatial field
+               block
+                  real(dp) :: transformcoef(NTRANSFORMCOEF)
+                  transformcoef = -999.0_dp
+                  call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
 
-               ! WEIGHTFACTORS + 3D, special case
-               if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then
-                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                             filetype, method, oper, variable_name, ec_item, target_data)
-               else if (associated(target_data)) then
-                  res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
-                                           forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
-               else if (associated(target_data_integer)) then
-                  res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, &
-                                           forcing_file, filetype, oper, transformcoef)
-               end if
+                  if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
+                        call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
+                  end if
 
-               ! 2D3D expansion post-step (applies to both normal and WEIGHTFACTORS 3D paths)
-               if (res .and. associated(target_array_3d)) then
-                  call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, &
-                                                    transformcoef(13), transformcoef(14), oper)
-                  deallocate(target_data)
-               end if
-            end block
+                  if (associated(target_data)) then
+                     res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
+                                              forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
+                  else if (associated(target_data_integer)) then
+                     res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
+                  else if( associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
+                        res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  end if
+
+                  if (associated(target_array_3d)) then !> 3D postprocessing
+                     call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
+                     deallocate(target_data)
+                  end if
+               end block
+            end if
          else
             select case (trim(str_tolower(forcing_file_type)))
             case ('bcascii')
@@ -1608,7 +1613,7 @@ end function read_3d_sigma_field
       ierr = DFM_NOERR
 
       select case (target_location_type)
-      case (UNC_LOC_S)
+      case (UNC_LOC_S, UNC_LOC_S3D)
          target_num_points = ndx
          target_x => xz(1:target_num_points)
          target_y => yz(1:target_num_points)
