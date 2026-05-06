@@ -27,9 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_flowparameters
    use precision, only: dp
    use m_sediment, only: jased
@@ -37,7 +34,7 @@ module m_flowparameters
    use m_waveconst
    use messagehandling, only: idlen
 
-   implicit none
+   implicit none(type, external)
 
    integer :: itstep !< time step 0=no, 1 =step_explicit, 2=step_reduce, 3=step_jacobi, 4: explicit
    integer :: iadvec !< adv type, 0=no, 1 = Wenneker vol, qu-udzt array, 2=1, function,
@@ -326,12 +323,12 @@ module m_flowparameters
    real(kind=dp) :: zkdropstep !< Amount of bottomlevel to be added with dropland (m)
    real(kind=dp) :: sdropstep !< Amount of water to be added with dropwater (m)
 
-   real(kind=dp), parameter :: eps3 = 1.0e-3_dp !< min value in storage_area check
-   real(kind=dp), parameter :: eps4 = 1.0e-4_dp !< min au in poshchk
-   real(kind=dp), parameter :: eps6 = 1.0e-6_dp !<
-   real(kind=dp), parameter :: eps8 = 1.0e-8_dp !< implicit diffusion
-   real(kind=dp), parameter :: eps10 = 1.0e-10_dp !<
-   real(kind=dp), parameter :: eps20 = 1.0e-20_dp !< turbulenceTimeIntegrationFactor
+   real(kind=dp), parameter :: EPS3 = 1.0e-3_dp !< min value in storage_area check
+   real(kind=dp), parameter :: EPS4 = 1.0e-4_dp !< min au in poshchk
+   real(kind=dp), parameter :: EPS6 = 1.0e-6_dp !<
+   real(kind=dp), parameter :: EPS8 = 1.0e-8_dp !< implicit diffusion
+   real(kind=dp), parameter :: EPS10 = 1.0e-10_dp !<
+   real(kind=dp), parameter :: EPS20 = 1.0e-20_dp !< turbulenceTimeIntegrationFactor
    real(kind=dp) :: epshsdif = 1.0e-2_dp !< hs < epshsdif: no vertical diffusion if hs < epshsdif
    ! parameters controlling flooding/drying/solving
    integer :: testdryflood !< Flag for testing alternative drying flooding algoritm; 0 = standard, 1 =Delft3D-FLOW
@@ -469,132 +466,142 @@ module m_flowparameters
    integer :: jadpuopt !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean.
    integer :: jaextrapbl !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions.
 
-   ! written to his file yes or no
-   integer :: jahisbal !< Write mass balance/volume totals to his file, 0: no, 1: yes
-   integer :: jahissourcesink !< Write discharge/volume at sources/sinks, 0: no, 1: yest
-   integer :: jahistur !< Write k, eps and vicww to his file, 0: no, 1: yes
-   integer :: jahiswind !< Write wind velocities to his file, 0: no, 1: yes
-   integer :: jahisrain !< Write precipitation intensity  (depth per time) to this file, 0: no, 1: yes
-   integer :: jahisinfilt !< Write infiltration rate to this file, 0: no, 1: yes
-   integer :: jahistem !< Write temperature to his file, 0: no, 1: yes
-   integer :: jahisheatflux !< Write heatfluxes to his file, 0: no, 1: yes
-   integer :: jahissal !< Write salinity to his file, 0: no, 1: yes
-   integer :: jahisrho !< Write density  to his file, 0: no, 1: yes
-   integer :: jahis_airdensity !< Write air density  to his file, 0: no, 1: yes
-   integer :: jahiswatlev !< Write water level to his file, 0: no, 1: yes
-   integer :: jahisbedlev !< Write bed level to his file, 0: no, 1: yes
-   integer :: jahiswatdep !< Write waterd epth to his file, 0: no, 1: yes
-   integer :: jahisvelvec !< Write velocity vectors to his file, 0: no, 1: yes
-   integer :: jahisww !< Write upward velocity to his file, 0: no, 1: yes
-   integer :: jahissed !< Write sediment transport to his file, 0: no, 1: yes
-   integer :: jahiszcor !< Write the vertical coordinate to his file, 0: no, 1: yes
-   integer :: jahiswav !< Write wave data to his file, 0: no, 1: yes
-   integer :: jahislateral !< Write lateral data to his file, 0: no, 1: yes
-   integer :: jahistaucurrent !< Write bed shear stress to his file, 0: no, 1: yes
-   integer :: jahisvelocity !< Write velocity magnitude to his file, 0: no, 1: yes
-   integer :: jahisdischarge !< Write discharge magnitude to his file, 0: no, 1: yes
-   integer :: jahisrunupgauge !< Write runupgauge       to his file, 0: no, 1: yes
-   integer :: jahiswqbot !< Write wqbot to his file, 0: no, 1: yes
-   integer :: jahiswqbot3d !< Write wqbot3d to his file, 0: no, 1: yes
-   integer :: jahistracers !< Write tracers          to his file, 0: no, 1: yes
-   integer :: jahiscrs_flow !< Write crs_flow         to his file, 0: no, 1: yes
-   integer :: jahiscrs_constituents !< Write crs_constituents to his file, 0: no, 1: yes
-   integer :: jahiscrs_sediment !< Write crs_sediment     to his file, 0: no, 1: yes
-   integer :: jahisdred !< Write dred             to his file, 0: no, 1: yes
-   integer :: jahiswaq !< Write Water Quality    to his file, 0: no, 1: yes
-   ! His output structure keywords
-   integer :: jahiscgen !< Write structure parameters to his file, 0: n0, 1: yes
-   integer :: jahispump !< Write pump      parameters to his file, 0: n0, 1: yes
-   integer :: jahisgate !< Write gate      parameters to his file, 0: n0, 1: yes
-   integer :: jahiscdam !< Write dam       parameters to his file, 0: n0, 1: yes
-   integer :: jahisweir !< Write weir      parameters to his file, 0: n0, 1: yes
-   integer :: jahisdambreak !< Write dambreak  parameters to his file, 0: n0, 1: yes
-   integer :: jahisorif !< Write orifice   parameters to his file, 0: no, 1: yes
-   integer :: jahisbridge !< Write bridge    parameters to his file, 0: no, 1: yes
-   integer :: jahisculv !< Write culvert   parameters to his file, 0: no, 1: yes
-   integer :: jahisuniweir !< Write univeral weir parameters to his file, 0: no, 1: yes
-   integer :: jahiscmpstru !< Write compound structure parameters to his file, 0: no, 1: yes
-   integer :: jahislongculv !< Write long culverts parameters to his file, 0: no, 1:yes
+   type :: HisWriteSettings
+      integer :: bal = 1 !< Write mass balance/volume totals to his file, 0: no, 1: yes
+      integer :: sourcesink = 1 !< Write discharge/volume at sources/sinks, 0: no, 1: yes
+      integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
+      integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
+      integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
+      integer :: infilt = 1 !< Write infiltration rate to this file, 0: no, 1: yes
+      integer :: tem = 1 !< Write temperature to his file, 0: no, 1: yes
+      integer :: heatflux = 1 !< Write heatfluxes to his file, 0: no, 1: yes
+      integer :: sal = 1 !< Write salinity to his file, 0: no, 1: yes
+      integer :: rho = 1 !< Write density  to his file, 0: no, 1: yes
+      integer :: airdensity = 0 !< Write air density  to his file, 0: no, 1: yes
+      integer :: watlev = 1 !< Write water level to his file, 0: no, 1: yes
+      integer :: bedlev = 1 !< Write bed level to his file, 0: no, 1: yes
+      integer :: watdep = 0 !< Write waterd epth to his file, 0: no, 1: yes
+      integer :: velvec = 1 !< Write velocity vectors to his file, 0: no, 1: yes
+      integer :: ww = 0 !< Write upward velocity to his file, 0: no, 1: yes
+      integer :: sed = 1 !< Write sediment transport to his file, 0: no, 1: yes
+      integer :: zcor = 1 !< Write the vertical coordinate to his file, 0: no, 1: yes
+      integer :: wav = 1 !< Write wave data to his file, 0: no, 1: yes
+      integer :: lateral = 1 !< Write lateral data to his file, 0: no, 1: yes
+      integer :: taucurrent = 1 !< Write bed shear stress to his file, 0: no, 1: yes
+      integer :: velocity = 1 !< Write velocity magnitude to his file, 0: no, 1: yes
+      integer :: discharge = 1 !< Write discharge magnitude to his file, 0: no, 1: yes
+      integer :: runupgauge = 1 !< Write runupgauge to his file, 0: no, 1: yes
+      integer :: wqbot = 1 !< Write wqbot to his file, 0: no, 1: yes
+      integer :: wqbot3d = 0 !< Write wqbot3d to his file, 0: no, 1: yes
+      integer :: tracers = 1 !< Write tracers to his file, 0: no, 1: yes
+      integer :: crs_flow = 1 !< Write crs_flow to his file, 0: no, 1: yes
+      integer :: crs_constituents = 1 !< Write crs_constituents to his file, 0: no, 1: yes
+      integer :: crs_sediment = 1 !< Write crs_sediment to his file, 0: no, 1: yes
+      integer :: dred = 1 !< Write dred to his file, 0: no, 1: yes
+      integer :: waq = 1 !< Write Water Quality to his file, 0: no, 1: yes
 
-   ! written to map file yes or no
-   integer :: jamaps0 !< previous step water levels to map file, 0: no, 1: yes
-   integer :: jamaps1 !< water levels to map file, 0: no, 1: yes
-   integer :: jamapevap !< evaporation to map file, 0: no, 1: yes
-   integer :: jamapvol1 !< Volumes to map file, 0: no, 1: yes
-   integer :: jamaphs !< Water depths to map file, 0: no, 1: yes
-   integer :: jamaphu !< Water depths on u point to map file, 0: no, 1: yes
-   integer :: jamapanc !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
-   integer :: jamapau !< Normal flow areas au to map file, 0: no, 1: yes
-   integer :: jamapu1 !< velocities to map file, 0: no, 1: yes
-   integer :: jamapu0 !< previous step velocities to map file, 0: no, 1: yes
-   integer :: jamapucvec !< velocity vectors to map file, 0: no, 1: yes
-   integer :: jamapucmag !< velocity vector magnitude to map file, 0: no, 1: yes
-   integer :: jamapucqvec !< velocity vectors (discharge based) to map file, 0: no, 1: yes
-   integer :: jamapww1 !< upward velocity on flow link to map file, 0: no, 1: yes
-   integer :: jamapnumlimdt !< Write the total number of times a cell was Courant limiting to map file, 0: no, 1: yes
+      ! His output structure keywords
+      integer :: cgen = 1 !< Write structure parameters to his file, 0: n0, 1: yes
+      integer :: pump = 1 !< Write pump parameters to his file, 0: n0, 1: yes
+      integer :: gate = 1 !< Write gate parameters to his file, 0: n0, 1: yes
+      integer :: cdam = 1 !< Write dam parameters to his file, 0: n0, 1: yes
+      integer :: weir = 1 !< Write weir parameters to his file, 0: n0, 1: yes
+      integer :: dambreak = 1 !< Write dambreak parameters to his file, 0: n0, 1: yes
+      integer :: orifice = 1 !< Write orifice parameters to his file, 0: no, 1: yes
+      integer :: bridge = 1 !< Write bridge parameters to his file, 0: no, 1: yes
+      integer :: culvert = 1 !< Write culvert parameters to his file, 0: no, 1: yes
+      integer :: universal_weir = 1 !< Write univeral weir parameters to his file, 0: no, 1: yes
+      integer :: compound_structure = 1 !< Write compound structure parameters to his file, 0: no, 1: yes
+      integer :: long_culvert = 1 !< Write long culverts parameters to his file, 0: no, 1:yes
+      integer :: sigwav = 1 !< 1: sign wave height on his output; 0: hrms wave height on his output
+   end type HisWriteSettings
+
+   type :: MapWriteSettings
+      integer :: s0 = 1 !< previous step water levels to map file, 0: no, 1: yes
+      integer :: s1 = 1 !< water levels to map file, 0: no, 1: yes
+      integer :: evap = 0 !< evaporation to map file, 0: no, 1: yes
+      integer :: vol1 = 0 !< Volumes to map file, 0: no, 1: yes
+      integer :: hs = 1 !< Water depths to map file, 0: no, 1: yes
+      integer :: hu = 0 !< Water depths on u point to map file, 0: no, 1: yes
+      integer :: anc = 0 !< Ancillary variables attribute added to map file, 0: no, 1: yes (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#ancillary-data)
+      integer :: au = 0 !< Normal flow areas au to map file, 0: no, 1: yes
+      integer :: u1 = 1 !< velocities to map file, 0: no, 1: yes
+      integer :: u0 = 1 !< previous step velocities to map file, 0: no, 1: yes
+      integer :: ucvec = 1 !< velocity vectors to map file, 0: no, 1: yes
+      integer :: ucmag = 1 !< velocity vector magnitude to map file, 0: no, 1: yes
+      integer :: ucqvec = 0 !< velocity vectors (discharge based) to map file, 0: no, 1: yes
+      integer :: ww1 = 1 !< upward velocity on flow link to map file, 0: no, 1: yes
+      integer :: numlimdt = 1 !< Write the total number of times a cell was Courant limiting to map file, 0: no, 1: yes
+      integer :: taucurrent = 1 !< shear stress to map file, 0: no, 1: yes
+      integer :: z0 = 0 !< roughness heights to map file, 0: no, 1: yes
+      integer :: chezy_elements = 0 !< chezy roughness in flow elements to map file, 0: no, 1: yes
+      integer :: chezy_links = 0 !< chezy roughness on flow links to map file, 0: no, 1: yes
+      integer :: chezy_input = 0 !< chezy input roughness on flow links to map file, 0: no, 1: yes
+      integer :: tem = 1 !< temperature to map file, 0: no, 1: yes
+      integer :: heatflux = 0 !< heatflux to map file, 0: no, 1: yes
+      integer :: sal = 1 !< salinity to map file, 0: no, 1: yes
+      integer :: cali = 1 !< roughness calibration factors to map file, 0: no, 1: yes
+      integer :: const = 1 !< constituents to map file, 0: no, 1: yes
+      integer :: sed = 1 !< sediment fractions to map file, 0: no, 1: yes
+      integer :: tur = 1 !< k, eps and vicww to map file, 0: no, 1: yes
+      integer :: trachy = 1 !< trachytope roughnesses to map file, 0: no, 1: yes
+      integer :: rain = 0 !< wind velocities to map file, 0: no, 1: yes
+      integer :: icept = 0 !< Interception layer to map file, 0: no, 1: yes
+      integer :: wind = 1 !< wind velocities to map file, 0: no, 1: yes
+      integer :: windstress = 0 !< wind stress to map file, 0: no, 1: yes
+      integer :: airdensity = 0 !< air density to map file, 0: no, 1: yes
+      integer :: viu = 1 !< horizontal viscosity to map file, 0: no, 1: yes
+      integer :: diu = 1 !< horizontal diffusity to map file, 0: no, 1: yes
+      integer :: rho = 1 !< flow density to map file, 0: no, 1: yes
+      integer :: q1 = 1 !< flow flux to map file, 0: no, 1: yes
+      integer :: q1main = 0 !< main channel flow flux to map file, 0: no, 1: yes
+      integer :: fw = 0 !< fixed weir energy loss to map file, 0: no, 1: yes
+      integer :: spir = 1 !< spiral flow to map file, 0: no, 1: yes
+      integer :: tidep = 1 !< tidal potential to map file, 0: no, 1: yes
+      integer :: selfal = 1 !< self attraction and loading potential to map file, 0: no, 1: yes
+      integer :: int_tides_diss = 1 !< internal tides dissipation to map file, 0: no, 1: yes
+      integer :: nudge = 1 !< output nudging to map file, 0: no, 1: yes
+      integer :: pure_1d_debug = 0 !< additional Pure1D debugging output to map file, 0: no, 1: yes
+      integer :: wav = 1 !< output waves to map file, 0: no, 1: yes
+      integer :: wav_hwav = 0 !< output waves to map file for variable hwav,   0: no, 1: yes
+      integer :: wav_twav = 0 !< output waves to map file for variable twav,   0: no, 1: yes
+      integer :: wav_phiwav = 0 !< output waves to map file for variable phiwav, 0: no, 1: yes
+      integer :: dtcell = 0 !< output time steps per cell based on CFL
+      integer :: time_wet_on_ground = 0 !< output to map file the cumulative time when water is above ground level, 0: no, 1: yes
+      integer :: free_board = 0 !< output freeboard to map file, 0: no, 1: yes
+      integer :: depth_on_ground = 0 !< output waterdepth above ground level, 0: no, 1: yes
+      integer :: vol_on_ground = 0 !< output volume above ground level, 0: no, 1: yes
+      integer :: total_inflow_1d2d = 0 !< output total 1d2d inflow to map file, 0: no, 1: yes
+      integer :: total_inflow_lat = 0 !< output total lateral inflow to map file, 0: no, 1: yes
+      integer :: s1gradient = 0 !< output water level gradient to map file, 0: no, 1: yes
+      integer :: bnd = 0 !< Includes boundary points in map output
+      integer :: qin = 0 !< Includes sum of all influxes in map output
+      integer :: flow_analysis = 0 !< Write flow analysis output to map file
+      integer :: near_field = 0 !< Nearfield related output
+      integer :: wqbot3d = 0 !< Write wqbot3d to map file, 0: no, 1: yes
+      integer :: sigwav = 0 !< 1: sign wave height on his output; 0: hrms wave height on his output
+   end type MapWriteSettings
+
+   type(HisWriteSettings) :: his_write_settings
+   type(MapWriteSettings) :: map_write_settings
+
    logical :: write_numlimdt_file !< Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file
-   integer :: jamaptaucurrent !< shear stress to map file, 0: no, 1: yes
-   integer :: jamapz0 !< roughness heights to map file, 0: no, 1: yes
-   integer :: jamap_chezy_elements !< chezy roughness in flow elements to map file, 0: no, 1: yes
-   integer :: jamap_chezy_links !< chezy roughness on flow links to map file, 0: no, 1: yes
-   integer :: jamap_chezy_input !< chezy input roughness on flow links to map file, 0: no, 1: yes
-   integer :: jamapsal !< salinity to map file, 0: no, 1: yes
-   integer :: jamaptem !< temperature to map file, 0: no, 1: yes
-   integer :: jamapcali !< roughness calibration factors to map file, 0: no, 1: yes
-   integer :: jamapconst !< constituents to map file, 0: no, 1: yes
-   integer :: jamapsed !< sediment fractions to map file, 0: no, 1: yes
-   integer :: jamaptur !< k, eps and vicww to map file, 0: no, 1: yes
-   integer :: jamaptrachy !< trachytope roughnesses to map file, 0: no, 1: yes
-   integer :: jamaprain !< wind velocities to map file, 0: no, 1: yes
-   integer :: jamapicept !< Interception layer to map file, 0: no, 1: yes
-   integer :: jamapwind !< wind velocities to map file, 0: no, 1: yes
-   integer :: jamapwindstress !< wind stress to map file, 0: no, 1: yes
-   integer :: jamap_airdensity !< air density to mao file, 0: no, 1: yes
-   integer :: jamapviu !< horizontal viscosity to map file, 0: no, 1: yes
-   integer :: jamapdiu !< horizontal diffusity to map file, 0: no, 1: yes
-   integer :: jamaprho !< flow density to map file, 0: no, 1: yes
-   integer :: jamapq1 !< flow flux to map file, 0: no, 1: yes
-   integer :: jamapq1main !< main channel flow flux to map file, 0: no, 1: yes
-   integer :: jamapfw !< fixed weir energy loss to map file, 0: no, 1: yes
-   integer :: jamapspir !< spiral flow to map file, 0: no, 1: yes
-   integer :: jamaptidep !< tidal potential to map file, 0: no, 1: yes
-   integer :: jamapselfal !< self attraction and loading potential to map file, 0: no, 1: yes
-   integer :: jamapIntTidesDiss !< internal tides dissipation to map file, 0: no, 1: yes
-   integer :: jamapNudge !< output nudging to map file, 0: no, 1: yes
-   integer :: jamapPure1D_debug !< additional Pure1D debugging output to map file, 0: no, 1: yes
-   integer :: jamapwav !< output waves to map file, 0: no, 1: yes
-   integer :: jamapwav_hwav !< output waves to map file for variable hwav,   0: no, 1: yes
-   integer :: jamapwav_twav !< output waves to map file for variable twav,   0: no, 1: yes
-   integer :: jamapwav_phiwav !< output waves to map file for variable phiwav, 0: no, 1: yes
-   integer :: jamapdtcell !< output time steps per cell based on CFL
-   integer :: jamapTimeWetOnGround !< output to map file the cumulative time when water is above ground level, 0: no, 1: yes
-   integer :: jamapFreeboard !< output freeboard to map file, 0: no, 1: yes
-   integer :: jamapDepthOnGround !< output waterdepth above ground level, 0: no, 1: yes
-   integer :: jamapVolOnGround !< output volume above ground level, 0: no, 1: yes
-   integer :: jamapTotalInflow1d2d !< output total 1d2d inflow to map file, 0: no, 1: yes
-   integer :: jamapTotalInflowLat !< output total lateral inflow to map file, 0: no, 1: yes
-   integer :: jamapS1Gradient !< output water level gradient to map file, 0: no, 1: yes
    integer :: jatekcd !< tek output with wind cd coefficients, 0=no (default), 1=yes
    integer :: jafullgridoutput !< 0: static layer positions, 1: time- and space-varying grid layer data, 2: time- and space-varying grid layer data with CF-bounds
    integer :: jaeulervel !< 0:GLM, 1:Euler velocities
    integer :: jamombal !< records some gradients of primitives 0:no, 1:yes
    integer :: jarstbnd !< Waterlevel, bedlevel and coordinates of boundaries, 0: no, 1: yes
-   integer :: jamapbnd !< Includes boundary points in map output
-   integer :: jamapqin !< Includes sum of all influxes in map output
    integer :: jaeverydt !< Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes
-   integer :: jamapFlowAnalysis !< Write flow analysis output to map file
-   integer :: jamapNearField !< Nearfield related output
-   integer :: jamapwqbot3d !< Write wqbot3d to map file, 0: no, 1: yes
 
-! read from restart
+   ! read from restart
    integer :: jarstignorebl !< Flag indicating if bed level on restart file should be ignored (0/1, default: 0)
 
-! Write partition domain file
+   ! Write partition domain file
    integer :: japartdomain !< Write a separate netcdf file for partition domain info., 0: no, 1: yes
 
    real(kind=dp) :: epswetout !< Waterdepth threshold, above which a cell counts as 'wet'. For output purposes.
 
-! Write shape files
+   ! Write shape files
    integer :: jashp_crs !< Write a shape file for cross sections
    integer :: jashp_obs !< Write a shape file for observation points
    integer :: jashp_weir !< Write a shape file for weirs
@@ -620,7 +627,7 @@ module m_flowparameters
    integer :: jawriteDFMinterpretedvalues !< Write interpretedvalues
    integer :: jawriteDetailedTimers !< Write detailed timers output file
 
-! parameters for parms solver
+   ! parameters for parms solver
    integer, parameter :: NPARMS_INT = 2 !< for parms solver, number of integer parameters
    integer, parameter :: IPARMS_ILUTYPE = 1
    integer, parameter :: IPARMS_NLEVEL = 2
@@ -632,13 +639,13 @@ module m_flowparameters
    character(len=128), dimension(NPARMS_DBL), parameter :: dparmsnam = [character(len=128) :: 'dtol']
    real(kind=dp), dimension(NPARMS_DBL) :: dparms
 
-! parameters for nudging
+   ! parameters for nudging
    real(kind=dp) :: Tnudgeuni = 3600.0_dp !< uniform nudge relaxation time
 
-! parameters for internal tides dissipation
+   ! parameters for internal tides dissipation
    real(kind=dp) :: ITcap !< limit to Internal Tides Dissipation / area (J/(m^2 s))
 
-! Advection modelling at barriers
+   ! Advection modelling at barriers
    integer :: jabarrieradvection = 1
 
    ! parameter for bed roughness and transport
@@ -651,13 +658,18 @@ module m_flowparameters
    integer, parameter :: PEROT_UPDATE = 1 ! Initialise Perot weights every time-step
 
 contains
-!> Sets ALL (scalar) variables in this module to their default values.
-!! For a reinit prior to flow computation, only call reset_flowparameters() instead.
+
+   !> Sets ALL (scalar) variables in this module to their default values.
+   !! For a reinit prior to flow computation, only call reset_flowparameters() instead.
    subroutine default_flowparameters()
       itstep = 2 ! time step 0=only transport, 1=transport + velocity update, 2=full implicit step_reduce
       iadvec = 33 ! adv type, 0=no, 1= Wenneker vol, qu-udzt array, 2=1, function, 3=Perot in uit, 4=Perot in, 5=3,piaczek
       iadvec1D = 33 ! same, now for 1D links
       iadveccorr1D2D = 0 ! Advection correction of 1D2D link volume (0: none, 1: link volume au*dx')
+
+      ! Reset his and map write settings to default
+      his_write_settings = HisWriteSettings()
+      map_write_settings = MapWriteSettings()
 
       maxNonlinearIterations = 100 !< maximal iterations in non linear iteration loop before a time step reduction is applied
       setHorizontalBobsFor1d2d = .false. !< bobs are set to 2d bedlevel, to prevent incorrect storage in sewer system.
@@ -950,103 +962,13 @@ contains
       jalogsolverconvergence = 0
       jalogtransportsolverlimiting = 0
 
-      jahisbal = 1
-      jahissourcesink = 1
-      jahistur = 1
-      jahiswind = 1
-      jahisrain = 1
-      jahisinfilt = 1
-      jahistem = 1
-      jahisheatflux = 1
-      jahissal = 1
-      jahisrho = 1
-      jahis_airdensity = 0
-      jahiswatlev = 1
-      jahisbedlev = 1
-      jahiswatdep = 0
-      jahisvelvec = 1
-      jahisww = 0
-      jahissed = 1
-      jahiszcor = 1
-      jahiswav = 1
-      jahislateral = 1
-      jahistaucurrent = 1
-      jahisvelocity = 1
-      jahisdischarge = 1
-      jahisrunupgauge = 1
-      jahiswqbot = 1
-      jahiswqbot3d = 0
-      jahistracers = 1
-      jahiscrs_flow = 1
-      jahiscrs_constituents = 1
-      jahiscrs_sediment = 1
-      jahisdred = 1
-      jahiswaq = 1
-      jamaps0 = 1
-      jamaps1 = 1
-      jamapevap = 0
-      jamapvol1 = 0
-      jamaphs = 1
-      jamaphu = 0
-      jamapanc = 0
-      jamapau = 0
-      jamapu0 = 1
-      jamapu1 = 1
-      jamapucvec = 1
-      jamapucmag = 1
-      jamapucqvec = 0
-      jamapww1 = 1
-      jamapnumlimdt = 1
       write_numlimdt_file = .false.
-      jamaptaucurrent = 1
-      jamapz0 = 0
-      jamap_chezy_elements = 0
-      jamap_chezy_links = 0
-      jamap_chezy_input = 0
-      jamapsal = 1
-      jamaptem = 1
-      jamapconst = 1
-      jamapsed = 1
-      jamaptur = 1
-      jamaptrachy = 1
-      jamapcali = 1
-      jamaprain = 0
-      jamapicept = 0
-      jamapwind = 1
-      jamapwindstress = 0
-      jamap_airdensity = 0
-      jamapviu = 1
-      jamapdiu = 1
-      jamaprho = 1
-      jamapq1 = 1
-      jamapq1main = 0
-      jamapfw = 0
-      jamapspir = 1
-      jamaptidep = 1
-      jamapselfal = 1
-      jamapIntTidesDiss = 1
-      jamapNudge = 1
-      jamapPure1D_debug = 0
-      jamapwav = 1
-      jamapdtcell = 0
-      jamapTimeWetOnGround = 0
-      jamapFreeboard = 0
-      jamapDepthOnGround = 0
-      jamapVolOnGround = 0
-      jamapTotalInflow1d2d = 0
-      jamapTotalInflowLat = 0
-      jamapS1Gradient = 0
-      jamapFlowAnalysis = 0
-      jamapNearField = 0
-      jamapwqbot3d = 0
 
       jarstignorebl = 0
 
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       jatekcd = 1 ! wind cd coeffs on tek
       jarstbnd = 1
-      jamapbnd = 0
-      jamapqin = 0
       jaeverydt = 0
       japartdomain = 1
       jashp_crs = 0
@@ -1087,8 +1009,8 @@ contains
       call reset_flowparameters()
    end subroutine default_flowparameters
 
-!> Resets only flowparameters variables intended for a restart of an existing flow simulation (same MDU).
-!! Upon loading of new model/MDU, call default_flowparameters() instead.
+   !> Resets only flowparameters variables intended for a restart of an existing flow simulation (same MDU).
+   !! Upon loading of new model/MDU, call default_flowparameters() instead.
    subroutine reset_flowparameters()
    end subroutine reset_flowparameters
 

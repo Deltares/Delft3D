@@ -60,6 +60,8 @@ fm wanda,dimr/dimr_dflowfm_wanda_lnx64.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,F
 fm wanda,dimr/dimr_dflowfm_wanda_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dsle,dimr/dimr_dflowfm_dsle_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm dsle,dimr/dimr_dflowfm_dsle_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm dsle parallel,dimr/dimr_dflowfm_dsle_lnx64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm dsle parallel,dimr/dimr_dflowfm_dsle_win64_parallel.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq 1d2d,dimr/dimr_dflowfm_waq_coupling_1D2D_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm waq aggregation,dimr/dimr_dflowfm_waq_coupling_aggregation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
@@ -134,4 +136,3 @@ RED IFX d3d4 flow parallel wave,delft3d4/delft3d_lnx64_hp_flow_parallel_wave_red
 RED IFX d3d4 flow parallel wave,delft3d4/delft3d_win64_hp_flow_parallel_wave_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
 RED IFX d3d4 flow rtc,delft3d4/delft3d_lnx64_hp_flow_rtc.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Disabled because it does not work on IFX.
 RED IFX d3d4 flow rtc,delft3d4/delft3d_win64_hp_flow_rtc.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Disabled because it does not work on IFX.
-RED IFX d3d4 flow nearfield,delft3d4/delft3d4_hp_cases_flow_nearfield_red_ifx.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,Red testcases that need to be fixed.
