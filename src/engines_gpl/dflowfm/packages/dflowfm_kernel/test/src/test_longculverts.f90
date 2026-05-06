@@ -2,6 +2,7 @@ module test_longculverts
     use assertions_gtest
     use m_longculverts, only: convert1D2DLongCulverts
     use m_network_helpers, only: t_grid_helper
+    use m_file_helpers, only: generate_square_grid, cleanup_network_data    
     implicit none
 
 contains
@@ -12,6 +13,7 @@ contains
         character(len=:), allocatable :: res
         res = trim(string) // c_null_char
     end function to_c_string
+    
 
     !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts__single_four_point, test_convert1d2dlongculverts__single_four_point,
     subroutine test_convert1d2dlongculverts__single_four_point() bind(C)
