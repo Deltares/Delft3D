@@ -714,4 +714,157 @@ contains
    end subroutine test_frictioncoefficient_with_explicit_frictiontype
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_advectiontype_integer_field_populated, test_advectiontype_integer_field_populated,
+   !> Verifies that an advectiontype [Spatial] block populates the iadv integer array
+   !! via the resolve_integer_target + timespaceinitialfield_int path.
+   !! Uses forcingFileType=insidePolygon since triangulation is not supported by
+   !! timespaceinitialfield_int. The value comes from the value= keyword (transformcoef(1)),
+   !! not from the polygon file itself.
+   !! iadv is pointered to (not allocated) by resolve_integer_target and must therefore
+   !! be pre-allocated here before init_spatial_fields is called.
+   subroutine test_advectiontype_integer_field_populated() bind(C)
+      use m_flowgeom, only: ndx2D, ndxi, lnx, xu, yu, iadv
+      use m_alloc, only: realloc, aerr
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: POL_FILE = "test_iadv.pol"
+      character(len=*), parameter :: EXT_FILE = "test_iadv.ext"
+
+      ! ARRANGE: a polygon that fully encloses the single cell at (0,0).
+      call create_file(POL_FILE, [ &
+                       "enclosing_polygon", &
+                       "5  2", &
+                       "-2.0  -2.0", &
+                       " 2.0  -2.0", &
+                       " 2.0   2.0", &
+                       "-2.0   2.0", &
+                       "-2.0  -2.0"])
+
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity        = advectiontype", &
+                       "    forcingFile     = "//POL_FILE, &
+                       "    forcingFileType = Polygon", &
+                       "    value           = 3"])
+
+      call setup_minimal_grid()
+      ndxi  = ndx
+      ndx2D = 0
+      lnx   = 1
+      if (allocated(xu)) deallocate (xu)
+      if (allocated(yu)) deallocate (yu)
+      allocate (xu(lnx), yu(lnx), stat=ierr)
+      call aerr('xu/yu(lnx)', ierr, lnx)
+      xu = [0.0_dp]
+      yu = [0.0_dp]
+      ! iadv is only pointered to by resolve_integer_target, not allocated there.
+      ! Pre-allocate here so the pointer assignment does not dereference garbage.
+      call realloc(iadv, lnx, fill=0, keepExisting=.false.)
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for advectiontype insidePolygon block")
+      call f90_assert_true(allocated(iadv), "iadv should be allocated after init")
+      call f90_expect_eq(iadv(1), 3, "iadv(1) should be 3 (value= keyword via transformcoef(1))")
+
+      ! CLEANUP
+      lnx   = 0
+      ndxi  = 0
+      ndx2D = 0
+      if (allocated(xu))   deallocate (xu)
+      if (allocated(yu))   deallocate (yu)
+      if (allocated(iadv)) deallocate (iadv)
+      call teardown_minimal_grid()
+   end subroutine test_advectiontype_integer_field_populated
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialsalinity_3d_field_populated, test_initialsalinity_3d_field_populated,
+   !> Verifies that an initialsalinity [Initial] block populates constituents(ISALT,:)
+   !! via the static 3D path: timespaceinitialfield (2D interp) + initialfield2Dto3D_dbl_indx.
+   !! constituents is pointered to by resolve_initial_3D_target and must be pre-allocated.
+   !! kbot and ktop must also be pre-allocated for initialfield2Dto3D_dbl_indx to iterate layers.
+   subroutine test_initialsalinity_3d_field_populated() bind(C)
+      use m_transportdata, only: constituents, ISALT, NUMCONST
+      use m_flow, only: ndkx, kmx, kbot, ktop, sa1
+      use m_flowparameters, only: jasal
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_alloc, only: realloc
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      character(len=*), parameter :: SAMPLE_FILE = "test_sal.xyz"
+      character(len=*), parameter :: EXT_FILE    = "test_sal.ext"
+
+      call create_file(SAMPLE_FILE, ["-1.0 -1.0  1.5", &
+                                      " 1.0 -1.0  1.5", &
+                                      " 0.0  1.0  1.5"])
+      call create_file(EXT_FILE, [ &
+                       "[Initial]", &
+                       "    quantity            = initialsalinity", &
+                       "    forcingFile         = "//SAMPLE_FILE, &
+                       "    forcingFileType     = sample", &
+                       "    interpolationMethod = triangulation"])
+
+      ! ARRANGE
+      call setup_minimal_grid()
+      ndxi    = ndx
+      ndx2D   = 0
+      kmx     = 0
+      ndkx    = ndx   ! for kmx=0: ndkx == ndx, one layer per cell
+      NUMCONST = 1
+      ISALT    = 1
+      jasal    = 1
+
+      constituents = 0.0_dp
+      call realloc(kbot, ndx, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndx, fill=1, keepExisting=.false.)
+      call realloc(sa1, ndx, fill=0.0_dp, keepExisting=.false.)
+      irefdate    = 20000101
+      tzone       = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Initial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for initialsalinity sample block")
+      call f90_expect_near(sa1(1), 1.5_dp, 1.0e-6_dp, &
+                           "sa1 should match the sample value after 2D interp + 3D expansion")
+
+      ! CLEANUP
+      jasal    = 0
+      NUMCONST = 0
+      ISALT    = 0
+      ndkx     = 0
+      kmx      = 0
+      ndxi     = 0
+      ndx2D    = 0
+      if (allocated(constituents)) deallocate (constituents)
+      if (allocated(kbot))         deallocate (kbot)
+      if (allocated(ktop))         deallocate (ktop)
+      call teardown_minimal_grid()
+   end subroutine test_initialsalinity_3d_field_populated
+   !$f90tw)
+
 end module test_init_spatial_fields_integration
