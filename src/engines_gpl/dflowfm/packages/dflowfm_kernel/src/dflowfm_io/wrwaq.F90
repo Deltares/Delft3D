@@ -470,9 +470,9 @@ contains
       write (lunhyd, '(a,a)') 'task      ', 'full-coupling'
 
       if (layertype == LAYTP_SIGMA) then ! sigma-layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured sigma-layers'
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
       elseif (layertype == LAYTP_Z) then ! z- or z-sigma-layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z- or z-sigma-layers'
+         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
       elseif (layertype == LAYTP_POLYGON_MIXED) then
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured polygon defined z-layers'
       elseif (layertype == LAYTP_DENS_SIGMA) then
