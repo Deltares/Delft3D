@@ -77,13 +77,6 @@ if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
 endif()
 
-# proj
-if(WIN32)
-    if(NOT TARGET proj)
-        include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/proj_configuration.cmake)
-    endif()
-endif(WIN32)
-
 # esmfsm
 if(NOT TARGET esmfsm_version_number)
     add_subdirectory(${checkout_src_root}/${esmfsm_version_number_module} esmfsm_version_number)
