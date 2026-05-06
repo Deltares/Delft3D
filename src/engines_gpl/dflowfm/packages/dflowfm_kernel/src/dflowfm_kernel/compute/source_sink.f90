@@ -1,7 +1,12 @@
 module m_source_sink
    use precision, only: dp
+   use m_missing, only: dmiss
 
    implicit none(type, external)
+
+   private
+
+   public :: source_sinks
 
    !> Type that contains all data for a single (linked) source/sink.
    type :: SourceSink
@@ -22,11 +27,9 @@ module m_source_sink
       real(kind=dp), dimension(2) :: discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2).
       real(kind=dp), dimension(2) :: discharge_sine !< [-] Sine of discharge on sink side (1) and source side (2).
 
-      real(kind=dp), dimension(:), allocatable :: all_discharges !< [m3/s,ppt,degC,kg/m3] Source/sink water discharge (1) and constituent concentrations of discharge (2:).
-      real(kind=dp), dimension(:), allocatable :: water_discharge !< [m3/s] Water discharge of source/sink.
-      real(kind=dp), dimension(:,:), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges on sink side (1) and source side (2).
+      real(kind=dp) :: water_discharge = 0.0_dp !< [m3/s] Water discharge of source/sink.
+      real(kind=dp), dimension(:), allocatable :: constituents = 0.0_dp !< [ppt,degC,kg/m3] Constituents of source/sink discharges on sink side (1) and source side (2).
    
-      real(kind=dp), dimension(:,:), allocatable :: reduction !< [-] Source/sink reduction array for partitioned models. 1 = sink side, 2 = source side.
       integer, dimension(:), allocatable :: extraction_warning !< [-] Issue a warning message if the extraction flux exceeds the cell volume (0 = no message, 1 = sink extraction too large, 2 = source extraction too large).
       logical :: add_k_to_turkin !< [-] Add k of sources to turkin (.false. = no, .true. = yes).
 
@@ -36,36 +39,46 @@ module m_source_sink
       integer, dimension(:), allocatable :: waq_index !< [-] Index array to map source/sink to waq source/sink arrays.
       real(kind=dp), dimension(:), allocatable :: cumulative_discharge_waq !< [m3/s] Cumulative discharge at source/sink within current waq-timestep.
       real(kind=dp), dimension(:), allocatable :: cumulative_discharge_waq_previous !< [m3/s] Cumulative discharge at source/sink within current waq-timestep at the beginning of the time step before possible reduction.
+   
    end type SourceSink
 
    !> Type that contains all source/sinks in the model.
    type :: AllSourceSinks
       private
 
-      integer :: number !< [-] Number of source/sinks in the model.
+      integer :: number = 0 !< [-] Number of source/sinks in the model.
       type(SourceSink), dimension(:), allocatable :: list !< [-] List of source/sinks in the model.
+      real(kind=dp), dimension(:,:), allocatable :: discharge_administration = 0.0_dp !< [m3/s,ppt,degC,kg/m3] Discharge administration for all source/sinks used for partitioned models.
+      real(kind=dp), dimension(:,:), allocatable :: all_discharges = 0.0_dp !< [m3/s,ppt,degC,kg/m3] Source/sink water discharge (1) and constituent concentrations of discharge (2:).
+   
    contains
       procedure :: initialize => initialize_all_source_sinks
       procedure :: add => add_source_sink
       procedure :: update_layer_indices => update_source_sink_layer_indices
       procedure :: set_discharges => set_source_sink_discharges
+
    end type AllSourceSinks
 
    type(AllSourceSinks), target :: source_sinks !< [-] All source/sinks in the model.
    
    contains
 
-   ! Type-bound precedures for AllSourceSInks
+   ! Type-bound precedures for AllSourceSinks
    ! ====================================================================================================
 
    !> Initializes the AllSourceSinks type by allocating the list of source/sinks based on the number of source/sinks in the model.
    subroutine initialize_all_source_sinks(self, number_source_sink)
+      use m_transport, only: numconst
+
       ! Parameters
       class(AllSourceSinks), intent(inout) :: self !< All source/sinks in the model.
       integer, intent(in) :: number_source_sink !< [-] Number of source/sinks in the model.
 
       self%number = number_source_sink
-      allocate(self%list(number_source_sink))      
+      allocate(self%list(number_source_sink))
+      allocate(self%discharge_administration(2*(1+numconst),number_source_sink))
+      allocate(self%all_discharges(numconst+1,number_source_sink))
+
    end subroutine initialize_all_source_sinks
 
    !> Adds a single source/sink to the AllSourceSinks type by filling in the data for the specified source/sink number.
@@ -120,6 +133,13 @@ module m_source_sink
             ! Point source/sinks are created as point source (therefore only indices(4) is filled)
             call find_nearest_flownodes(1, source_sink%x(1), source_sink%y(1), [name], source_sink%indices(4), jakdtree, -1, INDTP_ALL)
 
+            if (present(area)) then
+               if (area /= dmiss .and. area /= 0.0_dp) then
+                  write (msgbuf, '(a)') 'Area specified for point source/sink ['//trim(name)//'] will be ignored since momentum transport only applies to linked sources/sinks.'
+                  call warn_flush()
+               end if
+            end if
+
          else
             ! Get flow cell indices for sink and source side.
             call find_nearest_flownodes(1, source_sink%x(1), source_sink%y(1), [name], source_sink%indices(1), jakdtree, -1, INDTP_ALL)
@@ -145,29 +165,26 @@ module m_source_sink
          ! Check if source/sink is outside model area (i.e. both flow cell indices are zero). If so, raise an error.
          if (source_sink%indices(1) == 0 .and. source_sink%indices(4) == 0) then
             err = DFM_WRONGINPUT
-            write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
+            write (msgbuf, '(a)') 'Source/sink is outside model area for '//trim(name)
             call err_flush()
          end if
       end associate
 
-      ! Check if the FROM point of the current source/sink coincides with the FROM or TO point of any existing source/sinks. If so, raise a warning.
+      ! Check if the sink location of the current source/sink coincides with the sink or source location of any existing source/sinks. If so, raise a warning.
       do i = 1, number - 1
          if (self%list(i)%indices(1) /= 0 .and. self%list(i)%indices(1) == self%list(number)%indices(1)) then
-            write (msgbuf, '(4a)') 'FROM point of ', trim(self%list(number)%name), ' coincides with FROM point of ', trim(self%list(i)%name)
+            write (msgbuf, '(a)') 'Sink location of '//trim(self%list(number)%name)//' coincides with sink location of '//trim(self%list(i)%name)
             call warn_flush()
          else if (self%list(i)%indices(4) /= 0 .and. self%list(i)%indices(4) == self%list(number)%indices(1)) then
-            write (msgbuf, '(4a)') 'FROM point of ', trim(self%list(number)%name), ' coincides with TO   point of ', trim(self%list(i)%name)
+            write (msgbuf, '(a)') 'Sink location of '//trim(self%list(number)%name)//' coincides with source location of '//trim(self%list(i)%name)
             call warn_flush()
          end if 
       end do
 
    end function add_source_sink
 
-
    !> Updates the layer indices administration for all source/sinks.
    subroutine update_source_sink_layer_indices(self)
-      use m_missing, only: dmiss
-
       ! Parameters
       class(AllSourceSinks), intent(inout) :: self !< All source/sinks in the model.
 
@@ -179,26 +196,14 @@ module m_source_sink
          associate (source_sink => self%list(i_source_sink))
             ! Source-side
             if (source_sink%indices(1) /= 0) then
-
-               if (source_sink%z_bottom(1) /= dmiss) then
-                  source_sink%indices(2) = find_layer_index(source_sink%indices(1), source_sink%z_bottom(1))
-               end if
-               if (source_sink%z_top(1) /= dmiss) then
-                  source_sink%indices(3) = find_layer_index(source_sink%indices(1), source_sink%z_top(1))
-               end if
-
+               source_sink%indices(2) = find_layer_index(source_sink%indices(1), source_sink%z_bottom(1))
+               source_sink%indices(3) = find_layer_index(source_sink%indices(1), source_sink%z_top(1))
             end if
 
             ! Sink-side
             if (source_sink%indices(4) /= 0) then
-
-               if (source_sink%z_bottom(2) /= dmiss) then
-                  source_sink%indices(5) = find_layer_index(source_sink%indices(4), source_sink%z_bottom(2))
-               end if
-               if (source_sink%z_top(2) /= dmiss) then
-                  source_sink%indices(6) = find_layer_index(source_sink%indices(4), source_sink%z_top(2))
-               end if
-
+               source_sink%indices(5) = find_layer_index(source_sink%indices(4), source_sink%z_bottom(2))
+               source_sink%indices(6) = find_layer_index(source_sink%indices(4), source_sink%z_top(2))
             end if
          end associate
       end do
@@ -217,6 +222,9 @@ module m_source_sink
       do i_source_sink = 1, self%number
          associate (source_sink => self%list(i_source_sink))
             
+            if (self%all_discharges(1,i_source_sink) > 0.0_dp) then
+               qin(source_sink%indices(4)) = self%all_discharges(1,i_source_sink)
+            end if
             
          end associate
       end do
