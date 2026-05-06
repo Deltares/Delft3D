@@ -159,7 +159,7 @@ contains
       ierr = DFM_WRONGINPUT
 
       num_points = size(x_points)
-      if (num_points == 0 .or. num_points > 2) then
+      if (num_points == 0 .or. num_points > 2) then ! For now only support 1 & 2 point polylines
          return
       end if
 
