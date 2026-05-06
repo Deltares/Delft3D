@@ -46,22 +46,22 @@ namespace pre_c_sumo
         const std::vector<std::string> constituent_names = {"temperature", "salinity",
                                                             "tracer"}; // TODO: derive from settings
 
-        for (const auto&& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
+        for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
             const auto mapping_index = static_cast<std::size_t>(index);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
 
             auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
-                                         const std::string& name, const std::size_t& ambient_point_index) {
+                                         const std::string_view& name, const std::size_t& ambient_point_index) {
                 return quantities[name][m.first_ambient_point_index + ambient_point_index];
             };
 
-            auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](const std::string& name) {
-                return quantities[name][m.diffuser_index];
-            };
+            auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
+                                          const std::string_view& name) { return quantities[name][m.diffuser_index]; };
 
-            auto get_intake_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](const std::string& name) {
+            auto get_intake_value = [&quantities = csumo_2d_mesh.quantities,
+                                     &m = mapping](const std::string_view& name) {
                 return m.has_intake ? quantities[name][m.intake_index] : 0.0;
             };
 
@@ -80,7 +80,7 @@ namespace pre_c_sumo
             };
 
             std::vector<FarFieldPoint2D> ambient_points{};
-            for (const auto&& [position_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
+            for (const auto& [position_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
             {
                 const std::size_t ambient_index = static_cast<std::size_t>(position_index);
                 ambient_points.emplace_back(

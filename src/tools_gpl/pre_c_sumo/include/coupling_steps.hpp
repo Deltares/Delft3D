@@ -21,28 +21,28 @@ namespace pre_c_sumo
      * files parsing and the conversion/communication of NF/FF data.
      */
     // TODO?: Move/fold into class(es)?
-    const std::string water_levels_id = "sea_surface_height";
-    const std::string bed_levels_id = "sea_floor_depth_below_geoid";
-    const std::string water_depth_id = "sea_floor_depth_below_sea_surface";
+    constexpr std::string_view water_levels_id = "sea_surface_height";
+    constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
+    constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
 
-    typedef struct
+    struct DiffuserMapping
     {
         size_t diffuser_index;
         bool has_intake;
         size_t intake_index;
         size_t number_of_ambient_points;
         size_t first_ambient_point_index;
-    } DiffuserMapping;
+    };
 
-    typedef struct
+    struct Mesh
     {
         std::string name;
         std::vector<double> coordinates;
         std::vector<int> vertex_ids;
         std::vector<DiffuserMapping> forward_map;
         size_t number_of_nodes;
-        std::unordered_map<std::string, std::vector<double>> quantities;
-    } Mesh;
+        std::unordered_map<std::string_view, std::vector<double>> quantities;
+    };
 
     /**
      * @brief Read and parse the C-SUMO settings file.
@@ -63,7 +63,7 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, const double coupling_time_step);
+    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, double coupling_time_step);
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.

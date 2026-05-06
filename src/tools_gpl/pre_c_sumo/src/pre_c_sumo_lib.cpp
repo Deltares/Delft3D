@@ -14,7 +14,8 @@ namespace pre_c_sumo
     /**
      * @details Construct forward mapping from settings to data node indices.
      */
-    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index)
+    static DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting,
+                                               const std::size_t diffuser_index)
     {
         const bool has_intake = diffuser_setting.intake.has_value();
         const std::size_t intake_index = has_intake ? diffuser_index + 1 : 0;
@@ -34,30 +35,30 @@ namespace pre_c_sumo
      * The latter allows us to find the index of values belonging to diffusers, intakes and ambient points
      * in preCICE communication buffers in O(1) time.
      */
-    Mesh getMesh2d(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings)
+    static Mesh getMesh2d(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings)
     {
-        const int dimensions = 2;
+        constexpr int dimensions = 2;
         Mesh mesh = {};
         mesh.name = csumo_mesh_name;
-        for (const DiffuserSettings& d : csumo_settings.diffusers())
+        for (const DiffuserSettings& diffuser : csumo_settings.diffusers())
         {
             const std::size_t diffuser_index_mapping = mesh.coordinates.size() / dimensions;
-            mesh.coordinates.emplace_back(d.position.x_coordinate); // diffuser position x
-            mesh.coordinates.emplace_back(d.position.y_coordinate); // diffuser position y
+            mesh.coordinates.emplace_back(diffuser.position.x_coordinate); // diffuser position x
+            mesh.coordinates.emplace_back(diffuser.position.y_coordinate); // diffuser position y
 
-            if (d.intake.has_value()) // (optional intake)
+            if (diffuser.intake.has_value()) // (optional intake)
             {
-                mesh.coordinates.emplace_back(d.intake.value().x_coordinate); // intake point x
-                mesh.coordinates.emplace_back(d.intake.value().y_coordinate); // intake point y
+                mesh.coordinates.emplace_back(diffuser.intake.value().x_coordinate); // intake point x
+                mesh.coordinates.emplace_back(diffuser.intake.value().y_coordinate); // intake point y
             }
 
-            for (const parsing_utils::Point2D& p : d.ambient_positions)
+            for (const parsing_utils::Point2D& position : diffuser.ambient_positions)
             {
-                mesh.coordinates.emplace_back(p.x_coordinate);
-                mesh.coordinates.emplace_back(p.y_coordinate);
+                mesh.coordinates.emplace_back(position.x_coordinate);
+                mesh.coordinates.emplace_back(position.y_coordinate);
             }
 
-            mesh.forward_map.emplace_back(makeDiffuserMapping(d, diffuser_index_mapping));
+            mesh.forward_map.emplace_back(makeDiffuserMapping(diffuser, diffuser_index_mapping));
         }
 
         mesh.number_of_nodes = mesh.coordinates.size() / dimensions;
