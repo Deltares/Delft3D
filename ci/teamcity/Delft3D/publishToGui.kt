@@ -18,10 +18,10 @@ object PublishToGui : BuildType({
     }
 
     params {
-        param("DIMR_nuget_version", "%release_version%")
+        param("tc_build_number", "%build.number%")
+        param("DIMR_nuget_version", "%release_version%_%tc_build_number%")
         param("grid_geom_version", "1.0.0")
         param("ec_module_version", "1.0.0")
-        param("tc_build_number", "%build.number%")
     }
 
     vcs {
@@ -47,10 +47,10 @@ object PublishToGui : BuildType({
             scriptMode = script {
                 content = """
                     ${'$'}pathToDll = "source\x64\lib\ec_module.dll"
-                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw_%tc_build_number%
+                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
-                    	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion']"
+                    	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion:-%tc_build_number%']"
                     } else {
                         Write-Output "Unable to retrieve ECModule version."
                         exit 1
@@ -73,10 +73,10 @@ object PublishToGui : BuildType({
             scriptMode = script {
                 content = """
                     ${'$'}pathToDll = "source\x64\lib\gridgeom.dll"
-                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw_%tc_build_number%
+                    ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
-                    	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion']"
+                    	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion:-%tc_build_number%']"
                     } else {
                         Write-Output "Unable to retrieve GridGeom version."
                         exit 1
