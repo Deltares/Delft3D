@@ -61,7 +61,7 @@ subroutine flow_init (mode, it01, tscale)
 !
    integer, intent(in) :: mode
    integer             :: it01
-   real                :: tscale
+   real(hp)            :: tscale
 !
 ! Local variables
 !
