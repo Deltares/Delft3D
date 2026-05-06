@@ -481,7 +481,7 @@ integer function GetMessage_MH(imessage, message)
    integer,            intent(in)  :: imessage  !< Position in the message queue.
    character(len=*),   intent(out) :: message   !< The message text.
 
-   message = messages(imessage)(1:len(message))
+   message = messages(imessage)
    GetMessage_MH = levels(imessage)
 end function
 

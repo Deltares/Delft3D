@@ -103,6 +103,8 @@ module timespace_parameters
    integer, parameter :: OPERAND_MAXIMUM = 5 !< Take the maximum of existing and new value.
 contains
 
+!> Converts operand string to an operand enum integer. Supports both the new operand strings (e.g. 'override') and the legacy
+!! single-character strings (e.g. 'O') for backward compatibility. Returns OPERAND_UNKNOWN when an invalid operand string is given.
    function convert_operand_string_to_integer(string) result(operand)
       character(len=*), intent(in) :: string !< operand string
       integer :: operand !< operand enumeration integer
@@ -126,6 +128,7 @@ contains
       end select
    end function convert_operand_string_to_integer
 
+!> Converts a legacy operand string (e.g. 'O') to an operand enum integer. Returns OPERAND_UNKNOWN when an invalid operand string is given.
    function convert_legacy_operand_string_to_integer(string) result(operand)
       character(len=*), intent(in) :: string !< operand string
       integer :: operand !< operand enumeration integer
