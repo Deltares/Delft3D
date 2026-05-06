@@ -2445,7 +2445,7 @@ contains
       use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
                             lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
-      use string_module, only: str_token
+      use string_module, only: str_token, str_tolower
 
       implicit none
       character(len=MAXSTRLEN), intent(in) :: item_name
@@ -2462,7 +2462,7 @@ contains
          return
       end if
 
-      select case (field_name)
+      select case (str_tolower(field_name))
       case ("water_discharge")
          if (apply_transport(item_index) == 1 .or. kmx == 0) then
             c_lateral_pointer = c_loc(qplat(1:num_layers, item_index))
