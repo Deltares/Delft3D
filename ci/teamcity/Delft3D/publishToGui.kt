@@ -50,7 +50,7 @@ object PublishToGui : BuildType({
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
-                    	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion-%tc_build_number%']"
+                    	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion.%tc_build_number%']"
                     } else {
                         Write-Output "Unable to retrieve ECModule version."
                         exit 1
@@ -76,7 +76,7 @@ object PublishToGui : BuildType({
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
-                    	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion-%tc_build_number%']"
+                    	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion.%tc_build_number%']"
                     } else {
                         Write-Output "Unable to retrieve GridGeom version."
                         exit 1
