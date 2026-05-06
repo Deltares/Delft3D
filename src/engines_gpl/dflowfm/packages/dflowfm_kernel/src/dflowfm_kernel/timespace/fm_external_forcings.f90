@@ -1724,11 +1724,14 @@ contains
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new
+      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
       integer :: iresult
 
       call setup(iresult)
+      !if (iresult == DFM_NOERR) then
+      !   call init_new(md_inifieldfile, iresult)
+      !end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
