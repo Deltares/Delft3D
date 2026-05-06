@@ -21,6 +21,7 @@ object PublishToGui : BuildType({
         param("DIMR_nuget_version", "%release_version%")
         param("grid_geom_version", "1.0.0")
         param("ec_module_version", "1.0.0")
+        param("tc_build_number", "%build.number%")
     }
 
     vcs {
@@ -35,7 +36,7 @@ object PublishToGui : BuildType({
             name = "Pack DIMR NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/Dimr.Libs/Dimr.Libs.nuspec"
-            version = "%DIMR_nuget_version%-%build.number%"
+            version = "%DIMR_nuget_version%-%tc_build_number%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
@@ -49,7 +50,7 @@ object PublishToGui : BuildType({
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
-                    	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion-%build.number%']"
+                    	Write-Output "##teamcity[setParameter name='ec_module_version' value='${'$'}fileVersion-%tc_build_number%']"
                     } else {
                         Write-Output "Unable to retrieve ECModule version."
                         exit 1
@@ -75,7 +76,7 @@ object PublishToGui : BuildType({
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
-                    	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion-%build.number%']"
+                    	Write-Output "##teamcity[setParameter name='grid_geom_version' value='${'$'}fileVersion-%tc_build_number%']"
                     } else {
                         Write-Output "Unable to retrieve GridGeom version."
                         exit 1
@@ -96,7 +97,7 @@ object PublishToGui : BuildType({
             name = "Publish NuGet artifacts to Nexus"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             packages = "target/*.nupkg"
-            serverUrl = "https://artifacts.deltares.nl/repository/nuget-release/"
+            serverUrl = "https://artifacts.deltares.nl/repository/nuget-dev/"
             apiKey = "%nexus_nuget_apikey%"
         }
     }
