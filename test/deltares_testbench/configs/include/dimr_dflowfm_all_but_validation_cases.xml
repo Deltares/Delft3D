@@ -6104,6 +6104,26 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f022_c108_settling_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-05-06T07:31:54.202000">e02_dflowfm/f022_morphology_2D/c108_settling_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately 1e-4 --> 
+      			<parameter name="sed" toleranceAbsolute="1.05e-4" />
+      			<parameter name="waterlevel" toleranceAbsolute="1e-10" />
+      			<parameter name="bedlevel" toleranceAbsolute="1e-6" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -1.5e-5 to 1.5e-5 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="2e-5" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>
     <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
       <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
       <maxRunTime>20.0</maxRunTime>
