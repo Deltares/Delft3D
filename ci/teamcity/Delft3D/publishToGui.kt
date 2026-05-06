@@ -18,7 +18,7 @@ object PublishToGui : BuildType({
     }
 
     params {
-        param("DIMR_nuget_version", "%release_version%-%build.number%")
+        param("DIMR_nuget_version", "%release_version%")
         param("grid_geom_version", "1.0.0")
         param("ec_module_version", "1.0.0")
     }
@@ -35,7 +35,7 @@ object PublishToGui : BuildType({
             name = "Pack DIMR NuGet"
             toolPath = "%teamcity.tool.NuGet.CommandLine.DEFAULT%"
             paths = "ci/nuget/Dimr.Libs/Dimr.Libs.nuspec"
-            version = "%DIMR_nuget_version%"
+            version = "%DIMR_nuget_version%-%build.number%"
             outputDir = "target"
             cleanOutputDir = false
             publishPackages = true
