@@ -1397,6 +1397,7 @@ contains
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
+               num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + bubblescreen%num_flowcells
                bubblescreen%total_area = compute_bubblescreen_area(bubblescreen)
             end if
 
