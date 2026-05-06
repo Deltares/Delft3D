@@ -85,6 +85,7 @@ class NetcdfConan(ConanFile):
         tc.variables["NC_FIND_SHARED_LIBS"] = (
             self.options.with_hdf5 and self.dependencies["hdf5"].options.shared
         )
+        tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(self.settings.build_type)
         tc.generate()
 
         tc = CMakeDeps(self)

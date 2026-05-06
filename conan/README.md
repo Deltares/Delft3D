@@ -3,6 +3,16 @@
 This folder contains custom Conan 2 recipes for third-party libraries that are
 not available (or not in the required version) from conan-center-index.
 
+## Clean cache (optional)
+
+If you want to start with a clean conan cache, use the following commands:
+
+```bash
+conan remove "*" -c 
+conan cache clean
+```
+
+
 ## Building packages
 
 Build the packages in order (each depends on the previous):
