@@ -7,6 +7,13 @@
 
 namespace pre_c_sumo
 {
+    struct ZSpecification
+    {
+        bool is_2d;
+        double z_min;
+        double z_step;
+        double z_max;
+    };
     /**
      * @brief Entry point into the C-SUMO preCICE library.
      *
