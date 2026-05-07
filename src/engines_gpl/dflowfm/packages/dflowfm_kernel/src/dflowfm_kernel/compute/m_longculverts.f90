@@ -462,7 +462,6 @@ contains
       type(tree_data), pointer :: str_ptr
       character(len=IdLen) :: typestr
       character(len=IdLen) :: st_id
-      character(len=IdLen) :: csDefId
       character(len=IdLen) :: txt
       integer :: readerr, nstr, i, numcoords
       integer, allocatable, dimension(:) :: links
@@ -564,7 +563,7 @@ contains
                call prop_get(str_ptr, '', 'contactId', longculverts(nlongculverts)%contactID, success)
             end if
             if (success) then
-               call prop_get(str_ptr, '', 'csDefId', csDefId, success)
+               call prop_get(str_ptr, '', 'csDefId', longculverts(nlongculverts)%csDefId, success)
                if (.not. success) then
                   call SetMessage(LEVEL_ERROR, 'csDefId not found for long culvert: '//trim(st_id))
                end if
@@ -579,7 +578,7 @@ contains
             longculverts(nlongculverts)%netlinks = -999
 
             if (newculverts) then
-               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, csDefId, longculverts(nlongculverts)%bl, iref)
+               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, longculverts(nlongculverts)%csDefId, longculverts(nlongculverts)%bl, iref)
                if (iref > 0) then
                   ! Use top (#2) of tabulated cross section definition to derive width and height
                   longculverts(nlongculverts)%width = network%CSDefinitions%Cs(iref)%totalwidth(2)
@@ -702,6 +701,7 @@ contains
    subroutine longculvertsToProfs(skiplinks)
       use network_data
       use m_flowgeom
+      use unstruc_channel_flow, only: network
 
       logical, intent(in) :: skiplinks !< Skip determining the flow links or not
 
@@ -773,10 +773,17 @@ contains
             end do
             Lf = abs(longculverts(ilongc)%flowlinks(1))
             if (Lf > 0) then
+               block
+                  character(len=idLen) :: link_id
+                  if (longculverts(ilongc)%is_2D2D()) then
+                     link_id = longculverts(ilongc)%contactId
+                  else
+                     link_id = longculverts(ilongc)%branchId
+                  end if
+                  call add_longculvert_1D2D_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
+               end block
+
                wu(Lf) = longculverts(ilongc)%width
-               prof1D(1, Lf) = wu(Lf)
-               prof1D(2, Lf) = longculverts(ilongc)%height
-               prof1D(3, Lf) = -2
                bob(1, Lf) = longculverts(ilongc)%bl(1)
                bob(2, Lf) = bl(ln(2, Lf))
             end if
@@ -1239,7 +1246,48 @@ contains
       end if
 
    end subroutine addlongculvertcrosssections
-   !> Add new branch iformation to the network. Only add necessary information for long culverts (incomplete!)
+
+   !> add special 1D2D crossection for the longculvert and add it to the line2cross array
+   subroutine add_longculvert_1D2D_crosssection(network, flowlink, link_id, cs_def_id)
+      use precision, only: dp
+      use m_hash_search, only: hashsearch
+      use m_CrossSections, only: realloc
+      use m_readCrossSections, only: finalizeCrs
+      use m_network, only: t_network
+      use m_GlobalParameters, only: t_chainage2cross
+
+      type(t_network), intent(inout) :: network !< Network structure
+      integer, intent(in) :: flowlink !< Flowlink number on which to place the cross section. Should be 1D2D link belonging to the long culvert
+      character(len=IdLen), intent(in) :: link_id !< Branch id or contact id on which to place the cross section
+      character(len=IdLen), intent(in) :: cs_def_id !< Id of cross section definition
+
+      integer :: idef, icrs
+      character(len=16) :: kchar
+
+      ! Find cross section definition indices by ID.
+      idef = hashsearch(network%CSDefinitions%hashlist, cs_def_id)
+      if (idef <= 0) then
+         call SetMessage(LEVEL_ERROR, 'Cross-section definition not found: ' // trim(cs_def_id))
+         return
+      end if
+
+      ! Create new cross section instance of cross section definition `idef`.
+      if (network%crs%count + 1 > network%crs%size) then
+         call realloc(network%crs)
+      end if
+      icrs = network%crs%count + 1
+      
+      associate(cross_section => network%crs%cross(icrs))
+         write (kchar, '(I0)') flowlink
+         cross_section%csid = trim(link_id) // "_" // trim(kchar)
+         call finalizeCrs(network, cross_section, idef, icrs)
+      end associate
+
+      ! Assign new cross section along flowlink.
+      network%adm%line2cross(flowlink, :) = t_chainage2cross(c1=icrs, c2=icrs, f=1.0_dp, distance=0.0_dp)
+   end subroutine add_longculvert_1D2D_crosssection
+
+   !> Add new branch information to the network. Only add necessary information for long culverts (incomplete!)
    subroutine add_longculvert_branch(network, longculvert)
       use precision, only: dp
       use m_hash_search

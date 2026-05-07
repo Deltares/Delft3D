@@ -360,39 +360,70 @@ contains
       ! Construct the target field and the target item
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
+
       if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
                                              targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
                                              dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
-         return
+
+         if (present(tgt_item1)) then
+            targetItemPtr1 => tgt_item1
+            if (present(tgt_data1)) then
+               if (associated(tgt_data1)) then
+                  dataPtr1 => tgt_data1
+               end if
+            end if
+         else
+            return !> no known name and also no data pointer provided for lookup bypass
+         end if
       end if
+
       continue
 
       ! Overrule hard-coded pointers to target data by optional pointers passed in the call
       if (present(tgt_data1)) then
-         dataPtr1 => tgt_data1
+         if (associated(tgt_data1)) then
+            dataPtr1 => tgt_data1
+         end if
       end if
       if (present(tgt_data2)) then
-         dataPtr2 => tgt_data2
+         if (associated(tgt_data2)) then
+            dataPtr2 => tgt_data2
+         end if
       end if
       if (present(tgt_data3)) then
-         dataPtr3 => tgt_data3
+         if (associated(tgt_data3)) then
+            dataPtr3 => tgt_data3
+         end if
       end if
       if (present(tgt_data4)) then
-         dataPtr4 => tgt_data4
+         if (associated(tgt_data4)) then
+            dataPtr4 => tgt_data4
+         end if
       end if
 
-      ! Overrule hard-coded pointers to target items by optional pointers passed in the call
-      if (present(tgt_item1)) then
-         targetItemPtr1 => tgt_item1
+      ! Overrule hard-coded pointers to target items, but ONLY when the caller also
+      ! explicitly provides the backing data — this distinguishes a caller that wants
+      ! a new item created (lateral/param, tgt_data1 associated) from one relying on
+      ! the hardcoded field (meteo compound, tgt_data1 null).
+      if (present(tgt_item1) .and. present(tgt_data1)) then
+         if (associated(tgt_data1)) then
+            targetItemPtr1 => tgt_item1
+         end if
       end if
-      if (present(tgt_item2)) then
-         targetItemPtr2 => tgt_item2
+      if (present(tgt_item2) .and. present(tgt_data2)) then
+         if (associated(tgt_data2)) then
+            targetItemPtr2 => tgt_item2
+         end if
       end if
-      if (present(tgt_item3)) then
-         targetItemPtr3 => tgt_item3
+      if (present(tgt_item3) .and. present(tgt_data3)) then
+         if (associated(tgt_data3)) then
+            targetItemPtr3 => tgt_item3
+         end if
       end if
-      if (present(tgt_item4)) then
-         targetItemPtr4 => tgt_item4
+      if (present(tgt_item4) .and. present(tgt_data4)) then
+         if (associated(tgt_data4)) then
+            targetItemPtr4 => tgt_item4
+         end if
       end if
 
       ! Create the field and the target item, and if needed additional ones.

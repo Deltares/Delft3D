@@ -238,6 +238,11 @@ contains
          case ('precice')
             call precicef_get_version_information(msgbuf, LEN(msgbuf))
             write (*, '(a)') 'Using preCICE: '//trim(msgbuf)
+            write (*, '(a)') ' '
+            write (*, '(a)') 'WARNING: Known issue:'
+            write (*, '(a)') '         The D-Flow FM 3D mesh is redefined at the end of each preCICE time-window, before writing data.'
+            write (*, '(a)') '         The first remesh does not work. The data being written is correct,' 
+            write (*, '(a)') '         but their vertical location might be incorrect (at the first preCICE time-window only).'
             call precice_adapter_enable()
 
          case ('h', 'help')
