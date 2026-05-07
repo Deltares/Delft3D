@@ -4,9 +4,12 @@ endif()
 
 if(NOT TARGET mkl_sequential)
     add_library(mkl_sequential SHARED IMPORTED GLOBAL)
+
+    file(TO_CMAKE_PATH "$ENV{ONEAPI_ROOT}" oneapi_root_cmake)
+
     set_target_properties(mkl_sequential PROPERTIES
-        IMPORTED_LOCATION "$ENV{ONEAPI_ROOT}/mkl/latest/bin/mkl_sequential.2.dll"
-        IMPORTED_IMPLIB "$ENV{ONEAPI_ROOT}/mkl/latest/lib/mkl_sequential.lib"
+        IMPORTED_LOCATION "${oneapi_root_cmake}/mkl/latest/bin/mkl_sequential.2.dll"
+        IMPORTED_IMPLIB "${oneapi_root_cmake}/mkl/latest/lib/mkl_sequential.lib"
     )
 endif()
 
@@ -21,7 +24,7 @@ if(NOT TARGET petsc)
 endif()
 
 install(DIRECTORY ${petsc_libdir} DESTINATION lib
-	FILES_MATCHING
-	PATTERN "*.exe"
-	PATTERN "*.dll"
+    FILES_MATCHING
+    PATTERN "*.exe"
+    PATTERN "*.dll"
 )

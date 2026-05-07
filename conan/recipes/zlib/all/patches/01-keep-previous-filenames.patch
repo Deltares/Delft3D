@@ -30,8 +30,8 @@ index e103c40..6c03482 100644
 +        # always zlib1.dll on Windows (consistency with previous versions of the recipe)
 +        set_target_properties(zlib PROPERTIES PREFIX "" RUNTIME_OUTPUT_NAME "zlib1")
 +        if(WIN32 AND NOT MINGW)
-+            # "zdll.lib" import library for "zlib1.dll" on Windows
-+            set_target_properties(zlib PROPERTIES ARCHIVE_OUTPUT_NAME "zdll")
++            # "zdll1.lib" import library for "zlib1.dll" on Windows (name must match for ConanDeps to correctly copy DLL)
++            set_target_properties(zlib PROPERTIES ARCHIVE_OUTPUT_NAME "zlib1")
 +        endif()
 +    endif()
      target_include_directories(
