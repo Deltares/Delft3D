@@ -557,7 +557,7 @@ contains
       real :: def_enddir
       real :: def_freqmin
       real :: def_freqmax
-      real :: tscale
+      real(hp) :: tscale
       real, dimension(2) :: xy
       character(10) :: exemode
       character(10) :: versionstring
@@ -768,7 +768,7 @@ contains
       sr%tzone = 0.0
       call prop_get(mdw_ptr, 'General', 'TZone', sr%tzone)
       !
-      tscale = 60.0
+      tscale = 60.0_hp
       call prop_get(mdw_ptr, 'General', 'TScale', tscale)
       call settscale(wavedata%time, tscale)
       !
@@ -1641,9 +1641,8 @@ contains
             ! Read vegetation map
             !
             call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
-            if (dom%vegfil == '') then
+            if (dom%vegetation> 0 .and. dom%vegfil == '') then
                write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
-               !call handle_errors_mdw(sr)
             end if
          end if
          !
