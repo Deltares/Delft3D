@@ -9,13 +9,13 @@
 #include "csumo_settings_reader.hpp"
 #include "coupling_steps.hpp"
 
-namespace pre_c_sumo
+namespace
 {
+    using namespace pre_c_sumo;
     /**
      * @details Construct forward mapping from settings to data node indices.
      */
-    static DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting,
-                                               const std::size_t diffuser_index)
+    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index)
     {
         const bool has_intake = diffuser_setting.intake.has_value();
         const std::size_t intake_index = has_intake ? diffuser_index + 1 : 0;
@@ -35,7 +35,7 @@ namespace pre_c_sumo
      * The latter allows us to find the index of values belonging to diffusers, intakes and ambient points
      * in preCICE communication buffers in O(1) time.
      */
-    static Mesh getMesh2d(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings)
+    Mesh getMesh2d(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings)
     {
         constexpr int dimensions = 2;
         Mesh mesh = {};
@@ -66,7 +66,10 @@ namespace pre_c_sumo
 
         return mesh;
     }
+} // namespace
 
+namespace pre_c_sumo
+{
     /**
      * @details Entry point into the preC-SUMO preCICE library.
      */
@@ -106,11 +109,10 @@ namespace pre_c_sumo
         participant.writeData("sources_sinks_nodes", "sources_sinks", sources_sinks_nodes_ids, sources_sinks);
 
         participant.initialize();
-        double coupling_time_step;
         double current_time_seconds = 0.0;
         while (participant.isCouplingOngoing())
         {
-            coupling_time_step = participant.getMaxTimeStepSize();
+            double coupling_time_step = participant.getMaxTimeStepSize();
 
             receiveFFData(participant, csumo_2d_mesh, coupling_time_step);
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, current_time_seconds);
