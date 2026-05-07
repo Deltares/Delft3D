@@ -64,6 +64,4 @@ test/deltares_testbench/data/cases/*
 
 # precice
 examples/dflowfm/**/precice_debug_output.txt
-examples/dflowfm/**/precice-profiling/**
 examples/dflowfm/**/precice-run/**
-examples/dflowfm/**/precice-exports/**
