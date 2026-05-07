@@ -127,6 +127,20 @@ class ProjConan(ConanFile):
 
         replace_in_file(self, cmakelists, "/W4", "")
 
+        # Fix unquoted set() for IntelLLVM -fno-fast-math flags (causes shell splitting errors)
+        replace_in_file(
+            self,
+            cmakelists,
+            "set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} -fno-fast-math)",
+            'set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-fast-math")',
+        )
+        replace_in_file(
+            self,
+            cmakelists,
+            "set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -fno-fast-math)",
+            'set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-fast-math")',
+        )
+
         # Fix up usage of SQLite3 finder outputs
         if Version(self.version) < "9.4.0":
             rm(self, "FindSqlite3.cmake", os.path.join(self.source_folder, "cmake"))

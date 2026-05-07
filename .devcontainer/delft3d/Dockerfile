@@ -29,9 +29,9 @@ EOF
 USER dev
 WORKDIR /home/dev
 
-# Create mount points for bash history and MinIO credentials in the user's home directory.
+# Create mount points for bash history, MinIO credentials, and Conan in the user's home directory.
 RUN <<"EOF"
-mkdir ~/.history ~/.aws
+mkdir ~/.history ~/.aws ~/.conan2
 touch ~/.history/.bash_history
 EOF
 

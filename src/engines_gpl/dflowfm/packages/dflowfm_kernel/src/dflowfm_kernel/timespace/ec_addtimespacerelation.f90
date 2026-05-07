@@ -402,7 +402,7 @@ contains
       end if
 
       ! Overrule hard-coded pointers to target items, but ONLY when the caller also
-      ! explicitly provides the backing data — this distinguishes a caller that wants
+      ! explicitly provides the backing data - this distinguishes a caller that wants
       ! a new item created (lateral/param, tgt_data1 associated) from one relying on
       ! the hardcoded field (meteo compound, tgt_data1 null).
       if (present(tgt_item1) .and. present(tgt_data1)) then

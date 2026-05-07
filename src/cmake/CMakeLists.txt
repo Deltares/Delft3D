@@ -27,8 +27,8 @@ set(checkout_root ${checkout_src_root}/..)
 # TODO ------------------------- temporary conan stuff -------------------------
 list(PREPEND CMAKE_PREFIX_PATH "${checkout_root}/build/generators")
 
-find_package(netCDF REQUIRED)
-find_package(netcdf-fortran REQUIRED)
+find_package(netCDF CONFIG REQUIRED)
+find_package(netCDF-Fortran CONFIG REQUIRED)
 
 # TODO ----------------------- end temporary conan stuff -----------------------
 

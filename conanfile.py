@@ -11,6 +11,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("hdf5/1.14.6")
         self.requires("netcdf/4.9.2")
         self.requires("netcdf-fortran/4.6.2")
+        self.requires("libtiff/4.7.1")
         self.requires("proj/9.3.1")
         self.requires("gdal/3.12.1")
 
@@ -24,6 +25,7 @@ class Delft3DRecipe(ConanFile):
         self.options["netcdf-fortran"].shared = True
         self.options["proj"].shared = True
         self.options["gdal"].shared = True
+        self.options["libtiff"].shared = True
         # disable DAP and byterange support, this requires dependencies like libcurl are not needed
         self.options["netcdf"].dap = False
         self.options["netcdf"].byterange = False
