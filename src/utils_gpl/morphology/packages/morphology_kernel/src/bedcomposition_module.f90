@@ -249,7 +249,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
     type(bedcomp_data)                                                                           :: this 
     real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in)  :: dbodsd  !  change in sediment composition, units : kg/m2
     real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(out) :: dz      !  change in bed level, units : m
-    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m 
+    real(fp), dimension(:), pointer                                                , intent(in)  :: dunelength   !  length of the dunes, units : m 
     real(fp)                                                                       , intent(in)  :: hdt          !  half time step
     real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in)  :: sbot    
     type(message_stack)                                                                          :: messages
@@ -1904,7 +1904,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     real(fp)                                :: mtot_ac      ! total mass in active layer
     real(fp)                                :: mtot_crs     ! total mass in coarse layer
     real(fp)                                :: mup          ! total mass that rises from coarse to active layer
-    real(fp)                                :: pi           ! 3.14....
     real(fp)                                :: pmob_ac      ! fraction mobile sediment in active layer
     real(fp)                                :: pmob_crs     ! fraction mobile sediment in coarse layer
     real(fp)                                :: sinkfrac     ! fraction immobile sediment that sinks from active to coarse layer
@@ -1933,8 +1932,6 @@ subroutine updcrslyr(this, nm, hdt, sbot, dunelength, thick, dmi)
     mobile          => this%state%mobile
     msed            => this%state%msed
     thlyr           => this%state%thlyr
-    !
-    pi = 4.0_fp*atan(1.0_fp)
     !
     ! compute mobile sediment fractions in active and coarse layer
     !

@@ -145,8 +145,8 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     integer                                                                          :: lsedtot       ! dito
     real(fp), dimension(lsedtot)        , optional                                   :: rhosol
     logical                                                                          :: spatial_bedform
-    real(fp), dimension(nmlbc:nmubc)                                                 :: bedformD50    !< 50-percentile of sediment diameters
-    real(fp), dimension(nmlbc:nmubc)                                                 :: bedformD90    !< 90-percentile of sediment diameters
+    real(fp), dimension(:), pointer                                                  :: bedformD50    !< 50-percentile of sediment diameters
+    real(fp), dimension(:), pointer                                                  :: bedformD90    !< 90-percentile of sediment diameters
     real(fp), dimension(nmlbc:nmubc)                                                 :: rksr          !< Ripple roughness height in zeta point
     real(fp), dimension(nmlbc:nmubc)                                                 :: rksmr         !< Mega-ripple roughness height in zeta point
     real(fp), dimension(nmlbc:nmubc)                                                 :: rksd          !< Dune roughness height in zeta point
