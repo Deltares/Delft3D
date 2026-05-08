@@ -22,6 +22,7 @@ module boundary_spectral_cache
 !
 !-------------------------------------------------------------------------------
 
+   use iso_fortran_env, only: int64
    use precision_basics, only: hp
    use time_module, only: datetimestring_to_seconds
 
@@ -34,14 +35,13 @@ module boundary_spectral_cache
    public :: reset_boundary_spectral_cache
    public :: resolve_boundary_spectral_file
 
-   integer, parameter :: cache_line_len = 2048
-   integer, parameter :: cache_file_growth = 8
-   integer, parameter :: cache_line_growth = 64
+   integer, parameter :: parser_chunk_size = 65536
+   integer, parameter :: copy_chunk_size = 1048576
 
    type spectral_block_type
       real(hp) :: time_sec = 0.0_hp
-      integer :: nlines = 0
-      character(cache_line_len), allocatable :: lines(:)
+      integer(int64) :: start_pos = 0_int64
+      integer(int64) :: end_pos = 0_int64
    end type spectral_block_type
 
    type spectral_file_cache_type
@@ -49,12 +49,12 @@ module boundary_spectral_cache
       logical :: loaded = .false.
       integer :: refdate = 0
       integer :: nblocks = 0
-      integer :: nheader_lines = 0
+      integer(int64) :: header_end_pos = 0_int64
+      integer(int64) :: filesize = 0_int64
       real(hp) :: last_start = -huge(0.0_hp)
       real(hp) :: last_end = -huge(0.0_hp)
       character(37) :: tempfile = ' '
       character(256) :: sourcefile = ' '
-      character(cache_line_len), allocatable :: header_lines(:)
       type(spectral_block_type), allocatable :: blocks(:)
    end type spectral_file_cache_type
 
@@ -128,21 +128,14 @@ contains
    subroutine clear_cache_entry(cache)
       type(spectral_file_cache_type), intent(inout) :: cache
 
-      integer :: i
-
-      if (allocated(cache%header_lines)) deallocate(cache%header_lines)
-      if (allocated(cache%blocks)) then
-         do i = 1, size(cache%blocks)
-            if (allocated(cache%blocks(i)%lines)) deallocate(cache%blocks(i)%lines)
-         end do
-         deallocate(cache%blocks)
-      end if
+      if (allocated(cache%blocks)) deallocate(cache%blocks)
 
       cache%enabled = .false.
       cache%loaded = .false.
       cache%refdate = 0
       cache%nblocks = 0
-      cache%nheader_lines = 0
+      cache%header_end_pos = 0_int64
+      cache%filesize = 0_int64
       cache%last_start = -huge(0.0_hp)
       cache%last_end = -huge(0.0_hp)
       cache%tempfile = ' '
@@ -163,48 +156,59 @@ contains
       integer :: nang
       integer :: nquant
       integer :: iquant
+      integer :: previous_block
+      integer(int64) :: current_pos
+      integer(int64) :: line_start
+      integer(int64) :: next_pos
       logical :: success
-      character(cache_line_len) :: line
-      character(cache_line_len) :: keyword_line
+      character(:), allocatable :: keyword_line
+      character(:), allocatable :: line
 
       cache%enabled = .false.
       cache%nblocks = 0
-      cache%nheader_lines = 0
+      cache%header_end_pos = 0_int64
+      cache%filesize = 0_int64
 
-      open (newunit=lun, file=trim(cache%sourcefile), form='formatted', status='old', iostat=iostat)
+      open (newunit=lun, file=trim(cache%sourcefile), access='stream', form='unformatted', &
+            status='old', action='read', iostat=iostat)
       if (iostat /= 0) return
 
-      read (lun, '(A)', iostat=iostat) line
+      inquire (unit=lun, size=cache%filesize, iostat=iostat)
+      if (iostat /= 0 .or. cache%filesize <= 0_int64) then
+         close(lun)
+         return
+      end if
+
+      current_pos = 1_int64
+
+      call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
-      call append_header_line(cache, line)
       if (.not. starts_with_keyword(line, 'SWAN')) then
          close(lun)
          return
       end if
 
-      call read_next_relevant_line(lun, cache, line, iostat)
+      call read_next_relevant_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
 
       if (starts_with_keyword(line, 'TIME')) then
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
 
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
       else
          close(lun)
          return
@@ -213,12 +217,11 @@ contains
       nbound = 1
       keyword_line = normalize_line(line)
       if (starts_with_keyword(keyword_line, 'LOC') .or. starts_with_keyword(keyword_line, 'LONLAT')) then
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
          read (line, *, iostat=iostat) nbound
          if (iostat /= 0 .or. nbound <= 0) then
             close(lun)
@@ -226,20 +229,18 @@ contains
          end if
 
          do ibound = 1, nbound
-            read (lun, '(A)', iostat=iostat) line
+            call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
             if (iostat /= 0) then
                close(lun)
                return
             end if
-            call append_header_line(cache, line)
          end do
 
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
       end if
 
       keyword_line = normalize_line(line)
@@ -248,12 +249,11 @@ contains
          return
       end if
 
-      read (lun, '(A)', iostat=iostat) line
+      call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
-      call append_header_line(cache, line)
       read (line, *, iostat=iostat) nfreq
       if (iostat /= 0 .or. nfreq <= 0) then
          close(lun)
@@ -261,20 +261,18 @@ contains
       end if
 
       do ifreq = 1, nfreq
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
       end do
 
-      read (lun, '(A)', iostat=iostat) line
+      call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
-      call append_header_line(cache, line)
 
       keyword_line = normalize_line(line)
       if (.not. is_dir_keyword(keyword_line)) then
@@ -282,12 +280,11 @@ contains
          return
       end if
 
-      read (lun, '(A)', iostat=iostat) line
+      call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
-      call append_header_line(cache, line)
       read (line, *, iostat=iostat) nang
       if (iostat /= 0 .or. nang <= 0) then
          close(lun)
@@ -295,20 +292,18 @@ contains
       end if
 
       do ibound = 1, nang
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
       end do
 
-      read (lun, '(A)', iostat=iostat) line
+      call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
-      call append_header_line(cache, line)
 
       keyword_line = normalize_line(line)
       if (.not. starts_with_keyword(keyword_line, 'QUANT')) then
@@ -316,12 +311,11 @@ contains
          return
       end if
 
-      read (lun, '(A)', iostat=iostat) line
+      call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
          close(lun)
          return
       end if
-      call append_header_line(cache, line)
       read (line, *, iostat=iostat) nquant
       if (iostat /= 0 .or. nquant <= 0) then
          close(lun)
@@ -329,30 +323,30 @@ contains
       end if
 
       do iquant = 1, nquant
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
 
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
 
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
             close(lun)
             return
          end if
-         call append_header_line(cache, line)
       end do
 
+      cache%header_end_pos = current_pos
+      previous_block = 0
+
       do
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat < 0) exit
          if (iostat > 0) then
             call clear_cache_entry(cache)
@@ -360,54 +354,58 @@ contains
             return
          end if
 
+         if (previous_block > 0) cache%blocks(previous_block)%end_pos = line_start
+
          call ensure_block_capacity(cache, cache%nblocks + 1)
          cache%nblocks = cache%nblocks + 1
          iblock = cache%nblocks
 
+         cache%blocks(iblock)%start_pos = line_start
          call parse_swan_time(line, cache%refdate, cache%blocks(iblock)%time_sec, success)
          if (.not. success) then
             call clear_cache_entry(cache)
             close(lun)
             return
          end if
-         call append_block_line(cache%blocks(iblock), line)
 
          do ibound = 1, nbound
-            read (lun, '(A)', iostat=iostat) line
+            call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
             if (iostat /= 0) then
                call clear_cache_entry(cache)
                close(lun)
                return
             end if
-            call append_block_line(cache%blocks(iblock), line)
 
             keyword_line = normalize_line(line)
             if (starts_with_keyword(keyword_line, 'ZERO') .or. starts_with_keyword(keyword_line, 'NODATA')) cycle
             if (starts_with_keyword(keyword_line, 'FACTOR')) then
-               read (lun, '(A)', iostat=iostat) line
+               call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
                if (iostat /= 0) then
                   call clear_cache_entry(cache)
                   close(lun)
                   return
                end if
-               call append_block_line(cache%blocks(iblock), line)
             end if
 
             do ifreq = 1, nfreq
-               read (lun, '(A)', iostat=iostat) line
+               call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
                if (iostat /= 0) then
                   call clear_cache_entry(cache)
                   close(lun)
                   return
                end if
-               call append_block_line(cache%blocks(iblock), line)
             end do
          end do
+
+         previous_block = iblock
       end do
 
       close(lun)
 
-      if (cache%nblocks > 0) cache%enabled = .true.
+      if (previous_block > 0) then
+         cache%blocks(previous_block)%end_pos = cache%filesize + 1_int64
+         cache%enabled = .true.
+      end if
    end subroutine load_swan_spectral_cache
 
 
@@ -419,10 +417,11 @@ contains
 
       integer :: end_block
       integer :: iblock
-      integer :: iline
       integer :: iostat
-      integer :: lun
+      integer :: source_lun
+      integer :: target_lun
       logical :: run_file_exists
+      logical :: copied
       integer :: start_block
 
       success = .false.
@@ -438,20 +437,36 @@ contains
       end_block = select_end_block(cache, run_end)
       if (end_block < start_block) end_block = start_block
 
-      open (newunit=lun, file=trim(cache%tempfile), form='formatted', status='replace', iostat=iostat)
+      open (newunit=source_lun, file=trim(cache%sourcefile), access='stream', form='unformatted', &
+            status='old', action='read', iostat=iostat)
       if (iostat /= 0) return
 
-      do iline = 1, cache%nheader_lines
-         write (lun, '(A)') trim(cache%header_lines(iline))
-      end do
+      open (newunit=target_lun, file=trim(cache%tempfile), access='stream', form='unformatted', &
+            status='replace', action='write', iostat=iostat)
+      if (iostat /= 0) then
+         close(source_lun)
+         return
+      end if
+
+      copied = .true.
+      if (cache%header_end_pos > 1_int64) then
+         call copy_file_range(source_lun, target_lun, 1_int64, cache%header_end_pos - 1_int64, copied)
+      end if
 
       do iblock = start_block, end_block
-         do iline = 1, cache%blocks(iblock)%nlines
-            write (lun, '(A)') trim(cache%blocks(iblock)%lines(iline))
-         end do
+         if (.not. copied) exit
+         call copy_file_range(source_lun, target_lun, cache%blocks(iblock)%start_pos, &
+                              cache%blocks(iblock)%end_pos - 1_int64, copied)
       end do
 
-      close(lun)
+      close(target_lun)
+      close(source_lun)
+
+      if (.not. copied) then
+         call delete_tempfile(cache%tempfile)
+         return
+      end if
+
       cache%last_start = run_start
       cache%last_end = run_end
       success = .true.
@@ -462,13 +477,24 @@ contains
       type(spectral_file_cache_type), intent(in) :: cache
       real(hp), intent(in) :: run_start
 
-      integer :: iblock
+         integer :: high
+         integer :: low
+         integer :: mid
 
-      idx = 1
-      do iblock = 1, cache%nblocks
-         if (cache%blocks(iblock)%time_sec <= run_start) idx = iblock
-         if (cache%blocks(iblock)%time_sec > run_start) exit
-      end do
+         idx = 1
+         if (cache%nblocks <= 0) return
+
+         low = 1
+         high = cache%nblocks
+         do while (low <= high)
+            mid = low + (high - low) / 2
+            if (cache%blocks(mid)%time_sec <= run_start) then
+               idx = mid
+               low = mid + 1
+            else
+               high = mid - 1
+            end if
+         end do
    end function select_start_block
 
 
@@ -476,15 +502,24 @@ contains
       type(spectral_file_cache_type), intent(in) :: cache
       real(hp), intent(in) :: run_end
 
-      integer :: iblock
+         integer :: high
+         integer :: low
+         integer :: mid
 
-      idx = cache%nblocks
-      do iblock = 1, cache%nblocks
-         if (cache%blocks(iblock)%time_sec >= run_end) then
-            idx = iblock
-            exit
-         end if
-      end do
+         idx = cache%nblocks
+         if (cache%nblocks <= 0) return
+
+         low = 1
+         high = cache%nblocks
+         do while (low <= high)
+            mid = low + (high - low) / 2
+            if (cache%blocks(mid)%time_sec >= run_end) then
+               idx = mid
+               high = mid - 1
+            else
+               low = mid + 1
+            end if
+         end do
    end function select_end_block
 
 
@@ -499,7 +534,7 @@ contains
       if (allocated(spectral_caches)) old_size = size(spectral_caches)
       if (required_size <= old_size) return
 
-      new_size = max(required_size, old_size + cache_file_growth)
+      new_size = max(required_size, max(1, 2 * old_size))
       allocate(tmp(new_size))
       if (old_size > 0) tmp(1:old_size) = spectral_caches(1:old_size)
       call move_alloc(tmp, spectral_caches)
@@ -518,65 +553,186 @@ contains
       if (allocated(cache%blocks)) old_size = size(cache%blocks)
       if (required_size <= old_size) return
 
-      new_size = max(required_size, old_size + cache_file_growth)
+      new_size = max(required_size, max(1, 2 * old_size))
       allocate(tmp(new_size))
       if (old_size > 0) tmp(1:old_size) = cache%blocks(1:old_size)
       call move_alloc(tmp, cache%blocks)
    end subroutine ensure_block_capacity
 
 
-   subroutine ensure_line_capacity(lines, required_size)
-      character(cache_line_len), allocatable, intent(inout) :: lines(:)
-      integer, intent(in) :: required_size
-
-      character(cache_line_len), allocatable :: tmp(:)
-      integer :: new_size
-      integer :: old_size
-
-      old_size = 0
-      if (allocated(lines)) old_size = size(lines)
-      if (required_size <= old_size) return
-
-      new_size = max(required_size, old_size + cache_line_growth)
-      allocate(tmp(new_size))
-      if (old_size > 0) tmp(1:old_size) = lines(1:old_size)
-      call move_alloc(tmp, lines)
-   end subroutine ensure_line_capacity
-
-
-   subroutine append_header_line(cache, line)
-      type(spectral_file_cache_type), intent(inout) :: cache
-      character(*), intent(in) :: line
-
-      call ensure_line_capacity(cache%header_lines, cache%nheader_lines + 1)
-      cache%nheader_lines = cache%nheader_lines + 1
-      cache%header_lines(cache%nheader_lines) = line
-   end subroutine append_header_line
-
-
-   subroutine append_block_line(block, line)
-      type(spectral_block_type), intent(inout) :: block
-      character(*), intent(in) :: line
-
-      call ensure_line_capacity(block%lines, block%nlines + 1)
-      block%nlines = block%nlines + 1
-      block%lines(block%nlines) = line
-   end subroutine append_block_line
-
-
-   subroutine read_next_relevant_line(lun, cache, line, iostat)
+   subroutine read_next_relevant_line(lun, current_pos, filesize, line, line_start, next_pos, iostat)
       integer, intent(in) :: lun
-      type(spectral_file_cache_type), intent(inout) :: cache
-      character(*), intent(out) :: line
+      integer(int64), intent(inout) :: current_pos
+      integer(int64), intent(in) :: filesize
+      character(:), allocatable, intent(out) :: line
+      integer(int64), intent(out) :: line_start
+      integer(int64), intent(out) :: next_pos
       integer, intent(out) :: iostat
 
       do
-         read (lun, '(A)', iostat=iostat) line
+         call read_stream_line(lun, current_pos, filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) return
-         call append_header_line(cache, line)
          if (.not. is_comment_line(line)) exit
       end do
    end subroutine read_next_relevant_line
+
+
+   subroutine read_stream_line(lun, current_pos, filesize, line, line_start, next_pos, iostat)
+      integer, intent(in) :: lun
+      integer(int64), intent(inout) :: current_pos
+      integer(int64), intent(in) :: filesize
+      character(:), allocatable, intent(out) :: line
+      integer(int64), intent(out) :: line_start
+      integer(int64), intent(out) :: next_pos
+      integer, intent(out) :: iostat
+
+      character(parser_chunk_size) :: chunk
+      character(1) :: next_char
+      character(:), allocatable :: line_buffer
+      integer :: eol_index
+      integer :: eol_length
+      integer :: nchunk
+      integer :: stat
+      integer(int64) :: remaining
+
+      line_start = current_pos
+      next_pos = current_pos
+      iostat = 0
+
+      if (current_pos > filesize) then
+         allocate(character(0) :: line)
+         iostat = -1
+         return
+      end if
+
+      do
+         remaining = min(int(parser_chunk_size, int64), filesize - current_pos + 1_int64)
+         nchunk = int(remaining)
+
+         read (lun, pos=current_pos, iostat=iostat) chunk(1:nchunk)
+         if (iostat /= 0) return
+
+         eol_index = find_eol_index(chunk(1:nchunk))
+         if (eol_index == 0) then
+            call append_text(line_buffer, chunk(1:nchunk))
+            current_pos = current_pos + remaining
+            if (current_pos > filesize) then
+               next_pos = current_pos
+               call finalize_text(line_buffer, line)
+               return
+            end if
+            cycle
+         end if
+
+         if (eol_index > 1) call append_text(line_buffer, chunk(1:eol_index - 1))
+
+         eol_length = 1
+         if (eol_index < nchunk) then
+            if (is_eol_pair(chunk(eol_index:eol_index), chunk(eol_index + 1:eol_index + 1))) eol_length = 2
+         else if (current_pos + int(eol_index, int64) <= filesize) then
+            read (lun, pos=current_pos + int(eol_index, int64), iostat=stat) next_char
+            if (stat == 0) then
+               if (is_eol_pair(chunk(eol_index:eol_index), next_char)) eol_length = 2
+            end if
+         end if
+
+         next_pos = current_pos + int(eol_index - 1 + eol_length, int64)
+         current_pos = next_pos
+         call finalize_text(line_buffer, line)
+         return
+      end do
+   end subroutine read_stream_line
+
+
+   integer function find_eol_index(text) result(idx)
+      character(*), intent(in) :: text
+
+      idx = 0
+      if (len(text) > 0) idx = scan(text, achar(10)//achar(13))
+   end function find_eol_index
+
+
+   logical function is_eol_pair(first_char, second_char)
+      character(*), intent(in) :: first_char
+      character(*), intent(in) :: second_char
+
+      is_eol_pair = (first_char(1:1) == achar(13) .and. second_char(1:1) == achar(10)) .or. &
+                    (first_char(1:1) == achar(10) .and. second_char(1:1) == achar(13))
+   end function is_eol_pair
+
+
+   subroutine append_text(text, piece)
+      character(:), allocatable, intent(inout) :: text
+      character(*), intent(in) :: piece
+
+      character(:), allocatable :: tmp
+      integer :: add_len
+      integer :: old_len
+
+      add_len = len(piece)
+      if (add_len <= 0) return
+
+      if (.not. allocated(text)) then
+         allocate(character(add_len) :: text)
+         text = piece
+         return
+      end if
+
+      old_len = len(text)
+      allocate(character(old_len + add_len) :: tmp)
+      if (old_len > 0) tmp(1:old_len) = text
+      tmp(old_len + 1:old_len + add_len) = piece
+      call move_alloc(tmp, text)
+   end subroutine append_text
+
+
+   subroutine finalize_text(text, line)
+      character(:), allocatable, intent(inout) :: text
+      character(:), allocatable, intent(out) :: line
+
+      if (allocated(text)) then
+         call move_alloc(text, line)
+      else
+         allocate(character(0) :: line)
+      end if
+   end subroutine finalize_text
+
+
+   subroutine copy_file_range(source_lun, target_lun, start_pos, end_pos, success)
+      integer, intent(in) :: source_lun
+      integer, intent(in) :: target_lun
+      integer(int64), intent(in) :: start_pos
+      integer(int64), intent(in) :: end_pos
+      logical, intent(out) :: success
+
+      character(copy_chunk_size) :: buffer
+      integer :: iostat
+      integer :: nchunk
+      integer(int64) :: current_pos
+      integer(int64) :: remaining
+
+      success = .false.
+      if (end_pos < start_pos) then
+         success = .true.
+         return
+      end if
+
+      current_pos = start_pos
+      do while (current_pos <= end_pos)
+         remaining = end_pos - current_pos + 1_int64
+         nchunk = int(min(int(copy_chunk_size, int64), remaining))
+
+         read (source_lun, pos=current_pos, iostat=iostat) buffer(1:nchunk)
+         if (iostat /= 0) return
+
+         write (target_lun, iostat=iostat) buffer(1:nchunk)
+         if (iostat /= 0) return
+
+         current_pos = current_pos + int(nchunk, int64)
+      end do
+
+      success = .true.
+   end subroutine copy_file_range
 
 
    subroutine parse_swan_time(line, refdate, timsec, success)
