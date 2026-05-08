@@ -74,13 +74,15 @@ module m_spatial_field
 
 contains
 
-   !> Read all keyword values from a [Spatial] or [Meteo] block.
+   !> Read all keyword values from a [Spatial] block.
    function read_spatial_field_block(block_ptr) result(res)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
 
+      integer :: extrapolation_method_legacy
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_spatial_field_input) :: res
+      extrapolation_method_legacy = 0
 
       call prop_get(block_ptr, '', 'quantity', res%quantity)
       call prop_get(block_ptr, '', 'forcingFileType', res%forcing_file_type)
@@ -95,6 +97,20 @@ contains
       call prop_get(block_ptr, '', 'locationType', res%location_type)
       call read_averaging_input(block_ptr, res%averaging_input)
 
+      !Legacy fallbacks for backward compatibility with older ini files. TODO: deprecation warnings
+      if (len_trim(res%forcing_file_type) == 0) then
+         call prop_get(block_ptr, '', 'dataFileType', res%forcing_file_type)
+      end if
+
+      call prop_get(block_ptr, '', 'forcingFile', res%forcing_file)
+      if (len_trim(res%forcing_file) == 0) then
+         call prop_get(block_ptr, '', 'dataFile', res%forcing_file)
+      end if
+
+      call prop_get(block_ptr, '', 'extrapolationMethod', extrapolation_method_legacy)
+      if (extrapolation_method_legacy /= 0) then
+         res%is_extrapolation_allowed = .true.
+      end if
    end function read_spatial_field_block
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
@@ -149,7 +165,7 @@ contains
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff','polygon', '1dfield')
+      case ('sample', 'geotiff', 'polygon', '1dfield')
          is_static = .true.
       case default
          is_static = .false.
@@ -191,7 +207,7 @@ contains
       use string_module, only: strcmpi
       use unstruc_files, only: resolvePath
       use timespace_parameters, only: OPERAND_UNKNOWN, convert_operand_string_to_integer
-
+      use m_meteo, only: quantity_name_config_file_to_internal_name
       type(t_spatial_field_input), intent(inout) :: input
       character(len=*), intent(in) :: file_name
       character(len=*), intent(in) :: group_name
@@ -201,6 +217,8 @@ contains
       logical :: has_interpolation_method, target_mask_file_exists
 
       is_successful = .false.
+
+      input%quantity = quantity_name_config_file_to_internal_name(input%quantity)
 
       if (len_trim(input%quantity) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''quantity'' is missing.'
@@ -246,14 +264,14 @@ contains
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
          if (input%oper == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'Invalid block in file ''' // file_name // ''': [' // group_name // ']. Unknown operand ''' // input%operand_string // '''.'
+            write (msgbuf, '(a)') 'Invalid block in file '''//file_name//''': ['//group_name//']. Unknown operand '''//input%operand_string//'''.'
             call err_flush()
             return
          end if
-         
+
          if (len_trim(input%operand_string) == 1) then
-            write (msgbuf, '(a)') 'Block in file ''' // file_name // ''': [' // group_name // ']. Operand value ''' // input%operand_string // '''. is deprecated, ' &
-               // 'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            write (msgbuf, '(a)') 'Block in file '''//file_name//''': ['//group_name//']. Operand value '''//input%operand_string//'''. is deprecated, ' &
+               //'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
             call warn_flush()
          end if
       end if
