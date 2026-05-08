@@ -15,7 +15,7 @@ contains
       use network_data, only: kn, numl1d, LINK_1D2D_STREETINLET
       use m_GlobalParameters, only: t_chainage2cross
       use m_readcrosssections, only: finalizeCrs
-      use Messages, only: SetMessage, LEVEL_ERROR
+      use MessageHandling, only: SetMessage, LEVEL_ERROR
 
       use m_flowgeom, only: wu1Duni5, hh1Duni5
       use m_physcoef, only: frcunistreetinlet
