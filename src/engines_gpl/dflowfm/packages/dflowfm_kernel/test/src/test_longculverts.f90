@@ -2,7 +2,6 @@ module test_longculverts
     use assertions_gtest
     use m_longculverts, only: convert1D2DLongCulverts
     use m_network_helpers, only: t_grid_helper
-    use m_file_helpers, only: generate_square_grid, cleanup_network_data    
     implicit none
 
 contains

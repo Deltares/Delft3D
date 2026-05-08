@@ -4,27 +4,30 @@ module test_bubblescreen
    use precision_basics, only: comparereal
    use m_bubblescreen
    use m_alloc, only: realloc
-   use m_meteo, only: initialize_ec_module, item_sourcesink_discharge, ecInstancePtr, ec_gettimespacevalue, item_bubblescreen_discharge
-   use m_cell_geometry, only: xz, yz, ndx        ! use fm_external_forcings, only: init_new
-   use m_flowgeom, only: kcs
-   use m_file_helpers, only: create_file, generate_square_grid, cleanup_network_data
-   use m_wind, only: rain
-   use m_partitioninfo, only: jampi
 
    implicit none(type, external)
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_bubblescreen, test_bubble_and_normal_source_sinks, test_bubble_and_normal_source_sinks,
+   !$f90tw TESTCODE(TEST, test_bubblescreen, test_with_normal_source_sinks, test_with_normal_source_sinks,
    !> Test bubble and normal source-sinks
-   subroutine test_bubble_and_normal_source_sinks() bind(C)
+   subroutine test_with_normal_source_sinks() bind(C)
       use fm_external_forcings, only: init_new
       use m_flow_geominit, only: flow_geominit
       use Timers, only: timini
       use fm_external_forcings_data, only: source_sink_all_discharges, bubblescreen_air_discharge
+      use m_meteo, only: initialize_ec_module, item_sourcesink_discharge, ecInstancePtr, ec_gettimespacevalue, item_bubblescreen_discharge
+      use m_cell_geometry, only: xz, yz, ndx        ! use fm_external_forcings, only: init_new
+      use m_flowgeom, only: kcs
+      use m_file_helpers, only: create_file
+      use m_network_helpers, only: t_grid_helper
+      use m_wind, only: rain
+      use m_partitioninfo, only: jampi
 
       integer :: iresult
       logical :: success
+      type(t_grid_helper) :: grid_helper
+      grid_helper = t_grid_helper()
 
       call create_file("FlowFM_sourcesink.bc", [ &
                        "[General]", &
@@ -83,9 +86,9 @@ contains
 
       jampi = 0
       call timini()
-      call generate_square_grid( &
-         bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
-         rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
+      call grid_helper%make_square_grid( &
+         bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, side_length=10.0_dp, &
+         rows=1, columns=2, array_size_margin=2 &
          )
       call flow_geominit(0)
       call initialize_ec_module()
@@ -101,9 +104,7 @@ contains
       call f90_expect_true(success, "ec_gettimespacevalue failed to retrieve bubble screen air discharge value at 300 seconds")
       call f90_expect_near(bubblescreen_air_discharge(1), 201.38_dp, 1e-1_dp, "Bubble screen air discharge at 300 seconds should be approximately 201.38 m3/s")
 
-      call cleanup_network_data()
-
-   end subroutine test_bubble_and_normal_source_sinks
+   end subroutine test_with_normal_source_sinks
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_bubblescreen, test_convert_discharge_air_to_water_default, test_convert_discharge_air_to_water_default,
