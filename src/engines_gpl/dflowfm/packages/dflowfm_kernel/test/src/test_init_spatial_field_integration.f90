@@ -867,4 +867,95 @@ contains
    end subroutine test_initialsalinity_3d_field_populated
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_initialverticalsalinityprofile, test_initialverticalsalinityprofile,
+   !> Verifies that an initialverticalsalinityprofile [Spatial] block populates sa1
+   !! via the UNC_LOC_3DV path in init_spatial_fields, which bypasses EC entirely and
+   !! calls setinitialverticalprofile directly with the polygon profile file..
+   subroutine test_initialverticalsalinityprofile() bind(C)
+      use m_flow, only: sa1, kmx, kmxx, kbot, ktop, zws, layertype, ndkx
+      use m_flowgeom, only: ndx2D, ndxi
+      use m_flowparameters, only: jasal
+      use m_alloc, only: realloc
+      use m_flowtimes, only: irefdate, tzone, tstart_user
+      use m_polygon, only: m_polygon_destructor
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      integer :: ierr
+      real(dp), parameter :: EXPECTED_SALINITY = 35.0_dp
+      character(len=*), parameter :: PROFILE_FILE = "test_ivsp.pol"
+      character(len=*), parameter :: EXT_FILE = "test_ivsp.ext"
+
+      ! ARRANGE: polygon profile file with a constant 35 PSU from bed (-10 m) to surface (0 m).
+      ! reapol reads this format: name / M N / depth1 value1 / depth2 value2 ...
+      ! lineinterp uses xpl=depth and ypl=salinity value.
+      call create_file(PROFILE_FILE, [ &
+                       "salinityprofile", &
+                       "2  2", &
+                       "-10.0  35.0", &
+                       "  0.0  35.0"])
+
+      call create_file(EXT_FILE, [ &
+                       "[Spatial]", &
+                       "    quantity        = initialverticalsalinityprofile", &
+                       "    forcingFile     = "//PROFILE_FILE, &
+                       "    forcingFileType = Polygon", &
+                       "    value           = 35.0"])
+
+      ! Minimal flow geometry: 1 node, 1 sigma layer.
+      call setup_minimal_grid()
+      ndxi = ndx        ! ndx == 1, set by setup_minimal_grid
+      ndx2D = 0
+      ndkx = ndx        ! for kmx=1 and 1 node: ndkx = 1
+
+      ! Resolver guard: jasal>0 and kmx>0 are required by resolve_initial_target.
+      jasal = 1
+      kmx = 1
+      layertype = 0      ! sigma layers, avoids the LAYTP_Z branch
+
+      call realloc(kbot, ndxi, fill=1, keepExisting=.false.)
+      call realloc(ktop, ndxi, fill=1, keepExisting=.false.)
+      call realloc(sa1, ndkx, fill=0.0_dp, keepExisting=.false.)
+
+      ! zws(0:ndkx): zws(0)=bed interface, zws(1)=surface interface.
+      ! setinitialverticalprofile computes z_center(1) = 0.5*(zws(1)+zws(0)) = -5 m.
+      if (allocated(zws)) deallocate (zws)
+      allocate (zws(0:ndkx))
+      zws(0) = -10.0_dp
+      zws(1) = 0.0_dp
+
+      irefdate = 20000101
+      tzone = 0.0_dp
+      tstart_user = 0.0_dp
+      threshold_abort = LEVEL_FATAL
+      call initialize_ec_module()
+      ierr = m_polygon_destructor()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Spatial')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, &
+                           "init_spatial_fields must succeed for initialverticalsalinityprofile")
+      ! lineinterp: z_center=-5 lies in the profile range [-10,0], constant value 35 PSU.
+      call f90_expect_near(sa1(1), EXPECTED_SALINITY, 1.0e-10_dp, &
+                           "sa1(1) must equal the profile value interpolated at z_center=-5 m")
+
+      ! CLEANUP
+      jasal = 0
+      kmx = 0
+      ndkx = 0
+      ndxi = 0
+      ndx2D = 0
+      if (allocated(sa1))  deallocate (sa1)
+      if (allocated(kbot)) deallocate (kbot)
+      if (allocated(ktop)) deallocate (ktop)
+      if (allocated(zws))  deallocate (zws)
+      call teardown_minimal_grid()
+   end subroutine test_initialverticalsalinityprofile
+   !$f90tw)
+
+
 end module test_init_spatial_fields_integration
