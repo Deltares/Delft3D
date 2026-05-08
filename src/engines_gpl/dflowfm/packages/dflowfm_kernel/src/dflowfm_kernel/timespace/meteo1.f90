@@ -320,7 +320,7 @@ contains
             l1 = index(rec, '=') + 1
             call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
             read (rec(l2:l2), '(a1)', err=990) temp
-            operand = convert_operand_string_to_integer(temp)
+            operand = convert_legacy_operand_string_to_integer(temp)
          end block
       else
          return

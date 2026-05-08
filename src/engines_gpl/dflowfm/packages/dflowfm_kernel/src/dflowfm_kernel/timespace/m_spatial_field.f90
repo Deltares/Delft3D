@@ -183,7 +183,7 @@ contains
    !> Validate a t_spatial_field_input. Derives method and filetype.
    !! Returns .false. and writes error messages on failure.
    function validate_spatial_field_input(input, file_name, group_name, base_dir) result(is_successful)
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, warn_flush, msgbuf
       use timespace, only: convert_method_string_to_integer, get_default_method_for_file_type, &
                            update_method_with_weightfactor_fallback, update_method_in_case_extrapolation, &
                            convert_file_type_string_to_integer
@@ -242,12 +242,19 @@ contains
 
       input%is_static_field = is_static_file_type(input%forcing_file_type)
 
+      ! Parse operand. Legacy single-character values are supported but will trigger a warning.
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
          if (input%oper == OPERAND_UNKNOWN) then
-            write (msgbuf, '(5a)') 'Invalid block in file ''', file_name, ''': [', group_name, ']. Unknown operand.'
+            write (msgbuf, '(a)') 'Invalid block in file ''' // file_name // ''': [' // group_name // ']. Unknown operand ''' // input%operand_string // '''.'
             call err_flush()
             return
+         end if
+         
+         if (len_trim(input%operand_string) == 1) then
+            write (msgbuf, '(a)') 'Block in file ''' // file_name // ''': [' // group_name // ']. Operand value ''' // input%operand_string // '''. is deprecated, ' &
+               // 'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            call warn_flush()
          end if
       end if
 
