@@ -33,6 +33,8 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    real(dp), dimension(:), allocatable, target :: qplat_data
 
+   real(dp), dimension(:), allocatable, target :: source_sink_discharge
+
    logical, public :: apply_statistics_on_output
 
 contains
@@ -185,6 +187,13 @@ contains
       call allocate_and_associate(source_input, get_sediment_array_size(), SBCX, SBCY)
       call assign_sediment_transport(SBCX, SBCY, IPNT_SBCX1, IPNT_SBCY1)
    end subroutine calculate_sediment_SBC
+
+   subroutine filter_source_sink_discharge(source_input)
+      use fm_external_forcings_data, only: num_real_source_sink, is_source_sink_real, source_sink_all_discharges
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      call allocate_and_associate(source_input, num_real_source_sink, source_sink_discharge)
+      source_sink_discharge = pack(source_sink_all_discharges(1, :), is_source_sink_real)
+   end subroutine filter_source_sink_discharge
 
    subroutine add_station_water_quality_configs(output_config_set, idx_his_hwq)
       use processes_input, only: num_wq_user_outputs => noout_user
@@ -2308,7 +2317,9 @@ contains
       !
       ! Source-sink variables
       !
-      if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
+      if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+         function_pointer => filter_source_sink_discharge
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
          ! call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
          ! i = 1
          ! if (isalt > 0) then
