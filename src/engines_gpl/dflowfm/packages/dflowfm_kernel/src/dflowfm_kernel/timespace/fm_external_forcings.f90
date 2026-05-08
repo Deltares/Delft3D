@@ -1729,9 +1729,9 @@ contains
       integer :: iresult
 
       call setup(iresult)
-      !if (iresult == DFM_NOERR) then
-      !   call init_new(md_inifieldfile, iresult)
-      !end if
+      if (iresult == DFM_NOERR) then
+         call init_new(md_inifieldfile, iresult)
+      end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
@@ -1752,7 +1752,7 @@ contains
       use m_mass_balance_areas, only: mbaname
       use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
          btempforcingtypl, ja_friction_coefficient_time_dependent
-      use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
+      use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
       use unstruc_model, only: md_inifieldfile
@@ -1763,7 +1763,6 @@ contains
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
-      use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
@@ -1773,7 +1772,6 @@ contains
       integer, intent(out) :: iresult
 
       integer :: ierr
-      logical :: exist
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
@@ -1822,26 +1820,26 @@ contains
          return
       end if
 
-      ! First initialize new-style IniFieldFile quantities.
-      if (len_trim(md_inifieldfile) > 0) then
-         call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
-         inquire (file=trim(md_inifieldfile), exist=exist)
-         if (exist) then
-            iresult = initialize_initial_fields(md_inifieldfile)
-            if (iresult /= DFM_NOERR) then
-               call timstop(handle_extra(49)) ! initialize_initial_fields
-               return
-            end if
-         else
-            call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
-            call warn_flush()
-            iresult = DFM_EXTFORCERROR
-            call timstop(handle_extra(49)) ! initialize_initial_fields
-            return
-         end if
-         call timstop(handle_extra(49)) ! initialize_initial_fields
-      end if
+      !! First initialize new-style IniFieldFile quantities.
+      !if (len_trim(md_inifieldfile) > 0) then
+      !   call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
+      !   inquire (file=trim(md_inifieldfile), exist=exist)
+      !   if (exist) then
+      !      iresult = initialize_initial_fields(md_inifieldfile)
+      !      if (iresult /= DFM_NOERR) then
+      !         call timstop(handle_extra(49)) ! initialize_initial_fields
+      !         return
+      !      end if
+      !   else
+      !      call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
+      !      write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
+      !      call warn_flush()
+      !      iresult = DFM_EXTFORCERROR
+      !      call timstop(handle_extra(49)) ! initialize_initial_fields
+      !      return
+      !   end if
+      !   call timstop(handle_extra(49)) ! initialize_initial_fields
+      !end if
 
       if (jatimespace == 0) then
          return ! Just cleanup and close ext file.
