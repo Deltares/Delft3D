@@ -957,5 +957,61 @@ contains
    end subroutine test_initialverticalsalinityprofile
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_field1d_global_value_applied_to_frictioncoefficient, test_field1d_global_value_applied_to_frictioncoefficient,
+   !> Verifies that a frictioncoefficient block with forcingFileType=1dField applies
+   !! the [Global] value to all 1D links when no [Branch] blocks are present.
+   !! Does not require a real 1D network: with no [Branch] blocks, spaceInit1dField
+   !! is never called and the global fallback in init_field1d_block is the only code path.
+   subroutine test_field1d_global_value_applied_to_frictioncoefficient() bind(C)
+      use m_flow, only: frcu
+      use m_flowgeom, only: lnx, lnx1d
+
+      type(tree_data), pointer :: bnd_ptr, block_ptr
+      logical :: success
+      character(len=*), parameter :: FIELD1D_FILE = "test_fr1d.ini"
+      character(len=*), parameter :: EXT_FILE     = "test_fr1d.ext"
+
+      call create_file(FIELD1D_FILE, [ &
+                       "[General]", &
+                       "    fileVersion = 1.00", &
+                       "    fileType    = 1dField", &
+                       "", &
+                       "[Global]", &
+                       "    quantity = frictioncoefficient", &
+                       "    unit     = -", &
+                       "    value    = 0.025"])
+
+      call create_file(EXT_FILE, [ &
+                       "[Parameter]", &
+                       "    quantity        = frictioncoefficient", &
+                       "    forcingFile     = "//FIELD1D_FILE, &
+                       "    forcingFileType = 1dField"])
+
+      ! ARRANGE: one 1D flow link; no 1D network needed because there are no [Branch] blocks.
+      lnx   = 1
+      lnx1d = 1
+      call realloc(frcu, lnx, fill=0.0_dp, keepExisting=.false.)
+      threshold_abort = LEVEL_FATAL
+      call setup_minimal_grid()
+      call initialize_ec_module()
+
+      ! ACT
+      call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
+      success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Parameter')
+      call tree_destroy(bnd_ptr)
+
+      ! ASSERT
+      call f90_expect_true(success, "init_spatial_fields should succeed for a 1dField frictioncoefficient block")
+      call f90_expect_near(frcu(1), 0.025_dp, 1.0e-6_dp, &
+                           "frcu(1) should equal the global value from the [Global] block")
+
+      ! CLEANUP
+      lnx   = 0
+      lnx1d = 0
+      if (allocated(frcu)) deallocate (frcu)
+      call teardown_minimal_grid()
+   end subroutine test_field1d_global_value_applied_to_frictioncoefficient
+   !$f90tw)
+
 
 end module test_init_spatial_fields_integration
