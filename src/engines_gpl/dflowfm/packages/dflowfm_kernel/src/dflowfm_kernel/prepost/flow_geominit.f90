@@ -341,14 +341,15 @@ contains
 ! increase netcell admin. to include boundary nodes (safety)
       call add_boundarynetcells()
 
-      if (allocated(kcs)) then
-         deallocate (nd, bl, bai, kcs, bai_mor, ba_mor) ! and allocate geometry related node arrays
+      if (allocated(nd)) then
+         deallocate (nd)
       end if
-      allocate (nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
-      call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx)
-      kcs = 1
-      bl = dmiss
-      ba_mor = 0.0_dp
+      allocate(nd(ndx)) ! increase size of nd to include boundary nodes (safety)
+      call realloc(bl, ndx, keepExisting=.false., stat=ierr, fill=dmiss) ! increase size of nd to include boundary nodes (safety)
+      call realloc(bai, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) ! increase size of nd to include boundary nodes (safety)
+      call realloc(bai_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) ! increase size of nd to include boundary nodes (safety)
+      call realloc(ba_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) ! increase size of nd to include boundary nodes (safety)
+      call realloc(kcs, ndx, keepExisting=.false., stat=ierr, fill=1) ! increase size of nd to include boundary nodes (safety)
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then

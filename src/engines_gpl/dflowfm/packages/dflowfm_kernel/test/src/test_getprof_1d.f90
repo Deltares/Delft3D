@@ -157,6 +157,7 @@ contains
         if (.not. allocated(profiles1D)) then
             nprofdefs = 1
             allocate(profiles1D(nprofdefs), stat=ierr)
+        end if
             
             profiles1D(1)%ityp = -2          ! -2 = closed rectangular
             profiles1D(1)%width = width
@@ -164,7 +165,6 @@ contains
             profiles1D(1)%frctp = friction_type_
             profiles1D(1)%frccf = friction_value_
             profiles1D(1)%zmin = 0.0_dp
-        end if
 
         call realloc(frcu, lnx, fill=DMISS)
         call realloc(ifrcutp, lnx, fill=0)
@@ -259,7 +259,6 @@ contains
         )
         call place_2d2d_link([5.0_dp, 5.0_dp], [15.0_dp, 5.0_dp], new_link=new_link, error_code=error_code)
         call f90_assert_eq(error_code, 0, "Failed to place 2D2D link" // c_null_char)
-        
         call flow_geominit(0)
 
         call default_channel_flow()
