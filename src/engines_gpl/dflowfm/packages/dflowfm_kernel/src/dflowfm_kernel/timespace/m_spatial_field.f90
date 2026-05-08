@@ -149,7 +149,7 @@ contains
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
-      case ('sample', 'geotiff','polygon')
+      case ('sample', 'geotiff','polygon', '1dfield')
          is_static = .true.
       case default
          is_static = .false.

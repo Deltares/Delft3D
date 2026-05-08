@@ -207,6 +207,8 @@ contains
          method = SPACEANDTIME
       case ('polygon')
          method = INSIDE_POLYGON
+      case ('1dfield')
+         method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
       end select

@@ -700,35 +700,91 @@ contains
 
 !> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
 !! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
-function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
-                               filetype, method, oper, variable_name, ec_item, target_data) result(res)
-   use m_setzcs, only: setzcs
-   use m_flow, only: zcs, kbot, ktop, ndkx
-   use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
-   use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
-   use m_alloc, only: reallocP
-   use m_missing, only: dmiss
+   function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+      use m_setzcs, only: setzcs
+      use m_flow, only: zcs, kbot, ktop, ndkx
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_alloc, only: reallocP
+      use m_missing, only: dmiss
 
-   character(len=*), intent(in) :: quantity, forcing_file, variable_name
-   real(dp), intent(in) :: target_x(:), target_y(:)
-   integer, intent(in) :: mask(:), kx, filetype, method, oper
-   integer, intent(inout) :: ec_item
-   real(dp), pointer, intent(out) :: target_data(:)
-   logical :: res
+      character(len=*), intent(in) :: quantity, forcing_file, variable_name
+      real(dp), intent(in) :: target_x(:), target_y(:)
+      integer, intent(in) :: mask(:), kx, filetype, method, oper
+      integer, intent(inout) :: ec_item
+      real(dp), pointer, intent(out) :: target_data(:)
+      logical :: res
 
-   integer, pointer :: pkbot(:), pktop(:)
+      integer, pointer :: pkbot(:), pktop(:)
 
-   call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
-   call setzcs()
-   pkbot => kbot
-   pktop => ktop
+      call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      call setzcs()
+      pkbot => kbot
+      pktop => ktop
 
-   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
-                                  filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
-                                  varname=variable_name, tgt_item1=ec_item)
-   res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
-                                                   tunit, tstart_user, target_data)
-end function read_3d_sigma_field
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                    filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
+                                    varname=variable_name, tgt_item1=ec_item)
+      res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                     tunit, tstart_user, target_data)
+   end function read_3d_sigma_field
+
+   !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
+   function init_field1d_block(quantity, forcing_file, file_name) result(res)
+      use stdlib_kinds, only: c_bool
+      use timespace_parameters, only: FIELD1D
+      use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, &
+                                   set_global_values, set_global_water_values, finish_initialization
+      use m_flow, only: frcu, s1, hs
+      use m_flowgeom, only: bl, ndx2D, ndxi
+      use dfm_error, only: DFM_NOERR
+      use messageHandling, only: err_flush, msgbuf
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: quantity !< Quantity name as it appears in the ext block.
+      character(len=*), intent(in) :: forcing_file !< Path to the 1dField .ini file.
+      character(len=*), intent(in) :: file_name !< Path to the ext file, used in error messages.
+
+      logical :: res
+
+      character(len=256) :: source_quantity_name
+      logical(kind=c_bool), allocatable :: specified_indices(:)
+      real(dp) :: global_value
+      logical :: global_value_provided
+      integer :: ierr
+
+      ! Map the FM quantity name (e.g. 'initialWaterLevel') to the name used inside
+      ! the 1dField file (e.g. 'waterlevel').
+      call fm_quantity_name_to_source_quantity_name(quantity, FIELD1D, source_quantity_name)
+      if (source_quantity_name == '') then
+         write (msgbuf, '(a)') 'Quantity '''//trim(quantity)//''' is not supported with forcingFileType=1dField'// &
+            ' in '''//trim(file_name)//'''. Supported quantities: initialWaterLevel, initialWaterDepth,'// &
+            ' initialVelocity, frictionCoefficient.'
+         call err_flush()
+         res = .false.
+         return
+      end if
+
+      ierr = init1dField(forcing_file, file_name, source_quantity_name, specified_indices, global_value, global_value_provided)
+      res = (ierr == DFM_NOERR)
+      if (.not. res) return
+
+      ! Apply the global [Global] value to any nodes/links not set by a [Branch] block.
+      if (global_value_provided .and. .not. all(specified_indices)) then
+         select case (str_tolower(quantity))
+         case ('initialwaterlevel', 'waterlevel', 'initialwaterdepth', 'waterdepth')
+            call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), &
+                                         specified_indices, quantity, global_value, file_name)
+         case ('frictioncoefficient')
+            call set_global_values(frcu, specified_indices, global_value)
+         end select
+      end if
+
+      ! Shared post-processing: s1 = bl + hs for waterdepth, friction-type stamp, etc.
+      call finish_initialization(quantity)
+
+   end function init_field1d_block
 
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
@@ -740,7 +796,7 @@ end function read_3d_sigma_field
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
-      use timespace_parameters, only: WEIGHTFACTORS
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
@@ -772,7 +828,7 @@ end function read_3d_sigma_field
 
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
-      real(kind=dp), dimension(:,:), pointer :: target_array_3d
+      real(kind=dp), dimension(:, :), pointer :: target_array_3d
 
       res = .false.
 
@@ -791,6 +847,11 @@ end function read_3d_sigma_field
                  variable_name => input%variable_name, &
                  is_static_field => input%is_static_field)
 
+         if (filetype == FIELD1D) then !> field1d is a legacy special, TODO: refactor.
+            res = init_field1d_block(quantity, forcing_file, file_name)
+            return
+         end if
+
          kx = 1
          ec_item = ec_undef_int
          target_data => null()
@@ -808,7 +869,7 @@ end function read_3d_sigma_field
          if (.not. res) then
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
-       if (.not. res) then
+         if (.not. res) then
             res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
          end if
          if (.not. res) then
@@ -843,22 +904,22 @@ end function read_3d_sigma_field
                   call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
-                        call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
+                     call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
                   end if
 
                   if (associated(target_data)) then
                      res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
-                                              forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
+                                                 forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
                   else if (associated(target_data_integer)) then
                      call prop_get(block_ptr, '', 'value', transformcoef(1)) ! ugly extra reading for special case
                      res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
-                  else if( associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
-                        res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
                      call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
-                     deallocate(target_data)
+                     deallocate (target_data)
                   end if
                end block
             end if
@@ -1033,7 +1094,7 @@ end function read_3d_sigma_field
       end select
 
       if (success == .false.) then
-         success = .true. 
+         success = .true.
          select case (str_tolower(qid_base))
          case ('initialwaterdepth', 'waterdepth')
             s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
@@ -1598,7 +1659,7 @@ end function read_3d_sigma_field
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-      subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
       use fm_location_types
       use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
       use network_data, only: xk, yk, numk
