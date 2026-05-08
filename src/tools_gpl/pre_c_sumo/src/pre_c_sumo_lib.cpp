@@ -28,8 +28,8 @@ namespace
      *
      *  2D: number_of_zcoordinates = 1
      */
-    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting,
-                                               const std::size_t diffuser_index, const std::size_t number_of_zcoordinates)
+    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index,
+                                        const std::size_t number_of_zcoordinates)
     {
         const bool has_intake = diffuser_setting.intake.has_value();
         const std::size_t intake_index = has_intake ? diffuser_index + number_of_zcoordinates : 0;
@@ -53,25 +53,10 @@ namespace
     Mesh getMesh2D3D(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings,
                      const ZSpecification& z_spec)
     {
-        int dimensions;
-        if (z_spec.is_2d)
-        {
-            dimensions = 2;
-        }
-        else
-        {
-            dimensions = 3;
-        }
+        const int dimensions = z_spec.numberOfDimensions();
         Mesh mesh = {};
         mesh.name = csumo_mesh_name;
-        if (z_spec.is_2d)
-        {
-            mesh.number_of_zcoordinates = 1; // for 2d mesh, we only have one layer of nodes at z=0
-        }
-        else
-        {
-            mesh.number_of_zcoordinates = static_cast<int>((z_spec.z_max - z_spec.z_min) / z_spec.z_step) + 1;
-        }
+        mesh.number_of_zcoordinates = z_spec.numberOfZCoordinates();
         for (const DiffuserSettings& diffuser : csumo_settings.diffusers())
         {
             const std::size_t diffuser_index_mapping = mesh.coordinates.size() / dimensions;
@@ -81,7 +66,7 @@ namespace
                 mesh.coordinates.emplace_back(diffuser.position.y_coordinate); // diffuser position y
                 if (!z_spec.is_2d)
                 {
-                    mesh.coordinates.emplace_back(z_spec.z_min + i * z_spec.z_step); // z coordinate
+                    mesh.coordinates.emplace_back(z_spec.zCoordinateAt(i)); // z coordinate
                 }
             }
 
@@ -93,7 +78,7 @@ namespace
                     mesh.coordinates.emplace_back(diffuser.intake.value().y_coordinate); // intake point y
                     if (!z_spec.is_2d)
                     {
-                        mesh.coordinates.emplace_back(z_spec.z_min + i * z_spec.z_step); // z coordinate
+                        mesh.coordinates.emplace_back(z_spec.zCoordinateAt(i)); // z coordinate
                     }
                 }
             }
@@ -106,12 +91,13 @@ namespace
                     mesh.coordinates.emplace_back(position.y_coordinate);
                     if (!z_spec.is_2d)
                     {
-                        mesh.coordinates.emplace_back(z_spec.z_min + i * z_spec.z_step); // z coordinate
+                        mesh.coordinates.emplace_back(z_spec.zCoordinateAt(i)); // z coordinate
                     }
                 }
             }
 
-            mesh.forward_map.emplace_back(makeDiffuserMapping(diffuser, diffuser_index_mapping, mesh.number_of_zcoordinates));
+            mesh.forward_map.emplace_back(
+                makeDiffuserMapping(diffuser, diffuser_index_mapping, mesh.number_of_zcoordinates));
         }
 
         mesh.number_of_nodes = mesh.coordinates.size() / dimensions;
