@@ -12,6 +12,7 @@ LICENSE                 text
 *.md                    text diff=markdown
 *.csv                   text eol=crlf
 *.tab                   text
+*.drawio                text eol=lf
 # Serialisation:
 *.json                  text
 *.toml                  text

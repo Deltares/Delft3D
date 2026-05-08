@@ -683,6 +683,13 @@ contains
             call warn_flush()
             return
          end if
+            
+         if (len_trim(operand_ini) == 1) then
+            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''operand'' is set to deprecated value '''// trim(operand_ini) &
+               //'''. Replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            call warn_flush()
+         end if
       end if
 
       if (strcmpi(quantity, 'frictioncoefficient')) then
@@ -2037,8 +2044,6 @@ end function resolve_initial_3d_target
 
    !> Resolve the target array and location type for an [Initial] quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.
-   !! Returns with target_array unassociated if the quantity is not recognized here,
-   !! or requires a 3D constituent array (salinity, tracers, sediment, WAQ).
    function resolve_initial_target(qid, inifilename, target_location_type, target_array) result(success)
       use messageHandling
       use m_alloc, only: realloc
@@ -2145,12 +2150,6 @@ end function resolve_initial_3d_target
             target_array => sa1
          end if
 
-         ! Quantities intentionally not handled here (3D constituent arrays):
-         ! initialsalinity, initialsedfrac, initialsediment, initialtracer,
-         ! initialverticalsedfracprofile, initialverticalsigmasedfracprofile,
-         ! initialwaqbot → all require target_array_3d + constituent index.
-         ! bedlevel → set elsewhere (setbedlevelfromextfile).
-         ! initialvelocity → unsupported, error emitted in process_initial_block.
       case default
          success = .false.
       end select
@@ -2158,11 +2157,7 @@ end function resolve_initial_3d_target
    end function resolve_initial_target
 
    !> Resolve the target array and location type for a [Parameter] quantity.
-   !! Handles all quantities that map to a plain real(dp) 1D array, plus time-dependent
-   !! EC-only quantities (null target_array, EC writes directly via quantity name).
-   !! Returns success=.false. if the quantity is not recognized, or if a required MDU
-   !! setting (e.g. WaveModelNr) is not active.
-   !! kx is set to 2 for nudgesalinitytemperature; 1 for all other quantities.
+   !! Handles all quantities that map to a plain real(dp) 1D array.
    function resolve_parameter_target(qid, inifilename, target_location_type, target_array, kx) result(success)
       use messageHandling
       use m_alloc, only: realloc, aerr
