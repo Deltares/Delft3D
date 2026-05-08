@@ -1946,6 +1946,7 @@ function resolve_initial_3d_target(quantity, target_location_type, target_array_
    use m_add_bndtracer, only: add_bndtracer
    use m_add_tracer, only: add_tracer
    use fm_location_types, only: UNC_LOC_S
+   use processes_input, only: paname, painp, num_spatial_parameters
 
    character(len=*), intent(in) :: quantity
    integer, intent(out) :: target_location_type
@@ -2022,6 +2023,12 @@ function resolve_initial_3d_target(quantity, target_location_type, target_array_
       end if
       first_index = iwqbot
       target_array_3d => wqbot
+
+   case ('waqparameter', 'waqsegmentnumber')
+      target_location_type = UNC_LOC_S
+      call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
+                                 waq_values=painp, index_waq_input=first_index)
+      allocate(target_array_3d(first_index:first_index, size(painp, 2)))
 
    case default
       success = .false.
