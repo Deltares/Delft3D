@@ -384,6 +384,131 @@ contains
 !
 !
 !==============================================================================
+   subroutine register_boundary_spectrum_files(sr, refdate)
+      use boundary_spectral_cache, only: register_boundary_spectral_file, reset_boundary_spectral_cache
+
+      implicit none
+
+      type(swan_type), intent(in) :: sr
+      integer, intent(in) :: refdate
+
+      integer :: ibound
+      integer :: isect
+
+      call reset_boundary_spectral_cache()
+
+      if (len_trim(sr%specfile) > 0) call register_boundary_spectral_file(trim(sr%specfile), refdate)
+
+      if (.not. associated(sr%bnd)) return
+
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%parread /= 1) cycle
+         if (.not. associated(sr%bnd(ibound)%spectrum)) cycle
+         do isect = 1, size(sr%bnd(ibound)%spectrum)
+            if (len_trim(sr%bnd(ibound)%spectrum(isect)) == 0) cycle
+            call register_boundary_spectral_file(trim(sr%bnd(ibound)%spectrum(isect)), refdate)
+         end do
+      end do
+   end subroutine register_boundary_spectrum_files
+
+
+!
+!==============================================================================
+   subroutine cleanup_boundary_spectrum_files()
+      use boundary_spectral_cache, only: cleanup_boundary_spectral_cache
+
+      implicit none
+
+      call cleanup_boundary_spectral_cache()
+   end subroutine cleanup_boundary_spectrum_files
+
+
+!
+!==============================================================================
+   subroutine replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
+      use precision_basics, only: hp
+
+      implicit none
+
+      character(*), intent(inout) :: line
+      type(swan_type), intent(in) :: sr
+      real(hp), intent(in) :: run_start
+      real(hp), intent(in) :: run_end
+
+      integer :: ibound
+      integer :: isect
+
+      if (len_trim(sr%specfile) > 0) call replace_cached_path(line, trim(sr%specfile), run_start, run_end)
+
+      if (.not. associated(sr%bnd)) return
+
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%parread /= 1) cycle
+         if (.not. associated(sr%bnd(ibound)%spectrum)) cycle
+         do isect = 1, size(sr%bnd(ibound)%spectrum)
+            if (len_trim(sr%bnd(ibound)%spectrum(isect)) == 0) cycle
+            call replace_cached_path(line, trim(sr%bnd(ibound)%spectrum(isect)), run_start, run_end)
+         end do
+      end do
+   end subroutine replace_cached_boundary_spectrum_paths
+
+
+!
+!==============================================================================
+   subroutine replace_cached_path(line, sourcefile, run_start, run_end)
+      use precision_basics, only: hp
+
+      implicit none
+
+      character(*), intent(inout) :: line
+      character(*), intent(in) :: sourcefile
+      real(hp), intent(in) :: run_start
+      real(hp), intent(in) :: run_end
+
+      integer :: new_length
+      character(256) :: activefile
+      character(256) :: newline
+      integer :: old_length
+      integer :: pos
+
+      call resolve_cached_boundary_spectrum_path(sourcefile, run_start, run_end, activefile)
+      if (trim(activefile) == trim(sourcefile)) return
+
+      pos = index(line, trim(sourcefile))
+      if (pos <= 0) return
+
+      old_length = len_trim(sourcefile)
+      new_length = len_trim(activefile)
+      if (new_length <= 0) return
+      if (len_trim(line) + max(0, new_length - old_length) > len(line)) return
+
+      newline = ' '
+      if (pos > 1) newline(1:pos - 1) = line(1:pos - 1)
+      newline(pos:pos + new_length - 1) = activefile(1:new_length)
+      if (pos + old_length <= len_trim(line)) newline(pos + new_length:) = line(pos + old_length:)
+      line = newline
+   end subroutine replace_cached_path
+
+
+!
+!==============================================================================
+   subroutine resolve_cached_boundary_spectrum_path(sourcefile, run_start, run_end, activefile)
+      use boundary_spectral_cache, only: resolve_boundary_spectral_file
+      use precision_basics, only: hp
+
+      implicit none
+
+      character(*), intent(in) :: sourcefile
+      real(hp), intent(in) :: run_start
+      real(hp), intent(in) :: run_end
+      character(*), intent(out) :: activefile
+
+      call resolve_boundary_spectral_file(sourcefile, run_start, run_end, activefile)
+   end subroutine resolve_cached_boundary_spectrum_path
+
+
+!
+!==============================================================================
    subroutine dealloc_swan(sr)
       implicit none
       !
@@ -2475,10 +2600,18 @@ contains
       character(15) :: tendc
       character(15), external :: datetime_to_string
       character(256) :: fname
+      real(hp) :: boundary_run_end
+      real(hp) :: boundary_run_start
 !
 !! executable statements -------------------------------------------------------
 !
       write (*, '(2a)') 'Updating pre-existing INPUT file: ', trim(filnam)
+      boundary_run_start = wavedata%time%timsec
+      if (sr%modsim == 3) then
+         boundary_run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+      else
+         boundary_run_end = boundary_run_start
+      end if
       !
       open (newunit=old_input, file=filnam, form='formatted', status='old', iostat=ierr)
       if (ierr /= 0) then
@@ -2525,6 +2658,7 @@ contains
             ! SPEC for netcdf hotfiles, with format hot_inest_date_time.nc
             call create_hotfile_line(fname, inest, line, sr, wavedata)
          end if
+         call replace_cached_boundary_spectrum_paths(line, sr, boundary_run_start, boundary_run_end)
          write (new_input, '(a)') line
          line = ' '
          line(1:2) = ' $ '
@@ -2676,6 +2810,7 @@ contains
       character(37) :: mudfil
       character(37) :: vegfil
       character(37) :: aicefil
+      character(256) :: active_specfile
       character(60) :: lijn
       character(60) :: outfirst
       character(256) :: line
@@ -2684,6 +2819,8 @@ contains
       character(4) :: copy
       type(swan_bnd), pointer :: bnd
       type(swan_dom), pointer :: dom
+      real(hp) :: boundary_run_end
+      real(hp) :: boundary_run_start
       !
       ! Do not add more variables to varnam1
       !
@@ -2701,6 +2838,12 @@ contains
       !
       tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
       write (outfirst, '(3a,f8.2,a)') "OUT ", tbegc, " ", sr%nonstat_interval, " MIN"
+      boundary_run_start = wavedata%time%timsec
+      if (sr%modsim == 3) then
+         boundary_run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+      else
+         boundary_run_end = boundary_run_start
+      end if
 
       dom => sr%dom(inest)
       !
@@ -3218,21 +3361,23 @@ contains
          do bound = 1, nb
             bnd => sr%bnd(bound)
             if (bnd%bndtyp == 4) then
+               call resolve_cached_boundary_spectrum_path(trim(sr%specfile), boundary_run_start, boundary_run_end, active_specfile)
                line = ' '
                line(1:10) = 'BOUN NEST '
                line(11:11) = ''''''
-               ind = index(sr%specfile, ' ') - 1
-               line(12:12 + ind) = sr%specfile
+               ind = index(active_specfile, ' ') - 1
+               line(12:12 + ind) = active_specfile
                line(12 + ind:12 + ind) = ''''''
                line(12 + ind + 1:12 + ind + 7) = ' CLOSED'
                write (luninp, '(1X,A)') line
                cycle
             elseif (bnd%bndtyp == 5) then
+               call resolve_cached_boundary_spectrum_path(trim(sr%specfile), boundary_run_start, boundary_run_end, active_specfile)
                line = ' '
                line(1:11) = 'BOUN WWIII '
                line(12:12) = ''''''
-               ind = index(sr%specfile, ' ') - 1
-               line(13:13 + ind) = sr%specfile
+               ind = index(active_specfile, ' ') - 1
+               line(13:13 + ind) = active_specfile
                line(13 + ind:13 + ind) = ''''''
                line(13 + ind + 1:13 + ind + 10) = ' FREE OPEN'
                write (luninp, '(1X,A)') line
@@ -3334,11 +3479,12 @@ contains
                                   & bnd%direction(1), bnd%dirspread(1)
                else
                   !                    Read conditions from file
-                  ind = index(bnd%spectrum(1), ' ') - 1
+                  call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(1)), boundary_run_start, boundary_run_end, active_specfile)
                   line(26:30) = 'FILE '
                   i = 31
                   line(i:i) = ''''''
-                  line(i + 1:i + ind) = bnd%spectrum(1)
+                  ind = index(active_specfile, ' ') - 1
+                  line(i + 1:i + ind) = active_specfile
                   i = i + ind
                   line(i + 1:i + 1) = ''''''
                   line(i + 3:i + 4) = ' 1'
@@ -3372,8 +3518,9 @@ contains
                      line(39:39) = ' '
                      i = 40
                      line(i:i) = ''''''
-                     ind = index(bnd%spectrum(sect), ' ') - 1
-                     line(i + 1:i + ind) = bnd%spectrum(sect)
+                     call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), boundary_run_start, boundary_run_end, active_specfile)
+                     ind = index(active_specfile, ' ') - 1
+                     line(i + 1:i + ind) = active_specfile
                      i = i + ind
                      line(i + 1:i + 1) = ''''''
                      line(i + 3:i + 4) = ' 1'
