@@ -28,7 +28,7 @@ add_library(${library_name} ${meteo_sources} ${sources})
                          netCDF::netcdff)
 
 
-target_link_libraries(${library_name} ${oss_dependencies})
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 
 set_source_files_properties(${src_path}/ec_parameters.F90
                             ${src_path}/ec_basic_interpolation.F90
@@ -53,11 +53,13 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     set(library_name ec_module_dll)
     set(library_renamed libec_module.so)
     # Add dynamic ec_module library
-    add_library(${library_name} SHARED ${src_path}/ec_module_api.f90 ${rc_version_file})
+    add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${rc_dir}")
+    add_library(${library_name} SHARED ${src_path}/ec_module_api.f90)
+    target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
     include_directories(${version_include_dir})
     set(oss_dependencies deltares_common kdtree2 kdtree_wrapper gridgeom io_netcdf ec_module)
 
-	target_link_libraries(${library_name} ${oss_dependencies})
+	target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/ec_module_api.f90)

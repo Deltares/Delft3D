@@ -13,7 +13,9 @@ set(rc_version_file ${dflowfm_path}/version/dflowfm_cli_version.rc)
 
 # Define the executable
 set(executable_name dflowfm-cli)
+add_rc_object_library(${executable_name} "${rc_version_file};${icon_file}" "${version_include_dir};${dflowfm_path}/version;${resource_path}")
 add_executable(${executable_name} ${source})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 target_link_libraries(${executable_name} PRIVATE
                       dflowfm_kernel
@@ -38,7 +40,6 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/net_main.F90
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
 if (WIN32)
-    target_link_libraries(${executable_name} PRIVATE netcdf)
     include_directories(${mpi_module_path}
                         ${version_include_dir}
     )
@@ -48,7 +49,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
     )
 
@@ -61,10 +61,6 @@ if (WIN32)
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
 
-    target_sources(${executable_name} PRIVATE
-                   ${rc_version_file}
-                   ${icon_file}
-    )
 endif(WIN32)
 
 target_link_directories(${executable_name} PRIVATE

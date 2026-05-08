@@ -23,13 +23,11 @@ set(dimr_lib_sources "${dimr_src_path}/clock.cpp"
 
 # Define the executable
 set(executable_name dimr)
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${absolute_header_path}")
 add_executable(${executable_name}   ${source}
                                     ${dimr_lib_sources}
-                                    ${rc_version_file} 
                                     ${header_version_file})
-
-# Common UNIX and WIN32 link library dependency
-target_link_libraries(${executable_name} netcdf)
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 if(UNIX)
    add_definitions(-DD3D_PLUGIN_EXT=".so")
@@ -47,11 +45,11 @@ if(UNIX)
                               "${getopt_include_path}"
                               "${expat_include_path}")
 
-    target_link_libraries(${executable_name} ${oss_dependencies} ${CMAKE_DL_LIBS})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies} ${CMAKE_DL_LIBS})
 
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    target_link_libraries(${executable_name} Threads::Threads)
+    target_link_libraries(${executable_name} PRIVATE Threads::Threads)
 
 
 endif(UNIX)
@@ -71,19 +69,17 @@ if (WIN32)
                                 "${getopt_include_path}"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${getopt_library_path_win}"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${executable_name}    ${oss_dependencies}
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                                                 "${mpi_c_library}"
                                                 "libexpat.lib"
                                                 "pthreadVC2.lib")

@@ -139,7 +139,6 @@ if (WIN32)
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${mpi_library_path}"
                             "${expat_library_path_win}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
@@ -156,7 +155,7 @@ if (WIN32)
                             "comdlg32.lib"
                             "gdi32.lib"
                             "winspool.lib"
-                            "netcdf.lib")
+    )
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")

@@ -38,14 +38,6 @@ if (WIN32)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})
-    # Set linker properties
-    message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name} PRIVATE
-                            "netcdf.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")

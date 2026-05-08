@@ -17,7 +17,9 @@ set_source_files_properties(${fortran_version_file}
 set(library_name gridgeom_dll)
 
 # Add dynamic gridgeom library
-add_library(${library_name} SHARED ${source_files} ${rc_version_file} ${version_file})
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${version_dir}")
+add_library(${library_name} SHARED ${source_files} ${version_file})
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 include_directories(${version_include_dir} ${version_dir})
 
 # Set the dependencies of this library
@@ -31,7 +33,7 @@ set(oss_dependencies    deltares_common
                         gridgeom)
 
 
-target_link_libraries(${library_name} ${oss_dependencies})
+target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
 
 if (WIN32)
     # Set additional compilation properties

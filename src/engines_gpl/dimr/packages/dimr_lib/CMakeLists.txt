@@ -29,10 +29,11 @@ file(GLOB headers ${header_path}/*.h)
 include_directories(${header_path}
                     ${version_include_dir})
 set(library_name dimr_lib)
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${absolute_header_path}")
 add_library(${library_name} SHARED  ${source}
                                     ${headers}
-                                    ${rc_version_file}
                                     ${header_version_file})
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
 if(UNIX)
     set(oss_dependencies    deltares_common_c
@@ -49,7 +50,7 @@ if(UNIX)
                               "${getopt_include_path}"
                               "${expat_include_path}")
 
-    target_link_libraries(${library_name} ${oss_dependencies})
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
     set_target_properties(${library_name} PROPERTIES OUTPUT_NAME dimr)
 endif()
@@ -72,19 +73,17 @@ if(WIN32)
                                "${getopt_include_path}"
                                "${expat_include_path}"
                                "${mpi_include_path}"
-                               "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${getopt_library_path_win}"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
-    target_link_libraries(${library_name}   ${oss_dependencies}
+    target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
                                             netCDF::netcdf
                                             "${mpi_c_library}"
                                             "libexpat.lib"

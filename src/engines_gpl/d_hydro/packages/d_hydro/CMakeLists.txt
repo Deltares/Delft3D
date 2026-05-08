@@ -41,9 +41,10 @@ file(GLOB source ${src_path}/*.cpp)
 
 set(d_hydro_src_path "${d_hydro_lib_path}/src")
 
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${absolute_header_path}")
 add_executable(${executable_name}   ${source}
-                                    ${rc_version_file} 
                                     ${header_version_file})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Common UNIX and WIN32 link library dependency
 if(UNIX)
@@ -82,13 +83,11 @@ if (WIN32)
                                 "${getopt_include_path}"
                                 "${expat_include_path}"
                                 "${mpi_include_path}"
-                                "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/include"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
     # Set the linker properties
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${getopt_library_path_win}"
                             "${expat_library_path_win}"
                             "${mpi_library_path}"
@@ -117,5 +116,5 @@ endif(WIN32)
 
 message(STATUS "build_config ${build_config}")
 
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/d_hydro/scripts/create_config_xml.tcl DESTINATION bin)

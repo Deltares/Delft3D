@@ -21,7 +21,9 @@ get_fortran_source_files(${src_path} sources)
 # Define the executable
 set(executable_name qdb)
 
-add_executable(${executable_name} ${sources} ${rc_version_file})
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${res_path}")
+add_executable(${executable_name} ${sources})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Set dependencies
 set(oss_dependencies    deltares_common

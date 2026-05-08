@@ -69,11 +69,7 @@ When building on Linux, some third party libraries are needed that are not vendo
 These include:
 
 - libuuid
-- HDF5
-- NetCDF (There are separate libraries for C and Fortran)
 - METIS
-- PROJ
-- GDAL
 - PETSc
 - ESMF
 - precice (Recently added; not yet used in the main branch)

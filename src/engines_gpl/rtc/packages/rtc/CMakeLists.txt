@@ -20,9 +20,10 @@ set(fortran_version_file ${CMAKE_CURRENT_SOURCE_DIR}/src/rtc_version.F90)
 
 include_directories(${version_include_dir} ${rtc_version_header_path})
 
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${rtc_version_header_path}")
 add_executable(${executable_name} ${source_files}
-                                ${rc_version_file} 
                                 ${fortran_version_file})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 set_source_files_properties(
                     src/rtc_main.F90

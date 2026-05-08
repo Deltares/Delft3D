@@ -138,6 +138,13 @@ class LibtiffConan(ConanFile):
                               "set_target_properties(tiffxx PROPERTIES SOVERSION ${SO_COMPATVERSION})",
                               "set_target_properties(tiffxx PROPERTIES SOVERSION ${SO_COMPATVERSION} WINDOWS_EXPORT_ALL_SYMBOLS ON)")
 
+        # On Windows, math functions are in the CRT; skip find_library(m) to
+        # avoid accidentally picking up Intel's libm.lib from oneAPI environments.
+        replace_in_file(self, os.path.join(self.source_folder, "cmake", "FindCMath.cmake"),
+                              "find_library(CMath_LIBRARY NAMES m)",
+                              "if(NOT WIN32)\n  find_library(CMath_LIBRARY NAMES m)\nendif()",
+        )
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()

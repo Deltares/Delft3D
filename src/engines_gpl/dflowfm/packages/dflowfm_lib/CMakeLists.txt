@@ -18,9 +18,11 @@ file(GLOB includes include/*.inc)
 
 # Define the executable
 set(library_name dflowfm_dll)
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${dflowfm_path}/version")
 add_library(${library_name} SHARED ${source}
                                    ${includes}
 )
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
 target_link_libraries(${library_name} PRIVATE
                       dflowfm_kernel
@@ -42,7 +44,6 @@ if (WIN32)
     target_link_directories(${library_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name} PRIVATE
@@ -55,7 +56,6 @@ if (WIN32)
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${library_name} PRIVATE ${nologo_flag})
 
-    target_sources(${library_name} PRIVATE ${rc_version_file})
 endif(WIN32)
 
 # Change the name of the target library to dflowfm.dll

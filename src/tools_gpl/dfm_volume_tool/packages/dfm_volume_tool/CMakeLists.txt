@@ -14,7 +14,9 @@ set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 # Define the executable
 set(executable_name dfm_volume_tool)
-add_executable(${executable_name} ${sources} ${rc_version_file})
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${res_path}")
+add_executable(${executable_name} ${sources})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Add dependencies
 if (UNIX)
@@ -80,7 +82,6 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
     )
 
@@ -93,7 +94,6 @@ if (WIN32)
                           "Shlwapi.lib"
                           "Gdi32.lib"
                           "Winspool.lib"
-                          "netcdf.lib"
                           "pthreadVC2.lib"
                           "${mpi_fortran_library}"
     )
@@ -104,6 +104,7 @@ if (WIN32)
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
+
 	configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 

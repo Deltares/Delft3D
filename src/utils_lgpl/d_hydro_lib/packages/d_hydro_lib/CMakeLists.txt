@@ -12,9 +12,7 @@ if (UNIX)
     FortranCInterface_HEADER("${CMAKE_CURRENT_SOURCE_DIR}/include/FortranCInterface.h" MACRO_NAMESPACE "FC_")
     #produce a config.h to be included
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in ${CMAKE_CURRENT_SOURCE_DIR}/include/config.h)  
-    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h") 
-    
-    include_directories(${NETCDF_INCLUDEDIR}) 
+    set(configFile "${CMAKE_CURRENT_SOURCE_DIR}/include/config.h")
     add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
