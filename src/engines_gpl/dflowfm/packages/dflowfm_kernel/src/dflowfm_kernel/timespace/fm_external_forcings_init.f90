@@ -186,6 +186,8 @@ contains
       end do
       threshold_abort = initial_threshold_abort
 
+      call finalize_source_sinks()
+
       if (allocated(itpenzr)) then
          deallocate (itpenzr)
       end if
@@ -1366,6 +1368,26 @@ contains
       call cleanup_cell_geom_polylines()
 
    end subroutine initialize_bubblescreens
+
+   subroutine finalize_source_sinks() 
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_real, bubblescreens, num_real_source_sink
+      use m_alloc, only: realloc
+
+      integer :: i, sidx
+      call realloc(is_source_sink_real, num_source_sink, fill=.true.)
+
+      do i = 1, size(bubblescreens)
+         do sidx = 1, size(bubblescreens(i)%source_sink_indices)
+            is_source_sink_real(bubblescreens(i)%source_sink_indices(sidx)) = .false.
+         end do
+      end do
+
+      num_real_source_sink = count(is_source_sink_real)
+
+      print *, 'Number of source/sinks: ', num_real_source_sink
+      print *,  'boolean map', is_source_sink_real
+
+   end subroutine finalize_source_sinks
 
    !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.

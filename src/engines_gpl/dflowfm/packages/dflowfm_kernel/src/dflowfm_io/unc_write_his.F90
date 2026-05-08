@@ -316,27 +316,29 @@ contains
                                                   id_rugdim, id_rugname) ! No geometry
 
          ! Source-sinks
-         if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
             ! Define geometry related variables
             nNodeTot = 0
             do i = 1, num_source_sink
-               nNodes = 0
-               k1 = source_sink_indices(1, i)
-               k2 = source_sink_indices(4, i)
-               if (k1 /= 0) then
-                  nNodes = nNodes + 1
+               if (is_source_sink_real(i)) then
+                  nNodes = 0
+                  k1 = source_sink_indices(1, i)
+                  k2 = source_sink_indices(4, i)
+                  if (k1 /= 0) then
+                     nNodes = nNodes + 1
+                  end if
+                  if (k2 /= 0) then
+                     nNodes = nNodes + 1
+                  end if
+                  nNodeTot = nNodeTot + nNodes
                end if
-               if (k2 /= 0) then
-                  nNodes = nNodes + 1
-               end if
-               nNodeTot = nNodeTot + nNodes
             end do
          end if
 
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, num_source_sink, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, num_real_source_sink, 'line', nNodeTot, id_strlendim, &
                                                   id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
-         if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', max_source_sink_polyline_points, id_srcptsdim))
             call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
             call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
@@ -677,33 +679,48 @@ contains
             end if
 
             ! Source-sinks
-            if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
-               call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, source_sink_x))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, source_sink_y))
+            if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
+               block
+                  real(kind=dp), dimension(:,:), allocatable :: tm_source_sink_x, tm_source_sink_y
+                  integer :: num_points
+                  num_points = source_sink_max_xy_points(num_source_sink)
+                  call realloc(tm_source_sink_x, [num_real_source_sink, max_source_sink_polyline_points])
+                  call realloc(tm_source_sink_y, [num_real_source_sink, max_source_sink_polyline_points])
+                  do i = 1, num_source_sink
+                     if (is_source_sink_real(i)) then
+                        tm_source_sink_x(i, 1:num_points) = source_sink_x(i, 1:num_points)
+                        tm_source_sink_y(i, 1:num_points) = source_sink_y(i, 1:num_points)
+                     end if
+                  end do
+                  call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, tm_source_sink_x))
+                  call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, tm_source_sink_y))
+               end block
                j = 1
-               call realloc(node_count, num_source_sink, fill=0)
+               call realloc(node_count, num_real_source_sink, fill=0)
                call realloc(geom_x, 2)
                call realloc(geom_y, 2)
                do i = 1, num_source_sink
-                  k1 = source_sink_indices(1, i)
-                  k2 = source_sink_indices(4, i)
-                  nNodes = 0
-                  if (k1 > 0) then
-                     nNodes = nNodes + 1
-                     geom_x(nNodes) = xz(k1)
-                     geom_y(nNodes) = yz(k1)
+                  if (is_source_sink_real(i)) then
+                     k1 = source_sink_indices(1, i)
+                     k2 = source_sink_indices(4, i)
+                     nNodes = 0
+                     if (k1 > 0) then
+                        nNodes = nNodes + 1
+                        geom_x(nNodes) = xz(k1)
+                        geom_y(nNodes) = yz(k1)
+                     end if
+                     if (k2 > 0) then
+                        nNodes = nNodes + 1
+                        geom_x(nNodes) = xz(k2)
+                        geom_y(nNodes) = yz(k2)
+                     end if
+                     node_count(i) = nNodes
+                     if (nNodes > 0) then
+                        call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordx, geom_x(1:nNodes), start=[j], count=[nNodes]))
+                        call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordy, geom_y(1:nNodes), start=[j], count=[nNodes]))
+                     end if
+                     j = j + nNodes
                   end if
-                  if (k2 > 0) then
-                     nNodes = nNodes + 1
-                     geom_x(nNodes) = xz(k2)
-                     geom_y(nNodes) = yz(k2)
-                  end if
-                  node_count(i) = nNodes
-                  if (nNodes > 0) then
-                     call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordx, geom_x(1:nNodes), start=[j], count=[nNodes]))
-                     call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_coordy, geom_y(1:nNodes), start=[j], count=[nNodes]))
-                  end if
-                  j = j + nNodes
                end do
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_count, node_count))
             end if
@@ -1488,7 +1505,9 @@ contains
 
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
-      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, num_source_sink, gate2cgen, ngategen
+      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, &
+                  ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, &
+                  num_source_sink, gate2cgen, ngategen, is_source_sink_real
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: his_write_settings
@@ -1571,7 +1590,7 @@ contains
       structure_names = [(rug(i)%name, integer :: i=1, num_rugs)]
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
-      structure_names = [(source_sink_name(i), integer :: i=1, num_source_sink)]
+      structure_names = pack(source_sink_name, is_source_sink_real)
       call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
       if (network%sts%numGates > 0) then
