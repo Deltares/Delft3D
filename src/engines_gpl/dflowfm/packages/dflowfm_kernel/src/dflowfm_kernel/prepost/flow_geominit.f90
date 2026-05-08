@@ -344,12 +344,12 @@ contains
       if (allocated(nd)) then
          deallocate (nd)
       end if
-      allocate(nd(ndx)) ! increase size of nd to include boundary nodes (safety)
-      call realloc(bl, ndx, keepExisting=.false., stat=ierr, fill=dmiss) ! increase size of nd to include boundary nodes (safety)
-      call realloc(bai, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) ! increase size of nd to include boundary nodes (safety)
-      call realloc(bai_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) ! increase size of nd to include boundary nodes (safety)
-      call realloc(ba_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) ! increase size of nd to include boundary nodes (safety)
-      call realloc(kcs, ndx, keepExisting=.false., stat=ierr, fill=1) ! increase size of nd to include boundary nodes (safety)
+      allocate(nd(ndx)) 
+      call realloc(bl, ndx, keepExisting=.false., stat=ierr, fill=dmiss) 
+      call realloc(bai, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
+      call realloc(bai_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
+      call realloc(ba_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
+      call realloc(kcs, ndx, keepExisting=.false., stat=ierr, fill=1) 
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
