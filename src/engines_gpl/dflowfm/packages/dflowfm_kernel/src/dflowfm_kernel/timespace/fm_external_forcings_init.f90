@@ -232,7 +232,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -299,7 +299,7 @@ contains
       operand = OPERAND_UNKNOWN
       call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
       if (is_successful) then
-         operand = convert_operand_string_to_integer(property_value)
+         operand = convert_legacy_operand_string_to_integer(property_value)
       end if
 
       num_items_in_block = 0

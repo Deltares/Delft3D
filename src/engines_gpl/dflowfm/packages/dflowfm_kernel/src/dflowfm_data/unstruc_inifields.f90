@@ -682,6 +682,13 @@ contains
             call warn_flush()
             return
          end if
+            
+         if (len_trim(operand_ini) == 1) then
+            write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
+               //trim(quantity)//'. Field ''operand'' is set to deprecated value '''// trim(operand_ini) &
+               //'''. Replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            call warn_flush()
+         end if
       end if
 
       if (strcmpi(quantity, 'frictioncoefficient')) then
