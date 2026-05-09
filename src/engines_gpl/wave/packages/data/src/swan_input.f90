@@ -2773,6 +2773,8 @@ contains
       integer :: myfr
       integer :: n
       integer :: nb
+      integer :: nactive
+      integer :: maxcopy
       integer :: npoints
       integer :: nsect
       integer :: orient
@@ -3365,8 +3367,10 @@ contains
                line = ' '
                line(1:10) = 'BOUN NEST '
                line(11:11) = ''''''
-               ind = index(active_specfile, ' ') - 1
-               line(12:12 + ind) = active_specfile
+               nactive = len_trim(active_specfile)
+               maxcopy = max(0, len(line) - 12 - 7)
+               ind = min(nactive, maxcopy)
+               if (ind > 0) line(12:11 + ind) = active_specfile(1:ind)
                line(12 + ind:12 + ind) = ''''''
                line(12 + ind + 1:12 + ind + 7) = ' CLOSED'
                write (luninp, '(1X,A)') line
@@ -3376,8 +3380,10 @@ contains
                line = ' '
                line(1:11) = 'BOUN WWIII '
                line(12:12) = ''''''
-               ind = index(active_specfile, ' ') - 1
-               line(13:13 + ind) = active_specfile
+               nactive = len_trim(active_specfile)
+               maxcopy = max(0, len(line) - 13 - 10)
+               ind = min(nactive, maxcopy)
+               if (ind > 0) line(13:12 + ind) = active_specfile(1:ind)
                line(13 + ind:13 + ind) = ''''''
                line(13 + ind + 1:13 + ind + 10) = ' FREE OPEN'
                write (luninp, '(1X,A)') line
@@ -3483,8 +3489,10 @@ contains
                   line(26:30) = 'FILE '
                   i = 31
                   line(i:i) = ''''''
-                  ind = index(active_specfile, ' ') - 1
-                  line(i + 1:i + ind) = active_specfile
+                  nactive = len_trim(active_specfile)
+                  maxcopy = max(0, len(line) - i - 4)
+                  ind = min(nactive, maxcopy)
+                  if (ind > 0) line(i + 1:i + ind) = active_specfile(1:ind)
                   i = i + ind
                   line(i + 1:i + 1) = ''''''
                   line(i + 3:i + 4) = ' 1'
@@ -3519,8 +3527,10 @@ contains
                      i = 40
                      line(i:i) = ''''''
                      call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), boundary_run_start, boundary_run_end, active_specfile)
-                     ind = index(active_specfile, ' ') - 1
-                     line(i + 1:i + ind) = active_specfile
+                     nactive = len_trim(active_specfile)
+                     maxcopy = max(0, len(line) - i - 4)
+                     ind = min(nactive, maxcopy)
+                     if (ind > 0) line(i + 1:i + ind) = active_specfile(1:ind)
                      i = i + ind
                      line(i + 1:i + 1) = ''''''
                      line(i + 3:i + 4) = ' 1'

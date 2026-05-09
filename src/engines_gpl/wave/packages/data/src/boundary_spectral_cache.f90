@@ -860,13 +860,23 @@ contains
       character(37) :: tempfile
 
       integer :: dot_index
+      character(256) :: source_trimmed
+      character(8) :: extension_upper
 
       tempfile = ' '
       write (tempfile, '(A,I3.3)') 'DWBSP', index_value
 
-      dot_index = index(trim(sourcefile), '.', back=.true.)
-      if (dot_index > 0 .and. len_trim(sourcefile(dot_index:)) <= 8) then
-         tempfile = trim(tempfile)//trim(sourcefile(dot_index:))
+      source_trimmed = trim(sourcefile)
+      dot_index = index(source_trimmed, '.', back=.true.)
+      if (dot_index > 0 .and. len_trim(source_trimmed(dot_index:)) <= 8) then
+         extension_upper = to_upper(adjustl(source_trimmed(dot_index:dot_index + min(3, len_trim(source_trimmed(dot_index:)) - 1))))
+         if (extension_upper(1:4) == '.SP1') then
+            tempfile = trim(tempfile)//'.SP1'
+         elseif (extension_upper(1:4) == '.SP2') then
+            tempfile = trim(tempfile)//'.SP2'
+         else
+            tempfile = trim(tempfile)//trim(source_trimmed(dot_index:))
+         end if
       else
          tempfile = trim(tempfile)//'.SP2'
       end if
