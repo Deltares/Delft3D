@@ -864,7 +864,7 @@ contains
       character(8) :: extension_upper
 
       tempfile = ' '
-      write (tempfile, '(A,I3.3)') 'DWBSP', index_value
+      write (tempfile, '(A,I6.6)') 'DWBSP', index_value
 
       source_trimmed = trim(sourcefile)
       dot_index = index(source_trimmed, '.', back=.true.)
