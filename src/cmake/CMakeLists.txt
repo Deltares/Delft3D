@@ -25,7 +25,13 @@ set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the locat
 set(checkout_root ${checkout_src_root}/..)
 
 # TODO ------------------------- temporary conan stuff -------------------------
-list(PREPEND CMAKE_PREFIX_PATH "${checkout_root}/build/generators")
+if (WIN32)
+    list(PREPEND CMAKE_PREFIX_PATH "${checkout_root}/build/generators")
+endif(WIN32)
+
+if (UNIX)
+    list(PREPEND CMAKE_PREFIX_PATH "${checkout_root}/build/${CMAKE_BUILD_TYPE}/generators")
+endif(UNIX)
 
 find_package(netCDF CONFIG REQUIRED)
 find_package(netCDF-Fortran CONFIG REQUIRED)

@@ -155,10 +155,10 @@ export UV_TOOL_DIR=/opt/uv/share/uv/tools
 export UV_PYTHON_BIN_DIR=/opt/uv/bin
 export UV_TOOL_BIN_DIR=/opt/uv/bin
 
-# Add `/opt/uv/bin` to the `PATH` of all users.
-echo 'PATH=/opt/uv/bin:${PATH}' >> /etc/bashrc
-
 # Install python and python tools.
 uv python install 3.12 --default
 uv tool install conan
 EOF
+
+# Add python 3.12 and uv tools to PATH for all users.
+ENV PATH=/opt/uv/bin:$PATH
