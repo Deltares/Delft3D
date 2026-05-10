@@ -157,7 +157,7 @@ function wave_init(mode_in, mdw_file) result(retval)
    integer                                      :: i_swan       ! counter
    integer                                      :: it01flow     ! reference date obtained from FLOW
    integer                                      :: mtdim
-   real                                         :: tscaleflow   ! basic time unit == flow time step (s)
+   real(hp)                                     :: tscaleflow   ! basic time unit == flow time step (s)
    real(fp)       , dimension(:,:), allocatable :: x_fp         ! Copy of x-coordinate of grid in flexible precision, needed for external forcing module
    real(fp)       , dimension(:,:), allocatable :: y_fp         ! Copy of y-coordinate of grid in flexible precision, needed for external forcing module
    character(60) , dimension(:), allocatable    :: extforce_quantities
@@ -462,7 +462,7 @@ function wave_master_step(stepsize) result(retval)
          if (swan_run%flowgridfile == ' ') then
             call settimtscale(wavedata%time, timtscale, swan_run%modsim, swan_run%nonstat_interval)
          else
-            call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,sp), swan_run%modsim, swan_run%nonstat_interval)
+            call settimsec(wavedata%time, wavedata%time%timsec + real(stepsize,hp), swan_run%modsim, swan_run%nonstat_interval)
          endif
          !
          ! Run n_swan nested SWAN runs
