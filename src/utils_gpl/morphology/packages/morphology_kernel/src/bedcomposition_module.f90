@@ -249,7 +249,7 @@ function updmorlyr(this, dbodsd, dz, dunelength, sbot, hdt, messages) result (is
     type(bedcomp_data)                                                                           :: this 
     real(fp), dimension(this%settings%nfrac, this%settings%nmlb:this%settings%nmub), intent(in)  :: dbodsd  !  change in sediment composition, units : kg/m2
     real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(out) :: dz      !  change in bed level, units : m
-    real(fp), dimension(:), pointer                                                , intent(in)  :: dunelength   !  length of the dunes, units : m 
+    real(fp), dimension(this%settings%nmlb:this%settings%nmub)                     , intent(in)  :: dunelength   !  length of the dunes, units : m 
     real(fp)                                                                       , intent(in)  :: hdt          !  half time step
     real(fp), dimension(this%settings%nmlb:this%settings%nmub, this%settings%nfrac), intent(in)  :: sbot    
     type(message_stack)                                                                          :: messages
