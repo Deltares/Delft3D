@@ -33,6 +33,7 @@ function checkmeteoheader(meteoitem) result(success)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use meteo_data
+    use m_ec_utm_inverse, only: is_valid_utm_zone
     use precision
     implicit none
 !
@@ -148,8 +149,8 @@ function checkmeteoheader(meteoitem) result(success)
        ! Check units for y_wind
        !
        if (meteoitem%n_quantity == 3) then 
-          if (meteoitem%units(2) /= 'm s-1') then
-              write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for y_wind, expecting degree, but getting ', &
+          if (meteoitem%quantities(2) == 'y_wind' .and. meteoitem%units(2) /= 'm s-1') then
+              write(meteomessage, '(2a)') 'Meteo input: Incorrect unit given for y_wind, expecting m s-1, but getting ', &
                  & trim(meteoitem%units(2))
               success = .false.
               return
@@ -327,7 +328,16 @@ function checkmeteoheader(meteoitem) result(success)
        !
        if (trim(meteoitem%grid_unit) /= 'degree'  .and. &
          & trim(meteoitem%spw_utm_zone_target) /= 'nil') then
-          write(meteomessage, '(a)') 'Meteo input: spw_utm_target_zone must be nil when specifying spiderweb grid coordinates in m.'
+          write(meteomessage, '(a)') 'Meteo input: spw_utm_zone_target must be nil when specifying spiderweb grid coordinates in m.'
+          success = .false.
+          return
+       endif
+       if (trim(meteoitem%grid_unit) == 'degree' .and. &
+         & trim(meteoitem%spw_utm_zone_target) /= 'nil' .and. &
+         & .not. is_valid_utm_zone(meteoitem%spw_utm_zone_target)) then
+          write(meteomessage, '(3a)') 'Meteo input: Invalid spw_utm_zone_target "', &
+             & trim(meteoitem%spw_utm_zone_target), &
+             & '". Expecting UTM zone 1..60 followed by hemisphere N or S, for example 53N.'
           success = .false.
           return
        endif

@@ -2226,9 +2226,10 @@ contains
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType_spw) .and. &
                  ecElementSetSetRadius(instancePtr, elementSetId, radius, spw_merge_frac, radius_unit) .and. &
-                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols)) .and. &
+                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols) .and. &
                  ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit)) then
          success = .false.
+         return
       end if
       !
       ! ===== quantity1: wind_speed =====

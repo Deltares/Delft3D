@@ -37,6 +37,7 @@ module m_ec_elementSet
    use m_ec_support
    use m_ec_alloc
    use m_alloc
+   use m_ec_utm_inverse, only: is_valid_utm_zone
    
    implicit none
    
@@ -983,14 +984,26 @@ module m_ec_elementSet
          elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
          if (associated(elementSetPtr)) then
             if (elementSetPtr%ofType == elmSetType_spw) then
+               if (trim(gridunit) /= 'degree' .and. trim(utmzone) /= 'nil') then
+                  call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: " // &
+                                      "spw_utm_zone_target must be nil when specifying spiderweb grid coordinates in m.")
+                  return
+               end if
+               if (trim(gridunit) == 'degree' .and. trim(utmzone) /= 'nil' .and. &
+                  & .not. is_valid_utm_zone(utmzone)) then
+                  call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: Invalid spw_utm_zone_target '" // &
+                                      trim(utmzone) // "'. Expected UTM zone 1..60 followed by hemisphere N or S, " // &
+                                      "for example 53N.")
+                  return
+               end if
                elementSetPtr%utmzone = utmzone
                elementSetPtr%gridunit = gridunit
                success = .true.
             else
-               call setECMessage("WARNING: ec_elementSet::ecElementSetSetUTMzone: Won't set UTM zone of target grid for this ElementSet type.")
+               call set_ec_message("WARNING: ec_elementSet::ecElementSetSetUTMzone: Won't set UTM zone of target grid for this ElementSet type.")
             end if
          else
-            call setECMessage("ERROR: ec_elementSet::ecElementSetSetRadius: Cannot find an ElementSet with the supplied id.")
+            call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetUTMzone
       

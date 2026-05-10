@@ -304,7 +304,22 @@ function addmeteoitem(runid, inputfile, gridsferic, num_columns, num_rows) resul
     !
     ! Only for space varying meteo input on a separate grid
     !
-    if (meteoitem%filetype /= uniuvp .and. meteoitem%filetype /= meteo_on_computational_grid .and. meteoitem%filetype /= meteo_on_spiderweb_grid) then
+    if (meteoitem%filetype == meteo_on_spiderweb_grid) then
+       if (meteogridsferic .neqv. gridsferic) then
+          if (meteogridsferic .and. .not. gridsferic) then
+             if (trim(meteoitem%spw_utm_zone_target) == 'nil') then
+                success = .false.
+                meteomessage = 'Meteo input: spw_utm_zone_target must be specified when applying a spiderweb grid ' // &
+                             & 'in degrees on a Cartesian hydrodynamic grid'
+                return
+             endif
+          else
+             success = .false.
+             meteomessage = 'Meteo grid and hydrodynamic grid must be of the same type: Cartesian or spherical'
+             return
+          endif
+       endif
+    elseif (meteoitem%filetype /= uniuvp .and. meteoitem%filetype /= meteo_on_computational_grid) then
        if (meteogridsferic .neqv. gridsferic) then
           success = .false.
           meteomessage = 'Meteo grid and hydrodynamic grid must be of the same type: Cartesian or spherical'

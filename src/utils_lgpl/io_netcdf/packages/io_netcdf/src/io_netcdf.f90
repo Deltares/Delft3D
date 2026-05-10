@@ -1492,6 +1492,8 @@ contains
                ! This now happens with our native grid writer in eg interacter
                if (ierr == nf90_noerr) then
                   read (tmpstring(index(tmpstring, ':') + 1:len_trim(tmpstring)), *) datasets(ioncid)%crs%epsg_code ! 'EPSG:99999'
+               else
+                  datasets(ioncid)%crs%epsg_code = 0
                end if
             end if
          end if

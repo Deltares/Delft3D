@@ -2443,6 +2443,7 @@ contains
       integer :: mf, nf
       integer :: twx, twy, twp !< numbering of target items
       integer :: swr, swd, swp !< numbering of source items
+      logical :: utm_success
 
       !
       success = .false.
@@ -2512,7 +2513,8 @@ contains
          yctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
          if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'nil' .and.  &
              trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%gridunit) == 'degree') then
-            call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc)
+            call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc, utm_success)
+            if (.not. utm_success) return
          else
             xc = xctemp
             yc = yctemp
