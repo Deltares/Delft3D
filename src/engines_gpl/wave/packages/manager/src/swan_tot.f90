@@ -245,6 +245,10 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             sumvars = .true.
             extr_var1 = dom%qextnd(q_bath) == 2
             extr_var2 = dom%qextnd(q_wl) == 2
+            if (swan_grids(i_swan)%unstructured) then
+               extr_var1 = .false.
+               extr_var2 = .false.
+            endif
             call write_swan_file(swan_input_fields%dps, &
                                 & swan_input_fields%s1, &
                                 & swan_input_fields%mmax, &
@@ -261,6 +265,10 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             sumvars = .false.
             extr_var1 = dom%qextnd(q_cur) == 2
             extr_var2 = dom%qextnd(q_cur) == 2
+            if (swan_grids(i_swan)%unstructured) then
+               extr_var1 = .false.
+               extr_var2 = .false.
+            endif
             call write_swan_file(swan_input_fields%u1, &
                                 & swan_input_fields%v1, &
                                 & swan_input_fields%mmax, &
@@ -277,6 +285,10 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             sumvars = .false.
             extr_var1 = dom%qextnd(q_wind) == 2
             extr_var2 = dom%qextnd(q_wind) == 2
+            if (swan_grids(i_swan)%unstructured) then
+               extr_var1 = .false.
+               extr_var2 = .false.
+            endif
             call write_swan_file(swan_input_fields%windu, &
                                 & swan_input_fields%windv, &
                                 & swan_input_fields%mmax, &
@@ -339,7 +351,9 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
 
          ! Write SWAN input
          write (*, '(a)') '  Write SWAN input'
-         dom%curlif = swan_grids(i_swan)%tmp_name
+         if (.not.swan_grids(i_swan)%unstructured) then
+            dom%curlif = swan_grids(i_swan)%tmp_name
+         endif
 
          call write_swan_input(swan_run, itide, wavedata%time%calccount, i_swan, swan_grids(i_swan)%xymiss, wavedata)
 
@@ -383,9 +397,11 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
                !
                write (*, '(a,i10,a,f15.3)') '  Write WAVE map file, nest ', i_swan, ' time ', wavedata%time%timmin
                DataFromPreviousTimestep = .true.
-               call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields,&
-                                  & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                                  & swan_run%gamma0, swan_run%output_ice, swan_run%nautical_convention, swan_run%north_direction)
+               if (.not.swan_grids(i_swan)%unstructured) then
+                  call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields,&
+                                     & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
+                                     & swan_run%gamma0, swan_run%output_ice, swan_run%nautical_convention, swan_run%north_direction)
+               endif
                if (swan_run%swmapwritenetcdf) then
                   if (allocated(tempveg)) deallocate(tempveg)
                   allocate(tempveg(swan_input_fields%mmax, swan_input_fields%nmax))
@@ -430,9 +446,11 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             !
             write (*, '(a,i10,a,f15.3)') '  Write WAVE map file, nest ', i_swan, ' time ', wavedata%time%timmin
             DataFromPreviousTimestep = .false.
-            call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
-                               & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
-                               & swan_run%gamma0, swan_run%output_ice, swan_run%nautical_convention, swan_run%north_direction)
+            if (.not.swan_grids(i_swan)%unstructured) then
+               call write_wave_map(swan_grids(i_swan), swan_output_fields, swan_input_fields, &
+                                  & n_swan_grids, wavedata, swan_run%casl, DataFromPreviousTimestep, &
+                                  & swan_run%gamma0, swan_run%output_ice, swan_run%nautical_convention, swan_run%north_direction)
+            endif
             if (swan_run%swmapwritenetcdf) then
                if (allocated(tempveg)) deallocate(tempveg)
                allocate(tempveg(swan_input_fields%mmax, swan_input_fields%nmax))

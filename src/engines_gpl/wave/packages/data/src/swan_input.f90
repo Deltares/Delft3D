@@ -100,6 +100,10 @@ module swan_input
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
+   integer, parameter :: SWAN_GRID_STRUCTURED = 0
+   integer, parameter :: SWAN_GRID_UNSTRUCTURED = 1
+   integer, parameter :: SWAN_UNSTRUC_TRIANGLE = 1
+   integer, parameter :: SWAN_UNSTRUC_EASYMESH = 2
    integer, parameter :: NUM_ACCUR = 0
    integer, parameter :: NUM_STOPC = 1
    !
@@ -134,6 +138,7 @@ module swan_input
       integer :: ice = 0
       integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
+      integer :: unstructured_grid_generator = 0
       ! Possible values:
       !    FVT_SURFACE_LAYER           : use FLOW velocity at surface
       !    FVT_DEPTH_AVERAGED (default): use depth averaged FLOW velocity
@@ -226,6 +231,7 @@ module swan_input
       integer :: msurpnts ! minimum number of surrounding valid source-points for a target-point to be covered. default: 3, Delft3D: 4
       integer :: output_ice
       integer :: output_veg
+      integer :: swangridtype ! structured or unstructured SWAN computational grid
       !
       integer, dimension(4) :: ts_wl
       integer, dimension(4) :: ts_xv
@@ -471,6 +477,7 @@ contains
       sr%swuvt = .false.
       sr%swwindt = .false.
       sr%timedependent = .false.
+      sr%swangridtype = SWAN_GRID_STRUCTURED
       !
       keywbased = .false.
       call read_keyw_mdw(sr, wavedata, keywbased)
@@ -648,6 +655,20 @@ contains
          end if
       case default
          write (*, *) 'SWAN_INPUT: invalid SWAN execution mode. Expected SwanMode = "exe" or "lib"'
+         call handle_errors_mdw(sr)
+      end select
+      !
+      parname = 'structured'
+      sr%swangridtype = SWAN_GRID_STRUCTURED
+      call prop_get(mdw_ptr, 'General', 'SwanGridType', parname)
+      call str_lower(parname)
+      select case (trim(parname))
+      case ('structured', 'regular')
+         sr%swangridtype = SWAN_GRID_STRUCTURED
+      case ('unstructured', 'unswan')
+         sr%swangridtype = SWAN_GRID_UNSTRUCTURED
+      case default
+         write (*, *) 'SWAN_INPUT: invalid SWAN grid type. Expected SwanGridType = "structured" or "unstructured"'
          call handle_errors_mdw(sr)
       end select
       !
@@ -1324,6 +1345,7 @@ contains
       call prop_get(mdw_ptr, 'Output', 'COMFile', sr%flowgridfile)
       call prop_get(mdw_ptr, 'Output', 'AppendCOM', sr%append_com)
       call prop_get(mdw_ptr, 'Output', 'MapWriteNetCDF', sr%swmapwritenetcdf)
+      if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) sr%swmapwritenetcdf = .true.
       call prop_get(mdw_ptr, 'Output', 'NetCDFSinglePrecision', sr%netcdf_sp)
       call prop_get(mdw_ptr, 'Output', 'KeepINPUT', sr%keepinput)
       call prop_get(mdw_ptr, 'Output', 'ncFormat', par)
@@ -1554,6 +1576,7 @@ contains
          dom%qextnd(q_cur) = sr%dom(1)%qextnd(q_cur)
          dom%qextnd(q_wind) = sr%dom(1)%qextnd(q_wind)
          dom%flowVelocityType = sr%dom(1)%flowVelocityType
+         dom%unstructured_grid_generator = 0
       end do
       !
       domainnr = 0
@@ -1574,22 +1597,36 @@ contains
             write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif) ,'" and adjust input accordingly.'
             call handle_errors_mdw(sr)
          end if
-         call readgriddims(dom%curlif, dom%mxc, dom%myc)
          if (dom%curlif == '') then
             write (*, *) 'SWAN_INPUT: grid not found for domain', domainnr
             call handle_errors_mdw(sr)
          end if
-         !
-         ! poles? No, fences!
-         !
-         dom%mxc = dom%mxc - 1
-         dom%myc = dom%myc - 1
+         if (sr%swangridtype == SWAN_GRID_STRUCTURED) then
+            call readgriddims(dom%curlif, dom%mxc, dom%myc)
+            !
+            ! poles? No, fences!
+            !
+            dom%mxc = dom%mxc - 1
+            dom%myc = dom%myc - 1
+         else
+            dom%mxc = -999
+            dom%myc = -999
+         end if
          !
          ! Read bathymetry
          !
          dom%depfil = ''
          call prop_get(tmp_ptr, '*', 'BedLevelGrid', dom%depfil)
-         if (dom%depfil /= '') then
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            if (dom%depfil /= '') then
+               write (*, *) 'SWAN_INPUT: BedLevelGrid is not supported for unstructured SWAN grids. Use BedLevel values on the unSWAN vertices.'
+               call handle_errors_mdw(sr)
+            end if
+            dom%depfil = dom%curlif
+            dom%mxb = dom%mxc
+            dom%myb = dom%myc
+            dom%curvibot = 1
+         elseif (dom%depfil /= '') then
             call readgriddims(dom%depfil, dom%mxb, dom%myb)
             !
             ! poles? No, fences!
@@ -2414,11 +2451,11 @@ contains
       real :: wdir
       real :: wvel
       real(hp) :: xymiss
-      character(37) :: curlif
+      character(256) :: curlif
       type(swan_type) :: sr
       type(wave_data_type) :: wavedata
       !
-      curlif = sr%dom(inest)%curlif(1:37)
+      curlif = trim(sr%dom(inest)%curlif)
       wvel = sr%wvel(itide)
       wdir = sr%wdir(itide)
       !
@@ -2604,7 +2641,7 @@ contains
       real(hp), intent(in) :: xymiss
       character(16), intent(in) :: prname
       character(*), intent(in) :: casl
-      character(37), intent(in) :: curlif
+      character(*), intent(in) :: curlif
       character(37), intent(in) :: ffil
       character(37) :: wfil
       character(4), intent(in) :: prnumb
@@ -2868,10 +2905,14 @@ contains
       !
       line = ' '
       line(1:6) = 'CGRID '
-      line(7:11) = 'CURV '
-      write (line(12:21), '(2(I4,1X))') dom%mxc, dom%myc
-      ! Write missing values in exactly the same format as used when writing the grid
-      write (line(22:80), '(A,2(E25.17,1X))') 'EXCEPT ', xymiss, xymiss
+      if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+         line(7:18) = 'UNSTRUCTURED'
+      else
+         line(7:11) = 'CURV '
+         write (line(12:21), '(2(I4,1X))') dom%mxc, dom%myc
+         ! Write missing values in exactly the same format as used when writing the grid
+         write (line(22:80), '(A,2(E25.17,1X))') 'EXCEPT ', xymiss, xymiss
+      endif
       line(82:83) = ' _'
       write (luninp, '(1X,A)') line
       line = ' '
@@ -2892,20 +2933,33 @@ contains
       write (luninp, '(1X,A)') line
       line = ' '
       !
-      !     READING of coordinates CURVILINEAR computational grid
+      !     READING of computational grid
       !
-      line(1:13) = 'READ COOR 1. '
-      ind = index(curlif, ' ')
-      i = 14
-      line(i:i) = ''''''
-      line(15:14 + ind) = curlif
-      line(14 + ind:14 + ind) = ''''''
-      line(15 + ind:16 + ind) = ' _'
-      line(17 + ind:) = ' '
-      write (luninp, '(1X,A)') line
-      line = ' '
-      line(1:) = ' 4   0   1 FREE'
-      write (luninp, '(1X,A)') line
+      if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+         select case (dom%unstructured_grid_generator)
+         case (SWAN_UNSTRUC_TRIANGLE)
+            line = "READGRID UNSTRUCTURED TRIANGLE '"//trim(curlif)//"'"
+         case (SWAN_UNSTRUC_EASYMESH)
+            line = "READGRID UNSTRUCTURED EASYMESH '"//trim(curlif)//"'"
+         case default
+            write (*, '(a)') '*** ERROR: Unknown unSWAN grid generator.'
+            call wavestop(1, 'Unknown unSWAN grid generator.')
+         end select
+         write (luninp, '(1X,A)') trim(line)
+      else
+         line(1:13) = 'READ COOR 1. '
+         ind = index(curlif, ' ')
+         i = 14
+         line(i:i) = ''''''
+         line(15:14 + ind) = curlif
+         line(14 + ind:14 + ind) = ''''''
+         line(15 + ind:16 + ind) = ' _'
+         line(17 + ind:) = ' '
+         write (luninp, '(1X,A)') line
+         line = ' '
+         line(1:) = ' 4   0   1 FREE'
+         write (luninp, '(1X,A)') line
+      endif
       line = ' '
       line(1:2) = '$ '
       write (luninp, '(1X,A)') line
@@ -2917,8 +2971,12 @@ contains
       lijn = 'INPGRID _'
       write (luninp, '(1X,A)') lijn
       if (dom%curvibot == 1) then
-         line(1:18) = 'BOTTOM CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxb, dom%myb
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            line(1:19) = 'BOTTOM UNSTRUCTURED'
+         else
+            line(1:18) = 'BOTTOM CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxb, dom%myb
+         endif
          write (luninp, '(1X,A)') line
       else
          fname = dom%depfil
@@ -2965,8 +3023,12 @@ contains
       !
       if (dom%qextnd(q_cur) > 0 .or. swuvi) then
          lijn = 'INPGRID _'
-         line(1:18) = 'CURREN CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            line(1:19) = 'CURREN UNSTRUCTURED'
+         else
+            line(1:18) = 'CURREN CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -2996,8 +3058,12 @@ contains
          write (luninp, '(1X,A)') '$'
          line = ' '
          lijn = 'INPGRID _'
-         line(1:18) = 'AICE CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            line(1:18) = 'AICE UNSTRUCTURED'
+         else
+            line(1:18) = 'AICE CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -3015,8 +3081,12 @@ contains
       if (wavedata%mode == flow_mud_online) then
          write (luninp, '(1X,A)') '$'
          lijn = 'INPGRID _'
-         line(1:18) = 'MUDL CURV 0. 0. '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            line(1:18) = 'MUDL UNSTRUCTURED'
+         else
+            line(1:18) = 'MUDL CURV 0. 0. '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+         endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '
@@ -3036,8 +3106,12 @@ contains
             if (dom%vegfil /= '') then
                write (luninp, '(1X,A)') '$'
                lijn = 'INPGRID _'
-               line(1:19) = 'NPLANTS CURV 0. 0. '
-               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+               if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+                  line(1:22) = 'NPLANTS UNSTRUCTURED'
+               else
+                  line(1:19) = 'NPLANTS CURV 0. 0. '
+                  write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+               endif
                write (luninp, '(1X,A)') lijn
                write (luninp, '(1X,A)') trim(line)
                line = ' '
@@ -3056,8 +3130,12 @@ contains
             ! dom%veg_from_flow is true
             write (luninp, '(1X,A)') '$'
             lijn = 'INPGRID _'
-            line(1:19) = 'NPLANTS CURV 0. 0. '
-            write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+            if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+               line(1:22) = 'NPLANTS UNSTRUCTURED'
+            else
+               line(1:19) = 'NPLANTS CURV 0. 0. '
+               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+            endif
             write (luninp, '(1X,A)') lijn
             write (luninp, '(1X,A)') trim(line)
             line = ' '
@@ -3095,7 +3173,14 @@ contains
          !        *** definition of grid ***
          !
          write (luninp, '(1X,A)') '$'
-         if (.not. sr%curviwind) then
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            lijn = 'INPGRID _'
+            line = ' '
+            line(1:18) = 'WIND UNSTRUCTURED'
+            write (luninp, '(1X,A)') lijn
+            write (luninp, '(1X,A)') trim(line)
+            line = ' '
+         elseif (.not. sr%curviwind) then
             lijn = 'INPGRID _'
             line = ' '
             line(1:7) = 'WIND   '
@@ -3172,15 +3257,19 @@ contains
       if (varfri) then
          lijn = 'INPGRID _'
          line = ' '
-         line(1:18) = 'FRIC CURV 0. 0.   '
-         write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
-         if (sr%excval > -998.99 .or. sr%excval < -999.01) then
-            line(29:37) = ' EXCVAL '
-            write (line(38:49), '(F12.4)') sr%excval
-            line(50:) = ' '
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            line(1:18) = 'FRIC UNSTRUCTURED'
          else
-            line(29:) = ' '
-         end if
+            line(1:18) = 'FRIC CURV 0. 0.   '
+            write (line(19:28), '(2(I4,1X))') dom%mxc, dom%myc
+            if (sr%excval > -998.99 .or. sr%excval < -999.01) then
+               line(29:37) = ' EXCVAL '
+               write (line(38:49), '(F12.4)') sr%excval
+               line(50:) = ' '
+            else
+               line(29:) = ' '
+            end if
+         endif
          write (luninp, '(1X,A)') lijn
          write (luninp, '(1X,A)') trim(line)
          line = ' '

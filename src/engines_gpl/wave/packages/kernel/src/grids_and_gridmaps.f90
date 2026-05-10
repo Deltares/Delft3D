@@ -62,6 +62,8 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
                                                          !         Wave data is written to NetCDF file(s)
                                                          !         Mapping between grids is done using an external program e.g. ESMF_RegridWeightGen
                                                          !         Therefore all grids are written to a temporary NetCDF file in a specific format
+   logical                           :: external_flow2swan
+   logical                           :: external_swan2flow
    character (256) ,dimension(nswmax):: swangrid
    character (256)                   :: grid_name        ! name of grid
    character (4)                     :: grid_file_type   ! type of grid file (SWAN/FLOW/COM/TRIM)
@@ -76,6 +78,8 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
    else
       netcdf_files = .false.
    endif
+   external_flow2swan = netcdf_files .or. sr%swangridtype == SWAN_GRID_UNSTRUCTURED
+   external_swan2flow = sr%swangridtype == SWAN_GRID_UNSTRUCTURED
    ! Find out number of FLOW domains
    !
    write(*,'(a)') '  Initialising grids and grid mappings'
@@ -118,12 +122,21 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
    
    do i=1,n_swan_grids
       grid_name = swangrid(i)
-      grid_file_type ='FLOW'
+      if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+         grid_file_type = 'UNST'
+      else
+         grid_file_type = 'FLOW'
+      endif
       xy_loc         ='CORNER'
       call Alloc_and_get_grid(i, swan_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity)
+      sr%dom(i)%unstructured_grid_generator = swan_grids(i)%unstructured_grid_generator
+      if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+         sr%dom(i)%curlif = swan_grids(i)%grid_name
+      endif
       call write_bnd_loc(i,swan_grids(i))
-      if (netcdf_files) then
+      if (external_flow2swan .and. n_flow_grids > 0) then
          call write_wave_grid_netcdf(i, swan_grids(i), grid_name, flow2swan_maps(i,1)%r_tmp_filename)
+         swan2flow_maps(i,1)%p_tmp_filename = flow2swan_maps(i,1)%r_tmp_filename
       endif
    enddo
 
@@ -147,12 +160,16 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
          grid_file_type ='COM'
          xy_loc         ='CENTER'
          call Alloc_and_get_grid(i, flow_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity)
+         if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+            call write_wave_grid_netcdf(i, flow_grids(i), grid_name, flow2swan_maps(1,i)%p_tmp_filename)
+         endif
       endif
    enddo
 
    do i=1,n_swan_grids
       do j=2,n_flow_grids
          flow2swan_maps(i,j)%r_tmp_filename = flow2swan_maps(i,1)%r_tmp_filename
+         swan2flow_maps(i,j)%p_tmp_filename = swan2flow_maps(i,1)%p_tmp_filename
       enddo
    enddo
    do i=2,n_swan_grids
@@ -160,6 +177,13 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
          flow2swan_maps(i,j)%p_tmp_filename = flow2swan_maps(1,j)%p_tmp_filename
       enddo
    enddo
+   if (external_swan2flow) then
+      do i=1,n_swan_grids
+         do j=1,n_flow_grids
+            swan2flow_maps(i,j)%r_tmp_filename = flow2swan_maps(1,j)%p_tmp_filename
+         enddo
+      enddo
+   endif
 
    
    do i=1,n_swan_grids
@@ -170,11 +194,8 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
          f2s=>flow2swan_maps(i,j)
          s2f%msurpnts = sr%msurpnts
          f2s%msurpnts = sr%msurpnts
-         call make_grid_map(j, i, f, s, f2s, netcdf_files)
-         !
-         ! Mapping from (structured) SWAN to FLOW is never externally
-         !
-         call make_grid_map(i, j, s, f, s2f, .false.)
+         call make_grid_map(j, i, f, s, f2s, external_flow2swan)
+         call make_grid_map(i, j, s, f, s2f, external_swan2flow)
       enddo
    enddo
    

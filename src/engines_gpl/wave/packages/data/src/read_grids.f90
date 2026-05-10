@@ -571,6 +571,149 @@ end subroutine read_grd
 !
 !
 !==============================================================================
+subroutine read_unswan_grid(filnam, xb, yb, codb, covered, mmax, nmax, sferic, &
+                          & xymiss, kvertc, ncell, vmark, grid_generator)
+    implicit none
+!
+! Global variables
+!
+    character(*), intent(inout)                      :: filnam
+    integer     , intent(out)                        :: mmax
+    integer     , intent(out)                        :: nmax
+    integer     , intent(out)                        :: ncell
+    integer     , intent(out)                        :: grid_generator
+    real(hp)    , intent(out)                        :: xymiss
+    integer , dimension(:,:) , pointer               :: codb
+    integer , dimension(:,:) , pointer               :: covered
+    integer , dimension(:,:) , pointer               :: kvertc
+    integer , dimension(:)   , pointer               :: vmark
+    real(hp), dimension(:,:) , pointer               :: xb
+    real(hp), dimension(:,:) , pointer               :: yb
+    logical                                         :: sferic
+!
+! Local variables
+!
+    integer                       :: i
+    integer                       :: ierr
+    integer                       :: ii
+    integer                       :: irgf
+    integer                       :: k
+    integer                       :: nattr
+    integer                       :: nbmark
+    integer                       :: ndim
+    integer                       :: nnodes
+    logical                       :: easyelem
+    logical                       :: easynode
+    logical                       :: trielem
+    logical                       :: trinode
+    real, dimension(:), allocatable :: attrs
+    character(256)                :: basename
+    character(256)                :: rec
+!
+!! executable statements -------------------------------------------------------
+!
+    basename = trim(filnam)
+    if (len_trim(basename) > 5) then
+       if (basename(len_trim(basename)-4:len_trim(basename)) == '.node') basename = basename(:len_trim(basename)-5)
+    endif
+    if (len_trim(basename) > 4) then
+       if (basename(len_trim(basename)-3:len_trim(basename)) == '.ele') basename = basename(:len_trim(basename)-4)
+    endif
+    if (len_trim(basename) > 2) then
+       if (basename(len_trim(basename)-1:len_trim(basename)) == '.n') basename = basename(:len_trim(basename)-2)
+       if (basename(len_trim(basename)-1:len_trim(basename)) == '.e') basename = basename(:len_trim(basename)-2)
+    endif
+    !
+    inquire(file=trim(basename)//'.node', exist=trinode)
+    inquire(file=trim(basename)//'.ele' , exist=trielem)
+    inquire(file=trim(basename)//'.n'   , exist=easynode)
+    inquire(file=trim(basename)//'.e'   , exist=easyelem)
+    if (trinode .and. trielem .and. easynode .and. easyelem) then
+       write (*, '(3a)') '*** ERROR: Both Triangle and Easymesh files found for unSWAN grid base ''', trim(basename), ''''
+       call wavestop(1, 'Both Triangle and Easymesh files found for unSWAN grid base '//trim(basename))
+    elseif (trinode .and. trielem) then
+       grid_generator = 1
+    elseif (easynode .and. easyelem) then
+       grid_generator = 2
+    else
+       write (*, '(3a)') '*** ERROR: Unable to find Triangle or Easymesh files for unSWAN grid base ''', trim(basename), ''''
+       call wavestop(1, 'Unable to find Triangle or Easymesh files for unSWAN grid base '//trim(basename))
+    endif
+    !
+    xymiss = 0.0_hp
+    sferic = .false.
+    nmax   = 1
+    !
+    if (grid_generator == 1) then
+       open(newunit=irgf, file=trim(basename)//'.node', form='formatted', status='old')
+       read(irgf, *, end=7777, err=8888) mmax, ndim, nattr, nbmark
+       if (ndim /= 2) then
+          write (*, '(3a)') '*** ERROR: Triangle grid ''', trim(basename), ''' is not two-dimensional.'
+          call wavestop(1, 'Triangle grid is not two-dimensional: '//trim(basename))
+       endif
+       if (nbmark == 0) then
+          write (*, '(3a)') '*** ERROR: Triangle grid ''', trim(basename), ''' has no boundary markers.'
+          call wavestop(1, 'Triangle grid has no boundary markers: '//trim(basename))
+       endif
+       allocate(xb(mmax,nmax), yb(mmax,nmax), codb(mmax,nmax), covered(mmax,nmax), vmark(mmax), stat=ierr)
+       if (ierr /= 0) call wavestop(1, 'Allocation problem while reading unSWAN Triangle grid '//trim(basename))
+       if (nattr > 0) allocate(attrs(nattr), stat=ierr)
+       if (ierr /= 0) call wavestop(1, 'Allocation problem while reading unSWAN Triangle grid '//trim(basename))
+       do i = 1, mmax
+          if (nattr == 0) then
+             read(irgf, *, end=7777, err=8888) ii, xb(ii,1), yb(ii,1), vmark(ii)
+          else
+             read(irgf, '(a)', end=7777, err=8888) rec
+             read(rec, *, err=8888) ii, xb(ii,1), yb(ii,1), (attrs(k), k=1,nattr), vmark(ii)
+          endif
+       enddo
+       if (allocated(attrs)) deallocate(attrs, stat=ierr)
+       close(irgf)
+       open(newunit=irgf, file=trim(basename)//'.ele', form='formatted', status='old')
+       read(irgf, *, end=7777, err=8888) ncell, nnodes, nattr
+       if (nnodes /= 3) then
+          write (*, '(3a)') '*** ERROR: Triangle grid ''', trim(basename), ''' must contain triangular elements.'
+          call wavestop(1, 'Triangle grid must contain triangular elements: '//trim(basename))
+       endif
+       allocate(kvertc(3,ncell), stat=ierr)
+       if (ierr /= 0) call wavestop(1, 'Allocation problem while reading unSWAN Triangle grid '//trim(basename))
+       do i = 1, ncell
+          read(irgf, *, end=7777, err=8888) ii, kvertc(1,ii), kvertc(2,ii), kvertc(3,ii)
+       enddo
+       close(irgf)
+    else
+       open(newunit=irgf, file=trim(basename)//'.n', form='formatted', status='old')
+       read(irgf, *, end=7777, err=8888) mmax
+       allocate(xb(mmax,nmax), yb(mmax,nmax), codb(mmax,nmax), covered(mmax,nmax), vmark(mmax), stat=ierr)
+       if (ierr /= 0) call wavestop(1, 'Allocation problem while reading unSWAN Easymesh grid '//trim(basename))
+       do i = 1, mmax
+          read(irgf, *, end=7777, err=8888) xb(i,1), yb(i,1), vmark(i)
+       enddo
+       close(irgf)
+       open(newunit=irgf, file=trim(basename)//'.e', form='formatted', status='old')
+       read(irgf, *, end=7777, err=8888) ncell
+       allocate(kvertc(3,ncell), stat=ierr)
+       if (ierr /= 0) call wavestop(1, 'Allocation problem while reading unSWAN Easymesh grid '//trim(basename))
+       do i = 1, ncell
+          read(irgf, *, end=7777, err=8888) kvertc(1,i), kvertc(2,i), kvertc(3,i)
+       enddo
+       close(irgf)
+       kvertc = kvertc + 1
+    endif
+    codb    = 1
+    covered = 0
+    filnam  = trim(basename)
+    return
+!
+ 7777 continue
+ 8888 continue
+    write (*, '(3a)') '*** ERROR: reading unSWAN grid files for ''', trim(basename), ''''
+    close(irgf)
+    call wavestop(1, 'reading unSWAN grid files for '//trim(basename))
+end subroutine read_unswan_grid
+!
+!
+!==============================================================================
 subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax, kmax, &
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
                          & filename_tmp, flowLinkConnectivity)
