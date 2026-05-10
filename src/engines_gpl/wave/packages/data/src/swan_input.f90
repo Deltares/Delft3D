@@ -379,9 +379,31 @@ module swan_input
    integer, parameter :: q_veg = 5 ! used as index in array qextnd
 
    private :: get_pointname
+   private :: has_overall_sp2_boundary
 
 contains
 !
+!
+!==============================================================================
+   logical function has_overall_sp2_boundary(sr)
+      implicit none
+
+      type(swan_type), intent(in) :: sr
+
+      integer :: ibound
+
+      has_overall_sp2_boundary = .false.
+      if (.not. associated(sr%bnd)) return
+
+      do ibound = 1, sr%nbound
+         if (sr%bnd(ibound)%bndtyp == 4) then
+            has_overall_sp2_boundary = .true.
+            exit
+         end if
+      end do
+   end function has_overall_sp2_boundary
+
+
 !
 !==============================================================================
    subroutine register_boundary_spectrum_files(sr, refdate)
@@ -397,7 +419,9 @@ contains
 
       call reset_boundary_spectral_cache()
 
-      if (len_trim(sr%specfile) > 0) call register_boundary_spectral_file(trim(sr%specfile), refdate)
+      if (has_overall_sp2_boundary(sr) .and. len_trim(sr%specfile) > 0) then
+         call register_boundary_spectral_file(trim(sr%specfile), refdate)
+      end if
 
       if (.not. associated(sr%bnd)) return
 
@@ -438,7 +462,9 @@ contains
       integer :: ibound
       integer :: isect
 
-      if (len_trim(sr%specfile) > 0) call replace_cached_path(line, trim(sr%specfile), run_start, run_end)
+      if (has_overall_sp2_boundary(sr) .and. len_trim(sr%specfile) > 0) then
+         call replace_cached_path(line, trim(sr%specfile), run_start, run_end)
+      end if
 
       if (.not. associated(sr%bnd)) return
 
@@ -3376,14 +3402,13 @@ contains
                write (luninp, '(1X,A)') line
                cycle
             elseif (bnd%bndtyp == 5) then
-               call resolve_cached_boundary_spectrum_path(trim(sr%specfile), boundary_run_start, boundary_run_end, active_specfile)
                line = ' '
                line(1:11) = 'BOUN WWIII '
                line(12:12) = ''''''
-               nactive = len_trim(active_specfile)
+               nactive = len_trim(sr%specfile)
                maxcopy = max(0, len(line) - 13 - 10)
                ind = min(nactive, maxcopy)
-               if (ind > 0) line(13:12 + ind) = active_specfile(1:ind)
+               if (ind > 0) line(13:12 + ind) = sr%specfile(1:ind)
                line(13 + ind:13 + ind) = ''''''
                line(13 + ind + 1:13 + ind + 10) = ' FREE OPEN'
                write (luninp, '(1X,A)') line
