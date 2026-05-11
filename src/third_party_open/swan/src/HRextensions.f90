@@ -33,7 +33,7 @@ module HRextensions
     use M_GENARR, only: SPCSIG
     use M_PARALL, only : IAMMASTER, MXCGL, MYCGL, MCGRDGL, KGRPGL, SWREAL, MXF, MXL, MYF, MYL
     use agioncmd
-    use SWCOMM2, only : NUMGRD, NBGRPT, NBSPEC, XOFFS, YOFFS
+    use SWCOMM2, only : NUMGRD, NBGRPT, NBSPEC, XOFFS, YOFFS, OPTG
     use SWCOMM3, only : MXC, MYC, MDC, MSC, PI, PI2, DNORTH
     use SWCOMM4, only : KSPHER, LENDEG
     use OCPCOMM4, only : ITEST, PRINTF, PRTEST
@@ -75,31 +75,24 @@ contains
             if ( spc_as_map ) then
                 allocate(density(MDC, MSC, MXCGL, MYCGL))
             else
-                allocate(density(MDC, MSC, MCGRDGL-1, 1))
+                allocate(density(MDC, MSC, pntgrid%npoints, 1))
             end if
             call swn_hre_read_density(ncid, density, spc_as_map, ri)
             call close_ncfile(ncid)
         end if
         ! assign spectra to all members
-        do jx=1,MXCGL
-            do jy=1,MYCGL
+        if ( OPTG == 5 .and. .not.spc_as_map ) then
+            do jx=1,MXCGL
                 if ( IAMMASTER ) then
                     edloc(:,:) = 0.
-                    iindx = KGRPGL(jx, jy)
-                    if ( iindx /= 1 ) then
-                        if ( spc_as_map ) then
-                            edloc = density(:,:, jx, jy)
-                        else
-                            edloc = density(:,:, iindx - 1, 1)
-                        end if
+                    if ( jx <= size(density, 3) ) then
+                        edloc = density(:,:, jx, 1)
                     end if
                 end if
                 call SWBROADC (edloc, MDC*MSC, SWREAL)
-                if ( MXF <= jx .and. MXL >= jx .and. MYF <= jy .and. MYL >= jy ) then
-                    iy   = jy - MYF + 1
-                    ix   = jx - MXF + 1
-                    indx = KGRPNT(ix, iy)
-                    if ( indx /= 1 ) then
+                if ( MXF <= jx .and. MXL >= jx ) then
+                    indx = jx - MXF + 1
+                    if ( indx >= 1 .and. indx <= size(AC2, 3) ) then
                         do is=1, MSC
                             ! energy to action density
                             AC2(:,is, indx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
@@ -107,7 +100,35 @@ contains
                     end if
                 end if
             end do
-        end do
+        else
+            do jx=1,MXCGL
+                do jy=1,MYCGL
+                    if ( IAMMASTER ) then
+                        edloc(:,:) = 0.
+                        iindx = KGRPGL(jx, jy)
+                        if ( iindx /= 1 ) then
+                            if ( spc_as_map ) then
+                                edloc = density(:,:, jx, jy)
+                            else
+                                edloc = density(:,:, iindx - 1, 1)
+                            end if
+                        end if
+                    end if
+                    call SWBROADC (edloc, MDC*MSC, SWREAL)
+                    if ( MXF <= jx .and. MXL >= jx .and. MYF <= jy .and. MYL >= jy ) then
+                        iy   = jy - MYF + 1
+                        ix   = jx - MXF + 1
+                        indx = KGRPNT(ix, iy)
+                        if ( indx /= 1 ) then
+                            do is=1, MSC
+                                ! energy to action density
+                                AC2(:,is, indx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
+                            end do
+                        end if
+                    end if
+                end do
+            end do
+        end if
         if ( IAMMASTER ) deallocate(density)
 
     end subroutine swn_hre_initva
@@ -233,10 +254,10 @@ contains
                     end do
                 end do
             else
-                allocate(scale_factor(MCGRDGL-1, 1))
+                allocate(scale_factor(size(density, 3), 1))
                 call nccheck( nf90_get_var(ncid, svarid, scale_factor, (/1, ri/) ) )
 
-                do n=1, MCGRDGL - 1
+                do n=1, size(density, 3)
                     ! when density is scaled, it is stored as a int16, so is the _FillValue.
                     do j=1, MDC
                         do i=1, MSC
