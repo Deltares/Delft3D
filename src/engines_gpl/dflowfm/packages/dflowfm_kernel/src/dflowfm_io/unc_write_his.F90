@@ -1550,7 +1550,7 @@ contains
    subroutine unc_put_his_structure_static_vars(ncid)
       use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, &
                   ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, &
-                  num_source_sink, gate2cgen, ngategen, is_source_sink_real, bubblescreens
+                  gate2cgen, ngategen, is_source_sink_real, bubblescreens
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: his_write_settings
