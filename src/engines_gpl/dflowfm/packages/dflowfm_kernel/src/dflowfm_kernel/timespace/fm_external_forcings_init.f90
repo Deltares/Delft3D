@@ -894,7 +894,7 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
-         if ((target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
+         if (len_trim(input%location_type) > 0 .and. (target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
             ! Node-based quantities: use prepare_lateral_mask to correctly exclude pipe/culvert links (prof1D).
             call prepare_lateral_mask(mask, parse_location_type(input%location_type))
          else
