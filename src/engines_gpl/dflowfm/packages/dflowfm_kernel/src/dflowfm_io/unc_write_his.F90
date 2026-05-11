@@ -347,7 +347,7 @@ contains
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
          end if
 
-         if (size(bubblescreen_air_discharge) > 0) then
+         if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
             block
                integer :: num_bubble_screens, num_cell_bubblescreens
                num_cell_bubblescreens = 0
@@ -745,7 +745,7 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_count, node_count))
             end if
 
-            if (size(bubblescreens) > 0) then
+            if (his_write_settings%bubblescreens > 0 .and. size(bubblescreens) > 0) then
                call realloc(bubblescreen_node_count, size(bubblescreens), fill=0)
                bubblescreen_node_count = [(bubblescreens(i)%num_flowcells, i=1,size(bubblescreens))]
                call realloc(geom_x, 20)
@@ -1637,7 +1637,7 @@ contains
       call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
       structure_names = [(bubblescreens(i)%id, integer :: i=1, size(bubblescreens))]
-      call unc_put_his_structure_names(ncid, 1, id_bubblescreen_name, structure_names)
+      call unc_put_his_structure_names(ncid, his_write_settings%bubblescreens, id_bubblescreen_name, structure_names)
 
       if (network%sts%numGates > 0) then
          indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]

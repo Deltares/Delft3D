@@ -2388,7 +2388,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), null(), function_pointer)
       end if
 
-      if (size(bubblescreen_air_discharge) > 0) then
+      if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE), bubblescreen_air_discharge)
       end if
 
