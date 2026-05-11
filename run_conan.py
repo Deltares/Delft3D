@@ -34,8 +34,16 @@ def clean_conan_cache():
     if clean_result.returncode != 0:
         raise RuntimeError(f"Conan cache clean failed with exit code {clean_result.returncode}")
 
-def conan_install(profile):
-    cmd = ["conan", "install", ".", f"--profile=conan/profiles/{profile}", "--build=missing", "--no-remote"]
+def conan_install(profile, output_folder):
+    cmd = [
+        "conan",
+        "install",
+        ".",
+        f"--profile=conan/profiles/{profile}",
+        "--build=missing",
+        "--no-remote",
+        f"--output-folder={output_folder}",
+    ]
     result = subprocess.run(cmd)
     if result.returncode != 0:
         raise RuntimeError(f"Conan install failed with exit code {result.returncode}")
@@ -44,6 +52,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Installs conan-managed dependencies for the Delft3D repository.")
     parser.add_argument("-c", "--configuration", choices=["debug", "release"], required=True, help="Build configuration to use for Conan install.")
     parser.add_argument("--clean", action="store_true", help="Clean the local Conan cache before exporting and installing.")
+    parser.add_argument("--output-folder", default="build/conan", help="Output folder for Conan install files.")
     args = parser.parse_args()
 
     os_name = platform.system()
@@ -65,4 +74,4 @@ if __name__ == "__main__":
         export_package(recipe_name, version)
 
     # Install dependencies using the specified profile
-    conan_install(profile)
+    conan_install(profile, args.output_folder)

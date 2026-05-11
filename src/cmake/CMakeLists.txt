@@ -26,11 +26,11 @@ set(checkout_root ${checkout_src_root}/..)
 
 # TODO ------------------------- temporary conan stuff -------------------------
 if (WIN32)
-    list(PREPEND CMAKE_PREFIX_PATH "${checkout_root}/build/generators")
+    list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/build/generators")
 endif(WIN32)
 
 if (UNIX)
-    list(PREPEND CMAKE_PREFIX_PATH "${checkout_root}/build/${CMAKE_BUILD_TYPE}/generators")
+    list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/build/${CMAKE_BUILD_TYPE}/generators")
 endif(UNIX)
 
 find_package(netCDF CONFIG REQUIRED)
@@ -76,8 +76,10 @@ endif()
 include(compiler_options/compiler_warning_targets.cmake)
 include(compiler_options/fortran_styler.cmake)
 
-# Set available build configurations
-set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
+# Set available build configurations when not provided externally.
+if (NOT DEFINED CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "")
+endif()
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)

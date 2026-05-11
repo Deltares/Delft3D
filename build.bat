@@ -61,6 +61,12 @@ if "%VCINSTALLDIR%" == "" (
     if !ERRORLEVEL! NEQ 0 exit /B %~1
 )
 
+call :create_cmake_dir build_!config!
+if !ERRORLEVEL! NEQ 0 exit /B %~1
+
+call :do_conan
+if !ERRORLEVEL! NEQ 0 exit /B %~1
+
 call :do_cmake
 if !ERRORLEVEL! NEQ 0 exit /B %~1
 
@@ -361,10 +367,33 @@ rem =======================
 :do_cmake
     if !ERRORLEVEL! NEQ 0 goto :eof
     echo.
-    call :create_cmake_dir build_!config!
     echo Running CMake for !config!...
-    !cmake! -S .\src\cmake -B build_!config! !cmake_generator_arg! -T fortran=!compiler! -A x64 -D CONFIGURATION_TYPE:STRING="!config!" -D CMAKE_INSTALL_PREFIX=.\install_!config!\ 1>build_!config!\cmake_!config!.log 2>&1
+    !cmake! ^
+        -S .\src\cmake ^
+        -B build_!config! ^
+        !cmake_generator_arg! ^
+        -T fortran=!compiler! ^
+        -A x64 ^
+        -D CONFIGURATION_TYPE:STRING="!config!" ^
+        -D CMAKE_CONFIGURATION_TYPES:STRING="!build_type!" ^
+        -D CMAKE_BUILD_TYPE:STRING="!build_type!" ^
+        -D CMAKE_INSTALL_PREFIX=.\install_!config!\ ^
+        1>build_!config!\cmake_!config!.log 2>&1
     if !ERRORLEVEL! NEQ 0 call :errorMessage
+    goto :eof
+
+rem =======================
+rem === Conan install =====
+rem =======================
+:do_conan
+    if !ERRORLEVEL! NEQ 0 goto :eof
+    echo Running Conan dependency install for !config!...
+    if /I "!build_type!" == "Debug" (
+        python "%root%\run_conan.py" -c debug --output-folder "build_!config!\conan" 1>build_!config!\conan_!config!.log 2>&1
+    ) else (
+        python "%root%\run_conan.py" -c release --output-folder "build_!config!\conan" 1>build_!config!\conan_!config!.log 2>&1
+    )
+    if !ERRORLEVEL! NEQ 0 echo ERROR: Please check previous error messages and the Conan output in build_%config%\conan_%config%.log.
     goto :eof
 
 rem =======================
