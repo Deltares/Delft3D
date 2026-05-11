@@ -41,7 +41,7 @@ if (WIN32)
    target_compile_definitions(${executable_name} PRIVATE WIN64)
 endif(WIN32)
 
-target_link_libraries(${executable_name}
+target_link_libraries(${executable_name} PRIVATE
                       ${oss_dependencies}
                       )
 

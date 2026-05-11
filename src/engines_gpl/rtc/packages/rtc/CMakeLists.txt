@@ -51,7 +51,7 @@ set(oss_dependencies_general control_lib
 if (UNIX)
     set(oss_dependencies ${oss_dependencies_general})
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${oss_dependencies}
     )
          
@@ -63,7 +63,7 @@ if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
                         netCDF::netcdff)
 
-    target_link_libraries(${executable_name} ${oss_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
 
 
