@@ -368,11 +368,6 @@ contains
          ! If item not recognised, we can still try to set a connection if the right optional arguments were passed.
          if (present(tgt_item1)) then
             targetItemPtr1 => tgt_item1
-            if (present(tgt_data1)) then
-               if (associated(tgt_data1)) then
-                  dataPtr1 => tgt_data1
-               end if !> tgt_item without tgt_data is allowed, for example dambreaks.
-            end if
          else
             return !> no known name or target_item provided.
          end if
@@ -399,27 +394,6 @@ contains
       if (present(tgt_data4)) then
          if (associated(tgt_data4)) then
             dataPtr4 => tgt_data4
-         end if
-      end if
-
-      if (present(tgt_item1) .and. present(tgt_data1)) then
-         if (associated(tgt_data1)) then
-            targetItemPtr1 => tgt_item1
-         end if
-      end if
-      if (present(tgt_item2) .and. present(tgt_data2)) then
-         if (associated(tgt_data2)) then
-            targetItemPtr2 => tgt_item2
-         end if
-      end if
-      if (present(tgt_item3) .and. present(tgt_data3)) then
-         if (associated(tgt_data3)) then
-            targetItemPtr3 => tgt_item3
-         end if
-      end if
-      if (present(tgt_item4) .and. present(tgt_data4)) then
-         if (associated(tgt_data4)) then
-            targetItemPtr4 => tgt_item4
          end if
       end if
 

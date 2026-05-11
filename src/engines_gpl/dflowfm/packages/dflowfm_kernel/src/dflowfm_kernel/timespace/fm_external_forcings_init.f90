@@ -792,7 +792,7 @@ contains
       use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
@@ -894,10 +894,11 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
 
-         ! if we have a location type, simply call pepare_lateral_mask to create the mask; we construct it with construct_target_mask.
-         if (len_trim(input%location_type) > 0 .and. parse_location_type(input%location_type) /= ILATTP_ALL) then
+         if ((target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
+            ! Node-based quantities: use prepare_lateral_mask to correctly exclude pipe/culvert links (prof1D).
             call prepare_lateral_mask(mask, parse_location_type(input%location_type))
          else
+            ! Link/corner-based quantities, or polygon mask override: use standard mask construction.
             call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
          end if
 
