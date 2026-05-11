@@ -978,7 +978,10 @@ contains
       tempset%count = crsCount
 
       maxBranchId = max(1, maxval(crs%cross(:)%branchId))
-      maxBranchOrder = max(1, maxval(brs%branch(:)%ordernumber) + 1)
+      maxbranchorder = 1
+      if (brs%count > 0) then
+         maxBranchOrder = maxval(brs%branch(:)%ordernumber) + 1
+      end if
       maxChainage = maxval(crs%cross(:)%chainage)
 
       ! Multiplication factors for sorting
