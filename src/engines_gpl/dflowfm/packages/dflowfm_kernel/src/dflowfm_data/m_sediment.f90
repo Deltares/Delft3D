@@ -220,7 +220,7 @@ contains
    
    
    pure function get_rhol(stmpar, idx) result(rhol)
-      type(stmtype), intent(in) :: stmpar
+      type(stmtype), intent(in)     :: stmpar
       integer, intent(in)           :: idx
       real(dp)                      :: rhol
 
