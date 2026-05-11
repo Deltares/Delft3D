@@ -38,7 +38,7 @@ target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 if(UNIX)
     set(oss_dependencies    deltares_common_c
                             getopt
-                            expat
+                            expat::expat
                             netCDF::netcdf
     )
 
@@ -71,7 +71,6 @@ if(WIN32)
                                PRIVATE  
                                ${header_path}
                                "${getopt_include_path}"
-                               "${expat_include_path}"
                                "${mpi_include_path}"
                                "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
@@ -79,14 +78,13 @@ if(WIN32)
     target_link_directories(${library_name}
                             PRIVATE
                             "${getopt_library_path_win}"
-                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
                                             netCDF::netcdf
+                                            expat::expat
                                             "${mpi_c_library}"
-                                            "libexpat.lib"
                                             "pthreadVC2.lib"
                                             "wsock32.lib"
                                             "netapi32.lib")

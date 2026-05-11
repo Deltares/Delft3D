@@ -35,6 +35,7 @@ endif(UNIX)
 
 find_package(netCDF CONFIG REQUIRED)
 find_package(netCDF-Fortran CONFIG REQUIRED)
+find_package(expat CONFIG REQUIRED)
 
 # TODO ----------------------- end temporary conan stuff -----------------------
 
@@ -164,14 +165,6 @@ elseif (WIN32)
     set(library_prefix "")
     include(InstallRequiredSystemLibraries)
 endif()
-
-# Expat:
-#     Windows: use prebuild library in ".../expat/x64/x64"
-#     Linux  : compile source code  using ".../expat/cmake_deltares/CMakeLists.txt"
-set(expat_include_path ${checkout_src_root}/third_party_open/expat/x64/include)
-if (WIN32)
-    set(expat_library_path_win ${checkout_src_root}/third_party_open/expat/x64/x64/$<IF:$<CONFIG:Debug>,Debug,Release>/)
-endif(WIN32)
 
 # getopt:
 #     Windows: use prebuild library in ".../getopt/x64"

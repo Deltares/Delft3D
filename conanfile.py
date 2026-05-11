@@ -14,6 +14,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("libtiff/4.7.1")
         self.requires("proj/9.3.1")
         self.requires("gdal/3.12.1")
+        self.requires("expat/2.8.0")
 
     def layout(self):
         cmake_layout(self)
@@ -62,3 +63,4 @@ class Delft3DRecipe(ConanFile):
         # transforms via TIFF grid files.
         self.options["proj"].with_curl = False
         self.options["proj"].build_executables = False
+        self.options["expat"].shared = True

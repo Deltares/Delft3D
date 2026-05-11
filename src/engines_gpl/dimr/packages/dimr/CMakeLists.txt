@@ -35,15 +35,14 @@ if(UNIX)
    set(oss_dependencies    deltares_common_c
                            getopt
                            dimr_lib
-                           expat)
+                           expat::expat)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
                               "${dimr_lib_path}/include"
-                              "${getopt_include_path}"
-                              "${expat_include_path}")
+                              "${getopt_include_path}")
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies} ${CMAKE_DL_LIBS})
 
@@ -58,6 +57,7 @@ if (WIN32)
 
    set(oss_dependencies    deltares_common_c
                            getopt
+                           expat::expat
                            dimr_lib) 
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
@@ -67,7 +67,6 @@ if (WIN32)
                                 ${header_path}
                                 "${dimr_lib_path}/include"
                                 "${getopt_include_path}"
-                                "${expat_include_path}"
                                 "${mpi_include_path}"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
@@ -75,13 +74,12 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${getopt_library_path_win}"
-                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                                                 "${mpi_c_library}"
-                                                "libexpat.lib"
+                                                expat::expat
                                                 "pthreadVC2.lib")
 endif(WIN32)
 
