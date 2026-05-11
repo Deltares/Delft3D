@@ -892,7 +892,7 @@ contains
             return
          end if
 
-         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
          if ((target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
             ! Node-based quantities: use prepare_lateral_mask to correctly exclude pipe/culvert links (prof1D).
@@ -1652,24 +1652,29 @@ contains
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+     subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, exclude_boundary_nodes, ierr)
       use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
+      use m_flowgeom, only: ndx, ndxi, lnx, xz, yz, xu, yu
       use network_data, only: xk, yk, numk
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
 
-      integer, intent(in) :: target_location_type
+      integer, intent(in)  :: target_location_type
       integer, intent(out) :: target_num_points
       real(dp), dimension(:), pointer, intent(out) :: target_x
       real(dp), dimension(:), pointer, intent(out) :: target_y
+      logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying 
       integer, intent(out) :: ierr
 
       ierr = DFM_NOERR
 
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
-         target_num_points = ndx
+         if (exclude_boundary_nodes) then
+            target_num_points = ndxi
+         else 
+            target_num_points = ndx
+         end if
          target_x => xz(1:target_num_points)
          target_y => yz(1:target_num_points)
       case (UNC_LOC_U)
