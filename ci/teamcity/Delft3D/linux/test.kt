@@ -95,6 +95,7 @@ object LinuxTest : BuildType({
             }
             command = file {
                 filename = "TestBench.py"
+
                 scriptArguments = """
                     --username "%s3_dsctestbench_accesskey%"
                     --password "%s3_dsctestbench_secret%"
@@ -105,7 +106,8 @@ object LinuxTest : BuildType({
                     --parallel
                     --teamcity
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
-                """.trimIndent()
+                """.trimIndent() + if ("%copy_cases%" == "true") "\n--copy-failed-cases" else ""
+                scriptArguments = scriptArguments
             }
             dockerImage = "%testbench_container_image%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
