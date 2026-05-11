@@ -1118,10 +1118,6 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
           endif
           call lyrdiffusion(gdp%gdmorlyr, dtmor)
           !
-          if (.not.associated(gdp%gdbedformpar%dunelength)) then
-              deallocate(dunelength_tmp)
-          endif
-          !
           ! Apply composition boundary conditions
           !
           call bndmorlyr(lsedtot   ,timhr        , &
@@ -1129,7 +1125,9 @@ subroutine z_bott3d(nmmax     ,kmax      ,lsed      ,lsedtot   , &
                        & gdp       )
           !
           deallocate(sbot)
-          deallocate(dunelength_tmp)
+          if (.not.associated(gdp%gdbedformpar%dunelength)) then
+              deallocate(dunelength_tmp)
+          endif
           !
        endif
     endif ! nst >= itcmp
