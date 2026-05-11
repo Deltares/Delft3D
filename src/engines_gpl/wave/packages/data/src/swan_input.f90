@@ -139,6 +139,7 @@ module swan_input
       integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
       integer :: unstructured_grid_generator = 0
+      integer, dimension(:), allocatable :: unstructured_boundary_markers
       ! Possible values:
       !    FVT_SURFACE_LAYER           : use FLOW velocity at surface
       !    FVT_DEPTH_AVERAGED (default): use depth averaged FLOW velocity
@@ -159,8 +160,9 @@ module swan_input
       integer :: sshape ! 1 = Jonswap, 2 = Pierson-Moskowitz, 3 = Gauss
       integer :: periodtype ! 1 = Peak, 2 = Mean
       integer :: dsprtype ! 1 = Power, 2 = Degrees
-      integer :: bndtyp ! 1 = orientation, 2 = grid-coordinates, 3 = xy-coordinates
+      integer :: bndtyp ! 1 = orientation, 2 = grid-coordinates, 3 = xy-coordinates, 6 = unSWAN marker
       integer :: orient ! 1 = N, 2 = NW, 3 = W, 4 = SW, 5 = S, 6 = SE, 7 = E, 8 = NE
+      integer :: marker_id ! unSWAN boundary marker for unstructured SWAN grids
       integer :: turn ! 0 = clockwise, 1 = counterclockwise (distance measurement along boundary)
       integer :: convar ! 1 = uniform, 2 = space-varying
       integer :: nsect ! previously swani(iindx+9)
@@ -1938,6 +1940,7 @@ contains
          bnd%dsprtype = -999
          bnd%bndtyp = -999
          bnd%orient = -999
+         bnd%marker_id = -999
          bnd%turn = -999
          bnd%convar = -999
          bnd%nsect = -999
@@ -2058,6 +2061,19 @@ contains
             call prop_get(bnd_ptr, '*', 'EndCoordX', bnd%bndcrd_xy(3))
             call prop_get(bnd_ptr, '*', 'EndCoordY', bnd%bndcrd_xy(4))
             !
+         case ('marker')
+            bnd%bndtyp = 6
+            !
+            call prop_get(bnd_ptr, '*', 'MarkerId', bnd%marker_id)
+            if (sr%swangridtype /= SWAN_GRID_UNSTRUCTURED) then
+               write (*, *) 'SWAN_INPUT: boundary marker definition is only valid for unstructured SWAN grids'
+               call handle_errors_mdw(sr)
+            endif
+            if (bnd%marker_id <= 0) then
+               write (*, *) 'SWAN_INPUT: missing or invalid boundary MarkerId'
+               call handle_errors_mdw(sr)
+            endif
+            !
          case ('fromsp2file')
             bnd%bndtyp = 4
             !
@@ -2073,7 +2089,7 @@ contains
             cycle
             !
          case default
-            write (*, *) 'SWAN_INPUT: missing or invalid boundary orientation definition type'
+            write (*, *) 'SWAN_INPUT: missing or invalid boundary definition type'
             call handle_errors_mdw(sr)
          end select
          !
@@ -3363,7 +3379,27 @@ contains
             line(1:) = 'BOUN'
             nsect = bnd%nsect
             convar = bnd%convar
-            if (bnd%bndtyp == 1) then
+            if (bnd%bndtyp == 6) then
+               if (sr%swangridtype /= SWAN_GRID_UNSTRUCTURED) then
+                  write (*, *) 'SWAN_INPUT: boundary marker definition is only valid for unstructured SWAN grids'
+                  call wavestop(1, 'Boundary marker definition is only valid for unstructured SWAN grids')
+               endif
+               if (dom%unstructured_grid_generator /= SWAN_UNSTRUC_TRIANGLE .and. &
+                 & dom%unstructured_grid_generator /= SWAN_UNSTRUC_EASYMESH) then
+                  write (*, *) 'SWAN_INPUT: boundary marker definition requires a Triangle or Easymesh unSWAN grid'
+                  call wavestop(1, 'Boundary marker definition requires a Triangle or Easymesh unSWAN grid')
+               endif
+               if (.not.allocated(dom%unstructured_boundary_markers)) then
+                  write (*, *) 'SWAN_INPUT: unSWAN boundary markers are not available'
+                  call wavestop(1, 'unSWAN boundary markers are not available')
+               endif
+               if (.not.any(dom%unstructured_boundary_markers == bnd%marker_id)) then
+                  write (*, '(a,i0)') 'SWAN_INPUT: boundary MarkerId not found in unSWAN grid file: ', bnd%marker_id
+                  call wavestop(1, 'Boundary MarkerId not found in unSWAN grid file')
+               endif
+               write(line, '(a,i0,a)') 'BOUN SIDE ', bnd%marker_id, ' _'
+               write (luninp, '(1X,A)') trim(line)
+            elseif (bnd%bndtyp == 1) then
                !              Side
                line(6:) = 'SIDE'
                orient = bnd%orient

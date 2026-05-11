@@ -130,6 +130,11 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
       xy_loc         ='CORNER'
       call Alloc_and_get_grid(i, swan_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity)
       sr%dom(i)%unstructured_grid_generator = swan_grids(i)%unstructured_grid_generator
+      if (allocated(sr%dom(i)%unstructured_boundary_markers)) deallocate(sr%dom(i)%unstructured_boundary_markers)
+      if (associated(swan_grids(i)%vmark)) then
+         allocate(sr%dom(i)%unstructured_boundary_markers(size(swan_grids(i)%vmark)))
+         sr%dom(i)%unstructured_boundary_markers = swan_grids(i)%vmark
+      endif
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
          sr%dom(i)%curlif = swan_grids(i)%grid_name
       endif
