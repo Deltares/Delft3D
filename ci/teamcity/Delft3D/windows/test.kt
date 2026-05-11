@@ -118,7 +118,7 @@ object WindowsTest : BuildType({
                     --log-level DEBUG
                     --parallel
                     --teamcity
-                """.trimIndent()
+                """.trimIndent() + if ("%copy_cases%" == "true") "\n--copy-failed-cases" else ""
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
