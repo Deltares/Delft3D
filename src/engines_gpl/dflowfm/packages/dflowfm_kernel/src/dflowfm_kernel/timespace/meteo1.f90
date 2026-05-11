@@ -320,7 +320,7 @@ contains
             l1 = index(rec, '=') + 1
             call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
             read (rec(l2:l2), '(a1)', err=990) temp
-            operand = convert_operand_string_to_integer(temp)
+            operand = convert_legacy_operand_string_to_integer(temp)
          end block
       else
          return
@@ -4345,8 +4345,6 @@ contains
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreaklevelsandwidths')
-         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -4513,7 +4511,6 @@ contains
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
-         call mess(LEVEL_FATAL, 'm_meteo::fm_ext_force_name_to_ec_item: Unsupported quantity specified in ext-file (construct target field): '//qidname)
          success = .false.
       end select
    end function fm_ext_force_name_to_ec_item
