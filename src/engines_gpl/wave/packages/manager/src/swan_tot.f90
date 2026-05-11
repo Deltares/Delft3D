@@ -143,7 +143,7 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
 
          if (dom%curvibot == 1) then
             write (*, '(a)') '  Allocate and read SWAN depth'
-            call get_swan_depth(swan_input_fields, dom%botfil)
+            call get_swan_depth(swan_input_fields, dom%botfil, swan_grids(i_swan)%unstructured)
          end if
          !
          ! Vegetation map

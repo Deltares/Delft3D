@@ -3025,7 +3025,9 @@ contains
       i = i + (ind - 1)
       line(i:i) = ''''''
       i = i + 1
-      if (dom%curvibot == 1) then
+      if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+         line(i:) = ' 3'
+      elseif (dom%curvibot == 1) then
          line(i:) = ' 4'
       else
          line(i:) = ' 3'

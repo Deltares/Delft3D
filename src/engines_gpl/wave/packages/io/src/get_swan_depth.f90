@@ -1,4 +1,4 @@
-subroutine get_swan_depth (sif,botfil)
+subroutine get_swan_depth (sif, botfil, unstructured)
 !
 ! Head routine for calling read_bot
 !
@@ -6,8 +6,13 @@ use swan_flow_grid_maps
 implicit none
 type(input_fields)          :: sif
 character(*)                :: botfil
+logical                     :: unstructured
 real                        :: fac =1.
-   call read_bot (sif%dps     ,sif%mmax  ,sif%nmax  ,botfil    ,fac )
+   if (unstructured) then
+      call read_bot_unstructured(sif%dps, sif%mmax, sif%nmax, botfil, fac)
+   else
+      call read_bot(sif%dps, sif%mmax, sif%nmax, botfil, fac)
+   endif
 end subroutine get_swan_depth
 
 
@@ -80,3 +85,42 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
     close (lunbot)
     call wavestop(1, ' Premature end of file while reading file: '//trim(botfil))
 end subroutine read_bot 
+
+
+subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
+!----- GPL ---------------------------------------------------------------------
+!!--description-----------------------------------------------------------------
+! Read unSWAN bathymetry values listed on the unstructured grid vertices.
+!!--declarations----------------------------------------------------------------
+    implicit none
+!
+! Global variables
+!
+    integer                , intent(in)  :: mb
+    integer                , intent(in)  :: nb
+    real                   , intent(in)  :: fac
+    real, dimension(mb, nb)              :: dpb
+    character(*)           , intent(in)  :: botfil
+!
+! Local variables
+!
+    integer           :: i
+    integer           :: j
+    integer           :: lunbot
+!
+!! executable statements -------------------------------------------------------
+!
+    open (newunit = lunbot, file = botfil, status = 'unknown')
+    read (lunbot, *, end = 999) ((dpb(i, j), i = 1, mb), j = 1, nb)
+    close (lunbot)
+    do j = 1, nb
+       do i = 1, mb
+          dpb(i, j) = dpb(i, j)*fac
+       enddo
+    enddo
+    return
+  999 continue
+    write (*, '('' Premature end of file while reading file: '',A)') botfil
+    close (lunbot)
+    call wavestop(1, ' Premature end of file while reading file: '//trim(botfil))
+end subroutine read_bot_unstructured

@@ -169,6 +169,13 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, &
       if (ind > 0) gridnam = gridnam(:ind - 1)
       write (filename, '(5a)') 'wavm-', trim(casl), '-', trim(gridnam), '.nc'
    end if
+   if (sg%unstructured) then
+      call write_wave_map_netcdf_unstructured(sg, sof, sif, wavedata, filename, prevtime, precision, &
+                                              sif_mmax, sif_nmax, sif_veg, output_ice, output_veg, &
+                                              nautical_convention, north_direction)
+      deallocate (idvar_outpars, stat=ierror)
+      return
+   end if
    !
    ! replace the grid _FillValue with NF90_FILL_FLOAT in the x,y coordinates
    allocate (tmp_x(sg%mmax, sg%nmax), stat=ierror)
@@ -428,3 +435,437 @@ subroutine write_wave_map_netcdf(sg, sof, sif, n_swan_grids, wavedata, casl, &
    deallocate (tmp_x, stat=ierror)
    deallocate (tmp_y, stat=ierror)
 end subroutine write_wave_map_netcdf
+
+
+subroutine write_wave_map_netcdf_unstructured(sg, sof, sif, wavedata, filename, prevtime, precision, &
+                                              sif_mmax, sif_nmax, sif_veg, output_ice, output_veg, &
+                                              nautical_convention, north_direction)
+!----- GPL ---------------------------------------------------------------------
+!!--declarations----------------------------------------------------------------
+   use wave_data
+   use swan_flow_grid_maps
+   use netcdf
+   use nc_check, only : nc_check_err
+   use precision_basics
+   use dwaves_version_module
+   use angle_convention, only : reflect_between_nautical_and_cartesian
+   !
+   implicit none
+!
+! Global variables
+!
+   type(grid), intent(in) :: sg ! swan grid
+   type(output_fields), intent(in) :: sof ! output fields defined on swan grid
+   type(input_fields), intent(in) :: sif ! input fields defined on swan grid
+   type(wave_data_type), intent(in) :: wavedata
+   character(*), intent(in) :: filename
+   logical, intent(in) :: prevtime ! true: the time to be written is the "previous time"
+   integer, intent(in) :: precision
+   logical, intent(in) :: nautical_convention ! true: angles are according to the nautical convention
+   integer, intent(in) :: output_ice ! switch for writing ice quantities
+   integer, intent(in) :: output_veg ! switch for writing vegetation quantities
+   integer, intent(in) :: sif_mmax
+   integer, intent(in) :: sif_nmax
+   real   , intent(in) :: north_direction ! direction of north in degrees, used to convert to nautical convention if nautical_convention is true
+   real, dimension(sif_mmax, sif_nmax), intent(in) :: sif_veg
+!
+! Local variables
+!
+   integer :: epsg
+   integer :: i
+   integer :: idfile
+   integer :: iddim_node
+   integer :: iddim_face
+   integer :: iddim_max_face_nodes
+   integer :: iddim_time
+   integer :: idvar_coordmap
+   integer :: idvar_mesh
+   integer :: idvar_node_x
+   integer :: idvar_node_y
+   integer :: idvar_face_nodes
+   integer :: idvar_time
+   integer :: idvar_kcs
+   integer :: idvar_hsign
+   integer :: idvar_dir
+   integer :: idvar_pdir
+   integer :: idvar_period
+   integer :: idvar_rtp
+   integer :: idvar_depth
+   integer :: idvar_velx
+   integer :: idvar_vely
+   integer :: idvar_transpx
+   integer :: idvar_transpy
+   integer :: idvar_dspr
+   integer :: idvar_dissip
+   integer :: idvar_leak
+   integer :: idvar_qb
+   integer :: idvar_ubot
+   integer :: idvar_steepw
+   integer :: idvar_wlength
+   integer :: idvar_tps
+   integer :: idvar_tm02
+   integer :: idvar_tmm10
+   integer :: idvar_dhsign
+   integer :: idvar_drtm01
+   integer :: idvar_setup
+   integer :: idvar_fx
+   integer :: idvar_fy
+   integer :: idvar_windu
+   integer :: idvar_windv
+   integer :: idvar_nstems
+   integer :: idvar_icefrac
+   integer :: idvar_floedia
+   integer :: ierror
+   integer :: year
+   integer :: month
+   integer :: day
+   integer :: nnode
+   integer :: nface
+   integer, dimension(:), allocatable :: idvar_outpars
+   integer, dimension(:, :), allocatable :: face_nodes
+   integer, external :: nc_def_var
+   real(hp) :: dearthrad
+   real(hp), dimension(1) :: idummy
+   real(hp), dimension(:), allocatable :: node_x
+   real(hp), dimension(:), allocatable :: node_y
+   real, dimension(:), allocatable :: tmp_dir
+   character(8) :: cdate
+   character(10) :: ctime
+   character(5) :: czone
+   character(256) :: epsgstring
+   character(256) :: full_version
+   character(256) :: string
+!
+!! executable statements -------------------------------------------------------
+!
+   nnode = sg%mmax
+   nface = sg%ncell
+   if (nnode <= 0 .or. nface <= 0 .or. .not. associated(sg%kvertc)) then
+      write (*, '(a)') 'ERROR: unstructured WAVE NetCDF map output requires triangular connectivity.'
+      return
+   end if
+
+   dearthrad = 6378137.0_hp
+   call getfullversionstring_dwaves(full_version)
+   call date_and_time(cdate, ctime, czone)
+   year = wavedata%time%refdate / 10000
+   month = (wavedata%time%refdate - year * 10000) / 100
+   day = wavedata%time%refdate - year * 10000 - month * 100
+
+   allocate (idvar_outpars(sof%n_outpars), stat=ierror)
+   if (ierror /= 0) write (*, *) 'ERROR allocating idvar_outpars in write_wave_map_netcdf_unstructured'
+
+   if (wavedata%output%count == 1) then
+      allocate (node_x(nnode), stat=ierror)
+      allocate (node_y(nnode), stat=ierror)
+      allocate (face_nodes(3, nface), stat=ierror)
+      if (ierror /= 0) write (*, *) 'ERROR allocating unstructured WAVE NetCDF map arrays'
+      node_x = sg%x(1:nnode, 1)
+      node_y = sg%y(1:nnode, 1)
+      face_nodes = sg%kvertc(1:3, 1:nface)
+      !
+      ! create file
+      !
+      ierror = nf90_create(filename, wavedata%output%ncmode, idfile); call nc_check_err(ierror, 'creating file', filename)
+      !
+      ! global attributes
+      !
+      ierror = nf90_put_att(idfile, nf90_global, 'institution', trim(company)); call nc_check_err(ierror, 'put_att global institution', filename)
+      ierror = nf90_put_att(idfile, nf90_global, 'references', trim(company_url)); call nc_check_err(ierror, 'put_att global references', filename)
+      ierror = nf90_put_att(idfile, nf90_global, 'source', trim(full_version)); call nc_check_err(ierror, 'put_att global source', filename)
+      ierror = nf90_put_att(idfile, nf90_global, 'Conventions', 'CF-1.8 UGRID-1.0'); call nc_check_err(ierror, 'put_att global conventions', filename)
+      ierror = nf90_put_att(idfile, nf90_global, 'gridType', 'unstructured'); call nc_check_err(ierror, 'put_att global gridType', filename)
+      ierror = nf90_put_att(idfile, nf90_global, 'history', &
+                            'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
+                            ', '//trim(product_name)); call nc_check_err(ierror, 'put_att global history', filename)
+      if (nautical_convention) then
+         ierror = nf90_put_att(idfile, nf90_global, 'Directional_convention', 'nautical'); call nc_check_err(ierror, 'put_att global direction', filename)
+      else
+         ierror = nf90_put_att(idfile, nf90_global, 'Directional_convention', 'cartesian'); call nc_check_err(ierror, 'put_att global direction', filename)
+      end if
+      !
+      ! dimensions
+      !
+      ierror = nf90_def_dim(idfile, 'nMesh2d_node', nnode, iddim_node); call nc_check_err(ierror, 'def_dim nMesh2d_node', filename)
+      ierror = nf90_def_dim(idfile, 'nMesh2d_face', nface, iddim_face); call nc_check_err(ierror, 'def_dim nMesh2d_face', filename)
+      ierror = nf90_def_dim(idfile, 'nMaxMesh2d_face_nodes', 3, iddim_max_face_nodes); call nc_check_err(ierror, 'def_dim nMaxMesh2d_face_nodes', filename)
+      ierror = nf90_def_dim(idfile, 'time', nf90_unlimited, iddim_time); call nc_check_err(ierror, 'def_dim time', filename)
+      !
+      ! coordinate mapping
+      !
+      ierror = nf90_def_var(idfile, 'projected_coordinate_system', nf90_int, idvar_coordmap); call nc_check_err(ierror, 'def_var coordinate mapping', filename)
+      if (sg%sferic) then
+         epsg = 4326
+         epsgstring = 'EPSG:4326'
+         ierror = nf90_put_att(idfile, idvar_coordmap, 'name', 'WGS84'); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+         ierror = nf90_put_att(idfile, idvar_coordmap, 'grid_mapping_name', 'latitude_longitude'); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+         string = 'deg'
+      else
+         epsg = 28992
+         epsgstring = 'EPSG:28992'
+         ierror = nf90_put_att(idfile, idvar_coordmap, 'name', 'Unknown projected'); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+         ierror = nf90_put_att(idfile, idvar_coordmap, 'grid_mapping_name', 'Unknown projected'); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+         string = 'm'
+      end if
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'epsg', epsg); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'longitude_of_prime_meridian', 0d0); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'semi_major_axis', dearthrad); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'semi_minor_axis', 6356752.314245d0); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'inverse_flattening', 298.257223563d0); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'proj4_params', ' '); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'EPSG_code', trim(epsgstring)); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'projection_name', ' '); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'wkt', ' '); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'comment', ' '); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      ierror = nf90_put_att(idfile, idvar_coordmap, 'value', 'value is equal to EPSG code'); call nc_check_err(ierror, 'coordinate mapping put_att', filename)
+      !
+      ! UGRID mesh topology and coordinates
+      !
+      ierror = nf90_def_var(idfile, 'Mesh2d', nf90_int, idvar_mesh); call nc_check_err(ierror, 'def_var Mesh2d', filename)
+      ierror = nf90_put_att(idfile, idvar_mesh, 'cf_role', 'mesh_topology'); call nc_check_err(ierror, 'put_att Mesh2d cf_role', filename)
+      ierror = nf90_put_att(idfile, idvar_mesh, 'topology_dimension', 2); call nc_check_err(ierror, 'put_att Mesh2d topology_dimension', filename)
+      ierror = nf90_put_att(idfile, idvar_mesh, 'node_coordinates', 'Mesh2d_node_x Mesh2d_node_y'); call nc_check_err(ierror, 'put_att Mesh2d node_coordinates', filename)
+      ierror = nf90_put_att(idfile, idvar_mesh, 'face_node_connectivity', 'Mesh2d_face_nodes'); call nc_check_err(ierror, 'put_att Mesh2d face_node_connectivity', filename)
+      ierror = nf90_put_att(idfile, idvar_mesh, 'node_dimension', 'nMesh2d_node'); call nc_check_err(ierror, 'put_att Mesh2d node_dimension', filename)
+      ierror = nf90_put_att(idfile, idvar_mesh, 'face_dimension', 'nMesh2d_face'); call nc_check_err(ierror, 'put_att Mesh2d face_dimension', filename)
+
+      idvar_node_x = nc_def_var(idfile, 'Mesh2d_node_x', nf90_double, 1, (/iddim_node/), 'projection_x_coordinate', 'x-coordinate of mesh nodes', trim(string), .false., filename)
+      ierror = nf90_put_att(idfile, idvar_node_x, 'grid_mapping', 'projected_coordinate_system'); call nc_check_err(ierror, 'put_att Mesh2d_node_x grid_mapping', filename)
+      idvar_node_y = nc_def_var(idfile, 'Mesh2d_node_y', nf90_double, 1, (/iddim_node/), 'projection_y_coordinate', 'y-coordinate of mesh nodes', trim(string), .false., filename)
+      ierror = nf90_put_att(idfile, idvar_node_y, 'grid_mapping', 'projected_coordinate_system'); call nc_check_err(ierror, 'put_att Mesh2d_node_y grid_mapping', filename)
+      idvar_face_nodes = nc_def_var(idfile, 'Mesh2d_face_nodes', nf90_int, 2, (/iddim_max_face_nodes, iddim_face/), '', 'Maps every face to its three corner nodes', '', .false., filename)
+      ierror = nf90_put_att(idfile, idvar_face_nodes, 'cf_role', 'face_node_connectivity'); call nc_check_err(ierror, 'put_att Mesh2d_face_nodes cf_role', filename)
+      ierror = nf90_put_att(idfile, idvar_face_nodes, 'start_index', 1); call nc_check_err(ierror, 'put_att Mesh2d_face_nodes start_index', filename)
+      ierror = nf90_put_att(idfile, idvar_face_nodes, '_FillValue', -1); call nc_check_err(ierror, 'put_att Mesh2d_face_nodes _FillValue', filename)
+
+      write (string, '(a,i0.4,a,i0.2,a,i0.2,a)') 'seconds since ', year, '-', month, '-', day, ' 00:00:00'
+      idvar_time = nc_def_var(idfile, 'time', nf90_double, 1, (/iddim_time/), 'time', 'time', trim(string), .false., filename)
+      idvar_kcs = define_node_int_var('kcs', '', 'Active(1), Inactive(0), boundary(2) indicator', '-')
+      idvar_hsign = define_node_var('hsign', '', 'Significant wave height', 'm')
+      if (nautical_convention) then
+         idvar_dir = define_node_var('dir', 'sea_surface_wave_from_direction', 'Mean wave direction', 'deg')
+         idvar_pdir = define_node_var('pdir', 'sea_surface_wave_from_direction', 'Peak wave direction', 'deg')
+      else
+         idvar_dir = define_node_var('dir', 'sea_surface_wave_to_direction', 'Mean wave direction', 'deg')
+         idvar_pdir = define_node_var('pdir', 'sea_surface_wave_to_direction', 'Peak wave direction', 'deg')
+      end if
+      idvar_period = define_node_var('period', '', 'Mean wave period', 'sec')
+      idvar_rtp = define_node_var('rtp', '', 'Relative peak wave period', 'sec')
+      idvar_depth = define_node_var('depth', '', 'Water depth', 'm')
+      idvar_velx = define_node_var('veloc-x', '', 'Current velocity (x-component)', 'm/s')
+      idvar_vely = define_node_var('veloc-y', '', 'Current velocity (y-component)', 'm/s')
+      idvar_transpx = define_node_var('transp-x', '', 'Energy transport vector (x-component)', 'w/m')
+      idvar_transpy = define_node_var('transp-y', '', 'Energy transport vector (y-component)', 'w/m')
+      idvar_dspr = define_node_var('dspr', '', 'Directional spread of the waves', 'deg')
+      idvar_dissip = define_node_var('dissip', '', 'Energy dissipation', 'n/m/sec')
+      idvar_leak = define_node_var('leak', '', 'Leakage of energy over sector boundaries', 'j/m2/s')
+      idvar_qb = define_node_var('qb', '', 'Fraction of breaking waves', '-')
+      idvar_ubot = define_node_var('ubot', '', 'Rms value maximum of the orbital velocity near bed level', 'm/s')
+      idvar_steepw = define_node_var('steepw', '', 'Mean wave steepness', '-')
+      idvar_wlength = define_node_var('wlength', '', 'Mean wave length', 'm')
+      idvar_tps = define_node_var('tps', '', 'Smoothed peak period', 'sec')
+      idvar_tm02 = define_node_var('tm02', '', 'Mean absolute zero-crossing period', 'sec')
+      idvar_tmm10 = define_node_var('tmm10', '', 'Mean absolute wave period', 'sec')
+      idvar_dhsign = define_node_var('dhsign', '', 'Difference in significant wave height (last iterations)', 'm')
+      idvar_drtm01 = define_node_var('drtm01', '', 'Difference in average wave period (last iterations)', 'sec')
+      idvar_setup = define_node_var('setup', '', 'Set-up due to waves', 'm')
+      idvar_fx = define_node_var('fx', '', 'Wave induced force (x-component)', 'n/m2')
+      idvar_fy = define_node_var('fy', '', 'Wave induced force (y-component)', 'n/m2')
+      idvar_windu = define_node_var('windu', '', 'Wind velocity (x-component)', 'm/s')
+      idvar_windv = define_node_var('windv', '', 'Wind velocity (y-component)', 'm/s')
+      if (output_veg > 0) then
+         idvar_nstems = define_node_var('nstems', '', 'Stem density', '1/m2')
+      end if
+      if (output_ice > 0) then
+         idvar_icefrac = define_node_var('icefrac', '', 'Area fraction covered by ice', '1')
+         if (output_ice == 1) then
+            idvar_floedia = define_node_var('floedia', '', 'Ice floe diameter', 'm')
+         end if
+      end if
+      do i = 1, sof%n_outpars
+         idvar_outpars(i) = define_node_var(sof%add_out_names(i), '', sof%add_out_names(i), 'unknown')
+      end do
+      !
+      ierror = nf90_enddef(idfile); call nc_check_err(ierror, 'enddef', filename)
+      !
+      ! put vars (time independent)
+      !
+      ierror = nf90_put_var(idfile, idvar_mesh, 0); call nc_check_err(ierror, 'put_var Mesh2d', filename)
+      ierror = nf90_put_var(idfile, idvar_node_x, node_x, start=(/1/), count=(/nnode/)); call nc_check_err(ierror, 'put_var Mesh2d_node_x', filename)
+      ierror = nf90_put_var(idfile, idvar_node_y, node_y, start=(/1/), count=(/nnode/)); call nc_check_err(ierror, 'put_var Mesh2d_node_y', filename)
+      ierror = nf90_put_var(idfile, idvar_face_nodes, face_nodes, start=(/1, 1/), count=(/3, nface/)); call nc_check_err(ierror, 'put_var Mesh2d_face_nodes', filename)
+      call put_node_int_var(idvar_kcs, 'kcs', sg%kcs)
+      deallocate (node_x, stat=ierror)
+      deallocate (node_y, stat=ierror)
+      deallocate (face_nodes, stat=ierror)
+   else
+      !
+      ! open file
+      !
+      ierror = nf90_open(filename, NF90_WRITE, idfile); call nc_check_err(ierror, 'opening file', filename)
+      !
+      ierror = nf90_inq_varid(idfile, 'time', idvar_time); call nc_check_err(ierror, 'inq_varid time   ', filename)
+      ierror = nf90_inq_varid(idfile, 'hsign', idvar_hsign); call nc_check_err(ierror, 'inq_varid hsign  ', filename)
+      ierror = nf90_inq_varid(idfile, 'dir', idvar_dir); call nc_check_err(ierror, 'inq_varid dir    ', filename)
+      ierror = nf90_inq_varid(idfile, 'pdir', idvar_pdir); call nc_check_err(ierror, 'inq_varid pdir   ', filename)
+      ierror = nf90_inq_varid(idfile, 'period', idvar_period); call nc_check_err(ierror, 'inq_varid period ', filename)
+      ierror = nf90_inq_varid(idfile, 'rtp', idvar_rtp); call nc_check_err(ierror, 'inq_varid rtp    ', filename)
+      ierror = nf90_inq_varid(idfile, 'depth', idvar_depth); call nc_check_err(ierror, 'inq_varid depth  ', filename)
+      ierror = nf90_inq_varid(idfile, 'veloc-x', idvar_velx); call nc_check_err(ierror, 'inq_varid velx   ', filename)
+      ierror = nf90_inq_varid(idfile, 'veloc-y', idvar_vely); call nc_check_err(ierror, 'inq_varid vely   ', filename)
+      ierror = nf90_inq_varid(idfile, 'transp-x', idvar_transpx); call nc_check_err(ierror, 'inq_varid transpx', filename)
+      ierror = nf90_inq_varid(idfile, 'transp-y', idvar_transpy); call nc_check_err(ierror, 'inq_varid transpy', filename)
+      ierror = nf90_inq_varid(idfile, 'dspr', idvar_dspr); call nc_check_err(ierror, 'inq_varid dspr   ', filename)
+      ierror = nf90_inq_varid(idfile, 'dissip', idvar_dissip); call nc_check_err(ierror, 'inq_varid dissip ', filename)
+      ierror = nf90_inq_varid(idfile, 'leak', idvar_leak); call nc_check_err(ierror, 'inq_varid leak   ', filename)
+      ierror = nf90_inq_varid(idfile, 'qb', idvar_qb); call nc_check_err(ierror, 'inq_varid qb     ', filename)
+      ierror = nf90_inq_varid(idfile, 'ubot', idvar_ubot); call nc_check_err(ierror, 'inq_varid ubot   ', filename)
+      ierror = nf90_inq_varid(idfile, 'steepw', idvar_steepw); call nc_check_err(ierror, 'inq_varid steepw ', filename)
+      ierror = nf90_inq_varid(idfile, 'wlength', idvar_wlength); call nc_check_err(ierror, 'inq_varid wlength', filename)
+      ierror = nf90_inq_varid(idfile, 'tps', idvar_tps); call nc_check_err(ierror, 'inq_varid tps    ', filename)
+      ierror = nf90_inq_varid(idfile, 'tm02', idvar_tm02); call nc_check_err(ierror, 'inq_varid tm02   ', filename)
+      ierror = nf90_inq_varid(idfile, 'tmm10', idvar_tmm10); call nc_check_err(ierror, 'inq_varid tmm10  ', filename)
+      ierror = nf90_inq_varid(idfile, 'dhsign', idvar_dhsign); call nc_check_err(ierror, 'inq_varid dhsign ', filename)
+      ierror = nf90_inq_varid(idfile, 'drtm01', idvar_drtm01); call nc_check_err(ierror, 'inq_varid drtm01 ', filename)
+      ierror = nf90_inq_varid(idfile, 'setup', idvar_setup); call nc_check_err(ierror, 'inq_varid setup  ', filename)
+      ierror = nf90_inq_varid(idfile, 'fx', idvar_fx); call nc_check_err(ierror, 'inq_varid fx     ', filename)
+      ierror = nf90_inq_varid(idfile, 'fy', idvar_fy); call nc_check_err(ierror, 'inq_varid fy     ', filename)
+      ierror = nf90_inq_varid(idfile, 'windu', idvar_windu); call nc_check_err(ierror, 'inq_varid windu  ', filename)
+      ierror = nf90_inq_varid(idfile, 'windv', idvar_windv); call nc_check_err(ierror, 'inq_varid windv  ', filename)
+      if (output_veg > 0) then
+         ierror = nf90_inq_varid(idfile, 'nstems', idvar_nstems); call nc_check_err(ierror, 'inq_varid nstems ', filename)
+      end if
+      if (output_ice > 0) then
+         ierror = nf90_inq_varid(idfile, 'icefrac', idvar_icefrac); call nc_check_err(ierror, 'inq_varid icefrac', filename)
+         if (output_ice == 1) then
+            ierror = nf90_inq_varid(idfile, 'floedia', idvar_floedia); call nc_check_err(ierror, 'inq_varid floedia', filename)
+         end if
+      end if
+      do i = 1, sof%n_outpars
+         ierror = nf90_inq_varid(idfile, sof%add_out_names(i), idvar_outpars(i)); call nc_check_err(ierror, 'inq_varid '//sof%add_out_names(i), filename)
+      end do
+   end if
+
+   if (prevtime) then
+      idummy(1) = real(wavedata%time%calctimtscale_prev, hp) * wavedata%time%tscale
+   else
+      idummy(1) = real(wavedata%time%calctimtscale, hp) * wavedata%time%tscale
+   end if
+
+   ierror = nf90_put_var(idfile, idvar_time, idummy(1), start=(/wavedata%output%count/)); call nc_check_err(ierror, 'put_var time', filename)
+   call put_node_var(idvar_hsign, 'hsign', sof%hs)
+   if (nautical_convention) then
+      allocate (tmp_dir(nnode), stat=ierror)
+      tmp_dir = reflect_between_nautical_and_cartesian(sof%dir(1:nnode, 1), north_direction)
+      call put_node_vector(idvar_dir, 'dir', tmp_dir)
+      tmp_dir = reflect_between_nautical_and_cartesian(sof%pdir(1:nnode, 1), north_direction)
+      call put_node_vector(idvar_pdir, 'pdir', tmp_dir)
+      deallocate (tmp_dir, stat=ierror)
+   else
+      call put_node_var(idvar_dir, 'dir', sof%dir)
+      call put_node_var(idvar_pdir, 'pdir', sof%pdir)
+   end if
+   call put_node_var(idvar_period, 'period', sof%period)
+   call put_node_var(idvar_rtp, 'rtp', sof%rtp)
+   call put_node_var(idvar_depth, 'depth', sof%depth)
+   call put_node_var(idvar_velx, 'velx', sof%u)
+   call put_node_var(idvar_vely, 'vely', sof%v)
+   call put_node_var(idvar_transpx, 'transpx', sof%mx)
+   call put_node_var(idvar_transpy, 'transpy', sof%my)
+   call put_node_var(idvar_dspr, 'dspr', sof%dspr)
+   call put_node_var3(idvar_dissip, 'dissip', sof%dissip)
+   call put_node_var(idvar_leak, 'leak', sof%rleak)
+   call put_node_var(idvar_qb, 'qb', sof%qb)
+   call put_node_var(idvar_ubot, 'ubot', sof%ubot)
+   call put_node_var(idvar_steepw, 'steepw', sof%steep)
+   call put_node_var(idvar_wlength, 'wlength', sof%wlen)
+   call put_node_var(idvar_tps, 'tps', sof%tps)
+   call put_node_var(idvar_tm02, 'tm02', sof%tm02)
+   call put_node_var(idvar_tmm10, 'tmm10', sof%tmm10)
+   call put_node_var(idvar_dhsign, 'dhsign', sof%dhsign)
+   call put_node_var(idvar_drtm01, 'drtm01', sof%drtm01)
+   call put_node_var(idvar_setup, 'setup', sof%setup)
+   call put_node_var(idvar_fx, 'fx', sof%fx)
+   call put_node_var(idvar_fy, 'fy', sof%fy)
+   call put_node_var(idvar_windu, 'windu', sof%windu)
+   call put_node_var(idvar_windv, 'windv', sof%windv)
+   if (output_veg > 0) then
+      call put_node_var(idvar_nstems, 'nstems', sif_veg)
+   end if
+   if (output_ice > 0) then
+      call put_node_var(idvar_icefrac, 'icefrac', sif%ice_frac)
+      if (output_ice == 1) then
+         call put_node_var(idvar_floedia, 'floedia', sif%floe_dia)
+      end if
+   end if
+   do i = 1, sof%n_outpars
+      call put_node_var3(idvar_outpars(i), sof%add_out_names(i), sof%add_out_vals(:, :, i:i))
+   end do
+   !
+   ierror = nf90_sync(idfile); call nc_check_err(ierror, 'sync file', filename)
+   ierror = nf90_close(idfile); call nc_check_err(ierror, 'closing file', filename)
+
+   deallocate (idvar_outpars, stat=ierror)
+
+contains
+
+   integer function define_node_var(varname, standardname, longname, units) result(varid)
+      character(*), intent(in) :: varname
+      character(*), intent(in) :: standardname
+      character(*), intent(in) :: longname
+      character(*), intent(in) :: units
+      varid = nc_def_var(idfile, varname, precision, 2, (/iddim_node, iddim_time/), standardname, longname, units, .true., filename)
+      ierror = nf90_put_att(idfile, varid, 'mesh', 'Mesh2d'); call nc_check_err(ierror, 'put_att '//trim(varname)//' mesh', filename)
+      ierror = nf90_put_att(idfile, varid, 'location', 'node'); call nc_check_err(ierror, 'put_att '//trim(varname)//' location', filename)
+      ierror = nf90_put_att(idfile, varid, 'coordinates', 'Mesh2d_node_x Mesh2d_node_y'); call nc_check_err(ierror, 'put_att '//trim(varname)//' coordinates', filename)
+      ierror = nf90_put_att(idfile, varid, 'grid_mapping', 'projected_coordinate_system'); call nc_check_err(ierror, 'put_att '//trim(varname)//' grid_mapping', filename)
+   end function define_node_var
+
+   integer function define_node_int_var(varname, standardname, longname, units) result(varid)
+      character(*), intent(in) :: varname
+      character(*), intent(in) :: standardname
+      character(*), intent(in) :: longname
+      character(*), intent(in) :: units
+      varid = nc_def_var(idfile, varname, nf90_int, 1, (/iddim_node/), standardname, longname, units, .true., filename)
+      ierror = nf90_put_att(idfile, varid, 'mesh', 'Mesh2d'); call nc_check_err(ierror, 'put_att '//trim(varname)//' mesh', filename)
+      ierror = nf90_put_att(idfile, varid, 'location', 'node'); call nc_check_err(ierror, 'put_att '//trim(varname)//' location', filename)
+      ierror = nf90_put_att(idfile, varid, 'coordinates', 'Mesh2d_node_x Mesh2d_node_y'); call nc_check_err(ierror, 'put_att '//trim(varname)//' coordinates', filename)
+      ierror = nf90_put_att(idfile, varid, 'grid_mapping', 'projected_coordinate_system'); call nc_check_err(ierror, 'put_att '//trim(varname)//' grid_mapping', filename)
+   end function define_node_int_var
+
+   subroutine put_node_var(varid, varname, values)
+      integer, intent(in) :: varid
+      character(*), intent(in) :: varname
+      real, dimension(:, :), intent(in) :: values
+      ierror = nf90_put_var(idfile, varid, values(1:nnode, 1), &
+                            start=(/1, wavedata%output%count/), count=(/nnode, 1/))
+      call nc_check_err(ierror, 'put_var '//trim(varname), filename)
+   end subroutine put_node_var
+
+   subroutine put_node_var3(varid, varname, values)
+      integer, intent(in) :: varid
+      character(*), intent(in) :: varname
+      real, dimension(:, :, :), intent(in) :: values
+      ierror = nf90_put_var(idfile, varid, values(1:nnode, 1, 1), &
+                            start=(/1, wavedata%output%count/), count=(/nnode, 1/))
+      call nc_check_err(ierror, 'put_var '//trim(varname), filename)
+   end subroutine put_node_var3
+
+   subroutine put_node_vector(varid, varname, values)
+      integer, intent(in) :: varid
+      character(*), intent(in) :: varname
+      real, dimension(:), intent(in) :: values
+      ierror = nf90_put_var(idfile, varid, values(1:nnode), &
+                            start=(/1, wavedata%output%count/), count=(/nnode, 1/))
+      call nc_check_err(ierror, 'put_var '//trim(varname), filename)
+   end subroutine put_node_vector
+
+   subroutine put_node_int_var(varid, varname, values)
+      integer, intent(in) :: varid
+      character(*), intent(in) :: varname
+      integer, dimension(:, :), intent(in) :: values
+      ierror = nf90_put_var(idfile, varid, values(1:nnode, 1), start=(/1/), count=(/nnode/))
+      call nc_check_err(ierror, 'put_var '//trim(varname), filename)
+   end subroutine put_node_int_var
+
+end subroutine write_wave_map_netcdf_unstructured
