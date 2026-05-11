@@ -85,7 +85,6 @@ set(DSLE_SOURCE_FILES
 ##############################################################################
 ################################## Targets ###################################
 ##############################################################################
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 #Version includes
 set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 set(rc_version_file ${CMAKE_CURRENT_SOURCE_DIR}/../version/dsle_dll_version.rc)
