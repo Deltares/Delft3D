@@ -396,6 +396,22 @@ contains
             dataPtr4 => tgt_data4
          end if
       end if
+      
+      ! When a multuni chain is requested, targetItemPtr1 must be a DISTINCT intermediate item
+      ! from multuni1. Without this override, both fm_ext_force_name_to_ec_item calls resolve to
+      ! the same registered item (e.g., item_lateraldischarge), causing a self-loop in the EC graph.
+      if (present(tgt_item1) .and. present(multuni1)) then
+         targetItemPtr1 => tgt_item1
+      end if
+      if (present(tgt_item2) .and. present(multuni2)) then
+         targetItemPtr2 => tgt_item2
+      end if
+      if (present(tgt_item3) .and. present(multuni3)) then
+         targetItemPtr3 => tgt_item3
+      end if
+      if (present(tgt_item4) .and. present(multuni4)) then
+         targetItemPtr4 => tgt_item4
+      end if
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
