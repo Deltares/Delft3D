@@ -880,6 +880,13 @@ contains
             res = resolve_integer_target(quantity, target_location_type, target_data_integer)
          end if
          if (.not. res) then
+            if (str_tolower(quantity) == 'bedlevel') then
+               ! Ugly special case, bedlevel must not throw an error as it is read elsewhere.
+               res = .true.
+               return
+            end if
+         end if
+         if (.not. res) then
             write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
             call err_flush()
             return
