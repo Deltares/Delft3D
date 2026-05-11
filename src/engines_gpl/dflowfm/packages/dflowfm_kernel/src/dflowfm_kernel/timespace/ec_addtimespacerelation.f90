@@ -856,7 +856,12 @@ contains
       case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
             'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
          ! the name of the source item created by the file reader will be the same as the ext.force. var name
-
+         if (.not. present(varname)) then !> these variables will crash without a varname
+            write (msgbuf, '(3a)') 'm_meteo::ec_addtimespacerelation: ''dataVariableName'' is required for quantity ''', &
+               trim(target_name), ''' but was not provided. Add dataVariableName= to the [Parameter] block.'
+            call err_flush()
+            goto 1234
+         end if
          ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
          ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname

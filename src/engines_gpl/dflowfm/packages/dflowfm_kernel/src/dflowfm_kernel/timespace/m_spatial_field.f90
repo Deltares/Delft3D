@@ -101,16 +101,18 @@ contains
       if (len_trim(res%forcing_file_type) == 0) then
          call prop_get(block_ptr, '', 'dataFileType', res%forcing_file_type)
       end if
-
-      call prop_get(block_ptr, '', 'forcingFile', res%forcing_file)
       if (len_trim(res%forcing_file) == 0) then
          call prop_get(block_ptr, '', 'dataFile', res%forcing_file)
+      end if
+      if (len_trim(res%variable_name) == 0) then !> forcing variable name alias is datavariablename
+         call prop_get(block_ptr, '', 'dataVariableName', res%variable_name)
       end if
 
       call prop_get(block_ptr, '', 'extrapolationMethod', extrapolation_method_legacy)
       if (extrapolation_method_legacy /= 0) then
          res%is_extrapolation_allowed = .true.
       end if
+      
    end function read_spatial_field_block
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
