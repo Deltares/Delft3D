@@ -55,6 +55,7 @@ module m_unc_write_his
               id_bridgedim, id_bridge_id, &
               id_culvertdim, id_culvert_id, &
               id_srcdim, id_srcname, id_srcx, id_srcy, id_srcptsdim, &
+              id_bubblescreendim, id_bubblescreen_name, id_bubblescreen_x, id_bubblescreen_y, id_bubblescreenptsdim, &
               id_dredlinkdim, id_dreddim, id_dumpdim, id_dred_name, id_dump_name, &
               id_dambreakdim, id_dambreak_id, &
               id_uniweirdim, id_uniweir_id, &
@@ -77,6 +78,7 @@ module m_unc_write_his
       id_pumpgeom_node_count, id_pumpgeom_node_coordx, id_pumpgeom_node_coordy, id_pump_xmid, id_pump_ymid, &
       id_bridgegeom_node_count, id_bridgegeom_node_coordx, id_bridgegeom_node_coordy, id_bridge_xmid, id_bridge_ymid, &
       id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, id_src_xmid, id_src_ymid, &
+      id_bubblescreengeom_node_count, id_bubblescreengeom_node_coordx, id_bubblescreengeom_node_coordy, id_bubblescreen_xmid, id_bubblescreen_ymid, &
       id_longculvertgeom_node_count, id_longculvertgeom_node_coordx, id_longculvertgeom_node_coordy, id_longculvert_xmid, id_longculvert_ymid
 
 contains
@@ -134,7 +136,7 @@ contains
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
 
       real(kind=dp), allocatable :: geom_x(:), geom_y(:)
-      integer, allocatable :: node_count(:)
+      integer, allocatable :: node_count(:), bubblescreen_node_count(:)
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
       integer :: maxlocT, maxvalT !< row+column count of valobs
@@ -345,6 +347,21 @@ contains
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
          end if
 
+         if (size(bubblescreen_air_discharge) > 0) then
+            block
+               integer :: num_bubble_screens, num_cell_bubblescreens
+               num_cell_bubblescreens = 0
+               num_bubble_screens = size(bubblescreen_air_discharge)
+               do i = 1, num_bubble_screens
+                  num_cell_bubblescreens = num_cell_bubblescreens + bubblescreens(i)%num_flowcells
+               end do
+               ierr = unc_def_his_structure_static_vars(ihisfile, ST_BUBBLE_SCREEN, 1, num_bubble_screens, 'line', num_cell_bubblescreens, id_strlendim, &
+                                                   id_bubblescreendim, id_bubblescreen_name, id_bubblescreengeom_node_count, id_bubblescreengeom_node_coordx, id_bubblescreengeom_node_coordy, &
+                                                   id_poly_xmid=id_bubblescreen_xmid, id_poly_ymid=id_bubblescreen_ymid)
+               
+            end block
+         end if
+
          if (timon) then
             call timstrt("unc_write_his DEF structures", handle_extra(60))
          end if
@@ -516,6 +533,7 @@ contains
                    .and. config%location_specifier /= UNC_LOC_OBSCRS &
                    .and. config%location_specifier /= UNC_LOC_GLOBAL &
                    .and. config%location_specifier /= UNC_LOC_SOSI &
+                   .and. config%location_specifier /= UNC_LOC_BUBBLE_SCREEN &
                    .and. config%location_specifier /= UNC_LOC_RUG &
                    .and. config%location_specifier /= UNC_LOC_GENSTRU &
                    .and. config%location_specifier /= UNC_LOC_DAM &
@@ -575,6 +593,8 @@ contains
                select case (config%location_specifier)
                case (UNC_LOC_SOSI)
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_srcdim, id_timedim], var_name, var_long_name, config%unit, 'source_sink_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
+               case (UNC_LOC_BUBBLE_SCREEN)
+                  call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_bubblescreendim, id_timedim], var_name, var_long_name, config%unit, 'bubble_screen_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_RUG)
                   call definencvar(ihisfile, id_var, id_nc_type2nc_type_his(config%id_nc_type), [id_rugdim, id_timedim], var_name, var_long_name, config%unit, 'runup_gauge_name', fillVal=dmiss, extra_attributes=config%additional_attributes%atts)
                case (UNC_LOC_GENSTRU)
@@ -725,6 +745,27 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_count, node_count))
             end if
 
+            if (size(bubblescreens) > 0) then
+               call realloc(bubblescreen_node_count, size(bubblescreens), fill=0)
+               bubblescreen_node_count = [(bubblescreens(i)%num_flowcells, i=1,size(bubblescreens))]
+               call realloc(geom_x, 20)
+               call realloc(geom_y, 20)
+               j = 1
+               do i = 1, size(bubblescreens)
+                  nNodes = bubblescreens(i)%num_flowcells
+                  if (nNodes > 0) then
+                     do k1 = 1, nNodes
+                        geom_x(k1) = xz(bubblescreens(i)%flowcell_indices(k1))
+                        geom_y(k1) = yz(bubblescreens(i)%flowcell_indices(k1))
+                     end do
+                     call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordx, geom_x(1:nNodes), start=[j], count=[nNodes]))
+                     call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordy, geom_y(1:nNodes), start=[j], count=[nNodes]))
+                     j = j + nNodes
+                  end if
+               end do
+               call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_count, bubblescreen_node_count))
+            end if
+
             ! Lateral discharges
             if (his_write_settings%lateral > 0 .and. numlatsg > 0) then
                call check_netcdf_error(nf90_put_var(ihisfile, id_latgeom_node_coordx, geomXLat(1:nNodesLat), start=[1], count=[nlatnd]))
@@ -800,6 +841,7 @@ contains
                 .and. config%location_specifier /= UNC_LOC_OBSCRS &
                 .and. config%location_specifier /= UNC_LOC_GLOBAL &
                 .and. config%location_specifier /= UNC_LOC_SOSI &
+                .and. config%location_specifier /= UNC_LOC_BUBBLE_SCREEN &
                 .and. config%location_specifier /= UNC_LOC_RUG &
                 .and. config%location_specifier /= UNC_LOC_GENSTRU &
                 .and. config%location_specifier /= UNC_LOC_DAM &
@@ -842,7 +884,8 @@ contains
                   UNC_LOC_LONGCULVERT, &
                   UNC_LOC_LATERAL, &
                   UNC_LOC_DREDGE, &
-                  UNC_LOC_DUMP &
+                  UNC_LOC_DUMP, &
+                  UNC_LOC_BUBBLE_SCREEN &
                   )
                call check_netcdf_error(nf90_put_var(ihisfile, id_var, out_variable_set_his%statout(ivar)%stat_output, start=[1, it_his]))
             case (UNC_LOC_STATION)
@@ -1507,7 +1550,7 @@ contains
    subroutine unc_put_his_structure_static_vars(ncid)
       use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, &
                   ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, &
-                  num_source_sink, gate2cgen, ngategen, is_source_sink_real
+                  num_source_sink, gate2cgen, ngategen, is_source_sink_real, bubblescreens
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: his_write_settings
@@ -1593,6 +1636,9 @@ contains
       structure_names = pack(source_sink_name, is_source_sink_real)
       call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
+      structure_names = [(bubblescreens(i)%id, integer :: i=1, size(bubblescreens))]
+      call unc_put_his_structure_names(ncid, 1, id_bubblescreen_name, structure_names)
+
       if (network%sts%numGates > 0) then
          indices = [(network%sts%gateIndices(i), integer :: i=1, ngategen)]
          structure_names = [(trimexact(network%sts%struct(network%sts%gateIndices(i))%id, strlen_netcdf), integer :: i=1, ngategen)]
@@ -1610,7 +1656,8 @@ contains
    !> Get the NetCDF variable prefix and human-readable name of a structure type from its type id
    subroutine get_prefix_and_name_from_struc_type_id(struc_type_id, prefix, name)
       use MessageHandling, only: mess, LEVEL_ERROR
-      use m_GlobalParameters, only: ST_UNSET, ST_WEIR, ST_ORIFICE, ST_PUMP, ST_GATE, ST_GENERAL_ST, ST_UNI_WEIR, ST_DAMBREAK, ST_CULVERT, ST_BRIDGE, ST_COMPOUND, ST_LONGCULVERT, ST_DAM, ST_OBS_STATION, ST_CROSS_SECTION, ST_RUNUP_GAUGE, ST_SOURCE_SINK, ST_GATEGEN, ST_LATERAL
+      use m_GlobalParameters, only: ST_UNSET, ST_WEIR, ST_ORIFICE, ST_PUMP, ST_GATE, ST_GENERAL_ST, ST_UNI_WEIR, ST_DAMBREAK, ST_CULVERT, ST_BRIDGE, &
+      ST_COMPOUND, ST_LONGCULVERT, ST_DAM, ST_OBS_STATION, ST_CROSS_SECTION, ST_RUNUP_GAUGE, ST_SOURCE_SINK, ST_GATEGEN, ST_LATERAL, ST_BUBBLE_SCREEN
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT)
       character(len=*), intent(out) :: prefix !< Base name of this structure type, e.g., 'uniweir'
       character(len=*), intent(out) :: name !< Human readable name of this structure type, e.g., 'universal weir'
@@ -1674,6 +1721,9 @@ contains
       case (ST_LATERAL)
          prefix = 'lateral'
          name = 'lateral'
+      case (ST_BUBBLE_SCREEN)
+         prefix = 'bubblescreen'
+         name = 'bubble screen'
       end select
    end subroutine get_prefix_and_name_from_struc_type_id
 

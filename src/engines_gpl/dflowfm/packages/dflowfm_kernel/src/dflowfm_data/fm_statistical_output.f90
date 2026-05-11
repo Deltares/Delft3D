@@ -820,6 +820,14 @@ contains
                              'm3 s-1', UNC_LOC_SOSI, nc_attributes=atts(1:1))
 
       !
+      ! HIS: Bubble Screens
+      !
+      call add_output_config(config_set_his, IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE, &
+                             'Wrihis_sourcesink', 'bubble_screen_discharge', '', '', &
+                             'm3 s-1', UNC_LOC_BUBBLE_SCREEN, nc_attributes=atts(1:1), description='Write bubble screen parameters to his file')
+
+
+      !
       ! HIS: run-up gauges
       !
       call add_output_config(config_set_his, IDX_HIS_RUG_RUHEIGHT, &
@@ -2317,7 +2325,7 @@ contains
       !
       ! Source-sink variables
       !
-      if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+      if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
          function_pointer => filter_source_sink_discharge
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
          ! call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
@@ -2333,6 +2341,10 @@ contains
          ! call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sink_water_discharge)
          ! call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sink_cumulative_volume)
          ! call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sink_average_discharge_previous)
+      end if
+
+      if (size(bubblescreen_air_discharge) > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE), bubblescreen_air_discharge)
       end if
 
       !
