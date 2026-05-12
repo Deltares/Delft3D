@@ -24,19 +24,15 @@
 // Stichting Deltares. All rights reserved.
 //
 //------------------------------------------------------------------------------
-// $Id: dimr.cpp 962 2011-10-31 21:52:47Z elshoff $
-// $HeadURL: $
-//------------------------------------------------------------------------------
 //  dimr Main Program
-//
-//  Irv.Elshoff@Deltares.NL
-//  6 mar 13
 //------------------------------------------------------------------------------
 
 #define DIMR_LIB
 #include <string>
 #include <iostream>
 #include <set>
+#include <thread> // std::this_thread::sleep_for
+#include <chrono> // std::chrono::milliseconds
 
 #include "dimr.h"
 #include "dimr_lib_version.h"
@@ -1012,6 +1008,20 @@ void Dimr::runParallelUpdate(dimr_control_block* cb, double tStep)
             if (use_mpi)
             {
                 int ierr = MPI_Barrier(MPI_COMM_WORLD);
+                // MPI_Request req = MPI_REQUEST_NULL;
+                //// Dont use default MPI_Barrier spinlock, instead allow other processes to use cpu by periodically
+                //// polling for barrier completion
+                // int ierr = MPI_Ibarrier(MPI_COMM_WORLD, &req);
+                // while (true)
+                //{
+                //     int complete;
+                //     MPI_Test(&req, &complete, MPI_STATUS_IGNORE);
+                //     if (complete)
+                //     {
+                //         break;
+                //     }
+                //     std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                // }
             }
 
             if (i == cb->masterSubBlockId)
@@ -1386,8 +1396,8 @@ void Dimr::receive_ptr(const char* name, const char* sourceName, int compType, B
     strcat(nameShape, "_shape");
     if (compType != COMP_TYPE_DSLE)
     {
-       //Setting nameshape in DSLE registers it as a constituent, which we do not want.
-       (dllSetVar)(nameShape, shape);
+        // Setting nameshape in DSLE registers it as a constituent, which we do not want.
+        (dllSetVar)(nameShape, shape);
     }
     // Finally: call setvar(name, pointer)
     (dllSetVar)(name, (void*)sourceVarPtr);
