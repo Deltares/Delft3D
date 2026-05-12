@@ -189,7 +189,7 @@
       </programs>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="WAQ\deltashell_map.nc" type="netCDF">
+        <file name="WAQ/deltashell_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_trLayer01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
             <parameter name="mesh2d_trLayer02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
@@ -231,7 +231,7 @@
       </programs>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="WAQ\deltashell_map.nc" type="netCDF">
+        <file name="WAQ/deltashell_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_trLayer01" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
             <parameter name="mesh2d_trLayer02" toleranceAbsolute="1.0e-4" toleranceRelative="1.0e-6"/>
