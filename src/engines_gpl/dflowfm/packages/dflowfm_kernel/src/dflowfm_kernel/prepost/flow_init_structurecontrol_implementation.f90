@@ -26,6 +26,7 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
+
 !> submodule that contains the implementation of flow_init_structurecontrol.
 submodule(m_flow_init_structurecontrol) flow_init_structurecontrol_implementation
    use precision_basics, only: dp
@@ -53,7 +54,7 @@ contains
       use m_longculverts_data, only: nlongculverts
       use m_partitioninfo, only: jampi
       use messagehandling, only: IDLEN
-      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration
+      use m_dambreak_breach, only: update_counters_for_dambreaks, update_dambreak_administration, remove_1d_links_from_dambreak_polygon_list
       use m_update_counters_for_structures, only: update_counters_for_dambreak_or_pump
       use m_1d_structures, only: update_bedlevels_for_bridges
 
@@ -122,6 +123,7 @@ contains
             ! NOTE: kegen below does not apply to general structures. Just a placeholder for the link snapping of all structure types.
             select case (pstru%type)
             case (ST_DAMBREAK)
+               call remove_1d_links_from_dambreak_polygon_list(numgen, kegen)
                num_dambreak_links = num_dambreak_links + numgen
                call update_counters_for_dambreaks(pstru%id, numgen, dambridx, i, kedb, kegen)
             case (ST_PUMP)
@@ -200,31 +202,31 @@ contains
 
       ! Fill geometry arrays for structures
       ngategen = network%sts%numgates
-      if (jahisweir > 0 .and. network%sts%numWeirs > 0) then
+      if (his_write_settings%weir > 0 .and. network%sts%numWeirs > 0) then
          call fill_geometry_arrays_structure(ST_WEIR, network%sts%numWeirs, nNodesWeir, nodeCountWeir, geomXWeir, geomYWeir)
       end if
-      if (jahiscgen > 0 .and. network%sts%numGeneralStructures > 0) then
+      if (his_write_settings%cgen > 0 .and. network%sts%numGeneralStructures > 0) then
          call fill_geometry_arrays_structure(ST_GENERAL_ST, network%sts%numGeneralStructures, nNodesGenstru, nodeCountGenstru, geomXGenstru, geomYGenstru)
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (his_write_settings%orifice > 0 .and. network%sts%numOrifices > 0) then
          call fill_geometry_arrays_structure(ST_ORIFICE, network%sts%numOrifices, nNodesOrif, nodeCountOrif, geomXOrif, geomYOrif)
       end if
-      if (jahisgate > 0 .and. network%sts%numgates > 0) then
+      if (his_write_settings%gate > 0 .and. network%sts%numgates > 0) then
          call fill_geometry_arrays_structure(ST_GATE, network%sts%numgates, nNodesgate, nodeCountgate, geomXgate, geomYgate)
       end if
-      if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (his_write_settings%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          call fill_geometry_arrays_structure(ST_UNI_WEIR, network%sts%numuniweirs, nNodesUniweir, nodeCountUniweir, geomXUniweir, geomYUniweir)
       end if
-      if (jahisculv > 0 .and. network%sts%numculverts > 0) then
+      if (his_write_settings%culvert > 0 .and. network%sts%numculverts > 0) then
          call fill_geometry_arrays_structure(ST_CULVERT, network%sts%numculverts, nNodesCulv, nodeCountCulv, geomXCulv, geomYCulv)
       end if
-      if (jahispump > 0 .and. network%sts%numPumps > 0) then
+      if (his_write_settings%pump > 0 .and. network%sts%numPumps > 0) then
          call fill_geometry_arrays_structure(ST_PUMP, network%sts%numPumps, nNodesPump, nodeCountPump, geomXPump, geomYPump)
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (his_write_settings%bridge > 0 .and. network%sts%numBridges > 0) then
          call fill_geometry_arrays_structure(ST_BRIDGE, network%sts%numBridges, nNodesBridge, nodeCountBridge, geomXBridge, geomYBridge)
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (his_write_settings%long_culvert > 0 .and. nlongculverts > 0) then
          call fill_geometry_arrays_structure(ST_LONGCULVERT, nlongculverts, nNodesLongCulv, nodeCountLongCulv, geomXLongCulv, geomYLongCulv)
       end if
 
@@ -257,6 +259,7 @@ contains
       use m_togeneral, only: togeneral
       use unstruc_messages, only: callback_msg
       use m_dambreak_breach, only: add_dambreak_signal, update_dambreak_administration_old
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       logical :: status
       character(len=256) :: plifile
@@ -767,10 +770,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -828,10 +831,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+1) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 1) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -877,10 +880,10 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      ! Time-interpolated value will be placed in zcgen((n-1)*3+2) when calling ec_gettimespacevalue.
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 2) ! Hook up 1 component at a time, even when target element set has kx=3
                      end if
                   end if
                end if
@@ -911,10 +914,10 @@ contains
                         call resolvePath(fnam, md_structurefile_dir)
                         ! Time-interpolated value will be placed in zcgen((n-1)*3+3) when calling ec_gettimespacevalue.
                         if (index(trim(fnam)//'|', '.tim|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
                         end if
                         if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
+                           success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + 3) ! Hook up 1 component at a time, even when target element set has kx=3
                         end if
                      end if
                   end if
@@ -994,10 +997,10 @@ contains
                            fnam = trim(rec)
                            call resolvePath(fnam, md_structurefile_dir)
                            if (index(trim(fnam)//'|', '.tim|') > 0) then
-                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, 'O', targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
+                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                            end if
                            if (index(trim(fnam)//'|', '.cmp|') > 0) then
-                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, 'O', targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
+                              success = ec_addtimespacerelation(qid, xdum, ydum, kdum, 1, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=(n - 1) * kx + ifld) ! Hook up 1 component at a time, even when target element set has kx=3
                            end if
                         end if
                      end if
@@ -1099,11 +1102,11 @@ contains
                   call resolvePath(fnam, md_structurefile_dir)
                   if (index(trim(fnam)//'|', '.tim|') > 0) then
                      ! Time-interpolated value will be placed in zgate(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                   if (index(trim(fnam)//'|', '.cmp|') > 0) then
                      ! Evaluated harmonic signals value will be placed in zgate(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                end if
             end if
@@ -1180,11 +1183,11 @@ contains
                   call resolvePath(fnam, md_structurefile_dir)
                   if (index(trim(fnam)//'|', '.tim|') > 0) then
                      ! Time-interpolated value will be placed in zcdam(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                   if (index(trim(fnam)//'|', '.cmp|') > 0) then
                      ! Evaluated harmonic signals value will be placed in zcdam(n) when calling ec_gettimespacevalue.
-                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                     success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                   end if
                end if
             end if
@@ -1326,7 +1329,7 @@ contains
                      call resolvePath(fnam, md_structurefile_dir)
                      if (index(trim(fnam)//'|', '.tim|') > 0) then
                         ! Time-interpolated value will be placed in qpump(n) when calling ec_gettimespacevalue.
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, 'O', targetIndex=n)
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, uniform, spaceandtime, OPERAND_OVERRIDE, targetIndex=n)
                         if (.not. success) then
                            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
@@ -1334,7 +1337,7 @@ contains
                      end if
                      if (index(trim(fnam)//'|', '.cmp|') > 0) then
                         ! Evaluated harmonic signals value will be placed in qpump(n) when calling ec_gettimespacevalue.
-                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, 'O', targetIndex=n)
+                        success = ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, fnam, fourier, justupdate, OPERAND_OVERRIDE, targetIndex=n)
                         if (.not. success) then
                            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                            call qnerror(message, ' for ', strid)
@@ -1358,31 +1361,31 @@ contains
       end if
 
 ! Fill geometry arrays for structures
-      if (jahisweir > 0 .and. network%sts%numWeirs > 0) then
+      if (his_write_settings%weir > 0 .and. network%sts%numWeirs > 0) then
          call fill_geometry_arrays_structure(ST_WEIR, network%sts%numWeirs, nNodesWeir, nodeCountWeir, geomXWeir, geomYWeir)
       end if
-      if (jahiscgen > 0 .and. network%sts%numGeneralStructures > 0) then
+      if (his_write_settings%cgen > 0 .and. network%sts%numGeneralStructures > 0) then
          call fill_geometry_arrays_structure(ST_GENERAL_ST, network%sts%numGeneralStructures, nNodesGenstru, nodeCountGenstru, geomXGenstru, geomYGenstru)
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (his_write_settings%orifice > 0 .and. network%sts%numOrifices > 0) then
          call fill_geometry_arrays_structure(ST_ORIFICE, network%sts%numOrifices, nNodesOrif, nodeCountOrif, geomXOrif, geomYOrif)
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (his_write_settings%orifice > 0 .and. network%sts%numOrifices > 0) then
          call fill_geometry_arrays_structure(ST_ORIFICE, network%sts%numOrifices, nNodesOrif, nodeCountOrif, geomXOrif, geomYOrif)
       end if
-      if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (his_write_settings%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          call fill_geometry_arrays_structure(ST_UNI_WEIR, network%sts%numuniweirs, nNodesUniweir, nodeCountUniweir, geomXUniweir, geomYUniweir)
       end if
-      if (jahisculv > 0 .and. network%sts%numculverts > 0) then
+      if (his_write_settings%culvert > 0 .and. network%sts%numculverts > 0) then
          call fill_geometry_arrays_structure(ST_CULVERT, network%sts%numculverts, nNodesCulv, nodeCountCulv, geomXCulv, geomYCulv)
       end if
-      if (jahispump > 0 .and. network%sts%numPumps > 0) then
+      if (his_write_settings%pump > 0 .and. network%sts%numPumps > 0) then
          call fill_geometry_arrays_structure(ST_PUMP, network%sts%numPumps, nNodesPump, nodeCountPump, geomXPump, geomYPump)
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (his_write_settings%bridge > 0 .and. network%sts%numBridges > 0) then
          call fill_geometry_arrays_structure(ST_BRIDGE, network%sts%numBridges, nNodesBridge, nodeCountBridge, geomXBridge, geomYBridge)
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (his_write_settings%long_culvert > 0 .and. nlongculverts > 0) then
          call fill_geometry_arrays_structure(ST_LONGCULVERT, nlongculverts, nNodesLongCulv, nodeCountLongCulv, geomXLongCulv, geomYLongCulv)
       end if
 

@@ -58,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, eps4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -414,7 +414,7 @@ contains
          if (.not. size(stmpar%morpar%moroutput%avgintv, 1) == 3) then
             success = .false.
          end if
-         call getOutputTimeArrays(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, success)
+         call set_time_interval(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, tstart_user, tstop_user, success)
          if (ti_sed > (tstop_user - tstart_user)) then
             ti_sed = tstop_user - tstart_user
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - The averaging interval for time averaged sedmor output is larger than output duration in the simulation.')
@@ -456,12 +456,12 @@ contains
          end if
          if (jawave > NO_WAVES .and. jawave /= 4) then
             if (comparereal(gammax, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4 ! if they are exactly the same, rounding errors set index to false wrongly
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4 ! if they are exactly the same, rounding errors set index to false wrongly
             end if
          end if
          if (jawave == WAVE_SURFBEAT) then
             if (comparereal(gammaxxb, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4
             end if
          end if
       end if

@@ -116,6 +116,7 @@
 
       ! only in unstructured cases!!
       if (output_hyd%geometry .eq. HYD_GEOM_UNSTRUC) then
+
           call realloc (apnt, size(ipnt_h, 2))
           apnt = ipnt_h(1,:)
           success = aggregate_ugrid_geometry(input_hyd%waqgeom, output_hyd%waqgeom, input_hyd%edge_type, &

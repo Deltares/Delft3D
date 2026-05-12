@@ -37,6 +37,7 @@ subroutine get_var_netcdf(i_flow, wavetime, varname, vararr, mmax, nmax, basenam
     use wave_data
     use flow_data, only: num_subdomains
     use netcdf
+    use nc_check, only : nc_check_err
     !
     implicit none
 !

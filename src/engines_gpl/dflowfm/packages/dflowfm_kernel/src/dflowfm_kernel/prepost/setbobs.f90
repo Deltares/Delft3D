@@ -39,8 +39,8 @@ contains
    subroutine setbobs() ! and set blu, weigthed depth at u point
       use precision, only: dp
       use m_netw, only: netcell, zk, zkuni, numl, numl1d, lne, kn, nmk
-      use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_inactive_links, jaconveyance2D
-      use m_flowparameters, only: BEDLEV_TYPE_WATERLEVEL, BEDLEV_TYPE_VELOCITY, BEDLEV_TYPE_MEAN, BEDLEV_TYPE_MIN, BEDLEV_TYPE_MAX, BEDLEV_TYPE_WATERLEVEL6
+      use m_flowparameters, only: ibedlevtyp, calc_bedlevel_over_inactive_links, jaconveyance2D, BEDLEV_TYPE_WATERLEVEL, &
+         BEDLEV_TYPE_VELOCITY, BEDLEV_TYPE_MEAN, BEDLEV_TYPE_MIN, BEDLEV_TYPE_MAX, BEDLEV_TYPE_WATERLEVEL6
       use m_flowgeom, only: ndx2d, bl, ndxi, lne2ln, iadv, ln, lncn, ibot, blu, bob, bob0, lnx1d, lnx, kcu, kcs, ndx, nd
       use m_flowgeom, only: wu, lnxi
       use m_flow, only: ibedlevmode, BLMODE_D3D, BLMODE_DFM, dmiss, jaupdbobbl1d, setHorizontalBobsFor1d2d, jaupdbndbl, jadpuopt
@@ -417,8 +417,8 @@ contains
       use precision, only: dp
       use m_missing, only: dmiss
       use network_data, only: zkuni, zk
-      use m_flowparameters, only: ibedlevtyp, jadpuopt, jaconveyance2D
-      use m_flowparameters, only: BEDLEV_TYPE_WATERLEVEL, BEDLEV_TYPE_VELOCITY, BEDLEV_TYPE_MEAN, BEDLEV_TYPE_MIN, BEDLEV_TYPE_MAX, BEDLEV_TYPE_WATERLEVEL6
+      use m_flowparameters, only: ibedlevtyp, jadpuopt, jaconveyance2D, BEDLEV_TYPE_WATERLEVEL, BEDLEV_TYPE_VELOCITY, &
+         BEDLEV_TYPE_MEAN, BEDLEV_TYPE_MIN, BEDLEV_TYPE_MAX, BEDLEV_TYPE_WATERLEVEL6
       use m_flowgeom, only: bl
 
       integer, intent(in) :: n1, n2 !< Node numbers for the link.

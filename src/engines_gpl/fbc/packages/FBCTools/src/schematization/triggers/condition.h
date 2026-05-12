@@ -30,32 +30,30 @@ using namespace std;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class condition
-{
-private:
-	double x1Value;
-	int iX1In;
-	relationalOperator op;
-	double x2Value;
-	int iX2In;
+            class condition
+            {
+            private:
+                double x1Value;
+                int iX1In;
+                relationalOperator op;
+                double x2Value;
+                int iX2In;
 
-public:
-	condition();
-	condition(double x1Value, int iX1In,
-			  relationalOperator op,
-			  double x2Value, int iX2In);
-	~condition(void);
+            public:
+                condition();
+                condition(double x1Value, int iX1In, relationalOperator op, double x2Value, int iX2In);
+                ~condition(void);
 
-	double evaluate(double *stateOld, double *stateNew);
-};
+                double evaluate(double* stateOld, double* stateNew);
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* CONDITION_H */
