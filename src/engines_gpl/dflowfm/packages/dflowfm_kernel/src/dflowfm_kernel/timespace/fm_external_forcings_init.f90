@@ -839,6 +839,10 @@ contains
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
 
       res = .false.
+      ec_item = ec_undef_int
+      target_data => null()
+      target_data_integer => null()
+      target_array_3d => null()
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
@@ -955,6 +959,8 @@ contains
                if (len_trim(variable_name) > 0) then
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+               else if (target_location_type == UNC_LOC_S3D) then
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, tgt_item1=ec_item, tgt_data1=target_data)
