@@ -39,7 +39,7 @@ def conan_install(profile, output_folder):
         "conan",
         "install",
         ".",
-        f"--profile=conan/profiles/{profile}",
+        f"--profile:all=./conan/profiles/{profile}",
         "--build=missing",
         "--no-remote",
         f"--output-folder={output_folder}",
