@@ -97,9 +97,13 @@ contains
       end if
 
       ! check FileVersion
-      major = 1
+      major = 2
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
+      if (.not. is_successful) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
+         call warn_flush()
+      end if
       if ((major == 1)) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
