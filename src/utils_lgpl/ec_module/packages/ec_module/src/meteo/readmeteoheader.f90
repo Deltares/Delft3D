@@ -76,7 +76,7 @@ function readmeteoheader(minp, meteoitem) result(success)
     meteoitem%nodata_value     = 0.0_fp
     meteoitem%spw_radius       = 0.0_fp
     meteoitem%spw_merge_frac   = 0.5_fp
-    meteoitem%spw_utm_zone_target   = 'nil'
+    meteoitem%spw_utm_zone_target   = 'undefined'
     meteoitem%dx               = 0.0_hp
     meteoitem%dy               = 0.0_hp
     meteoitem%x_llcorner       = -9.990e+20_hp
