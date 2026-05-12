@@ -103,9 +103,7 @@ contains
       if (.not. is_successful) then
          write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
          call warn_flush()
-         return
-      end if
-      if ((major == 0)) then
+      else if ((major == 0)) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
