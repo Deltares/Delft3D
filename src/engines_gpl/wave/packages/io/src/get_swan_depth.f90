@@ -1,22 +1,4 @@
-subroutine get_swan_depth (sif, botfil, unstructured)
-!
-! Head routine for calling read_bot
-!
-use swan_flow_grid_maps
-implicit none
-type(input_fields)          :: sif
-character(*)                :: botfil
-logical                     :: unstructured
-real                        :: fac =1.
-   if (unstructured) then
-      call read_bot_unstructured(sif%dps, sif%mmax, sif%nmax, botfil, fac)
-   else
-      call read_bot(sif%dps, sif%mmax, sif%nmax, botfil, fac)
-   endif
-end subroutine get_swan_depth
-
-
-subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
+subroutine get_swan_bot (sif, botfil, unstructured)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -50,6 +32,26 @@ subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
 !!--pseudo code and references--------------------------------------------------
 ! NONE
 !!--declarations----------------------------------------------------------------
+!
+use swan_flow_grid_maps
+
+implicit none
+
+type(input_fields)          :: sif
+character(*), intent(in)    :: botfil
+logical, intent(in)         :: unstructured
+!
+real                        :: fac =1.
+   if (unstructured) then
+      call read_bot_unstructured(sif%dps, sif%mmax, sif%nmax, botfil, fac)
+   else
+      call read_bot(sif%dps, sif%mmax, sif%nmax, botfil, fac)
+   endif
+end subroutine get_swan_bot
+
+
+subroutine read_bot(dpb       ,mb        ,nb        ,botfil    ,fac  )
+!
     implicit none
 !
 ! Global variables
@@ -90,7 +92,8 @@ end subroutine read_bot
 subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
 !----- GPL ---------------------------------------------------------------------
 !!--description-----------------------------------------------------------------
-! Read unSWAN bathymetry values listed on the unstructured grid vertices.
+! Read unSWAN bathymetry using the same FREE-format layout as
+! SWAN READINP BOTTOM ... IDLA=3 NHEDF=0 FREE.
 !!--declarations----------------------------------------------------------------
     implicit none
 !
@@ -104,14 +107,16 @@ subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
 !
 ! Local variables
 !
-    integer           :: i
-    integer           :: j
-    integer           :: lunbot
+    integer               :: i
+    integer               :: j
+    integer               :: lunbot
 !
 !! executable statements -------------------------------------------------------
 !
-    open (newunit = lunbot, file = botfil, status = 'unknown')
-    read (lunbot, *, end = 999) ((dpb(i, j), i = 1, mb), j = 1, nb)
+    open (newunit = lunbot, file = botfil, status = 'old', action = 'read')
+    do j = 1, nb
+       read (lunbot, *, end = 999, err = 998) (dpb(i, j), i = 1, mb)
+    enddo
     close (lunbot)
     do j = 1, nb
        do i = 1, mb
@@ -119,8 +124,13 @@ subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
        enddo
     enddo
     return
-  999 continue
-    write (*, '('' Premature end of file while reading file: '',A)') botfil
+  998 continue
+    write (*, '('' Error while reading unSWAN bathymetry file: '',A)') botfil
     close (lunbot)
-    call wavestop(1, ' Premature end of file while reading file: '//trim(botfil))
+    call wavestop(1, ' Error while reading unSWAN bathymetry file: '//trim(botfil))
+    return
+  999 continue
+    write (*, '('' Premature end of file while reading unSWAN bathymetry file: '',A)') botfil
+    close (lunbot)
+    call wavestop(1, ' Premature end of file while reading unSWAN bathymetry file: '//trim(botfil))
 end subroutine read_bot_unstructured

@@ -142,8 +142,12 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
          call init_input_fields(swan_input_fields, swan_run, itide)
 
          if (dom%curvibot == 1) then
-            write (*, '(a)') '  Allocate and read SWAN depth'
-            call get_swan_depth(swan_input_fields, dom%botfil, swan_grids(i_swan)%unstructured)
+            if (swan_grids(i_swan)%unstructured) then
+               write (*, '(a)') '  Copy grid bed level file to BOTNOW'
+            else
+               write (*, '(a)') '  Allocate and read SWAN depth'
+               call get_swan_bot(swan_input_fields, dom%botfil, swan_grids(i_swan)%unstructured)
+            endif
          end if
          !
          ! Vegetation map
@@ -242,20 +246,20 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
             ! Write SWAN depth file
             !
             write (*, '(a)') '  Write SWAN depth file'
-            sumvars = .true.
-            extr_var1 = dom%qextnd(q_bath) == 2
-            extr_var2 = dom%qextnd(q_wl) == 2
             if (swan_grids(i_swan)%unstructured) then
-               extr_var1 = .false.
-               extr_var2 = .false.
+               call copy_swan_botfile(dom%botfil, 'BOTNOW')
+            else
+               sumvars = .true.
+               extr_var1 = dom%qextnd(q_bath) == 2
+               extr_var2 = dom%qextnd(q_wl) == 2
+               call write_swan_file(swan_input_fields%dps, &
+                                   & swan_input_fields%s1, &
+                                   & swan_input_fields%mmax, &
+                                   & swan_input_fields%nmax, &
+                                   & swan_grids(i_swan)%covered, &
+                                   & 'BOTNOW', extr_var1, extr_var2, &
+                                   & sumvars, swan_run%depmin)
             endif
-            call write_swan_file(swan_input_fields%dps, &
-                                & swan_input_fields%s1, &
-                                & swan_input_fields%mmax, &
-                                & swan_input_fields%nmax, &
-                                & swan_grids(i_swan)%covered, &
-                                & 'BOTNOW', extr_var1, extr_var2, &
-                                & sumvars, swan_run%depmin)
          end if
          if (dom%qextnd(q_cur) > 0 .or. swan_run%swuvi) then
             !
@@ -554,3 +558,52 @@ subroutine swan_tot(n_swan_grids, n_flow_grids, wavedata, selectedtime)
       end if
    end do ! time steps
 end subroutine swan_tot
+
+subroutine copy_swan_botfile(sourcefil, targetfil)
+!----- GPL ---------------------------------------------------------------------
+!!--description-----------------------------------------------------------------
+! Copy an existing SWAN bathymetry file unchanged to the runtime BOTNOW file.
+!!--declarations----------------------------------------------------------------
+   implicit none
+
+   character(*), intent(in) :: sourcefil
+   character(*), intent(in) :: targetfil
+
+   integer :: iostat
+   integer :: lundst
+   integer :: lunsrc
+   character(16384) :: line
+
+   open(newunit = lunsrc, file = sourcefil, status = 'old', action = 'read', iostat = iostat)
+   if (iostat /= 0) then
+      write(*, '(3a)') '*** ERROR: unable to open SWAN bathymetry source file ''', trim(sourcefil), ''''
+      call wavestop(1, 'Unable to open SWAN bathymetry source file: '//trim(sourcefil))
+   endif
+
+   open(newunit = lundst, file = targetfil, status = 'replace', action = 'write', iostat = iostat)
+   if (iostat /= 0) then
+      close(lunsrc)
+      write(*, '(3a)') '*** ERROR: unable to open SWAN bathymetry target file ''', trim(targetfil), ''''
+      call wavestop(1, 'Unable to open SWAN bathymetry target file: '//trim(targetfil))
+   endif
+
+   do
+      read(lunsrc, '(A)', iostat = iostat) line
+      if (iostat < 0) exit
+      if (iostat > 0) then
+         close(lunsrc)
+         close(lundst)
+         write(*, '(3a)') '*** ERROR: unable to read SWAN bathymetry source file ''', trim(sourcefil), ''''
+         call wavestop(1, 'Unable to read SWAN bathymetry source file: '//trim(sourcefil))
+      endif
+
+      if (len_trim(line) > 0) then
+         write(lundst, '(A)') line(1:len_trim(line))
+      else
+         write(lundst, '(A)') ''
+      endif
+   enddo
+
+   close(lunsrc)
+   close(lundst)
+end subroutine copy_swan_botfile
