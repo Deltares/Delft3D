@@ -3026,14 +3026,14 @@ contains
       line(i:i) = ''''''
       i = i + 1
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
-         line(i:) = ' 3'
+         line(i:) = ' 1 1'
       elseif (dom%curvibot == 1) then
-         line(i:) = ' 4'
+         line(i:) = ' 4 0'
       else
-         line(i:) = ' 3'
+         line(i:) = ' 3 0'
       end if
-      i = i + 2
-      line(i:) = ' 0 FREE'
+      i = i + 4
+      line(i:) = ' FREE'
       write (luninp, '(1X,A)') trim(line)
       line = ' '
       !
