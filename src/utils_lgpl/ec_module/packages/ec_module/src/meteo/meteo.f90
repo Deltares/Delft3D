@@ -307,7 +307,7 @@ function addmeteoitem(runid, inputfile, gridsferic, num_columns, num_rows) resul
     if (meteoitem%filetype == meteo_on_spiderweb_grid) then
        if (meteogridsferic .neqv. gridsferic) then
           if (meteogridsferic .and. .not. gridsferic) then
-             if (trim(meteoitem%spw_utm_zone_target) == 'nil') then
+             if (trim(meteoitem%spw_utm_zone_target) == 'undefined') then
                 success = .false.
                 meteomessage = 'Meteo input: spw_utm_zone_target must be specified when applying a spiderweb grid ' // &
                              & 'in degrees on a Cartesian hydrodynamic grid'
@@ -844,8 +844,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
    real(fp)                              :: wdir
    real(fp)                              :: wdir0
    real(fp)                              :: wdir1
-   real(dp)                              :: lo
-   real(dp)                              :: la
+   real(dp)                              :: lon
+   real(dp)                              :: lat
    real(fp), dimension(3)                :: z         ! spiderweb wind_speed (1), wind_from_direction (2) and air_pressure (3)
    real(fp), dimension(4)                :: f
    real(fp), dimension(4)                :: u
@@ -1235,14 +1235,14 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            enddo
                            x_hp  = real(meteo%flowgrid%xz(n,m),hp)
                            y_hp  = real(meteo%flowgrid%yz(n,m),hp)
-                           if (meteoitem%spw_utm_zone_target /= 'nil') then
-                              call utm2deg(x_hp, y_hp, meteoitem%spw_utm_zone_target, lo, la)
-                              xx = real(lo,fp)
-                              yy = real(la,fp)
-                              x  = real(lo,fp)
-                              y  = real(la,fp)
-                              dx = real(lo,fp) - x01
-                              dy = real(la,fp) - y01
+                           if (meteoitem%spw_utm_zone_target /= 'undefined') then
+                              call utm2deg(x_hp, y_hp, meteoitem%spw_utm_zone_target, lon, lat)
+                              xx = real(lon,fp)
+                              yy = real(lat,fp)
+                              x  = real(lon,fp)
+                              y  = real(lat,fp)
+                              dx = real(lon,fp) - x01
+                              dy = real(lat,fp) - y01
                            else
                               xx = x
                               yy = y

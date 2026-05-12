@@ -969,7 +969,7 @@ module m_ec_elementSet
       end function ecElementSetSetRadius
       
       !> Set the spiderweb target grid utm zone
-      function ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone,gridunit) result(success)
+      function ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit) result(success)
          logical                               :: success      !< function status
          type(tEcInstance), pointer            :: instancePtr  !< intent(in)
          integer,                   intent(in) :: elementSetId !< unique ElementSet id
@@ -984,12 +984,12 @@ module m_ec_elementSet
          elementSetPtr => ecSupportFindElementSet(instancePtr, elementSetId)
          if (associated(elementSetPtr)) then
             if (elementSetPtr%ofType == elmSetType_spw) then
-               if (trim(gridunit) /= 'degree' .and. trim(utmzone) /= 'nil') then
+               if (trim(gridunit) /= 'degree' .and. trim(utmzone) /= 'undefined') then
                   call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: " // &
-                                      "spw_utm_zone_target must be nil when specifying spiderweb grid coordinates in m.")
+                                      "spw_utm_zone_target must be 'undefined' when specifying spiderweb grid coordinates in m.")
                   return
                end if
-               if (trim(gridunit) == 'degree' .and. trim(utmzone) /= 'nil' .and. &
+               if (trim(gridunit) == 'degree' .and. trim(utmzone) /= 'undefined' .and. &
                   & .not. is_valid_utm_zone(utmzone)) then
                   call set_ec_message("ERROR: ec_elementSet::ecElementSetSetUTMzone: Invalid spw_utm_zone_target '" // &
                                       trim(utmzone) // "'. Expected UTM zone 1..60 followed by hemisphere N or S, " // &

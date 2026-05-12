@@ -2170,8 +2170,6 @@ contains
    ! =======================================================================
 
    !> Create source Items and their contained types, based on a spiderweb file's header.
-      !! meteo1.f90: reaspwheader
-      ! JRE look here
    function ecProviderCreateSpiderwebItems(instancePtr, fileReaderPtr) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2215,7 +2213,7 @@ contains
       spw_merge_frac = 0.5
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_merge_frac')
       if (len_trim(rec) > 0) read (rec, *) spw_merge_frac
-      utmzone = 'nil'
+      utmzone = 'undefined'
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_utm_zone_target')
       if (len_trim(rec) > 0) read (rec, *) utmzone
       gridunit = 'degree'

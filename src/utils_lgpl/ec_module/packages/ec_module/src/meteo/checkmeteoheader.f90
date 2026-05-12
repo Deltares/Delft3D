@@ -327,13 +327,13 @@ function checkmeteoheader(meteoitem) result(success)
        endif
        !
        if (trim(meteoitem%grid_unit) /= 'degree'  .and. &
-         & trim(meteoitem%spw_utm_zone_target) /= 'nil') then
-          write(meteomessage, '(a)') 'Meteo input: spw_utm_zone_target must be nil when specifying spiderweb grid coordinates in m.'
+         & trim(meteoitem%spw_utm_zone_target) /= 'undefined') then
+          write(meteomessage, '(a)') "Meteo input: spw_utm_zone_target must be 'undefined' when specifying spiderweb grid coordinates in m."
           success = .false.
           return
        endif
        if (trim(meteoitem%grid_unit) == 'degree' .and. &
-         & trim(meteoitem%spw_utm_zone_target) /= 'nil' .and. &
+         & trim(meteoitem%spw_utm_zone_target) /= 'undefined' .and. &
          & .not. is_valid_utm_zone(meteoitem%spw_utm_zone_target)) then
           write(meteomessage, '(3a)') 'Meteo input: Invalid spw_utm_zone_target "', &
              & trim(meteoitem%spw_utm_zone_target), &
