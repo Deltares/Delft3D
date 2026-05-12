@@ -161,14 +161,19 @@ contains
    !> Returns .true. when the given forcingFileType string describes a static
    !! spatial field (no time dimension). Static fields are read once at
    !! initialisation; the EC relation is never updated during the time loop.
-   pure function is_static_file_type(forcing_file_type) result(is_static)
+   pure function is_static_file_type(forcing_file_type, method) result(is_static)
       use string_module, only: str_tolower
+      use timespace_parameters, only: SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE
+
       character(len=*), intent(in) :: forcing_file_type
+      integer, intent(in) :: method
       logical :: is_static
 
       select case (str_tolower(trim(forcing_file_type)))
       case ('sample', 'geotiff', 'polygon', '1dfield')
          is_static = .true.
+      case ('arcinfo') !> TODO: change this approach once more file types can be both time-varying and static
+         is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
       case default
          is_static = .false.
       end select
@@ -260,8 +265,6 @@ contains
          return
       end if
 
-      input%is_static_field = is_static_file_type(input%forcing_file_type)
-
       ! Parse operand. Legacy single-character values are supported but will trigger a warning.
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
@@ -297,6 +300,8 @@ contains
          call err_flush()
          return
       end if
+
+      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method )
 
       call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
 
