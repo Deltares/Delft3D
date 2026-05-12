@@ -41,8 +41,8 @@ contains
    subroutine setsorsin()
       use precision, only: dp
       use m_flow, only: source_sink_reduction, num_source_sink, source_sink_indices, source_sink_water_discharge, &
-         source_sink_all_discharges, kmx, source_sink_z_bottom, dmiss, zws, source_sink_z_top, vol1, &
-         source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
+                        source_sink_all_discharges, kmx, source_sink_z_bottom, dmiss, zws, source_sink_z_top, vol1, &
+                        source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
@@ -206,9 +206,9 @@ contains
          if (kk > 0) then ! FROM Point
             qsrckk = source_sink_water_discharge(n)
             qin(kk) = qin(kk) - qsrckk ! add to 2D pressure cell nr
-            dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
             do k = source_sink_indices(2, n), source_sink_indices(3, n)
                if (kmx > 0) then
+                  dzss = zws(source_sink_indices(3, n)) - zws(source_sink_indices(2, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
@@ -222,9 +222,9 @@ contains
          if (kk2 > 0) then ! TO Point
             qsrckk = source_sink_water_discharge(n)
             qin(kk2) = qin(kk2) + qsrckk ! add to 2D pressure cell nr
-            dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
             do k = source_sink_indices(5, n), source_sink_indices(6, n)
                if (kmx > 0) then
+                  dzss = zws(source_sink_indices(6, n)) - zws(source_sink_indices(5, n) - 1)
                   if (dzss > epshs) then
                      qsrck = qsrckk * (zws(k) - zws(k - 1)) / dzss
                   else
