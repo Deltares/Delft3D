@@ -2758,7 +2758,6 @@ end function resolve_initial_3d_target
    !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
    !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
    subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, vertical_range_min, vertical_range_max, operand)
-      use m_flowgeom, only: ndx
       use precision_basics
       use m_flow, only: kmx, kbot, ktop, zws
       use m_missing
@@ -2786,7 +2785,7 @@ end function resolve_initial_3d_target
       if (vertical_range_max /= dmiss) then
          upper_limit = vertical_range_max
       end if
-      do n = 1, ndx
+      do n = 1, size(input_array_2d)
          if (input_array_2d(n) /= dmiss) then
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)

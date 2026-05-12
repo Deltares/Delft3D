@@ -100,7 +100,7 @@ module fm_external_forcings
          integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
       end subroutine
    end interface
-   
+
    interface
       module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
          use tree_data_types, only: tree_data
@@ -114,7 +114,7 @@ module fm_external_forcings
          real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
          real(kind=dp), dimension(2), intent(out) :: z_range_source
          real(kind=dp), dimension(2), intent(out) :: z_range_sink
-         
+
          logical :: is_successful
       end function sourcesink_parse_coordinates
    end interface
@@ -149,7 +149,7 @@ contains
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
-      use precision_basics 
+      use precision_basics
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
       use m_tauwavefetch, only: tauwavefetch
@@ -1730,9 +1730,6 @@ contains
 
       call setup(iresult)
       if (iresult == DFM_NOERR) then
-         call init_new(md_inifieldfile, iresult)
-      end if
-      if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
       if (iresult == DFM_NOERR) then
@@ -1751,8 +1748,8 @@ contains
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
       use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
-         btempforcingtypl, ja_friction_coefficient_time_dependent
-      use m_flowtimes, only: refdat, julrefdat, timjan
+                                  btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
       use unstruc_model, only: md_inifieldfile
@@ -1776,6 +1773,7 @@ contains
       integer, parameter :: N4 = 6
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
+      logical :: exist
 
       iresult = DFM_NOERR
 
@@ -1820,26 +1818,26 @@ contains
          return
       end if
 
-      !! First initialize new-style IniFieldFile quantities.
-      !if (len_trim(md_inifieldfile) > 0) then
-      !   call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
-      !   inquire (file=trim(md_inifieldfile), exist=exist)
-      !   if (exist) then
-      !      iresult = initialize_initial_fields(md_inifieldfile)
-      !      if (iresult /= DFM_NOERR) then
-      !         call timstop(handle_extra(49)) ! initialize_initial_fields
-      !         return
-      !      end if
-      !   else
-      !      call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
-      !      write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
-      !      call warn_flush()
-      !      iresult = DFM_EXTFORCERROR
-      !      call timstop(handle_extra(49)) ! initialize_initial_fields
-      !      return
-      !   end if
-      !   call timstop(handle_extra(49)) ! initialize_initial_fields
-      !end if
+      ! First initialize new-style IniFieldFile quantities.
+      if (len_trim(md_inifieldfile) > 0) then
+         call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
+         inquire (file=trim(md_inifieldfile), exist=exist)
+         if (exist) then
+            call init_new(md_inifieldfile, iresult)
+            if (iresult /= DFM_NOERR) then
+               call timstop(handle_extra(49)) ! initialize_initial_fields
+               return
+            end if
+         else
+            call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
+            write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
+            call warn_flush()
+            iresult = DFM_EXTFORCERROR
+            call timstop(handle_extra(49)) ! initialize_initial_fields
+            return
+         end if
+         call timstop(handle_extra(49)) ! initialize_initial_fields
+      end if
 
       if (jatimespace == 0) then
          return ! Just cleanup and close ext file.
@@ -2978,8 +2976,8 @@ contains
       end if
    end function check_keyword_zerozbndinflowadvection
 
-subroutine allocatewindarrays()
-      use m_wind, only: wx, wy 
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx
       use m_alloc, only: realloc, aerr

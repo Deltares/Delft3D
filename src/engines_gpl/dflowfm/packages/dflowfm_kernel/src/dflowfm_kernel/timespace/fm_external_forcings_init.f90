@@ -917,8 +917,10 @@ contains
                   real(dp) :: transformcoef(NTRANSFORMCOEF)
                   transformcoef = -999.0_dp
                   call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
-                  ! ugly extra reading for value. Can be moved to t_spatial_field_input once transformcoef is eliminated
+                  ! ugly extra reading for value, tracerfallvelocity and tracerdecaytime. Can be moved to t_spatial_field_input once transformcoef is eliminated
                   call prop_get(block_ptr, '', 'value', transformcoef(1))  
+                  call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
+                  call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
