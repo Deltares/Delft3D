@@ -42,7 +42,7 @@ contains
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, set_lateral_count_in_external_forcings_file
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, set_lateral_count_in_external_forcings_file
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
       use string_module, only: str_tolower
@@ -220,9 +220,6 @@ contains
       call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
 
       call tree_destroy(bnd_ptr)
-      if (allocated(thrtt)) then
-         call init_threttimes()
-      end if
 
       if (res) then
          iresult = DFM_NOERR
@@ -814,6 +811,7 @@ contains
       use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use m_laterals, only: ilattp_all
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -836,6 +834,7 @@ contains
       real(dp), dimension(:), pointer :: target_data
       integer, dimension(:), pointer :: target_data_integer
       real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      integer :: oper_backup
 
       res = .false.
       ec_item = ec_undef_int
@@ -921,12 +920,14 @@ contains
                   transformcoef = -999.0_dp
                   call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
                   ! ugly extra reading for value, tracerfallvelocity and tracerdecaytime. Can be moved to t_spatial_field_input once transformcoef is eliminated
-                  call prop_get(block_ptr, '', 'value', transformcoef(1))  
+                  call prop_get(block_ptr, '', 'value', transformcoef(1))
                   call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
                   call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
 
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
+                     oper_backup = oper
+                     oper = OPERAND_OVERRIDE !> first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
 
                   if (associated(target_data)) then
@@ -939,6 +940,7 @@ contains
                   end if
 
                   if (associated(target_array_3d)) then !> 3D postprocessing
+                     oper = oper_backup
                      call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
                      ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
                      if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
@@ -1164,9 +1166,9 @@ contains
             if (quantity == 'interceptionlayerthickness') then
                jaintercept2D = 1
             end if
-                     case ('sea_ice_area_fraction')
+         case ('sea_ice_area_fraction')
             ja_ice_area_fraction_read = 1
-                     case ('sea_ice_thickness')
+         case ('sea_ice_thickness')
             ja_ice_thickness_read = 1
          case ('secchidepth')
             secchi_depth_is_spatially_varying = .true.
@@ -1663,18 +1665,18 @@ contains
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-     subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, exclude_boundary_nodes, ierr)
+   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, exclude_boundary_nodes, ierr)
       use fm_location_types
       use m_flowgeom, only: ndx, ndxi, lnx, xz, yz, xu, yu
       use network_data, only: xk, yk, numk
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
 
-      integer, intent(in)  :: target_location_type
+      integer, intent(in) :: target_location_type
       integer, intent(out) :: target_num_points
       real(dp), dimension(:), pointer, intent(out) :: target_x
       real(dp), dimension(:), pointer, intent(out) :: target_y
-      logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying 
+      logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying
       integer, intent(out) :: ierr
 
       ierr = DFM_NOERR
@@ -1683,7 +1685,7 @@ contains
       case (UNC_LOC_S, UNC_LOC_S3D)
          if (exclude_boundary_nodes) then
             target_num_points = ndxi
-         else 
+         else
             target_num_points = ndx
          end if
          target_x => xz(1:target_num_points)

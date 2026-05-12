@@ -2526,6 +2526,10 @@ contains
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
 
+      if (allocated(thrtt)) then
+         call init_threttimes()
+      end if
+
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
          deallocate (frculin)
