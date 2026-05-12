@@ -817,12 +817,6 @@ contains
 !   Observation points (fixed+moving)
 
       ntot = numobs + nummovobs
-      !Fill average source-sink discharge with different array on first timestep
-      if (it_his == 1) then
-         do i = 1, num_source_sink
-            source_sink_water_discharge(i) = source_sink_all_discharges(1, i)
-         end do
-      end if
       !Bottom level is written separately from statout if it is static
       if (ntot > 0 .and. .not. stm_included .and. his_write_settings%bedlev > 0) then
          call check_netcdf_error(nf90_put_var(ihisfile, id_varb, valobs(:, IPNT_BL), start=[1]))

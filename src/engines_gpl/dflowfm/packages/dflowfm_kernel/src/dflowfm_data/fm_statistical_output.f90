@@ -218,9 +218,14 @@ contains
    end subroutine filter_source_sink_cumulative_volume
 
    subroutine filter_source_sink_water_discharge(source_input)
-      use fm_external_forcings_data, only: num_real_source_sink, is_source_sink_real, source_sink_water_discharge
+      use fm_external_forcings_data, only: num_real_source_sink, is_source_sink_real, source_sink_water_discharge, source_sink_all_discharges
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      logical :: is_init
+      is_init = .not. associated(source_input)
       call allocate_and_associate(source_input, num_real_source_sink, source_sink_water_discharge_out)
+      if (is_init) then
+         source_sink_water_discharge = source_sink_all_discharges(1, :)
+      end if
       source_sink_water_discharge_out = pack(source_sink_water_discharge, is_source_sink_real)
    end subroutine filter_source_sink_water_discharge
 
