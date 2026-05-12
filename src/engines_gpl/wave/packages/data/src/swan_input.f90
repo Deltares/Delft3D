@@ -385,6 +385,10 @@ contains
 !
 !
 !==============================================================================
+   !> Check whether configuration contains an overall SP2 boundary file.
+   !!
+   !! @param[in] sr SWAN runtime/configuration data.
+   !! @return       True when any boundary has bndtyp=4 (overall spectral file).
    logical function has_overall_sp2_boundary(sr)
       implicit none
 
@@ -406,6 +410,15 @@ contains
 
 !
 !==============================================================================
+   !> Register all spectral boundary files in the boundary cache.
+   !!
+   !! Algorithm:
+   !! - reset cache state from any previous setup
+   !! - register overall SP2 file when present
+   !! - register per-boundary spectrum files for PARREAD boundaries
+   !!
+   !! @param[in] sr       SWAN runtime/configuration data.
+   !! @param[in] refdate  Reference date (YYYYMMDD) used for time conversion.
    subroutine register_boundary_spectrum_files(sr, refdate)
       use boundary_spectral_cache, only: register_boundary_spectral_file, reset_boundary_spectral_cache
 
@@ -438,6 +451,7 @@ contains
 
 !
 !==============================================================================
+   !> Cleanup cached spectral subset files and cache administration.
    subroutine cleanup_boundary_spectrum_files()
       use boundary_spectral_cache, only: cleanup_boundary_spectral_cache
 
@@ -449,6 +463,16 @@ contains
 
 !
 !==============================================================================
+   !> Replace all registered boundary spectrum paths in a SWAN INPUT line.
+   !!
+   !! For each known source spectrum path, this routine resolves a run-window
+   !! specific cached subset path and rewrites the line when replacement is
+   !! available.
+   !!
+   !! @param[inout] line       INPUT line that may contain spectrum filenames.
+   !! @param[in]    sr         SWAN runtime/configuration data.
+   !! @param[in]    run_start  Start of requested run window (seconds).
+   !! @param[in]    run_end    End of requested run window (seconds).
    subroutine replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
       use precision_basics, only: hp
 
@@ -481,6 +505,12 @@ contains
 
 !
 !==============================================================================
+   !> Replace one source spectrum path in a line by its cached active path.
+   !!
+   !! @param[inout] line       INPUT line to update.
+   !! @param[in]    sourcefile Original source spectrum filename.
+   !! @param[in]    run_start  Start of requested run window (seconds).
+   !! @param[in]    run_end    End of requested run window (seconds).
    subroutine replace_cached_path(line, sourcefile, run_start, run_end)
       use precision_basics, only: hp
 
@@ -518,6 +548,15 @@ contains
 
 !
 !==============================================================================
+   !> Resolve active boundary spectrum file for the given run window.
+   !!
+   !! Delegates to boundary_spectral_cache and returns either the original
+   !! sourcefile or a generated cached subset file.
+   !!
+   !! @param[in]  sourcefile Original source spectrum filename.
+   !! @param[in]  run_start  Start of requested run window (seconds).
+   !! @param[in]  run_end    End of requested run window (seconds).
+   !! @param[out] activefile File that should be written into INPUT.
    subroutine resolve_cached_boundary_spectrum_path(sourcefile, run_start, run_end, activefile)
       use boundary_spectral_cache, only: resolve_boundary_spectral_file
       use precision_basics, only: hp
@@ -2632,6 +2671,9 @@ contains
 !! executable statements -------------------------------------------------------
 !
       write (*, '(2a)') 'Updating pre-existing INPUT file: ', trim(filnam)
+      ! Boundary spectrum cache window:
+      ! - stationary/quasi-stationary: current time only
+      ! - non-stationary: full COMPUTE NONSTAT interval until tendc
       boundary_run_start = wavedata%time%timsec
       if (sr%modsim == 3) then
          boundary_run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
@@ -2866,6 +2908,9 @@ contains
       !
       tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
       write (outfirst, '(3a,f8.2,a)') "OUT ", tbegc, " ", sr%nonstat_interval, " MIN"
+      ! Boundary spectrum cache window:
+      ! - stationary/quasi-stationary: current time only
+      ! - non-stationary: full COMPUTE NONSTAT interval until tendc
       boundary_run_start = wavedata%time%timsec
       if (sr%modsim == 3) then
          boundary_run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
