@@ -108,6 +108,7 @@ contains
       cc = 0.0_dp
       dc = 0.0_dp
 
+      wsf = 1.0_dp
       call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
       ! construct and solve system
@@ -210,7 +211,7 @@ contains
                   c(n, j) = c(n, j) + fluxfac * dvol1i
                end if
 
-               if (jased > 0 .and. jaimplicitfallvelocity == 1) then
+               !if (jased > 0 .and. jaimplicitfallvelocity == 1) then
                   fluxfac = 0.0_dp
                   if (jased == 4) then
                      if (j >= ISED1 .and. j <= ISEDN) then
@@ -229,7 +230,7 @@ contains
                      b(n, j) = b(n, j) - fluxfac * dvol1i
                      a(n + 1, j) = a(n + 1, j) + fluxfac * dvol2i
                   end if
-               end if
+               !end if
             end do
          end do
 
