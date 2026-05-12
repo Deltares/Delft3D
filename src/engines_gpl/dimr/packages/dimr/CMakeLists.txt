@@ -99,6 +99,8 @@ endif(WIN32)
  message(STATUS "build_config ${build_config}")
 
 install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+
+install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/run_dimr.sh             DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/dimr/scripts/generic/lnx64/submit_dimr.sh          DESTINATION bin)
