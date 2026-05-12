@@ -2509,8 +2509,8 @@ contains
       yeye = cyclic_interpolation(yeye0, yeye1, a0, a1) ! cyclic inteprolation (spheric coord)
       !
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-         xctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n)
-         yctemp = connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n)
+         xctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n),dp)
+         yctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n),dp)
          if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'nil' .and.  &
              trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%gridunit) == 'degree') then
             call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc, utm_success)

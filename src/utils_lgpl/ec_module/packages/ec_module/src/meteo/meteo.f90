@@ -1233,21 +1233,21 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                            do k = 1, kx
                               spw%spwarr(k, n, m) = 0.0_fp
                            enddo
-                           x  = meteo%flowgrid%xz(n,m)
-                           y  = meteo%flowgrid%yz(n,m)
+                           x  = real(meteo%flowgrid%xz(n,m),hp)
+                           y  = real(meteo%flowgrid%yz(n,m),hp)
                            if (meteoitem%spw_utm_zone_target /= 'nil') then
                               call utm2deg(x, y, meteoitem%spw_utm_zone_target, lo, la)
-                              xx = lo
-                              yy = la
-                              x  = lo
-                              y  = la
-                              dx = lo - x01
-                              dy = la - y01
+                              xx = real(lo,fp)
+                              yy = real(la,fp)
+                              x  = real(lo,fp)
+                              y  = real(la,fp)
+                              dx = real(lo,fp) - x01
+                              dy = real(la,fp) - y01
                            else
-                              xx = x
-                              yy = y
-                              dx = x - x01
-                              dy = y - y01
+                              xx = real(x,fp)
+                              yy = real(y,fp)
+                              dx = real(x,fp) - x01
+                              dy = real(y,fp) - y01
                            end if
                            !
                            ! Distance to centre
