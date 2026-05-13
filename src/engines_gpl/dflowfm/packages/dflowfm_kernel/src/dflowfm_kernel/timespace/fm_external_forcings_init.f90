@@ -735,9 +735,9 @@ contains
       use stdlib_kinds, only: c_bool
       use timespace_parameters, only: FIELD1D
       use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, &
-                                   set_global_values, set_global_water_values, finish_initialization
-      use m_flow, only: frcu, s1, hs
-      use m_flowgeom, only: bl, ndx2D, ndxi
+                                   set_global_values, set_global_water_values, finish_initialization, &
+      accumulate_1dfield_global, specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
+      use m_flowgeom, only: ndx2D, ndxi, lnx1d
       use dfm_error, only: DFM_NOERR
       use messageHandling, only: err_flush, msgbuf
       use string_module, only: str_tolower
@@ -770,16 +770,20 @@ contains
       res = (ierr == DFM_NOERR)
       if (.not. res) return
 
-      ! Apply the global [Global] value to any nodes/links not set by a [Branch] block.
-      if (global_value_provided .and. .not. all(specified_indices)) then
-         select case (str_tolower(quantity))
-         case ('initialwaterlevel', 'waterlevel', 'initialwaterdepth', 'waterdepth')
-            call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), &
-                                         specified_indices, quantity, global_value, file_name)
-         case ('frictioncoefficient')
-            call set_global_values(frcu, specified_indices, global_value)
-         end select
-      end if
+      select case (str_tolower(source_quantity_name))
+      case ('waterlevel', 'waterdepth')
+         call accumulate_1dfield_global(specified_water_1dfield, ndxi - ndx2D, specified_indices)
+         if (global_value_provided) then
+            water_global_value_1dfield = global_value
+            water_global_quantity_1dfield = quantity
+         end if
+
+      case ('frictioncoefficient')
+         call accumulate_1dfield_global(specified_friction_1dfield, lnx1d, specified_indices)
+         if (global_value_provided) then
+            friction_global_value_1dfield = global_value
+         end if
+      end select
 
       ! Shared post-processing: s1 = bl + hs for waterdepth, friction-type stamp, etc.
       call finish_initialization(quantity)

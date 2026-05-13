@@ -2519,6 +2519,7 @@ contains
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use unstruc_inifields, only: finalize_1dfield_globals
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2529,6 +2530,8 @@ contains
       if (allocated(thrtt)) then
          call init_threttimes()
       end if
+
+      call finalize_1dfield_globals()
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then

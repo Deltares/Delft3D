@@ -40,6 +40,7 @@ module unstruc_inifields
    use properties
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
+   use stdlib_kinds, only: c_bool
 
    use precision, only: dp
    implicit none(type, external)
@@ -48,7 +49,7 @@ module unstruc_inifields
    public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
-             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name   
+             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, accumulate_1dfield_global, finalize_1dfield_globals
 
    !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -69,6 +70,14 @@ module unstruc_inifields
    ! 2.01: Added field 'frictionType'
    ! 2.00: extrapolationMethod changed from integer to logical.
    ! 1.01: initial implemented version
+
+   ! Module-level state for deferred 1dField global application
+   logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:)
+   logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:)
+   real(dp), public :: water_global_value_1dfield
+   real(dp), public :: friction_global_value_1dfield
+   character(len=256), public :: water_global_quantity_1dfield
+
 contains
 
    function checkIniFieldFileVersion(inifilename, inifield_ptr) result(ierr)
@@ -156,6 +165,44 @@ contains
          call set_water_level_from_depth(bed_levels, water_depths, water_levels, mask)
       end select
    end subroutine set_global_water_values
+
+    !> Accumulate specified indices into a deferred 1dField mask.
+   subroutine accumulate_1dfield_global(specified, num_points, specified_indices)
+      use stdlib_kinds, only: c_bool
+      use m_alloc, only: realloc
+
+      logical(kind=c_bool), allocatable, intent(inout) :: specified(:)
+      integer, intent(in) :: num_points
+      logical(kind=c_bool), intent(in) :: specified_indices(:)
+
+      if (.not. allocated(specified)) then
+         call realloc(specified, num_points, fill=.false._c_bool, keepExisting=.false.)
+      end if
+
+      specified = specified .or. specified_indices
+   end subroutine accumulate_1dfield_global
+
+   !> Apply deferred 1dField globals for water and friction. Call once after all init_new calls.
+   subroutine finalize_1dfield_globals()
+      use m_flow, only: s1, hs, frcu
+      use m_flowgeom, only: bl, ndx2D, ndxi, lnx1d
+
+      if (allocated(specified_water_1dfield)) then
+         if (.not. all(specified_water_1dfield)) then
+            call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), &
+                                         specified_water_1dfield, water_global_quantity_1dfield, &
+                                         water_global_value_1dfield, '1dField global')
+         end if
+         deallocate(specified_water_1dfield)
+      end if
+
+      if (allocated(specified_friction_1dfield)) then
+         if (.not. all(specified_friction_1dfield)) then
+            call set_global_values(frcu(1:lnx1d), specified_friction_1dfield, friction_global_value_1dfield)
+         end if
+         deallocate(specified_friction_1dfield)
+      end if
+   end subroutine finalize_1dfield_globals
 
    !> Reads and initializes an initial field file.
    !! The IniFieldFile can contain multiple [Initial] and [Parameter] blocks
