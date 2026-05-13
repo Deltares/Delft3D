@@ -43,7 +43,6 @@ include_directories(${include_path}
                     ${dd_mapper_path}
                     ${pthreads_path}
                     ${mpi_include_path}
-                    ${expat_include_path}
                     ${version_include_dir}
                     ${flow2d3d_version_path})
 
@@ -121,6 +120,7 @@ set(oss_dependencies_general flow2d3d_manager
 # Add dependencies
 if (UNIX)
     set(oss_dependencies ${oss_dependencies_general}
+                         expat::expat
                          netCDF::netcdff)
 
     target_link_libraries(${library_name}
@@ -129,6 +129,7 @@ if (UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
+                        expat::expat
                         netCDF::netcdff)
 
     target_link_libraries(${library_name} ${oss_dependencies})
@@ -140,11 +141,9 @@ if (WIN32)
     target_link_directories(${library_name}
                             PRIVATE
                             "${mpi_library_path}"
-                            "${expat_library_path_win}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name}
-                            "libexpat.lib"
                             "${mpi_fortran_library}"
                             "pthreadVC2.lib"
                             "wsock32.lib"

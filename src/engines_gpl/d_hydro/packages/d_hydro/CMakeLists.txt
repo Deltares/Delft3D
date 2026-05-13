@@ -50,16 +50,15 @@ target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 if(UNIX)
    set(oss_dependencies    deltares_common_c
                            getopt
-                           d_hydro_lib
-                           expat)
+                           expat::expat
+                           d_hydro_lib)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
                                PRIVATE  
                                ${header_path}
                               "${d_hydro_lib_path}/include"
-                              "${getopt_include_path}"
-                              "${expat_include_path}")
+                              "${getopt_include_path}")
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
@@ -72,6 +71,7 @@ endif(UNIX)
 if (WIN32)
    set(oss_dependencies    deltares_common_c
                            getopt
+                           expat::expat
                            d_hydro_lib)
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
@@ -81,7 +81,6 @@ if (WIN32)
                                 ${header_path}
                                 "${d_hydro_lib_path}/include"
                                 "${getopt_include_path}"
-                                "${expat_include_path}"
                                 "${mpi_include_path}"
                                 "${checkout_src_root}/third_party_open/pthreads/include/x64")
 
@@ -89,14 +88,12 @@ if (WIN32)
     target_link_directories(${executable_name}
                             PRIVATE
                             "${getopt_library_path_win}"
-                            "${expat_library_path_win}"
                             "${mpi_library_path}"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${executable_name} PRIVATE
                             ${oss_dependencies}
                             "${mpi_c_library}"
-                            "libexpat.lib"
                             "pthreadVC2.lib"
     )
 endif(WIN32)

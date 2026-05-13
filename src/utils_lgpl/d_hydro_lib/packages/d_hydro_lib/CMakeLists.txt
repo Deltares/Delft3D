@@ -24,8 +24,7 @@ set(d_hydro_include ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # Set include directories
 include_directories(${d_hydro_lib_include_path}
                     ${d_hydro_include}
-                    ${pthreads_path}
-                    ${expat_include_path})
+                    ${pthreads_path})
 
 # Gather source files
 file(GLOB header_files ${d_hydro_lib_include_path}/*.h)

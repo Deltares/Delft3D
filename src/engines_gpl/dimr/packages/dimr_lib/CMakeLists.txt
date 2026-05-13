@@ -36,19 +36,14 @@ add_library(${library_name} SHARED  ${source}
 target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
 if(UNIX)
-    set(oss_dependencies    deltares_common_c
-                            getopt
-                            expat::expat
-                            netCDF::netcdf
-    )
+    set(oss_dependencies deltares_common_c getopt expat::expat netCDF::netcdf)
 
     target_compile_definitions(${library_name} PRIVATE LINUX64)
 
     target_include_directories(${library_name} 
                                PRIVATE  
                                ${header_path}
-                              "${getopt_include_path}"
-                              "${expat_include_path}")
+                              "${getopt_include_path}")
 
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     target_compile_options(${library_name} PRIVATE ${cpp_compiler_flags})
@@ -56,7 +51,7 @@ if(UNIX)
 endif()
 
 if(WIN32)
-    set(oss_dependencies deltares_common_c getopt)
+    set(oss_dependencies deltares_common_c getopt expat::expat netCDF::netcdf)
 
     # Define output name
     set_target_properties(${library_name} 
@@ -82,8 +77,6 @@ if(WIN32)
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64")
 
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies}
-                                            netCDF::netcdf
-                                            expat::expat
                                             "${mpi_c_library}"
                                             "pthreadVC2.lib"
                                             "wsock32.lib"

@@ -34,8 +34,9 @@ if(UNIX)
 
    set(oss_dependencies    deltares_common_c
                            getopt
-                           dimr_lib
-                           expat::expat)
+                           expat::expat
+                           netCDF::netcdf
+                           dimr_lib)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
    target_include_directories(${executable_name} 
@@ -58,6 +59,7 @@ if (WIN32)
    set(oss_dependencies    deltares_common_c
                            getopt
                            expat::expat
+                           netCDF::netcdf
                            dimr_lib) 
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)
@@ -79,7 +81,6 @@ if (WIN32)
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
                                                 "${mpi_c_library}"
-                                                expat::expat
                                                 "pthreadVC2.lib")
 endif(WIN32)
 
