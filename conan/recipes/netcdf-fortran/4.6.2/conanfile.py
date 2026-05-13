@@ -92,6 +92,6 @@ class netcdf_fortranRecipe(ConanFile):
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "netCDF-Fortran")
         self.cpp_info.set_property("cmake_target_name", "netCDF::netcdff")
-        self.cpp_info.includedirs = ["include", f"include/{self.settings.build_type}"]
+        self.cpp_info.includedirs = ["include"]
         self.cpp_info.libs = ["netcdff"]
         self.cpp_info.requires = ["netcdf::netcdf", "hdf5::hdf5"]
