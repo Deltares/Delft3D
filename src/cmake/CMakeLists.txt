@@ -24,7 +24,9 @@ include(functions.cmake)
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 set(checkout_root ${checkout_src_root}/..)
 
-# TODO ------------------------- temporary conan stuff -------------------------
+# Conan: add the CMakeDeps generator output to the search path and find all explicit dependencies.
+# In the CMakeDeps generator, transitively depending on a dll counts as an explicit dependency,
+# because we need to install the dll and deliver it to a user.
 if (WIN32)
     list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/build/generators")
 endif(WIN32)
@@ -33,11 +35,16 @@ if (UNIX)
     list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/build/${CMAKE_BUILD_TYPE}/generators")
 endif(UNIX)
 
+find_package(ZLIB CONFIG REQUIRED)
+find_package(HDF5 CONFIG REQUIRED)
 find_package(netCDF CONFIG REQUIRED)
 find_package(netCDF-Fortran CONFIG REQUIRED)
 find_package(expat CONFIG REQUIRED)
 
 # TODO ----------------------- end temporary conan stuff -----------------------
+find_package(TIFF CONFIG REQUIRED)
+find_package(PROJ CONFIG REQUIRED)
+find_package(GDAL CONFIG REQUIRED)
 
 # main repository directory
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH PARENT_DIR)
@@ -159,7 +166,6 @@ elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
-    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "lib")
     set(library_prefix "")
     include(InstallRequiredSystemLibraries)
 endif()

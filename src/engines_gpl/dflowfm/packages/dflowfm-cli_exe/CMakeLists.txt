@@ -82,8 +82,8 @@ if (WIN32)
 endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
-
 install(FILES $<TARGET_RUNTIME_DLLS:${executable_name}> DESTINATION bin)
+
 if(WIN32)
    if(WITH_INTERACTER)
       add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../interacter install_interacter)

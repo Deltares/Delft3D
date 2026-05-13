@@ -94,7 +94,7 @@ contains
          allocate (meshgeom1d%nodeidx(nump1d))
          meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
       end if
-      allocate (meshgeom1d%nodeidx_inverse(size(kc)))
+      allocate (meshgeom1d%nodeidx_inverse(maxval(meshgeom1d%nodeidx)))
       do i = 1, nump1d
          meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i
       end do

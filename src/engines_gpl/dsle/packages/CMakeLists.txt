@@ -145,4 +145,4 @@ add_subdirectory(tests)
 
 install(
     TARGETS
-    dsle RUNTIME DESTINATION lib)
+    dsle RUNTIME DESTINATION bin)

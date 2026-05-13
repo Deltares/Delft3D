@@ -54,6 +54,6 @@ endif(UNIX)
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/rr)
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )

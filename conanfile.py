@@ -64,3 +64,4 @@ class Delft3DRecipe(ConanFile):
         self.options["proj"].with_curl = False
         self.options["proj"].build_executables = False
         self.options["expat"].shared = True
+        self.options["hdf5"].enable_cxx = False

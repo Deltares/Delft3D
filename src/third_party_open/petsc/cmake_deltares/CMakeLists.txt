@@ -23,7 +23,7 @@ if(NOT TARGET petsc)
     )
 endif()
 
-install(DIRECTORY ${petsc_libdir} DESTINATION lib
+install(DIRECTORY ${petsc_libdir} DESTINATION bin
     FILES_MATCHING
     PATTERN "*.exe"
     PATTERN "*.dll"

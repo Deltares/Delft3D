@@ -113,7 +113,7 @@ if (UNIX)
 endif(UNIX)
 if(WIN32)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)
-    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION lib
+    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION bin
 FILES_MATCHING
 PATTERN "*.dll"
 PATTERN "*.dll.a"

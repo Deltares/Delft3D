@@ -365,15 +365,16 @@ contains
                                              targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
                                              dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
 
+         ! If item not recognised, we can still try to set a connection if the right optional arguments were passed.
          if (present(tgt_item1)) then
             targetItemPtr1 => tgt_item1
             if (present(tgt_data1)) then
                if (associated(tgt_data1)) then
                   dataPtr1 => tgt_data1
-               end if
+               end if !> tgt_item without tgt_data is allowed, for example dambreaks.
             end if
          else
-            return !> no known name and also no data pointer provided for lookup bypass
+            return !> no known name or target_item provided.
          end if
       end if
 
@@ -401,10 +402,6 @@ contains
          end if
       end if
 
-      ! Overrule hard-coded pointers to target items, but ONLY when the caller also
-      ! explicitly provides the backing data - this distinguishes a caller that wants
-      ! a new item created (lateral/param, tgt_data1 associated) from one relying on
-      ! the hardcoded field (meteo compound, tgt_data1 null).
       if (present(tgt_item1) .and. present(tgt_data1)) then
          if (associated(tgt_data1)) then
             targetItemPtr1 => tgt_item1

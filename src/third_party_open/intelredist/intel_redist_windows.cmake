@@ -1,10 +1,10 @@
 # Set the directory of where the source code is located
 set(src_path src)
 
-if (intel_version LESS_EQUAL 23)
-    set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/redist/intel64)
+if(intel_version LESS_EQUAL 23)
+    set(mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/redist/intel64)
     string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install (DIRECTORY ${mkl_path}/ DESTINATION lib
+    install(DIRECTORY ${mkl_path}/ DESTINATION bin
     FILES_MATCHING
     PATTERN "mkl_core.*.dll"
     PATTERN "mkl_def.*.dll"
@@ -14,20 +14,20 @@ if (intel_version LESS_EQUAL 23)
     PATTERN "1033" EXCLUDE
     )
 
-    set (redist_path $ENV{ONEAPI_ROOT}/compiler/latest/windows/redist/intel64_win/compiler)
+    set(redist_path $ENV{ONEAPI_ROOT}/compiler/latest/windows/redist/intel64_win/compiler)
     string(REPLACE "\\" "/" redist_path "${redist_path}")
-    install (DIRECTORY ${redist_path}/ DESTINATION lib
+    install(DIRECTORY ${redist_path}/ DESTINATION bin
     FILES_MATCHING
     PATTERN "*.dll"
     PATTERN "1033" EXCLUDE
     )
 
     # Intel MPI
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
+    if("${OSS_MPI}" STREQUAL "IntelMPI")
         set(mpi_path $ENV{I_MPI_ONEAPI_ROOT})
         string(REPLACE "\\" "/" mpi_path "${mpi_path}")
         install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION lib
+        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
         FILES_MATCHING
         PATTERN "*.dll"
         PATTERN "debug" EXCLUDE
@@ -39,15 +39,15 @@ if (intel_version LESS_EQUAL 23)
         PATTERN "debug" EXCLUDE
         PATTERN "release" EXCLUDE
         PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION lib FILES_MATCHING PATTERN "*.dll")
+        install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION bin FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
+        install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION bin FILES_MATCHING PATTERN "*.dll")
     endif()
 
-elseif (intel_version GREATER_EQUAL 24)
+elseif(intel_version GREATER_EQUAL 24)
     # Intel OneAPI folder structures and environment variables have changed with OneAPI 2024
     set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
     string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install (DIRECTORY ${mkl_path}/ DESTINATION lib
+    install (DIRECTORY ${mkl_path}/ DESTINATION bin
     FILES_MATCHING
     PATTERN "mkl_core.*.dll"
     PATTERN "mkl_def.*.dll"
@@ -57,7 +57,7 @@ elseif (intel_version GREATER_EQUAL 24)
     PATTERN "intel64" EXCLUDE
     )
 
-    set (redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
+    set(redist_path $ENV{ONEAPI_ROOT}/compiler/latest/bin)
     string(REPLACE "\\" "/" redist_path "${redist_path}")
     install(FILES
     ${redist_path}/libifcoremd.dll
@@ -65,21 +65,21 @@ elseif (intel_version GREATER_EQUAL 24)
     ${redist_path}/svml_dispmd.dll
     ${redist_path}/libiomp5md.dll  
     ${redist_path}/libifportMD.dll 
-    DESTINATION lib)
+    DESTINATION bin)
     
     #Debug runtime dlls
     install(FILES
     ${redist_path}/libifcoremdd.dll
     ${redist_path}/libmmdd.dll
     ${redist_path}/libiomp5md_db.dll
-    DESTINATION lib CONFIGURATIONS debug)
+    DESTINATION bin CONFIGURATIONS debug)
     
     # Intel MPI
-    if ("${OSS_MPI}" STREQUAL "IntelMPI")
+    if("${OSS_MPI}" STREQUAL "IntelMPI")
         set(mpi_path $ENV{ONEAPI_ROOT}/mpi/latest)
         string(REPLACE "\\" "/" mpi_path "${mpi_path}")
         install(DIRECTORY ${mpi_path}/env/ DESTINATION bin FILES_MATCHING PATTERN "*.bat")
-        install(DIRECTORY ${mpi_path}/bin/ DESTINATION lib
+        install(DIRECTORY ${mpi_path}/bin/ DESTINATION bin
         FILES_MATCHING
         PATTERN "*.dll"
         PATTERN "debug" EXCLUDE
@@ -93,7 +93,7 @@ elseif (intel_version GREATER_EQUAL 24)
         PATTERN "release" EXCLUDE
         PATTERN "mpi" EXCLUDE
         PATTERN "tune" EXCLUDE)
-        install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION lib FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
+        install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION bin FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
     endif()
 else()
     message(FATAL_ERROR "intel version ${intel_version} is not supported. \nCannot install intel redistributable libraries.")
