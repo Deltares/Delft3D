@@ -15,6 +15,8 @@ object VerschilanalyseProject : Project ({
     params {
         param("h7_account_username", DslContext.getParameter("va_h7_account_username"))
         password("h7_account_password", DslContext.getParameter("va_h7_account_password"))
+        param("env.AWS_ACCESS_KEY_ID", "%va_minio_access_key_id%")
+        password("env.AWS_SECRET_ACCESS_KEY", "%va_minio_secret_key%")
     }
     
     buildType(StartVerschilanalyse)
@@ -29,22 +31,11 @@ object VerschilanalyseProject : Project ({
         s3CompatibleStorage {
             id = "PROJECT_EXT_1"
             accessKeyID = DslContext.getParameter("va_minio_access_key_id")
-            accessKey = "credentialsJSON:a8071317-8442-48da-96ed-b69247463912"
+            accessKey = DslContext.getParameter("va_minio_secret_key")
             endpoint = "https://s3.deltares.nl"
             storageName = "VerschilAnalyseBucket"
             bucketName = "devops-test-verschilanalyse"
             bucketPrefix = "output"
-        }
-        awsConnection {
-            id = "minio_verschilanalyse_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = DslContext.getParameter("va_minio_access_key_id")
-                secretAccessKey = "credentialsJSON:a8071317-8442-48da-96ed-b69247463912"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
         }
     }
 })
