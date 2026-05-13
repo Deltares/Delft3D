@@ -98,7 +98,7 @@ contains
       integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs, i_neighbours
-      integer :: i_tmp, kb_tmp, kt_tmp, kk_tmp
+      integer :: i_tmp, kk_tmp, kb_tmp, kt_tmp
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens
       real(kind=dp) :: ux, uy, um
@@ -351,7 +351,7 @@ contains
             
             ! Water quality parameters
             ! Start with allocating temporary array
-            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0) then
+            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0 .or. IVAL_TRA1 >0) then
                call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp) 
             end if
             
@@ -360,7 +360,7 @@ contains
                do j = IVAL_HWQ1, IVAL_HWQN
                   ii = j - IVAL_HWQ1 + 1
                   do i_tmp = 1, 3
-                      call getkbotktop(neighbour_nodes_obs(i_tmp,i), kb_tmp, kt_tmp)
+                      call getkbotktop    (neighbour_nodes_obs(i_tmp,i), kb_tmp   , kt_tmp  )
                       do kk_tmp = kb_tmp, kt_tmp
                          waq_tmp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
                       end do
@@ -383,7 +383,15 @@ contains
                   waq_tmp = constituents(ISED1 + ii - 1, :)
                   call interpolate_and_fill_valobs (waq_tmp,i,IPNT_SF1 + (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
                 end do
-            end if                            
+            end if 
+            
+            if (IVAL_TRA1 > 0) then
+                  do j = IVAL_TRA1, IVAL_TRAN
+                     ii = j - IVAL_TRA1 + 1
+                     waq_tmp = constituents(ITRA1 + ii - 1, :)
+                     call interpolate_and_fill_valobs (waq_tmp,i,IPNT_TRA1 + (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
+                  end do
+            end if
 
             ! Frome here: everything as snapped!!!
             if (jawind > 0) then
@@ -582,12 +590,12 @@ contains
 
                valobs(i, IPNT_QMAG + klay - 1) = 0.5_dp * (squ(kk) + sqi(kk))
 
-               if (IVAL_TRA1 > 0) then
-                  do j = IVAL_TRA1, IVAL_TRAN
-                     ii = j - IVAL_TRA1 + 1
-                     valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
-                  end do
-               end if
+!               if (IVAL_TRA1 > 0) then
+!                  do j = IVAL_TRA1, IVAL_TRAN
+!                     ii = j - IVAL_TRA1 + 1
+!                     valobs(i, IPNT_TRA1 + (ii - 1) * kmx_const + klay - 1) = constituents(ITRA1 + ii - 1, kk)
+!                  end do
+!               end if
 
 !               if (IVAL_HWQ1 > 0) then
 !                  do j = IVAL_HWQ1, IVAL_HWQN
@@ -855,12 +863,16 @@ contains
             if (wet_or_dry(neighbour_nodes_obs(i_point, i_station)) == 1) then
                if ((klay >= nlayb_tmp(i_point)) .and. (klay <= nlayb_tmp(i_point) + nrlay_tmp(i_point) - 1)) then
                   pntnr = kb_tmp(i_point) - nlayb_tmp(i_point) + klay - oneDown
-                  value = value + values_on_grid(pntnr) * neighbour_weights_obs(i_point, i_station)
-                  weighttot = weighttot + neighbour_weights_obs(i_point, i_station)
+                  if (pntnr <= kt_tmp(i_point)) then
+                     value = value + values_on_grid(pntnr) * neighbour_weights_obs(i_point, i_station)
+                     weighttot = weighttot + neighbour_weights_obs(i_point, i_station)
+                  end if
                end if
             end if
          end do
-         valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
+         if (weighttot > 0.0_dp) then
+            valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
+         end if
       end do
    end subroutine interpolate_and_fill_valobs
 

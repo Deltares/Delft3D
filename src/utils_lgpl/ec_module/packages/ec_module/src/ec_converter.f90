@@ -1271,6 +1271,9 @@ contains
                end select
                !
                do i = 1, size(valuesT0, dim=1)
+                  ! For fixed layers, surface layers may exist for T0 but not for T1 (and vice versa) 
+                  if (valuesT0(i) == dmiss .and. valuesT1(i) /= dmiss) valuesT0(i) = valuesT1(i)
+                  if (valuesT0(i) /= dmiss .and. valuesT1(i) == dmiss) valuesT1(i) = valuesT0(i)
                   ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
                   valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
                end do
@@ -1921,6 +1924,11 @@ contains
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
                             (connection%converterPtr%operandType == operand_replace_element) ) then      
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
+                           if (vectormax == 2) then
+                               if (ABS(val(1)) .gt. 1.0 .OR. ABS(val(2)) .gt. 1.0) then
+                                  write (*,*) k,  val(1), val(2)
+                               end if
+                           end if
                         else if (connection%converterPtr%operandType == operand_add) then
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
                               = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
