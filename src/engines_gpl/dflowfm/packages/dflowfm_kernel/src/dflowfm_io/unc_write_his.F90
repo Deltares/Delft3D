@@ -748,8 +748,8 @@ contains
             if (his_write_settings%bubblescreens > 0 .and. size(bubblescreens) > 0) then
                call realloc(bubblescreen_node_count, size(bubblescreens), fill=0)
                bubblescreen_node_count = [(bubblescreens(i)%num_flowcells, i=1,size(bubblescreens))]
-               call realloc(geom_x, 20)
-               call realloc(geom_y, 20)
+               call realloc(geom_x, sum(bubblescreen_node_count))
+               call realloc(geom_y, sum(bubblescreen_node_count))
                j = 1
                do i = 1, size(bubblescreens)
                   nNodes = bubblescreens(i)%num_flowcells
