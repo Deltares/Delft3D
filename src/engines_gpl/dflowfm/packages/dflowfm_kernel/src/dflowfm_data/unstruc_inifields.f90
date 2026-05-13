@@ -74,9 +74,9 @@ module unstruc_inifields
    ! Module-level state for deferred 1dField global application
    logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:)
    logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:)
-   real(dp), public :: water_global_value_1dfield
-   real(dp), public :: friction_global_value_1dfield
-   character(len=256), public :: water_global_quantity_1dfield
+   real(dp), public :: water_global_value_1dfield = -999.0_dp
+   real(dp), public :: friction_global_value_1dfield = -999.0_dp
+   character(len=256), public :: water_global_quantity_1dfield = ''
 
 contains
 
@@ -186,21 +186,24 @@ contains
    subroutine finalize_1dfield_globals()
       use m_flow, only: s1, hs, frcu
       use m_flowgeom, only: bl, ndx2D, ndxi, lnx1d
+      use m_missing, only: dmiss
 
       if (allocated(specified_water_1dfield)) then
-         if (.not. all(specified_water_1dfield)) then
+         if (len_trim(water_global_quantity_1dfield) > 0 .and. .not. all(specified_water_1dfield)) then
             call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), &
                                          specified_water_1dfield, water_global_quantity_1dfield, &
                                          water_global_value_1dfield, '1dField global')
          end if
          deallocate(specified_water_1dfield)
+         water_global_quantity_1dfield = ''
       end if
 
       if (allocated(specified_friction_1dfield)) then
-         if (.not. all(specified_friction_1dfield)) then
+         if (friction_global_value_1dfield /= dmiss .and. .not. all(specified_friction_1dfield)) then
             call set_global_values(frcu(1:lnx1d), specified_friction_1dfield, friction_global_value_1dfield)
          end if
          deallocate(specified_friction_1dfield)
+         friction_global_value_1dfield = dmiss
       end if
    end subroutine finalize_1dfield_globals
 
