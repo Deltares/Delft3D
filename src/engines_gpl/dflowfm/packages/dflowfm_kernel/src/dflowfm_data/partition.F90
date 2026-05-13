@@ -3563,8 +3563,30 @@ contains
       var = dum
 #endif
       return
-   end subroutine reduce_double_array_max
+    end subroutine reduce_double_array_max
 
+!> reduce a logical array, take global OR
+   subroutine reduce_logical_array_or(N, var)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer, intent(in) :: N !< array size
+      logical, dimension(N), intent(inout) :: var !< array with logical values to be reduced across subdomains
+
+      logical, dimension(N) :: dum
+
+      integer :: ierror
+
+#ifdef HAVE_MPI
+      call MPI_allreduce(var, dum, N, mpi_logical, mpi_lor, DFM_COMM_DFMWORLD, ierror)
+      var = dum
+#endif
+      return
+    end subroutine reduce_logical_array_or
+    
    !> for an array over integers, take maximum over all subdomains (not over the array itself)
    subroutine reduce_int_max(N, var)
 #ifdef HAVE_MPI
