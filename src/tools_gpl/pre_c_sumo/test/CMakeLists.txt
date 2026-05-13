@@ -23,6 +23,7 @@ target_link_libraries(test_pre_c_sumo_lib PRIVATE
     pre_c_sumo_lib
     gtest
     gtest_main
+    precice::precice
     pugixml::pugixml
     Boost::headers
 )

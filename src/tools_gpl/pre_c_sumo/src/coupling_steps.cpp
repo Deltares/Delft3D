@@ -30,24 +30,47 @@ namespace pre_c_sumo
         return csumo_settings;
     }
 
-    void receiveFFData() { std::println("Receiving far-field data..."); }
+    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, const double coupling_time_step)
+    {
+        for (auto& quantity : csumo_2d_mesh.quantities)
+        {
+            participant.readData(csumo_2d_mesh.name, quantity.first, csumo_2d_mesh.vertex_ids, coupling_time_step,
+                                 quantity.second);
+        }
+    }
 
-    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings)
+    void writeFF2NFFiles(const CSumoSettingsReader& csumo_settings, Mesh& csumo_2d_mesh, double current_time_seconds)
     {
         // TODO: obtain these from the far-field model / coupling state
-        const double current_time_seconds = 0.0;
         const std::string run_id = "FlowFM";
-        const std::vector<std::string> constituent_names = {"temperature"}; // TODO: derive from settings
+        const std::vector<std::string> constituent_names = {"temperature", "salinity",
+                                                            "tracer"}; // TODO: derive from settings
 
         for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
             const auto subgrid_model_nr = static_cast<int>(index + 1);
-            // TODO: populate from received far-field data instead of placeholders
-            auto make_point = [&constituents =
-                                   diffuser.discharge.constituents](const parsing_utils::Point2D& position) {
+            const auto mapping_index = static_cast<std::size_t>(index);
+            DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
+
+            auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
+                                         const std::string_view& name, const std::size_t& ambient_point_index) {
+                return quantities[name][m.first_ambient_point_index + ambient_point_index];
+            };
+
+            auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
+                                          const std::string_view& name) { return quantities[name][m.diffuser_index]; };
+
+            auto get_intake_value = [&quantities = csumo_2d_mesh.quantities,
+                                     &m = mapping](const std::string_view& name) {
+                return m.has_intake ? quantities[name][m.intake_index] : 0.0;
+            };
+
+            //  TODO: populate from received far-field data instead of placeholders
+            auto make_point = [&constituents = diffuser.discharge.constituents](const parsing_utils::Point2D& position,
+                                                                                double water_depth) {
                 return FarFieldPoint2D{
                     .position = position,
-                    .water_depth = 0.0, // TODO: obtain from far-field
+                    .water_depth = water_depth,
                     .layers = {FarFieldLayer{.z_coordinate = 0.0,
                                              .x_velocity = 0.0,
                                              .y_velocity = 0.0,
@@ -56,8 +79,14 @@ namespace pre_c_sumo
                 };
             };
 
-            const auto ambient_points =
-                diffuser.ambient_positions | std::views::transform(make_point) | std::ranges::to<std::vector>();
+            std::vector<FarFieldPoint2D> ambient_points{};
+            for (const auto& [position_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
+            {
+                const std::size_t ambient_index = static_cast<std::size_t>(position_index);
+                ambient_points.emplace_back(
+                    make_point(ambient_point, get_ambient_value(water_levels_id, ambient_index) +
+                                                  get_ambient_value(bed_levels_id, ambient_index)));
+            }
 
             const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
                                                                          subgrid_model_nr, current_time_seconds / 60.0);
@@ -73,8 +102,12 @@ namespace pre_c_sumo
                 .subgrid_model_nr = subgrid_model_nr,
                 .current_time_seconds = current_time_seconds,
                 .constituent_names = constituent_names,
-                .diffuser = make_point(diffuser.position),
-                .intake = diffuser.intake.has_value() ? std::optional{make_point(*diffuser.intake)} : std::nullopt,
+                .diffuser = make_point(diffuser.position,
+                                       get_diffuser_value(water_levels_id) + get_diffuser_value(bed_levels_id)),
+                .intake = diffuser.intake.has_value()
+                              ? std::optional{make_point(*diffuser.intake, get_intake_value(water_levels_id) +
+                                                                               get_intake_value(bed_levels_id))}
+                              : std::nullopt,
                 .ambient_points = ambient_points,
                 .settings_xml_node = diffuser.settings_xml_node,
             };
