@@ -1244,6 +1244,8 @@ function getmeteoval(runid, quantity, time, mfg, nfg, &
                               dx = real(lon,fp) - x01
                               dy = real(lat,fp) - y01
                            else
+                              x  = real(x_hp, fp)
+                              y  = real(y_hp, fp)
                               xx = x
                               yy = y
                               dx = x - x01
