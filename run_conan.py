@@ -69,7 +69,7 @@ if __name__ == "__main__":
         export_package(recipe_name, version)
 
     # Install dependencies and generate CMakeDeps metadata for Debug, Release and RelWithDebInfo
-    # Note that RelWithDebInfo will just use Release binaries to avoid additional package bloat.
-    conan_install(profile, args.output_folder, "Debug")
+    # Note that they effectively they all use release binaries
     conan_install(profile, args.output_folder, "Release")
+    conan_install(profile, args.output_folder, "Release", consumer_build_type="Debug")
     conan_install(profile, args.output_folder, "Release", consumer_build_type="RelWithDebInfo")
