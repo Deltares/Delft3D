@@ -15,6 +15,7 @@ recipes = [
     ("proj/all", "9.3.1"),
     ("libgeotiff/all", "1.7.1"),
     ("gdal/post_3.5.0", "3.12.1"),
+    ("expat/all", "2.8.0"),
 ]
 
 def export_package(recipe_name, version):

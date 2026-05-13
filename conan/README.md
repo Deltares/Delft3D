@@ -57,6 +57,8 @@ conan create recipes/proj/all --version=9.3.1 --profile=default --options="proj/
 conan create recipes/libgeotiff/all --version=1.7.1 --profile=default --options="proj/*:shared=True" --options="proj/*:with_curl=False" --options="proj/*:build_executables=False" --options="libtiff/*:shared=True" --options="libtiff/*:lzma=False" --options="libtiff/*:jpeg=False" --options="zlib/*:shared=True"
 
 conan create recipes/gdal/post_3.5.0 --version=3.12.1 --profile=default --options="zlib/*:shared=True" --options="hdf5/*:shared=True" --options="netcdf/*:shared=True" --options="netcdf/*:dap=False" --options="netcdf/*:byterange=False" --options="netcdf-fortran/*:shared=True" --options="gdal/*:shared=True" --options="gdal/*:with_arrow=False" --options="gdal/*:with_curl=False" --options="gdal/*:with_expat=False" --options="gdal/*:with_geos=False" --options="gdal/*:with_gif=False" --options="gdal/*:with_jpeg=False" --options="gdal/*:with_lerc=False" --options="gdal/*:with_libcsf=False" --options="gdal/*:with_libdeflate=False" --options="gdal/*:with_libiconv=False" --options="gdal/*:with_opencl=False" --options="gdal/*:with_png=False" --options="gdal/*:with_qhull=False" --options="gdal/*:with_shapelib=False" --options="gdal/*:with_sqlite3=False" --options="gdal/*:gdal_optional_drivers=False" --options="gdal/*:ogr_optional_drivers=False" --options="libtiff/*:shared=True" --options="libtiff/*:lzma=False" --options="libtiff/*:jpeg=False" --options="proj/*:shared=True" --options="proj/*:with_curl=False" --options="proj/*:build_executables=False"
+
+conan create recipes/expat/all --version=2.8.0 --option="expat/*:shared=True"
 ```
 
 ## Exporting recipes without building
@@ -76,5 +78,6 @@ conan export recipes/sqlite3/all --version=3.53.0 && \
 conan export recipes/nlohmann_json/all --version=3.11.3 && \
 conan export recipes/proj/all --version=9.3.1 && \
 conan export recipes/libgeotiff/all --version=1.7.1 && \
-conan export recipes/gdal/post_3.5.0 --version=3.12.1
+conan export recipes/gdal/post_3.5.0 --version=3.12.1 && \
+conan export recipes/expat/all --version=2.8.0
 ```

@@ -50,7 +50,6 @@ target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 if(UNIX)
    set(oss_dependencies    deltares_common_c
                            getopt
-                           expat::expat
                            d_hydro_lib)
 
    target_compile_definitions(${executable_name} PRIVATE LINUX64)
@@ -71,7 +70,6 @@ endif(UNIX)
 if (WIN32)
    set(oss_dependencies    deltares_common_c
                            getopt
-                           expat::expat
                            d_hydro_lib)
     # Define preprocessor definitions
     target_compile_definitions(${executable_name} PRIVATE WIN32;_CONSOLE)

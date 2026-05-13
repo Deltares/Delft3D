@@ -42,6 +42,12 @@ endif(WIN32)
 if(UNIX)
     target_compile_definitions(${library_name} PRIVATE "HAVE_CONFIG_H")
 endif(UNIX)
+
+# `include/xmltree.h` has an `#include <expat.h>`. So `d_hydro_lib` exposes expat's public API.
+# This means `expat` must be linked as PUBLIC `d_hydro_lib`. Targets linking to `d_hydro_lib` will
+# then automatically link to `expat` and the include directories of `expat` are propagated as well.
+target_link_libraries(${library_name} PUBLIC expat::expat)
+
 # Define how the files should be structured within Visual Studio
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
 source_group(Include FILES  ${header_files})
