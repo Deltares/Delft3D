@@ -71,6 +71,7 @@ subroutine z_dif_ws(j         ,nmmaxj    ,nmmax     ,kmax      ,lsal      , &
     integer :: k    ! Help var. 
     integer :: kfd  ! Mutiplicity factor for top flux 
     integer :: kft  ! Mutiplicity factor for bottom flux 
+    integer :: kd   ! help variable
     integer :: l    ! Help var. 
     integer :: ll
     integer :: lst
@@ -101,8 +102,9 @@ subroutine z_dif_ws(j         ,nmmaxj    ,nmmax     ,kmax      ,lsal      , &
                 else
                    kfd = 0
                 endif
-                cckl(nm, k, ll) = cckl(nm, k, ll) - gsqs(nm)*ws(nm, k, l)  * kfd
-                bbkl(nm, k, ll) = bbkl(nm, k, ll) + gsqs(nm)*ws(nm, k-1, l)* kft
+                kd = max(k-1,1)
+                cckl(nm, k, ll) = cckl(nm, k, ll) - gsqs(nm)*ws(nm, k,  l) * kfd
+                bbkl(nm, k, ll) = bbkl(nm, k, ll) + gsqs(nm)*ws(nm, kd, l) * kft
              enddo
           endif
        enddo

@@ -197,6 +197,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: bubble
     logical                              , pointer :: lfsdu
     logical , dimension(:)               , pointer :: flbub
+    logical                              , pointer :: stressStrainRelation
     integer                              , pointer :: rtcact
     integer(pntrsize)                    , pointer :: alfas
     integer(pntrsize)                    , pointer :: alpha
@@ -411,6 +412,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: v1
     integer(pntrsize)                    , pointer :: vicuv
     integer(pntrsize)                    , pointer :: vicww
+    integer(pntrsize)                    , pointer :: vicmud
     integer(pntrsize)                    , pointer :: vmdis
     integer(pntrsize)                    , pointer :: vmean
     integer(pntrsize)                    , pointer :: vmnflc
@@ -501,6 +503,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer(pntrsize)                    , pointer :: kspu
     integer(pntrsize)                    , pointer :: kspv
     integer(pntrsize)                    , pointer :: kstp
+    integer(pntrsize)                    , pointer :: kfushr
+    integer(pntrsize)                    , pointer :: kfvshr
     integer(pntrsize)                    , pointer :: mnbar
     integer(pntrsize)                    , pointer :: mnbnd
     integer(pntrsize)                    , pointer :: mndro
@@ -549,6 +553,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     logical                              , pointer :: dryrun
     logical                              , pointer :: eulerisoglm
     integer(pntrsize)                    , pointer :: typbnd
+    integer(pntrsize)                    , pointer :: clyint
+    integer(pntrsize)                    , pointer :: sltint
+    integer(pntrsize)                    , pointer :: sndint
 !
     include 'tri-dyn.igd'
 !
@@ -598,6 +605,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     integer                 :: nmaxddb
     integer                 :: nreal       ! Pointer to real array RCOUSR for UDF particle wind factor parameters 
     integer                 :: ifirst_dens ! Flag to initialize the water density array
+    integer                 :: ifirst_settle ! Flag to initialize what settling velocity has been used
     integer(pntrsize)       :: umor
     integer(pntrsize)       :: vmor
     logical                 :: sscomp
@@ -745,6 +753,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     bubble              => gdp%gdprocs%bubble
     lfsdu               => gdp%gdprocs%lfsdu
     flbub               => gdp%gdbubble%flbub
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
     rtcact              => gdp%gdrtc%rtcact
     alfas               => gdp%gdr_i_ch%alfas
     alpha               => gdp%gdr_i_ch%alpha
@@ -959,6 +968,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     v1                  => gdp%gdr_i_ch%v1
     vicuv               => gdp%gdr_i_ch%vicuv
     vicww               => gdp%gdr_i_ch%vicww
+    vicmud              => gdp%gdr_i_ch%vicmud
     vmdis               => gdp%gdr_i_ch%vmdis
     vmean               => gdp%gdr_i_ch%vmean
     vmnflc              => gdp%gdr_i_ch%vmnflc
@@ -1049,6 +1059,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     kspu                => gdp%gdr_i_ch%kspu
     kspv                => gdp%gdr_i_ch%kspv
     kstp                => gdp%gdr_i_ch%kstp
+    kfushr              => gdp%gdr_i_ch%kfushr
+    kfvshr              => gdp%gdr_i_ch%kfvshr
     mnbar               => gdp%gdr_i_ch%mnbar
     mnbnd               => gdp%gdr_i_ch%mnbnd
     mndro               => gdp%gdr_i_ch%mndro
@@ -1096,6 +1108,9 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     dryrun              => gdp%gdtmpfil%dryrun
     nrcmp               => gdp%gdtfzeta%nrcmp
     typbnd              => gdp%gdr_i_ch%typbnd
+    clyint              => gdp%gdr_i_ch%clyint
+    sltint              => gdp%gdr_i_ch%sltint
+    sndint              => gdp%gdr_i_ch%sndint
     !
     icx     = 0
     icy     = 0
@@ -1111,6 +1126,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     !
     ! ********************** SET USER DEF FUNCT PARAMETERS ****************
     !
+    ifirst_settle = 0
     call timer_start(timer_trisol_ini, gdp)
     if (ifirst == 1) then
        !
@@ -1162,6 +1178,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        endif
        !
        ifirst = 0
+       ifirst_settle = 1
     endif
     !
     ! f0isf1 moved to here for OpenDA (before dmpveg since it uses s0)
@@ -1535,6 +1552,20 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
                  & r(dvdz)   ,r(wrkb3)  ,r(wrkb4)  ,gdp       )
        call timer_stop(timer_turclo, gdp)
        call timer_stop(timer_turbulence, gdp)
+       !
+       ! for mud layer, Bingham model for eddy viscosity
+       !
+       if (stressStrainRelation) then
+         call timer_start(timer_trisol_rest, gdp)
+         call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
+                   & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
+                   & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
+                   & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
+                   & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
+                   & r(sndint),gdp       )
+         call timer_stop(timer_trisol_rest, gdp)
+       endif
+       !
        if (htur2d .or. irov>0) then
           !
           ! Check horizontal Eddy Viscosity and Diffusivity
@@ -1682,7 +1713,8 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(precip) ,r(vicmud) ,i(kfushr) , &
+              & i(kfvshr) ,gdp       )
        call timer_stop(timer_1stadi, gdp)
        if (roller) then
           !
@@ -1933,16 +1965,27 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icy = 1
           !
           if (lsed > 0) then
+             if (stressStrainRelation) then
+                call timer_start(timer_trisol_rest, gdp)
+                call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
+                          & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
+                          & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
+                          & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
+                          & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
+                          & r(sndint),gdp       )                
+                call timer_stop(timer_trisol_rest, gdp)
+             endif
              call timer_start(timer_fallve, gdp)
              call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
                        & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                        & i(kcs)    ,i(kfs)    ,r(u0)     ,r(v0)     , &
                        & r(wphy)   ,r(r0)     ,r(rtur0)  ,ltur      ,r(thick)  , &
-                       & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     , &
+                       & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     ,ifirst_settle    , &
                        & icx       ,icy       ,lundia    ,d(dps)    ,r(s0)     , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
+                       & r(dudz)   ,r(dvdz)   ,r(clyint) ,r(sltint) ,r(sndint) , &
                        & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )        
              call timer_stop(timer_fallve, gdp)
           endif
@@ -2577,6 +2620,19 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
        call timer_stop(timer_turclo, gdp)
        call timer_stop(timer_turbulence, gdp)
        !
+       ! for mud layer, Bingham model for eddy viscosity
+       !
+       if (stressStrainRelation) then
+         call timer_start(timer_trisol_rest, gdp)
+         call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
+                   & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
+                   & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
+                   & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
+                   & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
+                   & r(sndint),gdp       )
+         call timer_stop(timer_trisol_rest, gdp)
+       endif
+       !
        ! Check horizontal eddy viscosity and diffusivity
        !
        if (htur2d .or. irov>0) then
@@ -2706,7 +2762,7 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
               & r(wrkb1)  ,r(wrkb2)  ,r(wrkb3)  ,r(wrkb4)  ,r(wrkb5)  , &
               & r(wrkb6)  ,r(wrkb7)  ,r(wrkb8)  ,r(wrkb9)  ,r(wrkb10) , &
               & r(wrkb11) ,r(wrkb12) ,r(wrkb13) ,r(wrkb14) ,r(wrkb15) , &
-              & r(wrkb16) ,sbkol     ,r(precip) ,gdp       )
+              & r(wrkb16) ,sbkol     ,r(precip) ,r(vicmud) ,i(kfushr) ,i(kfvshr) ,gdp       )
        call timer_stop(timer_2ndadi, gdp)
        if (roller) then
           !
@@ -3006,16 +3062,27 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
           icy = 1
           !
           if (lsed > 0) then
+             if (stressStrainRelation) then
+                call timer_start(timer_trisol_rest, gdp)
+                call bngham(jstart    ,nmmaxj    ,kmax      ,nmmax       ,lstsci      , &
+                   & lsed      ,icx       ,icy       ,i(kfushr),i(kfvshr), &
+                   & i(kcs)    ,i(kfs)    ,r(dudz )  ,r(dvdz )    ,r(u1)       , &
+                   & r(v1)     ,r(vicmud) ,r(thick)  ,r(rhowat)   ,r(rho)      , &
+                   & r(r1)     ,d(dps)    ,r(s1)     ,r(clyint)   ,r(sltint)   , &
+                   & r(sndint) ,gdp       )
+                call timer_stop(timer_trisol_rest, gdp)
+             endif
              call timer_start(timer_fallve, gdp)
              call d3d4_flocculate(nmmax, kmax, lstsci, lsal, ltem, zmodel, &
                        & r(r0), i(kfs), i(kfsmn0), i(kfsmx0), hdt, gdp)
              call fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                        & i(kcs)    ,i(kfs)    ,r(u0)     ,r(v0)     , &
                        & r(wphy)   ,r(r0)     ,r(rtur0)  ,ltur      ,r(thick)  , &
-                       & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     , &
+                       & saleqs    ,temeqs    ,r(rhowat) ,r(ws)     ,ifirst_settle    , &
                        & icx       ,icy       ,lundia    ,d(dps)    ,r(s0)     , &
                        & r(umean)  ,r(vmean)  ,r(z0urou) ,r(z0vrou) ,i(kfu)    , &
                        & i(kfv)    ,zmodel    ,i(kfsmx0) ,i(kfsmn0) ,r(dzs0)   , &
+                       & r(dudz)   ,r(dvdz)   ,r(clyint) ,r(sltint) ,r(sndint) , &
                        & r(taubmx) ,lstsci    ,r(rich)   ,gdp       )
              call timer_stop(timer_fallve, gdp)
           endif

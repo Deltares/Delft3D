@@ -1,10 +1,11 @@
 subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 & kcs       ,kfs       ,u0        ,v0        , &
                 & wphy      ,r0        ,rtur0     ,ltur      ,thick     , &
-                & saleqs    ,temeqs    ,rhowat    ,ws        , &
+                & saleqs    ,temeqs    ,rhowat    ,ws        ,ifirst_settle    , &
                 & icx       ,icy       ,lundia    ,dps       ,s0        , &
                 & umean     ,vmean     ,z0urou    ,z0vrou    ,kfu       , &
                 & kfv       ,zmodel    ,kfsmx0    ,kfsmn0    ,dzs0      , &
+                & dudz      ,dvdz      ,clyint    ,sltint    ,sndint    , &
                 & taubmx    ,lstsci    ,rich      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
@@ -67,6 +68,12 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     real(fp)         , dimension(:,:)  , pointer :: dss
     real(fp)           , dimension(:)  , pointer :: sedd50
     real(fp)           , dimension(:)  , pointer :: sedd50fld
+    real(fp)        , dimension(:,:)   , pointer :: rhocf
+    real(fp)        , dimension(:,:)   , pointer :: cfvic
+    real(fp)        , dimension(:,:)   , pointer :: phiclay
+    real(fp)        , dimension(:,:)   , pointer :: phisand
+    real(fp)                           , pointer :: Shearsettle_w_opt
+    real(fp)                           , pointer :: phisim
     integer            , dimension(:)  , pointer :: sedtyp
     !
     real(fp)                           , pointer :: timsec
@@ -83,11 +90,14 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     integer            , dimension(:)  , pointer :: dll_integers
     real(hp)           , dimension(:)  , pointer :: dll_reals
     character(256)     , dimension(:)  , pointer :: dll_strings
+    logical                            , pointer :: stressStrainRelation
+    logical                            , pointer :: shearSettling
 !
 ! Global variables
 !
     integer                                                 , intent(in)  :: icx    !!  Increment in the X-dir., if ICX= NMAX then computation proceeds in the X-dir. If icx=1 then computation proceeds in the Y-dir.
     integer                                                 , intent(in)  :: icy    !!  Increment in the Y-dir. (see ICX)
+    integer                                                               :: ifirst_settle    !!  Flag to initialize what settling velocity has been used, defined in trisol.f90
     integer                                                 , intent(in)  :: kmax   !  Description and declaration in esm_alloc_int.f90
     integer                                                 , intent(in)  :: lsal   !  Description and declaration in dimens.igs
     integer                                                 , intent(in)  :: lsed   !  Description and declaration in esm_alloc_int.f90
@@ -103,6 +113,8 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)            , intent(in)  :: kfsmn0 !  Description and declaration in iidim.f90
     integer   , dimension(gdp%d%nmlb:gdp%d%nmub)            , intent(in)  :: kfsmx0 !  Description and declaration in iidim.f90
     logical                                                 , intent(in)  :: zmodel !  Description and declaration in procs.igs
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)    , intent(in)  :: dudz   !  Description and declaration in rjdim.f90
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax)    , intent(in)  :: dvdz   !  Description and declaration in rjdim.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)      , intent(in)  :: dzs0   !  Description and declaration in rjdim.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, 0:kmax, lsed)            :: ws     !  Description and declaration in esm_alloc_real.f90
     real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub, kmax)      , intent(in)  :: rhowat !  Description and declaration in esm_alloc_real.f90
@@ -122,6 +134,9 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     real(fp)  , dimension(kmax)                             , intent(in)  :: thick  !  Description and declaration in esm_alloc_real.f90
     real(fp)                                                , intent(in)  :: saleqs    
     real(fp)                                                , intent(in)  :: temeqs    
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                          :: clyint
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                          :: sltint
+    real(fp)  , dimension(gdp%d%nmlb:gdp%d%nmub)                          :: sndint
 !
 ! Local variables
 !
@@ -143,6 +158,8 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     logical                     :: error
     real(fp)                    :: cclay
     real(fp)                    :: chezy
+    real(fp)                    :: dudzint
+    real(fp)                    :: dvdzint
     real(fp)                    :: ctot
     real(fp)                    :: fl
     real(fp)                    :: h0
@@ -152,6 +169,11 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     real(fp)                    :: sag
     real(fp)                    :: salint
     real(fp)                    :: temint
+    real(fp)                    :: shearint
+    real(fp)                    :: rhocfint
+    real(fp)                    :: cfvicint
+    real(fp)                    :: phiclayint
+    real(fp)                    :: phisandint
     real(fp)                    :: tka
     real(fp)                    :: tkb
     real(fp)                    :: tkt
@@ -175,6 +197,9 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     vonkar              => gdp%gdphysco%vonkar
     !
     vicmol              => gdp%gdphysco%vicmol
+    stressStrainRelation => gdp%gdsedpar%stressStrainRelation
+    shearSettling       => gdp%gdsedpar%shearSettling
+    sedtyp              => gdp%gdsedpar%sedtyp
     csoil               => gdp%gdsedpar%csoil
     rhosol              => gdp%gdsedpar%rhosol
     dss                 => gdp%gdsedpar%dss
@@ -196,6 +221,13 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     dll_integers        => gdp%gdtrapar%dll_integers_settle
     dll_reals           => gdp%gdtrapar%dll_reals_settle
     dll_strings         => gdp%gdtrapar%dll_strings_settle
+    rhocf               => gdp%gdsedpar%rhocf
+    cfvic               => gdp%gdsedpar%cfvic
+    phiclay             => gdp%gdsedpar%phiclay
+    phisand             => gdp%gdsedpar%phisand
+    phisim              => gdp%gdsedpar%rheo_phisim
+    Shearsettle_w_opt   => gdp%gdsedpar%Shearsettle_w_opt
+    lst = max(gdp%d%lsal, gdp%d%ltem)
     !
     allocate (localpar (gdp%gdtrapar%npar), stat = istat)
     !
@@ -255,6 +287,11 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
           !
           ! Input parameters are passed via dll_reals/integers/strings-arrays
           !
+          ! Shear calculation is copied from subroutine turclo
+          dudzint  = 0.5_fp * (dudz(nm,kbe) + dudz(nm,kab))
+          dvdzint  = 0.5_fp * (dvdz(nm,kbe) + dvdz(nm,kab))
+          shearint = sqrt(dudzint**2 + dvdzint**2)
+          !
           if (lsal > 0) then
              salint = max(0.0_fp, (tka*r0(nm, kbe, lsal) + tkb*r0(nm, kab, lsal)  ) / tkt )
           else
@@ -284,6 +321,30 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
           else ! algebraic or constant
              tur_k   = -999.0_fp
              tur_eps = -999.0_fp
+          endif
+          !
+          if (stressStrainRelation) then
+             !rhocfint = (tka*rhocf(nm,kbe) +  tkb*rhocf(nm,kab)) / tkt
+             !cfvicint = (tka*cfvic(nm,kbe) +  tkb*cfvic(nm,kab)) / tkt
+             !
+             ! Only use data from the cell below (downwind approach)
+             rhocfint = rhocf(nm,kbe)
+             cfvicint = cfvic(nm,kbe)
+          else
+             rhocfint = -999.0_fp
+             cfvicint = -999.0_fp
+          endif
+          !
+          if (stressStrainRelation) then
+             !phiclayint = (tka*phiclay(nm,kbe) +  tkb*phiclay(nm,kab)) / tkt
+             !phisandint = (tka*phisand(nm,kbe) +  tkb*phisand(nm,kab)) / tkt
+             !
+             ! Downwind:
+             phiclayint = phiclay(nm,kbe)
+             phisandint = phisand(nm,kbe)
+          else
+             phiclayint = -999.0_fp
+             phisandint = -999.0_fp
           endif
           !
           if (kmax == 0) then ! 2D
@@ -333,6 +394,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_reals(WS_RP_RHOWT) = real(rhoint ,hp)
              dll_reals(WS_RP_CFRCB) = real(r0(nm,kbe,ll),hp)
              dll_reals(WS_RP_CTOT ) = real(ctot   ,hp)
+!            dll_reals(WS_RP_CTOTA) = real(aak(nm,kab),hp)
              dll_reals(WS_RP_KTUR ) = real(tur_k  ,hp)
              dll_reals(WS_RP_EPTUR) = real(tur_eps,hp)
              if (sedd50(l)<0.0_fp) then
@@ -351,6 +413,17 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_reals(WS_RP_CHEZY) = real(chezy     ,hp)
              dll_reals(WS_RP_SHTUR) = real(tshear    ,hp)
              dll_reals(WS_RP_CCLAY) = real(cclay     ,hp)
+             dll_reals(WS_RP_RHOCF) = real(rhocfint   ,hp)
+             dll_reals(WS_RP_CFVIC) = real(cfvicint   ,hp)
+             dll_reals(WS_RP_PHICL) = real(phiclayint ,hp)
+             dll_reals(WS_RP_PHISA) = real(phisandint ,hp)
+             dll_reals(WS_RP_SHR  ) = real(shearint   ,hp)
+             !
+             dll_reals(WS_RP_CLYINT) = real(clyint(nm) ,hp)
+             dll_reals(WS_RP_SLTINT) = real(sltint(nm) ,hp)
+             dll_reals(WS_RP_SNDINT) = real(sndint(nm) ,hp)
+             dll_reals(WS_RP_FOROPT) = real(Shearsettle_w_opt ,hp)
+             dll_reals(WS_RP_PHISIM) = real(phisim ,hp)
              !
              if (max_integers < WS_MAX_IP) then
                 write(errmsg,'(a,a,a)') 'Insufficient space to pass integer values to settling routine.'
@@ -374,9 +447,24 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
              dll_strings(WS_SP_RUNID) = gdp%runid
              dll_strings(WS_SP_USRFL) = dll_usrfil(l)
              !
-             call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings, &
-                         & dll_integers, dll_reals, dll_strings, lundia, iform_settle(l),  &
-                         & localpar, gdp%gdtrapar%npar, wsloc, error)
+             if (stressStrainRelation) then
+                 if (sedtyp(l) == SEDTYP_CLAY) then
+                    !wsloc = 0.0_fp
+                    call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings    , &
+                                & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
+                                & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
+                 else
+                    if (shearSettling) then
+                       call shearsettle(dll_function, dll_handle, max_integers, max_reals, max_strings    , &
+                                      & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
+                                      & localpar    , gdp%gdtrapar%npar       , wsloc    , ifirst_settle  , error)
+                    endif
+                endif
+             else
+                call eqsettle(dll_function, dll_handle, max_integers, max_reals, max_strings    , &
+                            & dll_integers, dll_reals , dll_strings , lundia   , iform_settle(l), &
+                            & localpar    , gdp%gdtrapar%npar       , wsloc    , error          )
+             endif
              if (error) call d3stop(1, gdp)
              !
              ws(nm, k, l) = wsloc
