@@ -42,7 +42,7 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
