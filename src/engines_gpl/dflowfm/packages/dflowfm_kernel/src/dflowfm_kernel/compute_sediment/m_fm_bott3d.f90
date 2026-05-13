@@ -1192,7 +1192,7 @@ contains
       use m_flowgeom, only: bai_mor, bl, wu_mor, ba
       use m_flow, only: s1, hs
       use m_flowparameters, only: epshs
-      use m_fm_erosed, only: lsedtot, kfsed, dbodsd, fixfac, frac, hmaxth, sedthr, thetsd, e_sbn
+      use m_fm_erosed, only: lsedtot, kfsed, dbodsd, fixfac, frac, hmaxth, sedthr, thetsd, e_sbn, e_sbcn
       use m_fm_erosed, only: ndxi => ndxi_mor
       use m_fm_erosed, only: nd => nd_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -1319,6 +1319,7 @@ contains
                         dbodsd(ll, knb) = dbodsd(ll, knb) - dv * bai_mor(knb)
                         dbodsd(ll, nm) = dbodsd(ll, nm) + dv * bai_mor(nm)
                         e_sbn(Lf, ll) = e_sbn(Lf, ll) + dv / (dtmor * wu_mor(Lf)) * sign(1_dp, nd(nm)%ln(L) + 0_dp)
+                        e_sbcn(Lf,ll) = e_sbcn(Lf,ll) + dv / (dtmor * wu_mor(Lf)) * sign(1_dp, nd(nm)%ln(L) + 0_dp) !apply the correction to e_sbcn
                      end if
                   end do ! L
                end do ! ll
