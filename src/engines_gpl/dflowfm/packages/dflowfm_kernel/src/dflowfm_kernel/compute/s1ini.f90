@@ -34,7 +34,7 @@ module m_s1ini
    use m_update_waq_sink_source_fluxes, only: update_waq_sink_source_fluxes
    use m_update_waq_lateral_fluxes, only: update_waq_lateral_fluxes
    use m_setgrwflowexpl, only: setgrwflowexpl
-   use m_setsorsin, only: setsorsin
+   use m_source_sink, only: setsorsin
 
    implicit none
 

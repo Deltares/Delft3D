@@ -63,7 +63,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
-   use m_setsorsin, only: setsorsin
+   use m_source_sink, only: setsorsin
 
    implicit none
 

@@ -40,7 +40,7 @@ contains
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
       use m_setinitialverticalprofile, only: setinitialverticalprofile
       use precision, only: dp
-      use m_addsorsin, only: addsorsin_from_polyline_file
+      use m_source_sink, only: addsorsin_from_polyline_file
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax

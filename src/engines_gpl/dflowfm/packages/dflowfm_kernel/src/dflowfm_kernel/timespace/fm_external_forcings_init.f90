@@ -1149,7 +1149,7 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin
+      use m_source_sink, only: addsorsin
       use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
@@ -1380,8 +1380,7 @@ contains
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_setsorsin
+      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin
       use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
       use m_alloc, only: realloc
