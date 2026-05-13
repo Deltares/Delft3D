@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default">
-  <path version="2026-04-30T13:13:33.612000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
+  <path version="2026-05-13T11:48:52.451000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
       <parameters>
@@ -484,7 +484,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_default_restart">
-  <path version="2026-04-30T14:04:21.925000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
+  <path version="2026-05-13T11:49:26.132000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_restart_map.nc" type="netCDF">
       <parameters>
@@ -1303,7 +1303,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c108_frisianinlet_dynamo_statistics" ref="dflowfm_default">
-  <path version="2026-04-30T14:11:11.216000">e02_dflowfm/f030_water_quality_processes/c108_frisianinlet_dynamo_statistics</path>
+  <path version="2026-05-13T11:52:56.880000">e02_dflowfm/f030_water_quality_processes/c108_frisianinlet_dynamo_statistics</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
       <parameters>
