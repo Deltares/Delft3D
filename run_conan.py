@@ -35,7 +35,7 @@ def conan_install(profile, output_folder, build_type, consumer_build_type=None):
         "install",
         ".",
         f"--profile:all=./conan/profiles/{profile}",
-        "-s",
+        "-s:a",
         f"build_type={build_type}",
         "--build=missing",
         "--no-remote",
