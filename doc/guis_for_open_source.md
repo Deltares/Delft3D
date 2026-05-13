@@ -3,7 +3,7 @@ Back to [main page](../README.md).
 
 ## Delft3D Flexible Mesh
 - Register and login to the https://download.deltares.nl/en website.
-- Go to TODO and add the zipped installer for the Delft3D FM Suite to your cart.
+- Go to https://download.deltares.nl/delft3d-fm-suite-2d3d-graphical-user-interface-gui-open-source and add the zipped installer for the Delft3D FM Suite to your cart.
 - Click on the cart symbol at the top of the page, and fill out the forms, accept the general license term of Deltares software, select one of the available download sites, and press "send request".
 - You will automatically receive an email containing with a download link for the installer (share link) and the license file (download link).
 - Unzip and install the software; remember where you installed the software.
