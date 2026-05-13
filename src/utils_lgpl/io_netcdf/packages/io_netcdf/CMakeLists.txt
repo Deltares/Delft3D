@@ -52,6 +52,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
      ${configuration_type} STREQUAL "DELFT3D4" OR
      ${configuration_type} STREQUAL "FM-SUITE" OR
      ${configuration_type} STREQUAL "D3D4-SUITE" OR
+     ${configuration_type} STREQUAL "ALL" OR
      ${configuration_type} STREQUAL "ALL-TESTBENCH" OR
      ${configuration_type} STREQUAL "FM-TESTBENCH" OR
      ${configuration_type} STREQUAL "TOOLS" )
@@ -68,11 +69,18 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
 
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/io_netcdf_api.F90)
-    set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/io_netcdf)
+    set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/io_netcdf)
+    set_target_properties(${library_name} PROPERTIES OUTPUT_NAME io_netcdf)
+    if(WIN32)
+        # Use a distinct name for the DLL import library so it does not
+        # overwrite the static io_netcdf.lib that other targets link against.
+        set_target_properties(${library_name} PROPERTIES ARCHIVE_OUTPUT_NAME io_netcdf_dll)
+    endif()
+    if(UNIX)
+        set_target_properties(${library_name} PROPERTIES PREFIX "")
+    endif()
 
-    # Set post-build step
-    set(install_dir ${CMAKE_BINARY_DIR})
-    set(build_dir ${CMAKE_BINARY_DIR})
-
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME io_netcdf.${library_suffix} DESTINATION lib)
+    install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                    LIBRARY DESTINATION lib
+    )
 endif()

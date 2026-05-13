@@ -59,6 +59,6 @@ set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)
 # Change the name of the target library to delwaq.dll
 set_target_properties(${library_name} PROPERTIES OUTPUT_NAME delwaq)
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )

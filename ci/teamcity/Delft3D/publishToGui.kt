@@ -45,7 +45,7 @@ object PublishToGui : BuildType({
             formatStderrAsError = true
             scriptMode = script {
                 content = """
-                    ${'$'}pathToDll = "source\x64\lib\ec_module.dll"
+                    ${'$'}pathToDll = "source\x64\bin\ec_module.dll"
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {
@@ -71,7 +71,7 @@ object PublishToGui : BuildType({
             formatStderrAsError = true
             scriptMode = script {
                 content = """
-                    ${'$'}pathToDll = "source\x64\lib\gridgeom.dll"
+                    ${'$'}pathToDll = "source\x64\bin\gridgeom.dll"
                     ${'$'}fileVersion = (Get-Item ${'$'}pathToDll).VersionInfo.FileVersionRaw
                     
                     if (${'$'}fileVersion -ne ${'$'}null) {

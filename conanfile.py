@@ -62,3 +62,4 @@ class Delft3DRecipe(ConanFile):
         # transforms via TIFF grid files.
         self.options["proj"].with_curl = False
         self.options["proj"].build_executables = False
+        self.options["hdf5"].enable_cxx = False

@@ -1,6 +1,7 @@
 from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout, CMakeDeps
-from conan.tools.files import get
+from conan.tools.files import get, rmdir, rm, rename
+from pathlib import Path
 
 
 class netcdf_fortranRecipe(ConanFile):
@@ -57,6 +58,36 @@ class netcdf_fortranRecipe(ConanFile):
     def package(self):
         cmake = CMake(self)
         cmake.install()
+
+        # The upstream install puts .mod files into include/<build_type>/
+        # for multi-config generators. Move them up to include/.
+        include_dir = Path(self.package_folder) / "include"
+        mod_subdir = include_dir / str(self.settings.build_type)
+        if mod_subdir.is_dir():
+            for f in mod_subdir.glob("*.mod"):
+                rename(self, str(f), str(include_dir / f.name))
+            rmdir(self, str(mod_subdir))
+
+        # Remove CMake build-tree directories that leak into include/
+        # when using multi-config generators (Visual Studio).
+        rmdir(self, str(include_dir / "CMakeFiles"))
+        for d in include_dir.glob("*.dir"):
+            rmdir(self, str(d))
+
+        # Remove nf-config (not needed; consumers use CMake targets)
+        rm(self, "nf-config", str(Path(self.package_folder) / "bin"))
+
+        # Remove upstream CMake config files and pkgconfig (Conan generates its own)
+        lib_dir = Path(self.package_folder) / "lib"
+        rmdir(self, str(lib_dir / "cmake"))
+        rmdir(self, str(lib_dir / "pkgconfig"))
+
+        # Remove object files leaked by the upstream install(TARGETS ... OBJECTS)
+        for d in lib_dir.glob("objects-*"):
+            rmdir(self, str(d))
+
+        # Remove libnetcdff.settings (not needed at consume time)
+        rm(self, "libnetcdff.settings", str(lib_dir))
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "netCDF-Fortran")

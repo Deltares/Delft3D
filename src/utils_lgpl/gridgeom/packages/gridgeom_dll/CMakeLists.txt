@@ -42,9 +42,12 @@ endif(WIN32)
 
 # Create the folder structure in vfproj
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source_files})
-set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
-
-if ((CMAKE_GENERATOR MATCHES "Visual Studio") OR UNIX)
-    # Install the shared library in the lib folder with rename
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME gridgeom.${library_suffix} DESTINATION lib)
+set_target_properties(${library_name} PROPERTIES FOLDER utils_lgpl/gridgeom)
+set_target_properties(${library_name} PROPERTIES OUTPUT_NAME gridgeom)
+if(UNIX)
+    set_target_properties(${library_name} PROPERTIES PREFIX "")
 endif()
+
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                LIBRARY DESTINATION lib
+)

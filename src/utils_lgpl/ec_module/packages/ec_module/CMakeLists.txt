@@ -16,19 +16,15 @@ add_compile_options("${automatic_local_variable_storage_flag}")
 set(library_name ec_module)
 add_library(${library_name} ${meteo_sources} ${sources})
 
-# Add dependencies
-
-
-    set(oss_dependencies deltares_common
-                         gridgeom
-                         kdtree2
-                         kdtree_wrapper
-                         io_netcdf
-                         io_netcdf_data
-                         netCDF::netcdff)
-
-
-target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
+target_link_libraries(${library_name} PRIVATE
+                        deltares_common
+                        gridgeom
+                        kdtree2
+                        kdtree_wrapper
+                        io_netcdf
+                        io_netcdf_data
+                        netCDF::netcdff
+)
 
 set_source_files_properties(${src_path}/ec_parameters.F90
                             ${src_path}/ec_basic_interpolation.F90
@@ -46,6 +42,7 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
      ${configuration_type} STREQUAL "DELFT3D4" OR
      ${configuration_type} STREQUAL "FM-SUITE" OR
      ${configuration_type} STREQUAL "D3D4-SUITE" OR
+     ${configuration_type} STREQUAL "ALL" OR
      ${configuration_type} STREQUAL "ALL-TESTBENCH" OR
      ${configuration_type} STREQUAL "FM-TESTBENCH" OR
      ${configuration_type} STREQUAL "TOOLS" )
@@ -57,14 +54,30 @@ if ( ${configuration_type} STREQUAL "DFLOWFM" OR
     add_library(${library_name} SHARED ${src_path}/ec_module_api.f90)
     target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
     include_directories(${version_include_dir})
-    set(oss_dependencies deltares_common kdtree2 kdtree_wrapper gridgeom io_netcdf ec_module)
 
-	target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
+	target_link_libraries(${library_name} PRIVATE
+                            deltares_common
+                            kdtree2
+                            kdtree_wrapper
+                            gridgeom
+                            io_netcdf
+                            ec_module
+    )
 
     # Create the folder structure in vfproj
     source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${src_path}/ec_module_api.f90)
     set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/ec_module)
+    set_target_properties (${library_name} PROPERTIES OUTPUT_NAME ec_module)
+    if(WIN32)
+        # Use a distinct name for the DLL import library so it does not
+        # overwrite the static ec_module.lib that other targets link against.
+        set_target_properties(${library_name} PROPERTIES ARCHIVE_OUTPUT_NAME ec_module_dll)
+    endif()
+    if(UNIX)
+        set_target_properties (${library_name} PROPERTIES PREFIX "")
+    endif()
 
-
-    install(PROGRAMS $<TARGET_FILE:${library_name}> RENAME ec_module.${library_suffix} DESTINATION lib)
+    install(TARGETS ${library_name} RUNTIME DESTINATION bin
+                                    LIBRARY DESTINATION lib
+    )
 endif()
