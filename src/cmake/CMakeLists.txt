@@ -76,10 +76,8 @@ endif()
 include(compiler_options/compiler_warning_targets.cmake)
 include(compiler_options/fortran_styler.cmake)
 
-# Set available build configurations when not provided externally.
-if (NOT DEFINED CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "")
-endif()
+# Set available build configurations
+set (CMAKE_CONFIGURATION_TYPES "Debug;RelWithDebInfo;Release" CACHE STRING "" FORCE)
 
 # Set Fortran module files location (needed for dependency bubbling on Linux)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/fortran_module_dir)
