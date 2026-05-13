@@ -45,8 +45,9 @@ contains
       use precision, only: dp
       use m_flowgeom, only: Ndxi, Lnxi, Lnx, ln
       use m_flowtimes, only: dts
-      use m_transport, only: numnonglobal, dtmin_transp, nsubsteps, ndeltasteps, dtmax
+      use m_transport, only: numnonglobal, dtmin_transp, nsubsteps, ndeltasteps, dtmax, deltaflux
       use timers, only: timon, timstrt, timstop
+      use m_flowparameters, only: ja_transport_local_time_step
 
       real(kind=dp) :: dt, dtmin
       real(kind=dp) :: logtwo
@@ -64,36 +65,41 @@ contains
 !  get smallest and largest time steps
       dtmin = dtmin_transp
 
-      if (dtmin >= dts) then
+      if (dtmin >= dts .or. ja_transport_local_time_step==0) then
          nsubsteps = 1
          ndeltasteps = 1
       else
          logtwo = log(2.0_dp)
          nsubsteps = max(1, 2**int(log(dts / dtmin) / logtwo + 0.9999_dp))
-         dtmin = dts / nsubsteps
-
-!     get number of substeps
-         do kk = 1, Ndxi
-            dt = dtmax(kk)
-            if (dt < dts) then
-               ndeltasteps(kk) = min(2**int(log(dt / dtmin) / logtwo), nsubsteps)
-               numnonglobal = numnonglobal + 1
-            else
-               ndeltasteps(kk) = nsubsteps
-            end if
-         end do
-
-!     fictitious boundary cells
-         do LL = Lnxi + 1, Lnx
-            ndeltasteps(ln(1, LL)) = ndeltasteps(ln(2, LL))
-         end do
-
-!      if ( nsubsteps.gt.1 ) then
-!         write(6,*) dtmin
-!      end if
-
+         dtmin = dts / real(nsubsteps, kind=dp)
+         if (ja_transport_local_time_step==2) then
+            ! apply the smallest substep everywhere
+            ndeltasteps = 1
+            numnonglobal = ndxi
+         else
+            ! get number of substeps
+            do kk = 1, Ndxi
+               dt = dtmax(kk)
+               if (dt < dts) then
+                  ndeltasteps(kk) = min(2**int(log(dt / dtmin) / logtwo), nsubsteps)
+                  numnonglobal = numnonglobal + 1
+               else
+                  ndeltasteps(kk) = nsubsteps
+               end if
+            end do
+            ! fictitious boundary cells
+            do LL = Lnxi + 1, Lnx
+               ndeltasteps(ln(1, LL)) = ndeltasteps(ln(2, LL))
+            end do
+         end if
       end if
 
+!     set nfluxsteps
+      do LL = 1, Lnx
+         deltaflux(LL) = real(min(ndeltasteps(ln(1, LL)), ndeltasteps(ln(2, LL))), kind=dp)/real(nsubsteps, kind=dp)
+      end do
+
+      
       if (timon) then
          call timstop(ithndl)
       end if

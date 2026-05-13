@@ -44,6 +44,7 @@ module m_fm_erosed_sub
    private
 
    public :: fm_erosed
+   !public :: compute_sediment_mass
 
 contains
 
@@ -78,7 +79,7 @@ contains
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+         u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -87,13 +88,13 @@ contains
       use m_transport, only: ised1, constituents, isalt, itemp
       use dfparall
       use m_alloc
-      use m_missing
+      use m_missing, only: dmiss_neg, dmiss_pos
       use m_turbulence, only: vicwws, turkinws, rhowat
       use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE, jawave, jasecflow, jasourcesink, v2dwbl, &
                                   flow_without_waves, epshu
       use m_fm_erosed, only: bsskin, varyingmorfac, npar, iflufflyr, rca, anymud, frac, lsedtot, seddif, sedthr, ust2, kfsed, &
                              kmxsed, taub, uuu, vvv, e_sbcn, e_sbct, e_sbwn, e_sbwt, e_sswn, e_sswt, e_dzdn, e_dzdt, sbcx, sbcy, &
-                             sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor, sourf, sourse, sour_im, sinkf, sinkse, hs_mor, &
+                             sbwx, sbwy, sswx, sswy, sxtot, sytot, ucxq_mor, ucyq_mor, sourf, sourse, sour_im, sinkf, sinkse, sink_im, hs_mor, &
                              mudcnt, mudfrac, rsedeq, zumod, fixfac, srcmax, umod, thcmud, taurat, sedtrcfac, sedd50, rhosol, nmudfrac, &
                              taucr, tetacr, dstar, iform, dgsd, dg, dm, dxx, ffthresh, logseddia, lsed, max_mud_sedtyp, morfac, nseddia, &
                              nxx, sedd50fld, sedtyp, xx, min_dxx_sedtyp, logsedsig, asklhe, hidexp, ihidexp, mwwjhe, sandfrac, aksfac, &
@@ -129,6 +130,7 @@ contains
       logical :: flmd2l = .false.
       logical :: wave
 
+      
       integer, pointer :: iunderlyr
       real(prec), dimension(:, :), pointer :: bodsed
       !
@@ -191,6 +193,9 @@ contains
       real(fp) :: temperature
       real(fp), dimension(max(kmx, 1)) :: thicklc
       real(fp), dimension(max(kmx, 1)) :: siglc
+      real(fp) :: sink_theta      
+      real(fp) :: sink_factor      
+      real(fp) :: source_factor      
       real(fp) :: thick0
       real(fp) :: thick1
       real(fp) :: timhr
@@ -251,6 +256,10 @@ contains
       if (.not. stm_included) then
          return
       end if
+      sink_theta = stmpar%morpar%mornum%sink_theta
+      sink_factor = stmpar%morpar%mornum%sink_factor
+      source_factor = stmpar%morpar%mornum%source_factor
+      
       ubot_from_com = jauorbfromswan > 0
       timhr = time1 / 3600.0_fp
       !
@@ -351,6 +360,7 @@ contains
       sinkse = 0.0_fp
       sourse = 0.0_fp
       sour_im = 0.0_fp
+      sink_im = 0.0_fp
       ! source and sink terms fluff layer
       if (iflufflyr > 0) then
          sinkf = 0.0_fp
@@ -606,9 +616,9 @@ contains
                            & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                            & mwwjhe    ,1, ndx)
          else
-            call comphidexp(frac, dm, ndx, lsedtot, &
-               & sedd50, hidexp, ihidexp, asklhe, &
-               & mwwjhe, 1, ndx)
+         call comphidexp(frac, dm, ndx, lsedtot, &
+            & sedd50, hidexp, ihidexp, asklhe, &
+            & mwwjhe, 1, ndx)
          endif
 
          !endif
@@ -986,7 +996,7 @@ contains
                if (iflufflyr > 0) then
                   if (mfltot > 0.0_fp) then
                      fracf = max(0.0_fp, mfluff(l, nm)) / mfltot
-                  end if
+               end if
                end if
                !
                kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
@@ -1060,7 +1070,7 @@ contains
             !
             suspfrac = has_advdiff(tratyp(l))
             !
-            tsd = -999.0_fp
+            tsd = dmiss_neg
             di50 = sedd50(l)
             if (di50 < 0.0_fp) then
                !  Space varying sedd50 specified in array sedd50fld:
@@ -1287,7 +1297,8 @@ contains
                   !
                   call soursin_2d(umod(nm), ustarc, h0, h1, &
                                 & ws(kb, l), tsd, trsedeq, factsd,    &
-                                & sourse(nm, l), sour_im(nm, l), sinkse(nm, l))
+                                & sink_theta, source_factor, sink_factor, &
+                                & sourse(nm, l), sinkse(nm, l), sink_im(nm, l))
                end if ! suspfrac
             end if ! kmaxlc = 1
             if (suspfrac) then
@@ -1400,24 +1411,19 @@ contains
          end do
       end do
       deallocate (evel, stat=istat)
-      !
-      ! Add implicit part of source term to sinkse
-      !
-      do l = 1, lsed
-         do nm = 1, ndx
-            sinkse(nm, l) = sinkse(nm, l) + sour_im(nm, l)
-         end do
-      end do
-      !
       if (jasourcesink == 0) then
          sourse = 0.0_dp
          sinkse = 0.0_dp
+         sour_im = 0.0_dp
+         sink_im = 0.0_dp
       elseif (jasourcesink == 1) then
          !
       elseif (jasourcesink == 2) then
          sinkse = 0.0_dp
+         sink_im = 0.0_dp
       elseif (jasourcesink == 3) then
          sourse = 0.0_dp
+         sour_im = 0.0_dp
       end if
       !
 

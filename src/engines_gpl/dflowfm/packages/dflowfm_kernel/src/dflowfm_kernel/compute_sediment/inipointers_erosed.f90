@@ -68,7 +68,7 @@ contains
                               e_sbct, e_sbn, e_sbt, e_ssn, e_sst, e_sbnc, e_sbtc, e_ssnc, &
                               e_scrn, e_scrt, sbwx, sbwy, sscx, sscy, e_sbwn, e_sbwt, sddflc, &
                               sswx, sswy, e_sswn, e_sswt, sxtot, sytot, sbxcum, sbycum, &
-                              ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
+                              ssxcum, ssycum, sinkse, sourse, sour_im, sink_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
                               dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he
 
@@ -272,6 +272,7 @@ contains
       sinkse => sedtra%sinkse
       sourse => sedtra%sourse
       sour_im => sedtra%sour_im
+      sink_im => sedtra%sink_im
       srcmax => sedtra%srcmax
       taub => sedtra%taub
       taurat => sedtra%taurat

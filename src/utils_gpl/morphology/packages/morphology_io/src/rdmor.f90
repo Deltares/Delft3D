@@ -52,6 +52,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     use sediment_basics_module
     use string_module
     use m_rdmorlyr
+    use tree_structures, only: print_tree
     use message_module, only: write_error, write_warning, FILE_NOT_FOUND, FILE_READ_ERROR, PREMATURE_EOF
     !
     implicit none
@@ -102,6 +103,8 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
     character(11)                                                     :: fmttmp !< Format file ('formatted  ')
     character(:), allocatable                                         :: filmor
     character(:), allocatable                                         :: filename
+    character(len=1), dimension(1) :: dummychar
+    logical :: dummylog
 !
 !! executable statements -------------------------------------------------------
 !
@@ -294,6 +297,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
                  & griddim   )
     !
     deallocate(xxprog)
+    
 end subroutine rdmor
 
 !> put mor file in input tree 
@@ -785,6 +789,7 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     use tree_data_types
     use morphology_data_module
     use properties
+    use precision, only: fp
     use string_module, only: str_lower
 
     implicit none
@@ -799,6 +804,11 @@ subroutine read_morphology_numerical_settings(mor_ptr, mornum)
     call prop_get(mor_ptr, 'Numerics', 'LaterallyAveragedBedload', mornum%laterallyaveragedbedload)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepth', mornum%maximumwaterdepth)
     call prop_get(mor_ptr, 'Numerics', 'MaximumWaterdepthFraction', mornum%maximumwaterdepthfrac)
+    call prop_get(mor_ptr, 'Numerics', 'SinkTheta', mornum%sink_theta)
+    call prop_get(mor_ptr, 'Numerics', 'SuspendedSinkFactor', mornum%sink_factor)
+    call prop_get(mor_ptr, 'Numerics', 'SuspendedSourceFactor', mornum%source_factor)
+    call prop_get(mor_ptr, 'Numerics', 'UpdateLTSFlux', mornum%update_lts_flux)
+
     fluxlimstring = ' '
     call prop_get(mor_ptr, 'Numerics', 'FluxLimiter', fluxlimstring)       
     call str_lower(fluxlimstring)

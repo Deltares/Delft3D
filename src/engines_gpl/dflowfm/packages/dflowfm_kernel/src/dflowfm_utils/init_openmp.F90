@@ -53,15 +53,19 @@ contains
       integer, intent(in) :: maxnumthreads !< Desired maximum number of OpenMP threads.
       integer, intent(in) :: mpion !< Is MPI-mode currently on (1: yes, 0: no).
 
+#ifdef _OPENMP
       integer :: openmp_threads
       character(len=20) :: value
       integer :: env_num_threads
       integer :: status
+#endif
 
       iresult = DFM_NOERR
 
 #ifndef _OPENMP
       associate (maxnumthreads => maxnumthreads) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
+      end associate
+      associate (mpion => mpion) ! Required to prevent compiler error for unused variable in case OpenMP is not defined
       end associate
 #endif
 
@@ -79,7 +83,7 @@ contains
             read (value, *, iostat=status) env_num_threads
             if (status == 0 .and. env_num_threads > 0) then
                openmp_threads = env_num_threads
-            end if
+      end if
          end if
       end if
       if (openmp_threads > 1) then

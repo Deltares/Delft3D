@@ -56,7 +56,6 @@ contains
       integer, dimension(Lnx), intent(in) :: Ltop !< flow-link based layer administration
       real(kind=dp), dimension(NUMCONST, Lnkx), intent(in) :: fluxhor !< horizontal advection fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sumhorflux ! sum of horizontal fluxes, dim(NUMCONST,Ndkx)
-
       integer :: LL, L, Lb, Lt
       integer :: j, k1, k2
 
@@ -83,7 +82,7 @@ contains
             Lb = Lbot(LL)
             Lt = Ltop(LL)
             do L = Lb, Lt
-!           get neighboring flownodes
+!              get neighboring flownodes
                k1 = ln(1, L)
                k2 = ln(2, L)
                do j = 1, NUMCONST

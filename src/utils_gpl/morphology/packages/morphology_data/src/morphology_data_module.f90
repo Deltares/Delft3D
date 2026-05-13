@@ -318,6 +318,11 @@ type mornumericstype
                                         ! at zeta point is `maximumwaterdepthfrac` times the 
                                         ! maximum water depth at active velocity points.
     integer :: fluxlim                  ! flux limiter choice
+    integer :: update_lts_flux          ! flux update choice for local time stepping
+    double precision :: sink_theta      ! weighting factor for sink term in suspended sediment equation 0: explicit, 1: implicit
+    double precision :: sink_factor ! factor to scale suspended sediment sink term 
+    double precision :: source_factor ! factor to scale suspended sediment source term
+
 end type mornumericstype
 
 !
@@ -804,6 +809,7 @@ type sedtra_type
     real(fp)         , dimension(:,:)    , pointer :: sinkse   !(nc1:nc2,lsed)
     real(fp)         , dimension(:,:)    , pointer :: sourse   !(nc1:nc2,lsed)
     real(fp)         , dimension(:,:)    , pointer :: sour_im  !(nc1:nc2,lsed)
+    real(fp)         , dimension(:,:)    , pointer :: sink_im  !(nc1:nc2,lsed)
     !
     real(fp)         , dimension(:,:)    , pointer :: dbodsd   !(lsedtot,nc1:nc2)
     !
@@ -907,6 +913,7 @@ subroutine nullsedtra(sedtra)
     nullify(sedtra%sinkse)
     nullify(sedtra%sourse)
     nullify(sedtra%sour_im)
+    nullify(sedtra%sink_im)
     !
     nullify(sedtra%dbodsd)
     !
@@ -1031,6 +1038,7 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     if (istat==0) allocate(sedtra%sinkse  (nc1:nc2,lsed), STAT = istat)
     if (istat==0) allocate(sedtra%sourse  (nc1:nc2,lsed), STAT = istat)
     if (istat==0) allocate(sedtra%sour_im (nc1:nc2,lsed), STAT = istat)
+    if (istat==0) allocate(sedtra%sink_im (nc1:nc2,lsed), STAT = istat)
     !
     if (istat==0) allocate(sedtra%dbodsd  (lsedtot,nc1:nc2), STAT = istat)
     !
@@ -1119,6 +1127,7 @@ subroutine allocsedtra(sedtra, moroutput, num_layers_grid, lsed, lsedtot, nc1, n
     sedtra%sinkse   = 0.0_fp
     sedtra%sourse   = 0.0_fp
     sedtra%sour_im  = 0.0_fp
+    sedtra%sink_im  = 0.0_fp
     !
     sedtra%dbodsd   = 0.0_fp
     !
@@ -1233,6 +1242,7 @@ subroutine clrsedtra(istat, sedtra)
     if (associated(sedtra%sinkse  ))   deallocate(sedtra%sinkse  , STAT = istat)
     if (associated(sedtra%sourse  ))   deallocate(sedtra%sourse  , STAT = istat)
     if (associated(sedtra%sour_im ))   deallocate(sedtra%sour_im , STAT = istat)
+    if (associated(sedtra%sink_im ))   deallocate(sedtra%sink_im , STAT = istat)
     !
     if (associated(sedtra%dbodsd  ))   deallocate(sedtra%dbodsd  , STAT = istat)
     !
@@ -1624,6 +1634,10 @@ subroutine nullmorpar(morpar)
     morpar%mornum%laterallyaveragedbedload = .false.
     morpar%mornum%maximumwaterdepth        = .false.
     morpar%mornum%maximumwaterdepthfrac    = 1.0d0 !by default, if `maximumwaterdepth=.true.`, `hs_mor=max(hs,hu)`, which is the old functionality. 
+    morpar%mornum%sink_theta=1.0_fp
+    morpar%mornum%sink_factor=1.0_fp
+    morpar%mornum%source_factor=1.0_fp
+    morpar%mornum%update_lts_flux=1
     !
     rmissval           = -999.0_fp
     imissval           = -999

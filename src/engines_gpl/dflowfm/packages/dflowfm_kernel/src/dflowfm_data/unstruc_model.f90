@@ -1094,6 +1094,7 @@ contains
       if (jatransportautotimestepdiff == 3 .and. kmx > 0) then
          call mess(LEVEL_ERROR, 'Implicit horizontaldiffusion is only implemented in 2D', 'set TransportAutoTimestepdiff = 0, 1 or 2')
       end if
+      call prop_get(md_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step)
 
       call prop_get(md_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D)
       if (Implicitdiffusion2D == 1) then
@@ -2742,7 +2743,7 @@ contains
       call prop_set(prop_ptr, 'geometry', 'Gulliesfile', trim(md_gulliesfile), 'Polyline file *_gul.pliz, containing lowest bed level along talweg x, y, z level')
       call prop_set(prop_ptr, 'geometry', 'Roofsfile', trim(md_roofsfile), 'Polyline file *_rof.pliz, containing roofgutter heights x, y, z level')
       if (len_trim(md_vertplizfile) > 0) then
-         call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layertype')
+      call prop_set(prop_ptr, 'geometry', 'VertplizFile', trim(md_vertplizfile), 'Vertical layering file *_vlay.pliz with rows x, y, Z, first Z, nr of layers, second Z, layer type')
       end if
       call prop_set(prop_ptr, 'geometry', 'ProflocFile', trim(md_proflocfile), 'Channel profile location file *_proflocation.xyz with rows x, y, z, profile number ref')
       call prop_set(prop_ptr, 'geometry', 'ProfdefFile', trim(md_profdeffile), 'Channel profile definition file *_profdefinition.def with definition for all profile numbers')
@@ -3038,6 +3039,7 @@ contains
       end if
 
       call prop_set(prop_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff, 'Auto Timestepdiff in Transport, 0 : lim diff, no lim Dt_tr, 1 : no lim diff, lim Dt_tr, 2: no lim diff, no lim Dt_tr, 3=implicit (only 2D)')
+      call prop_set(prop_ptr, 'numerics', 'transportLocalTimeStep', ja_transport_local_time_step, '0=no, 1=yes (default), 2=yes but all cells use the same local time step. Flag for local time stepping in the transport module')
       call prop_set(prop_ptr, 'numerics', 'Implicitdiffusion2D', Implicitdiffusion2D, '1 = Yes, 0 = No')
 
       call prop_set(prop_ptr, 'numerics', 'DiagnosticTransport', jadiagnostictransport, 'Diagnostic ("frozen") transport (0: prognostic transport, 1: diagnostic transport)')
@@ -3513,6 +3515,7 @@ contains
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
             call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
+            call prop_set(prop_ptr, 'sediment', 'SourSink', jasourcesink, 'Source-sink setting (0:off, 1:on (default), 2:only sources 3:only sinks')
          end if
 
          if (jased /= 4) then
@@ -3703,7 +3706,7 @@ contains
       call prop_set(prop_ptr, 'Time', 'dtFacMax', dt_fac_max, 'Max timestep increase factor ( )')
       call prop_set(prop_ptr, 'Time', 'dtInit', dt_init, 'Initial computation timestep (s)')
 
-      call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no, 1=see file *.steps')
+      call prop_set(prop_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis, '0=no (default), 1=yes')
 
       if (writeall .or. autotimestep /= AUTO_TIMESTEP_2D_OUT) then
          call prop_set(prop_ptr, 'Time', 'autoTimeStep', autotimestep, '0 = no, 1 = 2D (hor. out), 3=3D (hor. out), 5 = 3D (hor. inout + ver. inout), smallest dt')
@@ -4115,7 +4118,7 @@ contains
 
          if (line_copied) then
             write (MDIA, *) 'Until here copy of previous diagnostic file'
-         end if
+      end if
       end if
 
    end subroutine switch_dia_file

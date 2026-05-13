@@ -41,8 +41,12 @@ module m_comp_fluxhor3d
 
 contains
 
-   subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
-                             viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu, difsedsp, background_diffusion_factor)
+   subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, &
+                             q1, sqi, vol1, kbot, Lbot, &
+                             Ltop, kmxn, kmxL, sed, difsed, &
+                             sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, &
+                             jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu, & 
+                             difsedsp, background_diffusion_factor)
       use precision, only: dp
       use m_flowgeom, only: Lnx, ln, dxi, wcx1, wcy1, wcx2, wcy2, klnup, slnup, acl, csu, snu, Dx, nd, ndx
       use MessageHandling, only: msgbuf, mess, level_warn
@@ -387,7 +391,7 @@ contains
                         !    dsalL(L) =  min(0d0, max(dsalL(L), sed(j,k2) - sed(j,k1) ) )
                         !endif
                         flux(j, L) = flux(j, L) - fluxfac * dsalL(L)
-                     else if (j == Itemp) then
+                     else if (j == ITEMP) then
                         !if (dtemL(L) > 0 ) then
                         !    dtemL(L) =  max(0d0, min(dtemL(L), sed(j,k2) - sed(j,k1) ) )
                         !else if (dtemL(L) < 0 ) then

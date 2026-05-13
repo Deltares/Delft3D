@@ -26,38 +26,6 @@
 !  Deltares, and remain the property of Stichting Deltares. All rights reserved.
 !
 !-------------------------------------------------------------------------------
-
-!
-!
-
-!----- AGPL --------------------------------------------------------------------
-!
-!  Copyright (C)  Stichting Deltares, 2017-2026.
-!
-!  This file is part of Delft3D (D-Flow Flexible Mesh component).
-!
-!  Delft3D is free software: you can redistribute it and/or modify
-!  it under the terms of the GNU Affero General Public License as
-!  published by the Free Software Foundation version 3.
-!
-!  Delft3D  is distributed in the hope that it will be useful,
-!  but WITHOUT ANY WARRANTY; without even the implied warranty of
-!  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!  GNU Affero General Public License for more details.
-!
-!  You should have received a copy of the GNU Affero General Public License
-!  along with Delft3D.  If not, see <http://www.gnu.org/licenses/>.
-!
-!  contact: delft3d.support@deltares.nl
-!  Stichting Deltares
-!  P.O. Box 177
-!  2600 MH Delft, The Netherlands
-!
-!  All indications and logos of, and references to, "Delft3D",
-!  "D-Flow Flexible Mesh" and "Deltares" are registered trademarks of Stichting
-!  Deltares, and remain the property of Stichting Deltares. All rights reserved.
-!
-!-------------------------------------------------------------------------------
 !
 !
 !> This subroutine transports an array of scalars.
@@ -69,6 +37,8 @@
 !>   solves for each column {k | 1<=k<k=top} an equation of the form
 !>     aaj(k) sedj(k-1) + bbj(k) sedj(k) + ccj(k) sedj(k+1) = ddj(k)
 module m_update_constituents
+
+   use precision, only: dp
 
    implicit none
 
@@ -108,11 +78,13 @@ contains
       use m_alloc
       use m_partitioninfo
       use m_timer
-      use m_sediment, only: jatranspvel, jased, stmpar, stm_included
+      use m_sediment, only: jatranspvel, jased, stmpar, stm_included, sedtra
       use m_waves
       use timers
       use mass_balance_areas_routines, only: comp_horfluxmba
       use m_get_Lbot_Ltop
+      use m_fm_erosed, only: morfac
+      use messagehandling, only: LEVEL_INFO, mess
 
       implicit none
 
@@ -122,8 +94,12 @@ contains
 
       integer :: limtyp !< limiter type (>0), or first-order upwind (0)
       real(kind=dp) :: dts_store
+      real(kind=dp) :: bed_exchange_source
+      real(kind=dp) :: bed_exchange_sink
 
       integer :: LL, L, j, numconst_store, Lb, Lt
+      integer :: kk, jsed, ksed
+      integer :: imba
       integer :: istep
       integer :: numstepssync
 
@@ -149,10 +125,10 @@ contains
          call fill_constituents(1)
       end if
 
-!  compute areas of horizontal diffusive fluxes divided by Dx
+!     compute areas of horizontal diffusive fluxes divided by Dx
       call comp_dxiAu()
 
-!  get maximum transport time step
+!     get maximum transport time step
       call get_dtmax()
 
       call get_ndeltasteps()
@@ -161,7 +137,7 @@ contains
       dts_store = dts
 
 !  set dts to smallest timestep
-      dts = dts / nsubsteps
+      dts = dts / real(nsubsteps, kind=dp)
 
       if (jampi /= 0) then
 !     determine at which sub timesteps to update
@@ -172,14 +148,15 @@ contains
          end if
       end if
 
+      jaupdatehorflux = 1
       jaupdate = 1
-
       fluxhor = 0.0_dp ! not necessary
       sumhorflux = 0.0_dp
 
       if (stm_included) then
          fluxhortot = 0.0_dp
          sinksetot = 0.0_dp
+         sourimtot = 0.0_dp
          sinkftot = 0.0_dp
          u1sed = 0.0_dp
          q1sed = 0.0_dp
@@ -190,44 +167,50 @@ contains
             fluxver = 0.0_dp
          end if
 
-!     determine which fluxes need to be updated
+!     determine which cells need to be updated for the current substep
          if (nsubsteps > 1) then
-            call get_jaupdatehorflux(nsubsteps, limtyp, jaupdate, jaupdatehorflux)
+            call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
          end if
 
+!     determine which fluxes need to be updated in a second step
+         if (nsubsteps > 1) then
+            call get_jaupdatehorflux(limtyp, jaupdate, jaupdatehorflux)
+         end if
+         if (istep == 0 .or. stmpar%morpar%mornum%update_lts_flux == 1) then
 !     compute horizontal fluxes, explicit part
-         if ((.not. stm_included) .or. flow_without_waves) then ! just do the normal stuff
-            call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
-         else
-            if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
-               ! only add velocity asymmetry
-               do LL = 1, Lnx
-                  call getLbotLtop(LL, Lb, Lt) ! prefer this, as Ltop gets messed around with in hk specials
-                  do L = Lb, Lt
-                     u1sed(L) = u1(L) !+mtd%uau(LL)                    ! JRE to do, discuss with Dano
-                     q1sed(L) = q1(L) !+mtd%uau(LL)*Au(L)
+            if ((.not. stm_included) .or. flow_without_waves) then ! just do the normal stuff
+               call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+            else
+               if (jatranspvel == 0 .or. jatranspvel == 1) then ! Lagrangian approach
+                  ! only add velocity asymmetry
+                  do LL = 1, Lnx
+                     call getLbotLtop(LL, Lb, Lt) ! prefer this, as Ltop gets messed around with in hk specials
+                     do L = Lb, Lt
+                        u1sed(L) = u1(L) !+mtd%uau(LL)                    ! JRE to do, discuss with Dano
+                        q1sed(L) = q1(L) !+mtd%uau(LL)*Au(L)
+                     end do
                   end do
-               end do
-            else if (jatranspvel == 2) then ! Eulerian approach
+               else if (jatranspvel == 2) then ! Eulerian approach
 !           stokes+asymmetry
-               do LL = 1, Lnx
-                  call getLbotLtop(LL, Lb, Lt)
-                  do L = Lb, Lt
-                     u1sed(L) = u1(L) - ustokes(L) !+mtd%uau(LL)
-                     q1sed(L) = q1(L) - ustokes(L) * Au(L) !+mtd%uau(LL)*Au(L)
+                  do LL = 1, Lnx
+                     call getLbotLtop(LL, Lb, Lt)
+                     do L = Lb, Lt
+                        u1sed(L) = u1(L) - ustokes(L) !+mtd%uau(LL)
+                        q1sed(L) = q1(L) - ustokes(L) * Au(L) !+mtd%uau(LL)*Au(L)
+                     end do
                   end do
-               end do
-            end if
-            call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1sed, q1sed, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, noupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+               end if
+               call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1sed, q1sed, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, noupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
 !        water advection velocity
-            call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+               call comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, constituents, difsedu, sigdifi, viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, fluxhor, dsedx, dsedy, jalimitdiff, dxiAu)
+            end if
          end if
 
          call starttimer(IDEBUG)
          call comp_sumhorflux(NUMCONST, kmx, Lnkx, Ndkx, Lbot, Ltop, fluxhor, sumhorflux)
          call stoptimer(IDEBUG)
 
-         if (jased == 4 .and. stmpar%lsedsus > 0) then ! at moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
+         if (jased == 4 .and. stmpar%lsedsus > 0) then ! at the moment, this function is only required by suspended sediment. Can be extended to other fluxes if necessary
             call comp_horfluxtot()
          end if
 
@@ -235,10 +218,11 @@ contains
             call comp_horfluxmba()
          end if
 
-!     determine which cells need to be updated
-         if (nsubsteps > 1) then
-            call get_jaupdate(istep, Ndxi, Ndx, ndeltasteps, jaupdate)
+         if (jarhoonly == 0) then
+            call fill_constituents(1)
          end if
+
+         call comp_sinktot(1)
 
          if (kmx < 1) then ! 2D, call to 3D as well for now
             call solve_2D(NUMCONST, Ndkx, vol1, kbot, ktop, sumhorflux, fluxver, const_sour, const_sink, nsubsteps, jaupdate, ndeltasteps, constituents, rhs)
@@ -269,9 +253,10 @@ contains
             end if
          end if
 
-         call comp_sinktot()
+         call comp_sinktot(2)
 
-      end do
+      end do ! substeps
+      !
       if (jalimitdiff == 3 .and. kmx == 0) then
          call diffusionimplicit2D()
       end if
@@ -280,7 +265,28 @@ contains
          do j = ISED1, ISEDN
             fluxhortot(j, :) = fluxhortot(j, :) / dts_store
             sinksetot(j, :) = sinksetot(j, :) / dts_store
+            sourimtot(j, :) = sourimtot(j, :) / dts_store
             sinkftot(j, :) = sinkftot(j, :) / dts_store
+         end do
+      end if
+
+      if (stm_included .and. jased == 4 .and. stmpar%lsedsus > 0 .and. jarhoonly == 0) then
+         do kk = 1, Ndxi
+            do jsed = 1, stmpar%lsedsus
+               j = ISED1 + jsed - 1
+               ksed = sedtra%kmxsed(kk, jsed)
+               if (ksed > 0) then
+                  if (jamba > 0 .and. allocated(mbasedsusexch)) then
+                     imba = mbadefdomain(kk)
+                     if (imba > 0) then
+                        bed_exchange_source = vol1(ksed) * (sedtra%sourse(kk, jsed)+sourimtot(j, kk)) * dts_store * morfac
+                        bed_exchange_sink = sinksetot(j, kk) * dts_store * morfac
+                        mbasedsusexch(1, j, imba) = mbasedsusexch(1, j, imba) + bed_exchange_source
+                        mbasedsusexch(2, j, imba) = mbasedsusexch(2, j, imba) + bed_exchange_sink
+                     end if
+                  end if
+               end if
+            end do
          end do
       end if
 

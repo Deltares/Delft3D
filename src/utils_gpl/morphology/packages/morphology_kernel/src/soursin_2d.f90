@@ -1,6 +1,7 @@
 subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
                     & ws        ,tsd       ,rsedeq    ,factsd    , &
-                    & sour_ex   ,sour_im   ,sink      )
+                    & sink_theta,source_factor,sink_factor,& 
+                    & sour_ex   ,sink_ex   ,sink_im)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -54,10 +55,13 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     real(fp), intent(in)  :: ws
     real(fp), intent(in)  :: factsd
     real(fp)              :: tsd
+    real(fp)              :: sink_theta
+    real(fp)              :: sink_factor
+    real(fp)              :: source_factor
     real(fp), intent(in)  :: rsedeq
     real(fp), intent(out) :: sour_ex
-    real(fp), intent(out) :: sour_im
-    real(fp), intent(out) :: sink
+    real(fp), intent(out) :: sink_ex
+    real(fp), intent(out) :: sink_im
 !
 ! Local variables
 !
@@ -71,6 +75,7 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     real(fp) :: x
     real(fp) :: x2
     real(fp) :: x3
+    
 !
 !! executable statements -------------------------------------------------------
 !
@@ -78,8 +83,8 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
     eps        = 1e-6_fp
     !
     wsl = max(1.0e-3_fp,ws)
-    if (umod > eps .and. ustarc > eps) then
-       if (tsd <= 0.0) then
+    if (umod > eps .and. ustarc > eps .and. factsd>0.0_fp) then
+       if (tsd <= 0.0_fp) then
           !
           ! tsd not given by user transport formula
           ! compute it using the Galappatti formulations
@@ -108,14 +113,14 @@ subroutine soursin_2d(umod      ,ustarc    ,h0        ,h1        , &
           ! tsd given by user transport formula
           !
        endif
-       hots = wsl/(tsd*factsd)
-       sour_ex = rsedeq*hots/h0
-       sour_im = (hots-wsl)/h1
-       sink    = wsl/h1
+       hots = wsl/(tsd*factsd)  ! (hots = h over ts)
+       sour_ex = source_factor*rsedeq*hots/h0
+       sink_ex = sink_factor*(1.0_fp - sink_theta)*hots/h0
+       sink_im = sink_factor*sink_theta*hots/h1
     else
        sour_ex = 0.0_fp
-       sour_im = 0.0_fp
-       sink = wsl/h1
+       sink_ex = sink_factor*(1.0_fp - sink_theta)*wsl/h0  ! pure settling, no adaptation
+       sink_im = sink_factor*sink_theta * wsl/h1
     endif
 end subroutine soursin_2d
 

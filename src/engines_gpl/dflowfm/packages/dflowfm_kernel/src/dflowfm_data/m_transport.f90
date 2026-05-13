@@ -75,9 +75,11 @@ module m_transport
    use m_transportdata !separation to get rid of all those use only: checks
 
    real(kind=dp), dimension(:, :), allocatable :: fluxhor ! horizontal fluxes
+   real(kind=dp), dimension(:, :), allocatable :: fluxhor2 ! horizontal fluxes after use
    real(kind=dp), dimension(:, :), allocatable :: fluxver ! vertical   fluxes
    real(kind=dp), dimension(:, :), allocatable :: fluxhortot ! sum of horizontal fluxes (fluxhor) at local time stepping
    real(kind=dp), dimension(:, :), allocatable :: sinksetot ! sum of sed sinks at local time stepping
+   real(kind=dp), dimension(:, :), allocatable :: sourimtot ! sum of implicit suspended source correction at local time stepping
    real(kind=dp), dimension(:, :), allocatable :: sinkftot ! sum of  fluff sinks at local time stepping
 
    real(kind=dp), dimension(:), allocatable :: thetavert ! vertical advection fluxes explicit (0) or implicit (1)
@@ -100,6 +102,7 @@ module m_transport
    real(kind=dp), dimension(:, :), allocatable :: sumhorflux !< sum of horizontal fluxes, dim(NUMCONST,Ndkx)
    integer :: nsubsteps !< total number of substeps
    integer, dimension(:), allocatable :: ndeltasteps !< cell-based number of subtimesteps between updates, dim(Ndx)
+   real(kind=dp), dimension(:), allocatable :: deltaflux !< link-based factor for summing fluxes due to subtimesteps, dim(Lnx)
    integer, dimension(:), allocatable :: jaupdate !< update cell (1) or not (0), dim(Ndx)
    integer, dimension(:), allocatable :: jaupdatehorflux !< update horizontal flux (1) or not (0), dim(Lnx)
    real(kind=dp), dimension(:), allocatable :: dtmax !< maximum local time-step (for water columns)

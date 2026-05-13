@@ -104,13 +104,13 @@ contains
       !
       inquire (file=trim(md_sedfile), exist=ex)
       if (.not. ex) then
-         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - *.sed file in mdu file does not exist.')
+         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - [Sediment] sedFile "'//trim(md_sedfile)//'" in mdu file does not exist.')
          return
       end if
 
       inquire (file=trim(md_morfile), exist=ex)
       if (.not. ex) then
-         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - *.mor file in mdu file does not exist.')
+         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - [Sediment] morFile "'//trim(md_morfile)//'" in mdu file does not exist.')
          return
       end if
 

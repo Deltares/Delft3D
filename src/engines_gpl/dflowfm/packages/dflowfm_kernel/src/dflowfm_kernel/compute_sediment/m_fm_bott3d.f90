@@ -249,14 +249,14 @@ contains
             ! 
             if (stmpar%morlyr%settings%imobility > MOBILITY_OFF) then 
                call compmobile(stmpar%morlyr, ag, sedd50, taub, rhosol, rhomean, hidexp)
-            endif    
+            endif
             ! 
             if (stmpar%morlyr%settings%crslyr) then 
                !
                ! Compute average bed load transport in cel
                ! 
                sbtot(:, :) = hypot(sbcx(:, :), sbcy(:, :)) !sbtot(:, :) = sqrt(sbcx(:, :) * sbcx(:, :) + sbcy(:, :) * sbcy(:, :))
-            endif 
+            endif
             !
             ! Update layers and obtain the depth change
             !
@@ -294,7 +294,7 @@ contains
          if (stmpar%morpar%moroutput%morstats) then
             if (comparereal(time1, ti_seds, EPS10) >= 0) then
                morstatt0 = morft
-            end if
+         end if
          end if
          !
          call fm_blchg_no_cmpupd() !Compute bed level changes without actually updating the bed composition
@@ -834,7 +834,7 @@ contains
                if (jampi == 1) then
                   if (.not. (idomain(k2) == my_rank)) then
                      cycle ! internal cells at boundary are in the same domain as the link
-                  end if
+               end if
                end if
                if (u1(lm) < 0.0_dp) then
                   cycle
@@ -861,7 +861,7 @@ contains
                   if (jampi == 1) then
                      if (.not. (idomain(k2) == my_rank)) then
                         cycle
-                     end if
+                  end if
                   end if
                   sbsum = sbsum + bc_mor_array(li) * wu_mor(lm) ! sum the total bedload flux throughout boundary
                end do
@@ -964,7 +964,7 @@ contains
       use m_fm_erosed, only: nd => nd_mor, sedtyp, depfac, max_mud_sedtyp, ndx => ndx_mor
       use m_sediment, only: avalflux, ssccum
       use m_flowtimes, only: dts, dnt
-      use m_transport, only: fluxhortot, ised1, sinksetot, sinkftot
+         use m_transport, only: fluxhortot, ised1, sinksetot, sourimtot, sinkftot
       use unstruc_files, only: mdia
       use m_get_kbot_ktop
       use m_get_Lbot_Ltop
@@ -1024,6 +1024,7 @@ contains
             trndiv = 0_dp
             sedflx = 0_dp
             eroflx = 0_dp
+            !
             !FM1DIMP2DO: I do not like this, but I cannot think of a better way.
             !The added flownodes at junctions are after the boundary ghost nodes.
             !We have to skip the boundaries but loop over the added flownodes.
@@ -1080,7 +1081,7 @@ contains
                   thick1 = vol1(k) * bai_mor(nm)
                   ! no fluff, everything to bed layer
                   if (iflufflyr == 0) then
-                     sedflx = sinksetot(j, nm) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
+                     sedflx = (sinksetot(j, nm) + sourimtot(j, nm)) * bai_mor(nm) + ssccum(l, nm) ! kg/s/m2
                   else
                      !
                      ! Update sedflx icw fluff layer
@@ -1089,7 +1090,7 @@ contains
                      mfluff(l, nm) = mfluff(l, nm) + dts * (sinkftot(j, nm) * bai_mor(nm) - sourf(l, nm) * thick1)
                      !
                      ! 2. sand to bed layer
-                     sedflx = sinksetot(j, nm) * bai_mor(nm)
+                     sedflx = (sinksetot(j, nm) + sourimtot(j, nm)) * bai_mor(nm)
                      !
                      ! 3. in case of drying cell, assign mass to the appropriate layer (fluff/bed)
                      if (ssccum(l, nm) > 0.0_fp) then

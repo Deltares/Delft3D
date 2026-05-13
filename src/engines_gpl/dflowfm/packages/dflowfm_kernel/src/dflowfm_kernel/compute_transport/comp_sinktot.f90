@@ -40,19 +40,24 @@ module m_comp_sinktot
 
 contains
 
-   subroutine comp_sinktot()
-      use m_transport, only: ised1, isedn, sinksetot, constituents, sinkftot
+   subroutine comp_sinktot(comp_sinktot_method)
+      use m_transport, only: ised1, isedn, sinksetot, sourimtot, constituents, sinkftot, &
+                           & jaupdate, ndeltasteps
       use m_sediment, only: stm_included, mxgr, sedtra, stmpar
       use timers, only: timon, timstrt, timstop
       use m_flow, only: vol1, kmx
       use m_flowgeom, only: ndx
       use m_flowtimes, only: dts
+      use precision, only: dp
 
       implicit none
 
+      integer, intent(in) :: comp_sinktot_method !< 1: before substep solve, 2: after substep solve
+      
       integer :: k, j, ll
 
       integer(4) :: ithndl = 0
+      real(kind=dp) :: dt_loc
 
       if (.not. stm_included) then
          return
@@ -64,28 +69,73 @@ contains
          call timstrt("comp_sinktot", ithndl)
       end if
 
-      if (kmx < 1) then ! 2D
-         do k = 1, ndx
-            do j = ISED1, ISEDN
-               ll = j - ISED1 + 1
-               sinksetot(j, k) = sinksetot(j, k) + vol1(k) * sedtra%sinkse(k, ll) * constituents(j, k) * dts
-               if (stmpar%morpar%flufflyr%iflufflyr > 0) then
-                  sinkftot(j, k) = sinkftot(j, k) + vol1(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dts
+      if (comp_sinktot_method == 1) then 
+         if (kmx < 1) then ! 2D
+            do k = 1, ndx
+               if (jaupdate(k) == 0) then
+                  cycle
+               else
+                  dt_loc = dts * ndeltasteps(k)
                end if
+               do j = ISED1, ISEDN
+                  ll = j - ISED1 + 1
+                  sinksetot(j, k) = sinksetot(j, k) + vol1(k) * sedtra%sinkse(k, ll) * constituents(j, k) * dt_loc
+                  !if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                  !   sinkftot(j, k) = sinkftot(j, k) + vol0(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dts
+                  !end if
+               end do
             end do
-         end do
-      else ! 3D
-         do k = 1, ndx
-            do j = ISED1, ISEDN
-               ll = j - ISED1 + 1
-               sinksetot(j, k) = sinksetot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sinkse(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dts
-               if (stmpar%morpar%flufflyr%iflufflyr > 0) then
-                  sinkftot(j, k) = sinkftot(j, k) + vol1(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dts
+         else ! 3D
+            do k = 1, ndx
+               if (jaupdate(k) == 0) then
+                  cycle
+               else
+                  dt_loc = dts * ndeltasteps(k)
                end if
+               do j = ISED1, ISEDN
+                  ll = j - ISED1 + 1
+                  sinksetot(j, k) = sinksetot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sinkse(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
+                  !if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                  !   sinkftot(j, k) = sinkftot(j, k) + vol0(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dts
+                  !end if
+               end do
             end do
-         end do
-      end if
-
+         end if
+      else if (comp_sinktot_method == 2) then
+         if (kmx < 1) then ! 2D
+            do k = 1, ndx
+            if (jaupdate(k) == 0) then
+               cycle
+            else
+               dt_loc = dts * ndeltasteps(k)
+            end if
+            do j = ISED1, ISEDN
+                  ll = j - ISED1 + 1
+                  sinksetot(j, k) = sinksetot(j, k) + vol1(k) * sedtra%sink_im(k, ll) * constituents(j, k) * dt_loc
+                  sourimtot(j, k) = sourimtot(j, k) + vol1(k) * sedtra%sour_im(k, ll) * constituents(j, k) * dt_loc
+                  if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                     sinkftot(j, k) = sinkftot(j, k) + vol1(k) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, k) * dt_loc
+                  end if
+               end do
+            end do
+         else ! 3D
+            do k = 1, ndx
+               if (jaupdate(k) == 0) then
+                  cycle
+               else
+                  dt_loc = dts * ndeltasteps(k)
+               end if
+               do j = ISED1, ISEDN
+                  ll = j - ISED1 + 1
+                  sinksetot(j, k) = sinksetot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sink_im(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
+                  sourimtot(j, k) = sourimtot(j, k) + vol1(sedtra%kmxsed(k, ll)) * sedtra%sour_im(k, ll) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
+                  if (stmpar%morpar%flufflyr%iflufflyr > 0) then
+                     sinkftot(j, k) = sinkftot(j, k) + vol1(sedtra%kmxsed(k, ll)) * stmpar%morpar%flufflyr%sinkf(ll, k) * constituents(j, sedtra%kmxsed(k, ll)) * dt_loc
+                  end if
+               end do
+            end do
+         end if
+      end if 
       if (timon) then
          call timstop(ithndl)
       end if
