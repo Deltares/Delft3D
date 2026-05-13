@@ -759,6 +759,14 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
+      ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
+      integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
+      integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
+
+      ! Salinity and temperature vertical Forester filter is turned off by default (value 0)
+      max_iterations_vertical_forester_sal = 0
+      max_iterations_vertical_forester_tem = 0
+
       istat = 0 ! Success
 
       ! Put .mdu file into a property tree

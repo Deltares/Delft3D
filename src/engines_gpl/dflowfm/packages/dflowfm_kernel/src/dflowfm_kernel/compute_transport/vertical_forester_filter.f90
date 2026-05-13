@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_forester_filter
+module m_vertical_forester_filter
    use precision, only: dp
    use m_flow, only: ndkx
    use m_transportdata, only: constituents, numconst, const_names
@@ -36,12 +36,12 @@ module m_forester_filter
 
    private
 
-   public :: do_forester_filter_all_constituents
+   public :: apply_vertical_forester_filter_to_all_constituents
 
 contains
 
    !> Applies the Forester vertical filter to all constituents in the model
-   subroutine do_forester_filter_all_constituents()
+   subroutine apply_vertical_forester_filter_to_all_constituents()
       use m_flow, only: kbot, ktop, max_iterations_vertical_forester, vol1, kmxn
       use timers, only: timon, timstrt, timstop
       use m_flowgeom, only: ndxi
@@ -59,7 +59,7 @@ contains
 
       ! Start timer for Forester filter if timing is enabled
       if (timon) then
-         call timstrt("do_forester_filter_all_constituents", timer_handle)
+         call timstrt("apply_vertical_forester_filter_to_all_constituents", timer_handle)
       end if
 
       ! Loop over flow cells and apply the Forester vertical filter for all constituents in each vertical column of flow cells
@@ -75,7 +75,7 @@ contains
                cycle 
             end if
 
-            call do_forester_filter_per_column_and_constituent(i_constituent, vol1(i_bottom_layer:), number_of_layers, kmxn(i_flowcell), i_bottom_layer, max_iterations_vertical_forester)
+            call apply_vertical_forester_filter_per_column_and_constituent(i_constituent, vol1(i_bottom_layer:), number_of_layers, kmxn(i_flowcell), i_bottom_layer, max_iterations_vertical_forester)
          end do
       end do
 
@@ -84,10 +84,10 @@ contains
          call timstop(timer_handle)
       end if
 
-   end subroutine do_forester_filter_all_constituents
+   end subroutine apply_vertical_forester_filter_to_all_constituents
 
    !> Applies the Forester vertical filter to a single constituent in a vertical column of flow cells
-   subroutine do_forester_filter_per_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations)
+   subroutine apply_vertical_forester_filter_per_column_and_constituent(i_constituent, cell_volume, number_of_layers, number_of_active_layers, i_bottom_layer, max_iterations)
       use m_flow, only: EPS6, EPS10
 
       ! Parameters
@@ -147,6 +147,6 @@ contains
          constituents(i_constituent, i_bottom_layer + number_of_layers:i_bottom_layer + number_of_active_layers - 1) = updated_constituent(number_of_layers)
       end if
 
-   end subroutine do_forester_filter_per_column_and_constituent
+   end subroutine apply_vertical_forester_filter_per_column_and_constituent
 
-end module m_forester_filter
+end module m_vertical_forester_filter
