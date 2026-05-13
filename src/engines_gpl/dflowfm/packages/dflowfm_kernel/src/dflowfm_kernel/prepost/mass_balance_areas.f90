@@ -768,13 +768,11 @@ contains
       end do
 
       do n = 1, num_source_sink
-         qsrck = source_sink_water_discharge(n)
-         if (qsrck > 0) then
-            if (mbasorsin(2, n) /= 0) then
+         if (mbasorsin(2, n) /= 0 .or. mbasorsin(1, n) /= 0) then
+            qsrck = source_sink_water_discharge(n)
+            if (qsrck > 0) then
                mbaflowsorsin(2, n) = mbaflowsorsin(2, n) + qsrck * dts
-            end if
-         else if (qsrck < 0) then
-            if (mbasorsin(1, n) /= 0) then
+            else if (qsrck < 0) then
                mbaflowsorsin(1, n) = mbaflowsorsin(1, n) - qsrck * dts
             end if
          end if
