@@ -80,32 +80,33 @@ namespace pre_c_sumo
             const auto mapping_index = static_cast<std::size_t>(index);
             DiffuserMapping& mapping = csumo_2d_mesh.forward_map[mapping_index];
 
-            // Lambda function to obtain the value of a 2D quantity for an ambient point, given the quantity name and
-            // the ambient point index (0-based). 3D is handled by the makePoint function, which reads the layered data
-            // for all z-coordinates of the point.
-            auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
-                                         const std::string_view& name, const std::size_t& ambient_point_index) {
-                return quantities[name][m.first_ambient_point_index + ambient_point_index];
-            };
+            //// Lambda function to obtain the value of a 2D quantity for an ambient point, given the quantity name and
+            //// the ambient point index (0-based). 3D is handled by the makePoint function, which reads the layered
+            ///data / for all z-coordinates of the point.
+            // auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
+            //                              const std::string_view& name, const std::size_t& ambient_point_index) {
+            //     return quantities[name][m.first_ambient_point_index + ambient_point_index];
+            // };
 
-            // Idem: Lambda function for the diffuser
-            auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
-                                          const std::string_view& name) { return quantities[name][m.diffuser_index]; };
+            //// Idem: Lambda function for the diffuser
+            // auto get_diffuser_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
+            //                               const std::string_view& name) { return quantities[name][m.diffuser_index];
+            //                               };
 
-            // Idem: Lambda function for the intake (if present)
-            auto get_intake_value = [&quantities = csumo_2d_mesh.quantities,
-                                     &m = mapping](const std::string_view& name) {
-                return m.has_intake ? quantities[name][m.intake_index] : 0.0;
-            };
+            //// Idem: Lambda function for the intake (if present)
+            // auto get_intake_value = [&quantities = csumo_2d_mesh.quantities,
+            //                          &m = mapping](const std::string_view& name) {
+            //     return m.has_intake ? quantities[name][m.intake_index] : 0.0;
+            // };
 
             // Collect all data for the ambient points
             std::vector<FarFieldPoint2D> ambient_points{};
             for (const auto& [position_index, ambient_point] : diffuser.ambient_positions | std::views::enumerate)
             {
+                const std::size_t ambient_index =
+                    static_cast<std::size_t>(position_index) + mapping.first_ambient_point_index;
                 ambient_points.emplace_back(makePoint(
-                    position_index + mapping.first_ambient_point_index,
-                    (position_index + mapping.first_ambient_point_index) * csumo_3d_mesh.number_of_zcoordinates,
-                    csumo_2d_mesh, csumo_3d_mesh));
+                    ambient_index, (ambient_index)*csumo_3d_mesh.number_of_zcoordinates, csumo_2d_mesh, csumo_3d_mesh));
             }
 
             const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,

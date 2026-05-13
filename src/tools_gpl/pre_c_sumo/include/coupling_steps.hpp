@@ -28,11 +28,11 @@ namespace pre_c_sumo
 
     struct DiffuserMapping
     {
-        size_t diffuser_index;
+        std::size_t diffuser_index;
         bool has_intake;
-        size_t intake_index;
-        size_t number_of_ambient_points;
-        size_t first_ambient_point_index;
+        std::size_t intake_index;
+        std::size_t number_of_ambient_points;
+        std::size_t first_ambient_point_index;
     };
 
     struct Mesh
@@ -41,8 +41,8 @@ namespace pre_c_sumo
         std::vector<double> coordinates;
         std::vector<int> vertex_ids;
         std::vector<DiffuserMapping> forward_map;
-        size_t number_of_nodes;
-        size_t number_of_zcoordinates;
+        std::size_t number_of_nodes;
+        std::size_t number_of_zcoordinates;
         std::unordered_map<std::string_view, std::vector<double>> quantities;
     };
 

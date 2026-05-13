@@ -53,14 +53,14 @@ namespace
     Mesh getMesh2D3D(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings,
                      const ZSpecification& z_spec)
     {
-        const int dimensions = z_spec.numberOfDimensions();
+        const std::size_t dimensions = z_spec.numberOfDimensions();
         Mesh mesh = {};
         mesh.name = csumo_mesh_name;
         mesh.number_of_zcoordinates = z_spec.numberOfZCoordinates();
         for (const DiffuserSettings& diffuser : csumo_settings.diffusers())
         {
             const std::size_t diffuser_index_mapping = mesh.coordinates.size() / dimensions;
-            for (int i = 0; i < mesh.number_of_zcoordinates; ++i)
+            for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
             {
                 mesh.coordinates.emplace_back(diffuser.position.x_coordinate); // diffuser position x
                 mesh.coordinates.emplace_back(diffuser.position.y_coordinate); // diffuser position y
@@ -72,7 +72,7 @@ namespace
 
             if (diffuser.intake.has_value()) // (optional intake)
             {
-                for (int i = 0; i < mesh.number_of_zcoordinates; ++i)
+                for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
                 {
                     mesh.coordinates.emplace_back(diffuser.intake.value().x_coordinate); // intake point x
                     mesh.coordinates.emplace_back(diffuser.intake.value().y_coordinate); // intake point y
@@ -85,7 +85,7 @@ namespace
 
             for (const parsing_utils::Point2D& position : diffuser.ambient_positions)
             {
-                for (int i = 0; i < mesh.number_of_zcoordinates; ++i)
+                for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
                 {
                     mesh.coordinates.emplace_back(position.x_coordinate);
                     mesh.coordinates.emplace_back(position.y_coordinate);

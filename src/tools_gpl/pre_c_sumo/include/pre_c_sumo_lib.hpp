@@ -3,6 +3,7 @@
 #include <expected>
 
 #include <string_view>
+#include <assert.h>
 #include "csumo_settings_reader.hpp"
 
 namespace pre_c_sumo
@@ -24,7 +25,7 @@ namespace pre_c_sumo
         /**
          * @brief Return the number of spatial dimensions represented by this spec.
          */
-        int numberOfDimensions() const
+        std::size_t numberOfDimensions() const
         {
             if (is_2d)
             {
@@ -39,7 +40,7 @@ namespace pre_c_sumo
         /**
          * @brief Return the number of discrete z coordinates / layers.
          */
-        int numberOfZCoordinates() const
+        std::size_t numberOfZCoordinates() const
         {
             if (is_2d)
             {
@@ -47,14 +48,16 @@ namespace pre_c_sumo
             }
             else
             {
-                return static_cast<int>((z_max - z_min) / z_step) + 1;
+                assert(z_step > 0);
+                assert(z_max >= z_min);
+                return static_cast<std::size_t>((z_max - z_min) / z_step) + 1;
             }
         }
 
         /**
          * @brief Get the z coordinate at a given layer index.
          */
-        double zCoordinateAt(int z_index) const
+        double zCoordinateAt(std::size_t z_index) const
         {
             if (is_2d)
             {
@@ -62,7 +65,7 @@ namespace pre_c_sumo
             }
             else
             {
-                return z_min + z_index * z_step;
+                return z_min + static_cast<double>(z_index) * z_step;
             }
         }
     };
