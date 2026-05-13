@@ -27,7 +27,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_vertical_forester_filter
+module m_vertical_forester_filter_dflowfm ! _dflowfm suffix added to avoid name clash with WAQ module
    use precision, only: dp
    use m_flow, only: ndkx
    use m_transportdata, only: constituents, numconst, const_names
@@ -149,4 +149,4 @@ contains
 
    end subroutine apply_vertical_forester_filter_per_column_and_constituent
 
-end module m_vertical_forester_filter
+end module m_vertical_forester_filter_dflowfm

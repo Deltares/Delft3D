@@ -57,7 +57,7 @@ contains
    !> extract constituent array and limits values if needed
    subroutine extract_constituents()
       use precision, only: dp, fp
-      use m_vertical_forester_filter, only: apply_vertical_forester_filter_to_all_constituents
+      use m_vertical_forester_filter_dflowfm, only: apply_vertical_forester_filter_to_all_constituents
       use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, temperature_model, &
                                   TEMPERATURE_MODEL_NONE, max_iterations_vertical_forester
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
