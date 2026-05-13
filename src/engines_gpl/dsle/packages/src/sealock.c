@@ -274,7 +274,7 @@ static void sealock_step_constituents_phase_wise(sealock_state_t *lock, const ds
       } else {
         double lam_c = flushing_discharge / volume_lock_before;
         c_lock_new = c_lake + (c_lock - c_lake) * exp(-lam_c * lock->phase_args.duration);
-        double c_mass_out = (c_lock - c_lock_new) * volume_lock_before;
+        double c_mass_out = (c_lock - c_lock_new) * volume_lock_before + c_lake * tp->volume_from_lake;
         c_to_sea = tp->volume_to_sea > DBL_EPSILON ? c_mass_out / tp->volume_to_sea : c_lock;
       }
       c_to_lake = c_lock_new;

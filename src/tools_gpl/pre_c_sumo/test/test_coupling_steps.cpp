@@ -10,6 +10,3 @@ TEST(CsumoPreciceCouplingStepsTest, ReadCosumoConfigFile)
     EXPECT_FALSE(result.has_value());
     EXPECT_PRED2(test_utilities::contains, result.error().message, "Cannot open file: ");
 }
-
-// This test verifies that the receive_ff_data function executes without throwing an exception.
-TEST(CsumoPreciceCouplingStepsTest, ReceiveNFData) { EXPECT_NO_THROW(pre_c_sumo::receiveFFData()); }

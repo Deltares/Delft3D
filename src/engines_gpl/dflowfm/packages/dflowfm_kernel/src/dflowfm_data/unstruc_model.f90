@@ -428,6 +428,7 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
+      use m_default1d2d, only: add_default_cross_sections_for_1d2d_links
       use m_readCrossSections, only: readCrossSectionDefinitions
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
@@ -509,6 +510,7 @@ contains
       ! set administration arrays and fill cross section list. So getbobs for 1d can be called.
       call timstrt('Initialise 1d administration', timerHandle)
       call initialize_1dadmin(network, network%numl, numl)
+      call add_default_cross_sections_for_1d2d_links(network)
       call timstop(timerHandle)
 
       if (getMaxErrorLevel() >= LEVEL_ERROR) then
