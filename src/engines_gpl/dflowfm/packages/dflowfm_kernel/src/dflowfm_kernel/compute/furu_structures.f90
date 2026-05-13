@@ -7,7 +7,7 @@
 !  Delft3D is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
 !  published by the Free Software Foundation version 3.
-!
+!f
 !  Delft3D  is distributed in the hope that it will be useful,
 !  but WITHOUT ANY WARRANTY; without even the implied warranty of
 !  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -106,7 +106,6 @@ contains
                if (hu(l) > 0) then
                   k1 = ln(1, L)
                   k2 = ln(2, L)
-
                   select case (network%sts%struct(istru)%type)
                   case (ST_GENERAL_ST)
                      firstiter = .true.
