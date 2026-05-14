@@ -13,4 +13,3 @@
 
 /*Product definition*/
 #define PRODUCT_NAME "D-SLE"
-

@@ -65,7 +65,7 @@ module unstruc_model
    ! 1.08 (2019-07-27): Default option for density changed from Eckart to UNESCO (idensform=2 instead of 1)
    ! 1.07 (2019-06-13): Renamed [model] block as [General] block, replace keyword MDUFormatVersion by FileVersion
    ! 1.06 (2016-05-16): Removed 1 variable for secondary flow, EffectSpiral as it is given by Espir contained in .mor file
-   ! 1.05 (2015-07-22): The structure parameters are added (jahisstr, jahisdam, jahispump, jahisgate)
+   ! 1.05 (2015-07-22): The structure parameters are added (jahisstr, jahisdam, his_write_settings%pump, his_write_settings%gate)
    ! 1.04 (2015-03-19): Anti-Creep option is added
    ! 1.03 (2015-02-25): Added 2 variable for secondary flow, EffectSpiral and BetaSpiral
    ! 1.02 (2015-01-07): Remove [time] AutoTimestep (always automatic).
@@ -428,6 +428,7 @@ contains
       use m_realan, only: realan
       use m_filez, only: oldfil
       use unstruc_messages, only: threshold_abort
+      use m_default1d2d, only: add_default_cross_sections_for_1d2d_links
       use m_readCrossSections, only: readCrossSectionDefinitions
 
       character(*), intent(inout) :: filename !< Name of file to be read (in current directory or with full path).
@@ -509,6 +510,7 @@ contains
       ! set administration arrays and fill cross section list. So getbobs for 1d can be called.
       call timstrt('Initialise 1d administration', timerHandle)
       call initialize_1dadmin(network, network%numl, numl)
+      call add_default_cross_sections_for_1d2d_links(network)
       call timstop(timerHandle)
 
       if (getMaxErrorLevel() >= LEVEL_ERROR) then
@@ -686,7 +688,7 @@ contains
       use m_flowtimes
       use m_flowparameters
       use m_dambreak_breach, only: set_dambreak_widening_method
-      use m_waves, only: rouwav, gammax, hminlw, jauorb, jahissigwav, jamapsigwav
+      use m_waves, only: rouwav, gammax, hminlw, jauorb
       use m_wind, only: wind_drag_type, cdb, wdb, jaheat_eachstep, relativewind, jawindhuorzwsbased, jawindpartialdry, rhoair, pavini, pavbnd, &
                         jastresstowind, update_wind_stress_each_time_step, ja_computed_airdensity, jarain, jaqin, jaqext, jaevap, jawind, &
                         wdb, jaevap, jawind, CD_TYPE_CONST, CD_TYPE_SMITHBANKE_2PT, CD_TYPE_SMITHBANKE_3PT, &
@@ -1353,6 +1355,11 @@ contains
       ! Physics
 
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef', frcuni)
+
+      ! Set default value for 1D and 1D2D uniform friction coefficients to the value of frcuni
+      frcuni1D = frcuni
+      frcuni1D2D = frcuni
+
       call prop_get(md_ptr, 'physics', 'UnifFrictType', ifrctypuni)
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D', frcuni1D) ! TODO: LUMBRICUS: HK: ook UnifFrictType1D? EN/OF prof1d type --> frcutp(LF) zetten?
       call prop_get(md_ptr, 'physics', 'UnifFrictCoef1D2D', frcuni1D2D)
@@ -1420,15 +1427,19 @@ contains
 
       call prop_get(md_ptr, 'physics', 'Temperature', temperature_model)
       call prop_get(md_ptr, 'physics', 'InitialTemperature', temini)
-      call prop_get(md_ptr, 'physics', 'Secchidepth', Secchidepth)
-      call prop_get(md_ptr, 'physics', 'Secchidepth2', Secchidepth2)
-      call prop_get(md_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction)
-      zab(1) = Secchidepth / 1.7_dp
-      sfr(1) = 1.0_dp
-      if (Secchidepth2 > 0) then
-         zab(2) = Secchidepth2 / 1.7_dp
-         sfr(2) = Secchidepth2fraction
-         sfr(1) = 1.0_dp - sfr(2)
+
+      ! Secchi parameter readout
+      call prop_get(md_ptr, 'physics', 'SecchiDepth', secchi_depth(1))
+      call prop_get(md_ptr, 'physics', 'SecchiDepth2', secchi_depth(2)) ! Deprecated, use SecchiDepthNonPenetrative instead
+      call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrative', secchi_depth(2))
+      call prop_get(md_ptr, 'physics', 'SecchiDepth2Fraction', secchi_radiation_fraction(2)) ! Deprecated, use SecchiDepthNonPenetrativeFraction instead
+      call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2))
+
+      diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
+      
+      if (secchi_depth(2) > 0) then
+         diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
+         secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
       end if
 
       call prop_get(md_ptr, 'physics', 'Stanton', Stanton)
@@ -1597,7 +1608,7 @@ contains
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
-            call getOutputTimeArrays(ti_st_array, ti_sts, ti_st, ti_ste, success)
+            call set_time_interval(ti_st_array, ti_sts, ti_st, ti_ste, tstart_user, tstop_user, success)
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsOutputFile', md_avgsedtrailsfile, success)
 
             call str_lower(sedtrails_analysis)
@@ -1682,8 +1693,8 @@ contains
       if (jawave > NO_WAVES .and. (jawave < WAVE_SWAN_ONLINE .or. flow_without_waves)) then
          jauorb = 1
       end if
-      call prop_get(md_ptr, 'waves', 'jahissigwav', jahissigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
-      call prop_get(md_ptr, 'waves', 'jamapsigwav', jamapsigwav) ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
+      call prop_get(md_ptr, 'waves', 'jahissigwav', his_write_settings%sigwav) ! 1: sign wave height on his output; 0: hrms wave height on his output. Default=1
+      call prop_get(md_ptr, 'waves', 'jamapsigwav', map_write_settings%sigwav) ! 1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy)
       call prop_get(md_ptr, 'waves', 'jauorbfromswan', jauorbfromswan) ! 1: use orbital velocities from com file; 0=internal uorb calculation. Default=0
       call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
@@ -1938,7 +1949,7 @@ contains
       call prop_get(md_ptr, 'output', 'HisFile', md_hisfile, success)
       ti_his_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'HisInterval', ti_his_array, 3, success)
-      call getOutputTimeArrays(ti_his_array, ti_hiss, ti_his, ti_hise, success)
+      call set_time_interval(ti_his_array, ti_hiss, ti_his, ti_hise, tstart_user, tstop_user, success, interval_name='HisInterval')
       call check_time_interval(ti_hiss, ti_his, ti_hise, dt_user, 'HisInterval', tstart_user)
 
       call prop_get(md_ptr, 'output', 'XLSInterval', ti_xls, success)
@@ -1949,14 +1960,14 @@ contains
 
       ti_map_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'MapInterval', ti_map_array, 3, success)
-      call getOutputTimeArrays(ti_map_array, ti_maps, ti_map, ti_mape, success)
+      call set_time_interval(ti_map_array, ti_maps, ti_map, ti_mape, tstart_user, tstop_user, success, interval_name='MapInterval')
       call check_time_interval(ti_maps, ti_map, ti_mape, dt_user, 'MapInterval', tstart_user)
 
       if (jawave == WAVE_SWAN_ONLINE) then
          ti_com_array = 0.0_hp
          ti_com = dt_user !< defaults to backward compatible behaviour
          call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
-         call getOutputTimeArrays(ti_com_array, ti_coms, ti_com, ti_come, success)
+         call set_time_interval(ti_com_array, ti_coms, ti_com, ti_come, tstart_user, tstop_user, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
    
          call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
@@ -2017,148 +2028,145 @@ contains
 
       call prop_get(md_ptr, 'output', 'GenerateUUID', unc_uuidgen, success)
 
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', jahisbal, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', jahissourcesink, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', jahiscgen, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', jahiscdam, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', jahispump, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate', jahisgate, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir', jahisweir, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice', jahisorif, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge', jahisbridge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert', jahisculv, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak', jahisdambreak, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir', jahisuniweir, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound', jahiscmpstru, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', jahislongculv, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', jahistur, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', jahiswind, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', jahisrain, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', jahisinfilt, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', jahis_airdensity, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density', jahisrho, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1', jahiswatlev, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel', jahisbedlev, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth', jahiswatdep, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves', jahiswav, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector', jahisvelvec, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', jahisww, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', jahissed, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', jahiszcor, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', his_write_settings%bal, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', his_write_settings%sourcesink, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', his_write_settings%cgen, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', his_write_settings%cdam, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', his_write_settings%pump, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gate', his_write_settings%gate, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_weir', his_write_settings%weir, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_orifice', his_write_settings%orifice, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_bridge', his_write_settings%bridge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_culvert', his_write_settings%culvert, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_damBreak', his_write_settings%dambreak, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_uniWeir', his_write_settings%universal_weir, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_compound', his_write_settings%compound_structure, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_longculvert', his_write_settings%long_culvert, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_turbulence', his_write_settings%tur, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wind', his_write_settings%wind, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_rain', his_write_settings%rain, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_infiltration', his_write_settings%infilt, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_airdensity', his_write_settings%airdensity, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_density', his_write_settings%rho, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterlevel_s1', his_write_settings%watlev, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bedlevel', his_write_settings%bedlev, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waterdepth', his_write_settings%watdep, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_waves', his_write_settings%wav, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity_vector', his_write_settings%velvec, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_upward_velocity_component', his_write_settings%ww, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sediment', his_write_settings%sed, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_zcor', his_write_settings%zcor, success)
       if (.not. success .and. kmx == 0) then
          ! for 2D we don't write zLayers by default. However zlayers are important for nesting where you can nest 2d=>3d models
-         ! since jahiszcor is by default 1,this will make by default jahiszcor=0 if kmx=0 .and. jahiszcor=1 if kmx > 0
-         jahiszcor = 0
+         ! since his_write_settings%zcor is by default 1,this will make by default his_write_settings%zcor=0 if kmx=0 .and. his_write_settings%zcor=1 if kmx > 0
+         his_write_settings%zcor = 0
       end if
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', jahislateral, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', jahistaucurrent, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', jahisvelocity, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', jahisdischarge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', jahisheatflux, success, alternative_key='Wrihis_heatflux')
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', jahisrunupgauge, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', jahiswqbot, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', jahiswqbot3d, success)
-      if (kmx == 0 .and. jahiswqbot3d == 1) then
-         jahiswqbot3d = 0
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_lateral', his_write_settings%lateral, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_taucurrent', his_write_settings%taucurrent, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_velocity', his_write_settings%velocity, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_discharge', his_write_settings%discharge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_heat_fluxes', his_write_settings%heatflux, success, alternative_key='Wrihis_heatflux')
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_runupgauge', his_write_settings%runupgauge, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_wqbot', his_write_settings%wqbot, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'wrihis_wqbot3d', his_write_settings%wqbot3d, success)
+      if (kmx == 0 .and. his_write_settings%wqbot3d == 1) then
+         his_write_settings%wqbot3d = 0
          write (msgbuf, '(a)') 'MDU setting "wrihis_wqbot3d = 1" asks to write 3D water quality bottom quantities to the history output, ' &
             //'but this is ignored since the simulation is 2D.'
          call warn_flush()
       end if
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', jahistracers, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', jahiscrs_flow, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', jahiscrs_constituents, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment', jahiscrs_sediment, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', jahisdred, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', jahiswaq, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', jahistem, success)
-      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', jahissal, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_constituents', his_write_settings%tracers, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_flow', his_write_settings%crs_flow, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_constituents', his_write_settings%crs_constituents, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_crs_sediment', his_write_settings%crs_sediment, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_dred', his_write_settings%dred, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_water_quality_output', his_write_settings%waq, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_temperature', his_write_settings%tem, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_salinity', his_write_settings%sal, success)
 
-      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', jamaps0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', jamaps1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', jamapevap, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_volume1', jamapvol1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', jamaphs, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', jamaphu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', jamapanc, success)
-      if (jamapanc > 0) then
-         if (jamaps1 <= 0) then
-            jamaps1 = 1 ! Enable writing s1, necessary for writing ancillary variables
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s0', map_write_settings%s0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterlevel_s1', map_write_settings%s1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_evaporation', map_write_settings%evap, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume1', map_write_settings%vol1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth', map_write_settings%hs, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_hu', map_write_settings%hu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_ancillary_variables', map_write_settings%anc, success)
+      if (map_write_settings%anc > 0) then
+         if (map_write_settings%s1 <= 0) then
+            map_write_settings%s1 = 1 ! Enable writing s1, necessary for writing ancillary variables
          end if
-         if (jamaphs <= 0) then
-            jamaphs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
+         if (map_write_settings%hs <= 0) then
+            map_write_settings%hs = 1 ! Enable writing waterdepth, necessary for writing ancillary variables
          end if
-         if (jamaphu <= 0) then
-            jamaphu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
+         if (map_write_settings%hu <= 0) then
+            map_write_settings%hu = 1 ! Enable writing waterdepth_hu, necessary for writing ancillary variables
          end if
       end if
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', jamapFlowAnalysis, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', jamapau, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', jamapu1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', jamapu0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', jamapucvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_analysis', map_write_settings%flow_analysis, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flowarea_au', map_write_settings%au, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u1', map_write_settings%u1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_component_u0', map_write_settings%u0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vector', map_write_settings%ucvec, success)
       !
-      if (jawave == WAVE_SWAN_ONLINE .and. jamapucvec == 0) then ! only needed for 2 way coupling
-         jamapucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
+      if (jawave == WAVE_SWAN_ONLINE .and. map_write_settings%ucvec == 0) then ! only needed for 2 way coupling
+         map_write_settings%ucvec = 1 ! Enable writing velocity vector to map file, necessary for SWAN online coupling
       end if
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', jamapucmag, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', jamapucqvec, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', jamapww1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', jamaprho, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', jamapviu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', jamapdiu, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', jamapq1, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', jamapq1main, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', jamapfw, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', jamapspir, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', jamapnumlimdt, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_magnitude', map_write_settings%ucmag, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_velocity_vectorq', map_write_settings%ucqvec, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_upward_velocity_component', map_write_settings%ww1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_density_rho', map_write_settings%rho, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_viscosity_viu', map_write_settings%viu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_horizontal_diffusivity_diu', map_write_settings%diu, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1', map_write_settings%q1, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_flow_flux_q1_main', map_write_settings%q1main, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_fixed_weir_energy_loss', map_write_settings%fw, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_spiral_flow', map_write_settings%spir, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_numlimdt', map_write_settings%numlimdt, success)
       call prop_get(md_ptr, 'output', 'Wrixyz_numlimdt', write_numlimdt_file, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', jamaptaucurrent, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_z0', jamapz0, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_salinity', jamapsal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy', jamap_chezy_elements, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', jamap_chezy_links, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', jamap_chezy_input, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_temperature', jamaptem, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_constituents', jamapconst, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_sediment', jamapsed, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', jamaptur, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', jamaptrachy, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_calibration', jamapcali, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_rain', jamaprain, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_interception', jamapicept, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_wind', jamapwind, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_windstress', jamapwindstress, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', jamap_airdensity, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', jamapheatflux, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', jamaptidep, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', jamapselfal, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', jamapIntTidesDiss, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_nudging', jamapnudge, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', jamapPure1D_debug, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waves', jamapwav, success)
-      jamapwav_hwav = 0
-      jamapwav_twav = 0
-      jamapwav_phiwav = 0
-      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', jamapdtcell, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_taucurrent', map_write_settings%taucurrent, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_z0', map_write_settings%z0, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_salinity', map_write_settings%sal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy', map_write_settings%chezy_elements, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_chezy_on_flow_links', map_write_settings%chezy_links, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_input_roughness', map_write_settings%chezy_input, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_temperature', map_write_settings%tem, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_constituents', map_write_settings%const, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sediment', map_write_settings%sed, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_turbulence', map_write_settings%tur, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_trachytopes', map_write_settings%trachy, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_calibration', map_write_settings%cali, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_rain', map_write_settings%rain, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_interception', map_write_settings%icept, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_wind', map_write_settings%wind, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_windstress', map_write_settings%windstress, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_airdensity', map_write_settings%airdensity, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_heat_fluxes', map_write_settings%heatflux, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_tidal_potential', map_write_settings%tidep, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_sal_potential', map_write_settings%selfal, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_internal_tides_dissipation', map_write_settings%int_tides_diss, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_nudging', map_write_settings%nudge, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_pure1d_debug', map_write_settings%pure_1D_debug, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waves', map_write_settings%wav, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_DTcell', map_write_settings%dtcell, success)
       epswetout = epshs ! the same as numerical threshold to counts as 'wet'.
       call prop_get(md_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', jamapTimeWetOnGround, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', jamapFreeboard, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', jamapDepthOnGround, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', jamapVolOnGround, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', jamapTotalInflow1d2d, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', jamapTotalInflowLat, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', jamapS1Gradient, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_time_water_on_ground', map_write_settings%time_wet_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_freeboard', map_write_settings%free_board, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_waterdepth_on_ground', map_write_settings%depth_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_volume_on_ground', map_write_settings%vol_on_ground, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_1d2d', map_write_settings%total_inflow_1d2d, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_total_net_inflow_lateral', map_write_settings%total_inflow_lat, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_water_level_gradient', map_write_settings%s1gradient, success)
       call prop_get(md_ptr, 'output', 'Writek_CdWind', jatekcd, success)
       call prop_get(md_ptr, 'output', 'Wrirst_bnd', jarstbnd, success)
       call prop_get(md_ptr, 'output', 'Writepart_domain', japartdomain, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_bnd', jamapbnd, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_Qin', jamapqin, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_bnd', map_write_settings%bnd, success)
+      call prop_get(md_ptr, 'output', 'Wrimap_Qin', map_write_settings%qin, success)
       call prop_get(md_ptr, 'output', 'Wrimap_every_dt', jaeverydt, success)
-      call prop_get(md_ptr, 'output', 'Wrimap_NearField', jamapNearField, success)
-      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, success)
-      if (kmx == 0 .and. jamapwqbot3d == 1) then
-         jamapwqbot3d = 0 ! Disable wqbot3d map output if model is 2D
+      call prop_get(md_ptr, 'output', 'Wrimap_NearField', map_write_settings%near_field, success)
+      call prop_get(md_ptr, 'output', 'wrimap_wqbot3d', map_write_settings%wqbot3d, success)
+      if (kmx == 0 .and. map_write_settings%wqbot3d == 1) then
+         map_write_settings%wqbot3d = 0 ! Disable wqbot3d map output if model is 2D
       end if
 
       ! Output
@@ -2166,25 +2174,25 @@ contains
       call scan_input_tree(md_ptr, 'Output', config_set_his)
       call scan_input_tree(md_ptr, 'Output', config_set_map)
       call scan_input_tree(md_ptr, 'Output', config_set_clm)
-      !if (md_mapformat /= 4 .and. jamapwindstress /= 0) then
+      !if (md_mapformat /= 4 .and. map_write_settings%windstress /= 0) then
       !  call mess(LEVEL_ERROR, 'writing windstress to mapfile is only implemented for NetCDF - UGrid (mapformat=4)')
       !endif
 
       if (temperature_model == TEMPERATURE_MODEL_NONE .or. temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
-         jamapheatflux = 0
-         jahisheatflux = 0
+         map_write_settings%heatflux = 0
+         his_write_settings%heatflux = 0
       end if
 
       ! If no temperature is involved, then do not write temperature to output map/his files
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
-         jamaptem = 0
-         jahistem = 0
+         map_write_settings%tem = 0
+         his_write_settings%tem = 0
       end if
 
       ! If no salinity is involved, then do not write salinity to output map/his files
       if (jasal < 1) then
-         jamapsal = 0
-         jahissal = 0
+         map_write_settings%sal = 0
+         his_write_settings%sal = 0
       end if
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, success)
@@ -2208,7 +2216,7 @@ contains
 
       ti_rst_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'RstInterval', ti_rst_array, 3, success)
-      call getOutputTimeArrays(ti_rst_array, ti_rsts, ti_rst, ti_rste, success)
+      call set_time_interval(ti_rst_array, ti_rsts, ti_rst, ti_rste, tstart_user, tstop_user, success, interval_name='RstInterval')
       call check_time_interval(ti_rsts, ti_rst, ti_rste, dt_user, 'RstInterval', tstart_user)
 
       call prop_get(md_ptr, 'output', 'MbaInterval', ti_mba, success)
@@ -2232,7 +2240,7 @@ contains
 
       ti_waq_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'WaqInterval', ti_waq_array, 3, success)
-      call getOutputTimeArrays(ti_waq_array, ti_waqs, ti_waq, ti_waqe, success)
+      call set_time_interval(ti_waq_array, ti_waqs, ti_waq, ti_waqe, tstart_user, tstop_user, success)
       call prop_get(md_ptr, 'output', 'WaqHorAggr', md_waqhoraggr, success)
       call prop_get(md_ptr, 'output', 'WaqVertAggr', md_waqvertaggr, success)
       call prop_get(md_ptr, 'waves', 'waveSwartDelwaq', jawaveSwartDelwaq, success)
@@ -2326,7 +2334,7 @@ contains
             ti_wav_array(2) = 0.0_dp
             ti_wav_array(3) = 0.0_dp
          end if
-         call getOutputTimeArrays(ti_wav_array, ti_wavs, ti_wav, ti_wave, success)
+         call set_time_interval(ti_wav_array, ti_wavs, ti_wav, ti_wave, tstart_user, tstop_user, success)
 
          if (jaavgwavquant > 0 .and. ti_wav > (tstop_user - tstart_user)) then
             ti_wav = tstop_user - tstart_user
@@ -2374,18 +2382,21 @@ contains
       ! Map classes output (formerly: incremental file)
       ti_classmap_array = 0.0_dp
       call prop_get(md_ptr, 'output', 'ClassMapInterval', ti_classmap_array, 3, success)
-      call getOutputTimeArrays(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, success)
+      call set_time_interval(ti_classmap_array, ti_classmaps, ti_classmap, ti_classmape, tstart_user, tstop_user, success)
       call check_time_interval(ti_classmaps, ti_classmap, ti_classmape, dt_user, 'ClassMapInterval', tstart_user)
 
       call prop_get(md_ptr, 'output', 'ClassMapFile', md_classmap_file, success)
       call prop_get(md_ptr, 'output', 'VelocityDirectionClassesInterval', map_classes_ucdirstep, success)
-      if (success) then
-         call createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
-      else
-         allocate (map_classes_ucdir(0))
-      end if
 
       if (ti_classmap > 0.0_dp) then
+         if (map_classes_ucdirstep > 0.0_dp .and. map_classes_ucdirstep <= 360.0_dp) then
+            call create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
+         else if (map_classes_ucdirstep /= dmiss) then
+            call mess(LEVEL_FATAL, 'Step size for classes out of range; must be > 0 and <= 360; found: ', map_classes_ucdirstep)
+         else
+            allocate (map_classes_ucdir(0))
+         end if
+
          call readClasses('WaterlevelClasses', map_classes_s1)
          call readClasses('WaterdepthClasses', map_classes_hs)
          call readClasses('VelocityMagnitudeClasses', map_classes_ucmag)
@@ -2583,22 +2594,22 @@ contains
 
 !> helper routine to convert step size to the class boundaries
 !! give error if step size is not valid (e.g. negative, > 360, number of steps is not an integer)
-   subroutine createDirectionClasses(map_classes_ucdir, map_classes_ucdirstep)
+   subroutine create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
       use MessageHandling, only: mess, LEVEL_FATAL
       use m_alloc, only: aerr
+      
+      ! Parameters
       real(kind=dp), allocatable, intent(inout) :: map_classes_ucdir(:) !< the constructed classes
       real(kind=dp), intent(in) :: map_classes_ucdirstep !< the input step size
 
-      real(kind=dp), parameter :: wholeCircle = 360.0_dp
+      ! Local variables
+      real(kind=dp), parameter :: WHOLE_CIRCLE = 360.0_dp
       integer :: n !< number of classes
-      integer :: i, ierr
+      integer :: i
+      integer :: ierr
 
-      if (map_classes_ucdirstep <= 0.0_dp .or. map_classes_ucdirstep > wholeCircle) then
-         call mess(LEVEL_FATAL, 'Step size for classes out of range; must be > 0 and <= 360; found: ', map_classes_ucdirstep)
-      end if
-
-      n = nint(wholeCircle / map_classes_ucdirstep)
-      if (comparereal(wholeCircle, n * map_classes_ucdirstep) /= 0) then
+      n = nint(WHOLE_CIRCLE / map_classes_ucdirstep)
+      if (comparereal(WHOLE_CIRCLE, n * map_classes_ucdirstep) /= 0) then
          call mess(LEVEL_FATAL, 'Step size for classes must meet: 360 / step size gives an integer')
       else if (n > 127) then
          call mess(LEVEL_FATAL, 'Step size too small. To many classes to fit in a signed byte')
@@ -2611,7 +2622,8 @@ contains
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
-   end subroutine createDirectionClasses
+      
+   end subroutine create_direction_classes
 
 !> Write a model definition to a file.
    subroutine writeMDUFile(filename, istat)
@@ -2660,7 +2672,7 @@ contains
       use m_heatfluxes
       use m_fm_wq_processes
       use m_trachy
-      use m_structures, only: jahiscgen, jahiscdam, jahispump, jahisgate, jahisweir, jahisorif, jahisbridge, jahisculv, jahisdambreak, jahisuniweir, jahiscmpstru, jahislongculv
+      use m_structures, only: his_write_settings
       use m_1d2d_fixedweirs, only: lat_fix_weir_umin, lat_fix_weir_umin_method, lat_fix_weir_minimal_1d2d_embankment, lat_fix_weir_relax, lat_fix_weir_dx
       use m_subsidence, only: sdu_update_s1
       use m_xbeach_data, only: swave
@@ -2670,7 +2682,7 @@ contains
       use fm_statistical_output, only: config_set_his, config_set_map, config_set_clm
       use m_map_his_precision
       use m_datum
-      use m_circumcenter_method, only: INTERNAL_NETLINKS_EDGE, circumcenter_tolerance, md_circumcenter_method
+      use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
       use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
@@ -2878,7 +2890,7 @@ contains
       if (writeall .or. (Dcenterinside /= 1.0_dp)) then
          call prop_set(prop_ptr, 'geometry', 'Dcenterinside', Dcenterinside, 'Limit cell center (1.0: in cell, 0.0: on c/g)')
       end if
-      if (writeall .or. (circumcenter_method /= INTERNAL_NETLINKS_EDGE)) then
+      if (writeall .or. (circumcenter_method /= ALL_NETLINKS_LOOP)) then
          call prop_set(prop_ptr, 'geometry', 'circumcenterMethod', trim(md_circumcenter_method), 'Circumcenter computation method (iterate each edge: internalNetlinksEdge; iterate each loop: internalNetlinksLoop or allNetlinksLoop)')
       end if
       if (writeall .or. (circumcenter_tolerance /= 1.0e-3_dp)) then
@@ -3135,7 +3147,7 @@ contains
       if (writeall .or. jaLogprofatubndin /= 1) then
          call prop_set(prop_ptr, 'numerics', 'Logprofatubndin', jaLogprofatubndin, 'ubnds inflow: 0=uniform U1, 1 = log U1, 2 = user3D')
       end if
-      if (writeall .or. jaLogprofkepsbndin /= 1) then
+      if (writeall .or. jaLogprofkepsbndin /= 0) then
          call prop_set(prop_ptr, 'numerics', 'Logprofkepsbndin', jaLogprofkepsbndin, 'inflow: 0=0 keps, 1 = log keps inflow, 2 = log keps in and outflow')
       end if
 
@@ -3433,26 +3445,19 @@ contains
          end if
       end if
 
-      if (writeall .or. (jasal == 0 .and. (temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
-      end if
+      call prop_set(prop_ptr, 'physics', 'Backgroundsalinity', Backgroundsalinity, 'Background salinity for eqn. of state (psu) if salinity not computed')
+      call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
 
-      if (writeall .or. (temperature_model == TEMPERATURE_MODEL_NONE .and. (jasal > 0 .or. jased > 0))) then
-         call prop_set(prop_ptr, 'physics', 'Backgroundwatertemperature', Backgroundwatertemperature, 'Background water temperature for eqn. of state (deg C) if temperature not computed')
-      end if
-
-      if (Jadelvappos /= 0) then
+      if (writeall .or. (Jadelvappos /= 0)) then
          call prop_set(prop_ptr, 'physics', 'Jadelvappos', Jadelvappos, 'Only positive forced evaporation fluxes')
       end if
 
       call prop_set(prop_ptr, 'physics', 'Temperature', temperature_model, 'Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)')
       if (writeall .or. (temperature_model /= TEMPERATURE_MODEL_NONE)) then
-         call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (degC)')
-         call prop_set(prop_ptr, 'physics', 'Secchidepth', Secchidepth, 'Water clarity parameter (m)')
-         if (Secchidepth2 > 0) then
-            call prop_set(prop_ptr, 'physics', 'Secchidepth2', Secchidepth2, 'Water clarity parameter 2 (m), only used if > 0')
-            call prop_set(prop_ptr, 'physics', 'Secchidepth2fraction', Secchidepth2fraction, 'Fraction of total absorbed by profile 2')
-         end if
+         call prop_set(prop_ptr, 'physics', 'InitialTemperature', temini, 'Uniform initial water temperature (deg C)')
+         call prop_set(prop_ptr, 'physics', 'SecchiDepth', secchi_depth(1), 'Water clarity parameter (m)')
+         call prop_set(prop_ptr, 'physics', 'SecchiDepthNonPenetrative', secchi_depth(2), 'Water clarity parameter for non-penetrative radiation (m).')
+         call prop_set(prop_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2), 'Fraction of solar radiation that is non-penetrative (-).')
 
          call prop_set(prop_ptr, 'physics', 'Stanton', Stanton, 'Coefficient for convective heat flux, if negative, Ccon = abs(Stanton)*Cdwind')
          call prop_set(prop_ptr, 'physics', 'Dalton', Dalton, 'Coefficient for evaporative heat flux, if negative, Ceva = abs(Dalton)*Cdwind')
@@ -3653,8 +3658,8 @@ contains
          call prop_set(prop_ptr, 'waves', 'Rouwav', rouwav, 'Friction model for wave induced shear stress: FR84 (default) or: MS90, HT91, GM79, DS88, BK67, CJ85, OY88, VR04')
          call prop_set(prop_ptr, 'waves', 'Gammax', gammax, 'Maximum wave height/water depth ratio')
          call prop_set(prop_ptr, 'waves', 'uorbfac', jauorb, 'Orbital velocities: 0=D3D style; 1=Guza style')
-         call prop_set(prop_ptr, 'waves', 'jahissigwav', jahissigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
-         call prop_set(prop_ptr, 'waves', 'jamapsigwav', jamapsigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
+         call prop_set(prop_ptr, 'waves', 'jahissigwav', his_write_settings%sigwav, '1: sign wave height on his output; 0: hrms wave height on his output. Default=1.')
+         call prop_set(prop_ptr, 'waves', 'jamapsigwav', map_write_settings%sigwav, '1: sign wave height on map output; 0: hrms wave height on map output. Default=0 (legacy behaviour).')
          call prop_set(prop_ptr, 'waves', 'hminlw', hminlw, 'Cut-off depth for application of wave forces in momentum balance')
          if (flow_without_waves) then
             fww = 1
@@ -3930,7 +3935,7 @@ contains
                        'Write the total number of times a cell was Courant limiting to <run_id>_numlimdt.xyz file (1: yes, 0: no).')
       end if
       if (writeall .or. len_trim(unc_metadatafile) > 0) then
-         call prop_set(prop_ptr, 'output', 'MetaDataFile', unc_metadatafile, 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')
+         call prop_set(prop_ptr, 'output', 'MetaDataFile', trim(unc_metadatafile), 'Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).')
       end if
       if (writeall .or. unc_uuidgen /= 0) then
          call prop_set(prop_ptr, 'output', 'GenerateUUID', unc_uuidgen, 'Generate UUID as unique dataset identifier and include in output NetCDF files.')
@@ -3938,23 +3943,23 @@ contains
 
       call set_properties(prop_ptr, 'Output', config_set_his)
 
-      if (writeall .or. jahiszcor /= 1) then
-         call prop_set(prop_ptr, 'output', 'Wrihis_zcor', jahiszcor, 'Write vertical coordinates to his file (1: yes, 0: no)')
+      if (writeall .or. his_write_settings%zcor /= 1) then
+         call prop_set(prop_ptr, 'output', 'Wrihis_zcor', his_write_settings%zcor, 'Write vertical coordinates to his file (1: yes, 0: no)')
       end if
 
       call set_properties(prop_ptr, 'Output', config_set_map)
 
-      if (jamapbnd > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_bnd', jamapbnd, 'Write boundary points to map file (1: yes, 0: no)')
+      if (map_write_settings%bnd > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_bnd', map_write_settings%bnd, 'Write boundary points to map file (1: yes, 0: no)')
       end if
-      if (jamapqin > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'Wrimap_Qin', jamapqin, 'Write sum of all influxes to map file (1: yes, 0: no)')
+      if (map_write_settings%qin > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'Wrimap_Qin', map_write_settings%qin, 'Write sum of all influxes to map file (1: yes, 0: no)')
       end if
       if (jaeverydt > 0 .or. writeall) then
          call prop_set(prop_ptr, 'output', 'Wrimap_every_dt', jaeverydt, 'Write output to map file every dt, based on start and stop from MapInterval, 0=no (default), 1=yes')
       end if
-      if (jamapwqbot3d > 0 .or. writeall) then
-         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', jamapwqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
+      if (map_write_settings%wqbot3d > 0 .or. writeall) then
+         call prop_set(prop_ptr, 'output', 'wrimap_wqbot3d', map_write_settings%wqbot3d, 'Write output to map file for waqbot3d, 0=no (default), 1=yes')
       end if
       if (writeall .or. epswetout /= 0.1_dp) then
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')
@@ -4165,39 +4170,64 @@ contains
       return
    end function getoutputdir
 
-   subroutine getOutputTimeArrays(ti_output, ti_outs, ti_out, ti_oute, success)
-
-      use m_flowtimes
-
+   !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, as read from the MDU file.
+   ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
+   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 
+   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds. 
+   ! If `read_interval_input` is `.false.`. Don't read `interval_input`, and only set the defaults.
+   subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, read_interval_input, interval_name)
+      use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
+      use precision_basics, only: equal
       implicit none
 
-      real(kind=hp), intent(in) :: ti_output(3)
-      real(kind=hp), intent(out) :: ti_outs, ti_out, ti_oute
-      logical, intent(inout) :: success
+      real(kind=dp), intent(in) :: interval_input(3)
+      real(kind=dp), intent(out) :: interval_start, interval_step, interval_end
+      real(kind=dp), intent(in) :: simulation_start, simulation_stop
+      logical, intent(in) :: read_interval_input
+      character(len=*), optional, intent(in) :: interval_name
 
-      if (success) then
-         ti_out = ti_output(1)
-         if (ti_output(2) == 0.0_dp) then
-            ti_outs = tstart_user
-         else
-            ti_outs = ti_output(2)
-         end if
-         if (ti_output(3) == 0.0_dp) then
-            ti_oute = tstop_user
-         else
-            ti_oute = ti_output(3)
-         end if
-      else
-         ! ti_out stays at default, only set output start/end time to current simulation start/end
-         ti_outs = tstart_user
-         ti_oute = tstop_user
+      character(len=:), allocatable :: interval_name_
+
+      interval_name_ = ''
+      if (present(interval_name)) then
+         interval_name_ = ' ' // trim(interval_name)  ! Prepend extra space to get nice string formatting.
       end if
 
-   end subroutine getOutputTimeArrays
+      ! If `read_interval_input` is `.false.`: Only set `interval_start/stop` to `simulation_start/stop`.
+      interval_start = simulation_start
+      interval_end = simulation_stop
+      if (.not. read_interval_input) then
+         return
+      end if
 
-!> Check time interval:
-!! If time interval is smaller than DtUser, time interval will be set equal to DtUser.
-!! If time interval is not multiple of DtUser, error will be raised.
+      interval_step = interval_input(1)
+
+      if (.not. equal(interval_input(2), 0.0_dp)) then  ! A value of zero means: Use `simulation_start`.
+         if (simulation_start <= interval_input(2) .and. interval_input(2) <= simulation_stop) then
+            interval_start = interval_input(2)
+         else
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Start time (', floor(interval_input(2)), &
+               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
+               '). Setting' // trim(interval_name_) // ' start time to TStart.'
+            call warn_flush()
+         end if
+      end if
+
+      if (.not. equal(interval_input(3), 0.0_dp)) then  ! A value of zero means: Use `simulation_stop`.
+         if (simulation_start <= interval_input(3) .and. interval_input(3) <= simulation_stop) then
+            interval_end = interval_input(3)
+         else
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Stop time (', floor(interval_input(3)), &
+               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
+               '). Setting' // trim(interval_name_) // ' stop time to TStop.'
+            call warn_flush()
+         end if
+      end if
+   end subroutine set_time_interval
+
+   !> Check time interval:
+   !! If time interval is smaller than DtUser, time interval will be set equal to DtUser.
+   !! If time interval is not multiple of DtUser, error will be raised.
    subroutine check_time_interval(time_interval_start, time_interval, time_interval_end, user_time_step, time_interval_name, time_start_user)
 
       real(kind=hp), intent(in) :: time_interval_start !< Start of time output interval to be checked.
@@ -4239,7 +4269,7 @@ contains
 !> Check if time interval is not multiple of DtUser
    logical function is_not_multiple(time_interval, user_time_step)
       use precision_basics, only: comparereal
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       implicit none
 
       real(kind=hp), intent(in) :: time_interval !< Time interval to be checked.
@@ -4248,7 +4278,7 @@ contains
       real(kind=dp) :: nearest_user_time_step
 
       nearest_user_time_step = nint(time_interval / user_time_step) * user_time_step
-      if (comparereal(nearest_user_time_step, time_interval, eps10) /= 0) then
+      if (comparereal(nearest_user_time_step, time_interval, EPS10) /= 0) then
          is_not_multiple = .true.
       else
          is_not_multiple = .false.

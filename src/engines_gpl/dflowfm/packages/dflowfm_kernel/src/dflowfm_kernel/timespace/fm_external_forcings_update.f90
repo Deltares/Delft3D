@@ -42,7 +42,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
                       btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
                       item_long_wave_radiation, btempforcingtypd, relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
-                      dumpecmessagestack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
+                      dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
                       twavcom, flow_without_waves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
                       item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
                       item_sea_ice_area_fraction, item_sea_ice_thickness, jarain, item_rainfall, item_rainfall_rate, item_pump_capacity, &
@@ -91,6 +91,7 @@ contains
       use precision, only: dp
       use m_update_zcgen_widths_and_heights, only: update_zcgen_widths_and_heights
       use m_update_pumps_with_levels, only: update_pumps_with_levels
+      use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
       use m_heatu, only: heatu
       use m_flow_trachyupdate, only: flow_trachyupdate
       use m_flow_trachy_needs_update, only: flow_trachy_needs_update
@@ -100,7 +101,7 @@ contains
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
        item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature, &
-       item_bubblescreen_discharge
+       item_bubblescreen_discharge, item_secchi_depth
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
 
@@ -109,7 +110,7 @@ contains
       integer, intent(out) :: iresult !< Integer error status: DFM_NOERR==0 if succesful.
 
       integer :: i_const
-      real(kind=dp), dimension(:), pointer :: source_sink_discharge_1d !< 1D pointer view of 2D source_sink_all_discharges array
+      real(kind=dp), dimension(:), pointer :: source_sink_all_discharges_1d !< 1D pointer view of 2D source_sink_all_discharges array
 
       call timstrt('External forcings', handle_ext)
 
@@ -168,6 +169,10 @@ contains
          call get_timespace_value_by_item_and_array(item_frcu, frcu, time_in_seconds)
       end if
 
+      if (secchi_depth_is_time_varying) then
+         call get_timespace_value_by_item_and_array(item_secchi_depth, spatial_secchi_depth, time_in_seconds)
+      end if
+
       call ecTime%set4(time_in_seconds, irefdate, tzone, ecSupportTimeUnitConversionFactor(tunit))
 
       call set_wave_parameters(initialization)
@@ -213,9 +218,9 @@ contains
       if (num_source_sink > 0) then
          ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
          ! This avoids copying while satisfying the 1D array interface requirement
-         source_sink_discharge_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
+         source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
          
-         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_discharge_1d)
+         success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_all_discharges_1d)
 
          !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds)
          call get_timespace_value_by_item_and_consider_success_value(item_sourcesink_discharge, time_in_seconds)
@@ -461,7 +466,7 @@ contains
                   ! - Just try it the next timestep again
                   ! - success must be set to .true., otherwise the calculation is aborted
                   !
-                  message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+                  message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
                   success = .true.
                end if
             end if
@@ -473,7 +478,7 @@ contains
             write (msgbuf, '(a,i0,a)') 'set_external_forcings:: Offline wave coupling with waveforcing=', waveforcing, '. &
                & Error reading data from nc file.'
             call warn_flush() ! ECMessage stack is not very informative
-            message = dumpECMessageStack(LEVEL_ERROR, callback_msg)
+            message = dump_ec_message_stack(LEVEL_ERROR, callback_msg)
          end if
 
          if (jawave == WAVE_NC_OFFLINE) then

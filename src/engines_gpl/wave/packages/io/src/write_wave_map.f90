@@ -1,4 +1,4 @@
-subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, gamma0, output_ice)
+subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, gamma0, output_ice, nautical_convention, north_direction)
 !----- GPL ---------------------------------------------------------------------
 !
 !  Copyright (C)  Stichting Deltares, 2011-2026.
@@ -34,6 +34,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
 !!--declarations----------------------------------------------------------------
    use wave_data
    use swan_flow_grid_maps
+   use angle_convention, only : reflect_between_nautical_and_cartesian
    !
    implicit none
 !
@@ -52,6 +53,8 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    logical :: prevtime ! true: the time to be written is the "previous time"
    real, intent(in) :: gamma0 ! JONSWAP peak enhancement factor
    integer, intent(in) :: output_ice ! switch for writing ice quantities
+   logical, intent(in) :: nautical_convention ! .true. if nautical directional convention is used, .false. if cartesian directional convention is used
+   real, intent(in) :: north_direction ! direction of north in degrees (clockwise from east)
 !
 ! Local variables
 !
@@ -64,6 +67,8 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    integer :: j
    integer :: nelems
    integer :: nelems2
+   integer :: ndim
+   integer :: mdim
    integer, dimension(6, nelmx) :: elmdms
    integer, dimension(nelmx) :: nbytsg
    integer, dimension(:, :), allocatable :: elmdms2
@@ -102,8 +107,8 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    data elmdes/'time',                                                         &
        & 'code for HISWA output grid                                    ',      &
        & 'significant wave height                                       ',      &
-       & 'mean wave direction                                           ',      &
-       & 'peak wave direction                                           ',      &
+       & 'mean wave direction to (cartesian)                            ',      &
+       & 'peak wave direction to (cartesian)                            ',      &
        & 'mean wave period                                              ',      &
        & 'relative peak wave period                                     ',      &
        & 'water depth                                                   ',      &
@@ -149,8 +154,15 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
       elmunt(17) = '[  DEG  ]'
       elmunt(18) = '[  DEG  ]'
    end if
+   if (nautical_convention) then
+      elmdes(4) = 'mean wave direction from (nautical)                           '
+      elmdes(5) = 'peak wave direction from (nautical)                           '
+   end if
    !
    wrswch = .true.
+   ndim = size(sg%x, 1)
+   mdim = size(sg%x, 2)
+   allocate (rbuf(ndim, mdim))
    !
    ! Allocate and initialise possible additional output parameters
    ! One extra entry in group 2 for the time information
@@ -207,7 +219,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    !
    it02 = 0
    itlen = 0
-   call wrpara(filnam, .true., wavedata%time%tscale, idum, 5, ierror)
+   call wrpara(filnam, .true., real(wavedata%time%tscale,sp), idum, 5, ierror)
    call wrpara(filnam, .true., xdum, wavedata%time%refdate, 6, ierror)
    call wrpara(filnam, .true., xdum, it02, 7, ierror)
    call wrpara(filnam, .true., xdum, itlen, 8, ierror)
@@ -245,13 +257,31 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
              & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
              & elmnms(3), celidt, wrswch, error, sof%hs)
 
-   call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
-             & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
-             & elmnms(4), celidt, wrswch, error, sof%dir)
-
-   call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
-             & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
-             & elmnms(5), celidt, wrswch, error, sof%pdir)
+   if (nautical_convention) then
+      ! dir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
+      ! Here we convert it back to nautical convention for output to Nefis
+      rbuf = reflect_between_nautical_and_cartesian(sof%dir, north_direction)
+      call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
+                & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
+                & elmnms(4), celidt, wrswch, error, rbuf)
+   else
+      call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
+                & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
+                & elmnms(4), celidt, wrswch, error, sof%dir)
+   end if
+   
+   if (nautical_convention) then
+      ! pdir: Nautical convention in SWAN output is converted to cartesian convention when read by D-Waves
+      ! Here we convert it back to nautical convention for output to Nefis
+      rbuf = reflect_between_nautical_and_cartesian(sof%pdir, north_direction)
+      call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
+                & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
+                & elmnms(5), celidt, wrswch, error, rbuf)
+   else
+      call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
+                & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
+                & elmnms(5), celidt, wrswch, error, sof%pdir)
+   end if
 
    call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
              & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
@@ -296,8 +326,6 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    call putgtr(filnam, grpnam(1), nelems, elmnms(1), elmdms(1, 1), &
              & elmqty(1), elmunt(1), elmdes(1), elmtps(1), nbytsg(1), &
              & elmnms(16), celidt, wrswch, error, sof%qb)
-
-   allocate (rbuf(size(sg%x, 1), size(sg%x, 2)))
 
    ! This statement causes a stack overflow on big models: rbuf = real(sg%x,sp)
    ! So a double do-loop is necessary

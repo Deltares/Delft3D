@@ -111,6 +111,10 @@ set_target_properties(dsle-static PROPERTIES
 
 target_include_directories(dsle-static INTERFACE src)
 
+# Explicitly set the `-DNDEBUG` flag in "non-Debug" builds. We ran into an 'assertion failed' crash with Release binaries.
+target_compile_definitions(dsle        PRIVATE $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
+target_compile_definitions(dsle-static PRIVATE $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
+
 set(INSTALL_TARGETS dsle dsle-static)
 
 # We also generate a 32-bits stdcall version for VBA
@@ -127,6 +131,7 @@ elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
         C_STANDARD 23
     )
 
+    target_compile_definitions(dsle-stdcall PRIVATE $<$<NOT:$<CONFIG:Debug>>:NDEBUG>)
     set(INSTALL_TARGETS ${INSTALL_TARGETS} dsle-stdcall)
 endif()
 

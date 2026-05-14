@@ -499,7 +499,7 @@ contains
       use m_cross_helper, only: getbobs
       use m_1d_structures, only: get_crest_level, t_structure
       use m_storage, only: t_storage
-      use m_flowparameters, only: eps3
+      use m_flowparameters, only: EPS3
 
       integer :: i
       integer :: L, L0
@@ -573,7 +573,7 @@ contains
             if (n1 <= 0) then
                cycle
             end if
-            if (bl(n1) + eps3 < pstor%storage_area%x(1)) then
+            if (bl(n1) + EPS3 < pstor%storage_area%x(1)) then
                call setmessage(LEVEL_WARN, 'At node '//trim(pstor%id)//' the bedlevel is below the bedlevel of the assigned storage area.')
                write (msgbuf, '(a,f0.2,a,f0.2,a)') 'The bedlevel (due to invert levels of incoming channels/pipes) = ', bl(n1), ' and the bottom level of the storage area is ', pstor%storage_area%x(1), '.'
                call setmessage(-LEVEL_WARN, msgbuf)

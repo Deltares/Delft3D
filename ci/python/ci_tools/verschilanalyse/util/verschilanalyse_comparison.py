@@ -92,8 +92,11 @@ class VerschilanalyseComparison:
         for path in verschillen_dir.rglob(f"{output_type.value}_output.xlsx"):
             key = path.parent.name.removeprefix("verschil_")
             with path.open("rb") as stream:
-                workbook = openpyxl.load_workbook(stream)
-                result[key] = VerschillentoolOutput.from_verschillentool_workbook(workbook, output_type)
+                try:
+                    workbook = openpyxl.load_workbook(stream)
+                    result[key] = VerschillentoolOutput.from_verschillentool_workbook(workbook, output_type)
+                except Exception as exc:
+                    logging.warning("Invalid excel file: %s", path, exc_info=exc)
         if not result:
             logging.warning("No %s file statistics found in %s", output_type.value, verschillen_dir)
         return result

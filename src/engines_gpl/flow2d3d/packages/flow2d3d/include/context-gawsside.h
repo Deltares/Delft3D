@@ -25,7 +25,9 @@
 //
 //------------------------------------------------------------------------------
 // $Id: context-gawsside.h 878 2011-10-07 12:58:46Z mourits $
-// $HeadURL: https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/context-gawsside.h $
+// $HeadURL:
+// https://svn.oss.deltares.nl/repos/delft3d/branches/research/Deltares/20110420_OnlineVisualisation/src/engines_gpl/flow2d3d/packages/flow2d3d/src/dd/mapper/context-gawsside.h
+// $
 //------------------------------------------------------------------------------
 //  Flow2D3D Context variables/functions for Gaws side
 //
@@ -35,43 +37,38 @@
 //  30 may 11
 //-------------------------------------------------------------------------------
 
-
 #pragma once
-
 
 #include "context-flowside.h"
 #include "iterator.h"
-
 
 //
 // TDC Definition of real-var. types
 //
 
-typedef REAL_FP     FlowScalar;
+typedef REAL_FP FlowScalar;
 typedef FlowScalar* FlowScalarPntr;
 
 //
 // Enumeration for Gaws equation terms
 //
 
-typedef enum {
-    GawsTerm_A,         // Ref to A-term of equation
-    GawsTerm_B,         // Ref to B-  "   "     "
-    GawsTerm_C,         // Ref to C-  "   "     "
-    GawsTerm_D,         // Ref to D-  "   "     "
+typedef enum
+{
+    GawsTerm_A, // Ref to A-term of equation
+    GawsTerm_B, // Ref to B-  "   "     "
+    GawsTerm_C, // Ref to C-  "   "     "
+    GawsTerm_D, // Ref to D-  "   "     "
     NR_GAWS_TERM
 } GawsTerm;
-
 
 /////////////////////////////////////////////////////////////////
 // DELFT3D-FLOW Context Gaws side Class
 //
 
-
 class D3dFlowContextGawsSide : public D3dFlowContext
 {
-    public:
-
+public:
     ////////////////////////
     //
     // PUBLIC FUNCTIONS
@@ -85,28 +82,25 @@ class D3dFlowContextGawsSide : public D3dFlowContext
 
     virtual ~D3dFlowContextGawsSide(void);
 
-    int Setup(
-        Iterator *  gaws,   // gaws iterator
-        Iterator *  flow,   // d3d-flow iterators
-        MemType aMemType    // (SharedMem | Distributed)
-        );
+    int Setup(Iterator* gaws,  // gaws iterator
+              Iterator* flow,  // d3d-flow iterators
+              MemType aMemType // (SharedMem | Distributed)
+    );
 
     //
     // Getting / Setting values
     //
 
-    virtual FlowScalar * Get_Adress(
-        bool        l2r,    // boolean L->R or Top->Bottom
-        int         m,      // m-index
-        int         n,      // n-index
-        GawsTerm    term    // get address of which term
-        );
+    virtual FlowScalar* Get_Adress(bool l2r,     // boolean L->R or Top->Bottom
+                                   int m,        // m-index
+                                   int n,        // n-index
+                                   GawsTerm term // get address of which term
+    );
 
-    virtual int Get_KCS_XorY(
-        int  cell,          // cell-index on line
-        int  line,          // line-index
-        bool leftToRight    // boolean L->R or Top->Bottom
-        );
+    virtual int Get_KCS_XorY(int cell,        // cell-index on line
+                             int line,        // line-index
+                             bool leftToRight // boolean L->R or Top->Bottom
+    );
 
     //
     // Functions / data for distributed datacommunication
@@ -117,25 +111,21 @@ class D3dFlowContextGawsSide : public D3dFlowContext
     void UpdateGawsToFlow(GawsDistribGroup distribGroup);
     void UpdateGawsFromFlow(GawsDistribGroup distribGroup);
 
-    void AddCommPointAdmin(
-        int  m,      // m-index of point
-        int  n,      // n-index of point
-        bool l2r     // boolean L->R or Top->Bottom
-        );
+    void AddCommPointAdmin(int m,   // m-index of point
+                           int n,   // n-index of point
+                           bool l2r // boolean L->R or Top->Bottom
+    );
 
     ////////////////////////
     //
     // PROTECTED FUNCTIONS for distributed Data Communication.
     //
 
-    protected:
-
+protected:
     void ReceiveSizesFromFlow(void);
 
-    int BufferVarOnCommPoints(
-        char          * buffer,        // buffer to be filled or read
-        REAL_FP       * var,           // var (1D-array) to be stored or read
-        BufferAction    bufferAction   // Fill or Read buffer
+    int BufferVarOnCommPoints(char* buffer,             // buffer to be filled or read
+                              REAL_FP* var,             // var (1D-array) to be stored or read
+                              BufferAction bufferAction // Fill or Read buffer
     );
-
 };
