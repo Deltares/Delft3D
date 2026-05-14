@@ -442,9 +442,20 @@ contains
                   end if
 
                   sourtu = max(vicwwu(L), vicwminb) * dijdij(k)
-
                   sortkeshear = sourtu
                   !
+                  if (testsplit /= 1) then
+                     if (iturbulencemodel == 3) then
+                        sinktu = tureps0(L) / turkin0(L) ! + tkedis(L) / turkin0(L)
+                        bk(k) = bk(k) + sinktu * 2.0_dp
+                        dk(k) = dk(k) + sinktu * turkin0(L) + sourtu ! m2/s3
+                     else if (iturbulencemodel == 4) then
+                        sinktu = 1.0_dp / tureps0(L) ! + tkedis(L) / turkin0(L)
+                        bk(k) = bk(k) + sinktu
+                        dk(k) = dk(k) + sourtu
+                     end if
+                  end if
+
                   if (testsplit == 1 .and. iturbulencemodel == 3) then
                      sortkeeps = -tureps0(L)
                      if (janettosplit == 1) then ! splitting on netto
@@ -677,12 +688,13 @@ contains
                   if (iturbulencemodel == 3) then ! k-eps
 
                      !c Source and sink terms                                                                epsilon
+                     if (bruva(k) > 0.0_dp) then ! stable stratification
+                        sortkebuoy = cmukep * c3e_stable * bruva(k) * turkin1(L)
+                     elseif (bruva(k) < 0.0_dp) then ! unstable stratification
+                        sortkebuoy = cmukep * c3e_unstable * bruva(k) * turkin1(L)
+                     end if
                      if (testsplit /= 1) then
-                        if (bruva(k) > 0.0_dp) then ! stable stratification
-                           dk(k) = dk(k) - cmukep * c3e_stable * bruva(k) * turkin1(L)
-                        elseif (bruva(k) < 0.0_dp) then ! unstable stratification
-                           dk(k) = dk(k) - cmukep * c3e_unstable * bruva(k) * turkin1(L)
-                        end if
+                        dk(k) = dk(k) - sortkebuoy
                      end if
 
                      ! Similar to the k-equation, in the eps-equation the net IWE to TKE
@@ -705,9 +717,11 @@ contains
                      if (testsplit /= 1) then
                         bk(k) = bk(k) + sinktu * 2.0_dp
                         dk(k) = dk(k) + sinktu * tureps0(L) + sourtu
-                     else
+                     end if
+
+                     if (testsplit == 1 .and. iturbulencemodel == 3) then
                         if (janettosplit == 1) then ! splitting on netto
-                           sorsum = sinktu + sourtu
+                           sorsum = sinktu + sourtu + sortkebuoy
                            call addsoursink(splitfac, sorsum, tureps0(L), bk(k), dk(k))
                         else
                            call addsoursink(splitfac, sourtu, tureps0(L), bk(k), dk(k)) ! sure positive, so add first
