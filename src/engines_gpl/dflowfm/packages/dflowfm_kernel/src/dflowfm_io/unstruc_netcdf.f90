@@ -14572,28 +14572,33 @@ contains
                   if (ierr == 0) then
                      ierr = nf90_inquire_dimension(imapfile, id_ncrs, len=nCrs)
                   end if
-                  if (allocated(work1d_z)) then
-                     deallocate (work1d_z, work1d_n)
-                  end if
-                  allocate (work1d_z(1:jmax, 1:nCrs), work1d_n(1:jmax, 1:nCrs))
-                  ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_z', id_flowelemcrsz)
-                  ierr = nf90_get_var(imapfile, id_flowelemcrsz, work1d_z(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
-                  do i = 1, nCrs
-                     do j = 1, network%crs%cross(i)%tabdef%levelscount
-                        network%crs%cross(i)%tabdef%height(j) = work1d_z(j, i)
-                     end do
-                     network%crs%cross(i)%bedlevel = work1d_z(1, i)
-                  end do
-                  ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_n', id_flowelemcrsn)
-                  if (ierr == 0) then
-                     ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
-                  end if
-                  if (ierr == 0) then
+                  if (ierr /= nf90_noerr) then
+                     write (msgbuf, '(a)') 'Restart file '''//trim(filename)//''' contains no 1D cross section data, but model does.'
+                     call msg_flush()
+                  else
+                     if (allocated(work1d_z)) then
+                        deallocate (work1d_z, work1d_n)
+                     end if
+                     allocate (work1d_z(1:jmax, 1:nCrs), work1d_n(1:jmax, 1:nCrs))
+                     ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_z', id_flowelemcrsz)
+                     ierr = nf90_get_var(imapfile, id_flowelemcrsz, work1d_z(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
                      do i = 1, nCrs
                         do j = 1, network%crs%cross(i)%tabdef%levelscount
-                           network%crs%cross(i)%tabdef%flowwidth(j) = work1d_n(j, i)
+                           network%crs%cross(i)%tabdef%height(j) = work1d_z(j, i)
                         end do
+                        network%crs%cross(i)%bedlevel = work1d_z(1, i)
                      end do
+                     ierr = nf90_inq_varid(imapfile, trim(mesh1dname)//'_mor_crs_n', id_flowelemcrsn)
+                     if (ierr == 0) then
+                        ierr = nf90_get_var(imapfile, id_flowelemcrsn, work1d_n(1:jmax, 1:nCrs), start=[1, 1], count=[jmax, nCrs])
+                     end if
+                     if (ierr == 0) then
+                        do i = 1, nCrs
+                           do j = 1, network%crs%cross(i)%tabdef%levelscount
+                              network%crs%cross(i)%tabdef%flowwidth(j) = work1d_n(j, i)
+                           end do
+                        end do
+                     end if
                   end if
                end if
             end if
