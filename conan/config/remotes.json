@@ -1,0 +1,14 @@
+{
+ "remotes": [
+  {
+   "name": "deltares-conan-dev",
+   "url": "https://artifacts.deltares.nl/repository/conan-dev/",
+   "verify_ssl": true
+  },
+  {
+   "name": "deltares-conan-center-proxy",
+   "url": "https://artifacts.deltares.nl/repository/conan-proxy",
+   "verify_ssl": true
+  }
+ ]
+}

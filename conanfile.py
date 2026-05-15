@@ -1,5 +1,4 @@
 from conan import ConanFile
-from conan.tools.cmake import cmake_layout
 
 
 class Delft3DRecipe(ConanFile):
@@ -17,7 +16,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("expat/2.8.0")
 
     def layout(self):
-        cmake_layout(self)
+        self.folders.generators = "generators"
 
     def configure(self):
         self.options["zlib"].shared = True

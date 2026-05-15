@@ -27,13 +27,7 @@ set(checkout_root ${checkout_src_root}/..)
 # Conan: add the CMakeDeps generator output to the search path and find all explicit dependencies.
 # In the CMakeDeps generator, transitively depending on a dll counts as an explicit dependency,
 # because we need to install the dll and deliver it to a user.
-if (WIN32)
-    list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/build/generators")
-endif(WIN32)
-
-if (UNIX)
-    list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/build/${CMAKE_BUILD_TYPE}/generators")
-endif(UNIX)
+list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/generators")
 
 find_package(ZLIB CONFIG REQUIRED)
 find_package(HDF5 CONFIG REQUIRED)
@@ -166,6 +160,7 @@ elseif (WIN32)
     set(platform_extension bat)
     set(library_suffix dll)
     set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_NO_WARNINGS TRUE) # Ignore warnings about missing ifort libs, we use ifx
     set(library_prefix "")
     include(InstallRequiredSystemLibraries)
 endif()

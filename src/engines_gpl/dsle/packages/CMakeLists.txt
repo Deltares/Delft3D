@@ -145,4 +145,6 @@ add_subdirectory(tests)
 
 install(
     TARGETS
-    dsle RUNTIME DESTINATION bin)
+    dsle RUNTIME DESTINATION bin
+    PUBLIC_HEADER DESTINATION include
+)

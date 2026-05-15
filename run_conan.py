@@ -1,56 +1,130 @@
+from __future__ import annotations
+
 import argparse
 import platform
 import subprocess
+import sys
+from pathlib import Path
 
-recipes = [
-    ("cmake/binary", "3.31.12"),
-    ("zlib/all", "1.3.2"),
-    ("hdf5/all", "1.14.6"),
-    ("netcdf/all", "4.9.2"),
-    ("netcdf-fortran/4.6.2", "4.6.2"),
-    ("json-c/all", "0.17"),
-    ("libtiff/all", "4.7.1"),
-    ("sqlite3/all", "3.53.0"),
-    ("nlohmann_json/all", "3.11.3"),
-    ("proj/all", "9.3.1"),
-    ("libgeotiff/all", "1.7.1"),
-    ("gdal/post_3.5.0", "3.12.1"),
-    ("expat/all", "2.8.0"),
-]
+CONFIG_DIR = Path("conan/config")
+RECIPES_DIR = Path("conan/recipes")
+LOCKFILE = Path("conan/conan.lock")
 
-def export_package(recipe_name, version):
-    cmd = ["conan", "export", f"conan/recipes/{recipe_name}", f"--version={version}"]
+
+def setup_conan_config(*, ci: bool = False) -> None:
+    """Install Conan configuration (profiles, settings, remotes) and register local recipes."""
+    cmd = ["conan", "config", "install", "--type", "dir", str(CONFIG_DIR)]
+    if ci:
+        cmd += ["--core-conf", "core:non_interactive=True"]
     subprocess.run(cmd, check=True)
 
-def clean_conan_cache():
-    remove_cmd = ["conan", "remove", "*", "--confirm"]
-    subprocess.run(remove_cmd, check=True)
+    # Register the local recipes folder between conan-dev and conan-center-proxy
+    subprocess.run(
+        [
+            "conan",
+            "remote",
+            "add",
+            "local-recipes",
+            str(RECIPES_DIR.resolve()),
+            "--type=local-recipes-index",
+            "--index=1",
+            "--force",
+        ],
+        check=True,
+    )
 
-    clean_cmd = ["conan", "cache", "clean"]
-    subprocess.run(clean_cmd, check=True)
 
-def conan_install(profile, output_folder, build_type, consumer_build_type=None):
+def clean_conan_cache() -> None:
+    subprocess.run(["conan", "remove", "*", "--confirm"], check=True)
+    subprocess.run(["conan", "cache", "clean"], check=True)
+
+
+def update_lockfile(profile: str, *, ci: bool = False) -> None:
+    """Generate or update conan.lock from the current conanfile and recipes."""
+    cmd = [
+        "conan",
+        "lock",
+        "create",
+        f"--profile:all={profile}",
+        "--settings:all",
+        "build_type=Release",
+        f"--lockfile-out={LOCKFILE}",
+    ]
+    if ci:
+        cmd += ["--core-conf", "core:non_interactive=True"]
+    print(f"Updating lockfile {LOCKFILE}...")
+    subprocess.run(cmd, check=True)
+
+
+def conan_install(
+    profile: str,
+    output_folder: str,
+    build_type: str,
+    *,
+    consumer_build_type: str | None = None,
+    ci: bool = False,
+    lockfile: Path | None = None,
+    build_missing: bool = False,
+) -> None:
     cmd = [
         "conan",
         "install",
-        ".",
-        f"--profile:all=./conan/profiles/{profile}",
-        "-s:a",
+        f"--profile:all={profile}",
+        "--settings:all",
         f"build_type={build_type}",
-        "--build=missing",
-        "--no-remote",
         f"--output-folder={output_folder}",
     ]
 
+    if build_missing:
+        cmd += ["--build=missing"]
+
+    if lockfile:
+        cmd += [f"--lockfile={lockfile}"]
+
+    if ci:
+        cmd += ["--core-conf", "core:non_interactive=True"]
+
     if consumer_build_type:
-        cmd.extend(["-s", f"&:build_type={consumer_build_type}"]) # Odd syntax explained here: https://github.com/conan-io/conan/issues/13478#issuecomment-1475389368
+        # Odd syntax explained here: https://github.com/conan-io/conan/issues/13478#issuecomment-1475389368
+        cmd += ["--settings:all", f"&:build_type={consumer_build_type}"]
 
     subprocess.run(cmd, check=True)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Installs conan-managed dependencies for the Delft3D repository.")
-    parser.add_argument("--clean", action="store_true", help="Clean the local Conan cache before exporting and installing.")
-    parser.add_argument("--output-folder", default="build/conan", help="Output folder for Conan install files.")
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Installs conan-managed dependencies for the Delft3D repository."
+    )
+    parser.add_argument(
+        "--system-setup",
+        action="store_true",
+        help="Install Conan configuration (profiles, settings, remotes) from conan/config.",
+    )
+    parser.add_argument(
+        "--ci",
+        action="store_true",
+        help="Run in non-interactive mode (adds core:non_interactive=True to Conan commands).",
+    )
+    parser.add_argument(
+        "--clean",
+        action="store_true",
+        help="Clean the local Conan cache before exporting and installing.",
+    )
+    parser.add_argument(
+        "--update-lockfile",
+        action="store_true",
+        help="Regenerate conan.lock from the current conanfile and recipes.",
+    )
+    parser.add_argument(
+        "--build-missing",
+        action="store_true",
+        help="Build packages from source if a pre-built binary is not available.",
+    )
+    parser.add_argument(
+        "--output-folder",
+        default="build/conan",
+        help="Output folder for Conan install files.",
+    )
     args = parser.parse_args()
 
     os_name = platform.system()
@@ -61,16 +135,51 @@ if __name__ == "__main__":
     else:
         raise RuntimeError(f"Unsupported OS: {os_name}")
 
-    # Clean conan cache if requested by the user
+    if args.system_setup:
+        setup_conan_config(ci=args.ci)
+
+    # Verify the profile is available (installed via --system-setup)
+    result = subprocess.run(
+        ["conan", "profile", "path", profile],
+        capture_output=True,
+    )
+    if result.returncode != 0:
+        sys.exit(
+            f"ERROR: Conan profile '{profile}' not found.\n"
+            "       Run 'python run_conan.py --system-setup' first to install profiles, set remotes and configure settings."
+        )
+
     if args.clean:
         clean_conan_cache()
 
-    # Export all recipes before installing to ensure they are available in the local cache
-    for recipe_name, version in recipes:
-        export_package(recipe_name, version)
+    if args.update_lockfile:
+        update_lockfile(profile, ci=args.ci)
+
+    # Use lockfile for reproducible installs if one exists
+    lockfile = LOCKFILE if LOCKFILE.exists() else None
 
     # Install dependencies and generate CMakeDeps metadata for Debug, Release and RelWithDebInfo
-    # Note that they effectively they all use release binaries
-    conan_install(profile, args.output_folder, "Release")
-    conan_install(profile, args.output_folder, "Release", consumer_build_type="Debug")
-    conan_install(profile, args.output_folder, "Release", consumer_build_type="RelWithDebInfo")
+    # Note that they effectively all use release binaries
+    conan_install(profile, args.output_folder, "Release", ci=args.ci, lockfile=lockfile, build_missing=args.build_missing)
+    conan_install(
+        profile,
+        args.output_folder,
+        "Release",
+        consumer_build_type="Debug",
+        ci=args.ci,
+        lockfile=lockfile,
+        build_missing=args.build_missing,
+    )
+    conan_install(
+        profile,
+        args.output_folder,
+        "Release",
+        consumer_build_type="RelWithDebInfo",
+        ci=args.ci,
+        lockfile=lockfile,
+        build_missing=args.build_missing,
+    )
+
+
+if __name__ == "__main__":
+    main()
