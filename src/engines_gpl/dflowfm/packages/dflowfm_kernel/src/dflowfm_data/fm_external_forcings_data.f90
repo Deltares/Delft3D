@@ -387,8 +387,10 @@ module fm_external_forcings_data
    type t_Bubblescreen
       character(len=255) :: id !< Bubble screen id
       integer :: num_flowcells !< Number of flow cells in bubble screen
+      integer :: global_num_flowcells !< Global number of flow cells in bubble screen (across partitions in parallel runs)
       integer, dimension(:), allocatable :: flowcell_indices !< Indices of flow cells in bubble screen. {size=num_flowcells}
       integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
+      integer, dimension(:), allocatable :: global_flowcell_indices !< Global indices of flow cells in bubble screen (across partitions in parallel runs). {size=num_flowcells}
       real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
       real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
    end type t_Bubblescreen

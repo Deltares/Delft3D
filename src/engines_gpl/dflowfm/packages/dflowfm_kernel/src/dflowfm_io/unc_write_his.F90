@@ -747,16 +747,16 @@ contains
 
             if (his_write_settings%bubblescreens > 0 .and. size(bubblescreens) > 0) then
                call realloc(bubblescreen_node_count, size(bubblescreens), fill=0)
-               bubblescreen_node_count = [(bubblescreens(i)%num_flowcells, i=1,size(bubblescreens))]
+               bubblescreen_node_count = [(bubblescreens(i)%global_num_flowcells, i=1,size(bubblescreens))]
                call realloc(geom_x, sum(bubblescreen_node_count))
                call realloc(geom_y, sum(bubblescreen_node_count))
                j = 1
                do i = 1, size(bubblescreens)
-                  nNodes = bubblescreens(i)%num_flowcells
+                  nNodes = bubblescreens(i)%global_num_flowcells
                   if (nNodes > 0) then
                      do k1 = 1, nNodes
-                        geom_x(k1) = xz(bubblescreens(i)%flowcell_indices(k1))
-                        geom_y(k1) = yz(bubblescreens(i)%flowcell_indices(k1))
+                        geom_x(k1) = xz(bubblescreens(i)%global_flowcell_indices(k1))
+                        geom_y(k1) = yz(bubblescreens(i)%global_flowcell_indices(k1))
                      end do
                      call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordx, geom_x(1:nNodes), start=[j], count=[nNodes]))
                      call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordy, geom_y(1:nNodes), start=[j], count=[nNodes]))

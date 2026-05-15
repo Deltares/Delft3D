@@ -1372,25 +1372,35 @@ contains
    subroutine finalize_source_sinks()
       use fm_external_forcings_data, only: num_source_sink, is_source_sink_real, bubblescreens, num_real_source_sink
       use m_alloc, only: realloc
-      use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank
+      use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
+      use m_flowgeom, only: ndx
 
-      integer :: i, sidx, ssidx
+      integer :: i, fcidx, sidx
       integer :: flownode_nr !< Flow node number
 
       call realloc(is_source_sink_real, num_source_sink, fill=.false.)
 
       do i = 1, size(bubblescreens)
-         do sidx = 1, bubblescreens(i)%num_flowcells
-            ssidx = bubblescreens(i)%source_sink_indices(sidx)
-            if (jampi == 1 .and. allocated(idomain)) then
-               flownode_nr = bubblescreens(i)%flowcell_indices(sidx)
-               if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
-                  is_source_sink_real(ssidx) = .true.
+         associate (bubblescreen => bubblescreens(i))
+            do fcidx = 1, bubblescreen%num_flowcells
+               sidx = bubblescreen%source_sink_indices(fcidx)
+               if (jampi == 1 .and. allocated(idomain)) then
+                  flownode_nr = bubblescreen%flowcell_indices(fcidx)
+                  if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
+                     is_source_sink_real(sidx) = .true.
+                  end if
+               else
+                  is_source_sink_real(sidx) = .true.
                end if
-            else
-               is_source_sink_real(ssidx) = .true.
+            end do
+
+            if (jampi == 1) then
+               bubblescreen%global_flowcell_indices =  reduce_cells(bubblescreen%flowcell_indices, ndx, .false.)
+            else 
+               bubblescreen%global_flowcell_indices =  bubblescreen%flowcell_indices
             end if
-         end do
+            bubblescreen%global_num_flowcells = size(bubblescreen%global_flowcell_indices)
+         end associate
       end do
 
       print '(a,i0,a,*(l2))', 'bm', my_rank, ' ', is_source_sink_real
@@ -1478,7 +1488,7 @@ contains
                bubblescreen_cells = bubblescreen%flowcell_indices
                ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
                if (jampi == 1) then
-                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx, .true.)
                   n_cells = size(bubblescreen_cells)
                end if
                call realloc(x_flowcell, n_cells, fill=0.0_dp)
