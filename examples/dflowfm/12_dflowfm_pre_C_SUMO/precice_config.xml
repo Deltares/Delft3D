@@ -11,9 +11,9 @@
   <data:scalar name="sea_floor_depth_below_sea_surface" />
   <data:scalar name="sea_surface_height" />
   <data:scalar name="sea_floor_depth_below_geoid" />
+  <data:scalar name="sea_water_potential_density" />
 
   <data:scalar name="sources_sinks" />
-  <data:scalar name="sea_water_potential_density" />
 
   <mesh name="fm_flow_cells" dimensions="2">
     <use-data name="sea_floor_depth_below_sea_surface" />
