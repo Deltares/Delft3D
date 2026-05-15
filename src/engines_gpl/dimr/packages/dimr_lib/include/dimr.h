@@ -106,6 +106,7 @@ public:
     void printComponentVersionStrings(Level);
 
     void freeLibs(void);
+    void barrier(MPI_Comm, bool, int);
     void processWaitFile(void);
     void createDistributeMPISubGroupCommunicator(dimr_component*);
     void runControlBlock(dimr_control_block*, double, int);
