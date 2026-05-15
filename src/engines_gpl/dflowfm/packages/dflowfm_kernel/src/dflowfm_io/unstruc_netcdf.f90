@@ -6997,7 +6997,7 @@ contains
                call realloc(toutputx, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [lnx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  rhol = get_rhol(stmpar, l)
+                  rhol = get_rhol(stmpar, sedtot2sedsus(l))
                   toutputx(:, l) = sedtra%e_ssn(:, l) / rhol
                   toutputy(:, l) = sedtra%e_sst(:, l) / rhol
                end do
@@ -7227,7 +7227,7 @@ contains
             call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
             call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
             do l = 1, stmpar%lsedsus
-               rhol = get_rhol(stmpar, l)
+               rhol = get_rhol(stmpar, sedtot2sedsus(l))
                toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol
                toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
             end do
@@ -10617,7 +10617,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  rhol = get_rhol(stmpar, sedtot2sedsus(sedtot2sedsus(l)))
+                  rhol = get_rhol(stmpar, sedtot2sedsus(l))
                   toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol ! mapping necessary because dim(sscx)=lsedtot
                   toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
                end do
@@ -10662,7 +10662,7 @@ contains
                call realloc(toutputx, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                call realloc(toutputy, [ndx, stmpar%lsedsus], keepExisting=.false., fill=-999.0_dp)
                do l = 1, stmpar%lsedsus
-                  rhol = get_rhol(stmpar, sedtot2sedsus(sedtot2sedsus(l)))
+                  rhol = get_rhol(stmpar, sedtot2sedsus(l))
                   toutputx(:, l) = sedtra%sscx(:, sedtot2sedsus(l)) / rhol ! mapping necessary because dim(sscx)=lsedtot
                   toutputy(:, l) = sedtra%sscy(:, sedtot2sedsus(l)) / rhol
                end do
