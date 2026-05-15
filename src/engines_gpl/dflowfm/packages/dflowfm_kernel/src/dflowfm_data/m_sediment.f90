@@ -220,7 +220,7 @@ contains
    
    !> A function to return the sediment density conversion factor depending on the keyword Transptype
    !! for converting the unit of the sediment transport quantities in the his/map writers.
-   !! For details, see the description of Transptype in Table A.5 in D-MOR Manual.
+   !! For details, see the description of Transptype in Table A.5 in D-MOR Manual. 
    pure function get_rhol(stmpar, idx) result(rhol)
       type(stmtype), intent(in)     :: stmpar           !< parameters in sediment-transport-morphology module
       integer, intent(in)           :: idx              !< index of sediment fractions
