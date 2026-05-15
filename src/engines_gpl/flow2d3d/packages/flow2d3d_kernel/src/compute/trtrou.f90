@@ -768,7 +768,7 @@ subroutine trtrou(lundia    ,nmax      ,mmax      ,nmaxus    ,kmax      , &
                 ! For flow through vegetation only
                 !
                 if (ircod==152) then
-                   rc0  = sqrt(1.0_fp/((drag*densit*vheigh)/(2.0_fp*ag)+1.0_fp/(cbed*cbed)))
+                   rc0  = sqrt(1.0_fp/((drag*densit*depth)/(2.0_fp*ag)+1.0_fp/(cbed*cbed)))
                 else
                    rc0  = sqrt((2.0_fp*ag)/(drag*densit*depth))
                 endif
