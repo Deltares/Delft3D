@@ -26,7 +26,7 @@ def setup_conan_config(*, ci: bool = False) -> None:
             "remote",
             "add",
             "local-recipes",
-            str(RECIPES_DIR.resolve()),
+            str(RECIPES_DIR.parent.resolve()),
             "--type=local-recipes-index",
             "--index=0",
             "--force",
