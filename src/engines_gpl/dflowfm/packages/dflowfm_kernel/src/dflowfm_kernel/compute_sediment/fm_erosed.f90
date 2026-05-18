@@ -604,7 +604,7 @@ contains
             call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                         & logsedsig ,nseddia   ,logseddia ,ndx     ,1, &
                         & ndx,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                        & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+                        & spatial_d50, sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
             call comphidexp(frac_he   ,dm_he     ,ndx     ,lsedtot   , &
                            & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                            & mwwjhe    ,1, ndx)
