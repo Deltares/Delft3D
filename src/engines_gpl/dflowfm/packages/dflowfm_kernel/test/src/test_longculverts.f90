@@ -193,4 +193,238 @@ contains
     end subroutine test_convert1d2dlongculverts__multiple_culverts
     !$f90tw )
 
+   !> Create a minimal UGRID 2D net file: a simple channel of 4 quads in a row.
+   !! Nodes form a 5x2 grid (10 nodes), edges connect them into 4 rectangular cells.
+   subroutine create_minimal_netfile(filename, ierr)
+      use precision, only: dp
+      use netcdf
+      character(len=*), intent(in) :: filename
+      integer, intent(out) :: ierr
+
+      integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
+      integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
+      integer :: nNodes, nEdges, nFaces
+      real(kind=dp) :: xnodes(10), ynodes(10)
+      integer :: edge_nodes(2, 13), face_nodes(4, 4)
+      integer :: i, j, k
+
+      ! 5 columns x 2 rows of nodes => 10 nodes
+      ! Node layout (y=0 bottom row, y=100 top row):
+      !   6---7---8---9---10      (y=100)
+      !   |   |   |   |   |
+      !   1---2---3---4---5       (y=0)
+      ! x=  0  100 200 300 400
+      nNodes = 10
+      nEdges = 13  ! 4 horizontal bottom + 4 horizontal top + 5 vertical
+      nFaces = 4
+
+      k = 0
+      do j = 1, 2
+         do i = 1, 5
+            k = k + 1
+            xnodes(k) = real((i - 1) * 100, dp)
+            ynodes(k) = real((j - 1) * 100, dp)
+         end do
+      end do
+
+      ! Edge connectivity (1-based)
+      ! Bottom horizontal edges: 1-2, 2-3, 3-4, 4-5
+      edge_nodes(:, 1) = [1, 2]
+      edge_nodes(:, 2) = [2, 3]
+      edge_nodes(:, 3) = [3, 4]
+      edge_nodes(:, 4) = [4, 5]
+      ! Top horizontal edges: 6-7, 7-8, 8-9, 9-10
+      edge_nodes(:, 5) = [6, 7]
+      edge_nodes(:, 6) = [7, 8]
+      edge_nodes(:, 7) = [8, 9]
+      edge_nodes(:, 8) = [9, 10]
+      ! Vertical edges: 1-6, 2-7, 3-8, 4-9, 5-10
+      edge_nodes(:, 9)  = [1, 6]
+      edge_nodes(:, 10) = [2, 7]
+      edge_nodes(:, 11) = [3, 8]
+      edge_nodes(:, 12) = [4, 9]
+      edge_nodes(:, 13) = [5, 10]
+
+      ! Face-node connectivity (CCW): 4 quads
+      face_nodes(:, 1) = [1, 2, 7, 6]
+      face_nodes(:, 2) = [2, 3, 8, 7]
+      face_nodes(:, 3) = [3, 4, 9, 8]
+      face_nodes(:, 4) = [4, 5, 10, 9]
+
+      ! Create NetCDF file
+      ierr = nf90_create(filename, NF90_CLOBBER, ncid)
+      if (ierr /= nf90_noerr) return
+
+      ! Global attributes
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', 'CF-1.8 UGRID-1.0')
+
+      ! Dimensions
+      ierr = nf90_def_dim(ncid, 'mesh2d_nNodes', nNodes, dimid_node)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nEdges', nEdges, dimid_edge)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nFaces', nFaces, dimid_face)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nMax_face_nodes', 4, dimid_maxnodes)
+      ierr = nf90_def_dim(ncid, 'Two', 2, dimid_two)
+
+      ! Mesh topology variable
+      ierr = nf90_def_var(ncid, 'mesh2d', NF90_INT, varid_mesh)
+      ierr = nf90_put_att(ncid, varid_mesh, 'cf_role', 'mesh_topology')
+      ierr = nf90_put_att(ncid, varid_mesh, 'topology_dimension', 2)
+      ierr = nf90_put_att(ncid, varid_mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
+      ierr = nf90_put_att(ncid, varid_mesh, 'edge_node_connectivity', 'mesh2d_edge_nodes')
+      ierr = nf90_put_att(ncid, varid_mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
+
+      ! Node coordinates
+      ierr = nf90_def_var(ncid, 'mesh2d_node_x', NF90_DOUBLE, [dimid_node], varid_xn)
+      ierr = nf90_put_att(ncid, varid_xn, 'standard_name', 'projection_x_coordinate')
+      ierr = nf90_put_att(ncid, varid_xn, 'units', 'm')
+
+      ierr = nf90_def_var(ncid, 'mesh2d_node_y', NF90_DOUBLE, [dimid_node], varid_yn)
+      ierr = nf90_put_att(ncid, varid_yn, 'standard_name', 'projection_y_coordinate')
+      ierr = nf90_put_att(ncid, varid_yn, 'units', 'm')
+
+      ! Edge-node connectivity
+      ierr = nf90_def_var(ncid, 'mesh2d_edge_nodes', NF90_INT, [dimid_two, dimid_edge], varid_en)
+      ierr = nf90_put_att(ncid, varid_en, 'cf_role', 'edge_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_en, 'start_index', 1)
+
+      ! Face-node connectivity
+      ierr = nf90_def_var(ncid, 'mesh2d_face_nodes', NF90_INT, [dimid_maxnodes, dimid_face], varid_fn)
+      ierr = nf90_put_att(ncid, varid_fn, 'cf_role', 'face_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
+
+      ierr = nf90_enddef(ncid)
+      if (ierr /= nf90_noerr) then
+         ierr = nf90_close(ncid)
+         return
+      end if
+
+      ! Write data
+      ierr = nf90_put_var(ncid, varid_xn, xnodes)
+      ierr = nf90_put_var(ncid, varid_yn, ynodes)
+      ierr = nf90_put_var(ncid, varid_en, edge_nodes)
+      ierr = nf90_put_var(ncid, varid_fn, face_nodes)
+
+      ierr = nf90_close(ncid)
+   end subroutine create_minimal_netfile
+
+   !> Create a structures.ini file containing a single long culvert
+   !! that runs through the middle of the mesh (y=50) from x=50 to x=350.
+   subroutine create_structure_file(filename)
+      use m_file_helpers, only: create_file
+      character(len=*), intent(in) :: filename
+
+      call create_file(filename, [ &
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 50.0 50.0 50.0         ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                "])
+   end subroutine create_structure_file
+
+   !> Create a minimal MDU file that references the net file and structure file.
+      subroutine create_mdu_file(mdu_file, net_file, str_file)
+      character(len=*), intent(in) :: mdu_file, net_file, str_file
+      integer :: mout, ierr
+
+      open(newunit=mout, file=mdu_file, status='replace', action='write', iostat=ierr)
+      write(mout, '(a)') '[General]'
+      write(mout, '(a)') '    fileVersion           = 1.09'
+      write(mout, '(a)') '    fileType              = modelDef'
+      write(mout, '(a)') '    program               = D-Flow FM'
+      write(mout, '(a)') ''
+      write(mout, '(a)') '[geometry]'
+      write(mout, '(2a)') '    netFile               = ', trim(net_file)
+      write(mout, '(2a)') '    StructureFile         = ', trim(str_file)
+      write(mout, '(a)') '    Uniformwidth1D        = 2.0'
+      write(mout, '(a)') '    Uniformheight1D       = 2.0'
+      write(mout, '(a)') '    Uniformtyp1D          = 3'
+      write(mout, '(a)') ''
+      write(mout, '(a)') '[physics]'
+      write(mout, '(a)') '    unifFrictCoef         = 0.023'
+      write(mout, '(a)') '    unifFrictType         = 1'
+      write(mout, '(a)') ''
+      write(mout, '(a)') '[time]'
+      write(mout, '(a)') '    refDate               = 20000101'
+      write(mout, '(a)') '    tUnit                 = S'
+      write(mout, '(a)') '    tStart                = 0.0'
+      write(mout, '(a)') '    tStop                 = 100.0'
+      write(mout, '(a)') '    dtMax                 = 10.0'
+      write(mout, '(a)') '    dtUser                = 10.0'
+      write(mout, '(a)') '    dtInit                = 1.0'
+      write(mout, '(a)') '    updateRoughnessInterval = 86400.0'
+      write(mout, '(a)') ''
+      write(mout, '(a)') '[output]'
+      write(mout, '(a)') '    hisInterval           = 0.0'
+      write(mout, '(a)') '    mapInterval           = 0.0'
+      close(mout)
+   end subroutine create_mdu_file
+
+   !$f90tw TESTCODE(TEST, test_longculvert_modelinit, test_flow_modelinit_with_longculvert, test_flow_modelinit_with_longculvert,
+   !> Verifies that flow_modelinit succeeds for a minimal 2D model containing
+   !! a long culvert. This exercises the full initialization path including
+   !! network loading, geometry init, long culvert conversion, and flow init.
+   subroutine test_flow_modelinit_with_longculvert() bind(C)
+      use m_flow_modelinit, only: flow_modelinit
+      use unstruc_model, only: loadModel, md_ident
+      use m_flowgeom, only: ndx, lnx
+      use m_longculverts_data, only: nlongculverts
+      use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL
+      use m_inidat, only: inidat
+      use Timers, only: timini, timon
+      use m_partitioninfo, only: jampi
+      use MessageHandling, only: SetMessageHandling
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use netcdf, only: nf90_noerr
+
+      integer :: ierr, iresult
+
+      character(len=*), parameter :: TEST_NET_FILE = "test_lc_net.nc"
+      character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
+      character(len=*), parameter :: TEST_MDU_FILE = "test_lc.mdu"
+
+      character(len=256) :: mdu_local
+
+      ! ARRANGE: Create all input files
+      call create_minimal_netfile(TEST_NET_FILE, ierr)
+      call f90_assert_eq(ierr, nf90_noerr, "NetCDF net file creation should succeed")
+
+      call create_structure_file(TEST_STR_FILE)
+      call create_mdu_file(TEST_MDU_FILE, TEST_NET_FILE, TEST_STR_FILE)
+      md_ident = TEST_MDU_FILE
+      ! Prevent abort-on-error so we can check return codes
+      threshold_abort = LEVEL_FATAL
+      call inidat()
+      call timini() ! Initialize timers (otherwise `flow_geominit` crashes)
+      timon = .false. ! Disable timers because we're running unit tests.
+      jampi = 0 ! Disable MPI because we're running unit tests.
+      call SetMessageHandling(write2screen=.false.) ! Disable logging.
+      call resetFullFlowModel()
+      mdu_local = TEST_MDU_FILE
+      call loadModel(mdu_local)
+      iresult = flow_modelinit()
+
+      ! ASSERT
+      call f90_expect_eq(iresult, DFM_NOERR, &
+                         "flow_modelinit should return DFM_NOERR for a valid model with a long culvert")
+      call f90_expect_true(ndx > 0, "ndx should be > 0 after successful model init")
+      call f90_expect_true(lnx > 0, "lnx should be > 0 after successful model init")
+      call f90_expect_eq(nlongculverts, 1, "one long culvert should be registered")
+
+   end subroutine test_flow_modelinit_with_longculvert
+   !$f90tw)
+
 end module test_longculverts
