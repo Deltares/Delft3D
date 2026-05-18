@@ -1925,11 +1925,6 @@ contains
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
                             (connection%converterPtr%operandType == operand_replace_element) ) then      
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-!                           if (vectormax == 2) then
-!                               if (ABS(val(1)) .gt. 1.0 .OR. ABS(val(2)) .gt. 1.0) then
-!                                  write (*,*) k,  val(1), val(2)
-!                               end if
-!                           end if
                         else if (connection%converterPtr%operandType == operand_add) then
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
                               = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)

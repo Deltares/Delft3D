@@ -42,7 +42,7 @@ module m_fill_valobs
 contains
 
    subroutine fill_valobs()
-      use precision, only: dp
+      use precision, only: dp, comparereal
       use m_linkstocentercartcomp, only: linkstocentercartcomp
       use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, ucmag, jaeulervel, &
                         flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, javiusp, viclu, viusp, &
@@ -253,16 +253,10 @@ contains
             neighbour_weights_obs(3,i)           = 0.0_dp
             wet_or_dry(neighbour_nodes_obs(:,i)) = 1       ! normal stations always wet!
          else 
-            ! And treat interpolated ones that could not have been interpolated as snapped ones (because they are out of interpolation boundaries)
-            ! if (intobs(i) /= 0) then
-            !   write (msgbuf, '(a, i0, a, f0.10, a, f0.10, a)') "Unable to interpolate #", i, " (", xobs(i), ", ", yobs(i), "). It's probably at the edge and will be snapped!"
-            !  call mess(LEVEL_WARN, msgbuf)
-            ! end if
-            ! check for drying or flooding for interpolated stations
             if (neighbour_nodes_obs(1,i) /=0) then
                do i_neighbours = 1,3
                   ! Points that based on their depth are initially dry (epshs does not recognize temporary drying)
-                  if (water_depth(neighbour_nodes_obs(i_neighbours,i)) < 0.10_dp) wet_or_dry(neighbour_nodes_obs(i_neighbours,i)) = 0
+                  if (comparereal(water_depth(neighbour_nodes_obs(i_neighbours,i)),0.10_dp) == -1) wet_or_dry(neighbour_nodes_obs(i_neighbours,i)) = 0
                end do
             end if
          end if
@@ -808,13 +802,12 @@ contains
    !! Interpolation points and weights are supposed to be already available in neighbour_nodes_obs and neighbour_weights_obs.
    subroutine interpolate_and_fill_valobs(values_on_grid, i_station, ipnt_valobs, loc_type,wet_or_dry)
 
-      use precision, only: dp
+      use precision,             only: dp, comparereal
       use fm_statistical_output, only: model_is_3d
-      use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs,intobs ,  valobs
-      use m_get_kbot_ktop, only: getkbotktop
-
-      use m_get_layer_indices, only: getlayerindices
-      use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
+      use m_observations_data,   only: neighbour_nodes_obs, neighbour_weights_obs,intobs ,  valobs
+      use m_get_kbot_ktop,       only: getkbotktop
+      use m_get_layer_indices,   only: getlayerindices
+      use fm_location_types,     only: UNC_LOC_S3D, UNC_LOC_W
 
       real(kind=dp), intent(in)    :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
       integer      , intent(in)    :: wet_or_dry(:)       !< Array indicating wheter point is wet or dry
@@ -825,7 +818,7 @@ contains
       real(kind=dp) :: value
       real(kind=dp) :: weighttot
 
-      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
+      integer       :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
 
       ! Interpolation needed, however no surroundig wet points, return, value remains dmiss!
       if (intobs(i_station) == 1) then
@@ -874,9 +867,7 @@ contains
                end if
             end if
          end do
-         if (weighttot > 0.0_dp) then
-            valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
-         end if
+         if (comparereal(weighttot,0.0_dp) == 1) valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
       end do
    end subroutine interpolate_and_fill_valobs
 
