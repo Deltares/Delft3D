@@ -163,6 +163,7 @@ def main() -> None:
 
     if args.clean:
         clean_conan_cache()
+        return
 
     if args.update_lockfile:
         update_lockfile(profile, ci=args.ci, local_only=args.rebuild_recipes)

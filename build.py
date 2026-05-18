@@ -88,7 +88,7 @@ def clean_directories(config: str, build_type: str) -> None:
             shutil.rmtree(directory)
 
 
-def run_conan(config: str, build_type: str, *, ci: bool = False) -> None:
+def run_conan(config: str, build_type: str, *, ci: bool = False, build_dependencies: bool = False) -> None:
     """Run run_conan.py to install dependencies."""
     output_folder = ROOT / build_dir_name(config, build_type) / "conan"
     cmd = [
@@ -98,6 +98,8 @@ def run_conan(config: str, build_type: str, *, ci: bool = False) -> None:
     ]
     if ci:
         cmd.append("--ci")
+    if build_dependencies:
+        cmd.append("--build-missing")
     print("Running Conan dependency install...")
     subprocess.run(cmd, check=True)
 
@@ -192,6 +194,11 @@ def main() -> None:
         action="store_true",
         help="Run in CI mode (non-interactive Conan, etc.).",
     )
+    parser.add_argument(
+        "--build-dependencies",
+        action="store_true",
+        help="Build third-party dependencies from source using local recipes, instead of downloading pre-built binaries. Use this when Nexus access is not available.",
+    )
     args = parser.parse_args()
 
     cmake = find_cmake()
@@ -223,7 +230,7 @@ def main() -> None:
     (ROOT / build_dir_name(args.config, args.build_type)).mkdir(exist_ok=True)
 
     # Conan
-    run_conan(args.config, args.build_type, ci=args.ci)
+    run_conan(args.config, args.build_type, ci=args.ci, build_dependencies=args.build_dependencies)
 
     # CMake configure
     run_cmake_configure(
