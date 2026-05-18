@@ -8,7 +8,7 @@ from pathlib import Path
 
 CONFIG_DIR = Path("conan/config")
 RECIPES_DIR = Path("conan/recipes")
-LOCKFILE = Path("conan/conan.lock")
+LOCKFILE = Path("conan.lock")
 
 
 def setup_conan_config(*, ci: bool = False) -> None:
@@ -65,6 +65,7 @@ def conan_install(
     ci: bool = False,
     lockfile: Path | None = None,
     build_missing: bool = False,
+    build_local: bool = False,
 ) -> None:
     cmd = [
         "conan",
@@ -75,7 +76,9 @@ def conan_install(
         f"--output-folder={output_folder}",
     ]
 
-    if build_missing:
+    if build_local:
+        cmd += ["--build=*", "--remote=local-recipes"]
+    elif build_missing:
         cmd += ["--build=missing"]
 
     if lockfile:
@@ -121,6 +124,11 @@ def main() -> None:
         help="Build packages from source if a pre-built binary is not available.",
     )
     parser.add_argument(
+        "--rebuild-recipes",
+        action="store_true",
+        help="Regenerate the lockfile and rebuild all packages from local recipes only. Use in CI to validate recipes.",
+    )
+    parser.add_argument(
         "--output-folder",
         default="build/conan",
         help="Output folder for Conan install files.",
@@ -160,7 +168,7 @@ def main() -> None:
 
     # Install dependencies and generate CMakeDeps metadata for Debug, Release and RelWithDebInfo
     # Note that they effectively all use release binaries
-    conan_install(profile, args.output_folder, "Release", ci=args.ci, lockfile=lockfile, build_missing=args.build_missing)
+    conan_install(profile, args.output_folder, "Release", ci=args.ci, lockfile=lockfile, build_missing=args.build_missing, build_local=args.rebuild_recipes)
     conan_install(
         profile,
         args.output_folder,
@@ -169,6 +177,7 @@ def main() -> None:
         ci=args.ci,
         lockfile=lockfile,
         build_missing=args.build_missing,
+        build_local=args.rebuild_recipes,
     )
     conan_install(
         profile,
@@ -178,6 +187,7 @@ def main() -> None:
         ci=args.ci,
         lockfile=lockfile,
         build_missing=args.build_missing,
+        build_local=args.rebuild_recipes,
     )
 
 
