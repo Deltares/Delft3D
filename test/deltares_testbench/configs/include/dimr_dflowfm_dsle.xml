@@ -109,6 +109,22 @@
                 </file>
             </checks>
         </testCase>
+        <testCase name="e119_f001_c022_3D_tracer_phase_wise" ref="dimr">
+            <path version="2026-05-18T12:56:41.257000">e119_dflowfm_dsle/f001/c022_3D_tracer_phase_wise</path>
+            <maxRunTime>60.0</maxRunTime>
+            <checks>
+                <file name="dhydro/output/FlowFM_map.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="mesh2d_TR1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+                <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
+                    <parameters>
+                        <parameter name="cross_section_TR1" toleranceAbsolute="0.0001" />
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
         <testCase name="e119_f001_c023_3D_tracer_cycle_average" ref="dimr">
             <path version="2026-05-18T12:52:48.056000">e119_dflowfm_dsle/f001/c023_3D_tracer_cycle_average</path>
             <maxRunTime>60.0</maxRunTime>
@@ -125,3 +141,4 @@
                 </file>
             </checks>
         </testCase>
+    </testCases>
