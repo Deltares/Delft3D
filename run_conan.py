@@ -145,6 +145,7 @@ def main() -> None:
 
     if args.system_setup:
         setup_conan_config(ci=args.ci)
+        return
 
     # Verify the profile is available (installed via --system-setup)
     result = subprocess.run(
