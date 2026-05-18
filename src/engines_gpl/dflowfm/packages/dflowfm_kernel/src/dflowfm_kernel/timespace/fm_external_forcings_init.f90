@@ -232,7 +232,7 @@ contains
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
       use fm_external_forcings_data, only: filetype, qhpliname
-      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_operand_string_to_integer
+      use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
       use messageHandling, only: mess, LEVEL_ERROR, err_flush, warn_flush, msgbuf
@@ -299,7 +299,7 @@ contains
       operand = OPERAND_UNKNOWN
       call prop_get(block_ptr, '', 'operand ', property_value, is_successful)
       if (is_successful) then
-         operand = convert_operand_string_to_integer(property_value)
+         operand = convert_legacy_operand_string_to_integer(property_value)
       end if
 
       num_items_in_block = 0
@@ -779,8 +779,7 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
 
-         ! Mask strategy: locationType= uses node-type masking (1d/2d/all);
-         ! targetMaskFile= uses polygon masking; empty = accept all active nodes.
+         ! if we have a location type, simply call pepare_lateral_mask to create the mask; we construct it with construct_target_mask.
          if (len_trim(input%location_type) > 0) then
             call prepare_lateral_mask(mask, parse_location_type(input%location_type))
          else
@@ -1023,48 +1022,6 @@ contains
       end if
 
    end function enable_quantity
-
-   !  !> Initialize the qext (external prescribed discharge) spatial field from a sample file.
-   !!! This is a one-shot spatial interpolation at t=0, not a time-varying EC relation.
-   !!! qext requires forcingFileType=sample and QExt=1 in the MDU.
-   !function init_qext_forcings(block_ptr, input) result(is_successful)
-   !   use tree_data_types, only: tree_data
-   !   use properties, only: prop_get
-   !   use m_lateral_helper_fuctions, only: prepare_lateral_mask
-   !   use m_wind, only: qext
-   !   use m_flowgeom, only: ndx, xz, yz
-   !   use timespace, only: timespaceinitialfield
-   !   use fm_location_types, only: UNC_LOC_S
-   !   use fm_external_forcings_data, only: NTRANSFORMCOEF
-   !   use m_spatial_field, only: t_spatial_field_input, t_averaging_input, &
-   !                              read_averaging_input, averaging_params_to_transformcoef, &
-   !                              parse_location_type
-   !
-   !   type(tree_data), pointer, intent(in) :: block_ptr !< [Spatial] block tree node
-   !   type(t_spatial_field_input), intent(in) :: input  !< Already validated spatial field input
-   !
-   !   logical :: is_successful
-   !
-   !   integer, allocatable :: mask(:)
-   !   real(dp) :: transformcoef(NTRANSFORMCOEF)
-   !   character(len=256) :: location_type_string
-   !   type(t_averaging_input) :: avg
-   !   logical :: is_read
-   !
-   !   !call read_averaging_input(block_ptr, avg)
-   !
-   !   transformcoef = -999.0_dp
-   !   call averaging_params_to_transformcoef(avg, transformcoef)
-   !
-   !   ! Parse locationType= to determine which flow nodes to include in the mask.
-   !   location_type_string = ' '
-   !   call prop_get(block_ptr, '', 'locationType', location_type_string, is_read)
-   !   call prepare_lateral_mask(mask, parse_location_type(location_type_string))
-   !
-   !   is_successful = timespaceinitialfield(xz, yz, qext, ndx, input%forcing_file, input%filetype, &
-   !                                         input%method, input%oper, transformcoef, UNC_LOC_S, mask)
-   !
-   !end function init_qext_forcings
 
    !> Parse source/sink coordinates, either from the ext file, a polyline file specified in the ext file, or a combination of both
    module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
@@ -1397,6 +1354,7 @@ contains
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
+               num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + bubblescreen%num_flowcells
                bubblescreen%total_area = compute_bubblescreen_area(bubblescreen)
             end if
 
