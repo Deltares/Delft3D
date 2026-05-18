@@ -729,7 +729,7 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           call compdiam(frac_he    ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                       & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                       & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                      & sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
+                      & spatial_d50, sedd50fld ,dm_he     ,dg_he     ,dxx_he    ,dgsd_he   )
           call comphidexp(frac_he   ,dm_he     ,nmmax     ,lsedtot   , &
                         & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                         & mwwjhe    ,gdp%d%nmlb,gdp%d%nmub)
