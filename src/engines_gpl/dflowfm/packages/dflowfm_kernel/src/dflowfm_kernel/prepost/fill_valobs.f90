@@ -52,7 +52,7 @@ contains
                         drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
                         rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
                         infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
-                        use_density
+                        use_density, bruva_u, turkinws, turepsws
       use m_flowtimes, only: handle_extra
       use m_transport, only: constituents, isalt, itemp, itra1, ised1
       use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
@@ -68,8 +68,8 @@ contains
                                      ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, &
                                      ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, &
                                      ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
-                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, &
-                                     ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
+                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_bruv_u, ipnt_richs, ival_seddif1, &
+                                     ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_tkins, ipnt_tepss, ipnt_rich, ipnt_rain, ipnt_airdensity, &
                                      ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
                                      ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs, namobs
       use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
@@ -579,6 +579,10 @@ contains
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
                      valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
                   end if
+                  if ((iturbulencemodel == 3 .or. iturbulencemodel == 5) .and. his_write_settings%tur > 0) then
+                     valobs(i, IPNT_TKINS + klay - 1) = turkinws(kk)
+                     valobs(i, IPNT_TEPSS + klay - 1) = turepsws(kk)
+                  end if
                   if (use_density() .and. his_write_settings%rho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
                         valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
@@ -614,6 +618,9 @@ contains
                      if (iturbulencemodel >= 3 .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
                         valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
+                     end if
+                     if (iturbulencemodel == 3 .and. L > Lb - 1 .and. L < Lt) then
+                        valobs(i, IPNT_BRUV_U + klay - 1) = bruva_u(L)
                      end if
                      if (idensform > 0 .and. jaRichardsononoutput > 0) then
                         valobs(i, IPNT_RICH + klay - 1) = rich(L)

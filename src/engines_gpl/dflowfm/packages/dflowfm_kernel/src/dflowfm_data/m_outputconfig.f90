@@ -217,6 +217,8 @@ module m_output_config
    integer, public :: IDX_HIS_VICWWU
    integer, public :: IDX_HIS_TKIN
    integer, public :: IDX_HIS_EPS
+   integer, public :: IDX_HIS_TKINS
+   integer, public :: IDX_HIS_EPSS
    integer, public :: IDX_HIS_TAU
    integer, public :: IDX_HIS_RICH
    integer, public :: IDX_HIS_RICHS
@@ -225,6 +227,7 @@ module m_output_config
    integer, public :: IDX_HIS_POTENTIAL_DENSITY
    integer, public :: IDX_HIS_DENSITY
    integer, public :: IDX_HIS_BRUNT_VAISALA_N2
+   integer, public :: IDX_HIS_BRUNT_VAISALA_N2_U
 
    integer, public :: IDX_HIS_HWAV
    integer, public :: IDX_HIS_HWAV_SIG
