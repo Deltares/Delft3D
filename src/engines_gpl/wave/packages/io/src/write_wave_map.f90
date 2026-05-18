@@ -219,7 +219,7 @@ subroutine write_wave_map(sg, sof, sif, n_swan_grids, wavedata, casl, prevtime, 
    !
    it02 = 0
    itlen = 0
-   call wrpara(filnam, .true., wavedata%time%tscale, idum, 5, ierror)
+   call wrpara(filnam, .true., real(wavedata%time%tscale,sp), idum, 5, ierror)
    call wrpara(filnam, .true., xdum, wavedata%time%refdate, 6, ierror)
    call wrpara(filnam, .true., xdum, it02, 7, ierror)
    call wrpara(filnam, .true., xdum, itlen, 8, ierror)
