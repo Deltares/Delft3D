@@ -14,13 +14,28 @@ namespace
     using namespace pre_c_sumo;
     /**
      * @details Construct forward mapping from settings to data node indices.
+     * 3D data of all subgrid models (each subgrid model is related to one diffuser) is stored in a 1D vector:
+     *     diffuser 1 (z=0), diffuser 1 (z=1), ..., diffuser 1 (z=n),
+     *     intake 1 (z=0), intake 1 (z=1), ..., intake 1 (z=n),               // optional
+     *     ambient 1a (z=0), ambient 1a (z=1), ..., ambient 1a (z=n),
+     *     ambient 1b (z=0), ambient 1b (z=1), ..., ambient 1b (z=n),
+     *     ...
+     *     diffuser 2 (z=0), diffuser 2 (z=1), ..., diffuser 2 (z=n),
+     *     intake 2 (z=0), intake 2 (z=1), ..., intake 2 (z=n),               // optional
+     *     ambient 2a (z=0), ambient 2a (z=1), ..., ambient 2a (z=n),
+     *     ambient 2b (z=0), ambient 2b (z=1), ..., ambient 2b (z=n),
+     *     ...
+     *
+     *  2D: number_of_zcoordinates = 1
      */
-    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index)
+    DiffuserMapping makeDiffuserMapping(const DiffuserSettings& diffuser_setting, const std::size_t diffuser_index,
+                                        const std::size_t number_of_zcoordinates)
     {
         const bool has_intake = diffuser_setting.intake.has_value();
-        const std::size_t intake_index = has_intake ? diffuser_index + 1 : 0;
-        const std::size_t number_of_ambient_points = diffuser_setting.ambient_positions.size();
-        const std::size_t first_ambient_point_index = has_intake ? diffuser_index + 2 : diffuser_index + 1;
+        const std::size_t intake_index = has_intake ? diffuser_index + number_of_zcoordinates : 0;
+        const std::size_t number_of_ambient_points = diffuser_setting.ambient_positions.size() * number_of_zcoordinates;
+        const std::size_t first_ambient_point_index =
+            has_intake ? diffuser_index + 2 * number_of_zcoordinates : diffuser_index + number_of_zcoordinates;
 
         const DiffuserMapping diffuser_mapping = {.diffuser_index = diffuser_index,
                                                   .has_intake = has_intake,
@@ -35,30 +50,54 @@ namespace
      * The latter allows us to find the index of values belonging to diffusers, intakes and ambient points
      * in preCICE communication buffers in O(1) time.
      */
-    Mesh getMesh2d(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings)
+    Mesh getMesh2D3D(const std::string_view csumo_mesh_name, const CSumoSettingsReader& csumo_settings,
+                     const ZSpecification& z_spec)
     {
-        constexpr int dimensions = 2;
+        const std::size_t dimensions = z_spec.numberOfDimensions();
         Mesh mesh = {};
         mesh.name = csumo_mesh_name;
+        mesh.number_of_zcoordinates = z_spec.numberOfZCoordinates();
         for (const DiffuserSettings& diffuser : csumo_settings.diffusers())
         {
             const std::size_t diffuser_index_mapping = mesh.coordinates.size() / dimensions;
-            mesh.coordinates.emplace_back(diffuser.position.x_coordinate); // diffuser position x
-            mesh.coordinates.emplace_back(diffuser.position.y_coordinate); // diffuser position y
+            for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
+            {
+                mesh.coordinates.emplace_back(diffuser.position.x_coordinate); // diffuser position x
+                mesh.coordinates.emplace_back(diffuser.position.y_coordinate); // diffuser position y
+                if (!z_spec.is_2d)
+                {
+                    mesh.coordinates.emplace_back(z_spec.zCoordinateAt(i)); // z coordinate
+                }
+            }
 
             if (diffuser.intake.has_value()) // (optional intake)
             {
-                mesh.coordinates.emplace_back(diffuser.intake.value().x_coordinate); // intake point x
-                mesh.coordinates.emplace_back(diffuser.intake.value().y_coordinate); // intake point y
+                for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
+                {
+                    mesh.coordinates.emplace_back(diffuser.intake.value().x_coordinate); // intake point x
+                    mesh.coordinates.emplace_back(diffuser.intake.value().y_coordinate); // intake point y
+                    if (!z_spec.is_2d)
+                    {
+                        mesh.coordinates.emplace_back(z_spec.zCoordinateAt(i)); // z coordinate
+                    }
+                }
             }
 
             for (const parsing_utils::Point2D& position : diffuser.ambient_positions)
             {
-                mesh.coordinates.emplace_back(position.x_coordinate);
-                mesh.coordinates.emplace_back(position.y_coordinate);
+                for (std::size_t i = 0; i < mesh.number_of_zcoordinates; ++i)
+                {
+                    mesh.coordinates.emplace_back(position.x_coordinate);
+                    mesh.coordinates.emplace_back(position.y_coordinate);
+                    if (!z_spec.is_2d)
+                    {
+                        mesh.coordinates.emplace_back(z_spec.zCoordinateAt(i)); // z coordinate
+                    }
+                }
             }
 
-            mesh.forward_map.emplace_back(makeDiffuserMapping(diffuser, diffuser_index_mapping));
+            mesh.forward_map.emplace_back(
+                makeDiffuserMapping(diffuser, diffuser_index_mapping, mesh.number_of_zcoordinates));
         }
 
         mesh.number_of_nodes = mesh.coordinates.size() / dimensions;
@@ -87,13 +126,20 @@ namespace pre_c_sumo
             return -1;
         }
 
-        Mesh csumo_2d_mesh = getMesh2d("csumo_2d_nodes", csumo_settings.value());
+        // Construct 2d mesh
+        Mesh csumo_2d_mesh = getMesh2D3D("csumo_2d_nodes", csumo_settings.value(), ZSpecification{true, 0, 0, 0});
         participant.setMeshVertices(csumo_2d_mesh.name, csumo_2d_mesh.coordinates, csumo_2d_mesh.vertex_ids);
-
         // Add preCICE quantity data buffers.
         csumo_2d_mesh.quantities[water_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
         csumo_2d_mesh.quantities[bed_levels_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
         csumo_2d_mesh.quantities[water_depth_id] = std::vector<double>(csumo_2d_mesh.number_of_nodes);
+
+        // Construct 3d mesh
+        Mesh csumo_3d_mesh =
+            getMesh2D3D("csumo_3d_nodes", csumo_settings.value(), ZSpecification{false, -11.0, 3.0, 1.0});
+        participant.setMeshVertices(csumo_3d_mesh.name, csumo_3d_mesh.coordinates, csumo_3d_mesh.vertex_ids);
+        // Add preCICE quantity data buffers.
+        csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
         // TESTDATA: set sources_sinks mesh
         constexpr int sources_sinks_size = 4;
@@ -114,8 +160,8 @@ namespace pre_c_sumo
         {
             double coupling_time_step = participant.getMaxTimeStepSize();
 
-            receiveFFData(participant, csumo_2d_mesh, coupling_time_step);
-            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, current_time_seconds);
+            receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
+            writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
             waitForNF2FFFiles(csumo_settings.value());
             readNF2FFFiles(csumo_settings.value());
             convertNFToSourcesSinks(csumo_settings.value());
