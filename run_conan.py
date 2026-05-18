@@ -18,7 +18,8 @@ def setup_conan_config(*, ci: bool = False) -> None:
         cmd += ["--core-conf", "core:non_interactive=True"]
     subprocess.run(cmd, check=True)
 
-    # Register the local recipes folder between conan-dev and conan-center-proxy
+    # Register the local recipes folder with highest priority so local recipe
+    # changes are always preferred over whatever is cached on the remotes.
     subprocess.run(
         [
             "conan",
@@ -27,7 +28,7 @@ def setup_conan_config(*, ci: bool = False) -> None:
             "local-recipes",
             str(RECIPES_DIR.resolve()),
             "--type=local-recipes-index",
-            "--index=1",
+            "--index=0",
             "--force",
         ],
         check=True,
@@ -39,7 +40,7 @@ def clean_conan_cache() -> None:
     subprocess.run(["conan", "cache", "clean"], check=True)
 
 
-def update_lockfile(profile: str, *, ci: bool = False) -> None:
+def update_lockfile(profile: str, *, ci: bool = False, local_only: bool = False) -> None:
     """Generate or update conan.lock from the current conanfile and recipes."""
     cmd = [
         "conan",
@@ -50,6 +51,8 @@ def update_lockfile(profile: str, *, ci: bool = False) -> None:
         "build_type=Release",
         f"--lockfile-out={LOCKFILE}",
     ]
+    if local_only:
+        cmd += ["--remote=local-recipes"]
     if ci:
         cmd += ["--core-conf", "core:non_interactive=True"]
     print(f"Updating lockfile {LOCKFILE}...")
@@ -162,7 +165,7 @@ def main() -> None:
         clean_conan_cache()
 
     if args.update_lockfile:
-        update_lockfile(profile, ci=args.ci)
+        update_lockfile(profile, ci=args.ci, local_only=args.rebuild_recipes)
 
     # Use lockfile for reproducible installs if one exists
     lockfile = LOCKFILE if LOCKFILE.exists() else None
