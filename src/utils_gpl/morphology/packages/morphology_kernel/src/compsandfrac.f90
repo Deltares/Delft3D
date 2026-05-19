@@ -41,7 +41,7 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision
-    use sediment_basics_module, only: dgravel
+    use sediment_basics_module, only: dsand, dgravel
     !
     implicit none
 !
@@ -70,13 +70,17 @@ subroutine compsandfrac(frac, seddm, nmmax, lsedtot, sedtyp, &
 !
     if (spatial_d50) then
        ! Single size fraction
-       do nm = 1, nmmax
-          if (sedd50fld(nm) < dgravel) then
-             sandfrac(nm) = 1
-          else
-             sandfrac(nm) = 0
-          endif
-       enddo
+       if (sedtyp(1) > max_mud_sedtyp) then
+          do nm = 1, nmmax
+             if (sedd50fld(nm) >= dsand .and. sedd50fld(nm) < dgravel) then
+                sandfrac(nm) = 1.0_fp
+             else
+                sandfrac(nm) = 0.0_fp
+             endif
+          enddo
+       else
+          sandfrac(:) = 0.0_fp
+       endif
     else
        ! Multiple size fractions
        do nm = 1, nmmax
