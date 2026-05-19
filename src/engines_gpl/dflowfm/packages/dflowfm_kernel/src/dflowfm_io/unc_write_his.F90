@@ -135,8 +135,8 @@ contains
 
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
 
-      real(kind=dp), allocatable :: geom_x(:), geom_y(:)
-      integer, allocatable :: node_count(:), bubblescreen_node_count(:)
+      ! real(kind=dp), allocatable :: geom_x(:), geom_y(:)
+      ! integer, allocatable :: node_count(:), bubblescreen_node_count(:)
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
       integer :: maxlocT, maxvalT !< row+column count of valobs
