@@ -377,6 +377,7 @@ contains
       use MessageHandling, only: SetMessageHandling
       use m_resetfullflowmodel, only: resetfullflowmodel
       use netcdf, only: nf90_noerr
+      use m_flow_spatietimestep, only: flow_spatietimestep
 
       integer :: ierr, iresult
 
@@ -405,7 +406,7 @@ contains
       mdu_local = TEST_MDU_FILE
       call loadModel(mdu_local)
       iresult = flow_modelinit()
-
+      call flow_spatietimestep()
       ! ASSERT
       call f90_expect_eq(iresult, DFM_NOERR, &
                          "flow_modelinit should return DFM_NOERR for a valid model with a long culvert")
