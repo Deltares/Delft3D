@@ -1,8 +1,8 @@
 module test_longculverts
     use assertions_gtest
-    use m_longculverts, only: convert1D2DLongCulverts
+    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
     use m_network_helpers, only: t_grid_helper
-    implicit none
+    implicit none(type, external)
 
 contains
     function to_c_string(string) result(res)
@@ -347,13 +347,6 @@ contains
       write(mout, '(a)') '[geometry]'
       write(mout, '(2a)') '    netFile               = ', trim(net_file)
       write(mout, '(2a)') '    StructureFile         = ', trim(str_file)
-      write(mout, '(a)') '    Uniformwidth1D        = 2.0'
-      write(mout, '(a)') '    Uniformheight1D       = 2.0'
-      write(mout, '(a)') '    Uniformtyp1D          = 3'
-      write(mout, '(a)') ''
-      write(mout, '(a)') '[physics]'
-      write(mout, '(a)') '    unifFrictCoef         = 0.023'
-      write(mout, '(a)') '    unifFrictType         = 1'
       write(mout, '(a)') ''
       write(mout, '(a)') '[time]'
       write(mout, '(a)') '    refDate               = 20000101'
@@ -363,11 +356,6 @@ contains
       write(mout, '(a)') '    dtMax                 = 10.0'
       write(mout, '(a)') '    dtUser                = 10.0'
       write(mout, '(a)') '    dtInit                = 1.0'
-      write(mout, '(a)') '    updateRoughnessInterval = 86400.0'
-      write(mout, '(a)') ''
-      write(mout, '(a)') '[output]'
-      write(mout, '(a)') '    hisInterval           = 0.0'
-      write(mout, '(a)') '    mapInterval           = 0.0'
       close(mout)
    end subroutine create_mdu_file
 
@@ -407,6 +395,7 @@ contains
       md_ident = TEST_MDU_FILE
       ! Prevent abort-on-error so we can check return codes
       threshold_abort = LEVEL_FATAL
+
       call inidat()
       call timini() ! Initialize timers (otherwise `flow_geominit` crashes)
       timon = .false. ! Disable timers because we're running unit tests.
@@ -423,6 +412,8 @@ contains
       call f90_expect_true(ndx > 0, "ndx should be > 0 after successful model init")
       call f90_expect_true(lnx > 0, "lnx should be > 0 after successful model init")
       call f90_expect_eq(nlongculverts, 1, "one long culvert should be registered")
+
+      call default_longculverts
 
    end subroutine test_flow_modelinit_with_longculvert
    !$f90tw)
