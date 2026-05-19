@@ -65,21 +65,17 @@ def setup_vs_environment(vs_year: str) -> None:
     )
 
 
-def clean_directories(config: str, build_type: str) -> None:
-    """Remove build and install directories for the given configuration."""
-    for name in (
-        build_dir_name(config, build_type),
-        install_dir_name(config, build_type),
-    ):
-        directory = ROOT / name
+def clean_directories(build_dir: Path, install_dir: Path) -> None:
+    """Remove build and install directories."""
+    for directory in (build_dir, install_dir):
         if directory.exists():
             print(f"Removing {directory}...")
             shutil.rmtree(directory)
 
 
-def run_conan(config: str, build_type: str, *, ci: bool = False, build_dependencies: bool = False) -> None:
+def run_conan(build_dir: Path, *, ci: bool = False, build_dependencies: bool = False) -> None:
     """Run run_conan.py to install dependencies."""
-    output_folder = ROOT / build_dir_name(config, build_type) / "conan"
+    output_folder = build_dir / "conan"
     cmd = [
         sys.executable,
         str(ROOT / "run_conan.py"),
@@ -98,9 +94,10 @@ def run_cmake_configure(
     *,
     vs_year: str | None,
     build_type: str,
+    build_dir: Path,
+    install_dir: Path,
 ) -> None:
     """Run CMake configure step."""
-    build_dir = ROOT / build_dir_name(config, build_type)
     build_dir.mkdir(exist_ok=True)
 
     cmd = [
@@ -110,7 +107,7 @@ def run_cmake_configure(
         "-B",
         str(build_dir),
         f"-DCONFIGURATION_TYPE:STRING={config}",
-        f"-DCMAKE_INSTALL_PREFIX={ROOT / install_dir_name(config, build_type)}",
+        f"-DCMAKE_INSTALL_PREFIX={install_dir}",
     ]
 
     if platform.system() == "Windows":
@@ -125,9 +122,8 @@ def run_cmake_configure(
     subprocess.run(cmd, check=True)
 
 
-def run_cmake_build(config: str, *, build_type: str) -> None:
+def run_cmake_build(config: str, *, build_type: str, build_dir: Path) -> None:
     """Run CMake build step."""
-    build_dir = ROOT / build_dir_name(config, build_type)
     print(f"Building {config} ({build_type})...")
     subprocess.run(
         ["cmake", "--build", str(build_dir), "--config", build_type, "--parallel"],
@@ -135,9 +131,8 @@ def run_cmake_build(config: str, *, build_type: str) -> None:
     )
 
 
-def run_cmake_install(config: str, *, build_type: str) -> None:
+def run_cmake_install(config: str, *, build_type: str, build_dir: Path) -> None:
     """Run CMake install step."""
-    build_dir = ROOT / build_dir_name(config, build_type)
     print(f"Installing {config} ({build_type})...")
     subprocess.run(
         ["cmake", "--install", str(build_dir), "--config", build_type],
@@ -187,6 +182,14 @@ def main() -> None:
         action="store_true",
         help="Build third-party dependencies from source using local recipes, instead of downloading pre-built binaries. Use this when Nexus access is not available.",
     )
+    parser.add_argument(
+        "--build-dir",
+        help="Override build directory path (default: build_<config> on Windows, build_<config>_<build_type> on Linux).",
+    )
+    parser.add_argument(
+        "--install-dir",
+        help="Override install directory path (default: install_<config> on Windows, install_<config>_<build_type> on Linux).",
+    )
     args = parser.parse_args()
 
     # Visual Studio detection (Windows only)
@@ -204,33 +207,38 @@ def main() -> None:
     print(f"  keep_build : {args.keep_build}")
     print()
 
+    # Resolve build and install directories
+    build_dir = ROOT / (args.build_dir or build_dir_name(args.config, args.build_type))
+    install_dir = ROOT / (args.install_dir or install_dir_name(args.config, args.build_type))
+
     # Verify VS environment is active when building on Windows
     if platform.system() == "Windows" and args.build and vs_year:
         setup_vs_environment(vs_year)
 
     # Clean build directories
     if not args.keep_build:
-        clean_directories(args.config, args.build_type)
+        clean_directories(build_dir, install_dir)
 
     # Conan
-    run_conan(args.config, args.build_type, ci=args.ci, build_dependencies=args.build_dependencies)
+    run_conan(build_dir, ci=args.ci, build_dependencies=args.build_dependencies)
 
     # CMake configure
     run_cmake_configure(
         args.config,
         vs_year=vs_year,
         build_type=args.build_type,
+        build_dir=build_dir,
+        install_dir=install_dir,
     )
 
     # Build and install
     if args.build:
-        run_cmake_build(args.config, build_type=args.build_type)
-        run_cmake_install(args.config, build_type=args.build_type)
+        run_cmake_build(args.config, build_type=args.build_type, build_dir=build_dir)
+        run_cmake_install(args.config, build_type=args.build_type, build_dir=build_dir)
 
     print()
     if platform.system() == "Windows":
         sln_ext = "slnx" if vs_year == "2026" else "sln"
-        build_dir = ROOT / build_dir_name(args.config, args.build_type)
         print(f"Generated solution: {build_dir / f'{args.config}.{sln_ext}'}")
     print("Finished")
 

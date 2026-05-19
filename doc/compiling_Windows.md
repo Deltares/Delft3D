@@ -19,7 +19,8 @@ Back to main [development page](development.md).
 If you prefer user interfaces over command lines, you may want to additionally install [GitExtensions](https://gitextensions.github.io/) and/or [TortoiseGit](https://tortoisegit.org/).
 The former tool is generally considered more powerful and true to Git.
 The latter tool offers icon overlays for commit status.
-- [Python](https://www.python.org/downloads/) for some build steps
+- [Python](https://www.python.org/downloads/) for the build scripts and Conan package manager
+- [Conan 2](https://docs.conan.io/2/installation.html) — install via `pip install conan`
 
 **Note**
 - We are currently using Visual Studio 2022 and Intel oneAPI 2024.2 for the official release.
@@ -28,20 +29,44 @@ The latter tool offers icon overlays for commit status.
   We aim to transition to the updated versions in the near future.
 
 
+## One-time Conan setup
+
+Before building for the first time, initialise the Conan configuration.
+This installs compiler profiles, settings, and (for Deltares developers) the Nexus remote where pre-built binary packages are hosted.
+
+**Deltares developers** (with Nexus access):
+```
+python run_conan.py --initialize-conan=deltares
+```
+
+**External / open-source developers** (without Nexus access):
+```
+python run_conan.py --initialize-conan=external
+```
+
 ## Build steps
 - Download or clone the source code from https://github.com/Deltares/Delft3D
   ```
   git clone https://github.com/Deltares/Delft3D.git
   ```
-- Execute `build.bat` from an **Intel oneAPI command prompt for Intel 64 for Visual Studio XXX** (where XXX depends on the version installed; you can find this command prompt in your Windows Start menu).
-  Execute `build.bat -help` to show the supported command line options.
-  This step uses CMake to create the Visual Studio build environment.
+- Run `build.py` from an **Intel oneAPI command prompt for Intel 64 for Visual Studio XXX** (where XXX depends on the version installed; you can find this command prompt in your Windows Start menu).
+  Execute `python build.py --help` to show the supported command line options.
+  This step uses Conan to fetch third-party dependencies and CMake to create the Visual Studio build environment.
   By default, it creates the build environment for the Delft3D FM Suite (`fm-suite`) but you can also build environments for the Delft3D 4 Suite (`d3d4-suite`) and everything (`all`) by changing the selected configuration (see the command line options).
-- Experienced developers may prefer to trigger the CMake build system manually by means of a command such as
   ```
-  cmake -S .\src\cmake -B build_fm-suite  -T fortran=ifx -A x64 -D CONFIGURATION_TYPE:STRING="fm-suite" -D CMAKE_INSTALL_PREFIX=.\install_fm-suite\
-  ```  
-  instead of using the `build.bat` script.
+  python build.py --config fm-suite
+  ```
+  To also compile and install in one go:
+  ```
+  python build.py --config fm-suite --build
+  ```
+
+  **Open-source developers** without access to the Deltares Nexus must build all third-party
+  dependencies from the local recipes by adding `--build-dependencies`:
+  ```
+  python build.py --config fm-suite --build --build-dependencies
+  ```
+
 - Open the generated solution from the **Intel oneAPI command prompt for Intel 64 for Visual Studio XXX** to ensure that the intel environment is inherited by visual studio. For example:
   ```
   devenv build_fm-suite\fm-suite.sln
@@ -59,3 +84,30 @@ The latter tool offers icon overlays for commit status.
   cmake --install build_fm-suite --config Debug
   ```
   to build the debug version of the Delft3D FM binaries.
+
+## Power-user workflow (Conan + CMake separately)
+
+If you prefer to drive Conan and CMake individually (e.g. when iterating on CMake changes without
+re-running Conan):
+
+```bat
+:: 1. Install dependencies (generates CMakeDeps files in the output folder)
+::    The profile was installed by --initialize-conan; the lockfile ensures reproducibility.
+conan install . --profile:all=delft3d_windows --settings:all build_type=Release ^
+      --output-folder=build_fm-suite/conan --lockfile=conan.lock
+
+:: 2. CMake configure
+cmake -S .\src\cmake -B build_fm-suite -T fortran=ifx -A x64 ^
+      -D CONFIGURATION_TYPE:STRING="fm-suite" ^
+      -D CMAKE_INSTALL_PREFIX=.\install_fm-suite
+
+:: 3. Build & install
+cmake --build build_fm-suite --config Debug --parallel
+cmake --install build_fm-suite --config Debug
+```
+
+To build missing dependencies from source (e.g. after changing a recipe):
+```bat
+conan install . --profile:all=delft3d_windows --settings:all build_type=Release ^
+      --output-folder=build_fm-suite/conan --build=missing
+```

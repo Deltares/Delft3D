@@ -4,6 +4,14 @@ Back to main [development page](development.md).
 The preferred build procedure for Linux uses containers; this is the procedure described here.
 Containers are lightweight, isolated environments that package an application and all its dependencies so it can run consistently across different systems.
 
+Third-party dependencies are managed by [Conan 2](https://docs.conan.io/2/).
+Pre-built binary packages are available from the Deltares Nexus repository for Deltares developers.
+External developers build all dependencies from the local recipes included in this repository.
+
+> **Note:** Not all third-party libraries have been migrated to Conan yet.
+> Some still come from the `third-party-libs` Docker container. The build scripts
+> handle both sources transparently.
+
 ## Prerequisites
 - Install git using
   ```
@@ -15,7 +23,6 @@ Containers are lightweight, isolated environments that package an application an
   ```
   git clone https://github.com/Deltares/Delft3D.git
   ```
-  This step is eventually needed for compiling Delft3D, but it also downloads the Dockerfiles for the next step.
 - Install Docker.
   The exact steps depend on your operating system.
   It will typically be something like:
@@ -32,42 +39,85 @@ Containers are lightweight, isolated environments that package an application an
   # 4. Enable & start service
   sudo systemctl enable --now docker
   ```
-- See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the rest of the prerequisites: a container for the base build environment and one with the build environment including all third party dependencies.
-  For Windows, we include all third party dependencies in the source distribution in (semi) compiled form, but on Linux it's common practice that you build such libraries yourself.
+- See [these instructions](../ci/dockerfiles/linux/README.md) for setting up the build-tools container and third-party-libs container (compiler environment and remaining non-Conan dependencies).
+  The `buildtools` image contains the Intel oneAPI compilers, CMake, Python and Conan.
+  The `third-party-libs` image extends `buildtools` with libraries not yet managed by Conan.
+
+## One-time Conan setup
+
+Before building for the first time (inside the container), initialise the Conan configuration.
+If you use the [devcontainer](../.devcontainer/delft3d/README.md), the Conan cache is persisted
+in a Docker volume across rebuilds — you only need to run this once.
+
+**Deltares developers** (with Nexus access):
+```bash
+python run_conan.py --initialize-conan=deltares
+```
+
+**External / open-source developers** (without Nexus access):
+```bash
+python run_conan.py --initialize-conan=external
+```
 
 ## Build steps
-- To build the Delft3D source code, we use the `third-party-libs` container created in the last step of the prerequisites:
-  ```
-  # Optionally repeat: export TAG=oneapi-2024
-  docker build . -f doc/delft3d.Dockerfile \
-      -t localhost/delft3d:$TAG \
-      --build-arg INTEL_ONEAPI_VERSION=2024 \
-      --build-arg INTEL_FORTRAN_COMPILER=ifx \
-      --build-arg BUILD_TYPE=Release \
-      --build-arg THIRDPARTYLIBS_IMAGE_URL=localhost/third-party-libs \
-      --build-arg BASE_TAG=$TAG
-  ```
-- Alternatively, you can open the build container interactively while making the current folder (root of the repository) available as `/delft3d`:
-  ```
-  # Optionally repeat: export TAG=oneapi-2024
-  docker run -it -v .:/delft3d localhost/third-party-libs:$TAG
-  ```
-  and subsequently inside the container go to that folder, and run the build script.
-  Unfortunately, you have to make sure that some paths have been properly set such that the build process can find all dependencies.
-  In the build container only the last two have not yet been set.
-  ```
-  #export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-  #export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-  #export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
-  export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
-  export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
-  
-  cd /delft3d
-  ./build.sh --build all
-  ```
+
+### Using the devcontainer (recommended)
+
+The easiest way to build on Linux is to open this repository in the
+[devcontainer](../.devcontainer/delft3d/README.md). The devcontainer is based on the
+`third-party-libs` image and persists your Conan cache in a Docker volume.
+Once the container is running:
+
+```bash
+cd /workspaces/delft3d
+
+# One-time Conan setup (Deltares developers)
+python run_conan.py --initialize-conan=deltares
+
+# Build (downloads pre-built Conan binaries from Nexus)
+python build.py --config fm-suite --build --build-type Release
+```
+
+### Using `build.py` in an interactive container
+
+When not using the devcontainer, run the build inside the third-party-libs container directly:
+
+```bash
+docker run -it -v .:/delft3d containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release
+```
+
+Inside the container:
+```bash
+cd /delft3d
+
+# One-time Conan setup (Deltares developers)
+python run_conan.py --initialize-conan=deltares
+
+# Build (downloads pre-built binaries from Nexus)
+python build.py --config fm-suite --build --build-type Release
+```
+
+**Open-source developers** without Nexus access build all dependencies from source:
+```bash
+python run_conan.py --initialize-conan=external
+python build.py --config fm-suite --build --build-type Release --build-dependencies
+```
+
+### Using `docker build` (non-interactive)
+
+You can also use the Dockerfile for a non-interactive build:
+```bash
+export TAG=oneapi-2024
+docker build . -f doc/delft3d.Dockerfile \
+    -t localhost/delft3d:$TAG \
+    --build-arg INTEL_ONEAPI_VERSION=2024 \
+    --build-arg INTEL_FORTRAN_COMPILER=ifx \
+    --build-arg BUILD_TYPE=Release \
+    --build-arg BASE_TAG=$TAG
+```
 
 ### Build arguments
-The dockerfile has seven build argument:
+The dockerfile has the following build arguments:
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 - `INTEL_FORTRAN_COMPILER` (default value: `ifx`)
 - `BUILD_TYPE` (default value: `Release`)
@@ -93,6 +143,33 @@ Note that the `BASE_TAG` is added automatically by the Dockerfile (see the `BASE
 
 The `BASE_TAG` ensures that the `delft3d` image is based on the `third-party-libs` image with that tag.
 Note that the default tag used here deviates from the one set in the prerequisites, so you will typically have to overrule it.
+
+## Power-user workflow (Conan + CMake separately)
+
+Inside the build container, you can drive Conan and CMake individually:
+
+```bash
+# 1. Install dependencies (generates CMakeDeps files)
+#    The profile was installed by --initialize-conan; the lockfile ensures reproducibility.
+conan install . --profile:all=delft3d_linux --settings:all build_type=Release \
+      --output-folder=build_fm-suite_release/conan --lockfile=conan.lock
+
+# 2. CMake configure
+cmake -S ./src/cmake -B build_fm-suite_release -G "Unix Makefiles" \
+      -D CONFIGURATION_TYPE:STRING="fm-suite" \
+      -D CMAKE_BUILD_TYPE=Release \
+      -D CMAKE_INSTALL_PREFIX=./install_fm-suite_release
+
+# 3. Build & install
+cmake --build build_fm-suite_release --parallel
+cmake --install build_fm-suite_release
+```
+
+To build missing dependencies from source (e.g. after changing a recipe):
+```bash
+conan install . --profile:all=delft3d_linux --settings:all build_type=Release \
+      --output-folder=build_fm-suite_release/conan --build=missing
+```
 
 ## Run
 Now, you should be able to run your first simulations.
