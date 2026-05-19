@@ -137,6 +137,12 @@ module m_structures
    real(kind=dp), allocatable, target :: geomXLongCulv(:) !< [m] x coordinates of long culverts.
    real(kind=dp), allocatable, target :: geomYLongCulv(:) !< [m] y coordinates of long culverts.
 
+   ! source/sinks
+   integer :: nNodesSourceSink !< [-] Total number of nodes for all source/sinks
+   integer, dimension(:), allocatable, target :: nodeCountSourceSink !< [-] Count of nodes per source/sink.
+   real(kind=dp), dimension(:), allocatable, target :: geomXSourceSink !< [m] x coordinates of source/sinks.
+   real(kind=dp), dimension(:), allocatable, target :: geomYSourceSink !< [m] y coordinates of source/sinks.
+
    !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
  !! (set in fill_geometry_arrays_structure)
@@ -390,15 +396,15 @@ contains
 
       if (hs(ku) > epshs) then
          valstruct(IVAL_WIDTHUP) = valstruct(IVAL_WIDTHUP) + wu(L)
-         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP) + s1(ku) * wu(L)
+         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP) + s1(ku)*wu(L)
       end if
       if (hs(kd) > epshs) then
          valstruct(IVAL_WIDTHDN) = valstruct(IVAL_WIDTHDN) + wu(L)
-         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN) + s1(kd) * wu(L)
+         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN) + s1(kd)*wu(L)
       end if
       if (hs(ku) > epshs .and. hs(kd) > epshs) then
          valstruct(IVAL_WIDTHUPDN) = valstruct(IVAL_WIDTHUPDN) + wu(L)
-         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD) + (s1(ku) - s1(kd)) * wu(L)
+         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD) + (s1(ku) - s1(kd))*wu(L)
       end if
 
       if (hu(L) > epshu) then ! when link L is wet
@@ -408,9 +414,9 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             qcmp = get_discharge_under_compound_struc(network%sts%struct(istru), L0, s1(k1), s1(k2), teta(L))
-            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp * dir
+            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp*dir
          else
-            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L) * dir
+            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L)*dir
          end if
 
          if (istrtypein /= ST_PUMP) then ! Compute flow area for structures except for pump
@@ -429,8 +435,8 @@ contains
 
          ! 2a. General structure-based structures with a crest.
          if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
-            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0) * wu(L)
-            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L) * wu(L)
+            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0)*wu(L)
+            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L)*wu(L)
          end if
 
          ! 2b. General structure-based structures with a (gate) door.
@@ -439,9 +445,9 @@ contains
             k2 = ln(2, L)
             genstr => network%sts%struct(istru)%generalst
 
-            valstruct(IVAL_DIS_OPEN) = valstruct(IVAL_DIS_OPEN) + get_discharge_through_gate_opening(genstr, L0, s1(k1), s1(k2)) * dir
-            valstruct(IVAL_DIS_OVER) = valstruct(IVAL_DIS_OVER) + get_discharge_over_gate(genstr, L0, s1(k1), s1(k2)) * dir
-            valstruct(IVAL_DIS_UNDER) = valstruct(IVAL_DIS_UNDER) + get_discharge_under_gate(genstr, L0, s1(k1), s1(k2)) * dir
+            valstruct(IVAL_DIS_OPEN) = valstruct(IVAL_DIS_OPEN) + get_discharge_through_gate_opening(genstr, L0, s1(k1), s1(k2))*dir
+            valstruct(IVAL_DIS_OVER) = valstruct(IVAL_DIS_OVER) + get_discharge_over_gate(genstr, L0, s1(k1), s1(k2))*dir
+            valstruct(IVAL_DIS_UNDER) = valstruct(IVAL_DIS_UNDER) + get_discharge_under_gate(genstr, L0, s1(k1), s1(k2))*dir
 
             valstruct(IVAL_AREA_OPEN) = valstruct(IVAL_AREA_OPEN) + genstr%au(3, L0) ! flow area through gate opening
             valstruct(IVAL_AREA_OVER) = valstruct(IVAL_AREA_OVER) + genstr%au(2, L0) ! flow area over gate
@@ -456,9 +462,9 @@ contains
 
       ! 2d. More specific values that apply to bridge
       if (istrtypein == ST_BRIDGE) then
-         valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) + bl(ku) * wu(L)
-         valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) + bl(kd) * wu(L)
-         valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%bridge%bedLevel_actual * wu(L)
+         valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) + bl(ku)*wu(L)
+         valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) + bl(kd)*wu(L)
+         valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%bridge%bedLevel_actual*wu(L)
       end if
 
    end subroutine fill_valstruct_perlink
@@ -513,17 +519,17 @@ contains
       ! 1. Generic values that apply to all structure types
       ! 1a. average for waterlevel upstream, downstream and head
       if (valstruct(IVAL_WIDTHUP) > 0) then
-         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP) / valstruct(IVAL_WIDTHUP)
+         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP)/valstruct(IVAL_WIDTHUP)
       else
          valstruct(IVAL_S1UP) = dmiss
       end if
       if (valstruct(IVAL_WIDTHDN) > 0) then
-         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN) / valstruct(IVAL_WIDTHDN)
+         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN)/valstruct(IVAL_WIDTHDN)
       else
          valstruct(IVAL_S1DN) = dmiss
       end if
       if (valstruct(IVAL_WIDTHUPDN) > 0) then
-         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD) / valstruct(IVAL_WIDTHUPDN)
+         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD)/valstruct(IVAL_WIDTHUPDN)
       else
          valstruct(IVAL_HEAD) = dmiss
       end if
@@ -551,7 +557,7 @@ contains
 
          if (istrtypein /= ST_PUMP) then
             if (valstruct(IVAL_AREA) > 0.0_dp) then ! non-zero flow area
-               valstruct(IVAL_VEL) = valstruct(IVAL_DIS) / valstruct(IVAL_AREA) ! velocity
+               valstruct(IVAL_VEL) = valstruct(IVAL_DIS)/valstruct(IVAL_AREA) ! velocity
             else
                valstruct(IVAL_VEL) = 0.0_dp
             end if
@@ -559,8 +565,8 @@ contains
 
          if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             pstru => network%sts%struct(istru)
-            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTHWET) ! water level on crest
-            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTHWET) ! force difference per unit width
+            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST)/valstruct(IVAL_WIDTHWET) ! water level on crest
+            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF)/valstruct(IVAL_WIDTHWET) ! force difference per unit width
          end if
       end if
 
@@ -576,13 +582,13 @@ contains
             ! only for general structure
             if (istrtypein == ST_GENERAL_ST) then
                if (valstruct(IVAL_AREA_OPEN) > 0) then ! flow area in gate opening
-                  valstruct(IVAL_VEL_OPEN) = valstruct(IVAL_DIS_OPEN) / valstruct(IVAL_AREA_OPEN) ! velocity through gate opening
+                  valstruct(IVAL_VEL_OPEN) = valstruct(IVAL_DIS_OPEN)/valstruct(IVAL_AREA_OPEN) ! velocity through gate opening
                end if
                if (valstruct(IVAL_AREA_OVER) > 0) then ! flow area over gate
-                  valstruct(IVAL_VEL_OVER) = valstruct(IVAL_DIS_OVER) / valstruct(IVAL_AREA_OVER) ! velocity over gate
+                  valstruct(IVAL_VEL_OVER) = valstruct(IVAL_DIS_OVER)/valstruct(IVAL_AREA_OVER) ! velocity over gate
                end if
                if (valstruct(IVAL_AREA_UNDER) > 0) then ! flow area under gate
-                  valstruct(IVAL_VEL_UNDER) = valstruct(IVAL_DIS_UNDER) / valstruct(IVAL_AREA_UNDER) ! velocity under gate
+                  valstruct(IVAL_VEL_UNDER) = valstruct(IVAL_DIS_UNDER)/valstruct(IVAL_AREA_UNDER) ! velocity under gate
                end if
             end if
          end if
@@ -595,9 +601,9 @@ contains
             valstruct(IVAL_BLDN) = dmiss
             valstruct(IVAL_BLACTUAL) = dmiss
          else
-            valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) / valstruct(IVAL_WIDTH)
-            valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) / valstruct(IVAL_WIDTH)
-            valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) / valstruct(IVAL_WIDTH)
+            valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP)/valstruct(IVAL_WIDTH)
+            valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN)/valstruct(IVAL_WIDTH)
+            valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL)/valstruct(IVAL_WIDTH)
          end if
       end if
 
@@ -639,8 +645,8 @@ contains
          rholeft = 1000.0_dp
          rhoright = 1000.0_dp
 
-         get_force_difference = max((s1up - crestl), 0.0_dp)**2 * rholeft * gravity * 0.5_dp - &
-                                max((s1dn - crestl), 0.0_dp)**2 * rhoright * gravity * 0.5_dp
+         get_force_difference = max((s1up - crestl), 0.0_dp)**2*rholeft*gravity*0.5_dp - &
+                                max((s1dn - crestl), 0.0_dp)**2*rhoright*gravity*0.5_dp
       else
          get_force_difference = dmiss
       end if
@@ -662,8 +668,8 @@ contains
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
       if (gatefraction < 1.0_dp - GATE_FRACTION_EPS) then
-         u1L = genstr%ru(3, L0) - genstr%fu(3, L0) * dsL
-         get_discharge_through_gate_opening = genstr%au(3, L0) * u1L
+         u1L = genstr%ru(3, L0) - genstr%fu(3, L0)*dsL
+         get_discharge_through_gate_opening = genstr%au(3, L0)*u1L
       else
          get_discharge_through_gate_opening = 0.0_dp
       end if
@@ -685,8 +691,8 @@ contains
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
       if (gatefraction > GATE_FRACTION_EPS) then
-         u1L = genstr%ru(2, L0) - genstr%fu(2, L0) * dsL
-         get_discharge_over_gate = genstr%au(2, L0) * u1L
+         u1L = genstr%ru(2, L0) - genstr%fu(2, L0)*dsL
+         get_discharge_over_gate = genstr%au(2, L0)*u1L
       else
          get_discharge_over_gate = 0.0_dp
       end if
@@ -708,8 +714,8 @@ contains
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
       if (gatefraction > GATE_FRACTION_EPS) then
-         u1L = genstr%ru(1, L0) - genstr%fu(1, L0) * dsL
-         get_discharge_under_gate = genstr%au(1, L0) * u1L
+         u1L = genstr%ru(1, L0) - genstr%fu(1, L0)*dsL
+         get_discharge_under_gate = genstr%au(1, L0)*u1L
       else
          get_discharge_under_gate = 0.0_dp
       end if
@@ -1057,6 +1063,71 @@ contains
       end if
    end subroutine get_geom_coordinates_of_structure
 
+   subroutine fill_geometry_source_sinks()
+
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_real, source_sink_indices, num_real_source_sink
+      use m_flowgeom, only: xz, yz
+      use m_alloc
+      use m_partitioninfo, only: jampi, my_rank, reduce_int_max, reduce_double_array_max
+      use m_GlobalParameters
+      implicit none
+
+      real(kind=dp), dimension(:, :), allocatable :: localGeomXSourceSink !< [m] x coordinates of source/sinks.
+      real(kind=dp), dimension(:, :), allocatable :: localGeomYSourceSink !< [m] y coordinates of source/sinks.
+
+
+      real(kind=dp), allocatable :: geom_x(:), geom_y(:)
+      integer :: i, j, k1, k2, nNodes, ierror
+
+      j = 1
+
+      call realloc(geom_x, 2)
+      call realloc(geom_y, 2)
+      call realloc(nodeCountSourceSink, num_real_source_sink)
+      call realloc(localGeomXSourceSink, num_real_source_sink, 2)
+      call realloc(localGeomYSourceSink, num_real_source_sink, 2)
+      do i = 1, num_source_sink
+         if (is_source_sink_real(i)) then
+            k1 = source_sink_indices(1, i)
+            k2 = source_sink_indices(4, i)
+            nNodes = 0
+            if (k1 > 0) then
+               nNodes = nNodes + 1
+               geom_x(nNodes) = xz(k1)
+               geom_y(nNodes) = yz(k1)
+            end if
+            if (k2 > 0) then
+               nNodes = nNodes + 1
+               geom_x(nNodes) = xz(k2)
+               geom_y(nNodes) = yz(k2)
+            end if
+            nodeCountSourceSink(j) = nNodes
+            if (nNodes > 0) then
+               localGeomXSourceSink(j, 1:nNodes) = geom_x(1:nNodes)
+               localGeomYSourceSink(j, 1:nNodes) = geom_y(1:nNodes)
+            end if
+            j = j + 1
+         end if
+      end do
+      if (jampi > 0) then
+         call reduce_int_max(num_real_source_sink, nodeCountSourceSink)
+      end if
+      nNodesSourceSink = sum(nodeCountSourceSink)
+      call realloc(geomXSourceSink, nNodesSourceSink, fill=0.0_dp)
+      call realloc(geomYSourceSink, nNodesSourceSink, fill=0.0_dp)
+      j = 1
+      do i = 1, num_real_source_sink
+         nNodes = nodeCountSourceSink(i)
+         geomXSourceSink(j:j + nNodes - 1) = localGeomXSourceSink(i, 1:nNodes)
+         geomYSourceSink(j:j + nNodes - 1) = localGeomYSourceSink(i, 1:nNodes)
+         j = j + nNodes
+      end do
+      if (jampi > 0) then
+         call reduce_double_array_max(nNodesSourceSink, geomXSourceSink)
+         call reduce_double_array_max(nNodesSourceSink, geomYSourceSink)
+      end if
+
+   end subroutine fill_geometry_source_sinks
 !> Fills in the geometry arrays of a structure type for history output
    subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
       use m_alloc
@@ -1158,7 +1229,7 @@ contains
 
             ! Allocate arrays that gather information from all subdomains
             ! Data on all subdomains will be gathered in a contiguous way
-            call realloc(nodeCountStruGat, nstru * ndomains, keepExisting=.false., fill=0)
+            call realloc(nodeCountStruGat, nstru*ndomains, keepExisting=.false., fill=0)
             call realloc(xGat, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(yGat, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(displs, ndomains, keepExisting=.false., fill=0)
@@ -1172,13 +1243,13 @@ contains
          end if
 
          ! Gather integer data, where the same number of data, i.e. nstru, are gathered from each subdomain to process 0000
-         call gather_int_data_mpi_same(nstru, nodeCountStru, nstru * ndomains, nodeCountStruGat, nstru, 0, ierror)
+         call gather_int_data_mpi_same(nstru, nodeCountStru, nstru*ndomains, nodeCountStruGat, nstru, 0, ierror)
 
          if (my_rank == 0) then
             ! To use mpi gather call, construct displs, and nNodesStruGat (used as receive count for mpi gather call)
             displs(1) = 0
             do i = 1, ndomains
-               is = (i - 1) * nstru + 1 ! Starting index in nodeCountStruGat
+               is = (i - 1)*nstru + 1 ! Starting index in nodeCountStruGat
                ie = is + nstru - 1 ! Endding index in nodeCountStruGat
                nNodesStruGat(i) = sum(nodeCountStruGat(is:ie)) ! Total number of nodes on subdomain i
                if (i > 1) then
@@ -1198,7 +1269,7 @@ contains
             ! Construct nodeCountStruMPI for history output
             do i = 1, nstru
                do n = 1, ndomains
-                  k = (n - 1) * nstru + i
+                  k = (n - 1)*nstru + i
                   nodeCountStruMPI(i) = nodeCountStruMPI(i) + nodeCountStruGat(k) ! Total number of nodes for structure i among all subdomains
                end do
             end do
@@ -1216,11 +1287,11 @@ contains
                   call realloc(indLocalStartEndMPI, nodeCountStruMPI(i), keepExisting=.false., fill=0)
                   call realloc(jaCoincide, nodeCountStruMPI(i), keepExisting=.false., fill=0)
                   do n = 1, ndomains ! on each sudomain
-                     k = (n - 1) * nstru + i ! index in nodeCountStruGat
+                     k = (n - 1)*nstru + i ! index in nodeCountStruGat
                      nNodes = nodeCountStruGat(k) ! structure i on sumdomain n has nNodes nodes
                      if (nNodes > 0) then
                         nPar = nPar + 1
-                        ii = (n - 1) * nstru
+                        ii = (n - 1)*nstru
                         is = sum(nNodesStruGat(1:n - 1)) + sum(nodeCountStruGat(ii + 1:ii + i - 1)) ! starting index in xGat
                         ks = 1
                         ke = nNodes
@@ -1283,10 +1354,10 @@ contains
                j = 1
                do i = 1, nstru ! for each structure
                   do n = 1, ndomains ! on each sudomain
-                     k = (n - 1) * nstru + i ! index in nodeCountStruGat
+                     k = (n - 1)*nstru + i ! index in nodeCountStruGat
                      nNodes = nodeCountStruGat(k) ! structure i on sumdomain n has nNodes nodes
                      if (nNodes > 0) then
-                        ii = (n - 1) * nstru
+                        ii = (n - 1)*nstru
                         is = sum(nNodesStruGat(1:n - 1)) + sum(nodeCountStruGat(ii + 1:ii + i - 1)) ! starting index in xGat
                         do k1 = 1, nNodes
                            geomXStruMPI(j) = xGat(is + k1)
@@ -1547,7 +1618,7 @@ contains
                associate (branch => network%brs%branch(network%sts%struct(j)%IBRAN))
                   if (branch%GRIDPOINTSCOUNT > 0) then
                      ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
-                                                   [branch%gridpointscount], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
+                                   [branch%gridpointscount], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   else
                      ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, [branch%FROMNODE%X, branch%TONODE%X], [branch%FROMNODE%Y, branch%TONODE%Y], &
                                                    [2], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
@@ -1750,7 +1821,7 @@ contains
       distance_along_flowlink_set = 0.0_dp
       do i = 1, number_of_flowlinks
          Lf = abs(links(i))
-         if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set / 2.0_dp) then
+         if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set/2.0_dp) then
             ! The midpoint must lie on this flowlink; calculate exactly where
             if (kcu(Lf) == 2) then
                ! 2D flowlink
@@ -1761,9 +1832,9 @@ contains
                   k3 = lncn(2, Lf)
                   k4 = lncn(1, Lf)
                end if
-               w1 = (total_length_of_flowlink_set / 2.0_dp - distance_along_flowlink_set) / wu(Lf)
-               xmid = w1 * xk(k3) + (1.0_dp - w1) * xk(k4)
-               ymid = w1 * yk(k3) + (1.0_dp - w1) * yk(k4)
+               w1 = (total_length_of_flowlink_set/2.0_dp - distance_along_flowlink_set)/wu(Lf)
+               xmid = w1*xk(k3) + (1.0_dp - w1)*xk(k4)
+               ymid = w1*yk(k3) + (1.0_dp - w1)*yk(k4)
             else
                ! 1D flowlink
                xmid = xu(Lf)
