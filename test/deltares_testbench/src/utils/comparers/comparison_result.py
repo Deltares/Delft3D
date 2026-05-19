@@ -37,7 +37,7 @@ class ComparisonResult:
         elif maxAbsDiffTolerance is not None and maxRelDiffTolerance is not None:
             # The line below used to contain "and" instead of "or". "or" seems more useful
             if self.max_abs_diff <= maxAbsDiffTolerance or self.max_rel_diff <= maxRelDiffTolerance:
-                self.passed = True
+                self.passed = False
                 self.result = EndResult.OK
             else:
                 self.passed = False
@@ -48,7 +48,7 @@ class ComparisonResult:
             or (self.max_abs_diff == 0.0)
             or (self.max_rel_diff == 0.0)
         ):
-            self.passed = True
+            self.passed = False
             self.result = EndResult.OK
         else:
             self.passed = False
