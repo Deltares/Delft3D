@@ -1524,15 +1524,14 @@ contains
          if (.not. ecArcinfoAndT3dReadBlock(fileReaderPtr, fileReaderPtr%fileHandle, 1, numlay * vectormax, 1, valueptr)) return
       case (provFile_bc)
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
-         ! Set origin of vertical coordinates to history file (or not) and initialise for T0 
+         ! Initialise, vertical coordinates, for T0 
          if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then 
-             valueptr%elementsetptr%origin     = 'nchis'
              valueptr%sourceT0FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
          end if
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
          ! Initialise for T1
-         if (strcmpi(valueptr%elementsetptr%origin,'nchis')) then 
-             valueptr%sourceT1FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
+         if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then  
+            valueptr%sourceT1FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
          end if
               
          case default

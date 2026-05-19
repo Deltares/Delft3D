@@ -1077,7 +1077,6 @@ contains
          success = ecConverterUniform(connection, timesteps%mjd())
          !TK_ Temp interpolate z coordinate (mus be more elegant way of doing this, only if z coordinates are time dependent, i.e. origintae froem his file
          if (success .and.  associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) ) then
-!                strcmpi(connection%targetItemsPtr(1)%ptr%ElementSetPtr%origin,'nchis') )  then
              success = ecConverterUniform(connection, timesteps%mjd(),arr1D = .false.)
          end if
       case (convType_uniform_to_magnitude)
@@ -1213,8 +1212,9 @@ contains
          valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
       else
          ! Time series interpolation on depth values
-         if (.not. strcmpi(connection%sourceItemsPtr(1)%ptr%ElementSetPtr%origin,'nchis') ) then
-            ! No timeinterpolation needed if origin is old nc file! (z values fixed in time)
+         if (all(connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arrzPTR == ec_undef_hp)  .and. &
+             all(connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arrzPTR == ec_undef_hp) ) then
+            ! No timeinterpolation needed for old nc file! (z values fixed in time), arrZ is not defined
             success = .true.
             return
          else
