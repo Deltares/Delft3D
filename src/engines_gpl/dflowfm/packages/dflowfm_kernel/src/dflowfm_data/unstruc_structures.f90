@@ -1077,7 +1077,7 @@ contains
 
 
       real(kind=dp), allocatable :: geom_x(:), geom_y(:)
-      integer :: i, j, k1, k2, nNodes, ierror
+      integer :: i, j, k1, k2, nNodes
 
       j = 1
 
@@ -1086,6 +1086,8 @@ contains
       call realloc(nodeCountSourceSink, num_real_source_sink)
       call realloc(localGeomXSourceSink, num_real_source_sink, 2)
       call realloc(localGeomYSourceSink, num_real_source_sink, 2)
+      localGeomXSourceSink = -huge(1.0_dp)
+      localGeomYSourceSink = -huge(1.0_dp)
       do i = 1, num_source_sink
          if (is_source_sink_real(i)) then
             k1 = source_sink_indices(1, i)
@@ -1113,8 +1115,8 @@ contains
          call reduce_int_max(num_real_source_sink, nodeCountSourceSink)
       end if
       nNodesSourceSink = sum(nodeCountSourceSink)
-      call realloc(geomXSourceSink, nNodesSourceSink, fill=0.0_dp)
-      call realloc(geomYSourceSink, nNodesSourceSink, fill=0.0_dp)
+      call realloc(geomXSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
+      call realloc(geomYSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
       j = 1
       do i = 1, num_real_source_sink
          nNodes = nodeCountSourceSink(i)
@@ -1126,6 +1128,7 @@ contains
          call reduce_double_array_max(nNodesSourceSink, geomXSourceSink)
          call reduce_double_array_max(nNodesSourceSink, geomYSourceSink)
       end if
+
 
    end subroutine fill_geometry_source_sinks
 !> Fills in the geometry arrays of a structure type for history output
