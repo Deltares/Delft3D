@@ -78,7 +78,7 @@ contains
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+                        u_to_umain, frcu_mor, cfuhi, epshs, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -120,6 +120,7 @@ contains
       use m_compdiam, only: compdiam
       use m_comphidexp, only: comphidexp
       use m_getfixfac, only: getfixfac
+      use m_flow, only: jabaptist
       !
       implicit none
       !
@@ -419,7 +420,8 @@ contains
       ! half of internal velocity in direction of any
       ! closed boundary or dry point.
       !
-      javegczu = (javeg == 1 .and. jabaptist > 1 .and. kmx == 0)
+      javegczu = (jabaptist > 1 .and. kmx == 0)
+      javegczu = .false.
       !
       do k = 1, ndx ! This interpolation is done by considering constant waterdepth per each flow-cell
          h1 = s1(k) - bl(k) ! To ensure to get the same results from interpolation based on constant frcu and ifrcutp in the cell centre
@@ -436,6 +438,7 @@ contains
                if (cfuhi(L) > 0.0_dp) then ! use bed contribution of baptist>1
                   czu = 1.0_dp / (cfuhi(L) * max(hu(L), epshu))
                   czu = sqrt(czu * ag)
+                  debugarr1d(L) = czu
                else
                   czu = get_chezy(hu(L), frcuni, u1(L), v(L), ifrctypuni)
                end if

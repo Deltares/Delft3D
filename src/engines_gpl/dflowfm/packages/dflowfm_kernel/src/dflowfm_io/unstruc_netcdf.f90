@@ -6580,17 +6580,17 @@ contains
          end if
 
          ! Enable the following when needed:
-         ! if (jawritedebug) then
-         !    ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_dbg1d  , nf90_double, UNC_LOC_U, 'debug1d', 'debug1d', 'debug1d', '-', dimids = [ -2, -1 ], jabndnd=jabndnd_)
-         !    !
-         !    if (allocated(debugarr2d)) then
-         !       ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg2d, nf90_double, UNC_LOC_S, 'debug2d', 'debug2d', 'debug2d', '-', dimids = [ -2, mapids%id_tsp%id_sedtotdim,-1 ], jabndnd=jabndnd_) ! not CF
-         !    end if
-         !    !
-         !    if (allocated(debugarr3d)) then
-         !       !ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg3d, nf90_double, UNC_LOC_S3D, 'debug3d', 'debug3d', 'debug3d', '-', dimids = [ -2, -1 ], jabndnd=jabndnd_) ! not CF
-         !    end if
-         ! endif
+          if (jawritedebug) then
+             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp  , mapids%id_dbg1d  , nf90_double, UNC_LOC_U, 'debug1d', 'debug1d', 'debug1d', '-', dimids = [ -2, -1 ], jabndnd=jabndnd_)
+             !
+             if (allocated(debugarr2d)) then
+                ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg2d, nf90_double, UNC_LOC_S, 'debug2d', 'debug2d', 'debug2d', '-', dimids = [ -2, mapids%id_tsp%id_sedtotdim,-1 ], jabndnd=jabndnd_) ! not CF
+             end if
+             !
+             if (allocated(debugarr3d)) then
+                !ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg3d, nf90_double, UNC_LOC_S3D, 'debug3d', 'debug3d', 'debug3d', '-', dimids = [ -2, -1 ], jabndnd=jabndnd_) ! not CF
+             end if
+          endif
 
          if (timon) then
             call timstop(handle_extra(71))
@@ -8013,17 +8013,17 @@ contains
       end if
 
       ! debug variables
-      ! if (jawritedebug /= 0) then
-      !    ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg1d, UNC_LOC_U, debugarr1d(1:lnx), jabndnd=jabndnd_)
-      !
-      !    if (allocated(debugarr2d)) then
-      !       ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg2d, UNC_LOC_S, debugarr2d(1:ndxndxi, :), jabndnd=jabndnd_)
-      !    end if
-      !
-      !    if (allocated(debugarr3d)) then
-      !       ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg3d, UNC_LOC_S3D, debugarr3d, jabndnd=jabndnd_)
-      !    end if
-      ! end if
+       if (jawritedebug /= 0) then
+          ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg1d, UNC_LOC_U, debugarr1d(1:lnx), jabndnd=jabndnd_)
+      
+          if (allocated(debugarr2d)) then
+             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg2d, UNC_LOC_S, debugarr2d(1:ndxndxi, :), jabndnd=jabndnd_)
+          end if
+      
+          if (allocated(debugarr3d)) then
+             ! ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_dbg3d, UNC_LOC_S3D, debugarr3d, jabndnd=jabndnd_)
+          end if
+       end if
 
       ! water quality bottom variables
       if (numwqbots > 0) then
