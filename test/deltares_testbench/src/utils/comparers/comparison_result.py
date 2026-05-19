@@ -12,7 +12,7 @@ class ComparisonResult:
     """
 
     def __init__(self, error: bool = False) -> None:
-        self.passed = None
+        self.passed: bool | None = None
         self.error = error
         self.result: EndResult = EndResult.NOK
         if self.error:
@@ -38,7 +38,7 @@ class ComparisonResult:
             # The line below used to contain "and" instead of "or". "or" seems more useful
             if self.max_abs_diff <= maxAbsDiffTolerance or self.max_rel_diff <= maxRelDiffTolerance:
                 self.passed = False
-                self.result = EndResult.OK
+                self.result = EndResult.NOK
             else:
                 self.passed = False
                 self.result = EndResult.NOK
@@ -49,7 +49,7 @@ class ComparisonResult:
             or (self.max_rel_diff == 0.0)
         ):
             self.passed = False
-            self.result = EndResult.OK
+            self.result = EndResult.NOK
         else:
             self.passed = False
             self.result = EndResult.NOK
