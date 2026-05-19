@@ -11,15 +11,15 @@ RECIPES_DIR = Path("conan/recipes")
 LOCKFILE = Path("conan.lock")
 
 
-def setup_conan_config(*, ci: bool = False) -> None:
-    """Install Conan configuration (profiles, settings, remotes) and register local recipes."""
+def _conan_config_install(*, ci: bool) -> None:
     cmd = ["conan", "config", "install", "--type", "dir", str(CONFIG_DIR)]
     if ci:
         cmd += ["--core-conf", "core:non_interactive=True"]
     subprocess.run(cmd, check=True)
 
-    # Register the local recipes folder with highest priority so local recipe
-    # changes are always preferred over whatever is cached on the remotes.
+
+def _register_local_recipes() -> None:
+    """Register the local recipes folder with highest priority."""
     subprocess.run(
         [
             "conan",
@@ -33,6 +33,27 @@ def setup_conan_config(*, ci: bool = False) -> None:
         ],
         check=True,
     )
+
+
+def setup_conan_config_deltares(*, ci: bool = False) -> None:
+    """Install full Conan configuration including Deltares Nexus remotes and register local recipes."""
+    _conan_config_install(ci=ci)
+    _register_local_recipes()
+
+
+def setup_conan_config_external(*, ci: bool = False) -> None:
+    """Install Conan configuration (profiles, settings) without Nexus remotes.
+
+    Removes all remotes installed by the config (i.e. the Deltares Nexus instances)
+    and registers only the local recipes folder.  Use this when Nexus is not accessible.
+    """
+    _conan_config_install(ci=ci)
+
+    # Remove all remotes that were just installed from remotes.json so that no
+    # network access to Nexus is attempted later.
+    subprocess.run(["conan", "remote", "remove", "*"], check=True)
+
+    _register_local_recipes()
 
 
 def clean_conan_cache() -> None:
@@ -102,9 +123,14 @@ def main() -> None:
         description="Installs conan-managed dependencies for the Delft3D repository."
     )
     parser.add_argument(
-        "--system-setup",
-        action="store_true",
-        help="Install Conan configuration (profiles, settings, remotes) from conan/config.",
+        "--initialize-conan",
+        choices=["deltares", "external"],
+        metavar="{deltares,external}",
+        help=(
+            "One-time Conan setup. "
+            "'deltares': installs profiles, settings and Deltares Nexus remotes (default for Deltares developers). "
+            "'external': installs profiles and settings only, without any Nexus remotes (for open-source developers without Nexus access)."
+        ),
     )
     parser.add_argument(
         "--ci",
@@ -146,11 +172,14 @@ def main() -> None:
     else:
         raise RuntimeError(f"Unsupported OS: {os_name}")
 
-    if args.system_setup:
-        setup_conan_config(ci=args.ci)
+    if args.initialize_conan == "deltares":
+        setup_conan_config_deltares(ci=args.ci)
+        return
+    if args.initialize_conan == "external":
+        setup_conan_config_external(ci=args.ci)
         return
 
-    # Verify the profile is available (installed via --system-setup)
+    # Verify the profile is available (installed via --initialize-conan)
     result = subprocess.run(
         ["conan", "profile", "path", profile],
         capture_output=True,
@@ -158,7 +187,8 @@ def main() -> None:
     if result.returncode != 0:
         sys.exit(
             f"ERROR: Conan profile '{profile}' not found.\n"
-            "       Run 'python run_conan.py --system-setup' first to install profiles, set remotes and configure settings."
+            "       Run 'python run_conan.py --initialize-conan=deltares' (or =external) first "
+            "to install profiles, configure settings and set up remotes."
         )
 
     if args.clean:

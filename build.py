@@ -55,17 +55,6 @@ def detect_visual_studio() -> str | None:
     return version_map.get(vs_version)
 
 
-def find_cmake() -> str:
-    """Find cmake executable on PATH (with Windows fallback path)."""
-    if shutil.which("cmake"):
-        return "cmake"
-    if platform.system() == "Windows":
-        default = Path(r"C:\Program Files\CMake\bin\cmake.exe")
-        if default.exists():
-            return str(default)
-    sys.exit("ERROR: CMake not found. Download: https://cmake.org/download/")
-
-
 def setup_vs_environment(vs_year: str) -> None:
     """Ensure we are in a Developer Command Prompt with the VS environment set."""
     if os.environ.get("VCINSTALLDIR"):
@@ -107,7 +96,6 @@ def run_conan(config: str, build_type: str, *, ci: bool = False, build_dependenc
 def run_cmake_configure(
     config: str,
     *,
-    cmake: str,
     vs_year: str | None,
     build_type: str,
 ) -> None:
@@ -116,7 +104,7 @@ def run_cmake_configure(
     build_dir.mkdir(exist_ok=True)
 
     cmd = [
-        cmake,
+        "cmake",
         "-S",
         str(ROOT / "src" / "cmake"),
         "-B",
@@ -137,22 +125,22 @@ def run_cmake_configure(
     subprocess.run(cmd, check=True)
 
 
-def run_cmake_build(config: str, *, cmake: str, build_type: str) -> None:
+def run_cmake_build(config: str, *, build_type: str) -> None:
     """Run CMake build step."""
     build_dir = ROOT / build_dir_name(config, build_type)
     print(f"Building {config} ({build_type})...")
     subprocess.run(
-        [cmake, "--build", str(build_dir), "--config", build_type, "--parallel"],
+        ["cmake", "--build", str(build_dir), "--config", build_type, "--parallel"],
         check=True,
     )
 
 
-def run_cmake_install(config: str, *, cmake: str, build_type: str) -> None:
+def run_cmake_install(config: str, *, build_type: str) -> None:
     """Run CMake install step."""
     build_dir = ROOT / build_dir_name(config, build_type)
     print(f"Installing {config} ({build_type})...")
     subprocess.run(
-        [cmake, "--install", str(build_dir), "--config", build_type],
+        ["cmake", "--install", str(build_dir), "--config", build_type],
         check=True,
     )
 
@@ -201,8 +189,6 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    cmake = find_cmake()
-
     # Visual Studio detection (Windows only)
     vs_year = None
     if platform.system() == "Windows":
@@ -226,24 +212,20 @@ def main() -> None:
     if not args.keep_build:
         clean_directories(args.config, args.build_type)
 
-    # Ensure build directory exists
-    (ROOT / build_dir_name(args.config, args.build_type)).mkdir(exist_ok=True)
-
     # Conan
     run_conan(args.config, args.build_type, ci=args.ci, build_dependencies=args.build_dependencies)
 
     # CMake configure
     run_cmake_configure(
         args.config,
-        cmake=cmake,
         vs_year=vs_year,
         build_type=args.build_type,
     )
 
     # Build and install
     if args.build:
-        run_cmake_build(args.config, cmake=cmake, build_type=args.build_type)
-        run_cmake_install(args.config, cmake=cmake, build_type=args.build_type)
+        run_cmake_build(args.config, build_type=args.build_type)
+        run_cmake_install(args.config, build_type=args.build_type)
 
     print()
     if platform.system() == "Windows":
