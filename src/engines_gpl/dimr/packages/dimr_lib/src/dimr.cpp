@@ -422,8 +422,6 @@ void Dimr::runParallelInit(dimr_control_block* cb)
         throw Exception(Exception::ERR_INVALID_INPUT,
                         "runParallelInit: a parallel block must have at least one start element.");
     }
-    // cb->subBlocks[cb->masterSubBlockId].mpi_barrier_sleep =
-    //     cb->subBlocks[cb->masterSubBlockId].unit.component->mpi_barrier_sleep;
 
     // Hack:
     // The masterComponent must be initialized first
@@ -500,7 +498,9 @@ void Dimr::runParallelInit(dimr_control_block* cb)
                 if (cb->subBlocks[i].subBlocks[j].type == CT_START)
                 {
                     dimr_component* thisComponent = cb->subBlocks[i].subBlocks[j].unit.component;
-                    // cb->subBlocks[i].mpi_barrier_sleep = thisComponent->mpi_barrier_sleep;
+                    // Copy mpi_barrier_sleep from the component to the control block to avoid digging it up in the
+                    // update step
+                    cb->subBlocks[i].mpi_barrier_sleep = thisComponent->mpi_barrier_sleep;
 
                     // Create an MPI subgroup and subcommunicator and pass it on to thisComponent (similar to block for
                     // masterComponent above)
@@ -1866,14 +1866,15 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     if (mpiBarrierSleep == NULL)
     {
         // Default values for mpiBarrierSleep:
-        // WAVE on Linux: 500 ms, to avoid excessive CPU load in the barrier when having to wait for this component
+        // WAVE on Linux: 200 ms, to avoid excessive CPU load in the barrier when having to wait for this component
+        //                Any value between 10 and 500 ms seems to work properly
         // Else: 0 ms
         if (newComp->type == COMP_TYPE_WAVE)
         {
 #ifdef _WIN32
             newComp->mpi_barrier_sleep = 0;
 #else
-            newComp->mpi_barrier_sleep = 500;
+            newComp->mpi_barrier_sleep = 200;
 #endif
         }
         else
