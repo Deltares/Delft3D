@@ -1,0 +1,27 @@
+<testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+    <testCase name="e109_f02_c011_weir_timeseries_mpi" ref="dimr">
+      <path version="2026-05-20T17:00:00">e109_dflowfm-drtc-dwaves/f02_dflowfm_parallel/c011_weir_timeseries_mpi</path>
+      <checks>
+        <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_0000_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceRelative="1.00" />
+           </parameters>
+        </file>
+        <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_0001_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceRelative="1.00" />
+           </parameters>
+        </file>
+        <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_0002_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceRelative="1.00" />
+           </parameters>
+        </file>
+        <file name="fm/DFM_OUTPUT_weirtimeseries/weirtimeseries_0003_map.nc" type="netCDF">
+           <parameters>
+               <parameter name="mesh2d_s1" toleranceRelative="1.00" />
+           </parameters>
+        </file>
+      </checks>
+    </testCase>
+</testCases>
