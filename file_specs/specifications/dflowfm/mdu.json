@@ -2528,6 +2528,7 @@
                 {
                     "key": "equili",
                     "value_type": "intbool",
+                    "default_value": 0,
                     "description": "Equilibrium spiral flow intensity.",
                     "status": {
                         "value": "research"
@@ -2560,6 +2561,7 @@
                 {
                     "key": "prandtlNumberTemperature",
                     "value_type": "float",
+                    "default_value": 0.7,
                     "description": "Turbulent Prandtl number for temperature.",
                     "status": {
                         "value": "research"
@@ -2568,6 +2570,7 @@
                 {
                     "key": "schmidtNumberSalinity",
                     "value_type": "float",
+                    "default_value": 0.7,
                     "description": "Turbulent Schmidt number for salinity.",
                     "status": {
                         "value": "research"
@@ -2576,6 +2579,7 @@
                 {
                     "key": "schmidtNumberTracer",
                     "value_type": "float",
+                    "default_value": 1.0,
                     "description": "Turbulent Schmidt number for tracer(s).",
                     "status": {
                         "value": "research"
@@ -2584,6 +2588,7 @@
                 {
                     "key": "umodLin",
                     "value_type": "float",
+                    "default_value": 1.0,
                     "description": "Linear friction umod.",
                     "status": {
                         "value": "research"
@@ -2610,6 +2615,7 @@
                 {
                     "key": "uniffrictcoef1dgrlay",
                     "value_type": "float",
+                    "default_value": 0.05,
                     "description": "Uniform ground layer friction coefficient for ocean models.",
                     "unit": "m/s",
                     "status": {
@@ -2619,6 +2625,7 @@
                 {
                     "key": "salinityDependentFreezingPoint",
                     "value_type": "intbool",
+                    "default_value": 0,
                     "description": "Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius."
                 }
             ]
@@ -2900,17 +2907,16 @@
             "ini_properties": [
                 {
                     "key": "waveModelNr",
-                    "default_value": 3,
+                    "default_value": 0,
                     "value_type": "intenum",
                     "description": "Wave model nr.",
                     "enum_values": {
                         "0": "none",
-                        "1": "fetch/depth limited hurdlestive",
-                        "2": "Young-Verhagen",
+                        "1": "fetch/depth limited Hurdle-Stive",
+                        "2": "fetch/depth limited Young-Verhagen",
                         "3": "SWAN",
-                        "4": "wave group forcing",
                         "5": "uniform",
-                        "6": "SWAN-NetCDF"
+                        "7": "Offline Wave Coupling"
                     }
                 },
                 {

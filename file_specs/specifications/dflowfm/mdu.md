@@ -355,17 +355,17 @@ In this field, physical model parameters can be inserted, for instance related t
 | `surfTempSmoFac` 🔬 | Horizontal smoothing factor for surface water in heatflux computations. |  | `[0.0, 1.0]` |  | research |
 | `selfAttractionLoading_correct_wl_with_ini` 🔬 | Correct water level with initial water level in self attraction and loading. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  | research |
 | `nfEntrainmentMomentum` 🔬 | Use momentum transfer in NearField related entrainment. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  | research |
-| `equili` 🔬 | Equilibrium spiral flow intensity. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  | research |
+| `equili` 🔬 | Equilibrium spiral flow intensity. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  | research |
 | `soilTempThick` 🔬 | Use soil temperature buffer if >0.0 | `0.0` |  | [m] | research |
 | `selfAttractionLoading` 🔬 | Use self attraction and loading. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li><li>**`2`**: only self attraction</li></ul> |  | research |
-| `prandtlNumberTemperature` 🔬 | Turbulent Prandtl number for temperature. |  |  |  | research |
-| `schmidtNumberSalinity` 🔬 | Turbulent Schmidt number for salinity. |  |  |  | research |
-| `schmidtNumberTracer` 🔬 | Turbulent Schmidt number for tracer(s). |  |  |  | research |
-| `umodLin` 🔬 | Linear friction umod. |  |  |  | research |
+| `prandtlNumberTemperature` 🔬 | Turbulent Prandtl number for temperature. | `0.7` |  |  | research |
+| `schmidtNumberSalinity` 🔬 | Turbulent Schmidt number for salinity. | `0.7` |  |  | research |
+| `schmidtNumberTracer` 🔬 | Turbulent Schmidt number for tracer(s). | `1.0` |  |  | research |
+| `umodLin` 🔬 | Linear friction umod. | `1.0` |  |  | research |
 | `jadelvappos` ⚠️ | Only positive forced evaporation fluxes. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  | deprecated |
 | `freeConvectionCoefficient` 🔬 | Free convection turbulence coefficient. | `0.14` |  |  | research |
-| `uniffrictcoef1dgrlay` 🔬 | Uniform ground layer friction coefficient for ocean models. |  |  | [m/s] | research |
-| `salinityDependentFreezingPoint` | Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius. |  | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `uniffrictcoef1dgrlay` 🔬 | Uniform ground layer friction coefficient for ocean models. | `0.05` |  | [m/s] | research |
+| `salinityDependentFreezingPoint` | Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 
 
 # [sediment]
@@ -424,7 +424,7 @@ The wind section prescribes the dependency of the wind drag coefficient to the w
 
 | Keyword | Description | Default | Supported values | Unit | Status |
 | ------- | ----------- | ------- | ---------------- | ---- | ------ |
-| `waveModelNr` | Wave model nr. | `3` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited hurdlestive</li><li>**`2`**: Young-Verhagen</li><li>**`3`**: SWAN</li><li>**`4`**: wave group forcing</li><li>**`5`**: uniform</li><li>**`6`**: SWAN-NetCDF</li></ul> |  |  |
+| `waveModelNr` | Wave model nr. | `0` | <ul><li>**`0`**: none</li><li>**`1`**: fetch/depth limited Hurdle-Stive</li><li>**`2`**: fetch/depth limited Young-Verhagen</li><li>**`3`**: SWAN</li><li>**`5`**: uniform</li><li>**`7`**: Offline Wave Coupling</li></ul> |  |  |
 | `rouWav` | Friction model for wave induced shear stress. | `FR84` | <ul><li>**`FR84`**: Fredsøe (1984)</li><li>**`MS90`**: Myrhaug and Slaattelid (1990)</li><li>**`HT91`**: Huynh-Thanh and Temperville (1991)</li><li>**`GM79`**: Grant and Madsen (1979)</li><li>**`DS88`**: Davies et al. (1988)</li><li>**`BK67`**: Bijker (1967)</li><li>**`CJ85`**: Christoffersen and Jonsson (1985)</li><li>**`OY88`**: O' Connor and Yoo (1988)</li><li>**`VR04`**: Van Rijn et al. (2004)</li></ul> |  |  |
 | `gammaX` | Maximum wave height/water depth ratio. | `0.5` |  |  |  |
 | `flowWithoutWaves` | Exclude Wave data in the flow computations, passing it directly to D-WAQ. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
