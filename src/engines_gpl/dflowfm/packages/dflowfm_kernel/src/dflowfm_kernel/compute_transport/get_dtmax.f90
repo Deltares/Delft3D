@@ -42,7 +42,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: Ndx, Ndxi, bl, ln, lnx, ba
       use m_flow, only: s1, epshu, squ, sqi, vol1, kmx, diusp, viu, Lbot, Ltop, jaimplicitfallvelocity
-      use m_flowparameters, only: eps10, cflmx, jadiusp
+      use m_flowparameters, only: EPS10, cflmx, jadiusp
       use m_turbulence, only: sigdifi
       use m_flowtimes, only: time1
       use m_physcoef, only: dicouv
@@ -117,11 +117,11 @@ contains
             dtmax(k) = dtmax_default
 
             if (jalimitdtdiff == 0) then
-               if (squ(k) > eps10) then
+               if (squ(k) > EPS10) then
                   dtmax(k) = min(dtmax(k), cflmx * vol1(k) / squ(k))
                end if
             else
-               if (sqi(k) + sumdifflim(k) > eps10) then
+               if (sqi(k) + sumdifflim(k) > EPS10) then
                   dtmax(k) = min(dtmax(k), cflmx * vol1(k) / (sqi(k) + sumdifflim(k)))
                end if
             end if
@@ -156,7 +156,7 @@ contains
                         else
                            sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
                         end if
-                        if (squ(k) > eps10 .or. sqtot > eps10) then
+                        if (squ(k) > EPS10 .or. sqtot > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
                         end if
                      end do
@@ -170,7 +170,7 @@ contains
                      end do
                   else
                      do k = kb, kt
-                        if (squ(k) > eps10 .or. sqi(k) > eps10) then
+                        if (squ(k) > EPS10 .or. sqi(k) > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqi(k)))
                         end if
                      end do
@@ -184,7 +184,7 @@ contains
                         else
                            sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
                         end if
-                        if (sqtot > eps10) then
+                        if (sqtot > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
                         end if
                      end do
@@ -199,7 +199,7 @@ contains
 
                   else
                      do k = kb, kt
-                        if (sqi(k) + sumdifflim(k) > eps10) then
+                        if (sqi(k) + sumdifflim(k) > EPS10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / (sqi(k) + sumdifflim(k)))
                         end if
                      end do

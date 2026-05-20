@@ -42,7 +42,7 @@ module fm_external_forcings
 
    private
 
-   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -145,12 +145,11 @@ contains
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flow_without_waves
+      use m_flowparameters, only: jawave, flow_without_waves, EPS10
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
-      use precision_basics
-      use m_flowparameters, only: eps10
+      use precision_basics 
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
       use m_tauwavefetch, only: tauwavefetch
@@ -269,7 +268,7 @@ contains
 
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
-            if (comparereal(air_pressure(k), dmiss, eps10) == 0) then
+            if (comparereal(air_pressure(k), dmiss, EPS10) == 0) then
                air_pressure(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do
@@ -1725,11 +1724,14 @@ contains
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new
+      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
       integer :: iresult
 
       call setup(iresult)
+      !if (iresult == DFM_NOERR) then
+      !   call init_new(md_inifieldfile, iresult)
+      !end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
@@ -1748,7 +1750,8 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
+         btempforcingtypl, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk

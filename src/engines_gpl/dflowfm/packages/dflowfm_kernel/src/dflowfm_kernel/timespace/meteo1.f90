@@ -320,7 +320,7 @@ contains
             l1 = index(rec, '=') + 1
             call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
             read (rec(l2:l2), '(a1)', err=990) temp
-            operand = convert_operand_string_to_integer(temp)
+            operand = convert_legacy_operand_string_to_integer(temp)
          end block
       else
          return
@@ -601,7 +601,7 @@ contains
    !>
    subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
-      use m_flowparameters, only: jatidep, jaselfal, jamaptidep
+      use m_flowparameters, only: jatidep, jaselfal, map_write_settings
       use m_partitioninfo
       use m_flow
       use m_flowgeom
@@ -745,7 +745,7 @@ contains
                           (td2(m1, n2) + self(m1, n2)) * f12
 
 !        for output only
-            if (jamaptidep > 0 .and. Np > 1) then ! store SAL potential seperately
+            if (map_write_settings%tidep > 0 .and. Np > 1) then ! store SAL potential seperately
                tidep(2, n) = (self(m1, n1)) * f11 + &
                              (self(m2, n1)) * f21 + &
                              (self(m2, n2)) * f22 + &
@@ -4345,8 +4345,6 @@ contains
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreaklevelsandwidths')
-         ! itemPtr1 and dataPtr1 are provided at a dambreak call
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -4441,15 +4439,15 @@ contains
       case ('hrms', 'wavesignificantheight')
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
-         jamapwav_hwav = 1
+         map_write_settings%wav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
-         jamapwav_twav = 1
+         map_write_settings%wav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
-         jamapwav_phiwav = 1
+         map_write_settings%wav_phiwav = 1
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
@@ -4513,7 +4511,6 @@ contains
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
-         call mess(LEVEL_FATAL, 'm_meteo::fm_ext_force_name_to_ec_item: Unsupported quantity specified in ext-file (construct target field): '//qidname)
          success = .false.
       end select
    end function fm_ext_force_name_to_ec_item

@@ -64,7 +64,6 @@ Tlfsmo                            = 3600            # Fourier smoothing time on 
 Slopedrop2D                       = 0               # Apply drop losses only if local bed slope > Slopedrop2D, (<=0: no drop losses)
 Chkadvd                           = 0.1             # Check advection terms if depth < chkadvdp, => less setbacks
 Teta0                             = 0.55            # Theta of time integration (0.5 < theta < 1)
-Qhrelax                           = 0.01            # Relaxation on Q-h open boundaries
 cstbnd                            = 0               # Delft3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)
 Maxitverticalforestersal          = 0               # Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)
 Maxitverticalforestertem          = 0               # Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)
@@ -108,7 +107,6 @@ Stanton                           = -1              # Coefficient for convective
 Dalton                            = -1              # Coefficient for evaporative heat flux
 Backgroundwatertemperature        = 15              # Background water temperature for eqn. of state
 SecondaryFlow                     = 0               # Secondary flow (0: no, 1: yes)
-EffectSpiral                      = 0               # Weight factor of the spiral flow intensity on transport angle
 BetaSpiral                        = 0               # Weight factor of the spiral flow intensity on flow dispersion stresses
 Temperature                       = 1               # Include temperature (0: no, 1: only transport, 3: excess model of D3D, 5: composite (ocean) model)
 
@@ -122,12 +120,11 @@ PavIni                            = 0               # Average air pressure for i
 
 [waves]
 Wavemodelnr                       = 0               # Wave model nr. (0: none, 1: fetch/depth limited Hurdle-Stive, 2: Young-Verhagen, 3: SWAN)
-WaveNikuradse                     = 0.01            # Wave friction Nikuradse ks c , used in Krone-Swart
 Rouwav                            = FR84            # Friction model for wave induced shear stress
 Gammax                            = 1               # Maximum wave height/water depth ratio
 
 [time]
-RefDate                           = 20160310        # Reference date [YYYY-MM-DD HH:MM:SS]
+RefDate                           = 20010101        # Reference date [YYYY-MM-DD HH:MM:SS]
 Tzone                             = 0               # Time zone assigned to input time series
 DtUser                            = 300             # Time interval for external forcing update [Dd HH:MM:SS.ZZZ]
 DtNodal                           = 21600           # Time interval (s) for updating nodal factors in astronomical boundary conditions [Dd HH:MM:SS.ZZZ]
@@ -142,7 +139,7 @@ RestartFile                       =                 # Restart netcdf-file, eithe
 RestartDateTime                   =                 # Restart date and time when restarting from *_map.nc [YYYY-MM-DD HH:MM:SS]
 
 [external forcing]
-ExtForceFileNew                   =                 # New format for external forcings file *.ext, link with bc-format boundary conditions specification
+ExtForceFileNew                   = sources.ext     # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [trachytopes]
 TrtRou                            = N               # Include alluvial and vegetation roughness (trachytopes) (Y: yes, N: no)
@@ -160,7 +157,6 @@ Wrishp_thd                        = 0               # Write shape file for thin 
 Wrishp_obs                        = 0               # Write shape file for observation stations
 Wrishp_emb                        = 0               # Write shape file for embankments
 Wrishp_dryarea                    = 0               # Write shape file for dry area
-Wrishp_enc                        = 0               # Write shape file for enclosure
 Wrishp_src                        = 0               # Write shape file for sources
 Wrishp_pump                       = 0               # Write shape file for pump
 OutputDir                         =                 # Output directory of map-, his-, rst-, dat- and timings-files, default: DFM_OUTPUT_<modelname>. Set to . for current dir.
@@ -188,7 +184,7 @@ Wrihis_wind                       = 1               # Write wind velocities to h
 Wrihis_rain                       = 1               # Write precipitation to his file (1: yes, 0: no)
 Wrihis_temperature                = 1               # Write temperature to his file (1: yes, 0: no)
 Wrihis_heat_fluxes                = 1               # Write heat fluxes to his file (1: yes, 0: no)
-Wrihis_salinity                   = 1               # Write salinity to his file (1: yes, 0: no)
+Wrihis_salinity                   = 0               # Write salinity to his file (1: yes, 0: no)
 Wrihis_density                    = 1               # Write density to his file (1: yes, 0: no)
 Wrihis_waterlevel_s1              = 1               # Write water level to his file (1: yes, 0: no)
 Wrihis_waterdepth                 = 0               # Write water depth to his file (1: yes, 0: no)
@@ -196,6 +192,7 @@ Wrihis_velocity_vector            = 1               # Write velocity vectors to 
 Wrihis_upward_velocity_component  = 0               # Write upward velocity to his file (1: yes, 0: no)
 Wrihis_sediment                   = 1               # Write sediment transport to his file (1: yes, 0: no)
 Wrihis_constituents               = 1               # Write tracers to his file (1: yes, 0: no)
+Wrihis_zcor                       = 0
 Wrimap_waterlevel_s0              = 1               # Write water levels for previous time step to map file (1: yes, 0: no)
 Wrimap_waterlevel_s1              = 1               # Write water levels to map file (1: yes, 0: no)
 Wrimap_velocity_component_u0      = 1               # Write velocity component for previous time step to map file (1: yes, 0: no)
@@ -218,8 +215,6 @@ MapOutputTimeVector               =                 # File (*.mpt) containing fi
 FullGridOutput                    = 0               # Full grid output mode (0: compact, 1: full time-varying grid data)
 EulerVelocities                   = 0               # Euler velocities output (0: GLM, 1: Euler velocities)
 ClassMapFile                      =                 # Class map file *_clm.nc
-WaterlevelClasses                 = 0.0             # Water level classes
-WaterdepthClasses                 = 0.0             # Water depth classes
 ClassMapInterval                  = 0               # Class output interval [Dd HH:MM:SS.ZZZ]
 StatsInterval                     =                 # Interval (in s) between simulation statistics output [Dd HH:MM:SS.ZZZ]
 TimingsInterval                   =                 # Timings statistics output interval [Dd HH:MM:SS.ZZZ]

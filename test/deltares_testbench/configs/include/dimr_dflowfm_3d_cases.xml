@@ -744,6 +744,36 @@
       </checks>
     </testCase>
 
+    <testCase name="e02_f021_c003_slopingbed_anticreep_z" ref="dflowfm_default">
+      <path version="2026-05-04T16:00:00">e02_dflowfm/f021_anti-creep/c003_slopingbed_anticreep_z</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
+    <testCase name="e02_f021_c004_slopingbed_anticreep_z_sigma" ref="dflowfm_default">
+      <path version="2026-05-04T16:00:00">e02_dflowfm/f021_anti-creep/c004_slopingbed_anticreep_z_sigma</path>
+      <maxRunTime>15000.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/anticreep01_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_ucy" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_sa1" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+
     <testCase name="e02_f021_c101_bedwithobstacle_anticreep_nonequi_3d" ref="dflowfm_default">
       <path version="2025-10-07T06:58:06.480000">e02_dflowfm/f021_anti-creep/c101_bedwithobstacle_anticreep_nonequi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -953,7 +983,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f203_c02_Waal_trachytopes_3D_sigma" ref="dflowfm_default">
-      <path version="2026-03-13T16:21:45.714000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
+      <path version="2026-05-10T21:00:00.000000">e02_dflowfm/f203_3D_trachytopes/c02_Waal_trachytopes_3D_sigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_sigma_map.nc" type="netCDF">
@@ -966,7 +996,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f203_c04_Waal_trachytopes_3D_zsigma" ref="dflowfm_default">
-      <path version="2026-03-13T16:21:57.149000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
+      <path version="2026-05-10T21:00:00.000000">e02_dflowfm/f203_3D_trachytopes/c04_Waal_trachytopes_3D_zsigma</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Waal_3D_zsigma_map.nc" type="netCDF">
