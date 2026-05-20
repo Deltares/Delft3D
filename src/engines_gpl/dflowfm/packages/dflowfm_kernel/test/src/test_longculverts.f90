@@ -2,17 +2,15 @@ module test_longculverts
     use assertions_gtest
     use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
     use m_network_helpers, only: t_grid_helper
+    use m_file_helpers, only: create_file
+
     implicit none(type, external)
 
-contains
-    function to_c_string(string) result(res)
-        use iso_c_binding, only: c_null_char
-        implicit none
-        character(len=*), intent(in) :: string
-        character(len=:), allocatable :: res
-        res = trim(string) // c_null_char
-    end function to_c_string
-    
+    character(len=*), parameter :: TEST_NET_FILE = "test_lc2_net.nc"
+    character(len=*), parameter :: TEST_STR_FILE = "test_lc2_structures.ini"
+    character(len=*), parameter :: TEST_MDU_FILE = "test_lc2.mdu"
+
+contains    
 
     !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_four_point, test_convert1d2dlongculverts_single_four_point,
     subroutine test_convert1d2dlongculverts_single_four_point() bind(C)
@@ -61,9 +59,9 @@ contains
         call F90_ASSERT_EQ(numk, 10) ! 6 Netnodes for the grid, 4 For the long culvert.
         call F90_ASSERT_EQ(numl, 10) ! 7 Netlinks for the grid, 3 For the long culvert.
 
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, to_c_string("Expected middle link to be a 1D link."))
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, to_c_string("Expected last new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, "Expected first new link to be a 1D2D link.")
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, "Expected middle link to be a 1D link.")
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, "Expected last new link to be a 1D2D link.")
     end subroutine test_convert1d2dlongculverts_single_four_point
     !$f90tw )
 
@@ -119,7 +117,7 @@ contains
         call F90_ASSERT_EQ(numk, 8) ! 6 Netnodes for the grid, 2 For the long culvert.
         call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
 
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
+        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, "Expected first new link to be a 1D2D link.")
     end subroutine test_convert1d2dlongculverts_single_two_point
     !$f90tw )
 
@@ -310,7 +308,6 @@ contains
    !> Create a structures.ini file containing a single long culvert
    !! that runs through the middle of the mesh (y=50) from x=50 to x=350.
    subroutine create_structure_file(filename)
-      use m_file_helpers, only: create_file
       character(len=*), intent(in) :: filename
 
       call create_file(filename, [ &
@@ -669,9 +666,145 @@ contains
    end subroutine test_flow_reverse_head_gives_negative_discharge
    !$f90tw)
 
+   !> Create a 5x3-node UGRID net (4 cells wide, 2 rows).
+   subroutine create_two_row_netfile(filename, ierr)
+      use precision, only: dp
+      use netcdf
+      character(len=*), intent(in) :: filename
+      integer, intent(out) :: ierr
+
+      integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
+      integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
+      ! 5 cols x 3 rows = 15 nodes, 8 cells in 2 rows of 4
+      integer, parameter :: NNODES = 15, NEDGES = 22, NFACES = 8
+      real(kind=dp) :: xnodes(NNODES), ynodes(NNODES)
+      integer :: edge_nodes(2, NEDGES), face_nodes(4, NFACES)
+      integer :: i, j, k
+
+      k = 0
+      do j = 1, 3
+         do i = 1, 5
+            k = k + 1
+            xnodes(k) = real((i - 1) * 100, dp)
+            ynodes(k) = real((j - 1) * 100, dp)
+         end do
+      end do
+
+      ! Bottom horizontal edges (row 0-1): 1-2, 2-3, 3-4, 4-5
+      edge_nodes(:,  1) = [1,  2];  edge_nodes(:,  2) = [2,  3]
+      edge_nodes(:,  3) = [3,  4];  edge_nodes(:,  4) = [4,  5]
+      ! Middle horizontal edges (row 1-2): 6-7, 7-8, 8-9, 9-10
+      edge_nodes(:,  5) = [6,  7];  edge_nodes(:,  6) = [7,  8]
+      edge_nodes(:,  7) = [8,  9];  edge_nodes(:,  8) = [9, 10]
+      ! Top horizontal edges (row 2-3): 11-12, 12-13, 13-14, 14-15
+      edge_nodes(:,  9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
+      edge_nodes(:, 11) = [13, 14]; edge_nodes(:, 12) = [14, 15]
+      ! Vertical edges bottom tier: 1-6, 2-7, 3-8, 4-9, 5-10
+      edge_nodes(:, 13) = [1,  6];  edge_nodes(:, 14) = [2,  7]
+      edge_nodes(:, 15) = [3,  8];  edge_nodes(:, 16) = [4,  9]
+      edge_nodes(:, 17) = [5, 10]
+      ! Vertical edges top tier: 6-11, 7-12, 8-13, 9-14, 10-15
+      edge_nodes(:, 18) = [6, 11];  edge_nodes(:, 19) = [7, 12]
+      edge_nodes(:, 20) = [8, 13];  edge_nodes(:, 21) = [9, 14]
+      edge_nodes(:, 22) = [10, 15]
+
+      ! Bottom row of faces (CCW)
+      face_nodes(:, 1) = [1,  2,  7,  6]; face_nodes(:, 2) = [2,  3,  8,  7]
+      face_nodes(:, 3) = [3,  4,  9,  8]; face_nodes(:, 4) = [4,  5, 10,  9]
+      ! Top row of faces (CCW)
+      face_nodes(:, 5) = [6,  7, 12, 11]; face_nodes(:, 6) = [7,  8, 13, 12]
+      face_nodes(:, 7) = [8,  9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
+
+      ierr = nf90_create(filename, NF90_CLOBBER, ncid)
+      if (ierr /= nf90_noerr) return
+
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', 'CF-1.8 UGRID-1.0')
+      ierr = nf90_def_dim(ncid, 'mesh2d_nNodes', NNODES, dimid_node)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nEdges', NEDGES, dimid_edge)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nFaces', NFACES, dimid_face)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nMax_face_nodes', 4, dimid_maxnodes)
+      ierr = nf90_def_dim(ncid, 'Two', 2, dimid_two)
+
+      ierr = nf90_def_var(ncid, 'mesh2d', NF90_INT, varid_mesh)
+      ierr = nf90_put_att(ncid, varid_mesh, 'cf_role', 'mesh_topology')
+      ierr = nf90_put_att(ncid, varid_mesh, 'topology_dimension', 2)
+      ierr = nf90_put_att(ncid, varid_mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
+      ierr = nf90_put_att(ncid, varid_mesh, 'edge_node_connectivity', 'mesh2d_edge_nodes')
+      ierr = nf90_put_att(ncid, varid_mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
+
+      ierr = nf90_def_var(ncid, 'mesh2d_node_x', NF90_DOUBLE, [dimid_node], varid_xn)
+      ierr = nf90_put_att(ncid, varid_xn, 'standard_name', 'projection_x_coordinate')
+      ierr = nf90_put_att(ncid, varid_xn, 'units', 'm')
+      ierr = nf90_def_var(ncid, 'mesh2d_node_y', NF90_DOUBLE, [dimid_node], varid_yn)
+      ierr = nf90_put_att(ncid, varid_yn, 'standard_name', 'projection_y_coordinate')
+      ierr = nf90_put_att(ncid, varid_yn, 'units', 'm')
+
+      ierr = nf90_def_var(ncid, 'mesh2d_edge_nodes', NF90_INT, [dimid_two, dimid_edge], varid_en)
+      ierr = nf90_put_att(ncid, varid_en, 'cf_role', 'edge_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_en, 'start_index', 1)
+      ierr = nf90_def_var(ncid, 'mesh2d_face_nodes', NF90_INT, [dimid_maxnodes, dimid_face], varid_fn)
+      ierr = nf90_put_att(ncid, varid_fn, 'cf_role', 'face_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
+
+      ierr = nf90_enddef(ncid)
+      if (ierr /= nf90_noerr) then; ierr = nf90_close(ncid); return; end if
+
+      ierr = nf90_put_var(ncid, varid_xn, xnodes)
+      ierr = nf90_put_var(ncid, varid_yn, ynodes)
+      ierr = nf90_put_var(ncid, varid_en, edge_nodes)
+      ierr = nf90_put_var(ncid, varid_fn, face_nodes)
+      ierr = nf90_close(ncid)
+   end subroutine create_two_row_netfile
+
+   !> Shared helper for two-culvert integration tests.
+   !! Creates the two-row net, initialises the model from the given structure and
+   !! MDU files, raises a bed level barrier on the middle cells, and applies a
+   !! left-to-right water level gradient. The caller only needs to write the
+   !! structure file before calling this, then call flow_spatietimestep and assert.
+   subroutine init_two_culvert_scenario(str_file, mdu_file, iresult)
+      use m_flow_modelinit, only: flow_modelinit
+      use unstruc_model, only: loadModel, md_ident
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1
+      use m_cell_geometry, only: xz
+      use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL, SetMessageHandling
+      use m_inidat, only: inidat
+      use Timers, only: timini, timon
+      use m_partitioninfo, only: jampi
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use precision, only: dp
+
+      character(len=*), intent(in) :: str_file, mdu_file
+      integer, intent(out) :: iresult
+
+      character(len=256) :: mdu_local
+      integer :: ierr, i
+
+      call create_two_row_netfile(TEST_NET_FILE, ierr)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      md_ident = mdu_file
+      threshold_abort = LEVEL_FATAL
+      call inidat()
+      call timini()
+      timon = .false.
+      jampi = 0
+      call SetMessageHandling(write2screen=.false.)
+      call resetFullFlowModel()
+      mdu_local = mdu_file
+      call loadModel(mdu_local)
+      iresult = flow_modelinit()
+
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) bl(i) = 10.0_dp
+      end do
+      do i = 1, ndx
+         s1(i) = merge(2.0_dp, 0.0_dp, xz(i) < 100.0_dp)
+      end do
+   end subroutine init_two_culvert_scenario
+
    !$f90tw TESTCODE(TEST, test_longculvert, test_valve_half_open_reduces_discharge, test_valve_half_open_reduces_discharge,
-   !> A half-open valve should produce less discharge than a fully-open valve
-   !! under the same head difference.
    subroutine test_valve_half_open_reduces_discharge() bind(C)
       use m_flowgeom, only: ndx, bl
       use m_flow, only: s1, q1
@@ -681,57 +814,243 @@ contains
       use m_flow_spatietimestep, only: flow_spatietimestep
       use precision, only: dp
 
-      integer :: iresult, i, lc_link
+      integer :: iresult, i, lc_link_full, lc_link_half
       real(kind=dp) :: q_full, q_half
+      character(len=*), parameter :: STR_FILE = "test_lc_valve_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc_valve.mdu"
 
-      ! --- Run 1: fully open valve ---
-      call setup_longculvert_model(iresult)
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 50.0 50.0               ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 150.0 150.0             ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 0.5                "])
+
+      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
-      do i = 1, ndx
-         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) bl(i) = 10.0_dp
-      end do
-      do i = 1, ndx
-         if (xz(i) < 100.0_dp) then
-            s1(i) = 2.0_dp
-         else
-            s1(i) = 0.0_dp
-         end if
-      end do
-
-      longculverts(1)%valve_relative_opening = 1.0_dp
       call flow_spatietimestep()
-      lc_link = longculverts(1)%flowlinks(1)
-      q_full = q1(lc_link)
-      call default_longculverts
 
-      ! --- Run 2: half-open valve ---
-      call setup_longculvert_model(iresult)
-      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed (run 2)")
-
-      do i = 1, ndx
-         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) bl(i) = 10.0_dp
-      end do
-      do i = 1, ndx
-         if (xz(i) < 100.0_dp) then
-            s1(i) = 2.0_dp
-         else
-            s1(i) = 0.0_dp
-         end if
-      end do
-
-      longculverts(1)%valve_relative_opening = 0.5_dp
-      call flow_spatietimestep()
-      lc_link = longculverts(1)%flowlinks(1)
-      q_half = q1(lc_link)
-      call default_longculverts
-
-      ! Assert
+      q_full = q1(longculverts(1)%flowlinks(1))
+      q_half = q1(longculverts(2)%flowlinks(1))
       call f90_expect_true(q_full > 0.0_dp, "full-open discharge should be positive")
       call f90_expect_true(q_half > 0.0_dp, "half-open discharge should be positive")
-      call f90_expect_true(q_half < q_full, &
-                           "half-open discharge should be less than fully-open discharge")
+      call f90_expect_true(q_half < q_full, "half-open discharge should be less than fully-open")
+      call default_longculverts
    end subroutine test_valve_half_open_reduces_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_friction_higher_value_reduces_discharge, test_friction_higher_value_reduces_discharge,
+   subroutine test_friction_higher_value_reduces_discharge() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult
+      real(kind=dp) :: q_low_friction, q_high_friction
+      character(len=*), parameter :: STR_FILE = "test_lc_friction_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc_friction.mdu"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 50.0 50.0               ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.01                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 150.0 150.0             ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.05                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+
+      call flow_spatietimestep()
+
+      q_low_friction  = q1(longculverts(1)%flowlinks(1)) ! lc01: Manning n=0.01
+      q_high_friction = q1(longculverts(2)%flowlinks(1)) ! lc02: Manning n=0.05
+      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
+      call f90_expect_true(q_high_friction < q_low_friction, &
+                           "higher Manning friction should produce less discharge")
+      call default_longculverts
+   end subroutine test_friction_higher_value_reduces_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_friction_type_affects_discharge, test_friction_type_affects_discharge,
+   subroutine test_friction_type_affects_discharge() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult
+      real(kind=dp) :: q_manning, q_colebrook
+      character(len=*), parameter :: STR_FILE = "test_lc_frtype_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc_frtype.mdu"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 50.0 50.0               ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 150.0 150.0             ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = WhiteColebrook          ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+
+      call flow_spatietimestep()
+
+      q_manning   = q1(longculverts(1)%flowlinks(1))
+      q_colebrook = q1(longculverts(2)%flowlinks(1))
+      call f90_expect_true(q_manning   > 0.0_dp, "Manning culvert discharge should be positive")
+      call f90_expect_true(q_colebrook > 0.0_dp, "WhiteColebrook culvert discharge should be positive")
+      call f90_expect_true(abs(q_manning - q_colebrook) > 1.0e-6_dp, &
+                           "different friction types with same coefficient should give different discharge")
+      call default_longculverts
+   end subroutine test_friction_type_affects_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_larger_cross_section_increases_discharge, test_larger_cross_section_increases_discharge,
+   subroutine test_larger_cross_section_increases_discharge() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult
+      real(kind=dp) :: q_small, q_large
+      character(len=*), parameter :: STR_FILE = "test_lc_cross_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc_cross.mdu"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 50.0 50.0               ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 1.0                     ", &
+         "    height          = 1.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 150.0 150.0             ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 4.0                     ", &
+         "    height          = 4.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+
+      call flow_spatietimestep()
+
+      q_small = q1(longculverts(1)%flowlinks(1)) ! lc01: 1x1 m
+      q_large = q1(longculverts(2)%flowlinks(1)) ! lc02: 4x4 m
+      call f90_expect_true(q_small > 0.0_dp, "small culvert discharge should be positive")
+      call f90_expect_true(q_large > 0.0_dp, "large culvert discharge should be positive")
+      call f90_expect_true(q_large > q_small, &
+                           "larger cross-section should give more discharge")
+      call default_longculverts
+   end subroutine test_larger_cross_section_increases_discharge
    !$f90tw)
 
 end module test_longculverts
