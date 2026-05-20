@@ -222,7 +222,6 @@ contains
          if (allocated(nbranchids)) then
             longculvertindex = meshgeom1d%nbranches
          else
-            allocate(nbranchids(0))
             longculvertindex = 0
          end if
 
