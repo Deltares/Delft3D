@@ -39,7 +39,7 @@ object WindowsConanPackages : BuildType({
 
     steps {
         script {
-            name = "Initialize Conan and build all packages"
+            name = "Build and upload all packages"
             scriptContent = """
                 call C:/set-env-vs2022.cmd
                 python run_conan.py --initialize-conan=deltares --ci
@@ -47,21 +47,13 @@ object WindowsConanPackages : BuildType({
 
                 python run_conan.py --rebuild-recipes --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
-            """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "--mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
-            dockerPull = true
-        }
-        script {
-            name = "Upload packages to Nexus"
-            scriptContent = """
-                conan upload "*" --remote=deltares-conan-dev --confirm
+
+                conan upload "*" --remote=delft3d-conan-dev --confirm
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "--mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
+            dockerRunParameters = "-e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
         }
     }

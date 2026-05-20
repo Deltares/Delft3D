@@ -40,7 +40,7 @@ object LinuxConanPackages : BuildType({
 
     steps {
         script {
-            name = "Initialize Conan and build all packages"
+            name = "Build and upload all packages"
             scriptContent = """
                 #!/usr/bin/env bash
                 source /etc/bashrc
@@ -51,25 +51,13 @@ object LinuxConanPackages : BuildType({
 
                 # Rebuild all packages from local recipes (also regenerates lockfile)
                 python run_conan.py --rebuild-recipes --ci
-            """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-            dockerRunParameters = "--rm --mount type=volume,source=delft3d-conan-cache,target=/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
-            dockerPull = true
-        }
-        script {
-            name = "Upload packages to Nexus"
-            scriptContent = """
-                #!/usr/bin/env bash
-                source /etc/bashrc
-                set -eo pipefail
 
                 # Upload all packages in the local cache to the deltares-conan-dev remote
-                conan upload "*" --remote=deltares-conan-dev --confirm
+                conan upload "*" --remote=delft3d-conan-dev --confirm
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-            dockerRunParameters = "--rm --mount type=volume,source=delft3d-conan-cache,target=/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
+            dockerRunParameters = "--rm -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
         }
     }
