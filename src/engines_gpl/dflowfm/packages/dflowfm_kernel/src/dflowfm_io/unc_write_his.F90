@@ -135,8 +135,6 @@ contains
 
       real(kind=dp), intent(in) :: tim !< Current time, should in fact be time1, since the data written is always s1, ucx, etc.
 
-      ! real(kind=dp), allocatable :: geom_x(:), geom_y(:)
-      ! integer, allocatable :: node_count(:), bubblescreen_node_count(:)
       integer, allocatable, save :: id_tra(:)
       integer, allocatable, save :: id_hwq(:)
       integer :: maxlocT, maxvalT !< row+column count of valobs
@@ -348,18 +346,9 @@ contains
          end if
 
          if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
-            block
-               integer :: num_bubble_screens, num_cell_bubblescreens
-               num_cell_bubblescreens = 0
-               num_bubble_screens = size(bubblescreen_air_discharge)
-               do i = 1, num_bubble_screens
-                  num_cell_bubblescreens = num_cell_bubblescreens + bubblescreens(i)%num_flowcells
-               end do
-               ierr = unc_def_his_structure_static_vars(ihisfile, ST_BUBBLE_SCREEN, 1, num_bubble_screens, 'line', num_cell_bubblescreens, id_strlendim, &
-                                                   id_bubblescreendim, id_bubblescreen_name, id_bubblescreengeom_node_count, id_bubblescreengeom_node_coordx, id_bubblescreengeom_node_coordy, &
-                                                   id_poly_xmid=id_bubblescreen_xmid, id_poly_ymid=id_bubblescreen_ymid)
-               
-            end block
+            ierr = unc_def_his_structure_static_vars(ihisfile, ST_BUBBLE_SCREEN, 1, size(bubblescreen_air_discharge), 'point', nNodesBubbleScreen, id_strlendim, &
+                                                id_bubblescreendim, id_bubblescreen_name, id_bubblescreengeom_node_count, id_bubblescreengeom_node_coordx, id_bubblescreengeom_node_coordy, &
+                                                id_poly_xmid=id_bubblescreen_xmid, id_poly_ymid=id_bubblescreen_ymid)               
          end if
 
          if (timon) then
@@ -722,26 +711,11 @@ contains
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcgeom_node_count, nodeCountSourceSink))
             end if
 
-            ! if (his_write_settings%bubblescreens > 0 .and. size(bubblescreens) > 0) then
-            !    call realloc(bubblescreen_node_count, size(bubblescreens), fill=0)
-            !    bubblescreen_node_count = [(bubblescreens(i)%global_num_flowcells, i=1,size(bubblescreens))]
-            !    call realloc(geom_x, sum(bubblescreen_node_count))
-            !    call realloc(geom_y, sum(bubblescreen_node_count))
-            !    j = 1
-            !    do i = 1, size(bubblescreens)
-            !       nNodes = bubblescreens(i)%global_num_flowcells
-            !       if (nNodes > 0) then
-            !          do k1 = 1, nNodes
-            !             geom_x(k1) = xz(bubblescreens(i)%global_flowcell_indices(k1))
-            !             geom_y(k1) = yz(bubblescreens(i)%global_flowcell_indices(k1))
-            !          end do
-            !          call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordx, geom_x(1:nNodes), start=[j], count=[nNodes]))
-            !          call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordy, geom_y(1:nNodes), start=[j], count=[nNodes]))
-            !          j = j + nNodes
-            !       end if
-            !    end do
-            !    call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_count, bubblescreen_node_count))
-            ! end if
+            if (his_write_settings%bubblescreens > 0 .and. size(bubblescreens) > 0) then
+               call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordx, geomXBubbleScreen))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_coordy, geomYBubbleScreen))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_bubblescreengeom_node_count, nodeCountBubbleScreen))
+            end if
 
             ! Lateral discharges
             if (his_write_settings%lateral > 0 .and. numlatsg > 0) then

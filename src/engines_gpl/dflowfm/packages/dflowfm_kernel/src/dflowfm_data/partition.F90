@@ -5134,6 +5134,79 @@ contains
 
    end subroutine gatherv_int_data_mpi_dif
 
+!> Gathers real(kind=dp) array data from all processes to root, automatically handling size gathering.
+!! This convenience wrapper handles variable-length arrays by first gathering sizes, then the data.
+!! The output array is only allocated and filled on the root process. Use size(data_all) to get total count.
+   subroutine gatherv_double_auto(data_local, data_all, root, ierror)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+      implicit none
+
+      real(kind=dp), dimension(:), intent(in) :: data_local !< Local array to send
+      real(kind=dp), dimension(:), allocatable, intent(out) :: data_all !< Gathered array (allocated on root with total size, dummy size 1 on non-root)
+      integer, intent(in) :: root !< Rank of receiving process
+      integer, intent(out) :: ierror !< Error index
+
+      integer :: ndomains, i, ndata_total
+      integer, dimension(:), allocatable :: recvcounts, displs
+      integer :: ndata_local !< Number of data elements in local array
+
+      ndata_local = size(data_local)
+      ierror = -1
+
+#ifdef HAVE_MPI
+      ! Get MPI communicator info
+      call mpi_comm_size(DFM_COMM_DFMWORLD, ndomains, ierror)
+      if (ierror /= 0) return
+
+      ! Allocate receive count and displacement arrays
+      if (my_rank == root) then
+         allocate(recvcounts(ndomains))
+         allocate(displs(ndomains))
+      else
+         allocate(recvcounts(1))  ! dummy for non-root
+         allocate(displs(1))
+      end if
+
+      ! Step 1: Gather sizes from all partitions to root
+      call mpi_gather(ndata_local, 1, MPI_INTEGER, &
+                      recvcounts, 1, MPI_INTEGER, &
+                      root, DFM_COMM_DFMWORLD, ierror)
+      if (ierror /= 0) goto 999
+
+      ! Step 2: Calculate displacements and total size (root only)
+      if (my_rank == root) then
+         displs(1) = 0
+         do i = 2, ndomains
+            displs(i) = displs(i-1) + recvcounts(i-1)
+         end do
+         ndata_total = sum(recvcounts)
+         
+         ! Allocate the global array on root
+         allocate(data_all(ndata_total))
+      else
+         allocate(data_all(1))  ! dummy allocation for non-root
+      end if
+
+      ! Step 3: Gather the actual data using gatherv
+      call mpi_gatherv(data_local, ndata_local, MPI_DOUBLE_PRECISION, &
+                       data_all, recvcounts, displs, MPI_DOUBLE_PRECISION, &
+                       root, DFM_COMM_DFMWORLD, ierror)
+
+999   continue
+      ! Cleanup temporary arrays
+      if (allocated(recvcounts)) deallocate(recvcounts)
+      if (allocated(displs)) deallocate(displs)
+#else
+      ! Serial case: just copy the data
+      allocate(data_all(ndata_local))
+      data_all = data_local
+      ierror = 0
+#endif
+
+   end subroutine gatherv_double_auto
+
 !> Abort all processes
    subroutine abort_all()
       use dfm_error, only: DFM_GENERICERROR
@@ -6489,9 +6562,6 @@ contains
                global_cells(num_cells) = k
             end if
          end do
-         if (my_rank == 0) then
-            print *, global_cells
-         end if
       end if
 
 

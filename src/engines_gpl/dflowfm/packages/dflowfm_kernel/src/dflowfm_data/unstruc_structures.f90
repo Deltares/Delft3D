@@ -143,6 +143,12 @@ module m_structures
    real(kind=dp), dimension(:), allocatable, target :: geomXSourceSink !< [m] x coordinates of source/sinks.
    real(kind=dp), dimension(:), allocatable, target :: geomYSourceSink !< [m] y coordinates of source/sinks.
 
+   ! bubble screens
+   integer :: nNodesBubbleScreen !< [-] Total number of nodes for all bubble screens
+   integer, dimension(:), allocatable, target :: nodeCountBubbleScreen !< [-] Count of nodes per bubble screen.
+   real(kind=dp), dimension(:), allocatable, target :: geomXBubbleScreen !< [m] x coordinates of bubble screens.
+   real(kind=dp), dimension(:), allocatable, target :: geomYBubbleScreen !< [m] y coordinates of bubble screens.
+
    !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
  !! (set in fill_geometry_arrays_structure)
@@ -1131,6 +1137,69 @@ contains
 
 
    end subroutine fill_geometry_source_sinks
+
+   subroutine fill_geometry_bubblescreens()
+      use fm_external_forcings_data, only: bubblescreens
+      use m_flowgeom, only: xz, yz
+      use m_alloc
+      use m_partitioninfo, only: jampi, my_rank, reduce_int_max, reduce_double_array_max, reduce_intN_sum, idomain, gatherv_double_auto
+
+      integer :: i, j, k, global_idx, flownode_nr, ierror
+      integer, dimension(:), allocatable :: localNodeCountBubbleScreens
+      real(kind=dp), dimension(:), allocatable :: localGeomXBubbleScreens
+      real(kind=dp), dimension(:), allocatable :: localGeomYBubbleScreens
+      real(kind=dp), dimension(:), allocatable :: collectGeomXBubbleScreens
+      real(kind=dp), dimension(:), allocatable :: collectGeomYBubbleScreens
+
+      call realloc(localNodeCountBubbleScreens, size(bubblescreens), fill=0)
+      call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
+      do i = 1, size(bubblescreens)
+         j = 1
+         do k = 1, bubblescreens(i)%num_flowcells
+            flownode_nr = bubblescreens(i)%flowcell_indices(k)
+            if (idomain(flownode_nr) == my_rank) then
+               j = j + 1
+            end if
+         end do
+         localNodeCountBubbleScreens(i) = j - 1
+      end do
+      if (jampi > 0) then
+         call reduce_intN_sum(size(localNodeCountBubbleScreens), localNodeCountBubbleScreens, nodeCountBubbleScreen)
+      else 
+         nodeCountBubbleScreen = localNodeCountBubbleScreens
+      end if      
+
+      nNodesBubbleScreen = sum(nodeCountBubbleScreen)
+      call realloc(geomXBubbleScreen, nNodesBubbleScreen, fill=-huge(1.0_dp))
+      call realloc(geomYBubbleScreen, nNodesBubbleScreen, fill=-huge(1.0_dp))
+      global_idx = 1
+
+      do i = 1, size(bubblescreens)
+         j = 1
+         call realloc(localGeomXBubbleScreens,  localNodeCountBubbleScreens(i), fill=-huge(1.0_dp))
+         call realloc(localGeomYBubbleScreens,  localNodeCountBubbleScreens(i), fill=-huge(1.0_dp))
+         do k = 1,  bubblescreens(i)%num_flowcells
+            flownode_nr = bubblescreens(i)%flowcell_indices(k)
+            if (idomain(flownode_nr) == my_rank) then
+               localGeomXBubbleScreens(j) = xz(flownode_nr)
+               localGeomYBubbleScreens(j) = yz(flownode_nr)
+               j = j + 1
+            end if
+         end do
+         call gatherv_double_auto(localGeomXBubbleScreens, collectGeomXBubbleScreens, 0, ierror)
+         call gatherv_double_auto(localGeomYBubbleScreens, collectGeomYBubbleScreens, 0, ierror)
+         if (ierror /= 0) then 
+            call mess(LEVEL_ERROR, 'Error in gatherv_double_auto in fill_geometry_bubblescreens')
+         end if
+         if (my_rank == 0) then
+            geomXBubbleScreen(global_idx:global_idx + size(collectGeomXBubbleScreens) - 1) = collectGeomXBubbleScreens
+            geomYBubbleScreen(global_idx:global_idx + size(collectGeomYBubbleScreens) - 1) = collectGeomYBubbleScreens
+            global_idx = global_idx + size(collectGeomXBubbleScreens)
+         end if
+      end do
+   end subroutine fill_geometry_bubblescreens
+
+
 !> Fills in the geometry arrays of a structure type for history output
    subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
       use m_alloc

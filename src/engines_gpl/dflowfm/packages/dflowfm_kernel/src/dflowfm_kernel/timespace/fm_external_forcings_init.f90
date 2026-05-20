@@ -1374,7 +1374,7 @@ contains
       use m_alloc, only: realloc
       use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
       use m_flowgeom, only: ndx
-      use m_structures, only: fill_geometry_source_sinks
+      use m_structures, only: fill_geometry_source_sinks, fill_geometry_bubblescreens
 
       integer :: i, fcidx, sidx
       integer :: flownode_nr !< Flow node number
@@ -1404,8 +1404,6 @@ contains
          end associate
       end do
 
-      print '(a,i0,a,*(l2))', 'bm', my_rank, ' ', is_source_sink_real
-      
       if(jampi == 1) then
         call reduce_logical_array_or(num_source_sink, is_source_sink_real)
       end if
@@ -1413,10 +1411,8 @@ contains
       is_source_sink_real = .NOT. is_source_sink_real
       num_real_source_sink = count(is_source_sink_real)
 
-      print *, 'Number of source/sinks: ', num_real_source_sink
-      print '(a,i0,a,*(l2))', 'mf', my_rank, is_source_sink_real
-
       call fill_geometry_source_sinks()
+      call fill_geometry_bubblescreens()
 
       end subroutine finalize_source_sinks
 
