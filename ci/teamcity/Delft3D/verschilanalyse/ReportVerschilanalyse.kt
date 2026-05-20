@@ -46,7 +46,7 @@ object ReportVerschilanalyse: BuildType({
                 --rm
                 --entrypoint=/bin/bash
                 -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
-            """.trimIndent()=
+            """.trimIndent()
         }
         script {
             name = "Unzip logs and verschillentool output"
