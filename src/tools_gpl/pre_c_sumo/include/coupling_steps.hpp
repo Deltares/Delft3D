@@ -24,14 +24,15 @@ namespace pre_c_sumo
     constexpr std::string_view water_levels_id = "sea_surface_height";
     constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
     constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
+    constexpr std::string_view densities_id = "sea_water_potential_density";
 
     struct DiffuserMapping
     {
-        size_t diffuser_index;
+        std::size_t diffuser_index;
         bool has_intake;
-        size_t intake_index;
-        size_t number_of_ambient_points;
-        size_t first_ambient_point_index;
+        std::size_t intake_index;
+        std::size_t number_of_ambient_points;
+        std::size_t first_ambient_point_index;
     };
 
     struct Mesh
@@ -40,7 +41,8 @@ namespace pre_c_sumo
         std::vector<double> coordinates;
         std::vector<int> vertex_ids;
         std::vector<DiffuserMapping> forward_map;
-        size_t number_of_nodes;
+        std::size_t number_of_nodes;
+        std::size_t number_of_zcoordinates;
         std::unordered_map<std::string_view, std::vector<double>> quantities;
     };
 
@@ -63,7 +65,8 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, double coupling_time_step);
+    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+                       double coupling_time_step);
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
@@ -73,7 +76,8 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, Mesh& csumo_2d_mesh, double current_time_seconds);
+    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+                         double current_time_seconds);
 
     /**
      * @brief Wait until NF2FF files become available.

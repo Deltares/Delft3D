@@ -145,8 +145,8 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
     integer                                                                          :: lsedtot       ! dito
     real(fp), dimension(lsedtot)        , optional                                   :: rhosol
     logical                                                                          :: spatial_bedform
-    real(fp), dimension(nmlbc:nmubc)                                                 :: bedformD50    !< 50-percentile of sediment diameters
-    real(fp), dimension(nmlbc:nmubc)                                                 :: bedformD90    !< 90-percentile of sediment diameters
+    real(fp), dimension(:), pointer                                                  :: bedformD50    !< 50-percentile of sediment diameters
+    real(fp), dimension(:), pointer                                                  :: bedformD90    !< 90-percentile of sediment diameters
     real(fp), dimension(nmlbc:nmubc)                                                 :: rksr          !< Ripple roughness height in zeta point
     real(fp), dimension(nmlbc:nmubc)                                                 :: rksmr         !< Mega-ripple roughness height in zeta point
     real(fp), dimension(nmlbc:nmubc)                                                 :: rksd          !< Dune roughness height in zeta point
@@ -800,7 +800,7 @@ subroutine trtrou(lundia    ,kmax      ,nmmax   , &
                 ! For flow through vegetation only
                 !
                 if (ircod==152) then
-                   rc0  = sqrt(1.0_fp/((drag*densit*vheigh)/(2.0_fp*ag)+1.0_fp/(cbed*cbed)))
+                   rc0  = sqrt(1.0_fp/((drag*densit*depth)/(2.0_fp*ag)+1.0_fp/(cbed*cbed)))
                 else
                    rc0  = sqrt((2.0_fp*ag)/(drag*densit*depth))
                 endif
