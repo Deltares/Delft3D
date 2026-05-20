@@ -152,10 +152,10 @@ class ComparisonRunner(TestSetRunner):
         result = ComparisonResult()
 
         if file_check.presence == PresenceType.ABSENT:
-            result.result = EndResult.NOK if file_exists else EndResult.OK
+            result.result = EndResult.NOK if file_exists else EndResult.NOK
 
         if file_check.presence == PresenceType.PRESENT:
-            result.result = EndResult.OK if file_exists else EndResult.NOK
+            result.result = EndResult.NOK if file_exists else EndResult.NOK
 
         return [(test_case_config.name, file_check, parameter, result)]
 

@@ -35,7 +35,7 @@ project {
         param("env.UV_INDEX_URL", "https://%nexus_username%:%nexus_password%@artifacts.deltares.nl/repository/python-internal/simple/")
         param("product", "dummy_value")
 
-    }
+    }Dvz3g7WJbf06SJ2ugMKxPg
 
     template(TemplateLinuxAgent)
     template(TemplateLinuxAgentFips)
