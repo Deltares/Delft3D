@@ -55,7 +55,8 @@ contains
       use unstruc_display
       use m_get_chezy, only: get_chezy
       use mathconsts, only: ee
-
+      use m_debug
+      
       implicit none
 
       logical :: javegczu
