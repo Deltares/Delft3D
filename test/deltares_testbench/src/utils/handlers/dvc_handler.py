@@ -1,10 +1,11 @@
 """DVC handler – direct S3 download (zero local cache)."""
 
+import configparser
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import boto3
 import yaml
@@ -20,6 +21,7 @@ class DvcHandler(IHandler):
 
     def __init__(self) -> None:
         self.repo_root = self.__find_dvc_root(os.getcwd())
+        self.__bucket, self.__endpoint_url = self.__read_remote_config()
 
     def download(
         self,
@@ -62,12 +64,13 @@ class DvcHandler(IHandler):
         if not outs:
             raise ValueError(f"No 'outs' section in {dvc_path}")
 
-        # 2. Create S3 client (same credential injection as before)
+        # 2. Create S3 client using config from .dvc/config
+        logger.debug(f"Using S3 bucket={self.__bucket}, endpoint={self.__endpoint_url}")
         s3_client = boto3.client(
             "s3",
             aws_access_key_id=credentials.username if credentials else None,
             aws_secret_access_key=credentials.password if credentials else None,
-            endpoint_url="https://s3.deltares.nl",  # from your .dvc/config
+            endpoint_url=self.__endpoint_url,
         )
 
         # 3. Download every output (usually 1 per .dvc)
@@ -83,9 +86,9 @@ class DvcHandler(IHandler):
             target_path = target_base / rel_path if rel_path else target_base
 
             if is_dir:
-                self.__download_directory(s3_client, "delft3d-testbench", md5, target_path, logger)
+                self.__download_directory(s3_client, self.__bucket, md5, target_path, logger)
             else:
-                self.__download_file(s3_client, "delft3d-testbench", md5, target_path, logger)
+                self.__download_file(s3_client, self.__bucket, md5, target_path, logger)
 
         logger.info(f"Direct S3 download complete: {dvc_path.name}")
 
@@ -99,13 +102,14 @@ class DvcHandler(IHandler):
     ) -> None:
         """Download a single file using DVC's exact S3 key format."""
         s3_key = f"files/{md5[:2]}/{md5[2:]}"
+        logger.debug(f"Downloading s3://{bucket}/{s3_key} (md5={md5}) → {target_path}")
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
             s3_client.download_file(bucket, s3_key, str(target_path))
             logger.debug(f"Downloaded file → {target_path.name}")
         except ClientError as e:
-            raise RuntimeError(f"Failed to download {s3_key} from s3://{bucket}") from e
+            raise RuntimeError(f"Failed to download s3://{bucket}/{s3_key} (md5={md5})") from e
 
     def __download_directory(
         self,
@@ -118,6 +122,7 @@ class DvcHandler(IHandler):
         """Download a full directory by first fetching its .dir metadata JSON."""
         # 1. Get .dir metadata (in-memory)
         dir_key = f"files/{dir_md5[:2]}/{dir_md5[2:]}"
+        logger.debug(f"Fetching .dir metadata s3://{bucket}/{dir_key} (md5={dir_md5})")
         response = s3_client.get_object(Bucket=bucket, Key=dir_key)
         dir_json = json.loads(response["Body"].read().decode("utf-8"))
 
@@ -146,6 +151,37 @@ class DvcHandler(IHandler):
                     raise
 
         logger.info(f"Directory downloaded ({len(dir_json)} files) → {target_dir}")
+
+    def __read_remote_config(self) -> Tuple[str, str]:
+        """Read bucket and endpoint_url from .dvc/config for the default remote."""
+        config_path = Path(self.repo_root) / ".dvc" / "config"
+        if not config_path.is_file():
+            raise FileNotFoundError(f".dvc/config not found at {config_path}")
+
+        config = configparser.ConfigParser()
+        config.read(config_path)
+
+        # Determine the default remote name from [core].remote
+        remote_name = config.get("core", "remote", fallback="storage")
+
+        # DVC config uses section names like: 'remote "storage"'
+        section = f'remote "{remote_name}"'
+        if not config.has_section(section):
+            raise ValueError(
+                f"Remote '{remote_name}' not found in {config_path}. "
+                f"Available sections: {config.sections()}"
+            )
+
+        url = config.get(section, "url")  # e.g. s3://delft3d-testbench
+        endpoint_url = config.get(section, "endpointurl", fallback=None)
+
+        # Extract bucket name from s3:// URL
+        if url.startswith("s3://"):
+            bucket = url[len("s3://"):].rstrip("/")
+        else:
+            raise ValueError(f"Unsupported remote URL scheme: {url}")
+
+        return bucket, endpoint_url
 
     def __find_dvc_root(self, start_path: str) -> str:
         """Same helper you already have – finds the DVC repo root."""
