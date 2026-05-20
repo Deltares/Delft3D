@@ -1,13 +1,14 @@
-"""Executes DVC commands.
+"""DVC handler – direct S3 download (zero local cache)."""
 
-Copyright (C)  Stichting Deltares, 2025
-"""
-
+import json
 import os
-from typing import Optional
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from pathlib import Path
+from typing import List, Optional
 
-from dvc.repo import Repo
-from dvc.scm import NoSCM
+import boto3
+import yaml
+from botocore.exceptions import ClientError
 
 from src.config.credentials import Credentials
 from src.utils.handlers.i_handler import IHandler
@@ -15,188 +16,142 @@ from src.utils.logging.i_logger import ILogger
 
 
 class DvcHandler(IHandler):
-    """DVC wrapper, has handler interface."""
+    """Downloads DVC-tracked files/directories directly from S3, skipping cache entirely."""
 
-    def __init__(self, repo: Repo | None = None) -> None:
-        if repo is not None:
-            self.__repo = repo
-        else:
-            current_file_path = os.getcwd()
-            repo_root = self.__find_dvc_root(current_file_path)
-            self.__repo = Repo(repo_root, scm=NoSCM())
+    def __init__(self) -> None:
+        self.repo_root = self.__find_dvc_root(os.getcwd())
 
     def download(
-        self, from_path: str, to_path: str, credentials: Credentials, version: Optional[str], logger: ILogger
+        self,
+        from_path: str,
+        to_path: str,  # deprecated – kept for interface compatibility
+        credentials: Credentials,
+        version: Optional[str],
+        logger: ILogger,
     ) -> None:
-        """Set up a DVC client connection.
-
-        You can specify the download source and destination.
-
-        Parameters
-        ----------
-        from_path : str
-            dvc file path.
-        to_path : str
-            Deprecated: use from_path as the location of the .dvc file.
-        credentials : Credentials
-            DVC credentials (used for remote storage access).
-        version : str
-            Not used for DVC, version is already in md5 hash of the .dvc file.
-        logger : ILogger
-            The logger that logs to a file.
-        """
-        self.__download_with_dvc_pull(from_path, credentials, logger)
+        """Download one .dvc file (public API)."""
+        self.__download_direct(from_path, credentials, logger)
 
     def download_batch(
-        self, dvc_files: list[str], credentials: Credentials, logger: ILogger, jobs: Optional[int] = None
+        self,
+        dvc_files: List[str],
+        credentials: Credentials,
+        logger: ILogger,
+        jobs: Optional[int] = None,
     ) -> None:
-        """Download multiple .dvc files in a single fetch + checkout operation.
-
-        Parameters
-        ----------
-        dvc_files : list[str]
-            Paths to .dvc files to download.
-        credentials : Credentials
-            DVC credentials (used for remote storage access).
-        logger : ILogger
-            Logger instance.
-        jobs : Optional[int]
-            Number of parallel jobs for DVC fetch. Similar to ``dvc pull -j``.
-            When *None*, DVC uses its own default.
-        """
+        """Download multiple .dvc files (public API)."""
         if not dvc_files:
             return
 
-        _aws_keys = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-        _prev_env = {k: os.environ.get(k) for k in _aws_keys}
-        if credentials and credentials.username:
-            os.environ["AWS_ACCESS_KEY_ID"] = credentials.username
-            os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
+        for dvc_file in dvc_files:
+            self.__download_direct(dvc_file, credentials, logger)
+
+    def __download_direct(self, dvc_file: str, credentials: Credentials, logger: ILogger) -> None:
+        """Core: parse .dvc → download directly from S3."""
+        dvc_path = Path(dvc_file).resolve()
+        if not dvc_path.is_file():
+            raise FileNotFoundError(f"DVC file not found: {dvc_path}")
+
+        logger.info(f"Direct S3 download started: {dvc_path.name}")
+
+        # 1. Parse .dvc YAML
+        with open(dvc_path, encoding="utf-8") as f:
+            dvc_data = yaml.safe_load(f)
+
+        outs = dvc_data.get("outs", [])
+        if not outs:
+            raise ValueError(f"No 'outs' section in {dvc_path}")
+
+        # 2. Create S3 client (same credential injection as before)
+        s3_client = boto3.client(
+            "s3",
+            aws_access_key_id=credentials.username if credentials else None,
+            aws_secret_access_key=credentials.password if credentials else None,
+            endpoint_url="https://s3.deltares.nl",  # from your .dvc/config
+        )
+
+        # 3. Download every output (usually 1 per .dvc)
+        target_base = dvc_path.with_suffix("")  # e.g. input.dvc → input/
+        for out in outs:
+            md5 = out.get("md5")
+            if not md5:
+                continue
+
+            rel_path = out.get("path", "")
+            is_dir = out.get("isdir", False) or str(md5).endswith(".dir")
+
+            target_path = target_base / rel_path if rel_path else target_base
+
+            if is_dir:
+                self.__download_directory(s3_client, "delft3d-testbench", md5, target_path, logger)
+            else:
+                self.__download_file(s3_client, "delft3d-testbench", md5, target_path, logger)
+
+        logger.info(f"Direct S3 download complete: {dvc_path.name}")
+
+    def __download_file(
+        self,
+        s3_client,
+        bucket: str,
+        md5: str,
+        target_path: Path,
+        logger: ILogger,
+    ) -> None:
+        """Download a single file using DVC's exact S3 key format."""
+        s3_key = f"files/{md5[:2]}/{md5[2:]}"
+        target_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            # Collect absolute paths to .dvc files as targets.
-            # DVC resolves relative targets against CWD, not repo root,
-            # so we use absolute paths to avoid ambiguity.
-            all_targets: list[str] = []
-            for dvc_file in dvc_files:
-                # Resolve to real path so casing matches the repo root on Windows
-                dvc_file = os.path.realpath(dvc_file)
-                logger.debug(f"Loading DVC file: {dvc_file}")
-                if not os.path.isfile(dvc_file):
-                    raise FileNotFoundError(f"DVC file not found: {dvc_file}")
-                all_targets.append(dvc_file)
+            s3_client.download_file(bucket, s3_key, str(target_path))
+            logger.debug(f"Downloaded file → {target_path.name}")
+        except ClientError as e:
+            raise RuntimeError(f"Failed to download {s3_key} from s3://{bucket}") from e
 
-            logger.info(f"Fetching {len(all_targets)} DVC targets in one batch (jobs={jobs})")
-            logger.debug(f"DVC repo root: {self.__repo.root_dir}")
-            logger.debug(f"DVC targets: {all_targets}")
-            fetch_result = self.__repo.fetch(targets=all_targets, jobs=jobs)
-            logger.info(f"Fetch result: {fetch_result}")
+    def __download_directory(
+        self,
+        s3_client,
+        bucket: str,
+        dir_md5: str,
+        target_dir: Path,
+        logger: ILogger,
+    ) -> None:
+        """Download a full directory by first fetching its .dir metadata JSON."""
+        # 1. Get .dir metadata (in-memory)
+        dir_key = f"files/{dir_md5[:2]}/{dir_md5[2:]}"
+        response = s3_client.get_object(Bucket=bucket, Key=dir_key)
+        dir_json = json.loads(response["Body"].read().decode("utf-8"))
 
-            logger.info(f"Checking out {len(all_targets)} DVC targets in one batch")
-            checkout_result = self.__repo.checkout(targets=all_targets, force=True)
-            logger.info(f"Checkout result: {checkout_result}")
+        target_dir.mkdir(parents=True, exist_ok=True)
 
-            # Verify that the expected output directories actually exist
-            missing = []
-            for dvc_file in dvc_files:
-                # .dvc file at e.g. .../input.dvc should produce .../input directory
-                expected_dir = os.path.splitext(os.path.realpath(dvc_file))[0]
-                if not os.path.isdir(expected_dir):
-                    missing.append(expected_dir)
-            if missing:
-                logger.error(f"DVC checkout completed but {len(missing)} expected directories are missing:")
-                for m in missing:
-                    logger.error(f"  - {m}")
-                raise FileNotFoundError(
-                    f"DVC checkout did not produce {len(missing)} expected directories. First missing: {missing[0]}"
+        # 2. Parallel download of all files inside the directory
+        max_workers = min(32, len(dir_json) or 1)  # safe concurrency
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_path = {}
+            for entry in dir_json:
+                file_md5 = entry["md5"]
+                rel_path = entry.get("path") or entry.get("relpath", "")
+                file_target = target_dir / rel_path
+
+                future = executor.submit(
+                    self.__download_file, s3_client, bucket, file_md5, file_target, logger
                 )
+                future_to_path[future] = rel_path
 
-            logger.info(f"Batch DVC download complete for {len(dvc_files)} .dvc files")
+            for future in as_completed(future_to_path):
+                rel_path = future_to_path[future]
+                try:
+                    future.result()
+                except Exception as exc:
+                    logger.error(f"Failed to download {rel_path}: {exc}")
+                    raise
 
-        except FileNotFoundError as e:
-            logger.error(f"File not found: {str(e)}")
-            raise
-        except Exception as e:
-            logger.error(f"Error during DVC batch pull: {str(e)}")
-            raise
-        finally:
-            for key, val in _prev_env.items():
-                if val is None:
-                    os.environ.pop(key, None)
-                else:
-                    os.environ[key] = val
+        logger.info(f"Directory downloaded ({len(dir_json)} files) → {target_dir}")
 
-    def __download_with_dvc_pull(self, dvc_file: str, credentials: Credentials, logger: ILogger) -> None:
-        """Download using DVC by reading the .dvc file and fetching from remote.
-
-        Parameters
-        ----------
-        dvc_file : str
-            Path to the .dvc file (e.g., "data/cases/e02_f002_c100.dvc").
-        credentials : Credentials
-            Credentials whose username maps to the S3 access key ID and
-            password maps to the S3 secret access key.
-        logger : ILogger
-            Logger instance.
-        """
-        # Temporarily inject S3/MinIO credentials as environment variables so
-        # DVC can authenticate without touching the on-disk config.
-        _aws_keys = ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-        _prev_env = {k: os.environ.get(k) for k in _aws_keys}
-        if credentials and credentials.username:
-            os.environ["AWS_ACCESS_KEY_ID"] = credentials.username
-            os.environ["AWS_SECRET_ACCESS_KEY"] = credentials.password
-
-        try:
-            # Resolve to real path so casing matches the repo root on Windows
-            dvc_file = os.path.realpath(dvc_file)
-            logger.debug(f"Downloading DVC directory with file: {dvc_file}")
-
-            # Check if .dvc file exists
-            if not os.path.isfile(dvc_file):
-                raise FileNotFoundError(f"DVC file not found: {dvc_file}")
-
-            # Use absolute path to avoid CWD vs repo root ambiguity.
-            self.__repo.fetch(targets=[dvc_file])
-            self.__repo.checkout(targets=[dvc_file], force=True)
-
-            logger.info(f"Downloading DVC directory complete: {dvc_file}")
-
-        except FileNotFoundError as e:
-            logger.error(f"File not found: {str(e)}")
-            raise
-        except Exception as e:
-            logger.error(f"Error during DVC pull: {str(e)}")
-            raise
-        finally:
-            # Restore original environment to avoid leaking credentials.
-            for key, val in _prev_env.items():
-                if val is None:
-                    os.environ.pop(key, None)
-                else:
-                    os.environ[key] = val
-
-    def __find_dvc_root(self, path: str) -> str:
-        """Find the DVC repository root by looking for .dvc directory.
-
-        Parameters
-        ----------
-        path : str
-            Starting path to search from.
-
-        Returns
-        -------
-        str
-            Path to the DVC repository root.
-        """
-        current = os.path.dirname(os.path.abspath(path))
-        while True:
-            if os.path.isdir(os.path.join(current, ".dvc")):
-                # Resolve to true filesystem casing so DVC/scmrepo path
-                # comparisons work on case-insensitive (Windows) file systems.
-                return os.path.realpath(current)
-            parent = os.path.dirname(current)
-            if parent == current:
-                break
-            current = parent
+    def __find_dvc_root(self, start_path: str) -> str:
+        """Same helper you already have – finds the DVC repo root."""
+        current = Path(start_path).resolve().parent
+        while current != current.parent:
+            if (current / ".dvc").is_dir():
+                return str(current.resolve())
+            current = current.parent
         raise ValueError("Could not find DVC repository root (.dvc directory)")
