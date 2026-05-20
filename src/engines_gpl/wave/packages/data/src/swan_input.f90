@@ -3437,13 +3437,14 @@ contains
                call resolve_cached_boundary_spectrum_path(trim(sr%specfile), boundary_run_start, boundary_run_end, active_specfile)
                line = ' '
                line(1:10) = 'BOUN NEST '
-               line(11:11) = ''''''
-               nactive = len_trim(active_specfile)
-               maxcopy = max(0, len(line) - 12 - 7)
-               ind = min(nactive, maxcopy)
-               if (ind > 0) line(12:11 + ind) = active_specfile(1:ind)
-               line(12 + ind:12 + ind) = ''''''
-               line(12 + ind + 1:12 + ind + 7) = ' CLOSED'
+               !line(11:11) = ''''''
+               line = trim(line)//' '''//trim(active_specfile)//''''//' CLOSED'
+               !nactive = len_trim(active_specfile)
+               !maxcopy = max(0, len(line) - 12 - 7)
+               !ind = min(nactive, maxcopy)
+               !if (ind > 0) line(12:11 + ind) = active_specfile(1:ind)
+               !line(12 + ind:12 + ind) = ''''''
+               !line(12 + ind + 1:12 + ind + 7) = ' CLOSED'
                write (luninp, '(1X,A)') line
                cycle
             elseif (bnd%bndtyp == 5) then
