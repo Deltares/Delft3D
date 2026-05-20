@@ -1,8 +1,8 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_NF2FF_READER_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_NF2FF_READER_HPP
 
-#include "csumo_settings_reader.hpp" // For ConstituentsOperator, Discharge
-#include "parsing_types.hpp"         // For parsing_utils::Point2D
+#include "csumo_settings_reader.hpp" // For Discharge
+#include "parsing_types.hpp"         // For parsing_utils::Point2D, ConstituentsOperator
 
 #include <expected>
 #include <filesystem>
@@ -57,15 +57,20 @@ namespace pre_c_cumo
         std::string_view fileVersion() const;
 
     private:
-        explicit NF2FFReader(std::string file_version, pugi::xml_document document);
+        explicit NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
+                             double source_flow_rate, pre_c_sumo::ConstituentsOperator constituents_operator,
+                             std::vector<double> constituents, std::vector<double> sources, std::vector<double> sinks);
 
         constexpr static std::string_view root_element_name = "NF2FF";
         constexpr static std::string_view current_file_version = "0.3";
         std::string file_version_;
         pugi::xml_document document_;
-
-        [[nodiscard]] std::expected<pugi::xml_node, parsing_utils::ParseError> validateRoot(
-            pugi::xml_document& doc) const;
+        double intake_flow_rate_;
+        double source_flow_rate_;
+        pre_c_sumo::ConstituentsOperator constituents_operator_;
+        std::vector<double> constituents_;
+        std::vector<double> sources_;
+        std::vector<double> sinks_;
     };
 
 } // namespace pre_c_cumo

@@ -45,60 +45,50 @@ namespace
      */
     std::expected<pugi::xml_node, parsing_utils::ParseError> parseNFResult(const pugi::xml_node root)
     {
-        const pugi::xml_node result = parsing_utils::findChild(root, "NFResult");
-        if (!result)
+        const pugi::xml_node result_node = parsing_utils::findChild(root, "NFResult");
+        if (!result_node)
         {
             return std::unexpected(parsing_utils::ParseError{"No NFResult found in NF2FF file."});
         }
-        const pugi::xml_node check_sources = parsing_utils::findChild(result, "sources");
-        if (!check_sources)
-        {
-            return std::unexpected(parsing_utils::ParseError{"No sources in NFResult."});
-        }
-        const pugi::xml_node check_sinks = parsing_utils::findChild(result, "sinks");
-        if (!check_sinks)
-        {
-            return std::unexpected(parsing_utils::ParseError{"No sinks in NFResult."});
-        }
-        return result;
+        return result_node;
     }
+
     /**
      * @brief parse/validate the file version.
      * @return std::expected containing std::string on success or ParseError on failure.
      */
     std::expected<pugi::xml_node, parsing_utils::ParseError> parseDischarge(const pugi::xml_node root)
     {
-        const pugi::xml_node discharge = parsing_utils::findChild(root, "discharge");
-        if (!discharge)
+        const pugi::xml_node discharge_node = parsing_utils::findChild(root, "discharge");
+        if (!discharge_node)
         {
             return std::unexpected(parsing_utils::ParseError{"No discharge found in NF2FF file."});
         }
-        // TODO: check more content?
-        // Qintake : number
-        const pugi::xml_node q_intake = parsing_utils::findChild(discharge, "Qintake");
-        if (!q_intake)
+        return discharge_node;
+    }
+
+    std::expected<pre_c_sumo::ConstituentsOperator, parsing_utils::ParseError> parseConstituentsOperator(
+        const pugi::xml_node discharge_node)
+    {
+        ASSIGN_OR_RETURN(const auto operator_text,
+                         parsing_utils::requiredChildText(discharge_node, "constituentsOperator"));
+        if (boost::iequals(operator_text, "absolute"))
         {
-            return std::unexpected(parsing_utils::ParseError{"No Qintake found in discharge."});
+            return pre_c_sumo::ConstituentsOperator::Absolute;
         }
-        // Qsource : number
-        const pugi::xml_node q_source = parsing_utils::findChild(discharge, "Qsource");
-        if (!q_source)
+        if (boost::iequals(operator_text, "excess"))
         {
-            return std::unexpected(parsing_utils::ParseError{"No Qsource found in discharge."});
+            return pre_c_sumo::ConstituentsOperator::Excess;
         }
-        // constituentsOperator (get text immediately for check?) 'absolute'|'excess'
-        const pugi::xml_node constituents_operator = parsing_utils::findChild(discharge, "constitientsOperator");
-        if (!constituents_operator)
-        {
-            return std::unexpected(parsing_utils::ParseError{"No constituentsOperator found in discharge."});
-        }
-        // constituents : vector of numbers
-        const pugi::xml_node constituents = parsing_utils::findChild(discharge, "constituents");
-        if (!constituents)
-        {
-            return std::unexpected(parsing_utils::ParseError{"No constituents found in discharge."});
-        }
-        return discharge;
+        return std::unexpected(parsing_utils::ParseError{std::format(
+            "<constituentsOperator> has unknown value: '{}'; expected 'absolute' or 'excess'", operator_text)});
+    }
+
+    std::expected<double, parsing_utils::ParseError> parseRequiredDouble(const pugi::xml_node parent,
+                                                                         const std::string_view element_name)
+    {
+        ASSIGN_OR_RETURN(const auto text, parsing_utils::requiredChildText(parent, element_name));
+        return parsing_utils::parseDouble(text, element_name);
     }
 } // namespace
 
@@ -139,13 +129,41 @@ namespace pre_c_cumo
 
         ASSIGN_OR_RETURN(const auto root, validateRoot(doc));
         ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root));
-        ASSIGN_OR_RETURN(auto discharge, parseDischarge(root));
-        ASSIGN_OR_RETURN(auto nfresult, parseNFResult(root));
-        return NF2FFReader{std::move(file_version), std::move(doc)};
+
+        // Discharge
+        ASSIGN_OR_RETURN(auto discharge_node, parseDischarge(root));
+        ASSIGN_OR_RETURN(const auto intake_flow_rate, parseRequiredDouble(discharge_node, "Qintake"));
+        ASSIGN_OR_RETURN(const auto source_flow_rate, parseRequiredDouble(discharge_node, "Qsource"));
+        ASSIGN_OR_RETURN(const auto constituents_operator, parseConstituentsOperator(discharge_node));
+        ASSIGN_OR_RETURN(const auto constituents_text,
+                         parsing_utils::requiredChildText(discharge_node, "constituents"));
+        ASSIGN_OR_RETURN(auto constituents, parsing_utils::parseDoubleVector(constituents_text, "constituents"));
+        // End Discharge
+
+        // NFResult
+        ASSIGN_OR_RETURN(auto nfresult_node, parseNFResult(root));
+        ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
+        ASSIGN_OR_RETURN(auto sources, parsing_utils::parseDoubleVector(sources_text, "sources"));
+        ASSIGN_OR_RETURN(const auto sinks_text, parsing_utils::requiredChildText(nfresult_node, "sinks"));
+        ASSIGN_OR_RETURN(auto sinks, parsing_utils::parseDoubleVector(sinks_text, "sinks"));
+        // End NFResult
+
+        // Compose result
+        return NF2FFReader{std::move(file_version), std::move(doc),          intake_flow_rate,   source_flow_rate,
+                           constituents_operator,   std::move(constituents), std::move(sources), std::move(sinks)};
     }
 
-    NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document)
-        : file_version_{std::move(file_version)}, document_{std::move(document)}
+    NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
+                             double source_flow_rate, pre_c_sumo::ConstituentsOperator constituents_operator,
+                             std::vector<double> constituents, std::vector<double> sources, std::vector<double> sinks)
+        : file_version_{std::move(file_version)},
+          document_{std::move(document)},
+          intake_flow_rate_{intake_flow_rate},
+          source_flow_rate_{source_flow_rate},
+          constituents_operator_{constituents_operator},
+          constituents_{constituents},
+          sources_{sources},
+          sinks_{sinks}
     {
     }
 
