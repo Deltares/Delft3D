@@ -321,10 +321,10 @@ contains
                        "[Structure]                                   ", &
                        "    id              = lc01                    ", &
                        "    type            = longCulvert             ", &
-                       "    numCoordinates  = 3                       ", &
-                       "    xCoordinates    = 50.0 200.0 350.0       ", &
-                       "    yCoordinates    = 50.0 50.0 50.0         ", &
-                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0       ", &
+                       "    yCoordinates    = 50.0 50.0         ", &
+                       "    zCoordinates    = -5.0 -5.0         ", &
                        "    allowedFlowDir  = both                    ", &
                        "    width           = 2.0                     ", &
                        "    height          = 2.0                     ", &
@@ -334,15 +334,17 @@ contains
    end subroutine create_structure_file
 
    !> Create a minimal MDU file that references the net file and structure file.
-      subroutine create_mdu_file(mdu_file, net_file, str_file)
+   subroutine create_mdu_file(mdu_file, net_file, str_file)
       character(len=*), intent(in) :: mdu_file, net_file, str_file
       integer :: mout, ierr
 
       open(newunit=mout, file=mdu_file, status='replace', action='write', iostat=ierr)
+
       write(mout, '(a)') '[General]'
       write(mout, '(a)') '    fileVersion           = 1.09'
       write(mout, '(a)') '    fileType              = modelDef'
       write(mout, '(a)') '    program               = D-Flow FM'
+      write(mout, '(a)') '    ConvertLongCulverts   = 1'
       write(mout, '(a)') ''
       write(mout, '(a)') '[geometry]'
       write(mout, '(2a)') '    netFile               = ', trim(net_file)
@@ -367,7 +369,7 @@ contains
       use m_flow_modelinit, only: flow_modelinit
       use unstruc_model, only: loadModel, md_ident
       use m_flowgeom, only: ndx, lnx
-      use m_longculverts_data, only: nlongculverts
+      use m_longculverts_data, only: nlongculverts, longculverts
       use dfm_error, only: DFM_NOERR
       use unstruc_messages, only: threshold_abort
       use messagehandling, only: LEVEL_FATAL
@@ -413,6 +415,7 @@ contains
       call f90_expect_true(ndx > 0, "ndx should be > 0 after successful model init")
       call f90_expect_true(lnx > 0, "lnx should be > 0 after successful model init")
       call f90_expect_eq(nlongculverts, 1, "one long culvert should be registered")
+      call f90_expect_eq(longculverts(1)%flowlinks(1), 1, "the long culvert should have flowlink 1")
 
       call default_longculverts
 
