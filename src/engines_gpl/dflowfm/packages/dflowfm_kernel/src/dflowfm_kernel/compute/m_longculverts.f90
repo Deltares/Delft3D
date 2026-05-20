@@ -73,7 +73,7 @@ contains
       end if
 
       nlongculverts = 0 !< Number of longculverts
-
+      newculverts = .false.
       ! Remaining of variables is handled in reset_longculverts()
       call reset_longculverts()
    end subroutine default_longculverts
@@ -222,6 +222,7 @@ contains
          if (allocated(nbranchids)) then
             longculvertindex = meshgeom1d%nbranches
          else
+            allocate(nbranchids(0))
             longculvertindex = 0
          end if
 
@@ -1652,13 +1653,15 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         nbranchlongnames = nbranchids
-         nnodelongnames = nnodeids
-         allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
-         network%numl = meshgeom1d%numedge
-         ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
-                                                nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
-
+         if (network%numl > 0) then !> numl might be 0 due to only 2D-2D long culverts
+            nbranchlongnames = nbranchids
+            nnodelongnames = nnodeids
+            allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
+            network%numl = meshgeom1d%numedge
+        
+            ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
+                                                   nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+         end if
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do

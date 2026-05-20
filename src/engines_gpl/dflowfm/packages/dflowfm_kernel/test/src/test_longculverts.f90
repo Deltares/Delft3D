@@ -14,8 +14,8 @@ contains
     end function to_c_string
     
 
-    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts__single_four_point, test_convert1d2dlongculverts__single_four_point,
-    subroutine test_convert1d2dlongculverts__single_four_point() bind(C)
+    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_four_point, test_convert1d2dlongculverts_single_four_point,
+    subroutine test_convert1d2dlongculverts_single_four_point() bind(C)
         use precision, only: dp
         use network_data, only: numk, numl, kn
         use m_missing, only: dmiss
@@ -64,11 +64,11 @@ contains
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, to_c_string("Expected middle link to be a 1D link."))
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, to_c_string("Expected last new link to be a 1D2D link."))
-    end subroutine test_convert1d2dlongculverts__single_four_point
+    end subroutine test_convert1d2dlongculverts_single_four_point
     !$f90tw )
 
-    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts__single_two_point, test_convert1d2dlongculverts__single_two_point,
-    subroutine test_convert1d2dlongculverts__single_two_point() bind(C)
+    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_two_point, test_convert1d2dlongculverts_single_two_point,
+    subroutine test_convert1d2dlongculverts_single_two_point() bind(C)
         use precision, only: dp
         use network_data, only: numk, numl, kn
         use m_missing, only: dmiss
@@ -120,11 +120,11 @@ contains
         call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
 
         call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, to_c_string("Expected first new link to be a 1D2D link."))
-    end subroutine test_convert1d2dlongculverts__single_two_point
+    end subroutine test_convert1d2dlongculverts_single_two_point
     !$f90tw )
 
-    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts__multiple_culverts, test_convert1d2dlongculverts__multiple_culverts,
-    subroutine test_convert1d2dlongculverts__multiple_culverts() bind(C)
+    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_multiple_culverts, test_convert1d2dlongculverts_multiple_culverts,
+    subroutine test_convert1d2dlongculverts_multiple_culverts() bind(C)
         use precision, only: dp
         use network_data, only: numk, numl, kn
         use m_missing, only: dmiss
@@ -190,7 +190,7 @@ contains
         
         call F90_ASSERT_EQ(numk, 9 + 4 + 2) ! 9 Netnodes for the grid, 4 for LC1, 2 for LC2.
         call F90_ASSERT_EQ(numl, 12 + 3 + 1) ! 12 Netlinks for the grid, 3 for LC1, 1 for LC2.
-    end subroutine test_convert1d2dlongculverts__multiple_culverts
+    end subroutine test_convert1d2dlongculverts_multiple_culverts
     !$f90tw )
 
    !> Create a minimal UGRID 2D net file: a simple channel of 4 quads in a row.
@@ -361,14 +361,17 @@ contains
       close(mout)
    end subroutine create_mdu_file
 
-   !$f90tw TESTCODE(TEST, test_longculvert_modelinit, test_flow_modelinit_with_longculvert, test_flow_modelinit_with_longculvert,
+   !$f90tw TESTCODE(TEST, test_longculvert, test_flow_modelinit_with_longculvert, test_flow_modelinit_with_longculvert,
    !> Verifies that flow_modelinit succeeds for a minimal 2D model containing
-   !! a long culvert. This exercises the full initialization path including
-   !! network loading, geometry init, long culvert conversion, and flow init.
+   !! a long culvert, and that flow is driven through it by a water level gradient.
+   !! The two middle cells have a raised bed level (barrier), forcing all flow
+   !! through the culvert. The left cell starts at a higher water level than the
+   !! right cell, so we expect a positive discharge through the culvert link.
    subroutine test_flow_modelinit_with_longculvert() bind(C)
       use m_flow_modelinit, only: flow_modelinit
       use unstruc_model, only: loadModel, md_ident
-      use m_flowgeom, only: ndx, lnx
+      use m_flowgeom, only: ndx, lnx, xz, yz, bl
+      use m_flow, only: s1, q1
       use m_longculverts_data, only: nlongculverts, longculverts
       use dfm_error, only: DFM_NOERR
       use unstruc_messages, only: threshold_abort
@@ -380,14 +383,16 @@ contains
       use m_resetfullflowmodel, only: resetfullflowmodel
       use netcdf, only: nf90_noerr
       use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
 
-      integer :: ierr, iresult
+      integer :: ierr, iresult, i
 
       character(len=*), parameter :: TEST_NET_FILE = "test_lc_net.nc"
       character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
       character(len=*), parameter :: TEST_MDU_FILE = "test_lc.mdu"
 
       character(len=256) :: mdu_local
+      integer :: lc_link
 
       ! ARRANGE: Create all input files
       call create_minimal_netfile(TEST_NET_FILE, ierr)
@@ -396,30 +401,339 @@ contains
       call create_structure_file(TEST_STR_FILE)
       call create_mdu_file(TEST_MDU_FILE, TEST_NET_FILE, TEST_STR_FILE)
       md_ident = TEST_MDU_FILE
-      ! Prevent abort-on-error so we can check return codes
       threshold_abort = LEVEL_FATAL
 
       call inidat()
-      call timini() ! Initialize timers (otherwise `flow_geominit` crashes)
-      timon = .false. ! Disable timers because we're running unit tests.
-      jampi = 0 ! Disable MPI because we're running unit tests.
-      call SetMessageHandling(write2screen=.false.) ! Disable logging.
+      call timini()
+      timon = .false.
+      jampi = 0
+      call SetMessageHandling(write2screen=.false.)
       call resetFullFlowModel()
       mdu_local = TEST_MDU_FILE
       call loadModel(mdu_local)
       iresult = flow_modelinit()
-      call flow_spatietimestep()
-      ! ASSERT
+
       call f90_expect_eq(iresult, DFM_NOERR, &
                          "flow_modelinit should return DFM_NOERR for a valid model with a long culvert")
-      call f90_expect_true(ndx > 0, "ndx should be > 0 after successful model init")
-      call f90_expect_true(lnx > 0, "lnx should be > 0 after successful model init")
       call f90_expect_eq(nlongculverts, 1, "one long culvert should be registered")
-      call f90_expect_eq(longculverts(1)%flowlinks(1), 1, "the long culvert should have flowlink 1")
+
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
+            bl(i) = 10.0_dp ! barrier in cells 2 and 3
+         end if
+      end do
+      do i = 1, ndx
+         if (xz(i) < 100.0_dp) then
+            s1(i) = 2.0_dp  ! left cell: high water level
+         else
+            s1(i) = 0.0_dp  ! remaining cells: low water level
+         end if
+      end do
+
+      call flow_spatietimestep()
+
+      ! ASSERT: Flow should pass through the culvert from left to right.
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid (> 0)")
+      call f90_expect_true(q1(lc_link) > 0.0_dp, &
+                           "discharge through culvert should be positive (left to right)")
 
       call default_longculverts
 
    end subroutine test_flow_modelinit_with_longculvert
    !$f90tw)
 
+   !> Shared helper: initializes the model from the test MDU file.
+   !! Returns flow_modelinit result in iresult.
+   subroutine setup_longculvert_model(iresult)
+      use m_flow_modelinit, only: flow_modelinit
+      use unstruc_model, only: loadModel, md_ident
+      use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL
+      use m_inidat, only: inidat
+      use Timers, only: timini, timon
+      use m_partitioninfo, only: jampi
+      use MessageHandling, only: SetMessageHandling
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use netcdf, only: nf90_noerr
+      integer, intent(out) :: iresult
+
+      character(len=*), parameter :: TEST_NET_FILE = "test_lc_net.nc"
+      character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
+      character(len=*), parameter :: TEST_MDU_FILE = "test_lc.mdu"
+      character(len=256) :: mdu_local
+      integer :: ierr
+
+      call create_minimal_netfile(TEST_NET_FILE, ierr)
+      call create_structure_file(TEST_STR_FILE)
+      call create_mdu_file(TEST_MDU_FILE, TEST_NET_FILE, TEST_STR_FILE)
+      md_ident = TEST_MDU_FILE
+      threshold_abort = LEVEL_FATAL
+
+      call inidat()
+      call timini()
+      timon = .false.
+      jampi = 0
+      call SetMessageHandling(write2screen=.false.)
+      call resetFullFlowModel()
+      mdu_local = TEST_MDU_FILE
+      call loadModel(mdu_local)
+      iresult = flow_modelinit()
+   end subroutine setup_longculvert_model
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_modelinit_succeeds, test_modelinit_succeeds,
+   !> Verifies that flow_modelinit succeeds for a minimal 2D model with a long culvert.
+   subroutine test_modelinit_succeeds() bind(C)
+      use m_flowgeom, only: ndx, lnx
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+
+      integer :: iresult
+
+      call setup_longculvert_model(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, &
+                         "flow_modelinit should return DFM_NOERR")
+      call f90_expect_true(ndx > 0, "ndx should be > 0")
+      call f90_expect_true(lnx > 0, "lnx should be > 0")
+      call f90_expect_eq(nlongculverts, 1, "one long culvert should be registered")
+      call f90_expect_true(longculverts(1)%flowlinks(1) > 0, &
+                           "culvert should have a valid flow link")
+
+      call default_longculverts
+   end subroutine test_modelinit_succeeds
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_flow_head_difference_drives_discharge, test_flow_head_difference_drives_discharge,
+   !> With a bed level barrier in the middle cells and a water level gradient,
+   !! flow should pass through the culvert from the high-head side to the low-head side.
+   subroutine test_flow_head_difference_drives_discharge() bind(C)
+      use m_flow_modelinit, only: flow_modelinit
+      use m_flowgeom, only: ndx, lnx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_longculvert_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      ! Raise bed level on middle cells to block overland flow.
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
+            bl(i) = 10.0_dp
+         end if
+      end do
+      ! Apply water level gradient: left cell high, rest low.
+      do i = 1, ndx
+         if (xz(i) < 100.0_dp) then
+            s1(i) = 2.0_dp
+         else
+            s1(i) = 0.0_dp
+         end if
+      end do
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_true(q1(lc_link) > 0.0_dp, &
+                           "discharge should be positive (left to right)")
+
+      call default_longculverts
+   end subroutine test_flow_head_difference_drives_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_flow_no_head_difference_no_discharge, test_flow_no_head_difference_no_discharge,
+   !> With a uniform water level across all cells there should be no discharge
+   !! through the culvert.
+   subroutine test_flow_no_head_difference_no_discharge() bind(C)
+      use m_flowgeom, only: ndx, lnx, bl
+      use m_flow, only: s1, q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_longculvert_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      ! Uniform water level everywhere — no driving force.
+      do i = 1, ndx
+         s1(i) = 1.0_dp
+      end do
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, &
+                           "discharge should be ~zero with no head difference")
+
+      call default_longculverts
+   end subroutine test_flow_no_head_difference_no_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_valve_closed_blocks_flow, test_valve_closed_blocks_flow,
+   !> With the valve fully closed (valve_relative_opening = 0), no flow should
+   !! pass through the culvert even with a head difference.
+   subroutine test_valve_closed_blocks_flow() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_longculvert_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      ! Close the valve completely.
+      longculverts(1)%valve_relative_opening = 0.0_dp
+
+      ! Raise barrier and apply head difference as before.
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
+            bl(i) = 10.0_dp
+         end if
+      end do
+      do i = 1, ndx
+         if (xz(i) < 100.0_dp) then
+            s1(i) = 2.0_dp
+         else
+            s1(i) = 0.0_dp
+         end if
+      end do
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, &
+                           "discharge should be ~zero when valve is closed")
+
+      call default_longculverts
+   end subroutine test_valve_closed_blocks_flow
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_flow_reverse_head_gives_negative_discharge, test_flow_reverse_head_gives_negative_discharge,
+   !> With the head gradient reversed (right higher than left), the discharge
+   !! through the culvert should be negative.
+   subroutine test_flow_reverse_head_gives_negative_discharge() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_longculvert_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      ! Raise barrier in middle cells.
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
+            bl(i) = 10.0_dp
+         end if
+      end do
+      ! Reversed gradient: right cell high, left cell low.
+      do i = 1, ndx
+         if (xz(i) > 300.0_dp) then
+            s1(i) = 2.0_dp
+         else
+            s1(i) = 0.0_dp
+         end if
+      end do
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_true(q1(lc_link) < 0.0_dp, &
+                           "discharge should be negative (right to left)")
+
+      call default_longculverts
+   end subroutine test_flow_reverse_head_gives_negative_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_valve_half_open_reduces_discharge, test_valve_half_open_reduces_discharge,
+   !> A half-open valve should produce less discharge than a fully-open valve
+   !! under the same head difference.
+   subroutine test_valve_half_open_reduces_discharge() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+      real(kind=dp) :: q_full, q_half
+
+      ! --- Run 1: fully open valve ---
+      call setup_longculvert_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) bl(i) = 10.0_dp
+      end do
+      do i = 1, ndx
+         if (xz(i) < 100.0_dp) then
+            s1(i) = 2.0_dp
+         else
+            s1(i) = 0.0_dp
+         end if
+      end do
+
+      longculverts(1)%valve_relative_opening = 1.0_dp
+      call flow_spatietimestep()
+      lc_link = longculverts(1)%flowlinks(1)
+      q_full = q1(lc_link)
+      call default_longculverts
+
+      ! --- Run 2: half-open valve ---
+      call setup_longculvert_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed (run 2)")
+
+      do i = 1, ndx
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) bl(i) = 10.0_dp
+      end do
+      do i = 1, ndx
+         if (xz(i) < 100.0_dp) then
+            s1(i) = 2.0_dp
+         else
+            s1(i) = 0.0_dp
+         end if
+      end do
+
+      longculverts(1)%valve_relative_opening = 0.5_dp
+      call flow_spatietimestep()
+      lc_link = longculverts(1)%flowlinks(1)
+      q_half = q1(lc_link)
+      call default_longculverts
+
+      ! Assert
+      call f90_expect_true(q_full > 0.0_dp, "full-open discharge should be positive")
+      call f90_expect_true(q_half > 0.0_dp, "half-open discharge should be positive")
+      call f90_expect_true(q_half < q_full, &
+                           "half-open discharge should be less than fully-open discharge")
+   end subroutine test_valve_half_open_reduces_discharge
+   !$f90tw)
+
 end module test_longculverts
+
+
