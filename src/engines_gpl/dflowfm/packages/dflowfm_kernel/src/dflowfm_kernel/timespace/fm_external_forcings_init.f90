@@ -1369,6 +1369,9 @@ contains
 
    end subroutine initialize_bubblescreens
 
+!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+!> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
+!> filling the geometry of the source/sinks and bubblescreens. (used for output)  
    subroutine finalize_source_sinks()
       use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
       use m_alloc, only: realloc
@@ -1379,6 +1382,7 @@ contains
       integer :: i, j, sidx
       integer :: flownode_nr !< Flow node number
 
+      ! actually compute is_source_sink_bubble and then negate it
       call realloc(is_source_sink_normal, num_source_sink, fill=.false.)
 
       do i = 1, size(bubblescreens)
@@ -1401,6 +1405,7 @@ contains
         call reduce_logical_array_or(num_source_sink, is_source_sink_normal)
       end if
 
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
       is_source_sink_normal = .NOT. is_source_sink_normal
       num_normal_source_sink = count(is_source_sink_normal)
 
