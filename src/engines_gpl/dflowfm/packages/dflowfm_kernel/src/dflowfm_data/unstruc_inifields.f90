@@ -1450,8 +1450,8 @@ contains
             end if
             if (iconst > 0) then
                target_location_type = UNC_LOC_S3D
-               indx = iconst - ised1 + 1
-               target_array_3d => sed
+               indx = iconst
+               target_array_3d => constituents
             else
                call mess(LEVEL_WARN, 'Reading *.ext forcings file '''//trim(md_extfile)//''', getting unknown sediment fraction '''//trim(qid_specific)//''' from QUANTITY '''//trim(qid)//'''.')
                success = .false.
