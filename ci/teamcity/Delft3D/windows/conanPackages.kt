@@ -26,8 +26,8 @@ object WindowsConanPackages : BuildType({
 
     params {
         param("container.tag", "vs2022-intel2024")
-        param("nexus.username", "")
-        password("nexus.password", "credentialsJSON:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+        param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
+        password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
         param("env.CONAN_HOME", "C:/conan-cache")
     }
 
@@ -50,7 +50,7 @@ object WindowsConanPackages : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "--mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME=%nexus.username% -e CONAN_PASSWORD=%nexus.password%"
+            dockerRunParameters = "--mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
         }
         script {
@@ -61,7 +61,7 @@ object WindowsConanPackages : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
-            dockerRunParameters = "--mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME=%nexus.username% -e CONAN_PASSWORD=%nexus.password%"
+            dockerRunParameters = "--mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
         }
     }
