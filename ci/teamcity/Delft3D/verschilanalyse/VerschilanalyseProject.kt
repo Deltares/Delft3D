@@ -30,8 +30,8 @@ object VerschilanalyseProject : Project ({
         }
         s3CompatibleStorage {
             id = "PROJECT_EXT_1"
-            accessKeyID = %env.AWS_ACCESS_KEY_ID%
-            accessKey = %env.AWS_SECRET_ACCESS_KEY%
+            accessKeyID = "%env.AWS_ACCESS_KEY_ID%"
+            accessKey = "%env.AWS_SECRET_ACCESS_KEY%"
             endpoint = "https://s3.deltares.nl"
             storageName = "VerschilAnalyseBucket"
             bucketName = "devops-test-verschilanalyse"
