@@ -863,9 +863,10 @@ contains
       !
       ! HIS: Bubble Screens
       !
+      call ncu_set_att(atts(1), 'geometry', 'bubblescreen_geom')                             
       call add_output_config(config_set_his, IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE, &
-                             'Wrihis_sourcesink', 'bubble_screen_discharge', '', '', &
-                             'm3 s-1', UNC_LOC_BUBBLE_SCREEN, nc_attributes=atts(1:1), description='Write bubble screen parameters to his file')
+                             'Wrihis_bubblescreens', 'bubblescreen_air_discharge', '', '', &
+                             'm3 s-1', UNC_LOC_BUBBLE_SCREEN, nc_attributes=atts(1:1), description='Bubble Screen Air discharge')
 
 
       !
