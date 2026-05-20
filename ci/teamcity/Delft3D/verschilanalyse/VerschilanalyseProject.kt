@@ -15,8 +15,8 @@ object VerschilanalyseProject : Project ({
     params {
         param("h7_account_username", DslContext.getParameter("va_h7_account_username"))
         password("h7_account_password", DslContext.getParameter("va_h7_account_password"))
-        param("env.AWS_ACCESS_KEY_ID", "%va_minio_access_key_id%")
-        password("env.AWS_SECRET_ACCESS_KEY", "%va_minio_secret_key%")
+        param("env.AWS_ACCESS_KEY_ID", DslContext.getParameter("va_minio_access_key_id"))
+        password("env.AWS_SECRET_ACCESS_KEY", DslContext.getParameter("va_minio_secret_key"))
     }
     
     buildType(StartVerschilanalyse)
