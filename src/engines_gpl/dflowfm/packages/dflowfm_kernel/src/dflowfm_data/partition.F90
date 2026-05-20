@@ -6506,14 +6506,13 @@ contains
 
 !> Given a list of local flow cell indices, returns a list of local flow cell numbers at their global position in the global union,
 ! and -1 for the cells that lie on the other partitions.
-   function reduce_cells(local_cells, ndx, keeponlylocal) result(global_cells)
+   function reduce_cells(local_cells, ndx) result(global_cells)
 #ifdef HAVE_MPI
       use mpi
 #endif
 
       integer, dimension(:), intent(in) :: local_cells !< Local flow cell indices found on this partition
       integer, intent(in) :: ndx !< number of flow cells (internal + boundary), should match ndx in m_flowgeom
-      logical, intent(in) :: keeponlylocal !< If true, only keep local cells in the result
       integer, dimension(:), allocatable :: global_cells !< Local flow cell indices of the global union
       integer, dimension(:), allocatable :: global_cellmask, ilocal_s
       integer :: k, num_cells
@@ -6534,33 +6533,24 @@ contains
       num_cells = count(global_cellmask == 1)
       allocate (global_cells(num_cells))
 
-      if (keeponlylocal) then
-         ! iglobal_s contains global numbers of local cells, but required are local numbers of global cells, so build an inverse mapping.
-         allocate (ilocal_s(nglobal_s))
-         ilocal_s = -1
-         do k = 1, ndx
-            if (iglobal_s(k) > 0) then
-               ilocal_s(iglobal_s(k)) = k
-            end if
-         end do
-         num_cells = 0
-         ! Build global cells from ilocal_s by iterating over global_cellmask.
-         ! Cells that exist globally not on current partition will have -1 in ilocal_s and thus -1 in global_cells.
-         do k = 1, nglobal_s
-            if (global_cellmask(k) == 1) then
-               num_cells = num_cells + 1
-               global_cells(num_cells) = ilocal_s(k)
-            end if
-         end do
-      else 
-         num_cells = 0
-         do k = 1, nglobal_s
-            if (global_cellmask(k) == 1) then
-               num_cells = num_cells + 1
-               global_cells(num_cells) = k
-            end if
-         end do
-      end if
+      ! iglobal_s contains global numbers of local cells, but required are local numbers of global cells, so build an inverse mapping.
+      allocate (ilocal_s(nglobal_s))
+      ilocal_s = -1
+      do k = 1, ndx
+         if (iglobal_s(k) > 0) then
+            ilocal_s(iglobal_s(k)) = k
+         end if
+      end do
+      num_cells = 0
+      ! Build global cells from ilocal_s by iterating over global_cellmask.
+      ! Cells that exist globally not on current partition will have -1 in ilocal_s and thus -1 in global_cells.
+      do k = 1, nglobal_s
+         if (global_cellmask(k) == 1) then
+            num_cells = num_cells + 1
+            global_cells(num_cells) = ilocal_s(k)
+         end if
+      end do
+
 
 
    end function reduce_cells

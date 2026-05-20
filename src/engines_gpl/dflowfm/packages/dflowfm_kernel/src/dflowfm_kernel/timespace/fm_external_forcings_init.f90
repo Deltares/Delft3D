@@ -1370,46 +1370,39 @@ contains
    end subroutine initialize_bubblescreens
 
    subroutine finalize_source_sinks()
-      use fm_external_forcings_data, only: num_source_sink, is_source_sink_real, bubblescreens, num_real_source_sink
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
       use m_alloc, only: realloc
       use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
-      use m_flowgeom, only: ndx
+
       use m_structures, only: fill_geometry_source_sinks, fill_geometry_bubblescreens
 
-      integer :: i, fcidx, sidx
+      integer :: i, j, sidx
       integer :: flownode_nr !< Flow node number
 
-      call realloc(is_source_sink_real, num_source_sink, fill=.false.)
+      call realloc(is_source_sink_normal, num_source_sink, fill=.false.)
 
       do i = 1, size(bubblescreens)
          associate (bubblescreen => bubblescreens(i))
-            do fcidx = 1, bubblescreen%num_flowcells
-               sidx = bubblescreen%source_sink_indices(fcidx)
+            do j = 1, bubblescreen%num_flowcells
+               sidx = bubblescreen%source_sink_indices(j)
                if (jampi == 1 .and. allocated(idomain)) then
-                  flownode_nr = bubblescreen%flowcell_indices(fcidx)
+                  flownode_nr = bubblescreen%flowcell_indices(j)
                   if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
-                     is_source_sink_real(sidx) = .true.
+                     is_source_sink_normal(sidx) = .true.
                   end if
                else
-                  is_source_sink_real(sidx) = .true.
+                  is_source_sink_normal(sidx) = .true.
                end if
             end do
-
-            if (jampi == 1) then
-               bubblescreen%global_flowcell_indices =  reduce_cells(bubblescreen%flowcell_indices, ndx, .false.)
-            else 
-               bubblescreen%global_flowcell_indices =  bubblescreen%flowcell_indices
-            end if
-            bubblescreen%global_num_flowcells = size(bubblescreen%global_flowcell_indices)
          end associate
       end do
 
       if(jampi == 1) then
-        call reduce_logical_array_or(num_source_sink, is_source_sink_real)
+        call reduce_logical_array_or(num_source_sink, is_source_sink_normal)
       end if
 
-      is_source_sink_real = .NOT. is_source_sink_real
-      num_real_source_sink = count(is_source_sink_real)
+      is_source_sink_normal = .NOT. is_source_sink_normal
+      num_normal_source_sink = count(is_source_sink_normal)
 
       call fill_geometry_source_sinks()
       call fill_geometry_bubblescreens()
@@ -1487,7 +1480,7 @@ contains
                bubblescreen_cells = bubblescreen%flowcell_indices
                ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
                if (jampi == 1) then
-                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx, .true.)
+                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                   n_cells = size(bubblescreen_cells)
                end if
                call realloc(x_flowcell, n_cells, fill=0.0_dp)

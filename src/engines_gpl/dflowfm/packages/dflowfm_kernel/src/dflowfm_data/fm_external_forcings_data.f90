@@ -387,10 +387,8 @@ module fm_external_forcings_data
    type t_Bubblescreen
       character(len=255) :: id !< Bubble screen id
       integer :: num_flowcells !< Number of flow cells in bubble screen
-      integer :: global_num_flowcells !< Global number of flow cells in bubble screen (across partitions in parallel runs)
       integer, dimension(:), allocatable :: flowcell_indices !< Indices of flow cells in bubble screen. {size=num_flowcells}
       integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
-      integer, dimension(:), allocatable :: global_flowcell_indices !< Global indices of flow cells in bubble screen (across partitions in parallel runs). {size=num_flowcells}
       real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
       real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
    end type t_Bubblescreen
@@ -403,8 +401,8 @@ module fm_external_forcings_data
 
    ! Source/sink counters.
    integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
-   integer :: num_real_source_sink !< [-] number of real source/sinks in the model, i.e. excluding bubble screens
-   logical, dimension(:), allocatable :: is_source_sink_real !< [-] logical array to identify which sources/sinks are real (true) and which are bubble screens (false). {size=(num_source_sink)}
+   integer :: num_normal_source_sink !< [-] number of normal source/sinks in the model, i.e. excluding bubble screens
+   logical, dimension(:), allocatable :: is_source_sink_normal !< [-] logical array to identify which sources/sinks are normal (true) and which are bubble screens (false). {size=(num_source_sink)}
    integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
    integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}
    integer :: max_source_sink_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions. {former:msrc}

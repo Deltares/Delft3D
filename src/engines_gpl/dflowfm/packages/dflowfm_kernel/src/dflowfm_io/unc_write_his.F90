@@ -316,11 +316,11 @@ contains
                                                   id_rugdim, id_rugname) ! No geometry
 
          ! Source-sinks
-         if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. num_normal_source_sink > 0) then
             ! Define geometry related variables
             nNodeTot = 0
             do i = 1, num_source_sink
-               if (is_source_sink_real(i)) then
+               if (is_source_sink_normal(i)) then
                   nNodes = 0
                   k1 = source_sink_indices(1, i)
                   k2 = source_sink_indices(4, i)
@@ -335,10 +335,10 @@ contains
             end do
          end if
 
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, num_real_source_sink, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, num_normal_source_sink, 'line', nNodeTot, id_strlendim, &
                                                   id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
-         if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. num_normal_source_sink > 0) then
             call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', max_source_sink_polyline_points, id_srcptsdim))
             call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
             call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
@@ -688,16 +688,16 @@ contains
             end if
 
             ! Source-sinks
-            if (his_write_settings%sourcesink > 0 .and. num_real_source_sink > 0) then
+            if (his_write_settings%sourcesink > 0 .and. num_normal_source_sink > 0) then
                block
                   real(kind=dp), dimension(:,:), allocatable :: tm_source_sink_x, tm_source_sink_y
                   integer :: num_points
                   num_points = source_sink_max_xy_points(num_source_sink)
-                  call realloc(tm_source_sink_x, [num_real_source_sink, max_source_sink_polyline_points])
-                  call realloc(tm_source_sink_y, [num_real_source_sink, max_source_sink_polyline_points])
+                  call realloc(tm_source_sink_x, [num_normal_source_sink, max_source_sink_polyline_points])
+                  call realloc(tm_source_sink_y, [num_normal_source_sink, max_source_sink_polyline_points])
                   j = 1
                   do i = 1, num_source_sink
-                     if (is_source_sink_real(i)) then
+                     if (is_source_sink_normal(i)) then
                         tm_source_sink_x(j, 1:num_points) = source_sink_x(i, 1:num_points)
                         tm_source_sink_y(j, 1:num_points) = source_sink_y(i, 1:num_points)
                         j = j + 1
@@ -1495,7 +1495,7 @@ contains
    subroutine unc_put_his_structure_static_vars(ncid)
       use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, &
                   ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, num_source_sink, &
-                  gate2cgen, ngategen, is_source_sink_real, bubblescreens
+                  gate2cgen, ngategen, is_source_sink_normal, bubblescreens
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: his_write_settings
@@ -1579,7 +1579,7 @@ contains
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
       if (allocated(source_sink_name)) then
-         structure_names = pack(source_sink_name, is_source_sink_real)
+         structure_names = pack(source_sink_name, is_source_sink_normal)
       else
          structure_names = [(source_sink_name(i), integer :: i=1, num_source_sink)]
       end if

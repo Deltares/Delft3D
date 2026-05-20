@@ -1069,9 +1069,10 @@ contains
       end if
    end subroutine get_geom_coordinates_of_structure
 
+!> Fills in the geometry arrays of source/sinks taking into account the parallel domain decomposition.
    subroutine fill_geometry_source_sinks()
 
-      use fm_external_forcings_data, only: num_source_sink, is_source_sink_real, source_sink_indices, num_real_source_sink
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, source_sink_indices, num_normal_source_sink
       use m_flowgeom, only: xz, yz
       use m_alloc
       use m_partitioninfo, only: jampi, my_rank, reduce_int_max, reduce_double_array_max
@@ -1089,13 +1090,13 @@ contains
 
       call realloc(geom_x, 2)
       call realloc(geom_y, 2)
-      call realloc(nodeCountSourceSink, num_real_source_sink)
-      call realloc(localGeomXSourceSink, num_real_source_sink, 2)
-      call realloc(localGeomYSourceSink, num_real_source_sink, 2)
+      call realloc(nodeCountSourceSink, num_normal_source_sink)
+      call realloc(localGeomXSourceSink, num_normal_source_sink, 2)
+      call realloc(localGeomYSourceSink, num_normal_source_sink, 2)
       localGeomXSourceSink = -huge(1.0_dp)
       localGeomYSourceSink = -huge(1.0_dp)
       do i = 1, num_source_sink
-         if (is_source_sink_real(i)) then
+         if (is_source_sink_normal(i)) then
             k1 = source_sink_indices(1, i)
             k2 = source_sink_indices(4, i)
             nNodes = 0
@@ -1118,13 +1119,13 @@ contains
          end if
       end do
       if (jampi > 0) then
-         call reduce_int_max(num_real_source_sink, nodeCountSourceSink)
+         call reduce_int_max(num_normal_source_sink, nodeCountSourceSink)
       end if
       nNodesSourceSink = sum(nodeCountSourceSink)
       call realloc(geomXSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
       call realloc(geomYSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
       j = 1
-      do i = 1, num_real_source_sink
+      do i = 1, num_normal_source_sink
          nNodes = nodeCountSourceSink(i)
          geomXSourceSink(j:j + nNodes - 1) = localGeomXSourceSink(i, 1:nNodes)
          geomYSourceSink(j:j + nNodes - 1) = localGeomYSourceSink(i, 1:nNodes)
@@ -1138,6 +1139,7 @@ contains
 
    end subroutine fill_geometry_source_sinks
 
+!> Fills in the geometry arrays of bubble screens taking into account the parallel domain decomposition.
    subroutine fill_geometry_bubblescreens()
       use fm_external_forcings_data, only: bubblescreens
       use m_flowgeom, only: xz, yz
@@ -1153,6 +1155,7 @@ contains
 
       call realloc(localNodeCountBubbleScreens, size(bubblescreens), fill=0)
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
+      ! First count the number of nodes of each bubble screen on each subdomain
       do i = 1, size(bubblescreens)
          j = 1
          if (jampi > 0) then 
@@ -1163,7 +1166,7 @@ contains
                end if
             end do
             localNodeCountBubbleScreens(i) = j - 1
-         else 
+         else ! serial is simply num_flowcells
             localNodeCountBubbleScreens(i) = bubblescreens(i)%num_flowcells
          end if
       end do
@@ -1182,6 +1185,7 @@ contains
          j = 1
          call realloc(localGeomXBubbleScreens,  localNodeCountBubbleScreens(i), fill=-huge(1.0_dp))
          call realloc(localGeomYBubbleScreens,  localNodeCountBubbleScreens(i), fill=-huge(1.0_dp))
+         ! gather the coordinates of flow cells for each subdomain, and then fill in the geometry arrays of bubble screens on the root process (after gather)
          do k = 1,  bubblescreens(i)%num_flowcells
             flownode_nr = bubblescreens(i)%flowcell_indices(k)
             if (jampi > 0) then 
@@ -1190,7 +1194,7 @@ contains
                   localGeomYBubbleScreens(j) = yz(flownode_nr)
                   j = j + 1
                end if
-            else
+            else ! serial simply copy
                localGeomXBubbleScreens(j) = xz(flownode_nr)
                localGeomYBubbleScreens(j) = yz(flownode_nr)
                j = j + 1
@@ -1201,6 +1205,7 @@ contains
          if (ierror /= 0) then 
             call mess(LEVEL_ERROR, 'Error in gatherv_double_auto in fill_geometry_bubblescreens')
          end if
+
          if (my_rank == 0) then
             geomXBubbleScreen(global_idx:global_idx + size(collectGeomXBubbleScreens) - 1) = collectGeomXBubbleScreens
             geomYBubbleScreen(global_idx:global_idx + size(collectGeomYBubbleScreens) - 1) = collectGeomYBubbleScreens
