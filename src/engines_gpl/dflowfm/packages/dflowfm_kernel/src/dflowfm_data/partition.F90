@@ -5148,17 +5148,22 @@ contains
       integer, intent(in) :: root !< Rank of receiving process
       integer, intent(out) :: ierror !< Error index
 
-      integer :: ndomains, i, ndata_total
+      integer :: i, ndata_total
       integer, dimension(:), allocatable :: recvcounts, displs
       integer :: ndata_local !< Number of data elements in local array
 
       ndata_local = size(data_local)
       ierror = -1
+      
+      if (jampi == 0) then
+         ! Serial case: just copy the data
+         allocate(data_all(ndata_local))
+         data_all = data_local
+         ierror = 0
+         return
+      end if
 
 #ifdef HAVE_MPI
-      ! Get MPI communicator info
-      call mpi_comm_size(DFM_COMM_DFMWORLD, ndomains, ierror)
-      if (ierror /= 0) return
 
       ! Allocate receive count and displacement arrays
       if (my_rank == root) then
@@ -5173,7 +5178,7 @@ contains
       call mpi_gather(ndata_local, 1, MPI_INTEGER, &
                       recvcounts, 1, MPI_INTEGER, &
                       root, DFM_COMM_DFMWORLD, ierror)
-      if (ierror /= 0) goto 999
+
 
       ! Step 2: Calculate displacements and total size (root only)
       if (my_rank == root) then
@@ -5194,17 +5199,10 @@ contains
                        data_all, recvcounts, displs, MPI_DOUBLE_PRECISION, &
                        root, DFM_COMM_DFMWORLD, ierror)
 
-999   continue
       ! Cleanup temporary arrays
       if (allocated(recvcounts)) deallocate(recvcounts)
       if (allocated(displs)) deallocate(displs)
-#else
-      ! Serial case: just copy the data
-      allocate(data_all(ndata_local))
-      data_all = data_local
-      ierror = 0
 #endif
-
    end subroutine gatherv_double_auto
 
 !> Abort all processes

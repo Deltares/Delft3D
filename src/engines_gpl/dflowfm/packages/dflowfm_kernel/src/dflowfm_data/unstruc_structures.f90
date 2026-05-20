@@ -1155,13 +1155,17 @@ contains
       call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
       do i = 1, size(bubblescreens)
          j = 1
-         do k = 1, bubblescreens(i)%num_flowcells
-            flownode_nr = bubblescreens(i)%flowcell_indices(k)
-            if (idomain(flownode_nr) == my_rank) then
-               j = j + 1
-            end if
-         end do
-         localNodeCountBubbleScreens(i) = j - 1
+         if (jampi > 0) then 
+            do k = 1, bubblescreens(i)%num_flowcells
+               flownode_nr = bubblescreens(i)%flowcell_indices(k)
+               if (idomain(flownode_nr) == my_rank) then
+                  j = j + 1
+               end if
+            end do
+            localNodeCountBubbleScreens(i) = j - 1
+         else 
+            localNodeCountBubbleScreens(i) = bubblescreens(i)%num_flowcells
+         end if
       end do
       if (jampi > 0) then
          call reduce_intN_sum(size(localNodeCountBubbleScreens), localNodeCountBubbleScreens, nodeCountBubbleScreen)
@@ -1180,7 +1184,13 @@ contains
          call realloc(localGeomYBubbleScreens,  localNodeCountBubbleScreens(i), fill=-huge(1.0_dp))
          do k = 1,  bubblescreens(i)%num_flowcells
             flownode_nr = bubblescreens(i)%flowcell_indices(k)
-            if (idomain(flownode_nr) == my_rank) then
+            if (jampi > 0) then 
+               if (idomain(flownode_nr) == my_rank) then
+                  localGeomXBubbleScreens(j) = xz(flownode_nr)
+                  localGeomYBubbleScreens(j) = yz(flownode_nr)
+                  j = j + 1
+               end if
+            else
                localGeomXBubbleScreens(j) = xz(flownode_nr)
                localGeomYBubbleScreens(j) = yz(flownode_nr)
                j = j + 1
