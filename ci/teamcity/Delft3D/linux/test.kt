@@ -32,7 +32,7 @@ object LinuxTest : BuildType({
         test\deltares_testbench\data\cases\**\*.dia      => logging
         test\deltares_testbench\data\cases\**\*.log      => logging
         test\deltares_testbench\logs                     => logging
-        test\deltares_testbench\copy_cases               => copy_cases.zip
+        test\deltares_testbench\copy_cases\**               => copy_cases.zip
     """.trimIndent()
 
     val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
