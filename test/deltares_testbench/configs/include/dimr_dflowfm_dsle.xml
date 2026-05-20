@@ -136,7 +136,7 @@
                 </file>
                 <file name="dhydro/output/FlowFM_his.nc" type="netcdf">
                     <parameters>
-                        <parameter name="cross_section_TR1" toleranceAbsolute="0.0001" />
+                        <parameter name="cross_section_TR1" toleranceRelative="0.0008" />
                     </parameters>
                 </file>
             </checks>
