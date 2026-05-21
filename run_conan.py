@@ -61,7 +61,9 @@ def clean_conan_cache() -> None:
     subprocess.run(["conan", "cache", "clean"], check=True)
 
 
-def update_lockfile(profile: str, *, ci: bool = False, local_only: bool = False) -> None:
+def update_lockfile(
+    profile: str, *, ci: bool = False, local_only: bool = False
+) -> None:
     """Generate or update conan.lock from the current conanfile and recipes."""
     cmd = [
         "conan",
@@ -203,7 +205,17 @@ def main() -> None:
 
     # Install dependencies and generate CMakeDeps metadata for Debug, Release and RelWithDebInfo
     # Note that they effectively all use release binaries
-    conan_install(profile, args.output_folder, "Release", ci=args.ci, lockfile=lockfile, build_missing=args.build_missing, build_local=args.rebuild_recipes)
+    conan_install(
+        profile,
+        args.output_folder,
+        "Release",
+        ci=args.ci,
+        lockfile=lockfile,
+        build_missing=args.build_missing,
+        build_local=args.rebuild_recipes,
+    )
+    # The two installs below only generate CMakeDeps files for the consumer build types;
+    # the packages are already in the cache from the Release install above, so no rebuild is needed.
     conan_install(
         profile,
         args.output_folder,
@@ -211,8 +223,6 @@ def main() -> None:
         consumer_build_type="Debug",
         ci=args.ci,
         lockfile=lockfile,
-        build_missing=args.build_missing,
-        build_local=args.rebuild_recipes,
     )
     conan_install(
         profile,
@@ -221,8 +231,6 @@ def main() -> None:
         consumer_build_type="RelWithDebInfo",
         ci=args.ci,
         lockfile=lockfile,
-        build_missing=args.build_missing,
-        build_local=args.rebuild_recipes,
     )
 
 
