@@ -191,35 +191,35 @@ contains
 
    subroutine filter_source_sink_discharge(source_input)
       use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge" item, to be assigned once on first call.
       call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge_out)
       source_sink_discharge_out = pack(source_sink_all_discharges(1, :), is_source_sink_normal)
    end subroutine filter_source_sink_discharge
 
    subroutine filter_source_sink_discharge2(source_input)
       use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge2" item, to be assigned once on first call.
       call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge2_out)
       source_sink_discharge2_out = pack(source_sink_all_discharges(2, :), is_source_sink_normal)
    end subroutine filter_source_sink_discharge2
 
    subroutine filter_source_sink_discharge3(source_input)
       use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge3" item, to be assigned once on first call.
       call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge3_out)
       source_sink_discharge3_out = pack(source_sink_all_discharges(3, :), is_source_sink_normal)
    end subroutine filter_source_sink_discharge3
 
    subroutine filter_source_sink_cumulative_volume(source_input)
       use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_cumulative_volume
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_cumulative_volume" item, to be assigned once on first call.
       call allocate_and_associate(source_input, num_normal_source_sink, source_sink_cumulative_volume_out)
       source_sink_cumulative_volume_out = pack(source_sink_cumulative_volume, is_source_sink_normal)
    end subroutine filter_source_sink_cumulative_volume
 
    subroutine filter_source_sink_water_discharge(source_input)
       use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_water_discharge, source_sink_all_discharges
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_water_discharge" item, to be assigned once on first call.
       logical :: is_init
       is_init = .not. associated(source_input)
       call allocate_and_associate(source_input, num_normal_source_sink, source_sink_water_discharge_out)
@@ -231,7 +231,7 @@ contains
 
    subroutine filter_source_sink_average_discharge_previous(source_input)
       use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_average_discharge_previous
-      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "SBCX" item, to be assigned once on first call.
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_average_discharge_previous" item, to be assigned once on first call.
       call allocate_and_associate(source_input, num_normal_source_sink, source_sink_average_discharge_previous_out)
       source_sink_average_discharge_previous_out = pack(source_sink_average_discharge_previous, is_source_sink_normal)
    end subroutine filter_source_sink_average_discharge_previous
@@ -2370,7 +2370,6 @@ contains
       if (his_write_settings%sourcesink > 0 .and. num_normal_source_sink > 0) then
          function_pointer => filter_source_sink_discharge
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
-         ! call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
          i = 1
          if (isalt > 0) then
             i = i + 1

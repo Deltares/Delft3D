@@ -1372,7 +1372,7 @@ contains
    end subroutine initialize_bubblescreens
 
 
-      !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
+   !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.
       function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
          use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes

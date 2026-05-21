@@ -2513,9 +2513,10 @@ contains
 
       integer :: i, j, sidx
       integer :: flownode_nr !< Flow node number
+      logical, dimension(:), allocatable :: is_source_sink_bubblescreen
 
       ! actually compute is_source_sink_bubble and then negate it
-      call realloc(is_source_sink_normal, num_source_sink, fill=.false.)
+      call realloc(is_source_sink_bubblescreen, num_source_sink, fill=.false.)
 
       do i = 1, size(bubblescreens)
          associate (bubblescreen => bubblescreens(i))
@@ -2524,21 +2525,21 @@ contains
                if (jampi == 1 .and. allocated(idomain)) then
                   flownode_nr = bubblescreen%flowcell_indices(j)
                   if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
-                     is_source_sink_normal(sidx) = .true.
+                     is_source_sink_bubblescreen(sidx) = .true.
                   end if
                else
-                  is_source_sink_normal(sidx) = .true.
+                  is_source_sink_bubblescreen(sidx) = .true.
                end if
             end do
          end associate
       end do
 
       if(jampi == 1) then
-        call reduce_logical_array_or(num_source_sink, is_source_sink_normal)
+        call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
       end if
 
       ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
-      is_source_sink_normal = .NOT. is_source_sink_normal
+      is_source_sink_normal = .NOT. is_source_sink_bubblescreen
       num_normal_source_sink = count(is_source_sink_normal)
 
       call fill_geometry_source_sinks()
