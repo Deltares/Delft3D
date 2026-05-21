@@ -116,7 +116,7 @@ object LinuxTest : BuildType({
                     --filter "testcase=%case_filter%"
                     --log-level DEBUG
                     --parallel
-                    --teamcity$copyFailedCasesArg
+                    --teamcity $copyFailedCasesArg
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent() 
                 scriptArguments = scriptArguments
@@ -129,6 +129,20 @@ object LinuxTest : BuildType({
                 --pull always
                 --shm-size 8G
             """.trimIndent()
+        }
+        script {
+            name = "Display contents of Copy cases dir"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            workingDir = "test/deltares_testbench"
+            scriptContent = """
+                if [[ -d copy_cases ]]; then 
+                    ls -la copy_cases 
+                else 
+                echo 'copy_cases does not exist' 
+                fi
+                echo $copyFailedCasesArg
+                echo %copyFailedCasesArg%
+                """.trimIndent()
         }
         dockerCommand {
             name = "Remove container"
