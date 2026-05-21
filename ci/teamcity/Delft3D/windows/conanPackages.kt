@@ -4,6 +4,7 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.failureConditions.*
+import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 import Delft3D.step.*
 
@@ -55,6 +56,28 @@ object WindowsConanPackages : BuildType({
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerRunParameters = "-e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
+        }
+    }
+
+    triggers {
+        vcs {
+            triggerRules = """
+                +:conan.lock
+                +:conanfile.py
+                +:run_conan.py
+                +:conan/config/**
+            """.trimIndent()
+            branchFilter = "+:*"
+        }
+        schedule {
+            schedulingPolicy = weekly {
+                dayOfWeek = ScheduleTrigger.DAY.Thursday
+                hour = 0
+                minute = 0
+            }
+            branchFilter = "+:<default>"
+            triggerBuild = always()
+            withPendingChangesOnly = false
         }
     }
 

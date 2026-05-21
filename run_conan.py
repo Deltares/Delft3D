@@ -160,6 +160,16 @@ def main() -> None:
         help="Regenerate the lockfile and rebuild all packages from local recipes only. Use in CI to validate recipes.",
     )
     parser.add_argument(
+        "--build-type",
+        default="Release",
+        choices=["Release", "Debug", "RelWithDebInfo"],
+        help=(
+            "CMake build type for the consumer. "
+            "On Linux (single-config generator), determines which CMakeDeps files are generated. "
+            "Ignored on Windows, where all three configurations are always generated."
+        ),
+    )
+    parser.add_argument(
         "--output-folder",
         default="build/conan",
         help="Output folder for Conan install files.",
@@ -203,35 +213,47 @@ def main() -> None:
     # Use lockfile for reproducible installs if one exists
     lockfile = LOCKFILE if LOCKFILE.exists() else None
 
-    # Install dependencies and generate CMakeDeps metadata for Debug, Release and RelWithDebInfo
-    # Note that they effectively all use release binaries
-    conan_install(
-        profile,
-        args.output_folder,
-        "Release",
-        ci=args.ci,
-        lockfile=lockfile,
-        build_missing=args.build_missing,
-        build_local=args.rebuild_recipes,
-    )
-    # The two installs below only generate CMakeDeps files for the consumer build types;
-    # the packages are already in the cache from the Release install above, so no rebuild is needed.
-    conan_install(
-        profile,
-        args.output_folder,
-        "Release",
-        consumer_build_type="Debug",
-        ci=args.ci,
-        lockfile=lockfile,
-    )
-    conan_install(
-        profile,
-        args.output_folder,
-        "Release",
-        consumer_build_type="RelWithDebInfo",
-        ci=args.ci,
-        lockfile=lockfile,
-    )
+    if os_name == "Windows":
+        # Multi-config generator: generate CMakeDeps for all three configurations.
+        # Only the first install builds packages; the other two reuse the cache.
+        conan_install(
+            profile,
+            args.output_folder,
+            "Release",
+            ci=args.ci,
+            lockfile=lockfile,
+            build_missing=args.build_missing,
+            build_local=args.rebuild_recipes,
+        )
+        conan_install(
+            profile,
+            args.output_folder,
+            "Release",
+            consumer_build_type="Debug",
+            ci=args.ci,
+            lockfile=lockfile,
+        )
+        conan_install(
+            profile,
+            args.output_folder,
+            "Release",
+            consumer_build_type="RelWithDebInfo",
+            ci=args.ci,
+            lockfile=lockfile,
+        )
+    else:
+        # Single-config generator: one install for the requested build type.
+        # Packages are always built as Release; consumer_build_type controls the CMakeDeps output.
+        conan_install(
+            profile,
+            args.output_folder,
+            "Release",
+            consumer_build_type=args.build_type,
+            ci=args.ci,
+            lockfile=lockfile,
+            build_missing=args.build_missing,
+            build_local=args.rebuild_recipes,
+        )
 
 
 if __name__ == "__main__":
