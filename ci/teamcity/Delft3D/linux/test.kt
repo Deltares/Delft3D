@@ -32,8 +32,7 @@ object LinuxTest : BuildType({
         test\deltares_testbench\data\cases\**\*.dia      => logging
         test\deltares_testbench\data\cases\**\*.log      => logging
         test\deltares_testbench\logs                     => logging
-        test/deltares_testbench/copy_cases               => copy_cases_dir
-        test/deltares_testbench/copy_cases/**            => copy_cases.zip
+        test\deltares_testbench\copy_cases               => copy_cases.zip
     """.trimIndent()
 
     val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
@@ -120,7 +119,6 @@ object LinuxTest : BuildType({
                     --teamcity$copyFailedCasesArg
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent() 
-                // If all cases will be copies we don't also have to copy the failed ones
                 scriptArguments = scriptArguments
             }
             dockerImage = "%testbench_container_image%"
