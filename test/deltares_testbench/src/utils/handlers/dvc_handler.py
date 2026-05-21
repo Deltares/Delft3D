@@ -74,7 +74,10 @@ class DvcHandler(IHandler):
         )
 
         # 3. Download every output (usually 1 per .dvc)
-        target_base = dvc_path.with_suffix("")  # e.g. input.dvc → input/
+        # Place outputs relative to the .dvc parent directory. This avoids
+        # duplicating folder names when out.path equals the .dvc stem
+        # (e.g. input.dvc with out.path=input).
+        target_parent = dvc_path.parent
         for out in outs:
             md5 = out.get("md5")
             if not md5:
@@ -84,7 +87,7 @@ class DvcHandler(IHandler):
             hash_algo = out.get("hash", "md5")
             is_dir = out.get("isdir", False) or str(md5).endswith(".dir")
 
-            target_path = target_base / rel_path if rel_path else target_base
+            target_path = target_parent / rel_path if rel_path else dvc_path.with_suffix("")
 
             if is_dir:
                 self.__download_directory(s3_client, self.__bucket, md5, target_path, logger, hash_algo)
@@ -105,12 +108,12 @@ class DvcHandler(IHandler):
         """Download a single file using DVC's exact S3 key format."""
         clean_md5 = md5.removesuffix(".dir")
         s3_key = f"files/{hash_algo}/{clean_md5[:2]}/{clean_md5[2:]}"
-        logger.debug(f"Downloading s3://{bucket}/{s3_key} → {target_path}")
+        logger.debug(f"Downloading s3://{bucket}/{s3_key} -> {target_path}")
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
             s3_client.download_file(bucket, s3_key, str(target_path))
-            logger.debug(f"Downloaded file → {target_path.name}")
+            logger.debug(f"Downloaded file -> {target_path.name}")
         except ClientError as e:
             raise RuntimeError(f"Failed to download s3://{bucket}/{s3_key} (md5={md5})") from e
 
@@ -154,7 +157,7 @@ class DvcHandler(IHandler):
                     logger.error(f"Failed to download {rel_path}: {exc}")
                     raise
 
-        logger.info(f"Directory downloaded ({len(dir_json)} files) → {target_dir}")
+        logger.info(f"Directory downloaded ({len(dir_json)} files) -> {target_dir}")
 
     def __read_remote_config(self) -> Tuple[str, str]:
         """Read bucket and endpoint_url from .dvc/config for the default remote."""
