@@ -46,6 +46,17 @@ object LinuxTest : BuildType({
     val linesForAll = linuxLines.filter { line -> line.split(",")[2] == "TRUE" }
     val selectedConfigs = linesForAll.map { line -> line.split(",")[1] }
 
+    
+    val copyFailedCasesArg = if (
+        "%copy_failed_cases%" == "true" &&
+        "%copy_tested_cases%" != "true"
+    ) {
+        " --copy-failed-cases"
+    } else {
+        ""
+    }
+
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -106,8 +117,7 @@ object LinuxTest : BuildType({
                     --filter "testcase=%case_filter%"
                     --log-level DEBUG
                     --parallel
-                    --teamcity
-                    --copy-failed-cases
+                    --teamcity$copyFailedCasesArg
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
                 """.trimIndent() 
                 // If all cases will be copies we don't also have to copy the failed ones
@@ -137,12 +147,6 @@ object LinuxTest : BuildType({
                 subCommand = "system"
                 commandArgs = "prune -f"
             }
-        }
-        script {
-            name = "Display contents of Copy cases dir"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            workingDir = "test/deltares_testbench"
-            scriptContent = "if [[ -d copy_cases ]]; then ls -la copy_cases; else echo 'copy_cases does not exist'; fi"
         }
         script {
             name = "Copy cases"

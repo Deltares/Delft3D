@@ -44,6 +44,15 @@ object WindowsTest : BuildType({
     val linesForAll = windowsLines.filter { line -> line.split(",")[2] == "TRUE" }
     val selectedConfigs = linesForAll.map { line -> line.split(",")[1] }
 
+    val copyFailedCasesArg = if (
+        "%copy_failed_cases%" == "true" &&
+        "%copy_tested_cases%" != "true"
+    ) {
+        " --copy-failed-cases"
+    } else {
+        ""
+    }
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -119,7 +128,7 @@ object WindowsTest : BuildType({
                     --log-level DEBUG
                     --parallel
                     --teamcity
-                """.trimIndent() + if ("%copy_failed_cases%" == "true" && "%copy_tested_cases%" != "true" ) "\n--copy-failed-cases" else ""
+                """.trimIndent() 
                 // If all cases will be copies we don't also have to copy the failed ones
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
