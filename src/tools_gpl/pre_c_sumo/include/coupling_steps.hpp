@@ -1,9 +1,14 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_COUPLING_STEPS_HPP
-#include <expected>
 
+#include <precice/precice.hpp>
+#include <expected>
 #include <string_view>
+#include <vector>
+#include <unordered_map>
+
 #include "csumo_settings_reader.hpp"
+#include "parsing_types.hpp"
 
 namespace pre_c_sumo
 {
@@ -15,17 +20,31 @@ namespace pre_c_sumo
      * preC-SUMO library. They handle timestepping control, configuration and settings
      * files parsing and the conversion/communication of NF/FF data.
      */
+    // TODO?: Move/fold into class(es)?
+    constexpr std::string_view water_levels_id = "sea_surface_height";
+    constexpr std::string_view bed_levels_id = "sea_floor_depth_below_geoid";
+    constexpr std::string_view water_depth_id = "sea_floor_depth_below_sea_surface";
+    constexpr std::string_view densities_id = "sea_water_potential_density";
 
-    /**
-     * @brief Drive the main timeloop of the preC-SUMO demonstration.
-     *
-     * This function returns true while the timeloop should continue, and
-     * false when it should stop. The current implementation contains a
-     * simple demonstration counter.
-     *
-     * @return true if the timeloop should continue, false otherwise.
-     */
-    bool doTimeloop();
+    struct DiffuserMapping
+    {
+        std::size_t diffuser_index;
+        bool has_intake;
+        std::size_t intake_index;
+        std::size_t number_of_ambient_points;
+        std::size_t first_ambient_point_index;
+    };
+
+    struct Mesh
+    {
+        std::string name;
+        std::vector<double> coordinates;
+        std::vector<int> vertex_ids;
+        std::vector<DiffuserMapping> forward_map;
+        std::size_t number_of_nodes;
+        std::size_t number_of_zcoordinates;
+        std::unordered_map<std::string_view, std::vector<double>> quantities;
+    };
 
     /**
      * @brief Read and parse the C-SUMO settings file.
@@ -37,7 +56,7 @@ namespace pre_c_sumo
      * @param csumoSettingsFileName Path or name of the C-SUMO settings file.
      * @return std::expected containing `CSumoSettingsReader` on success or `ParseError` on failure.
      */
-    std::expected<pre_c_sumo::CSumoSettingsReader, pre_c_sumo::ParseError> readCsumoSettingsFile(
+    std::expected<pre_c_sumo::CSumoSettingsReader, parsing_utils::ParseError> readCsumoSettingsFile(
         const std::string_view csumoSettingsFileName);
 
     /**
@@ -46,7 +65,8 @@ namespace pre_c_sumo
      * Blocking receive of farfield data via preCICE.
      * The demo implementation only logs a message.
      */
-    void receiveFFData();
+    void receiveFFData(precice::Participant& participant, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+                       double coupling_time_step);
 
     /**
      * @brief Write FF2NF files based on parsed C-SUMO settings and received farfield data.
@@ -56,7 +76,8 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void writeFF2NFFiles(CSumoSettingsReader csumoSettings);
+    void writeFF2NFFiles(const CSumoSettingsReader& csumoSettings, Mesh& csumo_2d_mesh, Mesh& csumo_3d_mesh,
+                         double current_time_seconds);
 
     /**
      * @brief Wait until NF2FF files become available.
@@ -67,7 +88,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void waitForNF2FFFiles(CSumoSettingsReader csumoSettings);
+    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -77,7 +98,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void readNF2FFFiles(CSumoSettingsReader csumoSettings);
+    void readNF2FFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
@@ -86,7 +107,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void convertNFToSourcesSinks(CSumoSettingsReader csumoSettings);
+    void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Send computed sources/sinks to the farfield model.
@@ -96,7 +117,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void sendSourcesSinksToFF(CSumoSettingsReader csumoSettings);
+    void sendSourcesSinksToFF(const CSumoSettingsReader& csumoSettings);
 
     /**
      * @brief Convert NF sinks to farfield sinks.

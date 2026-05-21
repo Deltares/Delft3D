@@ -57,7 +57,8 @@ object WindowsTest : BuildType({
         )
         param("container.tag", "%build.vcs.number%")
         param("product", "unknown")
-        checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
@@ -118,7 +119,8 @@ object WindowsTest : BuildType({
                     --log-level DEBUG
                     --parallel
                     --teamcity
-                """.trimIndent()
+                """.trimIndent() + if ("%copy_failed_cases%" == "true" && "%copy_tested_cases%" != "true" ) "\n--copy-failed-cases" else ""
+                // If all cases will be copies we don't also have to copy the failed ones
             }
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
@@ -128,7 +130,7 @@ object WindowsTest : BuildType({
         script {
             name = "Copy cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
-            conditions { equals("copy_cases", "true") }
+            conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
         }

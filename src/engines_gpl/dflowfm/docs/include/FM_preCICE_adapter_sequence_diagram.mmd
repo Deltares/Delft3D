@@ -1,0 +1,33 @@
+sequenceDiagram
+    autonumber
+    participant FM as FM Adapter
+    participant P as preCICE
+
+    Note over FM,P: Initialize
+
+    FM->>P: create()
+    FM->>P: setVertices(2D, 3D)
+    alt Initial data required
+        FM->>P: writeData()
+    end
+    FM->>P: initialize()
+   
+    Note over FM,P: Update
+
+    FM->>P: isCouplingOngoing() ? continue : return
+    FM->>P: getMaxTimeStepSize(max_timestep)
+    FM->>FM: summed_time_progress += userTimeStep
+    alt summed_time_progress = max_timestep
+        FM->>P: isTimeWindowComplete()
+        alt isTimeWindowComplete == 1
+            FM->>P: resetMesh(3D)
+            FM->>P: setVertices(3D)
+        end
+        FM->>P: writeData(2D, 3D)
+        FM->>P: advance(max_timestep)
+    end
+
+    Note over FM,P: Update
+    Note over FM,P: Update
+    Note over FM,P: Finalize
+    

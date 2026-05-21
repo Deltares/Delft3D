@@ -10,9 +10,10 @@ configure_file(
 
 set(source_files
     test_pre_c_sumo_lib.cpp
-    coupling_steps.cpp
+    test_coupling_steps.cpp
     test_csumo_settings_reader.cpp
     test_endpoints.cpp
+    test_FF2NF_writer.cpp
 )
 
 add_executable(test_pre_c_sumo_lib ${source_files})
@@ -22,6 +23,9 @@ target_link_libraries(test_pre_c_sumo_lib PRIVATE
     pre_c_sumo_lib
     gtest
     gtest_main
+    precice::precice
+    pugixml::pugixml
+    Boost::headers
 )
 
 target_include_directories(test_pre_c_sumo_lib PRIVATE

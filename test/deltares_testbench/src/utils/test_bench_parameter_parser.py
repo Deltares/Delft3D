@@ -3,10 +3,12 @@
 Copyright (C)  Stichting Deltares, 2026
 """
 
+import csv
 import getpass
 import os
 from argparse import ArgumentParser, Namespace
-from typing import Any, List, Optional
+from pathlib import Path
+from typing import Any, List, Optional, TextIO
 
 from src.config.credentials import Credentials
 from src.config.types.mode_type import ModeType
@@ -64,6 +66,16 @@ class TestBenchParameterParser:
         settings.teamcity = cls.__get_argument_value("teamcity", args) or False
 
         settings.filter = args.filter
+        filter_csv = cls.__get_argument_value("filter_csv", args)
+        if filter_csv:
+            filter_csv_path = Path(filter_csv)
+            if not filter_csv_path.is_file():
+                parser.error(f"--filter-tc-csv: file not found: '{filter_csv_path}'")
+            with filter_csv_path.open(newline="", encoding="utf-8") as csv_file:
+                failed_names = cls.read_failed_tests_from_csv(csv_file)
+            if failed_names:
+                settings.filter = f"testcase={','.join(failed_names)}"
+
         # Determine type of run
         settings.run_mode = cls.__get_argument_value("run_mode", args) or ModeType.LIST
         settings.config_file = cls.__get_argument_value("config", args) or "config.xml"
@@ -71,7 +83,39 @@ class TestBenchParameterParser:
 
         settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
+        settings.copy_failed_cases = cls.__get_argument_value("copy_failed_cases", args) or False
+        
         return settings
+
+    @staticmethod
+    def read_failed_tests_from_csv(csv_file: TextIO) -> List[str]:
+        """Read test names with a 'Failure' status from a CSV file.
+
+        Parameters
+        ----------
+        csv_file : TextIO
+            Opened CSV file with columns including 'Test Name' and 'Status'.
+
+        Returns
+        -------
+        List[str]
+            Names of all tests whose status is 'Failure'.
+
+        Raises
+        ------
+        ValueError
+            If the CSV file is missing the required 'Test Name' or 'Status' columns.
+        """
+        reader = csv.DictReader(csv_file)
+        required_columns = {"Test Name", "Status"}
+        if not required_columns.issubset(reader.fieldnames or []):
+            missing = required_columns - set(reader.fieldnames or [])
+            raise ValueError(f"CSV file is missing required columns: {missing}. " f"Found: {reader.fieldnames}")
+        return [
+            row["Test Name"].strip()
+            for row in reader
+            if row.get("Status", "").strip() == "Failure" and row.get("Test Name", "").strip()
+        ]
 
     @classmethod
     def __get_argument_value(
@@ -172,11 +216,21 @@ class TestBenchParameterParser:
             help="Path to config file, if empty default config file is used",
             dest="config",
         )
-        parser.add_argument(
+        filter_group = parser.add_mutually_exclusive_group()
+        filter_group.add_argument(
             "--filter",
             default="",
             help="Specify what tests to run based on filter (--list for options)",
             dest="filter",
+        )
+        filter_group.add_argument(
+            "--filter-tc-csv",
+            default=None,
+            help=(
+                "Path to a CSV file with 'Test Name' and 'Status' columns. "
+                "All tests with status 'Failure' will be used as the testcase filter."
+            ),
+            dest="filter_csv",
         )
         parser.add_argument(
             "--log-level",
@@ -218,6 +272,12 @@ class TestBenchParameterParser:
             dest="teamcity",
         )
         parser.add_argument(
+            "--copy-failed-cases",
+            action="store_true",
+            help="Copy failed input/ouput data of failed cases into the teamcity artifact",
+            dest="copy_failed_cases",
+        )
+        parser.add_argument(
             "--server-base-url",
             help="e.g. SVN, S3, Git LFS",
             default="https://s3.deltares.nl/dsc-testbench",
@@ -228,14 +288,12 @@ class TestBenchParameterParser:
             "--username",
             help="Server username (e.g. git, SVN, MinIO).",
             default=None,
-            # required=True,
             dest="username",
         )
         parser.add_argument(
             "--password",
             help="Server password (e.g. git, SVN, MinIO).",
             default=None,
-            # required=True,
             dest="password",
         )
         parser.add_argument(

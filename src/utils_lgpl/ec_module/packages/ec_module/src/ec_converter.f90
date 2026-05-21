@@ -1269,7 +1269,7 @@ contains
          end if
 
          select case (connection%converterPtr%operandType)
-         case (operand_replace, operand_replace_if_value)
+         case (operand_replace)
             ! Write all values to one target Item or each value to its own target Item.
             if (connection%nTargetItems == 1) then ! All in one target item
                targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
@@ -1447,7 +1447,7 @@ contains
          magnitude = sqrt(windXT * windXT + windYT * windYT)
          ! ===== operation =====
          select case (connection%converterPtr%operandType)
-         case (operand_replace, operand_replace_if_value)
+         case (operand_replace)
             if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
                return
@@ -1537,7 +1537,7 @@ contains
          targetU = windspeed * cos(winddirection)
          targetV = windspeed * sin(winddirection)
          select case (connection%converterPtr%operandType)
-         case (operand_replace, operand_replace_if_value)
+         case (operand_replace)
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
                u(i) = targetU
                v(i) = targetV
@@ -1699,7 +1699,7 @@ contains
             wL = connection%converterPtr%indexWeight%weightFactors(1, i)
             wR = connection%converterPtr%indexWeight%weightFactors(2, i)
             select case (connection%converterPtr%operandType)
-            case (operand_replace_element, operand_replace, operand_replace_if_value, operand_add)
+            case (operand_replace_element, operand_replace, operand_add)
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
@@ -1803,8 +1803,7 @@ contains
                            val = wL * valL1 + wR * valR1
                            do k = kbegin, kend ! Set the average value for all vertical positions
                               if ((connection%converterPtr%operandType == operand_replace) .or. &
-                                  (connection%converterPtr%operandType == operand_replace_element) .or. &
-                                  (connection%converterPtr%operandType == operand_replace_if_value)) then
+                                  (connection%converterPtr%operandType == operand_replace_element)) then
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
                               else if (connection%converterPtr%operandType == operand_add) then
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
@@ -1846,8 +1845,7 @@ contains
                               end select
                               !
                               if ((connection%converterPtr%operandType == operand_replace) .or. &
-                                  (connection%converterPtr%operandType == operand_replace_element) .or. &
-                                  (connection%converterPtr%operandType == operand_replace_if_value)) then
+                                  (connection%converterPtr%operandType == operand_replace_element)) then
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
                               else if (connection%converterPtr%operandType == operand_add) then
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
@@ -1879,8 +1877,7 @@ contains
                         from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                         thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
                         if ((connection%converterPtr%operandType == operand_replace) .or. &
-                            (connection%converterPtr%operandType == operand_replace_element) .or. &
-                            (connection%converterPtr%operandType == operand_replace_if_value)) then
+                            (connection%converterPtr%operandType == operand_replace_element)) then
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
 
                         else if (connection%converterPtr%operandType == operand_add) then
@@ -2012,8 +2009,7 @@ contains
                   end do
 
                   if (nmiss == 0) then ! if sufficient data for bi-linear interpolation
-                     if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_if_value)) then
+                     if (connection%converterPtr%operandType == operand_replace) then
                         targetValues(i) = 0.0_dp
                      end if
                      wf_i = indexWeight%weightFactors(1:4, i)
@@ -2150,7 +2146,7 @@ contains
             call time_weight_factors(a0, a1, timesteps, t0, t1)
             rr = a0 * vv0 + a1 * vv1
             select case (connection%converterPtr%operandType)
-            case (operand_replace, operand_replace_if_value)
+            case (operand_replace)
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             case (operand_add)
@@ -2320,7 +2316,7 @@ contains
             deflection = deflection + magnitude * cos(phase)
          end do
          select case (connection%converterPtr%operandType)
-         case (operand_replace, operand_replace_if_value)
+         case (operand_replace)
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = deflection
          case (operand_replace_element)
             ! Only used by poly_tim.
@@ -2603,7 +2599,7 @@ contains
 
          end if
          select case (connection%converterPtr%operandType)
-         case (operand_replace, operand_replace_if_value)
+         case (operand_replace)
             if (twx > 0) then
                connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) = uintp
                connection%targetItemsPtr(twx)%ptr%targetFieldPtr%timesteps = timesteps
@@ -2886,8 +2882,7 @@ contains
 
                if (n_layers == 0) then
                   do j = 1, n_points
-                     if ((connection%converterPtr%operandType == operand_replace) .or. &
-                         (connection%converterPtr%operandType == operand_replace_if_value)) then
+                     if (connection%converterPtr%operandType == operand_replace) then
                         targetValues(j) = 0.0_dp
                      end if
                      do i_weight_index = 1, size(indexWeight%indices, 1)
@@ -3005,8 +3000,7 @@ contains
                      np = indexWeight%indices(1, j)
                      mp = indexWeight%indices(2, j)
                      if (mp > 0 .and. np > 0) then
-                        if ((connection%converterPtr%operandType == operand_replace) .or. &
-                            (connection%converterPtr%operandType == operand_replace_if_value)) then
+                        if (connection%converterPtr%operandType == operand_replace) then
                            targetValues(kbot:ktop) = 0.0_dp
                         end if
                         ! The save horizontal weigths are used. The vertical weights are recalculated because z changes.
@@ -3206,10 +3200,6 @@ contains
                            end if
                         end if
 
-                        if (connection%converterPtr%operandType == operand_replace) then
-                           targetValues(j) = 0.0_dp
-                        end if
-
                         kloop2D: do jj = 0, 1
                            do ii = 0, 1
                               if (comparereal(sourcevals(1 + ii, 1 + jj, 1, 1), sourceMissing, .true.) == 0 .or. &
@@ -3223,7 +3213,7 @@ contains
                            missing(j) = .true. ! Mark missings in the target grid in a temporary logical array
                            if (allocated(x_extrapolate)) x_extrapolate(j) = ec_undef_hp ! no-data -> unelectable for kdtree later
                         else
-                           if (connection%converterPtr%operandType == operand_replace_if_value) then
+                           if (connection%converterPtr%operandType == operand_replace) then
                               targetValues(j) = 0.0_dp
                            end if
                            if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
@@ -3300,7 +3290,7 @@ contains
                end if
                ! ===== operation =====
                select case (connection%converterPtr%operandType)
-               case (operand_replace, operand_replace_if_value)
+               case (operand_replace)
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                      return
@@ -3326,7 +3316,7 @@ contains
                end if
                ! ===== operation =====
                select case (connection%converterPtr%operandType)
-               case (operand_replace, operand_replace_if_value)
+               case (operand_replace)
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                      return
