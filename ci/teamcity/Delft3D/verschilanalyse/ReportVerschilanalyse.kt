@@ -110,9 +110,6 @@ object ReportVerschilanalyse: BuildType({
     features {
         perfmon {}
         swabra {}
-        provideAwsCredentials {
-            awsConnectionId = "minio_verschilanalyse_connection"
-        }
         dockerRegistryConnections {
             loginToRegistry = on {
                 dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
