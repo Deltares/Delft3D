@@ -37,16 +37,5 @@ object VerschilanalyseProject : Project ({
             bucketName = "devops-test-verschilanalyse"
             bucketPrefix = "output"
         }
-        awsConnection {
-            id = "minio_verschilanalyse_connection"
-            name = "Deltares MinIO connection"
-            credentialsType = static {
-                accessKeyId = "%env.AWS_ACCESS_KEY_ID%"
-                secretAccessKey = "%env.AWS_SECRET_ACCESS_KEY%"
-                useSessionCredentials = false
-            }
-            allowInSubProjects = true
-            allowInBuilds = true
-        }
     }
 })
