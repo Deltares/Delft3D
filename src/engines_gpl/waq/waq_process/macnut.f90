@@ -246,8 +246,8 @@ contains
                     !
                     ! Consider only the water phase
                     !
-                    !limn = max(limnsm01w, limnsm01b)
-                    limn = limnsm01w
+                    limn = max(limnsm01w, limnsm01b)
+                    !!limn = limnsm01w
 
                     if (cdinsm01w > 1e-10) then
                         if (cdinsm01b > 1e-10) then
@@ -258,6 +258,8 @@ contains
                     else
                         frootuptn = 1.0
                     endif
+
+                    !!write(88,'(10g12.4)') limnsm01w, limnsm01b, cdinsm01w, cdinsm01b, kmdinsm01w, kmdinsm01b
 
                     ! p limitation
 
@@ -279,8 +281,8 @@ contains
                     !
                     ! Consider only the water phase
                     !
-                    !limp = max(limpsm01w, limpsm01b)
-                    limp = limpsm01w
+                    limp = max(limpsm01w, limpsm01b)
+                    !!limp = limpsm01w
                     if (cpo4sm01w > 1e-10) then
                         if (cpo4sm01b > 1e-10) then
                             frootuptp = .998 / (1. + 2.66 * (cpo4sm01b / cpo4sm01w)**(-0.83))

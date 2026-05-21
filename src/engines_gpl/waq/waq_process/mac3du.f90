@@ -219,8 +219,9 @@ contains
 
                 call extract_waq_attribute(2, iknmrk(iseg), ikmrk2)
                 if ((ikmrk2==0).or.(ikmrk2==3)) then
-                    if (nh4s12>0.0) dnh4upsm01 = dnh4upsm01 + frootnsm01 * dnupsm01
-                    if (po4s12>0.0) dpo4upsm01 = dpo4upsm01 + frootpsm01 * dpupsm01
+                    !!write(99,'(10g12.4)') dnh4upsm01, frootnsm01, dnupsm01
+                    if (nh4s12>0.0 .and. din > 0.0 ) dnh4upsm01 = dnh4upsm01 + frootnsm01 * dnupsm01
+                    if (po4s12>0.0 .and. po4 > 0.0 ) dpo4upsm01 = dpo4upsm01 + frootpsm01 * dpupsm01
                 endif
 
             elseif (ikmrk1==3) then
