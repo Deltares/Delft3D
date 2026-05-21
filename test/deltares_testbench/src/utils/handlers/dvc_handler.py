@@ -83,6 +83,10 @@ class DvcHandler(IHandler):
             rel_path = out.get("path", "")
             is_dir = out.get("isdir", False) or str(md5).endswith(".dir")
 
+            # Strip the .dir suffix – it's metadata, not part of the S3 key
+            if md5.endswith(".dir"):
+                md5 = md5[: -len(".dir")]
+
             target_path = target_base / rel_path if rel_path else target_base
 
             if is_dir:
