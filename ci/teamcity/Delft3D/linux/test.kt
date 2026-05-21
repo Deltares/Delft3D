@@ -32,7 +32,8 @@ object LinuxTest : BuildType({
         test\deltares_testbench\data\cases\**\*.dia      => logging
         test\deltares_testbench\data\cases\**\*.log      => logging
         test\deltares_testbench\logs                     => logging
-        test\deltares_testbench\copy_cases\**               => copy_cases.zip
+        test/deltares_testbench/copy_cases               => copy_cases_dir
+        test/deltares_testbench/copy_cases/**            => copy_cases.zip
     """.trimIndent()
 
     val filePath = "${DslContext.baseDir}/vars/dimr_testbench_table.csv"
@@ -135,6 +136,12 @@ object LinuxTest : BuildType({
                 subCommand = "system"
                 commandArgs = "prune -f"
             }
+        }
+        script {
+            name = "Display contents of Copy cases dir"
+            executionMode = BuildStep.ExecutionMode.ALWAYS
+            workingDir = "test/deltares_testbench"
+            scriptContent = "if [[ -d copy_cases ]]; then ls -la copy_cases; else echo 'copy_cases does not exist'; fi"
         }
         script {
             name = "Copy cases"
