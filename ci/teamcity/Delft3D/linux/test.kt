@@ -141,7 +141,6 @@ object LinuxTest : BuildType({
                 echo 'copy_cases does not exist' 
                 fi
                 echo $copyFailedCasesArg
-                echo %copyFailedCasesArg%
                 """.trimIndent()
         }
         dockerCommand {
