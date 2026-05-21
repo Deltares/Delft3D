@@ -58,6 +58,10 @@ object WindowsConanPackages : BuildType({
         }
     }
 
+    failureConditions {
+        executionTimeoutMin = 600
+    }
+
     requirements {
         doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
     }

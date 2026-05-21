@@ -62,6 +62,10 @@ object LinuxConanPackages : BuildType({
         }
     }
 
+    failureConditions {
+        executionTimeoutMin = 600
+    }
+
     dependencies {
         dependency(LinuxThirdPartyLibs) {
             snapshot {
