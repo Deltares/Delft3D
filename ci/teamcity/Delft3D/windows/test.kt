@@ -127,7 +127,7 @@ object WindowsTest : BuildType({
                     --filter "testcase=%case_filter%"
                     --log-level DEBUG
                     --parallel
-                    --teamcity
+                    --teamcity$copyFailedCasesArg
                 """.trimIndent() 
                 // If all cases will be copies we don't also have to copy the failed ones
             }
