@@ -92,15 +92,14 @@ namespace
     }
 } // namespace
 
-namespace pre_c_cumo
+namespace pre_c_sumo
 {
     /**
      * @brief Reads NF2FF XML content from a file.
      * @param file_path The path to the input file.
      * @return std::expected containing void on success or parsing_utils::ParseError on failure.
      */
-    std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromFile(
-        const std::filesystem::path& file_path) const
+    std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromFile(const std::filesystem::path& file_path)
     {
         std::ifstream file(file_path);
         if (!file)
@@ -117,7 +116,7 @@ namespace pre_c_cumo
      * @param xml input string.
      * @return std::expected containing void on success or parsing_utils::ParseError on failure.
      */
-    std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml) const
+    std::expected<NF2FFReader, parsing_utils::ParseError> NF2FFReader::fromString(const std::string_view xml)
     {
         pugi::xml_document doc;
         const pugi::xml_parse_result parse_result = doc.load_buffer(xml.data(), xml.size());
@@ -173,4 +172,4 @@ namespace pre_c_cumo
      */
     std::string_view NF2FFReader::fileVersion() const { return file_version_; }
 
-} // namespace pre_c_cumo
+} // namespace pre_c_sumo

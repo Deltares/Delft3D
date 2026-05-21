@@ -14,6 +14,7 @@ set(source_files
     test_csumo_settings_reader.cpp
     test_endpoints.cpp
     test_FF2NF_writer.cpp
+    test_NF2FF_reader.cpp
 )
 
 add_executable(test_pre_c_sumo_lib ${source_files})

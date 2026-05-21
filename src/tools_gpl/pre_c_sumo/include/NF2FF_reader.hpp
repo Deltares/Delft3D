@@ -1,12 +1,10 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_NF2FF_READER_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_NF2FF_READER_HPP
 
-#include "csumo_settings_reader.hpp" // For Discharge
-#include "parsing_types.hpp"         // For parsing_utils::Point2D, ConstituentsOperator
+#include "csumo_settings_reader.hpp" // For Discharge, ConstituentsOperator
+#include "parsing_types.hpp"         // For parsing_utils::Point2D
 
 #include <expected>
-#include <filesystem>
-#include <optional>
 #include <pugixml.hpp>
 #include <string>
 #include <string_view>
@@ -30,7 +28,7 @@
  * </NF2FF>
  ***/
 
-namespace pre_c_cumo
+namespace pre_c_sumo
 {
     /**
      * @brief Writer for FF2NF XML files.
@@ -43,16 +41,16 @@ namespace pre_c_cumo
          * @param file_path The path to the input file.
          * @return std::expected containing void on success or parsing_utils::ParseError on failure.
          */
-        [[nodiscard]] std::expected<NF2FFReader, parsing_utils::ParseError> fromFile(
-            const std::filesystem::path& file_path) const;
+        [[nodiscard]] static std::expected<NF2FFReader, parsing_utils::ParseError> fromFile(
+            const std::filesystem::path& file_path);
 
         /**
          * @brief Reads NF2FF XML content from a string.
          * @param xml input string.
          * @return std::expected containing void on success or parsing_utils::ParseError on failure.
          */
-        [[nodiscard]] std::expected<NF2FFReader, parsing_utils::ParseError> fromString(
-            const std::string_view xml) const;
+        [[nodiscard]] static std::expected<NF2FFReader, parsing_utils::ParseError> fromString(
+            const std::string_view xml);
 
         std::string_view fileVersion() const;
 
@@ -73,6 +71,6 @@ namespace pre_c_cumo
         std::vector<double> sinks_;
     };
 
-} // namespace pre_c_cumo
+} // namespace pre_c_sumo
 
 #endif // SRC_TOOLS_GPL_PRE_C_SUMO_NF2FF_READER_HPP
