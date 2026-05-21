@@ -36,6 +36,7 @@ object VerschilanalyseProject : Project ({
             storageName = "VerschilAnalyseBucket"
             bucketName = "devops-test-verschilanalyse"
             bucketPrefix = "output"
+            forceVirtualHostAddressing = false
         }
     }
 })
