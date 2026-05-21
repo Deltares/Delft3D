@@ -1293,6 +1293,7 @@ contains
       use m_GlobalParameters, only: INDTP_2D
       use messageHandling, only: err_flush, msgbuf
       use m_bubblescreen, only: compute_bubblescreen_area
+      use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -1364,6 +1365,9 @@ contains
       end do
 
       call cleanup_cell_geom_polylines()
+      ! initialize global geometry
+      call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
+      nNodesBubbleScreen = 0
 
    end subroutine initialize_bubblescreens
 
@@ -1384,9 +1388,11 @@ contains
          use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
          use m_setsorsin
          use m_missing, only: dmiss
-         use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
+         use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
          use m_alloc, only: realloc
          use m_flowgeom, only: ndx
+         use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
+
 
          ! Parameters
          type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1403,6 +1409,7 @@ contains
          integer :: n_cells
          integer, dimension(:), allocatable :: bubblescreen_cells
          integer :: local_count
+         integer :: tm_global_count
 
          real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
          real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
@@ -1442,8 +1449,8 @@ contains
                   bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                   n_cells = size(bubblescreen_cells)
                end if
-               call realloc(x_flowcell, n_cells, fill=0.0_dp)
-               call realloc(y_flowcell, n_cells, fill=0.0_dp)
+               call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
+               call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
                do i = 1, n_cells
                   if (.not. bubblescreen_cells(i) == -1) then
                      x_flowcell(i) = xzw(bubblescreen_cells(i))
@@ -1454,6 +1461,14 @@ contains
                   call reduce_double_array_max(n_cells, x_flowcell)
                   call reduce_double_array_max(n_cells, y_flowcell)
                end if
+               tm_global_count = nNodesBubbleScreen
+               nNodesBubbleScreen = nNodesBubbleScreen + n_cells
+               call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+               call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+               geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
+               geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
+               nodeCountBubbleScreen(bi) = n_cells
+
                z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
                z_flowcell_sink = bubblescreen%z_level
                call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)

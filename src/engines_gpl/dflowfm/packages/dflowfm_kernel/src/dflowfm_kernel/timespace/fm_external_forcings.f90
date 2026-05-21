@@ -2509,7 +2509,7 @@ contains
       use m_alloc, only: realloc
       use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
 
-      use m_structures, only: fill_geometry_source_sinks, fill_geometry_bubblescreens
+      use m_structures, only: fill_geometry_source_sinks
 
       integer :: i, j, sidx
       integer :: flownode_nr !< Flow node number
@@ -2542,7 +2542,6 @@ contains
       num_normal_source_sink = count(is_source_sink_normal)
 
       call fill_geometry_source_sinks()
-      call fill_geometry_bubblescreens()
 
    end subroutine finalize_source_sinks
 
