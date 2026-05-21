@@ -1,7 +1,8 @@
 [core]
     remote = storage
     autostage = true
-['remote "storage"']
+[remote "storage"]
     url = s3://delft3d-testbench
     endpointurl = https://s3.deltares.nl
     read_timeout = 300
+

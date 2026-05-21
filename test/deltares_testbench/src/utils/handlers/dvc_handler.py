@@ -81,18 +81,15 @@ class DvcHandler(IHandler):
                 continue
 
             rel_path = out.get("path", "")
+            hash_algo = out.get("hash", "md5")
             is_dir = out.get("isdir", False) or str(md5).endswith(".dir")
-
-            # Strip the .dir suffix – it's metadata, not part of the S3 key
-            if md5.endswith(".dir"):
-                md5 = md5[: -len(".dir")]
 
             target_path = target_base / rel_path if rel_path else target_base
 
             if is_dir:
-                self.__download_directory(s3_client, self.__bucket, md5, target_path, logger)
+                self.__download_directory(s3_client, self.__bucket, md5, target_path, logger, hash_algo)
             else:
-                self.__download_file(s3_client, self.__bucket, md5, target_path, logger)
+                self.__download_file(s3_client, self.__bucket, md5, target_path, logger, hash_algo)
 
         logger.info(f"Direct S3 download complete: {dvc_path.name}")
 
@@ -103,10 +100,12 @@ class DvcHandler(IHandler):
         md5: str,
         target_path: Path,
         logger: ILogger,
+        hash_algo: str = "md5",
     ) -> None:
         """Download a single file using DVC's exact S3 key format."""
-        s3_key = f"files/{md5[:2]}/{md5[2:]}"
-        logger.debug(f"Downloading s3://{bucket}/{s3_key} (md5={md5}) → {target_path}")
+        clean_md5 = md5.removesuffix(".dir")
+        s3_key = f"files/{hash_algo}/{clean_md5[:2]}/{clean_md5[2:]}"
+        logger.debug(f"Downloading s3://{bucket}/{s3_key} → {target_path}")
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
@@ -122,11 +121,12 @@ class DvcHandler(IHandler):
         dir_md5: str,
         target_dir: Path,
         logger: ILogger,
+        hash_algo: str = "md5",
     ) -> None:
         """Download a full directory by first fetching its .dir metadata JSON."""
-        # 1. Get .dir metadata (in-memory)
-        dir_key = f"files/{dir_md5[:2]}/{dir_md5[2:]}"
-        logger.debug(f"Fetching .dir metadata s3://{bucket}/{dir_key} (md5={dir_md5})")
+        # 1. Get .dir metadata (in-memory) — key uses the full md5 including .dir suffix
+        dir_key = f"files/{hash_algo}/{dir_md5[:2]}/{dir_md5[2:]}"
+        logger.debug(f"Fetching .dir metadata s3://{bucket}/{dir_key}")
         response = s3_client.get_object(Bucket=bucket, Key=dir_key)
         dir_json = json.loads(response["Body"].read().decode("utf-8"))
 
@@ -142,7 +142,7 @@ class DvcHandler(IHandler):
                 file_target = target_dir / rel_path
 
                 future = executor.submit(
-                    self.__download_file, s3_client, bucket, file_md5, file_target, logger
+                    self.__download_file, s3_client, bucket, file_md5, file_target, logger, hash_algo
                 )
                 future_to_path[future] = rel_path
 
