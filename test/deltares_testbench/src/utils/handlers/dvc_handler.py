@@ -162,11 +162,10 @@ class DvcHandler(IHandler):
         config.read(config_path)
 
         # Determine the default remote name from [core].remote
-        remote_name = config.get("core", "remote", fallback="storage")
+        remote_name = self.__normalize_section_name(config.get("core", "remote", fallback="storage"))
 
-        # DVC config uses section names like: 'remote "storage"'
-        section = f'remote "{remote_name}"'
-        if not config.has_section(section):
+        section = self.__find_remote_section(config, remote_name)
+        if not section:
             raise ValueError(
                 f"Remote '{remote_name}' not found in {config_path}. "
                 f"Available sections: {config.sections()}"
@@ -182,6 +181,34 @@ class DvcHandler(IHandler):
             raise ValueError(f"Unsupported remote URL scheme: {url}")
 
         return bucket, endpoint_url
+
+    def __find_remote_section(self, config: configparser.ConfigParser, remote_name: str) -> Optional[str]:
+        """Resolve a DVC remote section, tolerating accidental extra quoting."""
+        expected = f'remote "{remote_name}"'
+        if config.has_section(expected):
+            return expected
+
+        normalized_expected = self.__normalize_section_name(expected)
+        for section in config.sections():
+            if self.__normalize_section_name(section) == normalized_expected:
+                return section
+
+        return None
+
+    def __normalize_section_name(self, value: str) -> str:
+        """Strip accidental wrappers (quotes/brackets) around section names."""
+        text = (value or "").strip()
+        while len(text) >= 2:
+            if text.startswith("[") and text.endswith("]"):
+                text = text[1:-1].strip()
+                continue
+            if (text.startswith("\"") and text.endswith("\"")) or (
+                text.startswith("'") and text.endswith("'")
+            ):
+                text = text[1:-1].strip()
+                continue
+            break
+        return text
 
     def __find_dvc_root(self, start_path: str) -> str:
         """Same helper you already have – finds the DVC repo root."""
