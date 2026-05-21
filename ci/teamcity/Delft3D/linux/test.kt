@@ -107,8 +107,9 @@ object LinuxTest : BuildType({
                     --log-level DEBUG
                     --parallel
                     --teamcity
+                    --copy-failed-cases
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
-                """.trimIndent() + if ("%copy_failed_cases%" == "true" && "%copy_all_cases%" != "true") "\n--copy-failed-cases" else ""
+                """.trimIndent() 
                 // If all cases will be copies we don't also have to copy the failed ones
                 scriptArguments = scriptArguments
             }
