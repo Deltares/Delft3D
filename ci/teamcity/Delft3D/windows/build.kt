@@ -83,7 +83,7 @@ object WindowsBuild : BuildType({
                 python build.py --config %product% --build --build-type %build_type% --ci --build-dir build_%product% --install-dir build_%product%/install
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                ctest --test-dir ./build_%product% --build-config %build_type% --output-junit unit-test-report-windows.xml --output-on-failure
+                ctest --test-dir ./build_%product% --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
