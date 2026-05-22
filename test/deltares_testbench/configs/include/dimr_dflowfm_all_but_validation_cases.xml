@@ -9303,7 +9303,7 @@
         </file>
       </checks>
     </testCase>
-	<testCase name="e02_f042_c01_serial_cor" ref="dflowfm_default">
+	<testCase name="e02_f042_c01_serial" ref="dflowfm_default">
       <path version="2026-06-01T11:37:01.446000">e02_dflowfm/f042_sedtrails_output/c01_sedtrails_serial</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
