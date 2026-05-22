@@ -1959,4 +1959,15 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f211_c001_bubblescreens_nieuwemeer_z" ref="dflowfm_config">
+      <path version="2026-05-22T09:28:09.735000">e02_dflowfm/f211_3D_bubblescreens/c001_bubblescreens_nieuwemeer_z</path>
+      <maxRunTime>20.0</maxRunTime>
+      <checks>
+        <file name="output/NieuweMeer_z_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="temperature" toleranceAbsolute="0.0005" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
   </testCases>
