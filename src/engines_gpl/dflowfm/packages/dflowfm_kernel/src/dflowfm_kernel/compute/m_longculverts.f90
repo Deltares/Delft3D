@@ -578,7 +578,8 @@ contains
             longculverts(nlongculverts)%netlinks = -999
 
             if (newculverts) then
-               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, longculverts(nlongculverts)%csDefId, longculverts(nlongculverts)%bl, iref)
+               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, longculverts(nlongculverts)%csDefId, longculverts(nlongculverts)%bl, &
+                                                longculverts(nlongculverts)%friction_type, longculverts(nlongculverts)%friction_value, iref)
                if (iref > 0) then
                   ! Use top (#2) of tabulated cross section definition to derive width and height
                   longculverts(nlongculverts)%width = network%CSDefinitions%Cs(iref)%totalwidth(2)
@@ -695,13 +696,39 @@ contains
 
    end subroutine reallocLongCulverts
 
+   !> Sets up a 1D2D entry or exit link for a long culvert: assigns the cross-section,
+   !! width, prof1D and bob arrays for the given flow link.
+   subroutine setup_longculvert_1D2D_link(ilongc, Lf, bl_up, bl_dn)
+      use m_flowgeom, only: wu, bob
+      use unstruc_channel_flow, only: network => network
+      use m_network, only: t_network
+
+      integer, intent(in) :: ilongc !< Long culvert index
+      integer, intent(in) :: Lf !< Flow link number
+      real(kind=dp), intent(in) :: bl_up !< Bed level at upstream side of this link
+      real(kind=dp), intent(in) :: bl_dn !< Bed level at downstream side of this link
+
+      character(len=idLen) :: link_id
+
+      if (longculverts(ilongc)%is_2D2D()) then
+         link_id = longculverts(ilongc)%contactId
+      else
+         link_id = longculverts(ilongc)%branchId
+      end if
+      call add_longculvert_1D2D_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
+
+      wu(Lf) = longculverts(ilongc)%width
+      bob(1, Lf) = bl_up
+      bob(2, Lf) = bl_dn
+
+   end subroutine setup_longculvert_1D2D_link
+
    !> Initializes the cross section administration for long culverts in prof1d and other relevant flow geometry arrays.
    !! * Sets netlink numbers and flowlink numbers.
    !> * Fills for the corresponding flow links the bedlevels, bobs and prof1d data.
    subroutine longculvertsToProfs(skiplinks)
       use network_data
       use m_flowgeom
-      use unstruc_channel_flow, only: network
 
       logical, intent(in) :: skiplinks !< Skip determining the flow links or not
 
@@ -771,31 +798,20 @@ contains
                   end if
                end if
             end do
+            ! Entry 1D2D link
             Lf = abs(longculverts(ilongc)%flowlinks(1))
             if (Lf > 0) then
-               block
-                  character(len=idLen) :: link_id
-                  if (longculverts(ilongc)%is_2D2D()) then
-                     link_id = longculverts(ilongc)%contactId
-                  else
-                     link_id = longculverts(ilongc)%branchId
-                  end if
-                  call add_longculvert_1D2D_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
-               end block
-
-               wu(Lf) = longculverts(ilongc)%width
-               bob(1, Lf) = longculverts(ilongc)%bl(1)
-               bob(2, Lf) = bl(ln(2, Lf))
+               !> take max of 1D and 2D bedlevels, as culvert cannot lie below the 2D bedlevel
+               call setup_longculvert_1D2D_link(ilongc, Lf, longculverts(ilongc)%bl(2), &
+                                                max(longculverts(ilongc)%bl(1), bl(ln(2, Lf))))
             end if
+
+            ! Exit 1D2D link
             if (longculverts(ilongc)%numlinks > 1) then
                Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
                if (Lf > 0) then
-                  wu(Lf) = longculverts(ilongc)%width
-                  prof1D(1, Lf) = wu(Lf)
-                  prof1D(2, Lf) = longculverts(ilongc)%height
-                  prof1D(3, Lf) = -2
-                  bob(1, Lf) = longculverts(ilongc)%bl(longculverts(ilongc)%numlinks - 1)
-                  bob(2, Lf) = bl(ln(2, Lf))
+                  call setup_longculvert_1D2D_link(ilongc, Lf, longculverts(ilongc)%bl(longculverts(ilongc)%numlinks), &
+                                                   max(longculverts(ilongc)%bl(longculverts(ilongc)%numlinks + 1), bl(ln(2, Lf))))
                end if
             end if
          end do
@@ -1203,33 +1219,29 @@ contains
 
    end subroutine reallocate_meshgeom1d_arrays
 
-   !> Add new cross section locations on a particular branch in the network.
-   !! The cross section definition (defining the long culvert's shape)
-   !! must already have been read from file.
-   subroutine addlongculvertcrosssections(network, branchId, csdefId, zpl, iref)
+   subroutine addlongculvertcrosssections(network, branchId, csdefId, zpl, friction_type, friction_value, iref)
       use precision, only: dp
-      use m_hash_search
       use m_readCrossSections
       use m_network
-      type(t_network), intent(inout) :: network !< Network structure
-      character(len=IdLen), intent(in) :: branchId !< Branch id on which to place the cross section
-      character(len=IdLen), intent(in) :: csdefId !< Id of cross section definition
-      real(kind=dp), allocatable, intent(in) :: zpl(:) !< (numlinks+1) Bed level on the long culvert support points
-      integer, intent(out) :: iref !< Index of reference cross section definition (if csdefId was found)
+      use m_Roughness, only: realloc, t_Roughness, R_FunctionConstant
+      use m_hash_search, only: hashsearch_or_add, hashsearch
 
-      integer :: k
-      integer :: inext
-      integer :: indx
+      type(t_network), intent(inout) :: network
+      character(len=IdLen), intent(in) :: branchId
+      character(len=IdLen), intent(in) :: csdefId
+      real(kind=dp), allocatable, intent(in) :: zpl(:)
+      integer, intent(in) :: friction_type !< Friction type for this culvert
+      real(kind=dp), intent(in) :: friction_value !< Friction value for this culvert
+      integer, intent(out) :: iref
+
+      integer :: k, inext, indx, irgh
       type(t_CrossSection), pointer :: pCrs
       character(len=5) :: kchar
 
       indx = hashsearch(network%brs%hashlist, branchId)
       iref = hashsearch(network%CSDefinitions%hashlist, csdefId)
       if (indx > 0 .and. iref > 0) then
-         ! This code assumes 1 gridpoint per culvert coordinate,
-         ! which means the culvert network branches cannot be modified after converting
          do k = 1, network%brs%branch(indx)%gridpointscount
-
             if (network%crs%count + 1 > network%crs%size) then
                call realloc(network%crs)
             end if
@@ -1239,11 +1251,10 @@ contains
             pCrs%csid = trim(branchId)//'_'//trim(kchar)
             pCrs%branchid = indx
             pCrs%bedLevel = 0.0_dp
-            pCrs%shift = zpl(k) !number of gridpoints in branch should match zpl+2!!
+            pCrs%shift = zpl(k)
             pCrs%chainage = network%brs%branch(indx)%gridpointschainages(k)
             call finalizeCrs(network, pCrs, iref, inext)
          end do
-      end if
 
    end subroutine addlongculvertcrosssections
 
@@ -1267,7 +1278,7 @@ contains
       ! Find cross section definition indices by ID.
       idef = hashsearch(network%CSDefinitions%hashlist, cs_def_id)
       if (idef <= 0) then
-         call SetMessage(LEVEL_ERROR, 'Cross-section definition not found: ' // trim(cs_def_id))
+         call SetMessage(LEVEL_ERROR, 'Cross-section definition not found: '//trim(cs_def_id))
          return
       end if
 
@@ -1276,10 +1287,10 @@ contains
          call realloc(network%crs)
       end if
       icrs = network%crs%count + 1
-      
-      associate(cross_section => network%crs%cross(icrs))
+
+      associate (cross_section => network%crs%cross(icrs))
          write (kchar, '(I0)') flowlink
-         cross_section%csid = trim(link_id) // "_" // trim(kchar)
+         cross_section%csid = trim(link_id)//"_"//trim(kchar)
          call finalizeCrs(network, cross_section, idef, icrs)
       end associate
 
@@ -1657,12 +1668,12 @@ contains
             nnodelongnames = nnodeids
             allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
             network%numl = meshgeom1d%numedge
-        
+
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
          end if
          do i = 1, nlongculverts
-            call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
+            call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, longculverts(i)%friction_type, longculverts(nlongculverts)%friction_value, ierr)
          end do
          i = 0
          call admin_network(network, i)

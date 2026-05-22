@@ -764,7 +764,7 @@ contains
    subroutine init_two_culvert_scenario(str_file, mdu_file, iresult)
       use m_flow_modelinit, only: flow_modelinit
       use unstruc_model, only: loadModel, md_ident
-      use m_flowgeom, only: ndx, bl
+      use m_flowgeom, only: ndx, ndx2d, bl
       use m_flow, only: s1
       use m_cell_geometry, only: xz
       use dfm_error, only: DFM_NOERR
@@ -796,7 +796,7 @@ contains
       call loadModel(mdu_local)
       iresult = flow_modelinit()
 
-      do i = 1, ndx
+      do i = 1, ndx2D
          if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
             bl(i) = 10.0_dp
          end if
@@ -1057,6 +1057,447 @@ contains
                            "larger cross-section should give more discharge")
       call default_longculverts
    end subroutine test_larger_cross_section_increases_discharge
+   !$f90tw)
+
+   ! ============================================================================
+   ! 3-POINT LONG CULVERT TESTS
+   ! ============================================================================
+
+   !> Create a structure file with a single 3-point long culvert (2 links: kcu=5, kcu=5).
+   subroutine create_structure_file_3pt(filename)
+      character(len=*), intent(in) :: filename
+
+      call create_file(filename, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 3                       ", &
+         "    xCoordinates    = 50.0 200.0 350.0       ", &
+         "    yCoordinates    = 50.0 50.0 50.0         ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                ", &   
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 3                       ", &
+         "    xCoordinates    = 50.0 200.0 350.0       ", &
+         "    yCoordinates    = 150.0 150.0 150.0         ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                "])
+   end subroutine create_structure_file_3pt
+
+   !> Shared helper for 3-point single-culvert tests.
+   subroutine setup_3pt_model(iresult)
+      use m_flow_modelinit, only: flow_modelinit
+      use unstruc_model, only: loadModel, md_ident
+      use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL, SetMessageHandling
+      use m_inidat, only: inidat
+      use Timers, only: timini, timon
+      use m_partitioninfo, only: jampi
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use netcdf, only: nf90_noerr
+      integer, intent(out) :: iresult
+
+      character(len=*), parameter :: NET_FILE = "test_lc3pt_net.nc"
+      character(len=*), parameter :: STR_FILE = "test_lc3pt_structures.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc3pt.mdu"
+      character(len=256) :: mdu_local
+      integer :: ierr
+
+     call create_structure_file_3pt(STR_FILE)
+     call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+
+   end subroutine setup_3pt_model
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_3pt_modelinit_succeeds, test_3pt_modelinit_succeeds,
+   subroutine test_3pt_modelinit_succeeds() bind(C)
+      use m_flowgeom, only: ndx, lnx
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+
+      integer :: iresult
+
+      call setup_3pt_model(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, "flow_modelinit should succeed for 3-point culvert")
+      call f90_expect_eq(nlongculverts, 2, "two long culverts should be registered")
+      call f90_expect_eq(longculverts(1)%numlinks, 2, "3-point culvert should have 2 links")
+
+      call default_longculverts
+   end subroutine test_3pt_modelinit_succeeds
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_3pt_head_difference_drives_discharge, test_3pt_head_difference_drives_discharge,
+   subroutine test_3pt_head_difference_drives_discharge() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_3pt_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_true(q1(lc_link) > 0.0_dp, "discharge should be positive (left to right)")
+
+      call default_longculverts
+   end subroutine test_3pt_head_difference_drives_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_3pt_valve_closed_blocks_flow, test_3pt_valve_closed_blocks_flow,
+   subroutine test_3pt_valve_closed_blocks_flow() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_3pt_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      longculverts(1)%valve_relative_opening = 0.0_dp
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, &
+                           "discharge should be ~zero when valve is closed")
+
+      call default_longculverts
+   end subroutine test_3pt_valve_closed_blocks_flow
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_3pt_friction_higher_value_reduces_discharge, test_3pt_friction_higher_value_reduces_discharge,
+   subroutine test_3pt_friction_higher_value_reduces_discharge() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i
+      real(kind=dp) :: q_low_friction, q_high_friction
+      character(len=*), parameter :: STR_FILE = "test_lc3pt_fric_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc3pt_fric.mdu"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 3                       ", &
+         "    xCoordinates    = 50.0 200.0 350.0       ", &
+         "    yCoordinates    = 50.0 50.0 50.0         ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.01                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 3                       ", &
+         "    xCoordinates    = 50.0 200.0 350.0       ", &
+         "    yCoordinates    = 150.0 150.0 150.0      ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.05                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+
+      do i = 1, 4
+         call flow_spatietimestep()
+      end do
+
+      q_low_friction  = q1(longculverts(1)%flowlinks(1))
+      q_high_friction = q1(longculverts(2)%flowlinks(1))
+      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
+      call f90_expect_true(q_high_friction < q_low_friction, &
+                           "higher Manning friction should produce less discharge (3-point)")
+      call default_longculverts
+   end subroutine test_3pt_friction_higher_value_reduces_discharge
+   !$f90tw)
+
+   ! ============================================================================
+   ! 4-POINT LONG CULVERT TESTS
+   ! ============================================================================
+
+   !> Create a structure file with a single 4-point long culvert (3 links: kcu=5, kcu=1, kcu=5).
+   subroutine create_structure_file_4pt(filename)
+      character(len=*), intent(in) :: filename
+
+      call create_file(filename, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 4                       ", &
+         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+         "    yCoordinates    = 50.0 50.0 50.0 50.0    ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 4                       ", &
+         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+         "    yCoordinates    = 150.0 150.0 150.0 150.0", &
+         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.02                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+   end subroutine create_structure_file_4pt
+
+   !> Shared helper for 4-point single-culvert tests.
+   subroutine setup_4pt_model(iresult)
+      use m_flow_modelinit, only: flow_modelinit
+      use unstruc_model, only: loadModel, md_ident
+      use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL, SetMessageHandling
+      use m_inidat, only: inidat
+      use Timers, only: timini, timon
+      use m_partitioninfo, only: jampi
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use netcdf, only: nf90_noerr
+      integer, intent(out) :: iresult
+
+      character(len=*), parameter :: NET_FILE = "test_lc4pt_net.nc"
+      character(len=*), parameter :: STR_FILE = "test_lc4pt_structures.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc4pt.mdu"
+
+     call create_structure_file_4pt(STR_FILE)
+     call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+
+   end subroutine setup_4pt_model
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_modelinit_succeeds, test_4pt_modelinit_succeeds,
+   subroutine test_4pt_modelinit_succeeds() bind(C)
+      use m_flowgeom, only: ndx, lnx
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+
+      integer :: iresult
+
+      call setup_4pt_model(iresult)
+
+      call f90_expect_eq(iresult, DFM_NOERR, "flow_modelinit should succeed for 4-point culvert")
+      call f90_expect_eq(nlongculverts, 2, "two long culverts should be registered")
+      call f90_expect_eq(longculverts(1)%numlinks, 3, "4-point culvert should have 3 links")
+
+      call default_longculverts
+   end subroutine test_4pt_modelinit_succeeds
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_head_difference_drives_discharge, test_4pt_head_difference_drives_discharge,
+   subroutine test_4pt_head_difference_drives_discharge() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_4pt_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_true(q1(lc_link) > 0.0_dp, "discharge should be positive (left to right)")
+
+      call default_longculverts
+   end subroutine test_4pt_head_difference_drives_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_valve_closed_blocks_flow, test_4pt_valve_closed_blocks_flow,
+   subroutine test_4pt_valve_closed_blocks_flow() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, lc_link
+
+      call setup_4pt_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+
+      longculverts(1)%valve_relative_opening = 0.0_dp
+
+      call flow_spatietimestep()
+
+      lc_link = longculverts(1)%flowlinks(1)
+      call f90_expect_true(lc_link > 0, "culvert flow link should be valid")
+      call f90_expect_near(q1(lc_link), 0.0_dp, 1.0e-10_dp, &
+                           "discharge should be ~zero when valve is closed")
+
+      call default_longculverts
+   end subroutine test_4pt_valve_closed_blocks_flow
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_friction_higher_value_reduces_discharge, test_4pt_friction_higher_value_reduces_discharge,
+   subroutine test_4pt_friction_higher_value_reduces_discharge() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i
+      real(kind=dp) :: q_low_friction, q_high_friction
+      character(len=*), parameter :: STR_FILE = "test_lc4pt_fric_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc4pt_fric.mdu"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 4                       ", &
+         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+         "    yCoordinates    = 50.0 50.0 50.0 50.0    ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.01                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 4                       ", &
+         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+         "    yCoordinates    = 150.0 150.0 150.0 150.0", &
+         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.05                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+
+      do i = 1, 4
+         call flow_spatietimestep()
+      end do
+
+      q_low_friction  = q1(longculverts(1)%flowlinks(1))
+      q_high_friction = q1(longculverts(2)%flowlinks(1))
+      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
+      call f90_expect_true(q_high_friction < q_low_friction, &
+                           "higher Manning friction should produce less discharge (4-point)")
+      call default_longculverts
+   end subroutine test_4pt_friction_higher_value_reduces_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_flow_continuity_across_links, test_4pt_flow_continuity_across_links,
+   !> For a 4-point culvert, verify that the discharge is consistent across all 3 links
+   !! (mass conservation within the culvert pipe).
+   subroutine test_4pt_flow_continuity_across_links() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, L1, L2, L3
+
+      call setup_4pt_model(iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(longculverts(1)%numlinks, 3, "4-point culvert should have 3 links")
+
+      do i = 1, 4
+         call flow_spatietimestep()
+      end do
+
+      L1 = abs(longculverts(1)%flowlinks(1))
+      L2 = abs(longculverts(1)%flowlinks(2))
+      L3 = abs(longculverts(1)%flowlinks(3))
+
+      call f90_expect_true(q1(L1) > 0.0_dp, "discharge at link 1 should be positive")
+      ! In steady state, Q should be equal across all links (continuity).
+      ! After a few timesteps it won't be perfectly steady, but should be close.
+      call f90_expect_near(q1(L1), q1(L2), 0.1_dp * abs(q1(L1)), &
+                           "discharge at links 1 and 2 should be similar (continuity)")
+      call f90_expect_near(q1(L2), q1(L3), 0.1_dp * abs(q1(L2)), &
+                           "discharge at links 2 and 3 should be similar (continuity)")
+
+      call default_longculverts
+   end subroutine test_4pt_flow_continuity_across_links
    !$f90tw)
 
 end module test_longculverts
