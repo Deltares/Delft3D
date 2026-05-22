@@ -542,7 +542,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
-        <path version="2026-04-17T10:08:37.762000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
+        <path version="2026-05-20T13:34:03.435000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
         <maxRunTime>60.0</maxRunTime>
         <programs>
           <program ref="dimr">
@@ -564,7 +564,7 @@
             </file>
             <file name="output/SimpleBucket_0000_his.nc" type="netcdf">
                 <parameters>
-                    <parameter name="source_sink_prescribed_discharge" toleranceAbsolute="0.0001" />
+                    <parameter name="bubblescreen_air_discharge" toleranceAbsolute="0.0001" />
                 </parameters>
             </file>
         </checks>

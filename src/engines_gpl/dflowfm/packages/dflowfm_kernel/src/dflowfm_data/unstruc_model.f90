@@ -2027,6 +2027,7 @@ contains
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', his_write_settings%bal, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', his_write_settings%sourcesink, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bubblescreens', his_write_settings%bubblescreens, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', his_write_settings%cgen, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', his_write_settings%cdam, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', his_write_settings%pump, success)
