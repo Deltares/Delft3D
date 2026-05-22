@@ -165,7 +165,7 @@ endfunction()
 # Create template for Visual Studio environment paths for debugging on Windows
 function(create_vs_user_files)
     cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe" TO_NATIVE_PATH_LIST debugcommand)
-    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
     set(envpath "PATH=${path_prefix};%PATH%")
     set(userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
@@ -369,7 +369,7 @@ function(create_test test_name)
         set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
     endif (UNIX)
     if (WIN32)
-        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
+        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/bin\;$ENV{PATH}")
     endif (WIN32)
 
 
