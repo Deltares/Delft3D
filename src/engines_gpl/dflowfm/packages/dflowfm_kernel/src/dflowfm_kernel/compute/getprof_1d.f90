@@ -110,8 +110,8 @@ contains
             call getconveyance(network, hpr, u1(L), q1(L), s1(k2), LL, perim_sub, af_sub, conv, cz_sub, cz, area, perim, factor)
             frcu(L) = cz
             frcu_mor(L) = cz
-            u_to_umain(L) = 1.0_dp
-            q1_main(L) = q1(L)
+               u_to_umain(L) = 1.0_dp
+               q1_main(L) = q1(L)
             wu(L) = width
 
             if (hydrad > 0.0_dp .and. cz > 0.0_dp) then
@@ -123,7 +123,7 @@ contains
 
          return
 
-      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. has_flow1d_cross_section(LL)) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
          cz = 0.0_dp
 
          if (japerim == 0) then ! calculate total area and volume
@@ -300,4 +300,20 @@ contains
       end if
 
    end subroutine getprof_1D
+
+   !> Returns true if the given link has a flow1d cross section, i.e. if it is a 1D channel with a flow1d cross section assigned.
+   function has_flow1d_cross_section(L) result(res)
+      use unstruc_channel_flow, only: network
+      integer, intent(in) :: L
+      logical :: res
+
+      res = .false.
+      if (associated(network%adm%line2cross)) then
+         if (L > 0 .and. L <= size(network%adm%line2cross, 1)) then
+            res = (network%adm%line2cross(L, 2)%c1 > 0)
+         end if
+      end if
+
+   end function has_flow1d_cross_section
+
 end module m_get_prof_1D

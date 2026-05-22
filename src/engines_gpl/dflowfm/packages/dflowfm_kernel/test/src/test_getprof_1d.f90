@@ -530,7 +530,9 @@ contains
 
       ! Initialize `prof1d` without `profiles1D`
       call setup_prof1d_rectangular_cross_section_without_profile(width=2.0_dp, height=1.5_dp)
-      network%loaded = .false. ! Skip the channel_flow branch
+      if (associated(network%adm%line2cross)) then
+         deallocate(network%adm%line2cross)
+      end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
       ! Act
@@ -659,7 +661,9 @@ contains
 
       call flow_geominit(0)
       call setup_prof1d_rectangular_cross_section_with_profile(width=2.0_dp, height=1.5_dp)
-      network%loaded = .false. ! Trick to skip the branch
+      if (associated(network%adm%line2cross)) then
+         deallocate(network%adm%line2cross)
+      end if
       newculverts = .true. ! The perimiter calculation in `rectan` is different if this global is set to true
 
       call getprof_1D(1, 10.0_dp, area, width, japerim, calcconv, perim)

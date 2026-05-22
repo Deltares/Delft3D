@@ -797,7 +797,9 @@ contains
       iresult = flow_modelinit()
 
       do i = 1, ndx
-         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) bl(i) = 10.0_dp
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
+            bl(i) = 10.0_dp
+         end if
       end do
       do i = 1, ndx
          s1(i) = merge(2.0_dp, 0.0_dp, xz(i) < 100.0_dp)
@@ -875,7 +877,7 @@ contains
       use m_flow_spatietimestep, only: flow_spatietimestep
       use precision, only: dp
 
-      integer :: iresult
+      integer :: iresult, i
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc_friction_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_friction.mdu"
@@ -916,8 +918,10 @@ contains
       call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
-
-      call flow_spatietimestep()
+      
+      do  i = 1, 4 !> multiple timesteps, from rest friction has no effect
+         call flow_spatietimestep()
+      end do
 
       q_low_friction  = q1(longculverts(1)%flowlinks(1)) ! lc01: Manning n=0.01
       q_high_friction = q1(longculverts(2)%flowlinks(1)) ! lc02: Manning n=0.05
@@ -937,7 +941,7 @@ contains
       use m_flow_spatietimestep, only: flow_spatietimestep
       use precision, only: dp
 
-      integer :: iresult
+      integer :: iresult, i
       real(kind=dp) :: q_manning, q_colebrook
       character(len=*), parameter :: STR_FILE = "test_lc_frtype_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_frtype.mdu"
@@ -958,7 +962,7 @@ contains
          "    width           = 2.0                     ", &
          "    height          = 2.0                     ", &
          "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
+         "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                ", &
          "                                              ", &
          "[Structure]                                   ", &
@@ -972,14 +976,16 @@ contains
          "    width           = 2.0                     ", &
          "    height          = 2.0                     ", &
          "    frictionType    = WhiteColebrook          ", &
-         "    frictionValue   = 0.02                    ", &
+         "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
       call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
-      call flow_spatietimestep()
+      do i = 1, 4 !> multiple timesteps, from rest friction has no effect
+         call flow_spatietimestep()
+      end do
 
       q_manning   = q1(longculverts(1)%flowlinks(1))
       q_colebrook = q1(longculverts(2)%flowlinks(1))
