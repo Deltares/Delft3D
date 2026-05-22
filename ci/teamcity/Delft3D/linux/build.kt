@@ -48,6 +48,7 @@ object LinuxBuild : BuildType({
         select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
+        param("env.CONAN_HOME", "/conan-cache")
     }
 
     vcs {

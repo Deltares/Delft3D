@@ -82,7 +82,11 @@ def clean_directories(build_dir: Path, install_dir: Path) -> None:
 
 
 def run_conan(
-    build_dir: Path, *, ci: bool = False, build_dependencies: bool = False
+    build_dir: Path,
+    *,
+    build_type: str,
+    ci: bool = False,
+    build_dependencies: bool = False,
 ) -> None:
     """Run run_conan.py to install dependencies."""
     output_folder = build_dir / "conan"
@@ -91,6 +95,8 @@ def run_conan(
         str(ROOT / "run_conan.py"),
         f"--output-folder={output_folder}",
     ]
+    if platform.system() != "Windows":
+        cmd.append(f"--build-type={build_type}")
     if ci:
         cmd.append("--ci")
     if build_dependencies:
@@ -232,7 +238,7 @@ def main() -> None:
         clean_directories(build_dir, install_dir)
 
     # Conan
-    run_conan(build_dir, ci=args.ci, build_dependencies=args.build_dependencies)
+    run_conan(build_dir, build_type=args.build_type, ci=args.ci, build_dependencies=args.build_dependencies)
 
     # CMake configure
     run_cmake_configure(
