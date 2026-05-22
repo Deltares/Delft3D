@@ -34,9 +34,11 @@ object LinuxBuild2D3DSP : BuildType({
     }
 
     params {
-        param("generator", """"Unix Makefiles"""")
         param("product", "auto-select")
         select("build_type", "%dep.${LinuxThirdPartyLibs.id}.build_type%", display = ParameterDisplay.PROMPT, options = listOf("Release", "RelWithDebInfo", "Debug"))
+        param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
+        password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
+        param("env.CONAN_HOME", "/conan-cache")
     }
 
     vcs {
@@ -77,12 +79,14 @@ object LinuxBuild2D3DSP : BuildType({
                 export CMAKE_PREFIX_PATH=/usr/local:${'$'}CMAKE_PREFIX_PATH
                 export CMAKE_INCLUDE_PATH=/usr/local/include:${'$'}CMAKE_INCLUDE_PATH
                 export CMAKE_LIBRARY_PATH=/usr/local/lib:${'$'}CMAKE_LIBRARY_PATH
-                cmake -S ./src/cmake -G %generator% -D CONFIGURATION_TYPE:STRING=flow2d3d -D CMAKE_BUILD_TYPE=%build_type% -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install
-                cmake --build build_flow2d3d --parallel --config %build_type%
+
+                # Initialize Conan and install pre-built dependencies from Nexus
+                python run_conan.py --initialize-conan=deltares --ci
+                python build.py --config flow2d3d --build --build-type %build_type% --ci --build-dir build_flow2d3d --install-dir build_flow2d3d/install
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-            dockerRunParameters = "--rm"
+            dockerRunParameters = "--rm --mount type=volume,source=delft3d-conan-cache,target=/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
         }
     }

@@ -28,11 +28,11 @@ object WindowsBuild2D3DSP : BuildType({
 
     params {
         param("product", "auto-select")
-        param("intel_fortran_compiler", "ifx")
         param("container.tag", "vs2022-intel2024")
-        param("generator", """"Visual Studio 17 2022"""")
-        param("enable_code_coverage_flag", "OFF")
+        param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
+        param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
+        password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
     }
 
     vcs {
@@ -86,16 +86,16 @@ object WindowsBuild2D3DSP : BuildType({
             scriptContent = """
                 call C:/set-env-vs2022.cmd
 
-                cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=flow2d3d -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
+                python run_conan.py --initialize-conan=deltares --ci
+                if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                cd build_flow2d3d
-
-                cmake --build . -j --target install --config %build_type%
+                python build.py --config flow2d3d --build --build-type %build_type% --ci --build-dir build_flow2d3d --install-dir build_flow2d3d/install
+                if %%errorlevel%% neq 0 exit /b %%errorlevel%%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
-            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount% --mount type=volume,source=delft3d-conan-cache,target=C:/conan-cache -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
         }
     }
     requirements {
