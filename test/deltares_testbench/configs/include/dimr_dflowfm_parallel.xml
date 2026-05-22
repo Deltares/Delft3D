@@ -228,7 +228,7 @@
     </testCase>
     <testCase name="e02_f014_c100" ref="dimr">
         <path version="2025-10-15T15:07:15.034000">e02_dflowfm/f014_parallel/c100_guayas_model</path>
-        <programs>
+		<programs>
           <program ref="dimr">
              <arguments>
                  <argument>-c 4 -m dimr.xml</argument>
@@ -544,7 +544,7 @@
     <testCase name="e02_f017_c40_parallel_bubblescreens_simplebucket" ref="dimr">
         <path version="2026-04-17T10:08:37.762000">e02_dflowfm/f017_sources_sinks/c40_parallel_bubblescreens_simplebucket</path>
         <maxRunTime>60.0</maxRunTime>
-                <programs>
+        <programs>
           <program ref="dimr">
              <arguments>
                  <argument>-c 2 -m dimr_config.xml</argument>
@@ -567,6 +567,51 @@
                     <parameter name="source_sink_prescribed_discharge" toleranceAbsolute="0.0001" />
                 </parameters>
             </file>
+        </checks>
+    </testCase>
+	
+	<testCase name="e02_f042_c02_sedtrails_parallel" ref="dimr">
+        <path version="2025-06-01T15:07:15.034000">e02_dflowfm/f042_sedtrails_output/c02_sedtrails_parallel</path>
+		<programs>
+          <program ref="dimr">
+             <arguments>
+                 <argument>-c 2 -m dimr_config.xml</argument>
+             </arguments>
+          </program>
+        </programs>
+        <checks>
+           <file name="output/inlet_0000_sedtrails.nc" type="netCDF">
+             <parameters>
+               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
+               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
+               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
+               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
+             </parameters>
+           </file>        
+		   <file name="output/inlet_0001_sedtrails.nc" type="netCDF">
+             <parameters>
+               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
+               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
+               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
+               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
+             </parameters>
+           </file>        
+		   <file name="output/inlet_0002_sedtrails.nc" type="netCDF">
+             <parameters>
+               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
+               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
+               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
+               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
+             </parameters>
+           </file>        
+		   <file name="output/inlet_0003_sedtrails.nc" type="netCDF">
+             <parameters>
+               <parameter name="sea_water_x_velocity" toleranceAbsolute="0.01" />
+               <parameter name="sea_water_y_velocity" toleranceAbsolute="0.01" />
+               <parameter name="mean_bss_magnitude" toleranceAbsolute="0.001" />
+               <parameter name="max_bss_magnitude" toleranceAbsolute="0.001" />
+             </parameters>
+           </file>
         </checks>
     </testCase>
  </testCases>
