@@ -22,8 +22,14 @@
  *       <constituents>10.0 0.0</constituents>
  *    </discharge>
  *    <NFResult>
- *       <sinks> 250.000 350.087 9.700 1.000 0.000 0.000 252.500 350.048 9.700 5 0.250 0.380 </sinks>
- *       <sources>1050.000 350.365 5.000 5.000 5 15.000 1050.500 350.365 5.000 5.000 5 15.000 </sources>
+ *       <sinks>
+ *          250.000 350.087 9.700 1.000 0.000 0.000
+ *          252.500 350.048 9.700 5     0.250 0.380
+ *       </sinks>
+ *       <sources>
+ *          1050.000 350.365 5.000 5.000 5 15.000
+ *          1050.500 350.365 5.000 5.000 5 15.000
+ *       </sources>
  *    </NFResult>
  * </NF2FF>
  ***/
@@ -53,11 +59,18 @@ namespace pre_c_sumo
             const std::string_view xml);
 
         std::string_view fileVersion() const;
+        double intakeFlowRate() const;
+        double sourceFlowRate() const;
+        ConstituentsOperator constituentsOperator() const;
+        std::vector<double> constituents() const;
+        std::vector<std::vector<double>> sources() const;
+        std::vector<std::vector<double>> sinks() const;
 
     private:
         explicit NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
-                             double source_flow_rate, pre_c_sumo::ConstituentsOperator constituents_operator,
-                             std::vector<double> constituents, std::vector<double> sources, std::vector<double> sinks);
+                             double source_flow_rate, ConstituentsOperator constituents_operator,
+                             std::vector<double> constituents, std::vector<std::vector<double>> sources,
+                             std::vector<std::vector<double>> sinks);
 
         constexpr static std::string_view root_element_name = "NF2FF";
         constexpr static std::string_view current_file_version = "0.3";
@@ -67,8 +80,8 @@ namespace pre_c_sumo
         double source_flow_rate_;
         pre_c_sumo::ConstituentsOperator constituents_operator_;
         std::vector<double> constituents_;
-        std::vector<double> sources_;
-        std::vector<double> sinks_;
+        std::vector<std::vector<double>> sources_;
+        std::vector<std::vector<double>> sinks_;
     };
 
 } // namespace pre_c_sumo

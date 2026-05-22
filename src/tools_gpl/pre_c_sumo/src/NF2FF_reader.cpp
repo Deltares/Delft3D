@@ -8,6 +8,7 @@
 #include <format>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
+#include <ranges>
 
 namespace
 {
@@ -48,7 +49,7 @@ namespace
         const pugi::xml_node result_node = parsing_utils::findChild(root, "NFResult");
         if (!result_node)
         {
-            return std::unexpected(parsing_utils::ParseError{"No NFResult found in NF2FF file."});
+            return std::unexpected(parsing_utils::ParseError{"Required element <NFResult> not found"});
         }
         return result_node;
     }
@@ -62,7 +63,7 @@ namespace
         const pugi::xml_node discharge_node = parsing_utils::findChild(root, "discharge");
         if (!discharge_node)
         {
-            return std::unexpected(parsing_utils::ParseError{"No discharge found in NF2FF file."});
+            return std::unexpected(parsing_utils::ParseError{"Required element <discharge> not found."});
         }
         return discharge_node;
     }
@@ -90,6 +91,36 @@ namespace
         ASSIGN_OR_RETURN(const auto text, parsing_utils::requiredChildText(parent, element_name));
         return parsing_utils::parseDouble(text, element_name);
     }
+
+    std::expected<std::vector<std::vector<double>>, parsing_utils::ParseError> parseVectorVector(
+        const std::string_view text, const std::string_view element_name)
+    {
+        std::vector<std::string> newline_separated_tokens;
+        boost::algorithm::split(newline_separated_tokens, text, boost::algorithm::is_any_of("\n\r"),
+                                boost::algorithm::token_compress_on);
+
+        auto is_non_empty = [](const std::string_view token) {
+            return token.find_first_not_of(" \t\r") != std::string_view::npos;
+        };
+        auto to_vector =
+            [element_name](
+                const std::string_view token) -> std::expected<std::vector<double>, parsing_utils::ParseError> {
+            ASSIGN_OR_RETURN(auto vector, parsing_utils::parseDoubleVector(token.data(), element_name));
+            return vector;
+        };
+
+        auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
+                              std::ranges::views::transform(to_vector) | std::ranges::to<std::vector>();
+
+        if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
+            errorIt != expected_items.end())
+        {
+            return std::unexpected((*errorIt).error());
+        }
+
+        return expected_items | std::ranges::views::transform(monadic_utils::unwrap) | std::ranges::to<std::vector>();
+    }
+
 } // namespace
 
 namespace pre_c_sumo
@@ -142,9 +173,9 @@ namespace pre_c_sumo
         // NFResult
         ASSIGN_OR_RETURN(auto nfresult_node, parseNFResult(root));
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
-        ASSIGN_OR_RETURN(auto sources, parsing_utils::parseDoubleVector(sources_text, "sources"));
+        ASSIGN_OR_RETURN(auto sources, parseVectorVector(sources_text, "sources"));
         ASSIGN_OR_RETURN(const auto sinks_text, parsing_utils::requiredChildText(nfresult_node, "sinks"));
-        ASSIGN_OR_RETURN(auto sinks, parsing_utils::parseDoubleVector(sinks_text, "sinks"));
+        ASSIGN_OR_RETURN(auto sinks, parseVectorVector(sinks_text, "sinks"));
         // End NFResult
 
         // Compose result
@@ -153,8 +184,9 @@ namespace pre_c_sumo
     }
 
     NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
-                             double source_flow_rate, pre_c_sumo::ConstituentsOperator constituents_operator,
-                             std::vector<double> constituents, std::vector<double> sources, std::vector<double> sinks)
+                             double source_flow_rate, ConstituentsOperator constituents_operator,
+                             std::vector<double> constituents, std::vector<std::vector<double>> sources,
+                             std::vector<std::vector<double>> sinks)
         : file_version_{std::move(file_version)},
           document_{std::move(document)},
           intake_flow_rate_{intake_flow_rate},
@@ -171,5 +203,41 @@ namespace pre_c_sumo
      * @return std::string_view
      */
     std::string_view NF2FFReader::fileVersion() const { return file_version_; }
+
+    /**
+     * @brief Returns the total intake flow rate (Qintake) that has been read.
+     * @return double
+     */
+    double NF2FFReader::intakeFlowRate() const { return intake_flow_rate_; }
+
+    /**
+     * @brief Returns the total source flow rate (Qsource) that has been read.
+     * @return double
+     */
+    double NF2FFReader::sourceFlowRate() const { return source_flow_rate_; }
+
+    /**
+     * @brief Returns the consituents operator (Absolute or Excess) that has been read.
+     * @return pre_c_sumo::ConstituentsOperator
+     */
+    ConstituentsOperator NF2FFReader::constituentsOperator() const { return constituents_operator_; };
+
+    /**
+     * @brief Returns the constituent values that have been read.
+     * @return std::vector<double>
+     */
+    std::vector<double> NF2FFReader::constituents() const { return constituents_; };
+
+    /**
+     * @brief Returns the sources that have been read.
+     * @return std::vector<std::vector<double>>
+     */
+    std::vector<std::vector<double>> NF2FFReader::sources() const { return sources_; };
+
+    /**
+     * @brief Returns the sinks that have been read.
+     * @return std::vector<std::vector<double>>
+     */
+    std::vector<std::vector<double>> NF2FFReader::sinks() const { return sinks_; };
 
 } // namespace pre_c_sumo
