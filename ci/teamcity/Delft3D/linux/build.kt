@@ -78,7 +78,7 @@ object LinuxBuild : BuildType({
 
                 # Initialize Conan and install pre-built dependencies from Nexus
                 python run_conan.py --initialize-conan=deltares --ci
-                python build.py --config %product% --build --build-type %build_type% --ci --keep-build --build-dir build --install-dir install
+                python build.py --config %product% --build --build-type %build_type% --ci --build-dir build --install-dir install
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux

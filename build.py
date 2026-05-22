@@ -10,8 +10,16 @@ from pathlib import Path
 
 CONFIGURATIONS = [
     "all",
+    "all-testbench",
     "fm-suite",
+    "fm-testbench",
     "d3d4-suite",
+    "d3d4-testbench",
+    "waq-testbench",
+    "part-testbench",
+    "rr-testbench",
+    "wave-testbench",
+    "swan-testbench",
     "dflowfm_interacter",
     "dflowfm",
     "dimr",
@@ -73,7 +81,9 @@ def clean_directories(build_dir: Path, install_dir: Path) -> None:
             shutil.rmtree(directory)
 
 
-def run_conan(build_dir: Path, *, ci: bool = False, build_dependencies: bool = False) -> None:
+def run_conan(
+    build_dir: Path, *, ci: bool = False, build_dependencies: bool = False
+) -> None:
     """Run run_conan.py to install dependencies."""
     output_folder = build_dir / "conan"
     cmd = [
@@ -209,7 +219,9 @@ def main() -> None:
 
     # Resolve build and install directories
     build_dir = ROOT / (args.build_dir or build_dir_name(args.config, args.build_type))
-    install_dir = ROOT / (args.install_dir or install_dir_name(args.config, args.build_type))
+    install_dir = ROOT / (
+        args.install_dir or install_dir_name(args.config, args.build_type)
+    )
 
     # Verify VS environment is active when building on Windows
     if platform.system() == "Windows" and args.build and vs_year:

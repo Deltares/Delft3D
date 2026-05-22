@@ -31,10 +31,8 @@ object WindowsBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("intel_fortran_compiler", "ifx")
         param("container.tag", "vs2022-intel2024")
-        param("generator", """"Visual Studio 17 2022"""")
-        param("enable_code_coverage_flag", "OFF")
+        param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
     }
@@ -76,13 +74,14 @@ object WindowsBuild : BuildType({
             name = "Build"
             scriptContent = """
                 call C:/set-env-vs2022.cmd
-                cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=%product% -B build_%product% -D CMAKE_INSTALL_PREFIX=build_%product%/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
+
+                python run_conan.py --initialize-conan=deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                cmake --build ./build_%product% -j --target install --config %build_type%
+                python build.py --config %product% --build --build-type %build_type% --ci --build-dir build_%product% --install-dir build_%product%/install
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                ctest --test-dir ./build_%product% --build-config %build_type% --output-junit ../unit-test-report-windows.xml --output-on-failure
+                ctest --test-dir ./build_%product% --build-config %build_type% --output-junit unit-test-report-windows.xml --output-on-failure
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
