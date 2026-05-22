@@ -575,7 +575,7 @@
 		<programs>
           <program ref="dimr">
              <arguments>
-                 <argument>-c 2 -m dimr_config.xml</argument>
+                 <argument>-c 4 -m dimr_config.xml</argument>
              </arguments>
           </program>
         </programs>
