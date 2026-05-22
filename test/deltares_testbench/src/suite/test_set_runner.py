@@ -8,6 +8,7 @@ import os
 import shutil
 import sys
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta
 from multiprocessing.pool import AsyncResult
 from multiprocessing.synchronize import Condition
@@ -598,18 +599,56 @@ class TestSetRunner(ABC):
 
     def __process_test_case_locations(self, config: TestCaseConfig, logger: ILogger) -> None:
         """Process all locations for a test case, downloading files as needed."""
-        for location in config.locations:
-            # Skip CHECK locations — those are for program binaries, handled by __update_programs
-            if location.type == PathType.CHECK:
-                continue
-            self.__validate_location(config, location)
-            remote_path = self.__build_remote_path(config, location)
-            local_path = self.__build_local_path(config, location)
-            self.__download_location_with_retries(config, location, remote_path, local_path, logger)
-            if location.type == PathType.INPUT:
-                self.__copy_to_work_folder(Path(local_path), logger)
+        locations_to_process = [location for location in config.locations if location.type != PathType.CHECK]
 
-            self.__set_absolute_paths(config, location.type, local_path)
+        for location in locations_to_process:
+            self.__validate_location(config, location)
+
+        if config.path and config.path.version == "DVC" and len(locations_to_process) > 1:
+            self.__process_dvc_locations_in_parallel(config, locations_to_process, logger)
+            return
+
+        for location in locations_to_process:
+            location_type, local_path = self.__process_single_location(config, location, logger)
+            self.__set_absolute_paths(config, location_type, local_path)
+
+    def __process_single_location(self, config: TestCaseConfig, location: Location, logger: ILogger) -> tuple[PathType, str]:
+        """Download one location and perform local post-download setup."""
+        remote_path = self.__build_remote_path(config, location)
+        local_path = self.__build_local_path(config, location)
+        self.__download_location_with_retries(config, location, remote_path, local_path, logger)
+
+        if location.type == PathType.INPUT:
+            self.__copy_to_work_folder(Path(local_path), logger)
+
+        return location.type, local_path
+
+    def __process_dvc_locations_in_parallel(
+        self,
+        config: TestCaseConfig,
+        locations_to_process: List[Location],
+        logger: ILogger,
+    ) -> None:
+        """Download DVC input/reference locations concurrently for one test case."""
+        max_workers = min(2, len(locations_to_process))
+        results: list[tuple[PathType, str]] = []
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_location = {
+                executor.submit(self.__process_single_location, config, location, logger): location
+                for location in locations_to_process
+            }
+
+            for future in as_completed(future_to_location):
+                location = future_to_location[future]
+                try:
+                    results.append(future.result())
+                except Exception as exception:
+                    logger.error(f"Failed to process DVC location '{location.type}': {exception}")
+                    raise
+
+        for location_type, local_path in results:
+            self.__set_absolute_paths(config, location_type, local_path)
 
     def __validate_location(self, config: TestCaseConfig, location: Location) -> None:
         """Validate that a location has required configuration."""
