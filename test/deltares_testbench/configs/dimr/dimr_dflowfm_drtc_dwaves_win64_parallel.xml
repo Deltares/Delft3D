@@ -92,19 +92,6 @@
     -->
     <defaultTestCases>
         <testCase name="dimr">
-            <programs>
-                <program ref="dflowfm" seq="1">
-                    <workingDirectory>fm</workingDirectory>
-                    <arguments>
-                        <argument>--partition:ndomains=4:icgsolver=6 weirtimeseries.mdu</argument>
-                    </arguments>
-                </program>
-                <program ref="dimr" seq="2">
-                    <arguments>
-                        <argument>4 -d 0 dimr_config.xml</argument>
-                    </arguments>
-                </program>
-            </programs>
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
