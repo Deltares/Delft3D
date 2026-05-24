@@ -55,7 +55,8 @@ contains
       use unstruc_display
       use m_get_chezy, only: get_chezy
       use mathconsts, only: ee
-
+      use m_debug
+      
       implicit none
 
       logical :: javegczu
@@ -75,6 +76,7 @@ contains
       astarc = 30.*pi**2 ! critical value for astar
       fsqrtt = sqrt(0.5_dp)
       javegczu = javeg > 1 .and. jabaptist > 1
+      javegczu = .false.
 
       ! parameterized bottom friction models
 
@@ -162,6 +164,7 @@ contains
             tauwav = 0.5_dp * rhoL * fw * ftauw * uorbu * uorbu ! wave related bed shear stress
             if ((javegczu .and. cfuhi(L) > 0.0_dp) .or. trachy_resistance) then ! vegetation hk/trachy
                cdrag = cfuhi(L) * huL
+               debugarr1d(L) = cdrag
             else
                cdrag = ag / cz / cz
             end if
