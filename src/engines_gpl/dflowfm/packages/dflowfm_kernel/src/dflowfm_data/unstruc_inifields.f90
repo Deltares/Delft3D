@@ -1377,6 +1377,13 @@ contains
 
       call split_qid(qid, qid_base, qid_specific)
 
+      if (index(str_tolower(qid_base), 'initialvertical') == 1) then
+         write (msgbuf, '(3a)') 'Fatal error: Quantity '''//trim(qid_base)//''' starting with ''initialvertical'' is not allowed.'
+         call err_flush()
+         success = .false.
+         return
+      end if
+
       ! UNST-8840: temporarily support hydrological quanties either as [Parameter] or [Initial] blocks.
       success = process_hydrological_quantities(qid_base, inifilename, target_location_type, target_array)
       if (associated(target_array)) then
