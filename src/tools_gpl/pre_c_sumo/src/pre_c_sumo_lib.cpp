@@ -152,7 +152,7 @@ namespace pre_c_sumo
             1050.500, 350.365, // Entrainment: source2_sink2
             1050.000, 350.365, // Discharge: source1
             1050.500, 350.365, // Discharge: source2
-            1500.6,   1000.6,  // Intake from C-SUMO settings file?
+            1500.6,   1000.6,  // Intake from C-SUMO settings file, if no intakes in NF2FF file
         };
         std::vector<int> sources_sinks_nodes_ids(sources_sinks_size);
         participant.setMeshVertices("sources_sinks_nodes", sources_sinks_nodes, sources_sinks_nodes_ids);
