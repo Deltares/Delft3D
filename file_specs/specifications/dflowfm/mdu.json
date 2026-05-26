@@ -3809,7 +3809,13 @@
                     "key": "wriHis_sourcesink",
                     "default_value": 1,
                     "value_type": "intbool",
-                    "description": "Write sources-sinks statistics to his file."
+                    "description": "Write sources-sinks data to his file."
+                },
+                {
+                    "key": "wriHis_bubblescreens",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write bubblescreens data to his file."
                 },
                 {
                     "key": "wriHis_turbulence",

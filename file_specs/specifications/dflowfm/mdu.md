@@ -596,7 +596,8 @@ This section contains the settings for various output files.
 | `wriHis_lateral` | Write lateral data. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_velocity` | Write velocity magnitude in observation point to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_discharge` | Write discharge magnitude in observation point to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `wriHis_sourcesink` | Write sources-sinks statistics to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriHis_sourcesink` | Write sources-sinks data to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `wriHis_bubblescreens` | Write bubblescreens data to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_turbulence` | Write k, eps and vicww to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_wind` | Write wind velocities to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriHis_rain` | Write precipitation to his file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
