@@ -976,6 +976,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
+      use m_source_sink, only: num_source_sink
       use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)

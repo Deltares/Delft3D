@@ -43,7 +43,7 @@ contains
    subroutine disable_higherorder_at_sorsin()
       use precision, only: dp
       use m_flowgeom
-      use fm_external_forcings_data, only: num_source_sink, source_sink_indices
+      use m_source_sink, only: source_sinks, num_source_sink
       use m_partitioninfo
       use m_alloc
       implicit none
@@ -64,7 +64,7 @@ contains
          do n = 1, num_source_sink
             do i = 1, 4, 3 ! 1 and 4
 !              get 2D flow nodes
-               kk = source_sink_indices(i, n)
+               kk = source_sinks%indices(n, i)
                if (kk <= 0) then
                   cycle ! 0: not in whole domain, -1: not in own subdomain, but can be in ghostregion
                end if
@@ -87,8 +87,8 @@ contains
 
 !        mask flownodes with sources
          do n = 1, num_source_sink
-            imask(source_sink_indices(1, n)) = 1
-            imask(source_sink_indices(4, n)) = 1
+            imask(source_sinks%indices(n, 1)) = 1
+            imask(source_sinks%indices(n, 4)) = 1
          end do
 
 !        disable flowlinks

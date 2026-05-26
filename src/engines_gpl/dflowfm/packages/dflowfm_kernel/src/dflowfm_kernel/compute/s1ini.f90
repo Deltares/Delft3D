@@ -51,6 +51,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
+      use m_source_sink, only: num_source_sink
       use m_reduce
       use m_ship
       use m_transport, only: constituents, itemp

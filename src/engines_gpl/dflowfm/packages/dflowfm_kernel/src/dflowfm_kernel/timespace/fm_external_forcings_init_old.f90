@@ -1496,6 +1496,7 @@ contains
    module subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
+      use m_source_sink, only: num_source_sink
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr

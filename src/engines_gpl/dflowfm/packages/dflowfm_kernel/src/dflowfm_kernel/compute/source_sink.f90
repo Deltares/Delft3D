@@ -24,8 +24,11 @@ module m_source_sink
    ! Type containing all source/sink data.
    type :: SourceSinks
 
-      ! Source/sink name, x,y,z coordinates, and indices.
+      ! Number of source/sinks and name.
+      integer :: number = 0 !< [-] Number of source/sinks in the model.
       character(len=255), dimension(:), allocatable :: name !< [-] Name of the source/sink.
+
+      ! Source/sink x,y,z coordinates, and indices.
       real(kind=dp), dimension(:,:), allocatable :: x !< [m] x-coordinates of source/sink.
       real(kind=dp), dimension(:,:), allocatable :: y !< [m] y-coordinates of source/sink.
       real(kind=dp), dimension(:,:), allocatable :: z_bottom !< [m] z-level of bottom source/sink.
@@ -43,7 +46,7 @@ module m_source_sink
       real(kind=dp), dimension(:), allocatable :: discharge !< [m3/s] Water discharge of source/sink.
       real(kind=dp), dimension(:,:), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
 
-      logical, dimension(:), allocatable :: add_k_to_turkin !< [-] Add k of source/sink to turkin.
+      logical :: add_k_to_turkin = .false. !< [-] Add k of source/sink to turkin.
       integer, dimension(:), allocatable :: max_xy_points !< [-] Maximum number of points per source/sink in x, y. Used for array dimensions.
 
    contains
@@ -110,7 +113,6 @@ contains
       allocate (self%discharge(size))
       allocate (self%constituents(size, numconst))
 
-      allocate (self%add_k_to_turkin(size))
       allocate (self%max_xy_points(size))
 
       ! Initialize all source/sink attributes.
@@ -158,7 +160,6 @@ contains
       call realloc(self%discharge, size, keepExisting=.true., fill=0.0_dp)
       call realloc(self%constituents, [size, numconst], keepExisting=.true., fill=0.0_dp)
 
-      call realloc(self%add_k_to_turkin, size, keepExisting=.true., fill=.false.)
       call realloc(self%max_xy_points, size, keepExisting=.true., fill=0)
 
    end subroutine resize_source_sinks

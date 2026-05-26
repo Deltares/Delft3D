@@ -105,6 +105,7 @@ contains
       use m_timer
       use m_sediment
       use fm_external_forcings_data, only: numtracers, trnames
+      use m_source_sink, only: num_source_sink
       use m_transport, only: ITRA1, ITRAN, ISED1
       use m_structures
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc

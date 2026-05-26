@@ -81,6 +81,7 @@ contains
       use m_fm_icecover, only: fm_icecover_prepare_output
       use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
       use m_wrimap, only: wrimap
+      use m_source_sink, only: num_source_sink
 
       integer, intent(out) :: iresult
 

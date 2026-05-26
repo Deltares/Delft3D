@@ -28,6 +28,8 @@
 
 module mass_balance_areas_routines
    use precision, only: dp
+   use m_source_sink, only: source_sinks, num_source_sink
+
    implicit none
 
    private
@@ -415,7 +417,6 @@ contains
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
-      use fm_external_forcings_data, only: num_source_sink
       use m_flowparameters, only: jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
       use m_transport, only: numconst
       use m_sediment, only: stm_included
@@ -733,7 +734,6 @@ contains
    subroutine comp_horflowmba()
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
-      use fm_external_forcings_data, only: num_source_sink, source_sink_water_discharge
       use m_mass_balance_areas
       use timers
 
@@ -764,7 +764,7 @@ contains
       end do
 
       do n = 1, num_source_sink
-         qsrck = source_sink_water_discharge(n)
+         qsrck = source_sinks%discharge(n)
          if (qsrck > 0) then
             if (mbasorsin(2, n) /= 0) then
                mbaflowsorsin(2, n) = mbaflowsorsin(2, n) + qsrck * dts
@@ -1201,7 +1201,6 @@ contains
    subroutine mba_prepare_names_flows(imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_source_sink, only: source_sinks, num_source_sink
       use m_mass_balance_areas
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1280,7 +1279,6 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use fm_external_forcings_data, only: num_source_sink
       use m_mass_balance_areas
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1364,7 +1362,6 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use m_source_sink, only: source_sinks, num_source_sink
       use m_mass_balance_areas
 
       integer :: jmba !< index of other mass balance area or open boundary
@@ -1420,7 +1417,6 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
-      use fm_external_forcings_data, only: num_source_sink
       use m_mass_balance_areas
 
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -1495,7 +1491,6 @@ contains
    subroutine mba_prepare_names_fluxes(imbs, imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
-      use m_source_sink, only: source_sinks, num_source_sink
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1648,7 +1643,6 @@ contains
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
-      use fm_external_forcings_data, only: num_source_sink
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -1823,7 +1817,6 @@ contains
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
-      use m_source_sink, only: source_sinks, num_source_sink
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1941,7 +1934,6 @@ contains
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, &
                                   jambalumpsrc, jambalumpproc
-      use fm_external_forcings_data, only: num_source_sink
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi

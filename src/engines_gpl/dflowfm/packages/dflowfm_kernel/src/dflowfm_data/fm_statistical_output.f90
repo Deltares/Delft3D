@@ -2220,6 +2220,7 @@ contains
       use m_ug_nc_attribute
       use m_flow
       use fm_external_forcings_data
+      use m_source_sink, only: num_source_sink
       use m_structures
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity

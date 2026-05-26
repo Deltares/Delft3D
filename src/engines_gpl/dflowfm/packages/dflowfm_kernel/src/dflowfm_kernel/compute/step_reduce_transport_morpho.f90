@@ -79,6 +79,7 @@ contains
       use m_volsur
       use m_set_bobs
       use m_fm_erosed_sub, only: fm_erosed
+      use m_source_sink, only: source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
 
       numnodneg = 0
       if (wrwaqon) then

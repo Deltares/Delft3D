@@ -1149,8 +1149,7 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_source_sink, only: addsorsin
-      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: addsorsin, num_source_sink, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, dzL
@@ -1277,7 +1276,8 @@ contains
 
    !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
-      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
+      use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
+      use m_source_sink, only: num_source_sink
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1380,7 +1380,7 @@ contains
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin
+      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, num_source_sink
       use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
       use m_alloc, only: realloc

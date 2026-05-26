@@ -400,7 +400,6 @@ module fm_external_forcings_data
    ! ====================================================================================================
 
    ! Source/sink counters.
-   integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
    integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
    integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}
    integer :: max_source_sink_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions. {former:msrc}
@@ -433,9 +432,6 @@ module fm_external_forcings_data
    real(kind=dp), dimension(:), target, allocatable :: source_sink_cumulative_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(num_source_sink), former:vsrccum}
    real(kind=dp), dimension(:), target, allocatable :: source_sink_cumulative_volume_previous !< [m3] Cumulative volume at each source/sink from Tstart to the previous His-output time. {size=(num_source_sink), former:vsrccum_pre}
    real(kind=dp), dimension(:), target, allocatable :: source_sink_average_discharge_previous !< [m3/s] Average discharge in the past his-interval at each source/sink. {size=(num_source_sink), former:qsrcavg}
-   integer, dimension(:), allocatable :: source_sink_waq_index !< [-] Index array to map source/sink to waq source/sink arrays. {size=(num_source_sink), former:ksrcwaq}
-   real(kind=dp), dimension(:), allocatable :: source_sink_cumulative_discharge_waq !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep. {size=(num_source_sink), former:qsrcwaq}
-   real(kind=dp), dimension(:), allocatable :: source_sink_cumulative_discharge_waq_previous !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep at the beginning of the time step before possible reduction. {size=(num_source_sink), former:qsrcwaq0}
 
    ! ====================================================================================================
 
@@ -497,7 +493,7 @@ contains
       ! JRE
       nzbnd = 0
       nubnd = 0
-      num_source_sink = 0
+      ! num_source_sink = 0
       num_source_sink_oldfile = 0
       num_source_sink_for_nearfield = 0
       max_source_sink_polyline_points = 0

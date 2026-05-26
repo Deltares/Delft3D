@@ -5352,6 +5352,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density
+      use m_source_sink, only: num_source_sink
 
       implicit none
 

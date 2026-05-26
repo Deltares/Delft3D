@@ -37,7 +37,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
-                      item_lateraldischarge, npumpswithlevels, num_source_sink, item_discharge_salinity_temperature_sorsin, source_sink_all_discharges, &
+                      item_lateraldischarge, npumpswithlevels, item_discharge_salinity_temperature_sorsin, &
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
                       btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
@@ -50,6 +50,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt
+   use m_source_sink, only: num_source_sink, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
    use dfm_error, only: dfm_noerr, dfm_extforcerror

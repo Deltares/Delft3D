@@ -334,6 +334,7 @@ end module wrwaq
 module waq
    use m_getkbotktopmax
    use precision, only: dp
+   use m_source_sink, only: num_source_sink, source_sink_waq_index, source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
 
    implicit none
 

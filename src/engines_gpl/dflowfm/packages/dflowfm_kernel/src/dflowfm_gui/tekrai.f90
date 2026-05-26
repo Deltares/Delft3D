@@ -87,6 +87,7 @@ contains
       use m_lnabs
       use m_zlin
       use m_znod
+      use m_source_sink, only: num_source_sink
 
       implicit none
 

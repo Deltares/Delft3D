@@ -42,7 +42,7 @@ contains
 
    subroutine updateValuesOnSourceSinks(tim1)
       use m_reallocsrc, only: reallocsrc
-      use fm_external_forcings_data, only: source_sink_water_discharge, source_sink_average_discharge_previous, source_sink_cumulative_volume, source_sink_cumulative_volume_previous, num_source_sink
+      use m_source_sink, only: source_sinks, num_source_sink, source_sink_average_discharge_previous, source_sink_cumulative_volume, source_sink_cumulative_volume_previous
       use precision, only: dp, comparereal
       use m_flowtimes, only: ti_his, time_his
       use m_flowparameters, only: EPS10
@@ -60,7 +60,7 @@ contains
          timstep = tim1 - timprev
          ! cumulative volume from Tstart
          do i = 1, num_source_sink
-            source_sink_cumulative_volume(i) = source_sink_cumulative_volume(i) + timstep * source_sink_water_discharge(i)
+            source_sink_cumulative_volume(i) = source_sink_cumulative_volume(i) + timstep * source_sinks%discharge(i)
          end do
 
          if (comparereal(tim1, time_his, EPS10) == 0) then

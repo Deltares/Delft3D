@@ -51,6 +51,7 @@ contains
       use m_laterals, only: qlatwaq, qlatwaq0
       use precision, only: dp
       use m_flowgeom
+      use m_source_sink, only: source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
       use Timers
       use m_flowtimes
       use m_sferic
