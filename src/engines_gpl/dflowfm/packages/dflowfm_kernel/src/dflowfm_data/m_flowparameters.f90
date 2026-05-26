@@ -133,6 +133,8 @@ module m_flowparameters
    logical :: btempforcingtypH !< Forcing parameter relative humidity given as a separate field or not
    logical :: btempforcingtypS !< Forcing parameter solar radiation given as a separate field or not
    logical :: btempforcingtypL !< Forcing parameter long wave radiation given as a separate field or not
+   logical :: btempforcingtypSHF !< Forcing parameter sensible heat flux given as a separate field or not
+   logical :: btempforcingtypLHF !< Forcing parameter latent heat flux given as a separate field or not
 
    integer :: jarhoxu !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term
 

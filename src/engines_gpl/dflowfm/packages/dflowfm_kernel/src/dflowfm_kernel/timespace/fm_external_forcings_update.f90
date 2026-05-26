@@ -41,7 +41,9 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
                       btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
-                      item_long_wave_radiation, btempforcingtypd, relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
+                      btempforcingtypSHF, btempforcingtypLHF, btempforcingtypD, &
+                      item_long_wave_radiation, item_sensible_heat_flux, item_latent_heat_flux, &
+                      relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
                       dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
                       twavcom, flow_without_waves, nbndu, kbndu, nbndz, kbndz, nbndn, kbndn, item_hrms, ecgetvalues, item_tp, item_dir, item_fx, &
                       item_fy, item_wsbu, item_mx, item_my, uorbwav, item_ubot, item_dissurf, item_diswcap, item_wsbv, item_distot, ecgetvalues, &
@@ -100,8 +102,8 @@ contains
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
       use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
-       item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature, &
-       item_bubblescreen_discharge, item_secchi_depth
+                         item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature, &
+                         item_bubblescreen_discharge, item_secchi_depth
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
 
@@ -219,7 +221,7 @@ contains
          ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
          ! This avoids copying while satisfying the 1D array interface requirement
          source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
-         
+
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_discharge_salinity_temperature_sorsin, irefdate, tzone, tunit, time_in_seconds, source_sink_all_discharges_1d)
 
          !success = success .and. ec_gettimespacevalue(ecInstancePtr, item_sourcesink_discharge, irefdate, tzone, tunit, time_in_seconds)
@@ -345,6 +347,14 @@ contains
       end if
       if (btempforcingtypL) then
          call get_timespace_value_by_item_and_consider_success_value(item_long_wave_radiation, time_in_seconds)
+         foundtempforcing = .true.
+      end if
+      if (btempforcingtypSHF) then
+         call get_timespace_value_by_item_and_consider_success_value(item_sensible_heat_flux, time_in_seconds)
+         foundtempforcing = .true.
+      end if
+      if (btempforcingtypLHF) then
+         call get_timespace_value_by_item_and_consider_success_value(item_latent_heat_flux, time_in_seconds)
          foundtempforcing = .true.
       end if
       if (btempforcingtypD) then

@@ -1802,6 +1802,8 @@ contains
       btempforcingtypH = .false.
       btempforcingtypS = .false.
       btempforcingtypL = .false.
+      btempforcingtypSHF = .false.
+      btempforcingtypLHF = .false.
 
       ja_friction_coefficient_time_dependent = 0
 

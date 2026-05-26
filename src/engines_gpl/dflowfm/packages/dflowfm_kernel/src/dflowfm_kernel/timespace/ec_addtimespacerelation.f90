@@ -595,7 +595,7 @@ contains
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
             'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
-            'cloudiness', 'solarradiation', 'longwaveradiation')
+            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -1451,6 +1451,10 @@ contains
          end if
       case ('longwaveradiation')
          sourceItemName = 'surface_net_downward_longwave_flux'
+      case ('sensibleheatflux')
+         sourceItemName = 'surface_upward_sensible_heat_flux'
+      case ('latentheatflux')
+         sourceItemName = 'surface_upward_latent_heat_flux'
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')
