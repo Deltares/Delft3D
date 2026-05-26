@@ -96,11 +96,11 @@ object LinuxTest : BuildType({
         scriptContent = """
             #!/bin/bash
             
-            ARGS="--username '%s3_dsctestbench_accesskey%' \
-                --password '%s3_dsctestbench_secret%' \
+            ARGS="--username "%s3_dsctestbench_accesskey%" \
+                --password "%s3_dsctestbench_secret%" \
                 --compare \
-                --config 'configs/%configfile%' \
-                --filter 'testcase=%case_filter%' \
+                --config "configs/%configfile%" \
+                --filter "testcase=%case_filter%" \
                 --log-level DEBUG \
                 --parallel \
                 --teamcity \
