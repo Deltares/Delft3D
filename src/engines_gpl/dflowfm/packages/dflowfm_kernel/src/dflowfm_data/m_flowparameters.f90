@@ -467,6 +467,7 @@ module m_flowparameters
    type :: HisWriteSettings
       integer :: bal = 1 !< Write mass balance/volume totals to his file, 0: no, 1: yes
       integer :: sourcesink = 1 !< Write discharge/volume at sources/sinks, 0: no, 1: yes
+      integer :: bubblescreens = 1 !< Write bubble screen parameters to his file, 0: no, 1: yes
       integer :: tur = 1 !< Write k, eps and vicww to his file, 0: no, 1: yes
       integer :: wind = 1 !< Write wind velocities to his file, 0: no, 1: yes
       integer :: rain = 1 !< Write precipitation intensity (depth per time) to this file, 0: no, 1: yes
