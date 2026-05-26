@@ -36,25 +36,6 @@ contains
         !>\file
         !>       Nett primary production and mortality DYNAMO algae
 
-        !
-        !     Description of the module :
-        !
-        ! Name    T   L I/O   Description                                   Unit
-        ! ----    --- -  -    -------------------                            ---
-        ! DL      R*4 1 I daylength for growth saturation green-algae          [
-        ! EFF     R*4 1 L average light efficiency green-algae                 [
-        ! FNUT    R*4 1 L nutrient limitation function green-algae             [
-        ! PPMAX1  R*4 1 I pot. max. pr. prod. rc. green-algae (st.temp)      [1/
-        ! process_space_real    R*4 1 L Gross act. pr. prod. rc. green-algae               [1/
-        ! TFUNG1  R*4 1 L temp. function for growth processes green            [
-
-        !     Logical Units : -
-
-        !     Modules called : -
-
-        !     Name     Type   Library
-        !     ------   -----  ------------
-        !
         implicit none
 
         !     Type    Name         I/O Description
@@ -94,14 +75,14 @@ contains
         real(kind = real_wp) :: KMDIN
         real(kind = real_wp) :: KMP
         real(kind = real_wp) :: KMSI
-        real(kind = real_wp) :: LIMDLGREEN
+        real(kind = real_wp) :: LimDayLength
         real(kind = real_wp) :: LIMRAD
         real(kind = real_wp) :: LNFRAD
         real(kind = real_wp) :: LOG
         !real(kind = real_wp) :: MIN
         real(kind = real_wp) :: NH4
         real(kind = real_wp) :: NO3
-        real(kind = real_wp) :: OPTDLGREEN
+        real(kind = real_wp) :: OptDayLength
         real(kind = real_wp) :: PO4
         real(kind = real_wp) :: RADSAT
         real(kind = real_wp) :: RAD
@@ -117,7 +98,6 @@ contains
         real(kind = real_wp) :: EXTVL
         real(kind = real_wp) :: EXTDPT
         real(kind = real_wp) :: RADBOT
-        real(kind = real_wp) :: EFF
         real(kind = real_wp) :: ALG
         real(kind = real_wp) :: PPMAX
         real(kind = real_wp) :: MRESP
@@ -131,9 +111,7 @@ contains
         real(kind = real_wp) :: PPROD
         real(kind = real_wp) :: DL           
 
-        real(kind = real_wp) :: TFUNG
         real(kind = real_wp) :: RESP
-        real(kind = real_wp) :: TFUNM
         
         CALL get_log_unit_number(ILUMON)
 		
@@ -195,13 +173,13 @@ contains
 				! from DL_green （dlalg.f90）Daylength function for algae DYNAMO
 				!				
 				DayL = process_space_real(ipnt(4))              ! daylength <0-1> in (d) 
-				OptDLGreen = process_space_real(ipnt(5))   		! daylength for growth saturation Greens (d) 
+				OptDayLength = process_space_real(ipnt(5))   		! daylength for growth saturation Greens (d) 
 
 				IF (DayL < 1E-20)  CALL write_error_message ('DayL in DLALG zero')
 
 				!     Actueel licht / licht voor groei verzadiging
-				LimDLGreen = MIN (DayL, OptDLGreen) / OptDLGreen  
-				process_space_real(ipnt(30)) = LimDLGreen
+				LimDayLength = MIN (DayL, OptDayLength) / OptDayLength  
+				process_space_real(ipnt(30)) = LimDayLength
 				
 				!
 				! from NLgreen （nlalg.f90）Nutrient limiation function for green algae DYNAMO
@@ -286,7 +264,6 @@ contains
 				process_space_real(ipnt(35)) = LimRad
 
 
-				EFF = LimRad
 				ALG = process_space_real(ipnt(18))
                 IF (ALG < 0.0) THEN
                     IF (NR_MES < 25) THEN
@@ -330,25 +307,25 @@ contains
                 ENDIF
 
                 !     Gross primary production
-                PPROD = DL * EFF * FNUT * TFUNG * PPMAX
+                PPROD = LimDayLength * LimRad * FNUT * TFG * PPMAX
 
                 !     The respiration does not include excretion!!
                 !     The proces formulation used here does not release nutrients due
                 !     to respiration, but reduces the uptake of nutrients.
                 !     Respiration = maintainance part + growth part
-                RESP = MRESP * TFUNM + GRESP * (PPROD - MRESP * TFUNM)
+                RESP = MRESP * TFM + GRESP * (PPROD - MRESP * TFM)
 
                 !     Nett primary production
                 FL (1 + IFLUX) = (PPROD - RESP) * ALG
 
                 !     Mortality, including processes as autolysis and zooplankton 'graas
-                FL (2 + IFLUX) = ACTMOR * TFUNM * MAX(ALG - ALGMIN, 0.0)
+                FL (2 + IFLUX) = ACTMOR * TFM * MAX(ALG - ALGMIN, 0.0)
 
                 process_space_real (ipnt(36)) = PPROD - RESP
-                process_space_real (ipnt(37)) = ACTMOR * TFUNM
+                process_space_real (ipnt(37)) = ACTMOR * TFM
                 process_space_real (ipnt(38)) = RESP
                 process_space_real (ipnt(39)) = (PPROD - RESP) * ALG
-                process_space_real (ipnt(40)) = ACTMOR * TFUNM * MAX(ALG - ALGMIN, 0.0)
+                process_space_real (ipnt(40)) = ACTMOR * TFM * MAX(ALG - ALGMIN, 0.0)
 				
             ENDIF
             !
