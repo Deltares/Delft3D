@@ -41,7 +41,6 @@ module m_updatevaluesonsourcesinks
 contains
 
    subroutine updateValuesOnSourceSinks(tim1)
-      use m_reallocsrc, only: reallocsrc
       use m_source_sink, only: source_sinks, num_source_sink, source_sink_average_discharge_previous, source_sink_cumulative_volume, source_sink_cumulative_volume_previous
       use precision, only: dp, comparereal
       use m_flowtimes, only: ti_his, time_his
@@ -55,7 +54,7 @@ contains
 
       if (timprev < 0.0_dp) then
          ! This realloc should not be needed
-         call reallocsrc(num_source_sink, 0)
+         call source_sinks%resize(num_source_sink)
       else
          timstep = tim1 - timprev
          ! cumulative volume from Tstart

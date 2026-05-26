@@ -31,7 +31,6 @@
 
 ! Processing data obtained from nearfield models like COSUMO inside D-Flow FM
 module m_nearfield
-   use m_reallocsrc, only: reallocsrc
    use iso_c_binding
    use precision
    use MessageHandling
@@ -669,7 +668,7 @@ contains
                nf_entr_end(idif) = nf_entr_end(idif) + 1
                nf_entr_max = max(nf_entr_max, nf_entr_end(idif) - nf_entr_start(idif) + 1)
             end if
-            call reallocsrc(num_source_sink, 2)
+            call source_sinks%resize(num_source_sink)
             !
             ! Name
             write (source_sinks%name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , sink ", isink, " , source_track ", isour
@@ -770,7 +769,7 @@ contains
          end if
          num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
          num_source_sink = num_source_sink + 1
-         call reallocsrc(num_source_sink, 2)
+         call source_sinks%resize(num_source_sink)
          if (nf_numsour == 1) then
             sourId = nf_numsour
          else
@@ -863,7 +862,7 @@ contains
          end if
          num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
          num_source_sink = num_source_sink + 1
-         call reallocsrc(num_source_sink, 2)
+         call source_sinks%resize(num_source_sink)
          !
          ! Name
          write (source_sinks%name(num_source_sink), '(3(a,i0.4))') "diffuser ", idif, " , intake ", iintake

@@ -404,14 +404,6 @@ module fm_external_forcings_data
    integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}
    integer :: max_source_sink_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions. {former:msrc}
 
-   ! Source/sink identification and geometry. All except _indices are read from the extforce file.
-   character(len=255), dimension(:), allocatable :: source_sink_name !< [-] Name of the source/sink. {size=(num_source_sink), former:srcname}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_x !< [m] x-coordinates of source/sink. {size=(num_source_sink,max_source_sink_polyline_points), former:xsrc}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_y !< [m] y-coordinates of source/sink. {size=(num_source_sink,max_source_sink_polyline_points), former:ysrc}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_z_bottom !< [m] z-level of bottom sink (1) and source (2). {size=(2,num_source_sink), former:zsrc}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_z_top !< [m] z-level of top sink (1) and source (2). {size=(2,num_source_sink), former:zsrc2}
-   integer, dimension(:,:), allocatable :: source_sink_indices !< [-] Index array of source/sinks. 1 = nodenr sink, 2 = kbot sink, 3 = ktop sink, 4 = nodenr source, 5 = kbot source, 6 = ktop source. {size=(6,num_source_sink), former:ksrc}
-
    ! Momentum variables. _area is specified in the extforce file.
    real(kind=dp), dimension(:), allocatable :: source_sink_area !< [m2] area of source/sink. If zero, source/sink transport no momentum. {size=(num_source_sink), former:arsrc}
    real(kind=dp), dimension(:,:), allocatable :: source_sink_discharge_cosine !< [-] Cosine of discharge on sink side (1) and source side (2). {size=(2,num_source_sink), former:cssrc}

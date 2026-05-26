@@ -95,8 +95,23 @@ contains
       ! Allocate and intialize global source/sink arrays.
       allocate (source_sink_all_discharges(numconst+1, size))
       allocate (source_sink_reduction(2*(numconst+1), size))
+
       source_sink_all_discharges = 0.0_dp
       source_sink_reduction = 0.0_dp
+
+      allocate (source_sink_cumulative_volume(size))
+      allocate (source_sink_cumulative_volume_previous(size))
+      allocate (source_sink_average_discharge_previous(size))
+      allocate (source_sink_waq_index(size))
+      allocate (source_sink_cumulative_discharge_waq(size))
+      allocate (source_sink_cumulative_discharge_waq_previous(size))
+
+      source_sink_cumulative_volume = 0.0_dp
+      source_sink_cumulative_volume_previous = 0.0_dp
+      source_sink_average_discharge_previous = 0.0_dp
+      source_sink_waq_index = 0
+      source_sink_cumulative_discharge_waq = 0.0_dp
+      source_sink_cumulative_discharge_waq_previous = 0.0_dp
 
       ! Allocate all source/sink attributes.
       allocate (self%name(size))
@@ -136,31 +151,42 @@ contains
    end subroutine initialize_source_sinks
 
    !> Resizes the SourceSinks object to size, keeping existing values if possible.
-   subroutine resize_source_sinks(self, size)
+   subroutine resize_source_sinks(self, new_size)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
-      integer, intent(in) :: size
+      integer, intent(in) :: new_size
 
-      ! Resize global source/sink arrays.
-      call realloc(source_sink_all_discharges, [numconst+1, size], keepExisting=.true., fill=0.0_dp)
-      call realloc(source_sink_reduction, [2*(numconst+1), size], keepExisting=.true., fill=0.0_dp)
+      ! Only resize if the new size is larger than the current size.
+      if (new_size > size(self%name)) then
 
-      ! Resize all source/sink arrays.
-      call realloc(self%name, size, keepExisting=.true., fill='')
-      call realloc(self%x, [size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%y, [size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%z_bottom, [size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%z_top, [size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%indices, [size, 6], keepExisting=.true., fill=0)
+         ! Resize global source/sink arrays.
+         call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_cumulative_volume, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_cumulative_volume_previous, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_average_discharge_previous, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_waq_index, new_size, keepExisting=.true., fill=0)
+         call realloc(source_sink_cumulative_discharge_waq, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
 
-      call realloc(self%area, size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%discharge_cosine, [size, 2], keepExisting=.true., fill=0.0_dp)
-      call realloc(self%discharge_sine, [size, 2], keepExisting=.true., fill=0.0_dp)
+         ! Resize all source/sink arrays.
+         call realloc(self%name, new_size, keepExisting=.true., fill='')
+         call realloc(self%x, [new_size, 2], keepExisting=.true., fill=dmiss)
+         call realloc(self%y, [new_size, 2], keepExisting=.true., fill=dmiss)
+         call realloc(self%z_bottom, [new_size, 2], keepExisting=.true., fill=dmiss)
+         call realloc(self%z_top, [new_size, 2], keepExisting=.true., fill=dmiss)
+         call realloc(self%indices, [new_size, 6], keepExisting=.true., fill=0)
 
-      call realloc(self%discharge, size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%constituents, [size, numconst], keepExisting=.true., fill=0.0_dp)
+         call realloc(self%area, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%discharge_cosine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
+         call realloc(self%discharge_sine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
 
-      call realloc(self%max_xy_points, size, keepExisting=.true., fill=0)
+         call realloc(self%discharge, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%constituents, [new_size, numconst], keepExisting=.true., fill=0.0_dp)
+
+         call realloc(self%max_xy_points, new_size, keepExisting=.true., fill=0)
+
+      end if
 
    end subroutine resize_source_sinks
 

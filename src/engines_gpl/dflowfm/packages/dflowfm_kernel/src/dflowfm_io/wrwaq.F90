@@ -334,7 +334,7 @@ end module wrwaq
 module waq
    use m_getkbotktopmax
    use precision, only: dp
-   use m_source_sink, only: num_source_sink, source_sink_waq_index, source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
+   use m_source_sink, only: source_sinks, num_source_sink, source_sink_waq_index, source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
 
    implicit none
 
@@ -628,8 +628,8 @@ contains
          end if
          write (lunhyd, '(A      )') 'sink-sources'
          do isrc = 1, num_source_sink
-            kk1 = source_sink_indices(1, isrc)
-            kk2 = source_sink_indices(4, isrc)
+            kk1 = source_sinks%indices(isrc, 1)
+            kk2 = source_sinks%indices(isrc, 4)
             if ((kk1 == 0 .and. kk2 > 0) .or. &
                 (kk2 == 0 .and. kk1 > 0) .or. &
                 (kk1 > 0 .and. kk2 > 0)) then
@@ -2288,8 +2288,8 @@ contains
       call realloc(source_sink_waq_index, num_source_sink, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
       do isrc = 1, num_source_sink
-         kk1 = source_sink_indices(1, isrc)
-         kk2 = source_sink_indices(4, isrc)
+         kk1 = source_sinks%indices(isrc, 1)
+         kk2 = source_sinks%indices(isrc, 4)
          if (kk1 == 0 .or. kk2 == 0) then
             ! If one of the nodes is external
             if (kk1 > 0 .or. kk2 > 0) then
@@ -2320,8 +2320,8 @@ contains
 
       ! Create additional pointer for sink/sources
       do isrc = 1, num_source_sink
-         kk1 = source_sink_indices(1, isrc)
-         kk2 = source_sink_indices(4, isrc)
+         kk1 = source_sinks%indices(isrc, 1)
+         kk2 = source_sinks%indices(isrc, 4)
          if (kk1 == 0 .or. kk2 == 0) then
             ! This is a boundary. If kk1 or kk2 is positive, then it is in the active domain
             if (kk1 > 0) then

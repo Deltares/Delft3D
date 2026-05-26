@@ -56,7 +56,7 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
-      use m_reallocsrc, only: reallocsrc
+      use m_source_sink, only: source_sinks
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -148,7 +148,7 @@ contains
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
-         call reallocsrc(max_num_src, 0)
+         call source_sinks%resize(max_num_src)
       end if
 
       ib = 0

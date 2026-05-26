@@ -105,7 +105,7 @@ contains
       use m_timer
       use m_sediment
       use fm_external_forcings_data, only: numtracers, trnames
-      use m_source_sink, only: num_source_sink
+      use m_source_sink, only: source_sinks, num_source_sink
       use m_transport, only: ITRA1, ITRAN, ISED1
       use m_structures
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -322,8 +322,8 @@ contains
             nNodeTot = 0
             do i = 1, num_source_sink
                nNodes = 0
-               k1 = source_sink_indices(1, i)
-               k2 = source_sink_indices(4, i)
+               k1 = source_sinks%indices(i, 1)
+               k2 = source_sinks%indices(i, 4)
                if (k1 /= 0) then
                   nNodes = nNodes + 1
                end if
@@ -679,15 +679,15 @@ contains
 
             ! Source-sinks
             if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
-               call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, source_sink_x))
-               call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, source_sink_y))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, source_sinks%x))
+               call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, source_sinks%y))
                j = 1
                call realloc(node_count, num_source_sink, fill=0)
                call realloc(geom_x, 2)
                call realloc(geom_y, 2)
                do i = 1, num_source_sink
-                  k1 = source_sink_indices(1, i)
-                  k2 = source_sink_indices(4, i)
+                  k1 = source_sinks%indices(i, 1)
+                  k2 = source_sinks%indices(i, 4)
                   nNodes = 0
                   if (k1 > 0) then
                      nNodes = nNodes + 1
