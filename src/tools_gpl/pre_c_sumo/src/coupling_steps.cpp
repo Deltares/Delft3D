@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
+#include "pre_c_sumo_lib.hpp"
 #include "FF2NF_writer.hpp"
 #include "parsing_types.hpp"
 
@@ -176,25 +177,27 @@ namespace pre_c_sumo
         }
     }
 
-    void sendSourcesSinksToFF(precice::Participant& participant, const std::vector<int>& sources_sinks_nodes_ids)
+    void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks)
     {
-        std::println("Sending sources/sinks data to far-field...");
+        std::println("Sending dummy sources/sinks data to far-field...");
         // TESTDATA: set sources_sinks data
-        std::vector<double> sources_sinks_ids = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0};
-        std::vector<double> sources_sinks_connected_ids = {3.0, 4.0, 1.0, 2.0, 0.0, 0.0, 0.0};
-        std::vector<double> sources_sinks_z_mins = {-9.95, -9.95, -5.0, -5.0, -5.0, -5.0, 0.0};
-        std::vector<double> sources_sinks_z_maxs = {-9.45, -9.45, -5.0, -5.0, -5.0, -5.0, 0.0};
-        std::vector<double> sources_sinks_discharges = {-0.20E+02, -0.20E+02, 0.20E+02, 0.20E+02,
-                                                        0.50E+01,  0.50E+01,  0.10E+02};
-        participant.writeData("sources_sinks_nodes", "sources_sinks_id", sources_sinks_nodes_ids, sources_sinks_ids);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_connected_id", sources_sinks_nodes_ids,
-                              sources_sinks_connected_ids);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_z_min", sources_sinks_nodes_ids,
-                              sources_sinks_z_mins);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_z_max", sources_sinks_nodes_ids,
-                              sources_sinks_z_maxs);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_discharge", sources_sinks_nodes_ids,
-                              sources_sinks_discharges);
+        sources_sinks.clearData();
+        sources_sinks.addData(1.0, 3.0, -9.95, -9.45, -0.20E+02); // sink 2, source 1
+        sources_sinks.addData(2.0, 4.0, -9.95, -9.45, -0.20E+02); // sink 2, source 2
+        sources_sinks.addData(3.0, 1.0, -5.0, -5.0, 0.20E+02);    // source 1, sink 2
+        sources_sinks.addData(4.0, 2.0, -5.0, -5.0, 0.20E+02);    // source 2, sink 2
+        sources_sinks.addData(5.0, 0.0, -5.0, -5.0, 0.50E+01);    // intake fraction to source 1
+        sources_sinks.addData(6.0, 0.0, -5.0, -5.0, 0.50E+01);    // intake fraction to source 2
+        sources_sinks.addData(7.0, 0.0, 0.0, 0.0, 0.10E+02);      // intake sink
+        participant.writeData("sources_sinks_nodes", "sources_sinks_id", sources_sinks.precice_ids, sources_sinks.ids);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_connected_id", sources_sinks.precice_ids,
+                              sources_sinks.connected_ids);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_z_min", sources_sinks.precice_ids,
+                              sources_sinks.z_mins);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_z_max", sources_sinks.precice_ids,
+                              sources_sinks.z_maxs);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_discharge", sources_sinks.precice_ids,
+                              sources_sinks.discharges);
     }
 
     void convertNFSinksToFF() { std::println("Processing sinks..."); }

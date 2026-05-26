@@ -144,21 +144,20 @@ namespace pre_c_sumo
         // Set sources_sinks mesh
         // TESTDATA based on file NF2FF__FlowFM_SubMod001_120.000.xml
         // TODO: Just-In-Time remeshing?
-        constexpr int sources_sinks_size = 7;
-        std::vector<double> sources_sinks_nodes = {
-            250.000,  350.048, // Entrainment: sink2_source1
-            250.000,  350.048, // Entrainment: sink2_source2
+        SourcesSinks sources_sinks;
+        sources_sinks.addCoordinates({
+            250.000, 350.048,  // Entrainment: sink2_source1
+            250.000, 350.048,  // Entrainment: sink2_source2
             1050.000, 350.365, // Entrainment: source1_sink2
             1050.500, 350.365, // Entrainment: source2_sink2
             1050.000, 350.365, // Discharge: source1
             1050.500, 350.365, // Discharge: source2
-            1500.6,   1000.6,  // Intake from C-SUMO settings file, if no intakes in NF2FF file
-        };
-        std::vector<int> sources_sinks_nodes_ids(sources_sinks_size);
-        participant.setMeshVertices("sources_sinks_nodes", sources_sinks_nodes, sources_sinks_nodes_ids);
+            1500.6, 1000.6,    // Intake from C-SUMO settings file, if no intakes in NF2FF file
+        });
+        participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
         if (participant.requiresInitialData())
         {
-            sendSourcesSinksToFF(participant, sources_sinks_nodes_ids);
+            sendSourcesSinksToFF(participant, sources_sinks);
         }
 
         participant.initialize();
@@ -173,7 +172,7 @@ namespace pre_c_sumo
             readNF2FFFiles(csumo_settings.value());
             convertNFToSourcesSinks(csumo_settings.value());
 
-            sendSourcesSinksToFF(participant, sources_sinks_nodes_ids);
+            sendSourcesSinksToFF(participant, sources_sinks);
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;

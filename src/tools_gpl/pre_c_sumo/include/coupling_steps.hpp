@@ -9,6 +9,7 @@
 
 #include "csumo_settings_reader.hpp"
 #include "parsing_types.hpp"
+#include "pre_c_sumo_lib.hpp"
 
 namespace pre_c_sumo
 {
@@ -117,7 +118,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void sendSourcesSinksToFF(precice::Participant& participant, const std::vector<int>& sources_sinks_nodes_ids);
+    void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 
     /**
      * @brief Convert NF sinks to farfield sinks.
