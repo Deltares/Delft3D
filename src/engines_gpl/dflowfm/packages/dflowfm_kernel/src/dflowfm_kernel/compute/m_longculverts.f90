@@ -578,8 +578,7 @@ contains
             longculverts(nlongculverts)%netlinks = -999
 
             if (newculverts) then
-               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, longculverts(nlongculverts)%csDefId, longculverts(nlongculverts)%bl, &
-                                                longculverts(nlongculverts)%friction_type, longculverts(nlongculverts)%friction_value, iref)
+               call addlongculvertcrosssections(network, longculverts(nlongculverts)%branchid, longculverts(nlongculverts)%csDefId, longculverts(nlongculverts)%bl, iref)
                if (iref > 0) then
                   ! Use top (#2) of tabulated cross section definition to derive width and height
                   longculverts(nlongculverts)%width = network%CSDefinitions%Cs(iref)%totalwidth(2)
@@ -1219,29 +1218,34 @@ contains
 
    end subroutine reallocate_meshgeom1d_arrays
 
-   subroutine addlongculvertcrosssections(network, branchId, csdefId, zpl, friction_type, friction_value, iref)
+
+   !> Add new cross section locations on a particular branch in the network.
+   !! The cross section definition (defining the long culvert's shape)
+   !! must already have been read from file.
+   subroutine addlongculvertcrosssections(network, branchId, csdefId, zpl, iref)
       use precision, only: dp
+      use m_hash_search
       use m_readCrossSections
       use m_network
-      use m_Roughness, only: realloc, t_Roughness, R_FunctionConstant
-      use m_hash_search, only: hashsearch_or_add, hashsearch
+      type(t_network), intent(inout) :: network !< Network structure
+      character(len=IdLen), intent(in) :: branchId !< Branch id on which to place the cross section
+      character(len=IdLen), intent(in) :: csdefId !< Id of cross section definition
+      real(kind=dp), allocatable, intent(in) :: zpl(:) !< (numlinks+1) Bed level on the long culvert support points
+      integer, intent(out) :: iref !< Index of reference cross section definition (if csdefId was found)
 
-      type(t_network), intent(inout) :: network
-      character(len=IdLen), intent(in) :: branchId
-      character(len=IdLen), intent(in) :: csdefId
-      real(kind=dp), allocatable, intent(in) :: zpl(:)
-      integer, intent(in) :: friction_type !< Friction type for this culvert
-      real(kind=dp), intent(in) :: friction_value !< Friction value for this culvert
-      integer, intent(out) :: iref
-
-      integer :: k, inext, indx, irgh
+      integer :: k
+      integer :: inext
+      integer :: indx
       type(t_CrossSection), pointer :: pCrs
       character(len=5) :: kchar
 
       indx = hashsearch(network%brs%hashlist, branchId)
       iref = hashsearch(network%CSDefinitions%hashlist, csdefId)
       if (indx > 0 .and. iref > 0) then
+         ! This code assumes 1 gridpoint per culvert coordinate,
+         ! which means the culvert network branches cannot be modified after converting
          do k = 1, network%brs%branch(indx)%gridpointscount
+
             if (network%crs%count + 1 > network%crs%size) then
                call realloc(network%crs)
             end if
@@ -1251,10 +1255,11 @@ contains
             pCrs%csid = trim(branchId)//'_'//trim(kchar)
             pCrs%branchid = indx
             pCrs%bedLevel = 0.0_dp
-            pCrs%shift = zpl(k)
+            pCrs%shift = zpl(k) !number of gridpoints in branch should match zpl+2!!
             pCrs%chainage = network%brs%branch(indx)%gridpointschainages(k)
             call finalizeCrs(network, pCrs, iref, inext)
          end do
+      end if
 
    end subroutine addlongculvertcrosssections
 
@@ -1673,7 +1678,7 @@ contains
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
          end if
          do i = 1, nlongculverts
-            call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, longculverts(i)%friction_type, longculverts(nlongculverts)%friction_value, ierr)
+            call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do
          i = 0
          call admin_network(network, i)
