@@ -18,6 +18,7 @@ class CommandLineSettings:
     run_mode: ModeType = ModeType.COMPARE
     config_file: str = ""
     credentials: Credentials = Credentials()
+    copy_failed_cases: bool = False
     filter: str = ""
     skip_run: bool = False
     skip_download: List[PathType] | None = None
