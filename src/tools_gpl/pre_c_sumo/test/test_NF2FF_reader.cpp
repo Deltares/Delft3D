@@ -20,6 +20,9 @@ namespace
         <sinks>
             250.000 350.087 9.700 1.000 0.000 0.000
             252.500 350.048 9.700 5     0.250 0.380
+            252.500 350.048 9.700 5     0.250 0.380 0.95
+            252.500 350.048 9.700 5     0.250 0.380 2.345, 3.142
+            252.500 350.048 9.700 5     0.250 0.380 2.345, 3.142, 0.95
         </sinks>
         <sources>
             1050.000 350.365 5.000 5.000 5 15.000
@@ -216,6 +219,40 @@ namespace
      </NFResult>
   </NF2FF>)";
 
+    constexpr std::string_view invalid_xml_wrong_sources_too_few_values = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>10.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+        <sources>
+            1050.000 350.365 5.000 5.000 5
+            1050.500 350.365 5.000 5.000 5
+        </sources>
+     </NFResult>
+  </NF2FF>)";
+
+    constexpr std::string_view invalid_xml_wrong_sources_too_many_values = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>10.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+        <sources>
+            1050.000 350.365 5.000 5.000 5 15.000 0.95
+            1050.500 350.365 5.000 5.000 5 15.000 0.05
+        </sources>
+     </NFResult>
+  </NF2FF>)";
+
     constexpr std::string_view invalid_xml_no_sinks = R"(<?xml version="1.0" encoding="utf-8"?>
   <NF2FF>
      <fileVersion>0.3</fileVersion>
@@ -265,6 +302,48 @@ namespace
         <sinks>
             250.000 350.087 9.700 1.000 0.000 0.000
             252.500 350.048 abcd  5     0.250 0.380
+        </sinks>
+        <sources>
+            1050.000 350.365 5.000 5.000 5 15.000
+            1050.500 350.365 5.000 5.000 5 15.000
+        </sources>
+     </NFResult>
+  </NF2FF>)";
+
+    constexpr std::string_view invalid_xml_wrong_sinks_too_few_values = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>10.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+        <sinks>
+            250.000 350.087 9.700 1.000 0.000
+            252.500 350.048 9.700 5     0.250
+        </sinks>
+        <sources>
+            1050.000 350.365 5.000 5.000 5 15.000
+            1050.500 350.365 5.000 5.000 5 15.000
+        </sources>
+     </NFResult>
+  </NF2FF>)";
+
+    constexpr std::string_view invalid_xml_wrong_sinks_too_many_values = R"(<?xml version="1.0" encoding="utf-8"?>
+  <NF2FF>
+     <fileVersion>0.3</fileVersion>
+     <discharge>
+        <Qintake>10.0</Qintake>
+        <Qsource>10.0</Qsource>
+        <constituentsOperator>excess</constituentsOperator>
+        <constituents>10.0 0.0</constituents>
+     </discharge>
+     <NFResult>
+        <sinks>
+            250.000 350.087 9.700 1.000 0.000 0.000 2.345, 3.142, 0.05, 1.000
+            252.500 350.048 9.700 5     0.250 0.380 2.345, 3.142, 0.95, 1.000
         </sinks>
         <sources>
             1050.000 350.365 5.000 5.000 5 15.000
@@ -471,6 +550,8 @@ TEST(NF2FFReaderTest, ParsesSources)
     EXPECT_DOUBLE_EQ(sources[0].z_coordinate, 5.000);
     EXPECT_DOUBLE_EQ(sources[0].entrainment, 5.000);
     EXPECT_DOUBLE_EQ(sources[0].half_plume_height, 5);
+    EXPECT_FALSE(sources[0].has_u);
+    EXPECT_FALSE(sources[0].has_weight);
     EXPECT_DOUBLE_EQ(sources[0].half_plume_width, 15.000);
     EXPECT_DOUBLE_EQ(sources[1].x_coordinate, 1050.500);
     EXPECT_DOUBLE_EQ(sources[1].y_coordinate, 350.365);
@@ -478,6 +559,8 @@ TEST(NF2FFReaderTest, ParsesSources)
     EXPECT_DOUBLE_EQ(sources[1].entrainment, 5.000);
     EXPECT_DOUBLE_EQ(sources[1].half_plume_height, 5);
     EXPECT_DOUBLE_EQ(sources[1].half_plume_width, 15.000);
+    EXPECT_FALSE(sources[1].has_u);
+    EXPECT_FALSE(sources[1].has_weight);
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSources)
@@ -501,24 +584,74 @@ TEST(NF2FFReaderTest, ReturnsErrorOnWrongSources)
     EXPECT_PRED2(test_utilities::contains, result.error().message, "<sources> contains invalid token: 'abcd'");
 }
 
+TEST(NF2FFReaderTest, ReturnsErrorOnWrongSourcesTooFewValues)
+{
+    const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources_too_few_values);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_PRED2(test_utilities::contains, result.error().message,
+                 "Found line in <sources> with 5 values; expected 6 to 6 values");
+}
+
+TEST(NF2FFReaderTest, ReturnsErrorOnWrongSourcesTooManyValues)
+{
+    const auto result = pre_c_sumo::NF2FFReader::fromString(invalid_xml_wrong_sources_too_many_values);
+    ASSERT_FALSE(result.has_value());
+    EXPECT_PRED2(test_utilities::contains, result.error().message,
+                 "Found line in <sources> with 7 values; expected 6 to 6 values");
+}
+
 TEST(NF2FFReaderTest, ParsesSinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
     const auto& sinks = result.value().sinks();
-    ASSERT_EQ(sinks.size(), 2u);
+    ASSERT_EQ(sinks.size(), 5u);
     EXPECT_DOUBLE_EQ(sinks[0].x_coordinate, 250.000);
     EXPECT_DOUBLE_EQ(sinks[0].y_coordinate, 350.087);
     EXPECT_DOUBLE_EQ(sinks[0].z_coordinate, 9.700);
     EXPECT_DOUBLE_EQ(sinks[0].entrainment, 1.000);
     EXPECT_DOUBLE_EQ(sinks[0].half_plume_height, 0.000);
     EXPECT_DOUBLE_EQ(sinks[0].half_plume_width, 0.000);
+    EXPECT_FALSE(sinks[0].has_u);
+    EXPECT_FALSE(sinks[0].has_weight);
     EXPECT_DOUBLE_EQ(sinks[1].x_coordinate, 252.500);
     EXPECT_DOUBLE_EQ(sinks[1].y_coordinate, 350.048);
     EXPECT_DOUBLE_EQ(sinks[1].z_coordinate, 9.700);
     EXPECT_DOUBLE_EQ(sinks[1].entrainment, 5);
     EXPECT_DOUBLE_EQ(sinks[1].half_plume_height, 0.250);
     EXPECT_DOUBLE_EQ(sinks[1].half_plume_width, 0.380);
+    EXPECT_FALSE(sinks[1].has_u);
+    EXPECT_FALSE(sinks[1].has_weight);
+    EXPECT_DOUBLE_EQ(sinks[2].x_coordinate, 252.500);
+    EXPECT_DOUBLE_EQ(sinks[2].y_coordinate, 350.048);
+    EXPECT_DOUBLE_EQ(sinks[2].z_coordinate, 9.700);
+    EXPECT_DOUBLE_EQ(sinks[2].entrainment, 5);
+    EXPECT_DOUBLE_EQ(sinks[2].half_plume_height, 0.250);
+    EXPECT_DOUBLE_EQ(sinks[2].half_plume_width, 0.380);
+    EXPECT_DOUBLE_EQ(sinks[2].weight, 0.95);
+    EXPECT_FALSE(sinks[2].has_u);
+    EXPECT_TRUE(sinks[2].has_weight);
+    EXPECT_DOUBLE_EQ(sinks[3].x_coordinate, 252.500);
+    EXPECT_DOUBLE_EQ(sinks[3].y_coordinate, 350.048);
+    EXPECT_DOUBLE_EQ(sinks[3].z_coordinate, 9.700);
+    EXPECT_DOUBLE_EQ(sinks[3].entrainment, 5);
+    EXPECT_DOUBLE_EQ(sinks[3].half_plume_height, 0.250);
+    EXPECT_DOUBLE_EQ(sinks[3].half_plume_width, 0.380);
+    EXPECT_DOUBLE_EQ(sinks[3].u_magnitude, 2.345);
+    EXPECT_DOUBLE_EQ(sinks[3].u_direction, 3.142);
+    EXPECT_TRUE(sinks[3].has_u);
+    EXPECT_FALSE(sinks[3].has_weight);
+    EXPECT_DOUBLE_EQ(sinks[4].x_coordinate, 252.500);
+    EXPECT_DOUBLE_EQ(sinks[4].y_coordinate, 350.048);
+    EXPECT_DOUBLE_EQ(sinks[4].z_coordinate, 9.700);
+    EXPECT_DOUBLE_EQ(sinks[4].entrainment, 5);
+    EXPECT_DOUBLE_EQ(sinks[4].half_plume_height, 0.250);
+    EXPECT_DOUBLE_EQ(sinks[4].half_plume_width, 0.380);
+    EXPECT_DOUBLE_EQ(sinks[4].u_magnitude, 2.345);
+    EXPECT_DOUBLE_EQ(sinks[4].u_direction, 3.142);
+    EXPECT_DOUBLE_EQ(sinks[4].weight, 0.95);
+    EXPECT_TRUE(sinks[4].has_u);
+    EXPECT_TRUE(sinks[4].has_weight);
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSinks)

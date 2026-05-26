@@ -95,10 +95,11 @@ namespace
     std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> extractSourceOrSinkData(
         const std::vector<double> values, const std::string_view element_name)
     {
-        if (values.size() < 6 || values.size() > 9)
+        const std::size_t max_size = element_name.compare("sinks") == 0 ? 9 : 6;
+        if (values.size() < 6 || values.size() > max_size)
         {
             return std::unexpected(parsing_utils::ParseError{std::format(
-                "Found {} has {} values; expected exactly 6, 7, 8 or 9 values.", element_name, values.size())});
+                "Found line in <{}> with {} values; expected 6 to {} values", element_name, values.size(), max_size)});
         }
         // Base values (6), always there.
         pre_c_sumo::SourceOrSinkData data = {.x_coordinate = values[0],
@@ -141,7 +142,7 @@ namespace
         return data;
     } // namespace
 
-    std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseVectorVector(
+    std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseSourceOrSinkVector(
         const std::string_view text, const std::string_view element_name)
     {
         std::vector<std::string> newline_separated_tokens;
@@ -222,9 +223,9 @@ namespace pre_c_sumo
         // NFResult
         ASSIGN_OR_RETURN(auto nfresult_node, parseNFResult(root));
         ASSIGN_OR_RETURN(const auto sources_text, parsing_utils::requiredChildText(nfresult_node, "sources"));
-        ASSIGN_OR_RETURN(auto sources, parseVectorVector(sources_text, "sources"));
+        ASSIGN_OR_RETURN(auto sources, parseSourceOrSinkVector(sources_text, "sources"));
         ASSIGN_OR_RETURN(const auto sinks_text, parsing_utils::requiredChildText(nfresult_node, "sinks"));
-        ASSIGN_OR_RETURN(auto sinks, parseVectorVector(sinks_text, "sinks"));
+        ASSIGN_OR_RETURN(auto sinks, parseSourceOrSinkVector(sinks_text, "sinks"));
         // End NFResult
 
         // Compose result
