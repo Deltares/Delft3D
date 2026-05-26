@@ -571,6 +571,7 @@ end function wave_main_finish
 function wave_master_finish() result(retval)
    use swan_input
    use wave_mpi
+
    implicit none
 !
 ! return value

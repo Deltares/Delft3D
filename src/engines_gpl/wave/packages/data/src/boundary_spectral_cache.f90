@@ -53,8 +53,8 @@ module boundary_spectral_cache
    public :: reset_boundary_spectral_cache
    public :: resolve_boundary_spectral_file
 
-   integer, parameter :: parser_chunk_size = 65536
-   integer, parameter :: copy_chunk_size = 1048576
+   integer, parameter :: PARSER_CHUNK_SIZE = 65536
+   integer, parameter :: COPY_CHUNK_SIZE = 1048576
 
    type spectral_block_type
       real(hp) :: time_sec = 0.0_hp
@@ -73,10 +73,10 @@ module boundary_spectral_cache
       real(hp) :: last_end = -huge(0.0_hp)
       character(37) :: tempfile = ' '
       character(256) :: sourcefile = ' '
-      type(spectral_block_type), allocatable :: blocks(:)
+      type(spectral_block_type), allocatable, dimension(:) :: blocks
    end type spectral_file_cache_type
 
-   type(spectral_file_cache_type), allocatable, save :: spectral_caches(:)
+   type(spectral_file_cache_type), allocatable, dimension(:), save :: spectral_caches
    integer, save :: spectral_cache_count = 0
 
 contains
@@ -85,7 +85,6 @@ contains
    subroutine reset_boundary_spectral_cache()
       call cleanup_boundary_spectral_cache()
    end subroutine reset_boundary_spectral_cache
-
 
    !> Cleanup complete cache administration and delete generated temp files.
    subroutine cleanup_boundary_spectral_cache()
@@ -96,25 +95,30 @@ contains
          call clear_cache_entry(spectral_caches(i))
       end do
 
-      if (allocated(spectral_caches)) deallocate(spectral_caches)
+      if (allocated(spectral_caches)) then
+         deallocate (spectral_caches)
+      end if
       spectral_cache_count = 0
    end subroutine cleanup_boundary_spectral_cache
-
 
    !> Register and index a SWAN spectral boundary file.
    !!
    !! @param[in] sourcefile Path to original spectral boundary file.
    !! @param[in] refdate    Reference date (YYYYMMDD) used for time parsing.
    subroutine register_boundary_spectral_file(sourcefile, refdate)
-      character(*), intent(in) :: sourcefile
+      character(len=*), intent(in) :: sourcefile
       integer, intent(in) :: refdate
 
       integer :: idx
 
-      if (len_trim(sourcefile) == 0) return
+      if (len_trim(sourcefile) == 0) then
+         return
+      end if
 
       idx = find_cache(sourcefile)
-      if (idx > 0) return
+      if (idx > 0) then
+         return
+      end if
 
       call ensure_cache_capacity(spectral_cache_count + 1)
       spectral_cache_count = spectral_cache_count + 1
@@ -129,7 +133,6 @@ contains
       spectral_caches(idx)%loaded = .true.
    end subroutine register_boundary_spectral_file
 
-
    !> Resolve active boundary file for a run window.
    !!
    !! If a cache entry exists and is enabled, this writes/reuses a subset
@@ -141,23 +144,31 @@ contains
    !! @param[in]  run_end    Run end time in seconds relative to refdate.
    !! @param[out] activefile File to use for this run interval.
    subroutine resolve_boundary_spectral_file(sourcefile, run_start, run_end, activefile)
-      character(*), intent(in) :: sourcefile
+      character(len=*), intent(in) :: sourcefile
       real(hp), intent(in) :: run_start
       real(hp), intent(in) :: run_end
-      character(*), intent(out) :: activefile
+      character(len=*), intent(out) :: activefile
 
       logical :: success
       integer :: idx
 
       activefile = sourcefile
       idx = find_cache(sourcefile)
-      if (idx <= 0) return
-      if (.not. spectral_caches(idx)%enabled) return
+      if (idx <= 0) then
+         return
+      end if
+
+      if (.not. spectral_caches(idx)%enabled) then
+         return
+      end if
 
       call write_subset_file(spectral_caches(idx), run_start, run_end, success)
-      if (success) activefile = trim(spectral_caches(idx)%tempfile)
-   end subroutine resolve_boundary_spectral_file
 
+      if (success) then
+         activefile = trim(spectral_caches(idx)%tempfile)
+      end if
+
+   end subroutine resolve_boundary_spectral_file
 
    !> Reset one cache record to defaults and release dynamic members.
    !!
@@ -165,7 +176,9 @@ contains
    subroutine clear_cache_entry(cache)
       type(spectral_file_cache_type), intent(inout) :: cache
 
-      if (allocated(cache%blocks)) deallocate(cache%blocks)
+      if (allocated(cache%blocks)) then
+         deallocate (cache%blocks)
+      end if
 
       cache%enabled = .false.
       cache%loaded = .false.
@@ -178,7 +191,6 @@ contains
       cache%tempfile = ' '
       cache%sourcefile = ' '
    end subroutine clear_cache_entry
-
 
    !> Parse a SWAN spectral file and build block time/byte-range index.
    !!
@@ -220,11 +232,13 @@ contains
 
       open (newunit=lun, file=trim(cache%sourcefile), access='stream', form='unformatted', &
             status='old', action='read', iostat=iostat)
-      if (iostat /= 0) return
+      if (iostat /= 0) then
+         return
+      end if
 
       inquire (unit=lun, size=cache%filesize, iostat=iostat)
       if (iostat /= 0 .or. cache%filesize <= 0_int64) then
-         close(lun)
+         close (lun)
          return
       end if
 
@@ -232,34 +246,34 @@ contains
 
       call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
       if (.not. starts_with_keyword(line, 'SWAN')) then
-         close(lun)
+         close (lun)
          return
       end if
 
       call read_next_relevant_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
 
       if (starts_with_keyword(line, 'TIME')) then
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
 
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
       else
-         close(lun)
+         close (lun)
          return
       end if
 
@@ -268,125 +282,125 @@ contains
       if (starts_with_keyword(keyword_line, 'LOC') .or. starts_with_keyword(keyword_line, 'LONLAT')) then
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
          read (line, *, iostat=iostat) nbound
          if (iostat /= 0 .or. nbound <= 0) then
-            close(lun)
+            close (lun)
             return
          end if
 
          do ibound = 1, nbound
             call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
             if (iostat /= 0) then
-               close(lun)
+               close (lun)
                return
             end if
          end do
 
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
       end if
 
       keyword_line = normalize_line(line)
       if (.not. is_freq_keyword(keyword_line)) then
-         close(lun)
+         close (lun)
          return
       end if
 
       call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
       read (line, *, iostat=iostat) nfreq
       if (iostat /= 0 .or. nfreq <= 0) then
-         close(lun)
+         close (lun)
          return
       end if
 
       do ifreq = 1, nfreq
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
       end do
 
       call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
 
       keyword_line = normalize_line(line)
       if (.not. is_dir_keyword(keyword_line)) then
-         close(lun)
+         close (lun)
          return
       end if
 
       call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
       read (line, *, iostat=iostat) nang
       if (iostat /= 0 .or. nang <= 0) then
-         close(lun)
+         close (lun)
          return
       end if
 
       do ibound = 1, nang
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
       end do
 
       call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
 
       keyword_line = normalize_line(line)
       if (.not. starts_with_keyword(keyword_line, 'QUANT')) then
-         close(lun)
+         close (lun)
          return
       end if
 
       call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
       if (iostat /= 0) then
-         close(lun)
+         close (lun)
          return
       end if
       read (line, *, iostat=iostat) nquant
       if (iostat /= 0 .or. nquant <= 0) then
-         close(lun)
+         close (lun)
          return
       end if
 
       do iquant = 1, nquant
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
 
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
 
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
          if (iostat /= 0) then
-            close(lun)
+            close (lun)
             return
          end if
       end do
@@ -396,14 +410,19 @@ contains
 
       do
          call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
-         if (iostat < 0) exit
+         if (iostat < 0) then
+            exit
+         end if
+
          if (iostat > 0) then
             call clear_cache_entry(cache)
-            close(lun)
+            close (lun)
             return
          end if
 
-         if (previous_block > 0) cache%blocks(previous_block)%end_pos = line_start
+         if (previous_block > 0) then
+            cache%blocks(previous_block)%end_pos = line_start
+         end if
 
          call ensure_block_capacity(cache, cache%nblocks + 1)
          cache%nblocks = cache%nblocks + 1
@@ -413,7 +432,7 @@ contains
          call parse_swan_time(line, cache%refdate, cache%blocks(iblock)%time_sec, success)
          if (.not. success) then
             call clear_cache_entry(cache)
-            close(lun)
+            close (lun)
             return
          end if
 
@@ -421,17 +440,19 @@ contains
             call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
             if (iostat /= 0) then
                call clear_cache_entry(cache)
-               close(lun)
+               close (lun)
                return
             end if
 
             keyword_line = normalize_line(line)
-            if (starts_with_keyword(keyword_line, 'ZERO') .or. starts_with_keyword(keyword_line, 'NODATA')) cycle
+            if (starts_with_keyword(keyword_line, 'ZERO') .or. starts_with_keyword(keyword_line, 'NODATA')) then
+               cycle
+            end if
             if (starts_with_keyword(keyword_line, 'FACTOR')) then
                call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
                if (iostat /= 0) then
                   call clear_cache_entry(cache)
-                  close(lun)
+                  close (lun)
                   return
                end if
             end if
@@ -440,7 +461,7 @@ contains
                call read_stream_line(lun, current_pos, cache%filesize, line, line_start, next_pos, iostat)
                if (iostat /= 0) then
                   call clear_cache_entry(cache)
-                  close(lun)
+                  close (lun)
                   return
                end if
             end do
@@ -449,14 +470,13 @@ contains
          previous_block = iblock
       end do
 
-      close(lun)
+      close (lun)
 
       if (previous_block > 0) then
          cache%blocks(previous_block)%end_pos = cache%filesize + 1_int64
          cache%enabled = .true.
       end if
    end subroutine load_swan_spectral_cache
-
 
    !> Write or reuse a subset spectral file for requested run time window.
    !!
@@ -480,7 +500,9 @@ contains
       integer :: start_block
 
       success = .false.
-      if (.not. cache%enabled) return
+      if (.not. cache%enabled) then
+         return
+      end if
 
       inquire (file=trim(cache%tempfile), exist=run_file_exists)
       if (run_file_exists .and. cache%last_start == run_start .and. cache%last_end == run_end) then
@@ -490,16 +512,20 @@ contains
 
       start_block = select_start_block(cache, run_start)
       end_block = select_end_block(cache, run_end)
-      if (end_block < start_block) end_block = start_block
+      if (end_block < start_block) then
+         end_block = start_block
+      end if
 
       open (newunit=source_lun, file=trim(cache%sourcefile), access='stream', form='unformatted', &
             status='old', action='read', iostat=iostat)
-      if (iostat /= 0) return
+      if (iostat /= 0) then
+         return
+      end if
 
       open (newunit=target_lun, file=trim(cache%tempfile), access='stream', form='unformatted', &
             status='replace', action='write', iostat=iostat)
       if (iostat /= 0) then
-         close(source_lun)
+         close (source_lun)
          return
       end if
 
@@ -509,13 +535,15 @@ contains
       end if
 
       do iblock = start_block, end_block
-         if (.not. copied) exit
+         if (.not. copied) then
+            exit
+         end if
          call copy_file_range(source_lun, target_lun, cache%blocks(iblock)%start_pos, &
                               cache%blocks(iblock)%end_pos - 1_int64, copied)
       end do
 
-      close(target_lun)
-      close(source_lun)
+      close (target_lun)
+      close (source_lun)
 
       if (.not. copied) then
          call delete_tempfile(cache%tempfile)
@@ -526,7 +554,6 @@ contains
       cache%last_end = run_end
       success = .true.
    end subroutine write_subset_file
-
 
    !> Select block at or immediately before run_start.
    !!
@@ -539,26 +566,27 @@ contains
       type(spectral_file_cache_type), intent(in) :: cache
       real(hp), intent(in) :: run_start
 
-         integer :: high
-         integer :: low
-         integer :: mid
+      integer :: high
+      integer :: low
+      integer :: mid
 
-         idx = 1
-         if (cache%nblocks <= 0) return
+      idx = 1
+      if (cache%nblocks <= 0) then
+         return
+      end if
 
-         low = 1
-         high = cache%nblocks
-         do while (low <= high)
-            mid = low + (high - low) / 2
-            if (cache%blocks(mid)%time_sec <= run_start) then
-               idx = mid
-               low = mid + 1
-            else
-               high = mid - 1
-            end if
-         end do
+      low = 1
+      high = cache%nblocks
+      do while (low <= high)
+         mid = low + (high - low) / 2
+         if (cache%blocks(mid)%time_sec <= run_start) then
+            idx = mid
+            low = mid + 1
+         else
+            high = mid - 1
+         end if
+      end do
    end function select_start_block
-
 
    !> Select first block at or immediately after run_end.
    !!
@@ -571,26 +599,27 @@ contains
       type(spectral_file_cache_type), intent(in) :: cache
       real(hp), intent(in) :: run_end
 
-         integer :: high
-         integer :: low
-         integer :: mid
+      integer :: high
+      integer :: low
+      integer :: mid
 
-         idx = cache%nblocks
-         if (cache%nblocks <= 0) return
+      idx = cache%nblocks
+      if (cache%nblocks <= 0) then
+         return
+      end if
 
-         low = 1
-         high = cache%nblocks
-         do while (low <= high)
-            mid = low + (high - low) / 2
-            if (cache%blocks(mid)%time_sec >= run_end) then
-               idx = mid
-               high = mid - 1
-            else
-               low = mid + 1
-            end if
-         end do
+      low = 1
+      high = cache%nblocks
+      do while (low <= high)
+         mid = low + (high - low) / 2
+         if (cache%blocks(mid)%time_sec >= run_end) then
+            idx = mid
+            high = mid - 1
+         else
+            low = mid + 1
+         end if
+      end do
    end function select_end_block
-
 
    !> Ensure global cache array can hold required_size entries.
    !!
@@ -603,15 +632,19 @@ contains
       integer :: old_size
 
       old_size = 0
-      if (allocated(spectral_caches)) old_size = size(spectral_caches)
-      if (required_size <= old_size) return
-
+      if (allocated(spectral_caches)) then
+         old_size = size(spectral_caches)
+      end if
+      if (required_size <= old_size) then
+         return
+      end if
       new_size = max(required_size, max(1, 2 * old_size))
-      allocate(tmp(new_size))
-      if (old_size > 0) tmp(1:old_size) = spectral_caches(1:old_size)
+      allocate (tmp(new_size))
+      if (old_size > 0) then
+         tmp(1:old_size) = spectral_caches(1:old_size)
+      end if
       call move_alloc(tmp, spectral_caches)
    end subroutine ensure_cache_capacity
-
 
    !> Ensure per-file block array can hold required_size blocks.
    !!
@@ -626,15 +659,20 @@ contains
       integer :: old_size
 
       old_size = 0
-      if (allocated(cache%blocks)) old_size = size(cache%blocks)
-      if (required_size <= old_size) return
+      if (allocated(cache%blocks)) then
+         old_size = size(cache%blocks)
+      end if
+      if (required_size <= old_size) then
+         return
+      end if
 
       new_size = max(required_size, max(1, 2 * old_size))
-      allocate(tmp(new_size))
-      if (old_size > 0) tmp(1:old_size) = cache%blocks(1:old_size)
+      allocate (tmp(new_size))
+      if (old_size > 0) then
+         tmp(1:old_size) = cache%blocks(1:old_size)
+      end if
       call move_alloc(tmp, cache%blocks)
    end subroutine ensure_block_capacity
-
 
    !> Read next non-comment line from stream.
    !!
@@ -656,11 +694,14 @@ contains
 
       do
          call read_stream_line(lun, current_pos, filesize, line, line_start, next_pos, iostat)
-         if (iostat /= 0) return
-         if (.not. is_comment_line(line)) exit
+         if (iostat /= 0) then
+            return
+         end if
+         if (.not. is_comment_line(line)) then
+            exit
+         end if
       end do
    end subroutine read_next_relevant_line
-
 
    !> Read one line from stream file using chunked scanning.
    !!
@@ -683,8 +724,8 @@ contains
       integer(int64), intent(out) :: next_pos
       integer, intent(out) :: iostat
 
-      character(parser_chunk_size) :: chunk
-      character(1) :: next_char
+      character(PARSER_CHUNK_SIZE) :: chunk
+      character(len=1) :: next_char
       character(:), allocatable :: line_buffer
       integer :: eol_index
       integer :: eol_length
@@ -697,17 +738,19 @@ contains
       iostat = 0
 
       if (current_pos > filesize) then
-         allocate(character(0) :: line)
+         allocate (character(0) :: line)
          iostat = -1
          return
       end if
 
       do
-         remaining = min(int(parser_chunk_size, int64), filesize - current_pos + 1_int64)
+         remaining = min(int(PARSER_CHUNK_SIZE, int64), filesize - current_pos + 1_int64)
          nchunk = int(remaining)
 
          read (lun, pos=current_pos, iostat=iostat) chunk(1:nchunk)
-         if (iostat /= 0) return
+         if (iostat /= 0) then
+            return
+         end if
 
          eol_index = find_eol_index(chunk(1:nchunk))
          if (eol_index == 0) then
@@ -721,7 +764,9 @@ contains
             cycle
          end if
 
-         if (eol_index > 1) call append_text(line_buffer, chunk(1:eol_index - 1))
+         if (eol_index > 1) then
+            call append_text(line_buffer, chunk(1:eol_index - 1))
+         end if
 
          eol_length = 1
          if (eol_index < nchunk) then
@@ -729,7 +774,9 @@ contains
          else if (current_pos + int(eol_index, int64) <= filesize) then
             read (lun, pos=current_pos + int(eol_index, int64), iostat=stat) next_char
             if (stat == 0) then
-               if (is_eol_pair(chunk(eol_index:eol_index), next_char)) eol_length = 2
+               if (is_eol_pair(chunk(eol_index:eol_index), next_char)) then
+                  eol_length = 2
+               end if
             end if
          end if
 
@@ -740,7 +787,6 @@ contains
       end do
    end subroutine read_stream_line
 
-
    !> Find first end-of-line character in text.
    !!
    !! @param[in] text Input text chunk.
@@ -749,9 +795,10 @@ contains
       character(*), intent(in) :: text
 
       idx = 0
-      if (len(text) > 0) idx = scan(text, achar(10)//achar(13))
+      if (len(text) > 0) then
+         idx = scan(text, achar(10)//achar(13))
+      end if
    end function find_eol_index
-
 
    !> Check if two adjacent chars form a 2-char EOL pair.
    !!
@@ -766,7 +813,6 @@ contains
                     (first_char(1:1) == achar(10) .and. second_char(1:1) == achar(13))
    end function is_eol_pair
 
-
    !> Append text fragment to allocatable string buffer.
    !!
    !! @param[inout] text  Accumulated buffer, allocated/grown as needed.
@@ -780,21 +826,25 @@ contains
       integer :: old_len
 
       add_len = len(piece)
-      if (add_len <= 0) return
+      if (add_len <= 0) then
+         return
+      end if
 
       if (.not. allocated(text)) then
-         allocate(character(add_len) :: text)
+         allocate (character(add_len) :: text)
          text = piece
          return
       end if
 
       old_len = len(text)
-      allocate(character(old_len + add_len) :: tmp)
-      if (old_len > 0) tmp(1:old_len) = text
+      allocate (character(old_len + add_len) :: tmp)
+      if (old_len > 0) then
+         tmp(1:old_len) = text
+      end if
+
       tmp(old_len + 1:old_len + add_len) = piece
       call move_alloc(tmp, text)
    end subroutine append_text
-
 
    !> Finalize line assembly by moving buffer into output line.
    !!
@@ -807,10 +857,9 @@ contains
       if (allocated(text)) then
          call move_alloc(text, line)
       else
-         allocate(character(0) :: line)
+         allocate (character(0) :: line)
       end if
    end subroutine finalize_text
-
 
    !> Copy byte range [start_pos, end_pos] from source stream to target stream.
    !!
@@ -826,7 +875,7 @@ contains
       integer(int64), intent(in) :: end_pos
       logical, intent(out) :: success
 
-      character(copy_chunk_size) :: buffer
+      character(COPY_CHUNK_SIZE) :: buffer
       integer :: iostat
       integer :: nchunk
       integer(int64) :: current_pos
@@ -841,20 +890,23 @@ contains
       current_pos = start_pos
       do while (current_pos <= end_pos)
          remaining = end_pos - current_pos + 1_int64
-         nchunk = int(min(int(copy_chunk_size, int64), remaining))
+         nchunk = int(min(int(COPY_CHUNK_SIZE, int64), remaining))
 
          read (source_lun, pos=current_pos, iostat=iostat) buffer(1:nchunk)
-         if (iostat /= 0) return
+         if (iostat /= 0) then
+            return
+         end if
 
          write (target_lun, iostat=iostat) buffer(1:nchunk)
-         if (iostat /= 0) return
+         if (iostat /= 0) then
+            return
+         end if
 
          current_pos = current_pos + int(nchunk, int64)
       end do
 
       success = .true.
    end subroutine copy_file_range
-
 
    !> Parse SWAN block time line into seconds since refdate.
    !!
@@ -885,7 +937,9 @@ contains
       do i = 1, len_trim(line)
          if (line(i:i) >= '0' .and. line(i:i) <= '9') then
             ndigits = ndigits + 1
-            if (ndigits <= len(digits)) digits(ndigits:ndigits) = line(i:i)
+            if (ndigits <= len(digits)) then
+               digits(ndigits:ndigits) = line(i:i)
+            end if
          end if
          if (ndigits == len(digits)) exit
       end do
@@ -897,13 +951,16 @@ contains
       end if
 
       compact_time = digits
-      if (ndigits == 12) compact_time(13:14) = '00'
+      if (ndigits == 12) then
+         compact_time(13:14) = '00'
+      end if
+
       write (refdate_string, '(I8.8)') refdate
+
       call datetimestring_to_seconds(compact_time, refdate_string, timsec_dp, istat)
       success = istat == 0
       timsec = real(timsec_dp, hp)
    end subroutine parse_swan_time
-
 
    !> Locate cache entry index by source filename.
    !!
@@ -923,7 +980,6 @@ contains
       end do
    end function find_cache
 
-
    !> Test if a line is a comment or empty line.
    !!
    !! @param[in] line Input line.
@@ -935,10 +991,11 @@ contains
 
       shifted = adjustl(line)
       is_comment_line = .false.
-      if (len_trim(shifted) == 0) return
+      if (len_trim(shifted) == 0) then
+         return
+      end if
       is_comment_line = shifted(1:1) == '$' .or. shifted(1:1) == '!'
    end function is_comment_line
-
 
    !> Test whether normalized keyword line denotes direction section.
    !!
@@ -948,33 +1005,34 @@ contains
       character(*), intent(in) :: line
 
       is_dir_keyword = len_trim(line) >= 4
-      if (is_dir_keyword) is_dir_keyword = line(2:4) == 'DIR'
+      if (is_dir_keyword) then
+         is_dir_keyword = line(2:4) == 'DIR'
+      end if
    end function is_dir_keyword
-
 
    !> Test whether normalized keyword line denotes frequency section.
    !!
    !! @param[in] line Candidate keyword line.
    !! @return         True when characters 2:5 equal "FREQ".
    logical function is_freq_keyword(line)
-      character(*), intent(in) :: line
+      character(len=*), intent(in) :: line
 
       is_freq_keyword = len_trim(line) >= 5
-      if (is_freq_keyword) is_freq_keyword = line(2:5) == 'FREQ'
+      if (is_freq_keyword) then
+         is_freq_keyword = line(2:5) == 'FREQ'
+      end if
    end function is_freq_keyword
-
 
    !> Return uppercase, left-adjusted copy of line.
    !!
    !! @param[in] line Input line.
    !! @return         Normalized line for case-insensitive keyword checks.
    function normalize_line(line) result(normalized)
-      character(*), intent(in) :: line
+      character(len=*), intent(in) :: line
       character(len=len(line)) :: normalized
 
       normalized = to_upper(adjustl(line))
    end function normalize_line
-
 
    !> Check whether line starts with keyword (case-insensitive).
    !!
@@ -982,8 +1040,8 @@ contains
    !! @param[in] keyword Keyword prefix to match.
    !! @return            True if normalized line starts with keyword.
    logical function starts_with_keyword(line, keyword)
-      character(*), intent(in) :: line
-      character(*), intent(in) :: keyword
+      character(len=*), intent(in) :: line
+      character(len=*), intent(in) :: keyword
 
       character(len=len(line)) :: normalized
       integer :: keyword_length
@@ -991,16 +1049,17 @@ contains
       normalized = normalize_line(line)
       keyword_length = len_trim(keyword)
       starts_with_keyword = len_trim(normalized) >= keyword_length
-      if (starts_with_keyword) starts_with_keyword = normalized(1:keyword_length) == keyword(1:keyword_length)
+      if (starts_with_keyword) then
+         starts_with_keyword = normalized(1:keyword_length) == keyword(1:keyword_length)
+      end if
    end function starts_with_keyword
-
 
    !> Convert text to uppercase (ASCII a-z only).
    !!
    !! @param[in] text Input text.
    !! @return         Uppercase-converted text.
    function to_upper(text) result(upper)
-      character(*), intent(in) :: text
+      character(len=*), intent(in) :: text
       character(len=len(text)) :: upper
 
       integer :: i
@@ -1009,10 +1068,11 @@ contains
       upper = text
       do i = 1, len(text)
          value = iachar(text(i:i))
-         if (value >= iachar('a') .and. value <= iachar('z')) upper(i:i) = achar(value - 32)
+         if (value >= iachar('a') .and. value <= iachar('z')) then
+            upper(i:i) = achar(value - 32)
+         end if
       end do
    end function to_upper
-
 
    !> Build deterministic temporary subset filename for a cache entry.
    !!
@@ -1023,12 +1083,12 @@ contains
    !! @return                Generated temporary filename.
    function build_tempfile_name(index_value, sourcefile) result(tempfile)
       integer, intent(in) :: index_value
-      character(*), intent(in) :: sourcefile
-      character(37) :: tempfile
+      character(len=*), intent(in) :: sourcefile
+      character(len=37) :: tempfile
 
       integer :: dot_index
-      character(256) :: source_trimmed
-      character(8) :: extension_upper
+      character(len=256) :: source_trimmed
+      character(len=8) :: extension_upper
 
       tempfile = ' '
       write (tempfile, '(A,I6.6)') 'DWBSP', index_value
@@ -1049,24 +1109,29 @@ contains
       end if
    end function build_tempfile_name
 
-
    !> Delete temporary file if it exists.
    !!
    !! @param[in] tempfile Path to temporary file to remove.
    subroutine delete_tempfile(tempfile)
-      character(*), intent(in) :: tempfile
+      character(len=*), intent(in) :: tempfile
 
       integer :: fillun
       integer :: istat
       logical :: exists
 
-      if (len_trim(tempfile) == 0) return
-
+      if (len_trim(tempfile) == 0) then
+         return
+      end if
       inquire (file=trim(tempfile), exist=exists, iostat=istat)
-      if (istat /= 0 .or. .not. exists) return
+      if (istat /= 0 .or. .not. exists) then
+         return
+      end if
 
       open (newunit=fillun, file=trim(tempfile), status='unknown', iostat=istat)
-      if (istat /= 0) return
+      if (istat /= 0) then
+         return
+      end if
+
       close (fillun, status='delete')
    end subroutine delete_tempfile
 

@@ -129,8 +129,8 @@ module swan_input
       integer :: mxc
       integer :: myc
       integer :: vegetation !> corresponds with idrag in SWAN: 1: Suzuki, 2: Jacobsen. "true" is allowed for backwards compatibility, corresponding to idrag=1
-                            !> Behaviour is changed with introducing the separate parameter veg_from_flow for keyword VegSVNPlants:
-                            !> It used to be: vegetation=1: Suzuki, vegetation=2:VegSVNPlants
+      !> Behaviour is changed with introducing the separate parameter veg_from_flow for keyword VegSVNPlants:
+      !> It used to be: vegetation=1: Suzuki, vegetation=2:VegSVNPlants
       integer :: ice = 0
       integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
@@ -407,7 +407,6 @@ contains
       end do
    end function has_overall_sp2_boundary
 
-
 !
 !==============================================================================
    !> Register all spectral boundary files in the boundary cache.
@@ -448,7 +447,6 @@ contains
       end do
    end subroutine register_boundary_spectrum_files
 
-
 !
 !==============================================================================
    !> Cleanup cached spectral subset files and cache administration.
@@ -459,7 +457,6 @@ contains
 
       call cleanup_boundary_spectral_cache()
    end subroutine cleanup_boundary_spectrum_files
-
 
 !
 !==============================================================================
@@ -502,7 +499,6 @@ contains
       end do
    end subroutine replace_cached_boundary_spectrum_paths
 
-
 !
 !==============================================================================
    !> Replace one source spectrum path in a line by its cached active path.
@@ -539,12 +535,19 @@ contains
       if (len_trim(line) + max(0, new_length - old_length) > len(line)) return
 
       newline = ' '
-      if (pos > 1) newline(1:pos - 1) = line(1:pos - 1)
+
+      if (pos > 1) then
+         newline(1:pos - 1) = line(1:pos - 1)
+      end if
+
       newline(pos:pos + new_length - 1) = activefile(1:new_length)
-      if (pos + old_length <= len_trim(line)) newline(pos + new_length:) = line(pos + old_length:)
+
+      if (pos + old_length <= len_trim(line)) then
+         newline(pos + new_length:) = line(pos + old_length:)
+      end if
+
       line = newline
    end subroutine replace_cached_path
-
 
 !
 !==============================================================================
@@ -570,7 +573,6 @@ contains
 
       call resolve_boundary_spectral_file(sourcefile, run_start, run_end, activefile)
    end subroutine resolve_cached_boundary_spectrum_path
-
 
 !
 !==============================================================================
@@ -1405,7 +1407,7 @@ contains
 
       enable_num_accur = .false.
       enable_num_stopc = .false.
-      
+
       sr%tolerance_relative = -1.0 ! Default value will be set after checking whether "num accur" or "num stopc" is used
       sr%tolerance_absolute = DEFAULT_TOLERANCE_ABSOLUTE_STOPC
       sr%tolerance_absolute_wave_height = DEFAULT_TOLERANCE_ACCUR
@@ -1434,21 +1436,21 @@ contains
       call prop_get(mdw_ptr, 'Numerics', 'FreqSpaceCSS', sr%css)
       !
       ! "num stopc" parameters
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DRelHinc', sr%tolerance_relative, 0.0, 1.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'DRelHinc', sr%tolerance_relative, 0.0, 1.0)) then
          enable_num_stopc = .true.
       end if
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DAbsHinc', sr%tolerance_absolute, 0.0, 100.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'DAbsHinc', sr%tolerance_absolute, 0.0, 100.0)) then
          enable_num_stopc = .true.
       end if
       !
       ! "num accur" parameters
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChHsTm01', sr%tolerance_relative, 0.0, 1.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChHsTm01', sr%tolerance_relative, 0.0, 1.0)) then
          enable_num_accur = .true.
       end if
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanHs', sr%tolerance_absolute_wave_height, 0.0, 100.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanHs', sr%tolerance_absolute_wave_height, 0.0, 100.0)) then
          enable_num_accur = .true.
       end if
-      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanTm01', sr%tolerance_absolute_wave_period, 0.0, 100.0) ) then
+      if (prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanTm01', sr%tolerance_absolute_wave_period, 0.0, 100.0)) then
          enable_num_accur = .true.
       end if
       !
@@ -1758,10 +1760,10 @@ contains
          !
          call prop_get(tmp_ptr, '*', 'Grid', dom%curlif)
          if (count_words(dom%curlif) > 1) then
-            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif) ,'" contains spaces which is not permitted.'
-            call replace_char(dom%curlif,32,95)  ! replace ' ' by '_'
-            call replace_char(dom%curlif,9,95)   ! replace tab by '_'
-            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif) ,'" and adjust input accordingly.'
+            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif), '" contains spaces which is not permitted.'
+            call replace_char(dom%curlif, 32, 95) ! replace ' ' by '_'
+            call replace_char(dom%curlif, 9, 95) ! replace tab by '_'
+            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif), '" and adjust input accordingly.'
             call handle_errors_mdw(sr)
          end if
          call readgriddims(dom%curlif, dom%mxc, dom%myc)
@@ -1813,7 +1815,7 @@ contains
             end if
          end if
          call prop_get(tmp_ptr, '*', 'VegSVNPlants', dom%veg_from_flow)
-         if (dom%veg_from_flow .and. dom%vegetation<=0) then
+         if (dom%veg_from_flow .and. dom%vegetation <= 0) then
             ! Backwards compatibility:
             ! If VegSVNPlants is true and Vegetation is not specified by the user, set Vegetation=1
             dom%vegetation = 1
@@ -1823,7 +1825,7 @@ contains
             call prop_get(tmp_ptr, '*', 'VegDiamtr', dom%veg_diamtr)
             call prop_get(tmp_ptr, '*', 'VegDrag', dom%veg_drag)
          end if
-         if (.not.dom%veg_from_flow) then
+         if (.not. dom%veg_from_flow) then
             ! When veg_from_flow is true, VegNstems will be set by flow
             ! When veg_from_flow is false, the user has to define VegNstems or provide a related map file
             call prop_get(tmp_ptr, '*', 'VegNstems', dom%veg_nstems)
@@ -1831,7 +1833,7 @@ contains
             ! Read vegetation map
             !
             call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
-            if (dom%vegetation> 0 .and. dom%vegfil == '') then
+            if (dom%vegetation > 0 .and. dom%vegfil == '') then
                write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
             end if
          end if
@@ -1842,9 +1844,9 @@ contains
          end if
          select case (dom%vegetation)
          case (1)
-            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
+            write (*, '(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
          case (2)
-            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
+            write (*, '(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
          case default
          end select
          !
@@ -2665,8 +2667,8 @@ contains
       character(15) :: tendc
       character(15), external :: datetime_to_string
       character(256) :: fname
-      real(hp) :: boundary_run_end
-      real(hp) :: boundary_run_start
+      real(hp) :: run_end
+      real(hp) :: run_start
 !
 !! executable statements -------------------------------------------------------
 !
@@ -2674,11 +2676,11 @@ contains
       ! Boundary spectrum cache window:
       ! - stationary/quasi-stationary: current time only
       ! - non-stationary: full COMPUTE NONSTAT interval until tendc
-      boundary_run_start = wavedata%time%timsec
+      run_start = wavedata%time%timsec
       if (sr%modsim == 3) then
-         boundary_run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+         run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
       else
-         boundary_run_end = boundary_run_start
+         run_end = run_start
       end if
       !
       open (newunit=old_input, file=filnam, form='formatted', status='old', iostat=ierr)
@@ -2726,7 +2728,7 @@ contains
             ! SPEC for netcdf hotfiles, with format hot_inest_date_time.nc
             call create_hotfile_line(fname, inest, line, sr, wavedata)
          end if
-         call replace_cached_boundary_spectrum_paths(line, sr, boundary_run_start, boundary_run_end)
+         call replace_cached_boundary_spectrum_paths(line, sr, run_start, run_end)
          write (new_input, '(a)') line
          line = ' '
          line(1:2) = ' $ '
@@ -2889,8 +2891,8 @@ contains
       character(4) :: copy
       type(swan_bnd), pointer :: bnd
       type(swan_dom), pointer :: dom
-      real(hp) :: boundary_run_end
-      real(hp) :: boundary_run_start
+      real(hp) :: run_end
+      real(hp) :: run_start
       !
       ! Do not add more variables to varnam1
       !
@@ -2911,11 +2913,11 @@ contains
       ! Boundary spectrum cache window:
       ! - stationary/quasi-stationary: current time only
       ! - non-stationary: full COMPUTE NONSTAT interval until tendc
-      boundary_run_start = wavedata%time%timsec
+      run_start = wavedata%time%timsec
       if (sr%modsim == 3) then
-         boundary_run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
+         run_end = wavedata%time%calctimtscale * real(wavedata%time%tscale, hp)
       else
-         boundary_run_end = boundary_run_start
+         run_end = run_start
       end if
 
       dom => sr%dom(inest)
@@ -3248,7 +3250,7 @@ contains
       !     Vegetation map
       !
       if (dom%vegetation >= 1) then
-         if (.not.dom%veg_from_flow) then
+         if (.not. dom%veg_from_flow) then
             if (dom%vegfil /= '') then
                write (luninp, '(1X,A)') '$'
                lijn = 'INPGRID _'
@@ -3434,17 +3436,10 @@ contains
          do bound = 1, nb
             bnd => sr%bnd(bound)
             if (bnd%bndtyp == 4) then
-               call resolve_cached_boundary_spectrum_path(trim(sr%specfile), boundary_run_start, boundary_run_end, active_specfile)
+               call resolve_cached_boundary_spectrum_path(trim(sr%specfile), run_start, run_end, active_specfile)
                line = ' '
                line(1:10) = 'BOUN NEST '
-               !line(11:11) = ''''''
                line = trim(line)//' '''//trim(active_specfile)//''''//' CLOSED'
-               !nactive = len_trim(active_specfile)
-               !maxcopy = max(0, len(line) - 12 - 7)
-               !ind = min(nactive, maxcopy)
-               !if (ind > 0) line(12:11 + ind) = active_specfile(1:ind)
-               !line(12 + ind:12 + ind) = ''''''
-               !line(12 + ind + 1:12 + ind + 7) = ' CLOSED'
                write (luninp, '(1X,A)') line
                cycle
             elseif (bnd%bndtyp == 5) then
@@ -3556,7 +3551,7 @@ contains
                                   & bnd%direction(1), bnd%dirspread(1)
                else
                   !                    Read conditions from file
-                  call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(1)), boundary_run_start, boundary_run_end, active_specfile)
+                  call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(1)), run_start, run_end, active_specfile)
                   line(26:30) = 'FILE '
                   i = 31
                   line(i:i) = ''''''
@@ -3597,7 +3592,7 @@ contains
                      line(39:39) = ' '
                      i = 40
                      line(i:i) = ''''''
-                     call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), boundary_run_start, boundary_run_end, active_specfile)
+                     call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), run_start, run_end, active_specfile)
                      nactive = len_trim(active_specfile)
                      maxcopy = max(0, len(line) - i - 4)
                      ind = min(nactive, maxcopy)
@@ -4651,14 +4646,14 @@ contains
       real, intent(in) :: lower_bound
       real, intent(in) :: upper_bound
       logical :: success
-      
+
       call prop_get(mdw_ptr, group, key, value_out, success)
       if (success) then
          if (value_out < lower_bound .or. value_out > upper_bound) then
             write (*, *) 'SWAN_INPUT: parameter ', key, ' (', value_out, ') is out of bounds [', lower_bound, ',', upper_bound, ']'
             call handle_errors_mdw(sr)
          end if
-      end if  
+      end if
    end function prop_get_checked
 
 end module swan_input
