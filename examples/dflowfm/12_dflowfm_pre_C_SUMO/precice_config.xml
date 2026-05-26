@@ -56,7 +56,7 @@
   <participant name="fm">
     <provide-mesh name="fm_flow_cells" />
     <provide-mesh name="fm_flow_cells_3d" />
-    <receive-mesh name="sources_sinks_nodes" from="preC-SUMO" />
+    <receive-mesh name="sources_sinks_nodes" from="preC-SUMO" api-access="true" />
     <write-data name="sea_floor_depth_below_sea_surface" mesh="fm_flow_cells" />
     <write-data name="sea_surface_height" mesh="fm_flow_cells" />
     <write-data name="sea_floor_depth_below_geoid" mesh="fm_flow_cells" />
@@ -66,7 +66,7 @@
     <read-data name="sources_sinks_z_min" mesh="fm_flow_cells" />
     <read-data name="sources_sinks_z_max" mesh="fm_flow_cells" />
     <read-data name="sources_sinks_discharge" mesh="fm_flow_cells" />
-<!-- TODO: replace "consistent" by "no interpolation at all" -->
+<!-- TODO: remove this mapping: -->
     <mapping:linear-cell-interpolation direction="read" from="sources_sinks_nodes" to="fm_flow_cells" constraint="consistent"/> 
     <export:vtu directory="precice-exports" />
   </participant>
