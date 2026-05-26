@@ -464,22 +464,20 @@ TEST(NF2FFReaderTest, ParsesSources)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& values = result.value().sources();
-    ASSERT_EQ(values.size(), 2u);
-    ASSERT_EQ(values[0].size(), 6u);
-    ASSERT_EQ(values[1].size(), 6u);
-    EXPECT_DOUBLE_EQ(values[0][0], 1050.000);
-    EXPECT_DOUBLE_EQ(values[0][1], 350.365);
-    EXPECT_DOUBLE_EQ(values[0][2], 5.000);
-    EXPECT_DOUBLE_EQ(values[0][3], 5.000);
-    EXPECT_DOUBLE_EQ(values[0][4], 5);
-    EXPECT_DOUBLE_EQ(values[0][5], 15.000);
-    EXPECT_DOUBLE_EQ(values[1][0], 1050.500);
-    EXPECT_DOUBLE_EQ(values[1][1], 350.365);
-    EXPECT_DOUBLE_EQ(values[1][2], 5.000);
-    EXPECT_DOUBLE_EQ(values[1][3], 5.000);
-    EXPECT_DOUBLE_EQ(values[1][4], 5);
-    EXPECT_DOUBLE_EQ(values[1][5], 15.000);
+    const auto& sources = result.value().sources();
+    ASSERT_EQ(sources.size(), 2u);
+    EXPECT_DOUBLE_EQ(sources[0].x_coordinate, 1050.000);
+    EXPECT_DOUBLE_EQ(sources[0].y_coordinate, 350.365);
+    EXPECT_DOUBLE_EQ(sources[0].z_coordinate, 5.000);
+    EXPECT_DOUBLE_EQ(sources[0].entrainment, 5.000);
+    EXPECT_DOUBLE_EQ(sources[0].half_plume_height, 5);
+    EXPECT_DOUBLE_EQ(sources[0].half_plume_width, 15.000);
+    EXPECT_DOUBLE_EQ(sources[1].x_coordinate, 1050.500);
+    EXPECT_DOUBLE_EQ(sources[1].y_coordinate, 350.365);
+    EXPECT_DOUBLE_EQ(sources[1].z_coordinate, 5.000);
+    EXPECT_DOUBLE_EQ(sources[1].entrainment, 5.000);
+    EXPECT_DOUBLE_EQ(sources[1].half_plume_height, 5);
+    EXPECT_DOUBLE_EQ(sources[1].half_plume_width, 15.000);
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSources)
@@ -507,22 +505,20 @@ TEST(NF2FFReaderTest, ParsesSinks)
 {
     const auto result = pre_c_sumo::NF2FFReader::fromString(valid_xml);
     ASSERT_TRUE(result.has_value());
-    const auto& values = result.value().sinks();
-    ASSERT_EQ(values.size(), 2u);
-    ASSERT_EQ(values[0].size(), 6u);
-    ASSERT_EQ(values[1].size(), 6u);
-    EXPECT_DOUBLE_EQ(values[0][0], 250.000);
-    EXPECT_DOUBLE_EQ(values[0][1], 350.087);
-    EXPECT_DOUBLE_EQ(values[0][2], 9.700);
-    EXPECT_DOUBLE_EQ(values[0][3], 1.000);
-    EXPECT_DOUBLE_EQ(values[0][4], 0.000);
-    EXPECT_DOUBLE_EQ(values[0][5], 0.000);
-    EXPECT_DOUBLE_EQ(values[1][0], 252.500);
-    EXPECT_DOUBLE_EQ(values[1][1], 350.048);
-    EXPECT_DOUBLE_EQ(values[1][2], 9.700);
-    EXPECT_DOUBLE_EQ(values[1][3], 5);
-    EXPECT_DOUBLE_EQ(values[1][4], 0.250);
-    EXPECT_DOUBLE_EQ(values[1][5], 0.380);
+    const auto& sinks = result.value().sinks();
+    ASSERT_EQ(sinks.size(), 2u);
+    EXPECT_DOUBLE_EQ(sinks[0].x_coordinate, 250.000);
+    EXPECT_DOUBLE_EQ(sinks[0].y_coordinate, 350.087);
+    EXPECT_DOUBLE_EQ(sinks[0].z_coordinate, 9.700);
+    EXPECT_DOUBLE_EQ(sinks[0].entrainment, 1.000);
+    EXPECT_DOUBLE_EQ(sinks[0].half_plume_height, 0.000);
+    EXPECT_DOUBLE_EQ(sinks[0].half_plume_width, 0.000);
+    EXPECT_DOUBLE_EQ(sinks[1].x_coordinate, 252.500);
+    EXPECT_DOUBLE_EQ(sinks[1].y_coordinate, 350.048);
+    EXPECT_DOUBLE_EQ(sinks[1].z_coordinate, 9.700);
+    EXPECT_DOUBLE_EQ(sinks[1].entrainment, 5);
+    EXPECT_DOUBLE_EQ(sinks[1].half_plume_height, 0.250);
+    EXPECT_DOUBLE_EQ(sinks[1].half_plume_width, 0.380);
 }
 
 TEST(NF2FFReaderTest, ReturnsErrorOnMissingSinks)

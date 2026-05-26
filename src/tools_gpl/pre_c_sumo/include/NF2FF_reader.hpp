@@ -37,7 +37,25 @@
 namespace pre_c_sumo
 {
     /**
-     * @brief Writer for FF2NF XML files.
+     * @brief SourceOrSinkData structure. Holds parameters for sources and sinks.
+     */
+    struct SourceOrSinkData
+    {
+        double x_coordinate;
+        double y_coordinate;
+        double z_coordinate;
+        double entrainment;
+        double half_plume_height;
+        double half_plume_width;
+        double u_magnitude;
+        double u_direction;
+        double weight;
+        bool has_u;
+        bool has_weight;
+    };
+
+    /**
+     * @brief Reader for FF2NF XML files.
      */
     class NF2FFReader
     {
@@ -63,14 +81,14 @@ namespace pre_c_sumo
         double sourceFlowRate() const;
         ConstituentsOperator constituentsOperator() const;
         std::vector<double> constituents() const;
-        std::vector<std::vector<double>> sources() const;
-        std::vector<std::vector<double>> sinks() const;
+        std::vector<pre_c_sumo::SourceOrSinkData> sources() const;
+        std::vector<pre_c_sumo::SourceOrSinkData> sinks() const;
 
     private:
         explicit NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
                              double source_flow_rate, ConstituentsOperator constituents_operator,
-                             std::vector<double> constituents, std::vector<std::vector<double>> sources,
-                             std::vector<std::vector<double>> sinks);
+                             std::vector<double> constituents, std::vector<pre_c_sumo::SourceOrSinkData> sources,
+                             std::vector<pre_c_sumo::SourceOrSinkData> sinks);
 
         constexpr static std::string_view root_element_name = "NF2FF";
         constexpr static std::string_view current_file_version = "0.3";
@@ -80,8 +98,8 @@ namespace pre_c_sumo
         double source_flow_rate_;
         pre_c_sumo::ConstituentsOperator constituents_operator_;
         std::vector<double> constituents_;
-        std::vector<std::vector<double>> sources_;
-        std::vector<std::vector<double>> sinks_;
+        std::vector<pre_c_sumo::SourceOrSinkData> sources_;
+        std::vector<pre_c_sumo::SourceOrSinkData> sinks_;
     };
 
 } // namespace pre_c_sumo

@@ -92,7 +92,56 @@ namespace
         return parsing_utils::parseDouble(text, element_name);
     }
 
-    std::expected<std::vector<std::vector<double>>, parsing_utils::ParseError> parseVectorVector(
+    std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> extractSourceOrSinkData(
+        const std::vector<double> values, const std::string_view element_name)
+    {
+        if (values.size() < 6 || values.size() > 9)
+        {
+            return std::unexpected(parsing_utils::ParseError{std::format(
+                "Found {} has {} values; expected exactly 6, 7, 8 or 9 values.", element_name, values.size())});
+        }
+        // Base values (6), always there.
+        pre_c_sumo::SourceOrSinkData data = {.x_coordinate = values[0],
+                                             .y_coordinate = values[1],
+                                             .z_coordinate = values[2],
+                                             .entrainment = values[3],
+                                             .half_plume_height = values[4],
+                                             .half_plume_width = values[5],
+                                             .u_magnitude = 0.0,
+                                             .u_direction = 0.0,
+                                             .weight = 0.0,
+                                             .has_u = false,
+                                             .has_weight = false};
+        // Additional values (7,8 or 9)
+        switch (values.size())
+        {
+            case 6:
+                // nothing to add.
+                break;
+            case 7:
+                data.weight = values[6];
+                data.has_weight = true;
+                break;
+            case 8:
+                data.u_magnitude = values[6];
+                data.u_direction = values[7];
+                data.has_u = true;
+                break;
+            case 9:
+                data.u_magnitude = values[6];
+                data.u_direction = values[7];
+                data.weight = values[8];
+                data.has_u = true;
+                data.has_weight = true;
+                break;
+            default:
+                assert(false); // Should not happen.
+                break;
+        }
+        return data;
+    } // namespace
+
+    std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseVectorVector(
         const std::string_view text, const std::string_view element_name)
     {
         std::vector<std::string> newline_separated_tokens;
@@ -102,15 +151,15 @@ namespace
         auto is_non_empty = [](const std::string_view token) {
             return token.find_first_not_of(" \t\r") != std::string_view::npos;
         };
-        auto to_vector =
-            [element_name](
-                const std::string_view token) -> std::expected<std::vector<double>, parsing_utils::ParseError> {
+        auto to_source_or_sink = [element_name](const std::string_view token)
+            -> std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> {
             ASSIGN_OR_RETURN(auto vector, parsing_utils::parseDoubleVector(token.data(), element_name));
-            return vector;
+            ASSIGN_OR_RETURN(auto data, extractSourceOrSinkData(vector, element_name));
+            return data;
         };
 
         auto expected_items = newline_separated_tokens | std::ranges::views::filter(is_non_empty) |
-                              std::ranges::views::transform(to_vector) | std::ranges::to<std::vector>();
+                              std::ranges::views::transform(to_source_or_sink) | std::ranges::to<std::vector>();
 
         if (auto errorIt = std::ranges::find_if(expected_items, monadic_utils::is_invalid);
             errorIt != expected_items.end())
@@ -185,8 +234,8 @@ namespace pre_c_sumo
 
     NF2FFReader::NF2FFReader(std::string file_version, pugi::xml_document document, double intake_flow_rate,
                              double source_flow_rate, ConstituentsOperator constituents_operator,
-                             std::vector<double> constituents, std::vector<std::vector<double>> sources,
-                             std::vector<std::vector<double>> sinks)
+                             std::vector<double> constituents, std::vector<pre_c_sumo::SourceOrSinkData> sources,
+                             std::vector<pre_c_sumo::SourceOrSinkData> sinks)
         : file_version_{std::move(file_version)},
           document_{std::move(document)},
           intake_flow_rate_{intake_flow_rate},
@@ -232,12 +281,12 @@ namespace pre_c_sumo
      * @brief Returns the sources that have been read.
      * @return std::vector<std::vector<double>>
      */
-    std::vector<std::vector<double>> NF2FFReader::sources() const { return sources_; };
+    std::vector<pre_c_sumo::SourceOrSinkData> NF2FFReader::sources() const { return sources_; };
 
     /**
      * @brief Returns the sinks that have been read.
      * @return std::vector<std::vector<double>>
      */
-    std::vector<std::vector<double>> NF2FFReader::sinks() const { return sinks_; };
+    std::vector<pre_c_sumo::SourceOrSinkData> NF2FFReader::sinks() const { return sinks_; };
 
 } // namespace pre_c_sumo
