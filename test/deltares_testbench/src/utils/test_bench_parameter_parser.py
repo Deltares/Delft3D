@@ -84,7 +84,7 @@ class TestBenchParameterParser:
         settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
         settings.copy_failed_cases = cls.__get_argument_value("copy_failed_cases", args) or False
-        
+
         return settings
 
     @staticmethod
