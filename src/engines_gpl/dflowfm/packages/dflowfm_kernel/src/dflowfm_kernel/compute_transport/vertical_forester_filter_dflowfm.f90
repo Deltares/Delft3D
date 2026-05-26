@@ -30,7 +30,7 @@
 module m_vertical_forester_filter_dflowfm ! _dflowfm suffix added to avoid name clash with WAQ module
    use precision, only: dp
    use m_flow, only: ndkx
-   use m_transportdata, only: constituents, numconst, const_names
+   use m_transportdata, only: constituents, numconst, const_names, ITEMP
 
    implicit none(type, external)
 
@@ -43,9 +43,10 @@ contains
    !> Applies the Forester vertical filter to all constituents in the model
    subroutine apply_vertical_forester_filter_to_all_constituents()
       use m_flow, only: kbot, ktop, max_iterations_vertical_forester, vol1, kmxn
-      use timers, only: timon, timstrt, timstop
       use m_flowgeom, only: ndxi
+      use m_physcoef, only: use_salinity_freezing_point
       use string_module, only: str_tolower
+      use timers, only: timon, timstrt, timstop
 
       ! Local variables
       integer :: i_bottom_layer
@@ -70,9 +71,15 @@ contains
 
          ! Apply the Forester vertical filter for each constituent in this vertical column of flow cells
          do i_constituent = 1, numconst
-            ! Skip the Forester filter for oxygen, since negative values are allowed
+
+            ! Skip the vertical Forester filter for oxygen, since negative values are allowed
             if (trim(str_tolower(const_names(i_constituent))) == 'oxy') then
                cycle 
+            end if
+
+            ! Skip the vertical Forester filter for temperature if the salinity freezing point is enabled, since negative values are allowed
+            if (i_constituent == ITEMP .and. use_salinity_freezing_point) then
+               cycle
             end if
 
             call apply_vertical_forester_filter_per_column_and_constituent(i_constituent, vol1(i_bottom_layer:), number_of_layers, kmxn(i_flowcell), i_bottom_layer, max_iterations_vertical_forester)
