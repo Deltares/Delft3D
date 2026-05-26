@@ -2220,7 +2220,7 @@ contains
       use m_ug_nc_attribute
       use m_flow
       use fm_external_forcings_data
-      use m_source_sink, only: num_source_sink
+      use m_source_sink, only: source_sinks, num_source_sink, source_sink_all_discharges
       use m_structures
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity
@@ -2320,7 +2320,7 @@ contains
             i = i + 1
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), source_sink_all_discharges(i, :))
          end if
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sink_water_discharge)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sinks%discharge)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sink_cumulative_volume)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sink_average_discharge_previous)
       end if

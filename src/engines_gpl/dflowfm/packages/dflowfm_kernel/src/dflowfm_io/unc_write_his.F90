@@ -105,7 +105,7 @@ contains
       use m_timer
       use m_sediment
       use fm_external_forcings_data, only: numtracers, trnames
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks, num_source_sink, source_sink_all_discharges
       use m_transport, only: ITRA1, ITRAN, ISED1
       use m_structures
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -763,7 +763,7 @@ contains
       !Fill average source-sink discharge with different array on first timestep
       if (it_his == 1) then
          do i = 1, num_source_sink
-            source_sink_water_discharge(i) = source_sink_all_discharges(1, i)
+            source_sinks%discharge(i) = source_sink_all_discharges(1, i)
          end do
       end if
       !Bottom level is written separately from statout if it is static

@@ -57,7 +57,7 @@ module m_source_sink
    end type SourceSinks
 
    ! Object containing all source/sink data.
-   type(SourceSinks) :: source_sinks
+   type(SourceSinks), target :: source_sinks
 
    integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
    real(kind=dp), dimension(:,:), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(num_source_sink,2), former:srcall}
