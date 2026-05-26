@@ -352,7 +352,6 @@ class TestSetRunner(ABC):
             if any(not comparison.passed for (_, _, _, comparison) in test_case_results):
                 shutil.copytree(test_case_config.absolute_test_case_path, dest_path / test_case_config.name)
 
-
     @abstractmethod
     def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:
         """Create an error result.
