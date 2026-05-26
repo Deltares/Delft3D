@@ -117,7 +117,7 @@ namespace pre_c_sumo
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
      */
-    void sendSourcesSinksToFF(const CSumoSettingsReader& csumoSettings);
+    void sendSourcesSinksToFF(precice::Participant& participant, const std::vector<int>& sources_sinks_nodes_ids);
 
     /**
      * @brief Convert NF sinks to farfield sinks.
