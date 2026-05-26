@@ -95,7 +95,7 @@ contains
       use messagehandling, only: mess, level_error, msgbuf, err_flush, setmessage
       use properties, only: tree_create, prop_inifile, tree_create_node, tree_put_data, node_value, tree_num_nodes, tree_get_name, prop_get, prop_set, tree_remove_child_by_name, prop_write_inifile, tree_destroy
       use unstruc_channel_flow, only: st_longculvert, network
-      use m_save_ugrid_state, only: nbranchids, meshgeom1d
+      use m_save_ugrid_state, only: nbranchids
       use system_utils, only: split_filename, cat_filename
       use string_module, only: strcmpi
       use m_filez, only: newfil
@@ -131,9 +131,9 @@ contains
       integer :: istart
       integer :: nlongculverts0
       integer :: mout
-      integer :: longculvertindex
       character(len=IdLen) :: temppath, tempname, tempext
       logical :: write_converted_files_
+      integer :: longculvertindex
 
       ierr = DFM_NOERR
 
@@ -219,11 +219,6 @@ contains
          end if
 
          nlongculverts = nlongculverts + 1
-         if (allocated(nbranchids)) then
-            longculvertindex = meshgeom1d%nbranches
-         else
-            longculvertindex = 0
-         end if
 
          call prop_get(str_ptr, '', 'id', st_id, success)
          if (.not. success) then
@@ -329,6 +324,7 @@ contains
       call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
       call restorepol()
 
+      longculvertindex = nlongculverts0
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
       do i = 1, nstr
          str_ptr => strs_ptr%child_nodes(i)%node_ptr
@@ -699,7 +695,7 @@ contains
    !! width, prof1D and bob arrays for the given flow link.
    subroutine setup_longculvert_1D2D_link(ilongc, Lf, bl_up, bl_dn)
       use m_flowgeom, only: wu, bob
-      use unstruc_channel_flow, only: network => network
+      use unstruc_channel_flow, only: network
       use m_network, only: t_network
 
       integer, intent(in) :: ilongc !< Long culvert index
@@ -714,7 +710,7 @@ contains
       else
          link_id = longculverts(ilongc)%branchId
       end if
-      call add_longculvert_1D2D_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
+      call add_longculvert_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
 
       wu(Lf) = longculverts(ilongc)%width
       bob(1, Lf) = bl_up
@@ -1218,7 +1214,6 @@ contains
 
    end subroutine reallocate_meshgeom1d_arrays
 
-
    !> Add new cross section locations on a particular branch in the network.
    !! The cross section definition (defining the long culvert's shape)
    !! must already have been read from file.
@@ -1264,7 +1259,7 @@ contains
    end subroutine addlongculvertcrosssections
 
    !> add special 1D2D crossection for the longculvert and add it to the line2cross array
-   subroutine add_longculvert_1D2D_crosssection(network, flowlink, link_id, cs_def_id)
+   subroutine add_longculvert_crosssection(network, flowlink, link_id, cs_def_id)
       use precision, only: dp
       use m_hash_search, only: hashsearch
       use m_CrossSections, only: realloc
@@ -1301,7 +1296,7 @@ contains
 
       ! Assign new cross section along flowlink.
       network%adm%line2cross(flowlink, :) = t_chainage2cross(c1=icrs, c2=icrs, f=1.0_dp, distance=0.0_dp)
-   end subroutine add_longculvert_1D2D_crosssection
+   end subroutine add_longculvert_crosssection
 
    !> Add new branch information to the network. Only add necessary information for long culverts (incomplete!)
    subroutine add_longculvert_branch(network, longculvert)
@@ -1668,10 +1663,11 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         if (network%numl > 0) then !> numl might be 0 due to only 2D-2D long culverts
+         if (meshgeom1d%numedge > 0) then !> only create a network if actual 1D links exist (4+ point long culverts)
             nbranchlongnames = nbranchids
             nnodelongnames = nnodeids
-            allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
+            call realloc(nodeids,meshgeom1d%numnode)
+            call realloc(nodelongnames,meshgeom1d%numnode)
             network%numl = meshgeom1d%numedge
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &

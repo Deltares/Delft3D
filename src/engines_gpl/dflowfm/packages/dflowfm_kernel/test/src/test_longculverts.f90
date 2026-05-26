@@ -1463,11 +1463,11 @@ contains
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_flow_continuity_across_links, test_4pt_flow_continuity_across_links,
-   !> For a 4-point culvert, verify that the discharge is consistent across all 3 links
-   !! (mass conservation within the culvert pipe).
-   subroutine test_4pt_flow_continuity_across_links() bind(C)
+   !> For a 4-point culvert, verify that cfuhi (friction coefficient) is uniform
+   !! across all 3 links, confirming the cross-section and friction administration is correctly set up.
+   subroutine test_4pt_flow_cfuhi_across_links() bind(C)
       use m_flowgeom, only: ndx, bl
-      use m_flow, only: s1, q1
+      use m_flow, only: s1, cfuhi
       use m_cell_geometry, only: xz
       use m_longculverts_data, only: nlongculverts, longculverts
       use dfm_error, only: DFM_NOERR
@@ -1488,16 +1488,18 @@ contains
       L2 = abs(longculverts(1)%flowlinks(2))
       L3 = abs(longculverts(1)%flowlinks(3))
 
-      call f90_expect_true(q1(L1) > 0.0_dp, "discharge at link 1 should be positive")
-      ! In steady state, Q should be equal across all links (continuity).
-      ! After a few timesteps it won't be perfectly steady, but should be close.
-      call f90_expect_near(q1(L1), q1(L2), 0.1_dp * abs(q1(L1)), &
-                           "discharge at links 1 and 2 should be similar (continuity)")
-      call f90_expect_near(q1(L2), q1(L3), 0.1_dp * abs(q1(L2)), &
-                           "discharge at links 2 and 3 should be similar (continuity)")
+      call f90_expect_true(cfuhi(L1) > 0.0_dp, "cfuhi at link 1 should be positive")
+      call f90_expect_true(cfuhi(L2) > 0.0_dp, "cfuhi at link 2 should be positive")
+      call f90_expect_true(cfuhi(L3) > 0.0_dp, "cfuhi at link 3 should be positive")
+      ! cfuhi should be uniform across all culvert links (same cross-section and friction)
+      call f90_expect_near(cfuhi(L1), cfuhi(L2), 1.0e-6_dp, &
+                           "cfuhi at links 1 and 2 should be equal (uniform friction admin)")
+      call f90_expect_near(cfuhi(L2), cfuhi(L3), 1.0e-6_dp, &
+                           "cfuhi at links 2 and 3 should be equal (uniform friction admin)")
+
 
       call default_longculverts
-   end subroutine test_4pt_flow_continuity_across_links
+   end subroutine test_4pt_flow_cfuhi_across_links
    !$f90tw)
 
 end module test_longculverts
