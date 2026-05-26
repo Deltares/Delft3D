@@ -853,11 +853,11 @@ contains
                      turkin1(Lb - 1) = tke * (1.0_dp - alfaT) + alfaT * turkin1(Lb - 1)
                      eps = epsbot / (hu(Lb) - hu(Lb - 1))
                      tureps1(Lb - 1) = eps * (1.0_dp - alfaT) + alfaT * tureps1(Lb - 1)
-
-                     if (jamodelspecific == 1) then
-                        call update_turkin_modelspecific(LL) ! will update turkin1 and tureps1 for all layers of flow link LL.
-                     end if
                   end if
+               end if
+
+               if (jamodelspecific == 1) then
+                  call update_turkin_modelspecific(LL) ! will update turkin1 and tureps1 for all layers of flow link LL.
                end if
 
                vicwmax = 0.1_dp * hu(LL) ! 0.009UH, Elder, uavmax=
