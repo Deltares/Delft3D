@@ -1488,7 +1488,8 @@ contains
 
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
-      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, source_sink_name, num_source_sink, gate2cgen, ngategen
+      use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, gate2cgen, ngategen
+      use m_source_sink, only: source_sinks, num_source_sink
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: his_write_settings
@@ -1571,7 +1572,7 @@ contains
       structure_names = [(rug(i)%name, integer :: i=1, num_rugs)]
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
-      structure_names = [(source_sink_name(i), integer :: i=1, num_source_sink)]
+      structure_names = [(source_sinks%name(i), integer :: i=1, num_source_sink)]
       call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
       if (network%sts%numGates > 0) then

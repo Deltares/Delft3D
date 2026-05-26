@@ -434,7 +434,7 @@ contains
       use m_flowparameters
       use m_flowtimes
       use m_flow
-      use fm_external_forcings_data
+      use m_source_sink, only: source_sinks
       use m_flowgeom
       use unstruc_model
       use time_module, only: ymd2jul
@@ -651,7 +651,7 @@ contains
                   ibnd = ibnd + 1
                   kk2 = -ibnd
                end if
-               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(source_sink_name(isrc))
+               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(source_sinks%name(isrc))
             end if
          end do
          write (lunhyd, '(A      )') 'end-sink-sources'
@@ -1569,7 +1569,8 @@ contains
       use m_flowgeom
       use network_data
       use m_partitioninfo, only: is_ghost_node
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: nopenbndsect, nopenbndlin, openbndlin, openbndname
+      use m_source_sink, only: source_sinks, num_source_sink
       use m_laterals, only: numlatsg, n1latsg, n2latsg, nnlat, lat_ids
       use unstruc_files
       use m_sferic, only: jsferic, jasfer3D
@@ -1657,15 +1658,15 @@ contains
       end do
       ibnd = ndx - ndxi
       do isrc = 1, num_source_sink
-         if ((source_sink_indices(1, isrc) == 0 .and. source_sink_indices(4, isrc) > 0) .or. (source_sink_indices(4, isrc) == 0 .and. source_sink_indices(1, isrc) > 0)) then
+         if ((source_sinks%indices(isrc, 1) == 0 .and. source_sinks%indices(isrc, 4) > 0) .or. (source_sinks%indices(isrc, 4) == 0 .and. source_sinks%indices(isrc, 1) > 0)) then
             ! This is a boundary condition within the current domain
             ibnd = ibnd + 1
-            if (source_sink_indices(1, isrc) /= 0) then
-               kk = source_sink_indices(1, isrc)
+            if (source_sinks%indices(isrc, 1) /= 0) then
+               kk = source_sinks%indices(isrc, 1)
             else
-               kk = source_sink_indices(4, isrc)
+               kk = source_sinks%indices(isrc, 4)
             end if
-            sectionname = makesectionname('src_', source_sink_name(isrc))
+            sectionname = makesectionname('src_', source_sinks%name(isrc))
             write (lunbnd, '(a)') sectionname ! Section name
             write (lunbnd, '(i8)') 1 ! Nr of source links in section
             write (lunbnd, '(i8,4f18.8)') - (ibnd), xz(kk), yz(kk), xz(kk), yz(kk)
@@ -2269,7 +2270,7 @@ contains
    subroutine waq_prepare_src()
       use m_flowgeom
       use m_flow
-      use fm_external_forcings_data
+      use m_source_sink, only: source_sinks
       use m_alloc
       use messagehandling, only: msgbuf, err_flush
       implicit none
@@ -2305,7 +2306,7 @@ contains
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sink_name(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sinks%name(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
                call err_flush()
             end if
          end if

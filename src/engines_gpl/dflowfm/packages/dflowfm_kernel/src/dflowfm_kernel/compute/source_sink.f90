@@ -11,6 +11,9 @@ module m_source_sink
    private
 
    public :: source_sinks
+   public :: num_source_sink
+   public :: source_sink_all_discharges
+
    public :: num_source_sink_oldfile, num_source_sink_for_nearfield, max_source_sink_polyline_points
    public :: source_sink_cumulative_volume, source_sink_cumulative_volume_previous, source_sink_average_discharge_previous, source_sink_waq_index, source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
 
@@ -54,7 +57,7 @@ module m_source_sink
    type(SourceSinks) :: source_sinks
 
    integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(num_source_sink,2), former:srcall}
+   real(kind=dp), dimension(:,:), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(num_source_sink,2), former:srcall}
    real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),num_source_sink), former:srsn}   
 
 
@@ -84,6 +87,7 @@ contains
 
       ! Initialize source/sink counter to zero.
       num_source_sink = 0
+      num_source_sink_for_nearfield = 0
 
       ! Allocate and intialize global source/sink arrays.
       allocate (source_sink_all_discharges(numconst+1, size))
