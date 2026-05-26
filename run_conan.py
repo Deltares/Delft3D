@@ -210,9 +210,6 @@ def main() -> None:
     if args.update_lockfile:
         update_lockfile(profile, ci=args.ci, local_only=args.rebuild_recipes)
 
-    # Use lockfile for reproducible installs if one exists
-    lockfile = LOCKFILE if LOCKFILE.exists() else None
-
     if os_name == "Windows":
         # Multi-config generator: generate CMakeDeps for all three configurations.
         # Only the first install builds packages; the other two reuse the cache.
@@ -221,7 +218,7 @@ def main() -> None:
             args.output_folder,
             "Release",
             ci=args.ci,
-            lockfile=lockfile,
+            lockfile=LOCKFILE,
             build_missing=args.build_missing,
             build_local=args.rebuild_recipes,
         )
@@ -231,7 +228,7 @@ def main() -> None:
             "Release",
             consumer_build_type="Debug",
             ci=args.ci,
-            lockfile=lockfile,
+            lockfile=LOCKFILE,
         )
         conan_install(
             profile,
@@ -239,7 +236,7 @@ def main() -> None:
             "Release",
             consumer_build_type="RelWithDebInfo",
             ci=args.ci,
-            lockfile=lockfile,
+            lockfile=LOCKFILE,
         )
     else:
         # Single-config generator: one install for the requested build type.
@@ -250,7 +247,7 @@ def main() -> None:
             "Release",
             consumer_build_type=args.build_type,
             ci=args.ci,
-            lockfile=lockfile,
+            lockfile=LOCKFILE,
             build_missing=args.build_missing,
             build_local=args.rebuild_recipes,
         )
