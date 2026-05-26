@@ -108,13 +108,13 @@ object LinuxTest : BuildType({
             
             # Add flag only if copy_failed_cases is true
             if [[ "%copy_failed_cases%" == "true" ]]; then
-                ARGS="$ARGS --copy-failed-cases"
+                ARGS="${'$'}ARGS --copy-failed-cases"
             fi
             
-            python3 TestBench.py $ARGS
+            python3 TestBench.py ${'$'}ARGS
         """.trimIndent()
         dockerImage = "%testbench_container_image%"
-        dockerImagePlatform = BuildStep.ImagePlatform.Linux
+        dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
         dockerPull = true
         dockerRunParameters = """
             --rm
@@ -132,7 +132,7 @@ object LinuxTest : BuildType({
                 else 
                 echo 'copy_cases does not exist' 
                 fi
-                echo $copyFailedCasesArg
+                echo %copy_failed_cases%
                 """.trimIndent()
         }
         dockerCommand {
