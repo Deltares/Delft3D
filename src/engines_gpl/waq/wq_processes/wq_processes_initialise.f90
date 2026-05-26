@@ -132,6 +132,7 @@ contains
 
         integer(kind = int_wp) :: lunblm           ! unit number bloom file
         integer(kind = int_wp) :: lunfrm           ! unit number bloom frm file
+        integer(kind = int_wp) :: lunfrmold = 0    ! unit number bloom frmold file
 
         integer(kind = int_wp) :: isys             ! index variable
         integer(kind = int_wp) :: igrp             ! index variable
@@ -647,7 +648,11 @@ contains
             ! write the bloom efficiency file
             filnam = trim(runnam) // '.frm'
             open (newunit = lunfrm, file = filnam)
-            call blmeff (lunlsp, lunblm, verspe, lunfrm, grpnam, nogrp, typnam, noalg)
+            if (verspe>2.01) then
+               filnam = trim(runnam) // '.frmold'
+               open (newunit = lunfrmold, file = filnam)
+            end if
+            call blmeff (lunlsp, lunblm, verspe, lunfrm, lunfrmold, grpnam, nogrp, typnam, noalg)
             close(lunblm)
             close(lunfrm)
         endif

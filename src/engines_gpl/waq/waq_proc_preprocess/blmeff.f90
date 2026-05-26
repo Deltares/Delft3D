@@ -29,7 +29,7 @@ module m_blmeff
 contains
 
 
-    subroutine blmeff (lunrep, lunblm, verspe, lunfrm, grname, nuecog, typnam, noalg)
+    subroutine blmeff (lunrep, lunblm, verspe, lunfrm, lunfrmold, grname, nuecog, typnam, noalg)
         !
         use m_bleffpro
         use m_logger_helper, only : stop_with_error
@@ -38,7 +38,7 @@ contains
         implicit none
         integer(kind = int_wp) :: lunrep, lunblm
         real(kind = real_wp) :: verspe
-        integer(kind = int_wp) :: lunfrm, nuecog, noalg
+        integer(kind = int_wp) :: lunfrm, lunfrmold, nuecog, noalg
         character(len=10)  grname(nuecog)
         character(len=10)  typnam(noalg)
 
@@ -135,11 +135,18 @@ contains
             write (lunfrm, 245)
         else
             write (lunfrm, 246)
+            if (lunfrmold/=0) then
+               write (lunfrmold, 245)
+            end if
         end if
         245 format ('BLOOMFRM_VERSION_2.00') ! frm version 2.00: added a list of the selected group and type names
         246 format ('BLOOMFRM_VERSION_2.01') ! frm version 2.01: added the light curves of the selected groups
         write (lunfrm, 250) grname(1:nuecog)
         write (lunfrm, 250) typnam(1:noalg)
+        if (lunfrmold/=0) then
+           write (lunfrmold, 250) grname(1:nuecog)
+           write (lunfrmold, 250) typnam(1:noalg)
+        end if
         250 format (30(A10, X))
         !
         ! Write the light curves the groups that were selected.
@@ -162,6 +169,15 @@ contains
             do i = 1, nz
                 write (lunfrm, 301) zvec(i), (der(i, ifnd(j)), j = 1, nuecog)
             enddo
+            if (lunfrmold/=0) then
+               write (lunfrmold, 290) nz, tefcur
+               write (lunfrmold, 300) (zvec(i), i = 1, nz)
+               write (lunfrmold, 290) nz
+               do i = 1, nz
+                   write (lunfrmold, 301) (fun(i, ifnd(j)), j = 1, nuecog)
+                   write (lunfrmold, 301) (der(i, ifnd(j)), j = 1, nuecog)
+               end do
+            end if
         else
             write (lunfrm, 290) nz, tefcur
             write (lunfrm, 300) (zvec(i), i = 1, nz)
@@ -174,6 +190,11 @@ contains
         do i = 1, 24
             write (lunfrm, 330) dl(i), (daymul(i, ifnd(j)), j = 1, nuecog)
         end do
+        if (lunfrmold/=0) then
+           do i = 1, 24
+              write (lunfrmold, 330) dl(i), (daymul(i, ifnd(j)), j = 1, nuecog)
+           end do
+        end if
         if (timon) call timstop(ithndl)
         return
     end
