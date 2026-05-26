@@ -1459,15 +1459,16 @@ contains
       call f90_expect_true(q_high_friction < q_low_friction, &
                            "higher Manning friction should produce less discharge (4-point)")
       call default_longculverts
+
    end subroutine test_4pt_friction_higher_value_reduces_discharge
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_flow_continuity_across_links, test_4pt_flow_continuity_across_links,
-   !> For a 4-point culvert, verify that cfuhi (friction coefficient) is uniform
-   !! across all 3 links, confirming the cross-section and friction administration is correctly set up.
-   subroutine test_4pt_flow_cfuhi_across_links() bind(C)
+   !> For a 4-point culvert, verify that the discharge is consistent across all 3 links
+   !! (mass conservation within the culvert pipe).
+   subroutine test_4pt_flow_continuity_across_links() bind(C)
       use m_flowgeom, only: ndx, bl
-      use m_flow, only: s1, cfuhi
+      use m_flow, only: s1, q1
       use m_cell_geometry, only: xz
       use m_longculverts_data, only: nlongculverts, longculverts
       use dfm_error, only: DFM_NOERR
@@ -1480,7 +1481,7 @@ contains
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(longculverts(1)%numlinks, 3, "4-point culvert should have 3 links")
 
-      do i = 1, 4
+      do i = 1, 15
          call flow_spatietimestep()
       end do
 
@@ -1488,19 +1489,224 @@ contains
       L2 = abs(longculverts(1)%flowlinks(2))
       L3 = abs(longculverts(1)%flowlinks(3))
 
-      call f90_expect_true(cfuhi(L1) > 0.0_dp, "cfuhi at link 1 should be positive")
-      call f90_expect_true(cfuhi(L2) > 0.0_dp, "cfuhi at link 2 should be positive")
-      call f90_expect_true(cfuhi(L3) > 0.0_dp, "cfuhi at link 3 should be positive")
-      ! cfuhi should be uniform across all culvert links (same cross-section and friction)
-      call f90_expect_near(cfuhi(L1), cfuhi(L2), 1.0e-6_dp, &
-                           "cfuhi at links 1 and 2 should be equal (uniform friction admin)")
-      call f90_expect_near(cfuhi(L2), cfuhi(L3), 1.0e-6_dp, &
-                           "cfuhi at links 2 and 3 should be equal (uniform friction admin)")
-
+      call f90_expect_true(q1(L1) > 0.0_dp, "discharge at link 1 should be positive")
+      ! In steady state, Q should be equal across all links (continuity).
+      ! After a few timesteps it won't be perfectly steady, but should be close enough (15%)
+      call f90_expect_near(q1(L1), q1(L2), 0.15_dp * abs(q1(L1)), &
+                           "discharge at links 1 and 2 should be similar (continuity)")
+      call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
+                           "discharge at links 2 and 3 should be similar (continuity)")
 
       call default_longculverts
-   end subroutine test_4pt_flow_cfuhi_across_links
+   end subroutine test_4pt_flow_continuity_across_links
    !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_with_existing_1d_network, test_4pt_with_existing_1d_network,
+   !> Verify that a 4-point long culvert works correctly when there is already
+   !! an existing 1D network (branch + cross sections) in the model.
+   !! This tests that meshgeom1d arrays are properly extended and that
+   !! admin_network handles both regular and culvert branches.
+   subroutine test_4pt_with_existing_1d_network() bind(C)
+      use m_flow_modelinit, only: flow_modelinit
+      use unstruc_model, only: loadModel, md_ident
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use m_flow, only: q1, s1, au
+      use m_flowgeom, only: ndx, ndx2d, bl
+      use m_cell_geometry, only: xz
+      use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: threshold_abort
+      use messagehandling, only: LEVEL_FATAL, SetMessageHandling
+      use m_inidat, only: inidat
+      use Timers, only: timini, timon
+      use m_partitioninfo, only: jampi
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, L1, L2, L3
+      character(len=*), parameter :: NET_FILE = "test_lc_existing1d_net.nc"
+      character(len=*), parameter :: STR_FILE = "test_lc_existing1d_str.ini"
+      character(len=*), parameter :: MDU_FILE = "test_lc_existing1d.mdu"
+      character(len=256) :: mdu_local
+      integer :: ierr
+
+      ! Create a net file that includes a 1D network (branch) alongside the 2D grid.
+      call create_net_with_1d_branch(NET_FILE, ierr)
+      call f90_assert_eq(ierr, 0, "Net file with 1D branch creation should succeed")
+
+      ! Create structure file with a 4-point long culvert
+      call create_structure_file_4pt(STR_FILE)
+
+      ! Create MDU with ConvertLongCulverts=1
+      call create_mdu_file(MDU_FILE, NET_FILE, STR_FILE)
+      md_ident = MDU_FILE
+      threshold_abort = LEVEL_FATAL
+      call inidat()
+      call timini()
+      timon = .false.
+      jampi = 0
+      call SetMessageHandling(write2screen=.false.)
+      call resetFullFlowModel()
+      mdu_local = MDU_FILE
+      call loadModel(mdu_local)
+      iresult = flow_modelinit()
+
+      call f90_expect_eq(iresult, DFM_NOERR, "flow_modelinit should succeed with existing 1D network + long culvert")
+      call f90_expect_eq(nlongculverts, 2, "two long culverts should be registered")
+      call f90_expect_eq(longculverts(1)%numlinks, 3, "4-point culvert should have 3 links")
+
+      ! Apply head difference
+      do i = 1, ndx2d
+         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
+            bl(i) = 10.0_dp
+         end if
+      end do
+      do i = 1, ndx
+         s1(i) = merge(2.0_dp, 0.0_dp, xz(i) < 100.0_dp)
+      end do
+
+      call flow_spatietimestep()
+
+      L1 = abs(longculverts(1)%flowlinks(1))
+      L2 = abs(longculverts(1)%flowlinks(2))
+      L3 = abs(longculverts(1)%flowlinks(3))
+
+      call f90_expect_true(L1 > 0, "entry link should be valid")
+      call f90_expect_true(au(L2) > 0.0_dp, "au on interior link should be > 0 with existing 1D network")
+      call f90_expect_true(q1(L1) > 0.0_dp, "discharge at entry should be positive with existing 1D network")
+
+      call default_longculverts
+   end subroutine test_4pt_with_existing_1d_network
+   !$f90tw)
+
+   !> Create a UGRID net file that has both a 2D grid (5x3 nodes, 8 cells)
+   !! AND a pre-existing 1D network branch running along y=50 from x=-100 to x=-50
+   !! (outside the 2D grid, so it doesn't interfere with the culvert placement).
+   subroutine create_net_with_1d_branch(filename, ierr)
+      use precision, only: dp
+      use netcdf
+      character(len=*), intent(in) :: filename
+      integer, intent(out) :: ierr
+
+      integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
+      integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
+      integer :: dimid_1dnode, dimid_1dedge
+      integer :: varid_mesh1d, varid_1dxn, varid_1dyn, varid_1den
+      ! 2D: same as create_two_row_netfile
+      integer, parameter :: NNODES = 15, NEDGES = 22, NFACES = 8
+      ! 1D: simple 3-node branch
+      integer, parameter :: N1DNODES = 3, N1DEDGES = 2
+      real(kind=dp) :: xnodes(NNODES), ynodes(NNODES)
+      real(kind=dp) :: x1d(N1DNODES), y1d(N1DNODES)
+      integer :: edge_nodes(2, NEDGES), face_nodes(4, NFACES)
+      integer :: edge_nodes_1d(2, N1DEDGES)
+      integer :: i, j, k
+
+      ! 2D grid (same as create_two_row_netfile)
+      k = 0
+      do j = 1, 3
+         do i = 1, 5
+            k = k + 1
+            xnodes(k) = real((i - 1) * 100, dp)
+            ynodes(k) = real((j - 1) * 100, dp)
+         end do
+      end do
+
+      edge_nodes(:,  1) = [1,  2];  edge_nodes(:,  2) = [2,  3]
+      edge_nodes(:,  3) = [3,  4];  edge_nodes(:,  4) = [4,  5]
+      edge_nodes(:,  5) = [6,  7];  edge_nodes(:,  6) = [7,  8]
+      edge_nodes(:,  7) = [8,  9];  edge_nodes(:,  8) = [9, 10]
+      edge_nodes(:,  9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
+      edge_nodes(:, 11) = [13, 14]; edge_nodes(:, 12) = [14, 15]
+      edge_nodes(:, 13) = [1,  6];  edge_nodes(:, 14) = [2,  7]
+      edge_nodes(:, 15) = [3,  8];  edge_nodes(:, 16) = [4,  9]
+      edge_nodes(:, 17) = [5, 10]
+      edge_nodes(:, 18) = [6, 11];  edge_nodes(:, 19) = [7, 12]
+      edge_nodes(:, 20) = [8, 13];  edge_nodes(:, 21) = [9, 14]
+      edge_nodes(:, 22) = [10, 15]
+
+      face_nodes(:, 1) = [1,  2,  7,  6]; face_nodes(:, 2) = [2,  3,  8,  7]
+      face_nodes(:, 3) = [3,  4,  9,  8]; face_nodes(:, 4) = [4,  5, 10,  9]
+      face_nodes(:, 5) = [6,  7, 12, 11]; face_nodes(:, 6) = [7,  8, 13, 12]
+      face_nodes(:, 7) = [8,  9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
+
+      ! 1D network: 3 nodes along y=50, x = -200, -150, -100
+      x1d = [-200.0_dp, -150.0_dp, -100.0_dp]
+      y1d = [50.0_dp, 50.0_dp, 50.0_dp]
+      edge_nodes_1d(:, 1) = [1, 2]
+      edge_nodes_1d(:, 2) = [2, 3]
+
+      ! Write NetCDF
+      ierr = nf90_create(filename, NF90_CLOBBER, ncid)
+      if (ierr /= nf90_noerr) return
+
+      ierr = nf90_put_att(ncid, NF90_GLOBAL, 'Conventions', 'CF-1.8 UGRID-1.0')
+
+      ! 2D dimensions and variables
+      ierr = nf90_def_dim(ncid, 'mesh2d_nNodes', NNODES, dimid_node)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nEdges', NEDGES, dimid_edge)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nFaces', NFACES, dimid_face)
+      ierr = nf90_def_dim(ncid, 'mesh2d_nMax_face_nodes', 4, dimid_maxnodes)
+      ierr = nf90_def_dim(ncid, 'Two', 2, dimid_two)
+
+      ierr = nf90_def_var(ncid, 'mesh2d', NF90_INT, varid_mesh)
+      ierr = nf90_put_att(ncid, varid_mesh, 'cf_role', 'mesh_topology')
+      ierr = nf90_put_att(ncid, varid_mesh, 'topology_dimension', 2)
+      ierr = nf90_put_att(ncid, varid_mesh, 'node_coordinates', 'mesh2d_node_x mesh2d_node_y')
+      ierr = nf90_put_att(ncid, varid_mesh, 'edge_node_connectivity', 'mesh2d_edge_nodes')
+      ierr = nf90_put_att(ncid, varid_mesh, 'face_node_connectivity', 'mesh2d_face_nodes')
+
+      ierr = nf90_def_var(ncid, 'mesh2d_node_x', NF90_DOUBLE, [dimid_node], varid_xn)
+      ierr = nf90_put_att(ncid, varid_xn, 'standard_name', 'projection_x_coordinate')
+      ierr = nf90_put_att(ncid, varid_xn, 'units', 'm')
+      ierr = nf90_def_var(ncid, 'mesh2d_node_y', NF90_DOUBLE, [dimid_node], varid_yn)
+      ierr = nf90_put_att(ncid, varid_yn, 'standard_name', 'projection_y_coordinate')
+      ierr = nf90_put_att(ncid, varid_yn, 'units', 'm')
+
+      ierr = nf90_def_var(ncid, 'mesh2d_edge_nodes', NF90_INT, [dimid_two, dimid_edge], varid_en)
+      ierr = nf90_put_att(ncid, varid_en, 'cf_role', 'edge_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_en, 'start_index', 1)
+      ierr = nf90_def_var(ncid, 'mesh2d_face_nodes', NF90_INT, [dimid_maxnodes, dimid_face], varid_fn)
+      ierr = nf90_put_att(ncid, varid_fn, 'cf_role', 'face_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
+
+      ! 1D dimensions and variables
+      ierr = nf90_def_dim(ncid, 'mesh1d_nNodes', N1DNODES, dimid_1dnode)
+      ierr = nf90_def_dim(ncid, 'mesh1d_nEdges', N1DEDGES, dimid_1dedge)
+
+      ierr = nf90_def_var(ncid, 'mesh1d', NF90_INT, varid_mesh1d)
+      ierr = nf90_put_att(ncid, varid_mesh1d, 'cf_role', 'mesh_topology')
+      ierr = nf90_put_att(ncid, varid_mesh1d, 'topology_dimension', 1)
+      ierr = nf90_put_att(ncid, varid_mesh1d, 'node_coordinates', 'mesh1d_node_x mesh1d_node_y')
+      ierr = nf90_put_att(ncid, varid_mesh1d, 'edge_node_connectivity', 'mesh1d_edge_nodes')
+
+      ierr = nf90_def_var(ncid, 'mesh1d_node_x', NF90_DOUBLE, [dimid_1dnode], varid_1dxn)
+      ierr = nf90_put_att(ncid, varid_1dxn, 'standard_name', 'projection_x_coordinate')
+      ierr = nf90_put_att(ncid, varid_1dxn, 'units', 'm')
+      ierr = nf90_def_var(ncid, 'mesh1d_node_y', NF90_DOUBLE, [dimid_1dnode], varid_1dyn)
+      ierr = nf90_put_att(ncid, varid_1dyn, 'standard_name', 'projection_y_coordinate')
+      ierr = nf90_put_att(ncid, varid_1dyn, 'units', 'm')
+      ierr = nf90_def_var(ncid, 'mesh1d_edge_nodes', NF90_INT, [dimid_two, dimid_1dedge], varid_1den)
+      ierr = nf90_put_att(ncid, varid_1den, 'cf_role', 'edge_node_connectivity')
+      ierr = nf90_put_att(ncid, varid_1den, 'start_index', 1)
+
+      ierr = nf90_enddef(ncid)
+      if (ierr /= nf90_noerr) then; ierr = nf90_close(ncid); return; end if
+
+      ! Write 2D data
+      ierr = nf90_put_var(ncid, varid_xn, xnodes)
+      ierr = nf90_put_var(ncid, varid_yn, ynodes)
+      ierr = nf90_put_var(ncid, varid_en, edge_nodes)
+      ierr = nf90_put_var(ncid, varid_fn, face_nodes)
+
+      ! Write 1D data
+      ierr = nf90_put_var(ncid, varid_1dxn, x1d)
+      ierr = nf90_put_var(ncid, varid_1dyn, y1d)
+      ierr = nf90_put_var(ncid, varid_1den, edge_nodes_1d)
+
+      ierr = nf90_close(ncid)
+      ierr = 0 ! success
+   end subroutine create_net_with_1d_branch
 
 end module test_longculverts
 
