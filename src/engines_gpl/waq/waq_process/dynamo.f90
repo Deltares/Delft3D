@@ -64,55 +64,50 @@ contains
         integer(kind = int_wp), save :: NR_MES = 0 
         real(kind = real_wp) :: ALGMIN        
 
-        real(kind = real_wp) :: AMOPRF
-        real(kind = real_wp) :: DAYL
-        real(kind = real_wp) :: DIN
-        real(kind = real_wp) :: FNUT
-        real(kind = real_wp) :: FN
-        real(kind = real_wp) :: FP
-        real(kind = real_wp) :: FRAD
-        real(kind = real_wp) :: FS
-        real(kind = real_wp) :: KMDIN
-        real(kind = real_wp) :: KMP
-        real(kind = real_wp) :: KMSI
-        real(kind = real_wp) :: LimDayLength
-        real(kind = real_wp) :: LIMRAD
-        real(kind = real_wp) :: LNFRAD
-        real(kind = real_wp) :: LOG
-        !real(kind = real_wp) :: MIN
-        real(kind = real_wp) :: NH4
-        real(kind = real_wp) :: NO3
-        real(kind = real_wp) :: OptDayLength
-        real(kind = real_wp) :: PO4
-        real(kind = real_wp) :: RADSAT
-        real(kind = real_wp) :: RAD
-        real(kind = real_wp) :: SI
-        real(kind = real_wp) :: TCG
-        real(kind = real_wp) :: TCM
-        real(kind = real_wp) :: TEMP20
-        real(kind = real_wp) :: TEMP
-        real(kind = real_wp) :: TFGRO
-        real(kind = real_wp) :: TFG
-        real(kind = real_wp) :: TFM   
-        real(kind = real_wp) :: DEPTH
-        real(kind = real_wp) :: EXTVL
-        real(kind = real_wp) :: EXTDPT
-        real(kind = real_wp) :: RADBOT
-        real(kind = real_wp) :: ALG
-        real(kind = real_wp) :: PPMAX
-        real(kind = real_wp) :: MRESP
-        real(kind = real_wp) :: GRESP
-        real(kind = real_wp) :: MORT0
-        real(kind = real_wp) :: MORTS
-        real(kind = real_wp) :: SAL1
-        real(kind = real_wp) :: SAL2
-        real(kind = real_wp) :: SAL
-        real(kind = real_wp) :: ACTMOR
-        real(kind = real_wp) :: PPROD
-        real(kind = real_wp) :: DL           
+        real(kind = real_wp) :: AMOPRF  ! Ammonium preference factor for nitrate uptake
+        real(kind = real_wp) :: DAYL    ! Daylength (0-1) for light limitation
+        real(kind = real_wp) :: DIN     ! Available dissolved inorganic nitrogen (nitrate corrected for ammonium + ammonium)
+        real(kind = real_wp) :: FNUT    ! Nutrient limitation factor
+        real(kind = real_wp) :: FN      ! Nutrient limitation factor for nitrogen
+        real(kind = real_wp) :: FP      ! Nutrient limitation factor for phosphate
+        real(kind = real_wp) :: FRAD    ! Light saturation factor
+        real(kind = real_wp) :: FS      ! Nutrient limitation factor for silicate
+        real(kind = real_wp) :: KMDIN   ! Half saturation constant for dissolved inorganic nitrogen
+        real(kind = real_wp) :: KMP     ! Half saturation constant for phosphate
+        real(kind = real_wp) :: KMSI    ! Half saturation constant for silicate
+        real(kind = real_wp) :: LimDayLength    ! Limiting factor for daylength
+        real(kind = real_wp) :: LIMRAD          ! Limiting factor for light
+        real(kind = real_wp) :: LNFRAD          ! Natural logarithm of the light saturation factor
+        real(kind = real_wp) :: NH4             ! Ammonium concentration
+        real(kind = real_wp) :: NO3             ! Nitrate concentration
+        real(kind = real_wp) :: OptDayLength    ! Optimal daylength for growth saturation
+        real(kind = real_wp) :: PO4             ! Phosphate concentration
+        real(kind = real_wp) :: RADSAT          ! Light saturation radiation
+        real(kind = real_wp) :: RAD             ! Actual radiation
+        real(kind = real_wp) :: SI              ! Silicate concentration
+        real(kind = real_wp) :: TCG             ! Temperature coefficient for growth
+        real(kind = real_wp) :: TCM             ! Temperature coefficient for mortality
+        real(kind = real_wp) :: TEMP20          ! Temperature - 20
+        real(kind = real_wp) :: TEMP            ! Temperature
+        real(kind = real_wp) :: TFGro           ! Temperature factor for growth
+        real(kind = real_wp) :: TFM             ! Temperature factor for mortality
+        real(kind = real_wp) :: DEPTH           ! Depth of the cell     
+        real(kind = real_wp) :: EXTVL           ! Light extinction coefficient
+        real(kind = real_wp) :: EXTDPT          ! Light extinction depth
+        real(kind = real_wp) :: RADBOT          ! Radiation at the bottom of the cell
+        real(kind = real_wp) :: ALG             ! Algae concentration
+        real(kind = real_wp) :: PPMAX           ! Potential maximum primary production rate
+        real(kind = real_wp) :: MRESP           ! Maintenance respiration rate
+        real(kind = real_wp) :: GRESP           ! Growth respiration rate
+        real(kind = real_wp) :: MORT0           ! Mortality rate constant 
+        real(kind = real_wp) :: MORTS           ! Mortality rate at high salinity
+        real(kind = real_wp) :: SAL1            ! Lower salinity limit for mortality
+        real(kind = real_wp) :: SAL2            ! Upper salinity limit for mortality
+        real(kind = real_wp) :: SAL             ! Actual salinity
+        real(kind = real_wp) :: ACTMOR          ! Actual mortality rate
+        real(kind = real_wp) :: PPROD           ! Gross primary production
+        real(kind = real_wp) :: RESP            ! Actual respiration rate  
 
-        real(kind = real_wp) :: RESP
-        
         CALL get_log_unit_number(ILUMON)
 		
 		ipnt  = ipoint
@@ -125,7 +120,7 @@ contains
 			TCG = process_space_real(ipnt(2))
 			TCM = process_space_real(ipnt(3))
 			TEMP20 = TEMP - 20.
-            TFG = TCG**TEMP20
+            TFGro = TCG**TEMP20
             TFM = TCM**TEMP20
             TMPOPT = .FALSE.
         ELSE
@@ -138,8 +133,6 @@ contains
             LgtOpt = .false.             !  This is constant for all cells
             Rad = process_space_real(ipnt(15))
             RadSat = process_space_real(ipnt(16))
-            !TFGro = process_space_real(ipnt(28))
-			TFGro = TFG
             RadSat = TFGro * RadSat      !  Correct RadSat for temperature
             if (RadSat > 1e-20) then
                 Frad = Rad / RadSat
@@ -161,11 +154,11 @@ contains
                     TCM = process_space_real(ipnt(3))
                     TEMP20 = TEMP - 20.
                     !     Algal temp. functions for growth (G) and mortality (M) processes
-                    TFG = TCG**TEMP20
+                    TFGro = TCG**TEMP20
                     TFM = TCM**TEMP20
                 ENDIF
                 !     Uitvoer limiterende factoren
-                process_space_real(ipnt(28)) = TFG
+                process_space_real(ipnt(28)) = TFGro
                 process_space_real(ipnt(29)) = TFM
 				
 				
@@ -173,7 +166,7 @@ contains
 				! from DL_green （dlalg.f90）Daylength function for algae DYNAMO
 				!				
 				DayL = process_space_real(ipnt(4))              ! daylength <0-1> in (d) 
-				OptDayLength = process_space_real(ipnt(5))   		! daylength for growth saturation Greens (d) 
+				OptDayLength = process_space_real(ipnt(5))   		! daylength for growth saturation (d) 
 
 				IF (DayL < 1E-20)  CALL write_error_message ('DayL in DLALG zero')
 
@@ -230,8 +223,6 @@ contains
 				if (LgtOpt) then
                     Rad    = process_space_real(ipnt(15))
                     RadSat = process_space_real(ipnt(16))
-                    !TFGro  = process_space_real(ipnt(28))
-					TFGro = TFG
                     RadSat = TFGro * RadSat
                     if (RadSat > 1e-20) then
                         Frad = Rad / RadSat
@@ -307,7 +298,7 @@ contains
                 ENDIF
 
                 !     Gross primary production
-                PPROD = LimDayLength * LimRad * FNUT * TFG * PPMAX
+                PPROD = LimDayLength * LimRad * FNUT * TFGro * PPMAX
 
                 !     The respiration does not include excretion!!
                 !     The proces formulation used here does not release nutrients due
