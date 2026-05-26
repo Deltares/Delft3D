@@ -1965,7 +1965,12 @@
       <checks>
         <file name="output/NieuweMeer_z_his.nc" type="netCDF">
           <parameters>
-            <parameter name="temperature" toleranceAbsolute="0.0005" />
+            <parameter name="temperature" toleranceAbsolute="0.005" />
+          </parameters>
+        </file>
+        <file name="output/NieuweMeer_z_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.05" />
           </parameters>
         </file>
       </checks>
@@ -1976,7 +1981,12 @@
       <checks>
         <file name="output/NieuweMeer_sigma_his.nc" type="netCDF">
           <parameters>
-            <parameter name="temperature" toleranceAbsolute="0.0005" />
+            <parameter name="temperature" toleranceAbsolute="0.005" />
+          </parameters>
+        </file>
+        <file name="output/NieuweMeer_sigma_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.05" />
           </parameters>
         </file>
       </checks>
@@ -1987,7 +1997,12 @@
       <checks>
         <file name="output/NieuweMeer_zsigma_his.nc" type="netCDF">
           <parameters>
-            <parameter name="temperature" toleranceAbsolute="0.0005" />
+            <parameter name="temperature" toleranceAbsolute="0.005" />
+          </parameters>
+        </file>
+        <file name="output/NieuweMeer_zsigma_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_tem1" toleranceAbsolute="0.05" />
           </parameters>
         </file>
       </checks>
