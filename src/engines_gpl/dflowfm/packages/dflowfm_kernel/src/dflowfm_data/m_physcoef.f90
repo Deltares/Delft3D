@@ -66,7 +66,6 @@ module m_physcoef
 
    real(kind=dp) :: Elder !< add Elder viscosity
    real(kind=dp) :: Smagorinsky !< add Smagorinsky Cs coefficient, vic = vic + (Cs*dx)**2 * S
-   real(kind=dp), parameter :: viuchk = 0.24_dp !< if < 0.5 then eddy viscosity cell peclet check viu<viuchk*dx*dx/dt
 
    real(kind=dp) :: vicoww !< user specified constant vertical eddy viscosity (m2/s)
    real(kind=dp) :: constant_dicoww !< user specified constant vertical eddy diffusivity (m2/s)
