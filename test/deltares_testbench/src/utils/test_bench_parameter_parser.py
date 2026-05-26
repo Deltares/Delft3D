@@ -83,6 +83,8 @@ class TestBenchParameterParser:
 
         settings.skip_post_processing = cls.__get_argument_value("skip_post_processing", args) or False
 
+        settings.copy_failed_cases = cls.__get_argument_value("copy_failed_cases", args) or False
+
         return settings
 
     @staticmethod
@@ -268,6 +270,12 @@ class TestBenchParameterParser:
             action="store_true",
             help="Turns on specific TeamCity logging.",
             dest="teamcity",
+        )
+        parser.add_argument(
+            "--copy-failed-cases",
+            action="store_true",
+            help="Copy failed input/ouput data of failed cases into the teamcity artifact",
+            dest="copy_failed_cases",
         )
         parser.add_argument(
             "--server-base-url",
