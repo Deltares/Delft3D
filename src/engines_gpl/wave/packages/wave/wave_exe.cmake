@@ -2,7 +2,7 @@
 set(executable_files ${src_path}/wave_exe.f90) # Because the .dll and the .exe are defined in the same directory, retrieve the relevant files for the executable alone
 
 # Define icon
-set(icon_file resource/wl.ico)
+set(icon_file resource/wave_icon.rc)
 
 # Define executable
 set(executable_name wave_exe)
