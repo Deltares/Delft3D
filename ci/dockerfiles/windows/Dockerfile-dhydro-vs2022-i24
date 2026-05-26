@@ -23,38 +23,32 @@ RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
 
 # Install the Intel toolkits
-ADD intel-fortran-compiler-2025.3.1.15_offline.exe C:/
-RUN Start-Process -FilePath "C:\intel-fortran-compiler-2025.3.1.15_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2022_INTEGRATION=1", "-s" -Wait
+ADD intel-fortran-compiler-2025.3.3.16_offline.exe C:/
+RUN Start-Process -FilePath "C:\intel-fortran-compiler-2025.3.3.16_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2022_INTEGRATION=1", "-s" -Wait
 
-ADD intel-onemkl-2025.3.0.460_offline.exe C:/
-RUN Start-Process -FilePath "C:\intel-onemkl-2025.3.0.460_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2022_INTEGRATION=1", "-s" -Wait
+ADD intel-onemkl-2025.3.1.10_offline.exe C:/
+RUN Start-Process -FilePath "C:\intel-onemkl-2025.3.1.10_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2022_INTEGRATION=1", "-s" -Wait
 
-ADD intel-mpi-2021.17.1.14_offline.exe C:/
-RUN Start-Process -FilePath "C:\intel-mpi-2021.17.1.14_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-s" -Wait
+ADD intel-mpi-2021.17.2.93_offline.exe C:/
+RUN Start-Process -FilePath "C:\intel-mpi-2021.17.2.93_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-s" -Wait
 
 # RUN Remove intel and visual studio executables
 RUN Remove-Item C:\*.exe"
 
-# Install Chocolatey and required packages
-# Install cmake 4.x.y, python 3.12.x, git and ninja
-
-RUN powershell.exe -Command \
-    Set-ExecutionPolicy Bypass -Scope Process -Force; \
-    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; \
-    [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}; \
-    (New-Object System.Net.WebClient).DownloadFile('https://community.chocolatey.org/install.ps1', 'choco_install.ps1'); \
-    ./choco_install.ps1; \
-	del choco_install.ps1; \
-	choco install cmake git ninja nano -y --no-progress; \
-	choco install python --version='3.12.10' -y --no-progress
-
-# Some environment variables
+ADD cmake-3.31.0-rc1-windows-x86_64.msi C:\\cmake-3.31.0-rc1-windows-x86_64.msi
+RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-3.31.0-rc1-windows-x86_64.msi /qn'
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
+RUN Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi
 
 ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
-ENV VS2022INSTALLDIR="C:\Program Files\Microsoft Visual Studio\17\Community"
+ENV VS2022INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\17\\Community\\"
 
-# Define the entry point for the docker container.
-# This entry point starts the developer command prompt and launches the PowerShell shell.
+ADD python-3.12.7-amd64.exe C:\\python-3.12.7-amd64.exe
+RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
+RUN Remove-Item C:\\python-3.12.7-amd64.exe
+RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
 
-COPY set-env-vs2022.cmd C:\\set-env-vs2022.cmd
-ENTRYPOINT ["cmd.exe", "/k", "C:\\set-env-vs2022.cmd"]
+ADD Git-2.47.0-64-bit.exe C:\\Git-2.47.0-64-bit.exe
+RUN Start-Process -FilePath "C:\\Git-2.47.0-64-bit.exe" -ArgumentList "/SILENT" -Wait
+RUN Remove-Item C:\\Git-2.47.0-64-bit.exe
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\Git\\usr\\bin')
