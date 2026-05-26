@@ -94,7 +94,9 @@ object WindowsBuildEnvironmentI24 : BuildType({
         vcs {
             triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
             branchFilter = "+:<default>".trimIndent()
-            param("trigger.type", "vcs")
+            buildParams {
+                param("trigger.type", "vcs")
+            }
         }
         schedule {
             schedulingPolicy = weekly {
@@ -105,7 +107,9 @@ object WindowsBuildEnvironmentI24 : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
-            param("trigger.type", "schedule")
+            buildParams {
+                param("trigger.type", "schedule")
+            }
         }
     }
 
