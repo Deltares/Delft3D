@@ -1387,9 +1387,10 @@ contains
       use fm_external_forcings_data
       use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
       use m_missing, only: dmiss
-      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
+      use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1406,6 +1407,7 @@ contains
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
       integer :: local_count
+      integer :: tm_global_count
 
       real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
       real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
@@ -1422,134 +1424,82 @@ contains
       is_successful = .false.
       bubblescreen_source_sink_count = 0
       local_count = 0
-      function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
-         use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
-         use m_filez, only: oldfil
-         use m_reapol, only: reapol
-         use messageHandling, only: err_flush, msgbuf, msg_flush
-         use tree_data_types, only: tree_data
-         use m_polygon, only: xpl, ypl, zpl, npl
-         use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
-         use network_data
-         use m_flow
-         use fm_external_forcings_data
-         use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-         use m_setsorsin
-         use m_missing, only: dmiss
-         use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
-         use m_alloc, only: realloc
-         use m_flowgeom, only: ndx
-         use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
 
+      ! Read bubble screen attributes from the tree node
+      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
+      if (is_successful) then
+         allocate (character(len=len_trim(id) + 50) :: srcid)
 
-         ! Parameters
-         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
-         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-         character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+         ! Find the bubblescreen with matching id
+         do i = 1, size(bubblescreens)
+            if (trim(bubblescreens(i)%id) == trim(id)) then
+               bi = i
+               exit
+            end if
+         end do
 
-         ! Local variables
-         logical :: is_successful !< Success flag
-         integer :: cidx !< Index for crossed cells
-         integer :: i, bi !< Loop indices
-         integer :: ierr !< Error code
-         integer :: bubblescreen_source_sink_count
-         integer :: n_cells
-         integer, dimension(:), allocatable :: bubblescreen_cells
-         integer :: local_count
-         integer :: tm_global_count
+         associate (bubblescreen => bubblescreens(bi))
 
-         real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
-         real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
-         real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
-         real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
-         real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
-
-         character(len=:), allocatable :: id !< Bubblescreen id
-         character(len=:), allocatable :: srcid !< Source id
-         character(len=:), allocatable :: location_file !< Bubblescreen location file
-         character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
-
-         ! Initialization
-         is_successful = .false.
-         bubblescreen_source_sink_count = 0
-         local_count = 0
-
-         ! Read bubble screen attributes from the tree node
-         is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
-         if (is_successful) then
-            allocate (character(len=len_trim(id) + 50) :: srcid)
-
-            ! Find the bubblescreen with matching id
-            do i = 1, size(bubblescreens)
-               if (trim(bubblescreens(i)%id) == trim(id)) then
-                  bi = i
-                  exit
+            n_cells = bubblescreen%num_flowcells
+            bubblescreen_cells = bubblescreen%flowcell_indices
+            ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+            if (jampi == 1) then
+               bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+               n_cells = size(bubblescreen_cells)
+            end if
+            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
+            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
+            do i = 1, n_cells
+               if (.not. bubblescreen_cells(i) == -1) then
+                  x_flowcell(i) = xzw(bubblescreen_cells(i))
+                  y_flowcell(i) = yzw(bubblescreen_cells(i))
                end if
             end do
+            if (jampi == 1) then
+               call reduce_double_array_max(n_cells, x_flowcell)
+               call reduce_double_array_max(n_cells, y_flowcell)
+            end if
+            tm_global_count = nNodesBubbleScreen
+            nNodesBubbleScreen = nNodesBubbleScreen + n_cells
+            call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+            call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+            geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
+            geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
+            nodeCountBubbleScreen(bi) = n_cells
 
-            associate (bubblescreen => bubblescreens(bi))
+            z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
+            z_flowcell_sink = bubblescreen%z_level
+            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
+            ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
+            do cidx = 1, n_cells
+               ! Create the source/sink name
+               bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
+               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
 
-               n_cells = bubblescreen%num_flowcells
-               bubblescreen_cells = bubblescreen%flowcell_indices
-               ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
-               if (jampi == 1) then
-                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
-                  n_cells = size(bubblescreen_cells)
+               ! Create a linked source/sink in the flow cell
+               call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               if (bubblescreen_cells(cidx) /= -1) then
+                  local_count = local_count + 1
+                  bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
+                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
                end if
-               call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
-               call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
-               do i = 1, n_cells
-                  if (.not. bubblescreen_cells(i) == -1) then
-                     x_flowcell(i) = xzw(bubblescreen_cells(i))
-                     y_flowcell(i) = yzw(bubblescreen_cells(i))
-                  end if
-               end do
-               if (jampi == 1) then
-                  call reduce_double_array_max(n_cells, x_flowcell)
-                  call reduce_double_array_max(n_cells, y_flowcell)
-               end if
-               tm_global_count = nNodesBubbleScreen
-               nNodesBubbleScreen = nNodesBubbleScreen + n_cells
-               call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-               call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-               geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
-               geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
-               nodeCountBubbleScreen(bi) = n_cells
+            end do
+         end associate
+      end if
 
-               z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
-               z_flowcell_sink = bubblescreen%z_level
-               call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
-               ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
-               do cidx = 1, n_cells
-                  ! Create the source/sink name
-                  bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
-                  write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
+      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
+                                                      trim(discharge_input), bi, 1, bubblescreen_air_discharge)
 
-                  ! Create a linked source/sink in the flow cell
-                  call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
-                  if (bubblescreen_cells(cidx) /= -1) then
-                     local_count = local_count + 1
-                     bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
-                     bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
-                  end if
-               end do
-            end associate
-         end if
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
+         call err_flush()
+         return
+      end if
 
-         is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                                                        trim(discharge_input), bi, 1, bubblescreen_air_discharge)
+      is_successful = .true.
 
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-               //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
-            call err_flush()
-            return
-         end if
-
-         is_successful = .true.
-
-      end function add_bubblescreen_source_sinks
+   end function add_bubblescreen_source_sinks
 
       !> Get several target grid properties for a given location type.
    !!

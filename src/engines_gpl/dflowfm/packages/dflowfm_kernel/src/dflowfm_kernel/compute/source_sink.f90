@@ -22,6 +22,7 @@ module m_source_sink
 
       ! Source/sink counters.
       integer :: num_total = 0 !< [-] Total number of source/sinks in the model.
+      integer :: num_normal = 0 !< [-] Number of normal source/sinks, i.e. excluding bubblescreens.
       integer :: num_oldfile = 0 !< [-] Number of source/sinks in old extforce file.
       integer :: num_nearfield = 0 !< [-] Number of source/sinks added for near field.
       integer :: max_polyline_points = 2 !< [-] Maximum number of points in source_sinks%x, source_sinks%y over all sources/sinks. Used for array dimensions.
@@ -46,8 +47,9 @@ module m_source_sink
       real(kind=dp), dimension(:,:), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
 
       ! Source/sink miscellaneous variables.
-      logical :: add_k_to_turkin = .false. !< [-] Add k of source/sink to turkin.
       integer, dimension(:), allocatable :: max_xy_points !< [-] Maximum number of points per source/sink in x, y. Used for array dimensions.
+      logical, dimension(:), allocatable :: is_normal !< [-] Logical array indicating if a source/sink is normal (excluding bubblescreens).
+      logical :: add_k_to_turkin = .false. !< [-] Add k of source/sink to turkin.
 
       ! Cumulative volume and discharge variables. Used in output and for waq coupling.
       real(kind=dp), dimension(:), allocatable :: cumulative_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(self%num_total)}
@@ -105,6 +107,7 @@ contains
       allocate (self%constituents(size, numconst))
 
       allocate (self%max_xy_points(size))
+      allocate (self%is_normal(size))
 
       allocate (self%cumulative_volume(size))
       allocate (self%cumulative_volume_previous(size))
@@ -115,6 +118,7 @@ contains
 
       ! Initialize all source/sink attributes.
       self%num_total = 0
+      self%num_normal = 0
       self%num_oldfile = 0
       self%num_nearfield = 0
       self%max_polyline_points = 2
@@ -133,8 +137,9 @@ contains
       self%discharge = 0.0_dp
       self%constituents = 0.0_dp
 
-      self%add_k_to_turkin = .false.
       self%max_xy_points = 0
+      self%is_normal = .true.
+      self%add_k_to_turkin = .false.
 
       self%cumulative_volume = 0.0_dp
       self%cumulative_volume_previous = 0.0_dp
@@ -171,6 +176,7 @@ contains
       call realloc(self%constituents, [new_size, numconst], keepExisting=.true., fill=0.0_dp)
 
       call realloc(self%max_xy_points, new_size, keepExisting=.true., fill=0)
+      call realloc(self%is_normal, new_size, keepExisting=.true., fill=.true.)
 
       call realloc(self%cumulative_volume, new_size, keepExisting=.true., fill=0.0_dp)
       call realloc(self%cumulative_volume_previous, new_size, keepExisting=.true., fill=0.0_dp)
