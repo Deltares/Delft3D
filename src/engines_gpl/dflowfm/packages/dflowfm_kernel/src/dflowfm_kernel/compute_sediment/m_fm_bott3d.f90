@@ -78,10 +78,10 @@ contains
       use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
       use unstruc_files, only: mdia
       use m_fm_erosed, only: mtd, tmor, bc_mor_array, lsedtot, e_ssn, bermslopetransport, duneavalan, &
-                              bedw,bed,dbodsd,e_sbcn,e_sbct,e_sbwn,e_sswn,e_sswt,lsed,morfac,&
-                              stmpar,susw,tcmp,sbcx,sbcy,morft,ucxq_mor,ucyq_mor,blchg,e_sbwt,&
-                              hs_mor,hydrt,sbwx,sbwy,sscx,sscy,sswx,sswy,sedd50,taub,rhosol,&
-                              hidexp      
+                             bedw, bed, dbodsd, e_sbcn, e_sbct, e_sbwn, e_sswn, e_sswt, lsed, morfac, &
+                             stmpar, susw, tcmp, sbcx, sbcy, morft, ucxq_mor, ucyq_mor, blchg, e_sbwt,&
+                             hs_mor, hydrt, sbwx, sbwy, sscx, sscy, sswx, sswy, sedd50, taub, rhosol, &
+                             hidexp
       use m_sediment, only: kcsmor
       use m_partitioninfo, only: jampi, ITYPE_Sall, update_ghosts
       use m_fm_morstatistics, only: morstats, morstatt0
@@ -122,7 +122,9 @@ contains
    !! Point
    !!
 
-      associate ( cmpupd => stmpar%morpar%cmpupd )
+      associate (&
+         cmpupd => stmpar%morpar%cmpupd &
+         )
 
       if (associated(bfmpar%dunelength)) then
          dunelength_tmp => bfmpar%dunelength
@@ -242,7 +244,7 @@ contains
             ! Determine new thickness of transport layer
             !
             call compthick()
-            !
+            ! 
             ! Compute mobile fractions
             ! 
             if (stmpar%morlyr%settings%imobility > MOBILITY_OFF) then 
@@ -311,8 +313,7 @@ contains
 
       !
       call timstop(handle_extra(89))
-      !
-      end associate
+   end associate
    end subroutine fm_bott3d
 
    !< Calculate suspended sediment transport correction vector (for SAND)
