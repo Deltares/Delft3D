@@ -8,7 +8,7 @@ module test_morphology
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_trab19)
+   !$f90tw TESTCODE(TEST, test_morphology, test_Van_Thiel_Van_Rijn, test_trab19,
    subroutine test_trab19() bind(C)
       integer, parameter :: npar = 25 
       integer, parameter :: npardef = 15
@@ -26,11 +26,11 @@ contains
       real(dp) :: poros = 0.4_dp ! Porosity of the sediment [-]
       real(dp) :: rlabda = 0.5_dp ! Parameter from Ruessink et al. 2009 JGR 
       real(dp) :: teta = 0.1_dp ! angle between wave direction and x-axis [degrees]
-      real(dp) :: tp = 5.0_dp ! Wave period   [s]
+      real(dp) :: tp = 5_dp ! Wave period   [s]
       real(dp) :: ubot = 0.1_dp ! velocity at the bed [m/s]
       real(dp) :: u = 1.0_dp ! velocity in x direction [m/s] 
       real(dp) :: v = 0.0_dp ! velocity in y direction [m/s]
-      real(dp) :: vicmol = 1.0e-6_dp ! kinematic viscosity of water [m^2/s]
+      real(dp) :: vicmol = 1e-6 ! kinematic viscosity of water [m^2/s]
       ! output variables
       real(dp) :: sbcu
       real(dp) :: sbcv
