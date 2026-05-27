@@ -30,7 +30,7 @@ contains
       real(dp) :: ubot = 0.1_dp ! velocity at the bed [m/s]
       real(dp) :: u = 1.0_dp ! velocity in x direction [m/s] 
       real(dp) :: v = 0.0_dp ! velocity in y direction [m/s]
-      real(dp) :: vicmol = 1e-6 ! kinematic viscosity of water [m^2/s]
+      real(dp) :: vicmol = 1.0e-6_dp ! kinematic viscosity of water [m^2/s]
       ! output variables
       real(dp) :: sbcu
       real(dp) :: sbcv
