@@ -1341,6 +1341,7 @@ contains
             i_bubblescreen = i_bubblescreen + 1
             is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
             bubblescreen%id = id
+            bubblescreen%isActive = .true.
 
             if (is_successful) then
 
