@@ -479,6 +479,7 @@ contains
       sr%swuvt = .false.
       sr%swwindt = .false.
       sr%timedependent = .false.
+      sr%sferic = .false.
       sr%swangridtype = SWAN_GRID_STRUCTURED
       !
       keywbased = .false.
@@ -673,6 +674,25 @@ contains
          write (*, *) 'SWAN_INPUT: invalid SWAN grid type. Expected SwanGridType = "structured" or "unstructured"'
          call handle_errors_mdw(sr)
       end select
+      !
+      sr%sferic = .false.
+      parname = ''
+      call prop_get(mdw_ptr, 'General', 'CoordinateSystem', parname)
+      if (parname == '') call prop_get(mdw_ptr, 'General', 'Coordinates', parname)
+      if (parname /= '') then
+         call str_lower(parname, len(parname))
+         select case (trim(parname))
+         case ('spherical', 'sferic', 'sphe')
+            sr%sferic = .true.
+         case ('cartesian', 'cart')
+            sr%sferic = .false.
+         case default
+            write (*, *) 'SWAN_INPUT: invalid coordinate system. Expected CoordinateSystem = "Cartesian" or "Spherical"'
+            call handle_errors_mdw(sr)
+         end select
+      elseif (sr%inputtemplatefile /= '') then
+         call read_template_coordinate_system(sr%inputtemplatefile, sr%sferic)
+      endif
       !
       sr%deltc = -999.0
       sr%nonstat_interval = -999.0
@@ -2522,6 +2542,11 @@ contains
       integer :: new_input
       integer :: loc_tag
       integer :: ierr
+      logical :: has_swanout1
+      logical :: has_swanout2
+      logical :: has_swanout3
+      logical :: insert_swanout
+      logical :: inserted_swanout
       character(256) :: rec
       character(256) :: line
       character(15) :: tbegc
@@ -2539,6 +2564,21 @@ contains
          close (old_input)
          call wavestop(1, 'Unable to find file '//trim(filnam))
       end if
+      !
+      call scan_template_swanout_files(old_input, has_swanout1, has_swanout2, has_swanout3)
+      if (has_swanout1 .neqv. has_swanout2) then
+         call wavestop(1, 'INPUTTemplateFile must contain both SWANOUT1 and SWANOUT2, or neither')
+      endif
+      if (allocated(sr%add_out_names)) then
+         if (has_swanout1 .and. has_swanout2 .and. .not. has_swanout3) then
+            call wavestop(1, 'INPUTTemplateFile must contain SWANOUT3 when AdditionalOutput is used')
+         endif
+      endif
+      insert_swanout   = .not. has_swanout1
+      inserted_swanout = .false.
+      if (insert_swanout) then
+         write (*, '(a)') 'INPUTTemplateFile does not contain SWANOUT1/SWANOUT2; inserting D-Waves output requests'
+      endif
       !
       open (newunit=new_input, file='INPUT', form='formatted', status='replace')
 
@@ -2578,16 +2618,248 @@ contains
             ! SPEC for netcdf hotfiles, with format hot_inest_date_time.nc
             call create_hotfile_line(fname, inest, line, sr, wavedata)
          end if
+         if (insert_swanout .and. .not. inserted_swanout .and. is_swan_compute_or_stop(line)) then
+            call write_template_swanout_requests(new_input, calccount, sr, wavedata)
+            inserted_swanout = .true.
+         endif
          write (new_input, '(a)') line
          line = ' '
          line(1:2) = ' $ '
          !
          read (old_input, '(a)', iostat=ierr) rec
       end do
+      if (insert_swanout .and. .not. inserted_swanout) then
+         call write_template_swanout_requests(new_input, calccount, sr, wavedata)
+      endif
       close (old_input)
       close (new_input)
 
    end subroutine update_swan_inp
+!
+!
+!==============================================================================
+   subroutine read_template_coordinate_system(filnam, sferic)
+      use string_module
+      implicit none
+
+      character(*), intent(in)    :: filnam
+      logical     , intent(inout) :: sferic
+
+      integer        :: ierr
+      integer        :: old_input
+      character(256) :: rec
+      character(256) :: line
+
+      open(newunit=old_input, file=filnam, form='formatted', status='old', iostat=ierr)
+      if (ierr /= 0) then
+         write (*, '(2a)') '*** ERROR: Unable to find file ', trim(filnam)
+         call wavestop(1, 'Unable to find file '//trim(filnam))
+      endif
+
+      read(old_input, '(a)', iostat=ierr) rec
+      do while (ierr == 0)
+         line = adjustl(rec)
+         if (line(1:1) /= '$' .and. line(1:1) /= '!' .and. line(1:1) /= '*') then
+            call str_lower(line, len(line))
+            if (index(line, 'coord') > 0) then
+               if (index(line, 'spher') > 0 .or. index(line, 'sphe') > 0) sferic = .true.
+               if (index(line, 'cart') > 0) sferic = .false.
+            endif
+         endif
+         read(old_input, '(a)', iostat=ierr) rec
+      enddo
+      close(old_input)
+   end subroutine read_template_coordinate_system
+!
+!
+!==============================================================================
+   subroutine scan_template_swanout_files(luninp, has_swanout1, has_swanout2, has_swanout3)
+      use string_module, only: str_toupper
+      implicit none
+
+      integer, intent(in)  :: luninp
+      logical, intent(out) :: has_swanout1
+      logical, intent(out) :: has_swanout2
+      logical, intent(out) :: has_swanout3
+
+      integer        :: ierr
+      character(256) :: rec
+      character(256) :: line
+
+      has_swanout1 = .false.
+      has_swanout2 = .false.
+      has_swanout3 = .false.
+      rewind(luninp)
+      do
+         read(luninp, '(a)', iostat=ierr) rec
+         if (ierr /= 0) exit
+         if (is_swan_comment(rec)) cycle
+         line = str_toupper(rec)
+         if (index(line, 'SWANOUT1') > 0) has_swanout1 = .true.
+         if (index(line, 'SWANOUT2') > 0) has_swanout2 = .true.
+         if (index(line, 'SWANOUT3') > 0) has_swanout3 = .true.
+      enddo
+      rewind(luninp)
+   end subroutine scan_template_swanout_files
+!
+!
+!==============================================================================
+   logical function is_swan_comment(line)
+      implicit none
+
+      character(*), intent(in) :: line
+
+      integer :: i
+
+      is_swan_comment = .false.
+      do i = 1, len_trim(line)
+         if (line(i:i) /= ' ') then
+            is_swan_comment = line(i:i) == '$' .or. line(i:i) == '!'
+            return
+         endif
+      enddo
+   end function is_swan_comment
+!
+!
+!==============================================================================
+   logical function is_swan_compute_or_stop(line)
+      implicit none
+
+      character(*), intent(in) :: line
+
+      is_swan_compute_or_stop = starts_with_swan_command(line, 'COMPUTE') .or. &
+                              & starts_with_swan_command(line, 'STOP')
+   end function is_swan_compute_or_stop
+!
+!
+!==============================================================================
+   logical function starts_with_swan_command(line, command)
+      use string_module, only: str_toupper
+      implicit none
+
+      character(*), intent(in) :: line
+      character(*), intent(in) :: command
+
+      integer                    :: first
+      integer                    :: last
+      integer                    :: ncmd
+      character(len=len(line))   :: upper
+      character(1)               :: next
+
+      starts_with_swan_command = .false.
+      upper = str_toupper(line)
+      last = len_trim(upper)
+      if (last == 0) return
+      first = 1
+      do while (first <= last .and. (upper(first:first) == ' ' .or. upper(first:first) == char(9)))
+         first = first + 1
+      enddo
+      if (first > last) return
+      if (upper(first:first) == '$' .or. upper(first:first) == '!') return
+
+      ncmd = len_trim(command)
+      if (last - first + 1 < ncmd) return
+      if (upper(first:first+ncmd-1) /= command(1:ncmd)) return
+      if (first+ncmd > len(upper)) then
+         starts_with_swan_command = .true.
+      else
+         next = upper(first+ncmd:first+ncmd)
+         starts_with_swan_command = next == ' ' .or. next == char(9)
+      endif
+   end function starts_with_swan_command
+!
+!
+!==============================================================================
+   subroutine write_template_swanout_requests(luninp, calccount, sr, wavedata)
+      use precision_basics
+      use wave_data
+      implicit none
+
+      integer, intent(in)          :: luninp
+      integer, intent(in)          :: calccount
+      type(swan_type), intent(in)  :: sr
+      type(wave_data_type)         :: wavedata
+
+      integer :: i
+      character(7), dimension(20) :: varnam1
+      character(7), dimension(11) :: varnam2
+      character(15) :: tbegc
+      character(15), external :: datetime_to_string
+      character(60) :: outfirst
+
+      data varnam1/'HSIGN  ', 'DIR    ', 'TM01   ', 'DEPTH ', 'VELOC ',     &
+           &       'TRANSP ', 'DSPR   ', 'DISSIP ', 'LEAK  ', 'QB    ',     &
+           &       'XP     ', 'YP     ', 'DIST   ', 'UBOT  ', 'STEEPW',     &
+           &       'WLENGTH', 'FORCES ', 'RTP    ', 'PDIR  ', 'WIND  '/
+      data varnam2/'TPS    ', 'TM02   ', 'TMM10  ', 'DHSIGN', 'DRTM01',     &
+           &       'SETUP  ', 'DISSURF', 'DISWCAP', 'DISBOT', 'DISVEG',     &
+           &       'NPLANTS'/
+
+      tbegc = datetime_to_string(wavedata%time%refdate, wavedata%time%timsec)
+      write (outfirst, '(3a,f8.2,a)') "OUT ", tbegc, " ", sr%nonstat_interval, " MIN"
+
+      write (luninp, '(1X,A)') '$ '
+      write (luninp, '(1X,A)') '$ D-Waves output requests'
+      do i = 1, size(varnam1)
+         write (luninp, '(1X,3A)') 'QUANTITY ', varnam1(i), ' excv=-999.0'
+      enddo
+      do i = 1, size(varnam2)
+         write (luninp, '(1X,3A)') 'QUANTITY ', varnam2(i), ' excv=-999.0'
+      enddo
+      if (allocated(sr%add_out_names)) then
+         do i = 1, size(sr%add_out_names)
+            write (luninp, '(1X,3A)') 'QUANTITY ', sr%add_out_names(i), ' excv=-999.0'
+         enddo
+      endif
+      call write_template_swanout_table(luninp, 'SWANOUT1', varnam1, calccount, sr%modsim, outfirst, .false.)
+      call write_template_swanout_table(luninp, 'SWANOUT2', varnam2, calccount, sr%modsim, outfirst, .true.)
+      if (allocated(sr%add_out_names)) then
+         write (luninp, '(1X,A)') 'TABLE ''COMPGRID''    NOHEAD    ''SWANOUT3''   _'
+         write (luninp, '(6(2X,A7),''_'')') sr%add_out_names
+         write (luninp, '(1X,A)') '$ '
+      endif
+   end subroutine write_template_swanout_requests
+!
+!
+!==============================================================================
+   subroutine write_template_swanout_table(luninp, filnam, varnames, calccount, modsim, outfirst, spaced_continuation)
+      implicit none
+
+      integer, intent(in)                         :: luninp
+      integer, intent(in)                         :: calccount
+      integer, intent(in)                         :: modsim
+      character(*), intent(in)                    :: filnam
+      character(7), dimension(:), intent(in)      :: varnames
+      character(*), intent(in)                    :: outfirst
+      logical, intent(in)                         :: spaced_continuation
+
+      integer       :: j
+      integer       :: m
+      integer       :: n
+      character(60) :: lijn
+
+      write (luninp, '(1X,5A)') 'TABLE ''', 'COMPGRID', '''    NOHEAD    ''', trim(filnam), '''   _'
+      if (calccount == 1 .and. modsim == 3) then
+         do j = 1, ceiling(real(size(varnames)) / 6.0)
+            m = min(6, size(varnames) - (j - 1) * 6)
+            lijn = ' '
+            if (spaced_continuation) then
+               write (lijn, '(A,I1.1,A)') "(", m, "(2X,A),' _')"
+            else
+               write (lijn, '(A,I1.1,A)') "(", m, "(2X,A),'_')"
+            endif
+            write (luninp, lijn) (varnames(n), n=(j - 1) * 6 + 1, min(j * 6, size(varnames)))
+         enddo
+         write (luninp, '(2A)') "  ", trim(outfirst)
+      else
+         if (spaced_continuation) then
+            write (luninp, '(6(2X,A),'' _'')') varnames
+         else
+            write (luninp, '(6(2X,A),''_'')') varnames
+         endif
+      endif
+      write (luninp, '(1X,A)') '$ '
+   end subroutine write_template_swanout_table
 !
 !
 !==============================================================================

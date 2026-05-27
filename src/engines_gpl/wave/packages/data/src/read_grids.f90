@@ -716,7 +716,7 @@ end subroutine read_unswan_grid
 !==============================================================================
 subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax, kmax, &
                          & sferic, xymiss, bndx, bndy, numenclpts, numenclparts, numenclptsppart, &
-                         & filename_tmp, flowLinkConnectivity)
+                         & filename_tmp, flowLinkConnectivity, sfericPointMesh)
     use netcdf
     use nc_check, only : nc_check_err
     use dwaves_version_module
@@ -748,6 +748,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     logical                                        :: sferic
     character(*)                                   :: filename_tmp
     logical                          , intent(in)  :: flowLinkConnectivity
+    logical, optional                , intent(in)  :: sfericPointMesh
 !
 ! Local variables
 !
@@ -786,6 +787,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     integer                                :: jatri
     integer                                :: jk
     integer                                :: maxelem
+    integer                                :: mesh_point_count
     integer                                :: nemax
     integer                                :: nemaxout
     integer                                :: nelm
@@ -815,6 +817,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     real(hp), dimension(:,:), allocatable  :: grid_corner
     logical                                :: eltlink2found
     logical                                :: regulargrid
+    logical                                :: sferic_point_mesh
     character(NF90_MAX_NAME)               :: string
     character(8)                           :: cdate
     character(10)                          :: ctime
@@ -829,6 +832,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     nh_ = nh
     nmax   = 1   ! Unstructured grid: use only mmax to count the elements
     xymiss = 0.0_hp
+    sferic_point_mesh = .false.
     !
     ierror = nf90_open(filename, NF90_NOWRITE, idfile); call nc_check_err(ierror, "opening file", filename)
     if (ierror /= 0) then
@@ -870,9 +874,10 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     else
        sferic = .false.
     endif
+    if (present(sfericPointMesh)) sferic_point_mesh = sferic .and. sfericPointMesh
     ierror = nf90_inq_varid(idfile, 'FlowElem_xcc', idvar_x       ); call nc_check_err(ierror, "inq_varid x", filename)
     ierror = nf90_inq_varid(idfile, 'FlowElem_ycc', idvar_y       ); call nc_check_err(ierror, "inq_varid y", filename)
-    if (.not.sferic .and. flowLinkConnectivity) then
+    if ((.not.sferic .or. sferic_point_mesh) .and. flowLinkConnectivity) then
           ierror = nf90_inq_varid(idfile, 'FlowLink'   , idvar_flowlink); call nc_check_err(ierror, "inq_varid FlowLink", filename)
     endif
     !
@@ -901,7 +906,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     allocate (ynode          (nnodes)          , STAT=ierror)
     allocate (elemtonode     (nemax,nelm)      , STAT=ierror)
     allocate (nelmslice      (nelm)            , STAT=ierror)
-    if (sferic) then
+    if (sferic .and. .not.sferic_point_mesh) then
        allocate (grid_corner(nemax,nelm), STAT=ierror)
        allocate (mask_area  (nelm)      , STAT=ierror)
     else
@@ -939,12 +944,12 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     ierror = nf90_get_var(idfile, idvar_ency     , bndy           , start=(/ 1 /)   , count=(/ numenclpts /)      ); call nc_check_err(ierror, "get_var bndy", filename)
     ierror = nf90_get_var(idfile, idvar_encptsppt, numenclptsppart, start=(/ 1 /)   , count=(/ numenclparts /)    ); call nc_check_err(ierror, "get_var encptsppt", filename)
     ierror = nf90_get_var(idfile, idvar_en       , elemtonode     , start=(/ 1, 1 /), count=(/ nemax, nelm /)     ); call nc_check_err(ierror, "get_var netelemnode", filename)
-    if (.not.sferic .and. flowLinkConnectivity) then
+    if ((.not.sferic .or. sferic_point_mesh) .and. flowLinkConnectivity) then
        ierror = nf90_get_var(idfile, idvar_flowlink, flowlink  , start=(/ 1, 1 /), count=(/ 2, nflowlink /)); call nc_check_err(ierror, "get_var flowlink", filename)
     endif
     ierror = nf90_close(idfile); call nc_check_err(ierror, "closing file", filename)
     !
-    if (.not. sferic) then
+    if (.not. sferic .or. sferic_point_mesh) then
        ! Is this a regular grid?
        if (nemax == 4) then
           regulargrid = .true.
@@ -1152,7 +1157,9 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
           ! Indices of the triangles are added to elemconn(:3,:)
           ! Not used: edgeindx, numedge, triedge, xh, yh, nh, trisize
           !
-          call tricall(jatri, xcc, ycc, nelm, elemconntmp, maxelem, &
+          mesh_point_count = nelm
+          if (sferic_point_mesh) mesh_point_count = mmax
+          call tricall(jatri, xcc, ycc, mesh_point_count, elemconntmp, maxelem, &
                      & edgeindx, numedge, triedge, xh, yh, nh_, trisize)
           !
           ! Turn the triangles in elemconn into quadrilaterals (rectangles):
@@ -1170,7 +1177,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     !
     ! Check that there is at least one element
     !
-    if (sferic) then
+    if (sferic .and. .not.sferic_point_mesh) then
        if (nelm == 0) then
           write(*,*) "ERROR: nelm=0: Not able to create 'shifted' elements (using centre points as corner points)"
           call wavestop(1, "ERROR: nelm=0")
@@ -1204,14 +1211,14 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     ierror = nf90_put_att(idfile, nf90_global,  'history', &
            'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
            ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename_tmp)
-    if (.not.sferic) then
+    if (.not.sferic .or. sferic_point_mesh) then
        ierror = nf90_put_att(idfile, nf90_global,  'gridType', 'unstructured'); call nc_check_err(ierror, "put_att global gridType", filename_tmp)
        ierror = nf90_put_att(idfile, nf90_global,  'version', '0.9'); call nc_check_err(ierror, "put_att global version", filename_tmp)
     endif
     !
     ! dimensions
     !
-    if (sferic) then
+    if (sferic .and. .not.sferic_point_mesh) then
        ! SCRIP format
        ierror = nf90_def_dim(idfile, 'grid_size', nelm, iddim_nelm); call nc_check_err(ierror, "def_dim grid_size", filename_tmp)
        ierror = nf90_def_dim(idfile, 'grid_corners', nemax, iddim_corners); call nc_check_err(ierror, "def_dim grid_corners", filename_tmp)
@@ -1226,7 +1233,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     !
     ! define vars
     !
-    if (sferic) then
+    if (sferic .and. .not.sferic_point_mesh) then
        idvar_griddims = nc_def_var(idfile, 'grid_dims'       , nf90_int   , 1, (/iddim_rank/), '', '', '', .false., filename_tmp)
        idvar_y        = nc_def_var(idfile, 'grid_center_lat' , nf90_double, 1, (/iddim_nelm/), '', '', "degrees", .false., filename_tmp)
        idvar_x        = nc_def_var(idfile, 'grid_center_lon' , nf90_double, 1, (/iddim_nelm/), '', '', "degrees", .false., filename_tmp)
@@ -1237,7 +1244,11 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
        idvar_mask     = nc_def_var(idfile, 'grid_imask' , nf90_double, 1, (/iddim_nelm/), '', '', '', .false., filename_tmp)
        ! ierror         = nf90_def_var_fill(idfile, idvar_mask,  0, -9999); call nc_check_err(ierror, "put_att _FillValue", trim(filename_tmp))
     else
-       idvar_coords   = nc_def_var(idfile, 'nodeCoords'    , nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename_tmp)
+       if (sferic) then
+          idvar_coords = nc_def_var(idfile, 'nodeCoords', nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "degrees", .false., filename_tmp)
+       else
+          idvar_coords = nc_def_var(idfile, 'nodeCoords', nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename_tmp)
+       endif
        idvar_eConn    = nc_def_var(idfile, 'elementConn'   , nf90_int   , 2, (/iddim_nemax,iddim_nelm/)  , '', 'Node Indices that define the element connectivity', '', .false., filename_tmp)
        ierror         = nf90_put_att(idfile, idvar_eConn,  '_FillValue', -1); call nc_check_err(ierror, "put_att elementConn fillVal", filename_tmp)
        idvar_neConn   = nc_def_var(idfile, 'numElementConn', nf90_int   , 1, (/iddim_nelm/)              , '', 'Number of nodes per element', '', .false., filename_tmp)
@@ -1247,7 +1258,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     !
     ! put vars
     !
-    if (sferic) then
+    if (sferic .and. .not.sferic_point_mesh) then
        !
        ! ESMF sferic:
        ! Write xcc,ycc to source.nc
@@ -1286,8 +1297,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
        ierror    = nf90_put_var(idfile, idvar_mask, mask_area  , start=(/1/), count=(/nelm/)); call nc_check_err(ierror, "put_var imask", filename_tmp)
     else
        !
-       ! ESMF Cartesian:
-       ! Write hexahedron(cube) around xcc,ycc to source.nc
+       ! ESMF mesh: FLOW coupling values are carried at the mesh corner/node locations.
        !
        do i=1, mmax
           grid_corner(1,i     ) = xcc(i,1)
@@ -1309,7 +1319,7 @@ subroutine read_netcdf_grd(i_grid, filename, xcc, ycc, codb, covered, mmax, nmax
     deallocate (elemtonode , STAT=ierror)
     deallocate (grid_corner, STAT=ierror)
     deallocate (nelmslice  , STAT=ierror)
-    if (sferic) then
+    if (sferic .and. .not.sferic_point_mesh) then
        deallocate (mask_area  , STAT=ierror)
     else
        deallocate ( elemconn, STAT=ierror)

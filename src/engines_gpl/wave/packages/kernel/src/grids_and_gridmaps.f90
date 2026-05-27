@@ -136,6 +136,7 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
          sr%dom(i)%unstructured_boundary_markers = swan_grids(i)%vmark
       endif
       if (sr%swangridtype == SWAN_GRID_UNSTRUCTURED) then
+         swan_grids(i)%sferic = sr%sferic
          sr%dom(i)%curlif = swan_grids(i)%grid_name
       endif
       call write_bnd_loc(i,swan_grids(i))
@@ -159,7 +160,8 @@ subroutine grids_and_gridmaps (n_swan_grids, n_flow_grids, sr, mode)
          endif
          grid_file_type = 'NC'
          xy_loc         = 'CENTER'
-         call Alloc_and_get_grid(i, flow_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity, flow2swan_maps(1,i)%p_tmp_filename)
+         call Alloc_and_get_grid(i, flow_grids(i),grid_name,grid_file_type,xy_loc, sr%flowLinkConnectivity, &
+            & flow2swan_maps(1,i)%p_tmp_filename, sr%swangridtype == SWAN_GRID_UNSTRUCTURED)
       else
          write(grid_name,'(a,a)')'com-',trim(runids(i))
          grid_file_type ='COM'

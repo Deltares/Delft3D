@@ -3965,7 +3965,7 @@
       USE SWCOMM3                                                         40.41
       USE OUTP_DATA
       USE M_PARALL                                                        40.31
-      USE SwanGriddata, ONLY: nvertsg                                     41.36
+      USE SwanGriddata, ONLY: nvertsg, xcugrdgl, ycugrdgl
 !
       IMPLICIT NONE
 !
@@ -4223,27 +4223,35 @@
 
 !              --- compute coordinates of output points                   40.51
 
-               ITMP1  = MXC
-               ITMP2  = MYC
-               ITMP3  = MCGRD
-               ITMP4  = NGRBND
-               ITMP5  = MXF
-               ITMP6  = MYF
-               RTMP1  = XCLMIN
-               RTMP2  = XCLMAX
-               RTMP3  = YCLMIN
-               RTMP4  = YCLMAX
-               MXC    = MXCGL
-               MYC    = MYCGL
-               MCGRD  = MCGRDGL
-               NGRBND = NGRBGL
-               MXF    = 1
-               MYF    = 1
-               XCLMIN = XCGMIN
-               XCLMAX = XCGMAX
-               YCLMIN = YCGMIN
-               YCLMAX = YCGMAX
-               CALL SWOEXC (PSTYPE              ,
+               IF ( OPTG.EQ.5 .AND. LCOMPGRD ) THEN
+                  DO IP = 1, MIP
+                     XP(IP) = xcugrdgl(IP)
+                     YP(IP) = ycugrdgl(IP)
+                     XC(IP) = REAL(IP) - 1.
+                     YC(IP) = 0.
+                  ENDDO
+               ELSE
+                  ITMP1  = MXC
+                  ITMP2  = MYC
+                  ITMP3  = MCGRD
+                  ITMP4  = NGRBND
+                  ITMP5  = MXF
+                  ITMP6  = MYF
+                  RTMP1  = XCLMIN
+                  RTMP2  = XCLMAX
+                  RTMP3  = YCLMIN
+                  RTMP4  = YCLMAX
+                  MXC    = MXCGL
+                  MYC    = MYCGL
+                  MCGRD  = MCGRDGL
+                  NGRBND = NGRBGL
+                  MXF    = 1
+                  MYF    = 1
+                  XCLMIN = XCGMIN
+                  XCLMAX = XCGMAX
+                  YCLMIN = YCGMIN
+                  YCLMAX = YCGMAX
+                  CALL SWOEXC (PSTYPE              ,
      &                      CUOPS%OPI           ,CUOPS%OPR           ,
      &                      CUOPS%XP            ,CUOPS%YP            ,
      &                      MIP                 ,XP                  ,
@@ -4251,16 +4259,17 @@
      &                      YC                  ,KGRPGL              ,
      &                      XGRDGL              ,YGRDGL              ,
      &                      CROSS               )                         40.86
-               MXC    = ITMP1
-               MYC    = ITMP2
-               MCGRD  = ITMP3
-               NGRBND = ITMP4
-               MXF    = ITMP5
-               MYF    = ITMP6
-               XCLMIN = RTMP1
-               XCLMAX = RTMP2
-               YCLMIN = RTMP3
-               YCLMAX = RTMP4
+                  MXC    = ITMP1
+                  MYC    = ITMP2
+                  MCGRD  = ITMP3
+                  NGRBND = ITMP4
+                  MXF    = ITMP5
+                  MYF    = ITMP6
+                  XCLMIN = RTMP1
+                  XCLMAX = RTMP2
+                  YCLMIN = RTMP3
+                  YCLMAX = RTMP4
+               ENDIF
 
 !              --- find global vertex index for output locations
 !                  in unstructured mesh and stored in array XC

@@ -83,6 +83,7 @@ module swan_flow_grid_maps
       real, dimension(:, :), pointer :: alfas => null() ! grid direction cell center
       real, dimension(:, :), pointer :: guu => null() ! grid size u-cell wall
       real, dimension(:, :), pointer :: gvv => null() ! grid size v-cell wall
+      logical :: esmf_mesh ! .true.: temporary ESMF_RegridWeightGen file is an ESMF mesh
       logical :: sferic ! spherical coordinate system (t/f)
       logical :: unstructured ! unstructured SWAN grid
       character(256) :: grid_name ! name of grid
@@ -186,7 +187,7 @@ contains
 !
 !
 !==============================================================================
-   subroutine alloc_and_get_grid(i_grid, g, grid_name, grid_file_type, xy_loc, flowLinkConnectivity, filename)
+   subroutine alloc_and_get_grid(i_grid, g, grid_name, grid_file_type, xy_loc, flowLinkConnectivity, filename, sfericPointMesh)
       use read_grids
       !
       implicit none
@@ -198,12 +199,15 @@ contains
       character(6), intent(in) :: xy_loc ! location of xy coords (CORNER/CENTER)
       logical, intent(in) :: flowLinkConnectivity
       character(*), optional :: filename
+      logical, optional :: sfericPointMesh
       !
       ! Assign attributes to grid structure
       !
       g%grid_name = grid_name
       g%grid_file_type = grid_file_type
       g%xy_loc = xy_loc
+      g%esmf_mesh = .false.
+      g%sferic = .false.
       g%unstructured = .false.
       g%unstructured_grid_generator = 0
       g%ncell = 0
@@ -219,6 +223,7 @@ contains
          call get_gri(g%grid_name, g%x, g%y, g%guu, g%gvv, &
              &        g%alfas, g%kcs, g%covered, g%mmax, g%nmax, &
              &        g%kmax, g%xymiss, g%layer_model)
+         g%esmf_mesh = .not. g%sferic
          !
          ! In case of DomainDecomposition, some adaptions are necessary
          !
@@ -233,6 +238,7 @@ contains
          ! read data from grd-file
          !
          call read_grd(g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%sferic, g%xymiss)
+         g%esmf_mesh = .not. g%sferic
       case ('UNST')
          !
          ! This is an unstructured SWAN grid
@@ -241,6 +247,7 @@ contains
          call read_unswan_grid(g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%sferic, &
                              & g%xymiss, g%kvertc, g%ncell, g%vmark, g%unstructured_grid_generator)
          g%unstructured = .true.
+         g%esmf_mesh = .true.
       case ('NC')
          !
          ! This is an unstructured grid from D-FLOWFM
@@ -249,7 +256,12 @@ contains
             write (*, '(a)') '*** ERROR: on calling read_netcdf_grd: filename not specified.'
             call wavestop(1, '*** ERROR: on calling read_netcdf_grd: filename not specified.')
          end if
-         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, g%numenclpts, g%numenclparts, g%numenclptsppart, filename, flowLinkConnectivity)
+         call read_netcdf_grd(i_grid, g%grid_name, g%x, g%y, g%kcs, g%covered, &
+            & g%mmax, g%nmax, g%kmax, g%sferic, g%xymiss, g%bndx, g%bndy, &
+            & g%numenclpts, g%numenclparts, g%numenclptsppart, filename, &
+            & flowLinkConnectivity, sfericPointMesh)
+         g%esmf_mesh = .not. g%sferic
+         if (present(sfericPointMesh)) g%esmf_mesh = g%esmf_mesh .or. (g%sferic .and. sfericPointMesh)
       case default
          ! grid type not supported
          write (*, '(3a)') '*** ERROR: Grid type ''', trim(grid_file_type), ''' not supported.'
@@ -397,8 +409,14 @@ contains
             write (command, '(a)') 'ESMF_RegridWeightGen_in_Delft3D-WAVE.bat'
          end if
          command = trim(command)//' '//trim(gm%p_tmp_filename)//' '//trim(gm%r_tmp_filename)//' '//trim(gm%w_tmp_filename)
-         if (.not. g1%sferic) then
-            write (command, '(2a)') trim(command), " CARTESIAN"
+         if (g1%unstructured .and. g1%sferic) then
+            write (command, '(2a)') trim(command), " NEARESTSTOD"
+         endif
+         if (g1%esmf_mesh) then
+            write (command, '(2a)') trim(command), " SRC_CORNERS"
+         endif
+         if (g2%esmf_mesh) then
+            write (command, '(2a)') trim(command), " DST_CORNERS"
          end if
          write (*, '(3a)') 'Executing command: "', trim(command), '"'
          !
@@ -429,8 +447,10 @@ contains
          ! 2D Cartesian grids => n_b = mmax * nmax
          !
          if (gm%n_b /= g2%mmax * g2%nmax) then
-            write (*, '(a,i0,a,i0,a)') "ERROR dimension n_b (", gm%n_b, ") from ESMF_RegridWeight file does not match the WAVE grid dimension (", (g2%mmax - 1) * (g2%nmax - 1), ")."
-            call wavestop(1, "Dimension n_b from ESMF_RegridWeight file does not match the WAVE grid dimension.")
+            write (*, '(a,i0,a,i0,3a)') "ERROR dimension n_b (", gm%n_b, &
+               ") from ESMF_RegridWeight file does not match the receiver grid dimension (", &
+               g2%mmax * g2%nmax, ") for grid '", trim(g2%grid_name), "'."
+            call wavestop(1, "Dimension n_b from ESMF_RegridWeight file does not match the receiver grid dimension.")
          end if
          if (gm%n_s == 0) then
             !write(*,'(3a)') "ERROR dimension n_s from ESMF_RegridWeight is zero."

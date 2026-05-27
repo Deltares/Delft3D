@@ -319,7 +319,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
     ierror = nf90_put_att(idfile, nf90_global,  'history', &
            'Created on '//cdate(1:4)//'-'//cdate(5:6)//'-'//cdate(7:8)//'T'//ctime(1:2)//':'//ctime(3:4)//':'//ctime(5:6)//czone(1:5)// &
            ', '//trim(product_name)); call nc_check_err(ierror, "put_att global history", filename)
-    if (.not.sg%sferic) then
+    if (.not.sg%sferic .or. sg%unstructured) then
        ierror = nf90_put_att(idfile, nf90_global,  'gridType', 'unstructured'); call nc_check_err(ierror, "put_att global gridType", filename)
        ierror = nf90_put_att(idfile, nf90_global,  'version', '0.9'); call nc_check_err(ierror, "put_att global version", filename)
     endif
@@ -356,7 +356,11 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        idvar_mask     = nc_def_var(idfile, 'grid_imask' , nf90_double, 1, (/iddim_ncell/), '', '', '', .false., filename)
        ! ierror         = nf90_def_var_fill(idfile, idvar_mask,  0, -9999); call nc_check_err(ierror, "put_att _FillValue", trim(filename))
     else
-       idvar_coords   = nc_def_var(idfile, 'nodeCoords'    , nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename)
+       if (sg%sferic) then
+          idvar_coords = nc_def_var(idfile, 'nodeCoords', nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "degrees", .false., filename)
+       else
+          idvar_coords = nc_def_var(idfile, 'nodeCoords', nf90_double, 2, (/iddim_rank,iddim_corners/), '', '', "meters", .false., filename)
+       endif
        idvar_eConn    = nc_def_var(idfile, 'elementConn'   , nf90_int   , 2, (/iddim_nemax,iddim_ncell/)  , '', 'Node Indices that define the element connectivity', '', .false., filename)
        ierror         = nf90_put_att(idfile, idvar_eConn,  '_FillValue', -1); call nc_check_err(ierror, "put_att elementConn fillVal", filename)
        idvar_neConn   = nc_def_var(idfile, 'numElementConn', nf90_int  , 1, (/iddim_ncell/)              , '', 'Number of nodes per element', '', .false., filename)
@@ -415,7 +419,7 @@ subroutine write_wave_grid_netcdf (i_grid, sg, gridname, filename)
        ierror = nf90_put_var(idfile, idvar_mask, ncellarray  , start=(/1/), count=(/ncell/)); call nc_check_err(ierror, "put_var imask", filename)
     else
        !
-       ! ESMF Cartesian:
+       ! ESMF mesh: SWAN values are carried at the mesh corner/node locations.
        !
        grid_corner = -999.0_hp
        do i=1, sg%mmax
