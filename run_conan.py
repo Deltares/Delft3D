@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import enum
 import platform
 import subprocess
 import sys
@@ -56,13 +57,19 @@ def setup_conan_config_external(*, ci: bool = False) -> None:
     _register_local_recipes()
 
 
+class BuildPolicy(enum.Enum):
+    NONE = "none" # Build no packages from source, only use pre-built binaries from remotes.
+    MISSING = "missing" # Build packages from source if a pre-built binary is not available from remotes.
+    ALL = "all" # Build all packages from source using local recipes only, do not use any pre-built binaries from remotes.
+
+
 def clean_conan_cache() -> None:
     subprocess.run(["conan", "remove", "*", "--confirm"], check=True)
     subprocess.run(["conan", "cache", "clean"], check=True)
 
 
 def update_lockfile(
-    profile: str, *, ci: bool = False, local_only: bool = False
+    profile: str
 ) -> None:
     """Generate or update conan.lock from the current conanfile and recipes."""
     cmd = [
@@ -73,11 +80,9 @@ def update_lockfile(
         "--settings:all",
         "build_type=Release",
         f"--lockfile-out={LOCKFILE}",
+        "--remote=local-recipes"
     ]
-    if local_only:
-        cmd += ["--remote=local-recipes"]
-    if ci:
-        cmd += ["--core-conf", "core:non_interactive=True"]
+
     print(f"Updating lockfile {LOCKFILE}...")
     subprocess.run(cmd, check=True)
 
@@ -90,8 +95,7 @@ def conan_install(
     consumer_build_type: str | None = None,
     ci: bool = False,
     lockfile: Path | None = None,
-    build_missing: bool = False,
-    build_local: bool = False,
+    build_policy: BuildPolicy = BuildPolicy.NONE,
 ) -> None:
     cmd = [
         "conan",
@@ -102,9 +106,9 @@ def conan_install(
         f"--output-folder={output_folder}",
     ]
 
-    if build_local:
+    if build_policy == BuildPolicy.ALL:
         cmd += ["--build=*", "--remote=local-recipes"]
-    elif build_missing:
+    elif build_policy == BuildPolicy.MISSING:
         cmd += ["--build=missing"]
 
     if lockfile:
@@ -120,78 +124,17 @@ def conan_install(
     subprocess.run(cmd, check=True)
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Installs conan-managed dependencies for the Delft3D repository."
-    )
-    parser.add_argument(
-        "--initialize-conan",
-        choices=["deltares", "external"],
-        metavar="{deltares,external}",
-        help=(
-            "One-time Conan setup. "
-            "'deltares': installs profiles, settings and Deltares Nexus remotes (default for Deltares developers). "
-            "'external': installs profiles and settings only, without any Nexus remotes (for open-source developers without Nexus access)."
-        ),
-    )
-    parser.add_argument(
-        "--ci",
-        action="store_true",
-        help="Run in non-interactive mode (adds core:non_interactive=True to Conan commands).",
-    )
-    parser.add_argument(
-        "--clean",
-        action="store_true",
-        help="Clean the local Conan cache before exporting and installing.",
-    )
-    parser.add_argument(
-        "--update-lockfile",
-        action="store_true",
-        help="Regenerate conan.lock from the current conanfile and recipes.",
-    )
-    parser.add_argument(
-        "--build-missing",
-        action="store_true",
-        help="Build packages from source if a pre-built binary is not available.",
-    )
-    parser.add_argument(
-        "--rebuild-recipes",
-        action="store_true",
-        help="Regenerate the lockfile and rebuild all packages from local recipes only. Use in CI to validate recipes.",
-    )
-    parser.add_argument(
-        "--build-type",
-        default="Release",
-        choices=["Release", "Debug", "RelWithDebInfo"],
-        help=(
-            "CMake build type for the consumer. "
-            "On Linux (single-config generator), determines which CMakeDeps files are generated. "
-            "Ignored on Windows, where all three configurations are always generated."
-        ),
-    )
-    parser.add_argument(
-        "--output-folder",
-        default="build/conan",
-        help="Output folder for Conan install files.",
-    )
-    args = parser.parse_args()
-
+def _get_profile() -> str:
     os_name = platform.system()
     if os_name == "Windows":
-        profile = "delft3d_windows"
+        return "delft3d_windows"
     elif os_name == "Linux":
-        profile = "delft3d_linux"
+        return "delft3d_linux"
     else:
         raise RuntimeError(f"Unsupported OS: {os_name}")
 
-    if args.initialize_conan == "deltares":
-        setup_conan_config_deltares(ci=args.ci)
-        return
-    if args.initialize_conan == "external":
-        setup_conan_config_external(ci=args.ci)
-        return
 
-    # Verify the profile is available (installed via --initialize-conan)
+def _require_profile(profile: str) -> None:
     result = subprocess.run(
         ["conan", "profile", "path", profile],
         capture_output=True,
@@ -199,43 +142,45 @@ def main() -> None:
     if result.returncode != 0:
         sys.exit(
             f"ERROR: Conan profile '{profile}' not found.\n"
-            "       Run 'python run_conan.py --initialize-conan=deltares' (or =external) first "
+            "       Run 'python run_conan.py initialize deltares' (or 'initialize external') first "
             "to install profiles, configure settings and set up remotes."
         )
 
-    if args.clean:
-        clean_conan_cache()
-        return
 
-    if args.update_lockfile:
-        update_lockfile(profile, ci=args.ci, local_only=args.rebuild_recipes)
-
+def _do_install(
+    profile: str,
+    output_folder: str,
+    build_type: str,
+    *,
+    ci: bool = False,
+    build_policy: BuildPolicy = BuildPolicy.NONE,
+) -> None:
+    os_name = platform.system()
     if os_name == "Windows":
         # Multi-config generator: generate CMakeDeps for all three configurations.
         # Only the first install builds packages; the other two reuse the cache.
         conan_install(
             profile,
-            args.output_folder,
+            output_folder,
             "Release",
-            ci=args.ci,
+            ci=ci,
             lockfile=LOCKFILE,
-            build_missing=args.build_missing,
-            build_local=args.rebuild_recipes,
+            build_policy=build_policy,
         )
         conan_install(
             profile,
-            args.output_folder,
+            output_folder,
             "Release",
             consumer_build_type="Debug",
-            ci=args.ci,
+            ci=ci,
             lockfile=LOCKFILE,
         )
         conan_install(
             profile,
-            args.output_folder,
+            output_folder,
             "Release",
             consumer_build_type="RelWithDebInfo",
-            ci=args.ci,
+            ci=ci,
             lockfile=LOCKFILE,
         )
     else:
@@ -243,14 +188,127 @@ def main() -> None:
         # Packages are always built as Release; consumer_build_type controls the CMakeDeps output.
         conan_install(
             profile,
-            args.output_folder,
+            output_folder,
             "Release",
-            consumer_build_type=args.build_type,
-            ci=args.ci,
+            consumer_build_type=build_type,
+            ci=ci,
             lockfile=LOCKFILE,
-            build_missing=args.build_missing,
-            build_local=args.rebuild_recipes,
+            build_policy=build_policy,
         )
+
+
+def cmd_init(args: argparse.Namespace) -> None:
+    if args.mode == "deltares":
+        setup_conan_config_deltares(ci=args.ci)
+    else:
+        setup_conan_config_external(ci=args.ci)
+
+
+def cmd_clean_cache(args: argparse.Namespace) -> None:
+    clean_conan_cache()
+
+
+def cmd_update_lockfile(args: argparse.Namespace) -> None:
+    profile = _get_profile()
+    _require_profile(profile)
+    update_lockfile(profile)
+
+
+def cmd_install(args: argparse.Namespace) -> None:
+    profile = _get_profile()
+    _require_profile(profile)
+
+    if args.rebuild_packages:
+        build_policy = BuildPolicy.ALL
+    elif args.build_missing:
+        build_policy = BuildPolicy.MISSING
+    else:
+        build_policy = BuildPolicy.NONE
+
+    _do_install(
+        profile,
+        args.output_folder,
+        args.build_type,
+        ci=args.ci,
+        build_policy=build_policy,
+    )
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Manage Conan dependencies for the Delft3D repository.",
+    )
+    subparsers = parser.add_subparsers(dest="command")
+
+    # --- initialize ---
+    parser_init = subparsers.add_parser(
+        "initialize",
+        help="One-time Conan setup (profiles, settings, remotes).",
+    )
+    parser_init.add_argument(
+        "mode",
+        choices=["deltares", "external"],
+        help=(
+            "'deltares': installs profiles, settings and Deltares Nexus remotes. "
+            "'external': installs profiles and settings only, without Nexus remotes."
+        ),
+    )
+    parser_init.add_argument("--ci", action="store_true", help="Non-interactive mode.")
+    parser_init.set_defaults(func=cmd_init)
+
+    # --- clean-cache ---
+    parser_clean_cache = subparsers.add_parser(
+        "clean-cache",
+        help="Clean the local Conan cache.",
+    )
+    parser_clean_cache.set_defaults(func=cmd_clean_cache)
+
+    # --- update-lockfile ---
+    parser_update_lockfile = subparsers.add_parser(
+        "update-lockfile",
+        help="Regenerate conan.lock from the current conanfile and recipes.",
+    )
+    parser_update_lockfile.set_defaults(func=cmd_update_lockfile)
+
+    # --- install ---
+    parser_install = subparsers.add_parser(
+        "install",
+        help="Install Conan-managed dependencies.",
+    )
+    parser_install.add_argument("--ci", action="store_true", help="Non-interactive mode.")
+    build_group = parser_install.add_mutually_exclusive_group()
+    build_group.add_argument(
+        "--build-missing",
+        action="store_true",
+        help="Build packages from source if a pre-built binary is not available.",
+    )
+    build_group.add_argument(
+        "--rebuild-packages",
+        action="store_true",
+        help="Rebuild all packages from local recipes only.",
+    )
+    parser_install.add_argument(
+        "--build-type",
+        default="Release",
+        choices=["Release", "Debug", "RelWithDebInfo"],
+        help=(
+            "CMake build type for the consumer. "
+            "On Linux, determines which CMakeDeps files are generated. "
+            "Ignored on Windows (all configurations are always generated)."
+        ),
+    )
+    parser_install.add_argument(
+        "--output-folder",
+        default="build/conan",
+        help="Output folder for Conan install files.",
+    )
+    parser_install.set_defaults(func=cmd_install)
+
+    args = parser.parse_args()
+    if not args.command:
+        parser.print_help()
+        sys.exit(1)
+    args.func(args)
 
 
 if __name__ == "__main__":

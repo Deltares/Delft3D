@@ -93,6 +93,7 @@ def run_conan(
     cmd = [
         sys.executable,
         str(ROOT / "run_conan.py"),
+        "install",
         f"--output-folder={output_folder}",
     ]
     if platform.system() != "Windows":

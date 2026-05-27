@@ -51,12 +51,12 @@ in a Docker volume across rebuilds — you only need to run this once.
 
 **Deltares developers** (with Nexus access):
 ```bash
-python run_conan.py --initialize-conan=deltares
+python run_conan.py initialize deltares
 ```
 
 **External / open-source developers** (without Nexus access):
 ```bash
-python run_conan.py --initialize-conan=external
+python run_conan.py initialize external
 ```
 
 ## Build steps
@@ -72,7 +72,7 @@ Once the container is running:
 cd /workspaces/delft3d
 
 # One-time Conan setup (Deltares developers)
-python run_conan.py --initialize-conan=deltares
+python run_conan.py initialize deltares
 
 # Build (downloads pre-built Conan binaries from Nexus)
 python build.py --config fm-suite --build --build-type Release
@@ -91,7 +91,7 @@ Inside the container:
 cd /delft3d
 
 # One-time Conan setup (Deltares developers)
-python run_conan.py --initialize-conan=deltares
+python run_conan.py initialize deltares
 
 # Build (downloads pre-built binaries from Nexus)
 python build.py --config fm-suite --build --build-type Release
@@ -99,7 +99,7 @@ python build.py --config fm-suite --build --build-type Release
 
 **Open-source developers** without Nexus access build all dependencies from source:
 ```bash
-python run_conan.py --initialize-conan=external
+python run_conan.py initialize external
 python build.py --config fm-suite --build --build-type Release --build-dependencies
 ```
 

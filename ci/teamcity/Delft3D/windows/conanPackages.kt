@@ -44,10 +44,10 @@ object WindowsConanPackages : BuildType({
             scriptContent = """
                 call C:/set-env-vs2022.cmd
 
-                python run_conan.py --initialize-conan=deltares --ci
+                python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                python run_conan.py --rebuild-recipes --ci
+                python run_conan.py install --rebuild-packages --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
                 conan upload "*" --remote=delft3d-conan-dev --confirm

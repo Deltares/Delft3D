@@ -48,10 +48,10 @@ object LinuxConanPackages : BuildType({
                 set -eo pipefail
 
                 # Initialize Conan with Deltares Nexus remotes and local recipes
-                python run_conan.py --initialize-conan=deltares --ci
+                python run_conan.py initialize deltares --ci
 
-                # Rebuild all packages from local recipes (also regenerates lockfile)
-                python run_conan.py --rebuild-recipes --ci
+                # Rebuild all packages from local recipes
+                python run_conan.py install --rebuild-packages --ci
 
                 # Upload all packages in the local cache to the deltares-conan-dev remote
                 conan upload "*" --remote=delft3d-conan-dev --confirm
