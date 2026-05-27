@@ -28,7 +28,7 @@
 
 module mass_balance_areas_routines
    use precision, only: dp
-   use m_source_sink, only: source_sinks, num_source_sink
+   use m_source_sink, only: source_sinks
 
    implicit none
 
@@ -151,8 +151,8 @@ contains
 
       call realloc(mbaflowhor, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowhortot, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbaflowsorsin, [2, num_source_sink], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbaflowsorsintot, [2, num_source_sink], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowsorsin, [2, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowsorsintot, [2, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowraineva, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowrainevatot, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafloweva, nomba, keepExisting=.false., fill=0.0_dp)
@@ -186,20 +186,20 @@ contains
 
       call realloc(mbafluxhor, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxhortot, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbafluxsorsin, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbafluxsorsintot, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxsorsin, [2, 2, numconst, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxsorsintot, [2, 2, numconst, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheat, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheattot, [2, nomba], keepExisting=.false., fill=0.0_dp)
 
       if (jampi == 1) then
          call realloc(mbavolumereduce, nomba, keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowhorreduce, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-         call realloc(mbaflowsorsinreduce, [2, num_source_sink], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowsorsinreduce, [2, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowrainevareduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowevareduce, nomba, keepExisting=.false., fill=0.0_dp)
          call realloc(mbamassreduce, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxhorreduce, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-         call realloc(mbafluxsorsinreduce, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxsorsinreduce, [2, 2, numconst, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxheatreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
       end if
 
@@ -272,9 +272,9 @@ contains
          call reduce_int_array_sum(nomba * nombabnd, mbalnused)
       end if
 
-      call realloc(mbasorsin, [2, num_source_sink], keepExisting=.true., fill=0)
-      call realloc(mbasorsinout, [2, num_source_sink], keepExisting=.true., fill=0)
-      do isrc = 1, num_source_sink
+      call realloc(mbasorsin, [2, source_sinks%num_total], keepExisting=.true., fill=0)
+      call realloc(mbasorsinout, [2, source_sinks%num_total], keepExisting=.true., fill=0)
+      do isrc = 1, source_sinks%num_total
          kk1 = source_sinks%indices(isrc, 1) ! 2D pressure cell nr FROM
          kk2 = source_sinks%indices(isrc, 4) ! 2D pressure cell nr TO
          if (kk1 > 0) then
@@ -298,7 +298,7 @@ contains
       end do
 
       if (jampi == 1) then
-         call reduce_int_array_sum(2 * num_source_sink, mbasorsinout)
+         call reduce_int_array_sum(2 * source_sinks%num_total, mbasorsinout)
       end if
 
       call realloc(flxdmp, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0_dp) !< Fluxes at dump segments
@@ -444,7 +444,7 @@ contains
          mbavolumeend(:) = mbavolumereduce(:)
          call reduce_double_sum(2 * nombabnd * nombabnd, mbaflowhor, mbaflowhorreduce)
          mbaflowhor(:, :, :) = mbaflowhorreduce(:, :, :)
-         call reduce_double_sum(2 * num_source_sink, mbaflowsorsin, mbaflowsorsinreduce)
+         call reduce_double_sum(2 * source_sinks%num_total, mbaflowsorsin, mbaflowsorsinreduce)
          mbaflowsorsin(:, :) = mbaflowsorsinreduce(:, :)
          call reduce_double_sum(2 * nomba, mbaflowraineva, mbaflowrainevareduce)
          mbaflowraineva(:, :) = mbaflowrainevareduce(:, :)
@@ -455,7 +455,7 @@ contains
          mbamassend(:, :) = mbamassreduce(:, :)
          call reduce_double_sum(2 * numconst * nombabnd * nombabnd, mbafluxhor, mbafluxhorreduce)
          mbafluxhor(:, :, :, :) = mbafluxhorreduce(:, :, :, :)
-         call reduce_double_sum(2 * 2 * numconst * num_source_sink, mbafluxsorsin, mbafluxsorsinreduce)
+         call reduce_double_sum(2 * 2 * numconst * source_sinks%num_total, mbafluxsorsin, mbafluxsorsinreduce)
          mbafluxsorsin(:, :, :, :) = mbafluxsorsinreduce(:, :, :, :)
          call reduce_double_sum(2 * nomba, mbafluxheat, mbafluxheatreduce)
          mbafluxheat(:, :) = mbafluxheatreduce(:, :)
@@ -763,7 +763,7 @@ contains
          end do
       end do
 
-      do n = 1, num_source_sink
+      do n = 1, source_sinks%num_total
          qsrck = source_sinks%discharge(n)
          if (qsrck > 0) then
             if (mbasorsin(2, n) /= 0) then
@@ -1244,7 +1244,7 @@ contains
 
       ! sources and sinks
       if (jambalumpsrc == 0) then
-         do isrc = 1, num_source_sink
+         do isrc = 1, source_sinks%num_total
             if (mbasorsinout(1, isrc) == imba) then
                call add_name(balance, labelsrc, source_sinks%name(isrc))
             end if
@@ -1254,7 +1254,7 @@ contains
          end do
       else
          check = .false.
-         do isrc = 1, num_source_sink
+         do isrc = 1, source_sinks%num_total
             if (any(mbasorsinout(:, isrc) == imba)) then
                check = .true.
                exit
@@ -1336,7 +1336,7 @@ contains
 
       ! sources and sinks
       has_entry = .false.
-      do isrc = 1, num_source_sink
+      do isrc = 1, source_sinks%num_total
          if (mbasorsinout(1, isrc) == imba) then
             call add_values(flows, imbf, p_mbaflowsorsin(1:2, isrc), jambalumpsrc, has_entry)
          end if
@@ -1389,7 +1389,7 @@ contains
 
       ! sources and sinks
       if (jambalumpsrc == 0) then
-         do isrc = 1, num_source_sink
+         do isrc = 1, source_sinks%num_total
             if (mbasorsinout(1, isrc) > 0) then
                call add_name(balance, labelsrc, source_sinks%name(isrc))
             end if
@@ -1465,7 +1465,7 @@ contains
 
       ! sources and sinks
       has_entry = .false.
-      do isrc = 1, num_source_sink
+      do isrc = 1, source_sinks%num_total
          if (mbasorsinout(1, isrc) > 0) then
             call add_values(flows, imbf, p_mbaflowsorsin(1:2, isrc), jambalumpsrc, has_entry)
          end if
@@ -1555,7 +1555,7 @@ contains
 
          ! sources and sinks
          if (jambalumpsrc == 0) then
-            do isrc = 1, num_source_sink
+            do isrc = 1, source_sinks%num_total
                if (mbasorsinout(1, isrc) == imba) then
                   call add_name(balance, labelsrc, source_sinks%name(isrc))
                end if
@@ -1565,7 +1565,7 @@ contains
             end do
          else
             check = .false.
-            do isrc = 1, num_source_sink
+            do isrc = 1, source_sinks%num_total
                if (any(mbasorsinout(:, isrc) == imba)) then
                   check = .true.
                   exit
@@ -1744,7 +1744,7 @@ contains
 
          ! sources and sinks
          has_entry = .false.
-         do isrc = 1, num_source_sink
+         do isrc = 1, source_sinks%num_total
             if (mbasorsinout(1, isrc) == imba) then
                call add_values(fluxes, imbf, p_mbafluxsorsin(1:2, 1, imbs, isrc), jambalumpsrc, has_entry)
             end if
@@ -1866,7 +1866,7 @@ contains
 
          ! sources and sinks
          if (jambalumpsrc == 0) then
-            do isrc = 1, num_source_sink
+            do isrc = 1, source_sinks%num_total
                if (mbasorsinout(1, isrc) > 0) then
                   call add_name(balance, labelsrc, source_sinks%name(isrc))
                end if
@@ -2026,7 +2026,7 @@ contains
 
          ! sources and sinks
          has_entry = .false.
-         do isrc = 1, num_source_sink
+         do isrc = 1, source_sinks%num_total
             if (mbasorsinout(1, isrc) > 0) then
                call add_values(fluxes, imbf, p_mbafluxsorsin(1:2, 1, imbs, isrc), jambalumpsrc, has_entry)
             end if

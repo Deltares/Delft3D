@@ -396,26 +396,6 @@ module fm_external_forcings_data
    type(t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< Array containing all bubble screens
    real(kind=dp), allocatable, target :: bubblescreen_air_discharge(:) !< Array to catch bubble screen air discharges
 
-   ! Source/sink variables, to be moved to a separate module; see UNST-9614
-   ! ====================================================================================================
-
-   ! Source/sink counters.
-   integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
-   integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}
-   integer :: max_source_sink_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions. {former:msrc}
-
-   ! Miscellaneous variables.
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),num_source_sink), former:srsn}   
-   integer, dimension(:), allocatable :: source_sink_max_xy_points !< [-] Maximum number of points per source.sink in source_sink_x, source_sink_y. {size=(num_source_sink), former:nxsrc}
-   logical :: source_sink_add_k_to_turkin !< [-] Add k of sources to turkin (.false. = no, .true. = yes). {former:addksources}
-
-   ! Cumulative volume and discharge variables. Used in output and for waq coupling.
-   real(kind=dp), dimension(:), target, allocatable :: source_sink_cumulative_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(num_source_sink), former:vsrccum}
-   real(kind=dp), dimension(:), target, allocatable :: source_sink_cumulative_volume_previous !< [m3] Cumulative volume at each source/sink from Tstart to the previous His-output time. {size=(num_source_sink), former:vsrccum_pre}
-   real(kind=dp), dimension(:), target, allocatable :: source_sink_average_discharge_previous !< [m3/s] Average discharge in the past his-interval at each source/sink. {size=(num_source_sink), former:qsrcavg}
-
-   ! ====================================================================================================
-
    real(kind=dp), allocatable, target :: sah(:) ! temp
    real(kind=dp), allocatable :: grainlayerthickness(:, :) ! help array grain layer thickness
 
@@ -474,11 +454,6 @@ contains
       ! JRE
       nzbnd = 0
       nubnd = 0
-      ! num_source_sink = 0
-      num_source_sink_oldfile = 0
-      num_source_sink_for_nearfield = 0
-      max_source_sink_polyline_points = 0
-      source_sink_add_k_to_turkin = .false.
 
    end subroutine default_fm_external_forcing_data
 

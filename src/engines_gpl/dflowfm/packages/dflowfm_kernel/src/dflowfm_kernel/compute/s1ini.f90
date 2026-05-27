@@ -51,7 +51,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
-      use m_source_sink, only: num_source_sink
+      use m_source_sink, only: source_sinks
       use m_reduce
       use m_ship
       use m_transport, only: constituents, itemp
@@ -72,7 +72,7 @@ contains
       ccr = 0.0_dp
       dd = 0.0_dp
 
-      if (jagrw > 0 .or. num_source_sink > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
+      if (jagrw > 0 .or. source_sinks%num_total > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
          jaqin = 1
       end if
 
@@ -266,12 +266,12 @@ contains
             call setgrwflowexpl() ! add grw-flow exchange to the qin array
          end if
 
-         if (num_source_sink > 0) then
+         if (source_sinks%num_total > 0) then
             call setsorsin() ! add sources and sinks
          end if
 
          if (wrwaqon) then ! Update waq output
-            if (num_source_sink > 0) then
+            if (source_sinks%num_total > 0) then
                call update_waq_sink_source_fluxes()
             end if
             if (numlatsg > 0) then

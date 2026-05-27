@@ -52,7 +52,7 @@ contains
                         c1e, c1t, c2t, c9of1, EPS6, eps_min, jalogprofkepsbndin, dmiss, jamodelspecific, eddyviscositybedfacmax, &
                         vicwws, kmxx, tur_time_int_factor, EPS20, tur_time_int_method, TURB_LAX_ALL, viskin, jawavebreakerturbulence, &
                         rhomean, bruva, buoflu, vicwminb, dijdij, v, eddyviscositysurfacmax, use_density
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_flowgeom, only: lnx, acl, ln, ndxi, lnxi
       use m_waves, only: hwav, gammax, ustokes, vstokes, fbreak, fwavpendep
       use m_partitioninfo, only: jampi, itype_sall3d, update_ghosts
@@ -222,7 +222,7 @@ contains
 
          if (javakeps > 0) then ! transport switched on: prepare horizontal advection k and eps
 
-            if (num_source_sink > 0 .and. source_sinks%add_k_to_turkin) then
+            if (source_sinks%num_total > 0 .and. source_sinks%add_k_to_turkin) then
                call doaddksources()
             end if
 

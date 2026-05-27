@@ -2220,7 +2220,7 @@ contains
       use m_ug_nc_attribute
       use m_flow
       use fm_external_forcings_data
-      use m_source_sink, only: source_sinks, num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_structures
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity
@@ -2309,7 +2309,7 @@ contains
       !
       ! Source-sink variables
       !
-      if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+      if (his_write_settings%sourcesink > 0 .and. source_sinks%num_total > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
          i = 1
          if (isalt > 0) then
@@ -2321,8 +2321,8 @@ contains
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), source_sink_all_discharges(i, :))
          end if
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sinks%discharge)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sink_cumulative_volume)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sink_average_discharge_previous)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sinks%cumulative_volume)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sinks%average_discharge_previous)
       end if
 
       !

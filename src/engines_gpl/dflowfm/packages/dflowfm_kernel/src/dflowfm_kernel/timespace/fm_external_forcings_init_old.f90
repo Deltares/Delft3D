@@ -40,7 +40,7 @@ contains
       use m_setinitialverticalprofilesigma, only: setinitialverticalprofilesigma
       use m_setinitialverticalprofile, only: setinitialverticalprofile
       use precision, only: dp
-      use m_source_sink, only: addsorsin_from_polyline_file
+      use m_source_sink, only: addsorsin_from_polyline_file, source_sinks
       use m_add_tracer, only: add_tracer
       use m_setzcs, only: setzcs
       use m_getkbotktopmax
@@ -1235,16 +1235,16 @@ contains
 
             else if (qid == 'discharge_salinity_temperature_sorsin') then
 
-               ! 1. Prepare source-sink location (will increment num_source_sink, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
+               ! 1. Prepare source-sink location (will increment source_sinks%num_total, and prepare geometric position), based on .pli file (transformcoef(4)=AREA).
                call addsorsin_from_polyline_file(filename, area=transformcoef(4), ierr=ierr)
                if (ierr /= DFM_NOERR) then
                   success = .false.
                else
                   success = .true.
-                  num_source_sink_oldfile = num_source_sink_oldfile + 1
+                  source_sinks%num_oldfile = source_sinks%num_oldfile + 1
                end if
 
-               ! 2. Time series hookup is done below, once counting of all num_source_sink is done.
+               ! 2. Time series hookup is done below, once counting of all source_sinks%num_total is done.
 
             else if (qid == 'shiptxy') then
                kx = 2
@@ -1496,7 +1496,7 @@ contains
    module subroutine init_misc(iresult)
       use precision, only: dp
       use m_flowgeom, only: ln, xz, yz, iadv, ba, wu, IADV_SUBGRID_WEIR, IADV_GENERAL_STRUCTURE
-      use m_source_sink, only: num_source_sink
+      use m_source_sink, only: source_sinks
       use unstruc_model, only: md_extfile_dir
       use timespace, only: uniform, spaceandtime, readprovider
       use m_structures, only: jaoldstr
@@ -1536,7 +1536,7 @@ contains
       success = .true. ! default return code
 
       ! If no source/sink exists, then do not write related statistics to His-file
-      if (num_source_sink < 0) then
+      if (source_sinks%num_total < 0) then
          his_write_settings%sourcesink = 0
          call mess(LEVEL_INFO, 'Source/sink does not exist, no related info to write.')
       end if
@@ -1949,21 +1949,21 @@ contains
          end do
       end if
 
-      if (num_source_sink_oldfile > 0) then
-         if (num_source_sink_oldfile /= num_source_sink) then
+      if (source_sinks%num_oldfile > 0) then
+         if (source_sinks%num_oldfile /= source_sinks%num_total) then
             call mess(LEVEL_ERROR, 'Source/sink entries detected in both the old and new ext file. This is not allowed.')
          end if
          ja = 1
          rewind (mext)
          kx = numconst + 1
          ! TODO: UNST-537/UNST-190: we now support timeseries, the constant values should come from new format ext file, not from transformcoef
-         num_source_sink = 0
+         source_sinks%num_total = 0
          success = .true.
          do while (ja == 1) ! for sorsin again read *.ext file
             call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja, varname)
             if (ja == 1 .and. qid == 'discharge_salinity_temperature_sorsin') then
                call resolvePath(filename, md_extfile_dir)
-               num_source_sink = num_source_sink + 1
+               source_sinks%num_total = source_sinks%num_total + 1
                ! 2. Prepare time series relation, if the .pli file has an associated .tim file.
                L = index(filename, '.', back=.true.) - 1
                filename0 = filename(1:L)//'.tim'
@@ -1971,9 +1971,9 @@ contains
                if (exist) then
                   filetype0 = uniform ! uniform=single time series vectormax = ..
                   method = min(1, method) ! only method 0 and 1 are allowed, methods > 1 are set to 1 (no spatial interpolation possible here).
-                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*num_source_sink-2), (3*num_source_sink-1), and (3*num_source_sink), respectively.
+                  ! Converter will put 'source_sink_water_discharge, sasrc and tmsrc' values in array source_sink_all_discharges on positions: (3*source_sinks%num_total-2), (3*source_sinks%num_total-1), and (3*source_sinks%num_total), respectively.
                   call clear_ec_message()
-                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=num_source_sink)) then
+                  if (.not. ec_addtimespacerelation(qid, xdum, ydum, kdum, kx, filename0, filetype0, method, operand=OPERAND_OVERRIDE, targetIndex=source_sinks%num_total)) then
                      msgbuf = 'Connecting time series file '''//trim(filename0)//''' and polyline file '''//trim(filename) &
                               //'''. for source/sinks failed:'//dump_ec_message_stack(LEVEL_WARN, callback_msg)
                      call warn_flush()

@@ -42,7 +42,7 @@ contains
 
    subroutine doaddksources() ! add k sources
       use precision, only: dp
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_flow, only: vol1, turkinws
       use m_flowtimes, only: dts
       implicit none
@@ -50,7 +50,7 @@ contains
       integer :: n, k, kk, kk2
       real(kind=dp) :: qsrck, dvoli, dtol = 1.0e-4_dp
 
-      do n = 1, num_source_sink
+      do n = 1, source_sinks%num_total
          if (source_sinks%indices(n, 2) == 0 .and. source_sinks%indices(n, 5) == 0) then
             cycle ! due to initialisation
          end if

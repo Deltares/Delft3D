@@ -105,7 +105,7 @@ contains
       use m_timer
       use m_sediment
       use fm_external_forcings_data, only: numtracers, trnames
-      use m_source_sink, only: source_sinks, num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_transport, only: ITRA1, ITRAN, ISED1
       use m_structures
       use m_fm_wq_processes, only: wq_user_outputs => outputs, noout_statt, noout_state, noout_user, jawaqproc
@@ -317,10 +317,10 @@ contains
                                                   id_rugdim, id_rugname) ! No geometry
 
          ! Source-sinks
-         if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+         if (his_write_settings%sourcesink > 0 .and. source_sinks%num_total > 0) then
             ! Define geometry related variables
             nNodeTot = 0
-            do i = 1, num_source_sink
+            do i = 1, source_sinks%num_total
                nNodes = 0
                k1 = source_sinks%indices(i, 1)
                k2 = source_sinks%indices(i, 4)
@@ -334,11 +334,11 @@ contains
             end do
          end if
 
-         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, num_source_sink, 'line', nNodeTot, id_strlendim, &
+         ierr = unc_def_his_structure_static_vars(ihisfile, ST_SOURCE_SINK, his_write_settings%sourcesink, source_sinks%num_total, 'line', nNodeTot, id_strlendim, &
                                                   id_srcdim, id_srcname, id_srcgeom_node_count, id_srcgeom_node_coordx, id_srcgeom_node_coordy, &
                                                   id_poly_xmid=id_src_xmid, id_poly_ymid=id_src_ymid)
-         if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
-            call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', max_source_sink_polyline_points, id_srcptsdim))
+         if (his_write_settings%sourcesink > 0 .and. source_sinks%num_total > 0) then
+            call check_netcdf_error(nf90_def_dim(ihisfile, 'source_sink_points', source_sinks%max_polyline_points, id_srcptsdim))
             call definencvar(ihisfile, id_srcx, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_x_coordinate')
             call definencvar(ihisfile, id_srcy, nf90_double, [id_srcdim, id_srcptsdim], 'source_sink_y_coordinate')
             ierr = unc_addcoordatts(ihisfile, id_srcx, id_srcy, jsferic)
@@ -678,14 +678,14 @@ contains
             end if
 
             ! Source-sinks
-            if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
+            if (his_write_settings%sourcesink > 0 .and. source_sinks%num_total > 0) then
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcx, source_sinks%x))
                call check_netcdf_error(nf90_put_var(ihisfile, id_srcy, source_sinks%y))
                j = 1
-               call realloc(node_count, num_source_sink, fill=0)
+               call realloc(node_count, source_sinks%num_total, fill=0)
                call realloc(geom_x, 2)
                call realloc(geom_y, 2)
-               do i = 1, num_source_sink
+               do i = 1, source_sinks%num_total
                   k1 = source_sinks%indices(i, 1)
                   k2 = source_sinks%indices(i, 4)
                   nNodes = 0
@@ -762,7 +762,7 @@ contains
       ntot = numobs + nummovobs
       !Fill average source-sink discharge with different array on first timestep
       if (it_his == 1) then
-         do i = 1, num_source_sink
+         do i = 1, source_sinks%num_total
             source_sinks%discharge(i) = source_sink_all_discharges(1, i)
          end do
       end if
@@ -1490,7 +1490,7 @@ contains
    !> Write static data such as names, coordintates, and geometry of structures to the history file
    subroutine unc_put_his_structure_static_vars(ncid)
       use fm_external_forcings_data, only: weir2cgen, nweirgen, cgen_ids, pump_ids, npumpsg, gate_ids, ngatesg, ncgensg, genstru2cgen, ngenstru, cdam_ids, ncdamsg, gate2cgen, ngategen
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_dambreak_breach, only: get_dambreak_names
       use unstruc_channel_flow, only: network
       use m_flowparameters, only: his_write_settings
@@ -1573,7 +1573,7 @@ contains
       structure_names = [(rug(i)%name, integer :: i=1, num_rugs)]
       call unc_put_his_structure_names(ncid, 1, id_rugname, structure_names)
 
-      structure_names = [(source_sinks%name(i), integer :: i=1, num_source_sink)]
+      structure_names = [(source_sinks%name(i), integer :: i=1, source_sinks%num_total)]
       call unc_put_his_structure_names(ncid, his_write_settings%sourcesink, id_srcname, structure_names)
 
       if (network%sts%numGates > 0) then

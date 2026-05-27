@@ -59,7 +59,7 @@ contains
                         vol1, japure1d, au1d, q1d, volu1d, alpha_mom_1d, alpha_ene_1d, volau, voldhu, sq, advi, iadveccorr1d2d, au, &
                         hs, huvli, q1, adve, layertype, LAYTP_SIGMA, LAYTP_Z, jahazlayer, kmxn
       use m_sferic, only: jasfer3d
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_dslim, only: dslim
       use m_get_kbot_ktop, only: getkbotktop
       use m_qucper, only: qucper
@@ -316,7 +316,7 @@ contains
          sqa = sqa * rho
       end if
 
-      do n = 1, num_source_sink ! momentum
+      do n = 1, source_sinks%num_total ! momentum
          if (source_sinks%area(n) > 0) then ! if momentum desired
             if (source_sinks%discharge(n) > 0) then
                kk = source_sinks%indices(n, 4) ! 2D pressure cell nr TO

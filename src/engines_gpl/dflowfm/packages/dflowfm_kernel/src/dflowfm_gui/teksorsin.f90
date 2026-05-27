@@ -39,7 +39,7 @@ contains
    subroutine teksorsin() ! teksrc
       use precision, only: dp
       use m_settextsizefac
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use unstruc_display, only: klsrc
       use m_transport, only: isalt, itemp
       use m_drawthis
@@ -52,14 +52,14 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: xp, yp
 
-      if (ndraw(41) <= 1 .or. num_source_sink == 0) then
+      if (ndraw(41) <= 1 .or. source_sinks%num_total == 0) then
          return
       end if
 
       call IGrCharJustify('L')
       call settextsizefac(1.0_dp)
 
-      do n = 1, num_source_sink ! teksorsin
+      do n = 1, source_sinks%num_total ! teksorsin
          k = source_sinks%indices(n, 1)
          if (k /= 0) then
             n2 = 1

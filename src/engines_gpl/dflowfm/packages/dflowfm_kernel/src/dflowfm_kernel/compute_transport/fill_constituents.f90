@@ -52,7 +52,7 @@ contains
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: Schmidt_number_salinity, Prandtl_number_temperature, Schmidt_number_tracer, sigdifi, sigsed, wsf
       use fm_external_forcings_data, only: wstracers
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_sediment, only: sed, sedtra, stm_included, stmpar, jased, mxgr, ws
       use m_mass_balance_areas, only: jamba, mbadefdomain, mbafluxheat, mbafluxsorsin
       use m_partitioninfo, only: jampi, idomain, my_rank
@@ -291,7 +291,7 @@ contains
          goto 1234 ! no sources from initialise
       end if
 
-      do n = 1, num_source_sink
+      do n = 1, source_sinks%num_total
          kk = source_sinks%indices(n, 1) ! 2D pressure cell nr FROM
          kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr TO
          qsrckk = source_sinks%discharge(n)

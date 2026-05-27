@@ -43,7 +43,7 @@ contains
    subroutine disable_higherorder_at_sorsin()
       use precision, only: dp
       use m_flowgeom
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_partitioninfo
       use m_alloc
       implicit none
@@ -61,7 +61,7 @@ contains
 
       if (jaall == 1) then
 !        disable all flowlink attached to flownodes with sources/sinks
-         do n = 1, num_source_sink
+         do n = 1, source_sinks%num_total
             do i = 1, 4, 3 ! 1 and 4
 !              get 2D flow nodes
                kk = source_sinks%indices(n, i)
@@ -86,7 +86,7 @@ contains
          call realloc(imask, Ndx, keepExisting=.false., fill=0)
 
 !        mask flownodes with sources
-         do n = 1, num_source_sink
+         do n = 1, source_sinks%num_total
             imask(source_sinks%indices(n, 1)) = 1
             imask(source_sinks%indices(n, 4)) = 1
          end do

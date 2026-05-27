@@ -5352,7 +5352,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density
-      use m_source_sink, only: source_sinks, num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
 
       implicit none
 
@@ -8197,7 +8197,7 @@ contains
       !
       if (map_write_settings%near_field == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = num_source_sink - num_source_sink_for_nearfield + 1, num_source_sink
+         do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
             !
             ! Sinks
             n = source_sinks%indices(isrc, 1)

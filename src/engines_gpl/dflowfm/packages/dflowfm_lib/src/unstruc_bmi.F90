@@ -976,7 +976,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
-      use m_source_sink, only: num_source_sink
+      use m_source_sink, only: source_sinks
       use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
@@ -1052,7 +1052,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = num_source_sink
+         shape(1) = source_sinks%num_total
          shape(2) = 3
          return
       case ("observations")

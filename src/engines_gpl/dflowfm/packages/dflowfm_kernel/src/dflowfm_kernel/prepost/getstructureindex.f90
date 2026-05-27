@@ -48,7 +48,7 @@ contains
 ! TODO: longer-term all structure sets run via channel_flow and t_structureset, cleanup this function then.
       use fm_external_forcings_data, only: cgen_ids, gate2cgen, genstru2cgen, L1cgensg, L2cgensg, ngategen, ngenstru, nweirgen, &
          weir2cgen, pump_ids, npumpsg, L1pumpsg, L2pumpsg
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
       use m_hash_search, only: hashsearch
       use unstruc_channel_flow, only: network
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -87,7 +87,7 @@ contains
             end if
          end do
       else if (trim(strtypename) == 'sourcesinks') then
-         do i = 1, num_source_sink
+         do i = 1, source_sinks%num_total
             if (trim(source_sinks%name(i)) == trim(strname)) then
                index = i
                exit

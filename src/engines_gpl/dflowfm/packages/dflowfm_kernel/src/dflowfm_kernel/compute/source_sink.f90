@@ -11,11 +11,7 @@ module m_source_sink
    private
 
    public :: source_sinks
-   public :: num_source_sink
    public :: source_sink_all_discharges
-
-   public :: num_source_sink_oldfile, num_source_sink_for_nearfield, max_source_sink_polyline_points
-   public :: source_sink_cumulative_volume, source_sink_cumulative_volume_previous, source_sink_average_discharge_previous, source_sink_waq_index, source_sink_cumulative_discharge_waq, source_sink_cumulative_discharge_waq_previous
 
    public :: addsorsin_from_polyline_file
    public :: addsorsin
@@ -24,11 +20,14 @@ module m_source_sink
    ! Type containing all source/sink data.
    type :: SourceSinks
 
-      ! Number of source/sinks and name.
-      integer :: number = 0 !< [-] Number of source/sinks in the model.
-      character(len=255), dimension(:), allocatable :: name !< [-] Name of the source/sink.
+      ! Source/sink counters.
+      integer :: num_total = 0 !< [-] Total number of source/sinks in the model.
+      integer :: num_oldfile = 0 !< [-] Number of source/sinks in old extforce file.
+      integer :: num_nearfield = 0 !< [-] Number of source/sinks added for near field.
+      integer :: max_polyline_points = 2 !< [-] Maximum number of points in source_sinks%x, source_sinks%y over all sources/sinks. Used for array dimensions.
 
-      ! Source/sink x,y,z coordinates, and indices.
+      ! Source/sink name, x,y,z coordinates, and indices.
+      character(len=255), dimension(:), allocatable :: name !< [-] Name of the source/sink.
       real(kind=dp), dimension(:,:), allocatable :: x !< [m] x-coordinates of source/sink.
       real(kind=dp), dimension(:,:), allocatable :: y !< [m] y-coordinates of source/sink.
       real(kind=dp), dimension(:,:), allocatable :: z_bottom !< [m] z-level of bottom source/sink.
@@ -46,8 +45,17 @@ module m_source_sink
       real(kind=dp), dimension(:), allocatable :: discharge !< [m3/s] Water discharge of source/sink.
       real(kind=dp), dimension(:,:), allocatable :: constituents !< [ppt,degC,kg/m3] Constituents of source/sink discharges.
 
+      ! Source/sink miscellaneous variables.
       logical :: add_k_to_turkin = .false. !< [-] Add k of source/sink to turkin.
       integer, dimension(:), allocatable :: max_xy_points !< [-] Maximum number of points per source/sink in x, y. Used for array dimensions.
+
+      ! Cumulative volume and discharge variables. Used in output and for waq coupling.
+      real(kind=dp), dimension(:), allocatable :: cumulative_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(self%num_total)}
+      real(kind=dp), dimension(:), allocatable :: cumulative_volume_previous !< [m3] Cumulative volume at each source/sink from Tstart to the previous His-output time. {size=(self%num_total)}
+      real(kind=dp), dimension(:), allocatable :: average_discharge_previous !< [m3/s] Average discharge in the past his-interval at each source/sink. {size=(self%num_total)}
+      integer, dimension(:), allocatable :: waq_index !< [-] Index array to map source/sink to waq source/sink arrays. {size=(self%num_total)}
+      real(kind=dp), dimension(:), allocatable :: cumulative_discharge_waq !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep. {size=(self%num_total)}
+      real(kind=dp), dimension(:), allocatable :: cumulative_discharge_waq_previous !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep at the beginning of the time step before possible reduction. {size=(self%num_total)}
 
    contains
 
@@ -59,23 +67,9 @@ module m_source_sink
    ! Object containing all source/sink data.
    type(SourceSinks), target :: source_sinks
 
-   integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
-   real(kind=dp), dimension(:,:), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(num_source_sink,2), former:srcall}
-   real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),num_source_sink), former:srsn}   
-
-
-   ! Source/sink counters.
-   integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
-   integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}
-   integer :: max_source_sink_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions. {former:msrc}
-
-   ! Cumulative volume and discharge variables. Used in output and for waq coupling.
-   real(kind=dp), dimension(:), target, allocatable :: source_sink_cumulative_volume !< [m3] Cumulative volume at each source/sink from Tstart to now. {size=(num_source_sink), former:vsrccum}
-   real(kind=dp), dimension(:), target, allocatable :: source_sink_cumulative_volume_previous !< [m3] Cumulative volume at each source/sink from Tstart to the previous His-output time. {size=(num_source_sink), former:vsrccum_pre}
-   real(kind=dp), dimension(:), target, allocatable :: source_sink_average_discharge_previous !< [m3/s] Average discharge in the past his-interval at each source/sink. {size=(num_source_sink), former:qsrcavg}
-   integer, dimension(:), allocatable :: source_sink_waq_index !< [-] Index array to map source/sink to waq source/sink arrays. {size=(num_source_sink), former:ksrcwaq}
-   real(kind=dp), dimension(:), allocatable :: source_sink_cumulative_discharge_waq !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep. {size=(num_source_sink), former:qsrcwaq}
-   real(kind=dp), dimension(:), allocatable :: source_sink_cumulative_discharge_waq_previous !< [m3/s] Cumulative discharge at each source/sink within current waq-timestep at the beginning of the time step before possible reduction. {size=(num_source_sink), former:qsrcwaq0}
+   ! Global source/sink arrays used for EC module and partitioned models.
+   real(kind=dp), dimension(:,:), allocatable, target :: source_sink_all_discharges !< [m3/s] All source/sink discharges in one array for partitioned models. {size=(source_sinks%num_total,2)}
+   real(kind=dp), dimension(:,:), allocatable :: source_sink_reduction !< [-] Source/sink reduction array for partitioned models. {size=(2*(numconst+1),source_sinks%num_total)}   
 
 contains
 
@@ -88,10 +82,6 @@ contains
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: size
 
-      ! Initialize source/sink counter to zero.
-      num_source_sink = 0
-      num_source_sink_for_nearfield = 0
-
       ! Allocate and intialize global source/sink arrays.
       allocate (source_sink_all_discharges(numconst+1, size))
       allocate (source_sink_reduction(2*(numconst+1), size))
@@ -99,24 +89,10 @@ contains
       source_sink_all_discharges = 0.0_dp
       source_sink_reduction = 0.0_dp
 
-      allocate (source_sink_cumulative_volume(size))
-      allocate (source_sink_cumulative_volume_previous(size))
-      allocate (source_sink_average_discharge_previous(size))
-      allocate (source_sink_waq_index(size))
-      allocate (source_sink_cumulative_discharge_waq(size))
-      allocate (source_sink_cumulative_discharge_waq_previous(size))
-
-      source_sink_cumulative_volume = 0.0_dp
-      source_sink_cumulative_volume_previous = 0.0_dp
-      source_sink_average_discharge_previous = 0.0_dp
-      source_sink_waq_index = 0
-      source_sink_cumulative_discharge_waq = 0.0_dp
-      source_sink_cumulative_discharge_waq_previous = 0.0_dp
-
       ! Allocate all source/sink attributes.
       allocate (self%name(size))
-      allocate (self%x(size, 2))
-      allocate (self%y(size, 2))
+      allocate (self%x(size, self%max_polyline_points))
+      allocate (self%y(size, self%max_polyline_points))
       allocate (self%z_bottom(size, 2))
       allocate (self%z_top(size, 2))
       allocate (self%indices(size, 6))
@@ -130,7 +106,19 @@ contains
 
       allocate (self%max_xy_points(size))
 
+      allocate (self%cumulative_volume(size))
+      allocate (self%cumulative_volume_previous(size))
+      allocate (self%average_discharge_previous(size))
+      allocate (self%waq_index(size))
+      allocate (self%cumulative_discharge_waq(size))
+      allocate (self%cumulative_discharge_waq_previous(size))
+
       ! Initialize all source/sink attributes.
+      self%num_total = 0
+      self%num_oldfile = 0
+      self%num_nearfield = 0
+      self%max_polyline_points = 2
+
       self%name = ''
       self%x = dmiss
       self%y = dmiss
@@ -148,6 +136,13 @@ contains
       self%add_k_to_turkin = .false.
       self%max_xy_points = 0
 
+      self%cumulative_volume = 0.0_dp
+      self%cumulative_volume_previous = 0.0_dp
+      self%average_discharge_previous = 0.0_dp
+      self%waq_index = 0
+      self%cumulative_discharge_waq = 0.0_dp
+      self%cumulative_discharge_waq_previous = 0.0_dp
+
    end subroutine initialize_source_sinks
 
    !> Resizes the SourceSinks object to size, keeping existing values if possible.
@@ -156,37 +151,33 @@ contains
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: new_size
 
-      ! Only resize if the new size is larger than the current size.
-      if (new_size > size(self%name)) then
+      ! Resize global source/sink arrays.
+      call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
+      call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
 
-         ! Resize global source/sink arrays.
-         call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_cumulative_volume, new_size, keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_cumulative_volume_previous, new_size, keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_average_discharge_previous, new_size, keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_waq_index, new_size, keepExisting=.true., fill=0)
-         call realloc(source_sink_cumulative_discharge_waq, new_size, keepExisting=.true., fill=0.0_dp)
-         call realloc(source_sink_cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
+      ! Resize all source/sink arrays.
+      call realloc(self%name, new_size, keepExisting=.true., fill='')
+      call realloc(self%x, [new_size, 2], keepExisting=.true., fill=dmiss)
+      call realloc(self%y, [new_size, 2], keepExisting=.true., fill=dmiss)
+      call realloc(self%z_bottom, [new_size, 2], keepExisting=.true., fill=dmiss)
+      call realloc(self%z_top, [new_size, 2], keepExisting=.true., fill=dmiss)
+      call realloc(self%indices, [new_size, 6], keepExisting=.true., fill=0)
 
-         ! Resize all source/sink arrays.
-         call realloc(self%name, new_size, keepExisting=.true., fill='')
-         call realloc(self%x, [new_size, 2], keepExisting=.true., fill=dmiss)
-         call realloc(self%y, [new_size, 2], keepExisting=.true., fill=dmiss)
-         call realloc(self%z_bottom, [new_size, 2], keepExisting=.true., fill=dmiss)
-         call realloc(self%z_top, [new_size, 2], keepExisting=.true., fill=dmiss)
-         call realloc(self%indices, [new_size, 6], keepExisting=.true., fill=0)
+      call realloc(self%area, new_size, keepExisting=.true., fill=0.0_dp)
+      call realloc(self%discharge_cosine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
+      call realloc(self%discharge_sine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
 
-         call realloc(self%area, new_size, keepExisting=.true., fill=0.0_dp)
-         call realloc(self%discharge_cosine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
-         call realloc(self%discharge_sine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
+      call realloc(self%discharge, new_size, keepExisting=.true., fill=0.0_dp)
+      call realloc(self%constituents, [new_size, numconst], keepExisting=.true., fill=0.0_dp)
 
-         call realloc(self%discharge, new_size, keepExisting=.true., fill=0.0_dp)
-         call realloc(self%constituents, [new_size, numconst], keepExisting=.true., fill=0.0_dp)
+      call realloc(self%max_xy_points, new_size, keepExisting=.true., fill=0)
 
-         call realloc(self%max_xy_points, new_size, keepExisting=.true., fill=0)
-
-      end if
+      call realloc(self%cumulative_volume, new_size, keepExisting=.true., fill=0.0_dp)
+      call realloc(self%cumulative_volume_previous, new_size, keepExisting=.true., fill=0.0_dp)
+      call realloc(self%average_discharge_previous, new_size, keepExisting=.true., fill=0.0_dp)
+      call realloc(self%waq_index, new_size, keepExisting=.true., fill=0)
+      call realloc(self%cumulative_discharge_waq, new_size, keepExisting=.true., fill=0.0_dp)
+      call realloc(self%cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
 
    end subroutine resize_source_sinks
 
@@ -311,28 +302,28 @@ contains
       end if
 
       ! Increment source/sink counter.
-      num_source_sink = num_source_sink + 1
+      source_sinks%num_total = source_sinks%num_total + 1
       
       ! If the number of source/sinks exceeds the current array size, double the array size.
-      if (num_source_sink > size(source_sinks%name)) then
-         call source_sinks%resize((num_source_sink - 1) * 2)
+      if (source_sinks%num_total > size(source_sinks%name)) then
+         call source_sinks%resize((source_sinks%num_total - 1) * 2)
       end if
 
       ! Set the coordinates of the source/sink, only the first 2 points of the polyline file are actually used.
-      source_sinks%x(num_source_sink, 1:num_points) = x_points(1:num_points)
-      source_sinks%y(num_source_sink, 1:num_points) = y_points(1:num_points)
-      source_sinks%max_xy_points(num_source_sink) = num_points
+      source_sinks%x(source_sinks%num_total, 1:num_points) = x_points(1:num_points)
+      source_sinks%y(source_sinks%num_total, 1:num_points) = y_points(1:num_points)
+      source_sinks%max_xy_points(source_sinks%num_total) = num_points
       kk = 0
       kk2 = 0
 
       ! Set source/sink name.
-      source_sinks%name(num_source_sink) = name
+      source_sinks%name(source_sinks%num_total) = name
 
       tmpname(1) = name//' source'
       jakdtree = 0
       kdum(1) = 0
-      if (source_sinks%x(num_source_sink, num_points) /= dmiss) then
-         call find_nearest_flownodes(1, source_sinks%x(num_source_sink, num_points), source_sinks%y(num_source_sink, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+      if (source_sinks%x(source_sinks%num_total, num_points) /= dmiss) then
+         call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
          kk2 = kdum(1)
       end if
 
@@ -345,18 +336,18 @@ contains
             write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
             call warn_flush()
          end if
-         source_sinks%area(num_source_sink) = 0.0_dp
+         source_sinks%area(source_sinks%num_total) = 0.0_dp
 
       else ! Default: linked source-sink, with 2 or more polyline points
          tmpname = name//' sink'
          kdum(1) = 0
-         if (source_sinks%x(num_source_sink, 1) /= dmiss) then
-            call find_nearest_flownodes(1, source_sinks%x(num_source_sink, 1), source_sinks%y(num_source_sink, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         if (source_sinks%x(source_sinks%num_total, 1) /= dmiss) then
+            call find_nearest_flownodes(1, source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
             kk = kdum(1)
          end if
 
          if (kk /= 0 .or. kk2 /= 0) then
-            source_sinks%area(num_source_sink) = area
+            source_sinks%area(source_sinks%num_total) = area
          end if
       end if
 
@@ -367,29 +358,29 @@ contains
          goto 8888
       end if
 
-      source_sinks%indices(1, num_source_sink) = kk
-      source_sinks%z_bottom(1, num_source_sink) = z_sink(1)
-      source_sinks%z_top(1, num_source_sink) = z_sink(1)
+      source_sinks%indices(1, source_sinks%num_total) = kk
+      source_sinks%z_bottom(1, source_sinks%num_total) = z_sink(1)
+      source_sinks%z_top(1, source_sinks%num_total) = z_sink(1)
 
-      source_sinks%indices(4, num_source_sink) = kk2
-      source_sinks%z_bottom(2, num_source_sink) = z_source(1)
-      source_sinks%z_top(2, num_source_sink) = z_source(1)
+      source_sinks%indices(4, source_sinks%num_total) = kk2
+      source_sinks%z_bottom(2, source_sinks%num_total) = z_source(1)
+      source_sinks%z_top(2, source_sinks%num_total) = z_source(1)
 
       if (kk > 0) then
          if (z_sink(2) /= dmiss) then
-            source_sinks%z_top(1, num_source_sink) = z_sink(2)
+            source_sinks%z_top(1, source_sinks%num_total) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(num_source_sink, 1), source_sinks%y(num_source_sink, 1), source_sinks%x(num_source_sink, 2), source_sinks%y(num_source_sink, 2), source_sinks%discharge_cosine(1, num_source_sink), source_sinks%discharge_sine(1, num_source_sink), source_sinks%x(num_source_sink, 1), source_sinks%y(num_source_sink, 1), jsferic, jasfer3D, dxymis)
+            call normalin(source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 2), source_sinks%y(source_sinks%num_total, 2), source_sinks%discharge_cosine(1, source_sinks%num_total), source_sinks%discharge_sine(1, source_sinks%num_total), source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), jsferic, jasfer3D, dxymis)
          end if
 
-         do i = 1, num_source_sink - 1
+         do i = 1, source_sinks%num_total - 1
             if (source_sinks%indices(1, i) /= 0 .and. kk == source_sinks%indices(1, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(num_source_sink)), ' coincides with FROM point of ', trim(source_sinks%name(i))
+               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with FROM point of ', trim(source_sinks%name(i))
                call warn_flush()
             else if (source_sinks%indices(4, i) /= 0 .and. kk == source_sinks%indices(4, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(num_source_sink)), ' coincides with TO   point of ', trim(source_sinks%name(i))
+               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with TO   point of ', trim(source_sinks%name(i))
                call warn_flush()
             end if
          end do
@@ -398,12 +389,12 @@ contains
 
       if (kk2 > 0) then
          if (z_source(2) /= dmiss) then
-            source_sinks%z_top(2, num_source_sink) = z_source(2)
+            source_sinks%z_top(2, source_sinks%num_total) = z_source(2)
          end if
          
          ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(num_source_sink, num_points - 1), source_sinks%y(num_source_sink, num_points - 1), source_sinks%x(num_source_sink, num_points), source_sinks%y(num_source_sink, num_points), source_sinks%discharge_cosine(2, num_source_sink), source_sinks%discharge_sine(2, num_source_sink), source_sinks%x(num_source_sink, num_points), source_sinks%y(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
+            call normalin(source_sinks%x(source_sinks%num_total, num_points - 1), source_sinks%y(source_sinks%num_total, num_points - 1), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), source_sinks%discharge_cosine(2, source_sinks%num_total), source_sinks%discharge_sine(2, source_sinks%num_total), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), jsferic, jasfer3D, dxymis)
          end if
       end if
 
@@ -435,7 +426,7 @@ contains
       real(kind=dp), parameter :: FRAC = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
       source_sink_reduction = 0.0_dp
-      do n = 1, num_source_sink
+      do n = 1, source_sinks%num_total
          kk = source_sinks%indices(n, 1) ! 2D pressure cell nr, From side, 0 = out of all, -1 = in other domain, > 0, own domain
          kk2 = source_sinks%indices(n, 4) ! 2D pressure cell nr, To   side, 0 = out of all, -1 = in other domain, > 0, own domain
          source_sinks%discharge(n) = source_sink_all_discharges(1, n)
@@ -533,10 +524,10 @@ contains
 
       if (jampi > 0) then
          numvals = 2 * (1 + numconst)
-         call reduce_srsn(numvals, num_source_sink, source_sink_reduction)
+         call reduce_srsn(numvals, source_sinks%num_total, source_sink_reduction)
       end if
 
-      do n = 1, num_source_sink
+      do n = 1, source_sinks%num_total
          source_sinks%discharge(n) = source_sink_all_discharges(1, n)
          do L = 1, numconst
             source_sinks%constituents(L, n) = source_sink_all_discharges(L + 1, n)

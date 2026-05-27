@@ -87,7 +87,7 @@ contains
       use m_lnabs
       use m_zlin
       use m_znod
-      use m_source_sink, only: source_sinks, num_source_sink
+      use m_source_sink, only: source_sinks
 
       implicit none
 
@@ -702,7 +702,7 @@ contains
 
       call setcol(121)
       if (kmx > 0) then
-         do n = 1, num_source_sink ! teksorsin rai
+         do n = 1, source_sinks%num_total ! teksorsin rai
             qsrck = source_sinks%discharge(n)
             kk = source_sinks%indices(n, 1) ! 2D pressure cell nr from
             if (japol == 1) then
