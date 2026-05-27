@@ -6,10 +6,6 @@ module test_longculverts
 
     implicit none(type, external)
 
-    character(len=*), parameter :: TEST_NET_FILE = "test_lc2_net.nc"
-    character(len=*), parameter :: TEST_STR_FILE = "test_lc2_structures.ini"
-    character(len=*), parameter :: TEST_MDU_FILE = "test_lc2.mdu"
-
 contains    
 
     !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_four_point, test_convert1d2dlongculverts_single_four_point,
@@ -346,6 +342,7 @@ contains
       write(mout, '(a)') '[geometry]'
       write(mout, '(2a)') '    netFile               = ', trim(net_file)
       write(mout, '(2a)') '    StructureFile         = ', trim(str_file)
+      write(mout, '(a)') '    UseCaching             = 0'
       write(mout, '(a)') ''
       write(mout, '(a)') '[time]'
       write(mout, '(a)') '    refDate               = 20000101'
@@ -355,6 +352,7 @@ contains
       write(mout, '(a)') '    dtMax                 = 10.0'
       write(mout, '(a)') '    dtUser                = 10.0'
       write(mout, '(a)') '    dtInit                = 1.0'
+
       close(mout)
    end subroutine create_mdu_file
 
@@ -384,7 +382,7 @@ contains
 
       integer :: ierr, iresult, i
 
-      character(len=*), parameter :: TEST_NET_FILE = "test_lc_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc_net.nc"
       character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
       character(len=*), parameter :: TEST_MDU_FILE = "test_lc.mdu"
 
@@ -392,11 +390,11 @@ contains
       integer :: lc_link
 
       ! ARRANGE: Create all input files
-      call create_minimal_netfile(TEST_NET_FILE, ierr)
+      call create_minimal_netfile(NET_FILE, ierr)
       call f90_assert_eq(ierr, nf90_noerr, "NetCDF net file creation should succeed")
 
       call create_structure_file(TEST_STR_FILE)
-      call create_mdu_file(TEST_MDU_FILE, TEST_NET_FILE, TEST_STR_FILE)
+      call create_mdu_file(TEST_MDU_FILE, NET_FILE, TEST_STR_FILE)
       md_ident = TEST_MDU_FILE
       threshold_abort = LEVEL_FATAL
 
@@ -456,15 +454,15 @@ contains
       use netcdf, only: nf90_noerr
       integer, intent(out) :: iresult
 
-      character(len=*), parameter :: TEST_NET_FILE = "test_lc_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc_net.nc"
       character(len=*), parameter :: TEST_STR_FILE = "test_lc_structures.ini"
       character(len=*), parameter :: TEST_MDU_FILE = "test_lc.mdu"
       character(len=256) :: mdu_local
       integer :: ierr
 
-      call create_minimal_netfile(TEST_NET_FILE, ierr)
+      call create_minimal_netfile(NET_FILE, ierr)
       call create_structure_file(TEST_STR_FILE)
-      call create_mdu_file(TEST_MDU_FILE, TEST_NET_FILE, TEST_STR_FILE)
+      call create_mdu_file(TEST_MDU_FILE, NET_FILE, TEST_STR_FILE)
       md_ident = TEST_MDU_FILE
       threshold_abort = LEVEL_FATAL
 
@@ -562,7 +560,7 @@ contains
       call setup_longculvert_model(iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
 
-      ! Uniform water level everywhere — no driving force.
+      ! Uniform water level everywhere no driving force.
       do i = 1, ndx
          s1(i) = 1.0_dp
       end do
@@ -820,6 +818,7 @@ contains
       real(kind=dp) :: q_full, q_half
       character(len=*), parameter :: STR_FILE = "test_lc_valve_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_valve.mdu"
+      character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
          "[General]                                     ", &
@@ -854,8 +853,8 @@ contains
          "    frictionValue   = 0.02                    ", &
          "    valveRelativeOpening = 0.5                "])
 
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
@@ -883,6 +882,7 @@ contains
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc_friction_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_friction.mdu"
+    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
          "[General]                                     ", &
@@ -917,8 +917,8 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
@@ -937,6 +937,76 @@ contains
    end subroutine test_friction_higher_value_reduces_discharge
    !$f90tw)
 
+ !$f90tw TESTCODE(TEST, test_longculvert, test_2pt_friction_converted, test_2pt_friction_converted,
+   subroutine test_2pt_friction_converted() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i
+      real(kind=dp) :: q_low_friction, q_high_friction
+      character(len=*), parameter :: STR_FILE = "test_lc2pt_fric_str.ini"
+      character(len=256) :: MDU_FILE = "test_lc2pt_fric_converted.mdu"
+      character(len=*), parameter :: NET_FILE = "test_lc_convert_2pt_net.nc"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 50.0 50.0               ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.01                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 2                       ", &
+         "    xCoordinates    = 50.0 350.0              ", &
+         "    yCoordinates    = 150.0 150.0             ", &
+         "    zCoordinates    = -5.0 -5.0               ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.05                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(longculverts(1)%numlinks, 1, "2-point culvert should have 1 link")
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+
+      do i = 1, 4
+         call flow_spatietimestep()
+      end do
+
+      q_low_friction  = q1(longculverts(1)%flowlinks(1))
+      q_high_friction = q1(longculverts(2)%flowlinks(1))
+      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
+      call f90_expect_true(q_high_friction < q_low_friction, &
+                           "higher Manning friction should produce less discharge (3-point)")
+      call default_longculverts
+   end subroutine test_2pt_friction_converted
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_longculvert, test_friction_type_affects_discharge, test_friction_type_affects_discharge,
    subroutine test_friction_type_affects_discharge() bind(C)
       use m_flow, only: q1
@@ -949,6 +1019,7 @@ contains
       real(kind=dp) :: q_manning, q_colebrook
       character(len=*), parameter :: STR_FILE = "test_lc_frtype_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_frtype.mdu"
+    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
          "[General]                                     ", &
@@ -983,8 +1054,8 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
@@ -1015,6 +1086,7 @@ contains
       real(kind=dp) :: q_small, q_large
       character(len=*), parameter :: STR_FILE = "test_lc_cross_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_cross.mdu"
+    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
          "[General]                                     ", &
@@ -1048,8 +1120,8 @@ contains
          "    frictionType    = Manning                 ", &
          "    frictionValue   = 0.02                    ", &
          "    valveRelativeOpening = 1.0                "])
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
@@ -1129,8 +1201,8 @@ contains
       integer :: ierr
 
      call create_structure_file_3pt(STR_FILE)
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
      call init_two_culvert_scenario(MDU_FILE, iresult)
 
    end subroutine setup_3pt_model
@@ -1218,6 +1290,7 @@ contains
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc3pt_fric_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc3pt_fric.mdu"
+    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
          "[General]                                     ", &
@@ -1252,8 +1325,8 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
@@ -1270,6 +1343,66 @@ contains
                            "higher Manning friction should produce less discharge (3-point)")
       call default_longculverts
    end subroutine test_3pt_friction_higher_value_reduces_discharge
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_3pt_friction_converted, test_3pt_friction_converted,
+   subroutine test_3pt_friction_converted() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i
+      real(kind=dp) :: q_low_friction, q_high_friction
+      character(len=*), parameter :: STR_FILE = "test_lc3pt_fric_str.ini"
+      character(len=256) :: MDU_FILE = "test_lc3pt_fric.mdu"
+      character(len=*), parameter :: NET_FILE = "test_lc_convert_3pt_net.nc"
+
+      call create_file(STR_FILE, [ &
+         "[General]                                     ", &
+         "    fileVersion     = 3.00                    ", &
+         "    fileType        = structures              ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc01                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 3                       ", &
+         "    xCoordinates    = 50.0 200.0 350.0       ", &
+         "    yCoordinates    = 50.0 50.0 50.0         ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.01                    ", &
+         "    valveRelativeOpening = 1.0                ", &
+         "                                              ", &
+         "[Structure]                                   ", &
+         "    id              = lc02                    ", &
+         "    type            = longCulvert             ", &
+         "    numCoordinates  = 3                       ", &
+         "    xCoordinates    = 50.0 200.0 350.0       ", &
+         "    yCoordinates    = 150.0 150.0 150.0      ", &
+         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+         "    allowedFlowDir  = both                    ", &
+         "    width           = 2.0                     ", &
+         "    height          = 2.0                     ", &
+         "    frictionType    = Manning                 ", &
+         "    frictionValue   = 0.05                    ", &
+         "    valveRelativeOpening = 1.0                "])
+
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(longculverts(1)%numlinks, 2, "3-point culvert should have 0 links")
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
+      !> the test stops here, as a 3 PT culvert cannot be written to the netfile in a ugrid compliant way
+   
+   end subroutine test_3pt_friction_converted
    !$f90tw)
 
    ! ============================================================================
@@ -1334,8 +1467,8 @@ contains
       character(len=*), parameter :: MDU_FILE = "test_lc4pt.mdu"
 
      call create_structure_file_4pt(STR_FILE)
-     call create_two_row_netfile(TEST_NET_FILE)
-     call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+     call create_two_row_netfile(NET_FILE)
+     call create_mdu_file(mdu_file, NET_FILE, str_file)
      call init_two_culvert_scenario(MDU_FILE, iresult)
 
    end subroutine setup_4pt_model
@@ -1423,6 +1556,7 @@ contains
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc4pt_fric_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc4pt_fric.mdu"
+    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
          "[General]                                     ", &
@@ -1457,8 +1591,8 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call create_two_row_netfile(TEST_NET_FILE)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
@@ -1506,7 +1640,7 @@ contains
 
       call f90_expect_true(q1(L1) > 0.0_dp, "discharge at link 1 should be positive")
       ! In steady state, Q should be equal across all links (continuity).
-      ! After a few timesteps it won't be perfectly steady, but should be close enough (15%)
+      ! After a few timesteps it wont be perfectly steady, but should be close enough (15%)
       call f90_expect_near(q1(L1), q1(L2), 0.15_dp * abs(q1(L1)), &
                            "discharge at links 1 and 2 should be similar (continuity)")
       call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
@@ -1514,6 +1648,51 @@ contains
 
       call default_longculverts
    end subroutine test_4pt_flow_continuity_across_links
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_flow_continuity_converted, test_4pt_flow_continuity_converted,
+   !> For a 4-point culvert, verify that the discharge is consistent across all 3 links
+   !! (mass conservation within the culvert pipe).
+   subroutine test_4pt_flow_continuity_converted() bind(C)
+      use m_flowgeom, only: ndx, bl
+      use m_flow, only: s1, q1
+      use m_cell_geometry, only: xz
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i, L1, L2, L3
+      character(len=*), parameter :: NET_FILE = "test_lc_convert_4pt_net.nc"
+      character(len=*), parameter :: STR_FILE = "test_lc_convert_4pt_str.ini"
+      character(len=256) :: mdu_file = "test_lc_convert_4pt.mdu"
+
+      call create_structure_file_4pt(STR_FILE)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
+      call f90_assert_eq(longculverts(1)%numlinks, 3, "4-point culvert should have 3 links")
+
+      do i = 1, 15
+         call flow_spatietimestep()
+      end do
+
+      L1 = abs(longculverts(1)%flowlinks(1))
+      L2 = abs(longculverts(1)%flowlinks(2))
+      L3 = abs(longculverts(1)%flowlinks(3))
+
+      call f90_expect_true(q1(L1) < 0.0_dp, "discharge at link 1 should be negative")
+      ! In steady state, Q should be equal across all links (continuity).
+      ! After a few timesteps it wont be perfectly steady, but should be close enough (15%)
+      call f90_expect_near(-q1(L1), q1(L2), 0.15_dp * abs(q1(L1)), &
+                           "discharge at links 1 and 2 should be similar (continuity)")
+      call f90_expect_near(q1(L2), q1(L3), 0.15_dp * abs(q1(L2)), &
+                           "discharge at links 2 and 3 should be similar (continuity)")
+
+      call default_longculverts
+   end subroutine test_4pt_flow_continuity_converted
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_longculvert, test_4pt_with_existing_1d_network, test_4pt_with_existing_1d_network,
@@ -1552,7 +1731,7 @@ contains
       ! Create structure file with a 4-point long culvert
       call create_structure_file_4pt(STR_FILE)
 
-      call create_mdu_file(mdu_file, TEST_NET_FILE, STR_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
       call init_two_culvert_scenario(MDU_FILE, iresult)
 
       call f90_expect_eq(iresult, DFM_NOERR, "flow_modelinit should succeed with existing 1D network + long culvert")
@@ -1702,33 +1881,67 @@ contains
       ierr = 0 ! success
    end subroutine create_net_with_1d_branch
 
-   subroutine convertlongculverts(mdufile, structurefile)
+   subroutine convertlongculverts(mdufile, structurefile, netfile)
       use m_resetfullflowmodel, only: resetfullflowmodel
-      use m_inidat, only: inidat
+      use m_inidat, only: inidat, jaSkipCmdLineArgs
       use gridoperations, only: findcells
+      use m_find1dcells, only: find1dcells
       use m_longculverts, only: makelongculverts_commandline
       use m_globalparameters, only: t_filenames
-      use unstruc_model, only: writeMDUfile
+      use unstruc_model, only: writeMDUfile, md_netfile, md_japartition, md_structurefile, md_crsfile, md_ident, md_convertlongculverts
       use m_partitioninfo, only: jampi
       use Timers, only: timini, timon
       use messagehandling, only: SetMessageHandling
-      use m_commandline_option, only: inputfiles
+      use m_commandline_option, only: inputfiles, numfiles
+      use unstruc_netcdf, only: unc_write_net
 
-      character(len=*), intent(in) :: mdufile
+      character(len=*), intent(inout) :: mdufile
       character(len=*), intent(in) :: structurefile
-      character(len=256) :: mdufile_local
+      character(len=*), intent(in) :: netfile
+      character(len=256) :: mdufile_local, netfile_local
       type(t_filenames) :: filenames
-      integer :: ierr
+      integer :: ierr, iunit
+      logical :: file_exists
+
+      ! Delete leftover converted_crsdef.ini from previous test runs
+      inquire(file='converted_crsdef.ini', exist=file_exists, number=iunit)
+      if (file_exists) then
+         if (iunit /= 0) then
+            close(iunit, iostat=ierr)
+         end if
+         open(newunit=iunit, file='converted_crsdef.ini', status='old', iostat=ierr)
+         if (ierr == 0) then
+            close(iunit, status='delete', iostat=ierr)
+         end if
+      end if
 
       call resetFullFlowModel()
+      call default_longculverts
+      call timini()
+      timon = .false.
+      jampi = 0
+      call SetMessageHandling(write2screen=.false.)
       inputfiles(1) = mdufile
+      numfiles = 1
+      md_japartition = 1 !> to make long culvert initialisation write the converted files
+      jaSkipCmdLineArgs = 0
       call INIDAT()
+      ! Write the updated net file (now includes culvert netlinks)
+      netfile_local = "converted_"//trim(netfile)
       call findcells(0)
-      filenames = t_filenames()
-      filenames%structures = structurefile
-      call makelongculverts_commandline(filenames, write_converted_files = .true.)
+      call find1dcells()
+      call unc_write_net(netfile_local, janetcell=1, janetbnd=1, jaidomain=0, &
+                            jaiglobal_s=0, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
+      md_netfile = netfile_local
       mdufile_local = "converted_" // mdufile
+      md_structurefile = "converted_" //structurefile
+      md_crsfile = "converted_crsdef.ini"
+      md_convertlongculverts = 0
       call writeMDUfile(mdufile_local, ierr)
+      mdufile = mdufile_local
+      call default_longculverts !> not automatically reset
+      numfiles = 0 !> not automatically reset
+      md_japartition = 0 !> not automatically reset
 
    end subroutine convertlongculverts
 

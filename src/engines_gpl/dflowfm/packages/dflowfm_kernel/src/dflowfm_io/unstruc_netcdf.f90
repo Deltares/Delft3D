@@ -11211,7 +11211,7 @@ contains
       janetbnd_loc = 0
       jaidomain_loc = 0
       jaiglobal_s_loc = 0
-      iconv = UNC_CONV_CFOLD
+      iconv = UNC_CONV_UGRID
 
       if (present(janetcell)) then
          janetcell_loc = janetcell

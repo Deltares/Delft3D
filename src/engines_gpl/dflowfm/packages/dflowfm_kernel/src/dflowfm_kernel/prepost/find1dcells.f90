@@ -196,7 +196,7 @@ contains
 
       if (NC == 0) then
          branches_first = .true.
-         if (preserve_branch_order) then
+         if (associated(meshgeom1d%nodebranchidx) .and. preserve_branch_order) then
             ! if the branch order is to be preserved, check if the next found node matches the next node in the branchorder.
             next_found_node = meshgeom1d%nodeidx_inverse(k)
             next_branch_node = nump1d2d - nump + 1

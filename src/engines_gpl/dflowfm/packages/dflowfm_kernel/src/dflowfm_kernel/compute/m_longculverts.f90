@@ -349,7 +349,7 @@ contains
             call err_flush()
          else
             longculvertindex = longculvertindex + 1
-            if (size(longculverts(longculvertindex)%netlinks) > 1) then
+            if (size(longculverts(longculvertindex)%netlinks) > 2) then
                call prop_set(str_ptr, '', 'branchId', longculverts(longculvertindex)%branchId)
                call add_longculvert_branch(network, longculverts(longculvertindex))
             else
@@ -365,6 +365,7 @@ contains
             call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(crsdef_output)//''' for writing.')
          else
             call prop_write_inifile(mout, prop_ptr, ierr)
+            close(mout)
          end if
       end if
 
@@ -1078,21 +1079,38 @@ contains
       write (ipolychar, '(I0)') i_longculvert
       longculvert_name = 'longCulvert_'//trim(ipolychar)
 
-      if (poly_point_count == 2) then
-         numculvertpoints = 2
+      if (poly_point_count <= 3) then
+         !> 2-point and 3-point culverts: only 1D2D links, no branch/meshgeom1d administration.
+         !! All links get kn3typ=5. These culverts are identified by contactId.
+         longculverts(i_longculvert)%contactId = longculvert_name
 
          call longculvert_create_endpoint(xplCulv(1), yplCulv(1), zplCulv(1), k1)
-         call longculvert_create_endpoint(xplCulv(poly_point_count), yplCulv(poly_point_count), zplCulv(poly_point_count), k2)
-         xplCulv(:) = [xk(k1), xk(k2)]
-         yplCulv(:) = [yk(k1), yk(k2)]
+         xplCulv(1) = xk(k1)
+         yplCulv(1) = yk(k1)
 
          kn3typ = 5
+         do j = 2, poly_point_count - 1
+            x2 = xplCulv(j)
+            y2 = yplCulv(j)
+            z2 = zplCulv(j)
+            call setnewpoint(x2, y2, z2, k2)
+            call connectdbn(k1, k2, L)
+            if (allocated(dxe)) then
+               dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+            end if
+            longculverts(i_longculvert)%netlinks(j - 1) = L
+            k1 = k2
+         end do
+
+         call longculvert_create_endpoint(xplCulv(poly_point_count), yplCulv(poly_point_count), zplCulv(poly_point_count), k2)
+         xplCulv(poly_point_count) = xk(k2)
+         yplCulv(poly_point_count) = yk(k2)
+
          call connectdbn(k1, k2, L)
          if (allocated(dxe)) then
             dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
          end if
-         longculverts(i_longculvert)%netlinks(1) = L
-         longculverts(i_longculvert)%contactId = longculvert_name
+         longculverts(i_longculvert)%netlinks(poly_point_count - 1) = L
 
       else ! Multi-point culvert
 
@@ -1367,6 +1385,11 @@ contains
 
          branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
          contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
+
+         if (branch_idx <= 0 .and. contact_idx <= 0) then
+            call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '// trim(longculvert%branchId)//' '// trim(longculvert%contactId))
+            return
+         end if
          !Find the last 1D node of the branch
          if (branch_idx > 0 .and. network%BRS%size >= i) then
             inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER

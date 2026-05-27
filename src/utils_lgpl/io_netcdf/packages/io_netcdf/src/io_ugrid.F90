@@ -1288,7 +1288,7 @@ contains
             end if
          end if
          ! always write edge nodes
-         if (meshids%varids(mid_edgenodes) /= -1) then
+         if (meshids%varids(mid_edgenodes) /= -1 .and. numedge > 0) then
             ierr = nf90_put_var(ncid, meshids%varids(mid_edgenodes), edge_nodes, count=(/2, numEdge/))
          end if
       end if
