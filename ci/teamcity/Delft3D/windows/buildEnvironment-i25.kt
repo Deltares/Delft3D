@@ -65,7 +65,7 @@ object WindowsBuildEnvironmentI25 : BuildType({
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
                 """.trimIndent()
-                commandArgs = ""
+                commandArgs = "--no-cache"
             }
         }
         dockerCommand {
