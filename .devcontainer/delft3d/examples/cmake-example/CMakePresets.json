@@ -70,7 +70,7 @@
             "displayName": "All Release Build",
             "configurePreset": "all-release",
             "jobs": 24
-        },        
+        }
     ], 
     "testPresets": [
         {
