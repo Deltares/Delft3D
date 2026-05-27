@@ -85,7 +85,7 @@
             "displayName": "FM-suite Release Test",
             "configuration": "Release"
         },
-{
+        {
             "configurePreset": "all-debug",
             "name": "all-debug-test",
             "displayName": "All Debug Test",
