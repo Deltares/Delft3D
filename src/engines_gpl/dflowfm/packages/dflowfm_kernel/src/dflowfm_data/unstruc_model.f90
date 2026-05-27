@@ -151,7 +151,6 @@ module unstruc_model
    character(len=max_prop_length) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=max_prop_length) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
    character(len=max_prop_length) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
-   character(len=max_prop_length) :: md_dynvegpol = ' ' !< File containing extent of dynamic vegetation application
 
    character(len=max_prop_length) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete
@@ -327,7 +326,6 @@ contains
       md_bedformfile = ' '
       md_morphopol = ' '
       md_sedtrailsfile = ' '
-      md_dynvegpol = ' '
 
       md_obsfile = ' '
       md_delete_observation_points_outside_grid = 0
@@ -1366,18 +1364,6 @@ contains
 
       if (frcunilin > 0) then
          jafrculin = 1
-      end if
-
-      ! Additions for dynamic roughness for storm impacts with morphology
-      call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynroughveg)
-      if (dynroughveg > 0 .and. ifrctypuni /= 1) then
-         call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness. Switched off.')
-         dynroughveg = 0
-      else
-         call prop_get(md_ptr, 'physics', 'dRoot', droot)
-         call prop_get(md_ptr, 'physics', 'dStem', dstem)
-         call prop_get(md_ptr, 'physics', 'nManMin', frcumin)
-         call prop_get(md_ptr, 'physics', 'dynVegPol', md_dynvegpol, success)
       end if
 
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
@@ -3398,12 +3384,6 @@ contains
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
-      call prop_set(prop_ptr, 'physics', 'dynRoughVeg', dynroughveg, 'Switch for dynamic vegetation roughness. Default 0.')
-      call prop_set(prop_ptr, 'physics', 'dRoot', droot, 'Root depth (m)')
-      call prop_set(prop_ptr, 'physics', 'dStem', dstem, 'Stem height (m)')
-      call prop_set(prop_ptr, 'physics', 'nMaxMin', frcumin, 'Base Manning friction value (s/m^{1/3})')
-      call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
-
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then

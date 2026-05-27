@@ -91,8 +91,6 @@ module m_sediment
    logical, allocatable :: bermslopeindexsus(:) !< index where nudging needs to be applied for suspended load
    real(kind=dp), allocatable :: bermslopecontrib(:, :) !< bermslope nudging sediment transport
    real(kind=dp), allocatable :: ssccum(:, :) !< water column integrated sediment transport in dry points (kg/s)
-   real(kind=dp), allocatable :: cumes(:) !< cumulative erosion/sedimentation in link positions
-
    integer :: jased !< Include sediment, 1=Krone, 2=Soulsby van Rijn 2007, 4=Delft3D morphology module
    integer :: jaseddenscoupling = 0 !< Include sediment in rho 1 = yes , 0 = no
    integer :: jasubstancedensitycoupling = 0 !< Include Delwaq substances in rho 1 = yes , 0 = no

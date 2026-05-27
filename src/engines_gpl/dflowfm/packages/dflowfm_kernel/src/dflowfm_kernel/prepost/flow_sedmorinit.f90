@@ -54,7 +54,7 @@ contains
       use unstruc_files
       use m_flowgeom
       use m_flowtimes
-      use m_physcoef, only: rhomean, ag, vismol, dynroughveg
+      use m_physcoef, only: rhomean, ag, vismol
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
@@ -542,11 +542,6 @@ contains
       case default
          ! if 0, do nothing.
       end select
-      !
-      if (dynroughveg > 0) then
-         if (allocated(cumes)) deallocate(cumes)
-         call realloc(cumes, lnx,stat=ierr,fill=0.0_dp, keepExisting=.false.)
-      end if
 
 1234  return
    end subroutine flow_sedmorinit
