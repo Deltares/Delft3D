@@ -32,7 +32,7 @@ object WindowsBuild : BuildType({
 
     params {
         param("intel_fortran_compiler", "ifx")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2025")
         param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
@@ -103,7 +103,4 @@ object WindowsBuild : BuildType({
             rules = "+:unit-test-report-windows.xml"
         }
     }
-    // requirements {
-    //     doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
-    // }
 })

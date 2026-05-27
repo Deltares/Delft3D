@@ -29,7 +29,7 @@ object WindowsBuild2D3DSP : BuildType({
     params {
         param("product", "auto-select")
         param("intel_fortran_compiler", "ifx")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2025")
         param("generator", """"Visual Studio 17 2022"""")
         param("enable_code_coverage_flag", "OFF")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
@@ -84,21 +84,21 @@ object WindowsBuild2D3DSP : BuildType({
                 matches("product", """^(d3d4-(suite|testbench))|(all-testbench)$""")
             }
             scriptContent = """
-                call C:/set-env-vs2022.cmd
+                call "C:\\Program Files (x86)\\Intel\\oneAPI\\setvars.bat" --force
+                call "C:\\Program Files\\Microsoft Visual Studio\\17\\Community\\Common7\\Tools\\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
 
                 cmake ./src/cmake -G %generator% -T fortran=%intel_fortran_compiler% -D CMAKE_BUILD_TYPE=%build_type% -D CONFIGURATION_TYPE:STRING=flow2d3d -B build_flow2d3d -D CMAKE_INSTALL_PREFIX=build_flow2d3d/install -D ENABLE_CODE_COVERAGE=%enable_code_coverage_flag%
 
                 cd build_flow2d3d
 
-                cmake --build . -j --target install --config %build_type%
+                cmake --build . -j --config %build_type%
+
+                cmake --build . --target install --config %build_type%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
-    }
-    requirements {
-        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
     }
 })
