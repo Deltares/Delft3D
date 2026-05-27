@@ -38,6 +38,7 @@ public initrafrm
 public rdtrafrm
 public setpardef
 public echotrafrm
+public traparams
 
 interface setpardef
    module procedure setpardeflog

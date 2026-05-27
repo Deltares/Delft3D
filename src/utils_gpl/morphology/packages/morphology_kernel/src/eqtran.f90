@@ -57,6 +57,7 @@ subroutine eqtran(sig       ,thick     ,num_layers_grid      ,ws        ,ltur   
     use mathconsts, only: pi, ee
     use iso_c_binding, only: c_char
     use morphology_data_module
+    use m_trab19, only: trab19
     !
     implicit none
 !

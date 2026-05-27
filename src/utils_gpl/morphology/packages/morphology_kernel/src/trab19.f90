@@ -24,6 +24,9 @@
 !  Stichting Deltares. All rights reserved.                                     
 !                                                                               
 !-------------------------------------------------------------------------------
+module m_trab19
+   implicit none
+   contains
 
 !> computes sediment transport according to the transport formula of Van Thiel / Van Rijn (2008)
 subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h         ,tp        , &
@@ -223,3 +226,5 @@ subroutine trab19(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     !
  999 continue
 end subroutine trab19
+
+end module m_trab19
