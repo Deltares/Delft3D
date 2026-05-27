@@ -81,40 +81,39 @@ contains
         integer(kind = int_wp) :: ipnt(28)   !    Local work array for the pointering
         integer(kind = int_wp) :: iseg        !    Local loop counter for computational element loop
         
-        integer(kind = int_wp) :: ILUMON       !    Local loop counter for computational element loop
+        !integer(kind = int_wp) :: ILUMON       !    Local loop counter for computational element loop
         integer(kind = int_wp) :: iflux        !    Local loop counter for computational element loop
         !
         !     Local declaration
         !
-        real(kind = real_wp) :: FPPGREEN
-        real(kind = real_wp) :: NCRATGREEN
-        real(kind = real_wp) :: PCRATGREEN
-        real(kind = real_wp) :: FPPDIAT
-        real(kind = real_wp) :: NCRATDIAT
-        real(kind = real_wp) :: PCRATDIAT
-        real(kind = real_wp) :: SCRATDIAT
-        real(kind = real_wp) :: DELT
-        real(kind = real_wp) :: NH4
-        real(kind = real_wp) :: NO3
-        real(kind = real_wp) :: PO4
-        real(kind = real_wp) :: SI
-        real(kind = real_wp) :: NH4KR
-        real(kind = real_wp) :: MORT1
-        real(kind = real_wp) :: NCRAT1
-        real(kind = real_wp) :: PCRAT1
-        real(kind = real_wp) :: FMRT1A
-        real(kind = real_wp) :: FMRT2A
-        real(kind = real_wp) :: MORT2
-        real(kind = real_wp) :: NCRAT2
-        real(kind = real_wp) :: PCRAT2
-        real(kind = real_wp) :: SCRAT2
-        real(kind = real_wp) :: FMRT1D
-        real(kind = real_wp) :: FMRT2D
-        real(kind = real_wp) :: CONMXN
-        real(kind = real_wp) :: AMAX1
-        real(kind = real_wp) :: CONMXP
-        real(kind = real_wp) :: CONMXS
-        
+        real(kind = real_wp) :: FPPGREEN    !    Gross primary production of green-algae [gC/m3/d]
+        real(kind = real_wp) :: NCRATGREEN  !    Nitrogen-Carbon ratio in green-algae             [gN/gC]
+        real(kind = real_wp) :: PCRATGREEN  !    Phosphorus-Carbon ratio in green-algae           [gP/gC]
+        real(kind = real_wp) :: FPPDIAT     !    Gross primary production of diatoms              [gC/m3/d]
+        real(kind = real_wp) :: NCRATDIAT   !    Nitrogen-Carbon ratio in diatoms                 [gN/gC]
+        real(kind = real_wp) :: PCRATDIAT   !    Phosphorus-Carbon ratio in diatoms               [gP/gC]
+        real(kind = real_wp) :: SCRATDIAT   !    Silicate-Carbon ratio in diatoms                [gSi/gC]   
+        real(kind = real_wp) :: DELT        !    Time step of the model [d]
+        real(kind = real_wp) :: NH4         !    Ammonium concentration [gN/m3]
+        real(kind = real_wp) :: NO3         !    Nitrate concentration [gN/m3]
+        real(kind = real_wp) :: PO4         !    Phosphate concentration [gP/m3]
+        real(kind = real_wp) :: Si          !    Silicate concentration [gSi/m3]
+        real(kind = real_wp) :: NH4KR       !    Critical NH4 concentration for uptake [gN/m3]
+        real(kind = real_wp) :: MORT1       !    Mortality rate of green-algae [1/d]
+        real(kind = real_wp) :: NCRAT1      !    Nitrogen-Carbon ratio in green-algae             [gN/gC]
+        real(kind = real_wp) :: PCRAT1      !    Phosphorus-Carbon ratio in green-algae           [gP/gC]
+        real(kind = real_wp) :: FMRT1A      !    Fecal mortality rate of green-algae [1/d]
+        real(kind = real_wp) :: FMRT2A      !    Fecal mortality rate of diatoms [1/d]
+        real(kind = real_wp) :: MORT2       !    Mortality rate of diatoms [1/d]
+        real(kind = real_wp) :: NCRAT2      !    Nitrogen-Carbon ratio in diatoms                 [gN/gC]
+        real(kind = real_wp) :: PCRAT2      !    Phosphorus-Carbon ratio in diatoms               [gP/gC]
+        real(kind = real_wp) :: SCRAT2      !    Silicate-Carbon ratio in diatoms                  [gSi/gC]
+        real(kind = real_wp) :: FMRT1D      !    Fecal mortality rate of green-algae [1/d]
+        real(kind = real_wp) :: FMRT2D      !    Fecal mortality rate of diatoms [1/d]
+        real(kind = real_wp) :: CONMXN      !    Maximum concentration of nitrogen [gN/m3]
+        real(kind = real_wp) :: CONMXP      !    Maximum concentration of phosphorus [gP/m3]
+        real(kind = real_wp) :: CONMXS      !    Maximum concentration of silicate [gSi/m3]
+
         real(kind = real_wp) :: N_DEMAND
         real(kind = real_wp) :: P_DEMAND
         real(kind = real_wp) :: SI_DEMAND
@@ -173,9 +172,9 @@ contains
                 FMRT2D     = process_space_real(ipnt(24))
 				
 				
-				ConmxN = amax1(NO3 + NH4, 0.0)
-                ConmxP = amax1(PO4, 0.0)
-                ConmxS = amax1(Si, 0.0)
+				ConmxN = MAX(NO3 + NH4, 0.0)
+                ConmxP = MAX(PO4, 0.0)
+                ConmxS = MAX(Si, 0.0)
 
                 N_demand = (fPPDiat * NCratDiat + fPPGreen * NCRatGreen) * DELT
                 P_demand = (fPPDiat * PCratDiat + fPPGreen * PCRatGreen) * DELT
@@ -224,8 +223,8 @@ contains
                 process_space_real(ipnt(26)) = fcPPDiat
 
 				
-				PROD1 = fPPGreen
-				PROD2 = fPPDiat
+				PROD1 = fcPPGreen
+				PROD2 = fcPPDiat
 				
 				NCRAT1 = NCRatGreen
 				NCRAT2 = NCRatDiat
@@ -248,19 +247,19 @@ contains
                     IF (NH4 > NH4KR) THEN
                         NH4N = NH4 - NH4KR
                         IF (XNTOT <= NH4N) THEN
-                            NH4D = 1.
-                            NO3D = 0.
+                            NH4D = 1.0
+                            NO3D = 0.0
                         ELSE
                             XNREST = XNTOT - NH4 + NH4KR
                             FNH4 = NH4KR / (NO3 + NH4KR)
                             NH4D = (NH4N + FNH4 * XNREST) / XNTOT
-                            NO3D = 1. - NH4D
+                            NO3D = 1.0 - NH4D
                         ENDIF
                     ELSE
                         !          below the critical NH4 conentration distribution of
                         !          NO3 and NH4 uptake based on availability!
                         NH4D = NH4 / (NO3 + NH4)
-                        NO3D = 1. - NH4D
+                        NO3D = 1.0 - NH4D
                     ENDIF
                 ENDIF
                 !     uitvoer fraction adsorbed as NH4
