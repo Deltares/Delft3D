@@ -113,7 +113,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) !Constant
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
+               if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -168,7 +168,7 @@ contains
                call getustbcfuhi(LL, Lb, ustb(LL), cfuhi(LL), hdzb, z00, cfuhi3D) ! algebraic
                advi(Lb) = advi(Lb) + cfuhi3D
                !
-               if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
+               if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_DEPTHUNIFORM .and. .not. flow_without_waves) then ! Ustokes correction at bed
                   adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                end if
 
@@ -318,12 +318,12 @@ contains
                vicu = viskin + 0.5_dp * (vicwwu(Lb0) + vicwwu(Lb)) * sigtkei
 
                ! Calculate turkin source from wave dissipation: preparation
-               if (jawave > NO_WAVES) then
+               if (jawave /= NO_WAVES) then
                   if (jawaveStokes > NO_STOKES_DRIFT .and. .not. flow_without_waves) then ! Ustokes correction at bed
                      adve(Lb) = adve(Lb) - cfuhi3D * ustokes(Lb)
                   end if
 
-                  if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+                  if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                      k1 = ln(1, LL)
                      k2 = ln(2, LL)
                      ac1 = acl(LL)
@@ -419,7 +419,7 @@ contains
                   ! Addition of production and of dissipation to matrix ;
                   ! observe implicit treatment by Newton linearization.
 
-                  if (jawave > NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flow_without_waves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
+                  if (jawave /= NO_WAVES .and. jawaveStokes >= STOKES_DRIFT_2NDORDER_VISC .and. .not. flow_without_waves) then ! vertical shear based on eulerian velocity field, see turclo,note JvK, Ardhuin 2006
                      dijdij(k) = ((u1(Lu) - ustokes(Lu) - u1(L) + ustokes(L))**2 + (v(Lu) - vstokes(Lu) - v(L) + vstokes(L))**2) / dzw(k)**2
                   else
                      dijdij(k) = ((u1(Lu) - u1(L))**2 + (v(Lu) - v(L))**2) / dzw(k)**2
@@ -446,7 +446,7 @@ contains
 
                end do ! Lb, Lt-1
 
-               if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+               if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                   ! check if first layer is thicker than fwavpendep*wave height
                   ! Then use JvK solution
                   if (hu(LL) - hu(Lt - 1) >= fwavpendep * hrmsLL) then
@@ -675,7 +675,7 @@ contains
                      sourtu = c1e * cmukep * turkin0(L) * dijdij(k)
                      !
                      ! Add wave dissipation production term
-                     if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+                     if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
                         sourtu = sourtu + pkwav(k) * c1e * tureps0(L) / max(turkin0(L), 1.0e-7_dp)
                      end if
 
@@ -728,7 +728,7 @@ contains
                   bk(kxL) = 1.0_dp
                   ck(kxL) = 0.0_dp
                   dk(kxL) = 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
-                  if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
+                  if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then ! wave dissipation at surface, neumann bc, dissipation over fwavpendep*Hrms
                      dk(kxL) = dk(kxL) + dzu(Lt - Lb + 1) * pkwmag / (fwavpendep * hrmsLL)
                   end if
 
@@ -840,8 +840,8 @@ contains
                      end do
                      epsbot = tureps1(Lb) + dzu(1) * abs(ustb(LL))**3 / (vonkar * hdzb * hdzb)
                      epssur = tureps1(Lt - 1) - 4.0_dp * abs(ustw(LL))**3 / (vonkar * dzu(Lt - Lb + 1))
-                     if (jawave > NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
-                        epssur = epssur - dzu(Lt - Lb + 1) * fwavpendep * pkwmag / hrmsLL
+                     if (jawave /= NO_WAVES .and. jawavebreakerturbulence > WAVE_BREAKER_TURB_OFF) then
+                        epssur = epssur - dzu(Lt - Lb + 1) * pkwmag / (hrmsLL * fwavpendep)
                      end if
                      epsbot = max(epsbot, eps_min)
                      epssur = max(epssur, eps_min)
@@ -867,7 +867,9 @@ contains
                   vicwwu(Lb0:Lt) = min(vicwmax, cmukep * turkin1(Lb0:Lt) * tureps1(Lb0:Lt))
                end if
 
-               vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
+               if (jawave == NO_WAVES .or. jawavebreakerturbulence == WAVE_BREAKER_TURB_OFF) then
+                  vicwwu(Lt) = min(vicwwu(Lt), vicwwu(Lt - 1) * Eddyviscositysurfacmax)
+               end if
                vicwwu(Lb0) = min(vicwwu(Lb0), vicwwu(Lb) * Eddyviscositybedfacmax)
 
                call vertical_profile_u0(dzu, womegu, Lb, Lt, kxL, LL)

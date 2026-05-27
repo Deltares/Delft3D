@@ -905,6 +905,8 @@ contains
       case ('charnock')
          jaspacevarcharn = 1
 
+               write (msgbuf, '(5a)') 'quantity '''//trim(quantity)//' in file ''', file_name, ''': [', group_name, &
+               write (msgbuf, '(7a)') 'Unknown forcingFileType '''//trim(forcing_file_type)//' in file ''', file_name, &
       case ('rainfall', 'rainfall_rate')
          jarain = 1
          jaqin = 1

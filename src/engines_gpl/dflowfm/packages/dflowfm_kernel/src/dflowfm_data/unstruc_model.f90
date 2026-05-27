@@ -151,6 +151,7 @@ module unstruc_model
    character(len=max_prop_length) :: md_bedformfile = ' ' !< File containing bedform settings (e.g., *.bfm)
    character(len=max_prop_length) :: md_morphopol = ' ' !< File containing boundaries of morphologic change extent (e.g., *.pol)
    character(len=max_prop_length) :: md_sedtrailsfile = ' ' !< File containing extent of sedtrails output grid
+   character(len=max_prop_length) :: md_dynvegpol = ' ' !< File containing extent of dynamic vegetation application
 
    character(len=max_prop_length) :: md_obsfile = ' ' !< File containing observation points  (e.g., *_obs.xyn, *_obs.ini)
    integer :: md_delete_observation_points_outside_grid !< 0 - do not delete, 1 - delete
@@ -326,6 +327,7 @@ contains
       md_bedformfile = ' '
       md_morphopol = ' '
       md_sedtrailsfile = ' '
+      md_dynvegpol = ' '
 
       md_obsfile = ' '
       md_delete_observation_points_outside_grid = 0
@@ -1366,6 +1368,18 @@ contains
          jafrculin = 1
       end if
 
+      ! Additions for dynamic roughness for storm impacts with morphology
+      call prop_get(md_ptr, 'physics', 'dynRoughVeg', dynroughveg)
+      if (dynroughveg > 0 .and. ifrctypuni /= 1) then
+         call mess(LEVEL_WARN, 'Dynamic vegetation roughness only implemented for Manning roughness. Switched off.')
+         dynroughveg = 0
+      else
+         call prop_get(md_ptr, 'physics', 'dRoot', droot)
+         call prop_get(md_ptr, 'physics', 'dStem', dstem)
+         call prop_get(md_ptr, 'physics', 'nManMin', frcumin)
+         call prop_get(md_ptr, 'physics', 'dynVegPol', md_dynvegpol, success)
+      end if
+
       call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
@@ -1534,6 +1548,8 @@ contains
       call prop_get(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'DiffusionScaling', difparam, success) ! Scaling factor to increase diffusion below reference level
+      call prop_get(md_ptr, 'sediment', 'DiffusionCal', seddif_cal, success) ! Scaling factor to change diffusion for ssc
 
       call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
       MxgrKrone = -1
@@ -1695,6 +1711,9 @@ contains
       call prop_get(md_ptr, 'waves', 'fwfac', fwfac) ! factor for adjusting wave boundary layer streaming, default 1.0
       call prop_get(md_ptr, 'waves', 'ftauw', ftauw) ! factor for adjusting wave related bottom shear stress
       call prop_get(md_ptr, 'waves', 'fbreak', fbreak) ! factor for adjusting wave breaking contribution to tke
+      call prop_get(md_ptr, 'waves', 'fforc', fforc) ! factor for adjusting wave forces in momentum equation
+      call prop_get(md_ptr, 'waves', 'streamlyrfac', strlyrfac) ! factor for adjusting streaming layer thickness in momentum equation
+
       if (ftauw < 0.0_dp) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: ftauw<0.0, reset to 0.0. Bed shear stress due to waves switched off.')
          ftauw = 0.0_dp
@@ -1706,6 +1725,11 @@ contains
       if (fbreak < 0.0_dp) then
          call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fbreak<0.0, reset to 0.0. Wave breaking contribution to tke switched off.')
          fbreak = 0.0_dp
+      end if
+      if (fforc <= 0.0_dp) then
+         call mess(LEVEL_WARN, 'unstruc_model::readMDUFile: fforc<=0.0, reset to 0.0. Wave forces switched off.')
+         fforc = 0.0_dp
+         jawaveforces = WAVE_FORCES_OFF
       end if
 
       if (jawave <= WAVE_FETCH_YOUNG) then
@@ -3374,6 +3398,12 @@ contains
       if (writeall) then
          call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
+      call prop_set(prop_ptr, 'physics', 'dynRoughVeg', dynroughveg, 'Switch for dynamic vegetation roughness. Default 0.')
+      call prop_set(prop_ptr, 'physics', 'dRoot', droot, 'Root depth (m)')
+      call prop_set(prop_ptr, 'physics', 'dStem', dstem, 'Stem height (m)')
+      call prop_set(prop_ptr, 'physics', 'nMaxMin', frcumin, 'Base Manning friction value (s/m^{1/3})')
+      call prop_set(prop_ptr, 'physics', 'dynVegPol', md_dynvegpol, 'Area to apply dynamic vegetation roughness. If empty, no roughness update.')
+
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')
       if (writeall .or. (kmx > 0)) then
