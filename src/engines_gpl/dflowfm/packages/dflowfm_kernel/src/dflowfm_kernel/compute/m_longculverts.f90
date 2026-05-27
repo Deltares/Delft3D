@@ -58,6 +58,7 @@ module m_longculverts
    public find1d2dculvertlinks
    public initialize_Long_Culverts
    public convert1D2DLongCulverts
+   public makelongculverts_commandline
 
    interface realloc
       module procedure reallocLongCulverts

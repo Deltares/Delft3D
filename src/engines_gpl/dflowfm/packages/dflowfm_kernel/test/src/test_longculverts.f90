@@ -667,11 +667,10 @@ contains
    !$f90tw)
 
    !> Create a 5x3-node UGRID net (4 cells wide, 2 rows).
-   subroutine create_two_row_netfile(filename, ierr)
+   subroutine create_two_row_netfile(filename)
       use precision, only: dp
       use netcdf
       character(len=*), intent(in) :: filename
-      integer, intent(out) :: ierr
 
       integer :: ncid, dimid_node, dimid_edge, dimid_face, dimid_maxnodes, dimid_two
       integer :: varid_mesh, varid_xn, varid_yn, varid_en, varid_fn
@@ -679,7 +678,7 @@ contains
       integer, parameter :: NNODES = 15, NEDGES = 22, NFACES = 8
       real(kind=dp) :: xnodes(NNODES), ynodes(NNODES)
       integer :: edge_nodes(2, NEDGES), face_nodes(4, NFACES)
-      integer :: i, j, k
+      integer :: i, j, k, ierr
 
       k = 0
       do j = 1, 3
@@ -747,7 +746,10 @@ contains
       ierr = nf90_put_att(ncid, varid_fn, 'start_index', 1)
 
       ierr = nf90_enddef(ncid)
-      if (ierr /= nf90_noerr) then; ierr = nf90_close(ncid); return; end if
+      if (ierr /= nf90_noerr) then
+         ierr = nf90_close(ncid)
+         return
+      end if
 
       ierr = nf90_put_var(ncid, varid_xn, xnodes)
       ierr = nf90_put_var(ncid, varid_yn, ynodes)
@@ -761,7 +763,7 @@ contains
    !! MDU files, raises a bed level barrier on the middle cells, and applies a
    !! left-to-right water level gradient. The caller only needs to write the
    !! structure file before calling this, then call flow_spatietimestep and assert.
-   subroutine init_two_culvert_scenario(str_file, mdu_file, iresult)
+   subroutine init_two_culvert_scenario(mdu_file, iresult)
       use m_flow_modelinit, only: flow_modelinit
       use unstruc_model, only: loadModel, md_ident
       use m_flowgeom, only: ndx, ndx2d, bl
@@ -776,14 +778,12 @@ contains
       use m_resetfullflowmodel, only: resetfullflowmodel
       use precision, only: dp
 
-      character(len=*), intent(in) :: str_file, mdu_file
+      character(len=*), intent(in) :: mdu_file
       integer, intent(out) :: iresult
 
       character(len=256) :: mdu_local
       integer :: ierr, i
 
-      call create_two_row_netfile(TEST_NET_FILE, ierr)
-      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
       md_ident = mdu_file
       threshold_abort = LEVEL_FATAL
       call inidat()
@@ -854,7 +854,9 @@ contains
          "    frictionValue   = 0.02                    ", &
          "    valveRelativeOpening = 0.5                "])
 
-      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
@@ -915,7 +917,9 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
       
@@ -979,7 +983,9 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
@@ -1042,8 +1048,9 @@ contains
          "    frictionType    = Manning                 ", &
          "    frictionValue   = 0.02                    ", &
          "    valveRelativeOpening = 1.0                "])
-
-      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
@@ -1122,7 +1129,9 @@ contains
       integer :: ierr
 
      call create_structure_file_3pt(STR_FILE)
-     call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+     call init_two_culvert_scenario(MDU_FILE, iresult)
 
    end subroutine setup_3pt_model
 
@@ -1243,7 +1252,9 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
@@ -1323,7 +1334,9 @@ contains
       character(len=*), parameter :: MDU_FILE = "test_lc4pt.mdu"
 
      call create_structure_file_4pt(STR_FILE)
-     call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+     call create_two_row_netfile(TEST_NET_FILE)
+     call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+     call init_two_culvert_scenario(MDU_FILE, iresult)
 
    end subroutine setup_4pt_model
 
@@ -1444,7 +1457,9 @@ contains
          "    frictionValue   = 0.05                    ", &
          "    valveRelativeOpening = 1.0                "])
 
-      call init_two_culvert_scenario(STR_FILE, MDU_FILE, iresult)
+      call create_two_row_netfile(TEST_NET_FILE)
+      call create_mdu_file(mdu_file, TEST_NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
 
@@ -1537,33 +1552,12 @@ contains
       ! Create structure file with a 4-point long culvert
       call create_structure_file_4pt(STR_FILE)
 
-      ! Create MDU with ConvertLongCulverts=1
-      call create_mdu_file(MDU_FILE, NET_FILE, STR_FILE)
-      md_ident = MDU_FILE
-      threshold_abort = LEVEL_FATAL
-      call inidat()
-      call timini()
-      timon = .false.
-      jampi = 0
-      call SetMessageHandling(write2screen=.false.)
-      call resetFullFlowModel()
-      mdu_local = MDU_FILE
-      call loadModel(mdu_local)
-      iresult = flow_modelinit()
+      call create_mdu_file(mdu_file, TEST_NET_FILE, STR_FILE)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
 
       call f90_expect_eq(iresult, DFM_NOERR, "flow_modelinit should succeed with existing 1D network + long culvert")
       call f90_expect_eq(nlongculverts, 2, "two long culverts should be registered")
       call f90_expect_eq(longculverts(1)%numlinks, 3, "4-point culvert should have 3 links")
-
-      ! Apply head difference
-      do i = 1, ndx2d
-         if (xz(i) > 75.0_dp .and. xz(i) < 325.0_dp) then
-            bl(i) = 10.0_dp
-         end if
-      end do
-      do i = 1, ndx
-         s1(i) = merge(2.0_dp, 0.0_dp, xz(i) < 100.0_dp)
-      end do
 
       call flow_spatietimestep()
 
@@ -1707,6 +1701,36 @@ contains
       ierr = nf90_close(ncid)
       ierr = 0 ! success
    end subroutine create_net_with_1d_branch
+
+   subroutine convertlongculverts(mdufile, structurefile)
+      use m_resetfullflowmodel, only: resetfullflowmodel
+      use m_inidat, only: inidat
+      use gridoperations, only: findcells
+      use m_longculverts, only: makelongculverts_commandline
+      use m_globalparameters, only: t_filenames
+      use unstruc_model, only: writeMDUfile
+      use m_partitioninfo, only: jampi
+      use Timers, only: timini, timon
+      use messagehandling, only: SetMessageHandling
+      use m_commandline_option, only: inputfiles
+
+      character(len=*), intent(in) :: mdufile
+      character(len=*), intent(in) :: structurefile
+      character(len=256) :: mdufile_local
+      type(t_filenames) :: filenames
+      integer :: ierr
+
+      call resetFullFlowModel()
+      inputfiles(1) = mdufile
+      call INIDAT()
+      call findcells(0)
+      filenames = t_filenames()
+      filenames%structures = structurefile
+      call makelongculverts_commandline(filenames, write_converted_files = .true.)
+      mdufile_local = "converted_" // mdufile
+      call writeMDUfile(mdufile_local, ierr)
+
+   end subroutine convertlongculverts
 
 end module test_longculverts
 
