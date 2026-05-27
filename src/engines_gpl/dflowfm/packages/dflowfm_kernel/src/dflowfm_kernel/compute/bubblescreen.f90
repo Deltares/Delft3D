@@ -41,7 +41,6 @@ contains
       integer :: k_stop !< Stop active layer index (top) (inclusive)
       integer :: k_max_velocity !< Layer index for maximum downward velocity
       integer :: n !< 2D flow cell index; in {network_data::netcell}
-      integer :: ierror !< [-] Error code (0 if no error, 1 if insufficient active layers)
       real(kind=dp) :: area_fraction !< Area fraction of the flow cell
       real(kind=dp) :: water_discharge !< Water discharge for this bubble screen
       real(kind=dp) :: local_water_discharge !< Water discharge for this flow cell
@@ -57,9 +56,9 @@ contains
          area_fraction = ba(n) / bubblescreen%total_area
          local_water_discharge = water_discharge * area_fraction
 
-         call find_active_layer_interfaces(bubblescreen, n, i_flowcell, k_start, k_stop, k_max_velocity, ierror)
+         call find_active_layer_interfaces(bubblescreen, n, i_flowcell, k_start, k_stop, k_max_velocity)
 
-         if (ierror == 0) then
+         if (bubblescreen%isActive(i_flowcell)) then
             call update_bubblescreen_source_sink_layer_indices(bubblescreen%source_sink_indices(i_flowcell), k_start, k_stop, k_max_velocity)
          else 
             local_water_discharge = 0.0_dp ! Set discharge to zero if insufficient active layers
@@ -92,7 +91,7 @@ contains
    end function convert_discharge_air_to_water
 
    !> Finds the layer interfaces of the bottom (k_start), top (k_stop) and maximum velocity (k_max_velocity) for a bubble screen in a flow cell
-   subroutine find_active_layer_interfaces(bubblescreen, flow_cell_index, flowcell_index, k_start, k_stop, k_max_velocity, ierror)
+   subroutine find_active_layer_interfaces(bubblescreen, flow_cell_index, flowcell_index, k_start, k_stop, k_max_velocity)
       use m_flow, only: zws, s1
       use m_get_kbot_ktop, only: getkbotktop
 
@@ -103,7 +102,6 @@ contains
       integer, intent(out) :: k_start !< Layer interface of lowest active source/sink in bubble screen; in {m_flow::zws}
       integer, intent(out) :: k_stop !< Layer interface of highest active source/sink in bubble screen; in {m_flow::zws}
       integer, intent(out) :: k_max_velocity !< Layer interface with maximum downward velocity; in {m_flow::zws}
-      integer, intent(out) :: ierror !< [-] Error code (0 if no error, 1 if insufficient active layers)
 
       ! Local variables
       integer :: k !< Layer interface {in m_flow::zws}
@@ -134,7 +132,6 @@ contains
       !
       !   ----------- k = 0
 
-      ierror = 0
       ! Get bottom and top layer interfaces of the flow cell
       call getkbotktop(flow_cell_index, k_bot, k_top)
 
@@ -164,7 +161,7 @@ contains
       ! Require at least 3 active layers in the bubble screen
       if (k_stop - k_start < 3) then
          ! Currently has insufficient layers - show warning only if this is a state change
-         if (bubblescreen%isActive) then
+         if (bubblescreen%isActive(flowcell_index)) then
             if (zws(k_start) < bubblescreen%z_level) then
                write (msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, ' computation no longer possible: water is below z=', &
                   bubblescreen%z_level, ' and z=', zws(k_stop), '.'
@@ -173,21 +170,20 @@ contains
                   bubblescreen%z_level, ' and z=', zws(k_stop), '. Increase bubble screen vertical extent or check flow cell water level.'
             end if
             call warn_flush()
-            bubblescreen%isActive = .false.
+            bubblescreen%isActive(flowcell_index) = .false.
          end if
-         ierror = 1
          return
       else
          ! Currently has sufficient layers - show message if recovering from error state
-         if (.not. bubblescreen%isActive) then
+         if (.not. bubblescreen%isActive(flowcell_index)) then
             write (msgbuf, '(A,A,A,I0,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, ' computation is now possible again.'
             call msg_flush()
-            bubblescreen%isActive = .true.
+            bubblescreen%isActive(flowcell_index) = .true.
          end if
       end if
 
       ! Require at least 1 layer between k_max_velocity and k_stop; if not adjust k_max_velocity
-      if (ierror == 0 .and. k_stop - k_max_velocity < 1) then
+      if (k_stop - k_max_velocity < 1) then
          k_max_velocity = k_stop - 1
       end if
 
