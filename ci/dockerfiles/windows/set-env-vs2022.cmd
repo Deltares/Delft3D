@@ -1,5 +1,5 @@
 @echo off
-set VSROOT=C:\Program Files\Microsoft Visual Studio\17\Community
-call "%VSROOT%\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64
-call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" --force
-cmd
+call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+call "C:\Program Files (x86)\Intel\oneAPI\setvars-vcvarsall.bat"
+call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\Common7\Tools\VsDevCmd.bat"
+cmd /K
