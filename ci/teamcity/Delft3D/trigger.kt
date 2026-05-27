@@ -317,6 +317,7 @@ object Trigger : BuildType({
                 branchFilter = ""
                 triggerBuild = always()
                 param("revisionRuleBuildBranch", "<default>")
+                param("copy_failed_cases", "true")
             }
             vcs {
                 quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
