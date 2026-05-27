@@ -58,6 +58,7 @@ module SwanCompdata
 !
     integer                                    :: nbpol  ! total number of boundary polygons
     integer, dimension(10000)                  :: nbpt   ! number of boundary vertices for each boundary polygon
+    logical, save                              :: bnddone = .false. ! boundary-point lists have been built for current run
 !
     integer, dimension(MICMAX)                 :: vs     ! computational stencil, i.e. set of vertices
                                                          ! needed for the computation of a new value

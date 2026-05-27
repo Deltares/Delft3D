@@ -2614,7 +2614,6 @@
 
       LOGICAL   KEYWIS, LOCGRI, CCW, BPARF, BOUNPT, DONALL
       LOGICAL   LFRST1, LFRST2, LFRST3                                    40.31
-      LOGICAL, SAVE :: BNDDONE = .FALSE.                                  43.01
       LOGICAL   SwanPointinMesh                                           43.01
 
       INTEGER   NUMP
@@ -2777,7 +2776,6 @@
                   ENDIF                                                   43.01
                ENDDO                                                      43.01
             ENDIF                                                         43.01
-!
          ELSE                                                             41.14
 !
 !           generate output curves BOUNDARY and BOUND_** for structured grids

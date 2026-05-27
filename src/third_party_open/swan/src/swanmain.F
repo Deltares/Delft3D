@@ -158,6 +158,7 @@
       USE SwanBraggScat                                                   41.80
       USE SwanQCM                                                         41.90
       USE SwanGriddata                                                    40.80
+      USE SwanCompdata, ONLY: BNDDONE
       USE SwanParallel
 !
       IMPLICIT NONE
@@ -396,6 +397,7 @@
       LORQ             =.FALSE.                                           BJXX
       NREOQ            =0                                                 BJXX
       SwanBndStruc_done=.FALSE.                                           BJXX
+      BNDDONE          =.FALSE.                                           43.01
       RUNMADE          =.FALSE.                                           BJXX
       LOPS             =.FALSE.                                           BJXX
 
@@ -747,13 +749,17 @@
 
       CALL SWSYNC                                                         40.30
 !TIMG      CALL SWTSTA(9)                                                      40.30
-      IF ( PARLL ) THEN                                                   40.30
+      IF ( PARLL .AND. ALLOCATED(OURQT) ) THEN                            40.30
          IF (OPTG.NE.5) THEN                                              41.36
             ALLOCATE (BLKND(MXC*MYC))                                     40.51 40.41
             BLKND = REAL(INODE)                                           40.41
          ENDIF                                                            41.36
          IF ( IAMMASTER ) THEN                                            40.95
-            ALLOCATE(BLKNDC(MXCGL*MYCGL))                                 40.51 40.41
+            IF (OPTG.NE.5) THEN                                           41.36
+               ALLOCATE(BLKNDC(MXCGL*MYCGL))                              40.51 40.41
+            ELSE                                                          41.36
+               ALLOCATE(BLKNDC(nvertsg))                                  41.36
+            ENDIF                                                         41.36
             BLKNDC = 0.                                                   40.96
          END IF
          IF (OPTG.NE.5) THEN                                              41.36
@@ -9390,6 +9396,8 @@
       IF (ALLOCATED(UYB   ))   DEALLOCATE(UYB   )
       IF (ASSOCIATED(WXI  ))   DEALLOCATE(WXI   )
       IF (ASSOCIATED(WYI  ))   DEALLOCATE(WYI   )
+      NULLIFY(WXI)
+      NULLIFY(WYI)
       IF (ALLOCATED(WLEVL ))   DEALLOCATE(WLEVL )
       IF (ALLOCATED(ASTDF ))   DEALLOCATE(ASTDF )
       IF (ALLOCATED(IBLKAD))   DEALLOCATE(IBLKAD)
