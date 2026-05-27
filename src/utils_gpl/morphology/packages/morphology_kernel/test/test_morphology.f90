@@ -8,7 +8,7 @@ module test_morphology
 
 contains
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_Van_Thiel_Van_Rijn, test_trab19,
+   !$f90tw TESTCODE(TEST, test_morphology, test_trab19)
    subroutine test_trab19() bind(C)
       integer, parameter :: npar = 25 
       integer, parameter :: npardef = 15
