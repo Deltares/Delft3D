@@ -73,7 +73,7 @@ contains
       real(kind=dp) :: evaporative_heat_flux_coefficient, convective_heat_flux_coefficient, specific_humidity_surface_saturation, specific_humidity_air_surface, &
                        latent_heat_vaporization, longwave_radiation_flux, saturation_vapor_pressure_at_air_temperature, &
                        saturation_vapor_pressure_at_surface_temperature, vapor_pressure_air_humidity, vapor_pressure_difference, &
-                       sensible_heat_flux_in_cell, latent_heat_flux_in_cell, wind_driven_sensible_heat_flux, wind_driven_latent_heat_flux
+                       convective_heat_flux, evaporative_heat_flux
       real(kind=dp) :: dexp, zlo, zup, explo, expup, ratio, heat_capacity_water_cell_area, total_heat_flux, total_area
       real(kind=dp) :: weighted_sums(20), cell_area_weight, buoyancy_parameter, free_convection_velocity, free_convective_sensible_heat_flux, &
                        free_convective_latent_heat_flux, air_density_surface, air_density_10m
@@ -230,7 +230,7 @@ contains
                      expup = explo
                      zlo = zws(k_top) - zws(cell_index_3D - 1)
                      ratio = zlo / diffuse_attenuation_coefficient_in_cell(j)
-                     if (ratio > 4.0_dp) then !  .or. cell_index_3D.eq.k_bot) then
+                     if (ratio > 4.0_dp) then
                         explo = 0.0_dp
                      else
                         explo = exp(-ratio)
@@ -265,14 +265,14 @@ contains
          end if
 
          saturation_vapor_pressure_at_air_temperature = compute_saturation_pressure(air_temperature_in_cell)
-         saturation_vapor_pressure_at_surface_temperature = compute_saturation_pressure(surface_temperature) ! eq.(A.12):
+         saturation_vapor_pressure_at_surface_temperature = compute_saturation_pressure(surface_temperature)
 
          vapor_pressure_air_humidity = relative_humidity_in_cell * saturation_vapor_pressure_at_air_temperature
 
          specific_humidity_surface_saturation = (0.62_dp * saturation_vapor_pressure_at_surface_temperature) / (air_pressure_in_cell - 0.38_dp * saturation_vapor_pressure_at_surface_temperature)
-         specific_humidity_air_surface = (0.62_dp * vapor_pressure_air_humidity) / (air_pressure_in_cell - 0.38_dp * vapor_pressure_air_humidity) ! saturated air near water surface; eq.(A.9)+(A.10):
+         specific_humidity_air_surface = (0.62_dp * vapor_pressure_air_humidity) / (air_pressure_in_cell - 0.38_dp * vapor_pressure_air_humidity)
 
-         latent_heat_vaporization = 2.5e6_dp - 2.3e3_dp * surface_temperature ! eq.(A.19.b): (J/kg)
+         latent_heat_vaporization = 2.5e6_dp - 2.3e3_dp * surface_temperature
 
          if (Stanton < 0.0_dp) then ! if specified negative, use windspeed dependent Cd coeff
             convective_heat_flux_coefficient = abs(Stanton) * cdwcof(L)
@@ -281,10 +281,10 @@ contains
             evaporative_heat_flux_coefficient = abs(Dalton) * cdwcof(L)
          end if
 
-         vapor_pressure_difference = specific_humidity_surface_saturation - specific_humidity_air_surface ! D3D, both positive and negative evaporation, cannot be correct
+         vapor_pressure_difference = specific_humidity_surface_saturation - specific_humidity_air_surface
          if (jadelvappos == 1) then
-            vapor_pressure_difference = max(0.0_dp, vapor_pressure_difference) ! DPM, DFM This must be positive, otherwise heat is pumped into water
-         end if ! causing air to cool down below prescribed temperature, immedia. and
+            vapor_pressure_difference = max(0.0_dp, vapor_pressure_difference)
+         end if
 
          ! change parameters for ice modelling
          if (ja_icecover == ICECOVER_SEMTNER) then
@@ -300,14 +300,19 @@ contains
             air_density_in_cell = rhoair
          end if
 
+         evaporative_heat_flux = -evaporative_heat_flux_coefficient * air_density_in_cell * wind_speed_in_cell * vapor_pressure_difference * latent_heat_vaporization
+         convective_heat_flux = -convective_heat_flux_coefficient * air_density_in_cell * cpa * wind_speed_in_cell * (surface_temperature - air_temperature_in_cell)
+
          water_surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
          if (long_wave_radiation_available) then
-            longwave_radiation_flux = em * (long_wave_radiation(n) - stf * (water_surface_temperature_kelvin**4)) ! difference between prescribed long wave downward flux and calculated upward flux
+            longwave_radiation_flux = em * (long_wave_radiation(n) - stf * (water_surface_temperature_kelvin**4))
          else
-            longwave_radiation_flux = -em * stf * (water_surface_temperature_kelvin**4) * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity)) ! heat loss by effective infrared back radiation hl, restricted by
-            longwave_radiation_flux = longwave_radiation_flux * (1.0_dp - 0.6_dp * cloudiness_in_cell**2) !  presence of clouds and water vapour in air; eq.(A.22):
+            longwave_radiation_flux = -em * stf * (water_surface_temperature_kelvin**4) * (0.39_dp - 0.05_dp * sqrt(vapor_pressure_air_humidity))
+            longwave_radiation_flux = longwave_radiation_flux * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
          end if
 
+         convective_heat_flux = 0.0_dp
+         evaporative_heat_flux = 0.0_dp
          free_convective_sensible_heat_flux = 0.0_dp
          free_convective_latent_heat_flux = 0.0_dp
          air_density_surface = ((air_pressure_in_cell - saturation_vapor_pressure_at_surface_temperature) / rdry + saturation_vapor_pressure_at_surface_temperature / rvap) / celsius_to_kelvin(surface_temperature)
@@ -317,25 +322,21 @@ contains
             free_convection_velocity = buoyancy_parameter * xnuair / pr2
             free_convection_velocity = free_convection_coefficient * free_convection_velocity**0.33333333_dp
             if (sensible_heat_flux_available) then
-               sensible_heat_flux_in_cell = sensible_heat_flux(n)
+               convective_heat_flux = sensible_heat_flux(n)
             else
-               wind_driven_sensible_heat_flux = -convective_heat_flux_coefficient * air_density_in_cell * cpa * wind_speed_in_cell * (surface_temperature - air_temperature_in_cell) ! heat loss of water by convection eq.(A.23); Stanton number is convective_heat_flux_coefficient:
-               free_convective_sensible_heat_flux = min(0.0_dp, -air_density_in_cell * cpa * free_convection_velocity * (surface_temperature - air_temperature_in_cell) * evafac) ! Free convective sensible heat loss:
-               sensible_heat_flux_in_cell = wind_driven_sensible_heat_flux + free_convective_sensible_heat_flux
+               free_convective_sensible_heat_flux = min(0.0_dp, -air_density_in_cell * cpa * free_convection_velocity * (surface_temperature - air_temperature_in_cell) * evafac)
             end if
 
             if (latent_heat_flux_available) then
-               latent_heat_flux_in_cell = latent_heat_flux(n)
+               evaporative_heat_flux = latent_heat_flux(n)
             else
-               wind_driven_latent_heat_flux = -evaporative_heat_flux_coefficient * air_density_in_cell * wind_speed_in_cell * vapor_pressure_difference * latent_heat_vaporization ! heat loss of water by evaporation eq.(A.19.a); Dalton number is evaporative_heat_flux_coefficient:
                free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * evafac * (air_density_surface + air_density_10m) * 0.5_dp) ! Free convective latent/evaporation heat loss:
-               latent_heat_flux_in_cell = wind_driven_latent_heat_flux + free_convective_latent_heat_flux
             end if
          end if
-         total_heat_flux = latent_heat_flux_in_cell + sensible_heat_flux_in_cell + longwave_radiation_flux
+         total_heat_flux = evaporative_heat_flux + convective_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
 
          if (jaevap > 0) then
-            evap(n) = latent_heat_flux_in_cell / (latent_heat_vaporization * rhomean) * ice_free_area_fraction
+            evap(n) = (evaporative_heat_flux + free_convective_latent_heat_flux) / (latent_heat_vaporization * rhomean) * ice_free_area_fraction
          end if
 
          heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction
@@ -374,15 +375,15 @@ contains
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then ! todo, only at mapintervals
             qsunmap(n) = net_solar_radiation_in_cell
-            qevamap(n) = latent_heat_flux_in_cell
-            qconmap(n) = sensible_heat_flux_in_cell
+            qevamap(n) = evaporative_heat_flux
+            qconmap(n) = convective_heat_flux
             qlongmap(n) = longwave_radiation_flux
             qfrevamap(n) = free_convective_latent_heat_flux
             qfrconmap(n) = free_convective_sensible_heat_flux
             qtotmap(n) = net_solar_radiation_in_cell + total_heat_flux
          end if
 
-         total_area = 0.0_dp ! these 2 lines outside loop
+         total_area = 0.0_dp
          weighted_sums = 0.0_dp ! array of spatially averaged output
 
          cell_area_weight = ba(n) ! Spatially averaged time series output :
@@ -396,8 +397,8 @@ contains
          weighted_sums(5) = weighted_sums(5) + cell_area_weight * (net_solar_radiation_in_cell + total_heat_flux)
          weighted_sums(6) = weighted_sums(6) + cell_area_weight * net_solar_radiation_in_cell
          weighted_sums(7) = weighted_sums(7) + cell_area_weight * longwave_radiation_flux
-         weighted_sums(8) = weighted_sums(8) + cell_area_weight * sensible_heat_flux_in_cell
-         weighted_sums(9) = weighted_sums(9) + cell_area_weight * latent_heat_flux_in_cell
+         weighted_sums(8) = weighted_sums(8) + cell_area_weight * convective_heat_flux
+         weighted_sums(9) = weighted_sums(9) + cell_area_weight * evaporative_heat_flux
          weighted_sums(10) = weighted_sums(10) + cell_area_weight * free_convective_sensible_heat_flux
          weighted_sums(11) = weighted_sums(11) + cell_area_weight * free_convective_latent_heat_flux
          weighted_sums(12) = weighted_sums(12) + cell_area_weight * wind_speed_in_cell
