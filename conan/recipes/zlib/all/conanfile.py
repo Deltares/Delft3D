@@ -78,7 +78,7 @@ class ZlibConan(ConanFile):
         if self.settings.os == "Windows" and self.settings.get_safe("compiler.runtime"):
             # The recipe patches the CMakeLists.txt to generate different filenames when CMake
             # detects MINGW (clang, gcc with compiler.runtime undefined and compiler.libcxx defined)
-            libname = "zdll" if self.options.shared else "zlib"
+            libname = "zlib1" if self.options.shared else "zlib"
         else:
             libname = "z"
         self.cpp_info.libs = [libname]

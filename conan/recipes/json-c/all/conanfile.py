@@ -44,6 +44,9 @@ class JSONCConan(ConanFile):
 
     def generate(self):
         tc = CMakeToolchain(self)
+        # _GNU_SOURCE is needed to expose vasprintf in glibc headers when using Intel compiler.
+        if self.settings.os == "Linux" and self.settings.compiler == "intel-cc":
+            tc.extra_cflags.append("-D_GNU_SOURCE")
         if Version(self.version) >= "0.15":
             tc.variables["BUILD_STATIC_LIBS"] = not self.options.shared
             tc.variables["DISABLE_STATIC_FPIC"] = not self.options.get_safe("fPIC", True)

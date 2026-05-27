@@ -446,7 +446,12 @@ class GdalConan(ConanFile):
         # https://github.com/conan-io/conan/issues/12180
         tc.variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = self.settings.build_type
         # https://github.com/OSGeo/gdal/blob/v3.8.1/cmake/modules/packages/FindSQLite3.cmake
-        if self.options.with_sqlite3:
+        # GDAL's CheckDependentLibraries.cmake validates these capability
+        # flags whenever an SQLite3 target is visible, even when
+        # GDAL_USE_SQLITE3=OFF. SQLite3 may also be pulled in transitively
+        # via proj, so the flags must be set unconditionally if sqlite3 is
+        # in the dependency graph.
+        if "sqlite3" in self.dependencies:
             tc.cache_variables["SQLite3_HAS_COLUMN_METADATA"] = self.dependencies["sqlite3"].options.enable_column_metadata
             tc.cache_variables["SQLite3_HAS_RTREE"] = self.dependencies["sqlite3"].options.enable_rtree
             tc.cache_variables["SQLite3_HAS_LOAD_EXTENSION"] = not self.dependencies["sqlite3"].options.omit_load_extension

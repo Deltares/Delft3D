@@ -30,6 +30,7 @@ class NetcdfConan(ConanFile):
         "cdf5": [True, False],
         "dap": [True, False],
         "byterange": [True, False],
+        "parallel4": [True, False],
     }
     default_options = {
         "shared": False,
@@ -39,6 +40,7 @@ class NetcdfConan(ConanFile):
         "cdf5": True,
         "dap": True,
         "byterange": False,
+        "parallel4": False,
     }
 
     @property
@@ -53,7 +55,8 @@ class NetcdfConan(ConanFile):
 
     def requirements(self):
         if self._with_hdf5:
-            self.requires("hdf5/1.14.3")
+            self.requires("hdf5/1.14.6")
+            self.requires("zlib/[>=1.2.11 <2]")
 
         if self.options.dap or self.options.byterange:
             self.requires("libcurl/[>=7.78.0 <9]")
@@ -75,6 +78,10 @@ class NetcdfConan(ConanFile):
         tc.variables["ENABLE_BYTERANGE"] = self.options.byterange
         tc.variables["USE_HDF5"] = self.options.with_hdf5
         tc.variables["NC_FIND_SHARED_LIBS"] = self.options.with_hdf5 and self.dependencies["hdf5"].options.shared
+        tc.variables["ENABLE_PARALLEL4"] = self.options.parallel4
+        tc.variables["ENABLE_PARALLEL_TESTS"] = False
+        tc.cache_variables["HDF5_HAS_COLL_METADATA_OPS"] = self.options.parallel4
+        tc.cache_variables["CMAKE_TRY_COMPILE_CONFIGURATION"] = str(self.settings.build_type)
         tc.generate()
 
         tc = CMakeDeps(self)
@@ -110,6 +117,7 @@ class NetcdfConan(ConanFile):
         self.cpp_info.components["libnetcdf"].libs = ["netcdf"]
         if self._with_hdf5:
             self.cpp_info.components["libnetcdf"].requires.append("hdf5::hdf5")
+            self.cpp_info.components["libnetcdf"].requires.append("zlib::zlib")
         if self.options.dap or self.options.byterange:
             self.cpp_info.components["libnetcdf"].requires.append("libcurl::libcurl")
         if self.settings.os in ["Linux", "FreeBSD"]:
