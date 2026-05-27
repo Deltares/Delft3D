@@ -1,11 +1,11 @@
 --- a/src/lib_proj.cmake
 +++ b/src/lib_proj.cmake
-@@ -395,7 +395,7 @@
- if(WIN32)
-   set_target_properties(proj
+@@ -398,7 +398,7 @@
      PROPERTIES
      VERSION "${PROJ_VERSION}"
      OUTPUT_NAME "${PROJ_CORE_TARGET_OUTPUT_NAME}"
 -    ARCHIVE_OUTPUT_NAME proj
 +    ARCHIVE_OUTPUT_NAME "${PROJ_CORE_TARGET_OUTPUT_NAME}"
      CLEAN_DIRECT_OUTPUT 1)
+ elseif(BUILD_FRAMEWORKS_AND_BUNDLE)
+   set_target_properties(proj
