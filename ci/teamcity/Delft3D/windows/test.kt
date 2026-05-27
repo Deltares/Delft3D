@@ -44,15 +44,6 @@ object WindowsTest : BuildType({
     val linesForAll = windowsLines.filter { line -> line.split(",")[2] == "TRUE" }
     val selectedConfigs = linesForAll.map { line -> line.split(",")[1] }
 
-    val copyFailedCasesArg = if (
-        "%copy_failed_cases%" == "true" &&
-        "%copy_tested_cases%" != "true"
-    ) {
-        " --copy-failed-cases"
-    } else {
-        ""
-    }
-
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -113,26 +104,34 @@ object WindowsTest : BuildType({
                 """.trimIndent()
             }
         }
-        python {
+            script {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
-            workingDir = "test/deltares_testbench/"
-            command = file {
-                filename = "TestBench.py"
-                scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
-                    --compare
-                    --config "configs/%configfile%"
-                    --filter "testcase=%case_filter%"
-                    --log-level DEBUG
-                    --parallel
-                    --teamcity$copyFailedCasesArg
-                """.trimIndent() 
-                // If all cases will be copies we don't also have to copy the failed ones
+        workingDir = "test/deltares_testbench/"
+        scriptContent = """
+            powershell -NoProfile -Command "
+            
+            \${'$'}argsList = @(
+                '--username', '%s3_dsctestbench_accesskey%',
+                '--password', '%s3_dsctestbench_secret%',
+                '--compare',
+                '--config', 'configs/%configfile%',
+                '--filter', 'testcase=%case_filter%',
+                '--log-level', 'DEBUG',
+                '--parallel',
+                '--teamcity',
+                )
+
+            if ('%copy_failed_cases%' -eq 'true') {
+                \${'$'}argsList += '--copy-failed-cases'
             }
+
+            python TestBench.py @argsList
+            "
+        """.trimIndent()
+
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
