@@ -1,4 +1,8 @@
 # Specify the modules to be included
+if(NOT TARGET metis)
+    add_subdirectory(${checkout_src_root}/${metis_module} metis)
+endif()
+
 add_subdirectory(${checkout_src_root}/${swan_mpi_lib_module} swan_mpi_lib)
 add_subdirectory(${checkout_src_root}/${swan_mpi_module} swan_mpi)
 add_subdirectory(${checkout_src_root}/${swan_omp_module} swan_omp)

@@ -28,7 +28,7 @@ add_executable(${executable_name}   ${headers}
                                     ${rc_version_file}
                                     ${executable_files})
 
-target_link_libraries(${executable_name} PRIVATE no_compiler_warnings)
+target_link_libraries(${executable_name} PRIVATE no_compiler_warnings metis)
 # Set dependencies
 if (WIN32)
     set(exe_dependencies netcdff)
@@ -70,6 +70,7 @@ set_source_files_properties(${checkout_src_root}/third_party_open/swan/src/ocpid
                             ${checkout_src_root}/third_party_open/swan/src/swancom1.F
                             ${checkout_src_root}/third_party_open/swan/src/swanmain.F
                             ${checkout_src_root}/third_party_open/swan/src/swanparll.F
+                            ${checkout_src_root}/third_party_open/swan/src/SwanParallel.f90
                             ${checkout_src_root}/third_party_open/swan/src/swmod2.F
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
@@ -93,11 +94,11 @@ endif(UNIX)
 
 # Define preprocessor definitions
 if (WIN32)
-    target_compile_definitions(${executable_name} PRIVATE "WIN32;USE_MPI;SWANEXE")
+    target_compile_definitions(${executable_name} PRIVATE "WIN32;USE_MPI;SWANEXE;HAVE_METIS")
 endif(WIN32)
 
 if (UNIX)
-    target_compile_definitions(${executable_name} PRIVATE "USE_MPI;SWANEXE")
+    target_compile_definitions(${executable_name} PRIVATE "USE_MPI;SWANEXE;HAVE_METIS")
 endif(UNIX)
 
 # Define how the files should be structured within Visual Studio

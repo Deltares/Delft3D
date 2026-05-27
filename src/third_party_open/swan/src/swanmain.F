@@ -158,6 +158,7 @@
       USE SwanBraggScat                                                   41.80
       USE SwanQCM                                                         41.90
       USE SwanGriddata                                                    40.80
+      USE SwanParallel
 !
       IMPLICIT NONE
 !
@@ -759,7 +760,7 @@
             CALL SWCOLLECT ( BLKNDC, BLKND, .TRUE. )                      40.51 40.41
             IF (STPNOW()) RETURN                                          40.41
          ELSE                                                             41.36
-!METIS            BLKNDC = REAL(ipown)                                          41.36
+            IF ( IAMMASTER ) BLKNDC = REAL(ipown)                         41.36
          ENDIF                                                            41.36
          IF ( IAMMASTER ) THEN                                            40.95 40.30
             CALL SWCOLOUT ( OURQT, BLKNDC )                               40.51 40.41 40.30
@@ -9311,7 +9312,7 @@
       USE SwanIEM                                                         41.85
       USE SwanBraggScat                                                   41.80
       USE SwanQCM                                                         41.90
-!METIS      USE SwanParallel
+      USE SwanParallel
 !
       IMPLICIT NONE
 !
@@ -9451,19 +9452,19 @@
       IF (ALLOCATED(bvertg  )) DEALLOCATE(bvertg  )
       IF (ALLOCATED( bmark  )) DEALLOCATE( bmark  )
 !
-!METIS      IF (ALLOCATED(ipown   )) DEALLOCATE(ipown   )
-!METIS      IF (ALLOCATED(vres    )) DEALLOCATE(vres    )
-!METIS      IF (ALLOCATED(vsubcm  )) DEALLOCATE(vsubcm  )
-!METIS      IF (ALLOCATED(nvrecv  )) DEALLOCATE(nvrecv  )
-!METIS      IF (ALLOCATED(nvsend  )) DEALLOCATE(nvsend  )
-!METIS      IF (ALLOCATED(ivrecv  )) DEALLOCATE(ivrecv  )
-!METIS      IF (ALLOCATED(ivsend  )) DEALLOCATE(ivsend  )
-!METIS      IF (ALLOCATED(rrqst   )) DEALLOCATE(rrqst   )
-!METIS      IF (ALLOCATED(srqst   )) DEALLOCATE(srqst   )
-!METIS      IF (ALLOCATED(irbuf   )) DEALLOCATE(irbuf   )
-!METIS      IF (ALLOCATED(isbuf   )) DEALLOCATE(isbuf   )
-!METIS      IF (ALLOCATED( rbuf   )) DEALLOCATE( rbuf   )
-!METIS      IF (ALLOCATED( sbuf   )) DEALLOCATE( sbuf   )
+      IF (ALLOCATED(ipown   )) DEALLOCATE(ipown   )
+      IF (ALLOCATED(vres    )) DEALLOCATE(vres    )
+      IF (ALLOCATED(vsubcm  )) DEALLOCATE(vsubcm  )
+      IF (ALLOCATED(nvrecv  )) DEALLOCATE(nvrecv  )
+      IF (ALLOCATED(nvsend  )) DEALLOCATE(nvsend  )
+      IF (ALLOCATED(ivrecv  )) DEALLOCATE(ivrecv  )
+      IF (ALLOCATED(ivsend  )) DEALLOCATE(ivsend  )
+      IF (ALLOCATED(rrqst   )) DEALLOCATE(rrqst   )
+      IF (ALLOCATED(srqst   )) DEALLOCATE(srqst   )
+      IF (ALLOCATED(irbuf   )) DEALLOCATE(irbuf   )
+      IF (ALLOCATED(isbuf   )) DEALLOCATE(isbuf   )
+      IF (ALLOCATED( rbuf   )) DEALLOCATE( rbuf   )
+      IF (ALLOCATED( sbuf   )) DEALLOCATE( sbuf   )
 !
       IF (ALLOCATED( fb     )) DEALLOCATE( fb     )
       IF (ALLOCATED( fbdxy  )) DEALLOCATE( fbdxy  )

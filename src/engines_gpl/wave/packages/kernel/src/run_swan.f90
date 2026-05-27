@@ -37,7 +37,7 @@ subroutine run_swan (casl)
 ! NONE
 !!--declarations----------------------------------------------------------------
     use swan_input
-    use wave_mpi, only: numranks, wave_mpi_bcast, wave_mpi_barrier, engine_comm_world, MPI_COMM_SELF, MPI_SUCCESS, SWAN_GO
+    use wave_mpi, only: numranks, wave_mpi_bcast, wave_mpi_barrier, engine_comm_world, MPI_SUCCESS, SWAN_GO
     use system_utils, only: SCRIPT_EXTENSION
     !
     implicit none
@@ -46,7 +46,6 @@ subroutine run_swan (casl)
 !
     integer                 :: ierr
     integer                 :: ind
-    integer                 :: swan_comm
     integer                 :: strlen 
     integer                 :: nuerr
     logical                 :: ex
@@ -87,11 +86,7 @@ subroutine run_swan (casl)
        endif
        !
        write(*,'(a)')'>>...Start SWAN run'
-       if (numranks > 1 .and. swan_run%swangridtype == SWAN_GRID_UNSTRUCTURED) then
-          write(*,'(a)') '  Running unstructured SWAN on the master rank using MPI_COMM_SELF'
-          swan_comm = MPI_COMM_SELF
-          call swan(swan_comm)
-       elseif (numranks > 1) then
+       if (numranks > 1) then
           call wave_mpi_bcast(SWAN_GO, ierr)
           if ( ierr == MPI_SUCCESS ) then
              call swan(engine_comm_world)

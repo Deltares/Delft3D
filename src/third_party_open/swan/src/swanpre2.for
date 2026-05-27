@@ -2500,7 +2500,7 @@
       USE SwanGriddata                                                    40.80
       USE SwanGridobjects                                                 40.80
       USE SwanCompdata                                                    40.80
-!METIS      USE SwanParallel                                                    43.01
+      USE SwanParallel                                                    43.01
 !
       IMPLICIT NONE                                                       43.01
 !
@@ -2718,11 +2718,11 @@
 !
             CALL SwanBpntlist                                             40.80
             IF (STPNOW()) RETURN                                          41.39
-!METIS!
-!METIS!           next, gather the lists of boundary points to all processes    43.01
-!METIS!
-!METIS            CALL SwanCollBpntlist                                         43.01
-!METIS            IF (STPNOW()) RETURN                                          43.01
+!
+!           next, gather the lists of boundary points to all processes    43.01
+!
+            CALL SwanCollBpntlist                                         43.01
+            IF (STPNOW()) RETURN                                          43.01
 !
             IF (ITEST.GE.50.AND.IAMMASTER) THEN                           43.01
                NB = SIZE(blist,1)                                         43.01

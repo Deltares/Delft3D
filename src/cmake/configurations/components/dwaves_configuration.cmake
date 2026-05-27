@@ -80,6 +80,11 @@ if(NOT TARGET triangle_c)
     add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
 endif()
 
+# metis
+if(NOT TARGET metis)
+    add_subdirectory(${checkout_src_root}/${metis_module} metis)
+endif()
+
 # netcdf
 if(WIN32)
     if(NOT TARGET netcdff)

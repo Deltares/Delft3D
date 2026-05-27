@@ -1487,7 +1487,7 @@
       USE OUTP_DATA
       USE SwanGriddata                                                    40.80
       USE SwanGridobjects                                                 40.91
-!METIS      USE SwanParallel
+      USE SwanParallel
 !
       IMPLICIT NONE
 !
@@ -2905,10 +2905,10 @@
             DO IP = 1, MIP
                IF ( KVERT(IP).GT.0 ) THEN
 !                 excludes ghost nodes
-!METIS                  IF ( vres(KVERT(IP)) ) THEN
-!METIS                     NOWNV = NOWNV + 1
-!METIS                     IONOD(IP) = INODE
-!METIS                  ENDIF
+                  IF ( vres(KVERT(IP)) ) THEN
+                     NOWNV = NOWNV + 1
+                     IONOD(IP) = INODE
+                  ENDIF
                ENDIF
             ENDDO
          ELSE
