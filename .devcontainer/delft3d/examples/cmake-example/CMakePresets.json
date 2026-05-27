@@ -22,6 +22,28 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_release/install",
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "all-debug",
+            "displayName": "All Debug",
+            "binaryDir": "${sourceDir}/../../build_all_debug",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "all",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_all_debug/install",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "all-release",
+            "displayName": "All Release",
+            "binaryDir": "${sourceDir}/../../build_all_release",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "all",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_all_release/install",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
         }
     ],
     "buildPresets": [
@@ -36,7 +58,19 @@
             "displayName": "FM-suite Release Build",
             "configurePreset": "fm-suite-release",
             "jobs": 24
-        }
+        },
+        {
+            "name": "all-debug-build",
+            "displayName": "All Debug Build",
+            "configurePreset": "all-debug",
+            "jobs": 24
+        },
+        {
+            "name": "all-release-build",
+            "displayName": "All Release Build",
+            "configurePreset": "all-release",
+            "jobs": 24
+        },        
     ], 
     "testPresets": [
         {
@@ -50,6 +84,18 @@
             "name": "fm-suite-release-test",
             "displayName": "FM-suite Release Test",
             "configuration": "Release"
-        }
+        },
+{
+            "configurePreset": "all-debug",
+            "name": "all-debug-test",
+            "displayName": "All Debug Test",
+            "configuration": "Debug"
+        },
+        {
+            "configurePreset": "all-release",
+            "name": "all-release-test",
+            "displayName": "All Release Test",
+            "configuration": "Release"
+        }        
     ]
 }
