@@ -63,33 +63,37 @@ contains
                         ja_computed_airdensity
       use m_qsun_nominal, only: calculate_nominal_solar_radiation
 
-      integer, intent(in) :: n
+      integer, intent(in) :: n !< Cell index
       real(kind=dp), intent(in) :: time_in_hours !< Current model time in hours
-      real(kind=dp), intent(in) :: nominal_solar_radiation
+      real(kind=dp), intent(in) :: nominal_solar_radiation !< Nominal solar radiation (W/m2) at current time and location, used when solar radiation is not available in file but needs to be calculated from cloud coverage
 
-      integer :: cell_index_3D, k_bot, k_top, k2, L, LL, j, j2, ncols
+      real(kind=dp), parameter :: PR2 = 0.49_dp
+      real(kind=dp), parameter :: XNUAIR = 16.0e-06_dp
+      real(kind=dp), parameter :: RDRY = 287.05e-02_dp
+      real(kind=dp), parameter :: RVAP = 461.495e-02_dp
+      real(kind=dp), parameter :: EVAFAC = 1.0_dp
+      real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
+
+      real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient_in_cell !< Secchi extinction depth used in cell
+      real(kind=dp), dimension(20) :: weighted_sums
+
       real(kind=dp) :: solar_radiation_flux, net_solar_radiation_in_cell, nominal_solar_radiation_in_cell, air_pressure_in_cell, air_temperature_in_cell, &
                        water_temperature_in_cell, water_surface_temperature_kelvin, relative_humidity_in_cell, cloudiness_in_cell, wind_speed_in_cell, air_density_in_cell
       real(kind=dp) :: evaporative_heat_flux_coefficient, convective_heat_flux_coefficient, specific_humidity_surface_saturation, specific_humidity_air_surface, &
                        latent_heat_vaporization, longwave_radiation_flux, saturation_vapor_pressure_at_air_temperature, &
                        saturation_vapor_pressure_at_surface_temperature, vapor_pressure_air_humidity, vapor_pressure_difference, &
-                       convective_heat_flux, evaporative_heat_flux
-      real(kind=dp) :: dexp, zlo, zup, explo, expup, ratio, heat_capacity_water_cell_area, total_heat_flux, total_area
-      real(kind=dp) :: weighted_sums(20), cell_area_weight, buoyancy_parameter, free_convection_velocity, free_convective_sensible_heat_flux, &
+                       forced_sensible_heat_flux, forced_latent_heat_flux
+      real(kind=dp) :: dexp, zlo, zup, explo, expup, ratio, heat_capacity_water_cell_area, total_heat_flux, total_area, &
+                       cell_area_weight, buoyancy_parameter, free_convection_velocity, free_convective_sensible_heat_flux, &
                        free_convective_latent_heat_flux, air_density_surface, air_density_10m
-      real(kind=dp) :: pr2 = 0.49_dp, xnuair = 16.0e-06_dp
-      real(kind=dp) :: rdry = 287.05e-02_dp, rvap = 461.495e-02_dp, evafac = 1.0_dp
       real(kind=dp) :: heat_transfer_coefficient, cell_area, wxL, wyL, bak2, bottom_water_temperature
       real(kind=dp) :: solar_radiation_soil_heat_flux, soil_to_water_heat_flux, soil_water_heat_transfer_coefficient, rdtsdz
-
       real(kind=dp) :: ice_free_area_fraction !< area fraction of ice cover (-)
       real(kind=dp) :: qlong_ice !< coefficient for long wave radiation of ice (J m-2 s-1 K-4)
       real(kind=dp) :: surface_temperature !< surface temperature ... temperature of water, ice or snow depending on their presence (degC)
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
-      real(kind=dp), dimension(2) :: diffuse_attenuation_coefficient_in_cell !< Secchi extinction depth used in cell
-
-      real(kind=dp), parameter :: MIN_THICK = 0.001_fp !< threshold thickness for ice/snow to overrule the underlying layer (m)
+      integer :: cell_index_3D, k_bot, k_top, k2, L, LL, j, j2, ncols
 
       if (ja_icecover /= ICECOVER_NONE) then
          ice_free_area_fraction = 1.0_dp - ice_area_fraction(n)
@@ -300,9 +304,6 @@ contains
             air_density_in_cell = rhoair
          end if
 
-         evaporative_heat_flux = -evaporative_heat_flux_coefficient * air_density_in_cell * wind_speed_in_cell * vapor_pressure_difference * latent_heat_vaporization
-         convective_heat_flux = -convective_heat_flux_coefficient * air_density_in_cell * cpa * wind_speed_in_cell * (surface_temperature - air_temperature_in_cell)
-
          water_surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
          if (long_wave_radiation_available) then
             longwave_radiation_flux = em * (long_wave_radiation(n) - stf * (water_surface_temperature_kelvin**4))
@@ -311,32 +312,39 @@ contains
             longwave_radiation_flux = longwave_radiation_flux * (1.0_dp - 0.6_dp * cloudiness_in_cell**2)
          end if
 
-         convective_heat_flux = 0.0_dp
-         evaporative_heat_flux = 0.0_dp
+         forced_sensible_heat_flux = 0.0_dp
+         forced_latent_heat_flux = 0.0_dp
+         if (latent_heat_flux_available) then
+            forced_latent_heat_flux = latent_heat_flux(n)
+         else
+             forced_latent_heat_flux = -evaporative_heat_flux_coefficient * air_density_in_cell * wind_speed_in_cell * vapor_pressure_difference * latent_heat_vaporization
+         end if         
+         if (sensible_heat_flux_available) then
+            forced_sensible_heat_flux = sensible_heat_flux(n)
+         else
+            forced_sensible_heat_flux = -convective_heat_flux_coefficient * air_density_in_cell * cpa * wind_speed_in_cell * (surface_temperature - air_temperature_in_cell)
+         end if
+
          free_convective_sensible_heat_flux = 0.0_dp
          free_convective_latent_heat_flux = 0.0_dp
-         air_density_surface = ((air_pressure_in_cell - saturation_vapor_pressure_at_surface_temperature) / rdry + saturation_vapor_pressure_at_surface_temperature / rvap) / celsius_to_kelvin(surface_temperature)
-         air_density_10m = ((air_pressure_in_cell - vapor_pressure_air_humidity) / rdry + vapor_pressure_air_humidity / rvap) / celsius_to_kelvin(air_temperature_in_cell)
+         air_density_surface = ((air_pressure_in_cell - saturation_vapor_pressure_at_surface_temperature) / RDRY + saturation_vapor_pressure_at_surface_temperature / RVAP) / celsius_to_kelvin(surface_temperature)
+         air_density_10m = ((air_pressure_in_cell - vapor_pressure_air_humidity) / RDRY + vapor_pressure_air_humidity / RVAP) / celsius_to_kelvin(air_temperature_in_cell)
          buoyancy_parameter = 2.0_dp * ag * (air_density_10m - air_density_surface) / (air_density_surface + air_density_10m)
          if (buoyancy_parameter > 0.0_dp) then
-            free_convection_velocity = buoyancy_parameter * xnuair / pr2
-            free_convection_velocity = free_convection_coefficient * free_convection_velocity**0.33333333_dp
-            if (sensible_heat_flux_available) then
-               convective_heat_flux = sensible_heat_flux(n)
-            else
-               free_convective_sensible_heat_flux = min(0.0_dp, -air_density_in_cell * cpa * free_convection_velocity * (surface_temperature - air_temperature_in_cell) * evafac)
+            free_convection_velocity = buoyancy_parameter * XNUAIR / PR2
+            free_convection_velocity = free_convection_coefficient * free_convection_velocity**(1.0_dp / 3.0_dp)
+            if (.not. sensible_heat_flux_available) then
+               free_convective_sensible_heat_flux = min(0.0_dp, -air_density_in_cell * cpa * free_convection_velocity * (surface_temperature - air_temperature_in_cell) * EVAFAC)
             end if
-
-            if (latent_heat_flux_available) then
-               evaporative_heat_flux = latent_heat_flux(n)
-            else
-               free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * evafac * (air_density_surface + air_density_10m) * 0.5_dp) ! Free convective latent/evaporation heat loss:
+            if (.not. latent_heat_flux_available) then
+               free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * EVAFAC * (air_density_surface + air_density_10m) * 0.5_dp) ! Free convective latent/evaporation heat loss:
             end if
          end if
-         total_heat_flux = evaporative_heat_flux + convective_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
+         
+         total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
 
          if (jaevap > 0) then
-            evap(n) = (evaporative_heat_flux + free_convective_latent_heat_flux) / (latent_heat_vaporization * rhomean) * ice_free_area_fraction
+            evap(n) = (forced_latent_heat_flux + free_convective_latent_heat_flux) / (latent_heat_vaporization * rhomean) * ice_free_area_fraction
          end if
 
          heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction
@@ -375,8 +383,8 @@ contains
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then ! todo, only at mapintervals
             qsunmap(n) = net_solar_radiation_in_cell
-            qevamap(n) = evaporative_heat_flux
-            qconmap(n) = convective_heat_flux
+            qevamap(n) = forced_latent_heat_flux
+            qconmap(n) = forced_sensible_heat_flux
             qlongmap(n) = longwave_radiation_flux
             qfrevamap(n) = free_convective_latent_heat_flux
             qfrconmap(n) = free_convective_sensible_heat_flux
@@ -397,8 +405,8 @@ contains
          weighted_sums(5) = weighted_sums(5) + cell_area_weight * (net_solar_radiation_in_cell + total_heat_flux)
          weighted_sums(6) = weighted_sums(6) + cell_area_weight * net_solar_radiation_in_cell
          weighted_sums(7) = weighted_sums(7) + cell_area_weight * longwave_radiation_flux
-         weighted_sums(8) = weighted_sums(8) + cell_area_weight * convective_heat_flux
-         weighted_sums(9) = weighted_sums(9) + cell_area_weight * evaporative_heat_flux
+         weighted_sums(8) = weighted_sums(8) + cell_area_weight * forced_sensible_heat_flux
+         weighted_sums(9) = weighted_sums(9) + cell_area_weight * forced_latent_heat_flux
          weighted_sums(10) = weighted_sums(10) + cell_area_weight * free_convective_sensible_heat_flux
          weighted_sums(11) = weighted_sums(11) + cell_area_weight * free_convective_latent_heat_flux
          weighted_sums(12) = weighted_sums(12) + cell_area_weight * wind_speed_in_cell
