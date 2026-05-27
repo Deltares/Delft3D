@@ -23,7 +23,7 @@ namespace
         {
             return std::unexpected(parsing_utils::ParseError{"XML document is empty"});
         }
-        if (!boost::iequals(root.name(), "NF2FF") && !boost::iequals(root.name(), "NF2FF"))
+        if (!boost::iequals(root.name(), "NF2FF"))
         {
             return std::unexpected(
                 parsing_utils::ParseError{std::format("Root element must be <NF2FF>, got: <{}>", root.name())});
@@ -35,9 +35,17 @@ namespace
      * @brief parse/validate the file version.
      * @return std::expected containing std::string on success or ParseError on failure.
      */
-    std::expected<std::string, parsing_utils::ParseError> parseNFFileVersion(const pugi::xml_node root)
+    std::expected<std::string, parsing_utils::ParseError> parseNFFileVersion(
+        const pugi::xml_node root, const std::string_view expected_file_version)
     {
-        return parsing_utils::requiredChildText(root, "fileVersion");
+        const auto version_or_error = parsing_utils::requiredChildText(root, "fileVersion");
+        if (version_or_error.has_value() && !boost::iequals(version_or_error.value(), expected_file_version))
+        {
+            return std::unexpected(
+                parsing_utils::ParseError{std::format("Element <fileVersion> should be {}, got: {} instead",
+                                                      expected_file_version, version_or_error.value())});
+        }
+        return version_or_error;
     }
 
     /**
@@ -92,10 +100,16 @@ namespace
         return parsing_utils::parseDouble(text, element_name);
     }
 
+    /**
+     * @brief extract Source or Sink data from a std::vector<double>. The first six values have a fixed meaning,
+     * but depending on the size of the input vector, additional values are to be assigned to U components and/or
+     * the weight atribute in the struct. Additional values are only considered if the element_name is "source".
+     * @return std::expected containing a pre_c_sumo::SourceOrSinkData struct or ParseError on failure.
+     */
     std::expected<pre_c_sumo::SourceOrSinkData, parsing_utils::ParseError> extractSourceOrSinkData(
         const std::vector<double> values, const std::string_view element_name)
     {
-        const std::size_t max_size = element_name.compare("sinks") == 0 ? 9 : 6;
+        const std::size_t max_size = element_name.compare("sources") == 0 ? 9 : 6;
         if (values.size() < 6 || values.size() > max_size)
         {
             return std::unexpected(parsing_utils::ParseError{std::format(
@@ -113,7 +127,7 @@ namespace
                                              .weight = 0.0,
                                              .has_u = false,
                                              .has_weight = false};
-        // Additional values (7,8 or 9)
+        // Additional assignments in case of 7,8 or 9 values.
         switch (values.size())
         {
             case 6:
@@ -136,11 +150,11 @@ namespace
                 data.has_weight = true;
                 break;
             default:
-                assert(false); // Should not happen.
+                assert(false); // Should never happen.
                 break;
         }
         return data;
-    } // namespace
+    }
 
     std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseSourceOrSinkVector(
         const std::string_view text, const std::string_view element_name)
@@ -208,7 +222,7 @@ namespace pre_c_sumo
         }
 
         ASSIGN_OR_RETURN(const auto root, validateRoot(doc));
-        ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root));
+        ASSIGN_OR_RETURN(auto file_version, parseNFFileVersion(root, current_file_version));
 
         // Discharge
         ASSIGN_OR_RETURN(auto discharge_node, parseDischarge(root));
