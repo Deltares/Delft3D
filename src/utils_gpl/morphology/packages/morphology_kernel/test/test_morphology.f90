@@ -26,7 +26,7 @@ contains
       real(dp) :: poros = 0.4_dp ! Porosity of the sediment [-]
       real(dp) :: rlabda = 0.5_dp ! Parameter from Ruessink et al. 2009 JGR 
       real(dp) :: teta = 0.1_dp ! angle between wave direction and x-axis [degrees]
-      real(dp) :: tp = 5_dp ! Wave period   [s]
+      real(dp) :: tp = 5.0_dp ! Wave period   [s]
       real(dp) :: ubot = 0.1_dp ! velocity at the bed [m/s]
       real(dp) :: u = 1.0_dp ! velocity in x direction [m/s] 
       real(dp) :: v = 0.0_dp ! velocity in y direction [m/s]
