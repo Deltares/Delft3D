@@ -107,28 +107,27 @@ object WindowsTest : BuildType({
             script {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
-        workingDir = "test/deltares_testbench/"
-        scriptContent = """
-            powershell -NoProfile -Command "
-            
-            \${'$'}argsList = @(
-                '--username', '%s3_dsctestbench_accesskey%',
-                '--password', '%s3_dsctestbench_secret%',
-                '--compare',
-                '--config', 'configs/%configfile%',
-                '--filter', 'testcase=%case_filter%',
-                '--log-level', 'DEBUG',
-                '--parallel',
-                '--teamcity',
-                )
+            workingDir = "test/deltares_testbench/"
+                scriptContent = """   
+                    @echo off
 
-            if ('%copy_failed_cases%' -eq 'true') {
-                \${'$'}argsList += '--copy-failed-cases'
-            }
+                    set argsList=--username %s3_dsctestbench_accesskey% ^
+                    --password %s3_dsctestbench_secret% ^
+                    --compare ^
+                    --config configs/%configfile% ^
+                    --filter testcase=%case_filter% ^
+                    --log-level DEBUG ^
+                    --parallel ^
+                    --teamcity
 
-            python TestBench.py @argsList
-            "
-        """.trimIndent()
+                    if "%copy_failed_cases%"=="true" (
+                        set argsList=%%argsList%% --copy-failed-cases
+                    )
+
+                    python TestBench.py %%argsList%%
+
+            """.trimIndent()
+        
 
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
