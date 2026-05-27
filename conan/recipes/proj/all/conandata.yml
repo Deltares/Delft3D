@@ -19,3 +19,6 @@ patches:
     - patch_file: "patches/0001-use-cmake-targets-9.2.1.patch"
       patch_type: "conan"
       patch_description: "Use cmake targets"
+    - patch_file: "patches/0002-fix-windows-import-lib-name-9.3.1.patch"
+      patch_type: "conan"
+      patch_description: "Match ARCHIVE_OUTPUT_NAME to DLL output name so Conan CMakeDeps can locate the DLL"

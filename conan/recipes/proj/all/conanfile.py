@@ -158,32 +158,6 @@ class ProjConan(ConanFile):
         copy(self, "COPYING", dst=os.path.join(self.package_folder, "licenses"), src=self.source_folder)
         cmake = CMake(self)
         cmake.install()
-        # On Windows, PROJ names the DLL with the ABI version (e.g. proj_9_3_d.dll)
-        # but the import lib is just proj_d.lib. Conan's conan_package_library_targets()
-        # searches for a DLL matching the import lib name and fails to find it.
-        # Fix: rename the import lib to match the DLL name. The DLL name that the
-        # loader uses is embedded inside the import lib, so the .lib filename on disk
-        # is just for the linker to locate it — renaming it is safe.
-        if self.settings.os == "Windows" and self.options.shared:
-            import glob
-
-            bin_dir = os.path.join(self.package_folder, "bin")
-            lib_dir = os.path.join(self.package_folder, "lib")
-            dlls = glob.glob(os.path.join(bin_dir, "proj*.dll"))
-            if len(dlls) == 1:
-                dll_base = os.path.splitext(os.path.basename(dlls[0]))[
-                    0
-                ]  # e.g. "proj_9_3_d"
-                implibs = glob.glob(os.path.join(lib_dir, "proj*.lib"))
-                if (
-                    len(implibs) == 1
-                    and os.path.basename(implibs[0]) != f"{dll_base}.lib"
-                ):
-                    rename(
-                        self,
-                        src=implibs[0],
-                        dst=os.path.join(lib_dir, f"{dll_base}.lib"),
-                    )
         # recover the data ... 9.1.0 saves into share/proj rather than res directly
         # the new PROJ_DATA_PATH can't seem to be controlled from conan.
         rename(self, src=os.path.join(self.package_folder, "share", "proj"), dst=os.path.join(self.package_folder, "res"))
