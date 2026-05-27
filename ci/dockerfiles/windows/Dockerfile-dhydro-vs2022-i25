@@ -1,0 +1,54 @@
+FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
+SHELL ["cmd", "/S", "/C"]
+
+ADD vs_Community.exe C:/
+
+RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
+    --installPath "C:\\Program Files\\Microsoft Visual Studio\\17\\Community" \
+    --add Microsoft.VisualStudio.Workload.NativeDesktop;includeRecommended \
+    --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
+    --add Microsoft.VisualStudio.Component.VC.ATLMFC \
+    --add Microsoft.VisualStudio.Component.VC.CLI.Support \
+    --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
+    --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 \
+    --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 \
+    --remove Microsoft.VisualStudio.Component.Windows81SDK \
+    || IF "%ERRORLEVEL%"=="3010" EXIT 0)
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+# Install the Intel toolkits
+ADD intel-fortran-compiler-2025.3.3.16_offline.exe C:/
+RUN Start-Process -FilePath "C:\intel-fortran-compiler-2025.3.3.16_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2022_INTEGRATION=1", "-s" -Wait
+
+ADD intel-onemkl-2025.3.1.10_offline.exe C:/
+RUN Start-Process -FilePath "C:\intel-onemkl-2025.3.1.10_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-p=NEED_VS2022_INTEGRATION=1", "-s" -Wait
+
+ADD intel-mpi-2021.17.2.93_offline.exe C:/
+RUN Start-Process -FilePath "C:\intel-mpi-2021.17.2.93_offline.exe" -ArgumentList "--silent", "-a", "--action", "install", "--eula=accept", "-s" -Wait
+
+# RUN Remove intel and visual studio executables
+RUN Remove-Item C:\*.exe"
+
+ADD cmake-3.31.0-rc1-windows-x86_64.msi C:\\cmake-3.31.0-rc1-windows-x86_64.msi
+RUN Start-Process msiexec -Wait -ArgumentList '/i C:\\cmake-3.31.0-rc1-windows-x86_64.msi /qn'
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\CMake\\bin')
+RUN Remove-Item C:\\cmake-3.31.0-rc1-windows-x86_64.msi
+
+ENV ONEAPI_ROOT="C:\\Program Files (x86)\\Intel\\oneAPI\\"
+ENV VS2022INSTALLDIR="C:\\Program Files\\Microsoft Visual Studio\\17\\Community\\"
+
+ADD python-3.12.7-amd64.exe C:\\python-3.12.7-amd64.exe
+RUN Start-Process python-3.12.7-amd64.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1' -Wait
+RUN Remove-Item C:\\python-3.12.7-amd64.exe
+RUN New-Item -ItemType SymbolicLink -Path 'C:\\Program Files\\Python312\\python3.exe' -Target 'C:\\Program Files\\Python312\\python.exe'
+
+ADD Git-2.47.0-64-bit.exe C:\\Git-2.47.0-64-bit.exe
+RUN Start-Process -FilePath "C:\\Git-2.47.0-64-bit.exe" -ArgumentList "/SILENT" -Wait
+RUN Remove-Item C:\\Git-2.47.0-64-bit.exe
+RUN setx /M PATH $($Env:PATH + ';C:\\Program Files\\Git\\usr\\bin')

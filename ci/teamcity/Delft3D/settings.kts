@@ -97,7 +97,7 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironmentI25)
         buildType(WindowsTestEnvironment)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
@@ -106,7 +106,7 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironmentI25,
             WindowsTestEnvironment,
             WindowsBuild,
             WindowsBuild2D3DSP,

@@ -8,7 +8,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.schedule
 import Delft3D.template.*
 import Delft3D.step.*
 
-object WindowsBuildEnvironmentI24 : BuildType({
+object WindowsBuildEnvironmentI25 : BuildType({
 
     description = "Build-environment container image to build our Delf3D software in."
 
@@ -19,12 +19,12 @@ object WindowsBuildEnvironmentI24 : BuildType({
         TemplateDockerRegistry
     )
 
-    name = "Delft3D build environment intel 2024 container"
+    name = "Delft3D build environment intel 2025 container"
     buildNumberPattern = "%build.vcs.number%"
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2025")
     }
 
     vcs {
@@ -57,7 +57,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
             name = "Docker build dhydro"
             commandType = build {
                 source = file {
-                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i24"
+                    path = "ci/dockerfiles/windows/Dockerfile-dhydro-vs2022-i25"
                 }
                 contextDir = "ci/dockerfiles/windows"
                 platform = DockerCommandStep.ImagePlatform.Windows
