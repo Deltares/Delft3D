@@ -343,14 +343,14 @@
     </testCase>
 	
 	<testCase name="e100_f11_c01" ref="dimr_noconfig">
-        <path version="2026-06-01T12:39:12.558000">e100_dflowfm-dwaves/f11_unswan/c01_haringvliet</path>
+        <path version="2026-06-02T12:39:12.558000">e100_dflowfm-dwaves/f11_unswan/c01_haringvliet</path>
         <maxRunTime>300.0</maxRunTime> <!-- seconds -->
         <checks>
             <file name="fm/output/haringvliet_map.nc" type="NETCDF">
                 <parameters>
-                    <parameter name="s1" toleranceAbsolute="0.01" />
-                    <parameter name="ucx" toleranceAbsolute="0.01" />
-                    <parameter name="ucy" toleranceAbsolute="0.01" />
+                    <parameter name="mesh2d_s1" toleranceAbsolute="0.01" />
+                    <parameter name="mesh2d_ucx" toleranceAbsolute="0.01" />
+                    <parameter name="mesh2d_ucy" toleranceAbsolute="0.01" />
                 </parameters>
             </file>
             <file name="fm/output/haringvliet_com.nc" type="NETCDF">
