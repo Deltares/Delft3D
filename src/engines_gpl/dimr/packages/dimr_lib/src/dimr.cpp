@@ -1884,7 +1884,18 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     }
     else
     {
-        newComp->mpi_barrier_sleep = atoi(mpiBarrierSleep->charData);
+        // Parse mpiBarrierSleep using std::from_chars (no locale, no heap)
+        const char* s = mpiBarrierSleep->charData;
+        int value = 0;
+        auto res = std::from_chars(s, s + std::strlen(s), value);
+        if (res.ec == std::errc() && res.ptr != s)
+        {
+            newComp->mpi_barrier_sleep = value;
+        }
+        else
+        {
+            throw Exception(Exception::ERR_INVALID_INPUT, "Invalid integer value for mpiBarrierSleep: \"%s\"", s);
+        }
     }
     log->Write(DEBUG, my_rank, "mpiBarrierSleep is set to %d for component %s.", newComp->mpi_barrier_sleep,
                newComp->name);
@@ -2485,30 +2496,31 @@ void Dimr::freeLibs(void)
 }
 
 //------------------------------------------------------------------------------
-void Dimr::barrier(MPI_Comm comm, bool use_mpi, int mpi_barrier_sleep)
+void Dimr::barrier(const MPI_Comm comm, const bool use_mpi, const int mpi_barrier_sleep)
 {
-    if (use_mpi)
+    if (!use_mpi)
     {
-        if (mpi_barrier_sleep == 0)
+        return;
+    }
+    if (mpi_barrier_sleep == 0)
+    {
+        MPI_Barrier(comm);
+    }
+    else
+    {
+        MPI_Request req = MPI_REQUEST_NULL;
+        // Dont use default MPI_Barrier spinlock, instead allow other processes to use cpu by periodically
+        // polling for barrier completion
+        MPI_Ibarrier(comm, &req);
+        while (true)
         {
-            int ierr = MPI_Barrier(comm);
-        }
-        else
-        {
-            MPI_Request req = MPI_REQUEST_NULL;
-            // Dont use default MPI_Barrier spinlock, instead allow other processes to use cpu by periodically
-            // polling for barrier completion
-            int ierr = MPI_Ibarrier(comm, &req);
-            while (true)
+            int complete;
+            MPI_Test(&req, &complete, MPI_STATUS_IGNORE);
+            if (complete)
             {
-                int complete;
-                MPI_Test(&req, &complete, MPI_STATUS_IGNORE);
-                if (complete)
-                {
-                    break;
-                }
-                std::this_thread::sleep_for(std::chrono::milliseconds(mpi_barrier_sleep));
+                break;
             }
+            std::this_thread::sleep_for(std::chrono::milliseconds(mpi_barrier_sleep));
         }
     }
 }

@@ -73,6 +73,7 @@
             <path>bin/run_dimr.bat</path>
             <environments>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="OMP_NUM_THREADS_SWAN" type="raw">4</environment>
             </environments>
         </program>
         <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
