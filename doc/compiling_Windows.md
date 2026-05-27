@@ -36,12 +36,12 @@ This installs compiler profiles, settings, and (for Deltares developers) the Nex
 
 **Deltares developers** (with Nexus access):
 ```
-python run_conan.py --initialize-conan=deltares
+python run_conan.py initialize deltares
 ```
 
 **External / open-source developers** (without Nexus access):
 ```
-python run_conan.py --initialize-conan=external
+python run_conan.py initialize external
 ```
 
 ## Build steps

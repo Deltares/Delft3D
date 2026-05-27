@@ -86,7 +86,7 @@ object WindowsBuild2D3DSP : BuildType({
             scriptContent = """
                 call C:/set-env-vs2022.cmd
 
-                python run_conan.py --initialize-conan=deltares --ci
+                python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
                 python build.py --config flow2d3d --build --build-type %build_type% --ci --build-dir build_flow2d3d --install-dir build_flow2d3d/install
