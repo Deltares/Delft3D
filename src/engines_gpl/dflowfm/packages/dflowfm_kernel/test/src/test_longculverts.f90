@@ -1,191 +1,191 @@
 module test_longculverts
-    use assertions_gtest
-    use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
-    use m_network_helpers, only: t_grid_helper
-    use m_file_helpers, only: create_file
+   use assertions_gtest
+   use m_longculverts, only: convert1D2DLongCulverts, default_longculverts
+   use m_network_helpers, only: t_grid_helper
+   use m_file_helpers, only: create_file
 
-    implicit none(type, external)
+   implicit none(type, external)
 
-contains    
+contains
 
-    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_four_point, test_convert1d2dlongculverts_single_four_point,
-    subroutine test_convert1d2dlongculverts_single_four_point() bind(C)
-        use precision, only: dp
-        use network_data, only: numk, numl, kn
-        use m_missing, only: dmiss
-        use m_polygon, only: xpl, ypl, zpl, npl
-        use m_longculverts, only: convert1D2DLongCulverts
-        use m_longculverts_data, only: longculverts
+   !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_four_point, test_convert1d2dlongculverts_single_four_point,
+   subroutine test_convert1d2dlongculverts_single_four_point() bind(C)
+      use precision, only: dp
+      use network_data, only: numk, numl, kn
+      use m_missing, only: dmiss
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_longculverts, only: convert1D2DLongCulverts
+      use m_longculverts_data, only: longculverts
 
-        integer, parameter :: COORD_COUNT = 4
-        type(t_grid_helper) :: grid_helper
-        real(kind=dp) :: x_coords(COORD_COUNT)
-        real(kind=dp) :: y_coords(COORD_COUNT)
-        real(kind=dp) :: z_coords(COORD_COUNT)
-        integer :: i
+      integer, parameter :: COORD_COUNT = 4
+      type(t_grid_helper) :: grid_helper
+      real(kind=dp) :: x_coords(COORD_COUNT)
+      real(kind=dp) :: y_coords(COORD_COUNT)
+      real(kind=dp) :: z_coords(COORD_COUNT)
+      integer :: i
 
-        ! Arrange
-        grid_helper = t_grid_helper()
-        call grid_helper%make_square_grid( &
-            bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
-            rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
-        )
+      ! Arrange
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid( &
+         bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
+         rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
+         )
 
-        x_coords = [5._dp, 9._dp, 11._dp, 15._dp]
-        y_coords = [6._dp, 6._dp, 4._dp, 4._dp]
-        z_coords = -1.0_dp
+      x_coords = [5._dp, 9._dp, 11._dp, 15._dp]
+      y_coords = [6._dp, 6._dp, 4._dp, 4._dp]
+      z_coords = -1.0_dp
 
-        ! Subroutine `longculvert_create_endpiont` requires these arrays in `m_polygon` to be allocated.
-        xpl = x_coords
-        ypl = y_coords
-        zpl = z_coords
-        npl = COORD_COUNT
+      ! Subroutine `longculvert_create_endpiont` requires these arrays in `m_polygon` to be allocated.
+      xpl = x_coords
+      ypl = y_coords
+      zpl = z_coords
+      npl = COORD_COUNT
 
-        allocate(longculverts(1))
-        allocate(longculverts(1)%netlinks(3))
-        ! Act
-        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
+      allocate (longculverts(1))
+      allocate (longculverts(1)%netlinks(3))
+      ! Act
+      call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
 
-        ! Assert
-        call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
-        call F90_ASSERT_DOUBLE_EQ(y_coords(1), 5._dp)
-        call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT), 15._dp)
-        call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT), 5._dp)
-        
-        call F90_ASSERT_EQ(numk, 10) ! 6 Netnodes for the grid, 4 For the long culvert.
-        call F90_ASSERT_EQ(numl, 10) ! 7 Netlinks for the grid, 3 For the long culvert.
+      ! Assert
+      call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
+      call F90_ASSERT_DOUBLE_EQ(y_coords(1), 5._dp)
+      call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT), 15._dp)
+      call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT), 5._dp)
 
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, "Expected first new link to be a 1D2D link.")
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, "Expected middle link to be a 1D link.")
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, "Expected last new link to be a 1D2D link.")
-    end subroutine test_convert1d2dlongculverts_single_four_point
-    !$f90tw )
+      call F90_ASSERT_EQ(numk, 10) ! 6 Netnodes for the grid, 4 For the long culvert.
+      call F90_ASSERT_EQ(numl, 10) ! 7 Netlinks for the grid, 3 For the long culvert.
 
-    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_two_point, test_convert1d2dlongculverts_single_two_point,
-    subroutine test_convert1d2dlongculverts_single_two_point() bind(C)
-        use precision, only: dp
-        use network_data, only: numk, numl, kn
-        use m_missing, only: dmiss
-        use m_polygon, only: xpl, ypl, zpl, npl
-        use m_longculverts, only: convert1D2DLongCulverts
-        use m_longculverts_data, only: longculverts
+      call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, "Expected first new link to be a 1D2D link.")
+      call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(2)), 1, "Expected middle link to be a 1D link.")
+      call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(3)), 5, "Expected last new link to be a 1D2D link.")
+   end subroutine test_convert1d2dlongculverts_single_four_point
+   !$f90tw )
 
-        implicit none
+   !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_single_two_point, test_convert1d2dlongculverts_single_two_point,
+   subroutine test_convert1d2dlongculverts_single_two_point() bind(C)
+      use precision, only: dp
+      use network_data, only: numk, numl, kn
+      use m_missing, only: dmiss
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_longculverts, only: convert1D2DLongCulverts
+      use m_longculverts_data, only: longculverts
 
-        integer, parameter :: COORD_COUNT = 2
-        type(t_grid_helper) :: grid_helper
-        real(kind=dp) :: x_coords(COORD_COUNT)
-        real(kind=dp) :: y_coords(COORD_COUNT)
-        real(kind=dp) :: z_coords(COORD_COUNT)
-        integer :: i
+      implicit none
 
-        npl = 0
-        ! Arrange
-        grid_helper = t_grid_helper()
-        call grid_helper%make_square_grid( &
-            bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
-            rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
-        )
+      integer, parameter :: COORD_COUNT = 2
+      type(t_grid_helper) :: grid_helper
+      real(kind=dp) :: x_coords(COORD_COUNT)
+      real(kind=dp) :: y_coords(COORD_COUNT)
+      real(kind=dp) :: z_coords(COORD_COUNT)
+      integer :: i
 
-        x_coords = [5._dp, 15._dp]
-        y_coords = [6._dp, 4._dp]
-        z_coords = -1.0_dp
+      npl = 0
+      ! Arrange
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid( &
+         bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
+         rows=1, columns=2, side_length=10.0_dp, array_size_margin=16 &
+         )
 
-        ! `longculvert_create_endpiont` requires these arrays in `m_polygon` to be allocated.
-        xpl = x_coords
-        ypl = y_coords
-        zpl = z_coords
-        npl = COORD_COUNT
-        if (allocated(longculverts)) then
-            deallocate(longculverts)
-        end if
-        allocate(longculverts(1))
-        allocate(longculverts(1)%netlinks(1))
-        ! Act
-        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
+      x_coords = [5._dp, 15._dp]
+      y_coords = [6._dp, 4._dp]
+      z_coords = -1.0_dp
 
-        ! Assert
-        call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
-        call F90_ASSERT_DOUBLE_EQ(y_coords(1), 5._dp)
-        call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT), 15._dp)
-        call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT), 5._dp)
-        
-        call F90_ASSERT_EQ(numk, 8) ! 6 Netnodes for the grid, 2 For the long culvert.
-        call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
+      ! `longculvert_create_endpiont` requires these arrays in `m_polygon` to be allocated.
+      xpl = x_coords
+      ypl = y_coords
+      zpl = z_coords
+      npl = COORD_COUNT
+      if (allocated(longculverts)) then
+         deallocate (longculverts)
+      end if
+      allocate (longculverts(1))
+      allocate (longculverts(1)%netlinks(1))
+      ! Act
+      call convert1D2DLongCulverts(x_coords, y_coords, z_coords, COORD_COUNT)
 
-        call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, "Expected first new link to be a 1D2D link.")
-    end subroutine test_convert1d2dlongculverts_single_two_point
-    !$f90tw )
+      ! Assert
+      call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
+      call F90_ASSERT_DOUBLE_EQ(y_coords(1), 5._dp)
+      call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT), 15._dp)
+      call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT), 5._dp)
 
-    !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_multiple_culverts, test_convert1d2dlongculverts_multiple_culverts,
-    subroutine test_convert1d2dlongculverts_multiple_culverts() bind(C)
-        use precision, only: dp
-        use network_data, only: numk, numl, kn
-        use m_missing, only: dmiss
-        use m_polygon, only: xpl, ypl, zpl, npl
-        use m_longculverts, only: convert1D2DLongCulverts
-         use m_longculverts_data, only: longculverts
-        use m_save_ugrid_state, only: meshgeom1d
+      call F90_ASSERT_EQ(numk, 8) ! 6 Netnodes for the grid, 2 For the long culvert.
+      call F90_ASSERT_EQ(numl, 8) ! 7 Netlinks for the grid, 1 For the long culvert.
 
-        implicit none
+      call F90_ASSERT_EQ(kn(3, longculverts(1)%netlinks(1)), 5, "Expected first new link to be a 1D2D link.")
+   end subroutine test_convert1d2dlongculverts_single_two_point
+   !$f90tw )
 
-        integer, parameter :: COORD_COUNT_LC1 = 4
-        integer, parameter :: COORD_COUNT_LC2 = 2
-        integer, parameter :: ARRAY_SIZE = COORD_COUNT_LC1 + COORD_COUNT_LC2 + 1
-        type(t_grid_helper) :: grid_helper
-        real(kind=dp) :: x_coords(ARRAY_SIZE)
-        real(kind=dp) :: y_coords(ARRAY_SIZE)
-        real(kind=dp) :: z_coords(ARRAY_SIZE)
-        integer :: i
+   !$f90tw TESTCODE(TEST, test_longculvert, test_convert1d2dlongculverts_multiple_culverts, test_convert1d2dlongculverts_multiple_culverts,
+   subroutine test_convert1d2dlongculverts_multiple_culverts() bind(C)
+      use precision, only: dp
+      use network_data, only: numk, numl, kn
+      use m_missing, only: dmiss
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_longculverts, only: convert1D2DLongCulverts
+      use m_longculverts_data, only: longculverts
+      use m_save_ugrid_state, only: meshgeom1d
 
-        npl = 0
-        ! Arrange
-        ! 2 x 2 grid.
-        grid_helper = t_grid_helper()
-        call grid_helper%make_square_grid( &
-            bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
-            rows=2, columns=2, side_length=10.0_dp, array_size_margin=16 &
-        )
+      implicit none
 
-        x_coords = [5._dp, 9._dp, 11._dp, 15._dp, dmiss, 5._dp, 15._dp]
-        y_coords = [6._dp, 6._dp, 4._dp, 4._dp, dmiss, 16._dp, 14._dp]
-        z_coords = -1.0_dp
-        z_coords(5) = dmiss
+      integer, parameter :: COORD_COUNT_LC1 = 4
+      integer, parameter :: COORD_COUNT_LC2 = 2
+      integer, parameter :: ARRAY_SIZE = COORD_COUNT_LC1 + COORD_COUNT_LC2 + 1
+      type(t_grid_helper) :: grid_helper
+      real(kind=dp) :: x_coords(ARRAY_SIZE)
+      real(kind=dp) :: y_coords(ARRAY_SIZE)
+      real(kind=dp) :: z_coords(ARRAY_SIZE)
+      integer :: i
 
-        ! Subroutine `longculvert_create_endpiont` requires these arrays in `m_polygon` to be allocated.
-        xpl = x_coords
-        ypl = y_coords
-        zpl = z_coords
-        npl = ARRAY_SIZE
+      npl = 0
+      ! Arrange
+      ! 2 x 2 grid.
+      grid_helper = t_grid_helper()
+      call grid_helper%make_square_grid( &
+         bottom_left_x=0.0_dp, bottom_left_y=0.0_dp, &
+         rows=2, columns=2, side_length=10.0_dp, array_size_margin=16 &
+         )
 
-        !> ensure meshgeom1d state is disregarded
-        meshgeom1d%numnode = -1 
-        meshgeom1d%nnodes = -1
+      x_coords = [5._dp, 9._dp, 11._dp, 15._dp, dmiss, 5._dp, 15._dp]
+      y_coords = [6._dp, 6._dp, 4._dp, 4._dp, dmiss, 16._dp, 14._dp]
+      z_coords = -1.0_dp
+      z_coords(5) = dmiss
 
-        if (allocated(longculverts)) then
-            deallocate(longculverts)
-        end if
-        allocate(longculverts(2))
-        allocate(longculverts(1)%netlinks(3))
-        allocate(longculverts(2)%netlinks(1))
+      ! Subroutine `longculvert_create_endpiont` requires these arrays in `m_polygon` to be allocated.
+      xpl = x_coords
+      ypl = y_coords
+      zpl = z_coords
+      npl = ARRAY_SIZE
 
-        ! Act
-        call convert1D2DLongCulverts(x_coords, y_coords, z_coords, ARRAY_SIZE)
+      !> ensure meshgeom1d state is disregarded
+      meshgeom1d%numnode = -1
+      meshgeom1d%nnodes = -1
 
-        ! Assert
-        call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
-        call F90_ASSERT_DOUBLE_EQ(y_coords(1), 5._dp)
-        call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT_LC1), 15._dp)
-        call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT_LC1), 5._dp)
-        call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT_LC1 + 2), 5._dp) ! First and last point snapped to cell centers.
-        call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT_LC1 + 2), 15._dp)
-        call F90_ASSERT_DOUBLE_EQ(x_coords(ARRAY_SIZE), 15._dp)
-        call F90_ASSERT_DOUBLE_EQ(y_coords(ARRAY_SIZE), 15._dp)
-        
-        call F90_ASSERT_EQ(numk, 9 + 4 + 2) ! 9 Netnodes for the grid, 4 for LC1, 2 for LC2.
-        call F90_ASSERT_EQ(numl, 12 + 3 + 1) ! 12 Netlinks for the grid, 3 for LC1, 1 for LC2.
-    end subroutine test_convert1d2dlongculverts_multiple_culverts
-    !$f90tw )
+      if (allocated(longculverts)) then
+         deallocate (longculverts)
+      end if
+      allocate (longculverts(2))
+      allocate (longculverts(1)%netlinks(3))
+      allocate (longculverts(2)%netlinks(1))
+
+      ! Act
+      call convert1D2DLongCulverts(x_coords, y_coords, z_coords, ARRAY_SIZE)
+
+      ! Assert
+      call F90_ASSERT_DOUBLE_EQ(x_coords(1), 5._dp) ! First and last point snapped to cell centers.
+      call F90_ASSERT_DOUBLE_EQ(y_coords(1), 5._dp)
+      call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT_LC1), 15._dp)
+      call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT_LC1), 5._dp)
+      call F90_ASSERT_DOUBLE_EQ(x_coords(COORD_COUNT_LC1 + 2), 5._dp) ! First and last point snapped to cell centers.
+      call F90_ASSERT_DOUBLE_EQ(y_coords(COORD_COUNT_LC1 + 2), 15._dp)
+      call F90_ASSERT_DOUBLE_EQ(x_coords(ARRAY_SIZE), 15._dp)
+      call F90_ASSERT_DOUBLE_EQ(y_coords(ARRAY_SIZE), 15._dp)
+
+      call F90_ASSERT_EQ(numk, 9 + 4 + 2) ! 9 Netnodes for the grid, 4 for LC1, 2 for LC2.
+      call F90_ASSERT_EQ(numl, 12 + 3 + 1) ! 12 Netlinks for the grid, 3 for LC1, 1 for LC2.
+   end subroutine test_convert1d2dlongculverts_multiple_culverts
+   !$f90tw )
 
    !> Create a minimal UGRID 2D net file: a simple channel of 4 quads in a row.
    !! Nodes form a 5x2 grid (10 nodes), edges connect them into 4 rectangular cells.
@@ -209,7 +209,7 @@ contains
       !   1---2---3---4---5       (y=0)
       ! x=  0  100 200 300 400
       nNodes = 10
-      nEdges = 13  ! 4 horizontal bottom + 4 horizontal top + 5 vertical
+      nEdges = 13 ! 4 horizontal bottom + 4 horizontal top + 5 vertical
       nFaces = 4
 
       k = 0
@@ -233,7 +233,7 @@ contains
       edge_nodes(:, 7) = [8, 9]
       edge_nodes(:, 8) = [9, 10]
       ! Vertical edges: 1-6, 2-7, 3-8, 4-9, 5-10
-      edge_nodes(:, 9)  = [1, 6]
+      edge_nodes(:, 9) = [1, 6]
       edge_nodes(:, 10) = [2, 7]
       edge_nodes(:, 11) = [3, 8]
       edge_nodes(:, 12) = [4, 9]
@@ -331,29 +331,29 @@ contains
       character(len=*), intent(in) :: mdu_file, net_file, str_file
       integer :: mout, ierr
 
-      open(newunit=mout, file=mdu_file, status='replace', action='write', iostat=ierr)
+      open (newunit=mout, file=mdu_file, status='replace', action='write', iostat=ierr)
 
-      write(mout, '(a)') '[General]'
-      write(mout, '(a)') '    fileVersion           = 1.09'
-      write(mout, '(a)') '    fileType              = modelDef'
-      write(mout, '(a)') '    program               = D-Flow FM'
-      write(mout, '(a)') '    ConvertLongCulverts   = 1'
-      write(mout, '(a)') ''
-      write(mout, '(a)') '[geometry]'
-      write(mout, '(2a)') '    netFile               = ', trim(net_file)
-      write(mout, '(2a)') '    StructureFile         = ', trim(str_file)
-      write(mout, '(a)') '    UseCaching             = 0'
-      write(mout, '(a)') ''
-      write(mout, '(a)') '[time]'
-      write(mout, '(a)') '    refDate               = 20000101'
-      write(mout, '(a)') '    tUnit                 = S'
-      write(mout, '(a)') '    tStart                = 0.0'
-      write(mout, '(a)') '    tStop                 = 100.0'
-      write(mout, '(a)') '    dtMax                 = 10.0'
-      write(mout, '(a)') '    dtUser                = 10.0'
-      write(mout, '(a)') '    dtInit                = 1.0'
+      write (mout, '(a)') '[General]'
+      write (mout, '(a)') '    fileVersion           = 1.09'
+      write (mout, '(a)') '    fileType              = modelDef'
+      write (mout, '(a)') '    program               = D-Flow FM'
+      write (mout, '(a)') '    ConvertLongCulverts   = 1'
+      write (mout, '(a)') ''
+      write (mout, '(a)') '[geometry]'
+      write (mout, '(2a)') '    netFile               = ', trim(net_file)
+      write (mout, '(2a)') '    StructureFile         = ', trim(str_file)
+      write (mout, '(a)') '    UseCaching             = 0'
+      write (mout, '(a)') ''
+      write (mout, '(a)') '[time]'
+      write (mout, '(a)') '    refDate               = 20000101'
+      write (mout, '(a)') '    tUnit                 = S'
+      write (mout, '(a)') '    tStart                = 0.0'
+      write (mout, '(a)') '    tStop                 = 100.0'
+      write (mout, '(a)') '    dtMax                 = 10.0'
+      write (mout, '(a)') '    dtUser                = 10.0'
+      write (mout, '(a)') '    dtInit                = 1.0'
 
-      close(mout)
+      close (mout)
    end subroutine create_mdu_file
 
    !$f90tw TESTCODE(TEST, test_longculvert, test_flow_modelinit_with_longculvert, test_flow_modelinit_with_longculvert,
@@ -419,9 +419,9 @@ contains
       end do
       do i = 1, ndx
          if (xz(i) < 100.0_dp) then
-            s1(i) = 2.0_dp  ! left cell: high water level
+            s1(i) = 2.0_dp ! left cell: high water level
          else
-            s1(i) = 0.0_dp  ! remaining cells: low water level
+            s1(i) = 0.0_dp ! remaining cells: low water level
          end if
       end do
 
@@ -688,29 +688,29 @@ contains
       end do
 
       ! Bottom horizontal edges (row 0-1): 1-2, 2-3, 3-4, 4-5
-      edge_nodes(:,  1) = [1,  2];  edge_nodes(:,  2) = [2,  3]
-      edge_nodes(:,  3) = [3,  4];  edge_nodes(:,  4) = [4,  5]
+      edge_nodes(:, 1) = [1, 2]; edge_nodes(:, 2) = [2, 3]
+      edge_nodes(:, 3) = [3, 4]; edge_nodes(:, 4) = [4, 5]
       ! Middle horizontal edges (row 1-2): 6-7, 7-8, 8-9, 9-10
-      edge_nodes(:,  5) = [6,  7];  edge_nodes(:,  6) = [7,  8]
-      edge_nodes(:,  7) = [8,  9];  edge_nodes(:,  8) = [9, 10]
+      edge_nodes(:, 5) = [6, 7]; edge_nodes(:, 6) = [7, 8]
+      edge_nodes(:, 7) = [8, 9]; edge_nodes(:, 8) = [9, 10]
       ! Top horizontal edges (row 2-3): 11-12, 12-13, 13-14, 14-15
-      edge_nodes(:,  9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
+      edge_nodes(:, 9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
       edge_nodes(:, 11) = [13, 14]; edge_nodes(:, 12) = [14, 15]
       ! Vertical edges bottom tier: 1-6, 2-7, 3-8, 4-9, 5-10
-      edge_nodes(:, 13) = [1,  6];  edge_nodes(:, 14) = [2,  7]
-      edge_nodes(:, 15) = [3,  8];  edge_nodes(:, 16) = [4,  9]
+      edge_nodes(:, 13) = [1, 6]; edge_nodes(:, 14) = [2, 7]
+      edge_nodes(:, 15) = [3, 8]; edge_nodes(:, 16) = [4, 9]
       edge_nodes(:, 17) = [5, 10]
       ! Vertical edges top tier: 6-11, 7-12, 8-13, 9-14, 10-15
-      edge_nodes(:, 18) = [6, 11];  edge_nodes(:, 19) = [7, 12]
-      edge_nodes(:, 20) = [8, 13];  edge_nodes(:, 21) = [9, 14]
+      edge_nodes(:, 18) = [6, 11]; edge_nodes(:, 19) = [7, 12]
+      edge_nodes(:, 20) = [8, 13]; edge_nodes(:, 21) = [9, 14]
       edge_nodes(:, 22) = [10, 15]
 
       ! Bottom row of faces (CCW)
-      face_nodes(:, 1) = [1,  2,  7,  6]; face_nodes(:, 2) = [2,  3,  8,  7]
-      face_nodes(:, 3) = [3,  4,  9,  8]; face_nodes(:, 4) = [4,  5, 10,  9]
+      face_nodes(:, 1) = [1, 2, 7, 6]; face_nodes(:, 2) = [2, 3, 8, 7]
+      face_nodes(:, 3) = [3, 4, 9, 8]; face_nodes(:, 4) = [4, 5, 10, 9]
       ! Top row of faces (CCW)
-      face_nodes(:, 5) = [6,  7, 12, 11]; face_nodes(:, 6) = [7,  8, 13, 12]
-      face_nodes(:, 7) = [8,  9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
+      face_nodes(:, 5) = [6, 7, 12, 11]; face_nodes(:, 6) = [7, 8, 13, 12]
+      face_nodes(:, 7) = [8, 9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
 
       ierr = nf90_create(filename, NF90_CLOBBER, ncid)
       if (ierr /= nf90_noerr) return
@@ -821,37 +821,37 @@ contains
       character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 50.0 50.0               ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 150.0 150.0             ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 0.5                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 50.0 50.0               ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 150.0 150.0             ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 0.5                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
@@ -882,54 +882,54 @@ contains
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc_friction_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_friction.mdu"
-    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 50.0 50.0               ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.01                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 150.0 150.0             ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 50.0 50.0               ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.01                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 150.0 150.0             ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
-      
-      do  i = 1, 4 !> multiple timesteps, from rest friction has no effect
+
+      do i = 1, 4 !> multiple timesteps, from rest friction has no effect
          call flow_spatietimestep()
       end do
 
-      q_low_friction  = q1(longculverts(1)%flowlinks(1)) ! lc01: Manning n=0.01
+      q_low_friction = q1(longculverts(1)%flowlinks(1)) ! lc01: Manning n=0.01
       q_high_friction = q1(longculverts(2)%flowlinks(1)) ! lc02: Manning n=0.05
-      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_low_friction > 0.0_dp, "low-friction discharge should be positive")
       call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
       call f90_expect_true(q_high_friction < q_low_friction, &
                            "higher Manning friction should produce less discharge")
@@ -937,7 +937,7 @@ contains
    end subroutine test_friction_higher_value_reduces_discharge
    !$f90tw)
 
- !$f90tw TESTCODE(TEST, test_longculvert, test_2pt_friction_converted, test_2pt_friction_converted,
+   !$f90tw TESTCODE(TEST, test_longculvert, test_2pt_friction_converted, test_2pt_friction_converted,
    subroutine test_2pt_friction_converted() bind(C)
       use m_flow, only: q1
       use m_longculverts_data, only: nlongculverts, longculverts
@@ -952,37 +952,37 @@ contains
       character(len=*), parameter :: NET_FILE = "test_lc_convert_2pt_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 50.0 50.0               ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.01                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 150.0 150.0             ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 50.0 50.0               ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.01                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 150.0 150.0             ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
@@ -997,9 +997,9 @@ contains
          call flow_spatietimestep()
       end do
 
-      q_low_friction  = q1(longculverts(1)%flowlinks(1))
+      q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_low_friction > 0.0_dp, "low-friction discharge should be positive")
       call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
       call f90_expect_true(q_high_friction < q_low_friction, &
                            "higher Manning friction should produce less discharge (3-point)")
@@ -1019,40 +1019,40 @@ contains
       real(kind=dp) :: q_manning, q_colebrook
       character(len=*), parameter :: STR_FILE = "test_lc_frtype_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_frtype.mdu"
-    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 50.0 50.0               ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 150.0 150.0             ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = WhiteColebrook          ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 50.0 50.0               ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 150.0 150.0             ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = WhiteColebrook          ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
@@ -1064,9 +1064,9 @@ contains
          call flow_spatietimestep()
       end do
 
-      q_manning   = q1(longculverts(1)%flowlinks(1))
+      q_manning = q1(longculverts(1)%flowlinks(1))
       q_colebrook = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_manning   > 0.0_dp, "Manning culvert discharge should be positive")
+      call f90_expect_true(q_manning > 0.0_dp, "Manning culvert discharge should be positive")
       call f90_expect_true(q_colebrook > 0.0_dp, "WhiteColebrook culvert discharge should be positive")
       call f90_expect_true(abs(q_manning - q_colebrook) > 1.0e-6_dp, &
                            "different friction types with same coefficient should give different discharge")
@@ -1086,40 +1086,40 @@ contains
       real(kind=dp) :: q_small, q_large
       character(len=*), parameter :: STR_FILE = "test_lc_cross_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc_cross.mdu"
-    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 50.0 50.0               ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 1.0                     ", &
-         "    height          = 1.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 2                       ", &
-         "    xCoordinates    = 50.0 350.0              ", &
-         "    yCoordinates    = 150.0 150.0             ", &
-         "    zCoordinates    = -5.0 -5.0               ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 4.0                     ", &
-         "    height          = 4.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 50.0 50.0               ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 1.0                     ", &
+                       "    height          = 1.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 150.0 150.0             ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 4.0                     ", &
+                       "    height          = 4.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                "])
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
       call init_two_culvert_scenario(MDU_FILE, iresult)
@@ -1147,37 +1147,37 @@ contains
       character(len=*), intent(in) :: filename
 
       call create_file(filename, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 3                       ", &
-         "    xCoordinates    = 50.0 200.0 350.0       ", &
-         "    yCoordinates    = 50.0 50.0 50.0         ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                ", &   
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 3                       ", &
-         "    xCoordinates    = 50.0 200.0 350.0       ", &
-         "    yCoordinates    = 150.0 150.0 150.0         ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 50.0 50.0 50.0         ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 150.0 150.0 150.0         ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                "])
    end subroutine create_structure_file_3pt
 
    !> Shared helper for 3-point single-culvert tests.
@@ -1200,10 +1200,10 @@ contains
       character(len=256) :: mdu_local
       integer :: ierr
 
-     call create_structure_file_3pt(STR_FILE)
+      call create_structure_file_3pt(STR_FILE)
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
-     call init_two_culvert_scenario(MDU_FILE, iresult)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
 
    end subroutine setup_3pt_model
 
@@ -1290,40 +1290,40 @@ contains
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc3pt_fric_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc3pt_fric.mdu"
-    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 3                       ", &
-         "    xCoordinates    = 50.0 200.0 350.0       ", &
-         "    yCoordinates    = 50.0 50.0 50.0         ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.01                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 3                       ", &
-         "    xCoordinates    = 50.0 200.0 350.0       ", &
-         "    yCoordinates    = 150.0 150.0 150.0      ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 50.0 50.0 50.0         ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.01                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 150.0 150.0 150.0      ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
@@ -1335,9 +1335,9 @@ contains
          call flow_spatietimestep()
       end do
 
-      q_low_friction  = q1(longculverts(1)%flowlinks(1))
+      q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_low_friction > 0.0_dp, "low-friction discharge should be positive")
       call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
       call f90_expect_true(q_high_friction < q_low_friction, &
                            "higher Manning friction should produce less discharge (3-point)")
@@ -1360,37 +1360,37 @@ contains
       character(len=*), parameter :: NET_FILE = "test_lc_convert_3pt_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 3                       ", &
-         "    xCoordinates    = 50.0 200.0 350.0       ", &
-         "    yCoordinates    = 50.0 50.0 50.0         ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.01                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 3                       ", &
-         "    xCoordinates    = 50.0 200.0 350.0       ", &
-         "    yCoordinates    = 150.0 150.0 150.0      ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0         ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 50.0 50.0 50.0         ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.01                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 3                       ", &
+                       "    xCoordinates    = 50.0 200.0 350.0       ", &
+                       "    yCoordinates    = 150.0 150.0 150.0      ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0         ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
@@ -1401,7 +1401,7 @@ contains
       call f90_assert_eq(iresult, DFM_NOERR, "model init must succeed")
       call f90_assert_eq(nlongculverts, 2, "two long culverts should be registered")
       !> the test stops here, as a 3 PT culvert cannot be written to the netfile in a ugrid compliant way
-   
+
    end subroutine test_3pt_friction_converted
    !$f90tw)
 
@@ -1414,37 +1414,37 @@ contains
       character(len=*), intent(in) :: filename
 
       call create_file(filename, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 4                       ", &
-         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
-         "    yCoordinates    = 50.0 50.0 50.0 50.0    ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 4                       ", &
-         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
-         "    yCoordinates    = 150.0 150.0 150.0 150.0", &
-         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.02                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 4                       ", &
+                       "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+                       "    yCoordinates    = 50.0 50.0 50.0 50.0    ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 4                       ", &
+                       "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+                       "    yCoordinates    = 150.0 150.0 150.0 150.0", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.02                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
    end subroutine create_structure_file_4pt
 
@@ -1466,10 +1466,10 @@ contains
       character(len=*), parameter :: STR_FILE = "test_lc4pt_structures.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc4pt.mdu"
 
-     call create_structure_file_4pt(STR_FILE)
-     call create_two_row_netfile(NET_FILE)
-     call create_mdu_file(mdu_file, NET_FILE, str_file)
-     call init_two_culvert_scenario(MDU_FILE, iresult)
+      call create_structure_file_4pt(STR_FILE)
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, str_file)
+      call init_two_culvert_scenario(MDU_FILE, iresult)
 
    end subroutine setup_4pt_model
 
@@ -1556,40 +1556,40 @@ contains
       real(kind=dp) :: q_low_friction, q_high_friction
       character(len=*), parameter :: STR_FILE = "test_lc4pt_fric_str.ini"
       character(len=*), parameter :: MDU_FILE = "test_lc4pt_fric.mdu"
-    character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
+      character(len=*), parameter :: NET_FILE = "test_lc2_net.nc"
 
       call create_file(STR_FILE, [ &
-         "[General]                                     ", &
-         "    fileVersion     = 3.00                    ", &
-         "    fileType        = structures              ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc01                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 4                       ", &
-         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
-         "    yCoordinates    = 50.0 50.0 50.0 50.0    ", &
-         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.01                    ", &
-         "    valveRelativeOpening = 1.0                ", &
-         "                                              ", &
-         "[Structure]                                   ", &
-         "    id              = lc02                    ", &
-         "    type            = longCulvert             ", &
-         "    numCoordinates  = 4                       ", &
-         "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
-         "    yCoordinates    = 150.0 150.0 150.0 150.0", &
-         "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
-         "    allowedFlowDir  = both                    ", &
-         "    width           = 2.0                     ", &
-         "    height          = 2.0                     ", &
-         "    frictionType    = Manning                 ", &
-         "    frictionValue   = 0.05                    ", &
-         "    valveRelativeOpening = 1.0                "])
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 4                       ", &
+                       "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+                       "    yCoordinates    = 50.0 50.0 50.0 50.0    ", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.01                    ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 4                       ", &
+                       "    xCoordinates    = 50.0 150.0 250.0 350.0 ", &
+                       "    yCoordinates    = 150.0 150.0 150.0 150.0", &
+                       "    zCoordinates    = -5.0 -5.0 -5.0 -5.0   ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.05                    ", &
+                       "    valveRelativeOpening = 1.0                "])
 
       call create_two_row_netfile(NET_FILE)
       call create_mdu_file(mdu_file, NET_FILE, str_file)
@@ -1601,9 +1601,9 @@ contains
          call flow_spatietimestep()
       end do
 
-      q_low_friction  = q1(longculverts(1)%flowlinks(1))
+      q_low_friction = q1(longculverts(1)%flowlinks(1))
       q_high_friction = q1(longculverts(2)%flowlinks(1))
-      call f90_expect_true(q_low_friction  > 0.0_dp, "low-friction discharge should be positive")
+      call f90_expect_true(q_low_friction > 0.0_dp, "low-friction discharge should be positive")
       call f90_expect_true(q_high_friction > 0.0_dp, "high-friction discharge should be positive")
       call f90_expect_true(q_high_friction < q_low_friction, &
                            "higher Manning friction should produce less discharge (4-point)")
@@ -1785,23 +1785,23 @@ contains
          end do
       end do
 
-      edge_nodes(:,  1) = [1,  2];  edge_nodes(:,  2) = [2,  3]
-      edge_nodes(:,  3) = [3,  4];  edge_nodes(:,  4) = [4,  5]
-      edge_nodes(:,  5) = [6,  7];  edge_nodes(:,  6) = [7,  8]
-      edge_nodes(:,  7) = [8,  9];  edge_nodes(:,  8) = [9, 10]
-      edge_nodes(:,  9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
+      edge_nodes(:, 1) = [1, 2]; edge_nodes(:, 2) = [2, 3]
+      edge_nodes(:, 3) = [3, 4]; edge_nodes(:, 4) = [4, 5]
+      edge_nodes(:, 5) = [6, 7]; edge_nodes(:, 6) = [7, 8]
+      edge_nodes(:, 7) = [8, 9]; edge_nodes(:, 8) = [9, 10]
+      edge_nodes(:, 9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
       edge_nodes(:, 11) = [13, 14]; edge_nodes(:, 12) = [14, 15]
-      edge_nodes(:, 13) = [1,  6];  edge_nodes(:, 14) = [2,  7]
-      edge_nodes(:, 15) = [3,  8];  edge_nodes(:, 16) = [4,  9]
+      edge_nodes(:, 13) = [1, 6]; edge_nodes(:, 14) = [2, 7]
+      edge_nodes(:, 15) = [3, 8]; edge_nodes(:, 16) = [4, 9]
       edge_nodes(:, 17) = [5, 10]
-      edge_nodes(:, 18) = [6, 11];  edge_nodes(:, 19) = [7, 12]
-      edge_nodes(:, 20) = [8, 13];  edge_nodes(:, 21) = [9, 14]
+      edge_nodes(:, 18) = [6, 11]; edge_nodes(:, 19) = [7, 12]
+      edge_nodes(:, 20) = [8, 13]; edge_nodes(:, 21) = [9, 14]
       edge_nodes(:, 22) = [10, 15]
 
-      face_nodes(:, 1) = [1,  2,  7,  6]; face_nodes(:, 2) = [2,  3,  8,  7]
-      face_nodes(:, 3) = [3,  4,  9,  8]; face_nodes(:, 4) = [4,  5, 10,  9]
-      face_nodes(:, 5) = [6,  7, 12, 11]; face_nodes(:, 6) = [7,  8, 13, 12]
-      face_nodes(:, 7) = [8,  9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
+      face_nodes(:, 1) = [1, 2, 7, 6]; face_nodes(:, 2) = [2, 3, 8, 7]
+      face_nodes(:, 3) = [3, 4, 9, 8]; face_nodes(:, 4) = [4, 5, 10, 9]
+      face_nodes(:, 5) = [6, 7, 12, 11]; face_nodes(:, 6) = [7, 8, 13, 12]
+      face_nodes(:, 7) = [8, 9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
 
       ! 1D network: 3 nodes along y=50, x = -200, -150, -100
       x1d = [-200.0_dp, -150.0_dp, -100.0_dp]
@@ -1904,14 +1904,14 @@ contains
       logical :: file_exists
 
       ! Delete leftover converted_crsdef.ini from previous test runs
-      inquire(file='converted_crsdef.ini', exist=file_exists, number=iunit)
+      inquire (file='converted_crsdef.ini', exist=file_exists, number=iunit)
       if (file_exists) then
          if (iunit /= 0) then
-            close(iunit, iostat=ierr)
+            close (iunit, iostat=ierr)
          end if
-         open(newunit=iunit, file='converted_crsdef.ini', status='old', iostat=ierr)
+         open (newunit=iunit, file='converted_crsdef.ini', status='old', iostat=ierr)
          if (ierr == 0) then
-            close(iunit, status='delete', iostat=ierr)
+            close (iunit, status='delete', iostat=ierr)
          end if
       end if
 
@@ -1931,10 +1931,10 @@ contains
       call findcells(0)
       call find1dcells()
       call unc_write_net(netfile_local, janetcell=1, janetbnd=1, jaidomain=0, &
-                            jaiglobal_s=0, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
+                         jaiglobal_s=0, md_ident=md_ident) ! Save net bnds to prevent unnecessary open bnds
       md_netfile = netfile_local
-      mdufile_local = "converted_" // mdufile
-      md_structurefile = "converted_" //structurefile
+      mdufile_local = "converted_"//mdufile
+      md_structurefile = "converted_"//structurefile
       md_crsfile = "converted_crsdef.ini"
       md_convertlongculverts = 0
       call writeMDUfile(mdufile_local, ierr)
@@ -1946,5 +1946,4 @@ contains
    end subroutine convertlongculverts
 
 end module test_longculverts
-
 
