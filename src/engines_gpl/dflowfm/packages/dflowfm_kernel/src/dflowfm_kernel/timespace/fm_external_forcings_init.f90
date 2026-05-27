@@ -835,9 +835,7 @@ contains
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
                         sensible_heat_flux_available, latent_heat_flux_available, pseudo_air_pressure_available, water_level_correction_available
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
-                                  btempforcingtypS, itempforcingtyp, btempforcingtypSHF, btempforcingtypLHF
-
+      use m_flowparameters, only: itempforcingtyp
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
@@ -912,18 +910,8 @@ contains
       case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
          jawind = 1
 
-      case ('airtemperature')
-         btempforcingtypA = .true.
-
-      case ('cloudiness')
-         btempforcingtypC = .true.
-
-      case ('humidity')
-         btempforcingtypH = .true.
-
       case ('dewpoint')
          itempforcingtyp = 5
-         btempforcingtypD = .true.
 
       case ('solarradiation')
          if (net_solar_radiation_available) then
@@ -932,7 +920,6 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          solar_radiation_available = .true.
 
       case ('netsolarradiation')
@@ -942,19 +929,15 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          net_solar_radiation_available = .true.
 
       case ('longwaveradiation')
-         btempforcingtypL = .true.
          long_wave_radiation_available = .true.
 
       case ('sensibleheatflux')
-         btempforcingtypSHF = .true.
          sensible_heat_flux_available = .true.
 
       case ('latentheatflux')
-         btempforcingtypLHF = .true.
          latent_heat_flux_available = .true.
 
       case ('humidity_airtemperature_cloudiness')

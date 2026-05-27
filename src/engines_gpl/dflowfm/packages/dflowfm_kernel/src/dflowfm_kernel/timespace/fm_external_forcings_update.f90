@@ -39,9 +39,8 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
                       item_lateraldischarge, npumpswithlevels, num_source_sink, item_discharge_salinity_temperature_sorsin, source_sink_all_discharges, &
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
-                      jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, btempforcingtyph, item_relative_humidity, &
-                      btempforcingtypa, btempforcingtyps, item_solar_radiation, btempforcingtypc, item_cloudiness, btempforcingtypl, &
-                      btempforcingtypSHF, btempforcingtypLHF, btempforcingtypD, &
+                      jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, item_relative_humidity, &
+                      item_solar_radiation, item_cloudiness, &
                       item_long_wave_radiation, item_sensible_heat_flux, item_latent_heat_flux, &
                       relative_humidity, calculate_relative_humidity, jawave, waveforcing, message, &
                       dump_ec_message_stack, level_error, hwavcom, phiwav, sxwav, sywav, sbxwav, sbywav, dsurf, dwcap, mxwav, mywav, hs, epshu, &
@@ -309,6 +308,7 @@ contains
    subroutine update_temperature_forcings(time_in_seconds)
       use precision, only: dp
       use messagehandling, only: LEVEL_ERROR, mess
+      use m_ec_parameters, only: ec_undef_int
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
 
@@ -329,35 +329,35 @@ contains
 
       foundtempforcing = (itempforcingtyp >= 1 .and. itempforcingtyp <= 4)
 
-      if (btempforcingtypH) then
+      if (item_relative_humidity /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_relative_humidity, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypA) then
+      if (item_air_temperature /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_air_temperature, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypS) then
+      if (item_solar_radiation /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_solar_radiation, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypC) then
+      if (item_cloudiness /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_cloudiness, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypL) then
+      if (item_long_wave_radiation /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_long_wave_radiation, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypSHF) then
+      if (item_sensible_heat_flux /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_sensible_heat_flux, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypLHF) then
+      if (item_latent_heat_flux /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_latent_heat_flux, time_in_seconds)
          foundtempforcing = .true.
       end if
-      if (btempforcingtypD) then
+      if (item_dew_point_temperature /= ec_undef_int) then
          call get_timespace_value_by_item_and_consider_success_value(item_dew_point_temperature, time_in_seconds)
          foundtempforcing = .true.
          ! Conversion to relative humidity is required for heatun.f90. The dew_point_temperature and air_temperature arrays have just been updated.
