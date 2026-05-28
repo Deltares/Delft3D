@@ -24,7 +24,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
     }
 
     vcs {
@@ -68,26 +68,26 @@ object WindowsBuildEnvironmentI24 : BuildType({
                 commandArgs = ""
             }
         }
-        // dockerCommand {
-        //     name = "Docker push"
-        //     commandType = push {
-        //         namesAndTags = """
-        //             containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
-        //         """.trimIndent()
-        //     }
-        // }
-        // dockerCommand {
-        //     name = "Docker push"
-        //     enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
-        //     commandType = push {
-        //         namesAndTags = """
-        //             containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
-        //         """.trimIndent()
-        //     }
-        //     conditions {
-        //         equals("trigger.type", "vcs")
-        //     }
-        // }
+        dockerCommand {
+            name = "Docker push"
+            commandType = push {
+                namesAndTags = """
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%build.vcs.number%
+                """.trimIndent()
+            }
+        }
+        dockerCommand {
+            name = "Docker push"
+            enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
+            commandType = push {
+                namesAndTags = """
+                    containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
+                """.trimIndent()
+            }
+            conditions {
+                equals("trigger.type", "vcs")
+            }
+        }
     }
 
     triggers {

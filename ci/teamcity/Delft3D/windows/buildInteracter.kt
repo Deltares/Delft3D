@@ -29,7 +29,7 @@ object WindowsBuildDflowfmInteracter : BuildType({
     params {
         param("env..INTERACTER_DIR", """.\interacter\bin\win32\x64\""")
         text("product", "dflowfm_interacter", readOnly = true, allowEmpty = true)
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
         param("intel_fortran_compiler", "ifx")
         param("build.vcs.number", "${DslContext.settingsRoot.paramRefs.buildVcsNumber}")
         param("enable_code_coverage_flag", "OFF")
@@ -87,9 +87,5 @@ object WindowsBuildDflowfmInteracter : BuildType({
                 withPendingChangesOnly = false
             }
         }
-    }
-
-    requirements {
-        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
     }
 })
