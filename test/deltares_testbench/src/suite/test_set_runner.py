@@ -124,7 +124,7 @@ class TestSetRunner(ABC):
             if not self.__settings.command_line_settings.skip_post_processing:
                 self.show_summary(results, self.__logger)
                 if self.settings.command_line_settings.copy_failed_cases:
-                    self._copy_failed_cases(results, Path("test/deltares_testbench/copy_cases"))
+                    self._copy_failed_cases(results, Path("copy_cases"))
             else:
                 self.__logger.info("No summary, because postprocessing is skipped due to argument.")
         else:
