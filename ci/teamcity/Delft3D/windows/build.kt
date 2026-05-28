@@ -98,7 +98,4 @@ object WindowsBuild : BuildType({
             rules = "+:unit-test-report-windows.xml"
         }
     }
-    requirements {
-        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
-    }
 })
