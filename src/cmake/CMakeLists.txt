@@ -28,14 +28,11 @@ set(checkout_root ${checkout_src_root}/..)
 # In the CMakeDeps generator, transitively depending on a dll counts as an explicit dependency,
 # because we need to install the dll and deliver it to a user.
 list(PREPEND CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}/conan/generators")
-
 find_package(ZLIB CONFIG REQUIRED)
 find_package(HDF5 CONFIG REQUIRED)
 find_package(netCDF CONFIG REQUIRED)
 find_package(netCDF-Fortran CONFIG REQUIRED)
 find_package(expat CONFIG REQUIRED)
-
-# TODO ----------------------- end temporary conan stuff -----------------------
 find_package(TIFF CONFIG REQUIRED)
 find_package(PROJ CONFIG REQUIRED)
 find_package(GDAL CONFIG REQUIRED)
