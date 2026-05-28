@@ -688,29 +688,43 @@ contains
       end do
 
       ! Bottom horizontal edges (row 0-1): 1-2, 2-3, 3-4, 4-5
-      edge_nodes(:, 1) = [1, 2]; edge_nodes(:, 2) = [2, 3]
-      edge_nodes(:, 3) = [3, 4]; edge_nodes(:, 4) = [4, 5]
+      edge_nodes(:, 1) = [1, 2]
+      edge_nodes(:, 2) = [2, 3]
+      edge_nodes(:, 3) = [3, 4]
+      edge_nodes(:, 4) = [4, 5]
       ! Middle horizontal edges (row 1-2): 6-7, 7-8, 8-9, 9-10
-      edge_nodes(:, 5) = [6, 7]; edge_nodes(:, 6) = [7, 8]
-      edge_nodes(:, 7) = [8, 9]; edge_nodes(:, 8) = [9, 10]
+      edge_nodes(:, 5) = [6, 7]
+      edge_nodes(:, 6) = [7, 8]
+      edge_nodes(:, 7) = [8, 9]
+      edge_nodes(:, 8) = [9, 10]
       ! Top horizontal edges (row 2-3): 11-12, 12-13, 13-14, 14-15
-      edge_nodes(:, 9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
-      edge_nodes(:, 11) = [13, 14]; edge_nodes(:, 12) = [14, 15]
+      edge_nodes(:, 9) = [11, 12]
+      edge_nodes(:, 10) = [12, 13]
+      edge_nodes(:, 11) = [13, 14]
+      edge_nodes(:, 12) = [14, 15]
       ! Vertical edges bottom tier: 1-6, 2-7, 3-8, 4-9, 5-10
-      edge_nodes(:, 13) = [1, 6]; edge_nodes(:, 14) = [2, 7]
-      edge_nodes(:, 15) = [3, 8]; edge_nodes(:, 16) = [4, 9]
+      edge_nodes(:, 13) = [1, 6]
+      edge_nodes(:, 14) = [2, 7]
+      edge_nodes(:, 15) = [3, 8]
+      edge_nodes(:, 16) = [4, 9]
       edge_nodes(:, 17) = [5, 10]
       ! Vertical edges top tier: 6-11, 7-12, 8-13, 9-14, 10-15
-      edge_nodes(:, 18) = [6, 11]; edge_nodes(:, 19) = [7, 12]
-      edge_nodes(:, 20) = [8, 13]; edge_nodes(:, 21) = [9, 14]
+      edge_nodes(:, 18) = [6, 11]
+      edge_nodes(:, 19) = [7, 12]
+      edge_nodes(:, 20) = [8, 13]
+      edge_nodes(:, 21) = [9, 14]
       edge_nodes(:, 22) = [10, 15]
 
       ! Bottom row of faces (CCW)
-      face_nodes(:, 1) = [1, 2, 7, 6]; face_nodes(:, 2) = [2, 3, 8, 7]
-      face_nodes(:, 3) = [3, 4, 9, 8]; face_nodes(:, 4) = [4, 5, 10, 9]
+      face_nodes(:, 1) = [1, 2, 7, 6]
+      face_nodes(:, 2) = [2, 3, 8, 7]
+      face_nodes(:, 3) = [3, 4, 9, 8]
+      face_nodes(:, 4) = [4, 5, 10, 9]
       ! Top row of faces (CCW)
-      face_nodes(:, 5) = [6, 7, 12, 11]; face_nodes(:, 6) = [7, 8, 13, 12]
-      face_nodes(:, 7) = [8, 9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
+      face_nodes(:, 5) = [6, 7, 12, 11]
+      face_nodes(:, 6) = [7, 8, 13, 12]
+      face_nodes(:, 7) = [8, 9, 14, 13]
+      face_nodes(:, 8) = [9, 10, 15, 14]
 
       ierr = nf90_create(filename, NF90_CLOBBER, ncid)
       if (ierr /= nf90_noerr) return
@@ -1785,23 +1799,37 @@ contains
          end do
       end do
 
-      edge_nodes(:, 1) = [1, 2]; edge_nodes(:, 2) = [2, 3]
-      edge_nodes(:, 3) = [3, 4]; edge_nodes(:, 4) = [4, 5]
-      edge_nodes(:, 5) = [6, 7]; edge_nodes(:, 6) = [7, 8]
-      edge_nodes(:, 7) = [8, 9]; edge_nodes(:, 8) = [9, 10]
-      edge_nodes(:, 9) = [11, 12]; edge_nodes(:, 10) = [12, 13]
-      edge_nodes(:, 11) = [13, 14]; edge_nodes(:, 12) = [14, 15]
-      edge_nodes(:, 13) = [1, 6]; edge_nodes(:, 14) = [2, 7]
-      edge_nodes(:, 15) = [3, 8]; edge_nodes(:, 16) = [4, 9]
+      edge_nodes(:, 1) = [1, 2]
+      edge_nodes(:, 2) = [2, 3]
+      edge_nodes(:, 3) = [3, 4]
+      edge_nodes(:, 4) = [4, 5]
+      edge_nodes(:, 5) = [6, 7]
+      edge_nodes(:, 6) = [7, 8]
+      edge_nodes(:, 7) = [8, 9]
+      edge_nodes(:, 8) = [9, 10]
+      edge_nodes(:, 9) = [11, 12]
+      edge_nodes(:, 10) = [12, 13]
+      edge_nodes(:, 11) = [13, 14]
+      edge_nodes(:, 12) = [14, 15]
+      edge_nodes(:, 13) = [1, 6]
+      edge_nodes(:, 14) = [2, 7]
+      edge_nodes(:, 15) = [3, 8]
+      edge_nodes(:, 16) = [4, 9]
       edge_nodes(:, 17) = [5, 10]
-      edge_nodes(:, 18) = [6, 11]; edge_nodes(:, 19) = [7, 12]
-      edge_nodes(:, 20) = [8, 13]; edge_nodes(:, 21) = [9, 14]
+      edge_nodes(:, 18) = [6, 11]
+      edge_nodes(:, 19) = [7, 12]
+      edge_nodes(:, 20) = [8, 13]
+      edge_nodes(:, 21) = [9, 14]
       edge_nodes(:, 22) = [10, 15]
 
-      face_nodes(:, 1) = [1, 2, 7, 6]; face_nodes(:, 2) = [2, 3, 8, 7]
-      face_nodes(:, 3) = [3, 4, 9, 8]; face_nodes(:, 4) = [4, 5, 10, 9]
-      face_nodes(:, 5) = [6, 7, 12, 11]; face_nodes(:, 6) = [7, 8, 13, 12]
-      face_nodes(:, 7) = [8, 9, 14, 13]; face_nodes(:, 8) = [9, 10, 15, 14]
+      face_nodes(:, 1) = [1, 2, 7, 6]
+      face_nodes(:, 2) = [2, 3, 8, 7]
+      face_nodes(:, 3) = [3, 4, 9, 8]
+      face_nodes(:, 4) = [4, 5, 10, 9]
+      face_nodes(:, 5) = [6, 7, 12, 11]
+      face_nodes(:, 6) = [7, 8, 13, 12]
+      face_nodes(:, 7) = [8, 9, 14, 13]
+      face_nodes(:, 8) = [9, 10, 15, 14]
 
       ! 1D network: 3 nodes along y=50, x = -200, -150, -100
       x1d = [-200.0_dp, -150.0_dp, -100.0_dp]
@@ -1864,7 +1892,10 @@ contains
       ierr = nf90_put_att(ncid, varid_1den, 'start_index', 1)
 
       ierr = nf90_enddef(ncid)
-      if (ierr /= nf90_noerr) then; ierr = nf90_close(ncid); return; end if
+      if (ierr /= nf90_noerr) then
+         ierr = nf90_close(ncid)
+         return
+      end if
 
       ! Write 2D data
       ierr = nf90_put_var(ncid, varid_xn, xnodes)
