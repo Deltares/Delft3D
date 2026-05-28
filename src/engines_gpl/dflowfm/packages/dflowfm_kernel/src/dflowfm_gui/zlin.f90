@@ -33,13 +33,13 @@
 module m_zlin
 
    use m_waveconst
-   use precision, only: dp
 
    implicit none
 
 contains
 
    real(kind=dp) function zlin(LL) ! get various values at flow links
+      use precision, only: dp
       use m_getltoplot
       use m_flow
       use m_flowgeom
