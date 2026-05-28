@@ -45,6 +45,7 @@ object ReportVerschilanalyse: BuildType({
             dockerRunParameters = """
                 --rm
                 --entrypoint=/bin/bash
+                --volume="%env.AWS_SHARED_CREDENTIALS_FILE%:/root/.aws/credentials:ro"
                 -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
             """.trimIndent()
         }
