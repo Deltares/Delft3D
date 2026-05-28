@@ -110,6 +110,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     character(256)   , dimension(:)    , pointer :: flstcg
     logical                            , pointer :: anymud
     logical                            , pointer :: bsskin
+    logical                            , pointer :: spatial_d50
     character(256)                     , pointer :: flsdia
     character(256)                     , pointer :: flsmdc
     character(256)                     , pointer :: flspmc
@@ -231,6 +232,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     flsdbd               => sedpar%flsdbd
     anymud               => sedpar%anymud
     bsskin               => sedpar%bsskin
+    spatial_d50          => sedpar%spatial_d50
     flsdia               => sedpar%flsdia
     flsmdc               => sedpar%flsmdc
     flspmc               => sedpar%flspmc
@@ -387,6 +389,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     ! check for mud fractions
     !
     anymud       = .false.
+    spatial_d50  = .false.
     nclayfrac    = 0
     nmudfrac     = 0
     flocsize     = -999
@@ -697,6 +700,7 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                        call write_error(errmsg, unit=lundia)
                        return
                    endif
+                   spatial_d50 = .true.
                 else
                    call write_error('File "'//filename//'" for SedD50 not found', unit=lundia)
                    error = .true.
