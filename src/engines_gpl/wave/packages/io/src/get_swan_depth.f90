@@ -92,8 +92,8 @@ end subroutine read_bot
 subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
 !----- GPL ---------------------------------------------------------------------
 !!--description-----------------------------------------------------------------
-! Read unSWAN bathymetry using the same FREE-format layout as
-! SWAN READINP BOTTOM ... IDLA=3 NHEDF=0 FREE.
+! Read unSWAN bathymetry. Triangle/Easymesh bottom files commonly start with
+! a one-line point count, matching SWAN READINP BOTTOM ... NHEDF=1.
 !!--declarations----------------------------------------------------------------
     implicit none
 !
@@ -108,12 +108,32 @@ subroutine read_bot_unstructured(dpb, mb, nb, botfil, fac)
 ! Local variables
 !
     integer               :: i
+    integer               :: ios
     integer               :: j
     integer               :: lunbot
+    integer               :: ndata
+    integer               :: nwords
+    logical               :: inword
+    character(1024)       :: firstline
 !
 !! executable statements -------------------------------------------------------
 !
     open (newunit = lunbot, file = botfil, status = 'old', action = 'read')
+    read (lunbot, '(A)', end = 999, err = 998) firstline
+    nwords = 0
+    inword = .false.
+    do i = 1, len_trim(firstline)
+       if (firstline(i:i) /= ' ' .and. firstline(i:i) /= achar(9)) then
+          if (.not. inword) nwords = nwords + 1
+          inword = .true.
+       else
+          inword = .false.
+       endif
+    enddo
+    read (firstline, *, iostat = ios) ndata
+    if (ios /= 0 .or. nwords /= 1 .or. ndata /= mb*nb) then
+       rewind(lunbot)
+    endif
     do j = 1, nb
        read (lunbot, *, end = 999, err = 998) (dpb(i, j), i = 1, mb)
     enddo

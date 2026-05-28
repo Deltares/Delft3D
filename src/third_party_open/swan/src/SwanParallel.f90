@@ -639,7 +639,6 @@ contains
       integer :: ip2 ! subdomain number of second vertex
       integer :: ip3 ! subdomain number of third vertex
       integer :: istat ! indicate status of allocation
-      integer, dimension(1) :: itmp ! temporary stored integer
       integer :: ivert ! global vertex index
       integer :: j ! loop counter
       integer :: jvert ! local vertex index
@@ -712,6 +711,7 @@ contains
          call msgerr(4, trim(msgstr))
          return
       end if
+      ivertl = 0
       !
       ! use Metis partition to compute the number of resident vertices in each subdomain
       !
@@ -956,21 +956,22 @@ contains
       allocate (kvtcp(3, ncells))
       kvtcp = 0
       !
-      ! create list of vertices including ghost ones
+      ! create global-to-local vertex lookup including ghost ones
+      ivertl = 0
       do j = 1, nverts
-         jlist(j) = ivertg(j)
+         ivertl(ivertg(j)) = j
       end do
       ! look for vertices for each local cell and put them in table
       do j = 1, ncells
          icell = clistlg(j, INODE)
          do k = 1, nov
             ivert = kvertc(k, icell)
-            itmp = minloc(abs(jlist - ivert))
-            jvert = itmp(1)
-            if (jlist(jvert) == ivert) then
+            jvert = ivertl(ivert)
+            if (jvert > 0) then
                kvtcp(k, j) = jvert
             else
-               write (msgstr, '(a,i7,a,i7)') 'inconsistency found in SwanCommAdmin: list local-to-global vertex-based list corrupt!'
+               write (msgstr, '(a,i7,a,i7)') 'inconsistency found in SwanCommAdmin: global vertex ', ivert, &
+                                           & ' missing in subdomain ', INODE
                call msgerr(4, trim(msgstr))
                return
             end if

@@ -409,7 +409,7 @@ contains
             write (command, '(a)') 'ESMF_RegridWeightGen_in_Delft3D-WAVE.bat'
          end if
          command = trim(command)//' '//trim(gm%p_tmp_filename)//' '//trim(gm%r_tmp_filename)//' '//trim(gm%w_tmp_filename)
-         if (g1%unstructured .and. g1%sferic) then
+         if (g1%sferic .and. (g1%unstructured .or. (g1%grid_file_type == 'NC' .and. g1%esmf_mesh))) then
             write (command, '(2a)') trim(command), " NEARESTSTOD"
          endif
          if (g1%esmf_mesh) then

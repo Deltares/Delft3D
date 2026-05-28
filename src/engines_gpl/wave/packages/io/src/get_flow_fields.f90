@@ -109,10 +109,7 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
          !
          ! Map depth to SWAN grid
          !
-         call grmap (fif%dps      , fif%npts        , &
-                   & sif%dps      , sif%npts        , &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint       )
+         call map_flow_to_swan(fif%dps, sif%dps)
       else
          !
          ! Read depth from netcdf-file
@@ -121,11 +118,9 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
                             & fif%dps, fif%mmax, fif%nmax, &
                             & sr%flowgridfile, wavedata%output%lastvalidflowfield)
          !
-         ! Map depth to SWAN grid, using ESMF_Regrid weights
+         ! Map depth to SWAN grid
          !
-         call grmap_esmf (i_flow,         fif%dps , fif%npts, &
-                        & sif%dps       , sif%mmax, sif%nmax, &
-                        & f2s           , sg                )
+         call map_flow_to_swan(fif%dps, sif%dps)
          !
       endif
    endif
@@ -145,10 +140,7 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
          !
          ! Map water level to SWAN grid
          !
-         call grmap (fif%s1       , fif%npts        , &
-                   & sif%s1       , sif%npts        , &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint       )
+         call map_flow_to_swan(fif%s1, sif%s1)
       else
          !
          ! Read water level from netcdf-file
@@ -157,11 +149,9 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
                             & fif%s1, fif%mmax, fif%nmax, &
                             & sr%flowgridfile, wavedata%output%lastvalidflowfield)
          !
-         ! Map water level to SWAN grid, using ESMF_Regrid weights
+         ! Map water level to SWAN grid
          !
-         call grmap_esmf (i_flow       , fif%s1  , fif%npts, &
-                        & sif%s1       , sif%mmax, sif%nmax, &
-                        & f2s          , sg      )
+         call map_flow_to_swan(fif%s1, sif%s1)
       endif
    endif
    !
@@ -184,14 +174,8 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
          ! Map velocity to SWAN grid
          ! NOTE: mapping procedure only updates the part of SWAN grid covered by current FLOW domain
          !
-         call grmap (fif%u1       , fif%npts        , &
-                   & sif%u1       , sif%npts        , &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint       )
-         call grmap (fif%v1       , fif%npts        , &
-                   & sif%v1       , sif%npts        , &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint       )
+         call map_flow_to_swan(fif%u1, sif%u1)
+         call map_flow_to_swan(fif%v1, sif%v1)
       else
          !
          ! Read velocity components from netcdf-file
@@ -212,14 +196,10 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
                                & sr%flowgridfile, wavedata%output%lastvalidflowfield, fg%kmax,flowVelocityType)                      
          endif                   
          !
-         ! Map velocity components to SWAN grid, using ESMF_Regrid weights
+         ! Map velocity components to SWAN grid
          !
-         call grmap_esmf (i_flow, fif%u1       , fif%npts, &
-                        & sif%u1       , sif%mmax, sif%nmax, &
-                        & f2s          , sg)
-         call grmap_esmf (i_flow, fif%v1       , fif%npts, &
-                        & sif%v1       , sif%mmax, sif%nmax, &
-                        & f2s          , sg)
+         call map_flow_to_swan(fif%u1, sif%u1)
+         call map_flow_to_swan(fif%v1, sif%v1)
       endif
    endif
    !
@@ -234,14 +214,8 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
          !
          ! Map wind to SWAN grid
          !
-         call grmap (fif%windu    , fif%npts        , &
-                   & sif%windu    , sif%npts        , &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint       )
-         call grmap (fif%windv    , fif%npts   , &
-                   & sif%windv    , sif%npts   , &
-                   & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                   & iprint       )
+         call map_flow_to_swan(fif%windu, sif%windu)
+         call map_flow_to_swan(fif%windv, sif%windv)
       else
          !
          ! Read wind components from netcdf-file
@@ -253,14 +227,10 @@ subroutine get_flow_fields (i_flow, i_swan, sif, fg, sg, f2s, wavedata, sr, flow
                             & fif%windv, fif%mmax, fif%nmax, &
                             & sr%flowgridfile, wavedata%output%lastvalidflowfield)
          !
-         ! Map wind components to SWAN grid, using ESMF_Regrid weights
+         ! Map wind components to SWAN grid
          !
-         call grmap_esmf (i_flow       , fif%windu, fif%npts, &
-                        & sif%windu    , sif%mmax,  sif%nmax, &
-                        & f2s          , sg)
-         call grmap_esmf (i_flow       , fif%windv, fif%npts, &
-                        & sif%windv    , sif%mmax,  sif%nmax, &
-                        & f2s          , sg)
+         call map_flow_to_swan(fif%windu, sif%windu)
+         call map_flow_to_swan(fif%windv, sif%windv)
       endif
    endif
    !
@@ -285,17 +255,11 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
                             & fif%veg_stemheight, fif%mmax, fif%nmax, &
                             & sr%flowgridfile, wavedata%output%lastvalidflowfield)
          !
-         ! Map vegetation components to SWAN grid, using ESMF_Regrid weights
+         ! Map vegetation components to SWAN grid
          !
-         call grmap_esmf (i_flow       ,fif%veg    , fif%npts, &
-                        & sif%veg    , sif%mmax, sif%nmax, &
-                        & f2s        , sg)
-         call grmap_esmf (i_flow       ,fif%diaveg    , fif%npts, &
-                        & sif%diaveg    , sif%mmax, sif%nmax, &
-                        & f2s           , sg)
-         call grmap_esmf (i_flow       ,fif%veg_stemheight, fif%npts, &
-                        & sif%veg_stemheight, sif%mmax, sif%nmax, &
-                        & f2s               , sg)
+         call map_flow_to_swan(fif%veg, sif%veg)
+         call map_flow_to_swan(fif%diaveg, sif%diaveg)
+         call map_flow_to_swan(fif%veg_stemheight, sif%veg_stemheight)
          ! It seems that SWAN only accepts constant values for diaveg and veg_stemheight
          !
          maxval = -1.0e10
@@ -333,10 +297,7 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
       !
       ! Map depth to SWAN grid
       !
-      call grmap (fif%dpsmud   , fif%npts        , &
-                & sif%dpsmud   , sif%npts        , &
-                & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                & iprint       )
+      call map_flow_to_swan(fif%dpsmud, sif%dpsmud)
       !
       ! Read mud level from mud-com-file
       !
@@ -346,13 +307,24 @@ if (sr%swveg .and. sr%dom(1)%qextnd(q_veg) >= 1) then
       !
       ! Map mud level to SWAN grid
       !
-      call grmap (fif%s1mud    , fif%npts        , &
-                & sif%s1mud    , sif%npts        , &
-                & f2s%ref_table, f2s%weight_table, f2s%n_surr_points, &
-                & iprint       )
+      call map_flow_to_swan(fif%s1mud, sif%s1mud)
    endif
    !
    ! Deallocate memory swan input fields defined on flow grid
    !
    call dealloc_input_fields(fif, wavedata%mode)
+
+contains
+
+   subroutine map_flow_to_swan(src, dst)
+      real, dimension(fif%mmax, fif%nmax), intent(in)    :: src
+      real, dimension(sif%mmax, sif%nmax), intent(inout) :: dst
+
+      if (f2s%ext_mapper) then
+         call grmap_esmf(f2s%provider_index, src, fif%npts, dst, sif%mmax, sif%nmax, f2s, sg)
+      else
+         call grmap(src, fif%npts, dst, sif%npts, f2s%ref_table, &
+                  & f2s%weight_table, f2s%n_surr_points, iprint)
+      endif
+   end subroutine map_flow_to_swan
 end subroutine get_flow_fields
