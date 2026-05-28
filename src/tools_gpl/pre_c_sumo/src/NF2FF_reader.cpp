@@ -63,7 +63,7 @@ namespace
     }
 
     /**
-     * @brief parse/validate the file version.
+     * @brief parse/validate the discharge element.
      * @return std::expected containing std::string on success or ParseError on failure.
      */
     std::expected<pugi::xml_node, parsing_utils::ParseError> parseDischarge(const pugi::xml_node root)
@@ -156,6 +156,14 @@ namespace
         return data;
     }
 
+    /**
+     * @brief extract Source or Sink values from sources or sinks blocks.
+     * Since the data in these blocks are formatted by line we split the text into lines first and then
+     * convert each line to source or sink data objects if the line is not 'empty' (ergo, a line does not
+     * contain just blanks).
+     * The conversion and checking are implemented using lambda functions and are run trough a std::ranges chain.
+     * @return std::expected containing a pre_c_sumo::SourceOrSinkData struct or ParseError on failure.
+     */
     std::expected<std::vector<pre_c_sumo::SourceOrSinkData>, parsing_utils::ParseError> parseSourceOrSinkVector(
         const std::string_view text, const std::string_view element_name)
     {
