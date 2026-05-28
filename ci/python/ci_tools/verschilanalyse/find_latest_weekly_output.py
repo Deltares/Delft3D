@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 import minio
-from minio.credentials.providers import StaticProvider
+from minio.credentials import AWSConfigProvider
 
 ENDPOINT = "s3.deltares.nl"
 BUCKET_NAME = "devops-test-verschilanalyse"
@@ -68,13 +68,7 @@ if __name__ == "__main__":
 
     Used in TeamCity pipeline to set the `reference_prefix` parameter.
     """
-    access_key = os.environ.get("AWS_ACCESS_KEY_ID")
-    secret_key = os.environ.get("AWS_SECRET_ACCESS_KEY")
-
-    if not access_key or not secret_key:
-        raise ValueError("Missing MinIO credentials. Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.")
-
-    client = minio.Minio(endpoint=ENDPOINT, credentials=StaticProvider(access_key, secret_key))
+    client = minio.Minio(endpoint=ENDPOINT, credentials=AWSConfigProvider())
     reporter = VerschilAnalyseReporter(minio=client, bucket_name=BUCKET_NAME, prefix=PREFIX)
 
     report = reporter.get_latest_run()

@@ -40,6 +40,7 @@ class TestCommandLineInterface:
         assert args.queue_size == DEFAULT_QUEUE_SIZE
         assert args.part_size == DEFAULT_MULTIPART_UPLOAD_PART_SIZE
         assert args.endpoint_url == f"https://{DEFAULT_MINIO_HOSTNAME}"
+        assert args.profile is None
         assert args.log_level == CommandLine.DEFAULT_LOG_LEVEL
 
     @pytest.mark.parametrize(
@@ -69,6 +70,7 @@ class TestCommandLineInterface:
             pytest.param("jobs", ["--jobs=4"], 4, int, id="jobs"),
             pytest.param("queue_size", ["--queue-size=100"], 100, int, id="queue-size"),
             pytest.param("part_size", ["--part-size=42"], 42, int, id="part-size"),
+            pytest.param("profile", ["--profile=foo"], "foo", str, id="profile"),
             pytest.param("endpoint_url", ["--endpoint-url=https://min.io"], "https://min.io", str, id="endpoint_url"),
         ],
     )

@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 import certifi
 import minio
 import urllib3
-from minio.credentials.providers import StaticProvider
+from minio.credentials.providers import AWSConfigProvider
 from s3_path_wrangler.paths import S3Path
 
 from ci_tools import minio as const
@@ -86,6 +86,7 @@ class CommandLine:
         "jobs": "The number of threads to use for synchronization.",
         "queue-size": "The maximum size of the queue for synchronization. This will limit memory usage.",
         "part-size": "The size of the parts to use for multipart uploads.",
+        "profile": "The AWS profile to use to authenticate with MinIO.",
         "endpoint-url": "The endpoint URL to use for MinIO.",
     }
 
@@ -103,7 +104,11 @@ class CommandLine:
             args = parser.parse_args()
 
             logger = cls._make_logger("minio-sync", args.log_level)
-            minio_client = cls._make_minio_client(endpoint_url=args.endpoint_url, max_pool_size=args.jobs)
+            minio_client = cls._make_minio_client(
+                endpoint_url=args.endpoint_url,
+                max_pool_size=args.jobs,
+                profile=args.profile,
+            )
 
             cls._check_minio_connection(minio_client)
         except CommandLineError as exc:
@@ -185,6 +190,7 @@ class CommandLine:
         parser.add_argument("-j", "--jobs", type=int, help=cls.HELP["jobs"])
         parser.add_argument("--queue-size", type=int, help=cls.HELP["queue-size"])
         parser.add_argument("--part-size", type=int, help=cls.HELP["part-size"])
+        parser.add_argument("--profile", help=cls.HELP["profile"])
         parser.add_argument("--endpoint-url", type=cls._endpoint_url, help=cls.HELP["endpoint-url"])
 
         parser.set_defaults(
@@ -201,6 +207,7 @@ class CommandLine:
             queue_size=DEFAULT_QUEUE_SIZE,
             log_level=cls.DEFAULT_LOG_LEVEL,
             endpoint_url=os.environ.get("ENDPOINT_URL", f"https://{const.DEFAULT_MINIO_HOSTNAME}"),
+            profile=os.environ.get("AWS_PROFILE"),
         )
 
         return parser
@@ -218,10 +225,11 @@ class CommandLine:
     def _make_minio_client(
         cls,
         endpoint_url: str,
+        profile: str | None = None,
         max_pool_size: int | None = None,
     ) -> minio.Minio:
         parsed_url = urlparse(endpoint_url)
-        secure = parsed_url.scheme != "http"
+        secure = False if parsed_url.scheme == "http" else True
 
         max_pool_size = max_pool_size or cls.HTTP_DEFAULT_POOL_SIZE
         timeout = cls.HTTP_TIMEOUT_SECONDS
@@ -245,7 +253,7 @@ class CommandLine:
 
         return minio.Minio(
             parsed_url.netloc,
-            credentials=StaticProvider(access_key, secret_key),
+            credentials=AWSConfigProvider(profile=profile),
             http_client=pool_manager,
             secure=secure,
         )
