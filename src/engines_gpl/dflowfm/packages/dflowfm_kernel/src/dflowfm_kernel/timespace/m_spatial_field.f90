@@ -172,7 +172,7 @@ contains
       select case (str_tolower(trim(forcing_file_type)))
       case ('sample', 'geotiff', 'polygon', '1dfield')
          is_static = .true.
-      case ('arcinfo') !> TODO: change this approach once more file types can be both time-varying and static
+      case ('arcinfo') ! TODO: change this approach once more file types can be both time-varying and static
          is_static = .not. any(method == [SPACEANDTIME, SPACEFIRST, WEIGHTFACTORS, WEIGHTFACTORS_EXTRAPOLATION, JUSTUPDATE])
       case default
          is_static = .false.

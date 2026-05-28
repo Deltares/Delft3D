@@ -71,7 +71,7 @@ module unstruc_inifields
    ! 2.00: extrapolationMethod changed from integer to logical.
    ! 1.01: initial implemented version
 
-   ! Module-level state for deferred 1dField global application
+   ! Module-level state for deferred assignment of 1dField file [Global] values.
    logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:)
    logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:)
    real(dp), public :: water_global_value_1dfield = -999.0_dp
@@ -182,7 +182,7 @@ contains
       specified = specified .or. specified_indices
    end subroutine accumulate_1dfield_global
 
-   !> Apply deferred 1dField globals for water and friction. Call once after all init_new calls.
+   !> Apply deferred 1dField global values for water and friction, only for those points that have not been set already. Call once after all init_new calls.
    subroutine finalize_1dfield_globals()
       use m_flow, only: s1, hs, frcu
       use m_flowgeom, only: bl, ndx2D, ndxi, lnx1d
@@ -1957,7 +1957,7 @@ contains
 
    end subroutine process_parameter_block
 
-   !> Resolve quantities with integer target arrays.
+   !> Resolve the target array and location type for quantities that are of integer type.
    !! Returns .true. if the quantity was recognized and target_array is associated.
    function resolve_integer_target(qid, target_location_type, target_array) result(success)
       use fm_location_types, only: UNC_LOC_U

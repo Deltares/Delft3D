@@ -397,11 +397,13 @@ contains
          end if
       end if
       
-      ! When a multuni chain is requested, targetItemPtr1 must be a DISTINCT intermediate item
-      ! from multuni1. Without this override, both fm_ext_force_name_to_ec_item calls resolve to
-      ! the same registered item (e.g., item_lateraldischarge), causing a self-loop in the EC graph.
+      ! When a multuni item is provided from the call site, we assume that those
+      ! multuni1..4 item(s) are the ones to be used. Any targetItemPtr1..4 just set
+      ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
+      ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
+      ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
       if (present(tgt_item1) .and. present(multuni1)) then
-         targetItemPtr1 => tgt_item1
+         targetItemPtr1 = ec_undef_int
       end if
       if (present(tgt_item2) .and. present(multuni2)) then
          targetItemPtr2 => tgt_item2
