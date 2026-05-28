@@ -427,10 +427,6 @@ contains
                            aksu = ac1 * aks(k1, l) + ac2 * aks(k2, l)
                         end if
                         !
-                        if (aksu < 1e-10_dp) then
-                           cycle
-                        end if
-                        !
                         ! work up through layers integrating transport flux
                         ! below aksu, according to Bert's new implementation
                         !
