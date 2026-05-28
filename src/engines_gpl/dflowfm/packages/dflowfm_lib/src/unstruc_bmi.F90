@@ -2046,10 +2046,12 @@ contains
       character(len=MAXSTRLEN) :: var_name
       character(len=MAXSTRLEN) :: item_name
       character(len=MAXSTRLEN) :: field_name
+      character(len=MAXSTRLEN) :: field_name_original !< special extra field name in original casing, as constituents are case-sensitive
       ! Store the name and convert var and field to lowercase to make them case-insensitive.
       var_name = str_tolower(char_array_to_string(c_var_name))
       item_name = char_array_to_string(c_item_name)
-      field_name = str_tolower(char_array_to_string(c_field_name))
+      field_name_original = char_array_to_string(c_field_name)
+      field_name = str_tolower(field_name_original)
 
       select case (var_name)
          ! PUMPS
@@ -2348,14 +2350,14 @@ contains
          case default
             !       assume this is a tracer
             !       get constituent number for this tracer
-            iconst = find_name(const_names, field_name)
+            iconst = find_name(const_names, field_name_original)
 
             if (iconst == 0) then
                !          tracer not found
-               call mess(LEVEL_ERROR, 'get_compound_field: cannot find '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name))
+               call mess(LEVEL_ERROR, 'get_compound_field: cannot find '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name_original))
             else
                if (kmx > 1) then
-                  call mess(LEVEL_ERROR, 'get_compound_field: 3D not supported for '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name))
+                  call mess(LEVEL_ERROR, 'get_compound_field: 3D not supported for '//trim(var_name)//'/'//trim(item_name)//'/'//trim(field_name_original))
                else
                   !             find tracer number
                   itrac = iconst - ITRA1 + 1
@@ -2392,7 +2394,7 @@ contains
          end select
          ! LATERAL DISCHARGES
       case ("laterals")
-         x = get_pointer_to_lateral_variable(item_name, field_name)
+         x = get_pointer_to_lateral_variable(item_name, field_name_original)
          ! GEOMETRY
       case ("geometry")
          select case (item_name)
@@ -2443,7 +2445,7 @@ contains
       use m_laterals, only: qplat, nnlat, n1latsg, n2latsg, outgoing_lat_concentration, incoming_lat_concentration, apply_transport, &
                             lateral_volume_per_layer, num_layers, average_waterlevels_per_lateral, numlatsg
       use m_flow, only: s1
-      use string_module, only: str_token
+      use string_module, only: str_token, str_tolower
 
       implicit none
       character(len=MAXSTRLEN), intent(in) :: item_name
@@ -2460,7 +2462,7 @@ contains
          return
       end if
 
-      select case (field_name)
+      select case (str_tolower(field_name))
       case ("water_discharge")
          if (apply_transport(item_index) == 1 .or. kmx == 0) then
             c_lateral_pointer = c_loc(qplat(1:num_layers, item_index))
@@ -2518,7 +2520,7 @@ contains
          constituent_index = ITEMP
       case default
          constituent_index = find_name(const_names, constituent_name)
-         if (iconst == 0) then
+         if (constituent_index == 0) then
             !        tracer not found
             c_lateral_pointer = c_null_ptr
             return
@@ -2803,7 +2805,7 @@ contains
                constituent_index = ITEMP
             case default
                constituent_index = find_name(const_names, constituent_name)
-               if (iconst == 0) then
+               if (constituent_index == 0) then
                   !        tracer not found
                   return
                end if
