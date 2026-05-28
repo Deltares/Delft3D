@@ -116,8 +116,7 @@ contains
       real(kind=dp) :: dtmor
       real(kind=dp) :: timhr
       real(kind=dp) :: sbtot(ndx,stmpar%lsedtot)
-      real(fp), dimension(:), pointer :: dunelength
-      real(fp), dimension(1:0), target :: empty_dunelength
+      real(fp), dimension(:), pointer :: dunelength_tmp
 
    !!
    !! Point
@@ -128,11 +127,11 @@ contains
          )
 
       if (associated(bfmpar%dunelength)) then
-         dunelength => bfmpar%dunelength
+         dunelength_tmp => bfmpar%dunelength
       else
-         dunelength => empty_dunelength
+         allocate(dunelength_tmp(1:ndx))
+         dunelength_tmp = 1.0e10_fp
       end if
-         
 
    !!
    !! Execute
@@ -262,7 +261,7 @@ contains
             ! Update layers and obtain the depth change
             !
             !See: UNST-7369
-            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength, sbtot, dtmor, mtd%messages) /= 0) then
+            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength_tmp, sbtot, dtmor, mtd%messages) /= 0) then
                call writemessages(mtd%messages, mdia)
                write (errmsg, '(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
                call write_error(errmsg, unit=mdia)
@@ -278,6 +277,10 @@ contains
             call bndmorlyr(lsedtot, timhr, nopenbndsect, bc_mor_array, stmpar)
          end if
       end if ! time1>tcmp
+
+      if (.not. associated(bfmpar%dunelength)) then
+         deallocate(dunelength_tmp)
+      end if
 
       if (time1 >= tstart_user + tmor * tfac) then
          !

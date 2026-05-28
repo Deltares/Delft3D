@@ -2497,6 +2497,51 @@ contains
 
    end subroutine setup
 
+!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+!> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
+!> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   subroutine finalize_source_sinks()
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
+
+      use m_structures, only: fill_geometry_source_sinks
+
+      integer :: i, j, sidx
+      integer :: flownode_nr !< Flow node number
+      logical, dimension(:), allocatable :: is_source_sink_bubblescreen
+
+      ! actually compute is_source_sink_bubble and then negate it
+      call realloc(is_source_sink_bubblescreen, num_source_sink, fill=.false.)
+
+      do i = 1, size(bubblescreens)
+         associate (bubblescreen => bubblescreens(i))
+            do j = 1, bubblescreen%num_flowcells
+               sidx = bubblescreen%source_sink_indices(j)
+               if (jampi == 1 .and. allocated(idomain)) then
+                  flownode_nr = bubblescreen%flowcell_indices(j)
+                  if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
+                     is_source_sink_bubblescreen(sidx) = .true.
+                  end if
+               else
+                  is_source_sink_bubblescreen(sidx) = .true.
+               end if
+            end do
+         end associate
+      end do
+
+      if(jampi == 1) then
+        call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
+      end if
+
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
+      is_source_sink_normal = .NOT. is_source_sink_bubblescreen
+      num_normal_source_sink = count(is_source_sink_normal)
+
+      call fill_geometry_source_sinks()
+
+   end subroutine finalize_source_sinks
+
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
    subroutine finalize()
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
@@ -2527,6 +2572,7 @@ contains
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
 
+      call finalize_source_sinks()
       if (allocated(thrtt)) then
          call init_threttimes()
       end if

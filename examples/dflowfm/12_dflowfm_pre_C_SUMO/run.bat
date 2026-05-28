@@ -9,11 +9,11 @@ set libdir=%bindir%\..\lib
 
 del /f /q fm\DFM_OUTPUT_FlowFM\*.*
 del /f /q fm\precice-exports\*.*
-del /f /q fm\precice-profiling\*.*
+del /f /q fm\precice-profiling\*.txt
 del /f /q cosumo\FF2NF\*.xml
 del /f /q cosumo\csumo_bmi.dia
 del /f /q cosumo\precice-exports\*.*
-del /f /q cosumo\precice-profiling\*.*
+del /f /q cosumo\precice-profiling\*.txt
 del /f /q cosumo\precice_debug_output.txt
 del /f /q csumo_to_dflowfm.nc
 del /f /q precice_debug_output.txt
