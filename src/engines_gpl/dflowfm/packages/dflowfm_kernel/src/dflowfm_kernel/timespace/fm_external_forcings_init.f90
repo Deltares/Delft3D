@@ -148,7 +148,7 @@ contains
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
-         call source_sinks%resize(max_num_src)
+         call source_sinks%initialize(max_num_src)
       end if
 
       ib = 0

@@ -92,6 +92,7 @@ module m_source_sink
 
       procedure :: initialize => initialize_source_sinks
       procedure :: resize => resize_source_sinks
+      procedure :: resize_xy => resize_xy_source_sinks
 
    end type SourceSinks
 
@@ -191,8 +192,8 @@ contains
 
       ! Resize all source/sink arrays.
       call realloc(self%name, new_size, keepExisting=.true., fill='')
-      call realloc(self%x, [new_size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%y, [new_size, 2], keepExisting=.true., fill=dmiss)
+      call realloc(self%x, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
+      call realloc(self%y, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
       call realloc(self%z_bottom, [new_size, 2], keepExisting=.true., fill=dmiss)
       call realloc(self%z_top, [new_size, 2], keepExisting=.true., fill=dmiss)
       call realloc(self%indices, [new_size, 6], keepExisting=.true., fill=0)
@@ -215,6 +216,21 @@ contains
       call realloc(self%cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
 
    end subroutine resize_source_sinks
+
+   !> Resizes the x and y arrays of the SourceSinks object to fit new_max_polyline_points, keeping existing values if possible.
+   subroutine resize_xy_source_sinks(self, new_max_polyline_points)
+      ! Parameters
+      class(SourceSinks), intent(inout) :: self
+      integer, intent(in) :: new_max_polyline_points
+
+      ! Update max_polyline_points to new value if larger than current value.
+      self%max_polyline_points = max(self%max_polyline_points, new_max_polyline_points)
+
+      ! Resize x and y arrays to fit new max_polyline_points.
+      call realloc(self%x, [size(self%name), self%max_polyline_points], keepExisting=.true., fill=dmiss)
+      call realloc(self%y, [size(self%name), self%max_polyline_points], keepExisting=.true., fill=dmiss)
+
+   end subroutine resize_xy_source_sinks
 
    ! Source/sink subroutines.
    ! ====================================================================================================
@@ -344,6 +360,11 @@ contains
          call source_sinks%resize((source_sinks%num_total - 1) * 2)
       end if
 
+      ! If the number of points in the polyline exceeds the current max_polyline_points, resize the arrays to fit the new number of points.
+      if (num_points > source_sinks%max_polyline_points) then
+         call source_sinks%resize_xy(num_points)
+      end if
+
       ! Set the coordinates of the source/sink, only the first 2 points of the polyline file are actually used.
       source_sinks%x(source_sinks%num_total, 1:num_points) = x_points(1:num_points)
       source_sinks%y(source_sinks%num_total, 1:num_points) = y_points(1:num_points)
@@ -393,21 +414,21 @@ contains
          goto 8888
       end if
 
-      source_sinks%indices(1, source_sinks%num_total) = kk
-      source_sinks%z_bottom(1, source_sinks%num_total) = z_sink(1)
-      source_sinks%z_top(1, source_sinks%num_total) = z_sink(1)
+      source_sinks%indices(source_sinks%num_total, 1) = kk
+      source_sinks%z_bottom(source_sinks%num_total, 1) = z_sink(1)
+      source_sinks%z_top(source_sinks%num_total, 1) = z_sink(1)
 
-      source_sinks%indices(4, source_sinks%num_total) = kk2
-      source_sinks%z_bottom(2, source_sinks%num_total) = z_source(1)
-      source_sinks%z_top(2, source_sinks%num_total) = z_source(1)
+      source_sinks%indices(source_sinks%num_total, 4) = kk2
+      source_sinks%z_bottom(source_sinks%num_total, 2) = z_source(1)
+      source_sinks%z_top(source_sinks%num_total, 2) = z_source(1)
 
       if (kk > 0) then
          if (z_sink(2) /= dmiss) then
-            source_sinks%z_top(1, source_sinks%num_total) = z_sink(2)
+            source_sinks%z_top(source_sinks%num_total, 1) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 2), source_sinks%y(source_sinks%num_total, 2), source_sinks%discharge_cosine(1, source_sinks%num_total), source_sinks%discharge_sine(1, source_sinks%num_total), source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), jsferic, jasfer3D, dxymis)
+            call normalin(source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 2), source_sinks%y(source_sinks%num_total, 2), source_sinks%discharge_cosine(source_sinks%num_total, 1), source_sinks%discharge_sine(source_sinks%num_total, 1), source_sinks%x(source_sinks%num_total, 1), source_sinks%y(source_sinks%num_total, 1), jsferic, jasfer3D, dxymis)
          end if
 
          do i = 1, source_sinks%num_total - 1
@@ -424,12 +445,12 @@ contains
 
       if (kk2 > 0) then
          if (z_source(2) /= dmiss) then
-            source_sinks%z_top(2, source_sinks%num_total) = z_source(2)
+            source_sinks%z_top(source_sinks%num_total, 2) = z_source(2)
          end if
          
          ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
          if (num_points > 1) then
-            call normalin(source_sinks%x(source_sinks%num_total, num_points - 1), source_sinks%y(source_sinks%num_total, num_points - 1), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), source_sinks%discharge_cosine(2, source_sinks%num_total), source_sinks%discharge_sine(2, source_sinks%num_total), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), jsferic, jasfer3D, dxymis)
+            call normalin(source_sinks%x(source_sinks%num_total, num_points - 1), source_sinks%y(source_sinks%num_total, num_points - 1), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), source_sinks%discharge_cosine(source_sinks%num_total, 2), source_sinks%discharge_sine(source_sinks%num_total, 2), source_sinks%x(source_sinks%num_total, num_points), source_sinks%y(source_sinks%num_total, num_points), jsferic, jasfer3D, dxymis)
          end if
       end if
 
@@ -565,7 +586,7 @@ contains
       do n = 1, source_sinks%num_total
          source_sinks%discharge(n) = source_sink_all_discharges(1, n)
          do L = 1, numconst
-            source_sinks%constituents(L, n) = source_sink_all_discharges(L + 1, n)
+            source_sinks%constituents(n, L) = source_sink_all_discharges(L + 1, n)
          end do
 
          kk = source_sinks%indices(n, 1) ! 2D pressure cell nr
@@ -594,11 +615,11 @@ contains
          if (kk * kk2 /= 0) then ! Coupled stuff
             if (qsrck > 0) then ! FROM k to k2
                do L = 1, numconst
-                  source_sinks%constituents(L, n) = source_sinks%constituents(L, n) + source_sink_reduction(1 + L, n)
+                  source_sinks%constituents(n, L) = source_sinks%constituents(n, L) + source_sink_reduction(1 + L, n)
                end do
             else if (qsrck < 0) then ! FROM k2 to k
                do L = 1, numconst
-                  source_sinks%constituents(L, n) = source_sinks%constituents(L, n) + source_sink_reduction(1 + numconst + 1 + L, n)
+                  source_sinks%constituents(n, L) = source_sinks%constituents(n, L) + source_sink_reduction(1 + numconst + 1 + L, n)
                end do
             end if
          end if

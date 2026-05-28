@@ -385,8 +385,8 @@ contains
 
          do iconst = 1, numconst
             if (i1 == i2) then ! on outflow side
-               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * source_sinks%constituents(iconst, n) * dvoli
-               flux = qsrck * source_sinks%constituents(iconst, n)
+               const_sour(iconst, k) = const_sour(iconst, k) + qsrck * source_sinks%constituents(n, iconst) * dvoli
+               flux = qsrck * source_sinks%constituents(n, iconst)
             else ! on inflow side
                const_sour(iconst, k) = const_sour(iconst, k) + qsrck * constituents(iconst, k) * dvoli
                flux = qsrck * constituents(iconst, k)
