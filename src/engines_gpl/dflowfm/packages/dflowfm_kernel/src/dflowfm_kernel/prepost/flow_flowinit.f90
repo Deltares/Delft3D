@@ -1351,7 +1351,7 @@ contains
 
       if (jawave == CONST .and. .not. flow_without_waves) then
          hs = max(hs, 0.0_dp)
-         hwav = min(hwavuni, gammax * hs)
+         hwav = min(hwavcom, gammax * hs)
          call wave_uorbrlabda()
          if (kmx == 0) then
             if (jawavestokes > NO_STOKES_DRIFT) then

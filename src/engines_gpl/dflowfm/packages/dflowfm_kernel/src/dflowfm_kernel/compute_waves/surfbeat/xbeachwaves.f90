@@ -237,7 +237,7 @@ contains
       ARC = readkey_int(md_surfbeatfile, 'ARC', 1, 0, 1)
       order = readkey_dbl(md_surfbeatfile, 'order', 2.0_dp, 1.0_dp, 2.0_dp)
       freewave = readkey_int(md_surfbeatfile, 'freewave', 0, 0, 1)
-      !epsi        = readkey_dbl (md_surfbeatfile,'epsi',     -1._dp,          -1._dp,   0.2_dp   )
+      !epsi        = readkey_dbl (md_surfbeatfile,'epsi',     -1.d0,          -1.d0,   0.2d0   )
       hminlw = readkey_dbl(md_surfbeatfile, 'hmin', 0.2_dp, 0.001_dp, 1.0_dp)
       allocate (allowednames(2), oldnames(0))
       allowednames = ['abs_1d', 'abs_2d']
@@ -321,13 +321,13 @@ contains
       !if (windmodel .eq. 1) then
       !   call writelog('l','','--------------------------------')
       !   call writelog('l','','Wind source parameters: ')
-      !   mwind       = readkey_dbl (md_surfbeatfile,'mwind',   1._dp,    0.5_dp,   1._dp)
+      !   mwind       = readkey_dbl (md_surfbeatfile,'mwind',   1.d0,    0.5d0,   1.d0)
       !   jawsource   = readkey_int (md_surfbeatfile,'windsource',   0,    0,   1, required=(swave==1 .and. jawind==1), strict=.true.)
       !   jagradcg    = readkey_int (md_surfbeatfile,'jagradcg',   1,    0,   1, required=((swave==1 .and. jawind==1) .and. jawsource==1), strict=.true.)
       !   advecmod    = readkey_int (md_surfbeatfile,'advecmod',    1,         1,      2)
-      !   ndissip     = readkey_dbl (md_surfbeatfile,'ndissip',  3._dp,         1._dp,      10._dp)
-      !   coefdispT   = readkey_dbl (md_surfbeatfile,'coefdispT',  3.5_dp,         0._dp,      1000._dp)
-      !   coefdispk   = readkey_dbl (md_surfbeatfile,'coefdispk',  1._dp,         0._dp,      1000._dp)
+      !   ndissip     = readkey_dbl (md_surfbeatfile,'ndissip',  3.d0,         1.d0,      10.d0)
+      !   coefdispT   = readkey_dbl (md_surfbeatfile,'coefdispT',  3.5d0,         0.d0,      1000.d0)
+      !   coefdispk   = readkey_dbl (md_surfbeatfile,'coefdispk',  1.d0,         0.d0,      1000.d0)
       !endif
       !
       !
@@ -384,7 +384,7 @@ contains
          end if
       end if
       !
-      !facmax = 0.25_dp*sqrt(ag)*rhomean*gamma**2
+      !facmax = 0.25d0*sqrt(ag)*rhomean*gamma**2
       !
       !
       ! Wave-current interaction with non-stationary waves still experimental
@@ -471,7 +471,7 @@ contains
          !if (windmodel.eq.0) then
          do k = 1, ndx
             sigmwav(k) = sum(sigt(:, k), dim=1) / real(ntheta, kind=dp)
-            L0(k) = 2_dp * pi * ag / (sigmwav(k)**2)
+            L0(k) = 2 * pi * ag / (sigmwav(k)**2)
             L1(k) = L0(k)
             Ltemp(k) = L0(k)
          end do
@@ -557,10 +557,10 @@ contains
       !if ( windmodel.eq.1) then
       !   if (jawsource.eq.1) then
       !   !define source term coefficients
-      !      CE1 = 8_dp/(aa1*aa1*bb1 ) * (16_dp/(aa1*aa1 ) )**(1_dp/(2_dp* bb1) -1_dp )
-      !      CE2 = 1_dp/(2_dp* bb1) -1_dp
-      !      CT1 = 1_dp/(aa2*bb2 ) * (1_dp/(aa2 ) )**(1_dp/bb2 -1_dp )
-      !      CT2 = 1_dp/bb2 -1_dp
+      !      CE1 = 8d0/(aa1*aa1*bb1 ) * (16d0/(aa1*aa1 ) )**(1d0/(2d0* bb1) -1d0 )
+      !      CE2 = 1d0/(2d0* bb1) -1d0
+      !      CT1 = 1d0/(aa2*bb2 ) * (1d0/(aa2 ) )**(1d0/bb2 -1d0 )
+      !      CT2 = 1d0/bb2 -1d0
       !   endif
       !   !map wind field to cell centers
       !   call xbeach_map_wind_field(wx, wy, mwind, wmagcc, windspreadfac)
@@ -748,7 +748,7 @@ contains
 
       if (single_dir == 1) then
          do itheta = 1, ntheta_s
-            thetabin_s(itheta) = mod(thetamin + dtheta_s / 2.0_dp + dtheta_s * (itheta - 1), 2.0_dp * pi)
+            thetabin_s(itheta) = mod(thetamin + dtheta_s / 2.0 + dtheta_s * (itheta - 1), 2.0_dp * pi)
          end do
 
          do itheta = 1, ntheta_s
@@ -909,7 +909,7 @@ contains
       allocate (gammax_correct(1:ndx), stat=ierr)
 
       xb_started = 1
-      !ee_eps = 0.00001_dp
+      !ee_eps = 0.00001d0
       !tt_eps = waveps    !important to limit wave celerities to 1 in case of cells for which hs<epshu
 
       hh = 0.0_dp
@@ -917,9 +917,9 @@ contains
       wete = 0
       drr = 0.0_dp
       horadvec = 0.0_dp
-      !horadvec2 = 0.0_dp
+      !horadvec2=0d0
       thetaadvec = 0.0_dp
-      !thetaadvec2 = 0.0_dp
+      !thetaadvec2=0d0
       RH = 0.0_dp
       gammax_correct = .false.
       !
@@ -1096,7 +1096,7 @@ contains
 
       !if (windmodel.eq.1) then
       !  ! wave period depth limitation
-      !   call xbeach_wave_compute_period_depth_limitation( 1._dp/8._dp*rhomean*ag*(gammaxxb*hh**2) , Tdeplim)
+      !   call xbeach_wave_compute_period_depth_limitation( 1.d0/8.d0*rhomean*ag*(gammaxxb*hh**2) , Tdeplim)
       !   do itheta=1,ntheta
       !      tt1(itheta,:) = min(tt1(itheta,:) , Tdeplim )
       !   enddo
@@ -1110,10 +1110,10 @@ contains
       !   if (jawsource.eq.1) then
       !      call xbeach_windsource(ee1, E, tt1, sigmwav , cgwavt, cgwav, hh, dtmaxwav, wsorE, wsorT,egradcg,SwE,SwT)
       !   else
-      !       wsorE=0._dp
-      !       wsorT=0._dp
-      !       SwE=0._dp
-      !       SwT=0._dp
+      !       wsorE=0.d0
+      !       wsorT=0.d0
+      !       SwE=0.d0
+      !       SwT=0.d0
       !   endif
       !endif ! windmodel
 
@@ -1142,20 +1142,20 @@ contains
       !            tt1(itheta,k) = tt1(itheta, k) + min( dtmaxwav * (wsorT(itheta, k) -  ddT(k) ) , tt1(itheta, k) )
       !            !
       !            if(roller==1) then
-      !                  drr(itheta, k) = 2*ag*BR(k)*max(rr(itheta, k),0.0_dp)/ cwav(k)
+      !                  drr(itheta, k) = 2*ag*BR(k)*max(rr(itheta, k),0.0d0)/ cwav(k)
       !                  rr(itheta, k)=rr(itheta, k)+dtmaxwav*(ddlok(itheta, k) -drr(itheta, k))
       !            else if (roller==0) then
-      !               rr(itheta, k)  = 0.0_dp
-      !               drr(itheta, k) = 0.0_dp
+      !               rr(itheta, k)  = 0.0d0
+      !               drr(itheta, k) = 0.0d0
       !            endif
       !            !
       !            ee1(itheta, k)    = max(ee1(itheta, k),ee_eps)
       !            tt1(itheta, k)    = max(tt1(itheta, k), tt_eps)
-      !            rr(itheta, k)     = max(rr(itheta, k),0.0_dp)
+      !            rr(itheta, k)     = max(rr(itheta, k),0.0d0)
       !         else
       !            ee1(itheta, k)    = ee_eps
       !            tt1(itheta, k)    = tt_eps
-      !            rr(itheta, k)     = 0.0_dp
+      !            rr(itheta, k)     = 0.0d0
       !         end if
       !      end do
       !    end do
@@ -1282,7 +1282,7 @@ contains
          !
          ! Correct roller dissipation, check with Dano
          !where (hs>epshu)
-         !   DR = 2_dp*ag*beta1*R/cwav
+         !   DR = 2d0*ag*beta1*R/cwav
          !endwhere
       end if
 
@@ -1407,7 +1407,7 @@ contains
             k2 = ln(2, L)
             Fx(L) = (acL(L) * Fx_cc(k1) + (1.0_dp - acL(L)) * Fx_cc(k2))
             Fy(L) = (acL(L) * Fy_cc(k1) + (1.0_dp - acL(L)) * Fy_cc(k2))
-            !rhoL = (acL(L) * rho(k1) + (1.0_dp - acL(L)) * rho(k2))
+            !rhoL     = ( acL(L)*rho(k1) + (1d0-acL(L))*rho(k2) )
             rhoL = rhomean
             wavfu(L) = (Fx(L) * csu(L) + Fy(L) * snu(L)) / (rhoL * max(hu(L), hminlw))
             wavfv(L) = (-Fx(L) * snu(L) + Fy(L) * csu(L)) / (rhoL * max(hu(L), hminlw))
@@ -1585,7 +1585,7 @@ contains
          where (km > 0.01_dp)
             cwav = sigmwav / km
             cgwav = cwav * (0.5_dp + arg / sinh(2 * arg)) * sqrt(fac) ! &  to include more
-            !                                   + km*(H/2)**2*sqrt(max(par%g*km*tanh(arg),0.001_dp))/sqrt(max(fac,0.001_dp)) ! include wave steepness
+            !                                   + km*(H/2)**2*sqrt(max(par%g*km*tanh(arg),0.001d0))/sqrt(max(fac,0.001d0)) ! include wave steepness
             nwav = 0.5_dp + km * hh / sinh(2 * max(km, 0.00001_dp) * hh)
          elsewhere
             cwav = sqrt(ag * epshu)
@@ -1712,8 +1712,7 @@ contains
       logical :: isRecomputed
 
       integer :: kb, ki, Lb, nw
-      integer :: LL1, LL2, n
-      integer, save :: lunfil ! used for trim(instat) == 'stat_table'
+      integer :: LL1, LL2, n, lunfil
 
       ierror = 1
       if (.not. allocated(dist)) then
@@ -2089,7 +2088,7 @@ contains
                end if
 
                !if (windmodel .eq. 1) then
-               !   zbndw(:,n)=max(e01*E1/max(Emean,0.000001_dp)*min(time0/taper,1._dp),Eini)
+               !   zbndw(:,n)=max(e01*E1/max(Emean,0.000001d0)*min(time0/taper,1.d0),Eini)
                !else
                zbndw(:, n) = e01 * E1 / max(Emean, 0.000001_dp) * min(time0 / taper, 1.0_dp)
                !endif
@@ -2272,7 +2271,7 @@ contains
       break = trim(break)
 
       if (break == 'roelvink1') then ! Dissipation according to Roelvink (1993)
-         !H   = sqrt(8._dp*E/rhomean/ag)
+         !H   = sqrt(8.d0*E/rhomean/ag)
          H = hwav
          hr = hhw
          kmr = min(max(kwav, 0.01_dp), 100.0_dp)
@@ -2312,7 +2311,7 @@ contains
             gam = gamma
          end if
 
-         !H   = sqrt(8._dp/rhomean/ag*E)
+         !H   = sqrt(8.d0/rhomean/ag*E)
          H = hwav
          Hb = tanh(gam * kh / 0.88_dp) * (0.88_dp / max(kwav, 1.0e-10_dp))
          R = Hb / max(H, 0.00001_dp)
@@ -2321,7 +2320,7 @@ contains
          D = 0.25_dp * alpha * f * rhomean * ag * (Hb**2 + H**2) * Qb
 
       elseif (break == 'roelvink2') then
-         !H   = sqrt(8._dp*E/rhomean/ag)
+         !H   = sqrt(8.d0*E/rhomean/ag)
          H = hwav
          hr = hhw
          hh = max(hs, waveps)
@@ -2342,7 +2341,7 @@ contains
             D = D / Trep * H / hh
          end if
       elseif (trim(break) == 'roelvink_daly') then
-         !H   = sqrt(8._dp*E/rhomean/ag)
+         !H   = sqrt(8.d0*E/rhomean/ag)
          H = hwav
          call advec_upw_bulk(thetamean, Qb, cwav, Qb_advec) ! first order upwind, with mean direction
          do k = 1, ndxi
@@ -2363,7 +2362,7 @@ contains
          end if
 
       elseif (break == 'janssen') then ! Dissipation according to Janssen and Battjes (2007)
-         !H   = sqrt(8._dp*E/rhomean/ag)
+         !H   = sqrt(8.d0*E/rhomean/ag)
          H = hwav
          if (wci /= 0) then
             f = sigmwav / 2.0_dp / pi
@@ -2622,13 +2621,13 @@ contains
             do itheta = 2, ntheta - 2
                ctheta_between = 0.5_dp * (veloc(itheta, k) + veloc(itheta + 1, k))
                if (ctheta_between > 0) then
-                  eeup = 1.5_dp * quan(itheta, k) - 0.5_dp * quan(itheta - 1, k)
+                  eeup = 1.5_dp * quan(itheta, k) - .5 * quan(itheta - 1, k)
                   if (eeup < 0.0_dp) then
                      eeup = quan(itheta, k)
                   end if
                   fluxtheta(itheta) = eeup * ctheta_between
                else
-                  eeup = 1.5_dp * quan(itheta + 1, k) - 0.5_dp * quan(itheta + 2, k)
+                  eeup = 1.5_dp * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
                   if (eeup < 0.0_dp) then
                      eeup = quan(itheta + 1, k)
                   end if
@@ -2641,7 +2640,7 @@ contains
             if (ctheta_between > 0) then
                fluxtheta(itheta) = quan(itheta, k) * ctheta_between
             else
-               eeup = 1.5_dp * quan(itheta + 1, k) - 0.5_dp * quan(itheta + 2, k)
+               eeup = 1.5_dp * quan(itheta + 1, k) - .5 * quan(itheta + 2, k)
                if (eeup < 0.0_dp) then
                   eeup = quan(itheta + 1, k)
                end if
@@ -2651,7 +2650,7 @@ contains
             itheta = ntheta - 1 ! only compute for itheta==ntheta-1
             ctheta_between = .5 * (veloc(itheta + 1, k) + veloc(itheta, k))
             if (ctheta_between > 0) then
-               eeup = 1.5_dp * quan(itheta, k) - 0.5_dp * quan(itheta - 1, k)
+               eeup = 1.5_dp * quan(itheta, k) - .5 * quan(itheta - 1, k)
                if (eeup < 0.0_dp) then
                   eeup = quan(itheta, k)
                end if
@@ -3355,7 +3354,7 @@ contains
       !if (windmodel .eq. 0) then
       factime = 1.0_dp / cats / Trep * dts
       !else
-      !   factime = 1_dp/cats/minval(sigmwav)/2_dp/pi*dts
+      !   factime = 1d0/cats/minval(sigmwav)/2d0/pi*dts
       !endif
 
 !  compute boundary-averaged velocities
@@ -3756,13 +3755,13 @@ contains
 !   if (.not.allocated(wycc)) allocate(wycc(1:ndx), stat = ierr)
 !   if (.not.allocated(wdir))    allocate(wdir(1:ndx),              stat = ierr)
 !
-!   wxcc=0_dp
-!   wycc=0_dp
-!   wdir=0_dp
-!   wmagcc=0_dp
-!   dist2=0_dp
-!   dist0=0_dp
-!   windspreadfac=0_dp
+!   wxcc=0d0
+!   wycc=0d0
+!   wdir=0d0
+!   wmagcc=0d0
+!   dist2=0d0
+!   dist0=0d0
+!   windspreadfac=0d0
 !
 !   do L = 1, lnx                                                              ! interpolate face values to cell centered values
 !      k1 = ln(1,L); k2 = ln(2,L)
@@ -3777,15 +3776,15 @@ contains
 !   do k = 1, ndx
 !      do itheta = 1,ntheta
 !       dist2(itheta, k)=(cos(thetabin(itheta)-wdir(k)))**mwind
-!         if(cos(thetabin(itheta)-wdir(k))<0._dp) then
-!          dist2(itheta,k)=0.0_dp
+!         if(cos(thetabin(itheta)-wdir(k))<0.d0) then
+!          dist2(itheta,k)=0.0d0
 !         end if
 !      end do
-!    if (sum(dist2(:,k))>0._dp) then
+!    if (sum(dist2(:,k))>0.d0) then
 !       dist0 = dist2(:,k)
 !       windspreadfac(:,k) = (dist0/sum(dist0))/dtheta
 !    else
-!       windspreadfac(:,k)=0._dp
+!       windspreadfac(:,k)=0.d0
 !    endif
 !   end do
 !
@@ -3840,9 +3839,9 @@ contains
 !   ierr = 1
 !
 !   allocate( gradcg( 1:ntheta, 1:ndx), stat = ierr)
-!   fE=0_dp; fT=0_dp; dE=0_dp; dT=0_dp;
-!   wsorE=0_dp; wsorT=0_dp;
-!   gradcg=0_dp; tgradcg=0_dp; gradcg=0_dp;
+!   fE=0d0; fT=0d0; dE=0d0; dT=0d0;
+!   wsorE=0d0; wsorT=0d0;
+!   gradcg=0d0; tgradcg=0d0; gradcg=0d0;
 !
 !
 !   ! velocity gradient operator
@@ -3850,7 +3849,7 @@ contains
 !
 !   do k = 1, ndxi
 !
-!        dEful = (Tful / (4.0_dp * pi)) / (CE1 * Eful ** CE2) !d
+!        dEful = (Tful / (4.0d0 * pi)) / (CE1 * Eful ** CE2) !d
 !
 !        do itheta = 1, ntheta
 !
@@ -3875,22 +3874,22 @@ contains
 !           wsorEdlss = min(dE , dEful)
 !           wsorTdlss = dT !max(dT,dTful) !windspreadfac(itheta,k)  * dT * dtheta !max(dT , dTful)
 !
-!           SwE(k)= max(wmagcc(k)**3 * rhomean * wsorEdlss, 0._dp) !
-!           SwT(k)= max(wsorTdlss , 0._dp) !
+!           SwE(k)= max(wmagcc(k)**3 * rhomean * wsorEdlss, 0.d0) !
+!           SwT(k)= max(wsorTdlss , 0.d0) !
 !
 !           !distribute growth over the wave bins, add gradcg component and make dimensional
 !
 !            if (jagradcg .eq. 1) then
-!              ! egradcg = max(-windspreadfac(itheta,k) * ee0(itheta,k) / windspreadfac(itheta,k) * bai(k) * gradcg(itheta,k) , 0_dp) ! * Etaper  perhaps use gradcg(nodal)?
-!              egradcg(itheta,k) = max(- ee1(itheta, k) * bai(k) * gradcg(itheta,k) , 0._dp)!
-!              !tgradcg = max(-windspreadfac(itheta,k) * twopi / sigmwav(k) * bai(k) * gradcg(itheta,k)  , 0_dp)
+!              ! egradcg = max(-windspreadfac(itheta,k) * ee0(itheta,k) / windspreadfac(itheta,k) * bai(k) * gradcg(itheta,k) , 0d0) ! * Etaper  perhaps use gradcg(nodal)?
+!              egradcg(itheta,k) = max(- ee1(itheta, k) * bai(k) * gradcg(itheta,k) , 0.d0)!
+!              !tgradcg = max(-windspreadfac(itheta,k) * twopi / sigmwav(k) * bai(k) * gradcg(itheta,k)  , 0d0)
 !            else
-!                egradcg(itheta,k) = 0._dp
-!                !tgardcg = 0._dp
+!                egradcg(itheta,k) = 0.d0
+!                !tgardcg = 0.d0
 !           endif
 !
-!           wsorE(itheta,k) = max(windspreadfac(itheta,k) * SwE(k)   + egradcg(itheta,k), 0._dp )
-!           wsorT(itheta,k) = max(windspreadfac(itheta,k) * dtheta * SwT(k) , 0._dp )
+!           wsorE(itheta,k) = max(windspreadfac(itheta,k) * SwE(k)   + egradcg(itheta,k), 0.d0 )
+!           wsorT(itheta,k) = max(windspreadfac(itheta,k) * dtheta * SwT(k) , 0.d0 )
 !
 !        enddo
 !
@@ -3925,16 +3924,16 @@ contains
 !
 !   integer                                                  :: nwalls
 !
-!   gradcg = 0_dp
-!   velocL = 0_dp
-!   cwuL   = 0_dp
+!   gradcg = 0d0
+!   velocL = 0d0
+!   cwuL   = 0d0
 !
 !   do L  = 1,lnx                                                              ! upwind (supq) + limited high order (dsq), loop over link
 !        k1  = ln(1,L) ; k2 = ln(2,L)                                          ! linker en rechtercelnr geassocieerd aan de links
 !
 !        do itheta = 1,ntheta
 !
-!            velocL = acL(L)*veloc(itheta,k1) + (1_dp-acL(L))*veloc(itheta,k2)
+!            velocL = acL(L)*veloc(itheta,k1) + (1d0-acL(L))*veloc(itheta,k2)
 !
 !            cwuL    = velocL * wu(L) * ( csu(L)*csx(itheta) + snu(L)*snx(itheta) )   ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
 !                                                                                     ! inproduct cgx*csu+cgy*snu
@@ -3995,7 +3994,7 @@ contains
 !   real(kind=dp), dimension(ndx)        , intent(in)  :: kwav
 !   real(kind=dp), dimension(ndx)        , intent(out) :: DtotT
 !
-!   DtotT = - coefdispT * tanh(coefdispk * kwav) * 1._dp /(1._dp -ndissip) * (twopi) / sigmwav / sigmwav * cgwav * kwav / E * Df
+!   DtotT = - coefdispT * tanh(coefdispk * kwav) * 1.d0 /(1.d0 -ndissip) * (twopi) / sigmwav / sigmwav * cgwav * kwav / E * Df
 !
 !1234 continue
 !   return
@@ -4020,8 +4019,8 @@ contains
 !
 !   allocate(Edls(1:ndx), Tdls(1:ndx), stat = ierr)
 !
-!   Edls=ag / rhomean / wmagcc**4_dp * E
-!   Tdls=aa2*(16_dp* Edls / (aa1*aa1) )**(bb2/(2*bb1))
+!   Edls=ag / rhomean / wmagcc**4d0 * E
+!   Tdls=aa2*(16d0* Edls / (aa1*aa1) )**(bb2/(2*bb1))
 !   Tmaxdep = wmagcc * Tdls / ag
 !
 !1234 continue
@@ -4053,16 +4052,16 @@ contains
 !
 !   integer                                                :: nwalls
 !
-!   advec = 0_dp
+!   advec = 0d0
 !   do L  = 1,lnx                                                              ! upwind (supq) + limited high order (dsq), loop over link
 !        k1  = ln(1,L) ; k2 = ln(2,L)                                       ! linker en rechtercelnr geassocieerd aan de links
 !
 !        do itheta = 1,ntheta
-!            velocL  = acL(L)*veloc(itheta,k1) + (1_dp-acL(L))*veloc(itheta,k2)
+!            velocL  = acL(L)*veloc(itheta,k1) + (1d0-acL(L))*veloc(itheta,k2)
 !            cwuL    = velocL*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )   ! *au(L)   met cwi: u1(L) + cg*( csu(L)*csx(itheta) + snu(L)*snx(itheta) )
 !                                                                           ! inproduct cgx*csu+cgy*snu
 !            if (cwuL > 0) then                                              !   ->      ds1   ds2
-!                k = k1 ; kd = k2 ; is =  1 ; half = 1_dp - acl(L) ; ip = 0   !   ->   ku     k     kd
+!                k = k1 ; kd = k2 ; is =  1 ; half = 1d0 - acl(L) ; ip = 0   !   ->   ku     k     kd
 !            else                                                            !   <-      ds2   ds1
 !                k = k2 ; kd = k1 ; is = -1 ; half = acl(L)       ; ip = 3   !   <-   kd     k     ku
 !            endif                                                           ! acL = linkse dx fractie van afstand tussen flownodes (slide 83)
@@ -4088,7 +4087,7 @@ contains
 !
 !                    sl3 = slnup(3+ip,L)
 !                    cf  =  dtmaxwav*abs(cwuL)*dxi(L)
-!                    cf  =  half*max( 0_dp,1_dp-cf )
+!                    cf  =  half*max( 0d0,1d0-cf )
 !                    ds2  =  quant(itheta,kd) - quant(itheta,k)        ! ds1 = voorlopende slope, ds2 = eigen slope
 !                    ds1  = (quant(itheta,k)  - waku )*sl3
 !
@@ -4181,12 +4180,12 @@ contains
 !   do k=1,ndxi
 !      if(hdisp(k).ge.waveps) then
 !          do itheta = 1,ntheta
-!             if (2*pi/L0t(itheta,k)*hdisp(k) > 5_dp) then
+!             if (2*pi/L0t(itheta,k)*hdisp(k) > 5d0) then
 !                 Ltempt(itheta,k) = L0t(itheta,k)
 !              else
-!                 !Ltempt(k) = (2_dp*pi*ag/(sigt(itheta,k)**2))*(1-exp(-(sigt(itheta,k)*sqrt(hdisp(k)/ag))**(5_dp/2_dp)))**(2_dp/5_dp)
+!                 !Ltempt(k) = (2d0*pi*ag/(sigt(itheta,k)**2))*(1-exp(-(sigt(itheta,k)*sqrt(hdisp(k)/ag))**(5d0/2d0)))**(2d0/5d0)
 !                 Ltempt(itheta,k) = iteratedispersion(L0t(itheta,k),Ltempt(itheta,k),pi,hdisp(k))
-!                 if (Ltempt(itheta,k)<0._dp) then   ! this is an error from iteratedispersion
+!                 if (Ltempt(itheta,k)<0.d0) then   ! this is an error from iteratedispersion
 !                    Ltempt(itheta,k) = -Ltempt(itheta,k)
 !                    call writelog('lws','','Warning: no convergence in dispersion relation iteration at t = ', &
 !                       time0)
@@ -4215,8 +4214,8 @@ contains
 !       do itheta=1,ntheta
 !         kwavt(itheta,k)  = 2*pi/max(L1t(itheta,k),waveps)
 !         cwavt(itheta,k)  = sigt(itheta,k)/kwavt(itheta,k)
-!         kh   = min(kwavt(itheta,k)*hdisp(k),10.0_dp)
-!         nwavt(itheta,k)=0.5_dp+kh/max(sinh(2_dp*kh),waveps)
+!         kh   = min(kwavt(itheta,k)*hdisp(k),10.0d0)
+!         nwavt(itheta,k)=0.5d0+kh/max(sinh(2d0*kh),waveps)
 !         cgwavt(itheta,k)=cwavt(itheta,k)*nwavt(itheta,k)
 !      enddo
 !   end do
@@ -4225,7 +4224,7 @@ contains
 !      hh=s1(k)-bl(k)
 !      if (hh<epshu) then
 !         do itheta=1,ntheta
-!            kwavt(itheta,k)=0_dp
+!            kwavt(itheta,k)=0d0
 !         enddo
 !      endif
 !   enddo
@@ -4370,7 +4369,7 @@ contains
          end do
       case (callTypeDirections)
          ! bc vary along the boundary: project to links and then to corners
-         ! flownode2corner does not work here, as inner domain cell centers are 0_dp or have old value
+         ! flownode2corner does not work here, as inner domain cell centers are 0d0 or have old value
          ! values come from wave_bc: ee_s(ntheta_s,nbndw)
          !
          do n = 1, nbndw
@@ -4897,7 +4896,7 @@ contains
       integer, dimension(:, :), allocatable :: indx
       integer :: niter
       integer :: sweep, k, iter, count, k1, k2, ierr
-      real(dp) :: Afac, Bfac, Cfac, cfac_lim, Drst, percok
+      real(dp) :: Afac, Bfac, Cfac, Drst, percok
       real(dp) :: x1, x2, xk, y1, y2, yk
       real(dp) :: costh1, costh2, costhk, sinth1, sinth2, sinthk
       real(dp) :: dtol
@@ -4966,10 +4965,9 @@ contains
                         costhk = cos(thetam(k))
                         sinthk = sin(thetam(k))
                         Cfac = x1 * (y2 - yk) + x2 * (yk - y1) + xk * (y1 - y2)
-                        cfac_lim = sign(max(abs(Cfac), dtol), Cfac)
                         Afac = (F(k1) * costh1 * (y2 - yk) + F(k2) * costh2 * (yk - y1) &
-                                - F(k1) * sinth1 * (x2 - xk) - F(k2) * sinth2 * (xk - x1)) / cfac_lim
-                        Bfac = (costhk * (y1 - y2) - sinthk * (x1 - x2)) / cfac_lim
+                                - F(k1) * sinth1 * (x2 - xk) - F(k2) * sinth2 * (xk - x1)) / max(Cfac, dtol)
+                        Bfac = (costhk * (y1 - y2) - sinthk * (x1 - x2)) / sign(max(abs(Cfac), dtol), Cfac)
                         Drst = 2.0_dp * ag * beta / c(k)**2
                         F(k) = (Dw(k) - Afac) / (Bfac + Drst)
                         Er(k) = F(k) / c(k)
@@ -6065,13 +6063,6 @@ contains
 
       ! distribute dissipation
       do k = 1, ndx
-         if (L1(k) < 1e-1_dp) then
-            sxwav(k) = 0_dp
-            sywav(k) = 0_dp
-            sbxwav(k) = 0_dp
-            sbywav(k) = 0_dp
-            cycle
-         end if
          frc = diss(k) * twav(k) / L1(k)
          !
          dir = degrad * phiwav(k) ! cartesian angle, deg
@@ -6144,8 +6135,8 @@ contains
       if (jawavestokes == NO_STOKES_DRIFT) then
          ustokes = 0.0_dp
          vstokes = 0.0_dp
-         ustx_cc = 0.0_dp
-         usty_cc = 0.0_dp
+         ustx_cc(k) = 0.0_dp
+         usty_cc(k) = 0.0_dp ! output
          return
       end if
 

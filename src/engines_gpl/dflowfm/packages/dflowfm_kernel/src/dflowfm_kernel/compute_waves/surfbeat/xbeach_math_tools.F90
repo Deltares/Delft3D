@@ -431,9 +431,6 @@ contains
          if (stat /= 0) then
             return
          end if
-         ctmp = (0.0_fftkind, 0.0_fftkind)
-         sine = 0.0_fftkind
-         cosine= 0.0_fftkind
          call transform()
          deallocate (sine, cosine, STAT=stat)
          if (stat /= 0) then
@@ -443,7 +440,6 @@ contains
          if (stat /= 0) then
             return
          end if
-         perm = 0
          call permute()
          deallocate (perm, ctmp, STAT=stat)
          if (stat /= 0) then
@@ -451,13 +447,9 @@ contains
          end if
       else
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor))
-         ctmp = (0.0_fftkind, 0.0_fftkind)
-         sine = 0.0_fftkind
-         cosine= 0.0_fftkind
          call transform()
          deallocate (sine, cosine)
          allocate (perm(nperm))
-         perm = 0
          call permute()
          deallocate (perm, ctmp)
       end if
