@@ -146,7 +146,7 @@ contains
 
          total_heat_flux = -heat_transfer_coefficient * (water_temperature_in_cell - backgroundwatertemperature)
          heat_capacity_water_cell_area = rcpi * ba(n)
-         heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction ! fill heat source array
+         heatsrc0(k_top) = heatsrc0(k_top) + total_heat_flux * heat_capacity_water_cell_area * ice_free_area_fraction
 
          if (map_write_settings%heatflux > 0 .or. his_write_settings%heatflux > 0) then ! todo, only at mapintervals
             qtotmap(n) = total_heat_flux
@@ -337,7 +337,7 @@ contains
                free_convective_sensible_heat_flux = min(0.0_dp, -air_density_in_cell * cpa * free_convection_velocity * (surface_temperature - air_temperature_in_cell) * EVAFAC)
             end if
             if (.not. latent_heat_flux_available) then
-               free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * EVAFAC * (air_density_surface + air_density_10m) * 0.5_dp) ! Free convective latent/evaporation heat loss:
+               free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * EVAFAC * (air_density_surface + air_density_10m) * 0.5_dp)
             end if
          end if
          
@@ -394,7 +394,7 @@ contains
          total_area = 0.0_dp
          weighted_sums = 0.0_dp ! array of spatially averaged output
 
-         cell_area_weight = ba(n) ! Spatially averaged time series output :
+         cell_area_weight = ba(n) ! Spatially averaged time series output
          total_area = total_area + cell_area_weight ! Total area
          weighted_sums(1) = time_in_hours / 24.0_dp ! Time in days
          weighted_sums(2) = weighted_sums(2) + cell_area_weight * air_temperature_in_cell
