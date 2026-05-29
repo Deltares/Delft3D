@@ -38,7 +38,8 @@ contains
                                                    xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
                                                    dtnodal, quiet, varname, varname2, targetMaskSelect, &
                                                    tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
-                                                   tgt_item1, tgt_item2, tgt_item3, tgt_item4)
+                                                   tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
+                                                   multuni1, multuni2, multuni3, multuni4)
       use m_fm_wq_processes_sub, only: get_waqinputname
       use m_ec_module, only: ecFindFileReader, ec_filetype_to_conv_type ! TODO: Refactor this private data access (UNST-703).
       use m_ec_filereader_read, only: ecParseARCinfoMask
@@ -84,10 +85,14 @@ contains
       real(kind=dp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
       real(kind=dp), dimension(:), optional, pointer :: tgt_data3 !< optional pointer to the storage location for target data 3 field
       real(kind=dp), dimension(:), optional, pointer :: tgt_data4 !< optional pointer to the storage location for target data 4 field
-      integer, target, optional, intent(inout) :: tgt_item1 !< optional target item ID 1
-      integer, target, optional, intent(inout) :: tgt_item2 !< optional target item ID 2
-      integer, target, optional, intent(inout) :: tgt_item3 !< optional target item ID 3
-      integer, target, optional, intent(inout) :: tgt_item4 !< optional target item ID 4
+      integer, optional, intent(inout), target :: tgt_item1 !< optional target item ID 1
+      integer, optional, intent(inout), target :: tgt_item2 !< optional target item ID 2
+      integer, optional, intent(inout), target :: tgt_item3 !< optional target item ID 3
+      integer, optional, intent(inout), target :: tgt_item4 !< optional target item ID 4
+      integer, optional, intent(inout), target :: multuni1 !< multiple uni item ID 1
+      integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
+      integer, optional, intent(inout), target :: multuni3 !< item ID 3
+      integer, optional, intent(inout), target :: multuni4 !< item ID 4
       !
       integer :: ec_filetype !< EC-module's enumeration.
       integer :: ec_convtype !< EC-module's convType_ enumeration.
@@ -123,7 +128,6 @@ contains
       type(tEcFileReader), pointer :: fileReaderPtr => null() !<
 
       logical :: success
-      logical :: quantity_recognized
       logical :: quiet_
       character(len=NAMTRACLEN) :: trname, sfname, qidname
       character(len=NAMLEN) :: constituent_name
@@ -357,37 +361,19 @@ contains
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
 
-         quantity_recognized = fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
+      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
                                              targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)
-         
-         if (.not. quantity_recognized .and. .not. present(tgt_item1)) then
-            return !> An item must be supplied from either source to create a connection
-         end if
+                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
 
-         ! When tgt_item1 has a valid (pre-created) item ID, or when not recognized, redirect targetItemPtr.
-         ! always overriding breaks the target set by fm_ext_force_name_to_ec_item, but overriding needs to happen to prevent recursive relations
-         ! in a multuni scenario.
+         ! If item not recognised, we can still try to set a connection if the right optional arguments were passed.
          if (present(tgt_item1)) then
-            if (tgt_item1 /= ec_undef_int .or. .not. quantity_recognized) then
-               targetItemPtr1 => tgt_item1
-            end if
+            targetItemPtr1 => tgt_item1
+         else
+            return !> no known name or target_item provided.
          end if
-         if (present(tgt_item2)) then
-            if (tgt_item2 /= ec_undef_int .or. .not. quantity_recognized) then
-               targetItemPtr2 => tgt_item2
-            end if
-         end if
-         if (present(tgt_item3)) then
-            if (tgt_item3 /= ec_undef_int .or. .not. quantity_recognized) then
-               targetItemPtr3 => tgt_item3
-            end if
-         end if
-         if (present(tgt_item4)) then
-            if (tgt_item4 /= ec_undef_int .or. .not. quantity_recognized) then
-               targetItemPtr4 => tgt_item4
-            end if
-         end if
+      end if
+
+      continue
 
       ! Overrule hard-coded pointers to target data by optional pointers passed in the call
       if (present(tgt_data1)) then
@@ -410,6 +396,24 @@ contains
             dataPtr4 => tgt_data4
          end if
       end if
+      
+      ! When a multuni item is provided from the call site, we assume that those
+      ! multuni1..4 item(s) are the ones to be used. Any targetItemPtr1..4 just set
+      ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
+      ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
+      ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
+      if (present(tgt_item1) .and. present(multuni1)) then
+         targetItemPtr1 = ec_undef_int
+      end if
+      if (present(tgt_item2) .and. present(multuni2)) then
+         targetItemPtr2 => tgt_item2
+      end if
+      if (present(tgt_item3) .and. present(multuni3)) then
+         targetItemPtr3 => tgt_item3
+      end if
+      if (present(tgt_item4) .and. present(multuni4)) then
+         targetItemPtr4 => tgt_item4
+      end if
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
@@ -419,6 +423,27 @@ contains
       end if
       if (success) then
          success = createItem(ecInstancePtr, targetItemPtr1, quantityId, elementSetId, fieldId)
+      end if
+      if (present(multuni1)) then ! if multiple-uni item(s) specified:
+         if (multuni1 < 0) then
+            multuni1 = ecInstanceCreateItem(ecInstancePtr)
+            if (.not. ecSetItemRole(ecInstancePtr, multuni1, itemType_target)) then
+               return
+            end if
+         end if
+         connectionId = ecCreateConnection(ecInstancePtr)
+         if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr1)) then
+            return ! connecting source to new converter
+         end if
+         if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni1)) then
+            return ! connecting multuni1 as target item to the new converter
+         end if
+         if (.not. ecCopyItemProperty(ecInstancePtr, multuni1, targetItemPtr1, 'quantityPtr')) then
+            return ! copying the quantity pointer to the multi uni item
+         end if
+         if (.not. ecAddItemConnection(ecInstancePtr, multuni1, connectionId)) then
+            return ! adding the new converter to multuni1
+         end if
       end if
       if (associated(targetItemPtr2)) then
          ! second field (e.g. for 'windxy')
@@ -431,6 +456,27 @@ contains
          end if
          if (success) then
             success = createItem(ecInstancePtr, targetItemPtr2, quantityId, elementSetId, fieldId_2)
+         end if
+         if (present(multuni2)) then ! if multiple-uni item(s) specified:
+            if (multuni2 < 0) then
+               multuni2 = ecInstanceCreateItem(ecInstancePtr)
+               if (.not. ecSetItemRole(ecInstancePtr, multuni2, itemType_target)) then
+                  return
+               end if
+            end if
+            connectionId = ecCreateConnection(ecInstancePtr)
+            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr2)) then
+               return ! connecting source to new converter
+            end if
+            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni2)) then
+               return ! connecting multuni1 as target item to the new converter
+            end if
+            if (.not. ecCopyItemProperty(ecInstancePtr, multuni2, targetItemPtr2, 'quantityPtr')) then
+               return ! copying the quantity pointer to the multi uni item
+            end if
+            if (.not. ecAddItemConnection(ecInstancePtr, multuni2, connectionId)) then
+               return ! adding the new converter to multuni1
+            end if
          end if
       end if
       if (associated(targetItemPtr3)) then
@@ -445,6 +491,27 @@ contains
          if (success) then
             success = createItem(ecInstancePtr, targetItemPtr3, quantityId, elementSetId, fieldId_3)
          end if
+         if (present(multuni3)) then ! if multiple-uni item(s) specified:
+            if (multuni3 < 0) then
+               multuni3 = ecInstanceCreateItem(ecInstancePtr)
+               if (.not. ecSetItemRole(ecInstancePtr, multuni3, itemType_target)) then
+                  return
+               end if
+            end if
+            connectionId = ecCreateConnection(ecInstancePtr)
+            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr3)) then
+               return ! connecting source to new converter
+            end if
+            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni3)) then
+               return ! connecting multuni1 as target item to the new converter
+            end if
+            if (.not. ecCopyItemProperty(ecInstancePtr, multuni3, targetItemPtr3, 'quantityPtr')) then
+               return ! copying the quantity pointer to the multi uni item
+            end if
+            if (.not. ecAddItemConnection(ecInstancePtr, multuni3, connectionId)) then
+               return ! adding the new converter to multuni1
+            end if
+         end if
       end if
       if (associated(targetItemPtr4)) then
          ! fourth field (e.g. for 'humidity_airtemperature_cloudiness_solarradiation'
@@ -457,6 +524,27 @@ contains
          end if
          if (success) then
             success = createItem(ecInstancePtr, targetItemPtr4, quantityId, elementSetId, fieldId_4)
+         end if
+         if (present(multuni4)) then ! if multiple-uni item(s) specified:
+            if (multuni4 < 0) then
+               multuni4 = ecInstanceCreateItem(ecInstancePtr)
+               if (.not. ecSetItemRole(ecInstancePtr, multuni4, itemType_target)) then
+                  return
+               end if
+            end if
+            connectionId = ecCreateConnection(ecInstancePtr)
+            if (.not. ecAddConnectionSourceItem(ecInstancePtr, connectionId, targetItemPtr4)) then
+               return ! connecting source to new converter
+            end if
+            if (.not. ecAddConnectionTargetItem(ecInstancePtr, connectionId, multuni4)) then
+               return ! connecting multuni1 as target item to the new converter
+            end if
+            if (.not. ecCopyItemProperty(ecInstancePtr, multuni4, targetItemPtr4, 'quantityPtr')) then
+               return ! copying the quantity pointer to the multi uni item
+            end if
+            if (.not. ecAddItemConnection(ecInstancePtr, multuni4, connectionId)) then
+               return ! adding the new converter to multuni1
+            end if
          end if
       end if
 
@@ -1512,29 +1600,6 @@ contains
       end if
 
       ec_addtimespacerelation = .true.
-
-      ! If the caller wants to receive the target item ids, pass them back via the optional arguments.
-      if (present(tgt_item1)) then
-         if (tgt_item1 == ec_undef_int) then
-            tgt_item1 = targetItemPtr1
-         end if
-      end if
-      if (present(tgt_item2)) then
-         if (tgt_item2 == ec_undef_int) then
-            tgt_item2 = targetItemPtr2
-         end if
-      end if
-      if (present(tgt_item3)) then
-         if (tgt_item3 == ec_undef_int) then
-            tgt_item3 = targetItemPtr3
-         end if
-      end if
-      if (present(tgt_item4)) then
-         if (tgt_item4 == ec_undef_int) then
-            tgt_item4 = targetItemPtr4
-         end if
-      end if
-
       return
 
       ! Error handling.

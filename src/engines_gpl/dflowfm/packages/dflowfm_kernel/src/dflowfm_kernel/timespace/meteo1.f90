@@ -3816,7 +3816,8 @@ module m_meteo
                                                       xyen, z, pzmin, pzmax, pkbot, pktop, targetIndex, forcingfile, srcmaskfile, &
                                                       dtnodal, quiet, varname, varname2, targetMaskSelect, &
                                                       tgt_data1, tgt_data2, tgt_data3, tgt_data4, &
-                                                      tgt_item1, tgt_item2, tgt_item3, tgt_item4)
+                                                      tgt_item1, tgt_item2, tgt_item3, tgt_item4, &
+                                                      multuni1, multuni2, multuni3, multuni4)
          character(len=*), intent(in) :: name !< Name for the target Quantity, possibly compounded with a tracer name.
          real(hp), dimension(:), intent(in) :: x !< Array of x-coordinates for the target ElementSet.
          real(hp), dimension(:), intent(in) :: y !< Array of y-coordinates for the target ElementSet.
@@ -3844,10 +3845,14 @@ module m_meteo
          real(hp), dimension(:), optional, pointer :: tgt_data2 !< optional pointer to the storage location for target data 2 field
          real(hp), dimension(:), optional, pointer :: tgt_data3 !< optional pointer to the storage location for target data 3 field
          real(hp), dimension(:), optional, pointer :: tgt_data4 !< optional pointer to the storage location for target data 4 field
-         integer, target, optional, intent(inout) :: tgt_item1 !< optional target item ID 1
-         integer, target, optional, intent(inout) :: tgt_item2 !< optional target item ID 2
-         integer, target, optional, intent(inout) :: tgt_item3 !< optional target item ID 3
-         integer, target, optional, intent(inout) :: tgt_item4 !< optional target item ID 4
+         integer, optional, intent(inout), target :: tgt_item1 !< optional target item ID 1
+         integer, optional, intent(inout), target :: tgt_item2 !< optional target item ID 2
+         integer, optional, intent(inout), target :: tgt_item3 !< optional target item ID 3
+         integer, optional, intent(inout), target :: tgt_item4 !< optional target item ID 4
+         integer, optional, intent(inout), target :: multuni1 !< multiple uni item ID 1
+         integer, optional, intent(inout), target :: multuni2 !< multiple uni item ID 2
+         integer, optional, intent(inout), target :: multuni3 !< item ID 3
+         integer, optional, intent(inout), target :: multuni4 !< item ID 4
       end function ec_addtimespacerelation
    end interface
 
