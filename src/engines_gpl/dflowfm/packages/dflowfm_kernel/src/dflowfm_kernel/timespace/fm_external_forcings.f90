@@ -1357,8 +1357,11 @@ contains
 !! Also handles inside one function the old-style *.ext quantities and
 !! the new style *.ext and structures.ini quantities.
    function adduniformtimerelation_objects(qid, location_file, objtype, objid, paramname, paramvalue, targetindex, vectormax, targetarray) result(success)
-      !use fm_external_forcings_data, no1=>qid, no2=>filetype, no3=>operand, no4 => success
       use m_meteo, no5 => qid, no6 => filetype, no7 => operand, no8 => success
+      use m_ec_module, only: ecInstanceCreateItem, ecSetItemRole, ecCreateConnection, &
+                             ecAddConnectionSourceItem, ecAddConnectionTargetItem, &
+                             ecCopyItemProperty, ecAddItemConnection
+      use m_ec_parameters, only: itemType_target
       use m_transportdata, only: NAMLEN
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
@@ -1385,6 +1388,7 @@ contains
       real(kind=dp), pointer :: targetarrayptr(:)
       real(kind=dp), pointer :: dbleptr(:)
       integer :: tgtitem
+      integer :: multuni_connectionId
       integer, pointer :: intptr, multuniptr
       logical :: file_exists
 
@@ -1428,19 +1432,28 @@ contains
             write (msgbuf, '(a,a,a,a,a)') 'Control for ', trim(objtype), ''''//trim(objid)//''', ', paramname, ' set to REALTIME.'
             call dbg_flush()
          else
+            ! Resolve the global (multuni) item pointer for this quantity.
+            ! This is the shared item that aggregates all individual time series
+            ! for objects of the same type (e.g. item_lateraldischarge for all laterals).
             qid_base = qid
             call get_constituent_name(qid, const_name, qid_base)
-            if (fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
-               success = .true.
-            else
+            if (.not. fm_ext_force_name_to_ec_item('', '', '', const_name, qid_base, multuniptr, intptr, intptr, intptr, dbleptr, dbleptr, dbleptr, dbleptr)) then
                success = .false.
                write (msgbuf, '(a)') 'Unknown quantity '''//trim(qid)//'''.'
                call err_flush()
                return
             end if
 
+            ! Pre-create a target item, as ec_addtimespacrelation requires an item to connect to the multuni object. 
+            tgtitem = ecInstanceCreateItem(ecInstancePtr)
+            if (.not. ecSetItemRole(ecInstancePtr, tgtitem, itemType_target)) then
+               success = .false.
+               return
+            end if
+
             fnam = trim(valuestring)
-            ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
+            ! Time-interpolated value will be placed in target array (e.g., qplat(n))
+            ! when calling ec_gettimespacevalue.
             if (index(trim(fnam)//'|', '.tim|') > 0) then
                ! uniform=single time series vectormax = 1
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
@@ -1449,20 +1462,52 @@ contains
                                                  operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
-                                                 multuni1=multuniptr, &
                                                  targetIndex=targetindex)
             elseif (index(trim(fnam)//'|', '.bc|') > 0) then
                ! uniform=single time series vectormax = 1
-
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
                                                  filetype=bcascii, &
                                                  method=spaceandtime, &
                                                  operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
-                                                 multuni1=multuniptr, &
                                                  targetIndex=targetindex, &
                                                  forcingFile=fnam)
+            end if
+
+            ! Wire the tgtitem to the multuniptr. This creates a connection chain:
+            ! file => tgtitem => multuniptr, so that ec_gettimespacevalue(multuniptr) triggers all chained items.
+            if (success) then
+               ! Lazily create the shared aggregator item on first use.
+               if (multuniptr < 0) then
+                  multuniptr = ecInstanceCreateItem(ecInstancePtr)
+                  if (.not. ecSetItemRole(ecInstancePtr, multuniptr, itemType_target)) then
+                     success = .false.
+                     return
+                  end if
+               end if
+               ! Create a new connection object for the multuni connection.
+               multuni_connectionId = ecCreateConnection(ecInstancePtr)
+               ! tgtitem is the source, its data feeds into multuniptr.
+               if (.not. ecAddConnectionSourceItem(ecInstancePtr, multuni_connectionId, tgtitem)) then
+                  success = .false.
+                  return
+               end if
+               ! multuniptr is the target, receives the converted result.
+               if (.not. ecAddConnectionTargetItem(ecInstancePtr, multuni_connectionId, multuniptr)) then
+                  success = .false.
+                  return
+               end if
+               ! Propagate quantity metadata so the converter knows data layout.
+               if (.not. ecCopyItemProperty(ecInstancePtr, multuniptr, tgtitem, 'quantityPtr')) then
+                  success = .false.
+                  return
+               end if
+               ! Attach connection to multuniptr so it is traversed when ec_gettimespacevalue(multuniptr) is called.
+               if (.not. ecAddItemConnection(ecInstancePtr, multuniptr, multuni_connectionId)) then
+                  success = .false.
+                  return
+               end if
             end if
          end if
       else
@@ -2497,9 +2542,9 @@ contains
 
    end subroutine setup
 
-!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read.
 !> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
-!> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+!> filling the geometry of the source/sinks and bubblescreens. (used for output)
    subroutine finalize_source_sinks()
       use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
       use m_alloc, only: realloc
@@ -2530,12 +2575,12 @@ contains
          end associate
       end do
 
-      if(jampi == 1) then
-        call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
+      if (jampi == 1) then
+         call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
       end if
 
       ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
-      is_source_sink_normal = .NOT. is_source_sink_bubblescreen
+      is_source_sink_normal = .not. is_source_sink_bubblescreen
       num_normal_source_sink = count(is_source_sink_normal)
 
       call fill_geometry_source_sinks()
