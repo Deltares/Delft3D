@@ -170,7 +170,7 @@ contains
                               is_hu_changed = .true.
                            end if
                         end do
-                     case (8) ! set dry all attached links
+                     case (8) ! set dry all attached links, do not redo timestep
                         do link_index = 1, nd(node)%lnx
                            link = abs(nd(node)%ln(link_index))
                            upwind_waterheight(link) = SET_VALUE
