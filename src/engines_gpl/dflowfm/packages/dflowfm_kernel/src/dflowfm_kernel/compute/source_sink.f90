@@ -314,6 +314,11 @@ contains
          call split_filename(polyline_file, path, name_, ext)
       end if
 
+      ! Initialize source_sinks if not already done.
+      if (.not. allocated(source_sinks%name)) then
+         call source_sinks%initialize(1)
+      end if
+
       ! Add the source/sink to the model based on prepared polyline data.
       call addsorsin(trim(name_), xpl(1:npl), ypl(1:npl), z_source_, z_sink_, area, ierr)
 
