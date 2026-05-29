@@ -103,7 +103,7 @@ contains
       if (.not. is_successful) then
          write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
          call warn_flush()
-      else if ((major == 0)) then
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
@@ -864,7 +864,7 @@ contains
                  variable_name => input%variable_name, &
                  is_static_field => input%is_static_field)
 
-         if (filetype == FIELD1D) then !> field1d is a legacy special, TODO: refactor.
+         if (filetype == FIELD1D) then ! field1d is special, since it is not yet part of EC-module data reading+interpolation. TODO: refactor.
             res = init_field1d_block(quantity, forcing_file, file_name)
             return
          end if
@@ -908,20 +908,20 @@ contains
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
          if (len_trim(input%location_type) > 0 .and. (target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
-            ! Node-based quantities: use prepare_lateral_mask to correctly exclude pipe/culvert links (prof1D).
+            ! Node-based quantities: use prepare_lateral_mask to set the mask to 1D, 2D or all nodes.
             call prepare_lateral_mask(mask, parse_location_type(input%location_type))
          else
-            ! Link/corner-based quantities, or polygon mask override: use standard mask construction.
+            ! Not node-based, or polygon mask override: use standard mask construction. TODO: replace with single masking function.
             call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
          end if
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
          if (is_static_field) then
-            if (target_location_type == UNC_LOC_3DV) then !> vertical profiles are special
+            if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
                call setinitialverticalprofile(target_data, size(target_data), forcing_file)
                res = .true.
-            else !> normal spatial field
+            else ! normal spatial field
                block
                   real(dp) :: transformcoef(NTRANSFORMCOEF)
                   transformcoef = -999.0_dp
@@ -934,7 +934,7 @@ contains
                   if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
                      call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
                      oper_backup = oper
-                     oper = OPERAND_OVERRIDE !> first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
+                     oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
                   end if
 
                   if (associated(target_data)) then
@@ -976,7 +976,8 @@ contains
             end select
          end if
 
-         !> explicitly set annoying time_dependent flags, TODO: refactor
+         !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
+         !  TODO: remove them by handling time-dependence generically.
          if (.not. is_static_field) then
             select case (str_tolower(quantity))
             case ('frictioncoefficient')
@@ -988,7 +989,7 @@ contains
 
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) then !> Friction coefficient is a special case, requires additional reading
+            if (.not. res) then ! Friction coefficient is a special case, requires additional reading
                if (strcmpi(quantity, 'frictioncoefficient')) then
                   res = set_friction_type_values_explicit(block_ptr, input%oper)
                end if

@@ -104,7 +104,7 @@ contains
       if (len_trim(res%forcing_file) == 0) then
          call prop_get(block_ptr, '', 'dataFile', res%forcing_file)
       end if
-      if (len_trim(res%variable_name) == 0) then !> forcing variable name alias is datavariablename
+      if (len_trim(res%variable_name) == 0) then
          call prop_get(block_ptr, '', 'dataVariableName', res%variable_name)
       end if
 
