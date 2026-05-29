@@ -391,7 +391,7 @@ module fm_external_forcings_data
       integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
       real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
       real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
-      logical, dimension(:), allocatable :: isActive !< True if computation is currently possible for each flow cell. {size=num_flowcells}
+      logical, dimension(:), allocatable :: is_active !< True if computation is currently possible (min 3 layers above z-level). {size=num_flowcells}
    end type t_Bubblescreen
 
    type(t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< Array containing all bubble screens

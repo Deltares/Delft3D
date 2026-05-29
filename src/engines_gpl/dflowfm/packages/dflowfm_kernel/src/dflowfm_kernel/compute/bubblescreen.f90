@@ -58,10 +58,10 @@ contains
 
          call find_active_layer_interfaces(bubblescreen, n, i_flowcell, k_start, k_stop, k_max_velocity)
 
-         if (bubblescreen%isActive(i_flowcell)) then
+         if (bubblescreen%is_active(i_flowcell)) then
             call update_bubblescreen_source_sink_layer_indices(bubblescreen%source_sink_indices(i_flowcell), k_start, k_stop, k_max_velocity)
          else 
-            local_water_discharge = 0.0_dp ! Set discharge to zero if insufficient active layers
+            local_water_discharge = 0.0_dp
          end if
          call update_bubblescreen_source_sink_discharge(bubblescreen%source_sink_indices(i_flowcell), local_water_discharge)
 
@@ -161,24 +161,26 @@ contains
       ! Require at least 3 active layers in the bubble screen
       if (k_stop - k_start < 3) then
          ! Currently has insufficient layers - show warning only if this is a state change
-         if (bubblescreen%isActive(flowcell_index)) then
+         if (bubblescreen%is_active(flowcell_index)) then
             if (zws(k_start) < bubblescreen%z_level) then
-               write (msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, ' computation no longer possible: water is below z=', &
+               write (msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, &
+                  ' computation no longer possible: water level is below bubble screen z=', &
                   bubblescreen%z_level, ' and z=', zws(k_stop), '.'
             else
-               write (msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, ' computation no longer possible: insufficient active layers (min 3) between z=', &
-                  bubblescreen%z_level, ' and z=', zws(k_stop), '. Increase bubble screen vertical extent or check flow cell water level.'
+               write (msgbuf, '(A,A,A,I0,A,F7.2,A,F7.2,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, &
+                  ' computation no longer possible: insufficient active layers (min 3) between bubble screen z=', &
+                  bubblescreen%z_level, ' and water level z=', zws(k_stop), '.'
             end if
             call warn_flush()
-            bubblescreen%isActive(flowcell_index) = .false.
+            bubblescreen%is_active(flowcell_index) = .false.
          end if
          return
       else
          ! Currently has sufficient layers - show message if recovering from error state
-         if (.not. bubblescreen%isActive(flowcell_index)) then
+         if (.not. bubblescreen%is_active(flowcell_index)) then
             write (msgbuf, '(A,A,A,I0,A)') 'Bubble screen "', trim(bubblescreen%id), '" in flow cell ', flow_cell_index, ' computation is now possible again.'
             call msg_flush()
-            bubblescreen%isActive(flowcell_index) = .true.
+            bubblescreen%is_active(flowcell_index) = .true.
          end if
       end if
 
