@@ -47,14 +47,11 @@ object LinuxConanPackages : BuildType({
                 source /etc/bashrc
                 set -eo pipefail
 
-                # Initialize Conan with Deltares Nexus remotes and local recipes
                 python run_conan.py initialize deltares --ci
 
-                # Rebuild all packages from local recipes
                 python run_conan.py install --rebuild-packages --ci
 
-                # Upload all packages in the local cache to the deltares-conan-dev remote
-                conan upload "*" --remote=delft3d-conan-dev --confirm
+                python run_conan.py upload --remote=delft3d-conan-dev --ci
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux

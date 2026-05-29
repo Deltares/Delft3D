@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import argparse
 import enum
+import json
 import platform
 import subprocess
 import sys
+from collections.abc import Generator
 from pathlib import Path
 
 CONFIG_DIR = Path("conan/config")
@@ -58,9 +60,9 @@ def setup_conan_config_external(*, ci: bool = False) -> None:
 
 
 class BuildPolicy(enum.Enum):
-    NONE = "none" # Build no packages from source, only use pre-built binaries from remotes.
-    MISSING = "missing" # Build packages from source if a pre-built binary is not available from remotes.
-    ALL = "all" # Build all packages from source using local recipes only, do not use any pre-built binaries from remotes.
+    NONE = "none"  # Build no packages from source, only use pre-built binaries from remotes.
+    MISSING = "missing"  # Build packages from source if a pre-built binary is not available from remotes.
+    ALL = "all"  # Build all packages from source using local recipes only, do not use any pre-built binaries from remotes.
 
 
 def clean_conan_cache() -> None:
@@ -68,9 +70,7 @@ def clean_conan_cache() -> None:
     subprocess.run(["conan", "cache", "clean"], check=True)
 
 
-def update_lockfile(
-    profile: str
-) -> None:
+def update_lockfile(profile: str) -> None:
     """Generate or update conan.lock from the current conanfile and recipes."""
     cmd = [
         "conan",
@@ -80,7 +80,7 @@ def update_lockfile(
         "--settings:all",
         "build_type=Release",
         f"--lockfile-out={LOCKFILE}",
-        "--remote=local-recipes"
+        "--remote=local-recipes",
     ]
 
     print(f"Updating lockfile {LOCKFILE}...")
@@ -122,6 +122,53 @@ def conan_install(
         cmd += ["--settings:all", f"&:build_type={consumer_build_type}"]
 
     subprocess.run(cmd, check=True)
+
+
+def _iter_packages(data: dict) -> Generator[tuple[str, str, str], None, None]:
+    return (
+        (ref, rrev, pkg_id)
+        for ref, ref_data in data.items()
+        for rrev, rrev_data in ref_data.get("revisions", {}).items()
+        for pkg_id in rrev_data.get("packages", {})
+    )
+
+
+def upload_new_packages(remote: str, *, ci: bool = False) -> None:
+    """Upload only packages whose recipe_revision + package_id don't exist on the remote yet."""
+    local_json = subprocess.run(
+        ["conan", "list", "*:*", "--format=json"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    remote_json = subprocess.run(
+        ["conan", "list", "*:*", f"--remote={remote}", "--format=json"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+
+    local_data = json.loads(local_json).get("Local Cache", {})
+    remote_data = json.loads(remote_json).get(remote, {})
+
+    remote_packages = set(_iter_packages(remote_data))
+
+    uploaded = 0
+    skipped = 0
+
+    for ref, rrev, pkg_id in _iter_packages(local_data):
+        if (ref, rrev, pkg_id) in remote_packages:
+            print(f"SKIP (already on remote): {ref}#{rrev}:{pkg_id}")
+            skipped += 1
+        else:
+            print(f"UPLOAD: {ref}#{rrev}:{pkg_id}")
+            cmd = ["conan", "upload", f"{ref}#{rrev}:{pkg_id}", f"--remote={remote}", "--confirm", "--check"]
+            if ci:
+                cmd += ["--core-conf", "core:non_interactive=True"]
+            subprocess.run(cmd, check=True)
+            uploaded += 1
+
+    print(f"\nDone. Uploaded: {uploaded}, skipped: {skipped}")
 
 
 def _get_profile() -> str:
@@ -234,6 +281,10 @@ def cmd_install(args: argparse.Namespace) -> None:
     )
 
 
+def cmd_upload(args: argparse.Namespace) -> None:
+    upload_new_packages(args.remote, ci=args.ci)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Manage Conan dependencies for the Delft3D repository.",
@@ -303,6 +354,19 @@ def main() -> None:
         help="Output folder for Conan install files.",
     )
     parser_install.set_defaults(func=cmd_install)
+
+    # --- upload ---
+    parser_upload = subparsers.add_parser(
+        "upload",
+        help="Upload packages to a remote, skipping those already present (same recipe revision + package id).",
+    )
+    parser_upload.add_argument(
+        "--remote",
+        required=True,
+        help="Name of the Conan remote to upload to.",
+    )
+    parser_upload.add_argument("--ci", action="store_true", help="Non-interactive mode.")
+    parser_upload.set_defaults(func=cmd_upload)
 
     args = parser.parse_args()
     if not args.command:

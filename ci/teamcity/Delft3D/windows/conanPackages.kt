@@ -50,7 +50,7 @@ object WindowsConanPackages : BuildType({
                 python run_conan.py install --rebuild-packages --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                conan upload "*" --remote=delft3d-conan-dev --confirm
+                python run_conan.py upload --remote=delft3d-conan-dev --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%"
