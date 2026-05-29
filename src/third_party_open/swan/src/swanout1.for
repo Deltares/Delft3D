@@ -243,7 +243,7 @@
       REAL, ALLOCATABLE :: EBLOC(:,:,:)
 !
       INTEGER, ALLOCATABLE :: IONOD(:)                                    40.51
-      REAL, ALLOCATABLE :: ACLOC(:), AUX1(:), AC2LOC(:), VOQ(:)           40.31
+      REAL, ALLOCATABLE :: ACLOC(:), AUX1(:), VOQ(:)                     40.31
       REAL, ALLOCATABLE :: FORCE(:,:)                                     40.80
       REAL              :: KNUM(MSC), CG(MSC), NE(MSC), NED(MSC)          40.31
       TYPE(OPSDAT), POINTER :: CUOPS                                      40.31
@@ -409,20 +409,6 @@
 !         call SWOEXF to compute wave-driven force on regular grid
 !
           IF (OQPROC(20) .AND. OPTG.NE.5) THEN                            40.80 40.13
-             IF (PARLL) THEN
-                CALL SWEXCHG( COMPDA(1,JDP2), KGRPNT )
-                CALL SWEXCHG( COMPDA(1,JHS ), KGRPNT )
-                ALLOCATE(AC2LOC(MCGRD))
-                DO ID = 1, MDC
-                   DO IS = 1, MSC
-                      AC2LOC(:) = AC2(ID,IS,:)
-                      CALL SWEXCHG( AC2LOC, KGRPNT )
-                      AC2(ID,IS,:) = AC2LOC(:)
-                   END DO
-                END DO
-                DEALLOCATE(AC2LOC)
-                IF (STPNOW()) RETURN
-             ENDIF
              CALL SWOEXF (MIP                 ,VOQ(1+2*MIP)         ,     40.31 30.90
      &                   VOQ(1+3*MIP)        ,VOQR                 ,      40.31 30.90
      &                   VOQ(1)              ,AC2                  ,      40.31 30.90
@@ -5372,8 +5358,7 @@
 !
 !  6. Local variables
 !
-!     AC2LOC       Local action density
-!     ACWAVE       Action density in output point
+!     ACWAV        Action density in output point
 !     ACWI, ACWJ   dAC/dI and dAC/dJ
 !     ACWX         X-gradient of local action density
 !     ACWY         Y-gradient of local action density
@@ -5438,7 +5423,6 @@
 !     STPNOW           Logical indicating whether program must
 !                      terminated or not
 !     STRACE           Tracing routine for debugging
-!     SWEXCHG          exchanges AC2 at subdomain boundaries
 !TIMG!     SWTSTA           Start timing for a section of code
 !TIMG!     SWTSTO           Stop timing for a section of code
 !
@@ -5607,6 +5591,12 @@
         IND7 = KGRPNT(JX  ,JYLO)                                          30.21
         IND8 = KGRPNT(JX  ,JYUP)                                          30.21
         IND9 = KGRPNT(JX  ,JY  )                                          30.21
+!
+!       In parallel runs, output points on a computational-grid node may
+!       lie on a subdomain cut.  The owner rank writes the point, but the
+!       central stencil can include a non-owned/missing neighbour.  Use a
+!       one-sided stencil only when the point itself and the opposite
+!       neighbour are valid; otherwise keep the original exception path.
         IF (PARLL .AND. ONX .AND. ONY) THEN
           OK5 = DEP2(IND5).GT.DEPMIN .AND. HS(IND5).NE.0.
           OK6 = DEP2(IND6).GT.DEPMIN .AND. HS(IND6).NE.0.
