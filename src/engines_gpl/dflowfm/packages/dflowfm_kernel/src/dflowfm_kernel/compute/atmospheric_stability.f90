@@ -19,7 +19,6 @@ module m_atmospheric_stability
 !!   - Charnock parameter 
    use precision, only: dp
    use m_sferic, only: pi
-   use m_globalparameters, only: gravity
    use m_physcoef, only: vonkarw
    
    implicit none(type, external)
@@ -45,6 +44,7 @@ module m_atmospheric_stability
    real(kind=dp), parameter :: HEIGHT_WIND_VELOCITY = 10.0_dp ! sensor height for wind velocity [m]
    real(kind=dp), parameter :: HEIGHT_TEMPERATURE = 2.0_dp ! sensor height for temperature [m]
    real(kind=dp), parameter :: HEIGHT_HUMIDITY = 2.0_dp ! sensor height for specific humidity [m]
+   real(kind=dp), parameter :: CONST_GRAVITY = 9.80665_dp ! gravitational acceleration [m/s2]
    real(kind=dp), parameter :: CONST_R = 8.31451_dp ! universal gas constant [J/(mol K)]
    real(kind=dp), parameter :: CONST_Md = 28.9644e-3_dp ! dry air molar mass [kg/mol]
    real(kind=dp), parameter :: CONST_Mv = 18.0153e-3_dp ! water vapor molar mass [kg/mol]
@@ -526,7 +526,7 @@ contains
       real(kind=dp) :: inverse_u_star
 
       inverse_u_star = 1.0_dp / sign(max(abs(u_star), SMALL_NUMBER), u_star)
-      z0_momentum = ALPHA_M*CONST_NU_AIR*inverse_u_star + charnock*u_star*u_star/gravity
+      z0_momentum = ALPHA_M*CONST_NU_AIR*inverse_u_star + charnock*u_star*u_star/CONST_GRAVITY
       z0_heat = ALPHA_H*CONST_NU_AIR*inverse_u_star
       z0_humidity = ALPHA_Q*CONST_NU_AIR*inverse_u_star
    end subroutine compute_roughness_lengths
@@ -587,7 +587,7 @@ contains
       air_virtual_temperature = air_temperature * (1.0_dp + CONST_EST*air_specific_humidity)
       virtual_temperature_difference = air_virtual_temperature - surface_virtual_temperature
 
-      richardson_number = gravity * virtual_temperature_difference * HEIGHT_WIND_VELOCITY / &
+      richardson_number = CONST_GRAVITY * virtual_temperature_difference * HEIGHT_WIND_VELOCITY / &
                                max(air_virtual_temperature*wind_speed*wind_speed, 1.0e-10_dp)
    end function compute_richardson_number
 
@@ -658,7 +658,7 @@ contains
 
       virtual_temperature_scale = temperature_scale*(1.0_dp + air_specific_humidity*CONST_EST) + &
                                   (CONST_EST*air_temperature*humidity_scale)
-      buoyancy_flux = max(0.0_dp, -gravity*friction_velocity*virtual_temperature_scale / max(air_temperature, 1.0e-8_dp))
+      buoyancy_flux = max(0.0_dp, -CONST_GRAVITY*friction_velocity*virtual_temperature_scale / max(air_temperature, 1.0e-8_dp))
       convective_velocity_scale = (buoyancy_flux*boundary_layer_height)**(1.0_dp/3.0_dp)
    end function compute_convective_velocity_scale
 

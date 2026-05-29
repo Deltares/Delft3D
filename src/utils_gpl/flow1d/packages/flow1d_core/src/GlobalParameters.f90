@@ -35,7 +35,7 @@ module m_GlobalParameters
    
    public
    
-   double precision                 :: gravity                       = 9.80665d0
+   double precision                 :: gravity                       = 9.81d0
    logical                          :: anyGroundLayer                = .false.
    logical                          :: anySummerDike                 = .false.
    !TODO: Remove these drying and flooding options and also in all compute structure subroutines. This should be handled by Hu(L)
