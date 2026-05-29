@@ -98,4 +98,7 @@ object WindowsBuild2D3DSP : BuildType({
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
     }
+    requirements {
+        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2022")
+    }
 })
