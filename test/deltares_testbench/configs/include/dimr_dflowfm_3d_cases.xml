@@ -2007,4 +2007,26 @@
         </file>
       </checks>
     </testCase>    
+    <testCase name="e02_f211_c04_bubblescreen_edge_z" ref="dflowfm_config">
+      <path version="2026-05-27T12:08:29.931000">e02_dflowfm/f211_bubblescreens/c04_bubblescreen_edge_z</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/SimpleBucket_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="water_balance_total_volume" toleranceRelative="0.05" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
+    <testCase name="e02_f211_c05_bubblescreen_edge_sigma" ref="dflowfm_config">
+      <path version="2026-05-28T09:55:55.696000">e02_dflowfm/f211_bubblescreens/c05_bubblescreen_edge_sigma</path>
+      <maxRunTime>600.0000000</maxRunTime>
+      <checks>
+        <file name="output/SimpleBucket_his.nc" type="netCDF">
+          <parameters>
+            <parameter name="water_balance_total_volume" toleranceRelative="0.05" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
   </testCases>
