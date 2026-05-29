@@ -734,13 +734,13 @@ contains
    function init_field1d_block(quantity, forcing_file, file_name) result(res)
       use stdlib_kinds, only: c_bool
       use timespace_parameters, only: FIELD1D
-      use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, &
-                                   set_global_values, set_global_water_values, finish_initialization, &
-      accumulate_1dfield_global, specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
+      use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, set_global_values, set_global_water_values, finish_initialization, &
+      specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
       use m_flowgeom, only: ndx2D, ndxi, lnx1d
       use dfm_error, only: DFM_NOERR
       use messageHandling, only: err_flush, msgbuf
       use string_module, only: str_tolower
+      use m_alloc, only: realloc
 
       character(len=*), intent(in) :: quantity !< Quantity name as it appears in the ext block.
       character(len=*), intent(in) :: forcing_file !< Path to the 1dField .ini file.
@@ -770,16 +770,19 @@ contains
       res = (ierr == DFM_NOERR)
       if (.not. res) return
 
+      !> accumulate specified indices in global mask arrays, will be applied after all processing is done.
       select case (str_tolower(source_quantity_name))
       case ('waterlevel', 'waterdepth')
-         call accumulate_1dfield_global(specified_water_1dfield, ndxi - ndx2D, specified_indices)
+         call realloc(specified_water_1dfield, ndxi - ndx2D, fill=.false._c_bool, keepExisting=.true.)
+         specified_water_1dfield = specified_water_1dfield .or. specified_indices
          if (global_value_provided) then
             water_global_value_1dfield = global_value
             water_global_quantity_1dfield = quantity
          end if
 
       case ('frictioncoefficient')
-         call accumulate_1dfield_global(specified_friction_1dfield, lnx1d, specified_indices)
+         call realloc(specified_friction_1dfield, lnx1d, fill=.false._c_bool, keepExisting=.true.)
+         specified_friction_1dfield = specified_friction_1dfield .or. specified_indices
          if (global_value_provided) then
             friction_global_value_1dfield = global_value
          end if

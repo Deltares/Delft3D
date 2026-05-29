@@ -49,7 +49,7 @@ module unstruc_inifields
    public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
              set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
-             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, accumulate_1dfield_global, finalize_1dfield_globals
+             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values
 
    !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -166,24 +166,8 @@ contains
       end select
    end subroutine set_global_water_values
 
-    !> Accumulate specified indices into a deferred 1dField mask.
-   subroutine accumulate_1dfield_global(specified, num_points, specified_indices)
-      use stdlib_kinds, only: c_bool
-      use m_alloc, only: realloc
-
-      logical(kind=c_bool), allocatable, intent(inout) :: specified(:)
-      integer, intent(in) :: num_points
-      logical(kind=c_bool), intent(in) :: specified_indices(:)
-
-      if (.not. allocated(specified)) then
-         call realloc(specified, num_points, fill=.false._c_bool, keepExisting=.false.)
-      end if
-
-      specified = specified .or. specified_indices
-   end subroutine accumulate_1dfield_global
-
-   !> Apply deferred 1dField global values for water and friction, only for those points that have not been set already. Call once after all init_new calls.
-   subroutine finalize_1dfield_globals()
+   !> Apply 1dField global values for water and friction, only for those points that have not been set already. Call once after all init_new calls.
+   subroutine finalize_1dfield_global_values()
       use m_flow, only: s1, hs, frcu
       use m_flowgeom, only: bl, ndx2D, ndxi, lnx1d
       use m_missing, only: dmiss
@@ -205,7 +189,7 @@ contains
          deallocate(specified_friction_1dfield)
          friction_global_value_1dfield = dmiss
       end if
-   end subroutine finalize_1dfield_globals
+   end subroutine finalize_1dfield_global_values
 
    !> Reads and initializes an initial field file.
    !! The IniFieldFile can contain multiple [Initial] and [Parameter] blocks
@@ -2742,6 +2726,7 @@ end function resolve_initial_3d_target
       use network_data, only: xk, yk, numk
       use m_flowgeom, only: ndx, lnx, xu, yu
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_CN
+      use m_lateral_helper_fuctions, only: prepare_lateral_mask
 
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.

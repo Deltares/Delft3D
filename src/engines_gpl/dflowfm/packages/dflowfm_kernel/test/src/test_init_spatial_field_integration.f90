@@ -966,7 +966,7 @@ contains
    subroutine test_field1d_global_value_applied_to_frictioncoefficient() bind(C)
       use m_flow, only: frcu
       use m_flowgeom, only: lnx, lnx1d
-      use unstruc_inifields, only: finalize_1dfield_globals
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
       type(tree_data), pointer :: bnd_ptr, block_ptr
       logical :: success
@@ -1001,7 +1001,7 @@ contains
       call parse_spatial_block(EXT_FILE, bnd_ptr, block_ptr)
       success = init_spatial_fields(block_ptr, BASE_DIR, EXT_FILE, 'Parameter')
       call tree_destroy(bnd_ptr)
-      call finalize_1dfield_globals()
+      call finalize_1dfield_global_values()
 
       ! ASSERT
       call f90_expect_true(success, "init_spatial_fields should succeed for a 1dField frictioncoefficient block")
