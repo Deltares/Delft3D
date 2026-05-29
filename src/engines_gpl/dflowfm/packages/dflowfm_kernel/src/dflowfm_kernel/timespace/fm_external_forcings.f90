@@ -757,12 +757,16 @@ contains
          return
       end if
 
-      ! check FileVersion
-      major = 1
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
          call err_flush()
          return
       end if
