@@ -50,7 +50,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use m_source_sink, only: setsorsin, source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
    use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -64,7 +64,6 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
-   use m_source_sink, only: setsorsin
 
    implicit none
 
