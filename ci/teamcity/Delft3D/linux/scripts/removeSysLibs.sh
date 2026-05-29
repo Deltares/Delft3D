@@ -8,7 +8,6 @@ rm -fv \
     libcurl.so.* \
     librt.so.* \
     libpthread.so.* \
-    libm.so.* \
     libgcc_s.so.* \
     libselinux.so.* \
     libbz2.so.* \
