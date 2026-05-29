@@ -1030,7 +1030,6 @@ contains
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap

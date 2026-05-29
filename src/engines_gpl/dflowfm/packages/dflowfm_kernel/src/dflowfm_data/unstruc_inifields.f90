@@ -1389,7 +1389,6 @@ contains
       use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, temperature_model, &
                                   TEMPERATURE_MODEL_NONE, initem2D, inivel
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_sediment, only: stm_included, sed, jased, sedh
@@ -1671,7 +1670,6 @@ contains
                                   waveforcing, ja_friction_coefficient_time_dependent
       use m_flow, only: frcu, jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
@@ -2601,7 +2599,6 @@ end function resolve_initial_3d_target
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
@@ -2745,7 +2742,6 @@ end function resolve_initial_3d_target
       use network_data, only: xk, yk, numk
       use m_flowgeom, only: ndx, lnx, xu, yu
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_CN
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
 
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
