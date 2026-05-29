@@ -27,6 +27,4 @@ RUN set -eo pipefail && \
     python3 -m pip install --requirement "/tmp/lnx-requirements.txt" --break-system-packages --ignore-installed && \
     rm --verbose "/tmp/lnx-requirements.txt"
 
-ENV LD_LIBRARY_PATH=/opt/dimrset/lib
-
 CMD [ "python3" ]

@@ -4,14 +4,12 @@ rm -fv \
     libssh.so.* \
     libstdc++.so.* \
     libgcc.* \
-    libuuid.so.* \
     libdl.so.* \
     libcurl.so.* \
     librt.so.* \
     libpthread.so.* \
     libm.so.* \
     libgcc_s.so.* \
-    libz.so.* \
     libselinux.so.* \
     libbz2.so.* \
     libcom_err.so.* \
@@ -26,8 +24,5 @@ rm -fv \
     libpcre2-8.so.* \
     libresolv.so.* \
     libsasl2.so.* \
-    libsqlite3.so.* \
-    libxml2.so.* \
-    libzstd.so.* \
     libssl.so.* \
     libcrypt*
