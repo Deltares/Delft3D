@@ -136,7 +136,7 @@ contains
       type(tEcMask) :: srcmask
 
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
-      logical :: exist, opened, withCharnock, withStress
+      logical :: exist, opened, withCharnock, withStress, quantity_found
 
       real(kind=dp) :: relrow, relcol
       real(kind=dp), allocatable :: transformcoef(:)
@@ -361,21 +361,27 @@ contains
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
 
-      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
-                                             targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
+      quantity_found = fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
+                                                    dataPtr1, dataPtr2, dataPtr3, dataPtr4)
 
-         ! If item not recognised, we can still try to set a connection if the right optional arguments were passed.
-         if (present(tgt_item1)) then
-            targetItemPtr1 => tgt_item1
-         else
-            return !> no known name or target_item provided.
-         end if
+      if (.not. quantity_found .and. .not. present(tgt_item1)) then
+         return ! a target item must be supplied from either source
       end if
 
-      continue
+      ! we don not want to override fm_ext_force_name_to_ec_item result, unless multuni is present.
+      if (present(tgt_item1) .and. (present(multuni1) .or. .not. quantity_found)) then
+         targetItemPtr1 => tgt_item1
+      end if
+      if (present(tgt_item2) .and. (present(multuni2) .or. .not. quantity_found)) then
+         targetItemPtr2 => tgt_item2
+      end if
+      if (present(tgt_item3) .and. (present(multuni3) .or. .not. quantity_found)) then
+         targetItemPtr3 => tgt_item3
+      end if
+      if (present(tgt_item4) .and. (present(multuni4) .or. .not. quantity_found)) then
+         targetItemPtr4 => tgt_item4
+      end if
 
-      ! Overrule hard-coded pointers to target data by optional pointers passed in the call
       if (present(tgt_data1)) then
          if (associated(tgt_data1)) then
             dataPtr1 => tgt_data1
@@ -402,18 +408,7 @@ contains
       ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
       ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
       ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
-      if (present(tgt_item1) .and. present(multuni1)) then
-         targetItemPtr1 = ec_undef_int
-      end if
-      if (present(tgt_item2) .and. present(multuni2)) then
-         targetItemPtr2 => tgt_item2
-      end if
-      if (present(tgt_item3) .and. present(multuni3)) then
-         targetItemPtr3 => tgt_item3
-      end if
-      if (present(tgt_item4) .and. present(multuni4)) then
-         targetItemPtr4 => tgt_item4
-      end if
+
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
