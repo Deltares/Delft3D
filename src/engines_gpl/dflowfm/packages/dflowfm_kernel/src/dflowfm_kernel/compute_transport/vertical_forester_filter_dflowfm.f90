@@ -53,10 +53,7 @@ contains
       integer :: i_constituent
       integer :: i_flowcell
       integer :: number_of_layers
-      integer(4) :: timer_handle
-
-      ! Initialization
-      timer_handle = 0
+      integer(4), save :: timer_handle = 0
 
       ! Start timer for Forester filter if timing is enabled
       if (timon) then
