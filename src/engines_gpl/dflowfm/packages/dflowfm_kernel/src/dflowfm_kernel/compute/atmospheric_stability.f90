@@ -6,15 +6,15 @@ module m_atmospheric_stability
 !! by updating roughness lengths and stability corrections (psi functions) until convergence. 
 !! From these, surface fluxes are derived via:
 !!
-!!   tau   = rho_air * u*^2
-!!   Qh    = rho_air * Cp * u* * t*
-!!   Qe    = rho_air * Lv * u* * q*
+!!   tau   = rho_air * u_star^2 = rho_air * C_D * |U| * U
+!!   Qh    = rho_air * Cp * u_star * t_star = rho_air * C_H * C_P * (T_air - T_surface) * U
+!!   Qe    = rho_air * Lv * u_star * q_star = rho_air * L_V * C_E * (q_air - q_surface) * U
 !!
 !! Inputs required:
 !!   - Wind velocity components (u, v)
 !!   - Air temperature
-!!   - Dew-point temperature (used to derive vapor pressure and specific humidity)
-!!   - Air pressure at surface
+!!   - Dew-point temperature 
+!!   - Air pressure
 !!   - Sea surface temperature
 !!   - Charnock parameter 
    use precision, only: dp
@@ -256,6 +256,7 @@ contains
    end function compute_scaling_parameters
 
    !> Compute arrays of scaling parameters and bulk surface fluxes.
+   !! This routine gives no return values. It fills the module arrays with proper values.
    subroutine compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
                              air_pressure, charnock, surface_temperature, options)
       real(kind=dp), intent(in) :: wind_velocity_u(:)        !< U wind component [m/s].
