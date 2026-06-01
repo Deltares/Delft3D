@@ -524,15 +524,23 @@ contains
       integer :: pos
 
       call resolve_cached_boundary_spectrum_path(sourcefile, run_start, run_end, activefile)
-      if (trim(activefile) == trim(sourcefile)) return
+      if (trim(activefile) == trim(sourcefile)) then
+         return
+      end if
 
       pos = index(line, trim(sourcefile))
-      if (pos <= 0) return
+      if (pos <= 0) then
+         return
+      end if
 
       old_length = len_trim(sourcefile)
       new_length = len_trim(activefile)
-      if (new_length <= 0) return
-      if (len_trim(line) + max(0, new_length - old_length) > len(line)) return
+      if (new_length <= 0) then
+         return
+      end if
+      if (len_trim(line) + max(0, new_length - old_length) > len(line)) then
+         return
+      end if
 
       newline = ' '
 
@@ -3437,6 +3445,10 @@ contains
             bnd => sr%bnd(bound)
             if (bnd%bndtyp == 4) then
                call resolve_cached_boundary_spectrum_path(trim(sr%specfile), run_start, run_end, active_specfile)
+               if (len(trim(active_specfile)) == 0) then
+                  write (*, *) 'SWAN_INPUT: could not create temporary spectrum input file'
+                  call handle_errors_mdw(sr)
+               end if
                line = ' '
                line(1:10) = 'BOUN NEST '
                line = trim(line)//' '''//trim(active_specfile)//''''//' CLOSED'
@@ -3444,14 +3456,8 @@ contains
                cycle
             elseif (bnd%bndtyp == 5) then
                line = ' '
-               line(1:11) = 'BOUN WWIII '
-               line(12:12) = ''''''
-               nactive = len_trim(sr%specfile)
-               maxcopy = max(0, len(line) - 13 - 10)
-               ind = min(nactive, maxcopy)
-               if (ind > 0) line(13:12 + ind) = sr%specfile(1:ind)
-               line(13 + ind:13 + ind) = ''''''
-               line(13 + ind + 1:13 + ind + 10) = ' FREE OPEN'
+               line(1:9) = 'BOUN WW3 '       ! manual p54
+               line = trim(line)//' '''//trim(active_specfile)//''''//' FREE OPEN'
                write (luninp, '(1X,A)') line
                cycle
             end if
@@ -3552,16 +3558,12 @@ contains
                else
                   !                    Read conditions from file
                   call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(1)), run_start, run_end, active_specfile)
+                  if (len(trim(active_specfile)) == 0) then
+                     write (*, *) 'SWAN_INPUT: could not create temporary spectrum input file'
+                     call handle_errors_mdw(sr)
+                  end if
                   line(26:30) = 'FILE '
-                  i = 31
-                  line(i:i) = ''''''
-                  nactive = len_trim(active_specfile)
-                  maxcopy = max(0, len(line) - i - 4)
-                  ind = min(nactive, maxcopy)
-                  if (ind > 0) line(i + 1:i + ind) = active_specfile(1:ind)
-                  i = i + ind
-                  line(i + 1:i + 1) = ''''''
-                  line(i + 3:i + 4) = ' 1'
+                  line = trim(line)//' '''//trim(active_specfile)//''''//' 1'
                end if
                write (luninp, '(1X,A)') line
                rindx = rindx + 5
@@ -3590,23 +3592,19 @@ contains
                   do sect = 1, nsect
                      write (line(30:38), '(F9.2)') bnd%distance(sect)
                      line(39:39) = ' '
-                     i = 40
-                     line(i:i) = ''''''
                      call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), run_start, run_end, active_specfile)
-                     nactive = len_trim(active_specfile)
-                     maxcopy = max(0, len(line) - i - 4)
-                     ind = min(nactive, maxcopy)
-                     if (ind > 0) line(i + 1:i + ind) = active_specfile(1:ind)
-                     i = i + ind
-                     line(i + 1:i + 1) = ''''''
-                     line(i + 3:i + 4) = ' 1'
+                     if (len(trim(active_specfile)) == 0) then
+                        write (*, *) 'SWAN_INPUT: could not create temporar spectrum input file'
+                        call handle_errors_mdw(sr)
+                     end if
+                     line = trim(line)//' '''//trim(active_specfile)//''''//' 1'
                      if (sect < nsect) then
-                        line(79:) = '&'
+                        line = trim(line)//'&'
                      end if
                      rindx = rindx + 5
                      cindx = cindx + 1
                      write (luninp, '(1X,A)') line
-                     line(1:79) = ' '
+                     line(1:len(trim(line))) = ' '
                   end do
                end if
             end if
