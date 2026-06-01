@@ -98,7 +98,7 @@ contains
       integer :: i, ii, j, kk, k, kb, kt, klay, L, LL, Lb, Lt, LLL, k1, k2, k3, n, nlayb, nrlay, nlaybL, nrlayLx
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs, i_neighbours
-      integer :: i_tmp, kk_tmp, kb_tmp, kt_tmp
+      integer :: i_tmp, kb_tmp, kt_tmp
       real(kind=dp) :: wavfac
       real(kind=dp) :: dens
       real(kind=dp) :: ux, uy, um
@@ -359,9 +359,7 @@ contains
                   ii = j - IVAL_HWQ1 + 1
                   do i_tmp = 1, 3
                       call getkbotktop    (neighbour_nodes_obs(i_tmp,i), kb_tmp   , kt_tmp  )
-                      do kk_tmp = kb_tmp, kt_tmp
-                         waq_tmp(kk_tmp) = waqoutputs(ii, kk_tmp - kbx + 1)
-                      end do
+                      waq_tmp(kb_tmp:kt_tmp) = waqoutputs(ii, kb_tmp - kbx + 1:kt_tmp - kbx + 1)
                   end do
                   call interpolate_and_fill_valobs(waq_tmp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D,wet_or_dry)
                end do
