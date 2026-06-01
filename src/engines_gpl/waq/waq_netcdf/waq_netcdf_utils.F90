@@ -317,7 +317,7 @@ contains
         character(len = *), intent(in) :: mesh_name
         integer, intent(in) :: ugrid_type
 
-        integer :: mesh_id_out, source_var_id, destination_var_id
+        integer :: mesh_id_out, source_var_id, destination_var_id, edges_id, edges_id_out
         integer :: ierror, i, k
         integer, dimension(10) :: ierrorn
         integer :: mesh_value, xtype, length, crs_value, num_atts
@@ -444,6 +444,17 @@ contains
             ierrorn(6) = copy_associated_variables(source_nc_id, destination_nc_id, source_mesh_id, mesh_id_out, &
                     "projected_coordinate_system", &
                     dimsizes, use_attribute = .false.)
+
+            !
+            ! As the grid_mapping element is not referenced in the attributes of the mesh variable,
+            ! we need to retrieve it from an element that does have the sought-for attribute
+            !
+            ierrorn(7) = nf90_inq_varid( source_nc_id, trim(mesh_name) // "_nEdges", edges_id )
+            if ( ierrorn(7) == nf90_noerr ) then
+                ierrorn(7) = nf90_inq_varid( destination_nc_id, trim(mesh_name) // "_nEdges", edges_id_out )
+                ierrorn(7) = copy_associated_variables(source_nc_id, destination_nc_id, edges_id, edges_id_out, &
+                        "grid_mapping", dimsizes, use_attribute = .true.)
+            endif
             warning_message = .false.
         case (type_ugrid_network)
             warning_message = .true.
