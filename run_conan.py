@@ -71,15 +71,29 @@ def clean_conan_cache() -> None:
 
 
 def update_lockfile(profile: str) -> None:
-    """Generate or update conan.lock from the current conanfile and recipes."""
+    """Update conan.lock from the current conanfile and recipes.
+
+    Only the `local-recipes` remote is consulted, so updates reflect the
+    on-disk recipes exclusively.
+    """
+    if not LOCKFILE.exists():
+        sys.exit(
+            f"ERROR: Lockfile '{LOCKFILE}' does not exist. "
+            "Cannot update a lockfile that has not been created yet."
+        )
+
     cmd = [
         "conan",
         "lock",
-        "create",
+        "upgrade",
         f"--profile:all={profile}",
         "--settings:all",
         "build_type=Release",
+        f"--lockfile={LOCKFILE}",
         f"--lockfile-out={LOCKFILE}",
+        "--update-requires=*/*",
+        "--update-build-requires=*/*",
+        "--update-python-requires=*/*",
         "--remote=local-recipes",
     ]
 
