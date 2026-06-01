@@ -1360,7 +1360,8 @@ contains
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
-               ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+               ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
+               ! and then EC-module will be left with dangling pointers. 
                bubblescreen_cells = bubblescreen%flowcell_indices
                if (jampi == 1) then
                   bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
