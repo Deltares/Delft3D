@@ -1357,6 +1357,7 @@ contains
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + bubblescreen%num_flowcells
                bubblescreen%total_area = compute_bubblescreen_area(bubblescreen)
+               call realloc(bubblescreen%is_active, bubblescreen%num_flowcells, fill=.true.)
             end if
 
             ! Add the pre-initialized bubblescreen to bubblescreens
