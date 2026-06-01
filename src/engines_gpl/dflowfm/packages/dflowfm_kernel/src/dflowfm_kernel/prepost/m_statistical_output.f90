@@ -141,18 +141,36 @@ contains
    !> Update the stat_output of an item, depending on the operation_type.
    elemental subroutine update_statistical_output(item, dts)
       use precision, only: dp
+      use m_missing, only: dmiss
+      use precision_basics, only: equal
       type(t_output_variable_item), intent(inout) :: item !< statistical output item to update
       real(kind=dp), intent(in) :: dts !< current timestep
+      logical, allocatable :: mask(:)
+      real(kind=dp), pointer :: source(:)
+
+      if (item%operation_type == SO_CURRENT) then
+         return
+      end if
+
+      ! Check for dmiss values, they may not be included in any averaging
+      mask = equal(item%source_input, dmiss)
+      if (any(mask)) then ! we cannot modify input, create a copy with dmiss values set to 0.
+         allocate(source(size(item%source_input)))
+         source = item%source_input
+         where (mask)
+            source = 0.0_dp
+         end where
+      else
+         source => item%source_input
+      end if
 
       if (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX) then ! max/min of moving average requested
-         call update_moving_average_data(item%moving_average_data, item%source_input, dts)
+         call update_moving_average_data(item%moving_average_data, source, dts)
       end if
 
       select case (item%operation_type)
-      case (SO_CURRENT)
-         return
       case (SO_AVERAGE)
-         item%stat_output = item%stat_output + item%source_input * dts
+         item%stat_output = item%stat_output + source * dts
          item%time_step_sum = item%time_step_sum + dts
       case (SO_MAX)
          item%stat_output = max(item%stat_output, calculate_moving_average(item%moving_average_data))
