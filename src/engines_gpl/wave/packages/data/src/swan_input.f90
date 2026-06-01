@@ -3542,7 +3542,7 @@ contains
                        & bnd%bndcrd_mn(1), bnd%bndcrd_mn(2), &
                        & bnd%bndcrd_mn(3), bnd%bndcrd_mn(4)
                end if
-               line(83:) = '&'
+               line(83:) = ' &'
                write (luninp, '(1X,A)') line
                rindx = rindx + 4
             end if
@@ -3579,7 +3579,7 @@ contains
                           & bnd%waveheight(sect), bnd%period(sect), &
                           & bnd%direction(sect), bnd%dirspread(sect)
                      if (sect < nsect) then
-                        line(75:) = '&'
+                        line(75:) = ' &'
                      end if
                      rindx = rindx + 5
                      write (luninp, '(1X,A)') line
@@ -3594,12 +3594,12 @@ contains
                      line(39:39) = ' '
                      call resolve_cached_boundary_spectrum_path(trim(bnd%spectrum(sect)), run_start, run_end, active_specfile)
                      if (len(trim(active_specfile)) == 0) then
-                        write (*, *) 'SWAN_INPUT: could not create temporar spectrum input file'
+                        write (*, *) 'SWAN_INPUT: could not create temporary spectrum input file'
                         call handle_errors_mdw(sr)
                      end if
                      line = trim(line)//' '''//trim(active_specfile)//''''//' 1'
                      if (sect < nsect) then
-                        line = trim(line)//'&'
+                        line = trim(line)//' &'
                      end if
                      rindx = rindx + 5
                      cindx = cindx + 1
