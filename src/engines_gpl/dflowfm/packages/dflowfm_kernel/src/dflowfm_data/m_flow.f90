@@ -64,6 +64,8 @@ module m_flow ! flow arrays-999
    integer :: numtopsig = 0 !< number of top layers in sigma
    integer :: janumtopsiguniform = 1 !< specified nr of top layers in sigma is same everywhere
 
+   integer, allocatable :: ndkx2ndx(:)  ! Maps NDKX → NDX
+
    real(kind=dp) :: Tsigma = 100 !< relaxation period; only used in density controlled sigma-layers (layertype == LAYTP_DENS_SIGMA)
 
    integer :: layertype !< Vertical layertype, use one of LAYTP_SIGMA, LAYTP_Z, LAYTP_POLYGON_MIXED, LAYTP_DENS_SIGMA parameters
@@ -729,5 +731,28 @@ contains
 
       res = (jasal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE .or. jased > 0)
    end function use_density
+
+   subroutine mapndkx2ndx()
+      use m_cell_geometry, only: ndx
+      use m_alloc, only: realloc
+      
+      integer :: n, k
+
+      call realloc(ndkx2ndx, ndkx)
+
+      ! Fill the surface layer
+      do n = 1, ndx
+         ndkx2ndx(n) = n
+      end do
+
+      ! Fill the 3D layers
+      if (kmx > 0) then
+         do n = 1, ndx
+            do k = kbot(n), ktop(n)
+               ndkx2ndx(k) = n
+            end do
+         end do
+      end if
+   end subroutine mapndkx2ndx
 
 end module m_flow

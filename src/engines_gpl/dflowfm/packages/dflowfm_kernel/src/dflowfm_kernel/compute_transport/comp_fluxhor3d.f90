@@ -53,8 +53,9 @@ contains
       use m_flowtimes, only: dts
       use m_flowparameters, only: cflmx
       use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
-                        number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
+                        number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS, ndkx2ndx
       use m_transport, only: ISALT, ITEMP
+      use m_partitioninfo, only:  idomain, my_rank, jampi
 
       implicit none
 
@@ -372,8 +373,16 @@ contains
                      flux_max_limit = min(fluxfacMaxL, fluxfacMaxR)
                      if (fluxfac > flux_max_limit) then
                         fluxfac = flux_max_limit ! zie Borsboom sobek note
-                        !$omp atomic
-                        number_limited_links = number_limited_links + 1
+                        if (jampi == 1 .and. allocated(idomain)) then
+                           !check if the flow nodes are real nodes (not ghost nodes). In ghost nodes, the flux is not computed and limited
+                           if (idomain(ndkx2ndx(k1)) == my_rank .and. idomain(ndkx2ndx(k2)) == my_rank) then
+                              !$omp atomic
+                              number_limited_links = number_limited_links + 1
+                           end if
+                        else 
+                           !$omp atomic
+                           number_limited_links = number_limited_links + 1
+                        end if
                      end if
                   end if
                   fluxfac = max(fluxfac, 0.0_dp)
