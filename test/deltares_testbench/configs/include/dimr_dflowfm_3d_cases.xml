@@ -713,7 +713,7 @@
             </file>
         </checks>
     </testCase>
-    <testCase name="e02_f020_c044_heatmodel5_secchidepth_temporal" ref="dflowfm_default">
+    <testCase name="e02_f020_c044_sensibleheatflux_latentheatflux" ref="dflowfm_default">
         <path version="2026-05-28T09:25:00.000000">e02_dflowfm/f020_heat_flux/c044_sensibleheatflux_latentheatflux</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
