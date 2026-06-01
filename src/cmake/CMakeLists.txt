@@ -47,6 +47,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Set compiler flags
 enable_language(Fortran C CXX)
 
+# DFlowFM stack size in bytes, used for OpenMP thread stack and Windows linker /STACK flag
+set(DFLOWFM_STACK_SIZE_BYTES 20000000 CACHE STRING "DFlowFM stack size in bytes")
+
 if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
     include(compiler_options/gnu.cmake)
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")

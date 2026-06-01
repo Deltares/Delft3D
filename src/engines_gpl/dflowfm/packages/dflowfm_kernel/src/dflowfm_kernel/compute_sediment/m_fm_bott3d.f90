@@ -73,7 +73,7 @@ contains
       use bedcomposition_module
       use sediment_basics_module
       use m_flowgeom, only: ndxi, ndx
-      use m_flowparameters, only: eps10, jawave
+      use m_flowparameters, only: EPS10, jawave
       use fm_external_forcings_data, only: nopenbndsect
       use m_flowtimes, only: dts, tstart_user, time1, tfac, ti_sed, ti_seds, handle_extra
       use unstruc_files, only: mdia
@@ -116,8 +116,7 @@ contains
       real(kind=dp) :: dtmor
       real(kind=dp) :: timhr
       real(kind=dp) :: sbtot(ndx,stmpar%lsedtot)
-      real(fp), dimension(:), pointer :: dunelength
-      real(fp), dimension(1:0), target :: empty_dunelength
+      real(fp), dimension(:), pointer :: dunelength_tmp
 
    !!
    !! Point
@@ -128,11 +127,11 @@ contains
          )
 
       if (associated(bfmpar%dunelength)) then
-         dunelength => bfmpar%dunelength
+         dunelength_tmp => bfmpar%dunelength
       else
-         dunelength => empty_dunelength
+         allocate(dunelength_tmp(1:ndx))
+         dunelength_tmp = 1.0e10_fp
       end if
-         
 
    !!
    !! Execute
@@ -262,7 +261,7 @@ contains
             ! Update layers and obtain the depth change
             !
             !See: UNST-7369
-            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength, sbtot, dtmor, mtd%messages) /= 0) then
+            if (updmorlyr(stmpar%morlyr, dbodsd, blchg, dunelength_tmp, sbtot, dtmor, mtd%messages) /= 0) then
                call writemessages(mtd%messages, mdia)
                write (errmsg, '(a,a,a)') 'fm_bott3d :: updmorlyr returned an error.'
                call write_error(errmsg, unit=mdia)
@@ -279,6 +278,10 @@ contains
          end if
       end if ! time1>tcmp
 
+      if (.not. associated(bfmpar%dunelength)) then
+         deallocate(dunelength_tmp)
+      end if
+
       if (time1 >= tstart_user + tmor * tfac) then
          !
          ! Increment morphological time
@@ -289,7 +292,7 @@ contains
             hydrt = hydrt + dts / DAY2SEC
          end if
          if (stmpar%morpar%moroutput%morstats) then
-            if (comparereal(time1, ti_seds, eps10) >= 0) then
+            if (comparereal(time1, ti_seds, EPS10) >= 0) then
                morstatt0 = morft
             end if
          end if
@@ -1335,7 +1338,7 @@ contains
       use m_sediment, only: stmpar, mergebodsed, jamormergedtuser
       use m_flowtimes, only: time1, time_user
       use m_flowgeom, only: ndxi
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_fm_erosed, only: lsedtot, dbodsd
       use m_partitioninfo, only: jampi, my_rank, DFM_COMM_DFMWORLD
       use m_mormerge_mpi, only: update_mergebuffer
@@ -1364,7 +1367,7 @@ contains
          if (jamormergedtuser > 0) then
             mergebodsed = mergebodsed + dbodsd
             dbodsd(:, :) = 0_dp
-            if (comparereal(time1, time_user, eps10) >= 0) then
+            if (comparereal(time1, time_user, EPS10) >= 0) then
                jamerge = .true.
             end if
          else

@@ -33,6 +33,9 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    real(dp), dimension(:), allocatable, target :: qplat_data
 
+   real(dp), dimension(:), allocatable, target :: source_sink_discharge_out, source_sink_discharge2_out, source_sink_discharge3_out, &
+            source_sink_cumulative_volume_out, source_sink_water_discharge_out, source_sink_average_discharge_previous_out
+
    logical, public :: apply_statistics_on_output
 
 contains
@@ -185,6 +188,53 @@ contains
       call allocate_and_associate(source_input, get_sediment_array_size(), SBCX, SBCY)
       call assign_sediment_transport(SBCX, SBCY, IPNT_SBCX1, IPNT_SBCY1)
    end subroutine calculate_sediment_SBC
+
+   subroutine filter_source_sink_discharge(source_input)
+      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge" item, to be assigned once on first call.
+      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge_out)
+      source_sink_discharge_out = pack(source_sink_all_discharges(1, :), is_source_sink_normal)
+   end subroutine filter_source_sink_discharge
+
+   subroutine filter_source_sink_discharge2(source_input)
+      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge2" item, to be assigned once on first call.
+      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge2_out)
+      source_sink_discharge2_out = pack(source_sink_all_discharges(2, :), is_source_sink_normal)
+   end subroutine filter_source_sink_discharge2
+
+   subroutine filter_source_sink_discharge3(source_input)
+      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge3" item, to be assigned once on first call.
+      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge3_out)
+      source_sink_discharge3_out = pack(source_sink_all_discharges(3, :), is_source_sink_normal)
+   end subroutine filter_source_sink_discharge3
+
+   subroutine filter_source_sink_cumulative_volume(source_input)
+      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_cumulative_volume
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_cumulative_volume" item, to be assigned once on first call.
+      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_cumulative_volume_out)
+      source_sink_cumulative_volume_out = pack(source_sink_cumulative_volume, is_source_sink_normal)
+   end subroutine filter_source_sink_cumulative_volume
+
+   subroutine filter_source_sink_water_discharge(source_input)
+      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_water_discharge, source_sink_all_discharges
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_water_discharge" item, to be assigned once on first call.
+      logical :: is_init
+      is_init = .not. associated(source_input)
+      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_water_discharge_out)
+      if (is_init) then
+         source_sink_water_discharge = source_sink_all_discharges(1, :)
+      end if
+      source_sink_water_discharge_out = pack(source_sink_water_discharge, is_source_sink_normal)
+   end subroutine filter_source_sink_water_discharge
+
+   subroutine filter_source_sink_average_discharge_previous(source_input)
+      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_average_discharge_previous
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_average_discharge_previous" item, to be assigned once on first call.
+      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_average_discharge_previous_out)
+      source_sink_average_discharge_previous_out = pack(source_sink_average_discharge_previous, is_source_sink_normal)
+   end subroutine filter_source_sink_average_discharge_previous
 
    subroutine add_station_water_quality_configs(output_config_set, idx_his_hwq)
       use processes_input, only: num_wq_user_outputs => noout_user
@@ -809,6 +859,15 @@ contains
       call add_output_config(config_set_his, IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE, &
                              'Wrihis_sourcesink', 'source_sink_discharge_average', 'Average discharge in the past his-file output-interval at each source/sink', '', &
                              'm3 s-1', UNC_LOC_SOSI, nc_attributes=atts(1:1))
+
+      !
+      ! HIS: Bubble Screens
+      !
+      call ncu_set_att(atts(1), 'geometry', 'bubblescreen_geom')                             
+      call add_output_config(config_set_his, IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE, &
+                             'Wrihis_bubblescreens', 'bubblescreen_air_discharge', '', '', &
+                             'm3 s-1', UNC_LOC_BUBBLE_SCREEN, nc_attributes=atts(1:1), description='Bubble Screen Air discharge')
+
 
       !
       ! HIS: run-up gauges
@@ -2256,7 +2315,7 @@ contains
       !
       ! Mass balance variables
       !
-      if (jahisbal > 0) then
+      if (his_write_settings%bal > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VOLTOT), voltot(IDX_VOLTOT:IDX_VOLTOT))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_STOR), voltot(IDX_HIS_STOR:IDX_HIS_STOR))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VOLERR), voltot(IDX_HIS_VOLERR:IDX_HIS_VOLERR))
@@ -2308,20 +2367,34 @@ contains
       !
       ! Source-sink variables
       !
-      if (jahissourcesink > 0 .and. num_source_sink > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
+      if (his_write_settings%sourcesink > 0 .and. num_normal_source_sink > 0) then
+         function_pointer => filter_source_sink_discharge
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
          i = 1
          if (isalt > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), source_sink_all_discharges(i, :))
+            function_pointer => filter_source_sink_discharge2
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), null(), function_pointer)
          end if
          if (itemp > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), source_sink_all_discharges(i, :))
+            if (i == 3) then
+               function_pointer => filter_source_sink_discharge3
+            else
+               function_pointer => filter_source_sink_discharge2
+            end if
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), null(), function_pointer)
          end if
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sink_water_discharge)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sink_cumulative_volume)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sink_average_discharge_previous)
+         function_pointer => filter_source_sink_water_discharge
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), null(), function_pointer)
+         function_pointer => filter_source_sink_cumulative_volume
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), null(), function_pointer)
+         function_pointer => filter_source_sink_average_discharge_previous
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), null(), function_pointer)
+      end if
+
+      if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE), bubblescreen_air_discharge)
       end if
 
       !
@@ -2336,7 +2409,7 @@ contains
       !
       ! Hydraulic structures variables
       !
-      if (jahiscgen > 0 .and. ngenstru > 0) then
+      if (his_write_settings%cgen > 0 .and. ngenstru > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_DISCHARGE), valgenstru(IVAL_DIS, 1:ngenstru))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_CREST_LEVEL), valgenstru(IVAL_CRESTL, 1:ngenstru))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_GATE_LOWER_EDGE_LEVEL), valgenstru(IVAL_EDGEL, 1:ngenstru))
@@ -2364,13 +2437,13 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_S1_ON_CREST), valgenstru(IVAL_S1ONCREST, 1:network%sts%numGeneralStructures))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GENERAL_STRUCTURE_FORCE_DIFFERENCE), valgenstru(IVAL_FORCEDIF, 1:network%sts%numGeneralStructures))
       end if
-      if (jahiscdam > 0 .and. ncdamsg > 0) then
+      if (his_write_settings%cdam > 0 .and. ncdamsg > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_DISCHARGE), valcdam(2, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_CREST_LEVEL), zcdam)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_S1UP), valcdam(3, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CDAM_S1DN), valcdam(4, :))
       end if
-      if (jahispump > 0 .and. npumpsg > 0) then
+      if (his_write_settings%pump > 0 .and. npumpsg > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_STRUCTURE_DISCHARGE), valpump(IVAL_DIS, 1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_CAPACITY), valpump(IVAL_PP_CAP, 1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_DISCHARGE_DIR), valpump(IVAL_PP_DISDIR, 1:npumpsg))
@@ -2383,13 +2456,13 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_S1_DELIVERY_SIDE), valpump(IVAL_PP_S1DEL, 1:npumpsg))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PUMP_S1_SUCTION_SIDE), valpump(IVAL_PP_S1SUC, 1:npumpsg))
       end if
-      if (jahisgate > 0 .and. ngatesg > 0) then
+      if (his_write_settings%gate > 0 .and. ngatesg > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_DISCHARGE), valgate(2, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_LOWER_EDGE_LEVEL), zgate)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_S1UP), valgate(3, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATE_S1DN), valgate(4, :))
       end if
-      if (jahisgate > 0 .and. ngategen > 0) then
+      if (his_write_settings%gate > 0 .and. ngategen > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_DISCHARGE), valgategen(IVAL_DIS, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_CREST_LEVEL), valgategen(IVAL_GATE_SILLH, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_CREST_WIDTH), valgategen(IVAL_WIDTH, :))
@@ -2399,7 +2472,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_S1UP), valgategen(IVAL_S1UP, :))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_GATEGEN_S1DN), valgategen(IVAL_S1DN, :))
       end if
-      if (jahisweir > 0 .and. nweirgen > 0) then
+      if (his_write_settings%weir > 0 .and. nweirgen > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_DISCHARGE), valweirgen(IVAL_DIS, 1:nweirgen))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_CREST_LEVEL), valweirgen(IVAL_CRESTL, 1:nweirgen))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_CREST_WIDTH), valweirgen(IVAL_CRESTW, 1:nweirgen))
@@ -2412,7 +2485,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_FORCE_DIFFERENCE), valweirgen(IVAL_FORCEDIF, 1:nweirgen))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WEIRGEN_S1_ON_CREST), valweirgen(IVAL_S1ONCREST, 1:nweirgen))
       end if
-      if (jahisorif > 0 .and. network%sts%numOrifices > 0) then
+      if (his_write_settings%orifice > 0 .and. network%sts%numOrifices > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_DISCHARGE), valorifgen(IVAL_DIS, 1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_CREST_LEVEL), valorifgen(IVAL_CRESTL, 1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_CREST_WIDTH), valorifgen(IVAL_CRESTW, 1:network%sts%numOrifices))
@@ -2427,7 +2500,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_VELOCITY), valorifgen(IVAL_VEL, 1:network%sts%numOrifices))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_ORIFICE_FORCE_DIFFERENCE), valorifgen(IVAL_FORCEDIF, 1:network%sts%numOrifices))
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (his_write_settings%bridge > 0 .and. network%sts%numBridges > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_DISCHARGE), valbridge(IVAL_DIS, 1:network%sts%numBridges))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_S1UP), valbridge(IVAL_S1UP, 1:network%sts%numBridges))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_S1DN), valbridge(IVAL_S1DN, 1:network%sts%numBridges))
@@ -2438,7 +2511,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_BLDN), valbridge(IVAL_BLDN, 1:network%sts%numBridges))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BRIDGE_BL_ACTUAL), valbridge(IVAL_BLACTUAL, 1:network%sts%numBridges))
       end if
-      if (jahisculv > 0 .and. network%sts%numCulverts > 0) then
+      if (his_write_settings%culvert > 0 .and. network%sts%numCulverts > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_DISCHARGE), valculvert(IVAL_DIS, 1:network%sts%numCulverts))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_CREST_LEVEL), valculvert(IVAL_CL_CRESTL, 1:network%sts%numCulverts))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_GATE_LOWER_EDGE_LEVEL), valculvert(IVAL_CL_EDGEL, 1:network%sts%numCulverts))
@@ -2450,7 +2523,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_VELOCITY), valculvert(IVAL_VEL, 1:network%sts%numCulverts))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CULVERT_STATE), valculvert(IVAL_CL_STATE, 1:network%sts%numCulverts))
       end if
-      if (jahisdambreak > 0 .and. n_db_signals > 0) then
+      if (his_write_settings%dambreak > 0 .and. n_db_signals > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1UP), valdambreak(IVAL_S1UP, 1:n_db_signals))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_S1DN), valdambreak(IVAL_S1DN, 1:n_db_signals))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_DISCHARGE), valdambreak(IVAL_DIS, 1:n_db_signals))
@@ -2463,7 +2536,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_BREACH_WIDTH_TIME_DERIVATIVE), valdambreak(IVAL_DB_TIMEDIV, 1:n_db_signals))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DAMBREAK_WATER_LEVEL_JUMP), valdambreak(IVAL_DB_JUMP, 1:n_db_signals))
       end if
-      if (jahisuniweir > 0 .and. network%sts%numuniweirs > 0) then
+      if (his_write_settings%universal_weir > 0 .and. network%sts%numuniweirs > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_DISCHARGE), valuniweir(IVAL_DIS, 1:network%sts%numuniweirs))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_CREST_LEVEL), valuniweir(IVAL_UW_CRESTL, 1:network%sts%numuniweirs))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_S1UP), valuniweir(IVAL_S1UP, 1:network%sts%numuniweirs))
@@ -2472,7 +2545,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_FLOW_AREA), valuniweir(IVAL_AREA, 1:network%sts%numuniweirs))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_UNIWEIR_VELOCITY), valuniweir(IVAL_VEL, 1:network%sts%numuniweirs))
       end if
-      if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
+      if (his_write_settings%compound_structure > 0 .and. network%cmps%count > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_DISCHARGE), valcmpstru(IVAL_DIS, 1:network%cmps%count))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_S1UP), valcmpstru(IVAL_S1UP, 1:network%cmps%count))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_S1DN), valcmpstru(IVAL_S1DN, 1:network%cmps%count))
@@ -2480,7 +2553,7 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_FLOW_AREA), valcmpstru(IVAL_AREA, 1:network%cmps%count))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_CMPSTRU_VELOCITY), valcmpstru(IVAL_VEL, 1:network%cmps%count))
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (his_write_settings%long_culvert > 0 .and. nlongculverts > 0) then
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_DISCHARGE), vallongculvert(IVAL_DIS, 1:nlongculverts))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_S1UP), vallongculvert(IVAL_S1UP, 1:nlongculverts))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LONGCULVERT_S1DN), vallongculvert(IVAL_S1DN, 1:nlongculverts))
@@ -2500,10 +2573,10 @@ contains
          if (stm_included) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BEDLEVEL), valobs(:, IPNT_BL))
          end if
-         if (jahiswatdep > 0) then
+         if (his_write_settings%watdep > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WATERDEPTH), valobs(:, IPNT_HS))
          end if
-         if (jahisvelvec > 0) then
+         if (his_write_settings%velvec > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UCX:IPNT_UCX + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_X_VELOCITY), temp_pointer)
@@ -2521,7 +2594,7 @@ contains
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_Y_VELOCITY), valobs(:, IPNT_UCY))
             end if
          end if
-         if (jahisvelocity > 0) then
+         if (his_write_settings%velocity > 0) then
             if (jaeulervel == 0) then
                if (model_is_3D()) then
                   temp_pointer(1:kmx * ntot) => valobs(:, IPNT_UMAG:IPNT_UMAG + kmx - 1)
@@ -2538,7 +2611,7 @@ contains
                end if
             end if
          end if
-         if (jahisdischarge > 0) then
+         if (his_write_settings%discharge > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_QMAG:IPNT_QMAG + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DISCHARGE_MAGNITUDE), temp_pointer)
@@ -2548,7 +2621,7 @@ contains
          end if
 
          ! Turbulence model
-         if (jahistur > 0) then
+         if (his_write_settings%tur > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_VIU:IPNT_VIU + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_VIU), temp_pointer)
@@ -2557,7 +2630,7 @@ contains
             end if
          end if
          if (model_is_3D()) then
-            if (jahistur > 0) then
+            if (his_write_settings%tur > 0) then
                if (iturbulencemodel >= 3) then
                   temp_pointer(1:(kmx + 1) * ntot) => valobs(:, IPNT_TKIN:IPNT_TKIN + kmx)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TKIN), temp_pointer)
@@ -2588,7 +2661,7 @@ contains
          end if
 
          ! Gravity + buoyancy
-         if (jasal > 0 .and. jahissal > 0) then
+         if (jasal > 0 .and. his_write_settings%sal > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_SA1:IPNT_SA1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SALINITY), temp_pointer)
@@ -2597,7 +2670,7 @@ contains
             end if
          end if
 
-         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. jahistem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE .and. his_write_settings%tem > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_TEM1:IPNT_TEM1 + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TEMPERATURE), temp_pointer)
@@ -2606,7 +2679,7 @@ contains
             end if
          end if
 
-         if (use_density() .and. jahisrho > 0) then
+         if (use_density() .and. his_write_settings%rho > 0) then
             if (model_is_3D()) then
                temp_pointer(1:kmx * ntot) => valobs(:, IPNT_RHOP:IPNT_RHOP + kmx - 1)
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_POTENTIAL_DENSITY), temp_pointer)
@@ -2623,7 +2696,7 @@ contains
          end if
 
          ! Wave model
-         if (jawave > NO_WAVES .and. jahiswav > 0) then
+         if (jawave > NO_WAVES .and. his_write_settings%wav > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_HWAV), valobs(:, IPNT_WAVEH))
             !call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_HWAV_SIG),valobs(:,IPNT_HS)                                    )
             ! TODO: hwav sig vs. rms
@@ -2648,17 +2721,17 @@ contains
                end if
             end if
          end if
-         if (jahistaucurrent > 0) then
+         if (his_write_settings%taucurrent > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUSX), valobs(:, IPNT_TAUX))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUSY), valobs(:, IPNT_TAUY))
          end if
 
          ! Meteo
-         if (air_pressure_available .and. jahiswind > 0) then
+         if (air_pressure_available .and. his_write_settings%wind > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PATM), valobs(:, IPNT_PATM))
          end if
 
-         if (jawind > 0 .and. jahiswind > 0) then
+         if (jawind > 0 .and. his_write_settings%wind > 0) then
             if (jsferic == 0) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDX), valobs(:, IPNT_wx))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WINDY), valobs(:, IPNT_wy))
@@ -2668,22 +2741,22 @@ contains
             end if
          end if
 
-         if (jarain > 0 .and. jahisrain > 0) then
+         if (jarain > 0 .and. his_write_settings%rain > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_RAIN), valobs(:, IPNT_rain))
          end if
 
-         if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
+         if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. his_write_settings%infilt > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_CAP), valobs(:, IPNT_infiltcap))
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_INFILTRATION_INFILTRATION_ACTUAL), valobs(:, IPNT_infiltact))
          end if
 
-         if (ja_airdensity + ja_computed_airdensity > 0 .and. jahis_airdensity > 0) then
+         if (ja_airdensity + ja_computed_airdensity > 0 .and. his_write_settings%airdensity > 0) then
             call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_AIR_DENSITY), valobs(:, IPNT_AIRDENSITY))
          end if
 
          ! Write heat flux model statistical output
          if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
-            if (jahisheatflux > 0) then
+            if (his_write_settings%heatflux > 0) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_WIND), valobs(:, IPNT_WIND))
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAIR), valobs(:, IPNT_TAIR))
 
@@ -2744,7 +2817,7 @@ contains
             else
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SED), valobs(:, IPNT_SED))
             end if
-         else if (stm_included .and. ISED1 > 0 .and. jahissed > 0 .and. IVAL_SF1 > 0) then
+         else if (stm_included .and. ISED1 > 0 .and. his_write_settings%sed > 0 .and. IVAL_SF1 > 0) then
             if (model_is_3D()) then
                temp_pointer(1:(IVAL_SFN - IVAL_SF1 + 1) * kmx * ntot) => valobs(:, IPNT_SF1:IPNT_SF1 - 1 + (IVAL_SFN - IVAL_SF1 + 1) * kmx)
             else
@@ -2767,7 +2840,7 @@ contains
             end if
          end if
 
-         if (jahissed > 0 .and. jased > 0 .and. stm_included) then
+         if (his_write_settings%sed > 0 .and. jased > 0 .and. stm_included) then
             if (stmpar%morpar%moroutput%taub) then
                call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_TAUB), valobs(:, IPNT_TAUB))
             end if
@@ -2796,7 +2869,7 @@ contains
             end if
          end if
          ! Bed composition variables
-         if (jahissed > 0 .and. jased > 0 .and. stm_included) then
+         if (his_write_settings%sed > 0 .and. jased > 0 .and. stm_included) then
             select case (stmpar%morlyr%settings%iunderlyr)
             case (1)
                if (ISED1 > 0) then
@@ -2904,7 +2977,7 @@ contains
       !
       ! Variables on lateral discharges
       !
-      if (jahislateral > 0 .and. numlatsg > 0) then
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0) then
          allocate (qplat_data(size(qplat, dim=2)))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, transform_qplat)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE), qplatAve)

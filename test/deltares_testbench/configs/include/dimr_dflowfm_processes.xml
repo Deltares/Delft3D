@@ -248,7 +248,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c003_westernscheldt_dynamo_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2026-03-18T10:41:17.894000">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
+  <path version="2026-05-29T17:32:22.426000">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1466,6 +1466,16 @@
     <file name="dflowfmoutput/f34_map.nc" type="netCDF">
       <parameters>
         <parameter name="mesh2d_water_quality_output_1" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
+      </parameters>
+    </file>
+  </checks>
+</testCase>
+<testCase name="e02_f030_c116_latitude_from_fm_to_waq" ref="dflowfm_default">
+  <path version="2026-04-14T17:04:14">e02_dflowfm/f030_water_quality_processes/c116_latitude_from_fm_to_waq</path>
+  <checks>
+    <file name="dflowfmoutput/HK-FM_map.nc" type="netCDF">
+      <parameters>
+        <parameter name="mesh2d_water_quality_output_2" toleranceAbsolute="1.0e-3" toleranceRelative="1.0e-6"/>
       </parameters>
     </file>
   </checks>

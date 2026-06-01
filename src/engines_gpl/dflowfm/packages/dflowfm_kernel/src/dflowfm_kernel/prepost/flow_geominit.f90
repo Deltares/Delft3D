@@ -341,14 +341,15 @@ contains
 ! increase netcell admin. to include boundary nodes (safety)
       call add_boundarynetcells()
 
-      if (allocated(kcs)) then
-         deallocate (nd, bl, bai, kcs, bai_mor, ba_mor) ! and allocate geometry related node arrays
+      if (allocated(nd)) then
+         deallocate (nd)
       end if
-      allocate (nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx), stat=ierr)
-      call aerr('nd(ndx), bl(ndx), bai(ndx), bai_mor(ndx), ba_mor(ndx), kcs(ndx)', ierr, 8 * ndx)
-      kcs = 1
-      bl = dmiss
-      ba_mor = 0.0_dp
+      allocate(nd(ndx)) 
+      call realloc(bl, ndx, keepExisting=.false., stat=ierr, fill=dmiss) 
+      call realloc(bai, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
+      call realloc(bai_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
+      call realloc(ba_mor, ndx, keepExisting=.false., stat=ierr, fill=0.0_dp) 
+      call realloc(kcs, ndx, keepExisting=.false., stat=ierr, fill=1) 
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
@@ -1208,7 +1209,7 @@ contains
          call setisnbnodisnblin() ! set signarray isnbnod for left and rightneighbouring uc1d.
       end if
 
-      if (network%loaded .and. ndxi - ndx2d > 0 .and. (jamapTimeWetOnGround > 0 .or. jamapFreeboard > 0 .or. jamapDepthOnGround > 0 .or. jamapVolOnGround > 0)) then
+      if (network%loaded .and. ndxi - ndx2d > 0 .and. (map_write_settings%time_wet_on_ground > 0 .or. map_write_settings%free_board > 0 .or. map_write_settings%depth_on_ground > 0 .or. map_write_settings%vol_on_ground > 0)) then
          call set_ground_level_for_1d_nodes(network) ! set ground level for 1d nodes
       end if
 

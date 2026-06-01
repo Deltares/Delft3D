@@ -38,11 +38,11 @@ module fm_external_forcings
    use fm_external_forcings_utils, only: get_tracername, get_sedfracname, get_constituent_name
    use m_waveconst
 
-   implicit none
+   implicit none(type, external)
 
    private
 
-   public set_external_forcings_boundaries, allocatewindarrays, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints
+   public set_external_forcings_boundaries, adduniformtimerelation_objects, flow_initexternalforcings, findexternalboundarypoints, allocatewindarrays, init_spatial_fields, init_new
 
    integer, parameter :: max_registered_item_id = 512
    integer :: max_ext_bnd_items = 64 ! Starting size, will grow dynamically when needed.
@@ -72,6 +72,17 @@ module fm_external_forcings
    end interface
 
    interface
+      module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
+         use tree_structures, only: tree_data
+         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to meteo block in extforce file; child node of the extforce file tree
+         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
+         character(len=*), intent(in) :: group_name !< Name of the block, only used in warning messages
+         logical :: res
+      end function init_spatial_fields
+   end interface
+
+   interface
       module subroutine init_old(iresult)
          integer, intent(inout) :: iresult
       end subroutine init_old
@@ -89,7 +100,7 @@ module fm_external_forcings
          integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
       end subroutine
    end interface
-   
+
    interface
       module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
          use tree_data_types, only: tree_data
@@ -103,7 +114,7 @@ module fm_external_forcings
          real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
          real(kind=dp), dimension(2), intent(out) :: z_range_source
          real(kind=dp), dimension(2), intent(out) :: z_range_sink
-         
+
          logical :: is_successful
       end function sourcesink_parse_coordinates
    end interface
@@ -134,12 +145,11 @@ contains
 !> prepare_wind_model_data
    subroutine prepare_wind_model_data(time_in_seconds, iresult)
       use m_wind
-      use m_flowparameters, only: jawave, flow_without_waves
+      use m_flowparameters, only: jawave, flow_without_waves, EPS10
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
       use precision_basics
-      use m_flowparameters, only: eps10
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
       use m_tauwavefetch, only: tauwavefetch
@@ -258,7 +268,7 @@ contains
 
       if (item_atmosphericpressure /= ec_undef_int) then
          do k = 1, ndx
-            if (comparereal(air_pressure(k), dmiss, eps10) == 0) then
+            if (comparereal(air_pressure(k), dmiss, EPS10) == 0) then
                air_pressure(k) = BACKGROUND_AIR_PRESSURE
             end if
          end do
@@ -747,12 +757,16 @@ contains
          return
       end if
 
-      ! check FileVersion
-      major = 1
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
          call err_flush()
          return
       end if
@@ -1205,7 +1219,7 @@ contains
       character(len=*), intent(in) :: filename !< Name of data file for current quantity.
       integer, intent(in) :: filetype !< File type of current quantity.
       integer, intent(in) :: method !< Time-interpolation method for current quantity.
-      character(len=1), intent(in) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(in) :: operand !< Operand w.r.t. previous data
       character(len=*), optional, intent(in) :: forcing_file !< Optional forcings file, if it differs from the filename (i.e., if filename=*.pli, and forcing_file=*.bc)
       integer, optional, intent(in) :: targetIndex !< target position or rank of (complete!) vector in target array
 
@@ -1353,6 +1367,7 @@ contains
       use string_module, only: strcmpi
       use timespace_parameters, only: uniform, bcascii, spaceandtime
       use messagehandling, only: msgbuf, msg_flush, err_flush, LEVEL_WARN, mess
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       character(len=*), intent(in) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
       character(len=*), intent(in) :: location_file !< Name of location file (*.pli or *.pol) for current quantity (leave empty when valuestring contains value or filename).
@@ -1435,7 +1450,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, fnam, &
                                                  filetype=uniform, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -1446,7 +1461,7 @@ contains
                success = ec_addtimespacerelation(qid, xdum, ydum, kdum, vectormax, objid, &
                                                  filetype=bcascii, &
                                                  method=spaceandtime, &
-                                                 operand='O', &
+                                                 operand=OPERAND_OVERRIDE, &
                                                  tgt_data1=targetarrayptr, &
                                                  tgt_item1=tgtitem, &
                                                  multuni1=multuniptr, &
@@ -1710,31 +1725,10 @@ contains
 
    end subroutine init_threttimes
 
-   subroutine allocatewindarrays()
-      use m_wind
-      use m_flow
-      use m_flowgeom
-
-      implicit none
-
-      integer :: ierr
-
-      if (.not. allocated(wx)) then
-         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
-         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
-         wx = 0.0_dp
-         wy = 0.0_dp
-         wdsu = 0.0_dp
-         wdsu_x = 0.0_dp
-         wdsu_y = 0.0_dp
-      end if
-
-   end subroutine allocatewindarrays
-
 !> Initializes boundaries and meteo for the current model.
 !! @return Integer result status (0 if successful)
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
-      use unstruc_model, only: md_extfile_new
+      use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
       integer :: iresult
 
@@ -1757,7 +1751,8 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
+                                  btempforcingtypl, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
@@ -1769,7 +1764,6 @@ contains
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
-      use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
@@ -1779,11 +1773,11 @@ contains
       integer, intent(out) :: iresult
 
       integer :: ierr
-      logical :: exist
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
+      logical :: exist
 
       iresult = DFM_NOERR
 
@@ -1833,7 +1827,7 @@ contains
          call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
          inquire (file=trim(md_inifieldfile), exist=exist)
          if (exist) then
-            iresult = initialize_initial_fields(md_inifieldfile)
+            call init_new(md_inifieldfile, iresult)
             if (iresult /= DFM_NOERR) then
                call timstop(handle_extra(49)) ! initialize_initial_fields
                return
@@ -2507,6 +2501,51 @@ contains
 
    end subroutine setup
 
+!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+!> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
+!> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   subroutine finalize_source_sinks()
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
+
+      use m_structures, only: fill_geometry_source_sinks
+
+      integer :: i, j, sidx
+      integer :: flownode_nr !< Flow node number
+      logical, dimension(:), allocatable :: is_source_sink_bubblescreen
+
+      ! actually compute is_source_sink_bubble and then negate it
+      call realloc(is_source_sink_bubblescreen, num_source_sink, fill=.false.)
+
+      do i = 1, size(bubblescreens)
+         associate (bubblescreen => bubblescreens(i))
+            do j = 1, bubblescreen%num_flowcells
+               sidx = bubblescreen%source_sink_indices(j)
+               if (jampi == 1 .and. allocated(idomain)) then
+                  flownode_nr = bubblescreen%flowcell_indices(j)
+                  if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
+                     is_source_sink_bubblescreen(sidx) = .true.
+                  end if
+               else
+                  is_source_sink_bubblescreen(sidx) = .true.
+               end if
+            end do
+         end associate
+      end do
+
+      if(jampi == 1) then
+        call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
+      end if
+
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
+      is_source_sink_normal = .NOT. is_source_sink_bubblescreen
+      num_normal_source_sink = count(is_source_sink_normal)
+
+      call fill_geometry_source_sinks()
+
+   end subroutine finalize_source_sinks
+
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
    subroutine finalize()
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
@@ -2529,12 +2568,20 @@ contains
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
+
+      call finalize_source_sinks()
+      if (allocated(thrtt)) then
+         call init_threttimes()
+      end if
+
+      call finalize_1dfield_global_values()
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
@@ -2669,10 +2716,10 @@ contains
          end do
       end if
 
-      if (jaSecchisp > 0) then
+      if (secchi_depth_is_spatially_varying) then
          do n = 1, ndx
-            if (Secchisp(n) == dmiss) then
-               Secchisp(n) = Secchidepth
+            if (spatial_secchi_depth(n) == dmiss) then
+               spatial_secchi_depth(n) = secchi_depth(1)
             end if
          end do
       end if
@@ -2969,45 +3016,6 @@ contains
 
    end subroutine finalize
 
-   !> Allocate and initialized atmosperic pressure variable(s)
-   function allocate_patm(default_value) result(status)
-      use m_wind, only: air_pressure
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr, realloc
-
-      real(kind=dp), intent(in) :: default_value !< default atmospheric pressure value
-      integer :: status
-
-      call realloc(air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
-      call aerr('air_pressure(ndx)', status, ndx)
-   end function allocate_patm
-
-   !> Allocate and initialized pseudo air pressure variable(s)
-   function allocate_pseudo_air_pressure(default_value) result(status)
-      use m_wind, only: pseudo_air_pressure
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr, realloc
-
-      real(kind=dp), intent(in) :: default_value !< default pseudo air pressure value
-      integer :: status
-
-      call realloc(pseudo_air_pressure, ndx, keepExisting=.true., fill=default_value, stat=status)
-      call aerr('pseudo_air_pressure(ndx)', status, ndx)
-   end function allocate_pseudo_air_pressure
-
-   !> Allocate and initialized water_level_correction variable(s)
-   function allocate_water_level_correction(default_value) result(status)
-      use m_wind, only: water_level_correction
-      use m_cell_geometry, only: ndx
-      use m_alloc, only: aerr, realloc
-
-      real(kind=dp), intent(in) :: default_value !< default water level correction value
-      integer :: status
-
-      call realloc(water_level_correction, ndx, keepExisting=.true., fill=default_value, stat=status)
-      call aerr('water_level_correction(ndx)', status, ndx)
-   end function allocate_water_level_correction
-
    function check_keyword_zerozbndinflowadvection() result(success)
       use m_flowparameters, only: jaZerozbndinflowadvection
       use messagehandling, only: LEVEL_ERROR, msgbuf, mess
@@ -3024,4 +3032,27 @@ contains
          success = .false.
       end if
    end function check_keyword_zerozbndinflowadvection
+
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
+      use m_flow, only: wdsu, wdsu_x, wdsu_y
+      use m_flowgeom, only: lnx
+      use m_alloc, only: realloc, aerr
+
+      implicit none
+
+      integer :: ierr
+
+      if (.not. allocated(wx)) then
+         allocate (wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx), stat=ierr)
+         call aerr('wx(lnx), wy(lnx), wdsu(lnx), wdsu_x(lnx), wdsu_y(lnx)', ierr, lnx)
+         wx = 0.0_dp
+         wy = 0.0_dp
+         wdsu = 0.0_dp
+         wdsu_x = 0.0_dp
+         wdsu_y = 0.0_dp
+      end if
+
+   end subroutine allocatewindarrays
+
 end module fm_external_forcings

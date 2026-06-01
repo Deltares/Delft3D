@@ -27,12 +27,9 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_setsorsin
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -43,16 +40,28 @@ contains
    !> Compute and set source and sink values for the 'intake-outfall' structures.
    subroutine setsorsin()
       use precision, only: dp
-      use m_flow, only: source_sink_reduction, num_source_sink, source_sink_indices, source_sink_water_discharge, source_sink_all_discharges, kmx, source_sink_z_bottom, dmiss, zws, source_sink_z_top, vol1, source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
+      use m_flow, only: source_sink_reduction, num_source_sink, source_sink_indices, source_sink_water_discharge, &
+                        source_sink_all_discharges, kmx, source_sink_z_bottom, dmiss, zws, source_sink_z_top, vol1, &
+                        source_sink_extraction_warning, source_sink_constituents, qin, epshs, source_sink_name
       use m_get_kbot_ktop, only: getkbotktop
       use m_flowtimes, only: dts
       use m_transport, only: NUMCONST, constituents
       use MessageHandling, only: LEVEL_WARN, msgbuf, mess
       use m_partitioninfo, only: jampi, reduce_srsn
 
-      integer :: n, kk, k, kb, kt, kk2, ku, numvals, L
-      real(kind=dp) :: qsrck, qsrckk, dzss
-      real(kind=dp) :: frac = 0.5_dp ! cell volume fraction that can at most be extracted in one step
+      integer :: n
+      integer :: kk
+      integer :: k
+      integer :: kb
+      integer :: kt
+      integer :: kk2
+      integer :: ku
+      integer :: numvals
+      integer :: L
+      real(kind=dp) :: qsrck
+      real(kind=dp) :: qsrckk
+      real(kind=dp) :: dzss
+      real(kind=dp), parameter :: FRAC = 0.5_dp ! cell volume fraction that can at most be extracted in one step
 
       source_sink_reduction = 0.0_dp
       do n = 1, num_source_sink
@@ -90,29 +99,17 @@ contains
             source_sink_indices(3, n) = ku !
             if (source_sink_water_discharge(n) > 0) then ! Reduce if flux pos
 
-               do k = source_sink_indices(2, n), kt
+               do k = source_sink_indices(2, n), source_sink_indices(3, n)
                   source_sink_reduction(1, n) = source_sink_reduction(1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  source_sink_indices(3, n) = k
-                  if (frac * source_sink_reduction(1, n) / dts > abs(source_sink_water_discharge(n))) then
-                     exit
-                  end if
                end do
                if (source_sink_reduction(1, n) > 0.0_dp) then
                   do L = 1, numconst
                      source_sink_reduction(1 + L, n) = source_sink_reduction(1 + L, n) / source_sink_reduction(1, n)
                   end do
                end if
-               do k = source_sink_indices(2, n), source_sink_indices(3, n)
-                  !if (jasal > 0) constituents(isalt,k) = source_sink_reduction(1+isalt,n)
-                  !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = source_sink_reduction(1+itemp,n)
-                  do L = 1, numconst
-                     constituents(L, k) = source_sink_reduction(L + 1, n)
-                  end do
-               end do
-
             end if
          end if
 
@@ -147,29 +144,17 @@ contains
             source_sink_indices(6, n) = ku
             if (source_sink_water_discharge(n) < 0) then ! Reduce if flux neg
 
-               do k = source_sink_indices(5, n), kt
+               do k = source_sink_indices(5, n), source_sink_indices(6, n)
                   source_sink_reduction(1 + numconst + 1, n) = source_sink_reduction(1 + numconst + 1, n) + vol1(k)
                   do L = 1, numconst
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) + constituents(L, k) * vol1(k)
                   end do
-                  source_sink_indices(6, n) = k
-                  if (frac * source_sink_reduction(1 + numconst + 1, n) / dts > abs(source_sink_water_discharge(n))) then
-                     exit
-                  end if
                end do
                if (source_sink_reduction(1 + numconst + 1, n) > 0.0_dp) then
                   do L = 1, numconst
                      source_sink_reduction(1 + numconst + 1 + L, n) = source_sink_reduction(1 + numconst + 1 + L, n) / source_sink_reduction(1 + numconst + 1, n)
                   end do
                end if
-               do k = source_sink_indices(5, n), source_sink_indices(6, n)
-                  !if (jasal > 0) constituents(isalt,k) = source_sink_reduction(1+numconst+1+isalt,n)
-                  !if (temperature_model /= TEMPERATURE_MODEL_NONE) constituents(itemp,k) = source_sink_reduction(1+numconst+1+itemp,n)
-                  do L = 1, numconst
-                     constituents(L, k) = source_sink_reduction(1 + numconst + 1 + L, n)
-                  end do
-               end do
-
             end if
          end if
 
@@ -190,16 +175,16 @@ contains
          kk = source_sink_indices(1, n) ! 2D pressure cell nr
          qsrck = source_sink_water_discharge(n)
          if (kk /= 0 .and. qsrck > 0) then ! Extract FROM 1
-            if (frac * source_sink_reduction(1, n) / dts < abs(qsrck)) then
-               qsrck = frac * source_sink_reduction(1, n) / dts
+            if (FRAC * source_sink_reduction(1, n) / dts < abs(qsrck)) then
+               qsrck = FRAC * source_sink_reduction(1, n) / dts
                source_sink_extraction_warning(n) = 1
             end if
          end if
 
          kk2 = source_sink_indices(4, n) ! 2D pressure cell nr
          if (kk2 /= 0 .and. qsrck < 0) then ! Extract From 2
-            if (frac * source_sink_reduction(1 + numconst + 1, n) / dts < abs(qsrck)) then
-               qsrck = -frac * source_sink_reduction(1 + numconst + 1, n) / dts
+            if (FRAC * source_sink_reduction(1 + numconst + 1, n) / dts < abs(qsrck)) then
+               qsrck = -FRAC * source_sink_reduction(1 + numconst + 1, n) / dts
                source_sink_extraction_warning(n) = 2
             end if
          end if

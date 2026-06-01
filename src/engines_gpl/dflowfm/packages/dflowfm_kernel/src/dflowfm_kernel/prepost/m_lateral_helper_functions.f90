@@ -6,15 +6,18 @@ contains
 
    !> Prepare the 'kclat' mask array for a specific type of lateral.
    subroutine prepare_lateral_mask(kc, ilattype)
-      use m_flowgeom, only: lnx1d, ln, ndx2d, lnxi, prof1d
+      use m_flowgeom, only: lnx1d, ln, ndxi, ndx2d, lnxi, prof1d
       use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       implicit none
 
-      integer, intent(inout) :: kc(:) !< (ndx) The mask array that is to be filled.
+      integer, allocatable, intent(inout) :: kc(:) !< (ndx) The mask array that is to be filled.
       integer, intent(in) :: ilattype !< Type of the new lateral (one of ILATTP_1D|2D|1D2D)
 
       integer :: L, k1, k2
 
+      if (.not. allocated(kc)) then
+         allocate(kc(ndxi))
+      end if
       kc = 0
       select case (ilattype)
       case (ILATTP_1D) ! in everything 1D

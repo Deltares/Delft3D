@@ -54,13 +54,14 @@ contains
       use m_waves
       use m_alloc
       use m_meteo
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       logical :: retval !< Whether init was successful or not
 
       integer :: ierr
       integer :: filetype_l
       integer :: method_l
-      character(len=1) :: operand_l
+      integer :: operand_l
       character(len=256) :: qid_l
       integer, allocatable :: kcw(:) ! mask array
 
@@ -71,7 +72,7 @@ contains
 
       filetype_l = 14 ! netcdf
       method_l = 7 ! only time interpolation, extrapolation allowed (online WAVE)
-      operand_l = 'O' ! Override
+      operand_l = OPERAND_OVERRIDE
       kx = 1 ! default vectormax = 1
       !
       allocate (kcw(ndx), source=1, stat=ierr)
