@@ -391,6 +391,7 @@ module fm_external_forcings_data
       integer, dimension(:), allocatable :: source_sink_indices !< Numbers of the sources/sinks in the bubble screen. {size=num_flowcells}
       real(kind=dp) :: z_level !< [m] z-level of the bubble screen air discharge
       real(kind=dp) :: total_area !< [m2] Total area of the bubble screen
+      logical, dimension(:), allocatable :: is_active !< True if computation is currently possible (min 3 layers above z-level). {size=num_flowcells}
    end type t_Bubblescreen
 
    type(t_Bubblescreen), dimension(:), allocatable :: bubblescreens !< Array containing all bubble screens
@@ -401,6 +402,8 @@ module fm_external_forcings_data
 
    ! Source/sink counters.
    integer :: num_source_sink !< [-] number of source/sinks in the model. {former:numsrc}
+   integer :: num_normal_source_sink !< [-] number of normal source/sinks in the model, i.e. excluding bubble screens
+   logical, dimension(:), allocatable :: is_source_sink_normal !< [-] logical array to identify which sources/sinks are normal (true) and which are bubble screens (false). {size=(num_source_sink)}
    integer :: num_source_sink_oldfile !< [-] number of source/sinks in old extforce file. {former:numsrc_old}
    integer :: num_source_sink_for_nearfield !< [-] number of source/sinks added for near field. {former:numsrc_nf}
    integer :: max_source_sink_polyline_points !< [-] maximum number of points in source_sink_x, source_sink_y over all sources/sinks. Used for array dimensions. {former:msrc}
