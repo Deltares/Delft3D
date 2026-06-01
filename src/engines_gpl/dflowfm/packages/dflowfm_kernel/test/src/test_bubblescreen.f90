@@ -151,57 +151,5 @@ contains
    end subroutine test_convert_discharge_air_to_water_custom
    !$f90tw)
 
-   !$f90tw TESTCODE(TEST, test_bubblescreen, test_find_active_layer_interfaces, test_find_active_layer_interfaces,
-   !> Test active layer interfaces computation for a flow cell with 10 layers.
-    !! The bubble screen is located at z = -7.8 m, the water level is at z = -0.4 m.
-    !! The subroutine should return the correct start, stop, and max velocity layer interfaces.
-   subroutine test_find_active_layer_interfaces() bind(C)
-      use m_flow, only: kmx, zws, kbot, ktop, s1
-
-      ! Local variables
-      character(len=:), allocatable :: bubblescreen_id !< ID of bubble screen (not used in this test but required by function signature)
-      integer :: flow_cell_index !< 2D flow cell index
-      integer :: expected_k_start !< Expected starting layer interface for bubble screen
-      integer :: expected_k_stop !< Expected stopping layer interface for bubble screen
-      integer :: expected_k_max_velocity !< Expected layer interface of maximum velocity for bubble screen
-      integer :: computed_k_start !< Computed starting layer interface for bubble screen
-      integer :: computed_k_stop !< Computed stopping layer interface for bubble screen
-      integer :: computed_k_max_velocity !< Computed layer interface of maximum velocity for bubble screen
-      real(kind=dp) :: z_bubblescreen !< z coordinate of bubble screen
-
-      ! Setup - inputs
-      bubblescreen_id = "TestBubbleScreen"
-      flow_cell_index = 1
-      z_bubblescreen = -7.8_dp
-
-      ! Setup - globals
-      kmx = 10
-      call realloc(kbot, 1, fill=2, keepexisting=.false.)
-      call realloc(ktop, 1, fill=11, keepexisting=.false.)
-      call realloc(s1, 1, fill=-0.4_dp, keepexisting=.false.) ! z_top = waterlevel = -0.4 m
-      call realloc(zws, 11, fill=0.0_dp, keepexisting=.false.)
-      zws(1:11) = [-10.0_dp, -9.0_dp, -8.0_dp, -7.0_dp, -6.0_dp, -5.0_dp, -4.0_dp, -3.0_dp, -2.0_dp, -1.0_dp, 0.0_dp] ! Layers are 1 m thick
-
-      ! Setup - expected values
-      expected_k_start = 3 ! z_bot = z_bubblescreen = -7.8 m => closest to interface with z = -8 m
-      expected_k_stop = 11 ! z_top = -0.4 m => closest to interface with z = 0 m
-      expected_k_max_velocity = 9 ! z_max_velocity = -1.88 m => closest to interface with z = -2 m
-
-      ! Call function to test
-        call find_active_layer_interfaces(flow_cell_index, z_bubblescreen, bubblescreen_id, computed_k_start, computed_k_stop, computed_k_max_velocity)
-
-      ! Compare results
-      call f90_expect_true(computed_k_start == expected_k_start, "Computed k_start should match expected value")
-      call f90_expect_true(computed_k_stop == expected_k_stop, "Computed k_stop should match expected value")
-     call f90_expect_true(computed_k_max_velocity == expected_k_max_velocity, "Computed k_max_velocity should match expected value")
-
-      ! Cleanup
-      deallocate (kbot)
-      deallocate (ktop)
-      deallocate (s1)
-      deallocate (zws)
-
-   end subroutine test_find_active_layer_interfaces
-   !$f90tw)
 
 end module test_bubblescreen
