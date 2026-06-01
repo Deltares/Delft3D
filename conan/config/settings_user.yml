@@ -1,0 +1,3 @@
+compiler:
+    intel-cc:
+        version: ["2024.2"]

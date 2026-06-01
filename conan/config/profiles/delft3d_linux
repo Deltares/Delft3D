@@ -1,0 +1,14 @@
+[settings]
+arch=x86_64
+compiler=intel-cc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=2024.2
+compiler.mode=icx
+os=Linux
+
+[conf]
+## force is needed to prevent a error from happening. If not there it will call error 3 while executing cmake zlib
+tools.intel:setvars_args=--force
+tools.build:compiler_executables={"c": "/opt/intel/oneapi/compiler/2024.2/bin/icx", "cpp": "/opt/intel/oneapi/compiler/2024.2/bin/icpx", "fortran": "/opt/intel/oneapi/compiler/2024.2/bin/ifx"}
+tools.intel:installation_path="/opt/intel/oneapi"

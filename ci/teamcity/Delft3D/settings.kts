@@ -75,6 +75,7 @@ project {
                 LinuxReceiveH7ContainerSmokeTest,
             )
         }        
+        buildType(LinuxConanPackages)
         buildType(LinuxBuild)
         buildType(LinuxBuild2D3DSP)
         buildType(LinuxCollect)
@@ -83,6 +84,7 @@ project {
         buildType(LinuxTest)
         buildType(LinuxUnitTest)
         buildTypesOrder = arrayListOf(
+            LinuxConanPackages,
             LinuxBuild,
             LinuxBuild2D3DSP,
             LinuxCollect,
@@ -99,6 +101,7 @@ project {
 
         buildType(WindowsBuildEnvironmentI24)
         buildType(WindowsTestEnvironment)
+        buildType(WindowsConanPackages)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
         buildType(WindowsCollect)
@@ -108,6 +111,7 @@ project {
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironmentI24,
             WindowsTestEnvironment,
+            WindowsConanPackages,
             WindowsBuild,
             WindowsBuild2D3DSP,
             WindowsCollect,
