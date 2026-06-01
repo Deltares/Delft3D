@@ -425,10 +425,6 @@
       
       return
    end subroutine dbpinpol_tpolies
-
-
-end module m_tpoly
-
  
     !> Determines the orientation of a polygon.
     !! iorient = 1: Counter-clockwise, -1: clockwise
@@ -599,5 +595,8 @@ end module m_tpoly
 
    return
    end subroutine inwhichpolygon
+
+end module m_tpoly
+
 
 
