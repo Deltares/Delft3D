@@ -1586,7 +1586,7 @@
     </testCase>
 
     <testCase name="e02_f901_c202_tidal_flume_kepsilon_zmodel_equi_3d" ref="platform_specific">
-      <path version="2026-05-01T08:19:44.336000">e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d</path>
+      <path version="2026-06-01T08:29:36.870000">e02_dflowfm/f901_tidal_flume/c202_tidal_flume_kepsilon_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
@@ -1631,7 +1631,7 @@
     </testCase>
 
     <testCase name="e02_f901_c206_tidal_flume_ktau_zmodel_equi_3d" ref="dflowfm_default">
-      <path version="2026-05-01T08:24:16.554000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
+      <path version="2026-06-01T08:30:05.507000">e02_dflowfm/f901_tidal_flume/c206_tidal_flume_ktau_zmodel_equi_3d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
