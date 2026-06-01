@@ -83,7 +83,7 @@ python build.py --config fm-suite --build --build-type Release
 When not using the devcontainer, run the build inside the third-party-libs container directly:
 
 ```bash
-docker run -it -v .:/delft3d containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release
+sudo docker run -it -v .:/delft3d containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:oneapi-2024-ifx-release
 ```
 
 Inside the container:
@@ -108,7 +108,7 @@ python build.py --config fm-suite --build --build-type Release --build-dependenc
 You can also use the Dockerfile for a non-interactive build:
 ```bash
 export TAG=oneapi-2024
-docker build . -f doc/delft3d.Dockerfile \
+sudo docker build . -f doc/delft3d.Dockerfile \
     -t localhost/delft3d:$TAG \
     --build-arg INTEL_ONEAPI_VERSION=2024 \
     --build-arg INTEL_FORTRAN_COMPILER=ifx \

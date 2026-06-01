@@ -31,7 +31,7 @@ object WindowsBuild : BuildType({
     """.trimIndent()
 
     params {
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
         param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         select("product", "auto-select", display = ParameterDisplay.PROMPT, options = listOf("auto-select", "all-testbench", "fm-suite", "d3d4-suite", "fm-testbench", "d3d4-testbench", "waq-testbench", "part-testbench", "rr-testbench", "wave-testbench", "swan-testbench"))
@@ -100,6 +100,6 @@ object WindowsBuild : BuildType({
         }
     }
     requirements {
-        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
+        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2022")
     }
 })

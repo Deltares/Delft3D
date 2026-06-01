@@ -28,7 +28,7 @@ object WindowsBuild2D3DSP : BuildType({
 
     params {
         param("product", "auto-select")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
         param("env.CONAN_HOME", "C:/conan-cache")
         select("build_type", "Release", display = ParameterDisplay.PROMPT, options = listOf("Release", "Debug"))
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
@@ -99,6 +99,6 @@ object WindowsBuild2D3DSP : BuildType({
         }
     }
     requirements {
-        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
+        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2022")
     }
 })
