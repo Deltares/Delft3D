@@ -320,7 +320,7 @@ contains
          if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
             ! Define geometry related variables
             nNodeTot = 0
-            do i = 1, source_sinks%num_normal
+            do i = 1, source_sinks%num_total
                if (source_sinks%is_normal(i)) then
                   nNodes = 0
                   k1 = source_sinks%indices(i, 1)
@@ -693,7 +693,7 @@ contains
                block
                   real(kind=dp), dimension(:,:), allocatable :: tm_source_sink_x, tm_source_sink_y
                   integer :: num_points
-                  num_points = source_sinks%max_xy_points(source_sinks%num_normal)
+                  num_points = source_sinks%max_xy_points(source_sinks%num_total)
                   call realloc(tm_source_sink_x, [source_sinks%num_normal, source_sinks%max_polyline_points])
                   call realloc(tm_source_sink_y, [source_sinks%num_normal, source_sinks%max_polyline_points])
                   j = 1

@@ -1028,7 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use m_source_sink, only: source_sinks
+      use m_source_sink, only: source_sinks, source_sinks_all_discharges
       use m_flowgeom, only: xz, yz
       
       implicit none
@@ -1148,7 +1148,7 @@ contains
             end if
 
             ! determine source and sink points
-            if (source_sinks%discharge(i) > 0) then
+            if (source_sinks_all_discharges(1, i) > 0) then
                snkx = source_sinks%x(i, 1)
                snky = source_sinks%y(i, 1)
                srcx = source_sinks%x(i, maxnr)
