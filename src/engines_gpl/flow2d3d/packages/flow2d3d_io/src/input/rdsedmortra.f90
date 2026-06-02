@@ -39,7 +39,8 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
-    use sediment_basics_module, only: TRA_ADVDIFF, NPARDEF
+    use sediment_basics_module, only: TRA_ADVDIFF
+    use morphology_data_module, only: NPARDEF
     use m_rdmor
     use m_rdsed
     use m_rdtrafrm
@@ -190,7 +191,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     call setpardef(ipardef, rpardef, NPARDEF, -4, 5, gdp%gdmorpar%epspar)
     !
     call rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
-                & ipardef   ,rpardef   ,NPARDEF   ,gdp%gdtrapar, &
+                & ipardef   ,rpardef   ,gdp%gdtrapar, &
                 & gdp%gdmorpar%moroutput%sedpar, &
                 & gdp%gdsedpar%sedtyp  ,filsed, gdp%gdsedpar%sedblock  , &
                 & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)

@@ -29,7 +29,7 @@ module test_morphology
    use m_missing, only: dmiss
    use m_trab19, only: trab19
    use m_rdtrafrm, only: traparams
-   use sediment_basics_module, only: NPARDEF
+   use morphology_data_module, only: NPARDEF
 
    implicit none
 

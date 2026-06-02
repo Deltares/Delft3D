@@ -156,6 +156,8 @@ integer, parameter, public :: SP_RUNID =  1     ! ID of simulation
 integer, parameter, public :: SP_USRFL =  2     ! name of user specified input file
 integer, parameter, public :: MAX_SP   =  2     ! maximum number of strings
 
+integer, parameter, public :: NPARDEF = 20      ! default number of parameters for transport formulae, can be used for allocation in transport formulae and transport formula tests
+
 integer, parameter, public :: WS_FORM_FUNCTION_SALTEMCON    = 1
 integer, parameter, public :: WS_FORM_FUNCTION_DSS          = 2
 integer, parameter, public :: WS_FORM_FUNCTION_DSS_2004     = -2

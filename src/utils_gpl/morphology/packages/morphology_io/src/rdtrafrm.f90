@@ -231,7 +231,7 @@ contains
    end subroutine initrafrm
 
    subroutine rdtrafrm(lundia, error, filtrn, lsedtot, &
-                     & ipardef, rpardef, npardef, trapar, &
+                     & ipardef, rpardef, trapar, &
                      & sedparout, sedtyp, filsed, sedblock, &
                      & dims, julrefday, max_mud_sedtyp)
 !!--description-----------------------------------------------------------------
@@ -247,14 +247,13 @@ contains
       !
       ! Arguments
       !
-      integer, intent(in) :: npardef !<
       integer, intent(in) :: lundia !< unit number of diagnostic output
       logical, intent(out) :: error !< error flag
       integer, intent(in) :: lsedtot !< total number of sediment fractions
       type(trapar_type), target :: trapar !<
       character(*), intent(in) :: filtrn !< filename of default sand transport formula
-      integer, dimension(2, npardef), intent(in) :: ipardef !<
-      real(fp), dimension(npardef), intent(in) :: rpardef !<
+      integer, dimension(2, NPARDEF), intent(in) :: ipardef !<
+      real(fp), dimension(NPARDEF), intent(in) :: rpardef !<
       logical, intent(in) :: sedparout !< flag whether intermediate output of sediment transport formula should be written
       integer, dimension(:), intent(in) :: sedtyp !< sediment type
       character(*), intent(in) :: filsed !< filename of sed file from which the sedblock was read

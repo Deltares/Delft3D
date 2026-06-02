@@ -53,8 +53,6 @@ public TRA_BEDLOAD  ! transport given by an algebraic expression (typically bed 
 public TRA_ADVDIFF  ! transport determined via advection diffusion equation
 public TRA_COMBINE  ! transport determined via algebraic expression plus advection diffusion equation
 
-public NPARDEF
-
 public lognormal
 public ilognormal
 
@@ -80,7 +78,6 @@ integer, parameter :: TRA_COMBINE = TRA_BEDLOAD + TRA_ADVDIFF
 integer, parameter :: TRA_BEDLOAD_BIT = 0 ! the first bit is used for flagging bed load
 integer, parameter :: TRA_ADVDIFf_BIT = 1 ! the second bit is used for flagging suspended load
 
-integer, parameter :: NPARDEF = 20 ! default number of parameters for transport formulae, can be used for allocation in transport formulae and transport formula tests
 !
 !
 ! sqrt(2)*erfinv(P/50-1) for P = 1:99

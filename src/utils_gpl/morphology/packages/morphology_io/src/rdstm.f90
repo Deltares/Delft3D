@@ -64,7 +64,8 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                & lundia, lsal, ltem, ltur, lsec, lfbedfrm, &
                & julrefday, dtunit, nambnd, error)
     use grid_dimens_module
-    use sediment_basics_module, only: TRA_ADVDIFF, NPARDEF
+    use sediment_basics_module, only: TRA_ADVDIFF
+    use morphology_data_module, only: NPARDEF
     use properties ! includes tree_structures
     use m_ini_noderel ! for node relation definitions
     !
@@ -216,7 +217,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     call setpardef(ipardef, rpardef, NPARDEF, -4, 5, stm%morpar%epspar)
     !
     call rdtrafrm(lundia, error, filtrn, stm%lsedtot, &
-                & ipardef, rpardef, NPARDEF, stm%trapar, &
+                & ipardef, rpardef, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
                 & stm%sedpar%sedtyp, filsed, stm%sedpar%sedblock, &
                 & griddim, julrefday, stm%sedpar%max_mud_sedtyp)
