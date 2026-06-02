@@ -186,34 +186,36 @@ contains
       class(SourceSinks), intent(inout) :: self
       integer, intent(in) :: new_size
 
-      ! Resize global source/sink arrays.
-      call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
-      call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
+      if (new_size > size(self%name)) then
+         ! Resize global source/sink arrays.
+         call realloc(source_sink_all_discharges, [numconst+1, new_size], keepExisting=.true., fill=0.0_dp)
+         call realloc(source_sink_reduction, [2*(numconst+1), new_size], keepExisting=.true., fill=0.0_dp)
 
-      ! Resize all source/sink arrays.
-      call realloc(self%name, new_size, keepExisting=.true., fill='')
-      call realloc(self%x, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
-      call realloc(self%y, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
-      call realloc(self%z_bottom, [new_size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%z_top, [new_size, 2], keepExisting=.true., fill=dmiss)
-      call realloc(self%indices, [new_size, 6], keepExisting=.true., fill=0)
+         ! Resize all source/sink arrays.
+         call realloc(self%name, new_size, keepExisting=.true., fill='')
+         call realloc(self%x, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
+         call realloc(self%y, [new_size, self%max_polyline_points], keepExisting=.true., fill=dmiss)
+         call realloc(self%z_bottom, [new_size, 2], keepExisting=.true., fill=dmiss)
+         call realloc(self%z_top, [new_size, 2], keepExisting=.true., fill=dmiss)
+         call realloc(self%indices, [new_size, 6], keepExisting=.true., fill=0)
 
-      call realloc(self%area, new_size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%discharge_cosine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
-      call realloc(self%discharge_sine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
+         call realloc(self%area, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%discharge_cosine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
+         call realloc(self%discharge_sine, [new_size, 2], keepExisting=.true., fill=0.0_dp)
 
-      call realloc(self%discharge, new_size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%constituents, [new_size, numconst], keepExisting=.true., fill=0.0_dp)
+         call realloc(self%discharge, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%constituents, [new_size, numconst], keepExisting=.true., fill=0.0_dp)
 
-      call realloc(self%max_xy_points, new_size, keepExisting=.true., fill=0)
-      call realloc(self%is_normal, new_size, keepExisting=.true., fill=.true.)
+         call realloc(self%max_xy_points, new_size, keepExisting=.true., fill=0)
+         call realloc(self%is_normal, new_size, keepExisting=.true., fill=.true.)
 
-      call realloc(self%cumulative_volume, new_size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%cumulative_volume_previous, new_size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%average_discharge_previous, new_size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%waq_index, new_size, keepExisting=.true., fill=0)
-      call realloc(self%cumulative_discharge_waq, new_size, keepExisting=.true., fill=0.0_dp)
-      call realloc(self%cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%cumulative_volume, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%cumulative_volume_previous, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%average_discharge_previous, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%waq_index, new_size, keepExisting=.true., fill=0)
+         call realloc(self%cumulative_discharge_waq, new_size, keepExisting=.true., fill=0.0_dp)
+         call realloc(self%cumulative_discharge_waq_previous, new_size, keepExisting=.true., fill=0.0_dp)
+      end if
 
    end subroutine resize_source_sinks
 
