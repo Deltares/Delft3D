@@ -61,6 +61,79 @@ python run_conan.py initialize external
 
 ## Build steps
 
+Our toolchain is quite elaborate and we're relying on many third-party tools and libraries.
+The most reliable way to build Delft3D is to use container images that already have all the
+tools required to build our software. We do provide two options to build Delft3D on Linux:
+1. Connecting to the [Delft3D devcontainer](/.devcontainer/delft3d/README.md) in VSCode.
+2. Running the [Delft3D build container](/ci/dockerfiles/linux) interactively.
+
+In addition to running builds in containers, we use the [Conan package manager](https://conan.io) 
+to install some packages. Configuring Conan requires a few manual steps, but
+they are the same for the devcontainer and the build container.
+
+### Setting up the Conan package manager
+
+Before you can build, you will need to install Conan packages. At Deltares we
+host these packages in our
+[Nexus package repository](https://internal-artifacts.deltares.nl/#browse/browse:delft3d-conan-dev). 
+Unfortunately, this package repository is currently not public. You will need
+credentials to be able to access the packages from our repository.
+If you do not have access to our package repository, you can build the packages
+yourself using our [package recipies](/conan/recipes). Building the packages
+takes time. Thankfully, once you've built the packages, they're cached in the
+Conan cache directory (Usually in your home directory `~/.conan2`) and you only
+have to rebuild them when the recipies change.
+
+#### Setting up Conan if you have access to [Nexus](https://internal-artifacts.deltares.nl/#browse/browse:delft3d-conan-dev)
+
+Run the following commands:
+```bash
+cd /workspaces/delft3d
+
+# One-time Conan setup (Deltares developers)
+python run_conan.py initialize deltares
+```
+This will install the Conan "profile" in the Conan cache directory. 
+It tells Conan which toolchain/compilers we use to build the packages. Without
+it Conan can't find the packages in Nexus.
+
+Next, visit the [user token page](https://internal-artifacts.deltares.nl/#user/usertoken) on Nexus.
+You will be asked to log in with your Deltares credentials.
+On this page you will be able to create a "User Token". This token consists of an 'id' and a 'secret'. You will only
+be able to see these values right after you create the token. If you lose them you can reset the token, but you will
+only be able to login with the new token, and not with the old one anymore. Create a file called `credentials.json` in the
+conan cache directory (usually `~/.conan2`) with the following content
+(replace `NEXUS_TOKEN_ID` and `NEXUS_TOKEN_SECRET`):
+```json
+{
+    "credentials": [
+        {
+            "remote": "delft3d-conan-dev",
+            "user": "NEXUS_TOKEN_ID",
+            "password": "NEXUS_TOKEN_SECRET"
+        },
+        {
+            "remote": "deltares-conan-center-proxy",
+            "user": "NEXUS_TOKEN_ID",
+            "password": "NEXUS_TOKEN_SECRET"
+        }
+    ]
+}
+```
+
+#### Setting up Conan if you want to build the packages yourself
+Run the following commands:
+```bash
+cd /workspaces/delft3d
+
+python run_conan.py initialize external
+```
+This will install the Conan "profile" in the Conan cache directory. It tells Conan 
+which toolchain we use to build. Without it Conan can't build the packages properly.
+
+Note: To build the packages from our recipies, you will have to pass an additional 
+`--build-dependencies` flag to the `build.py` build script.
+
 ### Using the devcontainer (recommended)
 
 The easiest way to build on Linux is to open this repository in the

@@ -22,6 +22,17 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_release/install",
                 "CMAKE_BUILD_TYPE": "Release"
             }
+        },
+        {
+            "name": "fm-suite-relwithdebinfo",
+            "displayName": "FM-suite RelWithDebInfo",
+            "binaryDir": "${sourceDir}/../../build_fm-suite_relwithdebinfo",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "fm-suite",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_relwithdebinfo/install",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
         }
     ],
     "buildPresets": [
@@ -35,6 +46,13 @@
             "name": "fm-suite-release-build",
             "displayName": "FM-suite Release Build",
             "configurePreset": "fm-suite-release",
+            "jobs": 24
+        },
+        {
+            "name": "fm-suite-relwithdebinfo-build",
+            "displayName": "FM-suite RelWithDebInfo Build",
+            "configurePreset": "fm-suite-relwithdebinfo",
+            "configuration": "RelWithDebInfo",
             "jobs": 24
         }
     ], 
@@ -50,6 +68,12 @@
             "name": "fm-suite-release-test",
             "displayName": "FM-suite Release Test",
             "configuration": "Release"
+        },
+        {
+            "configurePreset": "fm-suite-relwithdebinfo",
+            "name": "fm-suite-relwithdebinfo-test",
+            "displayName": "FM-suite RelWithDebInfo Test",
+            "configuration": "RelWithDebInfo"
         }
     ]
 }
