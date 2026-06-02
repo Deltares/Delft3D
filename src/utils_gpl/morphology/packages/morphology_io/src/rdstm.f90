@@ -64,14 +64,13 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
                & lundia, lsal, ltem, ltur, lsec, lfbedfrm, &
                & julrefday, dtunit, nambnd, error)
     use grid_dimens_module
-    use sediment_basics_module, only: TRA_ADVDIFF
+    use sediment_basics_module, only: TRA_ADVDIFF, NPARDEF
     use properties ! includes tree_structures
     use m_ini_noderel ! for node relation definitions
     !
     implicit none
     !
-    integer                   , parameter    :: NPARDEF = 20
-!
+ 
 ! Arguments
 !
     type(stmtype)               , intent(out) :: stm

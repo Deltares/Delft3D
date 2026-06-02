@@ -39,7 +39,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
 !!--declarations----------------------------------------------------------------
     use precision
     use properties
-    use sediment_basics_module, only: TRA_ADVDIFF
+    use sediment_basics_module, only: TRA_ADVDIFF, NPARDEF
     use m_rdmor
     use m_rdsed
     use m_rdtrafrm
@@ -49,7 +49,6 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     implicit none
     !
     type(globdat)             ,target        :: gdp
-    integer                   , parameter    :: NPARDEF = 20
     logical                   , pointer      :: lfbedfrm
     real(hp)                  , pointer      :: morft
     real(hp)                  , pointer      :: morft0
