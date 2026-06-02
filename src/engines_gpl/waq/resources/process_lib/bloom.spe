@@ -1,4 +1,4 @@
-BLOOMSPE_VERSION_2.0
+BLOOMSPE_VERSION_2.00
 50 ; number of algae types
 27 ; number of coefficients = columns
 SPECIES     SPECIES_SHORT TYPE        TYPE_SHORT TYPE_DESCRIPTION                   EXTVLALG   NCRALG     XNCRALG    FNCRALG    PCRALG     XPCRALG    SCRALG     CHLACALG   DMCFALG    PPMAXALG   TCPMXALG   TFPMXALG   MORT0ALG   TCMRTALG   MrtExAlg   Mort2Alg   MrtB1Alg   MrtB2Alg   MRESPALG   TCRSPALG   SDMIXALG   VsedAlg    V0SedAlg   FrAutAlg   FrDetAlg   nAlg       FixAlg  
