@@ -31,74 +31,111 @@ module test_morphology
    use m_rdtrafrm, only: traparams
    implicit none
 
-contains
+   type :: transport_defaults
+      real(kind=fp) :: ag = 9.81_fp ! gravity acceleration [m/s^2]
+      real(kind=fp) :: delta = 1.65_fp ! relative density of sediment [-]
+   end type transport_defaults
 
-   !$f90tw TESTCODE(TEST, test_morphology, test_Van_Thiel_Van_Rijn, test_trab19,
-   subroutine test_trab19() bind(C)
-      integer, parameter :: npar = 25
-      integer, parameter :: npardef = 15
+   type, extends(transport_defaults) :: coastal_type_defaults
       logical :: ubot_from_com = .false.
-      real(fp) :: chezy = 65.0_fp ! Chezy coefficient [m^1/2/s]
-      real(fp) :: d15 = 0.0001_fp ! D15 of the sediment [m]
-      real(fp) :: di50 = 0.0002_fp ! D50 of the sediment [m]
-      real(fp) :: d90 = 0.0003_fp ! D90 of the sediment [m]
-      real(fp) :: dzbdt = 0.001_fp ! erosion/sedimentation velocity [m/s]
-      real(fp) :: dzdx = 0.01_fp ! slope in x direction [-]
-      real(fp) :: dzdy = 0.0_fp ! slope in y direction [-]
-      real(fp) :: h = 1.0_fp ! water depth [m]
-      real(fp) :: hrms = 1.1_fp ! Root mean square wave height  [m]
-      real(fp) :: kwtur = 0.1_fp ! Breaker induced turbulence [m^2/s^2]
-      real(fp) :: poros = 0.4_fp ! Porosity of the sediment [-]
-      real(fp) :: rlabda = 60.0_fp ! Wave length [m]
-      real(fp) :: teta = 0.1_fp ! angle between wave direction and x-axis [degrees]
-      real(fp) :: tp = 5_fp ! Wave period   [s]
-      real(fp) :: ubot = 0.1_fp ! velocity at the bed [m/s]
-      real(fp) :: u = 0.1_fp ! velocity in x direction [m/s]
-      real(fp) :: v = 0.0_fp ! velocity in y direction [m/s]
-      real(fp) :: vicmol = 1e-6_fp ! kinematic viscosity of water [m^2/s]
+      real(kind=fp) :: chezy = 65.0_fp ! Chezy coefficient [m^1/2/s]
+      real(kind=fp) :: d15 = 0.0001_fp ! D15 of the sediment [m]
+      real(kind=fp) :: di50 = 0.0002_fp ! D50 of the sediment [m]
+      real(kind=fp) :: d90 = 0.0003_fp ! D90 of the sediment [m]
+      real(kind=fp) :: dzbdt = 0.001_fp ! erosion/sedimentation velocity [m/s]
+      real(kind=fp) :: dzdx = 0.01_fp ! slope in x direction [-]
+      real(kind=fp) :: dzdy = 0.0_fp ! slope in y direction [-]
+      real(kind=fp) :: h = 1.0_fp ! water depth [m]
+      real(kind=fp) :: hrms = 1.1_fp ! Root mean square wave height  [m]
+      real(kind=fp) :: kwtur = 0.1_fp ! Breaker induced turbulence [m^2/s^2]
+      real(kind=fp) :: poros = 0.4_fp ! Porosity of the sediment [-]
+      real(kind=fp) :: rlabda = 60.0_fp ! Wave length [m]
+      real(kind=fp) :: teta = 0.1_fp ! angle between wave direction and x-axis [degrees]
+      real(kind=fp) :: tp = 5_fp ! Wave period   [s]
+      real(kind=fp) :: ubot = 0.1_fp ! velocity at the bed [m/s]
+      real(kind=fp) :: u = 0.1_fp ! velocity in x direction [m/s]
+      real(kind=fp) :: v = 0.0_fp ! velocity in y direction [m/s]
+      real(kind=fp) :: vicmol = 1e-6_fp ! kinematic viscosity of water [m^2/s]
+      integer :: npar = 0 ! number of parameters
+
+      real(kind=fp), dimension(:), allocatable :: par
+      
       ! output variables
-      real(fp) :: sbcu
-      real(fp) :: sbcv
-      real(fp) :: cesus
-      real(fp) :: ua
-      real(fp) :: va
+      real(kind=fp) :: sbcu = -999.0_fp
+      real(kind=fp) :: sbcv = -999.0_fp
+      real(kind=fp) :: cesus = -999.0_fp
+      real(kind=fp) :: va = -999.0_fp
+      real(kind=fp) :: ua = -999.0_fp
+      
+   end type coastal_type_defaults
+
+   contains
+
+   function set_coastal_type_defaults(iform) result(t)
+      integer, intent(in) :: iform
+      type(coastal_type_defaults) :: t
+
       integer :: j
 
-      integer :: iform = 19
       character(100) :: name
       integer :: nparreq
       integer :: nparopt
-      real(fp), dimension(:), allocatable :: pardef
+      integer :: npardef = 30
+      real(kind=fp), dimension(:), allocatable :: pardef
       character(25), dimension(:), allocatable :: parkeyw
       character(25), dimension(:, :), pointer :: parname
-
-      real(fp), dimension(npar) :: par
-
-      real(fp), parameter :: ag = 9.81_fp ! gravity acceleration [m/s^2]
-      real(fp), parameter :: delta = 1.65_fp ! relative density of sediment [-]
-
+   
+      t = coastal_type_defaults()
       allocate (pardef(npardef))
       allocate (parkeyw(npardef))
 
       call traparams(iform, name, nparreq, nparopt, parkeyw, pardef)
 
-      par(1) = ag
-      par(4) = delta
+      t%npar = npardef + 10
+      allocate (t%par(t%npar))
+
+      t%par(1) = t%ag
+      t%par(4) = t%delta
       do j = 1, npardef
-         par(j + 10) = pardef(j)
+         t%par(j + 10) = pardef(j)
       end do
 
-      call trab19(u, v, hrms, rlabda, teta, h, tp, &
-                & di50, d15, d90, npar, par, dzbdt, vicmol, &
-                & poros, chezy, dzdx, dzdy, sbcu, sbcv, cesus, &
-                & ua, va, ubot, kwtur, ubot_from_com)
+   end function set_coastal_type_defaults
 
-      call f90_assert_near(sbcu, 1.3433e-05_fp, 1.0e-08_fp, "sbcu is not near the expected value"//c_null_char)
-      call f90_assert_near(sbcv, 1.8343e-08_fp, 1.0e-11_fp, "sbcv is not near the expected value"//c_null_char)
-      call f90_assert_near(cesus, 5.2902e-04_fp, 1.0e-07_fp, "cesus is not near the expected value"//c_null_char)
-      call f90_assert_near(ua, 0.359505_fp, 1.0e-04_fp, "ua is not near the expected value"//c_null_char)
-      call f90_assert_near(va, 6.2746e-04_fp, 1.0e-08_fp, "va is not near the expected value"//c_null_char)
+
+   !$f90tw TESTCODE(TEST, test_morphology, test_rotation_Van_Thiel_Van_Rijn, test_trab19,
+   subroutine test_trab19() bind(C)
+      type(coastal_type_defaults) :: t
+      type(coastal_type_defaults) :: t_r
+      ! output variables
+
+      t = set_coastal_type_defaults(19)
+      t_r = set_coastal_type_defaults(19) ! rotated
+
+      t_r%u = -t%v
+      t_r%v = t%u
+      t_r%teta = t%teta + 90
+      t_r%dzdx = -t%dzdy
+      t_r%dzdy = t%dzdx
+
+      call trab19(t%u, t%v, t%hrms, t%rlabda, t%teta, t%h, t%tp, &
+                & t%di50, t%d15, t%d90, t%npar, t%par, t%dzbdt, t%vicmol, &
+                & t%poros, t%chezy, t%dzdx, t%dzdy, t%sbcu, t%sbcv, t%cesus, &
+                & t%ua, t%va, t%ubot, t%kwtur, t%ubot_from_com)
+
+      call trab19(t_r%u, t_r%v, t_r%hrms, t_r%rlabda, t_r%teta, t_r%h, t_r%tp, &
+                & t_r%di50, t_r%d15, t_r%d90, t_r%npar, t_r%par, t_r%dzbdt, t_r%vicmol, &
+                & t_r%poros, t_r%chezy, t_r%dzdx, t_r%dzdy, t_r%sbcu, t_r%sbcv, t_r%cesus, &
+                & t_r%ua, t_r%va, t_r%ubot, t_r%kwtur, t_r%ubot_from_com)
+
+      call f90_assert_near(t%sbcu, t_r%sbcv, 1.0e-08_fp, "sbcu is not near the expected value")
+      call f90_assert_near(t%sbcv, -t_r%sbcu, 1.0e-11_fp, "sbcv is not near the expected value")
+      call f90_assert_near(t%cesus, t_r%cesus, 1.0e-07_fp, "cesus is not near the expected value")
+      call f90_assert_near(t%ua, t_r%va, 1.0e-04_fp, "ua is not near the expected value")
+      call f90_assert_near(t%va, -t_r%ua, 1.0e-08_fp, "va is not near the expected value")
+     
    end subroutine test_trab19
    !$f90tw)
 
+   
 end module test_morphology
