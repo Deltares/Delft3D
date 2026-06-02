@@ -72,9 +72,9 @@ module unstruc_model
    ! 1.01 (2014-11-10): Renamed ThindykeFile/Scheme/Contraction -> FixedWeirFile/Scheme/Contraction.
    ! 1.00 (2014-09-22): first version of new permissive checking procedure. All (older) unversioned input remains accepted.
 
-   ! ExtfileNewMajorVersion = 2.02
-   integer, parameter :: ExtfileNewMajorVersion = 2
-   integer, parameter :: ExtfileNewMinorVersion = 2
+   ! ExtfileNewMajorVersion = 3.00
+   integer, parameter :: ExtfileNewMajorVersion = 3
+   integer, parameter :: ExtfileNewMinorVersion = 0
 
    ! History ExtfileNewVersion:
    ! 2.02 (2024-10-24): add [SourceSink] blocks.
@@ -2026,6 +2026,7 @@ contains
 
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_balance', his_write_settings%bal, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_sourcesink', his_write_settings%sourcesink, success)
+      call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_bubblescreens', his_write_settings%bubblescreens, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_gen', his_write_settings%cgen, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_dam', his_write_settings%cdam, success)
       call read_output_parameter_toggle(md_ptr, 'output', 'Wrihis_structure_pump', his_write_settings%pump, success)
