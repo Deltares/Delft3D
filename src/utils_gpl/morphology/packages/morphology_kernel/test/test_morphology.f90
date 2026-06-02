@@ -61,17 +61,17 @@ module test_morphology
       integer :: npar = 0 ! number of parameters
 
       real(kind=fp), dimension(:), allocatable :: par
-      
+
       ! output variables
       real(kind=fp) :: sbcu = -999.0_fp
       real(kind=fp) :: sbcv = -999.0_fp
       real(kind=fp) :: cesus = -999.0_fp
       real(kind=fp) :: va = -999.0_fp
       real(kind=fp) :: ua = -999.0_fp
-      
+
    end type coastal_transport_defaults
 
-   contains
+contains
 
    function set_coastal_transport_defaults(iform) result(t)
       integer, intent(in) :: iform
@@ -84,7 +84,7 @@ module test_morphology
       integer :: nparopt
       real(kind=fp), dimension(NPARDEF) :: pardef
       character(25), dimension(NPARDEF) :: parkeyw
-   
+
       t = coastal_transport_defaults()
 
       call traparams(iform, name, nparreq, nparopt, parkeyw, pardef)
@@ -99,7 +99,6 @@ module test_morphology
       end do
 
    end function set_coastal_transport_defaults
-
 
    !$f90tw TESTCODE(TEST, test_morphology, test_rotation_Van_Thiel_Van_Rijn, test_trab19,
    subroutine test_trab19() bind(C)
@@ -130,9 +129,8 @@ module test_morphology
       call f90_assert_near(t_r%cesus, t%cesus, 1.0e-07_fp, "cesus is not near the expected value")
       call f90_assert_near(t_r%ua, -t%va, 1.0e-04_fp, "ua is not near the expected value")
       call f90_assert_near(t_r%va, t%ua, 1.0e-08_fp, "va is not near the expected value")
-     
+
    end subroutine test_trab19
    !$f90tw)
 
-   
 end module test_morphology
