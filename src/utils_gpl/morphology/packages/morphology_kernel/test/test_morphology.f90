@@ -29,6 +29,8 @@ module test_morphology
    use m_missing, only: dmiss
    use m_trab19, only: trab19
    use m_rdtrafrm, only: traparams
+   use sediment_basics_module, only: NPARDEF
+
    implicit none
 
    type :: transport_defaults
@@ -80,23 +82,19 @@ module test_morphology
       character(100) :: name
       integer :: nparreq
       integer :: nparopt
-      integer :: npardef = 30
-      real(kind=fp), dimension(:), allocatable :: pardef
-      character(25), dimension(:), allocatable :: parkeyw
-      character(25), dimension(:, :), pointer :: parname
+      real(kind=fp), dimension(NPARDEF) :: pardef
+      character(25), dimension(NPARDEF) :: parkeyw
    
       t = coastal_type_defaults()
-      allocate (pardef(npardef))
-      allocate (parkeyw(npardef))
 
       call traparams(iform, name, nparreq, nparopt, parkeyw, pardef)
 
-      t%npar = npardef + 10
+      t%npar = NPARDEF + 10
       allocate (t%par(t%npar))
 
       t%par(1) = t%ag
       t%par(4) = t%delta
-      do j = 1, npardef
+      do j = 1, NPARDEF
          t%par(j + 10) = pardef(j)
       end do
 
@@ -107,7 +105,6 @@ module test_morphology
    subroutine test_trab19() bind(C)
       type(coastal_type_defaults) :: t
       type(coastal_type_defaults) :: t_r
-      ! output variables
 
       t = set_coastal_type_defaults(19)
       t_r = set_coastal_type_defaults(19) ! rotated
@@ -128,11 +125,11 @@ module test_morphology
                 & t_r%poros, t_r%chezy, t_r%dzdx, t_r%dzdy, t_r%sbcu, t_r%sbcv, t_r%cesus, &
                 & t_r%ua, t_r%va, t_r%ubot, t_r%kwtur, t_r%ubot_from_com)
 
-      call f90_assert_near(t%sbcu, t_r%sbcv, 1.0e-08_fp, "sbcu is not near the expected value")
-      call f90_assert_near(t%sbcv, -t_r%sbcu, 1.0e-11_fp, "sbcv is not near the expected value")
-      call f90_assert_near(t%cesus, t_r%cesus, 1.0e-07_fp, "cesus is not near the expected value")
-      call f90_assert_near(t%ua, t_r%va, 1.0e-04_fp, "ua is not near the expected value")
-      call f90_assert_near(t%va, -t_r%ua, 1.0e-08_fp, "va is not near the expected value")
+      call f90_assert_near(t_r%sbcu, -t%sbcv, 1.0e-08_fp, "sbcu is not near the expected value")
+      call f90_assert_near(t_r%sbcv, t%sbcu, 1.0e-11_fp, "sbcv is not near the expected value")
+      call f90_assert_near(t_r%cesus, t%cesus, 1.0e-07_fp, "cesus is not near the expected value")
+      call f90_assert_near(t_r%ua, -t%va, 1.0e-04_fp, "ua is not near the expected value")
+      call f90_assert_near(t_r%va, t%ua, 1.0e-08_fp, "va is not near the expected value")
      
    end subroutine test_trab19
    !$f90tw)
