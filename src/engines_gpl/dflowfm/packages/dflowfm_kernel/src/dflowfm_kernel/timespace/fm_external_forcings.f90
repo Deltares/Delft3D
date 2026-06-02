@@ -100,7 +100,7 @@ module fm_external_forcings
          integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
       end subroutine
    end interface
-   
+
    interface
       module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
          use tree_data_types, only: tree_data
@@ -114,7 +114,7 @@ module fm_external_forcings
          real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
          real(kind=dp), dimension(2), intent(out) :: z_range_source
          real(kind=dp), dimension(2), intent(out) :: z_range_sink
-         
+
          logical :: is_successful
       end function sourcesink_parse_coordinates
    end interface
@@ -149,7 +149,7 @@ contains
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
-      use precision_basics 
+      use precision_basics
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
       use m_tauwavefetch, only: tauwavefetch
@@ -757,12 +757,16 @@ contains
          return
       end if
 
-      ! check FileVersion
-      major = 1
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
          call err_flush()
          return
       end if
@@ -1729,9 +1733,6 @@ contains
       integer :: iresult
 
       call setup(iresult)
-      !if (iresult == DFM_NOERR) then
-      !   call init_new(md_inifieldfile, iresult)
-      !end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
@@ -1751,7 +1752,7 @@ contains
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
       use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
-         btempforcingtypl, ja_friction_coefficient_time_dependent
+                                  btempforcingtypl, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
@@ -1763,7 +1764,6 @@ contains
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
-      use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
@@ -1773,11 +1773,11 @@ contains
       integer, intent(out) :: iresult
 
       integer :: ierr
-      logical :: exist
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
+      logical :: exist
 
       iresult = DFM_NOERR
 
@@ -1827,7 +1827,7 @@ contains
          call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
          inquire (file=trim(md_inifieldfile), exist=exist)
          if (exist) then
-            iresult = initialize_initial_fields(md_inifieldfile)
+            call init_new(md_inifieldfile, iresult)
             if (iresult /= DFM_NOERR) then
                call timstop(handle_extra(49)) ! initialize_initial_fields
                return
@@ -2501,6 +2501,51 @@ contains
 
    end subroutine setup
 
+!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+!> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
+!> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   subroutine finalize_source_sinks()
+      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
+      use m_alloc, only: realloc
+      use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
+
+      use m_structures, only: fill_geometry_source_sinks
+
+      integer :: i, j, sidx
+      integer :: flownode_nr !< Flow node number
+      logical, dimension(:), allocatable :: is_source_sink_bubblescreen
+
+      ! actually compute is_source_sink_bubble and then negate it
+      call realloc(is_source_sink_bubblescreen, num_source_sink, fill=.false.)
+
+      do i = 1, size(bubblescreens)
+         associate (bubblescreen => bubblescreens(i))
+            do j = 1, bubblescreen%num_flowcells
+               sidx = bubblescreen%source_sink_indices(j)
+               if (jampi == 1 .and. allocated(idomain)) then
+                  flownode_nr = bubblescreen%flowcell_indices(j)
+                  if (idomain(flownode_nr) == my_rank) then ! Check if flow cell is owned by current partition
+                     is_source_sink_bubblescreen(sidx) = .true.
+                  end if
+               else
+                  is_source_sink_bubblescreen(sidx) = .true.
+               end if
+            end do
+         end associate
+      end do
+
+      if(jampi == 1) then
+        call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
+      end if
+
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
+      is_source_sink_normal = .NOT. is_source_sink_bubblescreen
+      num_normal_source_sink = count(is_source_sink_normal)
+
+      call fill_geometry_source_sinks()
+
+   end subroutine finalize_source_sinks
+
    !> Clean up after initialization, deallocate temporary arrays and check for any deprecated or not accessed keywords. Only called as part of fm_initexternalforcings
    subroutine finalize()
       use m_flowgeom, only: ndx, lnx, csu, snu, jagrounlay, wigr, argr, pergr, lnx1d, grounlay, grounlayuni, prof1d, ndxi, lnxi, ln, ba, bare, ndx2d, kcu, dx, bl, kcs, xz, yz
@@ -2523,12 +2568,20 @@ contains
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
       logical :: hyst_dummy(2)
       real(kind=dp) :: area, width, hdx
       type(t_storage), pointer :: stors(:)
+
+      call finalize_source_sinks()
+      if (allocated(thrtt)) then
+         call init_threttimes()
+      end if
+
+      call finalize_1dfield_global_values()
 
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
@@ -2980,8 +3033,8 @@ contains
       end if
    end function check_keyword_zerozbndinflowadvection
 
-subroutine allocatewindarrays()
-      use m_wind, only: wx, wy 
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx
       use m_alloc, only: realloc, aerr

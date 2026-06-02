@@ -85,7 +85,6 @@ object WindowsTest : BuildType({
             param("nexus_username", "%nexus_username%")
             param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
         }
         powerShell {
             name = "Extract artifact"
