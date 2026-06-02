@@ -183,7 +183,9 @@ contains
       end if
 
       if (any(item%operation_type == [SO_AVERAGE, SO_MIN, SO_MAX])) then ! missing array is allocated for any averaging output
-         item%stat_output(item%missing) = dmiss
+         where (item%missing)
+            item%stat_output = dmiss
+         end where
       end if
 
    end subroutine finalize_average
