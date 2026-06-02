@@ -163,7 +163,7 @@ namespace pre_c_sumo
             receiveFFData(participant, csumo_2d_mesh, csumo_3d_mesh, coupling_time_step);
             writeFF2NFFiles(csumo_settings.value(), csumo_2d_mesh, csumo_3d_mesh, current_time_seconds);
             waitForNF2FFFiles(csumo_settings.value());
-            readNF2FFFiles(csumo_settings.value());
+            const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), coupling_time_step);
             convertNFToSourcesSinks(csumo_settings.value());
 
             sendSourcesSinksToFF(csumo_settings.value());

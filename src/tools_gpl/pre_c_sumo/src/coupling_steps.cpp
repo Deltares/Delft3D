@@ -6,10 +6,14 @@
 #include <ranges>
 #include <string_view>
 #include <vector>
+#include <filesystem>
+#include <format>
 
 #include "csumo_settings_reader.hpp"
 #include "FF2NF_writer.hpp"
+#include "NF2FF_reader.hpp"
 #include "parsing_types.hpp"
+#include "monadic_utils.hpp"
 
 namespace pre_c_sumo
 {
@@ -82,7 +86,7 @@ namespace pre_c_sumo
 
             //// Lambda function to obtain the value of a 2D quantity for an ambient point, given the quantity name and
             //// the ambient point index (0-based). 3D is handled by the makePoint function, which reads the layered
-            ///data / for all z-coordinates of the point.
+            // data / for all z-coordinates of the point.
             // auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
             //                              const std::string_view& name, const std::size_t& ambient_point_index) {
             //     return quantities[name][m.first_ambient_point_index + ambient_point_index];
@@ -153,16 +157,37 @@ namespace pre_c_sumo
         }
     }
 
-    void readNF2FFFiles(const CSumoSettingsReader& csumo_settings)
+    const std::vector<pre_c_sumo::NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumo_settings,
+                                                              double current_time_seconds)
     {
-        for (const auto& diffuser : csumo_settings.diffusers())
+        const std::string run_id = "FlowFM"; // TODO: obtain this from the far-field model / coupling state
+
+        std::vector<NF2FFReader> nf2ff_readers{};
+        for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
         {
+            const int subgrid_model_nr = static_cast<int>(index + 1);
             if (diffuser.nf2ff_file.has_value())
             {
-                std::println("Reading NF2FF file: {}", diffuser.nf2ff_file.value());
-                // Here you would add the actual logic to read the NF2FF files and extract the necessary data
+                const std::filesystem::path nf2ff_dir =
+                    diffuser.ff2nf_dir.has_parent_path() ? diffuser.ff2nf_dir.parent_path() / "NF2FF" : "NF2FF";
+                const auto nf2ff_filename = nf2ff_dir / std::format("NF2FF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
+                                                                    subgrid_model_nr, current_time_seconds / 60.0);
+                if (std::filesystem::exists(nf2ff_filename))
+                {
+                    std::println("Reading NF2FF file: {}", nf2ff_filename.string());
+                    auto reader = NF2FFReader::fromFile(nf2ff_filename);
+                    if (reader.has_value())
+                    {
+                        nf2ff_readers.emplace_back(std::move(reader.value()));
+                    }
+                    else
+                    {
+                        // Error?
+                    }
+                }
             }
         }
+        return nf2ff_readers;
     }
 
     void convertNFToSourcesSinks(const CSumoSettingsReader& csumo_settings)

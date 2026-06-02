@@ -9,6 +9,7 @@
 
 #include "csumo_settings_reader.hpp"
 #include "parsing_types.hpp"
+#include "NF2FF_reader.hpp"
 
 namespace pre_c_sumo
 {
@@ -97,8 +98,11 @@ namespace pre_c_sumo
      * data that will be converted to sources/sinks.
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @returns std::vector<NF2FFReader> with the content of all NF2FF files of all
+     * diffusers in the settings.
      */
-    void readNF2FFFiles(const CSumoSettingsReader& csumoSettings);
+    const std::vector<NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumoSettings,
+                                                  double current_time_seconds);
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.
