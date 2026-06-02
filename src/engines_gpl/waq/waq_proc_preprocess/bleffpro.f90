@@ -39,36 +39,36 @@ module m_bleffpro
    integer(kind=int_wp), parameter :: max_groups = 30
 
    !> Number of points in the transformed solar radiation distribution.
-   integer(kind=int_wp) :: solrad_nval
+   integer(kind=int_wp) :: nval_sol
    !> Transformed solar radiation values.
-   real(kind=dp) :: solrad_tsol(max_points)
+   real(kind=dp) :: tsol_sol(max_points)
    !> Transformed densities.
-   real(kind=dp) :: solrad_tden(max_points)
+   real(kind=dp) :: tden_sol(max_points)
    !> Cumulative frequency distribution.
-   real(kind=dp) :: solrad_freq(max_points)
+   real(kind=dp) :: freq_sol(max_points)
 
    !> Step size in the solar radiation grid.
-   real(kind=dp) :: solval_delsol
+   real(kind=dp) :: delsol_val
    !> Maximum solar intensity.
-   real(kind=dp) :: solval_solmax
+   real(kind=dp) :: solmax_val
    !> Length of the day.
-   real(kind=dp) :: solval_day
+   real(kind=dp) :: day_val
 
 contains
 
    !> Compute the solar intensity distribution and efficiency convolution
    !! tables for the BLOOM II phytoplankton model.
    subroutine bleffpro(lunrep, lunblm, nuecog, npoint, power, effic, nz, zvec, fun, der)
-      integer(kind=int_wp), intent(in) :: lunrep !< Report file unit (unused).
-      integer(kind=int_wp), intent(in) :: lunblm !< Input file unit with BLOOM data.
-      integer(kind=int_wp), intent(in) :: nuecog !< Number of ecological groups.
-      integer(kind=int_wp), intent(out) :: npoint !< Number of light intensity points.
-      integer(kind=int_wp), intent(out) :: nz !< Number of convolution points.
-      real(kind=dp), intent(out) :: power(max_points)
-      real(kind=dp), intent(out) :: effic(max_points, max_groups)
-      real(kind=dp), intent(out) :: zvec(max_points)
-      real(kind=dp), intent(out) :: fun(max_points, max_groups)
-      real(kind=dp), intent(out) :: der(max_points, max_groups)
+      integer(kind=int_wp), intent(in)    :: lunrep  !< Report file unit (unused).
+      integer(kind=int_wp), intent(in)    :: lunblm  !< Input file unit with BLOOM data.
+      integer(kind=int_wp), intent(in)    :: nuecog  !< Number of ecological groups.
+      integer(kind=int_wp), intent(out)   :: npoint  !< Number of light intensity points.
+      integer(kind=int_wp), intent(out)   :: nz      !< Number of convolution points.
+      real(kind=dp),        intent(out)   :: power(max_points)
+      real(kind=dp),        intent(out)   :: effic(max_points, max_groups)
+      real(kind=dp),        intent(out)   :: zvec(max_points)
+      real(kind=dp),        intent(out)   :: fun(max_points, max_groups)
+      real(kind=dp),        intent(out)   :: der(max_points, max_groups)
 
       real(kind=dp) :: solvec(max_points)
       real(kind=dp) :: time(max_points)
@@ -86,37 +86,37 @@ contains
       ! Read number of light intensity points and the efficiency curves.
       read (lunblm, *) npoint
       do i = 1, npoint
-         read (lunblm, *) power(i), (effic(i, j), j=1, nuecog)
+         read (lunblm, *) power(i), (effic(i, j), j = 1, nuecog)
       end do
 
       ! Read, integrate, and transform diurnal intensity distribution.
       read (lunblm, *) nsp
-      read (lunblm, *) (solvec(k), time(k), k=1, nsp)
+      read (lunblm, *) (solvec(k), time(k), k = 1, nsp)
 
-      ! solrad_nval is the number of points in the transformed solar
+      ! nval_sol is the number of points in the transformed solar
       ! radiation distribution (max max_points - 1).
-      solrad_nval = 50
-      call solcdf(solvec, time, nsp, solrad_nval, solar, cdf)
-      call convrt(solar, cdf, solrad_nval, dens)
-      call indist(solrad_nval, solar, dens, solrad_freq, solrad_tsol, solrad_tden)
+      nval_sol = 50
+      call solcdf(solvec, time, nsp, nval_sol, solar, cdf)
+      call convrt(solar, cdf, nval_sol, dens)
+      call indist(nval_sol, solar, dens, freq_sol, tsol_sol, tden_sol)
 
       ! Transform efficiency data.
       call inteff(npoint, nuecog, domf, rfirst, effic, power)
 
       ! Determine appropriate tabulation points for convolution.
       nz = 51
-      call zval(domf, npoint, solrad_tsol, solrad_nval, zvec, nz)
+      call zval(domf, npoint, tsol_sol, nval_sol, zvec, nz)
 
       ! Compute convolutions and their derivatives.
-      done = 1.0_dp
+      done =  1.0_dp
       dneg = -1.0_dp
       do j = 1, nuecog
          do k = 1, npoint
             sfirst(k) = rfirst(k, j)
          end do
-         call cvolve(solrad_tsol, solrad_freq, solrad_nval, done, domf, sfirst, npoint, dneg, zvec, &
+         call cvolve(tsol_sol, freq_sol, nval_sol, done, domf, sfirst, npoint, dneg, zvec, &
                      gfun, nz)
-         call cvolve(domf, sfirst, npoint, dneg, solrad_tsol, solrad_tden, solrad_nval, done, zvec, &
+         call cvolve(domf, sfirst, npoint, dneg, tsol_sol, tden_sol, nval_sol, done, zvec, &
                      gder, nz)
          do k = 1, nz
             fun(k, j) = gfun(k)
@@ -128,12 +128,12 @@ contains
    !> Adjust the lower end of the efficiency data and transform the
    !! intensity axis to logarithmic form.
    subroutine inteff(npoint, nuecog, domf, rfirst, effic, power)
-      integer(kind=int_wp), intent(in) :: npoint
-      integer(kind=int_wp), intent(in) :: nuecog
-      real(kind=dp), intent(out) :: domf(max_points)
-      real(kind=dp), intent(out) :: rfirst(max_points, max_groups)
-      real(kind=dp), intent(inout) :: effic(max_points, max_groups)
-      real(kind=dp), intent(inout) :: power(max_points)
+      integer(kind=int_wp), intent(in)    :: npoint
+      integer(kind=int_wp), intent(in)    :: nuecog
+      real(kind=dp),        intent(out)   :: domf(max_points)
+      real(kind=dp),        intent(out)   :: rfirst(max_points, max_groups)
+      real(kind=dp),        intent(inout) :: effic(max_points, max_groups)
+      real(kind=dp),        intent(inout) :: power(max_points)
 
       real(kind=dp) :: e(max_groups)
       real(kind=dp) :: p
@@ -161,12 +161,12 @@ contains
 
    !> Find the cumulative distribution function of the solar radiation.
    subroutine solcdf(solvec, time, nsp, nval, solar, cdf)
-      real(kind=dp), intent(in) :: solvec(max_points)
-      real(kind=dp), intent(in) :: time(max_points)
-      integer(kind=int_wp), intent(in) :: nsp
-      integer(kind=int_wp), intent(in) :: nval
-      real(kind=dp), intent(out) :: solar(max_points)
-      real(kind=dp), intent(out) :: cdf(max_points)
+      real(kind=dp),        intent(in)  :: solvec(max_points)
+      real(kind=dp),        intent(in)  :: time(max_points)
+      integer(kind=int_wp), intent(in)  :: nsp
+      integer(kind=int_wp), intent(in)  :: nval
+      real(kind=dp),        intent(out) :: solar(max_points)
+      real(kind=dp),        intent(out) :: cdf(max_points)
 
       real(kind=dp) :: solna(max_points), solnb(max_points)
       real(kind=dp) :: timea(max_points), timeb(max_points)
@@ -175,28 +175,28 @@ contains
       integer(kind=int_wp) :: i, na, nb, j, jk, jkn
 
       ! Find maximum intensity.
-      solval_solmax = solvec(1)
+      solmax_val = solvec(1)
       do i = 1, nsp
-         if (solvec(i) > solval_solmax) solval_solmax = solvec(i)
+         if (solvec(i) > solmax_val) solmax_val = solvec(i)
       end do
 
       rn = nval - 1
-      solval_delsol = solval_solmax / rn
-      solval_day = time(nsp) - time(1)
+      delsol_val = solmax_val / rn
+      day_val = time(nsp) - time(1)
 
       ! Split solar radiation vector into ascending and descending parts.
       na = nsp
       do i = 1, nsp
          solna(i) = solvec(i)
          timea(i) = time(i)
-         if (solvec(i) == solval_solmax) then
+         if (solvec(i) == solmax_val) then
             na = i
             exit
          end if
       end do
       nb = nsp - na + 1
       do j = 1, nb
-         jk = j - 1
+         jk  = j - 1
          jkn = nsp - jk
          solnb(j) = solvec(jkn)
          timeb(j) = time(jkn)
@@ -204,23 +204,23 @@ contains
 
       ! Calculate cdf for radiation function.
       solar(1) = 0.0_dp
-      cdf(1) = 0.0_dp
+      cdf(1)   = 0.0_dp
       do j = 2, nval
-         rj = j - 1
-         sol = solval_delsol * rj
+         rj  = j - 1
+         sol = delsol_val * rj
          call interp(solna, timea, na, sol, value(1))
          call interp(solnb, timeb, nb, sol, value(2))
-         cdf(j) = (value(1) - time(1) + time(nsp) - value(2)) / solval_day
+         cdf(j)   = (value(1) - time(1) + time(nsp) - value(2)) / day_val
          solar(j) = sol
       end do
    end subroutine solcdf
 
    !> Convert a cumulative distribution function to a probability density.
    subroutine convrt(solar, cdf, nval, dens)
-      real(kind=dp), intent(in) :: solar(max_points)
-      real(kind=dp), intent(in) :: cdf(max_points)
-      integer(kind=int_wp), intent(in) :: nval
-      real(kind=dp), intent(out) :: dens(max_points)
+      real(kind=dp),        intent(in)  :: solar(max_points)
+      real(kind=dp),        intent(in)  :: cdf(max_points)
+      integer(kind=int_wp), intent(in)  :: nval
+      real(kind=dp),        intent(out) :: dens(max_points)
 
       real(kind=dp) :: value(2)
       real(kind=dp) :: ri, solc, soll, solu
@@ -234,31 +234,31 @@ contains
 
       n = nval - 1
       do i = 2, n
-         ri = i - 1
-         solc = solval_delsol * ri
+         ri   = i - 1
+         solc = delsol_val * ri
          if (i == 2) then
-            soll = 0.5_dp * solval_delsol
+            soll = 0.5_dp * delsol_val
             call interp(solar, cdf, nval, soll, value(1))
          else
             value(1) = value(2)
             soll = solu
          end if
-         solu = solc + 0.5_dp * solval_delsol
+         solu = solc + 0.5_dp * delsol_val
          call interp(solar, cdf, nval, solu, value(2))
-         dens(i) = (value(2) - value(1)) / solval_delsol
+         dens(i) = (value(2) - value(1)) / delsol_val
       end do
-      dens(nval) = (1.0_dp - value(2)) * 2.0_dp / solval_delsol
+      dens(nval) = (1.0_dp - value(2)) * 2.0_dp / delsol_val
    end subroutine convrt
 
    !> Integrate and normalize the diurnal intensity distribution and
    !! compute the mean intensity.
    subroutine indist(nval, solar, dens, freq, tsol, tden)
-      integer(kind=int_wp), intent(in) :: nval
-      real(kind=dp), intent(inout) :: solar(max_points)
-      real(kind=dp), intent(inout) :: dens(max_points)
-      real(kind=dp), intent(out) :: freq(max_points)
-      real(kind=dp), intent(out) :: tsol(max_points)
-      real(kind=dp), intent(out) :: tden(max_points)
+      integer(kind=int_wp), intent(in)    :: nval
+      real(kind=dp),        intent(inout) :: solar(max_points)
+      real(kind=dp),        intent(inout) :: dens(max_points)
+      real(kind=dp),        intent(out)   :: freq(max_points)
+      real(kind=dp),        intent(out)   :: tsol(max_points)
+      real(kind=dp),        intent(out)   :: tden(max_points)
 
       real(kind=dp) :: s, d, sbar, del, amult
       integer(kind=int_wp) :: i
@@ -267,20 +267,20 @@ contains
       if (solar(1) <= 0.001_dp * solar(2)) then
          s = 0.001_dp * solar(2)
          call interp(solar, dens, nval, s, d)
-         dens(1) = d
+         dens(1)  = d
          solar(1) = s
       end if
 
       ! Integrate to get cumulative distribution.
       freq(1) = 0.0_dp
-      sbar = 0.0_dp
+      sbar    = 0.0_dp
       do i = 2, nval
-         del = 0.5_dp * (solar(i) - solar(i - 1)) * (dens(i - 1) + dens(i))
-         freq(i) = freq(i - 1) + del
-         sbar = sbar + solar(i) * del
+         del      = 0.5_dp * (solar(i) - solar(i - 1)) * (dens(i - 1) + dens(i))
+         freq(i)  = freq(i - 1) + del
+         sbar     = sbar + solar(i) * del
       end do
       amult = 1.0_dp / freq(nval)
-      sbar = sbar * amult
+      sbar  = sbar * amult
 
       ! Normalize distribution.
       do i = 1, nval
@@ -293,12 +293,12 @@ contains
 
    !> Determine z-values for convolutions.
    subroutine zval(xvec, nx, yvec, ny, zvec, nz)
-      real(kind=dp), intent(in) :: xvec(max_points)
-      integer(kind=int_wp), intent(in) :: nx
-      real(kind=dp), intent(in) :: yvec(max_points)
-      integer(kind=int_wp), intent(in) :: ny
-      real(kind=dp), intent(out) :: zvec(max_points)
-      integer(kind=int_wp), intent(in) :: nz
+      real(kind=dp),        intent(in)    :: xvec(max_points)
+      integer(kind=int_wp), intent(in)    :: nx
+      real(kind=dp),        intent(in)    :: yvec(max_points)
+      integer(kind=int_wp), intent(in)    :: ny
+      real(kind=dp),        intent(out)   :: zvec(max_points)
+      integer(kind=int_wp), intent(in)    :: nz
 
       integer(kind=int_wp) :: ix(max_points)
       integer(kind=int_wp) :: i, nz1, n1, n2, j, k, imin, ixk, jdup
@@ -307,21 +307,21 @@ contains
       do i = 1, nx
          ix(i) = 1
       end do
-      nz1 = nz - 1
+      nz1  = nz - 1
       ! Preserve historical integer-division semantics.
-      rat = real((nx * ny - 1) / nz1, dp)
+      rat  = real((nx * ny - 1) / nz1, dp)
       crat = 0.0_dp
-      zvec(1) = xvec(1) + yvec(1)
-      ix(1) = 2
+      zvec(1)  = xvec(1)  + yvec(1)
+      ix(1)    = 2
       zvec(nz) = xvec(nx) + yvec(ny)
       n2 = 0
 
       ! Loop through the desired number of z-values.
       smin = zvec(nz) + 1.0_dp
       do i = 2, nz1
-         n1 = n2 + 1
+         n1   = n2 + 1
          crat = crat + rat
-         n2 = int(crat + 0.5_dp, int_wp)
+         n2   = int(crat + 0.5_dp, int_wp)
 
          ! Find the next "rat" potential z-values in ascending order.
          do j = n1, n2
@@ -361,17 +361,17 @@ contains
    !> Convolve the functions f(x) and g(y).
    subroutine cvolve(xvec, fofx, nx, ax, yvec, gofy, ny, ay, zvec, &
                      fstarg, nz)
-      real(kind=dp), intent(inout) :: xvec(max_points)
-      real(kind=dp), intent(inout) :: fofx(max_points)
-      integer(kind=int_wp), intent(in) :: nx
-      real(kind=dp), intent(in) :: ax
-      real(kind=dp), intent(in) :: yvec(max_points)
-      real(kind=dp), intent(in) :: gofy(max_points)
-      integer(kind=int_wp), intent(in) :: ny
-      real(kind=dp), intent(in) :: ay
-      real(kind=dp), intent(in) :: zvec(max_points)
-      real(kind=dp), intent(out) :: fstarg(max_points)
-      integer(kind=int_wp), intent(in) :: nz
+      real(kind=dp),        intent(inout) :: xvec(max_points)
+      real(kind=dp),        intent(inout) :: fofx(max_points)
+      integer(kind=int_wp), intent(in)    :: nx
+      real(kind=dp),        intent(in)    :: ax
+      real(kind=dp),        intent(in)    :: yvec(max_points)
+      real(kind=dp),        intent(in)    :: gofy(max_points)
+      integer(kind=int_wp), intent(in)    :: ny
+      real(kind=dp),        intent(in)    :: ay
+      real(kind=dp),        intent(in)    :: zvec(max_points)
+      real(kind=dp),        intent(out)   :: fstarg(max_points)
+      integer(kind=int_wp), intent(in)    :: nz
 
       integer(kind=int_wp) :: i, j, ix, iy
       real(kind=dp) :: bot, top, ex1, ex2, ey1, ey2
@@ -407,15 +407,15 @@ contains
             ex2 = exp(ax * xvec(ix + 1))
             ey1 = exp(ay * yvec(iy))
             ey2 = exp(ay * yvec(iy - 1))
-            f2 = (fofx(ix + 1) - fofx(ix)) / (ex2 - ex1)
-            f1 = fofx(ix) - f2 * ex1
-            g2 = (gofy(iy - 1) - gofy(iy)) / (ey2 - ey1)
-            g1 = gofy(iy) - g2 * ey1
-            d = ay - ax
-            s = f1 * g1 * (top - bot) &
-                + f1 * g2 * (exp(ay * top) - exp(ay * bot)) / ay &
-                - f2 * g1 * (exp(ax * (zvec(i) - top)) - exp(ax * (zvec(i) - bot))) / ax &
-                + f2 * g2 * exp(ax * zvec(i)) * (exp(d * top) - exp(d * bot)) / d
+            f2  = (fofx(ix + 1) - fofx(ix)) / (ex2 - ex1)
+            f1  = fofx(ix) - f2 * ex1
+            g2  = (gofy(iy - 1) - gofy(iy)) / (ey2 - ey1)
+            g1  = gofy(iy) - g2 * ey1
+            d   = ay - ax
+            s   = f1 * g1 * (top - bot) &
+                  + f1 * g2 * (exp(ay * top) - exp(ay * bot)) / ay &
+                  - f2 * g1 * (exp(ax * (zvec(i) - top)) - exp(ax * (zvec(i) - bot))) / ax &
+                  + f2 * g2 * exp(ax * zvec(i)) * (exp(d * top) - exp(d * bot)) / d
             fstarg(i) = fstarg(i) + s
 
             ! Update intervals and stop if x(1) or y(ny) has been reached.
@@ -423,7 +423,7 @@ contains
             tmp = zvec(i) - xvec(ix) - 1.0e-60_dp
             if (top >= tmp) ix = ix - 1
             if (iy > ny) exit
-            if (ix < 1) exit
+            if (ix < 1)  exit
             bot = top
          end do
       end do
@@ -431,11 +431,11 @@ contains
 
    !> Perform a single linear interpolation of a scalar function.
    subroutine interp(xvec, fofx, n, x, f)
-      real(kind=dp), intent(in) :: xvec(max_points)
-      real(kind=dp), intent(in) :: fofx(max_points)
-      integer(kind=int_wp), intent(in) :: n
-      real(kind=dp), intent(in) :: x
-      real(kind=dp), intent(out) :: f
+      real(kind=dp),        intent(in)  :: xvec(max_points)
+      real(kind=dp),        intent(in)  :: fofx(max_points)
+      integer(kind=int_wp), intent(in)  :: n
+      real(kind=dp),        intent(in)  :: x
+      real(kind=dp),        intent(out) :: f
 
       real(kind=dp) :: alam
       integer(kind=int_wp) :: i, idx
@@ -461,12 +461,12 @@ contains
 
    !> Perform a linear interpolation of a multi-valued function.
    subroutine interm(xvec, fofxm, n, nuecog, x, fm)
-      real(kind=dp), intent(in) :: xvec(max_points)
-      real(kind=dp), intent(in) :: fofxm(max_points, max_groups)
-      integer(kind=int_wp), intent(in) :: n
-      integer(kind=int_wp), intent(in) :: nuecog
-      real(kind=dp), intent(in) :: x
-      real(kind=dp), intent(out) :: fm(max_groups)
+      real(kind=dp),        intent(in)  :: xvec(max_points)
+      real(kind=dp),        intent(in)  :: fofxm(max_points, max_groups)
+      integer(kind=int_wp), intent(in)  :: n
+      integer(kind=int_wp), intent(in)  :: nuecog
+      real(kind=dp),        intent(in)  :: x
+      real(kind=dp),        intent(out) :: fm(max_groups)
 
       real(kind=dp) :: alam
       integer(kind=int_wp) :: i, j, idx
