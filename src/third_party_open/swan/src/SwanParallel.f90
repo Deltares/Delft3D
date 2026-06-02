@@ -1477,12 +1477,14 @@ contains
             !
             ii = blist(i, j)
             !
-            if (ii > 0 .and. vmark(ii) < excmark) then
-               k = k + 1
-               iarr1(k) = ivertg(ii)
-               iarr2(k) = vmark(ii)
-               iarr3(k) = j
-               !
+            if (ii > 0) then
+               if (vmark(ii) < excmark) then
+                  k = k + 1
+                  iarr1(k) = ivertg(ii)
+                  iarr2(k) = vmark(ii)
+                  iarr3(k) = j
+                  !
+               end if
             end if
             !
          end do
@@ -1558,6 +1560,13 @@ contains
       !
       deallocate (iarr1, iarr2, iarr3, icount, idsplc)
       !
+      if (nbpgl <= 0) then
+         call msgerr(4, 'SwanCollBpntlist: no genuine boundary points found ')
+         return
+      end if
+      !
+      nbpt = 0
+      !
       ! determine maximum number of boundary polygons in global grid
       !
       nbpolgl = maxval(iarrg3)
@@ -1599,6 +1608,8 @@ contains
       !
       ! complete the list of genuine boundary vertices in ascending order for all boundary polygons
       !
+      nbpol = 0
+      !
       do j = 1, nbpolgl
          !
          k = 0
@@ -1617,6 +1628,12 @@ contains
          end do
          !
          nbp = k
+         !
+         if (nbp == 0) then
+            cycle
+         end if
+         !
+         nbpol = nbpol + 1
          !
          ! allocate data for computing the order of boundary points
          !
@@ -1681,13 +1698,13 @@ contains
          ! sort blist and corresponding markers accordingly
          !
          do i = 1, nbp
-            blist(i, j) = blistg(jlist(i))
-            bmark(i, j) = bmarkg(jlist(i))
+            blist(i, nbpol) = blistg(jlist(i))
+            bmark(i, nbpol) = bmarkg(jlist(i))
          end do
          !
          ! store number of boundary vertices for present polygon
          !
-         nbpt(j) = nbp
+         nbpt(nbpol) = nbp
          !
          deallocate (ang, dxc, dyc, jlist)
          !
