@@ -748,7 +748,7 @@ contains
       ! Fill the 3D layers
       if (kmx > 0) then
          do n = 1, ndx
-            do k = kbot(n), ktop(n)
+            do k = kbot(n), kbot(n) + kmxn(n) - 1
                ndkx2ndx(k) = n
             end do
          end do

@@ -445,6 +445,9 @@ contains
          end do
          ndkx = kk
 
+         ! Create mapping from 3D indices (ndkx) to 2D horizontal cells (ndx)
+         call mapndkx2ndx()
+         
          LL = Lnx ! Stapelen vanaf grondlaag
          do L = 1, lnx
             n1 = ln(1, L)
@@ -1238,7 +1241,5 @@ contains
 
       call set_kbot_ktop(jazws0=1)
       
-      ! Create mapping from 3D indices (ndkx) to 2D horizontal cells (ndx)
-      call mapndkx2ndx()
    end subroutine flow_allocflow
 end module m_flow_allocflow

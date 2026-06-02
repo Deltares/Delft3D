@@ -6496,6 +6496,11 @@ contains
 
       integer :: ndx
 
+      if (kmx == 0) then
+         is_in_partition  = idomain(idx_ndkx) == my_rank
+         return
+      end if
+
       if (jampi == 0 .or. (.not. allocated(idomain))) then
          is_in_partition = .true.
          return
