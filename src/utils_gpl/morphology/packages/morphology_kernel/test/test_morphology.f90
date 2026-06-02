@@ -38,7 +38,7 @@ module test_morphology
       real(kind=fp) :: delta = 1.65_fp ! relative density of sediment [-]
    end type transport_defaults
 
-   type, extends(transport_defaults) :: coastal_type_defaults
+   type, extends(transport_defaults) :: coastal_transport_defaults
       logical :: ubot_from_com = .false.
       real(kind=fp) :: chezy = 65.0_fp ! Chezy coefficient [m^1/2/s]
       real(kind=fp) :: d15 = 0.0001_fp ! D15 of the sediment [m]
@@ -69,13 +69,13 @@ module test_morphology
       real(kind=fp) :: va = -999.0_fp
       real(kind=fp) :: ua = -999.0_fp
       
-   end type coastal_type_defaults
+   end type coastal_transport_defaults
 
    contains
 
-   function set_coastal_type_defaults(iform) result(t)
+   function set_coastal_transport_defaults(iform) result(t)
       integer, intent(in) :: iform
-      type(coastal_type_defaults) :: t
+      type(coastal_transport_defaults) :: t
 
       integer :: j
 
@@ -85,7 +85,7 @@ module test_morphology
       real(kind=fp), dimension(NPARDEF) :: pardef
       character(25), dimension(NPARDEF) :: parkeyw
    
-      t = coastal_type_defaults()
+      t = coastal_transport_defaults()
 
       call traparams(iform, name, nparreq, nparopt, parkeyw, pardef)
 
@@ -98,16 +98,16 @@ module test_morphology
          t%par(j + 10) = pardef(j)
       end do
 
-   end function set_coastal_type_defaults
+   end function set_coastal_transport_defaults
 
 
    !$f90tw TESTCODE(TEST, test_morphology, test_rotation_Van_Thiel_Van_Rijn, test_trab19,
    subroutine test_trab19() bind(C)
-      type(coastal_type_defaults) :: t
-      type(coastal_type_defaults) :: t_r
+      type(coastal_transport_defaults) :: t
+      type(coastal_transport_defaults) :: t_r
 
-      t = set_coastal_type_defaults(19)
-      t_r = set_coastal_type_defaults(19) ! rotated
+      t = set_coastal_transport_defaults(19)
+      t_r = set_coastal_transport_defaults(19) ! rotated
 
       t_r%u = -t%v
       t_r%v = t%u
