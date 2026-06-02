@@ -141,18 +141,24 @@ namespace pre_c_sumo
         // Add preCICE quantity data buffers.
         csumo_3d_mesh.quantities[densities_id] = std::vector<double>(csumo_3d_mesh.number_of_nodes);
 
-        // TESTDATA: set sources_sinks mesh
-        constexpr int sources_sinks_size = 4;
-        // constexpr int dim = 2;
-        std::vector<double> sources_sinks_nodes = {250.000,  350.087, 252.500,  350.048,
-                                                   1050.000, 350.365, 1050.500, 350.365};
-        std::vector<int> sources_sinks_nodes_ids(sources_sinks_size);
-        participant.setMeshVertices("sources_sinks_nodes", sources_sinks_nodes, sources_sinks_nodes_ids);
-
-        // TESTDATA: set sources_sinks data
-        // constexpr int sources_sinks_data_size = 1; // discharge
-        std::vector<double> sources_sinks = {1.23, 4.56, -1.23, -4.56};
-        participant.writeData("sources_sinks_nodes", "sources_sinks", sources_sinks_nodes_ids, sources_sinks);
+        // Set sources_sinks mesh
+        // TESTDATA based on file NF2FF__FlowFM_SubMod001_120.000.xml
+        // TODO: Just-In-Time remeshing?
+        SourcesSinks sources_sinks;
+        sources_sinks.addCoordinates({
+            250.000, 350.048,  // Entrainment: sink2_source1
+            250.000, 350.048,  // Entrainment: sink2_source2
+            1050.000, 350.365, // Entrainment: source1_sink2
+            1050.500, 350.365, // Entrainment: source2_sink2
+            1050.000, 350.365, // Discharge: source1
+            1050.500, 350.365, // Discharge: source2
+            1500.6, 1000.6,    // Intake from C-SUMO settings file, if no intakes in NF2FF file
+        });
+        participant.setMeshVertices("sources_sinks_nodes", sources_sinks.coordinates, sources_sinks.precice_ids);
+        if (participant.requiresInitialData())
+        {
+            sendSourcesSinksToFF(participant, sources_sinks);
+        }
 
         participant.initialize();
         double current_time_seconds = 0.0;
@@ -166,7 +172,7 @@ namespace pre_c_sumo
             const std::vector<NF2FFReader> nf2ff_readers = readNF2FFFiles(csumo_settings.value(), coupling_time_step);
             convertNFToSourcesSinks(csumo_settings.value());
 
-            sendSourcesSinksToFF(csumo_settings.value());
+            sendSourcesSinksToFF(participant, sources_sinks);
 
             participant.advance(coupling_time_step);
             current_time_seconds += coupling_time_step;
