@@ -109,6 +109,7 @@ def test_get_issue_dry_run() -> None:
 
 def test_test_connection_403_basic_auth_disabled() -> None:
     """Specific regression test for the case where Jira has disabled basic auth (returns 403).
+
     The client must use Bearer PAT, not basic auth, to succeed.
     """
     jira = make_jira()

@@ -65,9 +65,7 @@ class Jira(ConnectionServiceInterface):
                 status_code=200, content=b"dry-run mock"
             )
         else:
-            result = requests.get(
-                url=endpoint, headers=self._get_headers(), verify=True, timeout=(5, 30)
-            )
+            result = requests.get(url=endpoint, headers=self._get_headers(), verify=True, timeout=(5, 30))
 
         if result.status_code == 200:
             self.__context.log("Successfully connected to the Jira API.")
@@ -97,9 +95,7 @@ class Jira(ConnectionServiceInterface):
             self.__context.log(f"GET request: {endpoint}")
             return {"key": issue_number, "fields": {"summary": f"[dry-run mock] Summary for {issue_number}"}}
 
-        result = requests.get(
-            url=endpoint, headers=self._get_headers(), verify=True, timeout=(5, 30)
-        )
+        result = requests.get(url=endpoint, headers=self._get_headers(), verify=True, timeout=(5, 30))
 
         if result.status_code == 200:
             return cast(Dict[str, Any], result.json())
