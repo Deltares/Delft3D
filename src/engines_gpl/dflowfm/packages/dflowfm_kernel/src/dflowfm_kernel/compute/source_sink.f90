@@ -180,7 +180,7 @@ contains
 
    end subroutine initialize_source_sinks
 
-   !> Resizes the SourceSinks object to size, keeping existing values if possible.
+   !> Resizes the SourceSinks object to new size, keeping existing values.
    subroutine resize_source_sinks(self, new_size)
       ! Parameters
       class(SourceSinks), intent(inout) :: self
