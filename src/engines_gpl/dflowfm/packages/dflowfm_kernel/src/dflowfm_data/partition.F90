@@ -6489,7 +6489,7 @@ contains
    !< if there is no mapping, assumes true
    !< also returns true if there is no partitioning 
    function is_3d_layer_in_current_partition(idx_ndkx) result(is_in_partition)
-      use m_flow, only: ndkx2ndx, ndkx
+      use m_flow, only: ndkx2ndx, ndkx, kmx
       
       integer, intent(in) :: idx_ndkx !< 3d layer index
       logical :: is_in_partition
