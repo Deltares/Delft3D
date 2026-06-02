@@ -93,7 +93,6 @@ contains
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
       integer :: kk, k, kb, kt, ktx, nel
       integer :: j, n
-      logical :: usefallwaq
       real(kind=dp) :: dt_loc
       real(kind=dp) :: qw_loc
       real(kind=dp), parameter :: dtol = 1.0e-8_dp
@@ -114,7 +113,7 @@ contains
 
       ! construct and solve system
       !$OMP PARALLEL DO                                                 &
-      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc,nel,usefallwaq) &
+      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc,nel) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -176,7 +175,6 @@ contains
             end if
 
             do j = 1, NUMCONST
-               usefallwaq = iconst2fallwaq(j) > 0
                ! diffusion
                if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
                   fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(kk, j)) * dtbazi
@@ -195,20 +193,16 @@ contains
 
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
-                  if ((jased > 0 .or. usefallwaq) .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
-                     if (jased < 4 .or. usefallwaq) then
-                        if (usefallwaq) then
-                           qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * a1(kk)
-                        else
-                           qw_loc = qw(k) - wsf(j) * a1(kk)
-                        end if
-                     else if (j >= ISED1 .and. j <= ISEDN) then
+                   if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
+                     if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                         qw_loc = qw(k) - mtd%ws(k, j - ISED1 + 1) * a1(kk)
+                     else if (iconst2fallwaq(j) > 0) then
+                        qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * a1(kk)
                      else
-                        ! add something for semi-implicit/explicit fall velocity for WAQ here?
+                        qw_loc = qw(k) - wsf(j) * a1(kk)
                      end if
                   else
-                     qw_loc = qw(k) ! add something for semi-implicit/explicit fall velocity for WAQ here?
+                     qw_loc = qw(k)
                   end if
                   fluxfac = qw_loc * 0.5_dp * thetavert(j) * dt_loc
 
@@ -219,26 +213,13 @@ contains
                   c(n, j) = c(n, j) + fluxfac * dvol1i
                end if
 
-               if ((jased > 0 .or. usefallwaq) .and. jaimplicitfallvelocity == 1) then  ! add something for implicit fall velocity for WAQ here, also when jased is not > 0?
-                  fluxfac = 0.0_dp
-                  if (jased == 4) then
-                     if (j >= ISED1 .and. j <= ISEDN) then ! Combine with previous to avoid duplication?
-                        fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
-                     else
-                        ! tracers (optionally with fall velocity from WAQ)
-                        if (usefallwaq) then
-                           fluxfac = wfallwaq(iconst2fallwaq(j), k) * a1(kk) * dt_loc
-                        else
-                           fluxfac = wsf(j) * a1(kk) * dt_loc
-                        end if
-                     end if
+               if ((jased > 0 .or. iconst2fallwaq(j) > 0) .and. jaimplicitfallvelocity == 1) then
+                  if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
+                     fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
+                  else if (iconst2fallwaq(j) > 0) then
+                     fluxfac = wfallwaq(iconst2fallwaq(j), k) * a1(kk) * dt_loc
                   else
-                     ! tracers (optionally with fall velocity from WAQ) Duplication for now
-                     if (usefallwaq) then
-                        fluxfac = wfallwaq(iconst2fallwaq(j), k) * a1(kk) * dt_loc
-                     else
-                        fluxfac = wsf(j) * a1(kk) * dt_loc
-                     end if
+                     fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
                   if (fluxfac > 0.0_dp) then
                      c(n, j) = c(n, j) - fluxfac * dvol1i
