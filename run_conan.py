@@ -3,10 +3,14 @@ from __future__ import annotations
 import argparse
 import enum
 import json
+import os
 import platform
+import shutil
 import subprocess
 import sys
+import tempfile
 from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 
 CONFIG_DIR = Path("conan/config")
@@ -70,35 +74,63 @@ def clean_conan_cache() -> None:
     subprocess.run(["conan", "cache", "clean"], check=True)
 
 
-def update_lockfile(profile: str) -> None:
-    """Update conan.lock from the current conanfile and recipes.
+@contextmanager
+def _isolated_conan_home() -> Generator[Path, None, None]:
+    """Run a block with CONAN_HOME pointed at a fresh, temporary directory.
 
-    Only the `local-recipes` remote is consulted, so updates reflect the
-    on-disk recipes exclusively.
+    Ensures that the lockfile can be deterministically generated and
+    that the user's real Conan cache is left untouched.
     """
-    if not LOCKFILE.exists():
-        sys.exit(
-            f"ERROR: Lockfile '{LOCKFILE}' does not exist. "
-            "Cannot update a lockfile that has not been created yet."
-        )
+    tmp = Path(tempfile.mkdtemp(prefix="conan-lockgen-"))
+    prev = os.environ.get("CONAN_HOME")
+    os.environ["CONAN_HOME"] = str(tmp)
+    try:
+        yield tmp
+    finally:
+        if prev is None:
+            os.environ.pop("CONAN_HOME", None)
+        else:
+            os.environ["CONAN_HOME"] = prev
+        shutil.rmtree(tmp, ignore_errors=True)
 
-    cmd = [
-        "conan",
-        "lock",
-        "upgrade",
-        f"--profile:all={profile}",
-        "--settings:all",
-        "build_type=Release",
-        f"--lockfile={LOCKFILE}",
-        f"--lockfile-out={LOCKFILE}",
-        "--update-requires=*/*",
-        "--update-build-requires=*/*",
-        "--update-python-requires=*/*",
-        "--remote=local-recipes",
-    ]
 
-    print(f"Updating lockfile {LOCKFILE}...")
-    subprocess.run(cmd, check=True)
+def update_lockfile(profile: str) -> None:
+    """Regenerate conan.lock from the current conanfile and local recipes.
+
+    Runs `conan lock create` against an isolated, throw-away `CONAN_HOME` so
+    that only the `local-recipes` remote can influence dependency resolution
+    (the user's existing cache cannot leak versions or revisions into the
+    lockfile via newer timestamps / higher version-range matches).
+    """
+    if LOCKFILE.exists():
+        print(f"Removing existing lockfile {LOCKFILE}...")
+        LOCKFILE.unlink()
+
+    with _isolated_conan_home() as home:
+        print(f"Using isolated CONAN_HOME={home}")
+        setup_conan_config_external()
+
+        cmd = [
+            "conan",
+            "lock",
+            "create",
+            ".",
+            f"--profile:all={profile}",
+            "--settings:all",
+            "build_type=Release",
+            f"--lockfile-out={LOCKFILE}",
+            "--remote=local-recipes",
+            "--update",
+        ]
+
+        print(f"Generating lockfile {LOCKFILE}...")
+        try:
+            subprocess.run(cmd, check=True)
+        except subprocess.CalledProcessError:
+            # Do not leave a partial/inconsistent lockfile behind.
+            if LOCKFILE.exists():
+                LOCKFILE.unlink()
+            raise
 
 
 def conan_install(
@@ -271,7 +303,6 @@ def cmd_clean_cache(args: argparse.Namespace) -> None:
 
 def cmd_update_lockfile(args: argparse.Namespace) -> None:
     profile = _get_profile()
-    _require_profile(profile)
     update_lockfile(profile)
 
 
