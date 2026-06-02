@@ -55,7 +55,7 @@ contains
       use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
                         number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS, ndkx2ndx
       use m_transport, only: ISALT, ITEMP
-      use m_partitioninfo, only:  idomain, my_rank, jampi
+      use m_partitioninfo, only:  is_3d_layer_in_current_partition
 
       implicit none
 
@@ -372,14 +372,8 @@ contains
                   if (jalimitdiff == 1) then
                      flux_max_limit = min(fluxfacMaxL, fluxfacMaxR)
                      if (fluxfac > flux_max_limit) then
-                        fluxfac = flux_max_limit ! zie Borsboom sobek note
-                        if (jampi == 1 .and. allocated(idomain)) then
-                           !check if the flow nodes are real nodes (not ghost nodes). In ghost nodes, the flux is not computed and limited
-                           if (idomain(ndkx2ndx(k1)) == my_rank .and. idomain(ndkx2ndx(k2)) == my_rank) then
-                              !$omp atomic
-                              number_limited_links = number_limited_links + 1
-                           end if
-                        else 
+                        fluxfac = flux_max_limit
+                        if (is_3d_layer_in_current_partition(k1) .and. is_3d_layer_in_current_partition(k2)) then
                            !$omp atomic
                            number_limited_links = number_limited_links + 1
                         end if
