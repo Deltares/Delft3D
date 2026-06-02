@@ -2968,6 +2968,7 @@ contains
       use m_alloc
       use network_data
       use m_cell_geometry
+      use m_tpoly, only: inwhichpolygon
 
       implicit none
 
