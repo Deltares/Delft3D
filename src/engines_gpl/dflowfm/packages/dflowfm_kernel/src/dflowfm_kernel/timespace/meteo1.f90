@@ -2777,7 +2777,7 @@ module timespace
 
    use timespace_data
    use timespace_triangle
-   implicit none
+   implicit none(type, external)
 
 contains
    !
@@ -2933,7 +2933,7 @@ contains
       use m_reapol
       use m_filez, only: oldfil
       use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
-
+      use m_tpoly, only: inwhichpolygon
       implicit none
 
       !inputs
@@ -3115,6 +3115,7 @@ contains
       use m_delpol
       use m_reapol
       use m_filez, only: oldfil
+      use m_tpoly, only: inwhichpolygon
 
       implicit none
 
