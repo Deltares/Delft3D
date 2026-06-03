@@ -1756,7 +1756,7 @@ contains
       use m_mass_balance_areas, only: mbaname
       use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
                                   btempforcingtypl, ja_friction_coefficient_time_dependent
-      use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
+      use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
       use unstruc_model, only: md_inifieldfile
@@ -1780,7 +1780,6 @@ contains
       integer, parameter :: N4 = 6
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
-      logical :: exist
 
       iresult = DFM_NOERR
 
