@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
+#include "pre_c_sumo_lib.hpp"
 #include "FF2NF_writer.hpp"
 #include "parsing_types.hpp"
 
@@ -82,7 +83,7 @@ namespace pre_c_sumo
 
             //// Lambda function to obtain the value of a 2D quantity for an ambient point, given the quantity name and
             //// the ambient point index (0-based). 3D is handled by the makePoint function, which reads the layered
-            ///data / for all z-coordinates of the point.
+            /// data / for all z-coordinates of the point.
             // auto get_ambient_value = [&quantities = csumo_2d_mesh.quantities, &m = mapping](
             //                              const std::string_view& name, const std::size_t& ambient_point_index) {
             //     return quantities[name][m.first_ambient_point_index + ambient_point_index];
@@ -176,10 +177,27 @@ namespace pre_c_sumo
         }
     }
 
-    void sendSourcesSinksToFF(const CSumoSettingsReader& csumo_settings)
+    void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks)
     {
-        std::println("Sending sources/sinks data to far-field...");
-        (void)csumo_settings;
+        std::println("Sending dummy sources/sinks data to far-field...");
+        // TESTDATA: set sources_sinks data
+        sources_sinks.clearData();
+        sources_sinks.addData(1.0, 3.0, -9.95, -9.45, -0.20E+02); // sink 2, source 1
+        sources_sinks.addData(2.0, 4.0, -9.95, -9.45, -0.20E+02); // sink 2, source 2
+        sources_sinks.addData(3.0, 1.0, -5.0, -5.0, 0.20E+02);    // source 1, sink 2
+        sources_sinks.addData(4.0, 2.0, -5.0, -5.0, 0.20E+02);    // source 2, sink 2
+        sources_sinks.addData(5.0, 0.0, -5.0, -5.0, 0.50E+01);    // intake fraction to source 1
+        sources_sinks.addData(6.0, 0.0, -5.0, -5.0, 0.50E+01);    // intake fraction to source 2
+        sources_sinks.addData(7.0, 0.0, 0.0, 0.0, 0.10E+02);      // intake sink
+        participant.writeData("sources_sinks_nodes", "sources_sinks_id", sources_sinks.precice_ids, sources_sinks.ids);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_connected_id", sources_sinks.precice_ids,
+                              sources_sinks.connected_ids);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_z_min", sources_sinks.precice_ids,
+                              sources_sinks.z_mins);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_z_max", sources_sinks.precice_ids,
+                              sources_sinks.z_maxs);
+        participant.writeData("sources_sinks_nodes", "sources_sinks_discharge", sources_sinks.precice_ids,
+                              sources_sinks.discharges);
     }
 
     void convertNFSinksToFF() { std::println("Processing sinks..."); }
