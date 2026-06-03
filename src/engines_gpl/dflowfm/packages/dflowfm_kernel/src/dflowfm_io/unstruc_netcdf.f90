@@ -11263,6 +11263,7 @@ contains
       use geometry_module, only: get_startend, normaloutchk
       use gridoperations
       use m_copynetboundstopol
+      use m_tpoly, only: polorientation
 
       integer, intent(in) :: inetfile
 
