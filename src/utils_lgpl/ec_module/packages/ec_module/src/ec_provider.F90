@@ -191,6 +191,7 @@ contains
             bcBlockPtr%ncptr => ecSupportFindNetCDF(instancePtr, netCDFId)
             if (.not. ecNetCDFInit(fileName, bcBlockPtr%ncptr, iostat)) then
                bcBlockPtr%ncptr => null()
+               write(*,*) 'initializebcblock, ecbcinit returned false'
                return
             end if
          end if
@@ -1524,9 +1525,18 @@ contains
          if (.not. ecArcinfoAndT3dReadBlock(fileReaderPtr, fileReaderPtr%fileHandle, 1, numlay * vectormax, 1, valueptr)) return
       case (provFile_bc)
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
+         ! Initialise, vertical coordinates, for T0 
+         if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then 
+             valueptr%sourceT0FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
+         end if
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
-      case default
-         call set_ec_message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
+         ! Initialise for T1
+         if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then  
+            valueptr%sourceT1FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
+         end if
+              
+         case default
+         call set_EC_Message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
       end select
 
@@ -1878,6 +1888,24 @@ contains
          bctfiletype = BC_FTYPE_ASCII
       else if (index(trim(bctfilename)//'|', '.nc|') > 0) then ! NETCDF: nc-format
          bctfiletype = BC_FTYPE_NETCDF
+         ! ToDo, more generic approach to determine veriabel name from type of boundary
+         call str_lower(quantityname)
+         if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
+            ! History file
+            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
+            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
+            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
+            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+         else
+            ! Old existing nc files 
+            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevelbnd'
+            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'so'
+            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'thetao'
+            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'ux'
+            ! Old existing nc files (temporary fix for Tom, durban)
+            ! if (strcmpi(quantityname,'so'                      )) quantityname = 'salinity'
+            ! if (strcmpi(quantityname,'thetao'                  )) quantityname = 'temperature'
+         end if
       else
          call set_ec_message("Forcing file ("//trim(bctfilename)//") should either have extension .nc (netcdf timeseries file) or .bc (ascii BC-file).")
          return

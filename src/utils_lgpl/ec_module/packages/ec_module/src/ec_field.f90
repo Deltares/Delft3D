@@ -214,6 +214,22 @@ module m_ec_field
                fieldPtr%arr1d = ec_undef_hp
             end if
             fieldPtr%arr1dPtr => fieldPtr%arr1d
+            ! Allocate array for z values (needed for reading from his file in case of nesting)
+            if (allocated(fieldPtr%arrz)) then
+               deallocate(fieldPtr%arrz, stat = istat)
+               if (istat /= 0) then
+                  call set_EC_Message("ERROR: ec_field::ecFieldCreate1dArray: Unable to deallocate memory.")
+                  return
+               end if
+            end if
+            allocate(fieldPtr%arrz(arraySize), stat = istat)
+            if (istat /= 0) then
+               call set_EC_Message("ERROR: ec_field::ecFieldCreate1dArray: Unable to allocate additional memory.")
+               return
+            else
+               fieldPtr%arrz = ec_undef_hp
+            end if
+            fieldPtr%arrzPtr => fieldPtr%arrz
          else
             call set_ec_message("ERROR: ec_field::ecFieldCreate1dArray: Cannot find a Field with the supplied id.")
             return

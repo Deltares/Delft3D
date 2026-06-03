@@ -414,7 +414,6 @@ module m_ec_elementSet
             call set_ec_message("ERROR: ec_elementSet::ecElementSetSetZArray: Cannot find an ElementSet with the supplied id.")
          end if
       end function ecElementSetSetZArray
-
       
       function ecElementSetSetKbotKtop(instancePtr, elementSetId, kbot, ktop, Lpointer_) result(success)
          logical                               :: success      !< function status
