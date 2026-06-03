@@ -26,6 +26,11 @@
 !-------------------------------------------------------------------------------
 !  
 !  
+module m_trab12
+   implicit none
+
+contains
+
 !> computes sediment transport according to the bed load transport formula of Soulsby;
 !! first implementation assumes transport in current direction only.
 subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
@@ -268,3 +273,5 @@ subroutine trab12(u         ,v         ,hrms      ,h         ,tp        , &
     sboty = acal*factr/utot*(phix*v + phiy*u)
 
 end subroutine trab12
+
+end module m_trab12

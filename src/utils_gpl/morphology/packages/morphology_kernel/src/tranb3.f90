@@ -1,3 +1,8 @@
+module m_tranb3
+   implicit none
+
+contains
+
 subroutine tranb3(utot      ,d35       ,c         ,h         ,npar      , &
                 & par       ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
@@ -102,3 +107,5 @@ subroutine tranb3(utot      ,d35       ,c         ,h         ,npar      , &
     if (fwc>0.) sbot = acal*utot*d35*(utot/uster)**rn*ccc*fwc**rm
     ssus = 0.0
 end subroutine tranb3
+
+end module m_tranb3

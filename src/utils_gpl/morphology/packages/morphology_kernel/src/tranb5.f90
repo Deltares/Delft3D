@@ -1,3 +1,8 @@
+module m_tranb5
+   implicit none
+
+contains
+
 subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
                 & h         ,hrms      ,tp        ,dir       ,npar      , &
                 & par       ,dzdx      ,dzdy      ,vonkar    ,ws        , &
@@ -228,3 +233,5 @@ subroutine tranb5(u         ,v         ,d50       ,d90       ,chezy     , &
        ssusy = 0.0_fp
     endif
 end subroutine tranb5
+
+end module m_tranb5

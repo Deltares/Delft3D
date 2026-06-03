@@ -1,3 +1,8 @@
+module m_trabg
+   implicit none
+
+contains
+
 subroutine trabg(utot      ,di        ,taub      ,npar      ,par       , &
                & sbot      ,ssus      ,dg        ,dgsd      ,chezy     )
 !----- GPL ---------------------------------------------------------------------
@@ -110,3 +115,5 @@ subroutine trabg(utot      ,di        ,taub      ,npar      ,par       , &
     sbot    =  wistar * ustar**3 / (delta * ag)
     ! note: proportion of size fraction on surface (fi) is included elsewhere
 end subroutine trabg
+
+end module m_trabg

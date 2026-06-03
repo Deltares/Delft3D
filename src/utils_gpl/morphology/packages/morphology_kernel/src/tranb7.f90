@@ -1,3 +1,8 @@
+module m_tranb7
+   implicit none
+
+contains
+
 subroutine tranb7(utot      ,d50       ,d90       ,h         ,npar      , &
                 & par       ,sbot      ,ssus      ,vonkar    ,mudfrac   )
 !----- GPL ---------------------------------------------------------------------
@@ -138,3 +143,5 @@ subroutine tranb7(utot      ,d50       ,d90       ,h         ,npar      , &
        sbot = 0.100*(del)**0.5*sqrt(ag)*d50**1.5*dstar**( - 0.3)*t**1.5
     endif
 end subroutine tranb7
+
+end module m_tranb7

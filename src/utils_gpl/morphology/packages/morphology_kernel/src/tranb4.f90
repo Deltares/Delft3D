@@ -1,3 +1,8 @@
+module m_tranb4
+   implicit none
+
+contains
+
 subroutine tranb4(utot      ,d         ,chezy     ,npar      ,par       , &
                 & hidexp    ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
@@ -97,3 +102,5 @@ subroutine tranb4(utot      ,d         ,chezy     ,npar      ,par       , &
     f  = rmus*th - hidexp*thcrs
     if (f>1.0e-8) ssus = acals * d**1.5 * sqrt(ag*delta) * th**bs * f**ccs
 end subroutine tranb4
+
+end module m_tranb4

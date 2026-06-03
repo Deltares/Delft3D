@@ -1,3 +1,8 @@
+module m_tran9t
+   implicit none
+
+contains
+
 subroutine tran9t(utot      ,d50       ,d90       ,chezy     ,h         , &
                 & ust       ,npar      ,par       ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
@@ -126,3 +131,5 @@ subroutine tran9t(utot      ,d50       ,d90       ,chezy     ,h         , &
     ssus = (t - sbot)
   333 continue
 end subroutine tran9t
+
+end module m_tran9t

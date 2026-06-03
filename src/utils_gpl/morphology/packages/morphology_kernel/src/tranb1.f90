@@ -1,3 +1,8 @@
+module m_tranb1
+   implicit none
+
+contains
+
 subroutine tranb1(utot      ,d50       ,c         ,h         ,npar       , &
                 & par       ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
@@ -80,3 +85,5 @@ subroutine tranb1(utot      ,d50       ,c         ,h         ,npar       , &
     !
     ssus = suspfac * temp
 end subroutine tranb1
+
+end module m_tranb1

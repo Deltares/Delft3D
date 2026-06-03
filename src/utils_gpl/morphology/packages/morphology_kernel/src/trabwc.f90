@@ -1,3 +1,8 @@
+module m_trabwc
+   implicit none
+
+contains
+
 subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
                 & sbot      ,ssus      ,dg        ,fs        ,chezy     )
 !----- GPL ---------------------------------------------------------------------
@@ -110,3 +115,5 @@ subroutine trabwc(utot      ,di        ,taub      ,npar      ,par       , &
     par( 5) = taurm
     par( 6) = b
 end subroutine trabwc
+
+end module m_trabwc

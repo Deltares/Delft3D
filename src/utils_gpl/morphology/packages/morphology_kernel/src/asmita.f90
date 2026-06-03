@@ -1,3 +1,8 @@
+module m_asmita
+   implicit none
+
+contains
+
 !> This routine implements ASMITA equilibrium relation.
 subroutine asmita(zb, timhr, npar, par, sbot, cesus, t_relax)
 !----- GPL ---------------------------------------------------------------------
@@ -99,3 +104,5 @@ subroutine asmita(zb, timhr, npar, par, sbot, cesus, t_relax)
         t_relax = 1.0e10_fp
     endif
 end subroutine asmita
+
+end module m_asmita

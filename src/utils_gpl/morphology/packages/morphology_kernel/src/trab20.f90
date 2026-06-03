@@ -25,6 +25,11 @@
 !                                                                               
 !-------------------------------------------------------------------------------
 
+module m_trab20
+   implicit none
+
+contains
+
 !> computes sediment transport according to the transport formula of Soulsby / Van Rijn, XBeach flavour
 subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h         ,tp        , &
                 & d50       ,d15       ,d90       ,npar      ,par       ,dzbdt     ,vicmol    , &
@@ -219,3 +224,5 @@ subroutine trab20(u         ,v         ,hrms      ,rlabda    ,teta      ,h      
     !
  999 continue
 end subroutine trab20
+
+end module m_trab20

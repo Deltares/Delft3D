@@ -1,3 +1,8 @@
+module m_tranb2
+   implicit none
+
+contains
+
 subroutine tranb2(utot      ,d50       ,d90       ,chezy     ,h         , &
                 & npar      ,par       ,hidexp    ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
@@ -90,3 +95,5 @@ subroutine tranb2(utot      ,d50       ,d90       ,chezy     ,h         , &
     sbot = acal*8.0*sqrt(ag*delta*d50*y)*d50*y
     ssus = 0.0_fp
 end subroutine tranb2
+
+end module m_tranb2

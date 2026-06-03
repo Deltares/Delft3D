@@ -1,3 +1,8 @@
+module m_trab14
+   implicit none
+
+contains
+
 subroutine trab14(utot      ,d50       ,chezy     ,npar      ,par       , &
                 & hidexp    ,sbot      ,ssus      )
 !----- GPL ---------------------------------------------------------------------
@@ -95,3 +100,5 @@ subroutine trab14(utot      ,d50       ,chezy     ,npar      ,par       , &
        endif
     endif
 end subroutine trab14
+
+end module m_trab14

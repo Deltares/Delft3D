@@ -29,7 +29,7 @@ module m_trab19
 contains
 
 !> computes sediment transport according to the transport formula of Van Thiel / Van Rijn (2008)
-   subroutine trab19(u, v, hrms, rlabda, teta, h, tp, &
+subroutine trab19(u, v, hrms, rlabda, teta, h, tp, &
                    & d50, d15, d90, npar, par, dzbdt, vicmol, &
                    & poros, chezy, dzdx, dzdy, sbotx, sboty, cesus, &
                    & ua, va, ubot, kwtur, ubot_from_com)
@@ -226,5 +226,7 @@ contains
       !
 999   continue
    end subroutine trab19
+
+end module m_trab19
 
 end module m_trab19
