@@ -196,9 +196,9 @@ This section contains the settings of specific parts of the flow solver, such as
 | `teta0` | Theta (implicitness) of time integration. | `0.55` | `(0.5, 1.0)` | [-] |  |
 | `qhRelax` | Relaxation on Q-h open boundaries. | `0.01` |  |  |  |
 | `cstBnd` | Delft3D-FLOW type velocity treatment near boundaries for small coastal models or not. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `maxItVerticalForesterSal` | Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations). | `0` | `≥0` |  |  |
-| `maxItVerticalForester` 🔬 | Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations). | `0` | `≥0` |  | research |
-| `maxItVerticalForesterTem` | Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations). | `0` | `≥0` |  |  |
+| `maxItVerticalForesterSal` ⚠️ | Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations). | `0` | `≥0` |  | deprecated: Use `maxItVerticalForester` instead. |
+| `maxItVerticalForester` | Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations). | `0` | `≥0` |  |  |
+| `maxItVerticalForesterTem` ⚠️ | Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations). | `0` | `≥0` |  | deprecated: Use `maxItVerticalForester` instead. |
 | `transportAutoTimeStepDiff` | Auto timestepdiff in transport. | `0` | <ul><li>**`0`**: lim diff, no lim Dt_tr</li><li>**`1`**: no lim diff, lim Dt_tr</li><li>**`2`**: no lim diff, no lim Dt_tr</li><li>**`3`**: implicit (only 2D)</li></ul> |  |  |
 | `implicitDiffusion2D` | Implicit diffusion 2D. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `turbulenceModel` | Turbulence model. | `3` | <ul><li>**`0`**: no</li><li>**`1`**: constant</li><li>**`2`**: algebraic</li><li>**`3`**: k-epsilon</li><li>**`4`**: k-tau</li></ul> |  |  |

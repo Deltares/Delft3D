@@ -1097,6 +1097,10 @@
                     "default_value": 0,
                     "value_type": "int",
                     "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `maxItVerticalForester` instead."
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0
@@ -1107,10 +1111,7 @@
                     "key": "maxItVerticalForester",
                     "default_value": 0,
                     "value_type": "int",
-                    "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
-                    "status": {
-                        "value": "research"
-                    },
+                    "description": "Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations).",
                     "validation": {
                         "range": {
                             "min_inclusive": 0
@@ -1122,6 +1123,10 @@
                     "default_value": 0,
                     "value_type": "int",
                     "description": "Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations).",
+                    "status": {
+                        "value": "deprecated",
+                        "comment": "Use `maxItVerticalForester` instead."
+                    },
                     "validation": {
                         "range": {
                             "min_inclusive": 0
