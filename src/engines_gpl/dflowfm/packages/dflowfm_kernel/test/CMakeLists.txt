@@ -56,6 +56,16 @@ f90twtest(${test_target}
 add_subdirectory(helpers)
 
 copy_test_resources("${test_target}" "${CMAKE_CURRENT_SOURCE_DIR}/resources/MDUversion" "$<TARGET_FILE_DIR:${test_target}>/MDUversion")
+
+# Copy MSVC runtime DLLs to test output directory
+foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
+    add_custom_command(TARGET ${test_target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${runtime_lib}"
+            "$<TARGET_FILE_DIR:${test_target}>"
+    )
+endforeach()
+
 set_target_properties(${test_target} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${test_target}>"
 )
