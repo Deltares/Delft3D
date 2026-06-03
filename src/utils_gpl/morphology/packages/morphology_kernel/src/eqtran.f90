@@ -57,7 +57,24 @@ subroutine eqtran(sig, thick, num_layers_grid, ws, ltur, &
    use mathconsts, only: pi, ee
    use iso_c_binding, only: c_char
    use morphology_data_module
+   use m_tram1, only: tram1
+   use m_tram2, only: tram2
+   use m_tranb1, only: tranb1
+   use m_tranb2, only: tranb2
+   use m_tranb3, only: tranb3
+   use m_tranb4, only: tranb4
+   use m_tranb5, only: tranb5
+   use m_tranb7, only: tranb7
+   use m_trab11, only: trab11
+   use m_trab12, only: trab12
+   use m_tran9t, only: tran9t
+   use m_trab14, only: trab14
+   use m_trabwc, only: trabwc
+   use m_trabwc2, only: trabwc2
+   use m_trabg, only: trabg
    use m_trab19, only: trab19
+   use m_trab20, only: trab20
+   use m_asmita, only: asmita
    !
    implicit none
 !
