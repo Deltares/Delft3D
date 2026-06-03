@@ -1,3 +1,8 @@
+module m_tram2
+   implicit none
+
+contains
+
 subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
                 & par       ,num_layers_grid      ,bed       ,dzduu     ,dzdvv     , &
                 & rksrs     ,tauadd    ,taucr0    ,aks       ,eps       , &
@@ -507,3 +512,5 @@ subroutine tram2 (numrealpar,realpar   ,wave      ,i2d3d     ,npar      , &
        error = .false.
     endif
 end subroutine tram2
+
+end module m_tram2

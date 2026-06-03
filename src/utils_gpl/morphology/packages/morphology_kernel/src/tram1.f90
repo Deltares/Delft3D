@@ -1,3 +1,8 @@
+module m_tram1
+   implicit none
+
+contains
+
 subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
                 & num_layers_grid      ,bed       , &
                 & tauadd    ,taucr0    ,aks       ,eps       ,camax     , &
@@ -375,3 +380,5 @@ subroutine tram1 (numrealpar,realpar   ,wave      ,npar      ,par       , &
     par(15) = uwb
     par(16) = awb
 end subroutine tram1
+
+end module m_tram1

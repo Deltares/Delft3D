@@ -228,5 +228,3 @@ subroutine trab19(u, v, hrms, rlabda, teta, h, tp, &
    end subroutine trab19
 
 end module m_trab19
-
-end module m_trab19

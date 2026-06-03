@@ -1,3 +1,8 @@
+module m_trab11
+   implicit none
+
+contains
+
 subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
                 & d50       ,npar      ,par       ,sbotx     ,sboty     , &
                 & ssusx     ,ssusy     ,ubot      ,vonkar    ,ubot_from_com )
@@ -166,3 +171,5 @@ subroutine trab11(u         ,v         ,hrms      ,h         ,tp        , &
     !
   999 continue
 end subroutine trab11
+
+end module m_trab11
