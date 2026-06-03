@@ -1,19 +1,83 @@
 #include "coupling_steps.hpp"
 
 #include <precice/precice.hpp>
+#include <cmath>
 #include <format>
+#include <numeric>
 #include <print>
 #include <ranges>
 #include <string_view>
 #include <vector>
 
 #include "csumo_settings_reader.hpp"
+#include "endpoints.hpp"
 #include "pre_c_sumo_lib.hpp"
 #include "FF2NF_writer.hpp"
 #include "parsing_types.hpp"
 
 namespace pre_c_sumo
 {
+    namespace
+    {
+        constexpr double zero_connected_id = 0.0;
+
+        int asEndpointId(const double id)
+        {
+            return static_cast<int>(std::lround(id));
+        }
+
+        void appendEndpointRecord(SourcesSinks& sources_sinks, const Endpoint& endpoint)
+        {
+            sources_sinks.addCoordinates({endpoint.coordinate_x, endpoint.coordinate_y});
+            sources_sinks.addData(static_cast<double>(endpoint.id), static_cast<double>(endpoint.connected_id),
+                                  endpoint.vertical_boundary_lower, endpoint.vertical_boundary_upper,
+                                  endpoint.discharge);
+        }
+
+        void maybeAttachMomentum(Source& source, const SourceOrSinkData& source_point)
+        {
+            if (source_point.has_u)
+            {
+                addMomentum(source, Momentum{.velocity_magnitude = source_point.u_magnitude,
+                                             .velocity_direction_deg = source_point.u_direction});
+            }
+        }
+
+        void maybeAttachConstituents(Source& source, const NF2FFReader& nf2ff_reader)
+        {
+            if (nf2ff_reader.constituentsOperator() != ConstituentsOperator::Absolute)
+            {
+                return;
+            }
+
+            const auto values = nf2ff_reader.constituents();
+            Constituents constituents{};
+            if (!values.empty())
+            {
+                constituents.temperature = values[0];
+            }
+            if (values.size() > 1)
+            {
+                constituents.salinity = values[1];
+            }
+            const auto additional_count = std::min(values.size(), std::size_t{2} + constituent_count);
+            for (std::size_t i = 2; i < additional_count; ++i)
+            {
+                constituents.additional_constituents[i - 2] = values[i];
+            }
+            addConstituents(source, constituents);
+        }
+
+        std::pair<double, double> sourceDepthBounds(const SourceOrSinkData& source, const std::size_t source_count)
+        {
+            if (source_count == 1)
+            {
+                return {-source.z_coordinate - source.half_plume_height, -source.z_coordinate + source.half_plume_height};
+            }
+            return {-source.z_coordinate, -source.z_coordinate};
+        }
+    } // namespace
+
     FarFieldPoint2D makePoint(std::size_t index_2d, std::size_t index_3d, Mesh& mesh_2d, Mesh& mesh_3d)
     {
         std::vector<FarFieldLayer> layers;
@@ -201,6 +265,95 @@ namespace pre_c_sumo
     }
 
     void convertNFSinksToFF() { std::println("Processing sinks..."); }
+
+    double convertNFSinksToFF(const NF2FFReader& nf2ff_reader, SourcesSinks& sources_sinks, const double first_record_id,
+                              const std::optional<parsing_utils::Point2D>& intake_point)
+    {
+        auto sources = nf2ff_reader.sources();
+        auto sinks = nf2ff_reader.sinks();
+
+        if (sources.empty())
+        {
+            return first_record_id;
+        }
+
+        std::vector<double> source_weights;
+        source_weights.reserve(sources.size());
+        for (const auto& source : sources)
+        {
+            source_weights.push_back(source.has_weight ? source.weight : 1.0);
+        }
+
+        const double weight_sum = std::accumulate(source_weights.begin(), source_weights.end(), 0.0);
+        if (std::abs(weight_sum) > 0.0)
+        {
+            for (auto& weight : source_weights)
+            {
+                weight /= weight_sum;
+            }
+        }
+
+        double next_id = first_record_id;
+        const double source_flow_rate = nf2ff_reader.sourceFlowRate();
+
+        // Entrainment: pair each sink segment with each source point.
+        for (std::size_t sink_index = 1; sink_index < sinks.size(); ++sink_index)
+        {
+            const auto& previous_sink = sinks[sink_index - 1];
+            const auto& sink = sinks[sink_index];
+            const double delta_s = sink.entrainment - previous_sink.entrainment;
+
+            for (std::size_t source_index = 0; source_index < sources.size(); ++source_index)
+            {
+                const auto& source = sources[source_index];
+                const double discharge = delta_s * source_flow_rate * source_weights[source_index];
+
+                const double sink_id = next_id++;
+                const double source_id = next_id++;
+                const auto [source_z_min, source_z_max] = sourceDepthBounds(source, sources.size());
+
+                const auto sink_endpoint = makeEndpoint(asEndpointId(sink_id), asEndpointId(source_id), sink.x_coordinate,
+                                                        sink.y_coordinate, -sink.z_coordinate - sink.half_plume_height,
+                                                        -sink.z_coordinate + sink.half_plume_height, -discharge);
+                appendEndpointRecord(sources_sinks, sink_endpoint);
+
+                Source source_endpoint{};
+                source_endpoint.endpoint =
+                    makeEndpoint(asEndpointId(source_id), asEndpointId(sink_id),
+                                 source.x_coordinate, source.y_coordinate, source_z_min, source_z_max, discharge);
+                maybeAttachMomentum(source_endpoint, source);
+                maybeAttachConstituents(source_endpoint, nf2ff_reader);
+                appendEndpointRecord(sources_sinks, source_endpoint.endpoint);
+            }
+        }
+
+        // Discharge at source points.
+        for (std::size_t source_index = 0; source_index < sources.size(); ++source_index)
+        {
+            const auto& source = sources[source_index];
+            const auto [source_z_min, source_z_max] = sourceDepthBounds(source, sources.size());
+            const double discharge = source_flow_rate * source_weights[source_index];
+
+            Source source_endpoint{};
+            source_endpoint.endpoint = makeEndpoint(asEndpointId(next_id++), static_cast<int>(zero_connected_id),
+                                                    source.x_coordinate, source.y_coordinate, source_z_min,
+                                                    source_z_max, discharge);
+            maybeAttachMomentum(source_endpoint, source);
+            maybeAttachConstituents(source_endpoint, nf2ff_reader);
+            appendEndpointRecord(sources_sinks, source_endpoint.endpoint);
+        }
+
+        // Optional intake sink at provided intake position.
+        if (intake_point.has_value() && std::abs(nf2ff_reader.intakeFlowRate()) > 0.0)
+        {
+            const auto intake_endpoint = makeEndpoint(asEndpointId(next_id++), static_cast<int>(zero_connected_id),
+                                                      intake_point->x_coordinate, intake_point->y_coordinate, 0.0,
+                                                      0.0, nf2ff_reader.intakeFlowRate());
+            appendEndpointRecord(sources_sinks, intake_endpoint);
+        }
+
+        return next_id;
+    }
 
     void convertNFIntakesToFF() { std::println("Processing intakes..."); }
 

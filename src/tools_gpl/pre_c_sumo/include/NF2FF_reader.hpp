@@ -5,6 +5,7 @@
 #include "parsing_types.hpp"         // For parsing_utils::Point2D
 
 #include <expected>
+#include <filesystem>
 #include <pugixml.hpp>
 #include <string>
 #include <string_view>
@@ -36,52 +37,64 @@
 
 namespace pre_c_sumo
 {
-    /**
-     * @brief SourceOrSinkData structure. Holds parameters for sources and sinks.
-     */
+    // Raw NF2FF point data as stored in the XML file.
+    // The reader does not interpret these coordinates into FM cell indices.
+    // That mapping stays on the FM side. This type is intended as the input
+    // to the pre-C-SUMO conversion step that creates the source/sink data
+    // communicated via preCICE.
     struct SourceOrSinkData
     {
-        double x_coordinate;
-        double y_coordinate;
-        double z_coordinate;
-        double entrainment;
-        double half_plume_height;
-        double half_plume_width;
-        double u_magnitude;
-        double u_direction;
-        double weight;
-        bool has_u;
-        bool has_weight;
+        double x_coordinate;      ///< Horizontal X coordinate [m].
+        double y_coordinate;      ///< Horizontal Y coordinate [m].
+        double z_coordinate;      ///< Vertical coordinate [m].
+        double entrainment;       ///< S-factor used for entrainment / discharge scaling.
+        double half_plume_height; ///< Half plume height [m].
+        double half_plume_width;  ///< Half plume width [m].
+        double u_magnitude;       ///< Optional momentum magnitude [m/s].
+        double u_direction;       ///< Optional momentum direction [degrees].
+        double weight;            ///< Optional aggregation weight for later use.
+        bool has_u;               ///< True when momentum fields were present in the XML.
+        bool has_weight;          ///< True when an explicit weight value was present.
     };
 
-    /**
-     * @brief Reader for FF2NF XML files.
-     */
+    // Reader for NF2FF XML files.
+    // The parsed data is intentionally kept close to the XML structure so the
+    // conversion layer can decide how to map it to preCICE-ready source and sink
+    // records. In particular, no lumping and no coordinate-to-cell mapping is
+    // performed here.
     class NF2FFReader
     {
     public:
-        /**
-         * @brief Reads NF2FF XML content from a file.
-         * @param file_path The path to the input file.
-         * @return std::expected containing void on success or parsing_utils::ParseError on failure.
-         */
+        // Reads NF2FF XML content from a file.
+        // Expected input format:
+        // - &lt;fileVersion&gt; must match the supported NF2FF version.
+        // - &lt;discharge&gt; contains Qintake, Qsource, constituentsOperator and constituents.
+        // - &lt;NFResult&gt; contains &lt;sources&gt; and &lt;sinks&gt; blocks.
+        //
+        // The returned reader exposes the raw point vectors so a later conversion
+        // step can turn them into source and sink data for preCICE.
         [[nodiscard]] static std::expected<NF2FFReader, parsing_utils::ParseError> fromFile(
             const std::filesystem::path& file_path);
 
-        /**
-         * @brief Reads NF2FF XML content from a string.
-         * @param xml input string.
-         * @return std::expected containing void on success or parsing_utils::ParseError on failure.
-         */
+        // Reads NF2FF XML content from a string.
+        // This overload is useful for tests and for callers that already have the
+        // XML payload in memory.
         [[nodiscard]] static std::expected<NF2FFReader, parsing_utils::ParseError> fromString(
             const std::string_view xml);
 
+        // Supported NF2FF file version.
         std::string_view fileVersion() const;
+        // Total intake flow rate declared in &lt;Qintake&gt;.
         double intakeFlowRate() const;
+        // Total source flow rate declared in &lt;Qsource&gt;.
         double sourceFlowRate() const;
+        // Constituent operator declared in &lt;constituentsOperator&gt;.
         ConstituentsOperator constituentsOperator() const;
+        // Constituents declared in &lt;constituents&gt;.
         std::vector<double> constituents() const;
+        // Raw source points from &lt;NFResult&gt;/&lt;sources&gt;.
         std::vector<pre_c_sumo::SourceOrSinkData> sources() const;
+        // Raw sink points from &lt;NFResult&gt;/&lt;sinks&gt;.
         std::vector<pre_c_sumo::SourceOrSinkData> sinks() const;
 
     private:

@@ -3,11 +3,13 @@
 
 #include <precice/precice.hpp>
 #include <expected>
+#include <optional>
 #include <string_view>
 #include <vector>
 #include <unordered_map>
 
 #include "csumo_settings_reader.hpp"
+#include "NF2FF_reader.hpp"
 #include "parsing_types.hpp"
 #include "pre_c_sumo_lib.hpp"
 
@@ -92,21 +94,39 @@ namespace pre_c_sumo
     void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
-     * @brief Read NF2FF files and extract the required data.
+     * @brief Read NF2FF files and extract the raw data needed for conversion.
      *
-     * Reads NF2FF files referenced in `csumoSettings` and extracts the
-     * data that will be converted to sources/sinks.
+     * Reads NF2FF files referenced in `csumoSettings` and extracts the raw
+     * discharge, intake, source, sink, and constituent data.
+     * No lumping, no point aggregation, and no conversion from x/y coordinates
+     * to FM cell ids happens here.
      *
-     * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param csumoSettings Parsed C-SUMO settings.
      */
     void readNF2FFFiles(const CSumoSettingsReader& csumoSettings);
 
     /**
-     * @brief Convert NF data to sources and sinks to be communicated via preCICE.
+     * @brief Convert raw NF2FF input to preCICE-ready source and sink data.
      *
-     * Uses the data referenced in `csumoSettings` to perform the conversion.
+     * This is the pre-C-SUMO side of the handoff. It preserves the raw
+     * source/sink geometry from NF2FFReader and produces data that the FM side
+     * can consume via preCICE. The FM side remains responsible for mapping
+     * x/y positions to cell ids and for the nearfield::dischargeToSrc step that
+     * turns discharge information into FM source-sink entries.
+     *
+     * Current scope:
+     * - convert S factors into the entrainment/discharge representation used by FM
+     * - keep intake, discharge, source, and sink points as separate records
+     * - do not lump points together yet
+     * - do not derive FM cell ids here
+     *
+     * Future scope:
+     * - aggregation of points, when enabled
+     * - DESA-based processing, when enabled
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @note The converted data must remain compatible with nearfield::dischargeToSrc
+     *       on the FM side.
      */
     void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
@@ -121,12 +141,41 @@ namespace pre_c_sumo
     void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 
     /**
-     * @brief Convert NF sinks to farfield sinks.
+     * @brief Convert NF sink records to the far-field-facing sink stream.
      *
-     * Converts NF sink information into the format required by the
-     * farfield component.
+     * The conversion keeps the sink records separate and preserves their
+     * coordinates and plume parameters. Any FM cell lookup is deferred to the
+     * FM side. This is where the S-factor based entrainment logic is translated
+     * into the source/sink representation required by preCICE and by the FM
+     * nearfield coupling.
      */
     void convertNFSinksToFF();
+
+    /**
+     * @brief Convert one parsed NF2FF diffuser result to preCICE source/sink records.
+     *
+     * This conversion mirrors the FM nearfield intent while keeping FM-specific
+     * cell mapping out of pre-C-SUMO:
+     * - Entrainment records are created from sink S-factor differences and Qsource.
+     * - Discharge records are created from Qsource at source points.
+     * - Optional intake record is created from Qintake at a provided intake point.
+     *
+     * Source weighting follows these rules:
+     * - If a source line has an explicit weight, that weight is used.
+     * - Otherwise, a default weight of 1.0 is used.
+     * - Weights are normalized before applying to discharges.
+     *
+     * Record ids are assigned sequentially starting at `first_record_id`.
+     * Paired entrainment sink/source records are connected by `connected_id`.
+     *
+     * @param nf2ff_reader Parsed NF2FF input for one diffuser.
+     * @param sources_sinks Output container receiving appended records.
+     * @param first_record_id First logical record id to assign.
+     * @param intake_point Optional intake position used to add an intake sink record.
+     * @return Next available record id after all appended records.
+     */
+    double convertNFSinksToFF(const NF2FFReader& nf2ff_reader, SourcesSinks& sources_sinks, double first_record_id,
+                              const std::optional<parsing_utils::Point2D>& intake_point = std::nullopt);
 
     /**
      * @brief Convert NF intakes to farfield sinks.

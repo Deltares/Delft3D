@@ -70,15 +70,22 @@ namespace pre_c_sumo
         }
     };
 
+    /**
+     * @brief preCICE-ready source/sink payload prepared by pre-C-SUMO.
+     *
+     * The container keeps the raw geometric and discharge data separate from
+     * the FM cell mapping. The FM side is responsible for converting x/y
+     * coordinates to cell ids and for applying nearfield::dischargeToSrc.
+     */
     struct SourcesSinks
     {
-        std::vector<double> coordinates;
-        std::vector<int> precice_ids;
-        std::vector<double> ids;
-        std::vector<double> connected_ids;
-        std::vector<double> z_mins;
-        std::vector<double> z_maxs;
-        std::vector<double> discharges;
+        std::vector<double> coordinates;   ///< Interleaved x/y coordinates for the preCICE mesh.
+        std::vector<int> precice_ids;      ///< Mesh vertex ids returned by preCICE.
+        std::vector<double> ids;           ///< Logical record ids.
+        std::vector<double> connected_ids; ///< Partner record ids for coupled source/sink entries.
+        std::vector<double> z_mins;        ///< Lower z bound of each record.
+        std::vector<double> z_maxs;        ///< Upper z bound of each record.
+        std::vector<double> discharges;    ///< Discharge values associated with the record.
 
         void clear()
         {

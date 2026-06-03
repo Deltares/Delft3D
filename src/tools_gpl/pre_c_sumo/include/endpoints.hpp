@@ -17,6 +17,10 @@ namespace pre_c_sumo
      *
      * One endpoint can represent a source or a sink. The @ref connected_id links
      * paired source/sink records (-1 means unpaired).
+        *
+        * Source weighting is represented implicitly via @ref discharge.
+        * In other words, any source weight factor should already be applied
+        * before creating an endpoint record.
      */
     struct Endpoint
     {
@@ -67,6 +71,9 @@ namespace pre_c_sumo
 
     /**
      * @brief NF2FF source entry.
+     *
+     * The source weight is not stored as a separate field here; it is assumed
+     * to be applied to @ref Endpoint::discharge by the conversion step.
      */
     struct Source
     {
@@ -74,6 +81,25 @@ namespace pre_c_sumo
         std::optional<Momentum> momentum;         ///< Optional momentum data used for directional source forcing.
         std::optional<Constituents> constituents; ///< Optional constituent concentrations carried by this source.
     };
+
+    /**
+     * @brief Construct an endpoint record from explicit field values.
+     *
+     * This helper keeps endpoint construction logic centralized so conversion
+     * code can reuse the same semantics for source/sink records.
+     *
+     * @param id Unique identifier of this endpoint record.
+     * @param connected_id Identifier of the paired endpoint.
+     * @param coordinate_x Horizontal x-coordinate [m].
+     * @param coordinate_y Horizontal y-coordinate [m].
+     * @param vertical_boundary_lower Lower vertical boundary [m].
+     * @param vertical_boundary_upper Upper vertical boundary [m].
+    * @param discharge Weighted discharge [m3/s]. For source records, this value
+    *        should already include the source weight factor.
+     * @return Constructed endpoint record.
+     */
+    Endpoint makeEndpoint(int id, int connected_id, double coordinate_x, double coordinate_y,
+                          double vertical_boundary_lower, double vertical_boundary_upper, double discharge);
 
     /**
      * @brief Attach momentum data to a source.
