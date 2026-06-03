@@ -8,6 +8,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_library(dflowfm_io SHARED
     src/MduModel.cpp
     src/dflowfm_io.cpp
+    src/ini/IniData.cpp
+    src/ini/IniFormatter.cpp
+    src/ini/IniParser.cpp
+    src/ini/IniProperty.cpp
+    src/ini/IniSection.cpp
+    src/ini/IniValueConverter.cpp
 )
 
 include(GenerateExportHeader)

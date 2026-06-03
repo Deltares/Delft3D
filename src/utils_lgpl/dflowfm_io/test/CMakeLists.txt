@@ -13,7 +13,17 @@ enable_testing()
 
 add_executable(dflowfm_io_tests
     MduModelTest.cpp
+    ini/IniParserTest.cpp
+    ini/IniValueConverterTest.cpp
+    ini/IniDataTest.cpp
+    ini/IniFormatterTest.cpp
+    ini/IniSectionTest.cpp
+    ini/IniPropertyTest.cpp
 )
+
+if(MSVC)
+    target_compile_options(dflowfm_io_tests PRIVATE /bigobj)
+endif()
 
 target_link_libraries(dflowfm_io_tests PRIVATE dflowfm_io GTest::gtest_main)
 
