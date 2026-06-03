@@ -61,6 +61,8 @@
 #include <stdio.h>
 #include <fstream>
 #include <iomanip>
+#include <cstring>
+#include <charconv>
 
 #if defined(WIN32)
     // #  include "getopt.h"
