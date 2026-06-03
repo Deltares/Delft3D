@@ -24,6 +24,20 @@ include(functions.cmake)
 set(checkout_src_root ${CMAKE_CURRENT_SOURCE_DIR}/..) # This points to the location of OSS/src
 set(checkout_root ${checkout_src_root}/..)
 
+# Conan: check if conan.lock or conanfile.py have changed since last conan install.
+# If so, configuration is stopped and conan must be rerun. This doesn't catch all conan changes
+# (e.g. profile changes aren't taken into account), but it is a good basic safety net.
+set(conan_lock_source "${checkout_root}/conan.lock")
+set(conan_file_source "${checkout_root}/conanfile.py")
+set(conan_stamp "${CMAKE_BINARY_DIR}/conan/generators/conan.stamp")
+if("${conan_lock_source}" IS_NEWER_THAN "${conan_stamp}" OR
+   "${conan_file_source}" IS_NEWER_THAN "${conan_stamp}")
+    message(FATAL_ERROR
+        "The conan configuration has been updated since the last conan install. "
+        "Please do a clean build using build.py to ensure dependencies are up to date."
+    )
+endif()
+
 # Conan: add the CMakeDeps generator output to the search path and find all explicit dependencies.
 # In the CMakeDeps generator, transitively depending on a dll counts as an explicit dependency,
 # because we need to install the dll and deliver it to a user.
