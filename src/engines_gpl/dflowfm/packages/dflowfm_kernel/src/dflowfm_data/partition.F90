@@ -6489,7 +6489,7 @@ contains
    !< if there is no mapping, assumes true
    !< also returns true if there is no partitioning 
    function is_3d_layer_in_current_partition(idx_ndkx) result(is_in_partition)
-      use m_flow, only: ndkx2ndx, ndkx, kmx
+      use m_flow, only: ndkx_to_ndx, ndkx, kmx
       
       integer, intent(in) :: idx_ndkx !< 3d layer index
       logical :: is_in_partition
@@ -6507,7 +6507,7 @@ contains
       end if
 
       if (idx_ndkx >= 1 .and. idx_ndkx <= ndkx) then
-         ndx = ndkx2ndx(idx_ndkx)
+         ndx = ndkx_to_ndx(idx_ndkx)
       else
          ndx = -1
       end if

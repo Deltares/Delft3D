@@ -53,7 +53,7 @@ contains
       use m_flowtimes, only: dts
       use m_flowparameters, only: cflmx
       use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
-                        number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS, ndkx2ndx
+                        number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
       use m_transport, only: ISALT, ITEMP
       use m_partitioninfo, only:  is_3d_layer_in_current_partition
 
