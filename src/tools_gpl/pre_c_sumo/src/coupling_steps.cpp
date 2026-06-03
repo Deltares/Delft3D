@@ -114,8 +114,7 @@ namespace pre_c_sumo
                     ambient_index, (ambient_index)*csumo_3d_mesh.number_of_zcoordinates, csumo_2d_mesh, csumo_3d_mesh));
             }
 
-            const auto ff2nf_filename = diffuser.ff2nf_dir / std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
-                                                                         subgrid_model_nr, current_time_seconds / 60.0);
+            const auto ff2nf_filename = diffuser.ff2nfFilepath(subgrid_model_nr, current_time_seconds);
 
             const auto nf2ff_wait_file = diffuser.nf2ff_file.value_or("");
 
@@ -161,30 +160,21 @@ namespace pre_c_sumo
     const std::vector<pre_c_sumo::NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumo_settings,
                                                               double current_time_seconds)
     {
-        const std::string run_id = "FlowFM"; // TODO: obtain this from the far-field model / coupling state
-
         std::vector<NF2FFReader> nf2ff_readers{};
-        for (const auto& [index, diffuser] : csumo_settings.diffusers() | std::views::enumerate)
+
+        for (const auto& nf2ff_filepath : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
-            const int subgrid_model_nr = static_cast<int>(index + 1);
-            if (diffuser.nf2ff_file.has_value())
+            if (std::filesystem::exists(nf2ff_filepath))
             {
-                const std::filesystem::path nf2ff_dir =
-                    diffuser.ff2nf_dir.has_parent_path() ? diffuser.ff2nf_dir.parent_path() / "NF2FF" : "NF2FF";
-                const auto nf2ff_filename = nf2ff_dir / std::format("NF2FF__{}_SubMod{:03d}_{:.3f}.xml", run_id,
-                                                                    subgrid_model_nr, current_time_seconds / 60.0);
-                if (std::filesystem::exists(nf2ff_filename))
+                std::println("Reading NF2FF file: {}", nf2ff_filepath.string());
+                auto reader = NF2FFReader::fromFile(nf2ff_filepath);
+                if (reader.has_value())
                 {
-                    std::println("Reading NF2FF file: {}", nf2ff_filename.string());
-                    auto reader = NF2FFReader::fromFile(nf2ff_filename);
-                    if (reader.has_value())
-                    {
-                        nf2ff_readers.emplace_back(std::move(reader.value()));
-                    }
-                    else
-                    {
-                        // Error?
-                    }
+                    nf2ff_readers.emplace_back(std::move(reader.value()));
+                }
+                else
+                {
+                    // Error?
                 }
             }
         }
