@@ -196,8 +196,8 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
-		<testCase name="e04_f02_c05_windfields" ref="dimr_trunk">
-            <path version="2026-06-01T12:52:41.165000">e04_wave/f02-windfields/c06</path>
+		<testCase name="e04_f02_c06_windfields" ref="dimr_noconf">
+            <path version="2026-06-04T12:52:41.165000">e04_wave/f02-windfields/c06</path>
             <maxRunTime>900.0</maxRunTime>
             <checks>
                 <file name="wavm-osaka.nc" type="NETCDF">
