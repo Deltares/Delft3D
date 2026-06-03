@@ -42,7 +42,7 @@ contains
             defaul, prondt, prvvar, prvtyp, vararr, &
             varidx, arrpoi, arrknd, arrdm1, arrdm2, &
             num_vars, a, num_monitoring_cells, pronam, prvpnt, &
-            num_defaults, surfac, jaIntegratesedimentationwaq)
+            num_defaults, surfac, jawaqsedimentationtransportcoupling)
 
         !     Deltares Software Centre
 
@@ -126,7 +126,7 @@ contains
         character(10) :: pronam(num_processes_activated)               !< Name of called module
         integer(kind = int_wp), intent(in) :: prvpnt(num_processes_activated)                !< entry in process io pointers (cummulative of prvnio)
         real(kind = real_wp), intent(in) :: surfac(num_cells)                !< horizontal surface
-        integer(kind = int_wp), intent(in) :: jaIntegratesedimentationwaq !< Let Delwaq integrate sedimentation 1 = yes , 0 = no
+        integer(kind = int_wp), intent(in) :: jawaqsedimentationtransportcoupling !< Apply Delwaq sedimentation with transport 0 = no (default), 1 = yes
         integer(kind = int_wp) :: lunrep                       !< Logical unit number of report-file
 
         !     Local declarations
@@ -309,7 +309,7 @@ contains
                     deriv (iseg, :) = deriv(iseg, :) * atfac
                 enddo
 
-                if (num_velocity_arrays_new  > 0 .and. jaIntegratesedimentationwaq == 1) then
+                if (num_velocity_arrays_new  > 0 .and. jawaqsedimentationtransportcoupling == 0) then
                     !                 Add effect of additional flow velocities
                     call wq_processes_integrate_velocities (num_substances_transported, num_substances_total, num_cells, num_exchanges, num_velocity_arrays_new, &
                             velx, area, volume, iexpnt, iknmrk, &

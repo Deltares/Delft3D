@@ -865,7 +865,7 @@ contains
       !    Prepare fall velocity array
       !    count number of substances with fall velocities
       nfallwaq = 0
-      if (jaIntegratesedimentationwaq == 0) then
+      if (jawaqsedimentationtransportcoupling == 1) then
          do i = 1, num_substances_transported
             if (ivpnw(i) > 0) then
                nfallwaq = nfallwaq + 1
@@ -1411,7 +1411,7 @@ contains
                                num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, process_space_real(ipoiarea), num_dispersion_arrays_new, idpnew, dispnw, num_dispersion_arrays_extra, dspx, &
                                dsto, num_velocity_arrays_new, ivpnw, num_velocity_arrays_extra, process_space_real(ipoivelx), vsto, mbadefdomain(kbx:ktx), &
                                process_space_real(ipoidefa), prondt, prvvar, prvtyp, vararr, varidx, arrpoi, arrknd, arrdm1, &
-                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), jaIntegratesedimentationwaq)
+                               arrdm2, num_vars, process_space_real, nomba, pronam, prvpnt, num_defaults, process_space_real(ipoisurf), jawaqsedimentationtransportcoupling)
 
       ! copy data from WAQ to D-FlowFM
       if (timon) then

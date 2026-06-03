@@ -107,7 +107,7 @@ module m_fm_wq_processes
    integer, allocatable, dimension(:) :: isys2trac !< WAQ active system to D-FlowFM tracer
    integer, allocatable, dimension(:) :: isys2wqbot !< WAQ inactive system to D-FlowFM water quality bottom variable
 
-   integer :: jaIntegratesedimentationwaq = 1 !< Let Delwaq integrate sedimentation 1 = yes , 0 = no
+   integer :: jawaqsedimentationtransportcoupling = 0 !< Apply WAQ sedimentation coupled with FM transport calculation 0 = no (default), 1 = yes
    real(hp), dimension(:, :), allocatable :: wfallwaq ! fall velocities from water quality processes (m/s)
    integer :: nfallwaq ! number of substances with fall velocities
    integer, allocatable, dimension(:) :: ifall2const ! substance-with-fall-velocity to constituent number
