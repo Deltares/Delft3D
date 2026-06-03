@@ -30,7 +30,7 @@
 module m_vertical_forester_filter_dflowfm ! _dflowfm suffix added to avoid name clash with WAQ module
    use precision, only: dp
    use m_flow, only: ndkx
-   use m_transportdata, only: constituents, numconst, const_names, ITEMP
+   use m_transportdata, only: constituents, numconst, const_names, itemp, ioxy
 
    implicit none(type, external)
 
@@ -70,12 +70,12 @@ contains
          do i_constituent = 1, numconst
 
             ! Skip the vertical Forester filter for oxygen, since negative values are allowed
-            if (trim(str_tolower(const_names(i_constituent))) == 'oxy') then
+            if (i_constituent == ioxy) then
                cycle 
             end if
 
             ! Skip the vertical Forester filter for temperature if the salinity freezing point is enabled, since negative values are allowed
-            if (i_constituent == ITEMP .and. use_salinity_freezing_point) then
+            if (i_constituent == itemp .and. use_salinity_freezing_point) then
                cycle
             end if
 
