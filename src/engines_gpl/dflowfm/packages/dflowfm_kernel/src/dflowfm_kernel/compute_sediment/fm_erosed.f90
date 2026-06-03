@@ -79,9 +79,10 @@ contains
       use sediment_basics_module
       use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
+      use m_sediment, only: difparam, seddif_cal
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
-                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, epshs, taubxu, epsz0
+                        u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
       use m_flowtimes, only: julrefdat, dts, time1
       use unstruc_files, only: mdia
       use unstruc_channel_flow, only: t_branch, t_node, nt_LinkNode
@@ -472,7 +473,7 @@ contains
       !
       if (kmx > 0) then ! 3D
          deltas = 0.05_dp
-         maxdepfrac = 0.05
+         maxdepfrac = 0.05_dp
          if (jawave > NO_WAVES .and. v2dwbl > 0) then
             deltas = 0.0_dp
             do L = 1, lnx
@@ -490,7 +491,7 @@ contains
             do k = kb, kt
                zcc = 0.5_dp * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
-               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
+               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. (jawave /= NO_WAVES .and. zcc >= (bl(kk) + deltas(kk)))) then
                   exit
                end if
             end do
@@ -992,9 +993,9 @@ contains
                   end if
                end if
                !
-               kmaxsd = 1 ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
-               thick0 = max(thicklc(kmaxsd) * h0, epshs)
-               thick1 = max(thicklc(kmaxsd) * h1, epshs)
+               kmaxsd = kmaxlc ! for mud fractions kmaxsd points to the grid cell at the bottom of the water column
+               thick0 = max(thicklc(kmaxsd) * h0, epshu)
+               thick1 = thicklc(kmaxsd) * h1
                !
                call erosilt(thicklc, kmaxlc, wslc, mdia, &
                           & thick1, thick1, fixfac(nm, l), srcmax(nm, l), & ! mass conservation
@@ -1205,7 +1206,6 @@ contains
                   rsedeq(nm, l) = rsdqlc(kmaxsd)
                   !
                   thick0 = max(thicklc(kmaxsd) * h0, epshu)
-                  thick1 = max(thicklc(kmaxsd) * h1, epshu)
                   thick1 = thicklc(kmaxsd) * h1
                   !
                   call soursin_3d(h1, thick1, thick1,              & ! thick1 iso thick0 mass conservation
@@ -1215,15 +1215,20 @@ contains
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
+                  if (seddif_cal > 0.0_dp) then
+                     seddif(l, kb:kt) = seddif_cal * seddif(l, kb:kt)
+                  end if
+                  !
                   ! Impose relatively large vertical diffusion
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-
-                  difbot = 10.0_fp * ws(kmxsed(nm, l) - 1, l) * thick1
-                  do kk = kb - 1, kmxsed(nm, l) - 1
-                     seddif(l, kk) = difbot
-                  end do
+                  if (difparam > 0.0_dp) then
+                     difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
+                     do kk = kb - 1, kmxsed(nm, l) - 1
+                        seddif(l, kk) = difbot
+                     end do
+                  end if
                end if ! suspfrac
             else
                !

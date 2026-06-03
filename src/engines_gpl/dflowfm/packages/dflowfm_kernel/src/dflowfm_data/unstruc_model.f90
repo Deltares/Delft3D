@@ -1534,6 +1534,8 @@ contains
       call prop_get(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
       call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
       call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'DiffusionScaling', difparam, success) ! Scaling factor to increase diffusion below reference level
+      call prop_get(md_ptr, 'sediment', 'DiffusionCal', seddif_cal, success) ! Scaling factor to change diffusion for ssc
 
       call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
       MxgrKrone = -1
@@ -3514,6 +3516,8 @@ contains
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
             call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
+            call prop_get(prop_ptr, 'sediment', 'DiffusionCal', seddif_cal, 'Scaling factor for susp. sed. diffusion throughout water column, only applied if strictly positive (default=0)')
+            call prop_get(prop_ptr, 'sediment', 'DiffusionScaling', difparam, 'Additional scaling factor for susp. sed. diffusion below reference level, only applied if strictly positive (default=10)')
          end if
 
          if (jased /= 4) then

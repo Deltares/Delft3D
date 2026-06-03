@@ -106,6 +106,8 @@ module m_sediment
    integer :: jamormergedtuser
    real(kind=dp) :: upperlimitssc
    integer :: inmorphopol !< value of the update inside morphopol (only 0 or 1 make sense)
+   real(kind=dp) :: seddif_cal !< Scaling factor for susp. sed. diffusion throughout water column, only applied if strictly positive (default=0)
+   real(kind=dp) :: difparam !< Additional scaling factor for susp. sed. diffusion below reference level, only applied if strictly positive (default=10)
    !
    !-------------------------------------------------- old sediment transport and morphology
    integer :: mxgrKrone !< mx grainsize index nr that followsKrone. Rest follows v.Rijn
@@ -168,6 +170,8 @@ contains
       jamormergedtuser = 0
       upperlimitssc = 1.0e6_dp
       inmorphopol = 1
+      seddif_cal = 0.0_dp
+      difparam = 10.0_dp
 
    end subroutine default_sediment
 
