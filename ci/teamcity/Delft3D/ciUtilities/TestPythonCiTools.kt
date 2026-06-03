@@ -38,14 +38,6 @@ object TestPythonCiTools : BuildType({
 
     triggers {
         vcs { 
-            // Trigger this build only if there are changes to the files matching these rules.
-            // Absolute paths match paths relative to the VCS root.
-            // See: https://www.jetbrains.com/help/teamcity/configuring-vcs-triggers.html#General+Syntax
-            triggerRules = """
-                +:/ci/python/**/*.py
-                +:/ci/python/pyproject.toml
-                +:/ci/python/uv.lock
-            """.trimIndent()
             branchFilter = "+:pull/*"
         }
     }
