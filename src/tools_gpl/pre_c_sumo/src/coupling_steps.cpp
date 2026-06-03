@@ -7,7 +7,8 @@
 #include <string_view>
 #include <vector>
 #include <filesystem>
-#include <format>
+#include <thread>
+#include <chrono>
 
 #include "csumo_settings_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -145,14 +146,16 @@ namespace pre_c_sumo
         }
     }
 
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings)
+    void waitForNF2FFFiles(const CSumoSettingsReader& csumo_settings, double current_time_seconds)
     {
-        for (const auto& diffuser : csumo_settings.diffusers())
+        for (const auto& file : csumo_settings.nf2ffFilepaths(current_time_seconds))
         {
-            if (diffuser.nf2ff_file.has_value())
+            std::println("Waiting for NF2FF file: {}", file.string());
+            // Wait for the NF2FF file to be available
+            while (!std::filesystem::exists(file))
             {
-                std::println("Waiting for NF2FF file: {}", diffuser.nf2ff_file.value());
-                // Here you would add the actual logic to wait for the NF2FF files to be available
+                // Throttle CPU load.
+                std::this_thread::sleep_for(std::chrono::milliseconds(20));
             }
         }
     }

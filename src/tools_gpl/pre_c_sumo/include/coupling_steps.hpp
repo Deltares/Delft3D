@@ -86,11 +86,15 @@ namespace pre_c_sumo
      *
      * For each diffuser configured in `csumoSettings` this will wait for
      * the corresponding NF2FF file to appear. If `csumoSettings` contains
-     * a parse error, the behaviour is undefined in the demo implementation.
+     * a parse error, the function returns immediately without waiting.
+     *
+     * Note: If any diffuser is configured, this function will wait
+     *       INDEFINITELY for file(s) to appear.
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param current_time_seconds Current time in seconds.
      */
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings);
+    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
      * @brief Read NF2FF files and extract the required data.
