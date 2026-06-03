@@ -470,13 +470,13 @@ class TestMinioRewinder:
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, logger)
         minio_client.list_objects.return_value = itertools.chain(
-            (make_object("source/path/empty-file", "my-bucket", "v42", etag=hashlib.md5(b"").hexdigest()),),
+            (make_object("source/path/empty-file", "my-bucket", "v42", etag=hashlib.md5(b"",usedforsecurity=False).hexdigest()),),
             (
                 make_object(
                     object_name=f"source/path/{key}",
                     bucket_name="my-bucket",
                     version_id=f"v{i}",
-                    etag=hashlib.md5(key.encode("utf-8")).hexdigest(),
+                    etag=hashlib.md5(key.encode("utf-8"),usedforsecutiry=False).hexdigest(),
                 )
                 for i, key in enumerate(("foo", "bar", "baz", "qux", "quux"))
             ),
@@ -521,7 +521,7 @@ class TestMinioRewinder:
                     "source/path/foo",
                     bucket_name="my-bucket",
                     version_id="v1",
-                    etag=hashlib.md5(b"new_foo").hexdigest(),
+                    etag=hashlib.md5(b"new_foo",usedforsecurity=False).hexdigest(),
                 )
             ]
         )
@@ -556,8 +556,8 @@ class TestMinioRewinder:
 
         # Generate content and compute expected ETag.
         content = random.getrandbits(content_size * 8).to_bytes(content_size, "big")
-        digests = (hashlib.md5(content[i * part_size : (i + 1) * part_size]).digest() for i in range(parts))
-        etag = hashlib.md5(b"".join(digests)).hexdigest() + f"-{parts}"
+        digests = (hashlib.md5(content[i * part_size : (i + 1) * part_size],usedforsecurity=False).digest() for i in range(parts))
+        etag = hashlib.md5(b"".join(digests),usedforsecurity=False).hexdigest() + f"-{parts}"
 
         logger = mocker.Mock(spec=ILogger)
         minio_client = mocker.Mock(spec=Minio)
@@ -623,7 +623,7 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / path).key,
-                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+                etag=hashlib.md5(path.encode("utf-8"),usedforsecurity=False).hexdigest(),
             )
             for path in ("foo.txt", "bar/baz.txt", "qux/quux/quuux.txt")
         )
@@ -667,7 +667,7 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / path).key,
-                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+                etag=hashlib.md5(path.encode("utf-8"),usedforsecurity=False).hexdigest(),
             )
             for path in paths
         )
@@ -702,7 +702,7 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / path).key,
-                etag=hashlib.md5(path.encode("utf-8")).hexdigest(),
+                etag=hashlib.md5(path.encode("utf-8"),usedforsecurity=False).hexdigest(),
             )
             for path in paths
         )
@@ -751,17 +751,17 @@ class TestMinioRewinder:
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / "unchanged-file").key,
-                etag=hashlib.md5(b"Content unchanged.").hexdigest(),
+                etag=hashlib.md5(b"Content unchanged.",usedforsecurity=False).hexdigest(),
             ),
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / "changed-file").key,
-                etag=hashlib.md5(b"This content is old.").hexdigest(),
+                etag=hashlib.md5(b"This content is old.",usedforsecurity=False).hexdigest(),
             ),
             MinioObject(
                 bucket_name=minio_prefix.bucket,
                 object_name=(minio_prefix / "removed-file").key,
-                etag=hashlib.md5(b"This object is removed.").hexdigest(),
+                etag=hashlib.md5(b"This object is removed.",usedforsecurity=False).hexdigest(),
             ),
         ]
 
@@ -820,7 +820,7 @@ class TestMinioRewinder:
                     MinioObject(
                         bucket_name=minio_prefix.bucket,
                         object_name=(minio_prefix / name).key,
-                        etag=hashlib.md5(object_content.encode("utf-8")).hexdigest(),
+                        etag=hashlib.md5(object_content.encode("utf-8"),usedforsecurity=False).hexdigest(),
                     )
                 )
 
@@ -855,8 +855,8 @@ class TestMinioRewinder:
         content = random.getrandbits(size * 8).to_bytes(size, "big")
         part_count = (size + part_size - 1) // part_size
         assert len(content) == 1024  # 1024 random bytes.
-        hashes = [hashlib.md5(content[i * part_size : (i + 1) * part_size]).digest() for i in range(part_count)]
-        expected_etag = hashlib.md5(b"".join(hashes)).hexdigest() + f"-{part_count}"
+        hashes = [hashlib.md5(content[i * part_size : (i + 1) * part_size],usedforsecurity=False).digest() for i in range(part_count)]
+        expected_etag = hashlib.md5(b"".join(hashes),usedforsecurity=False).hexdigest() + f"-{part_count}"
 
         fs.create_file(local_dir / "foo/bar.baz", contents=content)
         minio_client.list_objects.return_value = [
@@ -1151,8 +1151,8 @@ class TestMinioRewinder:
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
         minio_client.list_objects.return_value = [
-            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="v1"),
-            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new").hexdigest(), version_id="v2"),
+            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old",usedforsecurity=False).hexdigest(), version_id="v1"),
+            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new",usedforsecurity=False).hexdigest(), version_id="v2"),
         ]
 
         # Act
@@ -1173,8 +1173,8 @@ class TestMinioRewinder:
         tags = Tags()
         tags["jira-issue-id"] = "FOO-123"
         objects = [
-            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new!").hexdigest(), version_id="2"),
-            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old").hexdigest(), version_id="1"),
+            MinioObject("my-bucket", "data/foo", now, etag=hashlib.md5(b"new!",usedforsecurity=False).hexdigest(), version_id="2"),
+            MinioObject("my-bucket", "data/foo", yesterday, etag=hashlib.md5(b"old",usedforsecurity=False).hexdigest(), version_id="1"),
         ]
         minio_client.list_objects.return_value = objects
         minio_client.get_object_tags.return_value = tags
@@ -1200,7 +1200,7 @@ class TestMinioRewinder:
         minio_client = mocker.Mock(spec=Minio)
         rewinder = Rewinder(minio_client, mocker.Mock(spec=ILogger))
         prefix = S3Path.from_bucket("my-bucket") / "data"
-        etag = hashlib.md5(b"old").hexdigest()
+        etag = hashlib.md5(b"old",usedforsecurity=False).hexdigest()
         minio_client.list_objects.return_value = [
             MinioObject("my-bucket", "data/foo", yesterday, etag=etag, version_id="1"),
             MinioObject("my-bucket", "data/foo", now, etag=etag, version_id="2"),
@@ -1317,7 +1317,7 @@ class TestMinioRewinder:
                     bucket_name="my-bucket",
                     object_name=key,
                     last_modified=now - timedelta(days=j),
-                    etag=hashlib.md5(f"{key}-v{j}".encode("utf-8")).hexdigest(),
+                    etag=hashlib.md5(f"{key}-v{j}".encode("utf-8"),usedforsecurity=False).hexdigest(),
                     version_id=f"{key}-v{j}",
                     is_delete_marker=False,
                 )
@@ -1343,7 +1343,7 @@ class TestMinioRewinder:
                 create_count += 1
             if 0.75 <= rand:  # The past and latest versions have the same content.
                 if past_object_exists:
-                    etag = hashlib.md5(b"same content!").hexdigest()
+                    etag = hashlib.md5(b"same content!",usedforsecurity=False).hexdigest()
                     versions[0] = MinioObject("my-bucket", key, now, etag, version_id=f"{key}-v0")
                     versions[3] = MinioObject("my-bucket", key, now - timedelta(days=3), etag, version_id=f"{key}-v3")
                 else:
