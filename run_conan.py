@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 import enum
 import json
 import os
@@ -12,10 +13,26 @@ import tempfile
 from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Any, Iterator
 
-CONFIG_DIR = Path("conan/config")
-RECIPES_DIR = Path("conan/recipes")
-LOCKFILE = Path("conan.lock")
+WINDOWS_PROFILE = "delft3d_windows"
+LINUX_PROFILE = "delft3d_linux"
+
+ROOT = Path(__file__).resolve().parent
+CONFIG_DIR = ROOT / "conan/config"
+RECIPES_DIR = ROOT / "conan/recipes"
+LOCKFILE = ROOT / "conan.lock"
+
+
+@dataclass(frozen=True)
+class PackageInfo:
+    name_version: str
+    revision_id: str
+    package_id: str
+
+    @property
+    def identifier(self) -> str:
+        return f"{self.name_version}#{self.revision_id}:{self.package_id}"
 
 
 def _conan_config_install(*, ci: bool) -> None:
@@ -135,12 +152,11 @@ def update_lockfile(profile: str) -> None:
 
 def conan_install(
     profile: str,
-    output_folder: str,
+    output_folder: Path,
     build_type: str,
     *,
     consumer_build_type: str | None = None,
     ci: bool = False,
-    lockfile: Path | None = None,
     build_policy: BuildPolicy = BuildPolicy.NONE,
 ) -> None:
     cmd = [
@@ -150,15 +166,13 @@ def conan_install(
         "--settings:all",
         f"build_type={build_type}",
         f"--output-folder={output_folder}",
+        f"--lockfile={LOCKFILE}",
     ]
 
     if build_policy == BuildPolicy.ALL:
         cmd += ["--build=*", "--remote=local-recipes"]
     elif build_policy == BuildPolicy.MISSING:
         cmd += ["--build=missing"]
-
-    if lockfile:
-        cmd += [f"--lockfile={lockfile}"]
 
     if ci:
         cmd += ["--core-conf", "core:non_interactive=True"]
@@ -170,45 +184,80 @@ def conan_install(
     subprocess.run(cmd, check=True)
 
 
-def _iter_packages(data: dict) -> Generator[tuple[str, str, str], None, None]:
-    return (
-        (ref, rrev, pkg_id)
-        for ref, ref_data in data.items()
-        for rrev, rrev_data in ref_data.get("revisions", {}).items()
-        for pkg_id in rrev_data.get("packages", {})
-    )
+def _list_conan_packages(pattern: str, remote: str | None = None) -> dict[str, Any]:
+    """Invoke `conan list` with the given pattern and remote."""
+    args = ["conan", "list", pattern, "--format=json"]
+    if remote is not None:
+        args.append(f"--remote={remote}")
+
+    process = subprocess.run(args, capture_output=True, text=True, check=True)
+    obj = json.loads(process.stdout)
+    repo_key = remote or "Local Cache"
+    if not isinstance(obj, dict):
+        raise ValueError(f"Failed to list {repo_key}. Response: {obj}")
+
+    repo_object = obj.get(repo_key)
+    if not isinstance(repo_object, dict):
+        raise ValueError(f"Failed to list {repo_key}. Response: {obj})")
+
+    error = repo_object.get("error")
+    if error is not None:
+        # If `pattern` matches no packages/revisions, the "error" property is set with this content:
+        # - package name/version can't be found: "404: Not Found. [Remote: remote]"
+        # - package revision can't be found: "Recipe revision 'name/version#revision_id' not found"
+        # - package id can't be found: "Package ID 'name/version#revision_id:package_id' not found"
+        if "not found" in str(error).lower():
+            # Not an error: We use this to test if a package is present on the remote.
+            return {}
+        raise ValueError(f"Failed to list {repo_key}. Error message in reponse: {error}")
+
+    return repo_object
+
+
+def _iter_revisions(name_version: str, revisions_map: dict[str, Any]) -> Iterator[tuple[str, str]]:
+    """Walks through `conan list` revision object and yields `(revision_id, package_id)` pairs."""
+    for revision_id, revision_obj in revisions_map.items():
+        package_map = revision_obj.get("packages")
+        if not isinstance(package_map, dict):
+            raise ValueError(f".{name_version}.revisions.{revision_id}.packages must be an object. Got: {package_map}")
+
+        for package_id in package_map.keys():
+            yield revision_id, package_id
+
+
+def _iter_packages(repo_object: dict[str, Any]) -> Iterator[PackageInfo]:
+    """Walks through `conan list` repo object and yields `PackageInfo`s."""
+    for name_version, revisions_data in repo_object.items():
+        if not isinstance(revisions_data, dict):
+            raise ValueError(f".{name_version} be an object. Got: {revisions_data}")
+
+        revisions_map = revisions_data.get("revisions")
+        if not isinstance(revisions_map, dict):
+            raise ValueError(f".{name_version}.revisions must be an object. Got: {revisions_map}")
+
+        for revision_id, package_id in _iter_revisions(name_version, revisions_map):
+            yield PackageInfo(name_version=name_version, revision_id=revision_id, package_id=package_id)
+
+
+def _remote_contains_package(remote: str, package_info: PackageInfo) -> bool:
+    """Test membership of package in remote Conan repository."""
+    repo_object = _list_conan_packages(package_info.identifier, remote)
+    return next(_iter_packages(repo_object), None) is not None
 
 
 def upload_new_packages(remote: str, *, ci: bool = False) -> None:
     """Upload only packages whose recipe_revision + package_id don't exist on the remote yet."""
-    local_json = subprocess.run(
-        ["conan", "list", "*:*", "--format=json"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    remote_json = subprocess.run(
-        ["conan", "list", "*:*", f"--remote={remote}", "--format=json"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-
-    local_data = json.loads(local_json).get("Local Cache", {})
-    remote_data = json.loads(remote_json).get(remote, {})
-
-    remote_packages = set(_iter_packages(remote_data))
+    repo_object = _list_conan_packages("*:*")
 
     uploaded = 0
     skipped = 0
-
-    for ref, rrev, pkg_id in _iter_packages(local_data):
-        if (ref, rrev, pkg_id) in remote_packages:
-            print(f"SKIP (already on remote): {ref}#{rrev}:{pkg_id}")
+    for package_info in _iter_packages(repo_object):
+        if _remote_contains_package("delft3d-conan-dev", package_info):
+            print(f"SKIP (already on remote): {package_info.identifier}")
             skipped += 1
         else:
-            print(f"UPLOAD: {ref}#{rrev}:{pkg_id}")
-            cmd = ["conan", "upload", f"{ref}#{rrev}:{pkg_id}", f"--remote={remote}", "--confirm", "--check"]
+            print(f"UPLOAD: {package_info.identifier}")
+            cmd = ["conan", "upload", package_info.identifier, f"--remote={remote}", "--confirm", "--check"]
             if ci:
                 cmd += ["--core-conf", "core:non_interactive=True"]
             subprocess.run(cmd, check=True)
@@ -220,9 +269,9 @@ def upload_new_packages(remote: str, *, ci: bool = False) -> None:
 def _get_profile() -> str:
     os_name = platform.system()
     if os_name == "Windows":
-        return "delft3d_windows"
+        return WINDOWS_PROFILE
     elif os_name == "Linux":
-        return "delft3d_linux"
+        return LINUX_PROFILE
     else:
         raise RuntimeError(f"Unsupported OS: {os_name}")
 
@@ -242,7 +291,7 @@ def _require_profile(profile: str) -> None:
 
 def _do_install(
     profile: str,
-    output_folder: str,
+    output_folder: Path,
     build_type: str,
     *,
     ci: bool = False,
@@ -257,7 +306,6 @@ def _do_install(
             output_folder,
             "Release",
             ci=ci,
-            lockfile=LOCKFILE,
             build_policy=build_policy,
         )
         conan_install(
@@ -266,7 +314,6 @@ def _do_install(
             "Release",
             consumer_build_type="Debug",
             ci=ci,
-            lockfile=LOCKFILE,
         )
         conan_install(
             profile,
@@ -274,7 +321,6 @@ def _do_install(
             "Release",
             consumer_build_type="RelWithDebInfo",
             ci=ci,
-            lockfile=LOCKFILE,
         )
     else:
         # Single-config generator: one install for the requested build type.
@@ -285,7 +331,6 @@ def _do_install(
             "Release",
             consumer_build_type=build_type,
             ci=ci,
-            lockfile=LOCKFILE,
             build_policy=build_policy,
         )
 
@@ -395,7 +440,8 @@ def main() -> None:
     )
     parser_install.add_argument(
         "--output-folder",
-        default="build/conan",
+        type=Path,
+        required=True,
         help="Output folder for Conan install files.",
     )
     parser_install.set_defaults(func=cmd_install)
