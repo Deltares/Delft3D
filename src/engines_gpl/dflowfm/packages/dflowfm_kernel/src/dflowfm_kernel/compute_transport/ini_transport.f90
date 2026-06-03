@@ -102,13 +102,6 @@ contains
          itra1 = numconst
          numconst = numconst + numtracers - 1
          itran = numconst
-         
-         ! Lookup oxygen tracer index, if present.
-         do i = itra1, itran
-            if (trim(str_tolower(const_names(i))) == 'oxy') then
-               ioxy = i
-            end if
-         end do
       end if
 
       select case (jatransportautotimestepdiff)
@@ -211,13 +204,18 @@ contains
          do i = itra1, itran
             itrace = i - itra1 + 1
 
-!        set name
+            ! set name
             if (trim(trnames(itrace)) /= '') then
                const_names(i) = trim(trnames(itrace))
                const_units(i) = trim(trunits(itrace))
             else
                write (str, "(I0)") itrace
                const_names(i) = 'tracer_'//trim(str)
+            end if
+
+            ! Lookup oxygen tracer index, if present.
+            if (trim(str_tolower(const_names(i))) == 'oxy') then
+               ioxy = i
             end if
 
             itrac2const(itrace) = i
