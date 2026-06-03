@@ -247,11 +247,11 @@ def _remote_contains_package(remote: str, package_info: PackageInfo) -> bool:
 
 def upload_new_packages(remote: str, *, ci: bool = False) -> None:
     """Upload only packages whose recipe_revision + package_id don't exist on the remote yet."""
-    repo_object = _list_conan_packages("*:*")
+    local_cache_packages = _list_conan_packages("*:*")
 
     uploaded = 0
     skipped = 0
-    for package_info in _iter_packages(repo_object):
+    for package_info in _iter_packages(local_cache_packages):
         if _remote_contains_package("delft3d-conan-dev", package_info):
             print(f"SKIP (already on remote): {package_info.identifier}")
             skipped += 1
