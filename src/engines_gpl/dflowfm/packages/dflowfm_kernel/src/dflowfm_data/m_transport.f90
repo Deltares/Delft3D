@@ -48,7 +48,7 @@ module m_transportdata
    integer :: numconst_mdu ! number of constituents as specified in mdu/ext file
    integer, target :: isalt ! salt
    integer, target :: itemp ! temperature
-   integer, target :: ioxy ! oxygen, currently only used to skip the vertical Forester filter
+   integer :: ioxy ! oxygen, currently only used to skip the vertical Forester filter
    integer :: ised1 ! first sediment fraction
    integer :: isedn ! last  sediment fraction
    integer :: ispir ! secondary flow intensity
