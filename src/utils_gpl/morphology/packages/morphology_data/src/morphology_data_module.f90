@@ -582,95 +582,96 @@ module morphology_data_module
       type(t_nodefraction), pointer, dimension(:) :: nodefractions
    end type t_nodereldata
 
-   type sedpar_type
-      !
-      ! doubles
-      !
-      real(fp) :: csoil !  concentration at bed used in hindered settling formulation
-      real(fp) :: mdcuni !  mud content / mud fraction uniform value (non-zero only
-      !  if mud is not included simulation)
-      real(fp) :: kssilt !  ks value for silt for Soulsby 2004 formulation (used below sc_cmf1)
-      real(fp) :: kssand !  ks value for sand (used above sc_cmf2)
-      real(fp) :: sc_cmf1 !  lower critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
-      real(fp) :: sc_cmf2 !  upper critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
-      real(fp) :: sc_flcf !  fraction of ParFluff0/ParFluff1 when the fluff layer fully covers the bed for Soulsby & Clarke (2005)
-      real(fp) :: tbreakup !  relaxation time scale for break-up of flocs [s]
-      real(fp) :: tfloc !  relaxation time scale for flocculation [s]
-      real(fp) :: d_micro !  characteristic diameter of micro flocs [m]
-      real(fp) :: ustar_macro ! characteristic shear velocity of macro flocs [m/s]
-      real(fp) :: version !  interpreter version
-      !
-      ! reals
-      !
-      !
-      ! integers
-      !
-      integer :: flocmod !  flocculation model applied to clay fractions
-      integer :: nflocpop !  number of floc populations (groups of clay fractions that exchange mass)
-      integer :: nflocsizes !  number of floc sizes distinguished in the flocculation model
-      integer :: nmudfrac !  number of simulated mud fractions
-      integer :: sc_mudfac !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
-      integer :: max_mud_sedtyp !  largest sediment type associated with mud
-      integer :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
-      !
-      ! pointers
-      !
-      type(tree_data), dimension(:), pointer :: sedblock => null() !  Pointer to array of data block per fraction in .sed file (version 2)
-      type(t_nodefraction), dimension(:), pointer :: nodefractions !  Pointer to array of nodal point relations
-      !
-      logical, dimension(:), pointer :: cmpupdfrac !  Flag for doing composition (underlayer) updates per fraction
-      !
-      real(fp), dimension(:), pointer :: tpsnumber !  Turbulent Prandtl-Schmidt number
-      real(fp), dimension(:), pointer :: rhosol !  Soil density
-      !
-      real(fp), dimension(:, :, :), pointer :: logseddia !  Characteristic sediment diameter table using log scale [%,log(m)]
-      real(fp), dimension(:), pointer :: logsedsig !  Standard deviation on log scale (log of geometric std.) [-]
-      real(fp), dimension(:), pointer :: sedd10 !  10% Diameter sediment fraction [m]
-      real(fp), dimension(:), pointer :: sedd50 !  50% Diameter sediment fraction [m]
-      real(fp), dimension(:), pointer :: sedd50fld => null() !  Spatially varying 50% sediment diameter [m] in case of spatial_d50
-      real(fp), dimension(:), pointer :: seddm !  Arithmetic mean sediment diameter [m]
-      real(fp), dimension(:), pointer :: sedd90 !  90% Diameter sediment fraction [m]
-      !
-      real(fp), dimension(:), pointer :: cdryb !  Dry bed concentration for determining
-      !  sediment depths
-      real(fp), dimension(:), pointer :: dstar !  Dimensionless grain size
-      real(fp), dimension(:), pointer :: taucr !  Critical shear stress
-      real(fp), dimension(:), pointer :: tetacr !  Dimensionless critical shear stress (Shields parameter)
-      !
-      real(fp), dimension(:, :), pointer :: dss !  Characteristic suspended sediment diameter
-      real(fp), dimension(:), pointer :: facdss !  Ratio between suspended sediment diameter and D50
-      real(fp), dimension(:), pointer :: sdbuni !  Uniform value of initial sediment mass at bed
-      real(fp), dimension(:), pointer :: sedtrcfac !  Calibration factor for tracer sediments
-      real(fp), dimension(:), pointer :: thcmud !  Critical stress erosion uniform values for mud
-      real(fp), dimension(:), pointer :: tcguni !  Calibration factor on critical shear stress in Van Rijn (2004) uniform values
-      real(fp), dimension(:), pointer :: mudcnt !  mud content / mud fraction field (non-zero only if mud
-      !  is not included simulation)
-      real(fp), dimension(:), pointer :: pmcrit !  Critical mud fraction for non-cohesive behaviour
-      integer, dimension(:), pointer :: nseddia !  Number of characteristic sediment diameters
-      integer, dimension(:), pointer :: sedtyp !  Sediment type: SEDTYP_CLAY, SEDTYP_SILT, SEDTYP_SAND, SEDTYP_GRAVEL
-      integer, dimension(:), pointer :: tratyp !  Transport method type: TRA_BEDLOAD, TRA_ADVDIFF, TRA_COMBINE
-      integer, dimension(:), pointer :: flocsize !  Floc size within floc population
-      integer, dimension(:, :), pointer :: floclist !  Table of groups of clay fractions that belong together (flocculation)
-      character(10), dimension(:), pointer :: inisedunit !  'm' or 'kg/m2' : Initial sediment at bed specified as thickness ([m]) or density ([kg/m2])
-      character(20), dimension(:), pointer :: namsed !  Names of all sediment fractions
-      character(20), dimension(:), pointer :: namclay !  Label of clay floc population to which the sediment fraction belongs
-      character(20), dimension(:), pointer :: namflocpop !  Clay floc population labels
-      character(256), dimension(:), pointer :: flsdbd !  File name containing initial sediment mass at bed
-      character(256), dimension(:), pointer :: flstcg !  File name calibration factor on critical shear stress in Van Rijn (2004) uniform values
-      character(256), dimension(:), pointer :: flnrd !  File names of Node Relation Data (NRD-Files) for bifurcation points in 1D morphology
-      !
-      ! logicals
-      !
-      logical :: anymud ! Flag to indicate whether a mud fraction is included in the simulation.
-      logical :: bsskin ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
-      logical :: spatial_d50 ! Flag to indicate whether the model uses spatially varying D50
-      !
-      ! characters
-      !
-      character(256) :: flsdia ! spatial sediment diameter file (in case of one sediment fraction only)
-      character(256) :: flsmdc ! mud content / mud fraction file (only if mud is not included in simulation)
-      character(256) :: flspmc ! critical mud fraction for non-cohesive behaviour file
-   end type sedpar_type
+type sedpar_type
+    !
+    ! doubles
+    !
+    real(fp) :: csoil     !  concentration at bed used in hindered settling formulation
+    real(fp) :: mdcuni    !  mud content / mud fraction uniform value (non-zero only
+                          !  if mud is not included simulation)
+    real(fp) :: kssilt    !  ks value for silt for Soulsby 2004 formulation (used below sc_cmf1)
+    real(fp) :: kssand    !  ks value for sand (used above sc_cmf2)
+    real(fp) :: sc_cmf1   !  lower critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
+    real(fp) :: sc_cmf2   !  upper critical mud factor for determining bed roughness length for Soulsby & Clarke (2005)
+    real(fp) :: sc_flcf   !  fraction of ParFluff0/ParFluff1 when the fluff layer fully covers the bed for Soulsby & Clarke (2005)
+    real(fp) :: tbreakup  !  relaxation time scale for break-up of flocs [s]
+    real(fp) :: tfloc     !  relaxation time scale for flocculation [s]
+    real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
+    real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
+    real(fp) :: version   !  interpreter version
+    real(fp), allocatable :: sedtrans_unitcov_fac(:) !  Factor for converting the unit of sediment transport quantities in the his/map writers
+    !
+    ! reals
+    !
+    !
+    ! integers
+    !
+    integer  :: flocmod        !  flocculation model applied to clay fractions
+    integer  :: nflocpop       !  number of floc populations (groups of clay fractions that exchange mass)
+    integer  :: nflocsizes     !  number of floc sizes distinguished in the flocculation model
+    integer  :: nmudfrac       !  number of simulated mud fractions
+    integer  :: sc_mudfac      !  formulation used for determining bed roughness length for Soulsby & Clarke (2005): SC_MUDFRAC, or SC_MUDTHC
+    integer  :: max_mud_sedtyp !  largest sediment type associated with mud
+    integer  :: min_dxx_sedtyp !  smallest sediment type included in computation of characteristic sediment diameters
+    !
+    ! pointers
+    !
+    type(tree_data)     , dimension(:), pointer :: sedblock => null()  !  Pointer to array of data block per fraction in .sed file (version 2)
+    type(t_nodefraction), dimension(:), pointer :: nodefractions       !  Pointer to array of nodal point relations
+    !
+    logical       , dimension(:)    , pointer :: cmpupdfrac !  Flag for doing composition (underlayer) updates per fraction
+    !
+    real(fp)      , dimension(:)    , pointer :: tpsnumber  !  Turbulent Prandtl-Schmidt number
+    real(fp)      , dimension(:)    , pointer :: rhosol     !  Soil density
+    !
+    real(fp)      , dimension(:,:,:), pointer :: logseddia             !  Characteristic sediment diameter table using log scale [%,log(m)]
+    real(fp)      , dimension(:)    , pointer :: logsedsig             !  Standard deviation on log scale (log of geometric std.) [-]
+    real(fp)      , dimension(:)    , pointer :: sedd10                !  10% Diameter sediment fraction [m]
+    real(fp)      , dimension(:)    , pointer :: sedd50                !  50% Diameter sediment fraction [m]
+    real(fp)      , dimension(:)    , pointer :: sedd50fld  => null()  !  Spatially varying 50% sediment diameter [m] in case of spatial_d50
+    real(fp)      , dimension(:)    , pointer :: seddm                 !  Arithmetic mean sediment diameter [m]
+    real(fp)      , dimension(:)    , pointer :: sedd90                !  90% Diameter sediment fraction [m]
+    !
+    real(fp)      , dimension(:)    , pointer :: cdryb      !  Dry bed concentration for determining
+                                                            !  sediment depths
+    real(fp)      , dimension(:)    , pointer :: dstar      !  Dimensionless grain size 
+    real(fp)      , dimension(:)    , pointer :: taucr      !  Critical shear stress 
+    real(fp)      , dimension(:)    , pointer :: tetacr     !  Dimensionless critical shear stress (Shields parameter)
+    !
+    real(fp)      , dimension(:,:)  , pointer :: dss        !  Characteristic suspended sediment diameter
+    real(fp)      , dimension(:)    , pointer :: facdss     !  Ratio between suspended sediment diameter and D50
+    real(fp)      , dimension(:)    , pointer :: sdbuni     !  Uniform value of initial sediment mass at bed
+    real(fp)      , dimension(:)    , pointer :: sedtrcfac  !  Calibration factor for tracer sediments
+    real(fp)      , dimension(:)    , pointer :: thcmud     !  Critical stress erosion uniform values for mud
+    real(fp)      , dimension(:)    , pointer :: tcguni     !  Calibration factor on critical shear stress in Van Rijn (2004) uniform values
+    real(fp)      , dimension(:)    , pointer :: mudcnt     !  mud content / mud fraction field (non-zero only if mud
+                                                            !  is not included simulation)
+    real(fp)      , dimension(:)    , pointer :: pmcrit     !  Critical mud fraction for non-cohesive behaviour
+    integer       , dimension(:)    , pointer :: nseddia    !  Number of characteristic sediment diameters
+    integer       , dimension(:)    , pointer :: sedtyp     !  Sediment type: SEDTYP_CLAY, SEDTYP_SILT, SEDTYP_SAND, SEDTYP_GRAVEL
+    integer       , dimension(:)    , pointer :: tratyp     !  Transport method type: TRA_BEDLOAD, TRA_ADVDIFF, TRA_COMBINE
+    integer       , dimension(:)    , pointer :: flocsize   !  Floc size within floc population
+    integer       , dimension(:,:)  , pointer :: floclist   !  Table of groups of clay fractions that belong together (flocculation)
+    character(10) , dimension(:)    , pointer :: inisedunit !  'm' or 'kg/m2' : Initial sediment at bed specified as thickness ([m]) or density ([kg/m2])
+    character(20) , dimension(:)    , pointer :: namsed     !  Names of all sediment fractions
+    character(20) , dimension(:)    , pointer :: namclay    !  Label of clay floc population to which the sediment fraction belongs
+    character(20) , dimension(:)    , pointer :: namflocpop !  Clay floc population labels
+    character(256), dimension(:)    , pointer :: flsdbd     !  File name containing initial sediment mass at bed
+    character(256), dimension(:)    , pointer :: flstcg     !  File name calibration factor on critical shear stress in Van Rijn (2004) uniform values
+    character(256), dimension(:)    , pointer :: flnrd      !  File names of Node Relation Data (NRD-Files) for bifurcation points in 1D morphology
+    ! 
+    ! logicals
+    !
+    logical :: anymud      ! Flag to indicate whether a mud fraction is included in the simulation.
+    logical :: bsskin      ! Flag to indicate whether a bed stress should be computed according to Soulsby 2004
+    logical :: spatial_d50 ! Flag to indicate whether the model uses spatially varying D50
+    !
+    ! characters
+    !
+    character(256) :: flsdia     ! spatial sediment diameter file (in case of one sediment fraction only)
+    character(256) :: flsmdc     ! mud content / mud fraction file (only if mud is not included in simulation)
+    character(256) :: flspmc     ! critical mud fraction for non-cohesive behaviour file
+end type sedpar_type
 
    type parfile_type
       integer :: source !< data source for the parameter: time-series or spatial field

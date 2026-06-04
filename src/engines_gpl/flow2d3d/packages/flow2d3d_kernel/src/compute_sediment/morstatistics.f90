@@ -102,8 +102,6 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
 ! Local variables
 !
     integer                              , pointer :: nstatqnt
-    real(fp), dimension(:)               , pointer :: rhosol
-    real(fp), dimension(:)               , pointer :: cdryb
     type (moroutputtype)                 , pointer :: moroutput  ! structure containing morphology output options
     real(fp), dimension(:,:)             , pointer :: statqnt
     integer                                        :: lsed
@@ -119,8 +117,6 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
 !
 !! executable statements -------------------------------------------------------
 !
-    rhosol         => gdp%gdsedpar%rhosol
-    cdryb          => gdp%gdsedpar%cdryb
     moroutput      => gdp%gdmorpar%moroutput
     nstatqnt       => gdp%gdmorpar%moroutput%nstatqnt
     statqnt        => gdp%gderosed%statqnt
@@ -160,16 +156,8 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
             qu = 0.0_fp
             qv = 0.0_fp
             do lsed = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(lsed)
-                case (2)
-                   rhol = rhosol(lsed)
-                end select
-                qu = qu + 0.5_fp*(sbuu(nm, lsed)+sbuu(nmd, lsed))/rhol
-                qv = qv + 0.5_fp*(sbvv(nm, lsed)+sbvv(ndm, lsed))/rhol
+                qu = qu + 0.5_fp*(sbuu(nm, lsed)+sbuu(nmd, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
+                qv = qv + 0.5_fp*(sbvv(nm, lsed)+sbvv(ndm, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
             enddo
             q = sqrt(qu**2 + qv**2)
             call local_stats(moroutput%statflg(:,3), nm, q, wght)
@@ -179,16 +167,8 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
             qu = 0.0_fp
             qv = 0.0_fp
             do lsed = 1, lsedsus
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(lsed)
-                case (2)
-                   rhol = rhosol(lsed)
-                end select
-                qu = qu + 0.5_fp*(ssuu(nm, lsed)+ssuu(nmd, lsed))/rhol
-                qv = qv + 0.5_fp*(ssvv(nm, lsed)+ssuu(ndm, lsed))/rhol
+                qu = qu + 0.5_fp*(ssuu(nm, lsed)+ssuu(nmd, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
+                qv = qv + 0.5_fp*(ssvv(nm, lsed)+ssuu(ndm, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
             enddo
             q = sqrt(qu**2 + qv**2)
             call local_stats(moroutput%statflg(:,4), nm, q, wght)
