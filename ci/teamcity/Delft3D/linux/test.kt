@@ -104,7 +104,7 @@ object LinuxTest : BuildType({
                 --log-level DEBUG \
                 --parallel \
                 --teamcity \
-                --override-paths 'from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt'"
+                --override-paths from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
             
             # Add flag only if copy_failed_cases is true
             if [[ "%copy_failed_cases%" == "true" ]]; then
