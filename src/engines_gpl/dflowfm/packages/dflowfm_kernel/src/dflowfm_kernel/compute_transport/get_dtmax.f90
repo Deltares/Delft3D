@@ -152,7 +152,7 @@ contains
                      bak = ba(kk)
                      do k = kb, kt
                         if (nfallwaq > 0) then
-                           sqtot = sqi(k) + maxval([mtd%ws(k, :), wfallwaq(:,k)]) * bak
+                           sqtot = sqi(k) + maxval([mtd%ws(k, :), wfallwaq(k,:)]) * bak
                         else
                            sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
                         end if
@@ -163,7 +163,7 @@ contains
                   elseif (nfallwaq > 0 .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        sqtot = sqi(k) + maxval(wfallwaq(:,k)) * bak
+                        sqtot = sqi(k) + maxval(wfallwaq(k,:)) * bak
                         if (squ(k) > eps10 .or. sqtot > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / max(squ(k), sqtot))
                         end if
@@ -180,7 +180,7 @@ contains
                      bak = ba(kk)
                      do k = kb, kt
                         if (nfallwaq > 0) then
-                           sqtot = sqi(k) + sumdifflim(k) + maxval([mtd%ws(k, :), wfallwaq(:,k)]) * bak
+                           sqtot = sqi(k) + sumdifflim(k) + maxval([mtd%ws(k, :), wfallwaq(k, :)]) * bak
                         else
                            sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
                         end if
@@ -191,7 +191,7 @@ contains
                   elseif (nfallwaq > 0 .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        sqtot = sqi(k) + sumdifflim(k) + maxval(wfallwaq(:,k)) * bak
+                        sqtot = sqi(k) + sumdifflim(k) + maxval(wfallwaq(k, :)) * bak
                         if (sqtot > eps10) then
                            dtmax(kk) = min(dtmax(kk), vol1(k) / sqtot)
                         end if

@@ -135,7 +135,7 @@ contains
                qw_loc = qw(k)
                if (jaimplicitfallvelocity == 0) then ! explicit
                   if (iconst2fallwaq(j) > 0) then
-                     qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * ba(kk)
+                     qw_loc = qw(k) - wfallwaq(k, iconst2fallwaq(j)) * ba(kk)
                   else if (jased == 4 .and. stm_included .and. j >= ISED1 .and. j <= ISEDN) then
                      ll = j - ISED1 + 1
                      if (k < sedtra%kmxsed(kk, ll)) then
@@ -144,10 +144,10 @@ contains
                         qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
                      end if
                   else
-                     qw_loc = qw(k) - wsf(j) * ba(kk) 
+                     qw_loc = qw(k) - wsf(j) * ba(kk)
                   end if
                end if
-               
+
                if (cffacver > 0.0_dp) then
                   cf = cffacver * dt_loc * abs(qw_loc) / (ba(kk) * dz(k - kb + 2)) ! courant nr
                   cf = max(0.0_dp, 1.0_dp - cf) ! use high order only for small courant

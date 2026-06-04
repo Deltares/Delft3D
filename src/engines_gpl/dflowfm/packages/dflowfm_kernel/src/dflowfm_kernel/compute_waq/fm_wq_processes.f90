@@ -508,7 +508,7 @@ contains
             isflatitude = num_spatial_time_fuctions
             call realloc(sfunname, num_spatial_time_fuctions, keepExisting=.true., fill='latitude')
             call mess(LEVEL_INFO, '''face (cell) latitude'' connected as ''latitude''')
-         endif
+         end if
       else
          call mess(LEVEL_INFO, '''face (cell) latitude'' not connected, because ''latitude'' is not in the sub-file.')
          isflatitude = 0
@@ -874,7 +874,7 @@ contains
       end if
       call realloc(iconst2fallwaq, numconst, keepExisting=.true., fill=0)
       if (nfallwaq > 0) then
-         call realloc(wfallwaq, [nfallwaq, Ndkx], keepExisting=.false., fill=0.0_hp)
+         call realloc(wfallwaq, [Ndkx, nfallwaq], keepExisting=.false., fill=0.0_hp)
          call realloc(ifall2const, nfallwaq, keepExisting=.true., fill=0)
          call realloc(ifall2vpnw, nfallwaq, keepExisting=.true., fill=0)
          nfallwaq = 0
@@ -1830,7 +1830,7 @@ contains
             do ifall = 1, nfallwaq
                ipnw = ifall2vpnw(ifall)
                if (ipnw > 0) then
-                  wfallwaq(ifall, k) = velowaq(ipnw, iex)
+                  wfallwaq(k, ifall) = velowaq(ipnw, iex)
                end if
             end do
          end do

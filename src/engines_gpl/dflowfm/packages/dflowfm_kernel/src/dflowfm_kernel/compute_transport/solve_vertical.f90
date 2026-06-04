@@ -193,11 +193,11 @@ contains
 
                ! advection
                if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
-                   if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
+                  if (jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                         qw_loc = qw(k) - mtd%ws(k, j - ISED1 + 1) * a1(kk)
                      else if (iconst2fallwaq(j) > 0) then
-                        qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * a1(kk)
+                        qw_loc = qw(k) - wfallwaq(k, iconst2fallwaq(j)) * a1(kk)
                      else
                         qw_loc = qw(k) - wsf(j) * a1(kk)
                      end if
@@ -217,7 +217,7 @@ contains
                   if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then
                      fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
                   else if (iconst2fallwaq(j) > 0) then
-                     fluxfac = wfallwaq(iconst2fallwaq(j), k) * a1(kk) * dt_loc
+                     fluxfac = wfallwaq(k, iconst2fallwaq(j)) * a1(kk) * dt_loc
                   else
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
