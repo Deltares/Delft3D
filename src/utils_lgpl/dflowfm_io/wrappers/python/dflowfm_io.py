@@ -53,7 +53,7 @@ _lib.mdu_model_create.restype = ctypes.c_int
 _lib.mdu_model_create.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
 
 _lib.mdu_model_destroy.restype = ctypes.c_int
-_lib.mdu_model_destroy.argtypes = [ctypes.c_void_p]
+_lib.mdu_model_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
 
 _lib.mdu_model_get_dummy_value.restype = ctypes.c_int
 _lib.mdu_model_get_dummy_value.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)]
@@ -72,7 +72,7 @@ class MduModel:
 
     def __del__(self):
         if hasattr(self, "_handle") and self._handle:
-            _lib.mdu_model_destroy(self._handle)
+            _lib.mdu_model_destroy(ctypes.byref(self._handle))
             self._handle = None
 
     def get_dummy_value(self) -> int:
