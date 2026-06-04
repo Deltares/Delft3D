@@ -49,7 +49,7 @@ object LinuxConanPackages : BuildType({
 
                 python run_conan.py initialize deltares --ci
 
-                python run_conan.py install --rebuild-packages --ci
+                python run_conan.py install --rebuild-packages --ci --output-folder build
 
                 python run_conan.py upload --remote=delft3d-conan-dev --ci
             """.trimIndent()

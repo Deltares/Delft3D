@@ -47,7 +47,7 @@ object WindowsConanPackages : BuildType({
                 python run_conan.py initialize deltares --ci
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
-                python run_conan.py install --rebuild-packages --ci
+                python run_conan.py install --rebuild-packages --ci --output-folder build
                 if %%errorlevel%% neq 0 exit /b %%errorlevel%%
 
                 python run_conan.py upload --remote=delft3d-conan-dev --ci
