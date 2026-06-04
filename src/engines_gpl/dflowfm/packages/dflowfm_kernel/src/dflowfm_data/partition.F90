@@ -6484,4 +6484,39 @@ contains
 
    end function reduce_cells
 
+   !< checks if a 3d layer is in the current partition
+   !< uses ndkx2ndx mapping.
+   !< if there is no mapping, assumes true
+   !< also returns true if there is no partitioning 
+   function is_3d_layer_in_current_partition(idx_ndkx) result(is_in_partition)
+      use m_flow, only: ndkx_to_ndx, ndkx, kmx
+      
+      integer, intent(in) :: idx_ndkx !< 3d layer index
+      logical :: is_in_partition
+
+      integer :: ndx
+
+      if (jampi == 0 .or. (.not. allocated(idomain))) then
+         is_in_partition = .true.
+         return
+      end if
+
+      if (kmx == 0) then
+         is_in_partition  = idomain(idx_ndkx) == my_rank
+         return
+      end if
+
+      if (idx_ndkx >= 1 .and. idx_ndkx <= ndkx) then
+         ndx = ndkx_to_ndx(idx_ndkx)
+      else
+         ndx = -1
+      end if
+
+      if (ndx > 0) then
+         is_in_partition  = idomain(ndx) == my_rank
+      else ! if there is no mapping, assume the layer is in the partition
+         is_in_partition = .true.
+      end if
+   end function is_3d_layer_in_current_partition
+
 end module m_partitioninfo
