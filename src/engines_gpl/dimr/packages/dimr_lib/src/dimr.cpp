@@ -1886,11 +1886,10 @@ void Dimr::scanComponent(XmlTree* xmlComponent, dimr_component* newComp)
     }
     else
     {
-        // Parse mpiBarrierSleep using std::from_chars (no locale, no heap)
         const char* s = mpiBarrierSleep->charData;
         int value = 0;
         auto res = std::from_chars(s, s + std::strlen(s), value);
-        if (res.ec == std::errc() && res.ptr != s)
+        if (res.ec == std::errc())
         {
             newComp->mpi_barrier_sleep = value;
         }
