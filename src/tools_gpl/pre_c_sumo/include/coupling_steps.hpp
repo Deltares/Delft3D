@@ -156,14 +156,39 @@ namespace pre_c_sumo
      *
      * This conversion mirrors the FM nearfield intent while keeping FM-specific
      * cell mapping out of pre-C-SUMO:
-     * - Entrainment records are created from sink S-factor differences and Qsource.
-     * - Discharge records are created from Qsource at source points.
-     * - Optional intake record is created from Qintake at a provided intake point.
+        * - Entrainment records are derived from the ordered sink sequence, not read
+        *   as explicit pairs from the NF2FF file.
+        * - Discharge records are created from Qsource at source points.
+        * - Optional intake record is created from Qintake at a provided intake point.
+        *
+        * Pairing semantics
+        * -----------------
+        * The NF2FF file only distinguishes raw `sinks`, `sources`, and optional
+        * `intakes`.
+        *
+        * This function derives that structure as follows:
+        * - For each sink index `i >= 2`, compute `delta_s = S_i - S_(i-1)`.
+        * - For each source point, create one entrainment sink record and one linked
+        *   entrainment source record.
+        * - The sink-side entrainment record receives discharge
+        *   `-delta_s * Qsource * normalized_weight`.
+        * - The source-side entrainment record receives discharge
+        *   `+delta_s * Qsource * normalized_weight`.
+        * - Those two records are marked as a pair by reciprocal `connected_id`
+        *   values.
+        *
+        * As a result, output records with `connected_id != 0` are derived
+        * entrainment pairs created by this conversion. Output records with
+        * `connected_id == 0` are unpaired records representing the source discharge
+        * itself or the optional intake sink.
      *
      * Source weighting follows these rules:
-     * - If a source line has an explicit weight, that weight is used.
+        * - If a source line has an explicit weight, that weight is used.
      * - Otherwise, a default weight of 1.0 is used.
-     * - Weights are normalized before applying to discharges.
+        * - All source weights are normalized by their sum before applying them.
+        * - The normalized weight scales both entrainment-derived discharge and the
+        *   final discharge-at-source record for that source.
+        *
      *
      * Record ids are assigned sequentially starting at `first_record_id`.
      * Paired entrainment sink/source records are connected by `connected_id`.

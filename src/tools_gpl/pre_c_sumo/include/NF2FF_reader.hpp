@@ -52,9 +52,9 @@ namespace pre_c_sumo
         double half_plume_width;  ///< Half plume width [m].
         double u_magnitude;       ///< Optional momentum magnitude [m/s].
         double u_direction;       ///< Optional momentum direction [degrees].
-        double weight;            ///< Optional aggregation weight for later use.
+        double weight;            ///< Optional source weight used by later conversion to distribute Qsource over sources.
         bool has_u;               ///< True when momentum fields were present in the XML.
-        bool has_weight;          ///< True when an explicit weight value was present.
+        bool has_weight;          ///< True when an explicit weight value was present; otherwise conversion uses 1.0.
     };
 
     // Reader for NF2FF XML files.

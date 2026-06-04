@@ -235,9 +235,9 @@ namespace pre_c_sumo
         for (const auto& diffuser : csumo_settings.diffusers())
         {
             std::println("Converting NF data to sources/sinks for diffuser {} ...", diffuser.nf2ff_file.value());
-            convertNFSinksToFF();
-            convertNFIntakesToFF();
-            convertNFSourcesToFF();
+            convertNFSinksToFF(); //needs to reference to new function with arguments
+            convertNFIntakesToFF(); // new function already takes care of this, can be removed.
+            convertNFSourcesToFF();// new function already takes care of this, can be removed. 
         }
     }
 
@@ -266,6 +266,10 @@ namespace pre_c_sumo
 
     void convertNFSinksToFF() { std::println("Processing sinks..."); }
 
+    // This function fills up the endpoints data structure, using entrainment, discharge and intakes
+    // Combined it in function for first try, can maybe be seprated into different functions like in FM.
+    // The endpoint structure needs to be converted
+    // to flat preCICE array in sendSourcesSinksToFF function
     double convertNFSinksToFF(const NF2FFReader& nf2ff_reader, SourcesSinks& sources_sinks, const double first_record_id,
                               const std::optional<parsing_utils::Point2D>& intake_point)
     {
@@ -284,6 +288,9 @@ namespace pre_c_sumo
             source_weights.push_back(source.has_weight ? source.weight : 1.0);
         }
 
+        //normalize the weight in source_weights vector
+        // Note: if all weights are zero, this code leaves them all as 
+        // zero, so every downstream discharge becomes zero. 
         const double weight_sum = std::accumulate(source_weights.begin(), source_weights.end(), 0.0);
         if (std::abs(weight_sum) > 0.0)
         {
@@ -296,7 +303,8 @@ namespace pre_c_sumo
         double next_id = first_record_id;
         const double source_flow_rate = nf2ff_reader.sourceFlowRate();
 
-        // Entrainment: pair each sink segment with each source point.
+        // Entrainment: pair each sink segment with each source point, from 2nd sink onwards.
+        // analogous to nearfield.f90:entrainmentToSrc(idif)
         for (std::size_t sink_index = 1; sink_index < sinks.size(); ++sink_index)
         {
             const auto& previous_sink = sinks[sink_index - 1];
@@ -328,6 +336,7 @@ namespace pre_c_sumo
         }
 
         // Discharge at source points.
+        // analogous to nearfield.f90:dischargeToSrc(idif, sum_weight_intakes)
         for (std::size_t source_index = 0; source_index < sources.size(); ++source_index)
         {
             const auto& source = sources[source_index];
@@ -344,6 +353,7 @@ namespace pre_c_sumo
         }
 
         // Optional intake sink at provided intake position.
+        // analogous to nearfield.f90:intakesToSrc(idif, sum_weight_intakes)
         if (intake_point.has_value() && std::abs(nf2ff_reader.intakeFlowRate()) > 0.0)
         {
             const auto intake_endpoint = makeEndpoint(asEndpointId(next_id++), static_cast<int>(zero_connected_id),
