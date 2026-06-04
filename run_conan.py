@@ -252,7 +252,7 @@ def upload_new_packages(remote: str, *, ci: bool = False) -> None:
     uploaded = 0
     skipped = 0
     for package_info in _iter_packages(local_cache_packages):
-        if _remote_contains_package("delft3d-conan-dev", package_info):
+        if _remote_contains_package(remote, package_info):
             print(f"SKIP (already on remote): {package_info.identifier}")
             skipped += 1
         else:
