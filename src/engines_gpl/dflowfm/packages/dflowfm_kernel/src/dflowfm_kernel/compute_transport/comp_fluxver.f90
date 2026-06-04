@@ -134,13 +134,9 @@ contains
             do j = 1, NUMCONST
                qw_loc = qw(k)
                if (jaimplicitfallvelocity == 0) then ! explicit
-                  if (jased < 4) then
-                     if (iconst2fallwaq(j) > 0) then
-                        qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * ba(kk)
-                     else
-                        qw_loc = qw(k) - wsf(j) * ba(kk)
-                     endif 
-                  elseif (stm_included .and. j >= ISED1 .and. j <= ISEDN) then
+                  if (iconst2fallwaq(j) > 0) then
+                     qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * ba(kk)
+                  else if (jased == 4 .and. stm_included .and. j >= ISED1 .and. j <= ISEDN) then
                      ll = j - ISED1 + 1
                      if (k < sedtra%kmxsed(kk, ll)) then
                         qw_loc = qw(k) ! settling flux zero below kmxsed layer
@@ -148,12 +144,7 @@ contains
                         qw_loc = qw(k) - mtd%ws(k, ll) * ba(kk)
                      end if
                   else
-                     ! enable tracers with settling vel icw morphology
-                     if (iconst2fallwaq(j) > 0) then
-                        qw_loc = qw(k) - wfallwaq(iconst2fallwaq(j), k) * ba(kk)
-                     else
-                        qw_loc = qw(k) - wsf(j) * ba(kk) 
-                     end if
+                     qw_loc = qw(k) - wsf(j) * ba(kk) 
                   end if
                end if
                
