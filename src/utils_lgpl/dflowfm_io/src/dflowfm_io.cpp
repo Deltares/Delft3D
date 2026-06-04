@@ -35,38 +35,42 @@ static dflowfm_io_result_t exception_to_result(const std::function<void()>& func
     }
 }
 
-const char* dflowfm_io_get_last_error(void)
+const char* dflowfm_io_get_last_error()
 {
     return last_error.c_str();
 }
 
-dflowfm_io_result_t mdu_model_create(MduModelHandle* out_handle)
+dflowfm_io_result_t mdu_model_create(MduModelHandle* handle_out)
 {
-    ENSURE_ARGUMENT_NOT_NULL(out_handle);
+    ENSURE_ARGUMENT_NOT_NULL(handle_out);
 
     return exception_to_result([&]()
     {
-        *out_handle = new dflowfm_io::MduModel();
+        *handle_out = new dflowfm_io::MduModel();
     });
 }
 
-dflowfm_io_result_t mdu_model_destroy(MduModelHandle handle)
+dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
 
     return exception_to_result([&]()
     {
-        delete static_cast<dflowfm_io::MduModel*>(handle);
+        if (*handle)
+        {
+            delete static_cast<dflowfm_io::MduModel*>(*handle);
+            *handle = nullptr;
+        }
     });
 }
 
-dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* out_value)
+dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
-    ENSURE_ARGUMENT_NOT_NULL(out_value);
+    ENSURE_ARGUMENT_NOT_NULL(value_out);
 
     return exception_to_result([&]()
     {
-        *out_value = static_cast<dflowfm_io::MduModel*>(handle)->GetDummyValue();
+        *value_out = static_cast<dflowfm_io::MduModel*>(handle)->GetDummyValue();
     });
 }

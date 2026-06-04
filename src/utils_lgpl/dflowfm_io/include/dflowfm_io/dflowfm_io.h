@@ -15,11 +15,11 @@ extern "C" {
 
 typedef void* MduModelHandle;
 
-DFLOWFM_IO_API dflowfm_io_result_t mdu_model_create(MduModelHandle* out_handle);
-DFLOWFM_IO_API dflowfm_io_result_t mdu_model_destroy(MduModelHandle handle);
-DFLOWFM_IO_API dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* out_value);
+DFLOWFM_IO_API dflowfm_io_result_t mdu_model_create(MduModelHandle* handle_out);
+DFLOWFM_IO_API dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle);
+DFLOWFM_IO_API dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_out);
 
-DFLOWFM_IO_API const char* dflowfm_io_get_last_error(void);
+DFLOWFM_IO_API const char* dflowfm_io_get_last_error();
 
 #ifdef __cplusplus
 }

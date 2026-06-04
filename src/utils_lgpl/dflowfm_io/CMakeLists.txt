@@ -21,6 +21,8 @@ target_include_directories(dflowfm_io
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+add_subdirectory(wrappers/fortran)
+
 option(DFLOWFM_IO_BUILD_TESTS "Build dflowfm_io tests" ${PROJECT_IS_TOP_LEVEL})
 if(DFLOWFM_IO_BUILD_TESTS)
     add_subdirectory(test)
