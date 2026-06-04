@@ -112,7 +112,7 @@ contains
       ipnt = ipoint
       iflux = 0
 
-      ! from TF_green （tfalg.f90）
+      ! Temperature correction factor (uniform values)
       if (increm(1) == 0 .and. increm(2) == 0 .and. increm(3) == 0) then
          TEMP = process_space_real(ipnt(1))
          TCG = process_space_real(ipnt(2))
@@ -125,7 +125,7 @@ contains
          TMPOPT = .true.
       end if
 
-      ! from RAD_green （RADALG.f90）Light efficiency function green algae DYNAMO
+      ! Light efficiency function (uniform values)
       LgtOpt = .true.
       if (increm(15) == 0 .and. increm(16) == 0) then
          LgtOpt = .false. !  This is constant for all cells
@@ -143,35 +143,35 @@ contains
 
          if (btest(IKNMRK(ISEG), 0)) then
             !
-            ! from TF_green （tfalg.f90）
+            ! Temperature correction factor for algae (local values)
             !
             if (TMPOPT) then
                TEMP = process_space_real(ipnt(1))
                TCG = process_space_real(ipnt(2))
                TCM = process_space_real(ipnt(3))
                TEMP20 = TEMP - 20.
-               !     Algal temp. functions for growth (G) and mortality (M) processes
+               ! Algal temp. functions for growth (G) and mortality (M) processes
                TFGro = TCG**TEMP20
                TFM = TCM**TEMP20
             end if
-            !     Uitvoer limiterende factoren
+            ! Output of limiting factors
             process_space_real(ipnt(28)) = TFGro
             process_space_real(ipnt(29)) = TFM
 
             !
-            ! from DL_green （dlalg.f90）Daylength function for algae DYNAMO
+            ! Daylength function (local values)
             !
-            DayL = process_space_real(ipnt(4)) ! daylength <0-1> in (d)
-            OptDayLength = process_space_real(ipnt(5)) ! daylength for growth saturation (d)
+            DayL = process_space_real(ipnt(4))
+            OptDayLength = process_space_real(ipnt(5))
 
             if (DayL < 1e-20) call write_error_message('DayL in DLALG zero')
 
-            !     Actueel licht / licht voor groei verzadiging
+            ! Daylength function (local values)
             LimDayLength = min(DayL, OptDayLength) / OptDayLength
             process_space_real(ipnt(30)) = LimDayLength
 
             !
-            ! from NLgreen （nlalg.f90）Nutrient limiation function for green algae DYNAMO
+            ! Nutrient limiation function for green algae
             !
             AMOPRF = process_space_real(ipnt(6))
             KMDIN = process_space_real(ipnt(7))
@@ -184,11 +184,11 @@ contains
 
             if (AMOPRF < 1e-20) call write_error_message('AMOPRF in NLALG zero')
 
-            !     Calculation of available dissolved N (NO3 corrected with AMOPRF)
+            ! Calculation of available dissolved N (NO3 corrected with AMOPRF)
             DIN = NO3 / AMOPRF + NH4
             if ((NO3 < 0.0) .or. (NH4 < 0.0)) DIN = 0.0
 
-            !     Nutrient limitation functions (MONOD)
+            ! Nutrient limitation functions (MONOD)
             FN = DIN / (DIN + KMDIN)
 
             if (PO4 < 0.0) then
@@ -206,14 +206,14 @@ contains
             end if
 
             FNUT = min(FN, FP, FS)
-            !@    Uitvoer limiterende factoren
+            ! Output of limiting factors
             process_space_real(ipnt(31)) = FN
             process_space_real(ipnt(32)) = FP
             process_space_real(ipnt(33)) = FS
             process_space_real(ipnt(34)) = FNUT
 
             !
-            ! from RAD_green （RADALG.f90）Light efficiency function green algae DYNAMO
+            ! Light efficiency function (local values)
             !
 
             if (LgtOpt) then
@@ -315,7 +315,7 @@ contains
 
          end if
          !
-         ipnt = ipnt + increm !perference.
+         ipnt = ipnt + increm
          iflux = iflux + noflux
       end do
       return
