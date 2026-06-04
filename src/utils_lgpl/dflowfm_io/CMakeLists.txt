@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(dflowfm_io LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -21,4 +21,7 @@ target_include_directories(dflowfm_io
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_subdirectory(test)
+option(DFLOWFM_IO_BUILD_TESTS "Build dflowfm_io tests" ${PROJECT_IS_TOP_LEVEL})
+if(DFLOWFM_IO_BUILD_TESTS)
+    add_subdirectory(test)
+endif()

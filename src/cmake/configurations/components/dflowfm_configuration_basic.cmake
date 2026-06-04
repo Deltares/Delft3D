@@ -1,4 +1,10 @@
 # Specify the modules to be included
+
+# dflowfm_io (C++ library via FetchContent)
+if(NOT TARGET dflowfm_io)
+    FetchContent_MakeAvailable(dflowfm_io)
+endif()
+
 if(NOT TARGET deltares_common)
     add_subdirectory(${checkout_src_root}/${deltares_common_module} deltares_common)
 endif()

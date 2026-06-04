@@ -1,6 +1,13 @@
 # File to define the utils_lgpl components and their corresponding tests
 set(utils_lgpl_path utils_lgpl)
 
+# dflowfm_io (C++ library, integrated via FetchContent for isolation)
+include(FetchContent)
+FetchContent_Declare(
+    dflowfm_io
+    SOURCE_DIR ${checkout_src_root}/${utils_lgpl_path}/dflowfm_io
+)
+
 # deltares_common modules
 set(utils_lgpl_deltares_common_path ${utils_lgpl_path}/deltares_common/packages)
 set(deltares_common_module ${utils_lgpl_deltares_common_path}/deltares_common)
