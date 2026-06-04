@@ -101,6 +101,7 @@ project {
 
         buildType(WindowsBuildEnvironmentI24)
         buildType(WindowsTestEnvironment)
+        buildType(WindowsCollectEnvironment)
         buildType(WindowsConanPackages)
         buildType(WindowsBuild)
         buildType(WindowsBuild2D3DSP)
@@ -111,6 +112,7 @@ project {
         buildTypesOrder = arrayListOf(
             WindowsBuildEnvironmentI24,
             WindowsTestEnvironment,
+            WindowsCollectEnvironment,
             WindowsConanPackages,
             WindowsBuild,
             WindowsBuild2D3DSP,
