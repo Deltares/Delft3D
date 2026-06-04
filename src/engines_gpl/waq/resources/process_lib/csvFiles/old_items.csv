@@ -442,8 +442,6 @@ old_name,new_name,old_default,configuration,serial,action_type
 "GreenS2   ","n.a.      ",    6.00000    ,"          ",2012032801,         7
 "DiatS1    ","n.a.      ",    6.00000    ,"          ",2012032801,         7
 "DiatS2    ","n.a.      ",    6.00000    ,"          ",2012032801,         7
-"DiatS1    ","n.a.      ",    7.00000    ,"          ",2012032801,         7
-"DiatS2    ","n.a.      ",    7.00000    ,"          ",2012032801,         7
 "BLOOM     ","Reflection",    0.00000    ,"          ",2016050301,         4
 "BLOOM_P   ","Reflection",    0.00000    ,"          ",2016050301,         4
 "TF_Green  ","n.a.      ",    7.00000    ,"          ",2016050301,         5
@@ -456,3 +454,4 @@ old_name,new_name,old_default,configuration,serial,action_type
 "Rad_Diat  ","n.a.      ",    7.00000    ,"          ",2016050301,         5
 "PPrLim    ","n.a.      ",    7.00000    ,"          ",2016050301,         5
 "NutUpt_Alg","n.a.      ",    7.00000    ,"          ",2016050301,         5
+
