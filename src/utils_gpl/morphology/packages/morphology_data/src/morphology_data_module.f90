@@ -597,6 +597,7 @@ type sedpar_type
     real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
     real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
+    real(fp), allocatable :: sedtrans_unitcov_fac(:) !  Factor for converting the unit of sediment transport quantities in the his/map writers
     !
     ! reals
     !

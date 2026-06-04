@@ -67,8 +67,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     real(fp)                             , pointer :: morfac
     real(fp)                             , pointer :: sus
     real(fp)                             , pointer :: bed
-    real(fp)      , dimension(:)         , pointer :: rhosol
-    real(fp)      , dimension(:)         , pointer :: cdryb
     type (moroutputtype)                 , pointer :: moroutput
     type (datagroup)                     , pointer :: group4
     type (datagroup)                     , pointer :: group5
@@ -122,7 +120,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     integer                                           :: filetype
     real(fp)        , dimension(:,:)  , allocatable   :: rbuff2
     real(fp)        , dimension(:,:,:), allocatable   :: rbuff3
-    real(fp)                                          :: rhol
     integer                                           :: ierror         ! Local error flag
     integer                                           :: istat
     integer                                           :: k
@@ -163,8 +160,6 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
     morfac      => gdp%gdmorpar%morfac
     sus         => gdp%gdmorpar%sus
     bed         => gdp%gdmorpar%bed
-    rhosol      => gdp%gdsedpar%rhosol
-    cdryb       => gdp%gdsedpar%cdryb
     moroutput   => gdp%gdmorpar%moroutput
     !
     kmaxout = size(shlay)
@@ -410,16 +405,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(nostat,lsedtot), stat=istat)
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zsbu(n, l)/rhol
+                   rbuff2(n, l) = zsbu(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -431,16 +418,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'ZSBV'
              !
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zsbv(n, l)/rhol
+                   rbuff2(n, l) = zsbv(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -457,16 +436,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(nostat, lsed), stat=istat)
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zssu(n, l)/rhol
+                   rbuff2(n, l) = zssu(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -478,16 +449,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'ZSSV'
              !
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, nostat
-                   rbuff2(n, l) = zssv(n, l)/rhol
+                   rbuff2(n, l) = zssv(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -601,16 +564,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(ntruv, lsedtot), stat=istat)
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sbtr(n, l)/rhol
+                   rbuff2(n, l) = sbtr(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -622,16 +577,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'SBTRC'
              !
              do l = 1, lsedtot
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sbtrc(n, l)/rhol
+                   rbuff2(n, l) = sbtrc(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -648,16 +595,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              allocate(rbuff2(ntruv, lsed), stat=istat)
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sstr(n, l)/rhol
+                   rbuff2(n, l) = sstr(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -669,16 +608,8 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              ! element 'SSTRC'
              !
              do l = 1, lsed
-                select case(moroutput%transptype)
-                case (0)
-                   rhol = 1.0_fp
-                case (1)
-                   rhol = cdryb(l)
-                case (2)
-                   rhol = rhosol(l)
-                end select
                 do n = 1, ntruv
-                   rbuff2(n, l) = sstrc(n, l)/rhol
+                   rbuff2(n, l) = sstrc(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
