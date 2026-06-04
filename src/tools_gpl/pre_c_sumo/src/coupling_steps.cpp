@@ -291,6 +291,7 @@ namespace pre_c_sumo
         //normalize the weight in source_weights vector
         // Note: if all weights are zero, this code leaves them all as 
         // zero, so every downstream discharge becomes zero. 
+        // Probably need to add some sort of error here
         const double weight_sum = std::accumulate(source_weights.begin(), source_weights.end(), 0.0);
         if (std::abs(weight_sum) > 0.0)
         {
