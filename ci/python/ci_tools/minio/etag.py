@@ -101,7 +101,7 @@ class ComputedEtag(ETag):
 
         first_chunk = next(chunks, None)
         if first_chunk is None:
-            return hashlib.md5(b"", usedforsecurity=False).hexdigest()  # Empty filemd5
+            return hashlib.md5(b"", usedforsecurity=False).hexdigest()  # Empty file
 
         if len(first_chunk) < part_size:
             return hashlib.md5(first_chunk, usedforsecurity=False).hexdigest()  # Single part
