@@ -70,53 +70,6 @@ namespace pre_c_sumo
         }
     };
 
-    struct SourcesSinks
-    {
-        std::vector<double> coordinates;
-        std::vector<int> precice_ids;
-        std::vector<double> ids;
-        std::vector<double> connected_ids;
-        std::vector<double> z_mins;
-        std::vector<double> z_maxs;
-        std::vector<double> discharges;
-
-        void clear()
-        {
-            coordinates.clear();
-            precice_ids.clear();
-            ids.clear();
-            connected_ids.clear();
-            z_mins.clear();
-            z_maxs.clear();
-            discharges.clear();
-        }
-
-        void clearData()
-        {
-            ids.clear();
-            connected_ids.clear();
-            z_mins.clear();
-            z_maxs.clear();
-            discharges.clear();
-        }
-
-        void addCoordinates(const std::vector<double>& new_coordinates)
-        {
-            coordinates.insert(coordinates.end(), new_coordinates.begin(), new_coordinates.end());
-            precice_ids.resize(coordinates.size() / 2); // Assuming 2D coordinates (x, y)
-        }
-
-        void addData(const double new_id, const double new_connected_id, const double new_z_min, const double new_z_max,
-                     const double new_discharge)
-        {
-            ids.push_back(new_id);
-            connected_ids.push_back(new_connected_id);
-            z_mins.push_back(new_z_min);
-            z_maxs.push_back(new_z_max);
-            discharges.push_back(new_discharge);
-        }
-    };
-
     /**
      * @brief preCICE-ready source/sink payload prepared by pre-C-SUMO.
      *
