@@ -483,7 +483,7 @@ class TestMinioRewinder:
                     object_name=f"source/path/{key}",
                     bucket_name="my-bucket",
                     version_id=f"v{i}",
-                    etag=hashlib.md5(key.encode("utf-8"), usedforsecutiry=False).hexdigest(),
+                    etag=hashlib.md5(key.encode("utf-8"), usedforsecurity=False).hexdigest(),
                 )
                 for i, key in enumerate(("foo", "bar", "baz", "qux", "quux"))
             ),
