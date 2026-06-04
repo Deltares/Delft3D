@@ -2821,16 +2821,11 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "NutRel_Alg","Si        ",  12,"Y","x",1
 "NutRel_Alg","NH4KRIT   ",  13,"Y","x",1
 "NutRel_Alg","fMrtGreen ",  14,"N","x",1
-"NutRel_Alg","NCRatGreen",  15,"Y","x",1
-"NutRel_Alg","PCRatGreen",  16,"Y","x",1
-"NutRel_Alg","FrAutGreen",  17,"Y","x",1
-"NutRel_Alg","FrDetGreen",  18,"Y","x",1
-"NutRel_Alg","fMrtDiat  ",  19,"Y","x",1
-"NutRel_Alg","NCRatDiat ",  20,"Y","x",1
-"NutRel_Alg","PCRatDiat ",  21,"Y","x",1
-"NutRel_Alg","SCRatDiat ",  22,"Y","x",1
-"NutRel_Alg","FrAutDiat ",  23,"Y","x",1
-"NutRel_Alg","FrDetDiat ",  24,"Y","x",1
+"NutRel_Alg","fMrtDiat  ",  15,"Y","x",1
+"NutRel_Alg","FrAutGreen",  16,"Y","x",1
+"NutRel_Alg","FrDetGreen",  17,"Y","x",1
+"NutRel_Alg","FrAutDiat ",  18,"Y","x",1
+"NutRel_Alg","FrDetDiat ",  19,"Y","x",1
 "NRAlg_S1  ","fMrtGreeS1",   1,"Y","x",1
 "NRAlg_S1  ","NCRatGreen",   2,"Y","x",1
 "NRAlg_S1  ","PCRatGreen",   3,"Y","x",1
@@ -3468,7 +3463,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "Res_Buffer","ZResIM3   ",  29,"Y","x",1
 "Res_Buffer","VResIM3   ",  30,"Y","x",1
 "Res_Buffer","TaucRS1IM3",  31,"Y","x",1
-"Res_Buffer","DMS1      ",  32,"Y","x",1
+"Res_Buffer","DMS1      ",  32,"N","x",1
 "Res_Buffer","DMS2      ",  33,"Y","x",1
 "Res_Buffer","SwResBuf  ",  34,"Y","x",1
 "Sed_IM1   ","IM1       ",   1,"N","x",1
@@ -5220,7 +5215,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Cd ","PORS1     ",  16,"Y","x",1
 "PartS1_Cd ","ActThS1   ",  17,"Y","x",1
 "PartS1_Cd ","Surf      ",  18,"Y","x",1
-"PartS1_Cd ","DMS1      ",  19,"Y","x",1
+"PartS1_Cd ","DMS1      ",  19,"N","x",1
 "PartS1_Cd ","HLTAdsCdS1",  20,"Y","x",1
 "PartS1_Cd ","HLTDesCdS1",  21,"Y","x",1
 "PartS1_Cd ","DELT      ",  22,"N","x",1
@@ -5796,7 +5791,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_153","PORS1     ",  16,"Y","x",1
 "PartS1_153","ActThS1   ",  17,"Y","x",1
 "PartS1_153","Surf      ",  18,"Y","x",1
-"PartS1_153","DMS1      ",  19,"Y","x",1
+"PartS1_153","DMS1      ",  19,"N","x",1
 "PartS1_153","HLTAds153S",  20,"Y","x",1
 "PartS1_153","HLTDes153S",  21,"Y","x",1
 "PartS1_153","DELT      ",  22,"N","x",1
@@ -5828,7 +5823,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Atr","PORS1     ",  16,"Y","x",1
 "PartS1_Atr","ActThS1   ",  17,"Y","x",1
 "PartS1_Atr","Surf      ",  18,"Y","x",1
-"PartS1_Atr","DMS1      ",  19,"Y","x",1
+"PartS1_Atr","DMS1      ",  19,"N","x",1
 "PartS1_Atr","HLTAdsAtrS",  20,"Y","x",1
 "PartS1_Atr","HLTDesAtrS",  21,"Y","x",1
 "PartS1_Atr","DELT      ",  22,"N","x",1
@@ -5860,7 +5855,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_BaP","PORS1     ",  16,"Y","x",1
 "PartS1_BaP","ActThS1   ",  17,"Y","x",1
 "PartS1_BaP","Surf      ",  18,"Y","x",1
-"PartS1_BaP","DMS1      ",  19,"Y","x",1
+"PartS1_BaP","DMS1      ",  19,"N","x",1
 "PartS1_BaP","HLTAdsBaPS",  20,"Y","x",1
 "PartS1_BaP","HLTDesBaPS",  21,"Y","x",1
 "PartS1_BaP","DELT      ",  22,"N","x",1
@@ -5892,7 +5887,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Diu","PORS1     ",  16,"Y","x",1
 "PartS1_Diu","ActThS1   ",  17,"Y","x",1
 "PartS1_Diu","Surf      ",  18,"Y","x",1
-"PartS1_Diu","DMS1      ",  19,"Y","x",1
+"PartS1_Diu","DMS1      ",  19,"N","x",1
 "PartS1_Diu","HLTAdsDiuS",  20,"Y","x",1
 "PartS1_Diu","HLTDesDiuS",  21,"Y","x",1
 "PartS1_Diu","DELT      ",  22,"N","x",1
@@ -5924,7 +5919,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Flu","PORS1     ",  16,"Y","x",1
 "PartS1_Flu","ActThS1   ",  17,"Y","x",1
 "PartS1_Flu","Surf      ",  18,"Y","x",1
-"PartS1_Flu","DMS1      ",  19,"Y","x",1
+"PartS1_Flu","DMS1      ",  19,"N","x",1
 "PartS1_Flu","HLTAdsFluS",  20,"Y","x",1
 "PartS1_Flu","HLTDesFluS",  21,"Y","x",1
 "PartS1_Flu","DELT      ",  22,"N","x",1
@@ -5956,7 +5951,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_HCB","PORS1     ",  16,"Y","x",1
 "PartS1_HCB","ActThS1   ",  17,"Y","x",1
 "PartS1_HCB","Surf      ",  18,"Y","x",1
-"PartS1_HCB","DMS1      ",  19,"Y","x",1
+"PartS1_HCB","DMS1      ",  19,"N","x",1
 "PartS1_HCB","HLTAdsHCBS",  20,"Y","x",1
 "PartS1_HCB","HLTDesHCBS",  21,"Y","x",1
 "PartS1_HCB","DELT      ",  22,"N","x",1
@@ -5988,7 +5983,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_HCH","PORS1     ",  16,"Y","x",1
 "PartS1_HCH","ActThS1   ",  17,"Y","x",1
 "PartS1_HCH","Surf      ",  18,"Y","x",1
-"PartS1_HCH","DMS1      ",  19,"Y","x",1
+"PartS1_HCH","DMS1      ",  19,"N","x",1
 "PartS1_HCH","HLTAdsHCHS",  20,"Y","x",1
 "PartS1_HCH","HLTDesHCHS",  21,"Y","x",1
 "PartS1_HCH","DELT      ",  22,"N","x",1
@@ -6020,7 +6015,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_Mef","PORS1     ",  16,"Y","x",1
 "PartS1_Mef","ActThS1   ",  17,"Y","x",1
 "PartS1_Mef","Surf      ",  18,"Y","x",1
-"PartS1_Mef","DMS1      ",  19,"Y","x",1
+"PartS1_Mef","DMS1      ",  19,"N","x",1
 "PartS1_Mef","HLTAdsMefS",  20,"Y","x",1
 "PartS1_Mef","HLTDesMefS",  21,"Y","x",1
 "PartS1_Mef","DELT      ",  22,"N","x",1
@@ -9527,7 +9522,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1_OMP","PORS1     ",  16,"Y","x",1
 "PartS1_OMP","ActThS1   ",  17,"Y","x",1
 "PartS1_OMP","Surf      ",  18,"Y","x",1
-"PartS1_OMP","DMS1      ",  19,"Y","x",1
+"PartS1_OMP","DMS1      ",  19,"N","x",1
 "PartS1_OMP","HLTAdsOMPS",  20,"Y","x",1
 "PartS1_OMP","HLTDesOMPS",  21,"Y","x",1
 "PartS1_OMP","DELT      ",  22,"N","x",1
@@ -15456,7 +15451,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1Vir1","PORS1     ",  16,"Y","x",1
 "PartS1Vir1","ActThS1   ",  17,"Y","x",1
 "PartS1Vir1","Surf      ",  18,"Y","x",1
-"PartS1Vir1","DMS1      ",  19,"Y","x",1
+"PartS1Vir1","DMS1      ",  19,"N","x",1
 "PartS1Vir1","HLTAdsVir1",  20,"Y","x",1
 "PartS1Vir1","HLTDesVir1",  21,"Y","x",1
 "PartS1Vir1","DELT      ",  22,"N","x",1
@@ -15488,7 +15483,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1Vir2","PORS1     ",  16,"Y","x",1
 "PartS1Vir2","ActThS1   ",  17,"Y","x",1
 "PartS1Vir2","Surf      ",  18,"Y","x",1
-"PartS1Vir2","DMS1      ",  19,"Y","x",1
+"PartS1Vir2","DMS1      ",  19,"N","x",1
 "PartS1Vir2","HLTAdsVir2",  20,"Y","x",1
 "PartS1Vir2","HLTDesVir2",  21,"Y","x",1
 "PartS1Vir2","DELT      ",  22,"N","x",1
@@ -15520,7 +15515,7 @@ inpupr,inpuit,inpunm,inpude,inpudo,inpusx
 "PartS1Vir3","PORS1     ",  16,"Y","x",1
 "PartS1Vir3","ActThS1   ",  17,"Y","x",1
 "PartS1Vir3","Surf      ",  18,"Y","x",1
-"PartS1Vir3","DMS1      ",  19,"Y","x",1
+"PartS1Vir3","DMS1      ",  19,"N","x",1
 "PartS1Vir3","HLTAdsVir3",  20,"Y","x",1
 "PartS1Vir3","HLTDesVir3",  21,"Y","x",1
 "PartS1Vir3","DELT      ",  22,"N","x",1
