@@ -64,7 +64,7 @@ contains
       integer :: k1, k2
       integer :: j
       integer :: ierror
-      logical :: usestmsedimentation, usewaqsedimentation
+      logical :: usemtdws, usewfallwaq
 
       real(kind=dp) :: sqtot, bak
 
@@ -78,8 +78,8 @@ contains
 
       dtmin_transp = huge(1.0_dp)
       kk_dtmin = 0
-      usestmsedimentation = stm_included .and. ISED1 > 0
-      usewaqsedimentation = nfallwaq > 0
+      usemtdws = stm_included .and. ISED1 > 0
+      usewfallwaq = nfallwaq > 0
 
       if (jalimitdtdiff == 1) then
 !        determine contribution of diffusion to time-step limitation, mostly copied from "comp_fluxhor3D"
@@ -151,14 +151,14 @@ contains
             if (s1(kk) - bl(kk) > epshu) then
                call getkbotktop(kk, kb, kt)
                if (jalimitdtdiff == 0) then
-                  if ((usestmsedimentation .or. usewaqsedimentation) .and. jaimplicitfallvelocity == 0) then
+                  if ((usemtdws .or. usewfallwaq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        if (usestmsedimentation .and. usewaqsedimentation) then
+                        if (usemtdws .and. usewfallwaq) then
                            sqtot = sqi(k) + maxval([mtd%ws(k, :), wfallwaq(k, :)]) * bak
-                        else if (usestmsedimentation) then
+                        else if (usemtdws) then
                            sqtot = sqi(k) + maxval(mtd%ws(k, :)) * bak
-                        else if (usewaqsedimentation) then
+                        else if (usewfallwaq) then
                            sqtot = sqi(k) + maxval(wfallwaq(k, :)) * bak
                         end if
                         if (squ(k) > EPS10 .or. sqtot > EPS10) then
@@ -173,14 +173,14 @@ contains
                      end do
                   end if
                else
-                  if ((usestmsedimentation .or. usewaqsedimentation) .and. jaimplicitfallvelocity == 0) then
+                  if ((usemtdws .or. usewfallwaq) .and. jaimplicitfallvelocity == 0) then
                      bak = ba(kk)
                      do k = kb, kt
-                        if (usestmsedimentation .and. usewaqsedimentation) then
+                        if (usemtdws .and. usewfallwaq) then
                            sqtot = sqi(k) + sumdifflim(k) + maxval([mtd%ws(k, :), wfallwaq(k, :)]) * bak
-                        else if (usestmsedimentation) then
+                        else if (usemtdws) then
                            sqtot = sqi(k) + sumdifflim(k) + maxval(mtd%ws(k, :)) * bak
-                        else if (usewaqsedimentation) then
+                        else if (usewfallwaq) then
                            sqtot = sqi(k) + sumdifflim(k) + maxval(wfallwaq(k, :)) * bak
                         end if
                         if (sqtot > EPS10) then
