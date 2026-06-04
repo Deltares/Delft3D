@@ -15,8 +15,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-WINDOWS_PROFILE = "delft3d_windows"
-LINUX_PROFILE = "delft3d_linux"
+WINDOWS_PROFILE = "delft3d_windows_msvc_194"
+LINUX_PROFILE = "delft3d_alma8_intel_2024"
 
 ROOT = Path(__file__).resolve().parent
 CONFIG_DIR = ROOT / "conan/config"

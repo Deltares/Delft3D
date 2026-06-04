@@ -1,3 +1,6 @@
 compiler:
     intel-cc:
         version: ["2024.2"]
+os:
+    Linux:
+        distro: ["Alma8", "Alma9", "Alma10"]
