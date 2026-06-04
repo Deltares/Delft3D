@@ -30,7 +30,6 @@
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
 module m_flow_finalize_single_timestep
 
-   use m_fm_wq_processes_sub, only: fm_wq_processes_step
    use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
    use m_updatecumulativeinflow, only: updatecumulativeinflow
    use m_updatebalance, only: updatebalance
@@ -85,16 +84,6 @@ contains
       integer, intent(out) :: iresult
 
       ! Timestep has been performed, now finalize it.
-
-      if (ti_waqproc < 0.0_dp) then
-         if (jatimer == 1) then
-            call starttimer(IFMWAQ)
-         end if
-         call fm_wq_processes_step(dts, time1)
-         if (jatimer == 1) then
-            call stoptimer(IFMWAQ)
-         end if
-      end if
 
       if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
          call comp_horflowmba()
