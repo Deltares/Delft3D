@@ -111,7 +111,7 @@ procid,procco,procfo,procnm
 "GroMrt_Gre",123,"DYNAMO    ","DYNAMO: Nett primary prod. and mort. green algae  "
 "GroMrt_Dia",123,"DYNAMO    ","DYNAMO: Nett primary prod. and mort. diatoms      "
 "GroMrt_DS1",123,"SDPPRO    ","DYNAMO: Nett primary prod. and mort. diatoms in S1"
-"NutRel_Alg",123,"DYNPRO    ","Release (nutrients/detritus) by of mortality algae"
+"NutRel_Alg",123,"DYNPRO    ","DYNAMO: PP Limitation and upt/release of nut/det  "
 "NRAlg_S1  ",123,"NRALGS    ","Nutrient release of algae in S1                   "
 "OXYMin    ",123,"OXYMIN    ","Potential mimimum dissolved oxygen concentration  "
 "CONSELAC  ",123,"CSELAC    ","Consumption oxygen/other electron acceptors       "

@@ -31,36 +31,9 @@ contains
                      noflux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, &
                      num_exchanges_z_dir, num_exchanges_bottom_dir)
       !>\file
-      !>       Release (nutrients/detritus) by of mortality algae DYNAMO
 
-      !
-      !     Description of the module :
-      !
-      ! Name    T   L I/O   Description                                   Unit
-      ! ----    --- -  -    -------------------                            ---
-      ! FL( 1)  R*4 1 O autolysis of NN4                               [gN/m3/
-      ! FL( 2)  R*4 1 O production of N-det                            [gN/m3/
-      ! FL( 3)  R*4 1 O autolysis of P                                 [gP/m3/
-      ! FL( 4)  R*4 1 O production of P-det                            [gP/m3/
-      ! FL( 5)  R*4 1 O autolysis of Si                               [gSi/m3/
-      ! FL( 6)  R*4 1 O production of Si-det                         [gSiC/m3/
-      ! MRT1    R*4 1 I fraction of mortality dissolved as nutrients         [
-      ! MRT2    R*4 1 I fraction of mortality dissolved as nutrients         [
-      ! NCRATGREEN  R*4 1 I Nitrogen-Carbon ratio in green-algea             [gN/g
-      ! NCRATDIAT  R*4 1 I Nitrogen-Carbon ratio in diatoms                 [gN/g
-      ! PCRATGREEN  R*4 1 I Phosphorus-Carbon ratio in green-algea           [gP/g
-      ! PCRATDIAT  R*4 1 I Phosphorus-Carbon ratio in diatoms               [gP/g
-      ! RESP1   R*4 1 L total respiration rate const. green-algea          [1/
-      ! RESP2   R*4 1 L total respiration rate const. diatoms              [1/
-      ! SCRAT3  R*4 1 I Silicate-Carbon ratio in diatoms                [gSi/g
+      !>       Primary Production Limitation and uptake/release of nutrients/detritus by algae DYNAMO
 
-      !     Logical Units : -
-
-      !     Modules called : -
-
-      !     Name     Type   Library
-      !     ------   -----  ------------
-      !
       implicit none
       !
       !     Type    Name         I/O Description
@@ -79,8 +52,6 @@ contains
       integer(kind=int_wp) :: num_exchanges_bottom_dir ! I  Nr of exchanges in the bottom (bottom layers, specialist use only)
       integer(kind=int_wp) :: ipnt(23) !    Local work array for the pointering
       integer(kind=int_wp) :: iseg !    Local loop counter for computational element loop
-
-      !integer(kind = int_wp) :: ILUMON       !    Local loop counter for computational element loop
       integer(kind=int_wp) :: iflux !    Local loop counter for computational element loop
       !
       !     Local declaration
@@ -210,9 +181,6 @@ contains
             NCRATGREEN = NCRatGreen
             NCRATDIAT = NCRatDiat
             SCRATDIAT = SCRatDiat
-            !***********************************************************************
-            !**** Processes connected to the ALGEA model
-            !***********************************************************************
 
             !      maximum uptake of N in one day (gC/m3)
             XNTOT = (NCRATGREEN * fcPPGreen + NCRATDIAT * fcPPDiat) * DELT
@@ -242,25 +210,21 @@ contains
                   NO3D = 1.0 - NH4D
                end if
             end if
-            !     uitvoer fraction adsorbed as NH4
+            !     output fraction adsorbed as NH4
             process_space_real(ipnt(22)) = NH4D
             process_space_real(ipnt(23)) = XNTOT
 
-            !@    Uptake of NH4
+            !    Uptake of NH4
             FL(3 + IFLUX) = (NCRATGREEN * fcPPGreen + NCRATDIAT * fcPPDiat) * NH4D
 
-            !@    Uptake of NO3
+            !    Uptake of NO3
             FL(4 + IFLUX) = (NCRATGREEN * fcPPGreen + NCRATDIAT * fcPPDiat) * NO3D
 
-            !@    Uptake of PO4
+            !    Uptake of PO4
             FL(5 + IFLUX) = PCRATGREEN * fcPPGreen + PCRATDIAT * fcPPDiat
 
-            !@    Uptake of Si
+            !    Uptake of Si
             FL(6 + IFLUX) = SCRATDIAT * fcPPDiat
-
-            !***********************************************************************
-            !**** Processes connected to the ALGEA model
-            !***********************************************************************
 
             !     Calculate fractions for carbon (different from nutrient fractions)
             !     no part of carbon to autolyse!
@@ -269,37 +233,37 @@ contains
             if (FMRT1A < 1.0) FDCA = FMRT2A / (1 - FMRT1A)
             if (FMRT1D < 1.0) FDCD = FMRT2D / (1 - FMRT1D)
 
-            !@    Production of DETC
+            !    Production of DETC
             FL(7 + IFLUX) = (MORT1 * FDCA + MORT2 * FDCD)
 
-            !@    Production of OOC
+            !    Production of OOC
             FL(8 + IFLUX) = (MORT1 * (1.0 - FDCA) + MORT2 * (1.0 - FDCD))
 
-            !@    Autolysis of NH4
+            !    Autolysis of NH4
             FL(9 + IFLUX) = (MORT1 * NCRATGREEN * FMRT1A + MORT2 * NCRATDIAT * FMRT1D)
 
-            !@    Production of DETN
+            !    Production of DETN
             FL(10 + IFLUX) = (MORT1 * NCRATGREEN * FMRT2A + MORT2 * NCRATDIAT * FMRT2D)
 
-            !@    Production of OON
+            !    Production of OON
             FL(11 + IFLUX) = (MORT1 * NCRATGREEN * (1.0 - FMRT1A - FMRT2A) + MORT2 * NCRATDIAT * (1.0 - FMRT1D - FMRT2D))
 
-            !@    Autolysis of PO4
+            !    Autolysis of PO4
             FL(12 + IFLUX) = (MORT1 * PCRATGREEN * FMRT1A + MORT2 * PCRATDIAT * FMRT1D)
 
-            !@    Production of DETP
+            !    Production of DETP
             FL(13 + IFLUX) = (MORT1 * PCRATGREEN * FMRT2A + MORT2 * PCRATDIAT * FMRT2D)
 
-            !@    Production of OOP
+            !    Production of OOP
             FL(14 + IFLUX) = (MORT1 * PCRATGREEN * (1.0 - FMRT1A - FMRT2A) + MORT2 * PCRATDIAT * (1.0 - FMRT1D - FMRT2D))
 
-            !@    Autolysis of Si
+            !    Autolysis of Si
             FL(15 + IFLUX) = MORT2 * SCRATDIAT * FMRT1D
 
-            !@    Production of Si-det
+            !    Production of Si-det
             FL(16 + IFLUX) = MORT2 * SCRATDIAT * FMRT2D
 
-            !@    Production of OOSI
+            !    Production of OOSI
             FL(17 + IFLUX) = MORT2 * SCRATDIAT * (1.0 - FMRT1D - FMRT2D)
 
          end if
