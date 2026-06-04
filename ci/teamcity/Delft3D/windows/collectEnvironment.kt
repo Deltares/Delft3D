@@ -24,7 +24,7 @@ object WindowsCollectEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "collect-environment")
+        param("container.tag", "collect-environment-ltsc2025")
     }
 
     vcs {
