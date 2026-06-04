@@ -68,6 +68,13 @@ foreach(runtime_lib IN LISTS CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS)
     )
 endforeach()
 
+# Copy pthreads runtime dependency
+add_custom_command(TARGET ${test_target} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${checkout_src_root}/third_party_open/pthreads/bin/x64/msvcr100.dll"
+        "$<TARGET_FILE_DIR:${test_target}>"
+)
+
 set_target_properties(${test_target} PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:${test_target}>"
 )
