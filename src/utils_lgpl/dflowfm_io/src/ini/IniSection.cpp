@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <utility>
 
 #include "ini/IniProperty.h"
 
