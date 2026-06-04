@@ -61,15 +61,6 @@ object WindowsConanPackages : BuildType({
     }
 
     triggers {
-        vcs {
-            triggerRules = """
-                +:conan.lock
-                +:conanfile.py
-                +:run_conan.py
-                +:conan/config/**
-            """.trimIndent()
-            branchFilter = "+:*"
-        }
         schedule {
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Thursday

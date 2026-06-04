@@ -17,8 +17,7 @@ class Delft3DRecipe(ConanFile):
         self.requires("expat/2.8.0")
 
     def generate(self):
-        # Write a timestamp marker so CMake can detect stale conan installs.
-        save(self, "conan.stamp", "Used to detect if conan.lock has changed since last conan install.")
+        save(self, "conan.stamp", "Timestamp of this file is used by CMake to detect if conan.lock has changed since last conan install.")
 
     def layout(self):
         self.folders.generators = "generators"

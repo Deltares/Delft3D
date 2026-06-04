@@ -50,10 +50,15 @@ def build_dir_name(config: str, build_type: str) -> str:
 
 
 def install_dir_name(config: str, build_type: str) -> str:
-    """Install directory name: on Linux includes build type, on Windows does not."""
+    """Install directory name.
+
+    On Windows: ``install_<config>`` alongside the build directory.
+    On Linux: ``build_<config>_<build_type>/install`` (i.e. inside the build
+    directory). This matches what devcontainer users expect.
+    """
     if platform.system() == "Windows":
         return f"install_{config}"
-    return f"install_{config}_{build_type.lower()}"
+    return f"{build_dir_name(config, build_type)}/install"
 
 
 def detect_visual_studio() -> str | None:
@@ -205,7 +210,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--install-dir",
-        help="Override install directory path (default: install_<config> on Windows, install_<config>_<build_type> on Linux).",
+        help="Override install directory path (default: install_<config> on Windows, build_<config>_<build_type>/install on Linux).",
     )
     args = parser.parse_args()
 

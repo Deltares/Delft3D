@@ -30,7 +30,7 @@ object WindowsCollect : BuildType({
 
     params {
         param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
-        param("container.tag", "collect-environment")
+        param("container.tag", "collect-environment-ltsc2025")
     }
 
     vcs {
