@@ -50,8 +50,8 @@ contains
       use m_density, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
       use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban
-      use m_flow, only: apply_thermobaricity, jasal, maxitverticalforestersal, temperature_model, TEMPERATURE_MODEL_NONE, &
-                        maxitverticalforestertem, limtyptm, limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, &
+      use m_flow, only: apply_thermobaricity, jasal, temperature_model, TEMPERATURE_MODEL_NONE, &
+                        limtyptm, limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, &
                         kbndu, nbndsd, kbndsd, kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, vol1, &
                         EPS10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
                         ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
@@ -81,13 +81,8 @@ contains
 
       call timstrt('Transport', handle_extra(52)) ! transport
 
-      if (jasal == 0) then
-         ! limtypsa = 0
-         maxitverticalforestersal = 0
-      end if
       if (temperature_model == TEMPERATURE_MODEL_NONE) then
          limtypTM = 0
-         maxitverticalforestertem = 0
       end if
       if (jased == 0) then
          limtypsed = 0
