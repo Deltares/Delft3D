@@ -4,11 +4,11 @@ If you already have a .devcontainer then migrating to conan is relatively simple
 
 Here are a migration steps
 
-1. Close the devcontainer VSCode 
+1. Close the devcontainer VSCode
 2. Remove de devcontainer docker image
 3. Re-open VSCode. It will take awhile to re-download and rebuild de dev-container
 4. By default, CMake extension runs cmake --configure. This will initally fail (with some missing ZLIB)
-5. Configure Conan Nexus. 
+5. Configure Conan Nexus.
 ```bash
 # One-time Conan setup (Deltares developers)
 python run_conan.py initialize deltares
@@ -36,7 +36,7 @@ conan cache directory (usually `~/.conan2`) with the following content
     ]
 }
 ```
-6. Now you are ready to run the buid. First you need to build using the ```build.py``` script. 
+6. Now you are ready to run the buid. First you need to build using the ```build.py``` script.
 
 ```bash
 python build.py

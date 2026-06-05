@@ -55,7 +55,7 @@
             "configuration": "RelWithDebInfo",
             "jobs": 24
         }
-    ], 
+    ],
     "testPresets": [
         {
             "configurePreset": "fm-suite-debug",

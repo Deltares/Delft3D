@@ -45,9 +45,9 @@ if(intel_version LESS_EQUAL 23)
 
 elseif(intel_version GREATER_EQUAL 24)
     # Intel OneAPI folder structures and environment variables have changed with OneAPI 2024
-    set (mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
+    set(mkl_path $ENV{ONEAPI_ROOT}/mkl/latest/bin)
     string(REPLACE "\\" "/" mkl_path "${mkl_path}")
-    install (DIRECTORY ${mkl_path}/ DESTINATION bin
+    install(DIRECTORY ${mkl_path}/ DESTINATION bin
     FILES_MATCHING
     PATTERN "mkl_core.*.dll"
     PATTERN "mkl_def.*.dll"
