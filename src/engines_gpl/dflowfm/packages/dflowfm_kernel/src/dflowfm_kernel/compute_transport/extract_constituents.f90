@@ -57,9 +57,9 @@ contains
    !> extract constituent array and limits values if needed
    subroutine extract_constituents()
       use precision, only: dp, fp
-      use m_doforester, only: doforester
+      use m_vertical_forester_filter_dflowfm, only: apply_vertical_forester_filter_to_all_constituents
       use m_flowparameters, only: jaequili, jalogtransportsolverlimiting, jasal, jasecflow, temperature_model, &
-                                  TEMPERATURE_MODEL_NONE, maxitverticalforestersal, maxitverticalforestertem
+                                  TEMPERATURE_MODEL_NONE, max_iterations_vertical_forester
       use m_flow, only: hs, kmx, kbot, ktop, ndkx, spirint, vol1
       use m_flowgeom, only: ndx, ndxi, bai_mor
       use m_flowtimes, only: dts
@@ -204,10 +204,10 @@ contains
          call print_message(IDX_SAL_MIN, 'Minimum salinity', cells_with_min_limit, minimum_salinity_value=minimum_salinity_value)
       end if
 
-      if (jasal > 0 .and. maxitverticalforestersal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE .and. maxitverticalforestertem > 0) then
-         call doforester()
+      if (max_iterations_vertical_forester > 0) then
+         call apply_vertical_forester_filter_to_all_constituents()
       end if
-      !
+
       ! When a cell become dry, keep track of the mass in the water column in ssccum array. This will be accounted
       ! for in the bottom update when the cell becomes wet again. This prevents large concentration gradients and
       ! exploding bed levels.

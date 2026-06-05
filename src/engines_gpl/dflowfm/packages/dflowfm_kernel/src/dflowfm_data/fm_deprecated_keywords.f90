@@ -28,6 +28,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Keepzlayeringatbed', DEPRECATED, 'Use [numerics] keepZLayeringAtBed instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterMethod', DEPRECATED, 'Once the keyword is removed/becomes obsolete, the "allNetlinksLoop" method will be used.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenterTolerance', DEPRECATED, 'Once the keyword is removed/becomes obsolete, a fixed tolerance will be used.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterSal', DEPRECATED, 'Use maxItVerticalForester instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'maxItVerticalForesterTem', DEPRECATED, 'Use maxItVerticalForester instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtypsal', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'Vertadvtyptem', DEPRECATED, 'Use verticalAdvectionType instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Jadelvappos', DEPRECATED)
