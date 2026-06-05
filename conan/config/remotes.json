@@ -1,0 +1,14 @@
+{
+    "remotes": [
+        {
+            "name": "delft3d-conan-dev",
+            "url": "https://internal-artifacts.deltares.nl/repository/delft3d-conan-dev",
+            "verify_ssl": true
+        },
+        {
+            "name": "deltares-conan-center-proxy",
+            "url": "https://internal-artifacts.deltares.nl/repository/conan-proxy",
+            "verify_ssl": true
+        }
+    ]
+}
