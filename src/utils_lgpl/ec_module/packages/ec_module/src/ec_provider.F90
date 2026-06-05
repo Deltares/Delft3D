@@ -1891,10 +1891,13 @@ contains
          call str_lower(quantityname)
          if (index(trim(bctfilename)//'|', '_his.nc|') > 0) then
             ! History file
-            if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevel'
-            if (strcmpi(quantityname,'salinitybnd'             )) quantityname = 'salinity'
-            if (strcmpi(quantityname,'temperaturebnd'          )) quantityname = 'temperature'
-            if (strcmpi(quantityname,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+            if (strcmpi(quantityname(1:9),'tracerbnd'               )) quantityname = quantityname(10:len(quantityname))    
+            if (strcmpi(quantityname     ,'waterlevelbnd'           )) quantityname = 'waterlevel'
+            if (strcmpi(quantityname     ,'salinitybnd'             )) quantityname = 'salinity'
+            if (strcmpi(quantityname     ,'temperaturebnd'          )) quantityname = 'temperature'
+            if (strcmpi(quantityname     ,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
+   
+            
          else
             ! Old existing nc files 
             if (strcmpi(quantityname,'waterlevelbnd'           )) quantityname = 'waterlevelbnd'

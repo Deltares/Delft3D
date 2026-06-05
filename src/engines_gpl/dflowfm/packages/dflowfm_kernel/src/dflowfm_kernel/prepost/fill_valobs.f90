@@ -349,11 +349,38 @@ contains
             
             ! Water quality parameters
             ! Start with allocating temporary array
+            ! 2D array for IM1S1, IM1S2 etc 
+            if (IVAL_WQB1 > 0) then
+                 call realloc(waq_tmp, ndx, keepExisting=.false., fill=0.0_dp)
+            end if
+            
+            ! 3D array for other quantities
             if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0 .or. IVAL_TRA1 >0) then
                call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp) 
             end if
-            
-             ! Must be more elegant way of doing this
+                        
+            ! Bed quantities 2D
+            if (IVAL_WQB1 > 0) then
+               do j = IVAL_WQB1, IVAL_WQBN
+                  ii = j - IVAL_WQB1 + 1
+                  do i_tmp = 1, 3
+                      call getkbotktop    (neighbour_nodes_obs(i_tmp,i), kb_tmp   , kt_tmp  )
+                      waq_tmp(neighbour_nodes_obs(i_tmp,i)) = wqbot(ii, kb_tmp)
+                  end do
+                  call interpolate_and_fill_valobs(waq_tmp,i,IPNT_WQB1 + ii - 1, UNC_LOC_S,wet_or_dry)
+               end do
+            end if
+
+            ! Bed quantities 3D
+            if (IVAL_WQB3D1 > 0) then
+               do j = IVAL_WQB3D1, IVAL_WQB3DN
+                  ii = j - IVAL_WQB3D1 + 1
+                  waq_tmp = wqbot(ii, :)
+                  call interpolate_and_fill_valobs (waq_tmp,i,IPNT_WQB3D1 +  (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
+               end do
+            end if
+
+             ! Waqoutputs (Must be more elegant way of doing this)
             if (IVAL_HWQ1 > 0) then
                do j = IVAL_HWQ1, IVAL_HWQN
                   ii = j - IVAL_HWQ1 + 1
@@ -364,13 +391,14 @@ contains
                   call interpolate_and_fill_valobs(waq_tmp,i,IPNT_HWQ1 + (ii - 1)*kmx_const, UNC_LOC_S3D,wet_or_dry)
                end do
             end if
-
-            if (IVAL_WQB3D1 > 0) then
-               do j = IVAL_WQB3D1, IVAL_WQB3DN
-                  ii = j - IVAL_WQB3D1 + 1
-                  waq_tmp = wqbot(ii, :)
-                  call interpolate_and_fill_valobs (waq_tmp,i,IPNT_WQB3D1 +  (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
-               end do
+            
+            ! Transport quantities (Delwaq constituents)
+            if (IVAL_TRA1 > 0) then
+                  do j = IVAL_TRA1, IVAL_TRAN
+                     ii = j - IVAL_TRA1 + 1
+                     waq_tmp = constituents(ITRA1 + ii - 1, :)
+                     call interpolate_and_fill_valobs (waq_tmp,i,IPNT_TRA1 + (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
+                  end do
             end if
 
             if (IVAL_SF1 > 0) then
@@ -381,14 +409,6 @@ contains
                 end do
             end if 
             
-            if (IVAL_TRA1 > 0) then
-                  do j = IVAL_TRA1, IVAL_TRAN
-                     ii = j - IVAL_TRA1 + 1
-                     waq_tmp = constituents(ITRA1 + ii - 1, :)
-                     call interpolate_and_fill_valobs (waq_tmp,i,IPNT_TRA1 + (ii - 1) * kmx_const, UNC_LOC_S3D,wet_or_dry)
-                  end do
-            end if
-
             ! Frome here: everything as snapped!!!
             if (jawind > 0) then
                valobs(i, IPNT_wx) = 0.0_dp
@@ -548,12 +568,12 @@ contains
                end if
             end if
             !
-            if (IVAL_WQB1 > 0) then
-               do j = IVAL_WQB1, IVAL_WQBN
-                  ii = j - IVAL_WQB1 + 1
-                  valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
-               end do
-            end if
+!            if (IVAL_WQB1 > 0) then
+!               do j = IVAL_WQB1, IVAL_WQBN
+!                  ii = j - IVAL_WQB1 + 1
+!                  valobs(i, IPNT_WQB1 + ii - 1) = wqbot(ii, kb)
+!               end do
+!            end if
 
             do kk = kb, kt
                klay = kk - kb + nlayb

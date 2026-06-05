@@ -282,8 +282,8 @@ contains
          endif 
       end do
       
-      ! Determine if variable represent first, component of vector quantity
-      ! if so, specify names of firts and second component
+      ! Determine if variable represent first component of vector quantity
+      ! if so, specify names of first and second component
       do iVars = 1, nVars 
          ! existing nc files
          if (strcmpi(ncptr%variable_names(iVars),'ux') ) then
@@ -329,8 +329,7 @@ contains
       vmax = 1
 
      do ivar = 1, ncptr%nVars
-         ltl = len_trim(quantity)
-         if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
+         if (strcmpi(ncptr%variable_names(ivar), quantity)) exit
      end do 
 
      if (ivar <= ncptr%nVars) then
@@ -406,6 +405,7 @@ contains
 
       success = .false.
       vectormax = size(q_id)
+      
       ! Use func in stead of number of layers      
       ! if (ncptr%nLayer < 0)  then ! no 3rd dimension, get single data value, maybe should be <=0
       if (func == BC_FUNC_TSERIES) then
