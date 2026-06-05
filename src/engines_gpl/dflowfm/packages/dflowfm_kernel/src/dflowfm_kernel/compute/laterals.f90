@@ -45,6 +45,7 @@ module m_laterals
    !!
    !! Laterals
    !!
+   integer, parameter, public :: ILATTP_INVALID = -1 !< Type code for invalid lateral type.
    integer, parameter, public :: ILATTP_ALL = 0 !< Type code for laterals that apply to both 2D and 1D nodes.
    integer, parameter, public :: ILATTP_1D = 1 !< Type code for laterals that only apply to 1D nodes.
    integer, parameter, public :: ILATTP_2D = 2 !< Type code for laterals that only apply to 2D nodes.

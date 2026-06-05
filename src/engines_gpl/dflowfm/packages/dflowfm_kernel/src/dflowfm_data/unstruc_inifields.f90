@@ -218,7 +218,6 @@ contains
 
       use fm_external_forcings_data, only: qid, operand, transformcoef, success, trnames
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
@@ -2727,7 +2726,7 @@ contains
       use network_data, only: xk, yk, numk
       use m_flowgeom, only: ndx, lnx, xu, yu
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_CN
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_construct_mask, only: construct_mask
 
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
@@ -2738,7 +2737,7 @@ contains
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
          call realloc(kcsini, ndx)
-         call prepare_lateral_mask(kcsini, iloctype)
+         call construct_mask(kcsini, target_location_type, ilattype=iloctype)
          x_loc => xz(1:ndx)
          y_loc => yz(1:ndx)
          num_items = ndx

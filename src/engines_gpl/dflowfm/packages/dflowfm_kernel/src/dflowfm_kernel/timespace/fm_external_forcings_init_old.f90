@@ -64,7 +64,7 @@ contains
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_construct_mask, only: construct_mask, parse_location_type
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_qnerror
@@ -292,12 +292,9 @@ contains
 
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-                  call prepare_lateral_mask(mask, ilattype)
-               case ('2d')
-                  ilattype = ILATTP_2D
-                  call prepare_lateral_mask(mask, ilattype)
+               case ('1d', '2d')
+                  ilattype = parse_location_type(qid(18:))
+                  call construct_mask(mask, UNC_LOC_S, ilattype=ilattype)
                case default
                   mask(:) = 1
                end select
@@ -1130,7 +1127,7 @@ contains
                   ilattype = ILATTP_ALL
                end select
 
-               call prepare_lateral_mask(kclat, ilattype)
+               call construct_mask(kclat, UNC_LOC_S, ilattype=ilattype)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)

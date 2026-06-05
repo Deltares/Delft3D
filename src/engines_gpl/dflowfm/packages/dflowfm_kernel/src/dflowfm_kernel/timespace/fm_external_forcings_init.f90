@@ -514,7 +514,8 @@ contains
       use m_wind, only: jaqin
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_construct_mask, only: construct_mask
+      use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
@@ -570,7 +571,7 @@ contains
 
       call ini_alloc_laterals()
 
-      call prepare_lateral_mask(kclat, ilattype)
+      call construct_mask(kclat, UNC_LOC_S, ilattype=ilattype)
 
       numlatsg = numlatsg + 1
       call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
@@ -806,10 +807,8 @@ contains
       use timespace_parameters, only: WEIGHTFACTORS, FIELD1D
       use properties, only: prop_get
       use m_alloc, only: realloc, reallocP
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
-                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
-                                 parse_location_type
+                                 t_averaging_input, read_averaging_input, averaging_params_to_transformcoef                                 
       use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
       use fm_external_forcings_data, only: NTRANSFORMCOEF
       use timespace, only: timespaceinitialfield, timespaceinitialfield_int
@@ -819,6 +818,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use m_laterals, only: ilattp_all
       use timespace_parameters, only: OPERAND_OVERRIDE
+      use m_construct_mask, only: construct_mask, parse_location_type
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -907,13 +907,7 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
-         if (len_trim(input%location_type) > 0 .and. (target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
-            ! Node-based quantities: use prepare_lateral_mask to set the mask to 1D, 2D or all nodes.
-            call prepare_lateral_mask(mask, parse_location_type(input%location_type))
-         else
-            ! Not node-based, or polygon mask override: use standard mask construction. TODO: replace with single masking function.
-            call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         end if
+         call construct_mask(mask, target_location_type, parse_location_type(input%location_type), target_num_points, target_mask_file, invert_mask, ierr)
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
