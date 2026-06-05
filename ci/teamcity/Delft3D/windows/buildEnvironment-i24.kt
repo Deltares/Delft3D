@@ -24,7 +24,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
     }
 
     vcs {

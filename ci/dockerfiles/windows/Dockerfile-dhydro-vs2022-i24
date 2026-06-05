@@ -1,18 +1,17 @@
-# Use the  Windows Server Core 2022 image form ICT.
-FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
+FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025
 
-# Restore the default Windows shell for correct batch processing.
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
+
+RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
+
 SHELL ["cmd", "/S", "/C"]
 
-# Download the VS19 bootstrapper from https://aka.ms/vs/17/release/vs_community.exe
-# This one is cached on a fileshare because the curl commando is not stable
 ADD vs_Community.exe C:/
 
-# Install visual studio with workloads, excluding workloads and components with known issues.
-RUN (start /w vs_Community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
-    --installPath "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community" \
+RUN (start /w vs_community.exe --passive --wait --noUpdateInstaller --norestart --nocache \
+    --installPath "C:\\Program Files\\Microsoft Visual Studio\\17\\Community" \
     --add Microsoft.VisualStudio.Workload.NativeDesktop;includeRecommended \
-    --add Microsoft.VisualStudio.Component.Windows10SDK.18362 \
+    --add Microsoft.VisualStudio.Component.Windows11SDK.26100 \
     --add Microsoft.VisualStudio.Component.VC.ATLMFC \
     --add Microsoft.VisualStudio.Component.VC.CLI.Support \
     --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 \
@@ -21,11 +20,7 @@ RUN (start /w vs_Community.exe --passive --wait --noUpdateInstaller --norestart 
     --remove Microsoft.VisualStudio.Component.Windows81SDK \
     || IF "%ERRORLEVEL%"=="3010" EXIT 0)
 
-# Set powershell as shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]
-
-# Enable long pathnames
-RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnabled" /t REG_DWORD /d 1 /f
 
 # Install the Intel toolkits
 ADD w_fortran-compiler_p_2024.2.1.81_offline.exe C:/
