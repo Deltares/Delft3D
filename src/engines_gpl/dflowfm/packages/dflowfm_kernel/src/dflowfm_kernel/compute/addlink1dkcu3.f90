@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,13 +42,12 @@ contains
 
    subroutine addlink1Dkcu3(L, japerim) ! and add area's and volumes of 1D link kcu3
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_missing
-      use unstruc_channel_flow
-      use precision_basics
-      use m_get_prof_1D
-      use m_get_hpr_nostruc
+      use m_flowgeom, only: ln, bl, dx, acl, kcs, bob0
+      use m_flow, only: s1, a1, vol1, hu, au, vol1_f
+      use unstruc_channel_flow, only: network
+      use precision_basics, only: comparereal
+      use m_get_prof_1D, only: getprof_1d
+      use m_get_hpr_nostruc, only: get_hpr_nostruc
 
       implicit none
 
@@ -60,9 +59,10 @@ contains
 
       if (japerim == 0) then
          calcConv = 0
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
 
-         hpr = max(0d0, s1(k1) - bl(k1)) ! this statement is called most nr of times through waterlevel iteration
+         hpr = max(0.0_dp, s1(k1) - bl(k1)) ! this statement is called most nr of times through waterlevel iteration
          if (hpr > 0) then !
             call getprof_1D(L, hpr, ar1, wid1, japerim, calcConv, perim)
             dx1 = dx(L) * acl(L)
@@ -70,10 +70,10 @@ contains
             vol1(k1) = vol1(k1) + dx1 * ar1
          end if
 
-         hpr = max(0d0, s1(k2) - bl(k2))
+         hpr = max(0.0_dp, s1(k2) - bl(k2))
          if (hpr > 0) then !
             call getprof_1D(L, hpr, ar2, wid2, japerim, calcConv, perim)
-            dx2 = dx(L) * (1d0 - acl(L))
+            dx2 = dx(L) * (1.0_dp - acl(L))
             a1(k2) = a1(k2) + dx2 * wid2
             vol1(k2) = vol1(k2) + dx2 * ar2
          end if
@@ -90,7 +90,7 @@ contains
             ! Only in case of a 1d-network, vol1 and vol1_f can be different
             if (kcs(k1) == 1) then ! TODO: consider *also* adding storage area to the 2D side k1, if kcu(L)==5, maybe not for kcu(L)==7
                hpr = s1(k1) - bob0(1, L)
-               if (hpr >= 0d0) then
+               if (hpr >= 0.0_dp) then
                   if (comparereal(hu(L), hpr) == 0) then
                      vol1_f(k1) = vol1_f(k1) + dx1 * au(L)
                   else
@@ -101,7 +101,7 @@ contains
             end if
             if (kcs(k2) == 1) then ! TODO: consider *also* adding storage area to the 2D side k2, if kcu(L)==5, maybe not for kcu(L)==7
                hpr = s1(k2) - bob0(2, L)
-               if (hpr >= 0d0) then
+               if (hpr >= 0.0_dp) then
                   ! flow volume
                   if (comparereal(hu(L), hpr) == 0) then
                      vol1_f(k2) = vol1_f(k2) + dx2 * au(L)

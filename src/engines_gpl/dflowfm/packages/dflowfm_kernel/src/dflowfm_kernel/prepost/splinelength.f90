@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -47,8 +47,8 @@ contains
       use geometry_module, only: dbdistance
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
-      use m_splinxy
-      use m_splintxy
+      use m_splinxy, only: splinxy
+      use m_splintxy, only: splintxy
 
       implicit none
 
@@ -65,14 +65,14 @@ contains
 
       call splinxy(xspl, yspl, xspl2, yspl2, num)
 
-      tR = 0d0
+      tR = 0.0_dp
       call splintxy(xspl, yspl, xspl2, yspl2, num, tR, xR, yR)
 
-      dt = 1d0 / dble(NSAM)
+      dt = 1.0_dp / real(NSAM, kind=dp)
 
-      splinelength = 0d0
+      splinelength = 0.0_dp
       do i = 1, num - 1
-         tR = dble(i - 1)
+         tR = real(i - 1, kind=dp)
          do j = 1, NSAM
             tL = tR
             xL = xR

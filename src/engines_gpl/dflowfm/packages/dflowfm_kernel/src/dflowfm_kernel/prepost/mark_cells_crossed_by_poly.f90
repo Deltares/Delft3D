@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,7 +53,9 @@ contains
       integer :: k, kk, k1, k2, L, N, lnn_orig
 
       !  allocate node mask arrays
-      if (allocated(cellmask)) deallocate (cellmask)
+      if (allocated(cellmask)) then
+         deallocate (cellmask)
+      end if
       allocate (Lmask(numL), cellmask(nump))
 
       !  make the linkmask
@@ -61,7 +63,9 @@ contains
       do L = 1, numL
          k1 = kn(1, L)
          k2 = kn(2, L)
-         if (k1 < 1 .or. k2 < 1 .or. k1 > numk .or. k2 > numk) cycle
+         if (k1 < 1 .or. k2 < 1 .or. k1 > numk .or. k2 > numk) then
+            cycle
+         end if
          if (kmask(k1) /= kmask(k2)) then
             Lmask(L) = 1
          else

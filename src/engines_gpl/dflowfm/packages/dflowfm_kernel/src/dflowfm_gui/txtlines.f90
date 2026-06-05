@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,15 +32,15 @@
 
 module m_txtlines
 
+   use precision, only: dp
    implicit none
 
 contains
 
    subroutine TXTLINES()
-      use m_settextsize
-      use m_mtext
-      use m_devices
-      use m_textlines
+      use m_settextsize, only: settextsize
+      use m_mtext, only: mtext
+      use m_textlines, only: txsize, txlin, txxpos, txypos
       implicit none
       integer :: i
 
@@ -48,7 +48,7 @@ contains
 
       do i = 1, 3
          if (len_trim(TXLIN(i)) > 0) then
-            call MTEXT(TXLIN(i), TXXpos, TXYpos + 0.04d0 * (4 - i), 3)
+            call MTEXT(TXLIN(i), TXXpos, TXYpos + 0.04_dp * (4 - i), 3)
          end if
       end do
 

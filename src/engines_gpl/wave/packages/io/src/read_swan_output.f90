@@ -17,8 +17,8 @@ real                           :: north
 logical                        :: cart
 !
 ! body
-   north    = sr%northdir
-   cart     = .not.sr%nautconv
+   north    = sr%north_direction
+   cart     = .not.sr%nautical_convention
    call hisout( &
         & sof%hs     ,sof%dir    ,sof%dirc      ,sof%dirs  ,sof%period , &
         & sof%depth  ,sof%fx     ,sof%fy        ,sof%mx    ,sof%my     , &
@@ -42,7 +42,7 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
                 & drtm01    ,setup     ,n_outpars ,add_out_vals)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -74,6 +74,7 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
 ! NONE
 !!--declarations----------------------------------------------------------------
     use precision_basics
+    use angle_convention, only : reflect_between_nautical_and_cartesian
     implicit none
 !
 ! Global variables
@@ -147,6 +148,8 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
     real              :: d1
     real              :: d2
     real              :: d3
+    real              :: dir_read
+    real             ::  pdir_read
     real              :: missingValue
     character(500)    :: record
     character(8)      :: filnam
@@ -212,16 +215,16 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
           do
              if (outfile == 1) then
                 read (record, *, iostat = iocond) &
-                   & hs(i)    , dir(i)   , period(i), depth(i) , u(i)     , v(i) , &
+                   & hs(i)    , dir_read , period(i), depth(i) , u(i)     , v(i) , &
                    & mx(i)    , my(i)    , dspr(i)  , dissip(i), rleak(i) , qb(i), &
                    & d1       , d2       , d3       , ubot(i)  , steep(i) , &
-                   & wlen(i)  , fx(i)    , fy(i)    , rtp(i)   , pdir(i)  , &
+                   & wlen(i)  , fx(i)    , fy(i)    , rtp(i)   , pdir_read, &
                    & windu(i) , windv(i)
                 !
                 ! Replace all missingValues by zero
                 !
                 if (comparereal(missingValue,hs(i))     == 0) hs(i)     = 0.0
-                if (comparereal(missingValue,dir(i))    == 0) dir(i)    = 0.0
+                if (comparereal(missingValue,dir_read)  == 0) dir_read  = 0.0
                 if (comparereal(missingValue,period(i)) == 0) period(i) = 0.0
                 if (comparereal(missingValue,depth(i))  == 0) depth(i)  = 0.0
                 if (comparereal(missingValue,u(i))      == 0) u(i)      = 0.0
@@ -238,7 +241,7 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
                 if (comparereal(missingValue,fx(i))     == 0) fx(i)     = 0.0
                 if (comparereal(missingValue,fy(i))     == 0) fy(i)     = 0.0
                 if (comparereal(missingValue,rtp(i))    == 0) rtp(i)    = 0.0
-                if (comparereal(missingValue,pdir(i))   == 0) pdir(i)   = 0.0
+                if (comparereal(missingValue,pdir_read) == 0) pdir_read = 0.0
                 if (comparereal(missingValue,windu(i))  == 0) windu(i)  = 0.0
                 if (comparereal(missingValue,windv(i))  == 0) windv(i)  = 0.0
                 !
@@ -349,12 +352,13 @@ subroutine hisout(hs        ,dir       ,dirc      ,dirs      ,period    , &
           enddo
           if (outfile == 1) then
              if (.not.cart) then
-                dir(i) = 180. + north - dir(i)
-                if (dir(i)>360.) dir(i) = dir(i) - 360.
-                if (dir(i)<0.)   dir(i) = dir(i) + 360.
-                pdir(i) = 180. + north - pdir(i)
-                if (pdir(i)>360.) pdir(i) = pdir(i) - 360.
-                if (pdir(i)<0.)   pdir(i) = pdir(i) + 360.
+                ! Convert from nautical to cartesian coordinates
+                ! D-Waves processes all directions as cartesian, i.e. 0 degrees is towards the east and 90 degrees towards the north
+                dir(i) = reflect_between_nautical_and_cartesian(dir_read, north)
+                pdir(i) = reflect_between_nautical_and_cartesian(pdir_read, north)
+             else
+                dir(i) = dir_read
+                pdir(i) = pdir_read
              endif
              dirc(i) = cos(dir(i)/180.*pi)*hs(i)
              dirs(i) = sin(dir(i)/180.*pi)*hs(i)

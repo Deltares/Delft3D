@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,8 @@ contains
       use unstruc_shapefile
       use m_monitoring_crosssections, only: ncrs, crs
       use m_observations_data, only: numobs, kobs
-      use fm_external_forcings_data, only: nweirgen, ngategen, numsrc, ksrc, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen, ndambreaksignals, L1dambreaksg, L2dambreaksg
+      use fm_external_forcings_data, only: nweirgen, ngategen, num_source_sink, source_sink_indices, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen
+      use m_dambreak_breach, only: should_write_dambreaks
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
       use m_fixedweirs, only: nfxw
@@ -133,7 +134,7 @@ contains
          end if
       end if
       ! gates
-      if (jashp_gate > 0) then
+      if (jashp_gate > 0 .and. allocated(gate2cgen) .and. ngategen > 0) then
          jawrite = ngategen
          do n = 1, ngategen
             igen = gate2cgen(n)
@@ -168,9 +169,9 @@ contains
 
       ! source-sinks
       if (jashp_src > 0) then
-         jawrite = numsrc
-         do n = 1, numsrc
-            if (ksrc(1, n) <= 0 .and. ksrc(4, n) <= 0) then
+         jawrite = num_source_sink
+         do n = 1, num_source_sink
+            if (source_sink_indices(1, n) <= 0 .and. source_sink_indices(4, n) <= 0) then
                jawrite = jawrite - 1
             end if
          end do
@@ -228,13 +229,7 @@ contains
 
       ! dam break
       if (jashp_dambreak > 0) then
-         jawrite = ndambreaksignals
-         do n = 1, ndambreaksignals
-            if (L1dambreaksg(n) > L2dambreaksg(n)) then
-               jawrite = jawrite - 1
-            end if
-         end do
-         if (jawrite > 0) then
+         if (should_write_dambreaks()) then
             call unc_write_shp_dambreak()
          else
             call mess(LEVEL_WARN, 'SHAPEFILE: No shape file for dam breaks is written because no dam break is found'//trim(subdomain))

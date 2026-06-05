@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">
+   <UnstructuredGrid>
+      <Piece NumberOfPoints="7" NumberOfCells="0" > 
+         <Points> 
+            <DataArray type="Float64" Name="Position" NumberOfComponents="3" format="ascii"> 
+               550  350  0  
+               1500.6  1000.6  0  
+               823  344  0  
+               465  793  0  
+               587  509  0  
+               300.4  400.4  0  
+               1100.5  300.5  0  
+            </DataArray>
+         </Points> 
+
+         <Cells>
+            <DataArray type="Int32" Name="connectivity" NumberOfComponents="1" format="ascii">
+               
+            </DataArray> 
+            <DataArray type="Int32" Name="offsets" NumberOfComponents="1" format="ascii">
+               
+            </DataArray>
+            <DataArray type="UInt8"  Name="types" NumberOfComponents="1" format="ascii">
+               
+            </DataArray>
+         </Cells>
+         <PointData Scalars="Rank sea_floor_depth_below_sea_surface sea_surface_height sea_floor_depth_below_geoid " Vectors="">
+            <DataArray type="UInt32" Name="Rank" NumberOfComponents="1" format="ascii">
+               0 0 0 0 0 0 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sea_floor_depth_below_sea_surface" NumberOfComponents="1" format="ascii">
+               0 0 0 0 0 0 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sea_surface_height" NumberOfComponents="1" format="ascii">
+               1.84568e-07 -0.499999 4.88811e-07 5.81226e-08 1.68014e-07 -0.999998 0.49958 
+            </DataArray>
+            <DataArray type="Float64" Name="sea_floor_depth_below_geoid" NumberOfComponents="1" format="ascii">
+               10 10 10 10 10 10 10 
+            </DataArray>
+         </PointData> 
+      </Piece>
+   </UnstructuredGrid> 
+</VTKFile>

@@ -1,7 +1,7 @@
 module m_read_roughness
 !----- AGPL --------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2017-2024.                                
+!  Copyright (C)  Stichting Deltares, 2017-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify              
 !  it under the terms of the GNU Affero General Public License as               
@@ -136,7 +136,7 @@ contains
          file = inputfiles(1:isemi-1)
          inputfiles = inputfiles(isemi+1:)
             
-         call remove_leading_spaces(trim(file))
+         call remove_leading_spaces(file)
          call read_roughnessfile(rgs, brs, spdata, file, default, def_type)
       enddo
 

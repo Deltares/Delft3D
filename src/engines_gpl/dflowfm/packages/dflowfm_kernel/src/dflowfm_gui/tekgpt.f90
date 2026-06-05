@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,15 +40,15 @@ contains
                      MP, NP, NCOL, RD1)
 !     TEKEN GRIDLIJNEN UITKOMEND OP DIT PUNT
       use precision, only: dp
-      use m_setxor
-      use m_isocol
-      use m_cir
-      use m_missing
-      use m_wearelt
-      use m_set_col
-      use m_movabs
-      use m_lnabs
-      use m_ptabs
+      use m_setxor, only: setxor
+      use m_isocol, only: isocol
+      use m_cir, only: cir
+      use m_missing, only: xymis, dmiss
+      use m_wearelt, only: rcir
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
+      use m_ptabs, only: ptabs
       implicit none
       integer :: mmax, nmax, mc, nc, mp, np, ncol
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), RD1(MMAX, NMAX)
@@ -56,7 +56,9 @@ contains
       real(kind=dp) :: XP, YP
       integer :: MPU, MPD, NPU, NPD, ncolcir
       XP = X(MP, NP)
-      if (XP == XYMIS) return
+      if (XP == XYMIS) then
+         return
+      end if
       YP = Y(MP, NP)
       call MOVABS(XP, YP)
       call SETCOL(NCOL)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,10 +58,10 @@ contains
       use m_filez, only: oldfil
 
       integer :: i, k, L, n1, n2, nt, minp, lastfoundk, kL, kint, kf, jacros
-      integer :: iL, numLL, numcrossedLinks, ierror, jakdtree = 1, ja2pt
+      integer :: iL, numLL, intersection_count, ierror, jakdtree = 1, ja2pt
       real(kind=dp) :: SL, SM, XCR, YCR, CRP, Xa, Ya, Xb, Yb, zc, af, width
-      real(kind=dp), allocatable :: dSL(:)
-      integer, allocatable :: iLink(:), iPol(:)
+      real(kind=dp), allocatable :: polygon_segment_weights(:)
+      integer, allocatable :: crossed_links(:), polygon_nodes(:)
       real(kind=dp) :: t0, t1
       character(len=128) :: mesg
 
@@ -69,18 +69,18 @@ contains
          return
       end if
 
-      call readyy('Setbobsongullies', 0d0)
+      call readyy('Setbobsongullies', 0.0_dp)
 
       call oldfil(minp, md_gulliesfile)
       call reapol(minp, 0)
 
       if (jakdtree == 1) then
          call wall_clock_time(t0)
-         allocate (iLink(Lnx), ipol(Lnx), dSL(Lnx))
-         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, 2, numL, 0, numcrossedLinks, iLink, iPol, dSL, ierror)
-         numLL = numcrossedLinks
+         allocate (crossed_links(Lnx), polygon_nodes(Lnx), polygon_segment_weights(Lnx))
+         call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK, numL, BOUNDARY_NONE, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+         numLL = intersection_count
          if (ierror /= 0) then !   check if kdtree was succesfull, disable if not so
-            deallocate (iLink, ipoL, dSL)
+            deallocate (crossed_links, polygon_nodes, polygon_segment_weights)
             jakdtree = 0
          end if
          call wall_clock_time(t1)
@@ -90,34 +90,42 @@ contains
          numLL = Lnxi
       end if
 
-      kint = max(numLL / 100, 1); nt = 0
+      kint = max(numLL / 100, 1)
+      nt = 0
       do iL = 1, numLL
 
          jacros = 0
          if (jakdtree == 0) then
             L = iL
          else
-            L = ilink(iL)
-            ! L = lne2ln( iLink(iL) )
-            if (L <= 0) cycle
-            k = iPol(iL)
+            L = crossed_links(iL)
+            ! L = lne2ln( crossed_links(iL) )
+            if (L <= 0) then
+               cycle
+            end if
+            k = polygon_nodes(iL)
          end if
 
          if (mod(iL, kint) == 0) then
-            AF = dble(iL) / dble(numLL)
+            AF = real(iL, kind=dp) / real(numLL, kind=dp)
             call readyy('Setbobsongullies', af)
          end if
 
-         n1 = ln(1, L); n2 = ln(2, L)
+         n1 = ln(1, L)
+         n2 = ln(2, L)
          if (jakdtree == 0) then
 
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
 
             iloop: do i = 1, 2
 
                if (i == 1) then
-                  if (Lastfoundk == 0) cycle
+                  if (Lastfoundk == 0) then
+                     cycle
+                  end if
                   kf = max(1, Lastfoundk - 100)
                   kL = min(npl - 1, Lastfoundk + 100)
                else
@@ -140,14 +148,15 @@ contains
 
             end do iloop
          else !       use kdtree to find nearest dike
-            k = iPol(iL)
+            k = polygon_nodes(iL)
             jacros = 1
-            sL = dSL(iL)
+            sL = polygon_segment_weights(iL)
          end if
 
          if (jacros == 1) then !        dig the gullies
-            zc = sl * zpL(k + 1) + (1d0 - sl) * zpL(k)
-            bob(1, L) = min(zc, bob(1, L), bob(2, L)); bob(2, L) = bob(1, L)
+            zc = sl * zpL(k + 1) + (1.0_dp - sl) * zpL(k)
+            bob(1, L) = min(zc, bob(1, L), bob(2, L))
+            bob(2, L) = bob(1, L)
             bob0(:, L) = bob(:, L)
 
             bl(n1) = min(bl(n1), zc)
@@ -176,15 +185,21 @@ contains
          call mess(LEVEL_INFO, 'Number of flow Links with lowered gullies :: ', nt)
       end if
 
-      call readyy(' ', -1d0)
+      call readyy(' ', -1.0_dp)
 
 1234  continue
 
 ! deallocate
       if (jakdtree == 1) then
-         if (allocated(iLink)) deallocate (iLink)
-         if (allocated(iPol)) deallocate (iPol)
-         if (allocated(dSL)) deallocate (dSL)
+         if (allocated(crossed_links)) then
+            deallocate (crossed_links)
+         end if
+         if (allocated(polygon_nodes)) then
+            deallocate (polygon_nodes)
+         end if
+         if (allocated(polygon_segment_weights)) then
+            deallocate (polygon_segment_weights)
+         end if
       end if
 
    end subroutine setbobsongullies

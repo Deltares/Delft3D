@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2022.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,10 +39,10 @@ contains
 
       use m_flow, only: au
       use m_f1dimp, only: f1dimppar
-      use fm_external_forcings_data
+      use fm_external_forcings_data, only: zbndz, l1qbnd, kbndu, zbndq
 !pointer
       integer, pointer :: table_length
-      integer, pointer :: maxtab
+      integer, pointer :: number_BC_tables
 
 !input
       real(kind=dp), intent(in) :: time1 !t^{n+1}
@@ -56,7 +56,7 @@ contains
 
 !point
       table_length => f1dimppar%table_length
-      maxtab => f1dimppar%maxtab
+      number_BC_tables => f1dimppar%number_BC_tables
 
 !!
 !! CALC
@@ -69,9 +69,9 @@ contains
          !x (time)
          ktab = table_number * table_length - 1
          f1dimppar%table(ktab) = time1
-         f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
+         f1dimppar%table(ktab + 1) = time1 + 1.0_dp !It does not matter, as the query time will be <time1>
          !y (var)
-         ktab = maxtab * table_length + table_number * table_length - 1
+         ktab = number_BC_tables * table_length + table_number * table_length - 1
          f1dimppar%table(ktab) = zbndz(k)
          f1dimppar%table(ktab + 1) = zbndz(k)
       end do
@@ -82,9 +82,9 @@ contains
          !x (time)
          ktab = table_number * table_length - 1
          f1dimppar%table(ktab) = time1
-         f1dimppar%table(ktab + 1) = time1 + 1d0 !It does not matter, as the query time will be <time1>
+         f1dimppar%table(ktab + 1) = time1 + 1.0_dp !It does not matter, as the query time will be <time1>
          !y (var)
-         ktab = maxtab * table_length + table_number * table_length - 1
+         ktab = number_BC_tables * table_length + table_number * table_length - 1
 
          !FM1DIMP2DO: properly understand what happens!
          !In <setau>, the discharge read in BC is converted into a
@@ -97,7 +97,7 @@ contains
          f1dimppar%table(ktab + 1) = zbndq(k) * au(L)
       end do
 
-!f1dimppar%table=(/ 0d0,86400d0,0d0,10000d0,1.00666656855963d0,1.00666656855963d0,100d0,100d0 /)
+!f1dimppar%table=[ 0d0,86400d0,0d0,10000d0,1.00666656855963d0,1.00666656855963d0,100d0,100d0 ]
 !                     call INTTAB (ntab(1,itab), ntab(4,itab),
 !     +                            table(ntab(3,itab)),
 !     +                            table(ntab(2,itab)),

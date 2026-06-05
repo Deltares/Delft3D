@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,55 +32,38 @@
 
 module m_turbulence
    use precision, only: dp
-
    implicit none
 
-   ! Coefficients of k-e model:
-   real(kind=dp) :: cmukep
-   real(kind=dp) :: sqcmukep
-   real(kind=dp) :: sqcmukepi
-   real(kind=dp) :: cewall
-   real(kind=dp) :: cde
+   ! Coefficients of turbulence model
+   real(kind=dp), parameter :: CMUKEP = 0.09_dp
+   real(kind=dp) :: c3e_stable
+   real(kind=dp) :: c3e_unstable
+   integer, parameter :: SIGDIF = 1
+   integer, parameter :: SIGTKE = 1
+   integer, parameter :: SIGTKEI = 1
+   real(kind=dp), parameter :: SIGEPS = 1.3_dp
+   real(kind=dp), parameter :: SIGEPSI = 1.0_dp / SIGEPS
+   real(kind=dp), parameter :: SIGRHO = 0.7_dp !< BOUYANCY
+   real(kind=dp), parameter :: C2E = 1.92_dp
+   real(kind=dp), parameter :: C2T = 1.0_dp - C2E
+   real(kind=dp), parameter :: C3T_STABLE = CMUKEP
+   real(kind=dp), parameter :: CDE = CMUKEP**0.75_dp
    real(kind=dp) :: c1e
-   real(kind=dp) :: c2e
-   real(kind=dp) :: sigdif
-   real(kind=dp) :: sigtke, sigtkei
-   real(kind=dp) :: sigeps, sigepsi
-   real(kind=dp) :: sigrho
-
    real(kind=dp) :: c1t
-   real(kind=dp) :: c2t
-   real(kind=dp) :: c3tsta
-   real(kind=dp) :: c3tuns
+   real(kind=dp) :: c3t_unstable
 
-   real(kind=dp) :: coefn2
-   real(kind=dp) :: skmy
-   real(kind=dp) :: a1ph
-   real(kind=dp) :: a2
-   real(kind=dp) :: b1
-   real(kind=dp) :: b2
-   real(kind=dp) :: c1
-   real(kind=dp) :: e1
-   real(kind=dp) :: e2
-   !real(kind=dp) :: e2     = e1-1+vonkar**2*b1**0.6667/skmy
-   real(kind=dp) :: ghmin
-   real(kind=dp) :: ghmax
+   real(kind=dp) :: brunt_vaisala_coefficient
 
-   !quasi-equilibrium coefficients:
-   !real(kind=dp) :: csb1   = a2*(1-6*a1ph/b1)
-   !real(kind=dp) :: csb2   = 3*a2*(6*a1ph+b2)
-   !real(kind=dp) :: csu1   = a1*(1-3*c1-6*a1ph/b1)
-   !real(kind=dp) :: csu2   = 3*a1ph*a2*((b2-3*a2)*(1-6*a1ph/b1)-3*c1*(6*a1ph+b2))
-   !real(kind=dp) :: csu3   = 3*a2*(6*a1ph+b2)
-   !real(kind=dp) :: csu4   = 9*a1*a2
+   integer, parameter :: kmxx = 2000 !< max dim of nr of vertical layers
+   integer, parameter :: mg = 4 !< max dim of nr of sediment fractions
 
-   integer, parameter :: kmxx = 2000 ! max dim of nr of vertical layers
-   integer, parameter :: mg = 4 ! max dim of nr of sediment fractions
+   integer, parameter :: TURB_LAX_ALL = 1
+   integer, parameter :: TURB_LAX_CONNECTED = 2
 
-   real(kind=dp) :: dijdij(0:kmxx) ! dudz(k)**2+dvdz(k)**2 vertical shear squared
+   real(kind=dp) :: dijdij(0:kmxx) !< dudz(k)**2+dvdz(k)**2 vertical shear squared
    real(kind=dp) :: buoflu(kmxx)
    real(kind=dp) :: bruva(kmxx)
-   real(kind=dp) :: tkepro(0:kmxx)
+   real(kind=dp) :: tkepro(0:kmxx) ! vertical production t
 
    real(kind=dp) :: ak(0:kmxx) ! local arrays, (0:
    real(kind=dp) :: bk(0:kmxx)
@@ -90,95 +73,83 @@ module m_turbulence
    real(kind=dp) :: dz(0:kmxx)
    real(kind=dp) :: dke(0:kmxx)
 
-   real(kind=dp) :: ucxref(kmxx) ! and for reference/plotting:
-   real(kind=dp) :: ucm(kmxx) ! and for reference/plotting:
+   real(kind=dp) :: ucxref(kmxx) !< for reference/plotting:
+   real(kind=dp) :: ucm(kmxx) !< for reference/plotting:
    real(kind=dp) :: dijdijref(0:kmxx)
    real(kind=dp) :: tkin1ref(0:kmxx)
    real(kind=dp) :: teps1ref(0:kmxx)
    real(kind=dp) :: vicwref(0:kmxx)
-   real(kind=dp) :: hcref(kmxx) ! mid-layer heigths
-   real(kind=dp) :: hwref(0:kmxx) ! layer interface height, 0=bed
+   real(kind=dp) :: hcref(kmxx) !< mid-layer heigths
+   real(kind=dp) :: hwref(0:kmxx) !< layer interface height, 0=bed
 
-   real(kind=dp) :: epstke = 1d-32 ! D3D: - 7, dpm: -32
-   real(kind=dp) :: epseps = 1d-32 ! D3D: - 7, dpm: -32
-   real(kind=dp) :: epsd = 1d-32 ! D3D: - 7, dpm: -32
+   real(kind=dp), parameter :: MINIMUM_VALUE_K_EPS_TAU = 1e-32_dp
+   real(kind=dp) :: tke_min
+   real(kind=dp) :: eps_min
 
-   real(kind=dp), allocatable :: turkin0(:) ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
-   real(kind=dp), allocatable, target :: turkin1(:) !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
+   real(kind=dp), allocatable, dimension(:) :: turkin0 ! k old (m2/s2)  , at layer interface at u     these will become global, rename to : turkinwu0
+   real(kind=dp), allocatable, dimension(:), target :: turkin1 !< [m2/s2] turbulent kinectic energy at layer interface u {"location": "edge", "shape": ["lnkx"]}
 
-   real(kind=dp), allocatable :: tureps0(:) ! eps old (1/s)  , at layer interface at u
-   real(kind=dp), allocatable :: tureps1(:) ! eps new        , at layer interface at u
+   real(kind=dp), allocatable, dimension(:) :: tureps0 ! eps old (1/s)  , at layer interface at u
+   real(kind=dp), allocatable, dimension(:) :: tureps1 ! eps new        , at layer interface at u
 
-   real(kind=dp), allocatable :: vicwwu(:) ! vertical eddy viscosity (m2/s) at layer interface at u point
-   real(kind=dp), allocatable, target :: vicwws(:) !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: vicwwu ! vertical eddy viscosity (m2/s) at layer interface at u point
+   real(kind=dp), allocatable, dimension(:), target :: vicwws !< [m2/s] vertical eddy viscosity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:), target :: difwws !< [m2/s] vertical eddy diffusivity of salinity at layer interface at s point {"location": "face", "shape": ["ndkx"]}
+   real(kind=dp), allocatable, dimension(:) :: rich !< Richardson number at velocity-point
+   real(kind=dp), allocatable, dimension(:) :: richs !< Richardson number at pressure-point
 
-   !real            , allocatable    :: tkepro   (:)      ! vertical production t
-   !real            , allocatable    :: tkedis   (:)      ! vertical dissipation
-   real(kind=dp), allocatable, target :: rho(:) ! density at cell centres (kg/m3)
-   real(kind=dp), allocatable :: rho0(:) ! density at cell centres (kg/m3), previous step
-   real(kind=dp), allocatable :: rhosww(:) ! deviatoric density at vertical interfaces, w points (kg/m3)
-   real(kind=dp), allocatable :: rhowat(:) ! density at cell centres (kg/m3), only salt and temp
-   real(kind=dp), allocatable :: dpbdx0(:) ! previous step baroclinic pressure gradient, at u points
-   real(kind=dp), allocatable :: rvdn(:) ! help integral of (rho-rhomean)*deltaz at pressure points (kg/m2)
-   real(kind=dp), allocatable :: grn(:) ! help integral of vertical baroclinic pressure integral at pressure points  (kg/m)
+   real(kind=dp), allocatable, dimension(:), target :: in_situ_density ! Pressure dependent water density at cell centres (kg/m3)
+   real(kind=dp), allocatable, dimension(:), target :: potential_density ! Potential water density at cell centres (kg/m3)
+   real(kind=dp), dimension(:), pointer :: rho ! Water density at cell centres (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: drhodz !< Vertical density gradient
+   real(kind=dp), allocatable, dimension(:) :: rhosww ! deviatoric density at vertical interfaces, w points (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: rhowat ! density at cell centres (kg/m3), only salt and temp
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_force_prev ! previous step baroclinic force, at u points
+   real(kind=dp), allocatable, dimension(:) :: baroclinic_pressures ! baroclinic pressures (/ag), at pressure points
+   real(kind=dp), allocatable, dimension(:) :: integrated_baroclinic_pressures ! depth-integrated baroclinic pressures (/ag), at pressure points
 
-   real(kind=dp), allocatable :: rhou(:) ! density at flow links   (kg/m3)
+   real(kind=dp), allocatable, dimension(:) :: rhou !< density at flow links (kg/m3)
 
    real(kind=dp) :: Schmidt_number_salinity = 0.7_dp !< Turbulent Schmidt number for salinity
    real(kind=dp) :: Prandtl_number_temperature = 0.7_dp !< Turbulent Prandtl number for temperature
    real(kind=dp) :: Schmidt_number_tracer = 1.0_dp !< Turbulent Schmidt number for tracers
-   real(kind=dp), allocatable :: sigsed(:) ! prandtl schmidt per sediment fraction
-   real(kind=dp), allocatable :: sigdifi(:) ! inverse prandtl schmidt nrs
-   real(kind=dp), allocatable :: wsf(:) ! fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable :: turkinepsws(:, :) ! k and eps,1,2     at layer interface at c , horizontal transport of k and eps
-   real(kind=dp), allocatable :: tqcu(:) ! sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
-   real(kind=dp), allocatable :: eqcu(:) ! sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
-   real(kind=dp), allocatable :: sqcu(:) ! sum of q          at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: sigsed !< prandtl schmidt per sediment fraction
+   real(kind=dp), allocatable, dimension(:) :: sigdifi !< inverse prandtl schmidt nrs
+   real(kind=dp), allocatable, dimension(:) :: wsf !< fall velocities of all numconst constituents
 
-   real(kind=dp), allocatable :: tttu(:), ttqc(:), tttc(:) ! test12
+   real(kind=dp), allocatable, dimension(:) :: turkinws !< k   at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: turepsws !< eps at layer interface at c , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: tqcu !< sum of q*turkinws at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: eqcu !< sum of q*turepsws at layer interface at cupw , horizontal transport of k and eps
+   real(kind=dp), allocatable, dimension(:) :: sqcu !< sum of q          at layer interface at cupw , horizontal transport of k and eps
 
-   integer, allocatable :: ln0(:, :) ! links in transport trimmed to minimum of ktop,ktop0 for z-layers
+   integer, allocatable :: ln0(:, :) !< links in transport trimmed to minimum of ktop,ktop0 for z-layers
+
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_ON = 1.0_dp
+   real(kind=dp), parameter :: BACKGROUND_DIFFUSION_OFF = 0.0_dp
 
 contains
-!> Sets ALL (scalar) variables in this module to their default values.
+
+   !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
-      use m_physcoef
-
-! Coefficients of k-e model:
-      sigdif = 1.0_dp
-      sigtke = 1.0_dp; sigtkei = 1.0_dp / sigtke
-      sigeps = 1.3_dp; sigepsi = 1.0_dp / sigeps
-      sigrho = 0.7_dp ! bouyancy
-
-      cmukep = 0.09_dp
-      sqcmukep = sqrt(cmukep)
-      sqcmukepi = 1.0_dp / sqcmukep
-
-      cde = cmukep**0.75_dp
-      cewall = cmukep**0.75_dp / vonkar ! 0.4769_dp  !        0.09**0.75/0.41  ! /vonkar
-      c2e = 1.92_dp
-      c1e = 1.44_dp
-      c1e = c2e - vonkar**2 / (sigeps * sqcmukep)
-
+      use m_physcoef, only: vonkar
+      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
       c1t = (1.0_dp - c1e) * cmukep
-      c2t = 1.0_dp - c2e
-      c3tsta = 1.0_dp * cmukep
-      c3tuns = (1.0_dp - c1e) * cmukep
+      c3t_unstable = (1.0_dp - c1e) * cmukep
+      c3e_stable = 0.0_dp
+      c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
 
-      coefn2 = -ag / (sigrho * rhomean)
-
-      skmy = 1.96_dp
-      a1ph = 0.92_dp
-      a2 = 0.74_dp
-      b1 = 16.6_dp
-      b2 = 10.1_dp
-      c1 = 0.08_dp
-      e1 = 1.80_dp
-      e2 = 1.33_dp
-!e2     = e1-1+vonkar**2*b1**0.6667/skmy = 1.358, not 1.33?
-      ghmin = -0.280_dp
-      ghmax = 0.0233_dp
+      tke_min = MINIMUM_VALUE_K_EPS_TAU
+      eps_min = MINIMUM_VALUE_K_EPS_TAU
    end subroutine default_turbulence
+
+   !> Calculates derived coefficients for turbulence
+   subroutine calculate_derived_coefficients_turbulence()
+      use m_physcoef, only: rhomean, ag
+
+      brunt_vaisala_coefficient = -ag / (SIGRHO * rhomean)
+
+   end subroutine calculate_derived_coefficients_turbulence
 
 end module m_turbulence

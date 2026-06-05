@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -32,34 +32,32 @@ using namespace rtctools::schematization::triggers;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class deadbandTimeTrigger : public trigger, public rule
-{
-private:
-	int nStepUp;
-	int nStepDown;
-	int iXIn;
-	int iStepsUpOut;
-    int iStepsDownOut;
+            class deadbandTimeTrigger : public trigger, public rule
+            {
+            private:
+                int nStepUp;
+                int nStepDown;
+                int iXIn;
+                int iStepsUpOut;
+                int iStepsDownOut;
 
-public:
-	deadbandTimeTrigger(string id, string name,
-	    int nStepUp, int nStepDown,
-	    int iXIn, int iStepsUpOut, int iStepsDownOut,
-	    int iYOut, int iTimeTrueOut, int iTimeFalseOut);
-	~deadbandTimeTrigger(void);
+            public:
+                deadbandTimeTrigger(string id, string name, int nStepUp, int nStepDown, int iXIn, int iStepsUpOut,
+                                    int iStepsDownOut, int iYOut, int iTimeTrueOut, int iTimeFalseOut);
+                ~deadbandTimeTrigger(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double* stateOld, double* stateNew, long long t, double dt,
-				  double* dStateOld, double* dStateNew);
-};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                              double* dStateNew);
+            };
 
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* DEADBANDTIMETRIGGER */

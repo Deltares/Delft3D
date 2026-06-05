@@ -33,7 +33,7 @@ subroutine putgtl(filnam    ,grpnam    ,nelems    ,elmnms    ,elmdms    , &
                 & elmnam    ,celidt    ,wrilog    ,error     ,buffr     )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -244,7 +244,7 @@ subroutine crewav(filnam   ,itide    ,hrms     ,tp       ,dir      , &
                 & mmax     ,nmax     ,swflux   ,wavetime )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -664,7 +664,7 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
                        & mmax     ,nmax     ,swflux   ,wavedata ,netcdf_sp)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -698,13 +698,14 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     use wave_data
     use swan_flow_grid_maps
     use netcdf
+    use nc_check, only : nc_check_err
     use precision_basics
     !
     implicit none
 !
 ! Global variables
 !
-    type (grid)                                 :: fg           ! flow grid
+    type (grid)                     :: fg           ! flow grid
     integer                         :: itide
     integer                         :: mmax
     integer                         :: nmax
@@ -723,7 +724,7 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     real, dimension(mmax, nmax)     :: wsbv
     logical                         :: swflux
     logical                         :: netcdf_sp
-    type (wave_data_type)                       :: wavedata
+    type (wave_data_type)           :: wavedata
 
 !
 ! Local variables
@@ -769,7 +770,7 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     !
     if (netcdf_sp) then
        precision = nf90_float
-       write(*,*) "Writing data to netcdf file in single precision (except the grid)"
+       write(*,*) "Writing data to netcdf file in single precision (except the grid and time)"
     else
        ! default
        precision = nf90_double
@@ -864,40 +865,6 @@ subroutine crewav_netcdf(fg       ,itide    ,hrms     ,tp       ,dir      , &
     endif
     !
     ! put vars (time dependent)
-!hrms = 5.0E-2
-!tp   = 0.9
-!dir  = 270.0
-!diss(:,:,1) = 0.0
-!diss(:,:,2) = 0.0
-!diss(:,:,3) = 0.0
-!diss(:,:,4) = 0.0
-!fx   = 2.0e-3
-!fy   = -9.0e-3
-!wsbu = 5.0e-4
-!wsbv = -4.0e-4
-!mx   = 7.0e-4
-!my   = -2.0e-3
-!tps  = 0.0
-!ubot = 0.0
-!wlen = 0.0
-!
-!hrms = 0.0
-!tp   = 0.0
-!dir  = 0.0
-!diss(:,:,1) = 0.0
-!diss(:,:,2) = 0.0
-!diss(:,:,3) = 0.0
-!diss(:,:,4) = 0.0
-!fx   = 0.0
-!fy   = 0.0
-!wsbu = 0.0
-!wsbv = 0.0
-!mx   = 0.0
-!my   = 0.0
-!tps  = 0.0
-!ubot = 0.0
-!wlen = 0.0
-    !
     ierror = nf90_put_var(idfile, idvar_time   , wavedata%time%timsec, start=(/ localcomcount /)); call nc_check_err(ierror, "put_var time", filename)
     ierror = nf90_put_var(idfile, idvar_hrms   , hrms           , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var hrms   ", filename)
     ierror = nf90_put_var(idfile, idvar_tp     , tp             , start=(/ 1, localcomcount /), count = (/ mmax, 1 /)); call nc_check_err(ierror, "put_var tp     ", filename)

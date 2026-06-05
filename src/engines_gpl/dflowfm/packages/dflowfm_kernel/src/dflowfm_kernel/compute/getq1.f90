@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,9 +37,9 @@ contains
       real(kind=dp) :: hg, d, h1, h2, q
       real(kind=dp) :: g, t, r, tr
 
-      g = 9.81d0
-      t = 2d0 * g * (h1 - h2)
-      r = 1d0 / hg**2 - 1d0 / (h1 + d)**2
+      g = 9.81_dp
+      t = 2.0_dp * g * (h1 - h2)
+      r = 1.0_dp / hg**2 - 1.0_dp / (h1 + d)**2
       tr = t / r
       if (tr > 0) then
          q = sqrt(tr)

@@ -1,6 +1,6 @@
 !----- AGPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -148,7 +148,7 @@
 !
 #endif
 
-!      write(*,*) 'Opening ', iunit, Name
+!     write(*,*) 'Opening ', iunit, Name
 
       if (iunit .ne. 0) then
          maxFileUnitNumber = max(maxFileUnitNumber, iunit)

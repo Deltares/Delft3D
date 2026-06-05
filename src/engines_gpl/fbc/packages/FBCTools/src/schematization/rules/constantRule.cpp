@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,27 +21,22 @@
  * @date 2010
  */
 
-#include <schematization/rules/constantRule.h> 
+#include <schematization/rules/constantRule.h>
 
 using namespace rtctools::schematization::rules;
 
-constantRule::constantRule(string id, string name, double constant, int yOut)
-	: rule(id, name)
+constantRule::constantRule(string id, string name, double constant, int yOut) : rule(id, name)
 {
-	this->constant = constant;
-	this->yOut = yOut;
+    this->constant = constant;
+    this->yOut = yOut;
 }
 
-constantRule::~constantRule(void)
-{
-}
+constantRule::~constantRule(void) {}
 
-void constantRule::solve(double *stateOld, double *stateNew, long long t, double dt)
-{
-	stateNew[yOut] = constant;
-}
+void constantRule::solve(double* stateOld, double* stateNew, long long t, double dt) { stateNew[yOut] = constant; }
 
-void constantRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
+void constantRule::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                            double* dStateNew)
 {
-	dStateOld[yOut] = 0.0;
+    dStateOld[yOut] = 0.0;
 }

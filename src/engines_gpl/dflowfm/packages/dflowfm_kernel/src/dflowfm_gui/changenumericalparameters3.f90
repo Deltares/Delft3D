@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,25 +32,26 @@
 
 module m_changenumericalparameters3
 
+   use precision, only: dp
    implicit none
 
 contains
 
    subroutine CHANGENUMERICALPARAMETERS3()
-      use m_flow
+      use m_flow, only: clveg, cdveg, rhoveg, cbveg, stemheightstd, modind, slotw1d, slotw2d, epsmaxlev, epsmaxlevm, jawavestreaming, jawavestokes, max_iterations_vertical_forester, noderivedtypes
+      use m_sediment, only: hwavuni, twavuni, phiwavuni, jaseddenscoupling, hwav, twav, phiwav
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_helpnow, only: nlevel, wrdkey
+      use m_save_keys, only: savekeys
+      use m_restore_keys, only: restorekeys
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use m_flowgeom, only: ndx
-      use m_sediment
-      use unstruc_colors
-      use unstruc_display_data
       use m_reduce, only: maxdge
       use dflowfm_version_module, only: company, product_name
-      use m_helpnow
-      use m_save_keys
-      use m_restore_keys
-      use m_help
-      use m_highlight_form_line
       use m_wind, only: jaqin, jaevap, evap
-      
+
       integer :: numpar, numfld, numparactual, numfldactual
       parameter(NUMPAR=22, NUMFLD=2 * NUMPAR)
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
@@ -61,28 +62,46 @@ contains
       integer :: nbut, imp, inp
 
       NLEVEL = 4
-      OPTION(1) = 'Clveg                                ( )'; it(2 * 1) = 6
-      OPTION(2) = 'Cdveg                                ( )'; it(2 * 2) = 6
-      OPTION(3) = 'Rhoveg                           (kg/m3)'; it(2 * 3) = 6
-      OPTION(4) = 'Cbveg                         (kg.m2/s2)'; it(2 * 4) = 6
-      OPTION(5) = 'Stemheightstd                        ( )'; it(2 * 5) = 6
-      OPTION(6) = 'Hwavuni                              (m)'; it(2 * 6) = 6
-      OPTION(7) = 'Twavuni                              (s)'; it(2 * 7) = 6
-      OPTION(8) = 'Phiwavuni                            ( )'; it(2 * 8) = 6
-      OPTION(9) = 'Wave model nr modind                 ( )'; it(2 * 9) = 2
-      OPTION(10) = 'Slotw1D                              (m)'; it(2 * 10) = 6
-      OPTION(11) = 'Slotw2D                              (m)'; it(2 * 11) = 6
-      OPTION(12) = 'Epsmaxlev                            (m)'; it(2 * 12) = 6
-      OPTION(13) = 'Epsmaxlevm                           (m)'; it(2 * 13) = 6
-      OPTION(14) = 'jawavestreaming terms in D3Dwavemodel( )'; it(2 * 14) = 2
-      OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'; it(2 * 15) = 2
-      OPTION(16) = 'jawavelogprof                        ( )'; it(2 * 16) = 2
-      OPTION(17) = 'Maxitforestersal                     ( )'; it(2 * 17) = 2
-      OPTION(18) = 'Maxitforestertem                     ( )'; it(2 * 18) = 2
-      OPTION(19) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'; it(2 * 19) = 2
-      OPTION(20) = 'Maxdegree                            ( )'; it(2 * 20) = 2
-      OPTION(21) = 'Jaevap                               ( )'; it(2 * 21) = 2
-      OPTION(22) = 'Jaseddenscoupling                    ( )'; it(2 * 22) = 2
+      OPTION(1) = 'Clveg                                ( )'
+      it(2 * 1) = 6
+      OPTION(2) = 'Cdveg                                ( )'
+      it(2 * 2) = 6
+      OPTION(3) = 'Rhoveg                           (kg/m3)'
+      it(2 * 3) = 6
+      OPTION(4) = 'Cbveg                         (kg.m2/s2)'
+      it(2 * 4) = 6
+      OPTION(5) = 'Stemheightstd                        ( )'
+      it(2 * 5) = 6
+      OPTION(6) = 'Hwavuni                              (m)'
+      it(2 * 6) = 6
+      OPTION(7) = 'Twavuni                              (s)'
+      it(2 * 7) = 6
+      OPTION(8) = 'Phiwavuni                            ( )'
+      it(2 * 8) = 6
+      OPTION(9) = 'Wave model nr modind                 ( )'
+      it(2 * 9) = 2
+      OPTION(10) = 'Slotw1D                              (m)'
+      it(2 * 10) = 6
+      OPTION(11) = 'Slotw2D                              (m)'
+      it(2 * 11) = 6
+      OPTION(12) = 'Epsmaxlev                            (m)'
+      it(2 * 12) = 6
+      OPTION(13) = 'Epsmaxlevm                           (m)'
+      it(2 * 13) = 6
+      OPTION(14) = 'jawavestreaming terms in D3Dwavemodel( )'
+      it(2 * 14) = 2
+      OPTION(15) = 'jawaveStokes 0,1,2,3                 ( )'
+      it(2 * 15) = 2
+      OPTION(16) = 'maxItVerticalForester                ( )'
+      it(2 * 16) = 2
+      OPTION(17) = 'Noderivedtypes (Noderivedtypes in mdu)     ( )'
+      it(2 * 17) = 2
+      OPTION(18) = 'Maxdegree                            ( )'
+      it(2 * 18) = 2
+      OPTION(19) = 'Jaevap                               ( )'
+      it(2 * 19) = 2
+      OPTION(20) = 'Jaseddenscoupling                    ( )'
+      it(2 * 20) = 2
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -102,13 +121,11 @@ contains
       HELPM(13) = 'Max level diff in outer loop of Nested Newton def 1d-8  (m) '
       HELPM(14) = '>=1 streaming, >= 2 streaming + turb                        '
       HELPM(15) = '0=no, 1 = uniform, 2 = non-uniform, 3=2+vertical visc Stokes'
-      HELPM(16) = '0=depth-av, 1 = log profile                                 '
-      HELPM(17) = 'Max nr of iterations                                        '
-      HELPM(18) = 'Max nr of iterations                                        '
-      HELPM(19) = '0=use der. types, 1 = less, 2 = lesser, 5 = also deallo der.'
-      HELPM(20) = '6 = default, 666 = number of the devil                      '
-      HELPM(21) = '1 = evaporation computed bij heatfluxmodel , 0= no evap     '
-      HELPM(22) = '0=no, 1 = yes                                               '
+      HELPM(16) = 'Max nr of vertical Forester iterations                      '
+      HELPM(17) = '0=use der. types, 1 = less, 2 = lesser, 5 = also deallo der.'
+      HELPM(18) = '6 = default, 666 = number of the devil                      '
+      HELPM(19) = '1 = evaporation computed bij heatfluxmodel , 0= no evap     '
+      HELPM(20) = '0=no, 1 = yes                                               '
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR
@@ -191,12 +208,11 @@ contains
       call IFORMputdouble(2 * 13, Epsmaxlevm, '(E8.2)')
       call IFORMputinteger(2 * 14, jawavestreaming)
       call IFORMputinteger(2 * 15, jawaveStokes)
-      call IFORMputinteger(2 * 16, Maxitverticalforestersal)
-      call IFORMputinteger(2 * 17, Maxitverticalforestertem)
-      call IFORMputinteger(2 * 18, Noderivedtypes)
-      call IFORMputinteger(2 * 19, maxdge)
-      call IFORMputinteger(2 * 20, Jaevap)
-      call IFORMputinteger(2 * 21, Jaseddenscoupling)
+      call IFORMputinteger(2 * 16, max_iterations_vertical_forester)
+      call IFORMputinteger(2 * 17, Noderivedtypes)
+      call IFORMputinteger(2 * 18, maxdge)
+      call IFORMputinteger(2 * 19, Jaevap)
+      call IFORMputinteger(2 * 20, Jaseddenscoupling)
 
       !  Display the form with numeric fields left justified
       !  and set the initial field to number 2
@@ -240,9 +256,18 @@ contains
             call IFORMGETdouble(2 * 3, Rhoveg)
             call IFORMGETdouble(2 * 4, Cbveg)
             call IFORMGETdouble(2 * 5, stemheightstd)
-            call IFORMGETdouble(2 * 6, hwavuni); if (hwavuni > 0d0) hwav = hwavuni
-            call IFORMGETdouble(2 * 7, twavuni); if (twavuni > 0d0) twav = twavuni
-            call IFORMGETdouble(2 * 8, phiwavuni); if (phiwavuni > 0d0) phiwav = phiwavuni
+            call IFORMGETdouble(2 * 6, hwavuni)
+            if (hwavuni > 0.0_dp) then
+               hwav = hwavuni
+            end if
+            call IFORMGETdouble(2 * 7, twavuni)
+            if (twavuni > 0.0_dp) then
+               twav = twavuni
+            end if
+            call IFORMGETdouble(2 * 8, phiwavuni)
+            if (phiwavuni > 0.0_dp) then
+               phiwav = phiwavuni
+            end if
             call IFORMGETinteger(2 * 9, modind)
             call IFORMGETdouble(2 * 10, Slotw1D)
             call IFORMGETdouble(2 * 11, Slotw2D)
@@ -250,12 +275,11 @@ contains
             call IFORMGETdouble(2 * 13, Epsmaxlevm)
             call IFORMGETinteger(2 * 14, jawavestreaming)
             call IFORMGETinteger(2 * 15, jawaveStokes)
-            call IFORMGETinteger(2 * 16, Maxitverticalforestersal)
-            call IFORMGETinteger(2 * 17, Maxitverticalforestertem)
-            call IFORMGETinteger(2 * 18, Noderivedtypes)
-            call IFORMGETinteger(2 * 19, Maxdge)
-            call IFORMGETinteger(2 * 20, Jaevap)
-            call IFORMgetinteger(2 * 21, Jaseddenscoupling)
+            call IFORMGETinteger(2 * 16, max_iterations_vertical_forester)
+            call IFORMGETinteger(2 * 17, Noderivedtypes)
+            call IFORMGETinteger(2 * 18, Maxdge)
+            call IFORMGETinteger(2 * 19, Jaevap)
+            call IFORMgetinteger(2 * 20, Jaseddenscoupling)
             if (jaevap > 0) then
                if (.not. allocated(evap)) then
                   allocate (evap(ndx))

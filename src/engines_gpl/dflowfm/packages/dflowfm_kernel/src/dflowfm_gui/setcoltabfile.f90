@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,8 @@ contains
       integer :: light
       integer :: minp
       integer, parameter :: mxq = 1, mxclass = 1
-      character FILNAM * (*), FOLNAM * 86
+      character(len=*), intent(in) :: filnam
+      character(:), allocatable :: FOLNAM
 
       FOLNAM = FILNAM
       if (FILNAM(1:5) == '*.hls') then

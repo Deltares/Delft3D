@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,19 +38,19 @@ module m_plotdots
    real(kind=dp), dimension(:), allocatable :: xdots, ydots ! dot coordinates, dim(NSIZE)
    real(kind=dp), dimension(:), allocatable :: zdots ! dot z-value
    integer, dimension(:), allocatable :: colnumber ! colour number
-   real(kind=dp), parameter :: ZDOTDEFAULT = 0d0
+   real(kind=dp), parameter :: ZDOTDEFAULT = 0.0_dp
 
 contains
 
    subroutine reallocdots(N)
-      use m_alloc
-      use m_missing
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss, imiss
       implicit none
 
       integer, intent(in) :: N
 
       if (N > NSIZE) then
-         NSIZE = 1 + int(1.2d0 * dble(N))
+         NSIZE = 1 + int(1.2_dp * real(N, kind=dp))
 
          call realloc(xdots, NSIZE, keepExisting=.true., fill=DMISS)
          call realloc(ydots, NSIZE, keepExisting=.true., fill=DMISS)
@@ -103,7 +103,9 @@ contains
 
       jawritten = 0
 
-      if (numdots < 1) goto 1234
+      if (numdots < 1) then
+         goto 1234
+      end if
 
       call newfil(id, FNAM)
 

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,22 +53,34 @@ contains
       integer :: k, L
       integer :: k1, k2
 
-      if (allocated(wcnx3)) deallocate (wcnx3)
-      if (allocated(wcny3)) deallocate (wcny3)
-      if (allocated(wcnx4)) deallocate (wcnx4)
-      if (allocated(wcny4)) deallocate (wcny4)
-      if (allocated(wcLn)) deallocate (wcLn)
-      if (allocated(jacorner)) deallocate (jacorner)
+      if (allocated(wcnx3)) then
+         deallocate (wcnx3)
+      end if
+      if (allocated(wcny3)) then
+         deallocate (wcny3)
+      end if
+      if (allocated(wcnx4)) then
+         deallocate (wcnx4)
+      end if
+      if (allocated(wcny4)) then
+         deallocate (wcny4)
+      end if
+      if (allocated(wcLn)) then
+         deallocate (wcLn)
+      end if
+      if (allocated(jacorner)) then
+         deallocate (jacorner)
+      end if
 
-      allocate (wcnx3(lnx), stat=ierr); 
+      allocate (wcnx3(lnx), stat=ierr)
       call aerr('wcnx3(lnx) ', ierr, lnx)
-      allocate (wcny3(lnx), stat=ierr); 
+      allocate (wcny3(lnx), stat=ierr)
       call aerr('wcny3(lnx) ', ierr, lnx)
-      allocate (wcnx4(lnx), stat=ierr); 
+      allocate (wcnx4(lnx), stat=ierr)
       call aerr('wcnx4(lnx) ', ierr, lnx)
-      allocate (wcny4(lnx), stat=ierr); 
+      allocate (wcny4(lnx), stat=ierr)
       call aerr('wcny4(lnx) ', ierr, lnx)
-      allocate (wcLn(2, lnx), stat=ierr); 
+      allocate (wcLn(2, lnx), stat=ierr)
       call aerr('wcLn(2,lnx)', ierr, lnx)
       allocate (jacorner(numk), stat=ierr)
       call aerr('jacorner(numk)', ierr, numk)
@@ -111,21 +123,31 @@ contains
          end if
       end do
 
-      if (allocated(cscnw)) deallocate (cscnw)
-      if (allocated(sncnw)) deallocate (sncnw)
-      if (allocated(kcnw)) deallocate (kcnw)
-      if (allocated(nwalcnw)) deallocate (nwalcnw)
-      if (allocated(sfcnw)) deallocate (sfcnw)
+      if (allocated(cscnw)) then
+         deallocate (cscnw)
+      end if
+      if (allocated(sncnw)) then
+         deallocate (sncnw)
+      end if
+      if (allocated(kcnw)) then
+         deallocate (kcnw)
+      end if
+      if (allocated(nwalcnw)) then
+         deallocate (nwalcnw)
+      end if
+      if (allocated(sfcnw)) then
+         deallocate (sfcnw)
+      end if
 
-      allocate (cscnw(nrcnw), stat=ierr); 
+      allocate (cscnw(nrcnw), stat=ierr)
       call aerr('cscnw(nrcnw)', ierr, nrcnw)
-      allocate (sncnw(nrcnw), stat=ierr); 
+      allocate (sncnw(nrcnw), stat=ierr)
       call aerr('sncnw(nrcnw)', ierr, nrcnw)
-      allocate (kcnw(nrcnw), stat=ierr); 
+      allocate (kcnw(nrcnw), stat=ierr)
       call aerr(' kcnw(nrcnw)', ierr, nrcnw)
-      allocate (nwalcnw(2, nrcnw), stat=ierr); 
+      allocate (nwalcnw(2, nrcnw), stat=ierr)
       call aerr(' nwalcnw(2,nrcnw)', ierr, 2 * nrcnw)
-      allocate (sfcnw(nrcnw), stat=ierr); 
+      allocate (sfcnw(nrcnw), stat=ierr)
       call aerr(' sfcnw(nrcnw)', ierr, nrcnw)
 
    end subroutine allocatelinktocornerweights

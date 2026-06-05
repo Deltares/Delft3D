@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2022-2024.
+!  Copyright (C)  Stichting Deltares, 2022-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,7 @@ contains
       call realloc(eh, ndx, stat=ierr)
       call aerr('eh(ndx)', ierr, ndx)
 
-      twogi = 1d0 / (2d0 * ag)
+      twogi = 1.0_dp / (2.0_dp * ag)
       do k = 1, ndx
          eh(k) = s1(k) + twogi * (ucx(k)**2 + ucy(k)**2)
       end do

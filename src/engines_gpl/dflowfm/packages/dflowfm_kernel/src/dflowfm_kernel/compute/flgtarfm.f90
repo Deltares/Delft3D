@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,8 +45,7 @@ contains
 ! NONE
 !!--declarations----------------------------------------------------------------
       ! use cpluv
-      use m_strucs
-      use m_missing
+      use m_strucs, only: generalstruc
       implicit none
 !
 ! Global variables
@@ -161,13 +160,13 @@ contains
       gatedoorheight = generalstruc(ng)%gatedoorheight
 
       !if (strdamf< - 0.5D0) strdamf = dynstructext
-      !if (lambda < - 0.5D0) lambda = extra_resist_genstruc
+      !if (lambda < - 0.5D0) lambda = EXTRA_RESISTANCE_GENERAL_STRUCTURE
 
       !
       !     Determine cgf, cgd, cwf, cwd, mugf
       !     (flow direction dependent)
       !
-      if (teken > 0.0d0) then
+      if (teken > 0.0_dp) then
          cgf = generalstruc(ng)%pos_freegateflowcoeff
          cgd = generalstruc(ng)%pos_drowngateflowcoeff
          cwf = generalstruc(ng)%pos_freeweirflowcoeff
@@ -183,7 +182,7 @@ contains
       !
       !     Determine flow direction dependent parameters
       !
-      if (teken > 0.0d0) then
+      if (teken > 0.0_dp) then
          wsd = wsdr
          ds1 = zs - zbsr
          ds2 = zbsr - zb2

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,6 +42,7 @@ module m_flow_modelinit
    use m_init_lateral_his, only: init_lateral_his
    use m_flow_trachyinit, only: flow_trachyinit
    use m_flow_sedmorinit, only: flow_sedmorinit
+   use m_waveconst
 
    implicit none
 
@@ -52,7 +53,7 @@ module m_flow_modelinit
 contains
 
    !> Initializes the entire current model (geometry, boundaries, initial state)
- !! @return Error status: error (/=0) or not (0)
+ !! @return Error status: error [=0) or not (0)
    integer function flow_modelinit() result(iresult) ! initialise flowmodel
       use m_flow_geominit, only: flow_geominit
       use m_flow_fourierinit, only: flow_fourierinit
@@ -70,9 +71,9 @@ contains
       use m_writesomeinitialoutput, only: writesomeinitialoutput
       use m_d3dflow_dimensioninit
       use timers
-      use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln
+      use m_flowgeom, only: jaFlowNetChanged, ndx, lnx, ndx2d, ndxi, wcl, ln, xz, yz
       use waq, only: reset_waq
-      use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1
+      use m_flow, only: kmx, kmxn, jasecflow, Perot_type, taubxu, ucxq, ucyq, fvcoro, vol1, s1, rho, ag, zws
       use m_flowtimes
       use m_laterals, only: numlatsg
       use network_data, only: NETSTAT_CELLS_DIRTY
@@ -84,7 +85,7 @@ contains
       use unstruc_files, only: mdia
       use unstruc_netcdf
       use MessageHandling
-      use m_flowparameters, only: jawave, jatrt, jacali, flowWithoutWaves, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
+      use m_flowparameters, only: jawave, jatrt, jacali, jasedtrails, jajre, modind, jaextrapbl, Corioadamsbashfordfac, flow_solver, FLOW_SOLVER_SRE, NOT_DEFINED
       use dfm_error
       use m_fm_wq_processes, only: jawaqproc
       use m_vegetation
@@ -109,7 +110,7 @@ contains
       use m_debug
       use m_flow_flowinit
       use m_pre_bedlevel, only: extrapolate_bedlevel_at_boundaries
-      use m_fm_icecover, only: fm_ice_alloc, fm_ice_echo
+      use m_fm_icecover, only: fm_ice_alloc, fm_icecover_prepare_output, fm_ice_echo
       use m_fixedweirs, only: weirdte, nfxw
       use mass_balance_areas_routines, only: mba_init
       use m_curvature, only: get_spirucm
@@ -119,15 +120,16 @@ contains
       use m_fm_erosed, only: taub
       use m_transport, only: numconst, constituents
       use m_laterals, only: reset_outgoing_lat_concentration, average_concentrations_for_laterals, apply_transport_is_used, &
-                            get_lateral_volume_per_layer, lateral_volume_per_layer
+                            finish_outgoing_lat_concentration, get_lateral_volume_per_layer, lateral_volume_per_layer
       use m_initialize_flow1d_implicit, only: initialize_flow1d_implicit
       use m_structure_parameters
       use m_set_frcu_mor
       use m_flow_obsinit
       use m_set_model_boundingbox, only: set_model_boundingbox
-      use m_init_openmp, only: init_openmp
       use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
       use m_tauwavefetch, only: tauwavefetch
+      use m_fill_constituents, only: fill_constituents
+      use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -141,6 +143,7 @@ contains
       real(kind=dp), allocatable :: weirdte_save(:)
       real(kind=dp), allocatable :: ucxq_save(:), ucyq_save(:)
       real(kind=dp), allocatable :: fvcoro_save(:)
+      class(precice_adapter_builder_t), pointer :: fm_precice_adapter_builder
 
       !
       ! To raise floating-point invalid, divide-by-zero, and overflow exceptions:
@@ -154,7 +157,7 @@ contains
       call datum2(rundat2)
       L = len_trim(rundat2)
 
-      if (ti_waq > 0d0) then
+      if (ti_waq > 0.0_dp) then
          call makedir(getoutputdir('waq')) ! No problem if it exists already.
       end if
 
@@ -182,12 +185,8 @@ contains
 
       call timstop(handle_extra(1)) ! End basic steps
 
-      if (jagui == 1) then
-         call timini() ! this seems to work, initimer and timini pretty near to each other
-      end if
-
 ! JRE
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          call timstrt('Surfbeat input init', handle_extra(2)) ! Wave input
          bccreated = .false. ! for reinit
          call xbeach_wave_input() ! will set swave and lwave
@@ -224,11 +223,15 @@ contains
 
          if (Ndx > 0) then
             call mess(LEVEL_INFO, 'Start partitioning model...')
-            if (jatimer == 1) call starttimer(IPARTINIT)
+            if (jatimer == 1) then
+               call starttimer(IPARTINIT)
+            end if
 
             call partition_init_1D2D(md_ident, iresult) ! 1D & 2D (hence the name, thanks to Herman for pointing this out)
 
-            if (jatimer == 1) call stoptimer(IPARTINIT)
+            if (jatimer == 1) then
+               call stoptimer(IPARTINIT)
+            end if
             call mess(LEVEL_INFO, 'Done partitioning model.')
 
             if (iresult == 0) then
@@ -270,9 +273,9 @@ contains
          is_is_numndvals = 3
       end if
 
-      if (my_rank == fetch_proc_rank .and. (jawave == 1 .or. jawave == 2)) then
+      if (my_rank == fetch_proc_rank .and. (jawave == WAVE_FETCH_HURDLE .or. jawave == WAVE_FETCH_YOUNG)) then
          ! All helpers need no further model initialization.
-         call tauwavefetch(0d0)
+         call tauwavefetch(0.0_dp)
          iresult = DFM_USERINTERRUPT
          return
       end if
@@ -281,7 +284,7 @@ contains
       call flow_allocflow() ! allocate   flow arrays
       call timstop(handle_extra(37)) ! end alloc flow
       !
-      if (jawave > 0 .and. .not. flowWithoutWaves) then
+      if (jawave > NO_WAVES) then
          call alloc9basicwavearrays()
       end if
       if (jawave > 2) then
@@ -295,7 +298,7 @@ contains
       call timstop(handle_extra(7)) ! End flow griddim
 
       call timstrt('Bed forms init (1)  ', handle_extra(8)) ! Bed forms
-      if ((jased > 0 .and. stm_included) .or. bfm_included .or. jatrt > 0 .or. (jawave > 0 .and. modind == 9)) then
+      if ((jased > 0 .and. stm_included) .or. bfm_included .or. jatrt > 0 .or. (jawave > NO_WAVES .and. modind == 9)) then
          call flow_bedforminit(1) ! bedforms stage 1: datastructure init
       end if
       call timstop(handle_extra(8)) ! End bed forms
@@ -324,9 +327,13 @@ contains
          call update_vertadmin()
 
          !3D: partition_init needs kmxn and kmxL arrays for 3D send- and ghostlists
-         if (jatimer == 1) call starttimer(IPARTINIT)
+         if (jatimer == 1) then
+            call starttimer(IPARTINIT)
+         end if
          call partition_init_3D(iresult)
-         if (jatimer == 1) call stoptimer(IPARTINIT)
+         if (jatimer == 1) then
+            call stoptimer(IPARTINIT)
+         end if
 
          if (iresult /= DFM_NOERR) then
             call mess(LEVEL_WARN, 'Error in 3D partitioning initialization.')
@@ -335,10 +342,6 @@ contains
 
       end if
       call timstop(handle_extra(12)) ! vertical administration
-
-#ifdef _OPENMP
-      ierr = init_openmp(md_numthreads, jampi)
-#endif
 
       call timstrt('Net link tree 0     ', handle_extra(13)) ! netlink tree 0
       if ((jatrt == 1) .or. (jacali == 1)) then
@@ -420,11 +423,11 @@ contains
 
       ! initialize waq and add to tracer administration
       call timstrt('WAQ processes init  ', handle_extra(18)) ! waq processes init
-      if (ti_waqproc /= 0d0) then
+      if (ti_waqproc /= 0.0_dp) then
          if (jawaqproc == 1) then
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
-            if (ti_waqproc > 0d0) then
+            if (ti_waqproc > 0.0_dp) then
                call fm_wq_processes_step(ti_waqproc, tstart_user)
             else
                call fm_wq_processes_step(dt_init, tstart_user)
@@ -435,6 +438,7 @@ contains
 
       call timstrt('MBA init            ', handle_extra(24)) ! MBA init
       if (ti_mba > 0) then
+         call fill_constituents(1) ! mba_init assumes that the concentrations are in the constituents array ...
          call mba_init()
       end if
       call timstop(handle_extra(24)) ! end MBA init
@@ -455,7 +459,7 @@ contains
       end if
       call timstop(handle_extra(26)) ! end dredging init
 
-      if (jawave == 4 .and. jajre == 1) then
+      if (jawave == WAVE_SURFBEAT .and. jajre == 1) then
          call timstrt('Surfbeat init         ', handle_extra(27)) ! Surfbeat init
          if (jampi == 0) then
             if (nwbnd == 0) then
@@ -465,6 +469,8 @@ contains
          call xbeach_wave_init()
          call timstop(handle_extra(27))
       end if
+
+      call fm_icecover_prepare_output(s1, rho, ag) ! needs to happen before the (final/second) call to flow_obsinit
 
       call timstrt('Observations init 2 ', handle_extra(28)) ! observations init 2
       call flow_obsinit() ! initialise stations and cross sections on flow grid + structure his (2nd time required to fill values in observation stations)
@@ -506,7 +512,7 @@ contains
          use_u1 = .false.
          ucxq_save = ucxq
          ucyq_save = ucyq
-         if (Corioadamsbashfordfac > 0d0) then
+         if (Corioadamsbashfordfac > 0.0_dp) then
             fvcoro_save = fvcoro
          end if
       end if !restart
@@ -523,9 +529,10 @@ contains
 
       !See UNST-7754
       if (stm_included .and. jased > 0) then
-         taub = 0d0
+         taub = 0.0_dp
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             taub(k1) = taub(k1) + wcl(1, L) * taubxu(L)
             taub(k2) = taub(k2) + wcl(2, L) * taubxu(L)
          end do
@@ -550,6 +557,10 @@ contains
          ! Use timestep 1 s to set outgoing_lat_concentration to the initial averaged concentrations at each lateral location.
          call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, 1._dp)
          call get_lateral_volume_per_layer(lateral_volume_per_layer)
+         if (jampi == 1) then
+            call reduce_lateral_output()
+         end if
+         call finish_outgoing_lat_concentration()
       end if
 
       !Initialize flow1d_implicit
@@ -605,6 +616,16 @@ contains
 
       call timstop(handle_extra(36)) ! End remainder
       call writesomeinitialoutput()
+
+      ! Geometry and initial data available, set up mesh(es) for precice adapter
+      ! TODO: Move name and config to more appropropriate places (also get names from config)
+      if (precice_adapter_is_enabled()) then
+         fm_precice_adapter_builder => precice_adapter_get_builder()
+         call fm_precice_adapter_builder%set_name("fm")
+         call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
+         call fm_precice_adapter_builder%set_cell_center_mesh_2d("fm_flow_cells", ndx, xz, yz)
+         call fm_precice_adapter_builder%set_cell_center_mesh_3d("fm_flow_cells_3d", ndx, kmx, xz, yz, zws)
+      end if
 
       iresult = DFM_NOERR
 

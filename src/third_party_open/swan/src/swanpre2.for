@@ -27,7 +27,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -36,22 +36,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -193,7 +191,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -202,22 +200,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -283,6 +279,7 @@
 
       TYPE XYPT                                                           40.31
         REAL                :: X, Y, XQ, YQ
+        CHARACTER (LEN=80)  :: ID
         TYPE(XYPT), POINTER :: NEXTXY
       END TYPE XYPT
 
@@ -313,7 +310,7 @@
 !
       LOGICAL   PP                                                        30.72
       INTEGER   IERR, SIRAY                                               30.81 30.72
-      CHARACTER PSNAME*16, STYPE*1, PRNAME*16                             40.31 30.21
+      CHARACTER PSNAME*16, STYPE*1, PRNAME*16, ID*80                      40.31 30.21
       LOGICAL   KEYWIS, BOTDEP                                            30.70
       SAVE IENT
       DATA IENT/0/
@@ -356,6 +353,7 @@
           OPSTMP%OPI(2) = MYK+1                                           40.31
           ALLOCATE(OPSTMP%XP(0))                                          40.31
           ALLOCATE(OPSTMP%YP(0))                                          40.31
+          ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
           NULLIFY(OPSTMP%NEXTOPS)                                         40.31
           IF ( .NOT.LOPS ) THEN                                           40.31
              FOPS = OPSTMP                                                40.31
@@ -440,11 +438,12 @@
             OPSTMP%OPI(1) = MXK+1                                         40.31
             OPSTMP%OPI(2) = MYK+1                                         40.31
             IF (ITEST .GE. 20 .OR. INTES .GE. 10)
-     &        WRITE (PRINTF, 6020) (OPSTMP%OPR(II), II=2,6)               40.31
- 6020       FORMAT (' Subgrid parms.', 6(1X,E12.4))
+     &        WRITE (PRINTF, 6020) (OPSTMP%OPR(II), II=1,5)               40.31
+ 6020       FORMAT (' Subgrid parms.', 5(1X,E12.4))
           ENDIF
           ALLOCATE(OPSTMP%XP(0))                                          40.31
           ALLOCATE(OPSTMP%YP(0))                                          40.31
+          ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
           NULLIFY(OPSTMP%NEXTOPS)                                         40.31
           IF ( .NOT.LOPS ) THEN                                           40.31
              FOPS = OPSTMP                                                40.31
@@ -521,6 +520,7 @@
 !       ***** store number of points of the curve *****
         OPSTMP%MIP = MIP                                                  40.31
         IF (MIP .EQ. 0) CALL MSGERR(1,'No output points found')
+        ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
         NULLIFY(OPSTMP%NEXTOPS)                                           40.31
         IF ( .NOT.LOPS ) THEN                                             40.31
            FOPS = OPSTMP                                                  40.31
@@ -563,7 +563,7 @@
         DO
           IF (PP) THEN
             IERR = 0                                                      10.18
-            CALL REFIXY (NDS, XP, YP, IERR)                               10.18
+            CALL REFIXY (NDS, XP, YP, IERR, ID)                           10.18
             IF (IERR.EQ.-1) GOTO 47
             IF (IERR.EQ.-2) THEN
               CALL MSGERR (2, 'Error reading point coord. from file')
@@ -577,16 +577,19 @@
           ALLOCATE(TMP)                                                   40.31
           TMP%X = XP                                                      40.31
           TMP%Y = YP                                                      40.31
+          TMP%ID = ID
           NULLIFY(TMP%NEXTXY)                                             40.31
           CURR%NEXTXY => TMP                                              40.31
           CURR => TMP                                                     40.31
         ENDDO
   47    ALLOCATE(OPSTMP%XP(MIP))                                          40.31
         ALLOCATE(OPSTMP%YP(MIP))                                          40.31
+        ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(MIP))                       40.31
         CURR => FRST%NEXTXY                                               40.31
         DO JJ = 1, MIP                                                    40.31
            OPSTMP%XP(JJ) = CURR%X                                         40.31
            OPSTMP%YP(JJ) = CURR%Y                                         40.31
+           OPSTMP%ID(JJ) = CURR%ID                                        40.31
            CURR => CURR%NEXTXY                                            40.31
         END DO                                                            40.31
         DEALLOCATE(TMP)                                                   40.31
@@ -678,6 +681,7 @@
 !         ***** termination *****
           OPSTMP%MIP = MIP                                                40.31
           IF (MIP .EQ. 1) CALL MSGERR (1,'Only one ray is defined')
+          ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
           NULLIFY(OPSTMP%NEXTOPS)                                         40.31
           IF ( .NOT.LOPS ) THEN                                           40.31
              FOPS = OPSTMP                                                40.31
@@ -775,6 +779,7 @@
      &               (2, 'No points with valid depth found')
 !             ***** store number of points of the curve *****
           OPSTMP%MIP = MIP                                                40.31
+          ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
           NULLIFY(OPSTMP%NEXTOPS)                                         40.31
           IF ( .NOT.LOPS ) THEN                                           40.31
              FOPS = OPSTMP                                                40.31
@@ -984,6 +989,7 @@
              OPSTMP%OPR(1) = -999.
           ENDIF                                                           40.80
           IF (MIP .EQ. 0) CALL MSGERR(1,'No output points found')
+          ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
           NULLIFY(OPSTMP%NEXTOPS)                                         40.31
           IF ( .NOT.LOPS ) THEN                                           40.31
              FOPS = OPSTMP                                                40.31
@@ -1029,12 +1035,11 @@
       USE OUTP_DATA                                                       40.13
       USE M_PARALL                                                        40.31
       USE swn_outnc                                                       41.52
-!PUN      USE SIZES                                                           40.95
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1043,22 +1048,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -1144,7 +1147,6 @@
       LOGICAL   KEYWIS                                                    40.31
       TYPE(ORQDAT), POINTER :: ORQTMP                                     40.31
       TYPE(ORQDAT), SAVE, POINTER :: CORQ                                 40.31
-!     LOGICAL, SAVE :: LORQ = .FALSE.                                     BJXX 40.31
       TYPE AUXT                                                           40.31
         INTEGER             :: I
         REAL                :: R
@@ -1155,6 +1157,10 @@
       INTEGER IEXPT(NEXPT)                                                41.62
       INTEGER IVT                                                         41.62
       INTEGER NOSWLL                                                      41.72
+      LOGICAL LC, VTK                                                     41.95
+      CHARACTER (LEN=4) :: PNUM                                           41.95
+      CHARACTER (LEN=80) :: MSGSTR                                        41.95
+      CHARACTER (LEN=LENFNM) :: OUTDIR                                    41.95
       SAVE IENT, IEXPT
       DATA IENT/0/
       DATA IEXPT /1, 2, 4, 5, 10, 12, 13, 16, 17, 26/                     41.62
@@ -1166,8 +1172,8 @@
 !             FRCOEFF/WIND/DISSIP/QB/TRANSP/FORCE/UBOT/URMS/WLEN/STEEPNESS/  &
 !             DHSIGN/DRTM01/LEAK/TSEC/XP/YP/DIST/SETUP/TMM10/RTMM10/         &
 !             TMBOT/QP/BFI/WATLEV/BOTLEV/TPS/DISBOT/DISSURF/DISWCAP/         &
-!             GENE/GENW/REDI/REDQ/REDT/PROPA/PROPX/PROPT/PROPS/RADS|LWAVP/   &
-!             DISTUR/TURB/DISSWELL/AICE/DISICE/                              &
+!             GENE/GENW/REDI/REDQ/REDT/REDB/REDC/PROPA/PROPX/PROPT/PROPS/    &
+!             RADS/LWAVP/DISTUR/TURB/DISSWELL/AICE/DISICE/                   &
 !             PTHSIGN/PTRTP/PTWLEN/PTDIR/PTDSPR/PTWFRAC/PTSTEEPNESS>         &
 !             ([unit]) (OUTPUT [tbegblk] [deltblk] SEC/MIN/HR/DAY)
 !   --------------------------------------------------------------------------
@@ -1217,18 +1223,23 @@
                RETURN                                                     40.30
             END IF                                                        40.30
           END IF
-          IF (FILENM .EQ. ' ') THEN                                       24/FEB
+          VTK = INDEX( FILENM, '.VT' ).NE.0 .OR.                          41.95
+     &          INDEX (FILENM, '.vt' ).NE.0                               41.95
+          IF ( VTK ) THEN                                                 41.95
+             DFAC  = 1.                                                   41.95
+             RTYPE = 'BLKV'                                               41.95
+          ENDIF                                                           41.95
+          IF (FILENM .EQ. ' ') THEN                                       32.02
             NREF = PRINTF
           ELSE
             NREF = 0
 !           --- append node number to FILENM in case of                   40.30
 !               parallel computing                                        40.30
-            IF ( PARLL ) THEN                                             40.30
+            IF ( PARLL.AND..NOT.VTK ) THEN                                41.95 40.30
                ILPOS = INDEX ( FILENM, ' ' )-1                            40.30
                WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE                    40.30
   33           FORMAT('-',I3.3)                                           40.30
             END IF                                                        40.30
-!PUN            FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                 40.95
           ENDIF
           CALL INKEYW ('STA', ' ')
           IF (KEYWIS('LAY')) THEN
@@ -1248,6 +1259,8 @@
           NVAR = 0                                                        40.31
           ORQTMP%OQI(3) = NVAR                                            40.31
           ORQTMP%OQI(4) = IDLAO                                           40.31
+          ALLOCATE(ORQTMP%IVTYP(1))                                       40.31
+          ALLOCATE(ORQTMP%FAC(1))                                         40.31
           OUTP_FILES(NREOQ) = FILENM                                      40.13
 !
 !         read types of output quantities
@@ -1409,6 +1422,16 @@
                    JDSXI  = MCMVAR                                        41.75
                    ALOCMP = .TRUE.                                        41.75
                 ENDIF                                                     41.75
+                IF (IVTYPE.EQ.79 .AND. JRSXB.LE.1) THEN                   41.80
+                   MCMVAR = MCMVAR+1                                      41.80
+                   JRSXB  = MCMVAR                                        41.80
+                   ALOCMP = .TRUE.                                        41.80
+                ENDIF                                                     41.80
+                IF (IVTYPE.EQ.80 .AND. JRSXC.LE.1) THEN                   41.90
+                   MCMVAR = MCMVAR+1                                      41.90
+                   JRSXC  = MCMVAR                                        41.90
+                   ALOCMP = .TRUE.                                        41.90
+                ENDIF                                                     41.90
                 IF (IVTYPE.EQ.7  .OR. IVTYPE.EQ.9  .OR.                   40.85
      &              IVTYPE.EQ.54 .OR. IVTYPE.EQ.55 .OR.                   40.85
      &              IVTYPE.EQ.56 .OR. IVTYPE.EQ.57 .OR.
@@ -1457,6 +1480,8 @@
              GOTO 70
           ENDIF
  91       IF (NVAR.GT.0) THEN                                             40.31
+             DEALLOCATE(ORQTMP%IVTYP)                                     40.31
+             DEALLOCATE(ORQTMP%FAC)                                       40.31
              ALLOCATE(ORQTMP%IVTYP(NVAR))                                 40.31
              ALLOCATE(ORQTMP%FAC(NVAR))                                   40.31
              CURR => FRST%NEXTI                                           40.31
@@ -1474,6 +1499,63 @@
             NSTATM = 1
             CALL INCTIM (ITMOPT, 'TBEG', ORQTMP%OQR(1), 'REQ', 0D0)       40.31 30.00
             CALL INITVD ('DELT', ORQTMP%OQR(2), 'REQ', 0D0)               40.31 30.00
+            IF ( VTK.AND.IAMMASTER ) THEN                                 41.95
+!              a PVD file is created to collect time-varying output       41.95
+               LC=.FALSE.                                                 41.95
+               ILPOS=INDEX( FILENM, '.VT' )                               41.95
+               IF (ILPOS.EQ.0) THEN                                       41.95
+                  LC=.TRUE.                                               41.95
+                  ILPOS=INDEX( FILENM, '.vt' )                            41.95
+               ENDIF                                                      41.95
+               IF (LC) THEN                                               41.95
+                  WRITE(FILENM(ILPOS+1:ILPOS+3),95) 'pvd'                 41.95
+               ELSE                                                       41.95
+                  WRITE(FILENM(ILPOS+3:ILPOS+3),95) 'PVD'                 41.95
+               ENDIF                                                      41.95
+ 95            FORMAT(A3)                                                 41.95
+               NREF   =  0                                                41.95
+               IOSTAT = -1                                                41.95
+               CALL FOR (NREF, FILENM, 'UF', IOSTAT)                      41.95
+               IF (STPNOW()) RETURN                                       41.95
+               UPVDF(NREOQ) = NREF                                        41.95
+!              write the header lines                                     41.95
+               WRITE(NREF,'(A)') TRIM(XMLLIN1)                            41.95
+               WRITE(NREF,'(A)') TRIM(XMLLIN2)                            41.95
+               VTKLINE = '  This file was generated by SWAN version '//   41.95
+     &                   TRIM(VERTXT)//'; project: '//TRIM(PROJID)//      41.95
+     &                   '; run number: '//TRIM(PROJNR)                   41.95
+               WRITE(NREF,'(A)') TRIM(VTKLINE)                            41.95
+               WRITE(NREF,'(A)') TRIM(XMLLIN3)                            41.95
+               WRITE(NREF,'(A)') TRIM(PVDLIN1)                            41.95
+               WRITE(NREF,'(A)') TRIM(PVDLIN2)                            41.95
+!              make output directory                                      41.95
+               IF (LC) THEN                                               41.95
+                  OUTDIR=FILENM(1:ILPOS-1)//'_output'                     41.95
+               ELSE                                                       41.95
+                  OUTDIR=FILENM(1:ILPOS-1)//'_OUTPUT'                     41.95
+               ENDIF                                                      41.95
+               CALL MKPATH ( OUTDIR, IERR )                               41.95
+               IF (IERR.NE.0) OUTDIR = '.'                                41.95
+               VTKDIR(NREOQ) = OUTDIR                                     41.95
+!              create subdirectories to store each piece of output data   41.95
+               IF (PARLL) THEN                                            41.95
+                  DO IPROC = 1, NPROC                                     41.95
+                     IF (LC) THEN                                         41.95
+                        WRITE(PNUM(1:4),96) 'p',IPROC                     41.95
+                     ELSE                                                 41.95
+                        WRITE(PNUM(1:4),96) 'P',IPROC                     41.95
+                     ENDIF                                                41.95
+                     CALL MKPATH ( TRIM(OUTDIR)//DIRCH2//PNUM, IERR )     41.95
+                  ENDDO                                                   41.95
+                  IF (IERR.NE.0) THEN                                     41.95
+                     WRITE (MSGSTR, '(A,I5)')                             41.95
+     &                                 'Error while creating folders '//  41.95
+     &                                 '- status error =',IERR            41.95
+                     CALL MSGERR( 3, TRIM(MSGSTR) )                       41.95
+                  ENDIF                                                   41.95
+ 96               FORMAT(A1,I3.3)                                         41.95
+               ENDIF                                                      41.95
+            ENDIF                                                         41.95
           ENDIF
 !
           ORQTMP%OQI(3) = NVAR                                            40.31
@@ -1495,8 +1577,8 @@
 !             FRCOEFF/WIND/DISSIP/QB/TRANSP/FORCE/UBOT/URMS/WLEN/STEEPNESS/  &
 !             DHSIGN/DRTM01/LEAK/TIME/TSEC/XP/YP/DIST/SETUP/TMM10/RTMM10/    &
 !             TMBOT/QP/BFI/WATLEV/BOTLEV/TPS/DISBOT/DISSURF/DISWCAP/         &
-!             GENE/GENW/REDI/REDQ/REDT/PROPA/PROPX/PROPT/PROPS/RADS|LWAVP/   &
-!             DISTUR/TURB/DISSWELL/AICE/DISICE/                              &
+!             GENE/GENW/REDI/REDQ/REDT/REDB/REDC/PROPA/PROPX/PROPT/PROPS/    &
+!             RADS/LWAVP/DISTUR/TURB/DISSWELL/AICE/DISICE/                   &
 !             PTHSIGN/PTRTP/PTWLEN/PTDIR/PTDSPR/PTWFRAC/PTSTEEPNESS>         &
 !             ([unit]) (OUTPUT [tbegtbl] [delttbl] SEC/MIN/HR/DAY)
 !   --------------------------------------------------------------------------
@@ -1545,7 +1627,6 @@
              ILPOS = INDEX ( FILENM, ' ' )-1                              40.30
              WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE                      40.30
           END IF                                                          40.30
-!PUN          FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                   40.95
         ELSE
           NREF = PRINTF
         ENDIF
@@ -1556,6 +1637,8 @@
 !
         NVAR = 0
         ORQTMP%OQI(3) = NVAR                                              40.31
+        ALLOCATE(ORQTMP%IVTYP(1))                                         40.31
+        ALLOCATE(ORQTMP%FAC(1))                                           40.31
 !       read types of variables to be printed in the table
         FRST%I = 0                                                        40.31
         NULLIFY(FRST%NEXTI)                                               40.31
@@ -1706,6 +1789,16 @@
                JDSXI  = MCMVAR                                            41.75
                ALOCMP = .TRUE.                                            41.75
             ENDIF                                                         41.75
+            IF (IVTYPE.EQ.79 .AND. JRSXB.LE.1) THEN                       41.80
+               MCMVAR = MCMVAR+1                                          41.80
+               JRSXB  = MCMVAR                                            41.80
+               ALOCMP = .TRUE.                                            41.80
+            ENDIF                                                         41.80
+            IF (IVTYPE.EQ.80 .AND. JRSXC.LE.1) THEN                       41.90
+               MCMVAR = MCMVAR+1                                          41.90
+               JRSXC  = MCMVAR                                            41.90
+               ALOCMP = .TRUE.                                            41.90
+            ENDIF                                                         41.90
             IF (IVTYPE.EQ.7  .OR. IVTYPE.EQ.9  .OR.                       40.85
      &          IVTYPE.EQ.54 .OR. IVTYPE.EQ.55 .OR.                       40.85
      &          IVTYPE.EQ.56 .OR.                                         VORTECH
@@ -1734,6 +1827,7 @@
           GOTO 80
         ENDIF
  90     IF (NVAR.GT.0) THEN                                               40.31
+           DEALLOCATE(ORQTMP%IVTYP)                                       40.31
            ALLOCATE(ORQTMP%IVTYP(NVAR))                                   40.31
            CURR => FRST%NEXTI                                             40.31
            DO JJ = 1, NVAR                                                40.31
@@ -1743,10 +1837,11 @@
            DEALLOCATE(TMP)                                                40.31
         END IF                                                            40.31
         IF ( RTYPE.EQ.'TABC') THEN
+          DEALLOCATE(ORQTMP%FAC)
           ALLOCATE(ORQTMP%FAC(NVAR))
           ORQTMP%FAC=1.
         ELSE
-        ALLOCATE(ORQTMP%FAC(0))                                           40.31
+          ALLOCATE(ORQTMP%FAC(0))                                           40.31
         ENDIF
 
         IF (IVTYPE .EQ. 98) THEN                                          30.00
@@ -1779,7 +1874,7 @@
       ENDIF
 !
 !   --------------------------------------------------------------------------
-!   SPECout 'sname'  SPEC1D/SPEC2D  ABS/REL   'fname'                        &
+!   SPECout 'sname'  SPEC1D/SPEC2D  ABS/REL  S/L  'fname'                    &
 !                    (MONth  ESCAle MDGRID COMPress NOAUX) (NOT documented)  &
 !                    (OUTPUT [tbegspc] [deltspc] SEC/MIN/HR/DAY)
 !   --------------------------------------------------------------------------
@@ -1810,6 +1905,18 @@
         ELSE
           CALL IGNORE ('ABS')                                             40.03
         ENDIF
+!
+        CALL INKEYW ('STA', 'S')                                          41.85
+        IF (KEYWIS ('L')) THEN                                            41.85
+           IF (RTYPE(3:3).EQ.'R') THEN
+              RTYPE(3:3) = 'L'
+           ELSEIF (RTYPE(3:3).EQ.'E') THEN
+              RTYPE(3:3) = 'B'
+           ENDIF
+        ELSE
+          CALL IGNORE ('S')                                               41.85
+        ENDIF
+!
         ORQTMP%OQR(1) = -1.                                               40.31
         ORQTMP%OQR(2) = -1.                                               40.31
         ORQTMP%RQTYPE = RTYPE                                             40.31
@@ -1821,7 +1928,6 @@
            ILPOS = INDEX ( FILENM, ' ' )-1                                40.30
            WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE                        40.30
         END IF                                                            40.30
-!PUN        FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                     40.95
         ORQTMP%PSNAME = PSNAME                                            40.31
         ORQTMP%OQI(1) = NREF                                              40.31
         ORQTMP%OQI(2) = NREOQ                                             40.31
@@ -1854,8 +1960,8 @@
 !
         NVAR = 0                                                          40.31
         ORQTMP%OQI(3) = NVAR                                              40.31
-        ALLOCATE(ORQTMP%IVTYP(0))                                         40.31
-        ALLOCATE(ORQTMP%FAC(0))                                           40.31
+        ALLOCATE(ORQTMP%IVTYP(1))                                         40.31
+        ALLOCATE(ORQTMP%FAC(1))                                           40.31
 !       read types of variables to be printed in the table
         CALL INKEYW ('STA', ' ')                                          30.00
         IF (KEYWIS ('OUT')) THEN                                          40.03
@@ -1926,7 +2032,6 @@
              ILPOS = INDEX ( FILENM, ' ' )-1                              40.30
              WRITE(FILENM(ILPOS+1:ILPOS+4),33) INODE                      40.30
           END IF                                                          40.30
-!PUN          FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                   40.95
           ORQTMP%PSNAME = PSNAME                                          40.31
           ORQTMP%OQI(1) = NREF                                            40.31
           ORQTMP%OQI(2) = NREOQ                                           40.31
@@ -1937,8 +2042,8 @@
           IF ( INDEX( FILENM, '.NC'  ).NE.0 .OR.
      &         INDEX (FILENM, '.nc'  ).NE.0 )
      &       ORQTMP%OQI(4) = 18
-          ALLOCATE(ORQTMP%IVTYP(0))                                       40.31
-          ALLOCATE(ORQTMP%FAC(0))                                         40.31
+          ALLOCATE(ORQTMP%IVTYP(1))                                       40.31
+          ALLOCATE(ORQTMP%FAC(1))                                         40.31
 !
           CALL INKEYW ('STA', ' ')                                        30.00
           IF (KEYWIS ('OUT')) THEN                                        40.03
@@ -1984,7 +2089,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -1993,22 +2098,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. AUTHORS
@@ -2154,7 +2257,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2163,22 +2266,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2272,7 +2373,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2281,22 +2382,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2397,14 +2496,18 @@
       USE SWCOMM2                                                         40.41
       USE SWCOMM3                                                         40.41
       USE M_BNDSPEC                                                       40.31
+      USE M_PARALL                                                        43.01
       USE SwanGriddata                                                    40.80
       USE SwanGridobjects                                                 40.80
       USE SwanCompdata                                                    40.80
+!METIS      USE SwanParallel                                                    43.01
+!
+      IMPLICIT NONE                                                       43.01
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -2413,22 +2516,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -2446,6 +2547,7 @@
 !     40.80: Marcel Zijlema
 !     40.92: Marcel Zijlema
 !     41.14: Nico Booij
+!     43.01: Marcel Zijlema
 !
 !  1. Updates
 !
@@ -2467,6 +2569,7 @@
 !     40.80, Jun. 07: extension to unstructured grids
 !     40.92, Jun. 08: changes with respect to boundary polygons
 !     41.14, Jul. 10: call SwanBndStruc added
+!     43.01, Aug. 24: parallelization of unstructured boundaries and their conditions
 !
 !  2. Purpose
 !
@@ -2498,6 +2601,8 @@
       INTEGER   MM,IX,IY,ISIDM,ISIDE,KC,KC2,KC1,IX3,IY3,MP
       INTEGER   IP,II,NBSPSS,NFSEQ,IKO,IKO2,IBSPC1,IBSPC2
       INTEGER   VM                                                        40.80
+      INTEGER   IERR, IXB1, IXB2, IXI, IPP, ISH, JBG                      43.01
+      INTEGER   IXG, IXG1, IXG2, ITMP(1), K, NB                           43.01
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: IARR1, IARR2                  40.92
 
@@ -2505,15 +2610,15 @@
       REAL      XP,YP,XC,YC,RR,DIRSI,COSDIR,SINDIR,DIRSID,DIRREF
       REAL      RLEN1,RDIST,RLEN2,XC1,YC1,XC2,YC2,W1
 
-      LOGICAL   KEYWIS, LOCGRI, CCW, BPARF, BOUNPT,DONALL
+      REAL      DET, DXLOC, DYLOC, X1, Y1, X2, Y2, X3, Y3                 43.01
+
+      LOGICAL   KEYWIS, LOCGRI, CCW, BPARF, BOUNPT, DONALL
       LOGICAL   LFRST1, LFRST2, LFRST3                                    40.31
+      LOGICAL, SAVE :: BNDDONE = .FALSE.                                  43.01
+      LOGICAL   SwanPointinMesh                                           43.01
 
       INTEGER   NUMP
 
-!      LOGICAL, SAVE :: LBFILS = .FALSE.                                  BJXX 40.31
-!      LOGICAL, SAVE :: LBS    = .FALSE.                                  BJXX 40.31
-!      LOGICAL, SAVE :: LBGP   = .FALSE.                                  BJXX 40.31
-!                                                                         BJXX
       TYPE(BSPCDAT), POINTER :: BFLTMP                                    40.31
 !      TYPE(BSPCDAT), SAVE, POINTER :: CUBFL                              BJXX 40.31
 
@@ -2605,19 +2710,82 @@
       vert => gridobject%vert_grid                                        40.80
       face => gridobject%face_grid                                        40.80
 !
-      IF (OPTG.EQ.5) THEN                                                 40.80
+      IF (.NOT.BNDDONE) THEN                                              43.01
+         IF (OPTG.EQ.5) THEN                                              40.80
 !
-!        in case of unstructured grid, make list of boundary points
-!        in ascending order
+!           in case of unstructured grid, make list of boundary points
+!           in ascending order
 !
-         CALL SwanBpntlist                                                40.80
-         IF (STPNOW()) RETURN                                             41.39
-      ELSE                                                                41.14
+            CALL SwanBpntlist                                             40.80
+            IF (STPNOW()) RETURN                                          41.39
+!METIS!
+!METIS!           next, gather the lists of boundary points to all processes    43.01
+!METIS!
+!METIS            CALL SwanCollBpntlist                                         43.01
+!METIS            IF (STPNOW()) RETURN                                          43.01
 !
-!        generate output curves BOUNDARY and BOUND_** for structured grids
+            IF (ITEST.GE.50.AND.IAMMASTER) THEN                           43.01
+               NB = SIZE(blist,1)                                         43.01
+               K  = SIZE(blist,2)                                         43.01
+               IF (.NOT.PARLL) K = 1                                      43.01
+               WRITE(PRTEST,*)                                            43.01
+     &                     'test BLIST of the sea/mainland boundary '     43.01
+               KOUNTR = 0                                                 43.01
+               DO IPP = 1, K                                              43.01
+                  DO IP = 1, NB                                           43.01
+                     II = blist(IP,IPP)                                   43.01
+                     IF (.NOT.PARLL) THEN                                 43.01
+                        VM = vmark(II)                                    43.01
+                     ELSE                                                 43.01
+                        VM = bmark(IP,IPP)                                43.01
+                     ENDIF                                                43.01
+                     IF ( II.GT.0 ) THEN                                  43.01
+                        KOUNTR = KOUNTR + 1                               43.01
+                        WRITE(PRTEST,'(A,2I7,2F18.9,I7)')                 43.01
+     &                  ' I, BLIST(I), X, Y, bound marker ',              43.01
+     &                  KOUNTR, II,                                       43.01
+     &                  xcugrdgl(II)+XOFFS,                               43.01
+     &                  ycugrdgl(II)+YOFFS,                               43.01
+     &                  VM                                                43.01
+                     ENDIF                                                43.01
+                  ENDDO                                                   43.01
+               ENDDO                                                      43.01
+            ENDIF                                                         43.01
 !
-         CALL SwanBndStruc ( XCGRID, YCGRID )                             41.14
-      ENDIF                                                               40.80
+!           store global indices of boundary vertices in own subdomain    43.01
+!
+            IF ( PARLL ) THEN                                             43.01
+               NB = nverts - count(mask=vmark==0 .or. vmark>=excmark)     43.01
+               ALLOCATE(bvertg(NB,2))                                     43.01
+               K = 0                                                      43.01
+               DO IP = 1, nverts                                          43.01
+                  IF ( vmark(IP).NE.0 .AND. vmark(IP).LT.excmark ) THEN   43.01
+                     K = K + 1                                            43.01
+                     bvertg(K,1) = IP                                     43.01
+                     bvertg(K,2) = ivertg(IP)                             43.01
+                  ENDIF                                                   43.01
+               ENDDO                                                      43.01
+            ELSE                                                          43.01
+               NB = nverts - count(mask=vmark==0)                         43.01
+               ALLOCATE(bvertg(NB,2))                                     43.01
+               K = 0                                                      43.01
+               DO IP = 1, nverts                                          43.01
+                  IF ( vmark(IP).NE.0 ) THEN                              43.01
+                     K = K + 1                                            43.01
+                     bvertg(K,1) = IP                                     43.01
+                     bvertg(K,2) = IP                                     43.01
+                  ENDIF                                                   43.01
+               ENDDO                                                      43.01
+            ENDIF                                                         43.01
+!
+         ELSE                                                             41.14
+!
+!           generate output curves BOUNDARY and BOUND_** for structured grids
+!
+            CALL SwanBndStruc ( XCGRID, YCGRID )                          41.14
+         ENDIF                                                            40.80
+         BNDDONE = .TRUE.                                                 43.01
+      ENDIF
 !
       CALL INKEYW ('REQ',' ')
       IF (KEYWIS ('SHAP')) THEN
@@ -2627,12 +2795,14 @@
 ! =========================================================================
 !
 !                      |  JONswap  [gamma]  |
-!                      |                    |    | -> PEAK |
-!  BOUndspec  SHAPe   <   PM                 >  <           >   &
-!                      |                    |    | MEAN    |
-!                      |  GAUSs  [sigfr]    |
 !                      |                    |
+!  BOUndspec  SHAPe   <   PM                |
+!                      |                    |    | -> PEAK |
+!                      |  GAUSs  [sigfr]     >  <           >   &
+!                      |                    |    | MEAN    |
 !                      |  BIN               |
+!                      |                    |
+!                      |  TMA  [gamma] [d]  |
 !
 !                     | DEGRees   |
 !             DSPR   <             >
@@ -2653,6 +2823,10 @@
           CALL INREAL ('SIGFR', SIGMAG, 'STA', 0.01)
 !         convert from Hz to rad/s:
           PSHAPE(2) = PI2 * SIGMAG                                        40.00
+        ELSE IF (KEYWIS ('TMA')) THEN
+          FSHAPE = 5
+          CALL INREAL ('GAMMA', PSHAPE(1), 'STA', 3.3)
+          CALL INREAL ('D'    , PSHAPE(3), 'REQ', 0. )
         ENDIF
 !       PEAK or MEAN frequency
         CALL INKEYW ('STA', ' ')
@@ -2698,6 +2872,13 @@
      &    ' command READ BOT or READ UNSTRUC must precede this command')  40.80
           GOTO 900
         ENDIF
+        IF (.NOT.ALOBND) THEN
+           NBGRPT = 0
+           NBSPEC = 0
+           NBFILS = 0
+           NBGGL  = 0
+           ALOBND = .TRUE.
+        ENDIF
 !
         IF (OPTG.EQ.5) THEN                                               40.80
            CALL MSGERR(2,
@@ -2708,7 +2889,7 @@
         NBFILS = NBFILS + 1
         CALL CONSTRUCTOR(BFLTMP)                                          BJXX 40.31
         CALL INCSTR ('FNAME',FILENM,'REQ', ' ')
-        CALL BCWAMN (FILENM, 'NEST', BFLTMP,                              BJXX 40.31
+        CALL BCWAMN (FILENM, 'NEST', BFLTMP,                              41.78 40.31
      &               XCGRID, YCGRID, KGRPNT, XYTST)                       40.31
         IF (STPNOW()) RETURN                                              34.01
         NULLIFY(BFLTMP%NEXTBSPC)                                          40.31
@@ -2740,6 +2921,13 @@
      &    ' command READ BOT or READ UNSTRUC must precede this command')  40.80
           GOTO 900
         ENDIF
+        IF (.NOT.ALOBND) THEN
+           NBGRPT = 0
+           NBSPEC = 0
+           NBFILS = 0
+           NBGGL  = 0
+           ALOBND = .TRUE.
+        ENDIF
 !
         IF (OPTG.EQ.5) THEN                                               40.80
            CALL MSGERR(2,
@@ -2750,7 +2938,7 @@
         NBFILS = NBFILS + 1
         CALL CONSTRUCTOR(BFLTMP)                                          BJXX 40.31
         CALL INCSTR ('FNAME',FILENM,'REQ', ' ')
-        CALL BCWW3N (FILENM, 'NEST', BFLTMP,                              BJXX 40.31 40.05
+        CALL BCWW3N (FILENM, 'NEST', BFLTMP,                              41.78 40.31 40.05
      &               XCGRID, YCGRID, KGRPNT, XYTST, KGRBND)               40.31 40.05
         IF (STPNOW()) RETURN
         NULLIFY(BFLTMP%NEXTBSPC)                                          40.31
@@ -2781,6 +2969,13 @@
      &    ' command READ BOT or READ UNSTRUC must precede this command')  40.80
           GOTO 900
         ENDIF
+        IF (.NOT.ALOBND) THEN
+           NBGRPT = 0
+           NBSPEC = 0
+           NBFILS = 0
+           NBGGL  = 0
+           ALOBND = .TRUE.
+        ENDIF
 !
         NBFILS = NBFILS + 1
         CALL CONSTRUCTOR(BFLTMP)                                          BJXX 40.31
@@ -2801,7 +2996,7 @@
            CALL WRNKEY                                                    40.05
         ENDIF                                                             40.05
 
-        CALL BCFILE (FILENM, 'NEST', BFLTMP,                              BJXX 40.31
+        CALL BCFILE (FILENM, 'NEST', BFLTMP,                              41.78 40.31
      &               XCGRID, YCGRID, KGRPNT, XYTST,  KGRBND,              40.31
      &               DONALL)                                              40.05
         IF (STPNOW()) RETURN                                              34.01
@@ -2854,6 +3049,13 @@
      &    ' command READ BOT or READ UNSTRUC must precede this command')  40.80
           GOTO 900
         ENDIF
+        IF (.NOT.ALOBND) THEN
+           NBGRPT = 0
+           NBSPEC = 0
+           NBFILS = 0
+           NBGGL  = 0
+           ALOBND = .TRUE.
+        ENDIF
 !
 !       first define side or segment
 !
@@ -2905,13 +3107,26 @@
 !             --- unstructured grid
 !
                  CALL SwanFindPoint ( XP, YP, IX2 )                       40.80
-                 IF ( IX2.LT.0 ) THEN                                     40.80
+!
+!                --- find global index of (XP,YP)                         43.01
+!
+                 IF ( PARLL ) THEN                                        43.01
+                    IF ( IX2.GT.0 ) THEN                                  43.01
+                       IXG2 = ivertg(IX2)                                 43.01
+                    ELSE                                                  43.01
+                       IXG2 = -999                                        43.01
+                    ENDIF                                                 43.01
+                    CALL SWREDUCE( IXG2, 1, SWINT, SWMAX )                43.01
+                 ELSE                                                     43.01
+                    IXG2 = IX2                                            43.01
+                 ENDIF                                                    43.01
+                 IF ( IXG2.LT.0 ) THEN                                    43.01 40.80
                     WRITE (MSGSTR, '(A,F12.4,A,F12.4,A)')                 40.80
      &                        ' Boundary point (',XP+XOFFS,',',YP+YOFFS,  40.80
      &                                ') not part of computational grid'  40.80
                     CALL MSGERR( 2, TRIM(MSGSTR) )                        40.80
                  ENDIF                                                    40.80
-                 IF ( vert(IX2)%atti(VMARKER) /= 1 ) THEN                 40.80
+                 IF ( IX2.GT.0 .AND. vert(IX2)%atti(VMARKER) /= 1 ) THEN  43.01 40.80
                     WRITE (MSGSTR, '(A,F12.4,A,F12.4,A)')                 40.80
      &                                ' Vertex (',XP+XOFFS,',',YP+YOFFS,  40.80
      &                                 ') is not a valid boundary point'  40.80
@@ -2926,16 +3141,24 @@
                  IX2 = IX2 + 1                                            40.00
                  IY2 = IY2 + 1
               ELSE                                                        40.80
-                 CALL ININTG ('K' , IX2, 'REP', -1)                       40.03
-                 IF (IX2 .LT. 0) GOTO 42                                  40.00
-                 IF (IX2.LE.0 .OR. IX2.GT.nverts) THEN                    40.80
-                    WRITE (MSGSTR,'(I4,A)') IX2,                          40.80
+                 CALL ININTG ('K' , IXG2, 'REP', -1)                      43.01 40.03
+                 IF (IXG2 .LT. 0) GOTO 42                                 43.01 40.00
+                 IF (IXG2.LE.0 .OR. IXG2.GT.nvertsg) THEN                 43.01 40.80
+                    WRITE (MSGSTR,'(I4,A)') IXG2,                         43.01 40.80
      &                                    ' is not a valid vertex index'  40.80
                     CALL MSGERR( 2, TRIM(MSGSTR) )                        40.80
-                 ELSEIF ( vert(IX2)%atti(VMARKER) /= 1 ) THEN             40.80
-                    WRITE (MSGSTR,'(A,I4,A)') ' Vertex with index ',IX2,  40.80
+                 ENDIF                                                    43.01
+                 IF ( PARLL ) THEN                                        43.01
+                    ITMP = MINLOC(ABS(ivertg-IXG2))                       43.01
+                    IX2  = ITMP(1)                                        43.01
+                    IF ( ivertg(IX2) /= IXG2 ) IX2 = -1                   43.01
+                 ELSE                                                     43.01
+                    IX2 = IXG2                                            43.01
+                 ENDIF                                                    43.01
+                 IF ( IX2.GT.0 .AND. vert(IX2)%atti(VMARKER) /= 1 ) THEN  43.01 40.80
+                   WRITE (MSGSTR,'(A,I4,A)') ' Vertex with index ',IXG2,  43.01 40.80
      &                                  ' is not a valid boundary point'  40.80
-                    CALL MSGERR( 2, TRIM(MSGSTR) )                        40.80
+                   CALL MSGERR( 2, TRIM(MSGSTR) )                         40.80
                  ENDIF                                                    40.80
               ENDIF                                                       40.80
             ENDIF
@@ -2989,13 +3212,25 @@
 !           --- unstructured grid                                         40.80
 !
                IF (LFRST1) THEN                                           40.80
-                  IXB1 = vert(IX2)%atti(BINDX)                            40.80
-                  JBG  = vert(IX2)%atti(BPOL)                             40.92
+                  IF ( IX2.GT.0 ) THEN                                    43.01
+                     JBG = vert(IX2)%atti(BPOL)                           43.01 40.92
+                  ELSE                                                    43.01
+                     JBG = -1                                             43.01
+                  ENDIF                                                   43.01
+                  CALL SWREDUCE( JBG, 1, SWINT, SWMAX )                   43.01
+                  ITMP = MINLOC(ABS(blist(:,JBG)-IXG2))                   43.01
+                  IXB1 = ITMP(1)                                          43.01
                   DET  = 1.                                               40.92
                   LFRST1 = .FALSE.                                        40.80
                ELSE                                                       40.80
-                  IXB1 = vert(IX1)%atti(BINDX)                            40.80
-                  JBG  = vert(IX1)%atti(BPOL)                             40.92
+                  IF ( IX1.GT.0 ) THEN                                    43.01
+                     JBG = vert(IX1)%atti(BPOL)                           43.01 40.92
+                  ELSE                                                    43.01
+                     JBG = -1                                             43.01
+                  ENDIF                                                   43.01
+                  CALL SWREDUCE( JBG, 1, SWINT, SWMAX )                   43.01
+                  ITMP = MINLOC(ABS(blist(:,JBG)-IXG1))                   43.01
+                  IXB1 = ITMP(1)                                          43.01
 !
 !                 1) the wave spectrum along the given segment can be
 !                    imposed in counterclockwise or clockwise direction
@@ -3007,31 +3242,37 @@
 !                    and an arbitrary point inside domain
 !
 !                 first endpoint of segment
-                  X1 = vert(IX1)%attr(VERTX)                              40.80
-                  Y1 = vert(IX1)%attr(VERTY)                              40.80
+                  X1 = xcugrdgl(IXG1)                                     43.01 40.80
+                  Y1 = ycugrdgl(IXG1)                                     43.01 40.80
 !
 !                 second endpoint of segment
-                  X2 = vert(IX2)%attr(VERTX)                              40.80
-                  Y2 = vert(IX2)%attr(VERTY)                              40.80
+                  X2 = xcugrdgl(IXG2)                                     43.01 40.80
+                  Y2 = ycugrdgl(IXG2)                                     43.01 40.80
 !
 !                 an arbitrary internal point                             40.92
-                  DX=0.1*mingsiz
-                  DY=0.1*mingsiz
-                  DO IP=1,4
-                     X3 = X1 - DX
-                     Y3 = Y1 - DY
-                     CALL SwanFindPoint ( X3, Y3, IX )
-                     IF ( JBG>1 .AND. IX.LT.0 ) THEN
-                        X3 = X1 + DX
-                        Y3 = Y1 + DY
+                  DXLOC = mingsiz                                         43.01
+                  CALL SWREDUCE ( DXLOC, 1, SWREAL, SWMIN )               43.01
+                  DYLOC = DXLOC                                           43.01
+                  DO IP = 1, 4
+                     X3 = X1 - DXLOC                                      43.01
+                     Y3 = Y1 - DYLOC                                      43.01
+                     IF ( SwanPointinMesh( X3, Y3 ) ) THEN                43.01
+                        IXG =  1                                          43.01
+                     ELSE                                                 43.01
+                        IXG = -1                                          43.01
+                     ENDIF                                                43.01
+                     CALL SWREDUCE( IXG, 1, SWINT, SWMAX )                43.01
+                     IF ( JBG.GT.1 .AND. IXG.LT.0 ) THEN
+                        X3 = X1 + DXLOC                                   43.01
+                        Y3 = Y1 + DYLOC                                   43.01
                         EXIT
-                     ELSEIF ( JBG==1 .AND. IX.GT.0 ) THEN
+                     ELSEIF ( JBG.EQ.1 .AND. IXG.GT.0 ) THEN
                         EXIT
                      ENDIF
                      IF ( MOD(IP,2).EQ.0 ) THEN
-                        DX = -DX
+                        DXLOC = -DXLOC                                    43.01
                      ELSE
-                        DY = -DY
+                        DYLOC = -DYLOC                                    43.01
                      ENDIF
                   ENDDO
 !
@@ -3045,7 +3286,8 @@
                      IXB1 = nbpt(JBG)-MOD(nbpt(JBG)+1-IXB1,nbpt(JBG))     40.92 40.80
                   ENDIF                                                   40.80
                ENDIF                                                      40.80
-               IXB2 = vert(IX2)%atti(BINDX)                               40.80
+               ITMP = MINLOC(ABS(blist(:,JBG)-IXG2))                      43.01
+               IXB2 = ITMP(1)                                             43.01
 !
 !              determine order of counting
                IF (IXB1.GT.IXB2 ) THEN                                    40.80
@@ -3067,21 +3309,27 @@
                DO IPP = IXB1, IXB2, IXI                                   40.92 40.80
                   IP = MOD(IPP,nbpt(JBG))                                 40.92
                   IF (IP.EQ.0) IP = nbpt(JBG)                             40.92
+                  IXG  = blist(IP,JBG)                                    43.01 40.92 40.80
+                  ITMP = MINLOC(ABS(bvertg(:,2)-IXG))                     43.01
+                  K    = ITMP(1)                                          43.01
+                  IF ( bvertg(K,2) == IXG ) THEN                          43.01
+                     IX = bvertg(K,1)                                     43.01
+                     vert(IX)%atti(VBC) = 1                               40.80
+                  ENDIF                                                   43.01
                   KOUNTR = KOUNTR + 1                                     40.80
-                  IX = blist(IP,JBG)                                      40.92 40.80
-                  vert(IX)%atti(VBC) = 1                                  40.80
                   ALLOCATE(TMP)                                           40.80
-                  TMP%JX = IX                                             40.80
+                  TMP%JX = IXG                                            43.01 40.80
                   NULLIFY(TMP%NEXTXY)                                     40.80
                   CURR%NEXTXY => TMP                                      40.80
                   CURR => TMP                                             40.80
                ENDDO                                                      40.80
             ENDIF                                                         40.80
-            IX1 = IX2
+            IX1  = IX2
+            IXG1 = IXG2                                                   43.01
           END DO
  42       IF (KOUNTR.EQ.0)
      &                CALL MSGERR(1,'No points on the boundaries found')
-          IF (LFRST1) CALL MSGERR (1,
+          IF (KOUNTR.EQ.1) CALL MSGERR (1,
      &        'At least two points needed for a segment')                 40.81
         ELSE
 !         boundary condition on one side of the computational grid
@@ -3319,15 +3567,24 @@
                   IXI  = -1                                               40.80
                ENDIF                                                      40.80
                !
-               ALLOCATE(IARR1(SUM(nbpt)))
+               ALLOCATE(IARR1(nbpt(JBG)))
                K = 0
-               DO IP = IXB1, IXB2, IXI                                    40.92
-                  IX = blist(IP,JBG)                                      40.92
-                  IF ( vmark(IX) == VM ) THEN                             40.92
-                     K = K+1                                              40.92
-                     IARR1(K) = IP                                        40.92
-                  ENDIF
-               ENDDO
+               IF ( .NOT.PARLL ) THEN
+                  DO IP = IXB1, IXB2, IXI                                 40.92
+                     IX = blist(IP,JBG)                                   40.92
+                     IF ( vmark(IX) == VM ) THEN                          40.92
+                        K = K+1                                           40.92
+                        IARR1(K) = IP                                     40.92
+                     ENDIF
+                  ENDDO
+               ELSE
+                  DO IP = IXB1, IXB2, IXI                                 43.01
+                     IF ( bmark(IP,JBG) == VM ) THEN                      43.01
+                        K = K+1                                           43.01
+                        IARR1(K) = IP                                     43.01
+                     ENDIF                                                43.01
+                  ENDDO
+               ENDIF
                !
                IF ( K/=0 ) THEN                                           40.92
                   !
@@ -3344,11 +3601,16 @@
                   !
                   DO IPP = 1, K                                           40.92
                      IP = IARR2(IPP)                                      40.92
-                     IX = blist(IP,JBG)                                   40.92 40.80
+                     IXG  = blist(IP,JBG)                                 43.01 40.92 40.80
+                     ITMP = MINLOC(ABS(bvertg(:,2)-IXG))                  43.01
+                     II   = ITMP(1)                                       43.01
+                     IF ( bvertg(II,2) == IXG ) THEN                      43.01
+                        IX = bvertg(II,1)                                 43.01
+                        vert(IX)%atti(VBC) = 1                            40.80
+                     ENDIF                                                43.01
                      KOUNTR = KOUNTR + 1                                  40.80
-                     vert(IX)%atti(VBC) = 1                               40.80
                      ALLOCATE(TMP)                                        40.80
-                     TMP%JX = IX                                          40.80
+                     TMP%JX = IXG                                         43.01 40.80
                      NULLIFY(TMP%NEXTXY)                                  40.80
                      CURR%NEXTXY => TMP                                   40.80
                      CURR => TMP                                          40.80
@@ -3421,7 +3683,7 @@
             NBFILS = NBFILS + 1
             NBSPSS = NBSPEC
             CALL CONSTRUCTOR(BFLTMP)                                      BJXX 40.31
-            CALL BCFILE (FILENM, 'PNTS', BFLTMP,                          BJXX 40.31
+            CALL BCFILE (FILENM, 'PNTS', BFLTMP,                          41.78 40.31
      &                   XCGRID, YCGRID, KGRPNT, XYTST, KGRBND,           40.31
      &                   DONALL)                                          40.05
             IF (STPNOW()) RETURN                                          34.01
@@ -3545,7 +3807,7 @@
                   NBFILS = NBFILS + 1
                   NBSPSS = NBSPEC
                   CALL CONSTRUCTOR(BFLTMP)                                BJXX 40.31
-                  CALL BCFILE (FILENM, 'PNTS', BFLTMP,                    BJXX 40.31
+                  CALL BCFILE (FILENM, 'PNTS', BFLTMP,                    41.78 40.31
      &                   XCGRID, YCGRID, KGRPNT, XYTST, KGRBND,           40.31
      &                   DONALL)                                          40.05
                   IF (STPNOW()) RETURN                                    34.01
@@ -3575,8 +3837,8 @@
                  XC2 = XCGRID(IX,IY)
                  YC2 = YCGRID(IX,IY)
               ELSE                                                        40.80
-                 XC2 = xcugrd(IX)                                         40.80
-                 YC2 = ycugrd(IX)                                         40.80
+                 XC2 = xcugrdgl(IX)                                       43.01 40.80
+                 YC2 = ycugrdgl(IX)                                       43.01 40.80
               ENDIF                                                       40.80
               IF (.NOT.LFRST3) THEN
                 RDIST = RDIST + SQRT ((XC2-XC1)**2 + (YC2-YC1)**2)
@@ -3627,7 +3889,7 @@
       END
 !*********************************************************************
 !                                                                    *
-      SUBROUTINE BCFILE (FBCNAM, BCTYPE, BSPFIL,                          BJXX 40.31
+      SUBROUTINE BCFILE (FBCNAM, BCTYPE, BSPFIL,                          41.78 40.31
      &                   XCGRID, YCGRID, KGRPNT,                          40.31
      &                   XYTST,  KGRBND, DONALL)                          40.31 40.05
 !                                                                    *
@@ -3640,6 +3902,7 @@
       USE SWCOMM3                                                         40.41
       USE SWCOMM4                                                         40.41
       USE M_BNDSPEC                                                       40.31
+      USE M_PARALL                                                        42.10
       use HRextensions, only: swn_hre_bcnccf
 !
       IMPLICIT NONE
@@ -3647,7 +3910,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -3656,22 +3919,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -3731,8 +3992,6 @@
       CHARACTER FBCNAM *(*), BCTYPE *(*)
 
       TYPE(BSPCDAT) :: BSPFIL                                             40.31
-!                                                                         BJXX
-!      LOGICAL :: LBGP                                                    BJXX 40.31
 !
 !  5. Parameter variables
 !
@@ -3747,6 +4006,7 @@
       REAL    :: XP, YP, XP2, YP2
       REAL    :: FREQHZ, DIRDEG, DIRRD1,DIRRAD, EXCV
       CHARACTER BTYPE *4, HEDLIN *80
+      CHARACTER (LEN=80)  :: ID
 !
 !    NBGRPT_PREV is the prevous number of NBGRPT
 !    IIPT2 counter use for the chekinf if there are grid points on nested boundary
@@ -3901,7 +4161,7 @@
 
           DO IBOUNC = 1, NBOUNC
             IERR = 0
-            CALL REFIXY (NDSD, XP, YP, IERR)
+            CALL REFIXY (NDSD, XP, YP, IERR, ID)
             IF (ITEST.GE.80) THEN
               WRITE (PRTEST, *) ' B. spectrum ', IBOUNC, XP+XOFFS,
      &        YP+YOFFS, IERR                                              40.03
@@ -3917,7 +4177,7 @@
 !                 the SWAN computational grid
 !
               NBGRPT_PREV = NBGRPT                                        40.05
-              CALL SWBCPT (  XCGRID, YCGRID,                              BJXX 40.41 40.31 40.05
+              CALL SWBCPT (  XCGRID, YCGRID,                              41.78 40.41 40.31 40.05
      &                       KGRPNT, XYTST,  KGRBND,XP2,YP2,IBOUNC,       40.05
      &                       NBOUNC,DONALL )                              40.05
 !             check if the grid points are on nested boundary.
@@ -3928,8 +4188,9 @@
             ENDIF
           ENDDO
 !
-          IF ((BCTYPE .EQ. 'NEST').AND. (IIPT2.EQ.0)) CALL MSGERR (2,
-     &      'no grid points on nested boundary')                          40.05
+          CALL SWREDUCE ( IIPT2, 1, SWINT, SWMAX )                        42.10
+          IF ((BCTYPE.EQ.'NEST') .AND. (IIPT2.EQ.0) .AND. IAMMASTER)      42.10
+     &       CALL MSGERR (2,'no grid points on nested boundary')          40.05
 !
           NHEDF = NHEDF + 2 + NBOUNC
           IF (ITEST.GE.60) WRITE (PRTEST,16) NBOUNC
@@ -4131,7 +4392,7 @@
       END
 !*********************************************************************
 !                                                                    *
-      SUBROUTINE BCWAMN (FBCNAM, BCTYPE, BSPFIL,                          BJXX 40.31
+      SUBROUTINE BCWAMN (FBCNAM, BCTYPE, BSPFIL,                          41.78 40.31
      &                   XCGRID, YCGRID, KGRPNT, XYTST)                   40.31
 !                                                                    *
 !*********************************************************************
@@ -4149,7 +4410,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -4158,22 +4419,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -4286,7 +4545,6 @@
       INTEGER   KGRPNT(MXC,MYC), XYTST(*)
       REAL      XCGRID(MXC,MYC), YCGRID(MXC,MYC)
       TYPE(BSPCDAT) :: BSPFIL                                             40.31
-!      LOGICAL :: LBGP                                                    BJXX 40.31
       CHARACTER FBCNAM *(*), BCTYPE *(*)
 !
 !     local variables
@@ -4721,7 +4979,7 @@
 
 !*********************************************************************
 !                                                                    *
-      SUBROUTINE BCWW3N (FBCNAM, BCTYPE, BSPFIL,                          BJXX 40.31
+      SUBROUTINE BCWW3N (FBCNAM, BCTYPE, BSPFIL,                          41.78 40.31
      &                   XCGRID, YCGRID, KGRPNT,                          40.31
      &                   XYTST,  KGRBND)                                  40.31
 !                                                                    *
@@ -4739,7 +4997,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -4748,22 +5006,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -4807,7 +5063,6 @@
       CHARACTER FBCNAM *(*), BCTYPE *(*)
 
       TYPE(BSPCDAT) :: BSPFIL                                             40.31
-!      LOGICAL :: LBGP                                                    BJXX 40.31
 !
 !  5. Parameter variables
 !
@@ -5152,7 +5407,7 @@
 !           the SWAN computational grid
 !
         NBGRPT_PREV = NBGRPT
-        CALL SWBCPT (  XCGRID, YCGRID,                                    BJXX 40.41 40.31
+        CALL SWBCPT (  XCGRID, YCGRID,                                    41.78 40.41 40.31
      &                 KGRPNT, XYTST,  KGRBND,XP2,YP2,IBOUNC,
      &                 NBOUNC, DONALL )
 !       check if the grid points are on nested boundary.
@@ -5240,7 +5495,7 @@
 
 !***********************************************************************
 !
-      SUBROUTINE SWBCPT ( XCGRID, YCGRID,                                 BJXX 40.41 40.31
+      SUBROUTINE SWBCPT ( XCGRID, YCGRID,                                 41.78 40.41 40.31
      &                    KGRPNT, XYTST,  KGRBND,XP2,YP2,IBOUNC,
      &                    NBOUNC,DONALL )
 !
@@ -5260,7 +5515,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -5269,22 +5524,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -5333,8 +5586,6 @@
 !              it is defined by the users
 !
       LOGICAL, INTENT(INOUT)  ::  DONALL
-!                                                                         BJXX
-!      LOGICAL :: LBGP                                                    BJXX 40.31
 !
 !  5. Parameter variables
 !
@@ -5434,7 +5685,9 @@
            IF (OPTG.EQ.5) THEN                                            40.80
              DO IXP = 1, nverts                                           40.80
                IF ( vert(IXP)%atti(VMARKER) == 1 .AND.                    40.80
-     &              vert(IXP)%atti(VBC) == 0 ) THEN                       40.80
+     &              vert(IXP)%atti(VBC) == 0     .AND.                    40.80
+     &              vmark(IXP) < excmark ) THEN                           43.01 42.10
+
                  XP = vert(IXP)%attr(VERTX)                               41.14
                  YP = vert(IXP)%attr(VERTY)                               41.14
 !
@@ -5482,6 +5735,11 @@
 !
                     CALL CONSTRUCTOR(BGPTMP)                              BJXX 40.31
                     BGPTMP%BGP(1) = IXP                                   40.31
+                    IF (.NOT.PARLL) THEN                                  43.01
+                       BGPTMP%BGP(1) = IXP                                40.31
+                    ELSE                                                  43.01
+                       BGPTMP%BGP(1) = ivertg(IXP)                        43.01
+                    ENDIF                                                 43.01
 !                   next item indicates type of boundary condition
                     BGPTMP%BGP(2) = 1                                     40.31
                     BGPTMP%BGP(3) = NINT(1000. * W2)                      40.31
@@ -5633,7 +5891,7 @@
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -5642,22 +5900,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -5783,7 +6039,6 @@
 !                                                                    *
 !*********************************************************************
 !
-      USE OCPCOMM2                                                        40.95
       USE OCPCOMM4                                                        40.41
       USE SWCOMM1                                                         40.41
       USE SWCOMM2                                                         40.41
@@ -5792,12 +6047,11 @@
       USE OUTP_DATA                                                       40.31
       USE M_PARALL                                                        40.31
       USE SwanGriddata                                                    40.80
-!PUN      USE SIZES                                                           40.95
 !
 !
 !   --|-----------------------------------------------------------|--
 !     | Delft University of Technology                            |
-!     | Faculty of Civil Engineering                              |
+!     | Faculty of Civil Engineering and Geosciences              |
 !     | Environmental Fluid Mechanics Section                     |
 !     | P.O. Box 5048, 2600 GA  Delft, The Netherlands            |
 !     |                                                           |
@@ -5806,22 +6060,20 @@
 !
 !
 !     SWAN (Simulating WAves Nearshore); a third generation wave model
-!     Copyright (C) 1993-2020  Delft University of Technology
+!     Copyright (C) 1993-2024  Delft University of Technology
 !
-!     This program is free software; you can redistribute it and/or
-!     modify it under the terms of the GNU General Public License as
-!     published by the Free Software Foundation; either version 2 of
-!     the License, or (at your option) any later version.
+!     This program is free software: you can redistribute it and/or modify
+!     it under the terms of the GNU General Public License as published by
+!     the Free Software Foundation, either version 3 of the License, or
+!     (at your option) any later version.
 !
 !     This program is distributed in the hope that it will be useful,
 !     but WITHOUT ANY WARRANTY; without even the implied warranty of
 !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 !     GNU General Public License for more details.
 !
-!     A copy of the GNU General Public License is available at
-!     http://www.gnu.org/copyleft/gpl.html#SEC3
-!     or by writing to the Free Software Foundation, Inc.,
-!     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+!     You should have received a copy of the GNU General Public License
+!     along with this program. If not, see <http://www.gnu.org/licenses/>.
 !
 !
 !  0. Authors
@@ -6042,6 +6294,7 @@
             OPSTMP%YP(IPTST) = ycugrd(K)                                  40.80
          ENDDO                                                            40.80
       ENDIF                                                               40.80
+      ALLOCATE(CHARACTER(LEN=80)::OPSTMP%ID(1))
       NULLIFY(OPSTMP%NEXTOPS)                                             40.31
       IF ( .NOT.LOPS ) THEN                                               40.31
          FOPS = OPSTMP                                                    40.31
@@ -6064,7 +6317,6 @@
            WRITE(FILENM(ILPOS+1:ILPOS+4),99) INODE                        40.30
   99       FORMAT('-',I3.3)                                               40.30
         END IF                                                            40.30
-!PUN        FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                     40.95
         IERR = 0                                                          40.00
         CALL FOR (IFPAR, FILENM, 'UF', IERR)                              40.00
         IF (STPNOW()) RETURN                                              34.01
@@ -6108,9 +6360,9 @@
 ! NB: If list of variables is expanded, the following hardwired integers
 !   must be increased:
         IF(IWCAP.NE.8)THEN                                                41.75 40.88
-          ICHECK1=12
+          ICHECK1=14
         ELSE
-          ICHECK1=13
+          ICHECK1=15
         ENDIF
         WRITE (IFPAR, 132) ICHECK1                                        41.75 40.32 40.55 40.00
  132    FORMAT ('QUANT', /, I6, T41, 'number of quantities in table')     40.00
@@ -6167,6 +6419,14 @@
         WRITE (IFPAR, 102) 'Snl4',   'total absolute 4-wave interaction'  40.13
         WRITE (IFPAR, 102) 'm2/s',   'unit'                               40.13
         WRITE (IFPAR, 104) OVEXCV(7),'exception value'                    40.00
+        ICHECK2=ICHECK2+1
+        WRITE (IFPAR, 102) 'Sbragg', 'Bragg scattering'                   40.13
+        WRITE (IFPAR, 102) 'm2/s',   'unit'                               40.13
+        WRITE (IFPAR, 104) OVEXCV(7),'exception value'                    40.00
+        ICHECK2=ICHECK2+1
+        WRITE (IFPAR, 102) 'Sqc',    'QC scattering'                      40.13
+        WRITE (IFPAR, 102) 'm2/s',   'unit'                               40.13
+        WRITE (IFPAR, 104) OVEXCV(7),'exception value'                    40.00
         IF ( ICHECK1.NE.ICHECK2 ) THEN                                    41.75
            CALL MSGERR (3,'Internal error: mismatch in # quantities')
         ENDIF
@@ -6183,7 +6443,6 @@
            ILPOS = INDEX ( FILENM, ' ' )-1                                40.30
            WRITE(FILENM(ILPOS+1:ILPOS+4),99) INODE                        40.30
         END IF                                                            40.30
-!PUN        FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                     40.95
         IERR = 0                                                          40.00
         CALL FOR (IFS1D, FILENM, 'UF', IERR)                              40.00
         IF (STPNOW()) RETURN                                              34.01
@@ -6230,9 +6489,9 @@
 ! NB: If list of variables is expanded, the following hardwired integers
 !   must be increased:
         IF(IWCAP.NE.8)THEN                                                41.75 40.88
-          ICHECK1=11
+          ICHECK1=13
         ELSE
-          ICHECK1=12
+          ICHECK1=14
         ENDIF
         WRITE (IFS1D, 132) ICHECK1                                        41.75 40.55
         WRITE (IFS1D, 102) 'VaDens', 'variance densities'                 40.00
@@ -6284,6 +6543,14 @@
         WRITE (IFS1D, 102) 'Snl4',   'quadruplet interactions'            40.00
         WRITE (IFS1D, 102) 'm2',     'unit'                               40.00
         WRITE (IFS1D, 104) OVEXCV(7),'exception value'                    40.00
+        ICHECK2=ICHECK2+1
+        WRITE (IFS1D, 102) 'Sbragg', 'Bragg scattering'                   40.00
+        WRITE (IFS1D, 102) 'm2',     'unit'                               40.00
+        WRITE (IFS1D, 104) OVEXCV(7),'exception value'                    40.00
+        ICHECK2=ICHECK2+1
+        WRITE (IFS1D, 102) 'Sqc',    'QC scattering'                      40.00
+        WRITE (IFS1D, 102) 'm2',     'unit'                               40.00
+        WRITE (IFS1D, 104) OVEXCV(7),'exception value'                    40.00
         IF ( ICHECK1.NE.ICHECK2 ) THEN                                    41.75
            CALL MSGERR (3,'Internal error: mismatch in # quantities')
         ENDIF
@@ -6298,7 +6565,6 @@
            ILPOS = INDEX ( FILENM, ' ' )-1                                40.30
            WRITE(FILENM(ILPOS+1:ILPOS+4),99) INODE                        40.30
         END IF                                                            40.30
-!PUN        FILENM = TRIM(LOCALDIR)//DIRCH2//TRIM(FILENM)                     40.95
         IERR = 0                                                          40.00
         CALL FOR (IFS2D, FILENM, 'UF', IERR)                              40.00
         IF (STPNOW()) RETURN                                              34.01
@@ -6352,9 +6618,9 @@
 ! NB: If list of variables is expanded, the following hardwired integers
 !   must be increased:
         IF(IWCAP.NE.8)THEN                                                41.75 40.88
-          ICHECK1=11
+          ICHECK1=13
         ELSE
-          ICHECK1=12
+          ICHECK1=14
         ENDIF
         WRITE (IFS2D, 132) ICHECK1                                        41.75 40.55
         WRITE (IFS2D, 102) 'VaDens', 'variance densities'                 40.00
@@ -6404,6 +6670,14 @@
         WRITE (IFS2D, 104) OVEXCV(7),'exception value'                    40.00
         ICHECK2=ICHECK2+1
         WRITE (IFS2D, 102) 'Snl4',   'quadruplet interactions'            40.00
+        WRITE (IFS2D, 102) 'm2/degr','unit'                               40.00
+        WRITE (IFS2D, 104) OVEXCV(7),'exception value'                    40.00
+        ICHECK2=ICHECK2+1
+        WRITE (IFS2D, 102) 'Sbragg', 'Bragg scattering'                   40.00
+        WRITE (IFS2D, 102) 'm2/degr','unit'                               40.00
+        WRITE (IFS2D, 104) OVEXCV(7),'exception value'                    40.00
+        ICHECK2=ICHECK2+1
+        WRITE (IFS2D, 102) 'Sqc',    'QC scattering'                      40.00
         WRITE (IFS2D, 102) 'm2/degr','unit'                               40.00
         WRITE (IFS2D, 104) OVEXCV(7),'exception value'                    40.00
         IF ( ICHECK1.NE.ICHECK2 ) THEN                                    41.75

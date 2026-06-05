@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,6 +30,7 @@
 !
 !
 module unstruc_display
+
 !! Handles all display settings and screen plotting for Unstruc
 !! (Not yet, a lot is still in REST.F90 [AvD])
 
@@ -53,6 +54,9 @@ module unstruc_display
    use m_set_col
    use m_movabs
    use m_lnabs
+   use m_waveconst
+
+   use precision, only: dp
    implicit none
 
    public dis_info_1d_link
@@ -184,10 +188,10 @@ contains
       call prop_get(dis_ptr, '*', 'Y0           ', Y, success)
       call prop_get(dis_ptr, '*', 'DYH          ', DY, success)
       if (.not. success) then ! to also use old cfg files
-         x = 0.5d0 * (x1 + x2)
+         x = 0.5_dp * (x1 + x2)
          call inqasp(asp)
          dy = (x2 - x1) * asp
-         y = y1 + 0.5d0 * dy
+         y = y1 + 0.5_dp * dy
       end if
 
       call prop_get(dis_ptr, '*', 'SFERTEK      ', JSFERTEK, success)
@@ -213,26 +217,146 @@ contains
          call iset_jaopengl(jaopengl_loc)
       end if
 
-      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success); if (success) NCOLDG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success); if (success) NCOLRG = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success); if (success) NCOLDN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success); if (success) NCOLRN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success); if (success) NCOLNN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success); if (success) NCOLSP = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success); if (success) NCOLLN = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success); if (success) NCOLTX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success); if (success) NCOLPL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success); if (success) NCOLCRS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success); if (success) NCOLTHD = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success); if (success) NCOLFXW = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success); if (success) NCOLHL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success); if (success) KLVEC = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success); if (success) KLAXS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success); if (success) KLSCL = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success); if (success) KLTEX = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success); if (success) KLOBS = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success); if (success) KLPROF = KRGB(1); if (success) call SETINTRGB(KRGB)
-      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success); if (success) KLSRC = KRGB(1); if (success) call SETINTRGB(KRGB)
+      call prop_get(dis_ptr, '*', 'NCOLDG ', KRGB, 4, success)
+      if (success) then
+         NCOLDG = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLRG ', KRGB, 4, success)
+      if (success) then
+         NCOLRG = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLDN ', KRGB, 4, success)
+      if (success) then
+         NCOLDN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLRN ', KRGB, 4, success)
+      if (success) then
+         NCOLRN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLNN ', KRGB, 4, success)
+      if (success) then
+         NCOLNN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLSP ', KRGB, 4, success)
+      if (success) then
+         NCOLSP = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLLN ', KRGB, 4, success)
+      if (success) then
+         NCOLLN = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLTX ', KRGB, 4, success)
+      if (success) then
+         NCOLTX = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLPL ', KRGB, 4, success)
+      if (success) then
+         NCOLPL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLCRS', KRGB, 4, success)
+      if (success) then
+         NCOLCRS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLTHD', KRGB, 4, success)
+      if (success) then
+         NCOLTHD = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLFXW', KRGB, 4, success)
+      if (success) then
+         NCOLFXW = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'NCOLHL ', KRGB, 4, success)
+      if (success) then
+         NCOLHL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLVEC  ', KRGB, 4, success)
+      if (success) then
+         KLVEC = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLAXS  ', KRGB, 4, success)
+      if (success) then
+         KLAXS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLSCL  ', KRGB, 4, success)
+      if (success) then
+         KLSCL = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLTEX  ', KRGB, 4, success)
+      if (success) then
+         KLTEX = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLOBS  ', KRGB, 4, success)
+      if (success) then
+         KLOBS = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLPROF ', KRGB, 4, success)
+      if (success) then
+         KLPROF = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
+      call prop_get(dis_ptr, '*', 'KLSRC  ', KRGB, 4, success)
+      if (success) then
+         KLSRC = KRGB(1)
+      end if
+      if (success) then
+         call SETINTRGB(KRGB)
+      end if
 
       call prop_get(dis_ptr, '*', 'NREDS  ', NREDS, success)
       call prop_get(dis_ptr, '*', 'NGREENS', NGREENS, success)
@@ -254,19 +378,27 @@ contains
       call prop_get(dis_ptr, '*', 'profmin(2)', profmin(2), success)
 
       RCIR = CR * (X2 - X1)
-      VFAC = max(0d0, VFAC)
-      VFACFORCE = max(0d0, VFACFORCE)
-      XLEFT = max(0d0, (min(XLEFT, 0.25d0)))
-      YBOT = max(0d0, (min(YBOT, 0.25d0)))
+      VFAC = max(0.0_dp, VFAC)
+      VFACFORCE = max(0.0_dp, VFACFORCE)
+      XLEFT = max(0.0_dp, (min(XLEFT, 0.25_dp)))
+      YBOT = max(0.0_dp, (min(YBOT, 0.25_dp)))
       JAXIS = min(1, (max(JAXIS, 0)))
       if (JAXIS == 1) then
-         if (XLEFT == 0) XLEFT = .15
-         if (YBOT == 0) YBOT = .10
+         if (XLEFT == 0) then
+            XLEFT = .15
+         end if
+         if (YBOT == 0) then
+            YBOT = .10
+         end if
       end if
 
       do I = 1, NUMHCOPTS
-         if (IHCOPTS(1, I) == 22) IHCOPTS(2, I) = JAEPS
-         if (IHCOPTS(1, I) == 5) IHCOPTS(2, I) = JALAND
+         if (IHCOPTS(1, I) == 22) then
+            IHCOPTS(2, I) = JAEPS
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            IHCOPTS(2, I) = JALAND
+         end if
       end do
 
       call SETTEXTSIZE()
@@ -360,8 +492,12 @@ contains
       call prop_set(dis_ptr, '*', 'ICONST', iconst_cur, ' ! active constituent number')
 
       do I = 1, NUMHCOPTs
-         if (IHCOPTS(1, I) == 22) JAEPS = IHCOPTS(2, I)
-         if (IHCOPTS(1, I) == 5) JALAND = IHCOPTS(2, I)
+         if (IHCOPTS(1, I) == 22) then
+            JAEPS = IHCOPTS(2, I)
+         end if
+         if (IHCOPTS(1, I) == 5) then
+            JALAND = IHCOPTS(2, I)
+         end if
       end do
 
       call prop_set(dis_ptr, '*', 'NHCDEV       ', NHCDEV)
@@ -425,26 +561,66 @@ contains
 
       call prop_set(dis_ptr, '*', 'jaopengl', iget_jaopengl())
 
-      KRGB(1) = NCOLDG; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLDG ', KRGB)
-      KRGB(1) = NCOLRG; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLRG ', KRGB)
-      KRGB(1) = NCOLDN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLDN ', KRGB)
-      KRGB(1) = NCOLRN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLRN ', KRGB)
-      KRGB(1) = NCOLNN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLNN ', KRGB)
-      KRGB(1) = NCOLSP; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLSP ', KRGB)
-      KRGB(1) = NCOLLN; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLLN ', KRGB)
-      KRGB(1) = NCOLTX; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLTX ', KRGB)
-      KRGB(1) = NCOLPL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLPL ', KRGB)
-      KRGB(1) = NCOLCRS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLCRS', KRGB)
-      KRGB(1) = NCOLTHD; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLTHD', KRGB)
-      KRGB(1) = NCOLFXW; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLFXW', KRGB)
-      KRGB(1) = NCOLHL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'NCOLHL ', KRGB)
-      KRGB(1) = KLVEC; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLVEC  ', KRGB)
-      KRGB(1) = KLAXS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLAXS  ', KRGB)
-      KRGB(1) = KLSCL; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLSCL  ', KRGB)
-      KRGB(1) = KLTEX; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLTEX  ', KRGB)
-      KRGB(1) = KLOBS; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLOBS  ', KRGB)
-      KRGB(1) = KLPROF; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLPROF ', KRGB)
-      KRGB(1) = KLSRC; call GETINTRGB(KRGB); call prop_set(dis_ptr, '*', 'KLSRC  ', KRGB)
+      KRGB(1) = NCOLDG
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLDG ', KRGB)
+      KRGB(1) = NCOLRG
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLRG ', KRGB)
+      KRGB(1) = NCOLDN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLDN ', KRGB)
+      KRGB(1) = NCOLRN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLRN ', KRGB)
+      KRGB(1) = NCOLNN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLNN ', KRGB)
+      KRGB(1) = NCOLSP
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLSP ', KRGB)
+      KRGB(1) = NCOLLN
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLLN ', KRGB)
+      KRGB(1) = NCOLTX
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLTX ', KRGB)
+      KRGB(1) = NCOLPL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLPL ', KRGB)
+      KRGB(1) = NCOLCRS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLCRS', KRGB)
+      KRGB(1) = NCOLTHD
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLTHD', KRGB)
+      KRGB(1) = NCOLFXW
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLFXW', KRGB)
+      KRGB(1) = NCOLHL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'NCOLHL ', KRGB)
+      KRGB(1) = KLVEC
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLVEC  ', KRGB)
+      KRGB(1) = KLAXS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLAXS  ', KRGB)
+      KRGB(1) = KLSCL
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLSCL  ', KRGB)
+      KRGB(1) = KLTEX
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLTEX  ', KRGB)
+      KRGB(1) = KLOBS
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLOBS  ', KRGB)
+      KRGB(1) = KLPROF
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLPROF ', KRGB)
+      KRGB(1) = KLSRC
+      call GETINTRGB(KRGB)
+      call prop_set(dis_ptr, '*', 'KLSRC  ', KRGB)
 
       call prop_set(dis_ptr, '*', 'NREDS  ', NREDS)
       call prop_set(dis_ptr, '*', 'NGREENS', NGREENS)
@@ -490,13 +666,17 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: temb, temt
 
-      if (ndrawobs == 1) return
+      if (ndrawobs == 1) then
+         return
+      end if
 
       call IGrCharJustify('L')
-      call settextsizefac(1.0d0)
+      call settextsizefac(1.0_dp)
 
       do n = 1, numobs + nummovobs
-         if (.not. inview(xobs(n), yobs(n))) cycle
+         if (.not. inview(xobs(n), yobs(n))) then
+            cycle
+         end if
 
          call setcol(klobs)
 
@@ -509,7 +689,7 @@ contains
             end if
          end if
          if (ndrawobs == 3) then
-            call settextsizefac(1.5d0)
+            call settextsizefac(1.5_dp)
             call igrcharfont(7)
             call gtext(' '//trim(namobs(n)), xobs(n), yobs(n), klobs)
             call igrcharfont(1)
@@ -544,8 +724,8 @@ contains
                      temt = constituents(itemp, kt)
                      temb = constituents(itemp, kb)
                   else
-                     temt = 32d0 + (9d0 / 5d0) * constituents(itemp, kt)
-                     temb = 32d0 + (9d0 / 5d0) * constituents(itemp, kb)
+                     temt = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, kt)
+                     temb = 32.0_dp + (9.0_dp / 5.0_dp) * constituents(itemp, kb)
                   end if
                   write (tex, '(2f6.1)') temt, temb
                   call gtext(tex(1:14), xobs(n), yobs(n), ncolblack)
@@ -603,7 +783,7 @@ contains
 
 !           reallocate if necessary
             if (numpi > ubound(xlist, 1)) then
-               numnew = int(1.2d0 * dble(numpi)) + 1
+               numnew = int(1.2_dp * real(numpi, kind=dp)) + 1
                call realloc(xlist, numnew)
                call realloc(ylist, numnew)
             end if
@@ -639,7 +819,9 @@ contains
       integer :: i, met, k, numk
       MET = NDRAW(15)
 
-      if (met == 0) return
+      if (met == 0) then
+         return
+      end if
 
 !   allocate
       allocate (xh2(numpi), yh2(numpi))
@@ -649,21 +831,27 @@ contains
 
       if (NUMPI == 1) then
          call MOVABS(XH(1), YH(1))
-         if (MET <= 2) call CIR(1.4 * RCIR)
+         if (MET <= 2) then
+            call CIR(1.4 * RCIR)
+         end if
       else if (NUMPI > 1) then
          call MOVABS(XH(1), YH(1))
-         if (MET <= 2) call CIR(1.4 * RCIR)
+         if (MET <= 2) then
+            call CIR(1.4 * RCIR)
+         end if
          call SPLINE(XH, NUMPI, XH2)
          call SPLINE(YH, NUMPI, YH2)
 
          do I = 1, NUMPI - 1
             do k = 1, NUMK
-               TN = (I - 1) + dble(K) / dble(NUMK)
+               TN = (I - 1) + real(K, kind=dp) / real(NUMK, kind=dp)
                call SPLINT(XH, XH2, NUMPI, TN, XK)
                call SPLINT(YH, YH2, NUMPI, TN, YK)
                call LNABS(XK, YK)
             end do
-            if (MET <= 2) call CIR(RCIR)
+            if (MET <= 2) then
+               call CIR(RCIR)
+            end if
          end do
       end if
 
@@ -681,7 +869,9 @@ contains
       character :: tex * 40
 
       met = ndrawCrosssections
-      if (met == 1) return
+      if (met == 1) then
+         return
+      end if
 
       if (met >= 3) then
          jaArrow = 1
@@ -734,7 +924,7 @@ contains
 
          character(len=7) :: fmt
          fmt = '(f10.3)'
-         if (val > -1d0 * 10**(numw - numd - 2) .and. val < 10**(numw - numd - 1)) then
+         if (val > -1.0_dp * 10**(numw - numd - 2) .and. val < 10**(numw - numd - 1)) then
             write (fmt(3:4), '(i2)') numw
             write (fmt(6:6), '(i1)') numd
             write (tex(1:numw), fmt) val
@@ -756,7 +946,9 @@ contains
 
       integer :: i
 
-      if (ndrawThinDams == 0 .or. nthd == 0) return
+      if (ndrawThinDams == 0 .or. nthd == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolthd)
 
@@ -777,7 +969,9 @@ contains
       integer :: i, L, k3, k4, ncol
       real(kind=dp) :: xu, yu
 
-      if (ndrawFixedWeirs == 0 .or. nfxw == 0) return
+      if (ndrawFixedWeirs == 0 .or. nfxw == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolfxw)
 
@@ -800,7 +994,8 @@ contains
 
                call setcol(ncolfxw)
 
-               k3 = lncn(1, L); k4 = lncn(2, L)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
 
                if (ndrawfixedweirs == 3 .or. ndrawfixedweirs == 4) then
                   call isocol(bob(1, L), ncol)
@@ -819,9 +1014,11 @@ contains
          if (ndrawFixedWeirs == 2 .or. ndrawFixedWeirs == 4) then
             call setcol(ncolblack)
             do i = 1, nfxw
-               L = lnfxw(i); k3 = lncn(1, L); k4 = lncn(2, L)
-               xu = 0.5d0 * (xk(k3) + xk(k4))
-               yu = 0.5d0 * (yk(k3) + yk(k4))
+               L = lnfxw(i)
+               k3 = lncn(1, L)
+               k4 = lncn(2, L)
+               xu = 0.5_dp * (xk(k3) + xk(k4))
+               yu = 0.5_dp * (yk(k3) + yk(k4))
                if (ndrawFixedWeirs == 4) then
                   call isocol(bob(1, L), ncol)
                end if
@@ -888,13 +1085,16 @@ contains
          do j = 1, path%lnx
             call movabs(path%xk(1, j), path%yk(1, j))
             ! call cir(.2d0*rcir)
-            xx = path%xk(2, j); yy = path%yk(2, j)
+            xx = path%xk(2, j)
+            yy = path%yk(2, j)
             call lnabs(xx, yy)
             ! call cir(.2d0*rcir)
 
             if (inview(xx, yy)) then ! find first and last j in viewing area
                jmax = j
-               if (jmin == 0) jmin = j
+               if (jmin == 0) then
+                  jmin = j
+               end if
             end if
          end do
          if (jmax == 0 .and. jmin == 0) then
@@ -902,26 +1102,33 @@ contains
             return
          else
             if (path%xk(1, jmin) > path%xk(1, jmax)) then
-               jj = jmin; jmin = jmax; jmax = jj
+               jj = jmin
+               jmin = jmax
+               jmax = jj
             end if
-            xx1 = path%xk(1, jmin); yy1 = path%yk(1, jmin)
-            xx2 = path%xk(1, jmax); yy2 = path%yk(1, jmax)
+            xx1 = path%xk(1, jmin)
+            yy1 = path%yk(1, jmin)
+            xx2 = path%xk(1, jmax)
+            yy2 = path%yk(1, jmax)
          end if
 
          ! For a monitoring cross section, plot the positive direction
          ! as an arrow in view area, and show discharge or other quant.
          if (jaArrow == 1) then
-            xt = .5d0 * (path%xk(1, jmin) + path%xk(2, jmin))
-            yt = .5d0 * (path%yk(1, jmin) + path%yk(2, jmin))
+            xt = 0.5_dp * (path%xk(1, jmin) + path%xk(2, jmin))
+            yt = 0.5_dp * (path%yk(1, jmin) + path%yk(2, jmin))
             call normalout(path%xk(1, jmin), path%yk(1, jmin), path%xk(2, jmin), path%yk(2, jmin), rn, rt, jsferic, jasfer3D, dmiss, dxymis)
-            call arrowsxy(xt, yt, rn, rt, 4d0 * rcir)
+            call arrowsxy(xt, yt, rn, rt, 4.0_dp * rcir)
          end if
 
       end if ! path%lnx > 0
       if (len_trim(label) > 0) then
          call igrcharfont(7)
-         xt = xx2; yt = yy2
-         if (xt > x2 - dsix) xt = x2 - dsix
+         xt = xx2
+         yt = yy2
+         if (xt > x2 - dsix) then
+            xt = x2 - dsix
+         end if
          call gtext(trim(label), xt, yt, kltex)
       end if
 
@@ -929,7 +1136,7 @@ contains
 
    subroutine thicklinetexcol(ncol)
       integer :: ncol
-      call settextsizefac(2.0d0)
+      call settextsizefac(2.0_dp)
       call LINEWIDTH(2)
       call setcol(ncol)
    end subroutine thicklinetexcol
@@ -980,10 +1187,10 @@ contains
          ysmin = y0
          ysmax = y0 + dya * (nca - 1)
       else
-         xsmin = 0d0
-         xsmax = 0d0
-         ysmin = 0d0
-         ysmax = 0d0
+         xsmin = 0.0_dp
+         xsmax = 0.0_dp
+         ysmin = 0.0_dp
+         ysmax = 0.0_dp
       end if
 
       if (NDRAW(26) == 1) then
@@ -1052,9 +1259,11 @@ contains
       call DMINMAX(YH, N, YMIN, YMAX, 10)
 
       if (XMAX == XMIN .and. YMAX == YMIN) then
-         XMIN = 0d0; YMIN = 0d0
+         XMIN = 0.0_dp
+         YMIN = 0.0_dp
          call INQASP(ASPECT)
-         XMAX = 1000d0; Ymax = aspect * 1000d0
+         XMAX = 1000.0_dp
+         Ymax = aspect * 1000.0_dp
       end if
 
       call MINMAXWORLD(XMIN, YMIN, XMAX, YMAX)
@@ -1104,7 +1313,9 @@ contains
             if (link > 0 .and. link <= lnx) then ! for safety
                x = xu(link)
                y = yu(link)
-               if (.not. inView(x, y)) cycle
+               if (.not. inView(x, y)) then
+                  cycle
+               end if
 
                ! Draw structure.
                active = hu(link) > epshu
@@ -1195,8 +1406,8 @@ contains
       real(kind=dp), dimension(8) :: xs
       real(kind=dp), dimension(8) :: ys
 
-      xs = (/x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8/)
-      ys = (/y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8/)
+      xs = [x - size / 2, x - size / 8, x, x + size / 8, x + size / 2, x + size / 8, x, x - size / 8]
+      ys = [y, y - size / 8, y - size / 2, y - size / 8, y, y + size / 8, y + size / 2, y + size / 8]
 
 ! Fill
       call IGrFillPattern(4, 0, 0)
@@ -1464,14 +1675,14 @@ contains
       real(kind=dp) :: dr, x00, y00, dxw, dyw, rshift
 
       nshift = nshift + 1
-      rshift = dble(nshift) / dble(numzoomshift)
+      rshift = real(nshift, kind=dp) / real(numzoomshift, kind=dp)
       i1 = int(rshift) + 1
       i1 = min(i1, npl - 1)
       dr = rshift - i1 + 1
-      x00 = (1d0 - dr) * xpl(i1) + dr * xpl(i1 + 1)
-      y00 = (1d0 - dr) * ypl(i1) + dr * ypl(i1 + 1)
-      dxw = 0.5d0 * (x2 - x1)
-      dyw = 0.5d0 * (y2 - y1)
+      x00 = (1.0_dp - dr) * xpl(i1) + dr * xpl(i1 + 1)
+      y00 = (1.0_dp - dr) * ypl(i1) + dr * ypl(i1 + 1)
+      dxw = 0.5_dp * (x2 - x1)
+      dyw = 0.5_dp * (y2 - y1)
       x1 = x00 - dxw
       x2 = x00 + dxw
       y1 = y00 - dyw
@@ -1498,7 +1709,9 @@ contains
       character tex * 60
       integer :: ncol, k, kk, vlatin, vlatout, i, mout
 
-      if (ndraw(40) == 0 .and. npdf == 0) return
+      if (ndraw(40) == 0 .and. npdf == 0) then
+         return
+      end if
 
       call thicklinetexcol(ncolln)
 
@@ -1513,9 +1726,11 @@ contains
          write (mout, '(a)') '* Column 2 : fraction ()'
 
          msgbuf = 'BL01'
-         call msg_flush(); write (mout, '(a)') msgbuf
+         call msg_flush()
+         write (mout, '(a)') msgbuf
          write (msgbuf, '(i4,A)') npdf, ' 2 '
-         call msg_flush(); write (mout, '(a)') msgbuf
+         call msg_flush()
+         write (mout, '(a)') msgbuf
 
          do i = npdf - 1, 1, -1
             yp = yp - dyp
@@ -1523,14 +1738,15 @@ contains
             write (tex(1:), '(2F10.6)') ypdf(i), xpdf(i)
             call GTEXT(tex, xp, yp, ncolln)
             write (msgbuf, '(a)') tex
-            call msg_flush(); write (mout, '(a)') msgbuf
+            call msg_flush()
+            write (mout, '(a)') msgbuf
          end do
          call doclose(mout)
       end if
 
       if (jawind > 0) then
          xp = 0.90 * x1 + 0.10 * x2
-         vfw = 0.1d0 * (x2 - x1) / 10d0 ! 10 m/s is 0.1*screen
+         vfw = 0.1_dp * (x2 - x1) / 10.0_dp ! 10 m/s is 0.1*screen
          call arrowsxy(xp, yp, windxav, windyav, vfw)
          ws = sqrt(windxav * windxav + windyav * windyav)
          xp = 0.97 * x1 + 0.03 * x2
@@ -1540,7 +1756,7 @@ contains
          call GTEXT(tex, xp, yp, ncolln)
       end if
 
-      if (a1ini == 0d0) then
+      if (a1ini == 0.0_dp) then
          call resetlinesizesetc()
          return
       end if
@@ -1642,7 +1858,7 @@ contains
          write (tex(10:21), '(E12.5)') a1ini
          call GTEXT(tex, xp, yp, ncol)
 
-         if (jatem == 5) then
+         if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
             yp = yp - 2 * dyp
             tex = 'QSUNav :              (W/m2)'
             write (tex(10:21), '(E12.5)') Qsunav
@@ -1714,12 +1930,12 @@ contains
 
          yp = yp - dyp
          tex = 'Upot/Ut0:                   ( )'
-         write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, eps4)
+         write (tex(8:20), '(F11.7)') upot / max(ukin0 + upot0, EPS4)
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
          tex = 'Ukin/Ut0:                   ( )'
-         write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, eps4)
+         write (tex(8:20), '(F11.7)') ukin / max(ukin0 + upot0, EPS4)
          call GTEXT(tex, xp, yp, ncol)
 
          yp = yp - dyp
@@ -1727,7 +1943,7 @@ contains
          write (tex(8:20), '(F11.7)') (ukin + upot) / (ukin0 + upot0)
          call GTEXT(tex, xp, yp, ncol)
 
-         if (jasal > 0 .or. jatem > 0) then
+         if (jasal > 0 .or. temperature_model /= TEMPERATURE_MODEL_NONE) then
             yp = yp - dyp
             tex = 'Ueaa :               (kg/(m.s2))'
             write (tex(8:20), '(F11.2)') ueaa
@@ -1738,7 +1954,7 @@ contains
 
          ncol = ncoltx
          do i = 1, numconst
-            ueaa = 0d0
+            ueaa = 0.0_dp
             do kk = 1, ndxi
                do k = kbot(kk), ktop(kk)
                   ueaa = ueaa + vol1(k) * constituents(i, k)
@@ -1758,12 +1974,12 @@ contains
 
       end if
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          xp = 0.90 * x1 + 0.10 * x2
          yp = 0.85 * y1 + 0.15 * y2
 
          call thicklinetexcol(ncolln)
-         call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1d0 * (x2 - x1))
+         call arrowsxy(xp, yp, csx(itheta_view), snx(itheta_view), 0.1_dp * (x2 - x1))
       end if
 
       call resetlinesizesetc()

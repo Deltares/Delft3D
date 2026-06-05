@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -63,7 +63,7 @@ contains
          generalstruc(ng)%levelcenter = zcgen((ng - 1) * 3 + 1)
 
          ! 1: First determine total width of all genstru links (TODO: AvD: we should not recompute this every user time step)
-         totalWidth = 0d0
+         totalWidth = 0.0_dp
          if (generalstruc(ng)%numlinks == 0) then
             cycle ! Only upon invalid input (see warnings in log about missing structure params)
          end if
@@ -86,16 +86,16 @@ contains
                write (msgbuf, '(a,a,a,es12.5,a)') 'Weir ''', trim(cgen_ids(ng)), ''', crest width (re)set to ', totalwidth, '.'
                call warn_flush()
             end if
-            closedGateWidthL = 0d0
-            closedGateWidthR = 0d0
+            closedGateWidthL = 0.0_dp
+            closedGateWidthR = 0.0_dp
          else
             if (cgen_type(ng) == ICGENTP_GENSTRU) then
                !crestwidth = totalWidth ! No crest/sill-width setting for true general structure yet (not old ext, nor new ext)
                crestwidth = min(totalWidth, generalstruc(ng)%widthcenter)
                !crestwidth = zcgen((ng-1)*3+3) ! NOTE: AvD: this now comes from scalar attribute 'widthcenter', no timeseries yet.
                ! genstru: always IOPENDIR_SYMMETRIC (TODO: UNST-1935)
-               closedGateWidthL = max(0d0, .5d0 * (crestwidth - zcgen((ng - 1) * 3 + 3)))
-               closedGateWidthR = max(0d0, .5d0 * (crestwidth - zcgen((ng - 1) * 3 + 3)))
+               closedGateWidthL = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
+               closedGateWidthR = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
                !closedGateWidthL = 0d0 ! max(0d0, .5d0*(totalWidth - zcgen((ng-1)*3+3))) ! Default symmetric opening
                !closedGateWidthR = 0d0 ! max(0d0, .5d0*(totalWidth - zcgen((ng-1)*3+3)))
             end if
@@ -104,17 +104,17 @@ contains
                ! *underneath* the two doors as well, (if lower_edge_level is still high enough above sill_level)
                crestwidth = min(totalWidth, gates(cgen2str(ng))%sill_width)
                if (gates(cgen2str(ng))%opening_direction == IOPENDIR_FROMLEFT) then
-                  closedGateWidthL = max(0d0, crestwidth - zcgen((ng - 1) * 3 + 3))
-                  closedGateWidthR = 0d0
+                  closedGateWidthL = max(0.0_dp, crestwidth - zcgen((ng - 1) * 3 + 3))
+                  closedGateWidthR = 0.0_dp
                else if (gates(cgen2str(ng))%opening_direction == IOPENDIR_FROMRIGHT) then
-                  closedGateWidthL = 0d0
-                  closedGateWidthR = max(0d0, crestwidth - zcgen((ng - 1) * 3 + 3))
+                  closedGateWidthL = 0.0_dp
+                  closedGateWidthR = max(0.0_dp, crestwidth - zcgen((ng - 1) * 3 + 3))
                else ! IOPENDIR_SYMMETRIC
-                  closedGateWidthL = max(0d0, .5d0 * (crestwidth - zcgen((ng - 1) * 3 + 3)))
-                  closedGateWidthR = max(0d0, .5d0 * (crestwidth - zcgen((ng - 1) * 3 + 3)))
+                  closedGateWidthL = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
+                  closedGateWidthR = max(0.0_dp, 0.5_dp * (crestwidth - zcgen((ng - 1) * 3 + 3)))
                end if
             end if
-            generalstruc(ng)%gateheightonlink(1:generalstruc(ng)%numlinks) = 1d10 ! As a start, gate door is open everywhere. Below, we will close part of the gate doors.
+            generalstruc(ng)%gateheightonlink(1:generalstruc(ng)%numlinks) = 1.0e10_dp ! As a start, gate door is open everywhere. Below, we will close part of the gate doors.
          end if
 
          ! 2b: Determine the width that needs to be fully closed on 'left' side
@@ -122,21 +122,21 @@ contains
          ! NOTE: closed means: fully closed because sill_width (crest_width) is smaller that totalwidth.
          !       NOT because of gate door closing: that is handled by closedGateWidthL/R and may still
          !       have flow underneath doors if they are up high enough.
-         closedWidth = max(0d0, totalWidth - crestwidth) / 2d0 ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
+         closedWidth = max(0.0_dp, totalWidth - crestwidth) / 2.0_dp ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
 
-         generalstruc(ng)%gateclosedfractiononlink = 0d0
+         generalstruc(ng)%gateclosedfractiononlink = 0.0_dp
 
          do L = L1cgensg(ng), L2cgensg(ng)
             L0 = L - L1cgensg(ng) + 1
             Lf = kcgen(3, L)
 
-            if (closedWidth > 0d0) then
+            if (closedWidth > 0.0_dp) then
                help = min(generalstruc(ng)%widthcenteronlink(L0), closedWidth)
                generalstruc(ng)%widthcenteronlink(L0) = generalstruc(ng)%widthcenteronlink(L0) - help ! 0d0 if closed
                closedWidth = closedWidth - help
             end if
 
-            if (closedWidth <= 0d0) then
+            if (closedWidth <= 0.0_dp) then
                ! finished
                exit
             end if
@@ -147,18 +147,18 @@ contains
          ! NOTE: closed means: fully closed because sill_width (crest_width) is smaller that totalwidth.
          !       NOT because of gate door closing: that is handled by closedGateWidthL/R and may still
          !       have flow underneath doors if they are up high enough.
-         closedWidth = max(0d0, totalWidth - crestwidth) / 2d0 ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
+         closedWidth = max(0.0_dp, totalWidth - crestwidth) / 2.0_dp ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
          do L = L2cgensg(ng), L1cgensg(ng), -1
             L0 = L - L1cgensg(ng) + 1
             Lf = kcgen(3, L)
 
-            if (closedWidth > 0d0) then
+            if (closedWidth > 0.0_dp) then
                help = min(generalstruc(ng)%widthcenteronlink(L0), closedWidth)
                generalstruc(ng)%widthcenteronlink(L0) = generalstruc(ng)%widthcenteronlink(L0) - help ! 0d0 if closed
                closedWidth = closedWidth - help
             end if
 
-            if (closedWidth <= 0d0) then
+            if (closedWidth <= 0.0_dp) then
                ! finished
                exit
             end if
@@ -169,45 +169,45 @@ contains
             L0 = L - L1cgensg(ng) + 1
             Lf = kcgen(3, L)
 
-            if ((cgen_type(ng) == ICGENTP_GATE .or. cgen_type(ng) == ICGENTP_GENSTRU) .and. closedGateWidthL > 0d0) then
+            if ((cgen_type(ng) == ICGENTP_GATE .or. cgen_type(ng) == ICGENTP_GENSTRU) .and. closedGateWidthL > 0.0_dp) then
                !if (closedGateWidthL > .5d0*wu(Lf)) then
                generalstruc(ng)%gateheightonlink(L0) = zcgen((ng - 1) * 3 + 2)
                help = min(generalstruc(ng)%widthcenteronlink(L0), closedGateWidthL)
                closedGateWidthL = closedGateWidthL - help
                !end if
 
-               if (generalstruc(ng)%widthcenteronlink(L0) > 0d0) then
+               if (generalstruc(ng)%widthcenteronlink(L0) > 0.0_dp) then
                   generalstruc(ng)%gateclosedfractiononlink(L0) = generalstruc(ng)%gateclosedfractiononlink(L0) + help / generalstruc(ng)%widthcenteronlink(L0)
                end if
             else
 
             end if
 
-            if (closedGateWidthL <= 0d0) then
+            if (closedGateWidthL <= 0.0_dp) then
                ! finished
                exit
             end if
          end do
 
          ! 2e Determine the gateclosedfractionOnlink on the left side, using the widthcenteronlink
-         closedWidth = max(0d0, totalWidth - crestwidth) / 2d0 ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
+         closedWidth = max(0.0_dp, totalWidth - crestwidth) / 2.0_dp ! Intentionally symmetric: if crest/sill_width < totalwidth. Only gate door motion may have a direction, was already handled above.
          do L = L2cgensg(ng), L1cgensg(ng), -1
             L0 = L - L1cgensg(ng) + 1
             Lf = kcgen(3, L)
 
-            if ((cgen_type(ng) == ICGENTP_GATE .or. cgen_type(ng) == ICGENTP_GENSTRU) .and. closedGateWidthR > 0d0) then
+            if ((cgen_type(ng) == ICGENTP_GATE .or. cgen_type(ng) == ICGENTP_GENSTRU) .and. closedGateWidthR > 0.0_dp) then
                !if (closedGateWidthL > .5d0*wu(Lf)) then
                generalstruc(ng)%gateheightonlink(L0) = zcgen((ng - 1) * 3 + 2)
                help = min(generalstruc(ng)%widthcenteronlink(L0), closedGateWidthR)
                closedGateWidthR = closedGateWidthR - help
                !end if
 
-               if (generalstruc(ng)%widthcenteronlink(L0) > 0d0) then
+               if (generalstruc(ng)%widthcenteronlink(L0) > 0.0_dp) then
                   generalstruc(ng)%gateclosedfractiononlink(L0) = generalstruc(ng)%gateclosedfractiononlink(L0) + help / generalstruc(ng)%widthcenteronlink(L0)
                end if
             end if
 
-            if (closedGateWidthR <= 0d0) then
+            if (closedGateWidthR <= 0.0_dp) then
                ! finished
                exit
             end if

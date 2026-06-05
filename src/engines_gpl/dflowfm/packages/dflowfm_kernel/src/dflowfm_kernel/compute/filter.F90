@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_filter
 
 contains
 
-#include "blasfm.h"
+#include "blasfm.inc"
 
 !> initialize filter
    subroutine ini_filter(jafilter, filterorder, jacheckmonitor, ierr)
@@ -57,7 +57,6 @@ contains
       use m_makenetnodescoding
       use m_saadf, only: amub_countonly, amub
       use m_saad, only: allocSolver
-      implicit none
 
       integer, intent(in) :: jafilter !< explicit (1), implicit (2), or no filter (0)
       integer, intent(in) :: filterorder !< filter order
@@ -96,10 +95,10 @@ contains
 
       if (jafilter /= 0 .or. jacheckmonitor == 1) then
          if (kmx > 1) then
-            call realloc(checkmonitor, kmx, keepExisting=.false., fill=0d0)
+            call realloc(checkmonitor, kmx, keepExisting=.false., fill=0.0_dp)
             if (jampi == 1) then
-               call realloc(workin, kmx + 1, keepExisting=.false., fill=0d0)
-               call realloc(workout, kmx + 1, keepExisting=.false., fill=0d0)
+               call realloc(workin, kmx + 1, keepExisting=.false., fill=0.0_dp)
+               call realloc(workout, kmx + 1, keepExisting=.false., fill=0.0_dp)
             end if
             jacheckmonitor = 1
          else
@@ -122,7 +121,7 @@ contains
       ! Filter to suppress checkerboarding is also available for z-layers (so that ERROR message has been switched off)
       !
       !  check for sigma-layers
-      ! if ( layertype.ne.1 ) then
+      ! if ( layertype /= LAYTP_SIGMA ) then
       ! call mess(LEVEL_ERROR, 'filter: only sigma layers supported')
 
       ! goto 1234
@@ -157,7 +156,9 @@ contains
          do kk = 1, 2
 !        get cell number
             k = ln(kk, Lf)
-            if (k == 0) cycle
+            if (k == 0) then
+               cycle
+            end if
 
 !        add to upper bound
             num(Lf) = num(Lf) + nd(k)%lnx
@@ -185,7 +186,7 @@ contains
 !  allocate CRS with upper bound
       numtot = iLvec(Lnx + 1) - 1
       call realloc(jLvec, numtot, fill=0, keepExisting=.false.)
-      call realloc(ALvec, numtot, fill=0d0, keepExisting=.false.)
+      call realloc(ALvec, numtot, fill=0.0_dp, keepExisting=.false.)
 
 !  construct row numbers and fill matrix
       num = 0
@@ -196,14 +197,16 @@ contains
          iend = iLvec(Lf + 1) - 1
 
 !     Div-part: loop over left, right neighboring cell
-         dfacDiv = 1d0 / Dx(Lf)
+         dfacDiv = 1.0_dp / Dx(Lf)
          do kk = 1, 2
 !        account for orientation
             dfacDiv = -dfacDiv
 
             k = ln(kk, Lf)
 
-            if (k == 0) cycle
+            if (k == 0) then
+               cycle
+            end if
 
             dfac = dfacDiv / ba(k)
 
@@ -229,7 +232,7 @@ contains
          end do
 
 !     Curl-part: loop over left, right netnode
-         dfacCurl = -1d0 / wu(Lf)
+         dfacCurl = -1.0_dp / wu(Lf)
          do nn = 1, 2
 !        account for orientation
             dfacCurl = -dfacCurl
@@ -238,7 +241,9 @@ contains
             n = lncn(nn, Lf)
 
 !        boundary condition: curl u = 0
-            if (nb(n) /= 1) cycle
+            if (nb(n) /= 1) then
+               cycle
+            end if
 
             if (n == 0) then
                call mess(LEVEL_ERROR, 'ini_filter: zero node number')
@@ -254,7 +259,9 @@ contains
 !           get flowlink number
                Lf2 = lne2ln(L2)
 
-               if (Lf2 <= 0) cycle ! boundary
+               if (Lf2 <= 0) then
+                  cycle ! boundary
+               end if
 
                if (n == lncn(2, Lf2)) then
                   val = dfac * Dx(Lf2)
@@ -308,18 +315,22 @@ contains
 
 !  allocate solver arrays
       call allocSolver(solver_filter, ierror)
-      if (ierror /= 0) goto 1234
+      if (ierror /= 0) then
+         goto 1234
+      end if
 
       if (filterorder == 1) then
          solver_filter%ia = iLvec
          solver_filter%ja = jLvec
       else if (filterorder == 2 .or. filterorder == 3) then
 !     allocate Lvec2
-         call realloc(ALvec2, N, keepExisting=.false., fill=0d0)
+         call realloc(ALvec2, N, keepExisting=.false., fill=0.0_dp)
 
 !     compute biharmonic operator
          call amub(Lnx, Lnx, 1, ALvec, jLvec, iLvec, ALvec, jLvec, iLvec, ALvec2, solver_filter%ja, solver_filter%ia, N, iwork, ierror)
-         if (ierror /= 0) goto 1234
+         if (ierror /= 0) then
+            goto 1234
+         end if
       end if
 
 !  safety: check if diagonal entry exists
@@ -338,16 +349,16 @@ contains
       end do Lp
 
 !  allocate other arrays
-      call realloc(sol, Lnx, keepExisting=.false., fill=0d0)
-      call realloc(ustar, Lnkx, keepExisting=.false., fill=0d0)
-      call realloc(eps, (/kmx, Lnx/), keepExisting=.false., fill=0d0)
-      call realloc(Deltax, Lnx, keepExisting=.false., fill=0d0)
+      call realloc(sol, Lnx, keepExisting=.false., fill=0.0_dp)
+      call realloc(ustar, Lnkx, keepExisting=.false., fill=0.0_dp)
+      call realloc(eps, [kmx, Lnx], keepExisting=.false., fill=0.0_dp)
+      call realloc(Deltax, Lnx, keepExisting=.false., fill=0.0_dp)
 
 !  get typical mesh width
       call get_Deltax()
 
       if (itype == 1) then
-         call realloc(dtmaxeps, Lnx, keepExisting=.false., fill=0d0)
+         call realloc(dtmaxeps, Lnx, keepExisting=.false., fill=0.0_dp)
 
 !     get maximum time step divided by filter coefficient
          call get_dtmaxeps()
@@ -388,7 +399,9 @@ contains
 !   if ( allocated(iLvec) ) deallocate(iLvec)
 !   if ( allocated(jLvec) ) deallocate(jLvec)
 !   if ( allocated(ALvec) ) deallocate(ALvec)
-      if (allocated(iwork)) deallocate (iwork)
+      if (allocated(iwork)) then
+         deallocate (iwork)
+      end if
 
       return
    end subroutine ini_filter
@@ -401,22 +414,50 @@ contains
 
       call deallocSolver(solver_filter)
 
-      if (allocated(ALvec2)) deallocate (ALvec2)
-      if (allocated(iLvec)) deallocate (iLvec)
-      if (allocated(jLvec)) deallocate (jLvec)
-      if (allocated(ALvec)) deallocate (ALvec)
-      if (allocated(sol)) deallocate (sol)
-      if (allocated(ustar)) deallocate (ustar)
-      if (allocated(eps)) deallocate (eps)
-      if (allocated(Deltax)) deallocate (Deltax)
+      if (allocated(ALvec2)) then
+         deallocate (ALvec2)
+      end if
+      if (allocated(iLvec)) then
+         deallocate (iLvec)
+      end if
+      if (allocated(jLvec)) then
+         deallocate (jLvec)
+      end if
+      if (allocated(ALvec)) then
+         deallocate (ALvec)
+      end if
+      if (allocated(sol)) then
+         deallocate (sol)
+      end if
+      if (allocated(ustar)) then
+         deallocate (ustar)
+      end if
+      if (allocated(eps)) then
+         deallocate (eps)
+      end if
+      if (allocated(Deltax)) then
+         deallocate (Deltax)
+      end if
 
-      if (allocated(dtmaxeps)) deallocate (dtmaxeps)
-      if (allocated(checkmonitor)) deallocate (checkmonitor)
-      if (allocated(workin)) deallocate (workin)
-      if (allocated(workout)) deallocate (workout)
+      if (allocated(dtmaxeps)) then
+         deallocate (dtmaxeps)
+      end if
+      if (allocated(checkmonitor)) then
+         deallocate (checkmonitor)
+      end if
+      if (allocated(workin)) then
+         deallocate (workin)
+      end if
+      if (allocated(workout)) then
+         deallocate (workout)
+      end if
 
-      if (allocated(num)) deallocate (num)
-      if (allocated(dum)) deallocate (dum)
+      if (allocated(num)) then
+         deallocate (num)
+      end if
+      if (allocated(dum)) then
+         deallocate (dum)
+      end if
 
       return
    end subroutine dealloc_filter
@@ -500,9 +541,11 @@ contains
 
       integer :: lunfil
 
-      real(kind=dp), parameter :: facmax = 0.9d0 ! safety factor for maximum allowed sub time step
+      real(kind=dp), parameter :: facmax = 0.9_dp ! safety factor for maximum allowed sub time step
 
-      if (itype == 0) return
+      if (itype == 0) then
+         return
+      end if
 
       call starttimer(IFILT)
 
@@ -514,7 +557,7 @@ contains
 !  force thread safe
       jasafe = 1
 
-      dsign = 1d0 ! sign of Lvec2 in matrix
+      dsign = 1.0_dp ! sign of Lvec2 in matrix
       if (itype == 1) then
          dsign = -dsign
       end if
@@ -528,8 +571,8 @@ contains
 !  loop over layers
 
       call starttimer(IFILT_OTHER)
-      solver_filter%A = 0d0
-      ustar = 0d0
+      solver_filter%A = 0.0_dp
+      ustar = 0.0_dp
       call stoptimer(IFILT_OTHER)
 
 !  get filter coefficient
@@ -545,9 +588,9 @@ contains
 
          if (itype == 1) then
 !        compute sub time step
-            dt = huge(1d0)
+            dt = huge(1.0_dp)
             do LL = 1, Lnx
-               dt = min(dt, dtmaxeps(LL) / max(eps(klay, LL), 1d-10))
+               dt = min(dt, dtmaxeps(LL) / max(eps(klay, LL), 1.0e-10_dp))
             end do
 
             dt = facmax * dt
@@ -579,7 +622,9 @@ contains
                L = Lb + klay - 1
 
 !           fill right-hand side
-               if (L >= Lb .and. L <= Lt) solver_filter%rhs(LL) = u0(L)
+               if (L >= Lb .and. L <= Lt) then
+                  solver_filter%rhs(LL) = u0(L)
+               end if
             end do
          else
             do LL = 1, Lnx
@@ -605,9 +650,9 @@ contains
 
 !               BEGIN DEBUG
                   if (itype == 1) then
-                     plotlin(L) = dts / (dtmaxeps(LL) / max(eps(klay, LL), 1d-10))
+                     plotlin(L) = dts / (dtmaxeps(LL) / max(eps(klay, LL), 1.0e-10_dp))
                   else
-                     plotlin(L) = 1d0
+                     plotlin(L) = 1.0_dp
                   end if
 !               END DEBUG
 
@@ -625,7 +670,7 @@ contains
 
 !                  add diagonal entry
                      if (j == LL) then
-                        solver_filter%A(i) = solver_filter%A(i) + 1d0
+                        solver_filter%A(i) = solver_filter%A(i) + 1.0_dp
                      end if
                   end do
                end if
@@ -669,7 +714,9 @@ contains
 !        solve system for r (reuse preconditioner)
             call solveSystem(solver_filter, sol, japrecond, iters, ierror)
             japrecond = 0
-            if (ierror /= 0) goto 1234
+            if (ierror /= 0) then
+               goto 1234
+            end if
          else
 !        unsupported option
             goto 1234
@@ -686,7 +733,9 @@ contains
             L = Lb + klay - 1
 
 !        fill layer data
-            if (L >= Lb .and. L <= Lt) ustar(L) = sol(LL)
+            if (L >= Lb .and. L <= Lt) then
+               ustar(L) = sol(LL)
+            end if
          end do
 
          call stoptimer(IFILT_COPYBACK)
@@ -728,12 +777,12 @@ contains
 
       ierror = 1
 
-      dtmaxeps = huge(1d0)
+      dtmaxeps = huge(1.0_dp)
 
       if (order == 2 .or. order == 3) then
          do L = 1, Lnx
-            diag = 0d0
-            offdiag = 0d0
+            diag = 0.0_dp
+            offdiag = 0.0_dp
 
             do i = solver_filter%ia(L), solver_filter%ia(L + 1) - 1
 !           get column index
@@ -748,10 +797,10 @@ contains
                end if
             end do
 
-            if (offdiag > 0d0) then
+            if (offdiag > 0.0_dp) then
 !           update maximum time step
-               dtmaxeps(L) = min(dtmaxeps(L), 1d0 / offdiag)
-               dtmaxeps(L) = min(dtmaxeps(L), 2d0 / (-diag + offdiag))
+               dtmaxeps(L) = min(dtmaxeps(L), 1.0_dp / offdiag)
+               dtmaxeps(L) = min(dtmaxeps(L), 2.0_dp / (-diag + offdiag))
             else
 !           error
 !            goto 1234
@@ -776,7 +825,7 @@ contains
       integer :: L, L1
       integer :: j
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       do L = 1, Lnx
          Deltax(L) = Dx(L)
@@ -786,7 +835,9 @@ contains
             L1 = solver_filter%ja(j)
 
 !        exclude self
-            if (L1 == L) cycle
+            if (L1 == L) then
+               cycle
+            end if
 
 !        account for orientation
             dinpr = abs(csu(L) * csu(L1) + snu(L) * snu(L1))
@@ -806,10 +857,10 @@ contains
       use m_flowgeom, only: Lnx, Dx, wu, ba, ln
       use m_flow, only: qw, kmx, Lbot, Ltop
       use m_turbulence, only: ln0
-      use m_filter_data
-      use m_partitioninfo
-      use m_get_Lbot_Ltop
-      implicit none
+      use m_filter_data, only: checkmonitor, workin, workout
+      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_double_sum
+      use m_get_Lbot_Ltop, only: getLbotLtop
+      use m_link_ghostdata, only: link_ghostdata
 
       real(kind=dp) :: area
       integer :: kk1, kk2, k1, k2
@@ -817,8 +868,8 @@ contains
       integer :: klay
       integer :: jaghost, idmn_link
 
-      checkmonitor = 0d0
-      area = 0d0
+      checkmonitor = 0.0_dp
+      area = 0.0_dp
 
       do LL = 1, Lnx
 !     get neighboring 2D cells
@@ -844,9 +895,9 @@ contains
             k2 = ln0(2, L)
 
 !        add to monitor
-            checkmonitor(klay) = checkmonitor(klay) + abs(qw(k2) / ba(kk2) - qw(k1) / ba(kk1)) * 0.5d0 * wu(LL)
+            checkmonitor(klay) = checkmonitor(klay) + abs(qw(k2) / ba(kk2) - qw(k1) / ba(kk1)) * 0.5_dp * wu(LL)
          end do
-         area = area + 0.5d0 * Dx(LL) * wu(LL)
+         area = area + 0.5_dp * Dx(LL) * wu(LL)
       end do
 
       if (jampi == 1) then
@@ -892,13 +943,13 @@ contains
 
       integer :: ierror
 !
-      real(kind=dp), parameter :: dtol = 0.01d0
+      real(kind=dp), parameter :: dtol = 0.01_dp
 
       ierror = 1
 
       do LL = 1, Lnx
 !     compute first-order filter coefficient
-         eps1 = 0d0
+         eps1 = 0.0_dp
 
          call getLbotLtop(LL, Lb, Lt)
 
@@ -908,7 +959,7 @@ contains
 
             alpha = acL(LL)
             if (ik == 2) then
-               alpha = 1d0 - acL(LL)
+               alpha = 1.0_dp - acL(LL)
             end if
 
 !        loop over links in cell
@@ -934,11 +985,11 @@ contains
                call getLbotLtop(LL1, Lb1, Lt1)
 
 !           get orientation of link
-               dsign = 1d0 ! outward
+               dsign = 1.0_dp ! outward
                wcx = wcx1(LL1)
                wcy = wcy1(LL1)
                if (ln(2, LL1) == kk) then
-                  dsign = -1d0 ! inward
+                  dsign = -1.0_dp ! inward
                   wcx = wcx2(LL1)
                   wcy = wcy2(LL1)
                end if
@@ -946,7 +997,9 @@ contains
 !           compare with vector Laplacian
                do i = iLvec(LL), ILvec(LL + 1) - 1
                   j = jLvec(i)
-                  if (j == LL1) exit
+                  if (j == LL1) then
+                     exit
+                  end if
                end do
 
                if (j /= LL1) then ! safety
@@ -962,9 +1015,9 @@ contains
                   k1 = ln(1, L)
                   k2 = ln(2, L)
 
-                  volu = acL(LL) * vol1(k1) + (1d0 - acL(LL)) * vol1(k2)
+                  volu = acL(LL) * vol1(k1) + (1.0_dp - acL(LL)) * vol1(k2)
 
-                  if (volu > 0d0) then
+                  if (volu > 0.0_dp) then
 
 !                 get 3D link number (sigma only)
                      L1 = Lb1 + klay - 1
@@ -978,7 +1031,7 @@ contains
                      Q = qa(L1) * dsign
 
 !                 outflowing only
-                     if (Q <= 0d0) then
+                     if (Q <= 0.0_dp) then
                         cycle
                      else
                         continue
@@ -989,7 +1042,7 @@ contains
 
                      w = w * Q
 
-                     if (abs(ALvec(i)) > 1d-10) then
+                     if (abs(ALvec(i)) > 1.0e-10_dp) then
                         eps1(klay) = max(eps1(klay), w / ALvec(i))
                      else
                         continue

@@ -12,6 +12,7 @@ object LinuxCollect : BuildType({
     description = "Prepping the binaries for testing/release."
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplatePublishStatus,
         TemplateMonitorPerformance
@@ -24,9 +25,13 @@ object LinuxCollect : BuildType({
     artifactRules = """
         #teamcity:symbolicLinks=as-is
         lnx64 => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
-        dimr_version*txt => version
+        dimrset_version_lnx64.txt => dimrset_lnx64_%build.vcs.number%.tar.gz!lnx64
+        dimrset_version*txt => version
     """.trimIndent()
+
+    params {
+        param("file_path", "dimrset_linux_%dep.${LinuxBuild.id}.product%_%build.vcs.number%.tar.gz")
+    }
 
     vcs {
         root(DslContext.settingsRoot)
@@ -34,7 +39,6 @@ object LinuxCollect : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exec {
             name = "Run artifacts_cleaner.py"
             path = "/usr/bin/python3"
@@ -44,9 +48,38 @@ object LinuxCollect : BuildType({
             }
         }
         exec {
+            name = "Remove system libraries"
+            workingDir = "lnx64/lib"
+            path = "ci/teamcity/Delft3D/linux/scripts/removeSysLibs.sh"
+        }
+        script {
+            name = "Set execute rights"
+            scriptContent = """
+                chmod a+x lnx64/bin/*
+            """.trimIndent()
+        }
+        exec {
             name = "Generate list of version numbers (from what-strings)"
             path = "/usr/bin/python3"
-            arguments = "ci/DIMRset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimr_version_lnx64.txt"
+            arguments = "ci/python/ci_tools/dimrset_delivery/scripts/list_all_what_strings.py --srcdir lnx64 --output dimrset_version_lnx64.txt"
+        }
+        script {
+            name = "Prepare artifact to upload"
+            scriptContent = """
+                echo "Creating %file_path%..."
+                tar -czf %file_path% lnx64 dimrset_version_lnx64.txt
+            """.trimIndent()
+        }
+        step {
+            name = "Upload artifact to Nexus"
+            type = "RawUploadNexusLinux2"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("file_path", "%file_path%")
+            param("nexus_username", "%nexus_username%")
+            param("nexus_password", "%nexus_password%")
+            param("nexus_repo", "/delft3d-dev")
+            param("retention_period", "07_day_retention")
+            param("target_path", "/dimrset/%file_path%")
         }
     }
 
@@ -69,6 +102,16 @@ object LinuxCollect : BuildType({
     }
 
     dependencies {
+        dependency(LinuxBuild2D3DSP) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+
+            artifacts {
+                artifactRules = "?:oss_artifacts_lnx64_*.tar.gz!lnx64/lib/libflow2d3d_sp.so => lnx64/lib"
+            }
+        }
         dependency(LinuxBuild) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
@@ -79,8 +122,5 @@ object LinuxCollect : BuildType({
                 artifactRules = "oss_artifacts_lnx64_*.tar.gz!lnx64/** => lnx64"
             }
         }
-    }
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })

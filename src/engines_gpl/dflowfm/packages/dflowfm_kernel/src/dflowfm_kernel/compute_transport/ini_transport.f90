@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,13 +27,11 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 !> initialize transport, set the enumerators
 module m_ini_transport
+   use precision, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -58,53 +56,52 @@ contains
       use unstruc_model, only: md_thetav_waq
       use m_bedform, only: bfmpar
 
-      implicit none
-
       character(len=8) :: str
       character(len=256) :: msg
 
       integer :: i, itrace, ised, isf, ifrac, isys
-      LOGICAL :: allocate_transport
+      logical :: allocate_transport
 
-      NUMCONST = 0
-      ISALT = 0
-      ITEMP = 0
-      ISED1 = 0
-      ISEDN = 0
-      ISPIR = 0
-      ITRA1 = 0
-      ITRAN = 0
+      numconst = 0
+      isalt = 0
+      itemp = 0
+      ioxy = 0
+      ised1 = 0
+      isedn = 0
+      ispir = 0
+      itra1 = 0
+      itran = 0
 
       if (jasal /= 0) then
-         NUMCONST = NUMCONST + 1
-         ISALT = NUMCONST
+         numconst = numconst + 1
+         isalt = numconst
       end if
 
-      if (jatem /= 0) then
-         NUMCONST = NUMCONST + 1
-         ITEMP = NUMCONST
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+         numconst = numconst + 1
+         itemp = numconst
       end if
 
       if (jased /= 0) then
          if (mxgr > 0) then
-            NUMCONST = NUMCONST + 1
-            ISED1 = NUMCONST
+            numconst = numconst + 1
+            ised1 = numconst
 
-            NUMCONST = NUMCONST + mxgr - 1
-            ISEDN = NUMCONST
+            numconst = numconst + mxgr - 1
+            isedn = numconst
          end if
       end if
 
       if (jasecflow > 0 .and. jaequili == 0 .and. kmx == 0) then
-         NUMCONST = NUMCONST + 1
-         ISPIR = NUMCONST
+         numconst = numconst + 1
+         ispir = numconst
       end if
 
       if (numtracers > 0) then
-         NUMCONST = NUMCONST + 1
-         ITRA1 = NUMCONST
-         NUMCONST = NUMCONST + numtracers - 1
-         ITRAN = NUMCONST
+         numconst = numconst + 1
+         itra1 = numconst
+         numconst = numconst + numtracers - 1
+         itran = numconst
       end if
 
       select case (jatransportautotimestepdiff)
@@ -130,72 +127,69 @@ contains
       end select
 
       !Allocate arrays for transport, if necessary.
-      allocate_transport=.false.
+      allocate_transport = .false.
       if (numconst > 0 .or. bfmpar%lfbedfrm) then
-         allocate_transport=.true.
-      endif
+         allocate_transport = .true.
+      end if
       if (jased > 0 .and. stm_included) then
          if (stmpar%morlyr%settings%active_layer_diffusion > 0) then !`morlyr` is undefined if `jased=0`, but it is associated, so you cannot check `associated`.
-            allocate_transport=.true.
-         endif
-      endif
+            allocate_transport = .true.
+         end if
+      end if
       if (allocate_transport) then
          call alloc_transport(.false.)
-      endif
-      
+      end if
 
-      if (ISALT > 0) then
+      if (isalt > 0) then
          if (javasal == 6) then
-            thetavert(ISALT) = 0d0 ! Ho explicit
+            thetavert(isalt) = 0.0_dp ! Ho explicit
          else
-            thetavert(ISALT) = tetav ! Central implicit
+            thetavert(isalt) = tetav ! Central implicit
          end if
-         const_names(ISALT) = 'salt'
+         const_names(isalt) = 'salt'
       end if
 
-      if (ITEMP > 0) then
+      if (itemp > 0) then
          if (javatem == 6) then
-            thetavert(ITEMP) = 0d0 ! Ho explicit
+            thetavert(itemp) = 0.0_dp ! Ho explicit
          else
-            thetavert(ITEMP) = tetav ! Central implicit  0.55d0
+            thetavert(itemp) = tetav ! Central implicit  0.55d0
          end if
-         const_names(ITEMP) = 'temperature'
+         const_names(itemp) = 'temperature'
       end if
 
-      if (ISED1 > 0) then
+      if (ised1 > 0) then
          if (javased == 6) then
-            thetavert(ISED1:ISEDN) = 0d0
+            thetavert(ised1:isedn) = 0.0_dp
          else
-            thetavert(ISED1:ISEDN) = tetav
+            thetavert(ised1:isedn) = tetav
          end if
          if (.not. stm_included) then ! Andere naamgeving in flow_sedmorinit, fracties van sed file
-            do i = ISED1, ISEDN
-               ised = i - ISED1 + 1
+            do i = ised1, isedn
+               ised = i - ised1 + 1
                write (str, "(I0)") ised
                const_names(i) = 'sediment_'//trim(str)
             end do
          else
             !
-            maserrsed = 0d0 ! initialise mass error counter
+            maserrsed = 0.0_dp ! initialise mass error counter
             !
             ! Map fraction names from sed to constituents (moved from ini_transport)
             !
-            do i = ISED1, ISEDN
-               ised = i - ISED1 + 1
+            do i = ised1, isedn
+               ised = i - ised1 + 1
                const_names(i) = trim(stmpar%sedpar%NAMSED(sedtot2sedsus(ised))) ! JRE - netcdf output somehow does not tolerate spaces in varnames?
-               !call remove_all_spaces(const_names(i))                             ! see whether this fix works
-               !const_names(i) = trim(const_names(i))
             end do
             !
             !   Map sfnames to const_names
             !
             if (numfracs > 0) then
                do isf = 1, stmpar%lsedsus ! dimension of sed constituents
-                  ifrac = find_name(sfnames, const_names(isf + ISED1 - 1))
+                  ifrac = find_name(sfnames, const_names(isf + ised1 - 1))
                   if (ifrac > 0) then
-                     ifrac2const(ifrac) = isf + ISED1 - 1
+                     ifrac2const(ifrac) = isf + ised1 - 1
                   else
-                     call mess(LEVEL_WARN, 'ini_transport(): fraction '//trim(const_names(isf + ISED1 - 1))//' has a neumann bc assigned. If that is not what was intended, check fraction name in the sedfracbnd definition.')
+                     call mess(LEVEL_WARN, 'ini_transport(): fraction '//trim(const_names(isf + ised1 - 1))//' has a neumann bc assigned. If that is not what was intended, check fraction name in the sedfracbnd definition.')
                   end if
                end do
             end if ! numfracs
@@ -203,14 +197,14 @@ contains
       end if ! ised
 
       if (jasecflow > 0 .and. jaequili == 0 .and. kmx == 0) then
-         const_names(ISPIR) = 'secondary_flow_intensity'
+         const_names(ispir) = 'secondary_flow_intensity'
       end if
 
-      if (ITRA1 > 0) then
-         do i = ITRA1, ITRAN
-            itrace = i - ITRA1 + 1
+      if (itra1 > 0) then
+         do i = itra1, itran
+            itrace = i - itra1 + 1
 
-!        set name
+            ! set name
             if (trim(trnames(itrace)) /= '') then
                const_names(i) = trim(trnames(itrace))
                const_units(i) = trim(trunits(itrace))
@@ -219,14 +213,19 @@ contains
                const_names(i) = 'tracer_'//trim(str)
             end if
 
+            ! Lookup oxygen tracer index, if present.
+            if (trim(str_tolower(const_names(i))) == 'oxy') then
+               ioxy = i
+            end if
+
             itrac2const(itrace) = i
 
          end do
       end if
 
-      if (NUMCONST > 0) then
+      if (numconst > 0) then
          call mess(LEVEL_INFO, 'List of constituents defined in the model')
-         do i = 1, NUMCONST
+         do i = 1, numconst
             write (msg, '(I8,1X,A)') i, const_names(i)
             call mess(LEVEL_INFO, msg)
          end do
@@ -251,11 +250,11 @@ contains
          end do
       end if
 
-!   iconst_cur = min(NUMCONST,ITRA1)
-      iconst_cur = min(NUMCONST, 1)
+!   iconst_cur = min(numconst,itra1)
+      iconst_cur = min(numconst, 1)
 
 !  local timestepping
-      time_dtmax = -1d0 ! cfl-numbers not evaluated
+      time_dtmax = -1.0_dp ! cfl-numbers not evaluated
       nsubsteps = 1
       ndeltasteps = 1
       jaupdatehorflux = 1
@@ -267,7 +266,7 @@ contains
       if (stm_included) then
          if (stmpar%lsedsus > 0) then
             noupdateconst = 0
-            do i = ISED1, ISEDN
+            do i = ised1, isedn
                jaupdateconst(i) = 0
                noupdateconst(i) = 1
             end do

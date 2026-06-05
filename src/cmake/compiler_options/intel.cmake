@@ -7,7 +7,8 @@ if (WIN32)
     # Disable diagnostic indicating that ifort is deprecated (10448)
     message(STATUS "Setting global Intel Fortran compiler flags in Windows")
     set(CMAKE_Fortran_FLAGS "/W1 /nologo /libs:dll /threads /MP /Qdiag-disable:10448 /assume:recursion")
-
+    # Set global linker flags for Fortran
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /LARGEADDRESSAWARE /STACK:${DFLOWFM_STACK_SIZE_BYTES}")
     # Set global C/C++ compiler flags that apply for each C/C++ project
     string(APPEND CMAKE_C_FLAGS " /MP")
     string(APPEND CMAKE_CXX_FLAGS " /MP")
@@ -17,6 +18,7 @@ if (WIN32)
     set(file_preprocessor_flag                /fpp)
     set(automatic_local_variable_storage_flag /auto)
     set(heap_arrays_one_flag                  /heap-arrays:1)
+    set(heap_arrays_20_flag                   /heap-arrays:20)
     set(heap_arrays_100_flag                  /heap-arrays:100)
     set(real_size_64_flag                     /real-size:64)
 
@@ -28,8 +30,12 @@ if (WIN32)
     set(check_uninit_flag                     /check:uninit)
     set(check_stack_flag                      /check:stack)
     set(openmp_flag                           /Qopenmp)   # To disable: set to /Qopenmp-stubs
+    set(avx2_flag                             /arch:CORE-AVX2)
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
     set(floating_point_exception_flag         /fpe:0)
+    set(floating_point_source_flag            /fp:source)
+    set(floating_point_speculation_safe_flag  /Qfp-speculation:safe)
+    set(flush_to_zero_flag                    /Qftz)
     set(traceback_flag                        /traceback)
 
     set(codecov_flag                          /Qcov-gen)
@@ -52,6 +58,12 @@ if (WIN32)
         string(APPEND CMAKE_MODULE_LINKER_FLAGS " /MANIFEST:NO")
         string(APPEND CMAKE_SHARED_LINKER_FLAGS " /MANIFEST:NO")
     endif()
+
+    # On windows, we have precompiled release versions of third party libraries,
+    # so we cannot link to the windows debug runtime library unless moving through a C interface.
+    # As a workaround, we link to the release runtime library in debug mode as well until a
+    # package manager solves the issue of providing debug versions of the third party libraries on windows.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif(WIN32)
 
 if (UNIX)
@@ -87,14 +99,16 @@ if (UNIX)
     set(check_uninit_flag                        "-check uninit")
     set(check_stack_flag                         "-check stack")
     set(openmp_flag                              "-qopenmp")     # To disable: set to -qopenmp-stubs
+    set(avx2_flag                                "-arch CORE-AVX2")
     set(generate_reentrancy_threaded_flag        "-reentrancy threaded")
     set(floating_point_exception_flag            "-fpe0")
+    set(flush_to_zero_flag                       "-ftz")
     set(traceback_flag                           "-traceback")
     set(heap_arrays_100_flag                     "-heap-arrays 100")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
-    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_uninit_flag} ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
 endif(UNIX)
 
 set(qauto_threaded_flags "SHELL:${automatic_local_variable_storage_flag}" "SHELL:${generate_reentrancy_threaded_flag}")

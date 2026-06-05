@@ -31,25 +31,19 @@ object TemplateFunctionalityDocumentation : Template({
 
     steps {
         python {
-            name = "Update infrastructure for functionality report"
-            id = "UPDATE_INFRASTRUCTURE_FUNCTIONALITY_REPORT"
             environment = venv {
-                requirementsFile = "ci/teamcity/Delft3D/documentation/scripts/requirements.txt"
-            }
-            command = file {
-                filename = "ci/teamcity/Delft3D/documentation/scripts/update_functionality_report.py"
-                scriptArguments = "--reldir ./%engine_dir%"
-            }
-        }
-        python {
-            environment = venv {
-                requirementsFile = "ci/teamcity/Delft3D/documentation/scripts/requirements.txt"
+                requirementsFile = ""
+                pipArgs = "--editable ./ci/python"
             }
             name = "Generate functionality report"
             id = "GENERATE_FUNCTIONALITY_REPORT"
-            command = file {
-                filename = "ci/teamcity/Delft3D/documentation/scripts/generate_functionality_report.py"
-                scriptArguments = "--engine_dir_name %engine_dir%"
+            command = module {
+                module = "ci_tools.documentation.generate_functionality_report"
+                scriptArguments = """
+                    --engine-dir=%engine_dir%
+                    --max-workers=8
+                    --teamcity
+                """.trimIndent()
             }
         }
     }
@@ -59,19 +53,25 @@ object TemplateFunctionalityDocumentation : Template({
     }
 
     triggers {
-        schedule {
-            schedulingPolicy = weekly {
-                dayOfWeek = ScheduleTrigger.DAY.Sunday
-                hour = 0
-                minute = 0
+        if (DslContext.getParameter("enable_documentation_trigger").lowercase() == "true") {
+            schedule {
+                schedulingPolicy = weekly {
+                    dayOfWeek = ScheduleTrigger.DAY.Sunday
+                    hour = 0
+                    minute = 0
+                }
+                branchFilter = "+:<default>"
+                triggerBuild = always()
+                withPendingChangesOnly = false
             }
-            branchFilter = "+:<default>"
-            triggerBuild = always()
-            withPendingChangesOnly = false
         }
     }    
     
     failureConditions {
         executionTimeoutMin = 180
+    }
+
+    features {
+        perfmon {}
     }
 })

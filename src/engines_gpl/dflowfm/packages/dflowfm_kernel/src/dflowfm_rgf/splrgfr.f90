@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -75,7 +75,7 @@ contains
 ! x, y -> xc, yc (m_grid)
 ! ijc, ijyes in m_grid
       integer :: ierr, mspl
-      integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, ii, i, j, L, ki, LJ, no, &
+      integer :: imax, i1, ni1, nti1, l1max, jj, ii1, ii2, k, i, j, L, ki, LJ, no, &
                  numspl, numpx, numi, &
                  ms, ns, &
                  mcr, ncr
@@ -113,13 +113,13 @@ contains
       numspl = mcs
       !maxsplen = 2*maxsplen
 
-      call READYY('TRANSFORMING SPLINES INTO DESIGN-GRID', 0d0)
+      call READYY('TRANSFORMING SPLINES INTO DESIGN-GRID', 0.0_dp)
       ierr = 0
 
       call NEWFIL(mspl, 'asave.spl')
       call writeSplines(mspl)
 
-      call READYY(' ', 0.05d0)
+      call READYY(' ', 0.05_dp)
 
       call SECTR(XSPc, YSPc, TIJ, mcs, maxsplen, imax, &
                  ierr, NUMI, &
@@ -138,17 +138,17 @@ contains
 !        vul voor alle splines de lijninterpolaties in
          do I1 = 1, NUMSPL
 !           Alle horizontaaltjes
-            call GETIJ(XSPc, XI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
-            call GETIJ(YSPc, YI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
+            call get_ij(XSPc, XI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
+            call get_ij(YSPc, YI1, mcs, maxsplen, imax, I1, I1, 1, NUMPX)
             call NUMPold(XSPc, mcs, maxsplen, I1, NI1)
             call PAKTIJ(TIJ, mcs, maxsplen, TI1, imax, I1, I1, 1, NUMSPL, NTI1)
             if (I1 <= NUMI) then
-               call MAKESPL(TI1, XI1, YI1, imax, NI1, NTI1, MFAC, X1, Y1, L1MAX, TT, 0d0)
+               call MAKESPL(TI1, XI1, YI1, imax, NI1, NTI1, MFAC, X1, Y1, L1MAX, TT, 0.0_dp)
                JJ = (MN12(I1, 1) - 1) * NFAC + 1
                II1 = (MN12(I1, 2) - 1) * MFAC + 1
                II2 = (MN12(I1, 3) - 1) * MFAC + 1
             else
-               call MAKESPL(TI1, XI1, YI1, imax, NI1, NTI1, NFAC, X1, Y1, L1MAX, TT, 0d0)
+               call MAKESPL(TI1, XI1, YI1, imax, NI1, NTI1, NFAC, X1, Y1, L1MAX, TT, 0.0_dp)
                JJ = (MN12(I1, 1) - 1) * MFAC + 1
                II1 = (MN12(I1, 2) - 1) * NFAC + 1
                II2 = (MN12(I1, 3) - 1) * NFAC + 1
@@ -158,11 +158,11 @@ contains
                K = K + 1
                if (K <= L1MAX) then
                   if (I1 <= NUMI) then
-                     Xc(II, JJ) = X1(K)
-                     Yc(II, JJ) = Y1(K)
+                     Xc(I, JJ) = X1(K)
+                     Yc(I, JJ) = Y1(K)
                   else
-                     Xc(JJ, II) = X1(K)
-                     Yc(JJ, II) = Y1(K)
+                     Xc(JJ, I) = X1(K)
+                     Yc(JJ, I) = Y1(K)
                   end if
                end if
 !              CALL RCIRC( X1(K),Y1(K) )
@@ -178,13 +178,13 @@ contains
          NCR = (NS - 1) * NFAC + 1
          MCR = (MS - 1) * MFAC + 1
          if (MCR >= MMAX - 1) then
-            call READYY(' ', -1d0)
+            call READYY(' ', -1.0_dp)
             call QNERROR('TOO MANY GRIDPOINTS IN', 'M-DIRECTION', ' ')
             call RESTOREgrd()
             return
          end if
          if (NCR >= NMAX - 1) then
-            call READYY(' ', -1d0)
+            call READYY(' ', -1.0_dp)
             call QNERROR('TOO MANY GRIDPOINTS IN', 'N-DIRECTION', ' ')
             call RESTOREgrd()
             return
@@ -226,10 +226,18 @@ contains
                   end do
                end do
                NO = 0
-               if (X1(2) == XYMIS) NO = 1
-               if (X2(2) == XYMIS) NO = 1
-               if (X3(2) == XYMIS) NO = 1
-               if (X4(2) == XYMIS) NO = 1
+               if (X1(2) == XYMIS) then
+                  NO = 1
+               end if
+               if (X2(2) == XYMIS) then
+                  NO = 1
+               end if
+               if (X3(2) == XYMIS) then
+                  NO = 1
+               end if
+               if (X4(2) == XYMIS) then
+                  NO = 1
+               end if
                if (NO == 0) then
                   call TRANFN2(X1, X2, X3, X4, &
                                Y1, Y2, Y3, Y4, &
@@ -252,7 +260,7 @@ contains
 !         CALL ISITU (Xc, Yc, MC, NC, IJC, IJYES)
       end if
 
-      call READYY(' ', -1d0)
+      call READYY(' ', -1.0_dp)
 
       deallocate (xspc, yspc)
       call aerr('xspc, yspc', 0, -2 * mmax * nmax) ! AvD: TODO

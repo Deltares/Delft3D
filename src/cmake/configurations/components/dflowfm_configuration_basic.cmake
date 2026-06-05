@@ -47,11 +47,8 @@ if(NOT TARGET flow1d_implicit)
 endif()
 
 # Waq
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_base.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq/dwaq_dflowfm_online_coupling.cmake)
-
-
-
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_base.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dwaq/dwaq_dflowfm_online_coupling.cmake)
 
 # Morphology
 if(NOT TARGET morphology_plugins_c)
@@ -74,6 +71,23 @@ endif()
 if(NOT TARGET dhydrology_kernel)
     add_subdirectory(${checkout_src_root}/${hydrology_kernel_module} dhydrology_kernel)
 endif()
+
+# PreCICE
+if(NOT TARGET precice::precice)
+    add_subdirectory(${checkout_src_root}/${precice_module} precice)
+endif()
+
+# precicef (preCICE fortran bindings)
+if (NOT TARGET precicef)
+    add_subdirectory(${checkout_src_root}/${precicef_module} precicef)
+endif()
+
+# petsc
+if(WIN32)
+    if(NOT TARGET petsc)
+        add_subdirectory(${checkout_src_root}/${petsc_module} petsc)
+    endif()
+endif(WIN32)
 
 # Dflowfm modules
 add_subdirectory(${checkout_src_root}/${dflowfm_kernel_module} dflowfm_kernel)
@@ -98,8 +112,6 @@ endif()
 if(NOT TARGET dfm_api_access)
     add_subdirectory(${checkout_src_root}/${dfm_api_access_module} dfm_api_access)
 endif()
-
-
 
 # Third party libraries
 # kdtree2
@@ -126,13 +138,6 @@ if(NOT TARGET metisoptions)
     add_subdirectory(${checkout_src_root}/${metisoptions_module} metisoptions) # Note that the metisoptions should be loaded AFTER metis is loaded, as it depends on settings set by the CMakeLists.txt of the metis library
 endif()
 
-# petsc
-if(WIN32)
-    if(NOT TARGET petsc)
-        add_subdirectory(${checkout_src_root}/${petsc_module} petsc)
-    endif()
-endif(WIN32)
-
 # triangle
 if(NOT TARGET triangle_c)
     add_subdirectory(${checkout_src_root}/${triangle_c_module} triangle_c)
@@ -148,6 +153,11 @@ if(NOT TARGET FLAP)
     add_subdirectory(${checkout_src_root}/${FLAP_module} FLAP)
 endif()
 
+if(WIN32)
+   if (NOT TARGET gdal)
+      add_subdirectory(${checkout_src_root}/${gdal_module} gdal)
+   endif()
+endif(WIN32)
 # fortrangis
 if(NOT TARGET fortrangis)
     add_subdirectory(${checkout_src_root}/${fortrangis_module} fortrangis)
@@ -190,11 +200,6 @@ if(NOT TARGET gridgeom)
     add_subdirectory(${checkout_src_root}/${gridgeom_module} gridgeom)
 endif()
 
-# icepack
-if(NOT TARGET icepack)
-    add_subdirectory(${checkout_src_root}/${icepack_module} icepack)
-endif()
-
 if(NOT WITH_INTERACTER)
     # Use interacter_stub instead
     if(NOT TARGET interacter_stub)
@@ -232,11 +237,11 @@ if(NOT WITH_INTERACTER)
     if(NOT TARGET test_dflowfm_kernel)
         add_subdirectory(${checkout_src_root}/${test_dflowfm_kernel} test_dflowfm_kernel)
     endif()
-    
+
     if(NOT TARGET test_deltares_common)
         add_subdirectory(${checkout_src_root}/${test_deltares_common_module} test_deltares_common)
     endif()
-    
+
     if(NOT TARGET test_ec_module)
         add_subdirectory(${checkout_src_root}/${test_ec_module} test_ec_module)
     endif()
@@ -246,16 +251,18 @@ if(NOT WITH_INTERACTER)
     endif()
 endif(NOT WITH_INTERACTER)
 
-
-if(UNIX)
-    # install
-    add_subdirectory(${checkout_src_root}/${install_dflowfm_module} install_dflowfm)
-endif()
-
 # Plugins
 if(NOT TARGET plugin_culvert)
     add_subdirectory(${checkout_src_root}/plugins_lgpl/plugin_culvert plugin_culvert)
 endif()
 if(NOT TARGET plugin_delftflow_traform)
     add_subdirectory(${checkout_src_root}/plugins_lgpl/plugin_delftflow_traform plugin_delftflow_traform)
+endif()
+
+if(WIN32)
+    if(WITH_INTERACTER)
+        if(NOT TARGET interacter_utils)
+            add_subdirectory(${checkout_src_root}/${interacter_utils_module} interacter_utils)
+        endif()
+    endif()
 endif()

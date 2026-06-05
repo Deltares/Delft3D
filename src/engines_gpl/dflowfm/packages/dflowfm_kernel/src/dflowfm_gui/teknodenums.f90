@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -59,7 +59,9 @@ contains
       call SETCOL(NCOL)
       KMOD = max(1, NUMK / 100)
       do K = 1, NUMK
-         if (.not. INVNOD(K)) cycle
+         if (.not. INVNOD(K)) then
+            cycle
+         end if
          X = XK(K)
          Y = YK(K)
          Z = ZK(K)
@@ -80,13 +82,13 @@ contains
                      L = NOD(K)%LIN(N)
                      K1 = KN(1, L)
                      K2 = KN(2, L)
-                     X = 0.5d0 * (XK(K1) + 0.5d0 * XK(K2))
-                     Y = 0.5d0 * (YK(K1) + 0.5d0 * YK(K2))
-                     Z = 0.5d0 * (ZK(K1) + 0.5d0 * ZK(K2))
+                     X = 0.5_dp * (XK(K1) + 0.5_dp * XK(K2))
+                     Y = 0.5_dp * (YK(K1) + 0.5_dp * YK(K2))
+                     Z = 0.5_dp * (ZK(K1) + 0.5_dp * ZK(K2))
                      call DHITEXT(L, X, Y)
                   end do
                else
-                  call dHTEXT(dble(RNOD(K)), X, Y, Z)
+                  call dHTEXT(real(RNOD(K), kind=dp), X, Y, Z)
                end if
             end if
          end if

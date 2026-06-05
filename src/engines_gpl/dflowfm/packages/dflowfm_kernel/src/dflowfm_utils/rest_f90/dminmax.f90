@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,8 +37,8 @@ contains
       use m_missing, only: dmiss
       implicit none
       integer :: i
-      integer :: maxlan
-      integer :: mxlan
+      integer, intent(in) :: maxlan
+      integer, intent(in) :: mxlan
       real(kind=dp) :: xmax
       real(kind=dp) :: xmin
       real(kind=dp) :: xx
@@ -51,8 +51,8 @@ contains
          return
       end if
 
-      XMIN = 10d20
-      XMAX = -10d20
+      XMIN = 10.0e20_dp
+      XMAX = -10.0e20_dp
       do I = 1, MXLAN
          XX = X(I)
          if (XX /= dmiss) then
@@ -60,8 +60,12 @@ contains
             XMAX = max(XMAX, XX)
          end if
       end do
-      if (XMIN == 10d20) XMIN = 0
-      if (XMAX == -10d20) XMAX = 0
+      if (XMIN == 10.0e20_dp) then
+         XMIN = 0
+      end if
+      if (XMAX == -10.0e20_dp) then
+         XMAX = 0
+      end if
       return
    end
 

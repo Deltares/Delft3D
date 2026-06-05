@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,45 +29,49 @@
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace triggers
-{
+    namespace schematization
+    {
+        namespace triggers
+        {
 
-class trigger : public element
-{
-protected:
-	int nTrueComponent;
-	element **trueComponent;
-	int nFalseComponent;
-	element **falseComponent;
+            class trigger : public element
+            {
+            protected:
+                int nTrueComponent;
+                element** trueComponent;
+                int nFalseComponent;
+                element** falseComponent;
 
-	int iYOut;
-	int iTimeTrueOut;
-	int iTimeFalseOut;
+                int iYOut;
+                int iTimeTrueOut;
+                int iTimeFalseOut;
 
-	trigger(string id, string name, int iYOut, int iTimeTrue, int iTimeFalse);
+                trigger(string id, string name, int iYOut, int iTimeTrue, int iTimeFalse);
 
-public:
-	virtual ~trigger(void) {};
+            public:
+                virtual ~trigger(void) {};
 
-	void addTrueComponent(int n, element **c);
-	void addFalseComponent(int n, element **c);
-	void activate();
-    void deactivate();
+                void addTrueComponent(int n, element** c);
+                void addFalseComponent(int n, element** c);
+                void activate();
+                void deactivate();
 
-	virtual void solve(double *stateOld, double *stateNew, long long t, double dt) = 0;
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew) {
-		throw runtime_error("void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew) not implemented");
-	};
+                virtual void solve(double* stateOld, double* stateNew, long long t, double dt) = 0;
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld,
+                              double* objNew)
+                {
+                    throw runtime_error(
+                        "void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, "
+                        "double *objNew) not implemented");
+                };
 
-	void evaluateTimes(double *stateOld, double *stateNew, long long t, double dt);
-	void evaluateSubtriggers(double *stateOld, double *stateNew, long long t, double dt);
-	double getStatus(double *state);
-};
+                void evaluateTimes(double* stateOld, double* stateNew, long long t, double dt);
+                void evaluateSubtriggers(double* stateOld, double* stateNew, long long t, double dt);
+                double getStatus(double* state);
+            };
 
-} // end namespace triggers
-} // end namespace schematization
+        } // end namespace triggers
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* TRIGGER_H */

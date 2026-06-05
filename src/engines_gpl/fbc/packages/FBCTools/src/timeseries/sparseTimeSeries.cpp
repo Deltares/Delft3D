@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -18,59 +18,43 @@
 
 using namespace rtctools::timeseries;
 
-sparseTimeSeries::sparseTimeSeries(int sIndex,vector<long long>* times, vector<double>* vals, 
-	long long t1, long long t2, long long dt, interpolationOption interpol, interpolationOption extrapol){
-	    this->seriesIndex = sIndex;
-		this->t1 = t1;
-		this->t2 = t2;
-		this->dt = dt;
-		this->intpol = interpol;
-		this->extpol = extrapol;
-		this->times = *times;
-		this->vals = *vals;
-	};
+sparseTimeSeries::sparseTimeSeries(int sIndex, vector<long long>* times, vector<double>* vals, long long t1,
+                                   long long t2, long long dt, interpolationOption interpol,
+                                   interpolationOption extrapol)
+{
+    this->seriesIndex = sIndex;
+    this->t1 = t1;
+    this->t2 = t2;
+    this->dt = dt;
+    this->intpol = interpol;
+    this->extpol = extrapol;
+    this->times = *times;
+    this->vals = *vals;
+};
 
-sparseTimeSeries::~sparseTimeSeries(void) {
-}
+sparseTimeSeries::~sparseTimeSeries(void) {}
 
-int sparseTimeSeries::getSeriesIndex() {
-	return this->seriesIndex;
-}
+int sparseTimeSeries::getSeriesIndex() { return this->seriesIndex; }
 
-interpolationOption sparseTimeSeries:: getInterpolationOption(){
-	return this->intpol;
-}
+interpolationOption sparseTimeSeries::getInterpolationOption() { return this->intpol; }
 
-interpolationOption sparseTimeSeries::getExtrapolationOption(){
-	return this->extpol;
-}
+interpolationOption sparseTimeSeries::getExtrapolationOption() { return this->extpol; }
 
-long long sparseTimeSeries::getStarttime(){
-	return this->t1;
-}
+long long sparseTimeSeries::getStarttime() { return this->t1; }
 
-long long sparseTimeSeries::getEndtime(){
-	return this->t2;
-}
+long long sparseTimeSeries::getEndtime() { return this->t2; }
 
-long long sparseTimeSeries::getdt(){
-	return this->dt;
-}
+long long sparseTimeSeries::getdt() { return this->dt; }
 
-vector <long long> sparseTimeSeries::gettimes(){
-	return this->times ;
-}
+vector<long long> sparseTimeSeries::gettimes() { return this->times; }
 
-vector <double> sparseTimeSeries::getvals(){
-	return this->vals ;
-}
+vector<double> sparseTimeSeries::getvals() { return this->vals; }
 
-double sparseTimeSeries::getvalue(int index){
-	return this->vals[index] ;
-}
+double sparseTimeSeries::getvalue(int index) { return this->vals[index]; }
 
-void sparseTimeSeries::setvalue(int index, double newval){
-	assert(index >= 0);
-	assert(index < (int)this->vals.size());
-	this->vals[index] = newval;
+void sparseTimeSeries::setvalue(int index, double newval)
+{
+    assert(index >= 0);
+    assert(index < (int)this->vals.size());
+    this->vals[index] = newval;
 }

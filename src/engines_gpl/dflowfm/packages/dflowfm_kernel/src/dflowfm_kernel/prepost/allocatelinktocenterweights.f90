@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,31 +43,46 @@ contains
    !> allocate center related linkxy weights
    subroutine allocatelinktocenterweights()
 
-      use m_flowgeom
-      use m_alloc
+      use m_flowgeom, only: wcxy, wcx1, wcy1, wcx2, wcy2, wcl, wc, ndx, lnx
+      use m_alloc, only: aerr
 
       integer :: ierr
 
-      if (allocated(wcx1)) deallocate (wcx1)
-      if (allocated(wcy1)) deallocate (wcy1)
-      if (allocated(wcx2)) deallocate (wcx2)
-      if (allocated(wcy2)) deallocate (wcy2)
-      if (allocated(wcL)) deallocate (wcL)
-      if (allocated(wc)) deallocate (wc)
+      if (allocated(wcxy)) then
+         deallocate (wcxy)
+      end if
+      if (allocated(wcx1)) then
+         deallocate (wcx1)
+      end if
+      if (allocated(wcy1)) then
+         deallocate (wcy1)
+      end if
+      if (allocated(wcx2)) then
+         deallocate (wcx2)
+      end if
+      if (allocated(wcy2)) then
+         deallocate (wcy2)
+      end if
+      if (allocated(wcL)) then
+         deallocate (wcL)
+      end if
+      if (allocated(wc)) then
+         deallocate (wc)
+      end if
 
-      allocate (wcx1(lnx), stat=ierr); 
+      allocate (wcxy(2, ndx), stat=ierr)
+      call aerr('wcxy(2, ndx)', ierr, 2 * ndx)
+      allocate (wcx1(lnx), stat=ierr)
       call aerr('wcx1(lnx)', ierr, lnx)
-      allocate (wcy1(lnx), stat=ierr); 
+      allocate (wcy1(lnx), stat=ierr)
       call aerr('wcy1(lnx)', ierr, lnx)
-      allocate (wcx2(lnx), stat=ierr); 
+      allocate (wcx2(lnx), stat=ierr)
       call aerr('wcx2(lnx)', ierr, lnx)
-      allocate (wcy2(lnx), stat=ierr); 
+      allocate (wcy2(lnx), stat=ierr)
       call aerr('wcy2(lnx)', ierr, lnx)
-      allocate (wcL(2, Lnx), stat=ierr); 
-      call aerr('wcL  (2,Lnx)', ierr, 2 * Lnx)
-      allocate (wc(ndx), stat=ierr); 
-      call aerr('wc     (ndx)', ierr, ndx)
-
+      allocate (wcL(2, lnx), stat=ierr)
+      call aerr('wcL(2,lnx)', ierr, 2 * lnx)
+      allocate (wc(ndx), stat=ierr)
+      call aerr('wc(ndx)', ierr, ndx)
    end subroutine allocatelinktocenterweights
-
 end module m_allocate_linktocenterweights

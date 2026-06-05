@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,9 +38,9 @@ contains
 
    subroutine ICTEXT(TEX, NX, NY, NCOL)
       use precision, only: dp
-      use unstruc_colors
-      use m_set_col
-      use m_draw_text
+      use unstruc_colors, only: x1, x2, iws, y2, y1, ihs
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
       implicit none
       integer :: l
       integer :: ncol
@@ -50,8 +50,8 @@ contains
       real(kind=dp) :: y
 !     grafische tekst op normale text posities
       character TEX * (*)
-      X = X1 + (X2 - X1) * dble(NX) / dble(IWS)
-      Y = Y2 + (Y1 - Y2) * dble(NY) / dble(IHS)
+      X = X1 + (X2 - X1) * real(NX, kind=dp) / real(IWS, kind=dp)
+      Y = Y2 + (Y1 - Y2) * real(NY, kind=dp) / real(IHS, kind=dp)
       call SETCOL(NCOL)
       L = len_trim(TEX)
       call DRAWTEXT(real(X), real(Y), TEX(1:L))

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -84,7 +84,7 @@ contains
          ! loop over nqhbnd (per pli)
          do i = 1, nqhbnd
             !    prepare qtot array
-            atqh_all(i) = 0d0
+            atqh_all(i) = 0.0_dp
             do n = L1qhbnd(i), L2qhbnd(i)
                kb = kbndz(1, n)
                k2 = kbndz(2, n)
@@ -102,15 +102,19 @@ contains
 
          ! do communication between domains
          if (jampi == 1) then
-            if (jatimer == 1) call starttimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call starttimer(IMPIREDUCE)
+            end if
             call reduce_atqh_all()
-            if (jatimer == 1) call stoptimer(IMPIREDUCE)
+            if (jatimer == 1) then
+               call stoptimer(IMPIREDUCE)
+            end if
          end if
 
          ! First step calculate the water level, using the QH-relation for a outflowing discharge + dQ
          do i = 1, nqhbnd
             q_org(i) = atqh_all(i)
-            atqh_all(i) = q_org(i) + max(min(0.001d0 * abs(q_org(i)), 1d0), 0.001d0)
+            atqh_all(i) = q_org(i) + max(min(0.001_dp * abs(q_org(i)), 1.0_dp), 0.001_dp)
          end do
          success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
          if (.not. success) then
@@ -120,7 +124,7 @@ contains
 
          ! Second step calculate the water level, using the QH-relation for a outflowing discharge - dQ
          do i = 1, nqhbnd
-            atqh_all(i) = q_org(i) - max(min(0.001d0 * abs(q_org(i)), 1d0), 0.001d0)
+            atqh_all(i) = q_org(i) - max(min(0.001_dp * abs(q_org(i)), 1.0_dp), 0.001_dp)
          end do
          success = ec_gettimespacevalue(ecInstancePtr, item_qhbnd, irefdate, tzone, tunit, time)
          if (.not. success) then
@@ -130,9 +134,9 @@ contains
 
          ! Step 3 now estimate the slope of the QH-relation at the given discharge
          do i = 1, nqhbnd
-            dQ = max(min(0.001d0 * abs(q_org(i)), 1d0), 0.001d0)
+            dQ = max(min(0.001_dp * abs(q_org(i)), 1.0_dp), 0.001_dp)
             if (comparereal(qhbndz_plus(i), qhbndz_min(i)) == 0) then
-               qh_gamma(i) = 0d0
+               qh_gamma(i) = 0.0_dp
             else
                qh_gamma(i) = 2 * dQ / (qhbndz_plus(i) - qhbndz_min(i))
             end if
@@ -259,14 +263,9 @@ contains
          success = success .and. ec_gettimespacevalue(ecInstancePtr, item_gateloweredgelevel, irefdate, tzone, tunit, time, zgate)
       end if
 
-      !dambreak
-      if (ndambreaksignals > 0) then
-         ! Variable ndambreaksignals is >0 for all partitions if there is a dambreak, even if it is outside of a partition.
-         ! In a parallel simulation, we need to call this subroutine even in a special situation that there is no dambreak
-         ! on the current subdomain (i.e. ndambreaklinks == 0), because this subroutine calls function
-         ! getAverageQuantityFromLinks, which involves mpi communication among all subdomains. However, in this special situation,
-         ! all the necessary variables will be set to 0 and will not participate the dambreak related computation in this subroutine.
-         call update_dambreak_breach(time, dts)
+      if (update_dambreak_breach(time, dts) /= 0) then
+         success = .false.
+         goto 888
       end if
 
       if (network%rgs%timeseries_defined) then
@@ -294,7 +293,7 @@ contains
 
       ! Error handling:
 888   continue
-      msgbuf = dumpECMessageStack(LEVEL_WARN, callback_msg)
+      msgbuf = dump_ec_message_stack(LEVEL_WARN, callback_msg)
       iresult = DFM_EXTFORCERROR
       write (msgbuf, '(a,f13.3)') 'Error while updating boundary forcing at time=', time
       call mess(LEVEL_WARN, trim(msgbuf))

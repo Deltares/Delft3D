@@ -3,6 +3,8 @@ package Delft3D.verschilanalyse
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
+import Delft3D.template.*
+import java.io.File
 
 object ReportVerschilanalyse: BuildType({
     name = "Report"
@@ -10,17 +12,22 @@ object ReportVerschilanalyse: BuildType({
     maxRunningBuilds = 1
 
     artifactRules = """
-        report.zip
+        current_logs.zip
+        reference_logs.zip
+        verschillen.zip
+        summaries
     """.trimIndent()
 
     params {
-        param("report_prefix", "output/weekly/latest/report")
+        param("current_prefix", "output/weekly/development")
+        param("reference_prefix", "output/release/2025.01")
+        param("send_email", "true")
 
-        param("env.TEAMCITY_SERVER_URL", DslContext.serverUrl)
-        param("env.EMAIL_FROM", "black-ops@deltares.nl")
+        param("env.TEAMCITY_SERVER_URL", DslContext.serverUrl.replace(Regex("/+$"), ""))
         param("env.EMAIL_SERVER", "smtp.directory.intra")
         param("env.EMAIL_PORT", "25")
-        param("env.EMAIL_RECIPIENTS", "dflowfm-verschilanalyse@deltares.nl")
+        param("env.EMAIL_FROM", "black-ops@deltares.nl")
+        param("env.EMAIL_TO", "dflowfm-verschilanalyse@deltares.nl")
     }
 
     vcs {
@@ -30,26 +37,24 @@ object ReportVerschilanalyse: BuildType({
 
     steps {
         script {
-            name = "Download Verschillentool report"
-            scriptContent = """
-                aws --endpoint-url=https://s3.deltares.nl \
-                    s3 cp s3://devops-test-verschilanalyse/%report_prefix%/report.zip report.zip
-            """.trimIndent()
-            dockerImage = "amazon/aws-cli:2.22.7"
+            name = "Download logs and verschillentool output"
+            val script = File(DslContext.baseDir, "verschilanalyse/scripts/download_reports.sh")
+            scriptContent = Util.readScript(script)
+            dockerImage = "containers.deltares.nl/docker-proxy/amazon/aws-cli:2.32.14"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = """
                 --rm
                 --entrypoint=/bin/bash
-                --volume="%env.AWS_SHARED_CREDENTIALS_FILE%:/root/.aws/credentials:ro"
+                -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
             """.trimIndent()
         }
         script {
-            name = "Unzip report"
-            scriptContent = "unzip -d report ./report.zip"
+            name = "Unzip logs and verschillentool output"
+            val script = File(DslContext.baseDir, "verschilanalyse/scripts/unzip_reports.sh")
+            scriptContent = Util.readScript(script)
         }
         python {
-            id = "generate_summary"
-            name = "Generate summary"
+            name = "Generate summaries"
             pythonVersion = customPython {
                 executable = "python3.11"
             }
@@ -58,16 +63,25 @@ object ReportVerschilanalyse: BuildType({
                 pipArgs = "--editable ./ci/python[verschilanalyse]"
             }
             command = module {
-                module = "ci_tools.verschilanalyse.summarize_verschillentool_output"
+                module = "ci_tools.verschilanalyse.generate_summaries"
                 scriptArguments = """
-                    --verschillentool-output-dir=./report/verschillentool_output
-                    --output-dir=./report
+                    --current-log-dir=current_logs
+                    --reference-log-dir=reference_logs
+                    --verschillen-dir=verschillen
+                    --output-dir=summaries
+                    --s3-current-prefix=s3://devops-test-verschilanalyse/%current_prefix%
+                    --s3-reference-prefix=s3://devops-test-verschilanalyse/%reference_prefix%
+                    --report-build-url=%env.TEAMCITY_SERVER_URL%/buildConfiguration/%system.teamcity.buildType.id%/%teamcity.build.id%
+                    --artifact-base-url=%env.TEAMCITY_SERVER_URL%/repository/download/%system.teamcity.buildType.id%/%teamcity.build.id%:id
                 """.trimIndent()
             }
         }
         python {
             name = "Send email"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
+            conditions {
+                equals("send_email", "true")
+            }
             pythonVersion = customPython {
                 executable = "python3.11"
             }
@@ -78,14 +92,12 @@ object ReportVerschilanalyse: BuildType({
             command = module {
                 module = "ci_tools.verschilanalyse.send_verschilanalyse_email"
                 scriptArguments = """
-                    --build-id=%teamcity.build.id%
-                    --status=%teamcity.build.step.status.generate_summary%
-                    --teamcity-server-url=%env.TEAMCITY_SERVER_URL%
-                    --build-type-id=%system.teamcity.buildType.id%
-                    --email-from=%env.EMAIL_FROM%
                     --email-server=%env.EMAIL_SERVER%
                     --email-port=%env.EMAIL_PORT%
-                    --email-recipients=%env.EMAIL_RECIPIENTS%
+                    --email-from=%env.EMAIL_FROM%
+                    --email-to=%env.EMAIL_TO%
+                    --email-content=summaries/email_content.html
+                    --attachment=summaries/verschillentool_summary.xlsx
                 """.trimIndent()
             }
         }
@@ -98,13 +110,16 @@ object ReportVerschilanalyse: BuildType({
     features {
         perfmon {}
         swabra {}
-        provideAwsCredentials {
-            awsConnectionId = "minio_verschilanalyse_connection"
-        }
-        dockerSupport {
+        dockerRegistryConnections {
             loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_133,PROJECT_EXT_81"
+                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"
             }
+        }
+        xmlReport {
+            reportType = XmlReport.XmlReportType.JUNIT
+            rules = """
+                +:summaries/verschilanalyse_junit.xml
+            """.trimIndent()
         }
     }
 

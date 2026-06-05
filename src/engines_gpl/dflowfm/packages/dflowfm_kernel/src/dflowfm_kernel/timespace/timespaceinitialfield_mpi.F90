@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -56,7 +56,7 @@ contains
       character(*), intent(in) :: filename !< name of data file
       integer, intent(in) :: filetype !< file type
       integer, intent(in) :: method !< interpolation method, only "4" and "5" supported
-      character(1), intent(in) :: operand !< override, add
+      integer, intent(in) :: operand !< override, add
       real(kind=dp), dimension(NTRANSFORMCOEF), intent(in) :: transformcoef !< Transformation coefficients
       integer, intent(in) :: iprimpos !< only needed for averaging, but not supported
 

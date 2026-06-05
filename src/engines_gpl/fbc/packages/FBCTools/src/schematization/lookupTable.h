@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -36,59 +36,59 @@ using namespace rtctools::utilities;
 
 namespace rtctools
 {
-namespace schematization
-{
+    namespace schematization
+    {
 
-/**
-  * @brief One-dimensional lookup table
-  */
-class lookupTable : public component, public rule, public trigger
-{
-private:
-	/**
-	  * @brief Pointer to the lookup table
-	  */
-	converter *conv;
-	/**
-	  * @brief Index of index time series
-	  */
-	int iXIn;
-	/**
-	  * @brief Index of optional time series for overruling the output
-	  *
-	  * This time series is optional and overrules the output of the lookup
-	  * table if being available. This means if it is configures and 
-	  * includes valid data.
-	  */
-	int iYIn;
-	/**
-	  * @brief Index of output time series
-	  */
-	int iYOut;
+        /**
+         * @brief One-dimensional lookup table
+         */
+        class lookupTable : public component, public rule, public trigger
+        {
+        private:
+            /**
+             * @brief Pointer to the lookup table
+             */
+            converter* conv;
+            /**
+             * @brief Index of index time series
+             */
+            int iXIn;
+            /**
+             * @brief Index of optional time series for overruling the output
+             *
+             * This time series is optional and overrules the output of the lookup
+             * table if being available. This means if it is configures and
+             * includes valid data.
+             */
+            int iYIn;
+            /**
+             * @brief Index of output time series
+             */
+            int iYOut;
 
-public:
-	/**
-	  * Constructor
-	  */
-	lookupTable(string id, string name, converter *conv, int iXIn, int iYIn, int iYOut);
-	/**
-	  * Constructor
-	  *
-	  * @param id		Identifyer
-	  * @param name		Name
-	  * @param conv		Pointer to lookup table 
-	  * @param iXIn		Input variable
-	  * @param iYIn		Optional input for overruling the output of the lookup table
-	  * @param iYOut	Output variable
-	  */
-	~lookupTable(void);
+        public:
+            /**
+             * Constructor
+             */
+            lookupTable(string id, string name, converter* conv, int iXIn, int iYIn, int iYOut);
+            /**
+             * Constructor
+             *
+             * @param id		Identifyer
+             * @param name		Name
+             * @param conv		Pointer to lookup table
+             * @param iXIn		Input variable
+             * @param iYIn		Optional input for overruling the output of the lookup table
+             * @param iYOut	Output variable
+             */
+            ~lookupTable(void);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew);
-    virtual int getIYOut() const override { return iYOut; }
-};
+            void solve(double* stateOld, double* stateNew, long long t, double dt);
+            void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld, double* objNew);
+            virtual int getIYOut() const override { return iYOut; }
+        };
 
-} // end namespace schematization
+    } // end namespace schematization
 } // end namespace rtctools
 
-#endif //LOOKUP_TABLE_H
+#endif // LOOKUP_TABLE_H

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,13 +43,13 @@ contains
 
    subroutine pillargrid(ierror)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_polygon
-      use m_missing
+      use m_grid, only: mc, nc, xc, yc
+      use m_gridsettings, only: nfac, pil_rad, pil_x, pil_y
+      use m_polygon, only: npl, xpl, ypl
+      use m_missing, only: dmiss
+      use m_increase_grid, only: increasegrid
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: dbdistance, get_startend
-      use m_increase_grid
 
       integer, intent(out) :: ierror ! error (1) or not (0)
 
@@ -59,14 +59,18 @@ contains
 
       ierror = 1
 
-      if (NPL < 3) goto 1234
+      if (NPL < 3) then
+         goto 1234
+      end if
 
 !  get the first polygon
       call get_startend(NPL, XPL, YPL, jstart, jend, dmiss)
 
 !  number of points in the polygon
       num = jend - jstart + 1
-      if (num < 2) goto 1234 ! we need at least two points in the polygon
+      if (num < 2) then
+         goto 1234 ! we need at least two points in the polygon
+      end if
 
 !  set the grid sizes
       mc = num + 1
@@ -85,7 +89,9 @@ contains
       do i = 1, mc
 !     get the coordinates of the point on the polyline
          ipol = jstart + i - 1
-         if (ipol > jend) ipol = ipol - num
+         if (ipol > jend) then
+            ipol = ipol - num
+         end if
          x1 = xpl(ipol)
          y1 = ypl(ipol)
 
@@ -94,8 +100,8 @@ contains
             R1 = dbdistance(x0, y0, x1, y1, jsferic, jasfer3D, dmiss)
 !        determine relative position on the gridline
 !        uniform:
-            alpha = dble(j - 1) / dble(nc - 1)
-            beta = (1d0 - alpha) * R0 / R1 + alpha
+            alpha = real(j - 1, kind=dp) / real(nc - 1, kind=dp)
+            beta = (1.0_dp - alpha) * R0 / R1 + alpha
 
             xc(i, j) = x0 + beta * (x1 - x0)
             yc(i, j) = y0 + beta * (y1 - y0)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,6 +37,6 @@ module m_boat
    real(kind=dp), allocatable :: XBOOT(:), YBOOT(:), ZBOOT(:) ! AFBEELDEN LIJNEN
    integer, allocatable :: NCBOAT(:) !
    integer :: MXBOAT, MAXBOAT, NCLBOAT
-   real(kind=dp) :: BLEN = 25, BHEIGHT = 4, BWIDTH = 5, BHPMAX = 1000, BHPPERC = 0.5d0
+   real(kind=dp) :: BLEN = 25, BHEIGHT = 4, BWIDTH = 5, BHPMAX = 1000, BHPPERC = 0.5_dp
    integer :: KKB(10) = 0
 end module m_boat

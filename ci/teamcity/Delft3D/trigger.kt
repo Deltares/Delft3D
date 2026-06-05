@@ -5,13 +5,16 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 import Delft3D.template.*
 import Delft3D.step.*
 import Delft3D.linux.*
+import Delft3D.linux.containers.*
 import Delft3D.windows.*
+import Delft3D.ciUtilities.*
 
 object Trigger : BuildType({
 
-    description = "This is triggered for merge-requests and will schedule the appropriate testbenches."
+    description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
 
     templates(
+        TemplateLinuxAgent,
         TemplateMergeRequest,
         TemplateDetermineProduct,
         TemplatePublishStatus,
@@ -27,9 +30,9 @@ object Trigger : BuildType({
 
     params {
         param("testbench_table", "ci/teamcity/Delft3D/vars/dimr_testbench_table.csv")
-    
+
         param("teamcity_user", "svc_dimr_trigger")
-        password("teamcity_pass", "credentialsJSON:15cc6665-e900-4360-8942-00e654f6acfe")
+        password("teamcity_pass", DslContext.getParameter("teamcity_pass"))
 
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
@@ -37,13 +40,15 @@ object Trigger : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         python {
             name = "Retrieve Linux Testbench XMLs from CSV"
             command = file {
                 filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v lnx64"
             }
+            dockerImage = "containers.deltares.nl/docker-proxy/python:3.13"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
+            dockerPull = true
         }
 
         python {
@@ -52,6 +57,9 @@ object Trigger : BuildType({
                 filename = "ci/python/ci_tools/trigger/testbench_filter.py"
                 scriptArguments = "-n %product% -f %testbench_table% -v win64"
             }
+            dockerImage = "containers.deltares.nl/docker-proxy/python:3.13"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
+            dockerPull = true
         }
 
         script {
@@ -59,8 +67,6 @@ object Trigger : BuildType({
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
-                doesNotEqual("product", "none-testbench")
-                doesNotEqual("product", "qp-testbench")
             }
 
             scriptContent = """
@@ -97,10 +103,8 @@ object Trigger : BuildType({
 
             conditions {
                 doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
-                doesNotEqual("product", "none-testbench")
-                doesNotEqual("product", "qp-testbench")
             }
-            
+
             scriptContent = """
                 curl --fail --silent --show-error \
                      -u %teamcity_user%:%teamcity_pass% \
@@ -129,9 +133,182 @@ object Trigger : BuildType({
                 fi
             """.trimIndent()
         }
+
+        script {
+            name = "Start Linux Unit Tests"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                     -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${LinuxUnitTest.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="product" value="%product%"/>
+                            </properties>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                         </build>' \
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Linux unit tests through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
+
+        script {
+            name = "Start Windows Unit Tests"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                     -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${WindowsUnitTest.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="product" value="%product%"/>
+                            </properties>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                         </build>' \
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Windows unit tests through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
+
+        script {
+            name = "Start Dev Container build"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                     -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${LinuxDevContainer.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="product" value="%product%"/>
+                            </properties>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                         </build>' \
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Dev container build through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
+        script {
+            name = "Start Docker Examples"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+                matches("product", """^(fm-(suite|testbench))|(all-testbench)$""")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                        -u %teamcity_user%:%teamcity_pass% \
+                        -X POST \
+                        -H "Content-Type: application/xml" \
+                        -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${LinuxRunAllContainerExamples.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                            </build>' \
+                        "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start Docker examples through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
+
+        script {
+            name = "Start DVC diff report build"
+
+            conditions {
+                doesNotContain("teamcity.build.triggeredBy", "Snapshot dependency")
+                startsWith("teamcity.build.branch", "pull")
+            }
+
+            scriptContent = """
+                curl --fail --silent --show-error \
+                     -u %teamcity_user%:%teamcity_pass% \
+                     -X POST \
+                     -H "Content-Type: application/xml" \
+                     -d '<build branchName="%teamcity.build.branch%" replace="true">
+                            <buildType id="${DvcDiffComment.id}"/>
+                            <revisions>
+                                <revision version="%build.vcs.number%" vcsBranchName="%teamcity.build.branch%">
+                                    <vcs-root-instance vcs-root-id="DslContext.settingsRoot"/>
+                                </revision>
+                            </revisions>
+                            <properties>
+                                <property name="product" value="%product%"/>
+                            </properties>
+                            <snapshot-dependencies>
+                                <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
+                            </snapshot-dependencies>
+                         </build>' \
+                     "%teamcity.serverUrl%/app/rest/buildQueue"
+                if (test $? -ne 0)
+                then
+                    echo Start dvc report through TC API failed.
+                    exit 1
+                fi
+            """.trimIndent()
+        }
     }
 
-    if (DslContext.getParameter("environment") == "production") {
+    if (DslContext.getParameter("enable_pre_merge_trigger").lowercase() == "true") {
         triggers {
             schedule {
                 schedulingPolicy = daily {
@@ -139,19 +316,14 @@ object Trigger : BuildType({
                 }
                 branchFilter = ""
                 triggerBuild = always()
-                withPendingChangesOnly = false
                 param("revisionRuleBuildBranch", "<default>")
+                param("copy_failed_cases", "true")
             }
             vcs {
                 quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
                 quietPeriod = 60
-                branchFilter = "+:merge-requests/*"
+                branchFilter = "+:pull/*"
             }
         }
     }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
-    }
-
 })

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,6 +28,7 @@
 !-------------------------------------------------------------------------------
 
 module m_find1dcells
+
    use network_data
    use m_alloc
    use m_flowgeom, only: xz, yz, ba
@@ -35,6 +36,7 @@ module m_find1dcells
    use MessageHandling
    use m_save_ugrid_state
    use m_inquire_flowgeom
+   use precision, only: dp
    implicit none
 
    private
@@ -47,9 +49,8 @@ contains
 !>    it is assumed that kc has been allocated
 !>    it is assumed that findcells has already been called (for 2d cells)
    subroutine find1dcells()
-#ifdef _OPENMP
-      use omp_lib
-#endif
+      use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+
       implicit none
 
       integer :: k1, k2, k3, L, N, new_cell
@@ -58,35 +59,32 @@ contains
       logical :: Lisnew
       integer :: ierror
       integer :: nump1d, nump1d_i
-#ifdef _OPENMP
-      integer :: temp_threads
-#endif
+
       ierror = 1
 
       allocate (left_2D_cells(NUML1D), right_2D_cells(NUML1D))
-#ifdef _OPENMP
-      temp_threads = omp_get_max_threads() !> Save old number of threads
-      call omp_set_num_threads(OMP_GET_NUM_PROCS()) !> Set number of threads to max for this O(N^2) operation
-#endif
-      !$OMP PARALLEL DO
+      call init_cell_geom_as_polylines()
+      !> Dynamic scheduling in case of unequal work, chunksize guided
+      !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do L = 1, NUML1D
-         if (KN(1, L) /= 0 .and. kn(3, L) /= IFLTP_1D .and. kn(3, L) /= 6) then
-            call INCELLS(Xk(KN(1, L)), Yk(KN(1, L)), left_2D_cells(L))
-            call INCELLS(Xk(KN(2, L)), Yk(KN(2, L)), right_2D_cells(L))
+         if (KN(1, L) /= 0 .and. kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then
+            left_2D_cells(L) = point_find_netcell(Xk(KN(1, L)), Yk(KN(1, L)))
+            right_2D_cells(L) = point_find_netcell(Xk(KN(2, L)), Yk(KN(2, L)))
          end if
       end do
       !$OMP END PARALLEL DO
-#ifdef _OPENMP
-      call omp_set_num_threads(temp_threads)
-#endif
+      call cleanup_cell_geom_polylines()
 
 !     BEGIN COPY from flow_geominit
       KC = 2 ! ONDERSCHEID 1d EN 2d NETNODES
 
       do L = 1, NUML
-         k1 = KN(1, L); k2 = KN(2, L); k3 = KN(3, L)
+         k1 = KN(1, L)
+         k2 = KN(2, L)
+         k3 = KN(3, L)
          if (k3 >= 1 .and. k3 <= 7) then
-            KC(k1) = 1; KC(k2) = 1
+            KC(k1) = 1
+            KC(k2) = 1
          end if
       end do
 
@@ -96,7 +94,7 @@ contains
          allocate (meshgeom1d%nodeidx(nump1d))
          meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
       end if
-      allocate (meshgeom1d%nodeidx_inverse(size(kc)))
+      allocate (meshgeom1d%nodeidx_inverse(maxval(meshgeom1d%nodeidx)))
       do i = 1, nump1d
          meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i
       end do
@@ -111,7 +109,7 @@ contains
       call realloc(yzw, nump1d2d)
       call realloc(xz, nump1d2d)
       call realloc(yz, nump1d2d)
-      call realloc(ba, nump1d2d, KeepExisting=.true., fill=0d0) ! 1D ba's will be filled halfway through flow_geominit, just allocate and initialize 1D part here
+      call realloc(ba, nump1d2d, KeepExisting=.true., fill=0.0_dp) ! 1D ba's will be filled halfway through flow_geominit, just allocate and initialize 1D part here
       call increasenetcells(nump1d2d, 1.0, .true.)
       do k = nump + 1, nump1d2d
          netcell(k)%N = 0
@@ -172,7 +170,7 @@ contains
       is_new_1D_cell = .false.
 
       if (KC(k) == 1) then !Node not yet touched
-         if (NMK(k) > 1 .or. (kn(3, l) == IFLTP_1D .or. kn(3, l) == 6)) then
+         if (NMK(k) > 1 .or. (kn(3, l) == LINK_1D .or. kn(3, l) == LINK_1D_MAINBRANCH)) then
             is_new_1D_cell = .true.
          end if
       end if
@@ -198,9 +196,9 @@ contains
             ! if the branch order is to be preserved, check if the next found node matches the next node in the branchorder.
             next_found_node = meshgeom1d%nodeidx_inverse(k)
             next_branch_node = nump1d2d - nump + 1
-            if (next_found_node /= 0 .and. next_branch_node <= size(meshgeom1d%nodebranchidx)) then
+            if (next_found_node > 0 .and. max(next_branch_node, next_found_node) <= size(meshgeom1d%nodebranchidx)) then
                if (meshgeom1d%nodebranchidx(next_found_node) == meshgeom1d%nodebranchidx(next_branch_node) .and. &
-                   comparereal(meshgeom1d%nodeoffsets(next_found_node), meshgeom1d%nodeoffsets(next_branch_node), 1d-6) == 0) then
+                   comparereal(meshgeom1d%nodeoffsets(next_found_node), meshgeom1d%nodeoffsets(next_branch_node), 1.0e-6_dp) == 0) then
                   branches_first = .true.
                else
                   branches_first = .false.
@@ -230,7 +228,7 @@ contains
       integer, intent(in) :: K !< node (attached to link)
 
       get_2D_cell = 0
-      if (kn(3, L) /= IFLTP_1D .and. kn(3, L) /= 6) then !These link types are allowed to have no 2D cells
+      if (kn(3, L) /= LINK_1D .and. kn(3, L) /= LINK_1D_MAINBRANCH) then !These link types are allowed to have no 2D cells
          if (NMK(K) == 1) then
             get_2D_cell = cell_array(L)
          end if
@@ -249,8 +247,11 @@ contains
       integer :: L, k1, k2, left_cell, right_cell
 
       do L = 1, NUML1D
-         k1 = KN(1, L); k2 = KN(2, L)
-         if (k1 == 0) cycle
+         k1 = KN(1, L)
+         k2 = KN(2, L)
+         if (k1 == 0) then
+            cycle
+         end if
          left_cell = get_2D_cell(L, k1, left_2D_cells)
          right_cell = get_2D_cell(L, k2, right_2D_cells)
          if (left_cell /= 0 .and. left_cell == right_cell) then !Both net nodes inside 2D cell, but assume that the first is then the 1D net node.

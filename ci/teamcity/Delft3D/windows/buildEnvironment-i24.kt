@@ -15,7 +15,8 @@ object WindowsBuildEnvironmentI24 : BuildType({
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Delft3D build environment intel 2024 container"
@@ -23,7 +24,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
     }
 
     vcs {
@@ -32,7 +33,6 @@ object WindowsBuildEnvironmentI24 : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         powerShell {
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
@@ -78,12 +78,15 @@ object WindowsBuildEnvironmentI24 : BuildType({
         }
         dockerCommand {
             name = "Docker push"
+            enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/delft3d-buildtools-windows:%container.tag%
                 """.trimIndent()
             }
-            enabled = "%trigger.type%" == "vcs"
+            conditions {
+                equals("trigger.type", "vcs")
+            }
         }
     }
 
@@ -96,7 +99,7 @@ object WindowsBuildEnvironmentI24 : BuildType({
         schedule {
             schedulingPolicy = weekly {
                 dayOfWeek = ScheduleTrigger.DAY.Sunday
-                hour = 0
+                hour = 10
                 minute = 0
             }
             branchFilter = "+:<default>"
@@ -110,11 +113,4 @@ object WindowsBuildEnvironmentI24 : BuildType({
         executionTimeoutMin = 360
     }
 
-    features {
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-    }
 })

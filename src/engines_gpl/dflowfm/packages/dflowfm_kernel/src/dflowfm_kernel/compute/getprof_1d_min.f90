@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,8 +36,8 @@ module m_get_prof_1D_min
 contains
    subroutine getprof_1D_min(L, hpr, area, width) ! pressurepipe
       use precision, only: dp
-      use m_flowgeom
-      use unstruc_channel_flow
+      use m_flowgeom, only: lnxi, lbnd1d, kcu, prof1d, profiles1d
+      use unstruc_channel_flow, only: network, getcsparstotal, cs_type_min
 
       integer :: L
       real(kind=dp) :: hpr ! hoogte in profiel
@@ -50,7 +50,8 @@ contains
       real(kind=dp) :: alfa, hh
       integer :: LL, ka, kb, itp
 
-      area = 0d0; width = 0d0
+      area = 0.0_dp
+      width = 0.0_dp
 
       LL = L
       if (L > lnxi) then ! for 1D boundary links, refer to attached link
@@ -63,12 +64,14 @@ contains
       end if
 
       if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
-         ka = 0; kb = 0 ! do not use profiles
+         ka = 0
+         kb = 0 ! do not use profiles
          profw = prof1D(1, LL)
          profh = prof1D(2, LL)
          itp = prof1D(3, LL)
       else
-         ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+         ka = -prof1D(1, LL)
+         kb = -prof1D(2, LL)
          profw = profiles1D(ka)%width
          profh = profiles1D(ka)%height
          itp = profiles1D(ka)%ityp
@@ -79,14 +82,15 @@ contains
          call pipemin(hpr, profw, area, width)
       else if (itp < 0) then ! closed rest
          hh = hpr - profh
-         if (hh > 0d0) then
+         if (hh > 0.0_dp) then
             width = profw
             area = hh * width
          end if
       end if
 
       if (ka /= 0 .and. kb /= ka) then ! interpolate in profiles
-         area2 = 0d0; width2 = 0d0
+         area2 = 0.0_dp
+         width2 = 0.0_dp
          profw = profiles1D(kb)%width
          profh = profiles1D(kb)%height
          itp = profiles1D(kb)%ityp
@@ -95,13 +99,13 @@ contains
             call pipemin(hpr, profw, area2, width2)
          else ! rest
             hh = hpr - profh
-            if (hh > 0d0) then
+            if (hh > 0.0_dp) then
                width2 = profw
                area2 = hh * width2
             end if
          end if
-         area = (1d0 - alfa) * area + alfa * area2
-         width = (1d0 - alfa) * width + alfa * width2
+         area = (1.0_dp - alfa) * area + alfa * area2
+         width = (1.0_dp - alfa) * width + alfa * width2
       end if
    end subroutine getprof_1D_min
 end module m_get_prof_1D_min

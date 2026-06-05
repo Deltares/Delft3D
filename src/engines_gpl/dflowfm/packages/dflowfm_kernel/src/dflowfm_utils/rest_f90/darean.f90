@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,8 +46,8 @@ contains
  !! is encountered, the polygon is 'closed'.
    subroutine dAREAN(XX, YY, N, DAREA, DLENGTH, DLENMX)
       use precision, only: dp
-      use m_missing
-      use m_sferic
+      use m_missing, only: dmiss
+      use m_sferic, only: jsferic, jasfer3d
       use geometry_module, only: dbdistance, get_startend, comp_masscenter
 
       integer, intent(in) :: n !< Nr. of polygon points.
@@ -60,15 +60,17 @@ contains
       real(kind=dp) :: Y0, DLE
       real(kind=dp) :: xcg, ycg
       integer :: jacounterclockwise
-      DAREA = 0d0
-      DLENGTH = 0d0
-      Y0 = 1d30
+      DAREA = 0.0_dp
+      DLENGTH = 0.0_dp
+      Y0 = 1.0e30_dp
       NEND = 0
-      DLENMX = 0.d0
+      DLENMX = 0.0_dp
 
       call get_startend(N, XX, YY, jstart, jend, dmiss)
 
-      if (jend <= jstart) return
+      if (jend <= jstart) then
+         return
+      end if
 
       call comp_masscenter(jend - jstart + 1, xx(jstart), yy(jstart), xcg, ycg, darea, jacounterclockwise, jsferic, jasfer3D, dmiss)
 
@@ -86,7 +88,9 @@ contains
       do I = jstart, jend
          IU = I + 1
 
-         if (iu > jend) iu = jstart
+         if (iu > jend) then
+            iu = jstart
+         end if
 
          !     IF (IU .GT. NEND) IU = 1
          !     IF (JSFERIC .EQ. 0) THEN

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,7 +28,7 @@
 !-------------------------------------------------------------------------------
 module m_laterals
    use precision_basics, only: dp, comparereal
-   use m_flowparameters, only: eps10
+   use m_flowparameters, only: EPS10
    implicit none
    private
 
@@ -82,9 +82,47 @@ module m_laterals
    real(kind=dp), allocatable, target, public :: geomYLat(:) !< [m] y coordinates of laterals.
    logical, public :: model_has_laterals_across_partitions = .false.
 
-   real(kind=dp), allocatable, target, dimension(:, :, :), public :: outgoing_lat_concentration !< Average concentration per lateral discharge location.
+   real(kind=dp), allocatable, target, dimension(:, :, :), public :: outgoing_lat_concentration !< Average (time and space) concentration per lateral discharge location.
    real(kind=dp), allocatable, target, dimension(:, :, :), public :: incoming_lat_concentration !< Concentration of the inflowing water at the lateral discharge location.
-   real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Total water volume per layer, for each lateral (kmx,numlatsg).
+   real(kind=dp), allocatable, target, dimension(:, :), public :: lateral_volume_per_layer !< Instantaneous total water volume per layer, for each lateral (kmx,numlatsg).
+   real(kind=dp), allocatable, target, dimension(:, :), public :: outgoing_lat_volume !< Average (time and space) volume per lateral discharge location.
+
+   real(kind=dp), dimension(:), allocatable, public :: qlatwaq !< Cumulative qsrc within current waq-timestep
+   real(kind=dp), dimension(:), allocatable, public :: qlatwaq0 !< Cumulative qsrc at the beginning of the time step before possible reduction
+
+   type t_flow_parameter !< General class for Flow parameters that require averaging.
+      real(kind=dp), dimension(:), allocatable :: values !< Averaged values of the flow parameter.
+      real(kind=dp), dimension(:), allocatable  :: cumulative_value
+      real(kind=dp), dimension(:), allocatable  :: cumulative_weight
+      logical :: is_used = .false. !< Indicates whether this flow parameter is used.
+      real(kind=dp), dimension(:), pointer :: input_variable !< Input variable to be averaged.
+      real(kind=dp), dimension(:), pointer :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+      integer :: num_elements
+      integer, dimension(:), pointer :: index_start, index_end, index_to_node !< Indexing parameters for mapping input variable to flow parameter locations.
+   contains
+      procedure :: initialize => initialize_flow_parameter !< Initialize flow_parameter, allocate arrays and set pointers
+      procedure :: update => update_flow_parameter !< Update flow_parameter, perform averaging
+   end type t_flow_parameter
+
+   interface initialize_flow_parameter
+      module subroutine initialize_flow_parameter(this, num_elements, input_variable, weighing_variable, &
+                                                  index_start, index_end, index_to_node)
+         class(t_flow_parameter), intent(inout) :: this !< Flow parameter object
+         integer, intent(in) :: num_elements !< Number of elements in the flow parameter.
+         real(kind=dp), dimension(:), pointer, intent(in) :: input_variable !< Input variable to be averaged.
+         real(kind=dp), dimension(:), pointer, intent(in) :: weighing_variable !< Weighing variable for averaging (e.g. cell volume, cell area).
+         integer, dimension(:), pointer, intent(in) :: index_start, index_end !< Indexing parameters for mapping input variable to flow parameter locations.
+         integer, dimension(:), pointer, intent(in) :: index_to_node !< Index mapping to flow nodes.
+      end subroutine initialize_flow_parameter
+   end interface initialize_flow_parameter
+
+   interface update_flow_parameter
+      module subroutine update_flow_parameter(this)
+         class(t_flow_parameter), intent(inout) :: this
+      end subroutine update_flow_parameter
+   end interface update_flow_parameter
+
+   type(t_flow_parameter), public, target :: average_waterlevels_per_lateral !< Flow parameter structure for laterals concentration.
 
    integer, allocatable, target, dimension(:), public :: apply_transport !< Flag to apply transport for laterals (0 means only water and no substances are transported).
    logical, public :: apply_transport_is_used
@@ -140,8 +178,7 @@ module m_laterals
    !! In average_concentrations_for_laterals in out_going_lat_concentration the concentrations*timestep are aggregated.
    !! While in finish_outgoing_lat_concentration, the average over time is actually computed.
    interface finish_outgoing_lat_concentration
-      module subroutine finish_outgoing_lat_concentration(time_interval)
-         real(kind=dp), intent(in) :: time_interval
+      module subroutine finish_outgoing_lat_concentration()
       end subroutine finish_outgoing_lat_concentration
    end interface finish_outgoing_lat_concentration
 

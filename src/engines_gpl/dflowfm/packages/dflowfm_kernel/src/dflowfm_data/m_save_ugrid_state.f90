@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,18 +39,18 @@ module m_save_ugrid_state
    type(t_ug_meshgeom) :: meshgeom1d
    character(len=ug_idsLen), allocatable :: nbranchids(:), nnodeids(:), nodeids(:)
    character(len=ug_idsLongNamesLen), allocatable :: nbranchlongnames(:), nnodelongnames(:), nodelongnames(:)
-   character(len=255) :: network1dname, mesh2dname, mesh1dname, contactname !MAXSTRLEN = 255
+   character(len=255) :: network1dname, mesh2dname, mesh1dname, contactname_1D2D, contactname_2D2D !MAXSTRLEN = 255
    character(len=ug_idsLen), allocatable :: mesh1dNodeIds(:)
+   character(len=ug_idsLen), dimension(:), allocatable :: contactids_2D2D ! Long names of 2D-2D contacts
    integer, allocatable, dimension(:) :: mesh1dUnmergedToMerged(:)
    !integer, allocatable, dimension(:)                 :: mesh1dMergedToUnMerged(:)
    integer :: numMesh1dBeforeMerging
    integer, allocatable :: contactnetlinks(:) !< netlink number for each contact
    integer, allocatable :: netlink2contact(:) !< Inverse mapping of contactnetlinks (only for first numl1d net links)
    integer :: contactnlinks !< Total number of links in all mesh contacts (typically we'll have one mesh contact with many netlinks part of it)
-   integer, allocatable :: contact1d2didx(:, :) !< Mapping 1D net node to 2D net face (for later use in 2D flow node snapping)
-
+   integer, allocatable :: contact_cell_idx(:, :) !< cell numbers this contact connects (2D for 2D-2D links, 1D for 1D-2D links). Dimension(2, contactnlinks). Second row is always 2D
    type(t_hashlist) :: hashlist_contactids !< Hash list for quick search for contact ids.
-
+   
 !> Sets ALL (scalar) variables in this module to their default values.
 !! For a reinit prior to flow computation, only call reset_save_ugrid_state() instead.
 contains
@@ -60,16 +60,26 @@ contains
       network1dname = 'network1d'
       mesh1dname = 'mesh1d'
       mesh2dname = 'mesh2d'
-      contactname = 'contacts'
+      contactname_1D2D = 'contact_1D2D'
+      contactname_2D2D = 'contact_2D2D'
       numMesh1dBeforeMerging = 0
 
-      if (allocated(mesh1dNodeIds)) deallocate (mesh1dNodeIds)
-      if (allocated(mesh1dUnmergedToMerged)) deallocate (mesh1dUnmergedToMerged)
-      !if (allocated(mesh1dMergedToUnMerged)) deallocate(mesh1dMergedToUnMerged)
+      if (allocated(mesh1dNodeIds)) then
+         deallocate (mesh1dNodeIds)
+      end if
+      if (allocated(mesh1dUnmergedToMerged)) then
+         deallocate (mesh1dUnmergedToMerged)
+      end if
 
-      if (allocated(contactnetlinks)) deallocate (contactnetlinks)
-      if (allocated(netlink2contact)) deallocate (netlink2contact)
-      if (allocated(contact1d2didx)) deallocate (contact1d2didx)
+      if (allocated(contactnetlinks)) then
+         deallocate (contactnetlinks)
+      end if
+      if (allocated(netlink2contact)) then
+         deallocate (netlink2contact)
+      end if
+      if (allocated(contact_cell_idx)) then
+         deallocate (contact_cell_idx)
+      end if
       contactnlinks = 0
       call dealloc(hashlist_contactids)
 

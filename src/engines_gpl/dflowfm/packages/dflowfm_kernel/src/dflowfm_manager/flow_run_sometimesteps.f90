@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -46,12 +46,12 @@ contains
       use m_flow_finalize_usertimestep, only: flow_finalize_usertimestep
       use precision, only: dp
       use m_flow_single_timestep, only: flow_single_timestep
-      use m_flowtimes
-      use m_partitioninfo
-      use dfm_error
+      use m_flowtimes, only: time1, tstop_user, time_user
+      use dfm_error, only: dfm_genericerror, dfm_noerr
       use m_laterals, only: reset_outgoing_lat_concentration, finish_outgoing_lat_concentration, apply_transport_is_used, &
                             qqlat, qplat, get_lateral_volume_per_layer, &
-                            lateral_volume_per_layer, distribute_lateral_discharge
+                            lateral_volume_per_layer, distribute_lateral_discharge, average_waterlevels_per_lateral 
+      use m_partitioninfo, only: reduce_lateral_output, distribute_lateral_input, jampi 
 
       real(kind=dp), intent(in) :: dtrange
       integer, intent(out) :: iresult !< Error status, DFM_NOERR==0 if successful.
@@ -61,12 +61,15 @@ contains
 
       if (apply_transport_is_used) then
          call reset_outgoing_lat_concentration()
+         if (jampi == 1) then
+            call distribute_lateral_input()
+         end if
          call distribute_lateral_discharge(qplat, qqlat)
       end if
 
       iresult = DFM_GENERICERROR
       if (dtrange < 0) then
-         timetarget = time1 + epsilon(1d0) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
+         timetarget = time1 + epsilon(1.0_dp) ! dtrange < 0 means: auto pick a *single* timestep. Enforce this with a target time *just* larger than current time.
       else
          timetarget = time1 + dtrange
       end if
@@ -101,11 +104,16 @@ contains
 
       end do
 
-      if (apply_transport_is_used) then
-         call finish_outgoing_lat_concentration(dtrange)
-         call get_lateral_volume_per_layer(lateral_volume_per_layer)
+      if (average_waterlevels_per_lateral%is_used) then
+         call average_waterlevels_per_lateral%update()
       end if
-
+      if (apply_transport_is_used) then
+         call get_lateral_volume_per_layer(lateral_volume_per_layer)
+         if (jampi == 1) then
+            call reduce_lateral_output()
+         end if
+         call finish_outgoing_lat_concentration()
+      end if
       iresult = DFM_NOERR
       return ! Return with success.
 

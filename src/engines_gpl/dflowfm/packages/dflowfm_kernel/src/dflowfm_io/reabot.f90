@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,7 @@ contains
       real(kind=dp) :: af
 
       character REC * 132
-      call READYY('Reading SIMONA *.bottom File', 0d0)
+      call READYY('Reading SIMONA *.bottom File', 0.0_dp)
 
 5     continue
 
@@ -77,7 +77,7 @@ contains
       end if
 
       do M = M1, M2
-         AF = dble(M) / dble(MC)
+         AF = real(M, kind=dp) / real(MC, kind=dp)
          call READYY('Reading SIMONA *.bottom File', AF)
 
          read (MMDD, '(A)', end=777) REC
@@ -87,20 +87,20 @@ contains
       end do
       goto 5
 
-777   call READYY('Reading SIMONA *.bottom File', -1d0)
+777   call READYY('Reading SIMONA *.bottom File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 1
       return
 
 999   continue
       call QNEOFERROR(MMDD)
-      call READYY('Reading SIMONA *.bottom File', -1d0)
+      call READYY('Reading SIMONA *.bottom File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
       return
 
 888   call QNREADERROR('Reading ERROR SIMONA bottom File With Wrong Dimensions', ' ', MMDD)
-      call READYY('Reading *.bottom File', -1d0)
+      call READYY('Reading *.bottom File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
    end subroutine REABOT

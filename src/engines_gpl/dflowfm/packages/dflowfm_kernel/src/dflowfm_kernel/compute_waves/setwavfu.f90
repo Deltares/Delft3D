@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,14 +43,14 @@ contains
    !> subroutine to compute wave forces
    subroutine setwavfu()
       use precision, only: dp
-      use MessageHandling
-      use m_flowparameters
-      use m_flowgeom
+      use m_flowparameters, only: jawaveforces, wave_forces_off, jawave, wave_swan_online, wave_nc_offline, wave_surfbeat, epshu
+      use m_flowgeom, only: lnx, lnx1d, ln, acl, csu, snu
+      use m_waves, only: m_waves_hminlw => hminlw, gammax, facmax, sxwav, sywav, sbxwav, sbywav, twav, hwav
+      use m_xbeach_data, only: xb_hminlw => hminlw, gammaxxb
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flow, only: hu, huvli, wavfu, wavfv, rhomean, kmx
-      use m_waves, m_waves_hminlw => hminlw
-      use m_xbeach_data, xb_hminlw => hminlw
       use m_physcoef, only: sag
-      use m_get_Lbot_Ltop
+
       implicit none
 
       integer :: L, LL, Lb, Lt
@@ -61,37 +61,40 @@ contains
 
       integer :: k1, k2
 
-      if (jawaveforces == 0) then
-         wavfu = 0d0
-         wavfv = 0d0
+      if (jawaveforces == WAVE_FORCES_OFF) then
+         wavfu = 0.0_dp
+         wavfv = 0.0_dp
          return
       end if
 
       ! Set correct limiting depth
-      if (jawave == 3 .or. jawave == 7) then
+      if (jawave == WAVE_SWAN_ONLINE .or. jawave == WAVE_NC_OFFLINE) then
          hminlw = m_waves_hminlw
-         hminlwi = 1d0 / m_waves_hminlw
+         hminlwi = 1.0_dp / m_waves_hminlw
          gammaloc = gammax
       end if
 
-      if (jawave == 4) then
+      if (jawave == WAVE_SURFBEAT) then
          hminlw = xb_hminlw
-         hminlwi = 1d0 / xb_hminlw
+         hminlwi = 1.0_dp / xb_hminlw
          gammaloc = gammaxxb
       end if
 
-      facmax = 0.25d0 * sag * rhomean * gammaloc**2
+      facmax = 0.25_dp * sag * rhomean * gammaloc**2
 
-      wavfu = 0d0
-      wavfv = 0d0
+      wavfu = 0.0_dp
+      wavfv = 0.0_dp
 
       if (kmx == 0) then
          do L = 1, lnx
-            if (hu(L) <= epshu) cycle
+            if (hu(L) <= epshu) then
+               cycle
+            end if
             if (L > lnx1D) then
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                ac1 = acl(L)
-               ac2 = 1d0 - ac1
+               ac2 = 1.0_dp - ac1
 
                wavfx = ac1 * sxwav(k1) + ac2 * sxwav(k2)
                wavfy = ac1 * sywav(k1) + ac2 * sywav(k2)
@@ -102,7 +105,7 @@ contains
                twavL = ac1 * twav(k1) + ac2 * twav(k2)
 
                ! limit forces
-               fmax = facmax * hu(L)**1.5 / max(0.1d0, twavL)
+               fmax = facmax * hu(L)**1.5 / max(0.1_dp, twavL)
 
                ! projection in face-normal direction
                wavfu_loc = wavfx * csu(L) + wavfy * snu(L)
@@ -130,14 +133,20 @@ contains
          end do
       else ! kmx>0
          do LL = 1, lnx
-            if (hu(LL) <= epshu) cycle
+            if (hu(LL) <= epshu) then
+               cycle
+            end if
             call getLbotLtop(LL, Lb, Lt)
-            if (Lt < Lb) cycle
-            k1 = ln(1, LL); k2 = ln(2, LL)
-            ac1 = acL(LL); ac2 = 1d0 - ac1
+            if (Lt < Lb) then
+               cycle
+            end if
+            k1 = ln(1, LL)
+            k2 = ln(2, LL)
+            ac1 = acL(LL)
+            ac2 = 1.0_dp - ac1
             !
-            hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01d0)
-            twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1d0)
+            hwavL = max(ac1 * hwav(k1) + ac2 * hwav(k2), 0.01_dp)
+            twavL = max(ac1 * twav(k1) + ac2 * twav(k2), 0.1_dp)
             fmax = facmax * hu(LL)**1.5 / twavL
             rhoL = rhomean
             !

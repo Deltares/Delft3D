@@ -1,5 +1,0 @@
-pytest
-requests
-paramiko
-openpyxl
-python-certifi-win32

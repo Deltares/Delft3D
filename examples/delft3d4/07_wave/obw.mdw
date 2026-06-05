@@ -58,9 +58,6 @@
 [Numerics]
    DirSpaceCDD          =  5.000000000000000000e-001         
    FreqSpaceCSS         =  5.000000000000000000e-001         
-   RChHsTm01            =  1.999999955296516400e-002         
-   RChMeanHs            =  1.999999955296516400e-002         
-   RChMeanTm01          =  1.999999955296516400e-002         
    PercWet              =  9.900000000000000000e+001         
    MaxIter              = 15                           
 [Output]

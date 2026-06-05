@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,12 +42,14 @@ contains
 
    subroutine pressakey()
 #ifdef HAVE_MPI
-      use mpi
-      use m_partitioninfo, only: DFM_COMM_ALLWORLD, my_rank
+      use mpi, only: mpi_barrier
+      use m_partitioninfo, only: DFM_COMM_ALLWORLD, my_rank, jampi
 
       integer :: ierr
 
-      call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
+      if (jampi == 1) then
+         call MPI_barrier(DFM_COMM_ALLWORLD, ierr)
+      end if
 
       if (my_rank == 0) then
          write (6, *) "press a key from rank 0..."

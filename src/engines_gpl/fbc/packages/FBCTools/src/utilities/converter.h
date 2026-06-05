@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -26,34 +26,39 @@
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class converter
-{
-public:
-	enum interpolationOption{BLOCK, LINEAR};
+        class converter
+        {
+        public:
+            enum interpolationOption
+            {
+                BLOCK,
+                LINEAR
+            };
 
-	enum propertyEnum {
-		POSITIVE_VALUE,
-		NONNEGATIVE_VALUE,
-		STRICTLY_MONOTONIC,
-		MONOTONIC_2ND
-	};
+            enum propertyEnum
+            {
+                POSITIVE_VALUE,
+                NONNEGATIVE_VALUE,
+                STRICTLY_MONOTONIC,
+                MONOTONIC_2ND
+            };
 
-	converter() {};
-	virtual ~converter() {};
+            converter() {};
+            virtual ~converter() {};
 
-	virtual void checkProperty(propertyEnum prop) = 0;
+            virtual void checkProperty(propertyEnum prop) = 0;
 
-	virtual double convert(double xVal) = 0;
-	virtual double convertDer(double xVal) = 0;
-	virtual double reverseConvert(double yVal) = 0;
-	virtual double reverseConvertDer(double yVal) = 0;
-	virtual converter* getIntegrator() = 0;
-};
+            virtual double convert(double xVal) = 0;
+            virtual double convertDer(double xVal) = 0;
+            virtual double reverseConvert(double yVal) = 0;
+            virtual double reverseConvertDer(double yVal) = 0;
+            virtual converter* getIntegrator() = 0;
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
 #endif /* CONVERTER_H */

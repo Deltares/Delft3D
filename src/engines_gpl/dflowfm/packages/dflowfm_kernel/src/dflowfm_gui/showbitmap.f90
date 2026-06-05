@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,15 +38,15 @@ contains
 
    subroutine SHOWBITMAP(jainterpolate)
       use precision, only: dp
-      use m_rectangle
-      use m_pixcount
-      use M_WEARELT
-      use M_BITMAP
-      use m_drawthis
-      use m_halt2
-      use m_krec5
-      use m_bilinxy
-      use m_set_col
+      use m_rectangle, only: rectangle
+      use m_pixcount, only: pixcount
+      use M_WEARELT, only: x1, x2, y1, y2
+      use M_BITMAP, only: xb, yb, xp, yp, nxp, mxp, ipix
+      use m_drawthis, only: ndraw
+      use m_halt2, only: halt2
+      use m_krec5, only: krec5
+      use m_bilinxy, only: bilinxy
+      use m_set_col, only: setcol
       implicit none
       integer :: i
       integer :: ini
@@ -71,7 +71,9 @@ contains
       XX = 2
       YY = 2
       call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
-      if (INI == -1) return
+      if (INI == -1) then
+         return
+      end if
       INI = 0
 
       XD = (XP(2) - XP(1)) / (XB(2) - XB(1))
@@ -88,8 +90,8 @@ contains
          NKO = -1
          do I = 1, MXP
             K = (NXP - J) * MXP + I
-            XX = dble(I - 1)
-            YY = dble(J - 1)
+            XX = real(I - 1, kind=dp)
+            YY = real(J - 1, kind=dp)
             call BILINXY(XB, YB, XP, YP, XX, YY, XX2, YY2, INI)
 
             if (jainterpolate == 1) then

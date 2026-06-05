@@ -9,7 +9,7 @@
     # Usage example:
     # Execute in the working directory:
     # /path/to/delft3d/installation/lnx64/bin/run_dimr.sh
-    # More examples: check run scripts in https://git.deltares.nl/oss/delft3d/-/tree/main/examples/*
+    # More examples: check run scripts in https://github.com/Deltares/Delft3D/tree/main/examples/*
 
 function print_usage_info {
     echo "Usage: ${0##*/} [OPTION]..."

@@ -11,10 +11,14 @@ import java.io.File
 object LinuxBuildTools : BuildType({
     name = "Build tools"
     description = "Build-environment container image to build our Delf3D software in."
+    buildNumberPattern = "%build.vcs.number%"
 
     templates(
+        TemplateLinuxAgent,
         TemplatePublishStatus,
-        TemplateMergeRequest
+        TemplateMergeRequest,
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     vcs {
@@ -33,7 +37,6 @@ object LinuxBuildTools : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
         exportJiraIssueId {
             paramName = "env.JIRA_ISSUE_ID"
         }
@@ -59,13 +62,11 @@ object LinuxBuildTools : BuildType({
                 """.trimIndent()
             }
         }
-        if (DslContext.getParameter("environment") == "production") {
-            dockerCommand {
-                name = "Push"
-                commandType = push {
-                    namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
-                    removeImageAfterPush = true
-                }
+        dockerCommand {
+            name = "Push"
+            commandType = push {
+                namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
+                removeImageAfterPush = true
             }
         }
         dockerCommand {
@@ -76,19 +77,6 @@ object LinuxBuildTools : BuildType({
                 commandArgs = "prune --force --filter type=exec.cachemount"
             }
         }
-    }
-
-    features {
-        perfmon {}
-        dockerSupport {
-            loginToRegistry = on {
-                dockerRegistryId = "DOCKER_REGISTRY_DELFT3D_DEV"
-            }
-        }
-    }
-
-    requirements {
-        equals("teamcity.agent.jvm.os.name", "Linux")
     }
 })
 

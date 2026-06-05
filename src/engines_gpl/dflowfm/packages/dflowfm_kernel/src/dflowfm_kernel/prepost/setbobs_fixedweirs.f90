@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,21 +44,24 @@ contains
 
    subroutine setbobs_fixedweirs()
       use precision, only: dp
-      use m_flowgeom
-      use m_fixedweirs
+      use m_flowgeom, only: bob
+      use m_fixedweirs, only: nfxw, fxw
 
       integer :: i, ip, iL, Lf
       real(kind=dp) :: alpha, zc
 
-      if (nfxw == 0) return
+      if (nfxw == 0) then
+         return
+      end if
 
       do i = 1, nfxw
          do iL = 1, fxw(i)%lnx
             Lf = abs(fxw(i)%ln(iL))
             ip = fxw(i)%indexp(iL)
             alpha = fxw(i)%wfp(iL)
-            zc = alpha * fxw(i)%zp(ip) + (1d0 - alpha) * fxw(i)%zp(ip + 1)
-            bob(1, Lf) = max(zc, bob(1, Lf)); bob(2, Lf) = max(zc, bob(2, Lf))
+            zc = alpha * fxw(i)%zp(ip) + (1.0_dp - alpha) * fxw(i)%zp(ip + 1)
+            bob(1, Lf) = max(zc, bob(1, Lf))
+            bob(2, Lf) = max(zc, bob(2, Lf))
          end do
       end do
    end subroutine setbobs_fixedweirs

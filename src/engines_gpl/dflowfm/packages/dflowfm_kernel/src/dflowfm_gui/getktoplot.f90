@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,8 +37,7 @@ module m_getktoplot
 contains
 
    subroutine getktoplot(kk, k)
-      use m_flowgeom
-      use m_flow
+      use m_flow, only: kplotfrombedorsurface, kbot, kplot, kmxn, ktop
 
       integer, intent(in) :: kk
       integer, intent(out) :: k
@@ -48,7 +47,9 @@ contains
       else
          k = kbot(kk) + kmxn(kk) - kplot
          !k = max(k, kbot(kk) )
-         if (k < kbot(kk)) k = -1 ! no plot
+         if (k < kbot(kk)) then
+            k = -1 ! no plot
+         end if
       end if
    end subroutine getktoplot
 

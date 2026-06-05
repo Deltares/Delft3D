@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,7 +37,7 @@ module m_searc2
 contains
 
    subroutine SEARC2(NAHEAD, HLPTXT, NUMTXT, LOOKUP, NUMCHC, JOFND)
-      use m_okay
+      use m_okay, only: okay
       implicit none
       integer :: jofnd
       integer :: k, len
@@ -48,7 +48,9 @@ contains
       character HLPTXT(NUMTXT) * (*), LOOKUP * 20
 
       LEN = len_trim(LOOKUP)
-      if (LEN == 0) return
+      if (LEN == 0) then
+         return
+      end if
 
       JOFND = 0
       K = NUMCHC - NAHEAD
@@ -56,10 +58,14 @@ contains
 10    continue
       K = K + NAHEAD
       if (K > NUMTXT .or. K < 1) then
-         if (JOFND == 0) call OKAY(0)
+         if (JOFND == 0) then
+            call OKAY(0)
+         end if
          return
       else
-         if (index(HLPTXT(K), LOOKUP(1:LEN)) == 0) goto 10
+         if (index(HLPTXT(K), LOOKUP(1:LEN)) == 0) then
+            goto 10
+         end if
       end if
 
       JOFND = 1

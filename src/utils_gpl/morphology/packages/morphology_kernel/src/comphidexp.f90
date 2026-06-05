@@ -1,9 +1,17 @@
-subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
+module m_comphidexp
+    
+private
+
+public comphidexp
+
+contains
+    
+    subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
                     & sedd50    ,hidexp    ,ihidexp   ,asklhe    , &
                     & mwwjhe    ,nmlb      ,nmub      )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -52,7 +60,7 @@ subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
     integer                                             , intent(in)  :: nmub
     integer                                             , intent(in)  :: nmmax   !  Description and declaration in dimens.igs
     real(fp), dimension(lsedtot)                        , intent(in)  :: sedd50  !  Description and declaration in esm_alloc_real.f90
-    real(fp), dimension(nmlb:nmub, lsedtot)                           :: hidexp
+    real(fp), dimension(nmlb:nmub, lsedtot)             , intent(out) :: hidexp
     real(fp), dimension(nmlb:nmub, lsedtot)             , intent(in)  :: frac
     real(fp), dimension(nmlb:nmub)                      , intent(in)  :: dm
     real(fp)                                            , intent(in)  :: asklhe
@@ -136,3 +144,5 @@ subroutine comphidexp(frac      ,dm        ,nmmax     ,lsedtot   , &
        !
     endselect
 end subroutine comphidexp
+
+end module m_comphidexp

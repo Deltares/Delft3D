@@ -12,12 +12,17 @@ import Delft3D.step.*
 object TestPythonCiTools : BuildType({
     id("TestPythonCiTools")
     name = "Test Python CI tools"
+    buildNumberPattern = "%build.vcs.number%"
     description = """
-        Runs tests and quality checks on the python CI tools.
+        Runs tests and quality checks on the python CI tools (including DIMRset delivery).
     """.trimIndent()
 
+    // The name `coverage.zip` for the pytest coverage report should not be changed.
+    // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.
+    // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
         +:ci/python/*.xml => report
+        +:ci/python/htmlcov/* => coverage.zip
     """.trimIndent()
 
     templates(
@@ -27,22 +32,17 @@ object TestPythonCiTools : BuildType({
 
     vcs {
         root(DslContext.settingsRoot)
+        excludeDefaultBranchChanges = true  // Only include changes made within the branch of this build.
         cleanCheckout = true
     }
 
     triggers {
-        vcs { // Trigger builds python files inside the 'ci' folder are modified.
-            triggerRules = """
-                +:ci/python/**/*.py
-                +:ci/python/pyproject.toml
-                +:ci/python/uv.lock
-            """.trimIndent()
-            branchFilter = "+:merge-requests/*"
+        vcs { 
+            branchFilter = "+:pull/*"
         }
     }
 
     steps {
-        mergeTargetBranch {}
         python {
             name = "Check code formatting"
             workingDir = "ci/python"
@@ -55,6 +55,7 @@ object TestPythonCiTools : BuildType({
                 module = "ruff"
                 scriptArguments = "format --diff"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Run linter"
@@ -68,6 +69,7 @@ object TestPythonCiTools : BuildType({
                 module = "ruff"
                 scriptArguments = "check --output-format=junit --output-file=ruff.xml"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Run type checker"
@@ -81,6 +83,7 @@ object TestPythonCiTools : BuildType({
                 module = "mypy"
                 scriptArguments = "ci_tools --junit-xml=mypy.xml"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Run unit tests"
@@ -92,8 +95,13 @@ object TestPythonCiTools : BuildType({
             }
             command = module {
                 module = "pytest"
-                scriptArguments = "--junitxml=pytest.xml"
+                scriptArguments = """
+                    --junitxml=pytest.xml
+                    --cov-report=html
+                    --cov=.
+                """.trimIndent()
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
     }
 

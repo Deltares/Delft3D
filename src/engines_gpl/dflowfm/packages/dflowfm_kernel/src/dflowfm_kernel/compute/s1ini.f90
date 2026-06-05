@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,64 +57,62 @@ contains
       use m_hydrology_data, only: jadhyd, ActEvap, interceptionmodel, InterceptThickness, InterceptHs, DFM_HYD_INTERCEPT_LAYER
       use m_mass_balance_areas
       use m_partitioninfo
-      use m_wind, only: jaqin, jaqext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, tair, qextreal
+      use m_wind, only: jaqin, jaqext, qext, jaevap, jarain, heatsrc, heatsrc0, rain, rainuni, evap, air_temperature, qextreal
       use m_laterals, only: numlatsg, num_layers, qqlat, n1latsg, n2latsg, nnlat, balat, qplat, &
                             apply_transport
-  
+
       integer :: L, k1, k2, k, LL, kt, idim, imba, i_lat, i_node
       real(kind=dp) :: aufu, auru, tetau
       real(kind=dp) :: ds, hsk, Qeva_ow, Qeva_icept, Qrain, Qicept, Qextk, aloc
       logical :: isGhost
       integer :: i_layer, layer_index, index_active_bottom_layer
 
-      bb = 0d0
-      ccr = 0d0
-      dd = 0d0
+      bb = 0.0_dp
+      ccr = 0.0_dp
+      dd = 0.0_dp
 
-      if (jagrw > 0 .or. numsrc > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
+      if (jagrw > 0 .or. num_source_sink > 0 .or. infiltrationmodel /= DFM_HYD_NOINFILT .or. nshiptxy > 0) then
          jaqin = 1
       end if
 
-      if (jatem > 0) then
-         if (jatem > 1) then
-            heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
-         else
-            heatsrc = 0d0 ! just prior to setsorsin that may add to heatsrc
-         end if
+      if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
+         heatsrc = 0.0_dp ! just prior to setsorsin that may add to heatsrc
+      else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         heatsrc = heatsrc0 ! heatsrc0 established in heatu at interval usertimestep
       end if
 
       if (jaqin > 0) then ! sources and sinks through meteo
 
-         qin = 0d0
-         qinrain = 0d0
-         qinrainground = 0d0
-         qouteva = 0d0
-         qoutevaicept = 0d0
-         qinlat(1:2) = 0d0
-         qoutlat(1:2) = 0d0
-         qinext(1:2) = 0d0
-         qoutext(1:2) = 0d0
+         qin = 0.0_dp
+         qinrain = 0.0_dp
+         qinrainground = 0.0_dp
+         qouteva = 0.0_dp
+         qoutevaicept = 0.0_dp
+         qinlat(1:2) = 0.0_dp
+         qoutlat(1:2) = 0.0_dp
+         qinext(1:2) = 0.0_dp
+         qoutext(1:2) = 0.0_dp
          if (jarain > 0) then
-            if (rainuni > 0d0) then
-               rain = rainuni * 24d0 ! mm/hr  => mm/day
+            if (rainuni > 0.0_dp) then
+               rain = rainuni * 24.0_dp ! mm/hr  => mm/day
             end if
 
             do k = 1, ndxi
-               Qrain = rain(k) * bare(k) * 1d-3 / (24d0 * 3600d0) ! mm/day => m3/s
+               Qrain = rain(k) * bare(k) * 1.0e-3_dp / (24.0_dp * 3600.0_dp) ! mm/day => m3/s
                if (Qrain > 0) then
                   qinrain = qinrain + Qrain ! rain can be pos or neg, to allow for prescribed evaporation
                else if (hs(k) > epshu) then
-                  Qrain = -min(0.5d0 * vol1(k) / dts, -Qrain)
+                  Qrain = -min(0.5_dp * vol1(k) / dts, -Qrain)
                   qouteva = qouteva - Qrain
                else
-                  Qrain = 0d0
+                  Qrain = 0.0_dp
                end if
 
-               if (Qrain > 0d0 .and. interceptionmodel == DFM_HYD_INTERCEPT_LAYER) then ! Is there rainfall AND interception?
+               if (Qrain > 0.0_dp .and. interceptionmodel == DFM_HYD_INTERCEPT_LAYER) then ! Is there rainfall AND interception?
                   Qicept = min(Qrain, dti * bare(k) * (InterceptThickness(k) - InterceptHs(k)))
                   InterceptHs(k) = InterceptHs(k) + dts * Qicept / bare(k)
                else
-                  Qicept = 0d0
+                  Qicept = 0.0_dp
                end if
                qin(k) = Qrain - Qicept
                if (Qrain - Qicept > 0) then
@@ -141,7 +139,7 @@ contains
                   ! It is capped by the available water plus the incoming rain calculated in the code above.
                   ! qin is used explicitly in the following , therefore an additional safety factor of 0.5
                   ! is introduced to prevent negative water depths.
-                  Qeva_ow = -min(0.5d0 * vol1(k) * dti + qin(k), -evap(k) * bare(k))
+                  Qeva_ow = -min(0.5_dp * vol1(k) * dti + qin(k), -evap(k) * bare(k))
                   if (jadhyd == 1) then ! TODO: this is can be removed once jaevap and jadhyd have been merged
                      ActEvap(k) = -Qeva_ow / bare(k) ! m s-1
                   end if
@@ -178,10 +176,10 @@ contains
                   Qextk = qext(k) ! Qext can be pos or neg
                   qinext(idim) = qinext(idim) + Qextk
                else if (hs(k) > epshu) then
-                  Qextk = -min(0.5d0 * vol1(k) / dts, -qext(k))
+                  Qextk = -min(0.5_dp * vol1(k) / dts, -qext(k))
                   qoutext(idim) = qoutext(idim) - Qextk
                else ! (almost) no water
-                  Qextk = 0.0d0
+                  Qextk = 0.0_dp
                end if
                qextreal(k) = Qextk
                qin(k) = qin(k) + Qextk
@@ -222,12 +220,12 @@ contains
                            qinlat(idim) = qinlat(idim) + qqLat(i_layer, k1) ! qqlat can be pos or neg
                         end if
                      else if (hs(k) > epshu) then
-                        qqlat(i_layer, k1) = -min(0.5d0 * vol1(k) / dts, -qqlat(i_layer, k1))
+                        qqlat(i_layer, k1) = -min(0.5_dp * vol1(k) / dts, -qqlat(i_layer, k1))
                         if (.not. isGhost) then
                            qoutlat(idim) = qoutlat(idim) - qqlat(i_layer, k1)
                         end if
                      else
-                        qqlat(i_layer, k1) = 0d0
+                        qqlat(i_layer, k1) = 0.0_dp
                      end if
                      qin(k) = qin(k) + qqlat(i_layer, k1)
                      if (kmx > 0) then
@@ -248,12 +246,13 @@ contains
                if (kmx > 0) then
                   qin(kt) = qin(kt) + qin(k)
                end if
-               if (jatem >= 1) then
+
+               if (temperature_model /= TEMPERATURE_MODEL_NONE) then
                   if (qin(kt) > 0) then
-                     if (jatem > 1) then
-                        heatsrc(kt) = heatsrc(kt) + qin(kt) * tair(k) ! rain has temp of air time varying specified
-                     else if (jatem == 1) then
+                     if (temperature_model == TEMPERATURE_MODEL_TRANSPORT) then
                         heatsrc(kt) = heatsrc(kt) + qin(kt) * BACKGROUND_AIR_TEMPERATURE ! or constant
+                     else if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                        heatsrc(kt) = heatsrc(kt) + qin(kt) * air_temperature(k) ! rain has temp of air time varying specified
                      end if
                   else
                      heatsrc(kt) = heatsrc(kt) + qin(kt) * constituents(itemp, kt) ! extract top layer temp
@@ -266,12 +265,12 @@ contains
             call setgrwflowexpl() ! add grw-flow exchange to the qin array
          end if
 
-         if (numsrc > 0) then
+         if (num_source_sink > 0) then
             call setsorsin() ! add sources and sinks
          end if
 
          if (wrwaqon) then ! Update waq output
-            if (numsrc > 0) then
+            if (num_source_sink > 0) then
                call update_waq_sink_source_fluxes()
             end if
             if (numlatsg > 0) then
@@ -283,13 +282,13 @@ contains
             ! qin = qin - qinship
          end if
 
-         qincel = 0d0
-         qoutcel = 0d0
+         qincel = 0.0_dp
+         qoutcel = 0.0_dp
 
          do k = 1, ndxi
-            if (qin(k) > 0d0) then
+            if (qin(k) > 0.0_dp) then
                dd(k) = qin(k)
-            else if (qin(k) < 0d0) then
+            else if (qin(k) < 0.0_dp) then
 
                hsk = s0(k) - bl(k)
                if (a1(k) > 0.0) then
@@ -308,7 +307,7 @@ contains
                   end if
                   qin(k) = -ds * aloc / dts
 
-               else if (hsk > 0d0) then ! all explicit
+               else if (hsk > 0.0_dp) then ! all explicit
                   dd(k) = -min(vol1(k) / dts, abs(qin(k)))
                   qin(k) = dd(k)
 
@@ -338,7 +337,7 @@ contains
                bb(k2) = bb(k2) + aufu
                ccr(Lv2(L)) = ccr(Lv2(L)) - aufu
 
-               auru = tetau * ru(L) + (1d0 - teta(L)) * au(L) * u0(L) !     q1(L)
+               auru = tetau * ru(L) + (1.0_dp - teta(L)) * au(L) * u0(L) !     q1(L)
                dd(k1) = dd(k1) - auru
                dd(k2) = dd(k2) + auru
             end if
@@ -348,7 +347,8 @@ contains
 
          do LL = 1, lnx
             if (hu(LL) > 0) then
-               k1 = ln(1, LL); k2 = ln(2, LL)
+               k1 = ln(1, LL)
+               k2 = ln(2, LL)
 
                do L = Lbot(LL), Ltop(LL)
 
@@ -360,7 +360,7 @@ contains
                      bb(k2) = bb(k2) + aufu
                      ccr(Lv2(LL)) = ccr(Lv2(LL)) - aufu
 
-                     auru = tetau * ru(L) + (1d0 - teta(LL)) * au(L) * u0(L) !     q1(L)
+                     auru = tetau * ru(L) + (1.0_dp - teta(LL)) * au(L) * u0(L) !     q1(L)
                      dd(k1) = dd(k1) - auru
                      dd(k2) = dd(k2) + auru
                   end if

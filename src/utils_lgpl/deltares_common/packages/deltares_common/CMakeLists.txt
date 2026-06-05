@@ -8,49 +8,81 @@ set(version_include_dir ${CMAKE_SOURCE_DIR}/../version_includes)
 # Set include path to have it accessible for other components
 set(public_include_path ${deltares_common_include_path})
 
-# Set the directory of where the source code is located
-set(src_path src)
+get_fortran_source_files(src/rd_token rd_token_source)
 
-get_fortran_source_files(${src_path}/rd_token rd_token_source)
+set(stdlib_source src/stdlib/stdlib_kinds.f90
+                  src/stdlib/stdlib_optval.f90
+                  src/stdlib/stdlib_sorting.f90
+                  src/stdlib/stdlib_sorting_sort.f90
+                  src/stdlib/stdlib_sorting_ord_sort.f90
+                  src/stdlib/stdlib_sorting_radix_sort.f90
+                  src/stdlib/stdlib_sorting_sort_index.f90
+)
+if(NOT Python_FOUND)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
+endif()
 
-set(stdlib_source ${src_path}/stdlib/stdlib_kinds.f90
-                  ${src_path}/stdlib/stdlib_optval.f90
-                  ${src_path}/stdlib/stdlib_sorting.f90
-                  ${src_path}/stdlib/stdlib_sorting_sort.f90
-                  ${src_path}/stdlib/stdlib_sorting_ord_sort.f90
-                  ${src_path}/stdlib/stdlib_sorting_radix_sort.f90
-                  ${src_path}/stdlib/stdlib_sorting_sort_index.f90
+set(malloc_output_file    "${CMAKE_CURRENT_BINARY_DIR}/generated/m_alloc_generated.f90")
+set(malloc_generator_file "${CMAKE_CURRENT_SOURCE_DIR}/python/generate_m_alloc.py")
+
+# Build-time regeneration rule
+add_custom_command(
+    OUTPUT  "${malloc_output_file}"
+    COMMAND ${Python_EXECUTABLE} ${malloc_generator_file} ${malloc_output_file}
+    DEPENDS "${malloc_generator_file}"
+    COMMENT "Regenerating m_alloc_generated.f90"
+    VERBATIM
 )
 
-get_fortran_source_files(${src_path} source)
+# Force build graph to consider this generation step explicitly
+add_custom_target(generate_m_alloc_generated DEPENDS "${malloc_output_file}")
+set_target_properties(generate_m_alloc_generated PROPERTIES FOLDER utils_lgpl/deltares_common)
+set_source_files_properties("${malloc_output_file}" PROPERTIES GENERATED TRUE)
+
+get_fortran_source_files(src source)
 
 set(library_name deltares_common)
 add_library(${library_name} ${source}
                             ${rd_token_source}
                             ${stdlib_source}
-                            ${fortran_version_file})
+                            ${malloc_output_file}
+                            ${malloc_generator_file}
+                            ${fortran_version_file}
+)
+add_dependencies(${library_name} generate_m_alloc_generated)
+
+target_link_libraries(${library_name} PRIVATE deltares_common_c)
 
 if(UNIX)
-   set(oss_dependencies deltares_common_c)
-   target_link_libraries(${library_name} ${oss_dependencies})
    add_definitions(-DHAVE_CONFIG_H=1)
 endif(UNIX)
 
 target_include_directories(${library_name}  PRIVATE ${version_include_dir})
 
 set_source_files_properties(${fortran_version_file}
-                            ${src_path}/system_utils.F90
-                            ${src_path}/MessageHandling.F90
-                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
-
-
-
+                            src/system_utils.F90
+                            src/MessageHandling.F90
+                            PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}"
+)
 
 # Create the folder structure in vfproj
+source_group("src\\malloc_includes" FILES ${malloc_output_file})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
                                                     ${rd_token_source}
                                                     ${stdlib_source}
-                                                    ${fortran_version_file})
+                                                    ${fortran_version_file}
+                                                    ${malloc_generator_file})
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
 
+set(gtest_path ${CMAKE_CURRENT_SOURCE_DIR}/../../gtest)
+f90twtest(test_deltares_common_gtest
+    CFILES ${gtest_path}/test_deltares_common_gtest.cpp
+    F90FILES ${gtest_path}/test_deltares_common_gtest.f90
+             ${gtest_path}/test_malloc.f90
+    F2HFILES ${gtest_path}/test_deltares_common_gtest.f90
+             ${gtest_path}/test_malloc.f90
+    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+    LIBRARIES deltares_common
+    VISUAL_STUDIO_PATH utils_lgpl/deltares_common/gtest
+)

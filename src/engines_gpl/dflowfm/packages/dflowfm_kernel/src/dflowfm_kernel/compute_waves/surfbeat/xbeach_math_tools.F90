@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -101,7 +101,7 @@ module math_tools
    ! Optional Parameters:
    !
    !   dim      One dimensional integer array, containing the dimensions to be
-   !            transformed. Default is (/1,...,N/) with N being the rank of
+   !            transformed. Default is [1,...,N] with N being the rank of
    !            array, i.e. complete transform. dim can restrict transformation
    !            to a subset of available dimensions. Its size must not exceed the
    !            rank of array or the size of shape respectivly.
@@ -131,7 +131,7 @@ module math_tools
    !
    !   will do the same in place.
    !
-   !     result = fft(A, dim=(/1,3/))
+   !     result = fft(A, dim=[1,3])
    !
    !   will transform with respect to the first and the third dimension, scaled
    !   by sqrt(L*N).
@@ -175,13 +175,14 @@ module math_tools
    !
    ! Michael Steffens, 09.12.96, <Michael.Steffens@mbox.muk.uni-hannover.de>
    !-----------------------------------------------------------------------------
+   use precision, only: dp
    implicit none
 
    private
    public :: fft, fftn, fftkind, realkind, flipa, flipv, hilbert, flipiv, xerf, random
 
-   integer, parameter :: fftkind = kind(0.0d0) !selected_real_kind(14,307) ! !--- adjust here for other precisions
-   integer, parameter :: realkind = kind(0.0d0)
+   integer, parameter :: fftkind = dp
+   integer, parameter :: realkind = dp
    real(fftkind), parameter :: sin60 = 0.86602540378443865_fftkind
    real(fftkind), parameter :: cos72 = 0.30901699437494742_fftkind
    real(fftkind), parameter :: sin72 = 0.95105651629515357_fftkind
@@ -348,7 +349,7 @@ contains
          d(1:ndim) = dim(1:ndim)
       else
          ndim = size(d)
-         d = (/(i, i=1, size(d))/)
+         d = [(i, i=1, size(d))]
       end if
 
       ntotal = product(shape)
@@ -360,7 +361,9 @@ contains
          call fftradix(array, ntotal, shape(d(i)), product(shape(1:d(i))), &
                        inverse, stat)
          if (present(stat)) then
-            if (stat /= 0) return
+            if (stat /= 0) then
+               return
+            end if
          end if
       end do
 
@@ -390,7 +393,9 @@ contains
       intrinsic MAXVAL, MOD, PRESENT, ISHFT, BIT_SIZE, SIN, COS, &
          CMPLX, real, AIMAG
 
-      if (npass <= 1) return
+      if (npass <= 1) then
+         return
+      end if
 
       c72 = cos72
       if (inv) then
@@ -423,15 +428,23 @@ contains
 
       if (present(stat)) then
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor), STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
          call transform()
          deallocate (sine, cosine, STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
          allocate (perm(nperm), STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
          call permute()
          deallocate (perm, ctmp, STAT=stat)
-         if (stat /= 0) return
+         if (stat /= 0) then
+            return
+         end if
       else
          allocate (ctmp(maxfactor), sine(maxfactor), cosine(maxfactor))
          call transform()
@@ -461,12 +474,16 @@ contains
             end do
             j = j + 2
             jj = j * j
-            if (jj > k) exit
+            if (jj > k) then
+               exit
+            end if
          end do
          if (k <= 4) then
             kt = nfactor
             factor(nfactor + 1) = k
-            if (k /= 1) nfactor = nfactor + 1
+            if (k /= 1) then
+               nfactor = nfactor + 1
+            end if
          else
             if (k - ishft(k / 4, 2) == 0) then
                nfactor = nfactor + 1
@@ -482,7 +499,9 @@ contains
                   k = k / j
                end if
                j = ishft((j + 1) / 2, 1) + 1
-               if (j > k) exit
+               if (j > k) then
+                  exit
+               end if
             end do
          end if
          if (kt > 0) then
@@ -491,7 +510,9 @@ contains
                nfactor = nfactor + 1
                factor(nfactor) = factor(j)
                j = j - 1
-               if (j == 0) exit
+               if (j == 0) then
+                  exit
+               end if
             end do
          end if
       end subroutine factorize
@@ -520,12 +541,18 @@ contains
                      array(k2) = array(kk) - ck
                      array(kk) = array(kk) + ck
                      kk = k2 + kspan
-                     if (kk > nn) exit
+                     if (kk > nn) then
+                        exit
+                     end if
                   end do
                   kk = kk - nn
-                  if (kk > jc) exit
+                  if (kk > jc) then
+                     exit
+                  end if
                end do
-               if (kk > kspan) return
+               if (kk > kspan) then
+                  return
+               end if
                do
                   c1 = 1.0_fftkind - cd
                   s1 = sd
@@ -537,12 +564,16 @@ contains
                            array(kk) = array(kk) + array(k2)
                            array(k2) = ck * cmplx(c1, s1, kind=fftkind)
                            kk = k2 + kspan
-                           if (kk >= nt) exit
+                           if (kk >= nt) then
+                              exit
+                           end if
                         end do
                         k2 = kk - nt
                         c1 = -c1
                         kk = k1 - k2
-                        if (kk <= k2) exit
+                        if (kk <= k2) then
+                           exit
+                        end if
                      end do
                      ak = c1 - (cd * c1 + sd * s1)
                      s1 = sd * c1 - cd * s1 + s1
@@ -550,11 +581,15 @@ contains
                      s1 = s1 * c1
                      c1 = c1 * ak
                      kk = kk + jc
-                     if (kk >= k2) exit
+                     if (kk >= k2) then
+                        exit
+                     end if
                   end do
                   k1 = k1 + 1 + 1
                   kk = (k1 - kspan) / 2 + jc
-                  if (kk > jc + jc) exit
+                  if (kk > jc + jc) then
+                     exit
+                  end if
                end do
 
             case (4) !-- transform for factor of 4
@@ -593,7 +628,9 @@ contains
                            array(k3) = ckm * cmplx(c3, s3, kind=fftkind)
                         end if
                         kk = k3 + kspan
-                        if (kk > nt) exit
+                        if (kk > nt) then
+                           exit
+                        end if
                      end do
 
                      c2 = c1 - (cd * c1 + sd * s1)
@@ -607,12 +644,18 @@ contains
                      c3 = c2 * c1 - s2 * s1
                      s3 = c2 * s1 + s2 * c1
                      kk = kk - nt + jc
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
                   kk = kk - kspan + 1
-                  if (kk > jc) exit
+                  if (kk > jc) then
+                     exit
+                  end if
                end do
-               if (kspan == jc) return
+               if (kspan == jc) then
+                  return
+               end if
 
             case default
                !-- transform for odd factors
@@ -634,10 +677,14 @@ contains
                         array(k1) = ck + cmplx(-aimag(cj), real(cj), kind=fftkind)
                         array(k2) = ck + cmplx(aimag(cj), -real(cj), kind=fftkind)
                         kk = k2 + kspan
-                        if (kk >= nn) exit
+                        if (kk >= nn) then
+                           exit
+                        end if
                      end do
                      kk = kk - nn
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
 
                case (5) !-- transform for factor of 5 (optional code)
@@ -664,10 +711,14 @@ contains
                         array(k2) = ck + cmplx(-aimag(cj), real(cj), kind=fftkind)
                         array(k3) = ck + cmplx(aimag(cj), -real(cj), kind=fftkind)
                         kk = k4 + kspan
-                        if (kk >= nn) exit
+                        if (kk >= nn) then
+                           exit
+                        end if
                      end do
                      kk = kk - nn
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
 
                case default
@@ -687,7 +738,9 @@ contains
                         cosine(k) = cosine(j)
                         sine(k) = -sine(j)
                         j = j + 1
-                        if (j >= k) exit
+                        if (j >= k) then
+                           exit
+                        end if
                      end do
                   end if
                   do
@@ -706,7 +759,9 @@ contains
                            j = j + 1
                            ctmp(j) = array(k1) - array(k2)
                            k1 = k1 + kspan
-                           if (k1 >= k2) exit
+                           if (k1 >= k2) then
+                              exit
+                           end if
                         end do
                         array(kk) = ck
                         k1 = kk
@@ -725,25 +780,37 @@ contains
                               k = k + 1
                               cj = cj + ctmp(k) * sine(jj)
                               jj = jj + j
-                              if (jj > jf) jj = jj - jf
-                              if (k >= jf) exit
+                              if (jj > jf) then
+                                 jj = jj - jf
+                              end if
+                              if (k >= jf) then
+                                 exit
+                              end if
                            end do
                            k = jf - j
                            array(k1) = ck + cmplx(-aimag(cj), real(cj), kind=fftkind)
                            array(k2) = ck + cmplx(aimag(cj), -real(cj), kind=fftkind)
                            j = j + 1
-                           if (j >= k) exit
+                           if (j >= k) then
+                              exit
+                           end if
                         end do
                         kk = kk + ispan
-                        if (kk > nn) exit
+                        if (kk > nn) then
+                           exit
+                        end if
                      end do
                      kk = kk - nn
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
 
                end select
                !--  multiply by rotation factor (except for factors of 2 and 4)
-               if (ii == nfactor) return
+               if (ii == nfactor) then
+                  return
+               end if
                kk = jc + 1
                do
                   c2 = 1.0_fftkind - cd
@@ -756,13 +823,17 @@ contains
                         do
                            array(kk) = cmplx(c2, s2, kind=fftkind) * array(kk)
                            kk = kk + ispan
-                           if (kk > nt) exit
+                           if (kk > nt) then
+                              exit
+                           end if
                         end do
                         ak = s1 * s2
                         s2 = s1 * c2 + c1 * s2
                         c2 = c1 * c2 - ak
                         kk = kk - nt + kspan
-                        if (kk > ispan) exit
+                        if (kk > ispan) then
+                           exit
+                        end if
                      end do
                      c2 = c1 - (cd * c1 + sd * s1)
                      s1 = s1 + sd * c1 - cd * s1
@@ -770,10 +841,14 @@ contains
                      s1 = s1 * c1
                      c2 = c2 * c1
                      kk = kk - ispan + jc
-                     if (kk > kspan) exit
+                     if (kk > kspan) then
+                        exit
+                     end if
                   end do
                   kk = kk - kspan + jc + 1
-                  if (kk > jc + jc) exit
+                  if (kk > jc + jc) then
+                     exit
+                  end if
                end do
 
             end select
@@ -786,7 +861,9 @@ contains
          perm(1) = ns
          if (kt > 0) then
             k = kt + kt + 1
-            if (nfactor < k) k = k - 1
+            if (nfactor < k) then
+               k = k - 1
+            end if
             j = 1
             perm(k + 1) = jc
             do
@@ -794,7 +871,9 @@ contains
                perm(k) = perm(k + 1) * factor(j)
                j = j + 1
                k = k - 1
-               if (j >= k) exit
+               if (j >= k) then
+                  exit
+               end if
             end do
             k3 = perm(k + 1)
             kspan = perm(2)
@@ -814,31 +893,45 @@ contains
                            array(k2) = ck
                            kk = kk + 1
                            k2 = k2 + 1
-                           if (kk >= k) exit
+                           if (kk >= k) then
+                              exit
+                           end if
                         end do
                         kk = kk + ns - jc
                         k2 = k2 + ns - jc
-                        if (kk >= nt) exit
+                        if (kk >= nt) then
+                           exit
+                        end if
                      end do
                      kk = kk - nt + jc
                      k2 = k2 - nt + kspan
-                     if (k2 >= ns) exit
+                     if (k2 >= ns) then
+                        exit
+                     end if
                   end do
                   do
                      do
                         k2 = k2 - perm(j)
                         j = j + 1
                         k2 = perm(j + 1) + k2
-                        if (k2 <= perm(j)) exit
+                        if (k2 <= perm(j)) then
+                           exit
+                        end if
                      end do
                      j = 1
                      do
-                        if (kk < k2) cycle permute_multi
+                        if (kk < k2) then
+                           cycle permute_multi
+                        end if
                         kk = kk + jc
                         k2 = k2 + kspan
-                        if (k2 >= ns) exit
+                        if (k2 >= ns) then
+                           exit
+                        end if
                      end do
-                     if (kk >= ns) exit
+                     if (kk >= ns) then
+                        exit
+                     end if
                   end do
                   exit
                end do permute_multi
@@ -851,23 +944,33 @@ contains
                      array(k2) = ck
                      kk = kk + 1
                      k2 = k2 + kspan
-                     if (k2 >= ns) exit
+                     if (k2 >= ns) then
+                        exit
+                     end if
                   end do
                   do
                      do
                         k2 = k2 - perm(j)
                         j = j + 1
                         k2 = perm(j + 1) + k2
-                        if (k2 <= perm(j)) exit
+                        if (k2 <= perm(j)) then
+                           exit
+                        end if
                      end do
                      j = 1
                      do
-                        if (kk < k2) cycle permute_single
+                        if (kk < k2) then
+                           cycle permute_single
+                        end if
                         kk = kk + 1
                         k2 = k2 + kspan
-                        if (k2 >= ns) exit
+                        if (k2 >= ns) then
+                           exit
+                        end if
                      end do
-                     if (kk >= ns) exit
+                     if (kk >= ns) then
+                        exit
+                     end if
                   end do
                   exit
                end do permute_single
@@ -875,7 +978,9 @@ contains
             jc = k3
          end if
 
-         if (ishft(kt, 1) + 1 >= nfactor) return
+         if (ishft(kt, 1) + 1 >= nfactor) then
+            return
+         end if
 
          ispan = perm(kt + 1)
          !-- permutation for square-free factors of n
@@ -884,7 +989,9 @@ contains
          do
             factor(j) = factor(j) * factor(j + 1)
             j = j - 1
-            if (j == kt) exit
+            if (j == kt) then
+               exit
+            end if
          end do
          kt = kt + 1
          nn = factor(kt) - 1
@@ -895,7 +1002,9 @@ contains
             k2 = factor(kt)
             kk = factor(k)
             j = j + 1
-            if (j > nn) exit !-- exit infinite loop
+            if (j > nn) then
+               exit !-- exit infinite loop
+            end if
             jj = jj + kk
             do while (jj >= k2)
                jj = jj - k2
@@ -912,19 +1021,25 @@ contains
             do
                j = j + 1
                kk = perm(j)
-               if (kk >= 0) exit
+               if (kk >= 0) then
+                  exit
+               end if
             end do
             if (kk /= j) then
                do
                   k = kk
                   kk = perm(k)
                   perm(k) = -kk
-                  if (kk == j) exit
+                  if (kk == j) then
+                     exit
+                  end if
                end do
                k3 = kk
             else
                perm(j) = -j
-               if (j == nn) exit !-- exit infinite loop
+               if (j == nn) then
+                  exit !-- exit infinite loop
+               end if
             end if
          end do
          !--  reorder a and b, following the permutation cycles
@@ -932,16 +1047,22 @@ contains
             j = k3 + 1
             nt = nt - ispan
             ii = nt - 1 + 1
-            if (nt < 0) exit !-- exit infinite loop
+            if (nt < 0) then
+               exit !-- exit infinite loop
+            end if
             do
                do
                   j = j - 1
-                  if (perm(j) >= 0) exit
+                  if (perm(j) >= 0) then
+                     exit
+                  end if
                end do
                jj = jc
                do
                   kspan = jj
-                  if (jj > maxfactor) kspan = maxfactor
+                  if (jj > maxfactor) then
+                     kspan = maxfactor
+                  end if
                   jj = jj - kspan
                   k = perm(j)
                   kk = jc * k + ii + jj
@@ -951,7 +1072,9 @@ contains
                      k2 = k2 + 1
                      ctmp(k2) = array(k1)
                      k1 = k1 - 1
-                     if (k1 == kk) exit
+                     if (k1 == kk) then
+                        exit
+                     end if
                   end do
                   do
                      k1 = kk + kspan
@@ -961,10 +1084,14 @@ contains
                         array(k1) = array(k2)
                         k1 = k1 - 1
                         k2 = k2 - 1
-                        if (k1 == kk) exit
+                        if (k1 == kk) then
+                           exit
+                        end if
                      end do
                      kk = k2
-                     if (k == j) exit
+                     if (k == j) then
+                        exit
+                     end if
                   end do
                   k1 = kk + kspan
                   k2 = 0
@@ -972,11 +1099,17 @@ contains
                      k2 = k2 + 1
                      array(k1) = ctmp(k2)
                      k1 = k1 - 1
-                     if (k1 == kk) exit
+                     if (k1 == kk) then
+                        exit
+                     end if
                   end do
-                  if (jj == 0) exit
+                  if (jj == 0) then
+                     exit
+                  end if
                end do
-               if (j == 1) exit
+               if (j == 1) then
+                  exit
+               end if
             end do
          end do
 
@@ -1066,7 +1199,7 @@ contains
       temp3 = 0
 
       temp1 = x
-      temp2 = (/(i, i=0, M - 1)/)
+      temp2 = [(i, i=0, M - 1)]
       temp3 = temp1(M - temp2)
       x = temp3
 
@@ -1093,10 +1226,10 @@ contains
       allocate (temp3r(M))
       allocate (temp1i(M))
       allocate (temp3i(M))
-      temp1r = 0.d0
-      temp1i = 0.d0
-      temp3r = 0.d0
-      temp3i = 0.d0
+      temp1r = 0.0_dp
+      temp1i = 0.0_dp
+      temp3r = 0.0_dp
+      temp3i = 0.0_dp
       temp1r = real(x)
       temp1i = aimag(x)
       do i = 0, M - 1
@@ -1167,90 +1300,90 @@ contains
       ! based on derf.f from http://www.kurims.kyoto-u.ac.jp/~ooura/
 
       data(a(i), i=0, 12) / &
-         0.00000000005958930743d0, -0.00000000113739022964d0, &
-         0.00000001466005199839d0, -0.00000016350354461960d0, &
-         0.00000164610044809620d0, -0.00001492559551950604d0, &
-         0.00012055331122299265d0, -0.00085483269811296660d0, &
-         0.00522397762482322257d0, -0.02686617064507733420d0, &
-         0.11283791670954881569d0, -0.37612638903183748117d0, &
-         1.12837916709551257377d0 /
+         0.00000000005958930743_dp, -0.00000000113739022964_dp, &
+         0.00000001466005199839_dp, -0.00000016350354461960_dp, &
+         0.00000164610044809620_dp, -0.00001492559551950604_dp, &
+         0.00012055331122299265_dp, -0.00085483269811296660_dp, &
+         0.00522397762482322257_dp, -0.02686617064507733420_dp, &
+         0.11283791670954881569_dp, -0.37612638903183748117_dp, &
+         1.12837916709551257377_dp /
       data(a(i), i=13, 25) / &
-         0.00000000002372510631d0, -0.00000000045493253732d0, &
-         0.00000000590362766598d0, -0.00000006642090827576d0, &
-         0.00000067595634268133d0, -0.00000621188515924000d0, &
-         0.00005103883009709690d0, -0.00037015410692956173d0, &
-         0.00233307631218880978d0, -0.01254988477182192210d0, &
-         0.05657061146827041994d0, -0.21379664776456006580d0, &
-         0.84270079294971486929d0 /
+         0.00000000002372510631_dp, -0.00000000045493253732_dp, &
+         0.00000000590362766598_dp, -0.00000006642090827576_dp, &
+         0.00000067595634268133_dp, -0.00000621188515924000_dp, &
+         0.00005103883009709690_dp, -0.00037015410692956173_dp, &
+         0.00233307631218880978_dp, -0.01254988477182192210_dp, &
+         0.05657061146827041994_dp, -0.21379664776456006580_dp, &
+         0.84270079294971486929_dp /
       data(a(i), i=26, 38) / &
-         0.00000000000949905026d0, -0.00000000018310229805d0, &
-         0.00000000239463074000d0, -0.00000002721444369609d0, &
-         0.00000028045522331686d0, -0.00000261830022482897d0, &
-         0.00002195455056768781d0, -0.00016358986921372656d0, &
-         0.00107052153564110318d0, -0.00608284718113590151d0, &
-         0.02986978465246258244d0, -0.13055593046562267625d0, &
-         0.67493323603965504676d0 /
+         0.00000000000949905026_dp, -0.00000000018310229805_dp, &
+         0.00000000239463074000_dp, -0.00000002721444369609_dp, &
+         0.00000028045522331686_dp, -0.00000261830022482897_dp, &
+         0.00002195455056768781_dp, -0.00016358986921372656_dp, &
+         0.00107052153564110318_dp, -0.00608284718113590151_dp, &
+         0.02986978465246258244_dp, -0.13055593046562267625_dp, &
+         0.67493323603965504676_dp /
       data(a(i), i=39, 51) / &
-         0.00000000000382722073d0, -0.00000000007421598602d0, &
-         0.00000000097930574080d0, -0.00000001126008898854d0, &
-         0.00000011775134830784d0, -0.00000111992758382650d0, &
-         0.00000962023443095201d0, -0.00007404402135070773d0, &
-         0.00050689993654144881d0, -0.00307553051439272889d0, &
-         0.01668977892553165586d0, -0.08548534594781312114d0, &
-         0.56909076642393639985d0 /
+         0.00000000000382722073_dp, -0.00000000007421598602_dp, &
+         0.00000000097930574080_dp, -0.00000001126008898854_dp, &
+         0.00000011775134830784_dp, -0.00000111992758382650_dp, &
+         0.00000962023443095201_dp, -0.00007404402135070773_dp, &
+         0.00050689993654144881_dp, -0.00307553051439272889_dp, &
+         0.01668977892553165586_dp, -0.08548534594781312114_dp, &
+         0.56909076642393639985_dp /
       data(a(i), i=52, 64) / &
-         0.00000000000155296588d0, -0.00000000003032205868d0, &
-         0.00000000040424830707d0, -0.00000000471135111493d0, &
-         0.00000005011915876293d0, -0.00000048722516178974d0, &
-         0.00000430683284629395d0, -0.00003445026145385764d0, &
-         0.00024879276133931664d0, -0.00162940941748079288d0, &
-         0.00988786373932350462d0, -0.05962426839442303805d0, &
-         0.49766113250947636708d0 /
+         0.00000000000155296588_dp, -0.00000000003032205868_dp, &
+         0.00000000040424830707_dp, -0.00000000471135111493_dp, &
+         0.00000005011915876293_dp, -0.00000048722516178974_dp, &
+         0.00000430683284629395_dp, -0.00003445026145385764_dp, &
+         0.00024879276133931664_dp, -0.00162940941748079288_dp, &
+         0.00988786373932350462_dp, -0.05962426839442303805_dp, &
+         0.49766113250947636708_dp /
       data(b(i), i=0, 12)/ &
-         -0.00000000029734388465d0, 0.00000000269776334046d0, &
-         -0.00000000640788827665d0, -0.00000001667820132100d0, &
-         -0.00000021854388148686d0, 0.00000266246030457984d0, &
-         0.00001612722157047886d0, -0.00025616361025506629d0, &
-         0.00015380842432375365d0, 0.00815533022524927908d0, &
-         -0.01402283663896319337d0, -0.19746892495383021487d0, &
-         0.71511720328842845913d0 /
+         -0.00000000029734388465_dp, 0.00000000269776334046_dp, &
+         -0.00000000640788827665_dp, -0.00000001667820132100_dp, &
+         -0.00000021854388148686_dp, 0.00000266246030457984_dp, &
+         0.00001612722157047886_dp, -0.00025616361025506629_dp, &
+         0.00015380842432375365_dp, 0.00815533022524927908_dp, &
+         -0.01402283663896319337_dp, -0.19746892495383021487_dp, &
+         0.71511720328842845913_dp /
       data(b(i), i=13, 25)/ &
-         -0.00000000001951073787d0, -0.00000000032302692214d0, &
-         0.00000000522461866919d0, 0.00000000342940918551d0, &
-         -0.00000035772874310272d0, 0.00000019999935792654d0, &
-         0.00002687044575042908d0, -0.00011843240273775776d0, &
-         -0.00080991728956032271d0, 0.00661062970502241174d0, &
-         0.00909530922354827295d0, -0.20160072778491013140d0, &
-         0.51169696718727644908d0 /
+         -0.00000000001951073787_dp, -0.00000000032302692214_dp, &
+         0.00000000522461866919_dp, 0.00000000342940918551_dp, &
+         -0.00000035772874310272_dp, 0.00000019999935792654_dp, &
+         0.00002687044575042908_dp, -0.00011843240273775776_dp, &
+         -0.00080991728956032271_dp, 0.00661062970502241174_dp, &
+         0.00909530922354827295_dp, -0.20160072778491013140_dp, &
+         0.51169696718727644908_dp /
       data(b(i), i=26, 38) / &
-         0.00000000003147682272d0, -0.00000000048465972408d0, &
-         0.00000000063675740242d0, 0.00000003377623323271d0, &
-         -0.00000015451139637086d0, -0.00000203340624738438d0, &
-         0.00001947204525295057d0, 0.00002854147231653228d0, &
-         -0.00101565063152200272d0, 0.00271187003520095655d0, &
-         0.02328095035422810727d0, -0.16725021123116877197d0, &
-         0.32490054966649436974d0 /
+         0.00000000003147682272_dp, -0.00000000048465972408_dp, &
+         0.00000000063675740242_dp, 0.00000003377623323271_dp, &
+         -0.00000015451139637086_dp, -0.00000203340624738438_dp, &
+         0.00001947204525295057_dp, 0.00002854147231653228_dp, &
+         -0.00101565063152200272_dp, 0.00271187003520095655_dp, &
+         0.02328095035422810727_dp, -0.16725021123116877197_dp, &
+         0.32490054966649436974_dp /
       data(b(i), i=39, 51) / &
-         0.00000000002319363370d0, -0.00000000006303206648d0, &
-         -0.00000000264888267434d0, 0.00000002050708040581d0, &
-         0.00000011371857327578d0, -0.00000211211337219663d0, &
-         0.00000368797328322935d0, 0.00009823686253424796d0, &
-         -0.00065860243990455368d0, -0.00075285814895230877d0, &
-         0.02585434424202960464d0, -0.11637092784486193258d0, &
-         0.18267336775296612024d0 /
+         0.00000000002319363370_dp, -0.00000000006303206648_dp, &
+         -0.00000000264888267434_dp, 0.00000002050708040581_dp, &
+         0.00000011371857327578_dp, -0.00000211211337219663_dp, &
+         0.00000368797328322935_dp, 0.00009823686253424796_dp, &
+         -0.00065860243990455368_dp, -0.00075285814895230877_dp, &
+         0.02585434424202960464_dp, -0.11637092784486193258_dp, &
+         0.18267336775296612024_dp /
       data(b(i), i=52, 64)/ &
-         -0.00000000000367789363d0, 0.00000000020876046746d0, &
-         -0.00000000193319027226d0, -0.00000000435953392472d0, &
-         0.00000018006992266137d0, -0.00000078441223763969d0, &
-         -0.00000675407647949153d0, 0.00008428418334440096d0, &
-         -0.00017604388937031815d0, -0.00239729611435071610d0, &
-         0.02064129023876022970d0, -0.06905562880005864105d0, &
-         0.09084526782065478489d0 /
+         -0.00000000000367789363_dp, 0.00000000020876046746_dp, &
+         -0.00000000193319027226_dp, -0.00000000435953392472_dp, &
+         0.00000018006992266137_dp, -0.00000078441223763969_dp, &
+         -0.00000675407647949153_dp, 0.00008428418334440096_dp, &
+         -0.00017604388937031815_dp, -0.00239729611435071610_dp, &
+         0.02064129023876022970_dp, -0.06905562880005864105_dp, &
+         0.09084526782065478489_dp /
 
       w = abs(x)
 
       do i = 1, size(x)
-         if (w(i) < 2.2d0) then
+         if (w(i) < 2.2_dp) then
             t = w(i) * w(i)
             k = int(t)
             t = t - k
@@ -1260,7 +1393,7 @@ contains
                            a(k + 5)) * t + a(k + 6)) * t + a(k + 7)) * t + &
                         a(k + 8)) * t + a(k + 9)) * t + a(k + 10)) * t + &
                      a(k + 11)) * t + a(k + 12)) * w(i)
-         else if (w(i) < 6.9d0) then
+         else if (w(i) < 6.9_dp) then
             k = int(w(i))
             t = w(i) - k
             k = 13 * (k - 2)
@@ -1274,7 +1407,9 @@ contains
             y(i) = 1
          end if
 
-         if (x(i) < 0) y(i) = -y(i)
+         if (x(i) < 0) then
+            y(i) = -y(i)
+         end if
       end do
 
    end function xerf

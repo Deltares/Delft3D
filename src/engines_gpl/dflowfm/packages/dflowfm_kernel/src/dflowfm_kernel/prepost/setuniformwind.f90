@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -48,7 +48,7 @@ contains
       real(kind=dp) :: wdir
 
       jawind = 2
-      wdir = (90d0 - winddir) * dg2rd
+      wdir = (90.0_dp - winddir) * dg2rd
 
       call allocatewindarrays()
 

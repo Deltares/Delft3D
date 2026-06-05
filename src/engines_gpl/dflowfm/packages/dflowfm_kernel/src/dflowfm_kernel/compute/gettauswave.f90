@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,11 +38,11 @@ contains
 !> Make output arrays for bed shear stress icm jawave>0, depending on waq coupling and 2D/3D
    subroutine gettauswave(waveswartdelwaq)
       use precision, only: dp
-      use m_flow
-      use m_waves
-      use m_flowgeom
+      use m_flow, only: taus, workx, worky, kmx, taubu, frcu, hu, u1, v, ifrcutp, ag, au, ustb, z0ucur, epsz0, ucx, ucy, rhomean, taubxu, flow_without_waves
+      use m_waves, only: twav, uorb, ftauw, phiwav, ustokes
+      use m_flowgeom, only: lnx, ln, wcx1, wcx2, wcy1, wcy2, ndx, nd, dx
+      use m_get_kbot_ktop, only: getkbotktop
       use m_sediment, only: sedtra, stm_included
-      use m_get_kbot_ktop
       use m_get_chezy, only: get_chezy
 
       ! Input variables
@@ -54,20 +54,21 @@ contains
       real(kind=dp) :: ucxb, ucyb, ucxs, ucys, um, tauL
       real(kind=dp), allocatable :: ustv(:, :)
 
-      taus = 0d0
-      workx = 0d0 ! save 2 arrays
-      worky = 0d0
+      taus = 0.0_dp
+      workx = 0.0_dp ! save 2 arrays
+      worky = 0.0_dp
       if (.not. allocated(ustv)) then
          allocate (ustv(2, max(kmx, 1)))
       end if
-      ustv = 0d0
+      ustv = 0.0_dp
 
       ! Calculate magnitude
       select case (waveswartdelwaq)
          ! Regular hydrodynamic shear stress, from Soulsby/Van Rijn/Ruessink (default)
       case (0)
          do L = 1, lnx
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             tauL = taubu(L)
             workx(k1) = workx(k1) + tauL * wcx1(L)
             workx(k2) = workx(k2) + tauL * wcx2(L)
@@ -79,14 +80,14 @@ contains
          ! Linear sum current + wave hydrodynamics (like gettau2)
       case (1)
          do k = 1, ndx
-            z00 = 0d0
-            wa = 0d0
-            cfn = 0d0
-            ust = 0d0
+            z00 = 0.0_dp
+            wa = 0.0_dp
+            cfn = 0.0_dp
+            ust = 0.0_dp
             do nn = 1, nd(k)%lnx
                LL = abs(nd(k)%ln(nn))
                frcn = frcu(LL)
-               if (frcn > 0d0 .and. hu(LL) > 0d0) then
+               if (frcn > 0.0_dp .and. hu(LL) > 0.0_dp) then
                   cz = get_chezy(hu(LL), frcn, u1(LL), v(LL), ifrcutp(LL))
                   cf = ag / (cz * cz)
                   ar = au(LL) * dx(LL)
@@ -99,21 +100,21 @@ contains
                   z00 = z00 + ar * z0ucur(LL) ! z0ucur, to avoid double counting
                end if
             end do
-            if (wa > 0d0) then
+            if (wa > 0.0_dp) then
                cfn = cfn / wa
                ust = ust / wa
                z00 = z00 / wa
             end if
             z00 = max(z00, epsz0)
             !
-            ust2 = 0d0
+            ust2 = 0.0_dp
             if (kmx == 0) then
                ust2 = cfn * (ucx(k) * ucx(k) + ucy(k) * ucy(k))
             else
                ust2 = ust * ust
             end if
             !
-            if (twav(k) > 1d-2) then
+            if (twav(k) > 1.0e-2_dp) then
                call Swart(twav(k), uorb(k), z00, fw, ustw2)
                ust2 = ust2 + ftauw * ustw2
             end if
@@ -126,7 +127,8 @@ contains
             taus = sedtra%taub
          else
             do L = 1, lnx
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
                tauL = taubxu(L)
                workx(k1) = workx(k1) + tauL * wcx1(L)
                workx(k2) = workx(k2) + tauL * wcx2(L)
@@ -138,12 +140,13 @@ contains
       end select
 
       ! Calculate direction from GLM velocities, ustokes unavailable
-      if (flowwithoutwaves) then
+      if (flow_without_waves) then
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
-            ucxb = ucx(kb); ucyb = ucy(kb)
-            um = max(hypot(ucxb, ucyb), 1d-4)
-            if (um > 1d-4) then
+            ucxb = ucx(kb)
+            ucyb = ucy(kb)
+            um = max(hypot(ucxb, ucyb), 1.0e-4_dp)
+            if (um > 1.0e-4_dp) then
                workx(k) = taus(k) * (ucxb) / um
                worky(k) = taus(k) * (ucyb) / um
             else
@@ -156,9 +159,12 @@ contains
          do k = 1, ndx
             call getkbotktop(k, kb, kt)
             call linkstocentercartcomp(k, ustokes, ustv)
-            ucxb = ucx(kb); ucyb = ucy(kb); ucxs = ustv(1, 1); ucys = ustv(2, 1)
-            um = max(hypot(ucxb - ucxs, ucyb - ucys), 1d-4)
-            if (um > 1d-4) then
+            ucxb = ucx(kb)
+            ucyb = ucy(kb)
+            ucxs = ustv(1, 1)
+            ucys = ustv(2, 1)
+            um = max(hypot(ucxb - ucxs, ucyb - ucys), 1.0e-4_dp)
+            if (um > 1.0e-4_dp) then
                workx(k) = taus(k) * (ucxb - ucxs) / um ! taus amplitude but euler directions
                worky(k) = taus(k) * (ucyb - ucys) / um
             else

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -67,7 +67,7 @@ contains
       integer :: ku
       real(kind=dp) :: XP1, YP1, XP2, YP2, SL, SM, XCR, YCR, CRP, dis
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       integer :: i
       integer :: janew
@@ -75,11 +75,12 @@ contains
       integer, parameter :: MAXCROSS = 100
       real(kind=dp), dimension(MAXCROSS) :: xcross, ycross
 
-      K1 = KN(1, L); K2 = KN(2, L)
+      K1 = KN(1, L)
+      K2 = KN(2, L)
 
 ! initialization
-      xm = 0d0
-      ym = 0d0
+      xm = 0.0_dp
+      ym = 0.0_dp
 
       JA = 0
       numcrossed = 0
@@ -95,14 +96,20 @@ contains
          if (num == 0) then
             k = k_
          else
-            if (pdxL(k_) /= ipoly) cycle
+            if (pdxL(k_) /= ipoly) then
+               cycle
+            end if
             k = jdxL(k_)
          end if
 
          KU = K + 1
-         if (K == NPL) KU = 1
-         XP1 = XPL(K); YP1 = YPL(K)
-         XP2 = XPL(KU); YP2 = YPL(KU)
+         if (K == NPL) then
+            KU = 1
+         end if
+         XP1 = XPL(K)
+         YP1 = YPL(K)
+         XP2 = XPL(KU)
+         YP2 = YPL(KU)
 
 ! Formerly:
 !     CALL DCROSS (XP1, YP1, XP2, YP2, XK(K1), YK(K1), XK(K2), YK(K2), JACROS, SL, SM, XM, YM, CRP)
@@ -118,7 +125,7 @@ contains
          call CROSSinbox(XK(K1), YK(K1), XK(K2), YK(K2), XP1, YP1, XP2, YP2, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
 !    fix for spherical coordinates (enforce same reference point for local projections)
-         if (jsferic == 1 .and. SM > 0.75d0 .and. jacros == 1) then
+         if (jsferic == 1 .and. SM > 0.75_dp .and. jacros == 1) then
             call CROSSinbox(XK(K1), YK(K1), XK(K2), YK(K2), XP2, YP2, XP1, YP1, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
          end if
 
@@ -160,8 +167,8 @@ contains
       else
          !  odd number of intersections: take one (average)
          ja = 1
-         xm = 0d0
-         ym = 0d0
+         xm = 0.0_dp
+         ym = 0.0_dp
          xm = xcross(1)
          ym = ycross(1)
       end if

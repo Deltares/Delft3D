@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_flow_sedmorinit
 
+   use precision, only: dp
    implicit none
 
    private
@@ -57,7 +58,7 @@ contains
       use m_initsedtra, only: initsedtra
       use m_rdmorlyr, only: rdinimorlyr
       use fm_external_forcings_data, only: numfracs, nopenbndsect, openbndname, openbndlin, nopenbndlin
-      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, jatem, eps4
+      use m_flowparameters, only: jasecflow, ibedlevtyp, jasal, temperature_model, EPS4
       use m_bedform, only: bfmpar, bfm_included
       use unstruc_channel_flow
       use m_oned_functions, only: gridpoint2cross
@@ -70,7 +71,7 @@ contains
       use m_fm_erosed, only: ndx_mor, ndxi_mor, lnx_mor, lnxi_mor, nd_mor, ln_mor, ndkx_mor
       use m_f1dimp, only: f1dimp_initialized
       use m_alloc, only: realloc, reallocp
-      
+      use m_waveconst
       use m_mormerge_mpi
       use m_partitioninfo, only: jampi, my_rank, ndomains, DFM_COMM_DFMWORLD
       use m_xbeach_data, only: gammaxxb
@@ -96,7 +97,9 @@ contains
 !
 !   activate morphology if sediment file has been specified in the mdu file
 !
-      if (.not. stm_included) return
+      if (.not. stm_included) then
+         return
+      end if
 
       !
       inquire (file=trim(md_sedfile), exist=ex)
@@ -111,7 +114,9 @@ contains
          return
       end if
 
-      if (allocated(nambnd)) deallocate (nambnd)
+      if (allocated(nambnd)) then
+         deallocate (nambnd)
+      end if
       allocate (nambnd(nopenbndsect))
       do k = 1, nopenbndsect
          nambnd(k) = openbndname(k)
@@ -140,7 +145,7 @@ contains
          ln_mor = ln
       end if
 
-      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=jatem, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
+      call rdstm(stmpar, griddim, md_sedfile, md_morfile, filtrn='', lundia=mdia, lsal=jasal, ltem=temperature_model, ltur=ltur_, lsec=jasecflow, lfbedfrm=bfm_included, julrefday=julrefdat, dtunit='Tunit='//md_tunit, nambnd=nambnd, error=error)
       if (error) then
          call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - Error in subroutine rdstm.')
          return
@@ -166,7 +171,7 @@ contains
       ! Set transport velocity definitions according to morfile settings
       !
       jatranspvel = 1 ! default eul bedload, lag susp load
-      if (stmpar%morpar%eulerisoglm .and. jawave > 0) then
+      if (stmpar%morpar%eulerisoglm .and. jawave > NO_WAVES) then
          jatranspvel = 2 ! everything euler
       end if
 
@@ -184,10 +189,14 @@ contains
       morbnd => stmpar%morpar%morbnd
       do k = 1, nopenbndsect
          j0 = 0
-         if (k > 1) j0 = nopenbndlin(k - 1)
+         if (k > 1) then
+            j0 = nopenbndlin(k - 1)
+         end if
          npnt = nopenbndlin(k) - j0
          morbnd(k)%npnt = npnt
-         if (associated(morbnd(k)%nm)) deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         if (associated(morbnd(k)%nm)) then
+            deallocate (morbnd(k)%nm, morbnd(k)%nxmx, morbnd(k)%lm)
+         end if
          allocate (morbnd(k)%nm(npnt))
          allocate (morbnd(k)%nxmx(npnt))
          allocate (morbnd(k)%lm(npnt))
@@ -203,17 +212,13 @@ contains
             else
                morbnd(k)%alfa_dist(j) = morbnd(k)%alfa_dist(j - 1) + wu(Lf)
             end if
-            morbnd(k)%alfa_mag(j) = 1.0d0
+            morbnd(k)%alfa_mag(j) = 1.0_dp
          end do
       end do
 
       if (jased == 4 .and. ibedlevtyp /= 1) then
-         if (stmpar%morpar%bedupd) then
-            call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
-            return
-         else
-            call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ')
-         end if
+         call mess(LEVEL_FATAL, 'unstruc::flow_sedmorinit - BedlevType should equal 1 in combination with SedimentModelNr 4 ') ! setbobs call after fm_erosed resets the bed level for ibedlevtyp > 1, resulting in no bed level change
+         return
       end if
 
       nbr = network%brs%count
@@ -264,7 +269,9 @@ contains
                      node_processed(k1) = node_processed(k1) + 1
                      j = node_processed(k1)
                      ic = gridpoint2cross(k1)%cross(j)
-                     if (ic == -999) cycle
+                     if (ic == -999) then
+                        cycle
+                     end if
                      if (network%crs%cross(ic)%itabdef == icd) then
                         write (chstr, '(F12.3)') network%crs%cross(ic)%chainage
                         call mess(LEVEL_WARN, '  It is used for grid point '//trim(pbr%gridPointIDs(i))//' via cross section '//trim(network%crs%cross(ic)%csid)//' on branch '//trim(pbr%id)//' at chainage '//trim(adjustl(chstr))//' m.')
@@ -289,7 +296,6 @@ contains
          deallocate (mtd%uau)
 
          deallocate (mtd%seddif)
-         deallocate (mtd%sed)
          deallocate (mtd%ws)
          deallocate (mtd%blchg)
 
@@ -301,7 +307,6 @@ contains
       allocate (mtd%dzbdt(ndx_mor))
       allocate (mtd%uau(lnx))
       allocate (mtd%seddif(stmpar%lsedsus, ndkx_mor))
-      allocate (mtd%sed(stmpar%lsedsus, ndkx_mor))
       allocate (mtd%ws(ndkx_mor, stmpar%lsedsus))
       allocate (mtd%blchg(Ndx_mor))
       allocate (mtd%messages)
@@ -310,19 +315,20 @@ contains
       mtd%dzbdt = 0.0_fp
       mtd%uau = 0.0_fp
       mtd%seddif = 0.0_fp
-      mtd%sed = 0.0_fp
       mtd%ws = 0.0_fp
       mtd%blchg = 0.0_fp
       !
       ! Array for transport.f90
       mxgr = stmpar%lsedsus
-      if (allocated(sed)) deallocate (sed)
-      if (allocated(ssccum)) deallocate (ssccum)
+      if (allocated(sed)) then
+         deallocate (sed)
+      end if
+      if (allocated(ssccum)) then
+         deallocate (ssccum)
+      end if
       if (stmpar%lsedsus > 0) then
-         allocate (sed(stmpar%lsedsus, Ndkx))
          allocate (ssccum(stmpar%lsedsus, Ndkx))
-         sed = 0d0
-         ssccum = 0d0
+         ssccum = 0.0_dp
       end if
       !
       call rdinimorlyr(stmpar%lsedtot, stmpar%lsedsus, mdia, error, &
@@ -341,7 +347,9 @@ contains
       !
       !   for boundary conditions: map suspended fractions index to total fraction index
       !
-      if (allocated(sedtot2sedsus)) deallocate (sedtot2sedsus)
+      if (allocated(sedtot2sedsus)) then
+         deallocate (sedtot2sedsus)
+      end if
       allocate (sedtot2sedsus(stmpar%lsedsus))
       sedtot2sedsus = 0
       isus = 1
@@ -406,7 +414,7 @@ contains
          if (.not. size(stmpar%morpar%moroutput%avgintv, 1) == 3) then
             success = .false.
          end if
-         call getOutputTimeArrays(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, success)
+         call set_time_interval(stmpar%morpar%moroutput%avgintv, ti_seds, ti_sed, ti_sede, tstart_user, tstop_user, success)
          if (ti_sed > (tstop_user - tstart_user)) then
             ti_sed = tstop_user - tstart_user
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - The averaging interval for time averaged sedmor output is larger than output duration in the simulation.')
@@ -425,12 +433,12 @@ contains
          if (allocated(sbcx_raw)) then
             deallocate (sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw)
          end if
-         call realloc(sbcx_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sbcy_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sbwx_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sbwy_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sswx_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
-         call realloc(sswy_raw, (/ndx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(sbcx_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sbcy_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sbwx_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sbwy_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sswx_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
+         call realloc(sswy_raw, [ndx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
       end if
       !
       ! Allocate berm slope index array if wanted
@@ -441,19 +449,19 @@ contains
          call realloc(bermslopeindex, lnx, stat=ierr, fill=.false., keepExisting=.false.)
          call realloc(bermslopeindexbed, lnx, stat=ierr, fill=.false., keepExisting=.false.)
          call realloc(bermslopeindexsus, lnx, stat=ierr, fill=.false., keepExisting=.false.)
-         call realloc(bermslopecontrib, (/lnx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(bermslopecontrib, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          if (.not. (ierr == 0)) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Could not allocate bermslope arrays. Bermslope transport switched off.')
             stmpar%morpar%bermslopetransport = .false.
          end if
-         if (jawave > 0 .and. jawave /= 4) then
+         if (jawave > NO_WAVES .and. jawave /= 4) then
             if (comparereal(gammax, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4 ! if they are exactly the same, rounding errors set index to false wrongly
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4 ! if they are exactly the same, rounding errors set index to false wrongly
             end if
          end if
-         if (jawave == 4) then
+         if (jawave == WAVE_SURFBEAT) then
             if (comparereal(gammaxxb, stmpar%morpar%bermslopegamma) == 0) then
-               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + eps4
+               stmpar%morpar%bermslopegamma = stmpar%morpar%bermslopegamma + EPS4
             end if
          end if
       end if
@@ -462,16 +470,16 @@ contains
          if (allocated(avalflux)) then
             deallocate (avalflux)
          end if
-         call realloc(avalflux, (/lnx, stmpar%lsedtot/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(avalflux, [lnx, stmpar%lsedtot], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          !
          ! Warn user if default wetslope is still 10.0 when using dune avalanching. Reset default to reasonable 1.0 in that case.
-         if (comparereal(stmpar%morpar%wetslope, 10d0) == 0) then
+         if (comparereal(stmpar%morpar%wetslope, 10.0_dp) == 0) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Dune avalanching is switched on. Default wetslope reset to 0.1 from 10.0')
-            stmpar%morpar%wetslope = 1d-1
+            stmpar%morpar%wetslope = 1.0e-1_dp
          end if
          !
          ! Warn user if upperlimitssc is set icm with avalanching. This effectively removes sedimentation of the avalanching flux if set too strictly.
-         if (comparereal(upperlimitssc, 1d6) /= 0) then
+         if (comparereal(upperlimitssc, 1.0e6_dp) /= 0) then
             call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Upper limit imposed on ssc. This will cause large mass errors icm avalanching. Check the mass error at the end of the run.')
          end if
       end if
@@ -487,10 +495,14 @@ contains
       !
       inquire (file=trim(md_morphopol), exist=ex)
       if (.not. ex) then
+         call mess(LEVEL_WARN, 'unstruc::flow_sedmorinit - Morphopol set but file does not exist, morphopol not used.')
+         md_morphopol = ''
          ! do all cells
          kcsmor = 1
       else
-         if (allocated(kp)) deallocate (kp)
+         if (allocated(kp)) then
+            deallocate (kp)
+         end if
          allocate (kp(1:ndx))
          kp = 0
          ! find cells inside polygon
@@ -513,7 +525,7 @@ contains
             goto 1234
          end if
 
-         call realloc(mergebodsed, (/stmpar%lsedtot, ndx/), stat=ierr, fill=0d0, keepExisting=.false.)
+         call realloc(mergebodsed, [stmpar%lsedtot, ndx], stat=ierr, fill=0.0_dp, keepExisting=.false.)
          !
          if (jamormergedtuser > 0 .and. my_rank == 0) then ! safety, set equal dt_user across mormerge processes once
             call put_get_time_step(stmpar%morpar%mergehandle, dt_user)
@@ -525,18 +537,18 @@ contains
       !
       select case (stmpar%morlyr%settings%active_layer_diffusion)
       case (1)
-          !The array read from the morphology module `rdmorlyr` is at cell centres because that routine is general
-          !for D3D4 and FM, however, diffusion in FM is at links. Here we transform it.
-          allocate(aldiff_links(1,lnx_mor))
-          associate (aldiff=>stmpar%morlyr%settings%aldiff)
-             do l=1,lnx_mor
-                 aldiff_links(1,l)=max(aldiff(ln_mor(1,l)),aldiff(ln_mor(2,l)))
-             enddo
-          end associate !aldiff
+         !The array read from the morphology module `rdmorlyr` is at cell centres because that routine is general
+         !for D3D4 and FM, however, diffusion in FM is at links. Here we transform it.
+         allocate (aldiff_links(1, lnx_mor))
+         associate (aldiff => stmpar%morlyr%settings%aldiff)
+            do l = 1, lnx_mor
+               aldiff_links(1, l) = max(aldiff(ln_mor(1, l)), aldiff(ln_mor(2, l)))
+            end do
+         end associate !aldiff
       case default
          ! if 0, do nothing.
       end select
-   
+
 1234  return
    end subroutine flow_sedmorinit
 

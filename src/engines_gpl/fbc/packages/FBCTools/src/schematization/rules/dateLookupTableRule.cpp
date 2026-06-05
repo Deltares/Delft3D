@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -23,53 +23,57 @@
 
 #include "dateLookupTableRule.h"
 
-#include <utilities/utils.h> 
+#include <utilities/utils.h>
 #include <stdexcept>
 
 using namespace rtctools;
 using namespace rtctools::schematization::rules;
 
-dateLookupTableRule::dateLookupTableRule(string id,
-										 string name,
-										 int nDateRecord,
-										 lookupTableConverter **dateRecord,
-										 int iXIn,
-										 int iYIn,
-										 int iYOut) : rule(id, name)
+dateLookupTableRule::dateLookupTableRule(string id, string name, int nDateRecord, lookupTableConverter** dateRecord,
+                                         int iXIn, int iYIn, int iYOut)
+    : rule(id, name)
 {
-	this->nDateRecord = nDateRecord;
-	this->dateRecord = dateRecord;
+    this->nDateRecord = nDateRecord;
+    this->dateRecord = dateRecord;
     this->iXIn = iXIn;
     this->iYIn = iYIn;
     this->iYOut = iYOut;
 }
 
-void dateLookupTableRule::solve(double *stateOld, double *stateNew, long long t, double dt)
+void dateLookupTableRule::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
-	double xOld = stateOld[iXIn];
+    double xOld = stateOld[iXIn];
     double yNew;
- 
-	if (nDateRecord == 1) { 
-		// only single record
-		yNew = dateRecord[0]->convert(xOld);
-	} else {
-		// record for each day of the year
-		int dayOfYear = utils::getDayOfYear(t);
-		yNew = dateRecord[dayOfYear]->convert(xOld);
-	} 
 
-	// check for overruling Y
-	if (iYIn>-1) {
-		double yIn = stateNew[iYIn];
-		if (yIn==yIn) {
-			yNew = yIn;
-		}
-	}
+    if (nDateRecord == 1)
+    {
+        // only single record
+        yNew = dateRecord[0]->convert(xOld);
+    }
+    else
+    {
+        // record for each day of the year
+        int dayOfYear = utils::getDayOfYear(t);
+        yNew = dateRecord[dayOfYear]->convert(xOld);
+    }
 
-	stateNew[iYOut] = yNew;
+    // check for overruling Y
+    if (iYIn > -1)
+    {
+        double yIn = stateNew[iYIn];
+        if (yIn == yIn)
+        {
+            yNew = yIn;
+        }
+    }
+
+    stateNew[iYOut] = yNew;
 }
 
-void dateLookupTableRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
+void dateLookupTableRule::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                                   double* dStateNew)
 {
-	throw runtime_error("void dateLookupTableRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew) not implemented");
+    throw runtime_error(
+        "void dateLookupTableRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double "
+        "*dStateOld, double *dStateNew) not implemented");
 }

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,162 +27,236 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
 module m_addsorsin
    use m_reallocsrc, only: reallocsrc
+   use m_missing, only: dmiss, dxymis
+   use messagehandling, only: IDLEN, msgbuf, warn_flush
+   use precision, only: dp
 
-   implicit none
+   implicit none(type, external)
 
    private
 
    public :: addsorsin
+   public :: addsorsin_from_polyline_file
 
 contains
 
-   subroutine addsorsin(filename, area, ierr)
-      use precision, only: dp
+   !> Add a source(-sink) to the model based on geometry given in a polyline file.
+   !! This subroutine is a wrapper around addsorsin, mainly taking care of reading the polyline file.
+   subroutine addsorsin_from_polyline_file(polyline_file, name, z_source, z_sink, area, ierr)
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
+      use m_filez, only: oldfil
+      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl
+      use m_reapol, only: reapol
+      use system_utils, only: split_filename
 
-      use fm_external_forcings_data
-      use m_polygon
-      use m_flow
+      ! Parameters
+      character(len=*), intent(in) :: polyline_file !< Name of the polyline file, either with x,y values only (*.pli), or including z-values (*.pliz).
+      character(len=*), optional, intent(in) :: name !< Name of the source-sink. When not present, name is based on the polyline filename instead.
+      real(kind=dp), dimension(:), optional, intent(in) :: z_source !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
+      real(kind=dp), dimension(:), optional, intent(in) :: z_sink !< Vertical position of the source, Z-value(s) in m (1 for point or 2 for range).
+      real(kind=dp), intent(in) :: area !< Area of the source/sink, in m2. Set to 0.0 for momentum-free point sources.
+      integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
+
+      ! Local variables
+      integer :: istat
+      integer :: pli_lun
+      integer, parameter :: Z_SIZE = 2
+      real(kind=dp), dimension(:), allocatable :: z_source_
+      real(kind=dp), dimension(:), allocatable :: z_sink_
+      logical :: have_z_range
+      character(len=0) :: path
+      character(len=0) :: ext
+      character(len=IDLEN) :: name_
+
+      ierr = DFM_WRONGINPUT
+
+      call oldfil(pli_lun, polyline_file)
+      call reapol(pli_lun, 0)
+
+      if (npl == 0) then
+         return
+      end if
+
+      have_z_range = colpl > 3
+
+      ! Either take the z-source values from input, or from polyline's last point.
+      if (present(z_source)) then
+         allocate (z_source_, source=z_source, stat=istat)
+         if (istat /= 0) then
+            return
+         end if
+      else
+         allocate (z_source_(Z_SIZE), source=dmiss, stat=istat)
+         if (istat /= 0) then
+            return
+         end if
+         z_source_(1) = zpl(npl)
+
+         if (have_z_range) then
+            z_source_(2) = dzL(npl)
+         end if
+      end if
+
+      ! Either take the z-sink values from input, or from polyline's first point.
+      if (present(z_sink)) then
+         allocate (z_sink_, source=z_sink, stat=istat)
+         if (istat /= 0) then
+            return
+         end if
+      else
+         allocate (z_sink_(Z_SIZE), source=dmiss, stat=istat)
+         if (istat /= 0) then
+            return
+         end if
+         z_sink_(1) = zpl(1)
+         if (have_z_range) then
+            z_sink_(2) = dzL(1)
+         end if
+      end if
+
+      if (present(name)) then
+         name_ = name
+      else
+         call split_filename(polyline_file, path, name_, ext)
+      end if
+
+      ! Add the source/sink to the model based on prepared polyline data.
+      call addsorsin(trim(name_), xpl(1:npl), ypl(1:npl), z_source_, z_sink_, area, ierr)
+
+   end subroutine addsorsin_from_polyline_file
+
+   !> Add a source-sink to the model.
+   subroutine addsorsin(name, x_points, y_points, z_source, z_sink, area, ierr)
+      use fm_external_forcings_data, only: num_source_sink, source_sink_x, source_sink_y, source_sink_max_xy_points, &
+                                           source_sink_indices, source_sink_z_bottom, source_sink_z_top, source_sink_area, source_sink_discharge_cosine, &
+                                           source_sink_discharge_sine, source_sink_name
       use m_GlobalParameters, only: INDTP_ALL
-
-      use m_missing
-      use messagehandling, only: msgbuf, warn_flush
-      use dfm_error
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use geometry_module, only: normalin
       use m_sferic, only: jsferic, jasfer3D
-      use MessageHandling, only: IdLen
       use m_find_flownode, only: find_nearest_flownodes
-      use m_reapol
-      use m_filez, only: oldfil
 
-      character(len=*), intent(in) :: filename
-      real(kind=dp), intent(in) :: area
-      integer, intent(out) :: ierr
-      integer :: minp, kk, kk2, n1, n2, i, jakdtree, kdum(1)
-      character(len=IdLen) :: tmpname(1)
+      ! Parameters
+      character(len=*), intent(in) :: name !< Name of the source/sink.
+      real(kind=dp), dimension(:), intent(in) :: x_points !< x-coordinates of the source/sink (polyline from sink to source point).
+      real(kind=dp), dimension(:), intent(in) :: y_points !< y-coordinates of the source/sink (polyline from sink to source point).
+      real(kind=dp), dimension(2), intent(in) :: z_source !< Vertical position of the source, Z-values in m. (second point is dmiss if not a range)
+      real(kind=dp), dimension(2), intent(in) :: z_sink !< Vertical position of the sink, Z-values in m. (second point is dmiss if not a range)
+      real(kind=dp), intent(in) :: area !< Area of the source/sink, in m2. Set to 0.0 for momentum-free point sources.
+      integer, intent(out) :: ierr !< Error code, DFM_NOERR if no error occurred.
 
-      ierr = DFM_NOERR
+      ! Local variables
+      integer :: kk
+      integer :: kk2
+      integer :: i
+      integer :: jakdtree
+      integer :: num_points
+      integer, dimension(1) :: kdum
+      character(len=IdLen), dimension(1) :: tmpname
 
-      call oldfil(minp, filename)
-      call reapol(minp, 0)
+      ierr = DFM_WRONGINPUT
 
-      if (npl == 0) return
+      num_points = size(x_points)
+      if (num_points == 0) then
+         return
+      end if
 
-      numsrc = numsrc + 1
-      call reallocsrc(numsrc)
+      num_source_sink = num_source_sink + 1
+      call reallocsrc(num_source_sink, num_points)
 
       ! set the coordinates of source/sink
-      xsrc(numsrc, 1:npl) = xpl(1:npl)
-      ysrc(numsrc, 1:npl) = ypl(1:npl)
-      nxsrc(numsrc) = npl
-      kk = 0; kk2 = 0
-
-      ! Strip off trailing file extension .pli
-      n2 = index(filename, '.', .true.) - 1
-      if (n2 < 0) then
-         n2 = len_trim(filename)
-      end if
-
-      ! Strip off leading path /dir/name/bnd/
-      n1 = index(filename(1:n2), '\', .true.) ! Win
-      if (n1 == 0) then
-         n1 = index(filename(1:n2), '/', .true.) ! Or try UX
-      end if
+      source_sink_x(num_source_sink, 1:num_points) = x_points(1:num_points)
+      source_sink_y(num_source_sink, 1:num_points) = y_points(1:num_points)
+      source_sink_max_xy_points(num_source_sink) = num_points
+      kk = 0
+      kk2 = 0
 
       ! Store sink/source name for waq
-      srcname(numsrc) = filename(n1 + 1:n2)
+      source_sink_name(num_source_sink) = name
 
       ! call inflowcell(xpl(npl), ypl(npl), kk2) ! TO: Source
-      tmpname(1) = filename(n1 + 1:n2)//' source'
+      tmpname(1) = name//' source'
       jakdtree = 0
       kdum(1) = 0
-      if (xpl(npl) /= -999.999d0) then
-         call find_nearest_flownodes(1, xpl(npl), ypl(npl), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL); kk2 = kdum(1)
+      if (source_sink_x(num_source_sink, num_points) /= dmiss) then
+         call find_nearest_flownodes(1, source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+         kk2 = kdum(1)
       end if
 
       ! Support point source/sinks in a single cell if polyline has just one point (npl==1)
-      if (npl == 1) then
+      if (num_points == 1) then
 
          kk = 0 ! Only keep the source-side (kk2), and disable momentum discharge
-         if (area /= dmiss .and. area /= 0d0) then
+         if (area /= dmiss .and. area /= 0.0_dp) then
             ! User specified an area for momentum discharge, but that does not apply to POINT sources.
-            write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink for ''', trim(filename), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
+            write (msgbuf, '(a,a,a,f8.2,a)') 'Source-sink ''', trim(name), ''' is a POINT-source. Nonzero area was specified: ', area, ', but area will be ignored (no momentum discharge).'
             call warn_flush()
          end if
-         arsrc(numsrc) = 0d0
-      else ! Default: linked source-sink, with polyline npl >= 2
+         source_sink_area(num_source_sink) = 0.0_dp
+      else ! Default: linked source-sink, with 2 or more polyline points
          ! call inflowcell(xpl(1) , ypl(1)  , kk) ! FROM: sink
-         tmpname = filename(n1 + 1:n2)//' sink'
+         tmpname = name//' sink'
          kdum(1) = 0
-         if (xpl(1) /= -999.999d0) then
-            call find_nearest_flownodes(1, xpl(1), ypl(1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL); kk = kdum(1)
+         if (source_sink_x(num_source_sink, 1) /= dmiss) then
+            call find_nearest_flownodes(1, source_sink_x(num_source_sink, 1), source_sink_y(num_source_sink, 1), tmpname(1), kdum(1), jakdtree, -1, INDTP_ALL)
+            kk = kdum(1)
          end if
 
          if (kk /= 0 .or. kk2 /= 0) then
-            arsrc(numsrc) = area
+            source_sink_area(num_source_sink) = area
          end if
       end if
 
       if (kk == 0 .and. kk2 == 0) then
-         write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(filename)
+         write (msgbuf, '(a,a)') 'Source+sink is outside model area for ', trim(name)
          call warn_flush()
          ierr = DFM_NOERR
          goto 8888
       end if
 
-      ksrc(1, numsrc) = kk
-      zsrc(1, numsrc) = zpl(1)
-      zsrc2(1, numsrc) = zpl(1)
+      source_sink_indices(1, num_source_sink) = kk
+      source_sink_z_bottom(1, num_source_sink) = z_sink(1)
+      source_sink_z_top(1, num_source_sink) = z_sink(1)
 
-      ksrc(4, numsrc) = kk2
-      zsrc(2, numsrc) = zpl(npl)
-      zsrc2(2, numsrc) = zpl(npl)
+      source_sink_indices(4, num_source_sink) = kk2
+      source_sink_z_bottom(2, num_source_sink) = z_source(1)
+      source_sink_z_top(2, num_source_sink) = z_source(1)
 
       if (kk > 0) then
-         if (allocated(dzL)) then
-            if (dzL(1) /= dmiss) then
-               zsrc2(1, numsrc) = dzL(1)
-            end if
+         if (z_sink(2) /= dmiss) then
+            source_sink_z_top(1, num_source_sink) = z_sink(2)
          end if
          ! Determine angle (sin/cos) of 'from' link (=first segment of polyline)
-         if (npl > 1) then
-            call normalin(xpl(1), ypl(1), xpl(2), ypl(2), cssrc(1, numsrc), snsrc(1, numsrc), xpl(1), ypl(1), jsferic, jasfer3D, dxymis)
+         if (num_points > 1) then
+            call normalin(source_sink_x(num_source_sink, 1), source_sink_y(num_source_sink, 1), source_sink_x(num_source_sink, 2), source_sink_y(num_source_sink, 2), source_sink_discharge_cosine(1, num_source_sink), source_sink_discharge_sine(1, num_source_sink), source_sink_x(num_source_sink, 1), source_sink_y(num_source_sink, 1), jsferic, jasfer3D, dxymis)
          end if
 
-         do i = 1, numsrc - 1
-            if (ksrc(1, i) /= 0 .and. kk == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i)); call warn_flush()
-            else if (ksrc(4, i) /= 0 .and. kk == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'FROM point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i)); call warn_flush()
+         do i = 1, num_source_sink - 1
+            if (source_sink_indices(1, i) /= 0 .and. kk == source_sink_indices(1, i)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sink_name(num_source_sink)), ' coincides with FROM point of ', trim(source_sink_name(i))
+               call warn_flush()
+            else if (source_sink_indices(4, i) /= 0 .and. kk == source_sink_indices(4, i)) then
+               write (msgbuf, '(4a)') 'FROM point of ', trim(source_sink_name(num_source_sink)), ' coincides with TO   point of ', trim(source_sink_name(i))
+               call warn_flush()
             end if
          end do
 
       end if
 
       if (kk2 > 0) then
-         if (allocated(dzL)) then
-            if (dzL(npl) /= dmiss) then
-               zsrc2(2, numsrc) = dzL(npl)
-            end if
+         if (z_source(2) /= dmiss) then
+            source_sink_z_top(2, num_source_sink) = z_source(2)
          end if
-         ! Determine angle (sin/cos) of 'to' link (=first segment of polyline)
-         if (npl > 1) then
-            call normalin(xpl(npl - 1), ypl(npl - 1), xpl(npl), ypl(npl), cssrc(2, numsrc), snsrc(2, numsrc), xpl(NPL), ypl(NPL), jsferic, jasfer3D, dxymis)
+         
+         ! Determine angle (sin/cos) of 'to' link (= first segment of polyline)
+         if (num_points > 1) then
+            call normalin(source_sink_x(num_source_sink, num_points - 1), source_sink_y(num_source_sink, num_points - 1), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), source_sink_discharge_cosine(2, num_source_sink), source_sink_discharge_sine(2, num_source_sink), source_sink_x(num_source_sink, num_points), source_sink_y(num_source_sink, num_points), jsferic, jasfer3D, dxymis)
          end if
-
-         do i = 1, numsrc - 1
-            if (ksrc(1, i) /= 0 .and. kk2 == ksrc(1, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with FROM point of ', trim(srcname(i)); call warn_flush()
-            else if (ksrc(4, i) /= 0 .and. kk2 == ksrc(4, i)) then
-               write (msgbuf, '(4a)') 'TO point of ', trim(srcname(numsrc)), ' coincides with TO   point of ', trim(srcname(i)); call warn_flush()
-            end if
-         end do
-
       end if
+
+      ierr = DFM_NOERR
 
 8888  continue
 

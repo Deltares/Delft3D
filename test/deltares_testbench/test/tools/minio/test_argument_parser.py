@@ -1,9 +1,11 @@
 import argparse
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import List, Union
 
 import pytest
+from s3_path_wrangler.paths import S3Path
 
 from src.config.types.path_type import PathType
 from tools.minio.argument_parser import make_argument_parser
@@ -17,7 +19,7 @@ def arg_parser() -> argparse.ArgumentParser:
 def assert_defaults(args: argparse.Namespace) -> None:
     assert args.color_output
     assert args.interactive
-    assert args.bucket == "dsc-testbench"
+    assert args.bucket == S3Path.from_bucket("dsc-testbench")
     assert args.endpoint_url == os.environ.get("AWS_ENDPOINT_URL", "https://s3.deltares.nl")
     assert args.profile == os.environ.get("AWS_PROFILE")
     assert args.local_path is None
@@ -85,7 +87,7 @@ def test_push__only_required(
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.config == "path/to/config"
+    assert args.config == Path("path/to/config")
     assert args.test_case_name == "foo"
     assert args.path_type == path_type
     assert args.issue_id == "FO0-123"
@@ -106,7 +108,7 @@ def test_push__only_required_long_opts(
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.config == "path/to/config"
+    assert args.config == Path("path/to/config")
     assert args.test_case_name == "foo"
     assert args.path_type == path_type
     assert args.issue_id == "FOO-123"
@@ -147,7 +149,7 @@ def test_update_refs__required_only(arg_parser: argparse.ArgumentParser) -> None
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.config == "path/to/config"
+    assert args.config == Path("path/to/config")
     assert args.test_case_name == "foo"
     assert args.issue_id == "FO0-123"
     assert_update_refs_defaults(args)
@@ -159,7 +161,7 @@ def test_update_refs__required_only__long_opts(arg_parser: argparse.ArgumentPars
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.config == "path/to/config"
+    assert args.config == Path("path/to/config")
     assert args.test_case_name == "foo"
     assert args.issue_id == "FOO-123"
     assert_update_refs_defaults(args)
@@ -190,7 +192,7 @@ def test_pull__only_required(
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.config == "path/to/config"
+    assert args.config == Path("path/to/config")
     assert args.test_case_name == "foo"
     assert args.path_type == path_type
     assert_pull_defaults(args)
@@ -210,7 +212,7 @@ def test_pull__only_required_long_opts(
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.config == "path/to/config"
+    assert args.config == Path("path/to/config")
     assert args.test_case_name == "foo"
     assert args.path_type == path_type
     assert_pull_defaults(args)
@@ -218,14 +220,15 @@ def test_pull__only_required_long_opts(
 
 def test_pull__timestamp(arg_parser: argparse.ArgumentParser) -> None:
     # Arrange
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().split("+")[0]
-    argv = ["pull", "-c=path/to/config", "-n=foo", "--case", f"--timestamp={now}"]
+    now = datetime.now().replace(microsecond=0)  # noqa: DTZ005
+    iso_timestamp = now.isoformat().split("+")[0]
+    argv = ["pull", "-c=path/to/config", "-n=foo", "--case", f"--timestamp={iso_timestamp}"]
 
     # Act
     args = arg_parser.parse_args(argv)
 
     # Assert
-    assert args.timestamp == now
+    assert args.timestamp == now.astimezone(timezone.utc)
 
 
 def test_pull__latest(arg_parser: argparse.ArgumentParser) -> None:
@@ -238,13 +241,23 @@ def test_pull__latest(arg_parser: argparse.ArgumentParser) -> None:
 @pytest.mark.parametrize(
     ("flag", "attr_name", "attr_value"),
     [
-        pytest.param("--timestamp=2024-04-17T12:00", "timestamp", "2024-04-17T12:00", id="timestamp"),
-        pytest.param("-t=2024-04-17T12:00", "timestamp", "2024-04-17T12:00", id="short-timestamp"),
+        pytest.param(
+            "--timestamp=2024-04-17T12:00",
+            "timestamp",
+            datetime(2024, 4, 17, 12).astimezone(tz=timezone.utc),
+            id="timestamp",
+        ),
+        pytest.param(
+            "-t=2024-04-17T12:00",
+            "timestamp",
+            datetime(2024, 4, 17, 12).astimezone(tz=timezone.utc),
+            id="short-timestamp",
+        ),
         pytest.param("--latest", "latest", True, id="latest"),
     ],
 )
 def test_pull__optional_arguments(
-    flag: str, attr_name: str, attr_value: Union[bool, str], arg_parser: argparse.ArgumentParser
+    flag: str, attr_name: str, attr_value: Union[bool, datetime], arg_parser: argparse.ArgumentParser
 ) -> None:
     # Arrange, Act, Assert
     argv = ["pull", "--reference", "-c=path/to/config", "-n=foo", flag]
@@ -258,20 +271,20 @@ def test_pull__optional_arguments(
         pytest.param("--no-color", "color_output", False, id="no-color"),
         pytest.param("--batch", "interactive", False, id="batch"),
         pytest.param("--force", "force", True, id="force"),
-        pytest.param("--local-path=foo/bar", "local_path", "foo/bar", id="local-path"),
+        pytest.param("--local-path=foo/bar", "local_path", Path("foo/bar"), id="local-path"),
         pytest.param(
             "-p=foo/bar",
             "local_path",
-            "foo/bar",
+            Path("foo/bar"),
             id="short-local-path",
         ),
-        pytest.param("--bucket=my-bucket", "bucket", "my-bucket", id="bucket"),
+        pytest.param("--bucket=my-bucket", "bucket", S3Path.from_bucket("my-bucket"), id="bucket"),
         pytest.param("--endpoint-url=https://my.s3:4242", "endpoint_url", "https://my.s3:4242", id="endpoint-url"),
         pytest.param("--profile=minio-super-admin", "profile", "minio-super-admin", id="profile"),
     ],
 )
 def test_optional_arguments(
-    flag: str, attr_name: str, attr_value: Union[bool, str], arg_parser: argparse.ArgumentParser
+    flag: str, attr_name: str, attr_value: Union[bool, str, Path, S3Path], arg_parser: argparse.ArgumentParser
 ) -> None:
     # Arrange, Act, Assert
     argv = ["pull", "--reference", "-c=path/to/config", "-n=foo", flag]

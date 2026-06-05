@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -80,11 +80,11 @@ contains
 
       type(tpoly), dimension(:), allocatable :: pli_loc
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
       jakdtree = 1
 
-      call READYY('CUTCELWU', 0d0)
+      call READYY('CUTCELWU', 0.0_dp)
 
       IN = -1
 
@@ -118,30 +118,37 @@ contains
                !
                ! gravity point of polygon
                !
-               Area = 0d0
-               cx = 0d0
-               cy = 0d0
+               Area = 0.0_dp
+               cx = 0.0_dp
+               cy = 0.0_dp
                num = 0
                do i = 1, NPL
-                  ip1 = i + 1; if (ip1 > NPL) ip1 = ip1 - NPL
+                  ip1 = i + 1
+                  if (ip1 > NPL) then
+                     ip1 = ip1 - NPL
+                  end if
 
-                  if (xpl(ip1) == DMISS) cycle
+                  if (xpl(ip1) == DMISS) then
+                     cycle
+                  end if
                   cof0 = xpl(i) * ypl(ip1) - xpl(ip1) * ypl(i)
                   Area = Area + cof0
                   cx = cx + (xpl(i) + xpl(ip1)) * cof0
                   cy = cy + (ypl(i) + ypl(ip1)) * cof0
                   num = num + 1
                end do
-               area = area * 0.5d0
+               area = area * 0.5_dp
 
-               if (area == 0d0) cycle
+               if (area == 0.0_dp) then
+                  cycle
+               end if
 
-               cx = cx / area / 6.0d0
-               cy = cy / area / 6.0d0
+               cx = cx / area / 6.0_dp
+               cy = cy / area / 6.0_dp
                !
                ! find the circumcircle
                !
-               R2search = 0d0
+               R2search = 0.0_dp
                do i = 1, npl - 1
                   R2search = max(R2search, dbdistance(xpl(i), ypl(i), cx, cy, jsferic, jasfer3D, dmiss)**2)
                end do
@@ -198,7 +205,8 @@ contains
       end if
 
       if (n12 >= 4) then ! 4, 5, or 6
-         allocate (KNP(NUMP)); KNP = 0
+         allocate (KNP(NUMP))
+         KNP = 0
 
          do N = 1, NUMP
             NN = netcell(N)%N
@@ -233,7 +241,9 @@ contains
 
          do N = 1, NUMP
 
-            if (mod(n, KMOD) == 0) call READYY('CUTCELWU', dble(n) / dble(nump))
+            if (mod(n, KMOD) == 0) then
+               call READYY('CUTCELWU', real(n, kind=dp) / real(nump, kind=dp))
+            end if
 
             if (KNP(N) == 1) then ! AT LEAST 1 POINT INSIDE POLYGON, SO CHECK CUTC
 
@@ -257,13 +267,16 @@ contains
                      jadelete = 0
                   end if
 
-                  LLU = LL + 1; if (LLU > NN) LLU = 1
+                  LLU = LL + 1
+                  if (LLU > NN) then
+                     LLU = 1
+                  end if
                   K1 = NETCELL(N)%NOD(LL)
                   K2 = NETCELL(N)%NOD(LLU)
 
                   if (jamasks == 0 .or. jamasks == 1) then
                      if (kc(kn(1, L)) == 1 .or. kc(kn(2, L)) == 1) then
-                        call CROSSLINKPOLY(L, 0, 0, (/0/), (/0/), XM, YM, JA)
+                        call CROSSLINKPOLY(L, 0, 0, [0], [0], XM, YM, JA)
                      else
                         ja = 0
                      end if
@@ -296,21 +309,33 @@ contains
                      if (N12 == 5) then ! OP DEZE MANIER UITSTEL AANPASSING TOT NA DE WEGINGEN VAN LINK CENTER/CORNER WEIGHTS
 
                         if (KC(K1) == 1 .and. kc(k2) /= 1) then ! 1 OUTSIDE
-                           IC = IC + 1; XXC(IC) = XM; YYC(IC) = YM
-                           IC = IC + 1; XXC(IC) = XK(K2); YYC(IC) = YK(K2)
+                           IC = IC + 1
+                           XXC(IC) = XM
+                           YYC(IC) = YM
+                           IC = IC + 1
+                           XXC(IC) = XK(K2)
+                           YYC(IC) = YK(K2)
                            if (Lf > 0) then
-                              if (wu(LF) /= 0d0) WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) then
+                                 WU(LF) = DBDISTANCE(XM, YM, XK(K2), YK(K2), jsferic, jasfer3D, dmiss)
+                              end if
                            end if
                         else if (kc(k1) /= 1 .and. kc(k2) == 1) then
                            if (IC == 0) then
-                              IC = IC + 1; XXC(IC) = XK(K1); YYC(IC) = YK(K1)
+                              IC = IC + 1
+                              XXC(IC) = XK(K1)
+                              YYC(IC) = YK(K1)
                            end if
-                           IC = IC + 1; XXC(IC) = XM; YYC(IC) = YM
+                           IC = IC + 1
+                           XXC(IC) = XM
+                           YYC(IC) = YM
                            if (Lf > 0) then
-                              if (wu(LF) /= 0d0) WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              if (wu(LF) /= 0.0_dp) then
+                                 WU(LF) = DBDISTANCE(XM, YM, XK(K1), YK(K1), jsferic, jasfer3D, dmiss)
+                              end if
                            end if
                         else if (kc(k1) == 1 .and. kc(k2) == 1 .and. Lf > 0) then
-                           wu(Lf) = 0d0
+                           wu(Lf) = 0.0_dp
                         end if
                      else if (N12 == 4) then
                         kfs(n) = 1 ! temporary cutcell flag, TO CHANGE LINKTOCENTER AND LINKTOCORNERSWEIGHTING FOR CUTCELLS
@@ -336,9 +361,13 @@ contains
                      if (KC(K1) == 0 .and. KC(K2) == 0) then
                         if (N12 == 5) then
                            if (IC == 0) then
-                              IC = IC + 1; XXC(IC) = XK(K1); YYC(IC) = YK(K1)
+                              IC = IC + 1
+                              XXC(IC) = XK(K1)
+                              YYC(IC) = YK(K1)
                            end if
-                           IC = IC + 1; XXC(IC) = XK(K2); YYC(IC) = YK(K2)
+                           IC = IC + 1
+                           XXC(IC) = XK(K2)
+                           YYC(IC) = YK(K2)
                         end if
                      else if (N12 == 4) then
                         LNN(L) = 0
@@ -370,19 +399,21 @@ contains
                   if (IC < 3) then
 
                      do KL = 1, nd(n)%lnx
-                        L = abs(nd(n)%ln(KL)); wu(L) = 0d0
+                        L = abs(nd(n)%ln(KL))
+                        wu(L) = 0.0_dp
                      end do
-                     ba(n) = 0d0
+                     ba(n) = 0.0_dp
 
                   else
 
                      call dAREAN(XXC, YYC, IC, DAREA, DLENGTH, DLENMX) ! AREA AND LENGTH OF POLYGON
 
-                     if (DAREA / BA(n) < 0.05d0) then
+                     if (DAREA / BA(n) < 0.05_dp) then
                         do KL = 1, nd(n)%lnx
-                           L = abs(nd(n)%ln(KL)); wu(L) = 0d0
+                           L = abs(nd(n)%ln(KL))
+                           wu(L) = 0.0_dp
                         end do
-                        ba(n) = 0d0
+                        ba(n) = 0.0_dp
                      else
                         BA(N) = max(DAREA, BAMIN) ! ; BAI(N) = 1D0/BA(N)    ! BAI ZIT IN ADVECTIEWEGING
                         deallocate (ND(N)%X, ND(N)%Y)
@@ -420,15 +451,23 @@ contains
 
 !  write(6,"('cutcelwu:', I4)") 9
 
-      if (allocated(knp)) deallocate (KNP)
-
-      if (jamasks == 1) then
-         if (allocated(Lmask)) deallocate (Lmask)
-         if (allocated(xmL)) deallocate (xmL)
-         if (allocated(ymL)) deallocate (ymL)
+      if (allocated(knp)) then
+         deallocate (knp)
       end if
 
-      call READYY('CUTCELWU', -1d0)
+      if (jamasks == 1) then
+         if (allocated(Lmask)) then
+            deallocate (Lmask)
+         end if
+         if (allocated(xmL)) then
+            deallocate (xmL)
+         end if
+         if (allocated(ymL)) then
+            deallocate (ymL)
+         end if
+      end if
+
+      call READYY('CUTCELWU', -1.0_dp)
 
    end subroutine CUTCELwu
 

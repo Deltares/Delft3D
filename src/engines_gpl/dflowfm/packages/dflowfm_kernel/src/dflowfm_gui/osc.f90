@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -35,9 +35,9 @@ module m_osc
    implicit none
 contains
    subroutine OSC(KEY)
-      use m_devices
+      use m_devices, only: nopsys, npx, npy, ncolr
+      use m_help, only: help
       use messagehandling, only: msgbuf, msg_flush
-      use m_help
 
       integer :: infoinput
       integer :: ixp
@@ -72,7 +72,9 @@ contains
          call msg_flush()
          call IOsCommand(STRING(:LEN))
       else if (KEY == 23) then
-         if (NOPSYS == 1) call ISCREENMODE('GR', NPX, NPY, NCOLR)
+         if (NOPSYS == 1) then
+            call ISCREENMODE('GR', NPX, NPY, NCOLR)
+         end if
          KEY = 3
          return
       end if

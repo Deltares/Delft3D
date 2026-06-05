@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
 
    subroutine get_meshbounds(xboundmin, xboundmax)
       use precision, only: dp
-      use network_data
+      use network_data, only: numl, kn, xk
 
       real(kind=dp), intent(out) :: xboundmin, xboundmax !< mesh bounding box x-coordinates
 
@@ -52,8 +52,8 @@ contains
 
       integer :: L, k1, k2
 
-      xboundmin = huge(1d0)
-      xboundmax = -huge(1d0)
+      xboundmin = huge(1.0_dp)
+      xboundmax = -huge(1.0_dp)
       do L = 1, numL
          if (kn(3, L) == 2) then
             k1 = kn(1, L)

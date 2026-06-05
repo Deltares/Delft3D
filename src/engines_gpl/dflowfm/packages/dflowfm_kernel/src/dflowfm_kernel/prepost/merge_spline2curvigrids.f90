@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,12 @@ contains
 
    subroutine merge_spline2curvigrids()
       use precision, only: dp
-      use m_grid
-      use m_alloc
-      use m_missing
+      use m_grid, only: mc, xc, yc, nc
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_increase_grid, only: increasegrid
       use geometry_module, only: dbdistance, get_startend
       use m_sferic, only: jsferic, jasfer3D
-      use m_increase_grid
 
       real(kind=dp), dimension(:, :), allocatable :: xcnew, ycnew
 
@@ -62,7 +62,7 @@ contains
 
       logical :: Lconnected
 
-      real(kind=dp), parameter :: dtol = 1d-6
+      real(kind=dp), parameter :: dtol = 1.0e-6_dp
 
 !  allocate
       allocate (xcnew(1, 1), ycnew(1, 1))
@@ -122,8 +122,8 @@ contains
 !     reallocate
          iupperold = ubound(xcnew)
          ilowerold = lbound(xcnew)
-         iupper = (/iendnew, max(jmax, iupperold(2))/)
-         ilower = (/1, min(2 - jmaxother, ilowerold(2))/)
+         iupper = [iendnew, max(jmax, iupperold(2))]
+         ilower = [1, min(2 - jmaxother, ilowerold(2))]
          call realloc(xcnew, iupper, ilower, keepExisting=.true., fill=DMISS)
          call realloc(ycnew, iupper, ilower, keepExisting=.true., fill=DMISS)
 
@@ -151,8 +151,12 @@ contains
       yc(1:mc, 1:nc) = ycnew
 
 !  deallocate
-      if (allocated(xcnew)) deallocate (xcnew)
-      if (allocated(ycnew)) deallocate (ycnew)
+      if (allocated(xcnew)) then
+         deallocate (xcnew)
+      end if
+      if (allocated(ycnew)) then
+         deallocate (ycnew)
+      end if
 
       return
    end subroutine merge_spline2curvigrids

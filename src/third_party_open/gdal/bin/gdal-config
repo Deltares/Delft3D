@@ -1,0 +1,80 @@
+#!/bin/sh
+CONFIG_LIBS="-LIBPATH:c:/checkouts/gdal/install/lib gdal"
+CONFIG_DEP_LIBS="wbemuuid ws2_32 C:/checkouts/netcdf-c-4.9.2/install/lib/netcdf.lib C:/checkouts/hdf5-hdf5-1_14_2/install/lib/hdf5_hl.lib C:/share/VS15/x64/lib/zlib.lib C:/checkouts/hdf5-hdf5-1_14_2/install/lib/hdf5.lib legacy_stdio_definitions.lib odbccp32.lib C:/share/VS15/x64/lib/libcurl_imp.lib psapi C:/checkouts/proj/lib/proj.lib D:/checkouts/Trunk_git/src/third_party_open/..//third_party_open/sqlite3/sqlite-3.44.0/lib/sqlite3.lib"
+CONFIG_PREFIX="c:/checkouts/gdal/install"
+CONFIG_CFLAGS="-Ic:/checkouts/gdal/install/include"
+CONFIG_DATA="c:/checkouts/gdal/install/share/gdal"
+CONFIG_VERSION="3.11.0dev"
+CONFIG_GNM_ENABLED=yes
+CONFIG_FORMATS="JPEG raw GTIFF MEM vrt Derived GTI LIBERTIFF HFA NITF GXF AAIGrid CEOS SAR_CEOS DTED JDEM Envisat L1B RS2 ILWIS RMF Leveller SRTMHGT IDRISI GSG ERS PALSARJaxa DIMAP GFF COSAR PDS ADRG COASP TSX Terragen MSGN TIL northwood SAGA XYZ ESRIC HF2 KMLSUPEROVERLAY CTG ZMap NGSGEOID IRIS MAP CALS SAFE SENTINEL2 PRF MRF WMTS GRIB BMP TGA STACTA SNAP_TIFF BSB AIGrid USGSDEM AirSAR PCIDSK SIGDEM RIK STACIT PDF RCM PNG GIF WCS HTTP netCDF Zarr DAAS EEDA HDF5 PLMOSAIC WMS OGCAPI PCRaster MEM GeoJSON TAB Shape KML VRT AVC GML CSV DGN GMT S57 GeoRSS DXF PGDump GPSBabel EDIGEO SXF OpenFileGDB WAsP Selafin JML VDV FlatGeobuf MapML ADBC MiraMon AIVector JSONFG CSW PLSCENES WFS OAPIF NGW Elastic Idrisi PDS AmigoCloud Carto MSSQLSpatial ODBC PGeo CAD GTFS"
+CONFIG_PLUGINDIR="c:/checkouts/gdal/install/lib/gdalplugins"
+usage()
+
+{
+	cat <<EOF
+Usage: gdal-config [OPTIONS]
+Options:
+	[--prefix[=DIR]]
+	[--libs]
+	[--dep-libs]
+	[--cflags]
+	[--datadir]
+	[--version]
+	[--ogr-enabled]
+	[--gnm-enabled]
+	[--formats]
+	[--plugindir]
+EOF
+	exit $1
+}
+
+if test $# -eq 0; then
+	usage 1 1>&2
+fi
+
+case $1 in
+  --libs)
+    echo $CONFIG_LIBS
+    ;;
+
+  --dep-libs)
+    echo $CONFIG_DEP_LIBS
+    ;;
+
+  --cflags)
+    echo $CONFIG_CFLAGS
+    ;;
+
+  --datadir)
+    echo $CONFIG_DATA
+    ;;
+
+  --prefix)
+    echo $CONFIG_PREFIX
+    ;;
+
+  --version)
+    echo $CONFIG_VERSION
+    ;;
+
+  --ogr-enabled)
+    echo yes
+    ;;
+
+  --gnm-enabled)
+    echo $CONFIG_GNM_ENABLED
+    ;;
+
+  --formats)
+    echo $CONFIG_FORMATS
+    ;;
+
+  --plugindir)
+    echo $CONFIG_PLUGINDIR
+    ;;
+
+  *)
+    usage 1 1>&2
+    ;;
+
+esac

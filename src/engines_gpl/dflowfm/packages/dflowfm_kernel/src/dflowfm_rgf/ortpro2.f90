@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
       use precision, only: dp
 
       real(kind=dp) :: X1, Y1, X2, Y2, X3, Y3, X4, Y4, TV
-      integer :: JA
+      integer, intent(inout) :: JA
 
       real(kind=dp) :: DX, DY, R2
 
@@ -55,7 +55,9 @@ contains
       TV = (X3 * DX + Y3 * DY - X1 * DX - Y1 * DY) / R2
       X4 = X1 + TV * DX
       Y4 = Y1 + TV * DY
-      if (0d0 <= TV .and. TV <= 1d0) JA = 1
+      if (0.0_dp <= TV .and. TV <= 1.0_dp) then
+         JA = 1
+      end if
       TV = TV * sqrt(R2)
       return
    end subroutine ORTPRO2

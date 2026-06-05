@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,32 +44,32 @@ contains
 !> nodes in continuity eq
    subroutine s1nod()
       use precision, only: dp
-      use precision_basics
+      use precision_basics, only: comparereal
+      use m_plotdots, only: adddot
+      use messagehandling, only: setmessage, level_warn
+      use m_flow, only: a1, bb, nonlin, a1m, dd, s1, vol0, vol1, s1m, s0, nbndz, kbndz, zbndz, zbndz0, u0, epshs, hs, ag, kmx, fu, ru, lbot, ltop, epshu, hu, nbndu, kbndu, jacheckmatrix
+      use m_flowgeom, only: ndx, ndx2d, xz, yz, nd, lnx1d, kfs, dx, dxi, bl, ndxi
+      use m_flowtimes, only: dti, refdat, time1, alfsmo, dts
+      use m_reduce, only: bbr, ddr, ccr, lv2
+      use m_partitioninfo, only: jampi, idomain, my_rank, qnerror, jaoverlap
+      use m_sobekdfm, only: nbnd1d2d, compute_1d2d_boundaries
+      use unstruc_channel_flow, only: network
       use time_module, only: seconds_to_datetimestring
-      use m_plotdots
-      use MessageHandling
-      use m_flow
-      use m_flowgeom
-      use m_flowtimes
-      use m_reduce
-      use m_partitioninfo
-      use m_missing
-      use m_alloc
-      use m_sobekdfm
-      use unstruc_channel_flow
+      use m_branch, only: t_branch
       use iso_c_utils, only: MAXSTRINGLEN
-      use m_fm_icecover, only: ice_apply_pressure, ice_p
-      use m_qnerror
-      use m_wind, only: japatm, patm, pavbnd
+      use m_water_level_boundary, only: correct_water_level_boundary
+      use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL, BOUNDARY_WATER_LEVEL_NEUMANN, &
+                                           BOUNDARY_VELOCITY_RIEMANN, BOUNDARY_WATER_LEVEL_OUTFLOW, &
+                                           BOUNDARY_DISCHARGE_HEAD
 
       integer :: n
       integer :: kb, k2, L, k, LL, itpbn
       integer :: ibr
-      real(kind=dp) :: dtiba, hh, zb, dtgh
+      real(kind=dp) :: dtiba, hh, water_level_boundary, dtgh
       real(kind=dp) :: sqrtgfh, cffu, rowsum, fuL, ruL, huL, hep
       integer :: i, ierr
       character(len=2) :: dim_text
-      real(kind=dp), parameter :: HBMIN = 1d-3
+      real(kind=dp), parameter :: HBMIN = 1.0e-3_dp
       real(kind=dp), pointer, dimension(:) :: gridPointsChainages
       type(t_branch), pointer, dimension(:) :: branch
       logical :: domainCheck
@@ -117,7 +117,7 @@ contains
          end if
 
          ! Check for zero (0d0) value on diagonal, to print a warning before a resulting Saad crash.
-         if (comparereal(bbr(n), 0d0) == 0 .and. domainCheck) then
+         if (comparereal(bbr(n), 0.0_dp) == 0 .and. domainCheck) then
             if (n <= ndx2d) then
                dim_text = '2D'
             else
@@ -184,37 +184,37 @@ contains
          L = kbndz(3, n)
          itpbn = kbndz(4, n)
 !    bbr(kb) = 1d0
-         if (itpbn == 1) then ! waterlevelbnd
-            zb = zbndz(n)
-            if (alfsmo < 1d0) then
-               zb = alfsmo * zb + (1d0 - alfsmo) * zbndz0(n)
+         if (itpbn == BOUNDARY_WATER_LEVEL) then ! waterlevelbnd
+            water_level_boundary = zbndz(n)
+            if (alfsmo < 1.0_dp) then
+               water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
             end if
-         else if (itpbn == 2) then ! neumannbnd, positive specified slope leads to inflow
-            !zb   = s1(k2) + zbndz(n)*dx(L)
-            zb = -zbndz(n) * dx(L) * ccr(Lv2(L)) ! right-hand side
-         else if (itpbn == 5) then ! Riemannbnd
+         else if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then ! neumannbnd, positive specified slope leads to inflow
+            !water_level_boundary   = s1(k2) + zbndz(n)*dx(L)
+            water_level_boundary = -zbndz(n) * dx(L) * ccr(Lv2(L)) ! right-hand side
+         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then ! Riemannbnd
 !       hh   = max(epshs, 0.5d0*( hs(kb) + hs(k2) ) )
-!       zb   = 2d0*zbndz(n) - zbndz0(n) - sqrt(hh/ag)*u1(L)
-            zb = 2d0 * zbndz(n) - zbndz0(n)
-         else if (itpbn == 6) then ! outflowbnd
-            if (u0(L) > 0d0) then
-               zb = s1(k2)
+!       water_level_boundary   = 2d0*zbndz(n) - zbndz0(n) - sqrt(hh/ag)*u1(L)
+            water_level_boundary = 2.0_dp * zbndz(n) - zbndz0(n)
+         else if (itpbn == BOUNDARY_WATER_LEVEL_OUTFLOW) then ! outflowbnd
+            if (u0(L) > 0.0_dp) then
+               water_level_boundary = s1(k2)
             else
-               hh = max(epshs, 0.5d0 * (hs(kb) + hs(k2)))
+               hh = max(epshs, 0.5_dp * (hs(kb) + hs(k2)))
                dtgh = dts * (sqrt(ag * hh))
-               zb = s1(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
+               water_level_boundary = s1(kb) - dtgh * (dxi(L) * (s1(kb) - s1(k2)) - zbndz(n)) ! verder testen
             end if
-         else if (itpbn == 7) then ! qhbnd
-            zb = zbndz(n)
-            if (alfsmo < 1d0) then
-               zb = alfsmo * zb + (1d0 - alfsmo) * zbndz0(n)
+         else if (itpbn == BOUNDARY_DISCHARGE_HEAD) then ! qhbnd
+            water_level_boundary = zbndz(n)
+            if (alfsmo < 1.0_dp) then
+               water_level_boundary = alfsmo * water_level_boundary + (1.0_dp - alfsmo) * zbndz0(n)
             end if
          end if
 
 !   set matrix entries
-         if (itpbn == 2) then
+         if (itpbn == BOUNDARY_WATER_LEVEL_NEUMANN) then
 !      Neumann boundary condition
-            if (ccr(Lv2(L)) == 0d0) then ! internal cell is wet, but boundary face is inactive (see setkfs)
+            if (ccr(Lv2(L)) == 0.0_dp) then ! internal cell is wet, but boundary face is inactive (see setkfs)
                ccr(Lv2(L)) = -bbr(kb)
                bbr(k2) = bbr(k2) + bbr(kb)
                ddr(k2) = ddr(k2) + ccr(Lv2(L)) * zbndz(n) * dx(L)
@@ -222,47 +222,44 @@ contains
 
             bbr(kb) = -ccr(Lv2(L))
             ddr(kb) = -zbndz(n) * dx(L) * ccr(Lv2(L)) ! double for safety
-         else if (itpbn == 5) then
+         else if (itpbn == BOUNDARY_VELOCITY_RIEMANN) then
 !      Riemann boundary condition (note: ccr= -Au theta fu)
-            zb = max(zb, bl(kb) + HBMIN)
-            if (ccr(Lv2(L)) == 0d0) then ! internal cell is wet, but boundary face is inactive (see setkfs)
-               ddr(kb) = bbr(kb) * zb ! u(L)=0 assumed
+            water_level_boundary = max(water_level_boundary, bl(kb) + HBMIN)
+            if (ccr(Lv2(L)) == 0.0_dp) then ! internal cell is wet, but boundary face is inactive (see setkfs)
+               ddr(kb) = bbr(kb) * water_level_boundary ! u(L)=0 assumed
             else
-               hh = max(epshs, 0.5d0 * (hs(kb) + hs(k2)))
+               hh = max(epshs, 0.5_dp * (hs(kb) + hs(k2)))
                sqrtgfh = sqrt(ag / hh)
                if (kmx == 0) then
                   fuL = fu(L)
                   ruL = ru(L)
                else
-                  fuL = 0d0; ruL = 0d0; huL = 0d0
+                  fuL = 0.0_dp
+                  ruL = 0.0_dp
+                  huL = 0.0_dp
                   do LL = Lbot(L), Ltop(L)
                      hep = max(epshu, hu(L) - hu(L - 1))
                      fuL = fuL + fu(LL) * hep
                      ruL = ruL + ru(LL) * hep
                      huL = huL + hep
                   end do
-                  ful = fuL / huL; ruL = ruL / huL
+                  ful = fuL / huL
+                  ruL = ruL / huL
                end if
                cffu = ccr(Lv2(L)) / fuL
                bbr(kb) = -cffu * (fuL + sqrtgfh)
-               ddr(kb) = -cffu * (sqrtgfh * zb - ruL)
+               ddr(kb) = -cffu * (sqrtgfh * water_level_boundary - ruL)
             end if
          else
 !      Dirichlet boundary condition
 
-            if (japatm > 0 .and. PavBnd > 0) then
-               zb = zb - (patm(kb) - PavBnd) / (ag * rhomean)
-            end if
+            call correct_water_level_boundary(water_level_boundary, kb)
 
-            if (ice_apply_pressure) then
-               zb = zb - ice_p(kb) / (ag * rhomean)
-            end if
+            water_level_boundary = max(water_level_boundary, bl(kb) + HBMIN)
 
-            zb = max(zb, bl(kb) + HBMIN)
-
-            ddr(kb) = bbr(kb) * zb
-            ddr(k2) = ddr(k2) - ccr(Lv2(L)) * zb ! met link(L) in s1ini
-            ccr(Lv2(L)) = 0d0
+            ddr(kb) = bbr(kb) * water_level_boundary
+            ddr(k2) = ddr(k2) - ccr(Lv2(L)) * water_level_boundary ! met link(L) in s1ini
+            ccr(Lv2(L)) = 0.0_dp
          end if
       end do
 
@@ -276,7 +273,7 @@ contains
          ccr(Lv2(L)) = -bbr(k2) ! some non-zero value
          bbr(k2) = bbr(k2) - ccr(Lv2(L))
          bbr(kb) = -ccr(Lv2(L)) ! should not be zero
-         ddr(kb) = 0d0
+         ddr(kb) = 0.0_dp
       end do
 
       if (nbnd1d2d > 0) then

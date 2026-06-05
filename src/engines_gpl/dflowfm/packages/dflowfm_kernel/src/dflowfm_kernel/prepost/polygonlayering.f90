@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,17 +43,17 @@ contains
    subroutine polygonlayering(mpol)
       use precision, only: dp
       use m_closedefinedflownode, only: closedefinedflownode
-      use m_flow
-      use m_flowgeom
-      use m_polygon
-      use m_samples
-      use m_missing
-      use m_ec_triangle
+      use m_flow, only: indlaynod, wflaynod, aerr, dmiss, mxlaydefs, laymx, laytyp, kmx, laydefnr, jins, transformcoef
+      use m_flowgeom, only: ndx, ndxi, xz, yz
+      use m_polygon, only: npl, xpl, ypl, zpl, iistart, iiend
+      use m_samples, only: increasesam, xs, ys, zs, ns
+      use m_ec_triangle, only: jagetwf, indxx, wfxx
+      use geometry_module, only: get_startend
+      use m_reapol, only: reapol
       use m_sferic, only: jsferic, jasfer3D
       use m_ec_basic_interpolation, only: TRIINTfast
-      use geometry_module
-      use m_reapol
       use m_filez, only: error
+      use m_tpoly, only: inwhichpolygon
 
       integer :: mpol
       integer :: k, j, jstart, jend, ierr, jdla, ipoint, jakdtree, ndim, n, in, nspl, n1
@@ -64,20 +64,29 @@ contains
 
       call increasesam(npl + ndx)
 
-      if (allocated(indlaynod)) deallocate (indlaynod, wflaynod)
-      allocate (indlaynod(3, ndxi), stat=ierr); indlaynod = 0
+      if (allocated(indlaynod)) then
+         deallocate (indlaynod, wflaynod)
+      end if
+      allocate (indlaynod(3, ndxi), stat=ierr)
+      indlaynod = 0
       call aerr('indlaynod(3,ndxi)', ierr, ndxi)
-      allocate (wflaynod(3, ndxi), stat=ierr); wflaynod = 0d0
+      allocate (wflaynod(3, ndxi), stat=ierr)
+      wflaynod = 0.0_dp
       call aerr(' wflaynod(3,ndxi)', ierr, ndxi)
 
       allocate (ndn(ndxi + npl), stat=ierr)
-      call aerr('ndn(ndxi+npl)', ierr, ndxi + npl); ndn = 0
+      call aerr('ndn(ndxi+npl)', ierr, ndxi + npl)
+      ndn = 0
 
       allocate (zz(ndxi), stat=ierr)
-      call aerr('zz(ndxi)', ierr, ndxi); zz = dmiss
+      call aerr('zz(ndxi)', ierr, ndxi)
+      zz = dmiss
 
-      mxlaydefs = 0; ipoint = 1 ! first count and allocate
-      jstart = 0; jend = 0; k = 0
+      mxlaydefs = 0
+      ipoint = 1 ! first count and allocate
+      jstart = 0
+      jend = 0
+      k = 0
       do while (ipoint <= npl) ! nr of layers in first polygonpoint, layertype in second point
          call get_startend(npl - ipoint + 1, xpl(ipoint:npl), ypl(ipoint:npl), jstart, jend, dmiss)
          jstart = ipoint + jstart - 1
@@ -89,8 +98,11 @@ contains
       allocate (laymx(mxlaydefs), laytyp(mxlaydefs), stat=ierr)
       call aerr('laymx(mxlaydefs), laytyp(mxlaydefs)', ierr, mxlaydefs)
 
-      mxlaydefs = 0; ipoint = 1 ! then fill
-      jstart = 0; jend = 0; k = 0
+      mxlaydefs = 0
+      ipoint = 1 ! then fill
+      jstart = 0
+      jend = 0
+      k = 0
 
       do while (ipoint <= npl) ! nr of layers in first polygonpoint, layertype in second point
 
@@ -125,12 +137,18 @@ contains
          call inwhichpolygon(xz(n), yz(n), in)
          if (in > 0) then
             k = k + 1
-            xs(k) = xz(n); ys(k) = yz(n); zs(k) = in; laydefnr(n) = in; ndn(k) = n
+            xs(k) = xz(n)
+            ys(k) = yz(n)
+            zs(k) = in
+            laydefnr(n) = in
+            ndn(k) = n
          end if
       end do
       ns = k
 
-      jdla = 1; jakdtree = 1; ndim = 1
+      jdla = 1
+      jakdtree = 1
+      ndim = 1
 
       jagetwf = 1
       allocate (indxx(3, ndxi), wfxx(3, ndxi)) ! if module variable jagetw == 1, make weightfactor_index arrays
@@ -162,7 +180,8 @@ contains
          end if
       end do
 
-      ns = 0; npl = 0
+      ns = 0
+      npl = 0
       deallocate (indxx, wfxx, zz, nds, ndn, iistart, iiend)
 
    end subroutine polygonlayering

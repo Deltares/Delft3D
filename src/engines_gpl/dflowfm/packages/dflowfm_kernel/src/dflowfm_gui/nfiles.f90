@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -104,7 +104,6 @@ contains
       use m_reapol_nampli, only: reapol_nampli
       use m_realan, only: realan
       use m_filez, only: doclose, newfil, message
-      use m_tecplot, only: ini_tecplot, wrinet_tecplot
 
       integer :: NUM, NWHAT, KEY
       integer :: ja, ierr
@@ -362,7 +361,9 @@ contains
             ipli = 0
             call reapol_nampli(MLAN, ja, 1, ipli) ! Read pol/pli as crs
             call pol_to_crosssections(xpl, ypl, npl, names=nampli)
-            if (NPL > 0) call delpol()
+            if (NPL > 0) then
+               call delpol()
+            end if
             call MESSAGE('YOU LOADED ', filnam, ' ')
             call MINMXNS()
             md_crsfile = ' '
@@ -547,17 +548,13 @@ contains
                call doclose(mtek)
                if (nwhat == 21) then
                   if (index(filnam, '.net') > 0) then
-                     call NEWFIL(MTEK, filnam); call WRINET(MTEK)
+                     call NEWFIL(MTEK, filnam)
+                     call WRINET(MTEK)
                   else
                      call unc_write_net(filnam, janetcell=0, janetbnd=0)
                   end if
                else if (nwhat == 22) then ! _net.nc with extra cell info (for example necessary for Baseline/Bas2FM input)
-                  !origial call unc_write_net(filnam, janetcell = 1, janetbnd = 0)
-                  call unc_write_net('UG'//filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
-                  call unc_write_net(filnam, janetcell=1, janetbnd=1) ! wrinet
-               else if (nwhat == 24) then
-                  call ini_tecplot()
-                  call wrinet_tecplot(filnam)
+                  call unc_write_net(filnam, janetcell=1, janetbnd=0, iconventions=UNC_CONV_UGRID)
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                md_netfile = ' '
@@ -629,7 +626,8 @@ contains
                end if
                call MESSAGE('YOU SAVED ', filnam, ' ')
                NUM = 0
-               md_plifile = ' '; md_plifile = filnam
+               md_plifile = ' '
+               md_plifile = filnam
             end if
          end if
       else if (NWHAT == 27) then

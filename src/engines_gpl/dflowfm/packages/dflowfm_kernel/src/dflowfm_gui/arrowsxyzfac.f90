@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,12 +38,14 @@ contains
 
    subroutine ARROWSXYzfac(X0, Y0, UX, UY, VFAC, zfac)
       use precision, only: dp
-      use m_movabs
-      use m_lnabs
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       implicit none
       real(kind=dp) :: X0, Y0, UX, UY, VFAC, zfac
 
-      if (UX == 0 .and. UY == 0) return
+      if (UX == 0 .and. UY == 0) then
+         return
+      end if
 
       uy = uy
 

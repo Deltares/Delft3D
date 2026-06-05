@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,36 +41,37 @@ module m_switchiadvnearlink
 contains
 
    subroutine switchiadvnearlink(L)
-      use m_flowgeom
-      use m_flow
+      use m_flowgeom, only: ln, iadv_original_lateral_overflow, nd, iadv, iadv_general_structure, kcu
+      use m_flow, only: iadvec, u0
       implicit none
       integer :: L, k1, k2, kk, LL, iadv1, iadv2
 
-      k1 = ln(1, L); k2 = ln(2, L)
+      k1 = ln(1, L)
+      k2 = ln(2, L)
 
       if (iadvec == 0) then
          iadv1 = 0
          iadv2 = 0
       elseif (u0(L) > 0) then
-         iadv1 = 8 ! piaczek incoming upwind
+         iadv1 = IADV_ORIGINAL_LATERAL_OVERFLOW ! piaczek incoming upwind
          iadv2 = 0 ! noadv downstream
       else if (u0(L) < 0) then
          iadv1 = 0
-         iadv2 = 8
+         iadv2 = IADV_ORIGINAL_LATERAL_OVERFLOW
       else ! == (now safe for grid direction)
-         iadv1 = 8
-         iadv2 = 8
+         iadv1 = IADV_ORIGINAL_LATERAL_OVERFLOW
+         iadv2 = IADV_ORIGINAL_LATERAL_OVERFLOW
       end if
 
       do kk = 1, nd(k1)%lnx
          LL = abs(nd(k1)%ln(kk))
-         if (iadv(LL) /= 22 .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
+         if (iadv(LL) /= IADV_GENERAL_STRUCTURE .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
             iadv(LL) = iadv1
          end if
       end do
       do kk = 1, nd(k2)%lnx
          LL = abs(nd(k2)%ln(kk))
-         if (iadv(LL) /= 22 .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
+         if (iadv(LL) /= IADV_GENERAL_STRUCTURE .and. (kcu(LL) == 1 .or. kcu(LL) == 2)) then ! Only for regular 1D or 2D.
             iadv(LL) = iadv2
          end if
       end do

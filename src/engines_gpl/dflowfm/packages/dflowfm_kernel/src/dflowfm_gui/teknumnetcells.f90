@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -57,16 +57,18 @@ contains
       jm = 0
       mxnum = 0
       if (jatel == 1) then
-         if (nump == 0) call findcells(0)
+         if (nump == 0) then
+            call findcells(0)
+         end if
          ijyes = 0
       else
-         vmax = -9d9
+         vmax = -9.0e9_dp
          vmin = -vmax
          do j = 1, nc - 1
             do i = 1, mc - 1
                if (ijyes(i, j) > 0) then
-                  x = 0.25d0 * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
-                  y = 0.25d0 * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
+                  x = 0.25_dp * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
+                  y = 0.25_dp * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
                   if (inview(x, y)) then
                      if (ijyes(i, j) > mxnum) then
                         im = i
@@ -126,9 +128,9 @@ contains
          i = im
          j = jm
          z = ijyes(i, j)
-         x = 0.25d0 * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
-         y = 0.25d0 * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
-         call SETTEXTSIZEfac(2d0)
+         x = 0.25_dp * (xc(i, j) + xc(i + 1, j) + xc(i + 1, j + 1) + xc(i, j + 1))
+         y = 0.25_dp * (yc(i, j) + yc(i + 1, j) + yc(i + 1, j + 1) + yc(i, j + 1))
+         call SETTEXTSIZEfac(2.0_dp)
          call htext(z, x, y)
          call SETTEXTSIZE()
       end if

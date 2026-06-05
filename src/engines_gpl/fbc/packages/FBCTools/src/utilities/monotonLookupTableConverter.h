@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -32,38 +32,39 @@ using namespace std;
 
 namespace rtctools
 {
-namespace utilities
-{
+    namespace utilities
+    {
 
-class monotonLookupTableConverter : public converter
-{
-private:
-	int n;
-	vector<double> xArray;
-	vector<double> yArray;
-	interpolationOption intOpt;
-	interpolationOption extOpt;
-	bool convertable;
+        class monotonLookupTableConverter : public converter
+        {
+        private:
+            int n;
+            vector<double> xArray;
+            vector<double> yArray;
+            interpolationOption intOpt;
+            interpolationOption extOpt;
+            bool convertable;
 
-	double interpolate(vector<double> &x, vector<double> &y, double xVal);
-	double interpolateDer(vector<double> &x, vector<double> &y, double xVal);
+            double interpolate(vector<double>& x, vector<double>& y, double xVal);
+            double interpolateDer(vector<double>& x, vector<double>& y, double xVal);
 
-public:
-	monotonLookupTableConverter(int n, vector<double> &x, vector<double> &y, interpolationOption intOpt, interpolationOption extOpt);
-	~monotonLookupTableConverter(void) {};
+        public:
+            monotonLookupTableConverter(int n, vector<double>& x, vector<double>& y, interpolationOption intOpt,
+                                        interpolationOption extOpt);
+            ~monotonLookupTableConverter(void) {};
 
-	void setInterpolationOption(interpolationOption intOpt) { this->intOpt = intOpt; };
-	void setExtrapolationOption(interpolationOption extOpt) { this->extOpt = extOpt; };
-	void checkProperty(converter::propertyEnum prop);
+            void setInterpolationOption(interpolationOption intOpt) { this->intOpt = intOpt; };
+            void setExtrapolationOption(interpolationOption extOpt) { this->extOpt = extOpt; };
+            void checkProperty(converter::propertyEnum prop);
 
-	double convert(double xVal);
-	double convertDer(double xVal);
-	double reverseConvert(double yVal);
-	double reverseConvertDer(double yVal);
-	monotonLookupTableConverter* getIntegrator();
-};
+            double convert(double xVal);
+            double convertDer(double xVal);
+            double reverseConvert(double yVal);
+            double reverseConvertDer(double yVal);
+            monotonLookupTableConverter* getIntegrator();
+        };
 
-} // end namespace utilities
+    } // end namespace utilities
 } // end namespace rtctools
 
-#endif //MONOTONLOOKUP_TABLE_CONVERTER_H
+#endif // MONOTONLOOKUP_TABLE_CONVERTER_H

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -454,7 +454,7 @@ contains
       integer :: itdate, julday, idatum, itijd, iyea, imon, iday, ihou, imin, isec
       real(kind=dp) :: anl
       real(kind=dp) :: x1, y1, x2, y2
-      real(kind=dp), parameter :: rmissval = -999.0d0
+      real(kind=dp), parameter :: rmissval = -999.0_dp
       !
    !! executable statements -------------------------------------------------------
       !
@@ -469,14 +469,10 @@ contains
 
       write (lunhyd, '(a,a)') 'task      ', 'full-coupling'
 
-      if (layertype == LAYTP_SIGMA) then ! all sigma layers
+      if ((layertype == LAYTP_SIGMA) .or. (layertype == LAYTP_DENS_SIGMA)) then ! (density controlled) sigma-layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured'
-      elseif (layertype == LAYTP_Z) then ! all z layers
+      elseif ((layertype == LAYTP_Z) .or. (layertype == LAYTP_POLYGON_MIXED)) then ! (polygon defined) z- or z-sigma-layers
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured z-layers'
-      elseif (layertype == LAYTP_LEFTSIGMA) then ! mixed sigma/z layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-sigma-layers'
-      elseif (layertype == LAYTP_LEFTZ) then ! mixed sigma/z layers
-         write (lunhyd, '(a,a)') 'geometry  ', 'unstructured left-z-layers'
       else ! other?
          write (lunhyd, '(a,a)') 'geometry  ', 'unstructured other'
       end if
@@ -559,7 +555,7 @@ contains
       write (lunhyd, '(a,a)') 'salinity-file               ', trim(stmp)
 
       stmp = ' '
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          stmp = ''''//trim(defaultFilename('tem', prefixWithDirectory=.false.))//''''
       else
          stmp = 'none'
@@ -624,13 +620,15 @@ contains
       !discharges
       !    2   14    1   '(14,2)'
       !end-discharges
-      if (numsrc > 0) then
+      if (num_source_sink > 0) then
          ibnd = 0
-         if (nopenbndsect > 0) ibnd = nopenbndlin(nopenbndsect)
+         if (nopenbndsect > 0) then
+            ibnd = nopenbndlin(nopenbndsect)
+         end if
          write (lunhyd, '(A      )') 'sink-sources'
-         do isrc = 1, numsrc
-            kk1 = ksrc(1, isrc)
-            kk2 = ksrc(4, isrc)
+         do isrc = 1, num_source_sink
+            kk1 = source_sink_indices(1, isrc)
+            kk2 = source_sink_indices(4, isrc)
             if ((kk1 == 0 .and. kk2 > 0) .or. &
                 (kk2 == 0 .and. kk1 > 0) .or. &
                 (kk1 > 0 .and. kk2 > 0)) then
@@ -653,7 +651,7 @@ contains
                   ibnd = ibnd + 1
                   kk2 = -ibnd
                end if
-               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(srcname(isrc))
+               write (lunhyd, '(3I10,4F18.6,2X,A)') isrc, kk1, kk2, x1, y1, x2, y2, trim(source_sink_name(isrc))
             end if
          end do
          write (lunhyd, '(A      )') 'end-sink-sources'
@@ -777,7 +775,9 @@ contains
             end if
 
             !TODO deallocate aggregated_meshgeom
-            if (allocated(aggregated_edge_type)) deallocate (aggregated_edge_type)
+            if (allocated(aggregated_edge_type)) then
+               deallocate (aggregated_edge_type)
+            end if
          end if
 
          ! Write mesh geometry.
@@ -809,6 +809,7 @@ contains
    subroutine write_face_domain_number_variable(igeomfile, meshids, meshName, idomain)
 
       use io_ugrid
+      use netcdf_utils, only: ncu_ensure_define_mode
 
       implicit none
 
@@ -818,21 +819,17 @@ contains
       integer, intent(in) :: idomain(:) !< Face domainnumber variable to be written to the NetCDF file.
 
       integer :: id_facedomainnumber !< Variable ID for face domain number variable.
-      integer :: was_in_define_mode
+      logical :: was_in_define_mode
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = UG_NOERR
 
       ! Put netcdf file in define mode.
-      was_in_define_mode = 0
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) then
-         was_in_define_mode = 1 ! If was still in define mode.
-      end if
+      ierr = ncu_ensure_define_mode(igeomfile, was_in_define_mode)
       ierr = UG_NOERR
 
       ! Define face domain number variable.
-      ierr = ug_def_var(igeomfile, id_facedomainnumber, (/meshids%dimids(mdim_face)/), nf90_int, UG_LOC_FACE, &
+      ierr = ug_def_var(igeomfile, id_facedomainnumber, [meshids%dimids(mdim_face)], nf90_int, UG_LOC_FACE, &
                         meshName, 'face_domain_number', '', 'Face partition domain number', '', '', '', ifill=-999)
 
       ! Put netcdf file in write mode.
@@ -842,9 +839,7 @@ contains
       ierr = nf90_put_var(igeomfile, id_facedomainnumber, idomain)
 
       ! Leave the dataset in the same mode as we got it.
-      if (was_in_define_mode == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
 
    end subroutine write_face_domain_number_variable
 
@@ -852,6 +847,7 @@ contains
    subroutine write_face_global_number_variable(igeomfile, meshids, meshName, iglobal_s)
 
       use io_ugrid
+      use netcdf_utils, only: ncu_ensure_define_mode
 
       implicit none
 
@@ -861,21 +857,15 @@ contains
       integer, intent(in) :: iglobal_s(:) !< Global face number variable to be written to the NetCDF file.
 
       integer :: id_faceglobalnumber !< Variable ID for global face number variable.
-      integer :: was_in_define_mode
+      logical :: was_in_define_mode
       integer :: ierr !< Result status (UG_NOERR==NF90_NOERR if successful).
 
       ierr = UG_NOERR
 
-      ! Put netcdf file in define mode.
-      was_in_define_mode = 0
-      ierr = nf90_redef(igeomfile)
-      if (ierr == nf90_eindefine) then
-         was_in_define_mode = 1 ! If was still in define mode.
-      end if
-      ierr = UG_NOERR
+      ierr = ncu_ensure_define_mode(igeomfile, was_in_define_mode)
 
       ! Define global face number variable.
-      ierr = ug_def_var(igeomfile, id_faceglobalnumber, (/meshids%dimids(mdim_face)/), nf90_int, UG_LOC_FACE, &
+      ierr = ug_def_var(igeomfile, id_faceglobalnumber, [meshids%dimids(mdim_face)], nf90_int, UG_LOC_FACE, &
                         meshName, 'face_global_number', '', 'Global face number (as it was in the full grid, before partitioning)', '', '', '', ifill=-999)
 
       ! Put netcdf file in write mode.
@@ -885,9 +875,8 @@ contains
       ierr = nf90_put_var(igeomfile, id_faceglobalnumber, iglobal_s)
 
       ! Leave the dataset in the same mode as we got it.
-      if (was_in_define_mode == 1) then
-         ierr = nf90_redef(igeomfile)
-      end if
+      ierr = ncu_restore_mode(igeomfile, was_in_define_mode)
+
    end subroutine write_face_global_number_variable
 
 !> Creates and initializes mesh geometry that contains the 2D (layered) unstructured network and edge type array.
@@ -969,7 +958,7 @@ contains
          meshgeom%numEdge = NUML - NUML1d
 
          ! Get edge nodes connectivity, edge types and edge coordinates (ordered as follows: first flow links, then closed edges).
-         call reallocP(meshgeom%edge_nodes, (/2, meshgeom%numEdge/), fill=missing_value)
+         call reallocP(meshgeom%edge_nodes, [2, meshgeom%numEdge], fill=missing_value)
          call realloc(edge_type, meshgeom%numEdge, fill=missing_value)
          call reallocP(meshgeom%edgex, meshgeom%numEdge, fill=dmiss)
          call reallocP(meshgeom%edgey, meshgeom%numEdge, fill=dmiss)
@@ -988,15 +977,19 @@ contains
          ! Edge z coordinates are unknown.
 
          ! Get edge faces connectivity.
-         call reallocP(meshgeom%edge_faces, (/2, meshgeom%numEdge/))
+         call reallocP(meshgeom%edge_faces, [2, meshgeom%numEdge])
          ! Here need to use reverse_edge_mapping_table to map edges to net links, because edges are ordered as follows: first flow links, then closed edges.
          do edge = 1, meshgeom%numEdge
             meshgeom%edge_faces(1:2, edge) = lne(1:2, reverse_edge_mapping_table(edge))
 
             ! 0 means no face, i.e. edge is on the boundary of the mesh.
             ! Replace zeroes with missing values.
-            if (meshgeom%edge_faces(1, edge) == 0) meshgeom%edge_faces(1, edge) = missing_value
-            if (meshgeom%edge_faces(2, edge) == 0) meshgeom%edge_faces(2, edge) = missing_value
+            if (meshgeom%edge_faces(1, edge) == 0) then
+               meshgeom%edge_faces(1, edge) = missing_value
+            end if
+            if (meshgeom%edge_faces(2, edge) == 0) then
+               meshgeom%edge_faces(2, edge) = missing_value
+            end if
          end do
 
          ! Faces.
@@ -1015,9 +1008,9 @@ contains
          end do
 
          ! Get face nodes connectivity, face edges connectivity and face-face connectivity.
-         call reallocP(meshgeom%face_nodes, (/maxNodesPerFace, meshgeom%numFace/), fill=missing_value)
-         call reallocP(meshgeom%face_edges, (/maxNodesPerFace, meshgeom%numFace/), fill=missing_value)
-         call reallocP(meshgeom%face_links, (/maxNodesPerFace, meshgeom%numFace/), fill=missing_value)
+         call reallocP(meshgeom%face_nodes, [maxNodesPerFace, meshgeom%numFace], fill=missing_value)
+         call reallocP(meshgeom%face_edges, [maxNodesPerFace, meshgeom%numFace], fill=missing_value)
+         call reallocP(meshgeom%face_links, [maxNodesPerFace, meshgeom%numFace], fill=missing_value)
          do face = 1, nump
             nodesPerFace = netcell(face)%n
             ! shift node numbers by numk1d
@@ -1152,7 +1145,7 @@ contains
       ! 1. Determine output edge_faces and edge_nodes.
       ! Apply face mapping table to edge faces.
       input_edge_count = input%numEdge
-      call realloc(input_edge_output_faces, (/2, input_edge_count/), fill=missing_value)
+      call realloc(input_edge_output_faces, [2, input_edge_count], fill=missing_value)
       do input_edge = 1, input_edge_count
          do i = 1, 2
             if (input%edge_faces(i, input_edge) /= missing_value) then
@@ -1162,8 +1155,8 @@ contains
       end do ! input_edge
       ! Create edge mapping table and output edge_faces and edge_nodes.
       call realloc(reverse_edge_mapping_table, input_edge_count)
-      call reallocP(output%edge_faces, (/2, input_edge_count/))
-      call reallocP(output%edge_nodes, (/2, input_edge_count/))
+      call reallocP(output%edge_faces, [2, input_edge_count])
+      call reallocP(output%edge_nodes, [2, input_edge_count])
       output_edge = 0
       do input_edge = 1, input_edge_count
          ! If edge points to the same aggregated face on either side, then edge is not needed anymore in the aggregated mesh.
@@ -1183,8 +1176,8 @@ contains
       ! At this point edges have been renumbered automatically from input edge numbers to output edge numbers.
       ! Truncate arrays.
       call realloc(reverse_edge_mapping_table, output_edge_count, keepExisting=.true.)
-      call reallocP(output%edge_faces, (/2, output_edge_count/), keepExisting=.true.)
-      call reallocP(output%edge_nodes, (/2, output_edge_count/), keepExisting=.true.)
+      call reallocP(output%edge_faces, [2, output_edge_count], keepExisting=.true.)
+      call reallocP(output%edge_nodes, [2, output_edge_count], keepExisting=.true.)
 
       ! 2. Determine output edge coordinates and types.
       call reallocP(output%edgex, output_edge_count)
@@ -1243,7 +1236,7 @@ contains
       !    forall (i = 1:output_edge_count*2)
       !        edges_column(i) = (i + 1) / 2
       !    end forall
-      !    faces_column = reshape(output_edge_faces, (/ output_edge_count * 2 /))
+      !    faces_column = reshape(output_edge_faces, [ output_edge_count * 2 ])
       !    ! Sort table on faces column.
       !    ! TODO use quicksort? AK
       !    qsort(faces_column, sorted_faces_column, sorted_indices)
@@ -1278,7 +1271,7 @@ contains
       ! Determine max_nodes_per_face.
       max_nodes_per_face = maxval(face_edge_count)
       ! Determine nodes, edges and faces for each output face.
-      call reallocP(output%face_edges, (/max_nodes_per_face, output_face_count/), fill=missing_value)
+      call reallocP(output%face_edges, [max_nodes_per_face, output_face_count], fill=missing_value)
       ! Re-use face_edge_count array to put edges in the next available spot in the output%face_edges array.
       face_edge_count = 0
       do output_edge = 1, output_edge_count
@@ -1298,7 +1291,7 @@ contains
 
       ! 6. Sort edges for each face in counter clockwise order.
       ! At the same time store sorted nodes of sorted edges in output%face_nodes array.
-      call reallocP(output%face_nodes, (/max_nodes_per_face, output_face_count/), fill=missing_value)
+      call reallocP(output%face_nodes, [max_nodes_per_face, output_face_count], fill=missing_value)
       do output_face = 1, output_face_count
          ! Sort edges for current output face.
          call sort_edges(output_face, output%face_edges(1:face_edge_count(output_face), output_face), output%face_nodes(1:face_edge_count(output_face), output_face), &
@@ -1306,7 +1299,7 @@ contains
       end do
 
       ! 7. Determine output face_links.
-      call reallocP(output%face_links, (/max_nodes_per_face, output_face_count/), fill=missing_value)
+      call reallocP(output%face_links, [max_nodes_per_face, output_face_count], fill=missing_value)
       do output_face = 1, output_face_count
          ! Get output faces that are adjacent to the current output_face.
          call get_adjacent_faces(output_face, output%face_edges, output%edge_faces, output%face_links(1:face_edge_count(output_face), output_face))
@@ -1627,10 +1620,10 @@ contains
 
             if (Lf <= 0 .or. Lf > lnx) then
                n = 0
-               x1 = 0d0
-               y1 = 0d0
-               x2 = 0d0
-               y2 = 0d0
+               x1 = 0.0_dp
+               y1 = 0.0_dp
+               x2 = 0.0_dp
+               y2 = 0.0_dp
             else
                n = ln(1, Lf)
                if (kn(3, L) == 1) then ! 1D link
@@ -1645,10 +1638,10 @@ contains
                   xn = wu(Lf) * xn
                   yn = wu(Lf) * yn
 
-                  x1 = .5d0 * (xz(n1) + xz(n2)) - .5d0 * xn
-                  y1 = .5d0 * (yz(n1) + yz(n2)) - .5d0 * yn
-                  x2 = .5d0 * (xz(n1) + xz(n2)) + .5d0 * xn
-                  y2 = .5d0 * (yz(n1) + yz(n2)) + .5d0 * yn
+                  x1 = 0.5_dp * (xz(n1) + xz(n2)) - 0.5_dp * xn
+                  y1 = 0.5_dp * (yz(n1) + yz(n2)) - 0.5_dp * yn
+                  x2 = 0.5_dp * (xz(n1) + xz(n2)) + 0.5_dp * xn
+                  y2 = 0.5_dp * (yz(n1) + yz(n2)) + 0.5_dp * yn
                else
                   x1 = xk(kn(1, L))
                   y1 = yk(kn(1, L))
@@ -1663,16 +1656,16 @@ contains
          istart = nopenbndlin(i)
       end do
       ibnd = ndx - ndxi
-      do isrc = 1, numsrc
-         if ((ksrc(1, isrc) == 0 .and. ksrc(4, isrc) > 0) .or. (ksrc(4, isrc) == 0 .and. ksrc(1, isrc) > 0)) then
+      do isrc = 1, num_source_sink
+         if ((source_sink_indices(1, isrc) == 0 .and. source_sink_indices(4, isrc) > 0) .or. (source_sink_indices(4, isrc) == 0 .and. source_sink_indices(1, isrc) > 0)) then
             ! This is a boundary condition within the current domain
             ibnd = ibnd + 1
-            if (ksrc(1, isrc) /= 0) then
-               kk = ksrc(1, isrc)
+            if (source_sink_indices(1, isrc) /= 0) then
+               kk = source_sink_indices(1, isrc)
             else
-               kk = ksrc(4, isrc)
+               kk = source_sink_indices(4, isrc)
             end if
-            sectionname = makesectionname('src_', srcname(isrc))
+            sectionname = makesectionname('src_', source_sink_name(isrc))
             write (lunbnd, '(a)') sectionname ! Section name
             write (lunbnd, '(i8)') 1 ! Nr of source links in section
             write (lunbnd, '(i8,4f18.8)') - (ibnd), xz(kk), yz(kk), xz(kk), yz(kk)
@@ -1765,6 +1758,7 @@ contains
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
+      use m_laterals, only: qlatwaq
       use m_waves
       use unstruc_files, only: defaultFilename
       use m_gettaus
@@ -1803,12 +1797,12 @@ contains
       end if
 
       ! Temperature file (salinity of computational cells)
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          call waq_wri_tem(itim, defaultFilename('tem'), waqpar%luntem)
       end if
 
       ! Taus file (contains taus at the bottom of computational cells)
-      if (jawave == 0 .or. flowWithoutWaves) then ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
+      if (jawave == NO_WAVES .or. (jawave > NO_WAVES .and. flow_without_waves)) then ! If jawave > 0, then taus is obtained from subroutine tauwave (taus = taucur + tauwave).
          call gettaus(1, 2)
       else
          call gettauswave(jawaveswartdelwaq)
@@ -1832,16 +1826,16 @@ contains
 
          ! Write a dummy last record in area and flow file to make them complete.
          if (time == ti_waqe) then
-            au = 0d0
-            q1waq = 0d0
+            au = 0.0_dp
+            q1waq = 0.0_dp
             if (kmx > 0) then
-               qwwaq = 0d0
+               qwwaq = 0.0_dp
             end if
-            if (numsrc > 0) then
-               qsrcwaq = 0d0 ! Reset accumulated discharges
+            if (num_source_sink > 0) then
+               source_sink_cumulative_discharge_waq = 0.0_dp ! Reset accumulated discharges
             end if
             if (numlatsg > 0) then
-               qlatwaq = 0d0 ! Reset accumulated discharges
+               qlatwaq = 0.0_dp ! Reset accumulated discharges
             end if
 
             ! Dummy area record
@@ -1851,15 +1845,15 @@ contains
             call waq_wri_flo(itim, int(ti_waq), defaultFilename('flo'), waqpar%lunflo)
          end if
       end if
-      q1waq = 0d0 ! Reset accumulated discharges
+      q1waq = 0.0_dp ! Reset accumulated discharges
       if (kmx > 0) then
-         qwwaq = 0d0 ! Reset accumulated discharges
+         qwwaq = 0.0_dp ! Reset accumulated discharges
       end if
-      if (numsrc > 0) then
-         qsrcwaq = 0d0 ! Reset accumulated discharges
+      if (num_source_sink > 0) then
+         source_sink_cumulative_discharge_waq = 0.0_dp ! Reset accumulated discharges
       end if
       if (numlatsg > 0) then
-         qlatwaq = 0d0 ! Reset accumulated discharges
+         qlatwaq = 0.0_dp ! Reset accumulated discharges
       end if
       itim_prev = itim
    end subroutine waq_wri_couple_files
@@ -2012,12 +2006,12 @@ contains
 
       waqpar%num_cells = waqpar%nosegl * waqpar%kmxnxa
       call realloc(waqpar%nosega, waqpar%num_cells, keepExisting=.false., fill=0)
-      call realloc(waqpar%vol, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%vel, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%sal, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%tem, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%tau, waqpar%num_cells, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%vdf, waqpar%num_cells, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%vol, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%vel, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%sal, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%tem, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%tau, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%vdf, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
       call realloc(waqpar%kmk1, waqpar%num_cells, keepExisting=.false., fill=0)
       call realloc(waqpar%kmk2, waqpar%num_cells, keepExisting=.false., fill=0)
 
@@ -2037,14 +2031,14 @@ contains
       if (waqpar%kmxnxa > 1) then
          waqpar%num_exchanges = waqpar%noq12 + waqpar%numsrcwaq + waqpar%numlatwaq + ndxi * waqpar%kmxnxa
       else
-         waqpar%num_exchanges = waqpar%noq12 + numsrc + waqpar%numlatwaq
+         waqpar%num_exchanges = waqpar%noq12 + num_source_sink + waqpar%numlatwaq
       end if
-      call realloc(waqpar%ifrmto, (/4, waqpar%num_exchanges/), keepExisting=.false., fill=0)
+      call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.false., fill=0)
 
       call waq_make_aggr_lnk()
-      call realloc(waqpar%ifrmto, (/4, waqpar%num_exchanges/), keepExisting=.true., fill=0)
-      call realloc(waqpar%qag, waqpar%num_exchanges, keepExisting=.false., fill=0d0)
-      call realloc(waqpar%area, waqpar%num_exchanges, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%ifrmto, [4, waqpar%num_exchanges], keepExisting=.true., fill=0)
+      call realloc(waqpar%qag, waqpar%num_exchanges, keepExisting=.false., fill=0.0_dp)
+      call realloc(waqpar%area, waqpar%num_exchanges, keepExisting=.false., fill=0.0_dp)
       waqpar%noql = waqpar%noq12 / waqpar%kmxnxa
    end subroutine waq_prepare_aggr
 !
@@ -2179,17 +2173,27 @@ contains
             call getLbotLtopmax(L, Lb, Ltx)
             ip = waqpar%iqaggr(L)
             ipa = abs(ip)
-            if (ip == 0) cycle
+            if (ip == 0) then
+               cycle
+            end if
             do LL = Ltx, Lb, -1
                waqpar%iqaggr(LL) = ip + sign((waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%noq12, ip)
                iq = abs(waqpar%iqaggr(LL))
                dseg = (waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%nosegl
                dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * (ndx - ndxi + waqpar%numsrcbnd) ! current number of external links in FM, account for sinks sources here too!
                if (waqpar%ifrmto(1, iq) == 0) then
-                  if (waqpar%ifrmto(1, ipa) > 0) waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) + dseg
-                  if (waqpar%ifrmto(1, ipa) < 0) waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
-                  if (waqpar%ifrmto(2, ipa) > 0) waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) + dseg
-                  if (waqpar%ifrmto(2, ipa) < 0) waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                  if (waqpar%ifrmto(1, ipa) > 0) then
+                     waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) + dseg
+                  end if
+                  if (waqpar%ifrmto(1, ipa) < 0) then
+                     waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
+                  end if
+                  if (waqpar%ifrmto(2, ipa) > 0) then
+                     waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) + dseg
+                  end if
+                  if (waqpar%ifrmto(2, ipa) < 0) then
+                     waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                  end if
                end if
             end do
             Lbb = Ltx - waqpar%kmxnxa + 1
@@ -2200,8 +2204,12 @@ contains
                      iq = ip + sign((waqpar%ilaggr(Ltx - LL + 1) - 1) * waqpar%noq12, ip)
                      dbnd = (waqpar%ilaggr(Ltx - LL + 1) - 1) * (ndx - ndxi + waqpar%numsrcbnd) ! current number of external links in FM, account for sinks sources here too!
                      if (waqpar%ifrmto(1, iq) == 0) then
-                        if (waqpar%ifrmto(1, ipa) < 0) waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
-                        if (waqpar%ifrmto(2, ipa) < 0) waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                        if (waqpar%ifrmto(1, ipa) < 0) then
+                           waqpar%ifrmto(1, iq) = waqpar%ifrmto(1, ipa) - dbnd
+                        end if
+                        if (waqpar%ifrmto(2, ipa) < 0) then
+                           waqpar%ifrmto(2, iq) = waqpar%ifrmto(2, ipa) - dbnd
+                        end if
                      end if
                   end if
                end do
@@ -2236,7 +2244,9 @@ contains
                waqpar%ifrmto(2, iq) = k + kk * waqpar%nosegl
                waqpar%ifrmto(3, iq) = max(k + (kk - 2) * waqpar%nosegl, 0)
                waqpar%ifrmto(4, iq) = 0
-               if (kk < waqpar%kmxnxa - 1) waqpar%ifrmto(4, iq) = k + (kk + 1) * waqpar%nosegl
+               if (kk < waqpar%kmxnxa - 1) then
+                  waqpar%ifrmto(4, iq) = k + (kk + 1) * waqpar%nosegl
+               end if
             end do
          end do
          waqpar%num_exchanges = waqpar%num_exchanges + waqpar%nosegl * (waqpar%kmxnxa - 1)
@@ -2270,17 +2280,19 @@ contains
 
       waqpar%numsrcbnd = 0
       waqpar%numsrcwaq = 0
-      if (numsrc == 0) return ! skip is no resources
-      call realloc(ksrcwaq, numsrc, keepexisting=.false., fill=-1)
+      if (num_source_sink == 0) then
+         return ! skip is no resources
+      end if
+      call realloc(source_sink_waq_index, num_source_sink, keepexisting=.false., fill=-1)
       ! First determine the number of external sink/sources and the allocations needed
-      do isrc = 1, numsrc
-         kk1 = ksrc(1, isrc)
-         kk2 = ksrc(4, isrc)
+      do isrc = 1, num_source_sink
+         kk1 = source_sink_indices(1, isrc)
+         kk2 = source_sink_indices(4, isrc)
          if (kk1 == 0 .or. kk2 == 0) then
             ! If one of the nodes is external
             if (kk1 > 0 .or. kk2 > 0) then
                ! And the other is not a ghost cell, then this is a boundary within this domain
-               ksrcwaq(isrc) = waqpar%numsrcwaq
+               source_sink_waq_index(isrc) = waqpar%numsrcwaq
                waqpar%numsrcbnd = waqpar%numsrcbnd + 1
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa
             end if
@@ -2288,38 +2300,39 @@ contains
             ! This is an internal sink/source combination
             if (kk1 > 0 .and. kk2 > 0) then
                ! And the first node is not a ghost cell
-               ksrcwaq(isrc) = waqpar%numsrcwaq
+               source_sink_waq_index(isrc) = waqpar%numsrcwaq
                waqpar%numsrcwaq = waqpar%numsrcwaq + waqpar%kmxnxa * waqpar%kmxnxa
             else if (kk1 > 0 .or. kk2 > 0) then
                ! Since we do not know the (global) cell number when one of the nodes is not in the curren domain, we cannot add the link
                ! If both are in an other domain, we simply skip this.
-               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(srcname(numsrc)), ' are not in the same domain. This is not yet supported in DELWAQ output!'; call err_flush()
+               write (msgbuf, '(3a)') 'Sink/source cells of ', trim(source_sink_name(num_source_sink)), ' are not in the same domain. This is not yet supported in DELWAQ output!'
+               call err_flush()
             end if
          end if
       end do
-      call realloc(waqpar%ifrmtosrc, (/2, waqpar%numsrcwaq/), keepexisting=.true., fill=0)
-      call realloc(qsrcwaq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0d0)
-      call realloc(qsrcwaq0, waqpar%numsrcwaq, keepexisting=.true., fill=0.0d0)
+      call realloc(waqpar%ifrmtosrc, [2, waqpar%numsrcwaq], keepexisting=.true., fill=0)
+      call realloc(source_sink_cumulative_discharge_waq, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(source_sink_cumulative_discharge_waq_previous, waqpar%numsrcwaq, keepexisting=.true., fill=0.0_dp)
       nbnd = ndx - ndxi + waqpar%numsrcbnd ! total number of boudaries
       ibnd = ndx - ndxi ! starting number for sink source boundaries
 
       ! Create additional pointer for sink/sources
-      do isrc = 1, numsrc
-         kk1 = ksrc(1, isrc)
-         kk2 = ksrc(4, isrc)
+      do isrc = 1, num_source_sink
+         kk1 = source_sink_indices(1, isrc)
+         kk2 = source_sink_indices(4, isrc)
          if (kk1 == 0 .or. kk2 == 0) then
             ! This is a boundary. If kk1 or kk2 is positive, then it is in the active domain
             if (kk1 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, ksrcwaq(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
-                  waqpar%ifrmtosrc(2, ksrcwaq(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
+                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
                end do
             else if (kk2 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  waqpar%ifrmtosrc(1, ksrcwaq(isrc) + K) = -ibnd - nbnd * (K - 1)
-                  waqpar%ifrmtosrc(2, ksrcwaq(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
+                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + K) = -ibnd - nbnd * (K - 1)
+                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
                end do
             end if
          else
@@ -2330,14 +2343,14 @@ contains
                if (waqpar%kmxnxa > 1) then
                   do K1 = 1, waqpar%kmxnxa
                      do K2 = 1, waqpar%kmxnxa
-                        kk = ksrcwaq(isrc) + K1 + (K2 - 1) * waqpar%kmxnxa
+                        kk = source_sink_waq_index(isrc) + K1 + (K2 - 1) * waqpar%kmxnxa
                         waqpar%ifrmtosrc(1, kk) = waqpar%iapnt(kk1) + (K1 - 1) * waqpar%nosegl
                         waqpar%ifrmtosrc(2, kk) = waqpar%iapnt(kk2) + (K2 - 1) * waqpar%nosegl
                      end do
                   end do
                else
-                  waqpar%ifrmtosrc(1, ksrcwaq(isrc) + 1) = waqpar%iapnt(kk1)
-                  waqpar%ifrmtosrc(2, ksrcwaq(isrc) + 1) = waqpar%iapnt(kk2)
+                  waqpar%ifrmtosrc(1, source_sink_waq_index(isrc) + 1) = waqpar%iapnt(kk1)
+                  waqpar%ifrmtosrc(2, source_sink_waq_index(isrc) + 1) = waqpar%iapnt(kk2)
                end if
             end if
          end if
@@ -2352,7 +2365,7 @@ contains
       use m_flowgeom
       use m_flow
       use fm_external_forcings_data
-      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat
+      use m_laterals, only: numlatsg, nodeCountLat, n1latsg, n2latsg, nnlat, qlatwaq, qlatwaq0
       use m_alloc
       implicit none
 
@@ -2384,9 +2397,9 @@ contains
          end if
       end do
       ! Do not skip when numlatsg is zero - we need to have the arrays allocated, even to zero length
-      call realloc(waqpar%ifrmtolat, (/2, waqpar%numlatwaq/), keepexisting=.true., fill=0)
-      call realloc(qlatwaq, waqpar%numlatwaq, keepexisting=.true., fill=0.0d0)
-      call realloc(qlatwaq0, waqpar%numlatwaq, keepexisting=.true., fill=0.0d0)
+      call realloc(waqpar%ifrmtolat, [2, waqpar%numlatwaq], keepexisting=.true., fill=0)
+      call realloc(qlatwaq, waqpar%numlatwaq, keepexisting=.true., fill=0.0_dp)
+      call realloc(qlatwaq0, waqpar%numlatwaq, keepexisting=.true., fill=0.0_dp)
 
       ibnd = (ndx - ndxi + waqpar%numsrcbnd) * waqpar%kmxnxa
       ilatwaq = 0
@@ -2452,7 +2465,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      call realloc(lenex, (/2, waqpar%num_exchanges/), keepExisting=.false., fill=0d0)
+      call realloc(lenex, [2, waqpar%num_exchanges], keepExisting=.false., fill=0.0_dp)
       call realloc(noqa, waqpar%noql, keepExisting=.false., fill=0)
 
       do L = 1, lnx
@@ -2460,18 +2473,18 @@ contains
          if (ip > 0) then
             ! MJ: TODO for now a simple average of the dispersion lengths, may be better to weight by wu (link initial width)
             lenex(1, ip) = lenex(1, ip) + dx(L) * acl(L)
-            lenex(2, ip) = lenex(2, ip) + dx(L) * (1d0 - acl(L))
+            lenex(2, ip) = lenex(2, ip) + dx(L) * (1.0_dp - acl(L))
             noqa(ip) = noqa(ip) + 1
          else if (ip < 0) then
-            lenex(1, -ip) = lenex(1, -ip) + dx(L) * (1d0 - acl(L))
+            lenex(1, -ip) = lenex(1, -ip) + dx(L) * (1.0_dp - acl(L))
             lenex(2, -ip) = lenex(2, -ip) + dx(L) * acl(L)
             noqa(-ip) = noqa(-ip) + 1
          end if
       end do
       do ip = 1, waqpar%noql
          if (waqpar%aggre == 1) then
-            lenex(1, ip) = lenex(1, ip) / dble(noqa(ip))
-            lenex(2, ip) = lenex(2, ip) / dble(noqa(ip))
+            lenex(1, ip) = lenex(1, ip) / real(noqa(ip), kind=dp)
+            lenex(2, ip) = lenex(2, ip) / real(noqa(ip), kind=dp)
          end if
          ! Copy lenghts to other layers
          do kk = 1, waqpar%kmxnxa - 1
@@ -2482,20 +2495,20 @@ contains
 
       !   dummy lengthes for sinks/sources
       do ip = waqpar%noq12 + 1, waqpar%noq12s
-         lenex(1, ip) = 1d5
-         lenex(2, ip) = 1d5
+         lenex(1, ip) = 1.0e5_dp
+         lenex(2, ip) = 1.0e5_dp
       end do
 
       !   dummy lengthes for laterals
       do ip = waqpar%noq12s + 1, waqpar%noq12sl
-         lenex(1, ip) = 1d5
-         lenex(2, ip) = 1d5
+         lenex(1, ip) = 1.0e5_dp
+         lenex(2, ip) = 1.0e5_dp
       end do
 
       !   dummy lengthes in third direction for all layers (will be calculated by WAQ from volume and surface)
       do ip = waqpar%noq12sl + 1, waqpar%num_exchanges
-         lenex(1, ip) = 1d0
-         lenex(2, ip) = 1d0
+         lenex(1, ip) = 1.0_dp
+         lenex(2, ip) = 1.0_dp
       end do
 
       ! Call the waq-len file writer
@@ -2525,13 +2538,13 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      call realloc(waqpar%horsurf, waqpar%num_cells, keepExisting=.false., fill=0d0)
+      call realloc(waqpar%horsurf, waqpar%num_cells, keepExisting=.false., fill=0.0_dp)
       !
    !! executable statements -------------------------------------------------------
       !
       ! AvD: TODO: What if ba(..) < 0.
       do k = 1, ndxi
-         waqpar%horsurf(waqpar%iapnt(k)) = waqpar%horsurf(waqpar%iapnt(k)) + max(ba(k), 0d0)
+         waqpar%horsurf(waqpar%iapnt(k)) = waqpar%horsurf(waqpar%iapnt(k)) + max(ba(k), 0.0_dp)
       end do
 
       ! Copy to all layers
@@ -2606,7 +2619,7 @@ contains
             end if
 
             if (num > 0) then
-               dv = 0d0
+               dv = 0.0_dp
                do k = 1, ndxi
                   call getkbotktopmax(k, kb, kt, ktx)
                   do kk = kb, ktx
@@ -2614,11 +2627,12 @@ contains
                   end do
                end do
 
-               dv1 = 0d0
+               dv1 = 0.0_dp
                do L = 1, lnx
                   call getLbotLtopmax(L, Lb, Lt)
                   do LL = Lb, Lt
-                     k1 = ln(1, LL); k2 = ln(2, LL)
+                     k1 = ln(1, LL)
+                     k2 = ln(2, LL)
                      dv1(k1) = dv1(k1) - q1waq(LL)
                      dv1(k2) = dv1(k2) + q1waq(LL)
                   end do
@@ -2638,8 +2652,8 @@ contains
                   call getkbotktopmax(k, kb, kt, ktx)
                   do kk = kb, ktx
                      errvol = dv(kk) - dv1(kk)
-                     if (errvol > 1d-6) then
-                        errvol = 0d0
+                     if (errvol > 1.0e-6_dp) then
+                        errvol = 0.0_dp
                      end if
                   end do
                end do
@@ -2647,7 +2661,7 @@ contains
             num = 1
          end if
 
-         waqpar%vol = 0d0
+         waqpar%vol = 0.0_dp
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
@@ -2656,7 +2670,7 @@ contains
          end do
 
       else
-         waqpar%vol = 0d0
+         waqpar%vol = 0.0_dp
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
@@ -2692,7 +2706,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%vel = 0d0
+      waqpar%vel = 0.0_dp
 
       if (.not. allocated(ucmag)) then
          call realloc(ucmag, ndkx, keepExisting=.false.)
@@ -2723,11 +2737,11 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               waqpar%vel(waqpar%isaggr(kk)) = waqpar%vel(waqpar%isaggr(kk)) + ucmag(kk) * max(ba(k), 0d0)
+               waqpar%vel(waqpar%isaggr(kk)) = waqpar%vel(waqpar%isaggr(kk)) + ucmag(kk) * max(ba(k), 0.0_dp)
             end do
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%horsurf(i) > 1d-25) then
+            if (waqpar%horsurf(i) > 1.0e-25_dp) then
                waqpar%vel(i) = waqpar%vel(i) / waqpar%horsurf(i)
             end if
          end do
@@ -2761,10 +2775,10 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%sal = 0d0
+      waqpar%sal = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, ndxi
-            if (vol1(i) > 1d-25) then
+            if (vol1(i) > 1.0e-25_dp) then
                waqpar%sal(i) = constituents(isalt, i)
             end if
          end do
@@ -2772,7 +2786,7 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%sal(waqpar%isaggr(kk)) = constituents(isalt, kk)
                end if
             end do
@@ -2782,16 +2796,16 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%sal(waqpar%isaggr(kk)) = waqpar%sal(waqpar%isaggr(kk)) + constituents(isalt, kk) * vol1(kk)
                end if
             end do
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%sal(i) = waqpar%sal(i) / waqpar%vol(i)
             else
-               waqpar%sal(i) = 0d0
+               waqpar%sal(i) = 0.0_dp
             end if
          end do
       end if
@@ -2823,10 +2837,10 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%tem = 0d0
+      waqpar%tem = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, ndxi
-            if (vol1(i) > 1d-25) then
+            if (vol1(i) > 1.0e-25_dp) then
                waqpar%tem(i) = constituents(itemp, i) !  tem1(i)
             end if
          end do
@@ -2834,7 +2848,7 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%tem(waqpar%isaggr(kk)) = constituents(itemp, kk)
                end if
             end do
@@ -2844,16 +2858,16 @@ contains
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%tem(waqpar%isaggr(kk)) = waqpar%tem(waqpar%isaggr(kk)) + constituents(itemp, kk) * vol1(kk)
                end if
             end do
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%tem(i) = waqpar%tem(i) / waqpar%vol(i)
             else
-               waqpar%tem(i) = 0d0
+               waqpar%tem(i) = 0.0_dp
             end if
          end do
       end if
@@ -2884,7 +2898,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%tau = 0d0
+      waqpar%tau = 0.0_dp
 
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, ndxi
@@ -2900,10 +2914,10 @@ contains
       else
          ! Taus are aggregated horizontal surface weighted
          do k = 1, ndxi
-            waqpar%tau(waqpar%isaggr(k)) = waqpar%tau(waqpar%isaggr(k)) + taus(k) * max(ba(k), 0d0)
+            waqpar%tau(waqpar%isaggr(k)) = waqpar%tau(waqpar%isaggr(k)) + taus(k) * max(ba(k), 0.0_dp)
          end do
          do i = 1, waqpar%nosegl
-            if (waqpar%horsurf(i) > 1d-25) then
+            if (waqpar%horsurf(i) > 1.0e-25_dp) then
                waqpar%tau(i) = waqpar%tau(i) / waqpar%horsurf(i)
             end if
          end do
@@ -2942,12 +2956,12 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%vdf = 0d0
+      waqpar%vdf = 0.0_dp
       if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
          do k = 1, ndxi
             call getkbotktopmax(k, kb, kt, ktx)
             do kk = kb + 1, ktx
-               if (vol1(kk) > 1d-25) then
+               if (vol1(kk) > 1.0e-25_dp) then
                   waqpar%vdf(waqpar%isaggr(kk)) = vicwws(kk - 1)
                end if
             end do
@@ -2960,15 +2974,17 @@ contains
             do kk = kb + 1, ktx
                if (waqpar%isaggr(kk - 1) == waqpar%isaggr(kk)) then
                   ! equal to the previous layer? find next minimum, and add volume
-                  if (vol1(kk) > 1d-25) then
-                     if (vicwws(kk - 1) < vdfmin .or. vdfmin == 0.0) vdfmin = vicwws(kk - 1)
+                  if (vol1(kk) > 1.0e-25_dp) then
+                     if (vicwws(kk - 1) < vdfmin .or. vdfmin == 0.0) then
+                        vdfmin = vicwws(kk - 1)
+                     end if
                      volsum = volsum + vol1(kk)
                   end if
                else
                   ! not equal to previous layer? add the (minimum) dispersion * volume vor the horizontal averaging
                   waqpar%vdf(waqpar%isaggr(kk - 1)) = waqpar%vdf(waqpar%isaggr(kk - 1)) + vdfmin * volsum
-                  if (vol1(kk) > 1d-25) then
-                     vdfmin = dble(vicwws(kk - 1))
+                  if (vol1(kk) > 1.0e-25_dp) then
+                     vdfmin = real(vicwws(kk - 1), kind=dp)
                      volsum = vol1(kk)
                   end if
                end if
@@ -2977,10 +2993,10 @@ contains
             waqpar%vdf(waqpar%isaggr(ktx)) = waqpar%vdf(waqpar%isaggr(ktx)) + vdfmin * volsum
          end do
          do i = 1, waqpar%num_cells
-            if (waqpar%vol(i) > 1d-25) then
+            if (waqpar%vol(i) > 1.0e-25_dp) then
                waqpar%vdf(i) = waqpar%vdf(i) / waqpar%vol(i)
             else
-               waqpar%vdf(i) = 0d0
+               waqpar%vdf(i) = 0.0_dp
             end if
          end do
       end if
@@ -3010,7 +3026,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%area = 0d0
+      waqpar%area = 0.0_dp
 
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
          do i = 1, lnx
@@ -3037,12 +3053,12 @@ contains
 
       ! dummy areas for sink/sources
       do i = waqpar%noq12 + 1, waqpar%noq12s
-         waqpar%area(i) = 0.1d0
+         waqpar%area(i) = 0.1_dp
       end do
 
       ! dummy areas for laterals
       do i = waqpar%noq12s + 1, waqpar%noq12sl
-         waqpar%area(i) = 0.1d0
+         waqpar%area(i) = 0.1_dp
       end do
 
       ! Add area of the vertical exchanges
@@ -3065,6 +3081,8 @@ contains
       use m_flow
       use wrwaq
       use m_get_Lbot_Ltop_max
+      use m_laterals, only: qlatwaq
+
       implicit none
       !
       !           Global variables
@@ -3082,7 +3100,7 @@ contains
       !
    !! executable statements -------------------------------------------------------
       !
-      waqpar%qag = 0d0
+      waqpar%qag = 0.0_dp
 
       ! Average the accumulated discharges.
       if (waqpar%aggre == 0 .and. waqpar%kmxnxa == 1) then
@@ -3092,14 +3110,14 @@ contains
             else
                L = Lbot(i)
             end if
-            waqpar%qag(i) = q1waq(L) / dble(ti_waq)
+            waqpar%qag(i) = q1waq(L) / real(ti_waq, kind=dp)
          end do
       else if (waqpar%aggre == 0 .and. waqpar%aggrel == 0) then
          do L = 1, lnx
             call getLbotLtopmax(L, Lb, Ltx)
 
             do LL = Lb, Ltx
-               waqpar%qag(waqpar%iqaggr(LL)) = q1waq(LL) / dble(ti_waq)
+               waqpar%qag(waqpar%iqaggr(LL)) = q1waq(LL) / real(ti_waq, kind=dp)
             end do
          end do
       else
@@ -3109,9 +3127,9 @@ contains
                do LL = Lb, Ltx
                   ip = abs(waqpar%iqaggr(LL))
                   if (waqpar%iqaggr(LL) > 0) then
-                     waqpar%qag(ip) = waqpar%qag(ip) + q1waq(LL) / dble(ti_waq)
+                     waqpar%qag(ip) = waqpar%qag(ip) + q1waq(LL) / real(ti_waq, kind=dp)
                   else
-                     waqpar%qag(ip) = waqpar%qag(ip) - q1waq(LL) / dble(ti_waq)
+                     waqpar%qag(ip) = waqpar%qag(ip) - q1waq(LL) / real(ti_waq, kind=dp)
                   end if
                end do
             end if
@@ -3122,14 +3140,14 @@ contains
    !! TODO: write out discharges to a separe (ascii) file for additional wasteloads?
       if (waqpar%numsrcwaq > 0) then
          do isrc = 1, waqpar%numsrcwaq
-            waqpar%qag(waqpar%noq12 + isrc) = qsrcwaq(isrc) / dble(ti_waq)
+            waqpar%qag(waqpar%noq12 + isrc) = source_sink_cumulative_discharge_waq(isrc) / real(ti_waq, kind=dp)
          end do
       end if
 
       ! Add laterals
       if (waqpar%numlatwaq > 0) then
          do ilatwaq = 1, waqpar%numlatwaq
-            waqpar%qag(waqpar%noq12s + ilatwaq) = qlatwaq(ilatwaq) / dble(ti_waq)
+            waqpar%qag(waqpar%noq12s + ilatwaq) = qlatwaq(ilatwaq) / real(ti_waq, kind=dp)
          end do
       end if
 
@@ -3140,7 +3158,7 @@ contains
                call getkbotktopmax(k, kb, kt, ktx)
                do kk = kb, ktx - 1
                   if (waqpar%iqwaggr(kk) > 0) then
-                     waqpar%qag(waqpar%iqwaggr(kk)) = -qwwaq(kk) / dble(ti_waq)
+                     waqpar%qag(waqpar%iqwaggr(kk)) = -qwwaq(kk) / real(ti_waq, kind=dp)
                   end if
                end do
             end do
@@ -3149,7 +3167,7 @@ contains
                call getkbotktopmax(k, kb, kt, ktx)
                do kk = kb, ktx
                   if (waqpar%iqwaggr(kk) > 0) then
-                     waqpar%qag(waqpar%iqwaggr(kk)) = waqpar%qag(waqpar%iqwaggr(kk)) - qwwaq(kk) / dble(ti_waq)
+                     waqpar%qag(waqpar%iqwaggr(kk)) = waqpar%qag(waqpar%iqwaggr(kk)) - qwwaq(kk) / real(ti_waq, kind=dp)
                   end if
                end do
             end do

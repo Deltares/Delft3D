@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -29,6 +29,7 @@
 
 !> Finalizes a single time step, should be called directly after flow_run_single_timestep
 module m_flow_finalize_single_timestep
+
    use m_fm_wq_processes_sub, only: fm_wq_processes_step
    use m_updatevaluesonsourcesinks, only: updatevaluesonsourcesinks
    use m_updatecumulativeinflow, only: updatecumulativeinflow
@@ -39,6 +40,7 @@ module m_flow_finalize_single_timestep
    use m_updatevaluesonobservationstations, only: updatevaluesonobservationstations
    use m_updatevaluesonlaterals, only: updatevaluesonlaterals
 
+   use precision, only: dp
    implicit none
 
    private
@@ -76,15 +78,22 @@ contains
       use m_structure_parameters
       use m_flow_f0isf1
       use m_wind, only: jaqext
+      use m_fm_icecover, only: fm_icecover_prepare_output
+      use m_update_flowanalysis_parameters, only: updateFlowAnalysisParameters
+      use m_wrimap, only: wrimap
 
       integer, intent(out) :: iresult
 
       ! Timestep has been performed, now finalize it.
 
-      if (ti_waqproc < 0d0) then
-         if (jatimer == 1) call starttimer(IFMWAQ)
+      if (ti_waqproc < 0.0_dp) then
+         if (jatimer == 1) then
+            call starttimer(IFMWAQ)
+         end if
          call fm_wq_processes_step(dts, time1)
-         if (jatimer == 1) call stoptimer(IFMWAQ)
+         if (jatimer == 1) then
+            call stoptimer(IFMWAQ)
+         end if
       end if
 
       if (jamba > 0) then ! at moment, this function is only required for the mass balance areas
@@ -95,11 +104,37 @@ contains
 
       ! Update water depth at pressure points (for output).
       hs = s1 - bl
+
+      if (jaeverydt > 0) then
+         if ((comparereal(time1, ti_maps, EPS10) >= 0) .and. (comparereal(time1, ti_mape, EPS10) <= 0)) then
+            if (map_write_settings%flow_analysis > 0) then
+               ! update the cumulative flow analysis parameters, and also compute the right CFL numbers
+               call updateFlowAnalysisParameters()
+            end if
+
+            call wrimap(time1)
+
+            if (map_write_settings%flow_analysis > 0) then
+               ! Reset the interval related flow analysis arrays
+               negativeDepths = 0
+               noiterations = 0
+               limitingTimestepEstimation = 0
+               flowCourantNumber = 0.0_dp
+            end if
+
+         end if
+      end if
+
       call structure_parameters()
 
       if (jaQext > 0) then
          call updateCumulativeInflow(dts)
       end if
+
+      ! compute some output quantities for ice ...
+      ! For the map-file it's good enough to call it from flow_externaloutput, but
+      ! we need to call it before updateValuesOnObservationStations for the his-file.
+      call fm_icecover_prepare_output(s1, rho, ag)
 
 !       only update values at the observation stations when necessary
 !          alternative: move this to flow_externaloutput
@@ -110,12 +145,12 @@ contains
             call updateValuesOnObservationStations()
          end if
 
-         if (comparereal(time1, time_his, eps10) >= 0) then
+         if (comparereal(time1, time_his, EPS10) >= 0) then
             if (jampi == 1) then
                call updateValuesOnRunupGauges_mpi()
                !call reduce_particles()
             end if
-            if (jahisbal > 0) then ! Update WaterBalances etc.
+            if (his_write_settings%bal > 0) then ! Update WaterBalances etc.
                call updateBalance()
             end if
             if (jacheckmonitor == 1) then
@@ -129,24 +164,24 @@ contains
       call update_values_on_cross_sections
       call updateValuesOnRunupGauges()
       if (jampi == 0 .or. (jampi == 1 .and. my_rank == 0)) then
-         if (numsrc > 0) then
+         if (num_source_sink > 0) then
             call updateValuesonSourceSinks(time1) ! Compute discharge and volume on sources and sinks
          end if
       end if
 
-      if (jahislateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
+      if (his_write_settings%lateral > 0 .and. numlatsg > 0 .and. ti_his > 0) then
          call updateValuesOnLaterals(time1, dts)
       end if
 
       ! for 1D only
       if (network%loaded .and. ndxi - ndx2d > 0) then
-         if (jamapTimeWetOnGround > 0) then
+         if (map_write_settings%time_wet_on_ground > 0) then
             call updateTimeWetOnGround(dts)
          end if
-         if (jamapTotalInflow1d2d > 0) then
+         if (map_write_settings%total_inflow_1d2d > 0) then
             call updateTotalInflow1d2d(dts)
          end if
-         if (jamapTotalInflowLat > 0) then
+         if (map_write_settings%total_inflow_lat > 0) then
             call updateTotalInflowLat(dts)
          end if
       end if
@@ -188,13 +223,17 @@ contains
 
       call timstop(handle_steps)
       iresult = dfm_check_signals() ! Abort when Ctrl-C was pressed
-      if (iresult /= DFM_NOERR) goto 888
+      if (iresult /= DFM_NOERR) then
+         goto 888
+      end if
 
       if (validateon) then
          call flow_validatestate(iresult) ! abort when the solution becomes unphysical
       end if
       validateon = .true.
-      if (iresult /= DFM_NOERR) goto 888
+      if (iresult /= DFM_NOERR) then
+         goto 888
+      end if
 
 888   continue
 

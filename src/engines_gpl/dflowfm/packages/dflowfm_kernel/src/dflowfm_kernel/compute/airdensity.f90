@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -30,7 +30,7 @@
 !> Module for computing spatial and time-varying air density.
 module m_airdensity
    use precision_basics, only: hp
-   use physicalconsts, only: CtoKelvin
+   use physicalconsts, only: celsius_to_kelvin
 
    implicit none
 
@@ -42,7 +42,8 @@ module m_airdensity
 ! part IV: PHYSICAL PROCESSES, Chapter 12
    real(kind=hp), parameter :: R = 8.31451_hp !< universal gas constant (J K-1 mol-1)
    real(kind=hp), parameter :: M_d = 28.9644e-3_hp !< dry air molar mass (kg mol-1)
-   real(kind=hp), parameter :: M_v = 18.0153e-3_hp; !< water vapour molar mass (kg mol-1)
+   real(kind=hp), parameter :: M_v = 18.0153e-3_hp
+   !< water vapour molar mass (kg mol-1)
    real(kind=hp), parameter :: R_d = R / M_d !< gas constant for dry air (J kg-1 K-1)
    real(kind=hp), parameter :: R_v = R / M_v !< gas constant for water vapor (J kg-1 K-1)
    real(kind=hp), parameter :: eps_star = R_v / R_d - 1 !< modified ratio of R_d and R_v
@@ -62,7 +63,7 @@ contains
 
       real(kind=hp), intent(in) :: p(:) !< total atmospheric pressure (Pa)
       real(kind=hp), intent(in) :: T(:) !< temperature [degrees_Celsius]
-      real(kind=hp), intent(in) :: T_dewpoint(:) !< dewpoint [degrees_Celsius]
+      real(kind=hp), intent(in) :: T_dewpoint(:) !< dew point temperature [degrees_Celsius]
       real(kind=hp), intent(inout) :: air_density(:) !< air density [kg m-3]
       integer, intent(out) :: ierror !< error (1) or not (0)
 
@@ -93,8 +94,8 @@ contains
       allocate (Td_kelvin(nelem), stat=ierr)
       call aerr('Td_kelvin ', ierr, nelem)
 
-      T_kelvin(1:nelem) = T(1:nelem) + CtoKelvin
-      Td_kelvin(1:nelem) = T_dewpoint(1:nelem) + CtoKelvin
+      T_kelvin(1:nelem) = celsius_to_kelvin(T(1:nelem))
+      Td_kelvin(1:nelem) = celsius_to_kelvin(T_dewpoint(1:nelem))
 
       call get_saturation_pressure
       call get_specific_humidity

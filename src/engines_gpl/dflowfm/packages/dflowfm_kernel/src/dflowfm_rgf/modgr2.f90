@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,13 +42,13 @@ contains
 
    subroutine MODGR2(XH, YH, X, Y, mmax, nmax, MC, NC, NUMP)
       use precision, only: dp
-      use m_modfld
-      use m_grid_block
+      use m_modfld, only: modfld
+      use m_grid_block, only: mb, nb
 
       integer :: mmax, nmax, mc, nc, nump
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX), XH(MMAX, NMAX), YH(MMAX, NMAX)
       real(kind=dp) :: EPS, dx1, dy1, dx2, dy2, fac, efac
-      data EPS/0.00001d0/
+      data EPS/0.00001_dp/
       integer :: m1, m2, n1, n2, in, jn, i1, j1, klast, num, i, j, i2, j2, ii, jj
 !     LINESHIFT
 
@@ -74,13 +74,15 @@ contains
                J2 = J
                DX2 = XH(I, J) - X(I, J)
                DY2 = YH(I, J) - Y(I, J)
-               if (I == M2 .and. J == N2) KLAST = 0
+               if (I == M2 .and. J == N2) then
+                  KLAST = 0
+               end if
                do II = I1, I2 - IN * KLAST
                   do JJ = J1, J2 - JN * KLAST
                      if (IN == 1) then
-                        FAC = dble(II - I1) / dble(I2 - I1)
+                        FAC = real(II - I1, kind=dp) / real(I2 - I1, kind=dp)
                      else
-                        FAC = dble(JJ - J1) / dble(J2 - J1)
+                        FAC = real(JJ - J1, kind=dp) / real(J2 - J1, kind=dp)
                      end if
                      EFAC = 1 - FAC
                      XH(II, JJ) = X(II, JJ) + EFAC * DX1 + FAC * DX2

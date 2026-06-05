@@ -17,7 +17,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                   & gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -73,6 +73,10 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     use m_sand_mud
     use globaldata
     use dfparall
+    use m_compdiam, only: compdiam
+    use m_comphidexp, only: comphidexp
+    use m_compsandfrac, only: compsandfrac
+    use m_getfixfac, only: getfixfac
     !
     implicit none
     !
@@ -91,6 +95,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:)      , pointer :: sedd10
     real(fp)         , dimension(:)      , pointer :: sedd50
     real(fp)         , dimension(:)      , pointer :: sedd90
+    logical                              , pointer :: spatial_d50
     real(fp)         , dimension(:)      , pointer :: sedd50fld
     real(fp)         , dimension(:)      , pointer :: dstar
     real(fp)         , dimension(:)      , pointer :: taucr
@@ -214,6 +219,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)         , dimension(:,:)    , pointer :: depfac
     real(fp)         , dimension(:,:)    , pointer :: mfluff
     include 'flow_steps_f.inc'
+    integer                              , pointer :: ithresh
 !
 ! Local parameters
 !
@@ -409,6 +415,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     sedd10              => gdp%gdsedpar%sedd10
     sedd50              => gdp%gdsedpar%sedd50
     sedd90              => gdp%gdsedpar%sedd90
+    spatial_d50         => gdp%gdsedpar%spatial_d50
     sedd50fld           => gdp%gdsedpar%sedd50fld
     dstar               => gdp%gdsedpar%dstar
     taucr               => gdp%gdsedpar%taucr
@@ -532,6 +539,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     depfac              => gdp%gdmorpar%flufflyr%depfac
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     wetslope            => gdp%gdmorpar%wetslope
+    ithresh             => gdp%gdmorpar%ithresh
     !
     allocate (localpar (npar), stat = istat)
     !
@@ -637,7 +645,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     dtmor = dt * morfac
     !
     call getfixfac(gdp%gdmorlyr, gdp%d%nmlb, gdp%d%nmub, lsedtot, &
-                 & nmmax       , fixfac    , ffthresh  )
+                 & nmmax       , fixfac    , ffthresh  , ithresh)
     !
     ! Set fixfac to 1.0 for tracer sediments and adjust frac
     !
@@ -689,7 +697,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        call compdiam(frac      ,sedd50    ,sedd50    ,sedtyp    ,lsedtot   , &
                    & logsedsig ,nseddia   ,logseddia ,nmmax     ,gdp%d%nmlb, &
                    & gdp%d%nmub,xx        ,nxx       ,max_mud_sedtyp, min_dxx_sedtyp, &
-                   & sedd50fld, dm        ,dg        ,dxx       ,dgsd      )
+                   & spatial_d50, sedd50fld, dm        ,dg        ,dxx       ,dgsd      )
        !
        ! determine hiding & exposure factors
        !
@@ -700,7 +708,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        ! compute sand fraction
        !
        call compsandfrac(frac, sedd50, nmmax, lsedtot, sedtyp, &
-                    & max_mud_sedtyp, sandfrac, sedd50fld, &
+                    & max_mud_sedtyp, sandfrac, spatial_d50, sedd50fld, &
                     & gdp%d%nmlb, gdp%d%nmub)
     endif
     !
@@ -900,8 +908,6 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
        else
           temperature = temeqs
        endif
-       !
-       taks0 = 0.0_fp
        !
        ! Calculate Van Rijn's reference height
        !
@@ -1112,7 +1118,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
           ! (Re)set of Prandtl-Schmidt number moved to TKECOF
           tsd  = -999.0_fp
           di50 = sedd50(l)
-          if (di50 < 0.0_fp) then
+          if (spatial_d50) then
              !
              ! Space varying sedd50 specified in array sedd50fld:
              ! Recalculate dstar, tetacr and taucr for each nm,l - point
@@ -1196,7 +1202,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                    klc=klc+1
                 enddo
              endif
-             taks = 0.0_fp
+             taks = taks0
              !
              klc    = 1
              do k = kfsmax(nm),kfsmin(nm),-1

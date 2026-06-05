@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -26,31 +26,32 @@
 
 using namespace rtctools::schematization::rules;
 
-deadBandValueRule::deadBandValueRule(string id, string name, double threshold, int yIn)
-    : rule(id, name)
+deadBandValueRule::deadBandValueRule(string id, string name, double threshold, int yIn) : rule(id, name)
 {
     this->threshold = threshold;
     this->yIn = yIn;
 }
 
-deadBandValueRule::~deadBandValueRule(void)
-{
-}
+deadBandValueRule::~deadBandValueRule(void) {}
 
-void deadBandValueRule::solve(double *stateOld, double *stateNew, long long t, double dt)
+void deadBandValueRule::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
     double yOld = stateOld[yIn];
     double yNew = stateNew[yIn];
 
-    if ((yOld==yOld) & (yNew==yNew)) {
-        if (yNew>yOld+threshold) yNew = yOld+threshold;
-        if (yNew<yOld-threshold) yNew = yOld-threshold;
+    if ((yOld == yOld) & (yNew == yNew))
+    {
+        if (yNew > yOld + threshold) yNew = yOld + threshold;
+        if (yNew < yOld - threshold) yNew = yOld - threshold;
     }
 
     stateNew[yIn] = yNew;
 }
 
-void deadBandValueRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
+void deadBandValueRule::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                                 double* dStateNew)
 {
-    throw runtime_error("void deadBandValueRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew) not implemented");
+    throw runtime_error(
+        "void deadBandValueRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double "
+        "*dStateOld, double *dStateNew) not implemented");
 }

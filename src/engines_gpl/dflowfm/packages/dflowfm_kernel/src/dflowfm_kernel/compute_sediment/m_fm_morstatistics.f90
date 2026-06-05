@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,7 +32,7 @@
 
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -234,9 +234,11 @@ contains
       end do
       !
       nmorstatqnt = i
-      if (allocated(morstatqnt)) deallocate (morstatqnt)
+      if (allocated(morstatqnt)) then
+         deallocate (morstatqnt)
+      end if
       allocate (morstatqnt(ndx, nmorstatqnt))
-      morstatqnt = 0d0
+      morstatqnt = 0.0_dp
       !
       ! Set minima and maxima start values
       !
@@ -273,53 +275,53 @@ contains
 
       integer :: iqnt
 
-      morstatqnt(:, 1) = 0d0
-      morstatqnt(:, 2:stmpar%lsedtot + 1) = 0d0
+      morstatqnt(:, 1) = 0.0_dp
+      morstatqnt(:, 2:stmpar%lsedtot + 1) = 0.0_dp
 
       do iqnt = 1, 4
          select case (iqnt)
          case (1) ! waterdepth
             ! min
             if (stmpar%morpar%moroutput%statflg(2, iqnt) > 0) then
-               morstatqnt(:, morstatflg(2, iqnt)) = 1d10
+               morstatqnt(:, morstatflg(2, iqnt)) = 1.0e10_dp
             end if
             ! max
             if (stmpar%morpar%moroutput%statflg(3, iqnt) > 0) then
-               morstatqnt(:, morstatflg(3, iqnt)) = -1d10
+               morstatqnt(:, morstatflg(3, iqnt)) = -1.0e10_dp
             end if
             !
             if (stmpar%morpar%moroutput%statflg(4, iqnt) > 0) then
-               morstatqnt(:, morstatflg(4, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(4, iqnt)) = 0.0_dp
             end if
             !
             if (stmpar%morpar%moroutput%statflg(5, iqnt) > 0) then
-               morstatqnt(:, morstatflg(5, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(5, iqnt)) = 0.0_dp
             end if
             !
             if (stmpar%morpar%moroutput%statflg(6, iqnt) > 0) then
-               morstatqnt(:, morstatflg(6, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(6, iqnt)) = 0.0_dp
             end if
          case default ! vectors
             ! min
             if (stmpar%morpar%moroutput%statflg(2, iqnt) > 0) then
-               morstatqnt(:, morstatflg(2, iqnt)) = 1d10
-               morstatqnt(:, morstatflg(3, iqnt)) = 1d10
+               morstatqnt(:, morstatflg(2, iqnt)) = 1.0e10_dp
+               morstatqnt(:, morstatflg(3, iqnt)) = 1.0e10_dp
             end if
             ! max
             if (stmpar%morpar%moroutput%statflg(3, iqnt) > 0) then
-               morstatqnt(:, morstatflg(4, iqnt)) = 0d0 ! comparison on magnitude
-               morstatqnt(:, morstatflg(5, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(4, iqnt)) = 0.0_dp ! comparison on magnitude
+               morstatqnt(:, morstatflg(5, iqnt)) = 0.0_dp
             end if
             if (stmpar%morpar%moroutput%statflg(4, iqnt) > 0) then
-               morstatqnt(:, morstatflg(6, iqnt)) = 0d0
-               morstatqnt(:, morstatflg(7, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(6, iqnt)) = 0.0_dp
+               morstatqnt(:, morstatflg(7, iqnt)) = 0.0_dp
             end if
             if (stmpar%morpar%moroutput%statflg(5, iqnt) > 0) then
-               morstatqnt(:, morstatflg(8, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(8, iqnt)) = 0.0_dp
             end if
             if (stmpar%morpar%moroutput%statflg(6, iqnt) > 0) then
-               morstatqnt(:, morstatflg(9, iqnt)) = 0d0
-               morstatqnt(:, morstatflg(10, iqnt)) = 0d0
+               morstatqnt(:, morstatflg(9, iqnt)) = 0.0_dp
+               morstatqnt(:, morstatflg(10, iqnt)) = 0.0_dp
             end if
          end select
       end do
@@ -375,15 +377,17 @@ contains
       real(fp) :: rhol
       real(fp) :: wght
       !
-      if (nmorstatqnt == 0) return
+      if (nmorstatqnt == 0) then
+         return
+      end if
       !
-      wght = max(dts / ti_sed, 0d0) ! time weighted is default, as opposed to original D3D implementation which used accreted volume
+      wght = max(dts / ti_sed, 0.0_dp) ! time weighted is default, as opposed to original D3D implementation which used accreted volume
       !
       do k = 1, ndx
          if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
-            wght = 0d0
+            wght = 0.0_dp
             do ll = 1, stmpar%lsedtot
-               wght = wght + max(0d0, dbodsd(ll, k))
+               wght = wght + max(0.0_dp, dbodsd(ll, k))
             end do
          end if
          !
@@ -522,7 +526,7 @@ contains
       integer :: ierr
       character(len=256) :: filnam
 
-      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_NETCDF_AND_TECPLOT .or. md_mapformat == IFORMAT_UGRID) then
+      if (md_mapformat == IFORMAT_NETCDF .or. md_mapformat == IFORMAT_UGRID) then
          ! Sedmor output always UGRID
          if (sedids%ncid /= 0 .and. ((md_unc_conv == UNC_CONV_UGRID .and. sedids%id_tsp%idx_curtime == 0))) then
             ierr = unc_close(sedids%ncid)
@@ -580,7 +584,6 @@ contains
       real(kind=dp), dimension(:, :), allocatable :: work
       real(kind=dp), dimension(:), allocatable :: work2
       real(kind=dp), dimension(:), allocatable :: wghtfac
-      character(len=10) :: transpunit
       character(len=75) :: var1, var2
       character(len=150) :: descr1, descr2
 
@@ -612,26 +615,18 @@ contains
          !
          ierr = nf90_def_dim(sedids%ncid, 'time', nf90_unlimited, sedids%id_tsp%id_timedim)
          call check_error(ierr, 'def time dim')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, (/sedids%id_tsp%id_timedim/), 'time', 'time', '', trim(Tudunitstr))
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, (/sedids%id_tsp%id_timedim/), 'averaging interval', 'averaging interval', '', 's')
-         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, (/sedids%id_tsp%id_timedim/), 'morfac', 'morphological accelaration factor', '', '-')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_time, nf90_double, [sedids%id_tsp%id_timedim], 'time', 'time', '', trim(Tudunitstr))
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_interval, nf90_double, [sedids%id_tsp%id_timedim], 'averaging interval', 'averaging interval', '', 's')
+         ierr = unc_def_var_nonspatial(sedids%ncid, sedids%id_morfac, nf90_double, [sedids%id_tsp%id_timedim], 'morfac', 'morphological acceleration factor', '', '-')
 
          ierr = nf90_def_dim(sedids%ncid, 'nSedTot', stmpar%lsedtot, sedids%id_tsp%id_sedtotdim)
 
          if (stmpar%morpar%moroutput%dmsedcum) then
-            ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=(/-2, sedids%id_tsp%id_sedtotdim, -1/))
+            ierr = unc_def_var_map(sedids%ncid, sedids%id_tsp, sedids%id_dmsedcum, nf90_double, UNC_LOC_S, 'dmsedcum', 'net sedimentation flux over time interval', '', 'kg m-2', dimids=[-2, sedids%id_tsp%id_sedtotdim, -1])
          end if
          !
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            transpunit = 'kg/(s m)'
-         case (1)
-            transpunit = 'm3/(s m)'
-         case (2)
-            transpunit = 'm3/(s m)'
-         end select
-         stmpar%morpar%moroutput%statunt(3) = trim(transpunit) ! bed load
-         stmpar%morpar%moroutput%statunt(4) = trim(transpunit) ! suspended load
+         stmpar%morpar%moroutput%statunt(3) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! bed load
+         stmpar%morpar%moroutput%statunt(4) = trim(stmpar%morpar%moroutput%unit_transport_rate) ! suspended load
          !
          ! Conditional defs based on requested output. This can be improved, I guess... Runtime variable definition would be nice to have :)
          !
@@ -641,20 +636,20 @@ contains
             select case (iq)
             case (1)
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             case (2)
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             case (3)
                !call realloc(dimids_, 3 )
-               !dimids_= (/ -2, sedids%id_tsp%id_sedtotdim, -1 /)
+               !dimids_= [ -2, sedids%id_tsp%id_sedtotdim, -1 ]
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             case (4)
                !call realloc(dimids_, 3 )
-               !dimids_= (/ -2, sedids%id_tsp%id_sedtotdim, -1 /)
+               !dimids_= [ -2, sedids%id_tsp%id_sedtotdim, -1 ]
                call realloc(dimids_, 2)
-               dimids_ = (/-2, -1/)
+               dimids_ = [-2, -1]
             end select
 
             idx = stmpar%morpar%moroutput%statflg(1, iq)
@@ -735,16 +730,38 @@ contains
             !
             select case (iq)
             case (1)
-               sedids%id_hs_mean = id_mean_x; sedids%id_hs_std = id_std_x; sedids%id_hs_min = id_min_x; sedids%id_hs_max = id_max_x; 
+               sedids%id_hs_mean = id_mean_x
+               sedids%id_hs_std = id_std_x
+               sedids%id_hs_min = id_min_x
+               sedids%id_hs_max = id_max_x
             case (2)
-               sedids%id_ucx_mean = id_mean_x; sedids%id_ucx_std = id_std_x; sedids%id_ucx_min = id_min_x; sedids%id_ucx_max = id_max_x; 
-               sedids%id_ucy_mean = id_mean_y; sedids%id_ucy_min = id_min_y; sedids%id_ucy_max = id_max_y; 
+               sedids%id_ucx_mean = id_mean_x
+               sedids%id_ucx_std = id_std_x
+               sedids%id_ucx_min = id_min_x
+               sedids%id_ucx_max = id_max_x
+               sedids%id_ucy_mean = id_mean_y
+               sedids%id_ucy_min = id_min_y
+               sedids%id_ucy_max = id_max_y
             case (3)
-               sedids%id_sbx_mean = id_mean_x; sedids%id_sbx_std = id_std_x; sedids%id_sbx_min = id_min_x; sedids%id_sbx_max = id_max_x; sedids%id_netsbx = id_net_x
-               sedids%id_sby_mean = id_mean_y; sedids%id_sby_min = id_min_y; sedids%id_sby_max = id_max_y; sedids%id_netsby = id_net_y
+               sedids%id_sbx_mean = id_mean_x
+               sedids%id_sbx_std = id_std_x
+               sedids%id_sbx_min = id_min_x
+               sedids%id_sbx_max = id_max_x
+               sedids%id_netsbx = id_net_x
+               sedids%id_sby_mean = id_mean_y
+               sedids%id_sby_min = id_min_y
+               sedids%id_sby_max = id_max_y
+               sedids%id_netsby = id_net_y
             case (4)
-               sedids%id_ssx_mean = id_mean_x; sedids%id_ssx_std = id_std_x; sedids%id_ssx_min = id_min_x; sedids%id_ssx_max = id_max_x; sedids%id_netssx = id_net_x
-               sedids%id_ssy_mean = id_mean_y; sedids%id_ssy_min = id_min_y; sedids%id_ssy_max = id_max_y; sedids%id_netssy = id_net_y
+               sedids%id_ssx_mean = id_mean_x
+               sedids%id_ssx_std = id_std_x
+               sedids%id_ssx_min = id_min_x
+               sedids%id_ssx_max = id_max_x
+               sedids%id_netssx = id_net_x
+               sedids%id_ssy_mean = id_mean_y
+               sedids%id_ssy_min = id_min_y
+               sedids%id_ssy_max = id_max_y
+               sedids%id_netssy = id_net_y
             end select
 
          end do
@@ -759,15 +776,17 @@ contains
       !
       sedids%id_tsp%idx_curtime = sedids%id_tsp%idx_curtime + 1
       itim = sedids%id_tsp%idx_curtime
-      if (itim == 1) return
+      if (itim == 1) then
+         return
+      end if
       !
-      morfc = (stmpar%morpar%morft - morft0) / (time1 - hydrt0) * 86400d0
+      morfc = (stmpar%morpar%morft - morft0) / (time1 - hydrt0) * 86400.0_dp
       morft0 = stmpar%morpar%morft
       hydrt0 = time1
       !
-      ierr = nf90_put_var(sedids%ncid, sedids%id_time, tim, (/itim/))
-      ierr = nf90_put_var(sedids%ncid, sedids%id_interval, morstatqnt(1, 1) * ti_sed, (/itim/))
-      ierr = nf90_put_var(sedids%ncid, sedids%id_morfac, morfc, (/itim/))
+      ierr = nf90_put_var(sedids%ncid, sedids%id_time, tim, [itim])
+      ierr = nf90_put_var(sedids%ncid, sedids%id_interval, morstatqnt(1, 1) * ti_sed, [itim])
+      ierr = nf90_put_var(sedids%ncid, sedids%id_morfac, morfc, [itim])
       !
       if (stmpar%morpar%moroutput%dmsedcum) then
          allocate (work(ndx, stmpar%lsedtot))
@@ -785,16 +804,42 @@ contains
       do iq = 1, 4
          select case (iq)
          case (1)
-            id_mean_x = sedids%id_hs_mean; id_std_x = sedids%id_hs_std; id_min_x = sedids%id_hs_min; id_max_x = sedids%id_hs_max; dim = 1
+            id_mean_x = sedids%id_hs_mean
+            id_std_x = sedids%id_hs_std
+            id_min_x = sedids%id_hs_min
+            id_max_x = sedids%id_hs_max
+            dim = 1
          case (2)
-            id_mean_x = sedids%id_ucx_mean; id_std_x = sedids%id_ucx_std; id_min_x = sedids%id_ucx_min; id_max_x = sedids%id_ucx_max; dim = 2
-            id_mean_y = sedids%id_ucy_mean; id_min_y = sedids%id_ucy_min; id_max_y = sedids%id_ucy_max; 
+            id_mean_x = sedids%id_ucx_mean
+            id_std_x = sedids%id_ucx_std
+            id_min_x = sedids%id_ucx_min
+            id_max_x = sedids%id_ucx_max
+            dim = 2
+            id_mean_y = sedids%id_ucy_mean
+            id_min_y = sedids%id_ucy_min
+            id_max_y = sedids%id_ucy_max
          case (3)
-            id_mean_x = sedids%id_sbx_mean; id_std_x = sedids%id_sbx_std; id_min_x = sedids%id_sbx_min; id_max_x = sedids%id_sbx_max; id_net_x = sedids%id_netsbx; dim = 2
-            id_mean_y = sedids%id_sby_mean; id_min_y = sedids%id_sby_min; id_max_y = sedids%id_sby_max; id_net_y = sedids%id_netsby
+            id_mean_x = sedids%id_sbx_mean
+            id_std_x = sedids%id_sbx_std
+            id_min_x = sedids%id_sbx_min
+            id_max_x = sedids%id_sbx_max
+            id_net_x = sedids%id_netsbx
+            dim = 2
+            id_mean_y = sedids%id_sby_mean
+            id_min_y = sedids%id_sby_min
+            id_max_y = sedids%id_sby_max
+            id_net_y = sedids%id_netsby
          case (4)
-            id_mean_x = sedids%id_ssx_mean; id_std_x = sedids%id_ssx_std; id_min_x = sedids%id_ssx_min; id_max_x = sedids%id_ssx_max; id_net_x = sedids%id_netssx; dim = 2
-            id_mean_y = sedids%id_ssy_mean; id_min_y = sedids%id_ssy_min; id_max_y = sedids%id_ssy_max; id_net_y = sedids%id_netssy
+            id_mean_x = sedids%id_ssx_mean
+            id_std_x = sedids%id_ssx_std
+            id_min_x = sedids%id_ssx_min
+            id_max_x = sedids%id_ssx_max
+            id_net_x = sedids%id_netssx
+            dim = 2
+            id_mean_y = sedids%id_ssy_mean
+            id_min_y = sedids%id_ssy_min
+            id_max_y = sedids%id_ssy_max
+            id_net_y = sedids%id_netssy
          end select
          !
          if (stmpar%morpar%moroutput%statflg(1, iq) > 0) then
@@ -802,25 +847,28 @@ contains
             idx = stmpar%morpar%moroutput%statflg(1, iq)
 
             if (iand(idx, MOR_STAT_MEAN) > 0 .or. iand(idx, MOR_STAT_STD) > 0) then
-               if (allocated(wghtfac)) deallocate (wghtfac, work2)
+               if (allocated(wghtfac)) then
+                  deallocate (wghtfac, work2)
+               end if
                allocate (wghtfac(1:ndx), work2(1:ndx))
-               wghtfac = 1d0; work2 = 0d0
+               wghtfac = 1.0_dp
+               work2 = 0.0_dp
                if (stmpar%morpar%moroutput%weightflg == MOR_STAT_BODS) then
-                  wghtfac = 1d0 / max(morstatqnt(:, 1), eps10)
+                  wghtfac = 1.0_dp / max(morstatqnt(:, 1), EPS10)
                end if
             end if
 
             if (dim == 1) then ! just waterlevel
                if (iand(idx, MOR_STAT_MIN) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(2, iq)) = -999d0
+                     morstatqnt(:, morstatflg(2, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, morstatqnt(:, morstatflg(2, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_MAX) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(3, iq)) = -999d0
+                     morstatqnt(:, morstatflg(3, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, morstatqnt(:, morstatflg(3, iq)))
                end if
@@ -828,7 +876,7 @@ contains
                if (iand(idx, MOR_STAT_MEAN) > 0) then
                   work2 = morstatqnt(:, morstatflg(4, iq)) * wghtfac
                   where (morstatqnt(:, 1) <= 0.0)
-                     work2 = -999d0
+                     work2 = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, work2)
                end if
@@ -845,23 +893,23 @@ contains
                   end do
 
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(5, iq)) = -999d0
+                     morstatqnt(:, morstatflg(5, iq)) = -999.0_dp
                   end where
 
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, morstatqnt(:, morstatflg(5, iq)))
                end if
             else
                if (iq == 2) then
-                  morfc = 1d0
+                  morfc = 1.0_dp
                else
-                  morfc = max(morfc, 1d0)
+                  morfc = max(morfc, 1.0_dp)
                end if
 
                if (iand(idx, MOR_STAT_MIN) > 0) then
 
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(2, iq)) = -999d0
-                     morstatqnt(:, morstatflg(3, iq)) = -999d0
+                     morstatqnt(:, morstatflg(2, iq)) = -999.0_dp
+                     morstatqnt(:, morstatflg(3, iq)) = -999.0_dp
                   end where
 
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_min_x, UNC_LOC_S, morstatqnt(:, morstatflg(2, iq)))
@@ -870,8 +918,8 @@ contains
                !
                if (iand(idx, MOR_STAT_MAX) > 0) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(4, iq)) = -999d0
-                     morstatqnt(:, morstatflg(5, iq)) = -999d0
+                     morstatqnt(:, morstatflg(4, iq)) = -999.0_dp
+                     morstatqnt(:, morstatflg(5, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_x, UNC_LOC_S, morstatqnt(:, morstatflg(4, iq)))
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_max_y, UNC_LOC_S, morstatqnt(:, morstatflg(5, iq)))
@@ -880,12 +928,12 @@ contains
                if (iand(idx, MOR_STAT_MEAN) > 0) then
                   work2 = morstatqnt(:, morstatflg(6, iq)) * wghtfac * morfc
                   where (morstatqnt(:, 1) <= 0.0)
-                     work2 = -999d0
+                     work2 = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_x, UNC_LOC_S, work2)
                   work2 = morstatqnt(:, morstatflg(7, iq)) * wghtfac * morfc
                   where (morstatqnt(:, 1) <= 0.0)
-                     work2 = -999d0
+                     work2 = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_mean_y, UNC_LOC_S, work2)
                end if
@@ -901,18 +949,18 @@ contains
                      end if
                   end do
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(8, iq)) = -999d0
+                     morstatqnt(:, morstatflg(8, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_std_x, UNC_LOC_S, morstatqnt(:, morstatflg(8, iq)))
                end if
                !
                if (iand(idx, MOR_STAT_CUM) > 0 .and. (iq == 3 .or. iq == 4)) then
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(9, iq)) = -999d0
+                     morstatqnt(:, morstatflg(9, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_x, UNC_LOC_S, morstatqnt(:, morstatflg(9, iq)) * morfc)
                   where (morstatqnt(:, 1) <= 0.0)
-                     morstatqnt(:, morstatflg(10, iq)) = -999d0
+                     morstatqnt(:, morstatflg(10, iq)) = -999.0_dp
                   end where
                   ierr = unc_put_var_map(sedids%ncid, sedids%id_tsp, id_net_y, UNC_LOC_S, morstatqnt(:, morstatflg(10, iq)) * morfc)
                end if

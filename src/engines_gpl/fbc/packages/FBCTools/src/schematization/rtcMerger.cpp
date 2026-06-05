@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,62 +27,69 @@
 
 using namespace rtctools::schematization::components;
 
-rtcMerger::rtcMerger(
-	string id,
-	string name,
-	modeEnum mode,
-	int nXIn,
-	int *iXIn,
-	int iYOut) : component(id, name), rule(id, name), trigger(id, name, iYOut, -1, -1)
+rtcMerger::rtcMerger(string id, string name, modeEnum mode, int nXIn, int* iXIn, int iYOut)
+    : component(id, name), rule(id, name), trigger(id, name, iYOut, -1, -1)
 {
-	this->mode = mode;
-	this->nXIn = nXIn;
-	this->iXIn = new int[nXIn];
-	for (int i=0; i<nXIn; i++) {
-		this->iXIn[i] = iXIn[i];
-	}
+    this->mode = mode;
+    this->nXIn = nXIn;
+    this->iXIn = new int[nXIn];
+    for (int i = 0; i < nXIn; i++)
+    {
+        this->iXIn[i] = iXIn[i];
+    }
 }
 
-rtcMerger::~rtcMerger(void)
+rtcMerger::~rtcMerger(void) {}
+
+void rtcMerger::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
+    double yNew = numeric_limits<double>::quiet_NaN();
+
+    if (mode == DATAHIERARCHY)
+    {
+        for (int i = 0; i < nXIn; i++)
+        {
+            double x = stateOld[iXIn[i]];
+            if (x == x)
+            {
+                yNew = x;
+                break;
+            }
+        }
+    }
+    else if (mode == SUM)
+    {
+        yNew = 0.0;
+        for (int i = 0; i < nXIn; i++)
+        {
+            yNew += stateOld[iXIn[i]];
+        }
+    }
+
+    stateNew[iYOut] = yNew;
 }
 
-void rtcMerger::solve(double *stateOld, double *stateNew, long long t, double dt)
+void rtcMerger::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                         double* dStateNew)
 {
-	double yNew = numeric_limits<double>::quiet_NaN();
-
-	if (mode==DATAHIERARCHY) {
-		for (int i=0; i<nXIn; i++) {
-			double x = stateOld[iXIn[i]];
-			if (x==x) {
-				yNew = x;
-				break;
-			}
-		}
-	} else if (mode==SUM) {
-		yNew = 0.0;
-		for (int i=0; i<nXIn; i++) {
-			yNew += stateOld[iXIn[i]];
-		}
-	}
-
-	stateNew[iYOut] = yNew;
-}
-
-void rtcMerger::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
-{
-	if (mode==DATAHIERARCHY) {
-		for (int i=0; i<nXIn; i++) {
-			double x = stateOld[iXIn[i]];
-			if (x==x) {
-				dStateOld[iXIn[i]] += dStateNew[iYOut];
-				break;
-			}
-		}
-	} else if (mode==SUM) {
-		for (int i=0; i<nXIn; i++) {
-			// yNew += stateOld[iXIn[i]];
-			dStateOld[iXIn[i]] += dStateNew[iYOut];
-		}
-	}
+    if (mode == DATAHIERARCHY)
+    {
+        for (int i = 0; i < nXIn; i++)
+        {
+            double x = stateOld[iXIn[i]];
+            if (x == x)
+            {
+                dStateOld[iXIn[i]] += dStateNew[iYOut];
+                break;
+            }
+        }
+    }
+    else if (mode == SUM)
+    {
+        for (int i = 0; i < nXIn; i++)
+        {
+            // yNew += stateOld[iXIn[i]];
+            dStateOld[iXIn[i]] += dStateNew[iYOut];
+        }
+    }
 }

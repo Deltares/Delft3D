@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,7 +53,7 @@ contains
       use m_flow
       use m_flowgeom
       use m_flowtimes
-      use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat
+      use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat, qlatwaq
 
       integer :: i_node, k1
       integer :: i_lat, i_latwaq, i_layer

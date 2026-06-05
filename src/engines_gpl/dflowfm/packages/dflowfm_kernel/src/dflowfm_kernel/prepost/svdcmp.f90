@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -191,8 +191,12 @@ contains
          do ITS = 1, 30
             l_loop: do L = K, 1, -1
                NM = L - 1
-               if ((abs(RV1(L)) + ANORM) == ANORM) GO TO 2
-               if ((abs(W(NM)) + ANORM) == ANORM) exit l_loop
+               if ((abs(RV1(L)) + ANORM) == ANORM) then
+                  GO TO 2
+               end if
+               if ((abs(W(NM)) + ANORM) == ANORM) then
+                  exit l_loop
+               end if
             end do l_loop
             C = 0.0
             S = 1.0
@@ -225,9 +229,9 @@ contains
             end if
 !          IF (ITS.EQ.30) PAUSE 'No convergence in 30 iterations'
             if (ITS == 30) then ! SPvdP: error handling
-               A = 0d0
-               W = 0d0
-               V = 0d0
+               A = 0.0_dp
+               W = 0.0_dp
+               V = 0.0_dp
                return
             end if
             X = W(L)

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,8 +31,10 @@
 !
 
 module m_delgrd
+
    use m_savegrd, only: savegrd
 
+   use precision, only: dp
    implicit none
 
    private
@@ -43,12 +45,12 @@ contains
 
    subroutine delgrd(KEY, JASAVE, jadelpol)
 !    delete grid
-      use m_confrm
-      use m_grid
-      use m_missing
+      use m_confrm, only: confrm
+      use m_grid, only: xc, yc, mc, nc
+      use m_missing, only: dxymis, dmiss, jins, xymis
+      use m_delpol, only: delpol
       use m_polygon, only: NPL, xpl, ypl, zpl
       use geometry_module, only: dbpinpol
-      use m_delpol
 
       integer :: inhul, ja, i, j
       integer, intent(in) :: jasave, jadelpol
@@ -56,7 +58,9 @@ contains
 
       inhul = -1
 
-      if (JASAVE == 1) call SAVEgrd()
+      if (JASAVE == 1) then
+         call SAVEgrd()
+      end if
       KEY = 3
       if (NPL <= 2) then
          if (NPL >= 1) then
@@ -64,10 +68,16 @@ contains
             if (JA == 0) then
                KEY = 0
             else
-               XC = 0d0; YC = 0d0; MC = 0; NC = 0
+               XC = 0.0_dp
+               YC = 0.0_dp
+               MC = 0
+               NC = 0
             end if
          else
-            XC = 0d0; YC = 0d0; MC = 0; NC = 0
+            XC = 0.0_dp
+            YC = 0.0_dp
+            MC = 0
+            NC = 0
          end if
          return
       end if
@@ -76,14 +86,18 @@ contains
          do J = 1, NC
             if (Xc(I, J) /= DXYMIS) then
                call dbpinpol(Xc(i, j), yc(i, j), INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
-               if (INHUL == 1) Xc(I, J) = XYMIS
+               if (INHUL == 1) then
+                  Xc(I, J) = XYMIS
+               end if
             end if
 
          end do
       end do
 
 !      CALL ADJUST(X, Y, MC, NC, WW1, WW2)
-      if (jadelpol == 1) call delpol()
+      if (jadelpol == 1) then
+         call delpol()
+      end if
       return
    end subroutine delgrd
 

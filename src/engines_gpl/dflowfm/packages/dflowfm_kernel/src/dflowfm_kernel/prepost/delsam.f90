@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,9 +40,9 @@ contains
 !>               -1: do not prompt for confirmation, deallocate arrays, do not make copy
    subroutine DELSAM(JACONFIRM) ! SPvdP: need promptless delsam in orthogonalisenet
       use precision, only: dp
-      use M_SAMPLES
-      use m_polygon
-      use m_missing
+      use M_SAMPLES, only: nsmax, ns, xs, ys, zs, ipsam, savesam
+      use m_polygon, only: npl, xpl, ypl, zpl
+      use m_missing, only: dmiss, jins
       use geometry_module, only: dbpinpol
 
       integer, intent(in) :: JACONFIRM !< prompt for confirmation (1) or not (0)
@@ -59,9 +59,14 @@ contains
 
       if (jaconfirm == -1) then
          if (nsmax > 0) then
-            nsmax = 0; ns = 0
-            if (allocated(xs)) deallocate (xs, ys, zs)
-            if (allocated(ipsam)) deallocate (ipsam)
+            nsmax = 0
+            ns = 0
+            if (allocated(xs)) then
+               deallocate (xs, ys, zs)
+            end if
+            if (allocated(ipsam)) then
+               deallocate (ipsam)
+            end if
          end if
          return
       end if
@@ -94,7 +99,9 @@ contains
          XI = XS(I)
          YI = YS(I)
          call DBPINPOL(xI, yI, INHUL, dmiss, JINS, NPL, xpl, ypl, zpl)
-         if (INHUL == 1) ZS(I) = dmiss
+         if (INHUL == 1) then
+            ZS(I) = dmiss
+         end if
       end do
 
       K = 0

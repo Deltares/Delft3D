@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_reacrs
 
+   use precision, only: dp
    implicit none
 
 contains
@@ -66,10 +67,14 @@ contains
          read (REC(21:), *, ERR=999) M1, N1, M2, N2
 
          if (M1 > M2) then
-            MH = M2; M2 = M1; M1 = MH
+            MH = M2
+            M2 = M1
+            M1 = MH
          end if
          if (N1 > N2) then
-            NH = N2; N2 = N1; N1 = NH
+            NH = N2
+            N2 = N1
+            N1 = NH
          end if
 
          !     WRITE(MOUT,'(A  )') REC(1:20)
@@ -104,7 +109,7 @@ contains
 
 999   continue
       call QNEOFERROR(MMDD)
-      call READYY('Reading SIMONA *.bottom File', -1d0)
+      call READYY('Reading SIMONA *.bottom File', -1.0_dp)
       call DOCLOSE(MMDD)
       JA = 0
       return

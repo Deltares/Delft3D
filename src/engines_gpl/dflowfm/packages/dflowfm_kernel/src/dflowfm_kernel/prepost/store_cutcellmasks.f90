@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,8 @@ contains
 
    subroutine store_cutcellmasks(numk, kc, numL, Lmask, xmL, ymL)
       use precision, only: dp
-      use m_cutcells
-      use m_alloc
+      use m_cutcells, only: jastored, npol, ik, jk, idxl, xdxl, ydxl, pdxl
+      use m_alloc, only: realloc
       use messagehandling, only: LEVEL_ERROR, mess
 
       integer, intent(in) :: numk
@@ -116,8 +116,8 @@ contains
       if (NPOL == 1) then
          call realloc(idxL, numL + 1, keepExisting=.true., fill=1)
       end if
-      call realloc(xdxL, numnew, keepExisting=.true., fill=0d0)
-      call realloc(ydxL, numnew, keepExisting=.true., fill=0d0)
+      call realloc(xdxL, numnew, keepExisting=.true., fill=0.0_dp)
+      call realloc(ydxL, numnew, keepExisting=.true., fill=0.0_dp)
       call realloc(pdxL, numnew, keepExisting=.true., fill=0)
 
 !     shift pointers and data

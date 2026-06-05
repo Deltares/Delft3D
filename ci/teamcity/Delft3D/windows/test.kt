@@ -5,6 +5,7 @@ import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.*
 import jetbrains.buildServer.configs.kotlin.triggers.*
+import jetbrains.buildServer.configs.kotlin.failureConditions.*
 import Delft3D.template.*
 import Delft3D.step.*
 
@@ -13,12 +14,13 @@ import CsvProcessor
 
 object WindowsTest : BuildType({
 
-    description = "Run TestBench.py on a list of testbench XML files. (This is not containerized as we'd need more Docker-pool agents.)"
+    description = "Run TestBench.py on a list of testbench XML files."
 
     templates(
         TemplateMergeRequest,
         TemplatePublishStatus,
-        TemplateMonitorPerformance
+        TemplateMonitorPerformance,
+        TemplateDockerRegistry
     )
 
     name = "Test"
@@ -53,12 +55,15 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
+        param("container.tag", "%build.vcs.number%")
         param("product", "unknown")
-        checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
-        password("s3_dsctestbench_secret", "credentialsJSON:7e8a3aa7-76e9-4211-a72e-a3825ad1a160")
-        
+        password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
+        param("file_path", "dimrset_windows_%dep.${WindowsBuild.id}.product%_%build.vcs.number%.zip")
+
     }
 
     features {
@@ -71,59 +76,71 @@ object WindowsTest : BuildType({
     }
 
     steps {
-        mergeTargetBranch {}
-        python {
-            name = "Run TestBench.py"
-            workingDir = "test/deltares_testbench/"
-            environment = venv {
-                requirementsFile = "pip/win-requirements.txt"
-            }
-            command = file {
-                filename = "TestBench.py"
-                scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
-                    --compare
-                    --config "configs/%configfile%"
-                    --filter "testcase=%case_filter%"
-                    --log-level DEBUG
-                    --parallel
-                    --teamcity
+        step {
+            name = "Download artifact from Nexus"
+            type = "RawDownloadNexusWindows2"
+            executionMode = BuildStep.ExecutionMode.DEFAULT
+            param("artifact_path", "/07_day_retention/dimrset/%file_path%")
+            param("nexus_repo", "/delft3d-dev")
+            param("nexus_username", "%nexus_username%")
+            param("download_to", "/downloads")
+            param("nexus_password", "%nexus_password%")
+        }
+        powerShell {
+            name = "Extract artifact"
+            enabled = false
+            scriptMode = script {
+                content = """
+                    ${'$'}ErrorActionPreference = "Stop"
+
+                    ${'$'}dest = "test/deltares_testbench/data/engines/teamcity_artifacts/x64"
+
+                    Write-Host "Extracting %file_path% ..."
+
+                    Expand-Archive -Path %file_path% -DestinationPath "temp_extract"
+
+                    robocopy "temp_extract/x64" ${'$'}dest /E /XC /XN /XO
                 """.trimIndent()
             }
+        }
+        // script is necessary to dynamically set the copy-failed-cases depending on the paramter
+        script {
+
+            name = "Run TestBench.py"
+            id = "RUNNER_testbench"
+            workingDir = "test/deltares_testbench/"
+                scriptContent = """   
+                    @echo off
+
+                    set argsList=--username %s3_dsctestbench_accesskey% ^
+                    --password %s3_dsctestbench_secret% ^
+                    --compare ^
+                    --config configs/%configfile% ^
+                    --filter testcase=%case_filter% ^
+                    --log-level DEBUG ^
+                    --parallel ^
+                    --teamcity
+
+                    if "%copy_failed_cases%"=="true" (
+                        set argsList=%%argsList%% --copy-failed-cases
+                    )
+
+                    python TestBench.py %%argsList%%
+
+            """.trimIndent()
+        
+
+            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
         script {
             name = "Copy cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
-            conditions { equals("copy_cases", "true") }
+            conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
-            scriptContent = "cp -r data/cases copy_cases"
-        }
-        script {
-            name = "Kill dimr.exe, mpiexec.exe, and hydra_pmi_proxy.exe"
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-            scriptContent = """
-                echo off
-                REM taskkill does not automatically kill child processes, and mpiexec spawns some
-                call :kill_program dimr.exe
-                call :kill_program mpiexec.exe
-                call :kill_program hydra_pmi_proxy.exe
-                call :kill_program mormerge.exe
-                call :kill_program d_hydro.exe
-                set errorlevel=0
-                goto :eof
-                
-                :kill_program
-                set program_name=%~1
-                tasklist | find /i "%%program_name%%" > NUL 2>&1
-                if errorlevel 1 (
-                    echo %%program_name%% is not running.
-                ) else (
-                    echo Executing 'taskkill /f /im %%program_name%% /t'
-                    taskkill /f /im %%program_name%% /t > NUL 2>&1
-                )
-                exit /b 0
-            """.trimIndent()
+            scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
         }
     }
 
@@ -143,6 +160,12 @@ object WindowsTest : BuildType({
                 artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
             }
         }
+        dependency(WindowsTestEnvironment) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
+        }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {
             buildRule = lastSuccessful()
             cleanDestination = true
@@ -155,7 +178,14 @@ object WindowsTest : BuildType({
         }
     }
 
-    requirements {
-        startsWith("teamcity.agent.jvm.os.name", "Windows 1")
+    failureConditions {
+        executionTimeoutMin = 90
+        errorMessage = true
+        failOnText {
+            conditionType = BuildFailureOnText.ConditionType.CONTAINS
+            pattern = "[ERROR  ]"
+            failureMessage = "There was an ERROR in the TestBench.py output."
+            reverse = false
+        }
     }
 })

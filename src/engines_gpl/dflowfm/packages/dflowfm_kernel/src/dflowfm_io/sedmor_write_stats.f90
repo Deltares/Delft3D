@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ contains
    subroutine sedmor_write_stats(tim)
       use precision, only: dp
       use m_sediment, only: stm_included, stmpar
-      use m_flowparameters, only: eps10
+      use m_flowparameters, only: EPS10
       use m_flowtimes, only: ti_sed, ti_seds, ti_sede, tstop_user, time_sed
       use precision_basics
       use m_fm_morstatistics
@@ -54,21 +54,25 @@ contains
       integer :: ierr
       real(kind=dp) :: tem_dif
 
-      if (.not. stm_included) return
-      if (.not. stmpar%morpar%moroutput%morstats) return
+      if (.not. stm_included) then
+         return
+      end if
+      if (.not. stmpar%morpar%moroutput%morstats) then
+         return
+      end if
 
       ierr = 1
       if (stmpar%morpar%moroutput%morstats .and. ti_sed > 0) then
-         if (comparereal(tim, time_sed, eps10) >= 0) then
+         if (comparereal(tim, time_sed, EPS10) >= 0) then
             call unc_write_sed(tim)
             call morstats_clearstats()
-            if (comparereal(time_sed, ti_sede, eps10) == 0) then
+            if (comparereal(time_sed, ti_sede, EPS10) == 0) then
                time_sed = tstop_user + 1
             else
                tem_dif = (tim - ti_seds) / ti_sed
-               time_sed = max(ti_seds + (floor(tem_dif + 0.001d0) + 1) * ti_sed, ti_seds)
+               time_sed = max(ti_seds + (floor(tem_dif + 0.001_dp) + 1) * ti_sed, ti_seds)
 
-               if (comparereal(time_sed, ti_sede, eps10) == 1) then
+               if (comparereal(time_sed, ti_sede, EPS10) == 1) then
                   ! next time_map would be beyond end of map-window, write one last map exactly at that end.
                   time_sed = ti_sede
                end if

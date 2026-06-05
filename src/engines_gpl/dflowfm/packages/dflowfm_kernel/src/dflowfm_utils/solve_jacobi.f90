@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,7 +36,7 @@ contains
       use precision, only: dp
       use m_flowgeom, only: ln, kfs, nd
       use m_jacobi, only: bbi, db, itmxjac
-      use m_reduce
+      use m_reduce, only: bbr, ddr, epscg, ccr, lv2
 
       real(kind=dp) :: ds, rrn ! max error
       integer :: L, n, ndx, itsol, nn, La, n1, n2, ni
@@ -46,7 +46,7 @@ contains
       !$OMP PRIVATE(n)
       do n = 1, ndx
          if (kfs(n) == 1) then
-            bbi(n) = 1d0 / bbr(n)
+            bbi(n) = 1.0_dp / bbr(n)
             db(n) = ddr(n) * bbi(n)
          end if
       end do
@@ -54,14 +54,18 @@ contains
 
       itmxjac = 100000
       itsol = 0
-      ds = 1d10
+      ds = 1.0e10_dp
 
       do while (ds > epscg) ! Jacobi
 
          if (mod(itsol, 2) == 0) then
-            n1 = 1; n2 = ndx; ni = 1
+            n1 = 1
+            n2 = ndx
+            ni = 1
          else
-            n2 = 1; n1 = ndx; ni = -1
+            n2 = 1
+            n1 = ndx
+            ni = -1
          end if
 
          !$OMP PARALLEL DO                                          &
@@ -70,8 +74,9 @@ contains
             if (kfs(n) == 1) then
                s1(n) = db(n)
                do nn = 1, nd(n)%lnx
-                  L = nd(n)%ln(nn); La = abs(L)
-                  if (ccr(Lv2(La)) < 0d0) then
+                  L = nd(n)%ln(nn)
+                  La = abs(L)
+                  if (ccr(Lv2(La)) < 0.0_dp) then
                      if (L > 0) then
                         s1(n) = s1(n) - ccr(Lv2(La)) * s1(ln(1, La)) * bbi(n)
                      else
@@ -91,8 +96,9 @@ contains
                if (kfs(n) == 1) then
                   rrn = ddr(n) - bbr(n) * s1(n) ! For explicit points db = s0, so this does won't hurt
                   do nn = 1, nd(n)%lnx
-                     L = nd(n)%ln(nn); La = abs(L)
-                     if (ccr(Lv2(La)) < 0d0) then
+                     L = nd(n)%ln(nn)
+                     La = abs(L)
+                     if (ccr(Lv2(La)) < 0.0_dp) then
                         if (L > 0) then
                            rrn = rrn - ccr(Lv2(La)) * s1(ln(1, La))
                         else
@@ -101,7 +107,9 @@ contains
                      end if
                   end do
                   ds = abs(rrn)
-                  if (ds > epscg) exit
+                  if (ds > epscg) then
+                     exit
+                  end if
                end if
             end do
             !$xOMP END PARALLEL DO

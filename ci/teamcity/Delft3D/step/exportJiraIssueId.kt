@@ -7,7 +7,7 @@ import java.io.File
 /**
  * Extract the Delft3D JIRA issue ID from the branch name and export it.
  * This only works if the branch name follows the Delft3D git branch name rule.
- * See https://git.deltares.nl/oss/delft3d#branch-naming
+ * See https://github.com/Deltares/Delft3D#branch-naming
  * 
  * By default this step exports the teamcity parameter `env.JIRA_ISSUE_ID` using a teamcity
  * service message. But the parameter name can be overridden by changing the `paramName`
@@ -26,17 +26,20 @@ class ExportJiraIssueId : ScriptBuildStep {
     constructor(init: ExportJiraIssueId.() -> Unit) {
         init()
 
-        conditions {
-            exists("teamcity.build.branch")
-            equals("teamcity.build.branch.is_default", "false")
+        if (DslContext.getParameter("enable_export_jira_issue_id").lowercase() == "true") {
+            conditions {
+                exists("teamcity.build.branch")
+                equals("teamcity.build.branch.is_default", "false")
+            }
         }
+
         name = "Export the Jira issue id"
 
         val script = File(DslContext.baseDir, "linux/scripts/exportJiraIssueIdSetParam.sh")
         scriptContent = Util.readScript(script).replace("%param_name%", paramName)
     }
 }
-  
+
 fun BuildSteps.exportJiraIssueId(init: ExportJiraIssueId.() -> Unit): BuildStep {
     val result = ExportJiraIssueId(init)
     step(result)

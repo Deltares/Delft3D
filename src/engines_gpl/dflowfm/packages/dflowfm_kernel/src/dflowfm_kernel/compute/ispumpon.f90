@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,9 +38,8 @@ contains
 
    integer function ispumpon(n, s1k)
       use precision, only: dp
-      use fm_external_forcings_data
-      use m_missing
-      use m_structures
+      use fm_external_forcings_data, only: pumponoff
+      use m_missing, only: dmiss
 
       integer, intent(in) :: n
       real(kind=dp), intent(in) :: s1k
@@ -51,7 +50,8 @@ contains
       end if
 
       if (pumponoff(1, n) == dmiss .and. pumponoff(2, n) == dmiss) then
-         ispumpon = 1; return
+         ispumpon = 1
+         return
       end if
       if (pumponoff(1, n) /= dmiss .and. s1k > pumponoff(1, n)) then
          pumponoff(5, n) = 1

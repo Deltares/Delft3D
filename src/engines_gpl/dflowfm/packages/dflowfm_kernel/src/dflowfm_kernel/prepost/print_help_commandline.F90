@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,7 +41,7 @@ module m_print_help_commandline
 contains
 
    subroutine print_help_commandline()
-      use m_gui
+      use m_gui, only: jagui
       use system_utils, only: FILESEP
 
       character(len=255) :: progarg
@@ -133,7 +133,7 @@ contains
       write (*, *) '          directional=[01]'
       write (*, *) '          outsidecell=[01]'
       write (*, *) '          drypointsfile=<filename (*.pol, or cutcellpolygons.lst)>'
-      write (*, *) '          circumcenter=[123]'
+      write (*, *) '          circumcentermethod=(internalNetlinksEdge | internalNetlinksLoop | allNetlinksLoop)'
       write (*, *) ' '
       write (*, *) '  --make1d2dlinks[:OPTS] NETFILE [-o OUTPUTFILE]'
       write (*, *) '      Make 1d2d links for the given NETFILE and save the resulting net.'
@@ -152,14 +152,13 @@ contains
       write (*, *) ' --cutcells NETFILE'
       write (*, *) '      Cut the unstructured grid in NETFILE with the polygons specified'
       write (*, *) '      in a file called ''cutcellpolygons.lst''.'
-      write (*, *) ' --convertlongculverts PREFIX'
-      write (*, *) '      Convert long culverts in mdu specified structure file to a netfile + crs definition file'
-      write (*, *) '      with file prefix PREFIX''.'
-      write (*, *) ' '
       write (*, *) '  --exportnet-bedlevel MDUFILE'
       write (*, *) '      Load the model in MDUFILE, initialize it, and export the interpolated'
       write (*, *) '      bedlevels into an output file DFM_interpreted_network_<md_ident>_net.nc'
       write (*, *) '      Only applied to models with a *.ext file containing bedlevel data.'
+      write (*, *) ' '
+      write (*, *) ' --precice'
+      write (*, *) '      Couple via preCICE.'
       write (*, *) ' '
       write (*, *) ' --no-geom-cache'
       write (*, *) '      Do not load nor save cache file with geometry information.'

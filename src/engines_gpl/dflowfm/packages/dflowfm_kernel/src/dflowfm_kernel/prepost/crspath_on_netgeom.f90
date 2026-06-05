@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,9 +50,9 @@ contains
 
    subroutine crspath_on_netgeom(path)
       use precision, only: dp
-      use m_crspath
-      use network_data
-      use m_get_link_neighboring_cell_coords
+      use m_crspath, only: tcrspath, crspath_on_singlelink
+      use network_data, only: numl, xk, kn, yk
+      use m_get_link_neighboring_cell_coords, only: get_link_neighboringcellcoords
 
       type(tcrspath), intent(inout) :: path !< Cross section path that must be imposed on network geometry.
 
@@ -64,7 +64,9 @@ contains
 !   Loop across all net links
       do L = 1, numl
          call get_link_neighboringcellcoords(L, isactive, xza, yza, xzb, yzb)
-         if (isactive /= 1) cycle
+         if (isactive /= 1) then
+            cycle
+         end if
 
          call crspath_on_singlelink(path, L, xk(kn(1, L)), yk(kn(1, L)), xk(kn(2, L)), yk(kn(2, L)), xza, yza, xzb, yzb, 1)
       end do

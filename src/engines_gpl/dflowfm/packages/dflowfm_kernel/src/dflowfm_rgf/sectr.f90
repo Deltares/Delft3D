@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -103,8 +103,8 @@ contains
 !        VERDUBBEL AANTAL STEUNPUNTEN ALS
          do I = 1, NUMSPL
             call NUMPold(X, mmax, nmax, I, NUMPI)
-            call GETIJ(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
-            call GETIJ(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
             call SPLINE(XI, NUMPI, XJ)
             call SPLINE(YI, NUMPI, YJ)
             do J = 2 * NUMPI - 1, 2, -2
@@ -125,14 +125,14 @@ contains
       IONBENOEMD = 0
 6     continue
       do I = 1, NUMSPL
-         call READYY(' ', 0.01d0 + 0.3d0 * dble(I - 1) / dble(NUMSPL))
+         call READYY(' ', 0.01_dp + 0.3_dp * real(I - 1, kind=dp) / real(NUMSPL, kind=dp))
          do J = I + 1, NUMSPL
             call NUMPold(X, mmax, nmax, I, NUMPI)
             call NUMPold(X, mmax, nmax, J, NUMPJ)
-            call GETIJ(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
-            call GETIJ(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
-            call GETIJ(X, XJ, mmax, nmax, imax, J, J, 1, NUMPJ)
-            call GETIJ(Y, YJ, mmax, nmax, imax, J, J, 1, NUMPJ)
+            call get_ij(X, XI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(Y, YI, mmax, nmax, imax, I, I, 1, NUMPI)
+            call get_ij(X, XJ, mmax, nmax, imax, J, J, 1, NUMPJ)
+            call get_ij(Y, YJ, mmax, nmax, imax, J, J, 1, NUMPJ)
             call SECT3r(XI, YI, XJ, YJ, imax, CRP, &
                         NUMPI, NUMPJ, NUMCRO, TI, TJ, XSPc, YSPc)
             if (NUMCRO == 1) then
@@ -156,14 +156,14 @@ contains
                   if (CRP * NTYP(I) < 0) then
                      call mess(LEVEL_DEBUG, ' SWITCHED J')
                      call SWITCH(X, Y, mmax, nmax, J, NUMPJ)
-                     TJ = dble(NUMPJ) - 1 - TJ
+                     TJ = real(NUMPJ, kind=dp) - 1 - TJ
                   end if
                else if (NTYP(I) == 0) then
                   NTYP(I) = -NTYP(J)
                   if (CRP * NTYP(J) > 0) then
                      call mess(LEVEL_DEBUG, ' SWITCHED I')
                      call SWITCH(X, Y, mmax, nmax, I, NUMPI)
-                     TI = dble(NUMPI) - 1 - TI
+                     TI = real(NUMPI, kind=dp) - 1 - TI
                   end if
                end if
                TIJ(I, J) = TI
@@ -216,7 +216,9 @@ contains
       end do
 
       do I = 1, NUMSPL
-         if (NTYP(I) == 1) NUMI = I
+         if (NTYP(I) == 1) then
+            NUMI = I
+         end if
       end do
 
 59    continue
@@ -284,7 +286,9 @@ contains
             end if
          end do
       end do
-      if (JACHANGE == 1) goto 59
+      if (JACHANGE == 1) then
+         goto 59
+      end if
 
 !     Initialiseer ranking, start en eind, 1,2,3
       do I = 1, NUMSPL
@@ -312,7 +316,9 @@ contains
 
          MAXN = 0
          do J = NUMI + 1, NUMSPL
-            if (TIJ(J, I) /= 0) MAXN = max(MN12(J, 2), MAXN)
+            if (TIJ(J, I) /= 0) then
+               MAXN = max(MN12(J, 2), MAXN)
+            end if
          end do
 
          MN12(I, 1) = MAXN
@@ -334,7 +340,9 @@ contains
          end do
          MAXM = 0
          do J = 1, NUMI
-            if (TIJ(J, I) /= 0) MAXM = max(MN12(J, 3), MAXM)
+            if (TIJ(J, I) /= 0) then
+               MAXM = max(MN12(J, 3), MAXM)
+            end if
          end do
          MN12(I, 1) = MAXM
       end do
@@ -348,7 +356,9 @@ contains
       do I = 1, NUMI
          do J = NUMI + 1, NUMSPL
             if (TIJ(I, J) /= 0) then
-               if (MN12(I, 2) == 0) MN12(I, 2) = MN12(J, 1)
+               if (MN12(I, 2) == 0) then
+                  MN12(I, 2) = MN12(J, 1)
+               end if
                MN12(I, 3) = MN12(J, 1)
             end if
          end do
@@ -358,13 +368,15 @@ contains
       do I = NUMI + 1, NUMSPL
          do J = 1, NUMI
             if (TIJ(I, J) /= 0) then
-               if (MN12(I, 2) == 0) MN12(I, 2) = MN12(J, 1)
+               if (MN12(I, 2) == 0) then
+                  MN12(I, 2) = MN12(J, 1)
+               end if
                MN12(I, 3) = MN12(J, 1)
             end if
          end do
       end do
 
-      call READYY(' ', 0.95d0)
+      call READYY(' ', 0.95_dp)
 
       do I = 1, NUMSPL
          write (msgbuf, *) I, (MN12(I, J), J=1, 3)

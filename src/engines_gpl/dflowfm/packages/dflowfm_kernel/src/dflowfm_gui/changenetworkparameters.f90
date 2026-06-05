@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -40,6 +40,7 @@ contains
    subroutine changenetworkPARAMETERS()
       use m_sferic, only: jamidlat
       use network_data
+      use m_circumcenter_method, only: circumcenter_method, circumcenter_tolerance
       use unstruc_colors
       use unstruc_display_data
       use m_missing
@@ -71,7 +72,7 @@ contains
       integer :: iselect, minp
       character(len=128) select(3)
 
-      integer, parameter :: NUMPAR = 23, NUMFLD = 2 * NUMPAR
+      integer, parameter :: NUMPAR = 24, NUMFLD = 2 * NUMPAR
       integer IX(NUMFLD), IY(NUMFLD), IS(NUMFLD), IT(NUMFLD)
       character OPTION(NUMPAR) * 40, HELPM(NUMPAR) * 60
       integer, external :: infoinput
@@ -79,25 +80,43 @@ contains
       jins_old = jins
 
       NLEVEL = 4
-      OPTION(1) = 'SELECT INSIDE POLYGON (1/0), 1 = INSIDE '; IT(1 * 2) = 2
+      OPTION(1) = 'SELECT INSIDE POLYGON (1/0), 1 = INSIDE '
+      IT(1 * 2) = 2
       !OPTION(2) = 'TRIANGLEMINANGLE                       ' ; IT( 2*2)  = 6
-      OPTION(2) = 'jadelnetlinktyp                         '; IT(2 * 2) = 2
-      OPTION(3) = 'TRIANGLEMAXANGLE                        '; IT(3 * 2) = 6
-      OPTION(4) = 'TRIANGLESIZEFACTOR, MAX.INSIDE/ AV.EDGE '; IT(4 * 2) = 6
-      OPTION(5) = 'limit center; 1.0:in cell <-> 0.0:on c/g'; IT(5 * 2) = 6
-      OPTION(6) = 'cosphiutrsh in geominit (good orhto)    '; IT(6 * 2) = 6
-      OPTION(7) = 'remove small links       0.0->          '; IT(7 * 2) = 6
-      OPTION(8) = 'TIME CONSUMING NETWORK CHECKS YES/NO 1/0'; IT(8 * 2) = 2
-      OPTION(9) = 'NR OF SMOOTH. ITER. IN COURANT NETWORK  '; IT(9 * 2) = 2
-      OPTION(10) = 'SMALLEST CELLSIZE IN COURANT NETWORK    '; IT(10 * 2) = 6
-      OPTION(11) = 'REMOVE SMALL TRIANGLES, TRIAREAREMFRAC  '; IT(11 * 2) = 6
-      OPTION(12) = 'REFINE NETWORK (QUADS) DIRECTION: 0,-1,1'; IT(12 * 2) = 2
-      OPTION(13) = 'Merge nodes closer than tooclose (m)    '; IT(13 * 2) = 6
-      OPTION(14) = 'Connect 1D end nodes to branch if closer'; IT(14 * 2) = 6
-      OPTION(15) = 'Uniform DX in copy landb to 1D netw     '; IT(15 * 2) = 6
-      OPTION(16) = 'snap-to-landbdy tolerance, netboundary  '; IT(16 * 2) = 6
-      OPTION(17) = 'snap-to-landbdy tolerance, inner network'; IT(17 * 2) = 6
-      OPTION(18) = 'max nr of faces allowed in removesmallfl'; IT(18 * 2) = 2
+      OPTION(2) = 'jadelnetlinktyp                         '
+      IT(2 * 2) = 2
+      OPTION(3) = 'TRIANGLEMAXANGLE                        '
+      IT(3 * 2) = 6
+      OPTION(4) = 'TRIANGLESIZEFACTOR, MAX.INSIDE/ AV.EDGE '
+      IT(4 * 2) = 6
+      OPTION(5) = 'limit center; 1.0:in cell <-> 0.0:on c/g'
+      IT(5 * 2) = 6
+      OPTION(6) = 'cosphiutrsh in geominit (good orhto)    '
+      IT(6 * 2) = 6
+      OPTION(7) = 'remove small links       0.0->          '
+      IT(7 * 2) = 6
+      OPTION(8) = 'TIME CONSUMING NETWORK CHECKS YES/NO 1/0'
+      IT(8 * 2) = 2
+      OPTION(9) = 'NR OF SMOOTH. ITER. IN COURANT NETWORK  '
+      IT(9 * 2) = 2
+      OPTION(10) = 'SMALLEST CELLSIZE IN COURANT NETWORK    '
+      IT(10 * 2) = 6
+      OPTION(11) = 'REMOVE SMALL TRIANGLES, TRIAREAREMFRAC  '
+      IT(11 * 2) = 6
+      OPTION(12) = 'REFINE NETWORK (QUADS) DIRECTION: 0,-1,1'
+      IT(12 * 2) = 2
+      OPTION(13) = 'Merge nodes closer than tooclose (m)    '
+      IT(13 * 2) = 6
+      OPTION(14) = 'Connect 1D end nodes to branch if closer'
+      IT(14 * 2) = 6
+      OPTION(15) = 'Uniform DX in copy landb to 1D netw     '
+      IT(15 * 2) = 6
+      OPTION(16) = 'snap-to-landbdy tolerance, netboundary  '
+      IT(16 * 2) = 6
+      OPTION(17) = 'snap-to-landbdy tolerance, inner network'
+      IT(17 * 2) = 6
+      OPTION(18) = 'max nr of faces allowed in removesmallfl'
+      IT(18 * 2) = 2
 !   OPTION(19)= 'dry/illegal/cutcells file (*.pol, *.lst)' ; IT(19*2)  = 4
       if (len_trim(md_dryptsfile) == 0) then
          OPTION(19) = 'DRY CELL FILE (none)'
@@ -105,10 +124,16 @@ contains
          OPTION(19) = 'DRY CELL FILE ('//trim(md_dryptsfile(1:min(len_trim(md_dryptsfile), 25)))//')'
       end if
       IT(19 * 2) = 4
-      OPTION(20) = '1D2D link generation algorithm          '; IT(20 * 2) = 2
-      OPTION(21) = 'Lateral algorithm search radius         '; IT(21 * 2) = 6
-      OPTION(22) = 'Use middle latitude (1/0)               '; IT(22 * 2) = 2
-      OPTION(23) = 'Circumcenter (1/2/3)                    '; IT(23 * 2) = 2
+      OPTION(20) = '1D2D link generation algorithm          '
+      IT(20 * 2) = 2
+      OPTION(21) = 'Lateral algorithm search radius         '
+      IT(21 * 2) = 6
+      OPTION(22) = 'Use middle latitude (1/0)               '
+      IT(22 * 2) = 2
+      OPTION(23) = 'Circumcenter method (1/2/3)             '
+      IT(23 * 2) = 2
+      OPTION(24) = 'Circumcenter tolerance                  '
+      IT(24 * 2) = 6
 
 !   123456789012345678901234567890123456789012345678901234567890
 !            1         2         3         4         5         6
@@ -158,7 +183,9 @@ contains
       HELPM(22) = &
          '1 = yes, 0 = no                                             '
       HELPM(23) = &
-         'iterate per 1=edge, 2=loop, 3=loop incl. outline            '
+         'iterate per 1=edge, 2=loop, 3=loop incl. boundary           '
+      HELPM(24) = &
+         'tolerance for circumcenter convergence (m)                  '
 
       call SAVEKEYS()
       NUMPARACTUAL = NUMPAR
@@ -166,10 +193,14 @@ contains
 
       IR = 0
       do I = 1, NUMPARACTUAL
-         IL = IR + 1; IR = IL + 1
-         IS(IL) = 82; IS(IR) = 10
-         IX(IL) = 10; IX(IR) = 92
-         IY(IL) = 2 * I; IY(IR) = 2 * I
+         IL = IR + 1
+         IR = IL + 1
+         IS(IL) = 82
+         IS(IR) = 10
+         IX(IL) = 10
+         IX(IR) = 92
+         IY(IL) = 2 * I
+         IY(IR) = 2 * I
          IT(IL) = 1001 ! ir staat hierboven
       end do
 
@@ -225,12 +256,12 @@ contains
       call IFormputDouble(2 * 6, cosphiutrsh, '(F7.3)')
       call IFormputDouble(2 * 7, removesmalllinkstrsh, '(F7.3)')
       call IFORMpuTINTEGER(2 * 8, JOCHECKNET)
-      call IFORMpuTINTEGER(2 * 9, NUMITCOURANT)
+      call IFORMpuTINTEGER(2 * 9, numitcourant)
       call IFormputDouble(2 * 10, SMALLESTSIZEINCOURANT, '(F7.0)')
       call IFormputDouble(2 * 11, TRIAREAREMFRAC, '(F7.3)')
       call IFORMpuTINTEGER(2 * 12, M13QUAD)
       call IFormputDouble(2 * 13, Tooclose, '(F7.3)')
-      call IFormputDouble(2 * 14, CONNECT1DEND, '(F7.3)')
+      call IFormputDouble(2 * 14, connect1dend, '(F7.3)')
       call IFormputDouble(2 * 15, Unidx1D, '(F7.3)')
       call IFormputDouble(2 * 16, DCLOSE_bound, '(F7.3)')
       call IFormputDouble(2 * 17, DCLOSE_whole, '(F7.3)')
@@ -247,6 +278,7 @@ contains
       call IFormputDouble(2 * 21, searchRadius1D2DLateral, '(F7.3)')
       call IFormputinteger(2 * 22, jamidlat)
       call IFormputinteger(2 * 23, circumcenter_method)
+      call IFormputDouble(2 * 24, circumcenter_tolerance, '(e10.5)')
 
       ! Display the form with numeric fields left justified and set the initial field to number 2
       call IOUTJUSTIFYNUM('L')
@@ -285,7 +317,9 @@ contains
          if (KEY == 23) then
             ! netcell administration out of date if jins changes
             call IFORMGETINTEGER(2 * 1, jins)
-            if (jins /= jins_old) netstat = NETSTAT_CELLS_DIRTY
+            if (jins /= jins_old) then
+               netstat = NETSTAT_CELLS_DIRTY
+            end if
             jins_old = jins
 
             !CALL IFormGetDouble  (2*2 , TRIANGLEMINANGLE)
@@ -296,12 +330,12 @@ contains
             call IFormgetDouble(2 * 6, cosphiutrsh)
             call IFormGetDouble(2 * 7, removesmalllinkstrsh)
             call IFORMGETINTEGER(2 * 8, JOCHECKNET)
-            call IFORMGETINTEGER(2 * 9, NUMITCOURANT)
+            call IFORMGETINTEGER(2 * 9, numitcourant)
             call IFormGetDouble(2 * 10, SMALLESTSIZEINCOURANT)
             call IFormGetDouble(2 * 11, TRIAREAREMFRAC)
             call IFORMGETINTEGER(2 * 12, M13QUAD)
             call IFormGetDouble(2 * 13, Tooclose)
-            call IFormGetDouble(2 * 14, CONNECT1DEND)
+            call IFormGetDouble(2 * 14, connect1dend)
             call IFormGetDouble(2 * 15, Unidx1D)
             call IFormGetDouble(2 * 16, DCLOSE_BOUND)
             call IFormGetDouble(2 * 17, DCLOSE_WHOLE)
@@ -321,6 +355,7 @@ contains
             call IFormGetDouble(2 * 21, searchRadius1D2DLateral)
             call IFormGetinteger(2 * 22, jamidlat)
             call IFormGetinteger(2 * 23, circumcenter_method)
+            call IFormGetDouble(2 * 24, circumcenter_tolerance)
 
          end if
          call IWinClose(1)

@@ -8,7 +8,7 @@
 ## specified command line arguments.
 ##
 ## Usage:
-##    convert_qstss.sh <input.tim|input.ext> <jasal> <jatem>
+##    convert_qstss.sh <input.tim|input.ext> <jasal> <temperature_model>
 ##
 ## When input file is an .ext file, all contained qstss .tim files are
 ## automatically detected.
@@ -18,7 +18,7 @@ me=`basename "$0"`
 function print_usage {
 	echo <<EOM
 Usage:
-    $me <input.tim> <jasal> <jatem>
+    $me <input.tim> <jasal> <temperature_model>
 
 jasal and jatemp should be 0 or 1.
 EOM

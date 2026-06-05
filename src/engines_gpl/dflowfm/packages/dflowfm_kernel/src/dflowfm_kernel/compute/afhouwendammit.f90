@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,8 @@ contains
 
    subroutine afhouwendammit()
       use precision, only: dp
-      use m_ship
-      use m_shipcoor
+      use m_ship, only: nshiptxy, deadw, fextx, fexty, fextm, xmxs, fricxi, shy, xmns, ymxs, fricyi, shx, ymns
+      use m_shipcoor, only: shipcoor
       implicit none
       integer :: n, i, j
       real(kind=dp) :: sx1, sy1, sx2, sy2, eas, easm, frc
@@ -55,11 +55,15 @@ contains
 
       do n = 1, nshiptxy
 
-         eas = 0.25d0 * deadw(n); easm = 0.5d0 * eas
-         frc = 0.5d0 * deadw(n)
-         fextx(n) = 0d0; fexty(n) = 0d0; fextm(n) = 0d0
+         eas = 0.25_dp * deadw(n)
+         easm = 0.5_dp * eas
+         frc = 0.5_dp * deadw(n)
+         fextx(n) = 0.0_dp
+         fexty(n) = 0.0_dp
+         fextm(n) = 0.0_dp
 
-         sx1 = 0.9d0; sy1 = 0d0
+         sx1 = 0.9_dp
+         sy1 = 0.0_dp
          call shipcoor(n, sx1, sy1, sx2, sy2) ! midvoor
          call inkade(sx2, sy2, i, j)
          if (i == 1) then
@@ -86,7 +90,8 @@ contains
             fextm(n) = fextm(n) + easm * (ymns - sy2) * (sx2 - shx(n))
          end if
 
-         sx1 = 0.9d0; sy1 = 1d0
+         sx1 = 0.9_dp
+         sy1 = 1.0_dp
          call shipcoor(n, sx1, sy1, sx2, sy2) ! linksvoor
          call inkade(sx2, sy2, i, j)
          if (i == 1) then
@@ -113,7 +118,8 @@ contains
             fextm(n) = fextm(n) + easm * (ymns - sy2) * (sx2 - shx(n))
          end if
 
-         sx1 = 0.9d0; sy1 = -1d0
+         sx1 = 0.9_dp
+         sy1 = -1.0_dp
          call shipcoor(n, sx1, sy1, sx2, sy2) ! rechtsvoor
          call inkade(sx2, sy2, i, j)
          if (i == 1) then
@@ -140,7 +146,8 @@ contains
             fextm(n) = fextm(n) + easm * (ymns - sy2) * (sx2 - shx(n))
          end if
 
-         sx1 = -1d0; sy1 = 1d0
+         sx1 = -1.0_dp
+         sy1 = 1.0_dp
          call shipcoor(n, sx1, sy1, sx2, sy2) ! linksachter
          call inkade(sx2, sy2, i, j)
          if (i == 1) then
@@ -167,7 +174,8 @@ contains
             fextm(n) = fextm(n) + easm * (ymns - sy2) * (sx2 - shx(n))
          end if
 
-         sx1 = -1d0; sy1 = -1d0
+         sx1 = -1.0_dp
+         sy1 = -1.0_dp
          call shipcoor(n, sx1, sy1, sx2, sy2) ! rechtsachter
          call inkade(sx2, sy2, i, j)
          if (i == 1) then

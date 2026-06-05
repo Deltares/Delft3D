@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,9 +45,9 @@ contains
 !! leaving the cell = +
    subroutine QucPer3Dsigma(n12, LL, Lb, Lt, cs, sn, quk1)
       use precision, only: dp
-      use m_flow
-      use m_flowgeom
-      use m_sferic
+      use m_flow, only: lbot, ltop, qa, ucxu, ucyu, jarhoxu, rhou, u1
+      use m_flowgeom, only: ln, nd
+      use m_sferic, only: jasfer3d
       use m_lin2nodx, only: lin2nodx
       use m_lin2nody, only: lin2nody
       use m_nod2linx, only: nod2linx
@@ -66,15 +66,19 @@ contains
       real(kind=dp) :: ucinx, uciny
       integer :: nn12
 
-      Quk1 = 0d0
+      Quk1 = 0.0_dp
 
       k12 = ln(n12, LL)
       do La = 1, nd(k12)%lnx ! loop over all attached links
          LLL = nd(k12)%ln(La)
-         nn12 = 1; if (LLL > 0) nn12 = 2
+         nn12 = 1
+         if (LLL > 0) then
+            nn12 = 2
+         end if
          LLLL = abs(LLL)
 
-         Lb2 = Lbot(LLLL); Lt2 = Ltop(LLLL)
+         Lb2 = Lbot(LLLL)
+         Lt2 = Ltop(LLLL)
          do Lk = LB2, LT2
 
             if (qa(Lk) /= 0) then ! include own link
@@ -96,7 +100,7 @@ contains
                   end if
                end if
                if (LLL > 0) then ! incoming link
-                  ucin = -1d0 * ucin
+                  ucin = -1.0_dp * ucin
                end if
                Lkin = min(Lk - Lb2 + 1, Lt - Lb + 1) ! for fixed layers just add to top index
                Quk1(1, Lkin) = Quk1(1, Lkin) + qa(Lk) * ucin

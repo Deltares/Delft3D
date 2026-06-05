@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -108,8 +108,8 @@ contains
    subroutine initimer()
       implicit none
 
-      t = 0d0
-      tcpu = 0d0
+      t = 0.0_dp
+      tcpu = 0.0_dp
       itstat = 0
 
       numtsteps = 0
@@ -119,7 +119,7 @@ contains
 !> start the timer
    subroutine starttimer(itvar)
       use precision, only: dp
-      use m_wall_clock_time
+      use m_wall_clock_time, only: wall_clock_time
       implicit none
 
       integer, intent(in) :: itvar !< timer number
@@ -145,14 +145,13 @@ contains
 !> stop the timer
    subroutine stoptimer(itvar)
       use precision, only: dp
-      use MessageHandling
-      use m_wall_clock_time
+      use m_wall_clock_time, only: wall_clock_time
 
       implicit none
       integer, intent(in) :: itvar !< timer number
 
       real(kind=dp) :: tloc
-      real(kind=dp), parameter :: dtol = 1d-3 !< timer tolerance
+      real(kind=dp), parameter :: dtol = 1.0e-3_dp !< timer tolerance
 
 !     check status
       if (itstat(itvar) /= 1) then
@@ -181,7 +180,7 @@ contains
 
    !> get timer value
    real(kind=dp) function gettimer(itype, itvar)
-      use precision, only: dp
+
       implicit none
       integer, intent(in) :: itype !< timer type, cpu-time (0) or wall-clock time (other)
       integer, intent(in) :: itvar !< timer number

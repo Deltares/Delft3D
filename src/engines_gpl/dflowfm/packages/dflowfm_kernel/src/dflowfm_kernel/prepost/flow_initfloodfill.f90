@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -78,7 +78,7 @@ contains
       nx = ns + ndx - 1
       call realloc(kcsfill, nx, fill=0)
       call realloc(ndqueue, nx, fill=0)
-      call realloc(s1queue, nx, fill=0d0)
+      call realloc(s1queue, nx, fill=0.0_dp)
 
       iqcur = 0 !< Index of current node in queue.
       iqtail = 0 !< Index of most recently added element in work queue.
@@ -90,7 +90,9 @@ contains
       end if
 
       if (ierror /= 0) then
-         if (allocated(inodes)) deallocate (inodes)
+         if (allocated(inodes)) then
+            deallocate (inodes)
+         end if
          jakdtree = 0
       end if
 
@@ -114,7 +116,9 @@ contains
          end if
       end do
 
-      if (iqtail == 0) return
+      if (iqtail == 0) then
+         return
+      end if
 
 ! Loop over flow node queue: for each node, water level is already set,
 ! but now also visit its neighbouring flow nodes (this is the 'flood' step).
@@ -127,7 +131,9 @@ contains
          end if
          do iL = 1, nd(k)%lnx
             Lf = abs(nd(k)%ln(iL))
-            if (s1queue(iqcur) < minval(bob(:, Lf))) cycle ! Water level lower than link's bottom level, cannot flood across this link.
+            if (s1queue(iqcur) < minval(bob(:, Lf))) then
+               cycle ! Water level lower than link's bottom level, cannot flood across this link.
+            end if
             k2 = ln(1, Lf)
             if (k2 == k) then
                k2 = ln(2, Lf)
@@ -135,7 +141,7 @@ contains
 
             if (kcsfill(k2) == 1) then
                !   Two flood areas meet: average waterlevel on their interface
-               s1(k2) = .5d0 * (s1(k2) + s1queue(iqcur))
+               s1(k2) = 0.5_dp * (s1(k2) + s1queue(iqcur))
             else if (kcsfill(k2) == 0) then
                !   Newly flooded point: set waterlevel and enqueue it for further flooding.
                s1(k2) = s1queue(iqcur)
@@ -146,7 +152,9 @@ contains
             end if
          end do
          ! All reachable nodes have been visited, rest (if any) remains unflooded at s1ini:
-         if (iqcur == iqtail) exit
+         if (iqcur == iqtail) then
+            exit
+         end if
       end do
 
 ! Update water depth explicitly here, for direct plotting.
@@ -155,7 +163,9 @@ contains
 
       deallocate (kcsfill, ndqueue, s1queue)
 
-      if (allocated(inodes)) deallocate (inodes)
+      if (allocated(inodes)) then
+         deallocate (inodes)
+      end if
 
    end subroutine flow_initfloodfill
 

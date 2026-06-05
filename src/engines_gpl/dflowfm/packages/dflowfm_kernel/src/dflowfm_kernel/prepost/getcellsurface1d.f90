@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,7 +44,7 @@ contains
    !> Computes the bottom area of a cell for 1d coordinates.
    subroutine getcellsurface1d(ba, bai)
 
-      use m_flowgeom, only: n1Dend, lnx, ndx2d, dx, wu, ln, lnxi, mx1dend, kcu, ndx1Db, ndx
+      use m_flowgeom, only: lnx, kcu, ln, ndx2d, dx, wu, lnxi, mx1dend, n1Dend, ndx1Db, ndx
       use precision, only: dp
 
       implicit none
@@ -63,19 +63,27 @@ contains
          if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (k1 > ndx2d) ba(k1) = 0
-            if (k2 > ndx2d) ba(k2) = 0
+            if (k1 > ndx2d) then
+               ba(k1) = 0
+            end if
+            if (k2 > ndx2d) then
+               ba(k2) = 0
+            end if
          end if
       end do
 
       do L = 1, lnx ! for all 1d links, add half the flowlink length*width to the neighbouring flow nodes
          if (kcu(L) == 1 .or. kcu(L) == -1 .or. kcu(L) == 4 .or. kcu(L) == 5 .or. kcu(L) == 7) then
             ! TODO: UNST-6592: consider excluding ghost links here and do an mpi_allreduce sum later
-            hdx = 0.5d0 * dx(L)
+            hdx = 0.5_dp * dx(L)
             k1 = ln(1, L)
             k2 = ln(2, L)
-            if (k1 > ndx2d) ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
-            if (k2 > ndx2d) ba(k2) = ba(k2) + hdx * wu(L)
+            if (k1 > ndx2d) then
+               ba(k1) = ba(k1) + hdx * wu(L) ! todo, on 1d2d nodes, choose appropriate wu1DUNI = min ( wu1DUNI, intersected 2D face)
+            end if
+            if (k2 > ndx2d) then
+               ba(k2) = ba(k2) + hdx * wu(L)
+            end if
          end if
       end do
 
@@ -89,13 +97,13 @@ contains
       ! for hanging 1d nodes set the value to twice the original
       do k = 1, mx1Dend
          k1 = n1Dend(k)
-         ba(k1) = 2d0 * ba(k1)
+         ba(k1) = 2.0_dp * ba(k1)
       end do
 
       ! compute inverse area of 1D nodes
       do n = ndx2D + 1, ndx1Db
-         if (ba(n) > 0d0) then
-            bai(n) = 1d0 / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
+         if (ba(n) > 0.0_dp) then
+            bai(n) = 1.0_dp / ba(n) ! initially, ba based on 'max wet envelopes', take bai used in linktocentreweights
          end if
       end do
 

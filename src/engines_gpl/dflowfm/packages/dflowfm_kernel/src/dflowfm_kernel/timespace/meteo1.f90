@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,10 +45,6 @@ module timespace_read
 !!--description-----------------------------------------------------------------
 !
 !!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
 !
 !!--declarations----------------------------------------------------------------
    use precision, only: dp
@@ -143,21 +139,16 @@ module timespace_data
 !
 !!--pseudo code and references--------------------------------------------------
 !
-! Stef.Hummel@deltares.nl
-! Herman.Kernkamp@deltares.nl
-! Adri.Mourits@deltares.nl
-! Edwin.Spee@deltares.nl
-!
 !!--declarations----------------------------------------------------------------
    use precision
    use timespace_read
    use timespace_parameters
    implicit none
 
-   real(kind=dp) :: timelast = -1d10 ! time of most recent value requested
+   real(kind=dp) :: timelast = -1e10_dp ! time of most recent value requested
    ! if time =< timelast, no updates
 
-   real(kind=dp) :: t01ini = -1d10 ! initial time for dataproviders t0 and t1 fields
+   real(kind=dp) :: t01ini = -1e10_dp ! initial time for dataproviders t0 and t1 fields
 
    ! AvD: NOTE
    ! De pointers in alle onderstaande types worden puur gebruikt om dynamisch
@@ -189,7 +180,7 @@ contains
       integer, intent(out) :: method !< Time-interpolation method for current quantity.
       character(len=*), intent(out) :: filename !< Name of data file for current quantity.
       character(len=*), intent(out) :: qid !< Identifier of current quantity (i.e., 'waterlevelbnd')
-      character(len=1), intent(out) :: operand !< Operand w.r.t. previous data ('O'verride or '+'Append)
+      integer, intent(out) :: operand !< Operand w.r.t. previous data
       real(kind=dp), intent(out) :: transformcoef(:) !< Transformation coefficients
       integer, intent(out) :: ja !< Whether a block was successfully read or not.
       character(len=*), intent(out) :: varname !< variable name within filename; only in case of NetCDF
@@ -202,34 +193,34 @@ contains
       logical, save :: alreadyPrinted = .false. !< flag to avoid printing the same message many times
 
       integer, parameter :: NUMGENERALKEYWRD_OLD = 26
-      character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = (/character(len=256) :: &
-                                                                        'widthleftW1', & ! ( 1)
-                                                                        'levelleftZb1', & ! ( 2)
-                                                                        'widthleftWsdl', & ! ( 3)
-                                                                        'levelleftZbsl', & ! ( 4)
-                                                                        'widthcenter', & ! ( 5)
-                                                                        'levelcenter', & ! ( 6)
-                                                                        'widthrightWsdr', & ! ( 7)
-                                                                        'levelrightZbsr', & ! ( 8)
-                                                                        'widthrightW2', & ! ( 9)
-                                                                        'levelrightZb2', & ! (10)
-                                                                        'gateheight', & ! (11)
-                                                                        'gateheightintervalcntrl', & ! (12)
-                                                                        'pos_freegateflowcoeff', & ! (13)
-                                                                        'pos_drowngateflowcoeff', & ! (14)
-                                                                        'pos_freeweirflowcoeff', & ! (15)
-                                                                        'pos_drownweirflowcoeff', & ! (16)
-                                                                        'pos_contrcoeffreegate', & ! (17)
-                                                                        'neg_freegateflowcoeff', & ! (18)
-                                                                        'neg_drowngateflowcoeff', & ! (19)
-                                                                        'neg_freeweirflowcoeff', & ! (20)
-                                                                        'neg_drownweirflowcoeff', & ! (21)
-                                                                        'neg_contrcoeffreegate', & ! (22)
-                                                                        'extraresistance', & ! (23)
-                                                                        'dynstructext', & ! (24)
-                                                                        'gatedoorheight', & ! (25)
-                                                                        'door_opening_width' & ! (26)
-                                                                        /)
+      character(len=256) :: generalkeywrd_old(NUMGENERALKEYWRD_OLD) = [character(len=256) :: &
+                                                                       'widthleftW1', & ! ( 1)
+                                                                       'levelleftZb1', & ! ( 2)
+                                                                       'widthleftWsdl', & ! ( 3)
+                                                                       'levelleftZbsl', & ! ( 4)
+                                                                       'widthcenter', & ! ( 5)
+                                                                       'levelcenter', & ! ( 6)
+                                                                       'widthrightWsdr', & ! ( 7)
+                                                                       'levelrightZbsr', & ! ( 8)
+                                                                       'widthrightW2', & ! ( 9)
+                                                                       'levelrightZb2', & ! (10)
+                                                                       'gateheight', & ! (11)
+                                                                       'gateheightintervalcntrl', & ! (12)
+                                                                       'pos_freegateflowcoeff', & ! (13)
+                                                                       'pos_drowngateflowcoeff', & ! (14)
+                                                                       'pos_freeweirflowcoeff', & ! (15)
+                                                                       'pos_drownweirflowcoeff', & ! (16)
+                                                                       'pos_contrcoeffreegate', & ! (17)
+                                                                       'neg_freegateflowcoeff', & ! (18)
+                                                                       'neg_drowngateflowcoeff', & ! (19)
+                                                                       'neg_freeweirflowcoeff', & ! (20)
+                                                                       'neg_drownweirflowcoeff', & ! (21)
+                                                                       'neg_contrcoeffreegate', & ! (22)
+                                                                       'extraresistance', & ! (23)
+                                                                       'dynstructext', & ! (24)
+                                                                       'gatedoorheight', & ! (25)
+                                                                       'door_opening_width' & ! (26)
+                                                                       ]
 
       if (minp == 0) then
          ja = 0
@@ -321,12 +312,16 @@ contains
       end if
 
       keywrd = 'OPERAND'
-      OPERAND = 'O' ! hk : default =O
+      operand = OPERAND_OVERRIDE
       call zoekja(minp, rec, keywrd, ja)
       if (ja == 1) then
-         l1 = index(rec, '=') + 1
-         call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
-         read (rec(l2:l2), '(a1)', err=990) operand
+         block
+            character(len=256) :: temp
+            l1 = index(rec, '=') + 1
+            call checkForSpacesInProvider(rec, l1, l2) ! l2 = l1 + #spaces after the equal-sign
+            read (rec(l2:l2), '(a1)', err=990) temp
+            operand = convert_legacy_operand_string_to_integer(temp)
+         end block
       else
          return
       end if
@@ -336,8 +331,12 @@ contains
       if (qid == 'generalstructure') then
          call mess(LEVEL_WARN, 'Keyword [generalstructure] is not supported in the external forcing file. &
  &                               Please use a structure file <*.ini> instead.')
-         if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) call mess(LEVEL_WARN, 'Not all expected keywords are provided.')
-         if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) call mess(LEVEL_WARN, 'More keywords provided than expected.')
+         if (NUMGENERALKEYWRD_OLD < NTRANSFORMCOEF) then
+            call mess(LEVEL_WARN, 'Not all expected keywords are provided.')
+         end if
+         if (NUMGENERALKEYWRD_OLD > NTRANSFORMCOEF) then
+            call mess(LEVEL_WARN, 'More keywords provided than expected.')
+         end if
          do k = 1, NUMGENERALKEYWRD_OLD
             call readandchecknextrecord(minp, rec, generalkeywrd_old(k), jaopt)
             if (jaopt == 1) then
@@ -357,7 +356,7 @@ contains
    !
    subroutine readTransformcoefficients(minp, transformcoef)
       use m_filez, only: readerror, zoekopt
-      
+
       integer, intent(in) :: minp
       real(kind=dp), intent(out) :: transformcoef(:)
 
@@ -372,7 +371,7 @@ contains
 
       ! constant keywrd = 'DISCHARGE'/'SALINITY'/'TEMPERATURE' removed, now always via time series, in future also via new ext [discharge]
 
-      transformcoef = -999d0
+      transformcoef = -999.0_dp
 
       pairs(1)%key = 'VALUE'
       pairs(1)%value = 1
@@ -476,7 +475,9 @@ contains
       end if
 
 10    read (minp, '(a)', end=999) rec
-      if (rec(1:1) == '*') goto 10
+      if (rec(1:1) == '*') then
+         goto 10
+      end if
       if (present(pliname)) then
          pliname = trim(rec)
       end if
@@ -582,7 +583,7 @@ contains
       Tzone = tz
 
       juljan = julday(1, 1, iyear0)
-      timjan = (jul0 - juljan) * 24.d0
+      timjan = (jul0 - juljan) * 24.0_dp
 
    end subroutine settimespacerefdat
    !
@@ -598,9 +599,9 @@ contains
    !
    ! ==========================================================================
    !>
-   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps) ! call schrama's routines on reduced set
+   subroutine meteo_tidepotential(jul0, TIME, dstart, dstop, eps)
       use m_sferic
-      use m_flowparameters, only: jatidep, jaselfal, jamaptidep
+      use m_flowparameters, only: jatidep, jaselfal, map_write_settings
       use m_partitioninfo
       use m_flow
       use m_flowgeom
@@ -628,7 +629,10 @@ contains
       if (INI == 0) then
          INI = 1
 
-         XMN = 1d30; YMN = 1d30; XMX = -1d30; YMX = -1d30
+         XMN = 1e30_dp
+         YMN = 1e30_dp
+         XMX = -1e30_dp
+         YMX = -1e30_dp
          do I = 1, ndx
             xmn = min(xz(i), xmn)
             xmx = max(xz(i), xmx)
@@ -636,11 +640,15 @@ contains
             ymx = max(yz(i), ymx)
          end do
 
-         i1 = floor(xmn); i2 = floor(xmx) + 1
-         j1 = floor(ymn); j2 = floor(ymx) + 1
+         i1 = floor(xmn)
+         i2 = floor(xmx) + 1
+         j1 = floor(ymn)
+         j2 = floor(ymx) + 1
          if (jatidep == 2) then ! gradient intp., one extra
-            i1 = i1 - 1; i2 = i2 + 1
-            j1 = j1 - 1; j2 = j2 + 1
+            i1 = i1 - 1
+            i2 = i2 + 1
+            j1 = j1 - 1
+            j2 = j2 + 1
          end if
 
          if (jaselfal == 1 .and. jampi == 1) then
@@ -652,31 +660,41 @@ contains
             j1 = -j1
          end if
 
-         if (allocated(XZ2)) deallocate (XZ2, YZ2, TD2)
+         if (allocated(XZ2)) then
+            deallocate (XZ2, YZ2, TD2)
+         end if
          allocate (xz2(i1:i2, j1:j2), stat=ierr) ! tot aerr
          allocate (yz2(i1:i2, j1:j2), stat=ierr)
          allocate (td2(i1:i2, j1:j2), stat=ierr)
 
          if (jatidep > 1) then ! gradient intp.
-            if (allocated(td2_x)) deallocate (td2_x, td2_y)
+            if (allocated(td2_x)) then
+               deallocate (td2_x, td2_y)
+            end if
             allocate (td2_x(i1:i2, j1:j2), stat=ierr)
             allocate (td2_y(i1:i2, j1:j2), stat=ierr)
          end if
 
-         td2 = 0d0
+         td2 = 0.0_dp
 
          if (jaselfal > 0) then
 !         if (allocated(self) ) deallocate ( self, avhs, area ) MVL ask Camille
-            if (allocated(self)) deallocate (self, avhs)
+            if (allocated(self)) then
+               deallocate (self, avhs)
+            end if
             allocate (self(i1:i2, j1:j2), stat=ierr)
             allocate (avhs(i1:i2, j1:j2), stat=ierr)
 !         allocate ( area(i1:i2,j1:j2), stat=ierr)
             do i = i1, i2
                do j = j1, j2
-                  xx(1) = dble(i) - 0.5d0; yy(1) = dble(j) - 0.5d0
-                  xx(2) = dble(i) + 0.5d0; yy(2) = dble(j) - 0.5d0
-                  xx(3) = dble(i) + 0.5d0; yy(3) = dble(j) + 0.5d0
-                  xx(4) = dble(i) - 0.5d0; yy(4) = dble(j) + 0.5d0
+                  xx(1) = real(i, kind=dp) - 0.5_dp
+                  yy(1) = real(j, kind=dp) - 0.5_dp
+                  xx(2) = real(i, kind=dp) + 0.5_dp
+                  yy(2) = real(j, kind=dp) - 0.5_dp
+                  xx(3) = real(i, kind=dp) + 0.5_dp
+                  yy(3) = real(j, kind=dp) + 0.5_dp
+                  xx(4) = real(i, kind=dp) - 0.5_dp
+                  yy(4) = real(j, kind=dp) + 0.5_dp
 
 !                call dAREAN( XX, YY, 4, DAREA, DLENGTH, DLENMX )
 !                area(i,j) = darea
@@ -698,7 +716,7 @@ contains
       if (jatidep > 0) then
          call tforce(jul0, TIME, xz2, yz2, Td2, ndx2, dstart, dstop, eps)
       else
-         td2 = 0d0 ! safety
+         td2 = 0.0_dp ! safety
       end if
 
       if (jaselfal > 0) then
@@ -708,14 +726,16 @@ contains
       end if
 
       do n = 1, ndx
-         m1 = floor(xz(n)); m2 = m1 + 1
-         n1 = floor(yz(n)); n2 = n1 + 1
+         m1 = floor(xz(n))
+         m2 = m1 + 1
+         n1 = floor(yz(n))
+         n2 = n1 + 1
          di = xz(n) - m1
          dj = yz(n) - n1
-         f11 = (1d0 - di) * (1d0 - dj)
-         f21 = (di) * (1d0 - dj)
+         f11 = (1.0_dp - di) * (1.0_dp - dj)
+         f21 = (di) * (1.0_dp - dj)
          f22 = (di) * (dj)
-         f12 = (1d0 - di) * (dj)
+         f12 = (1.0_dp - di) * (dj)
 
          if (jaselfal > 0) then
 
@@ -725,7 +745,7 @@ contains
                           (td2(m1, n2) + self(m1, n2)) * f12
 
 !        for output only
-            if (jamaptidep > 0 .and. Np > 1) then ! store SAL potential seperately
+            if (map_write_settings%tidep > 0 .and. Np > 1) then ! store SAL potential seperately
                tidep(2, n) = (self(m1, n1)) * f11 + &
                              (self(m2, n1)) * f21 + &
                              (self(m2, n2)) * f22 + &
@@ -741,7 +761,7 @@ contains
 
       if (jatidep > 1) then ! gradient intp., get gradient
 
-         dyy = 2d0 * ra * dg2rd
+         dyy = 2.0_dp * ra * dg2rd
          do j = j1 + 1, j2 - 1
             dxx = dyy * cos(yz2(i1, j))
             do i = i1 + 1, i2 - 1
@@ -755,14 +775,16 @@ contains
          end do
 
          do L = 1, Lnx
-            m1 = floor(xu(L)); m2 = m1 + 1
-            n1 = floor(yu(L)); n2 = n1 + 1
+            m1 = floor(xu(L))
+            m2 = m1 + 1
+            n1 = floor(yu(L))
+            n2 = n1 + 1
             di = xu(L) - m1
             dj = yu(L) - n1
-            f11 = (1d0 - di) * (1d0 - dj)
-            f21 = (di) * (1d0 - dj)
+            f11 = (1.0_dp - di) * (1.0_dp - dj)
+            f21 = (di) * (1.0_dp - dj)
             f22 = (di) * (dj)
-            f12 = (1d0 - di) * (dj)
+            f12 = (1.0_dp - di) * (dj)
 
             tidef(L) = csu(L) * (td2_x(m1, n1) * f11 + &
                                  td2_x(m2, n1) * f21 + &
@@ -822,13 +844,13 @@ contains
          allocate (jasea(i1:i2, j1:j2), stat=ierr)
 
          if (jakdtree == 1) then
-            call realloc(xx, (/Ni, Nj/), keepExisting=.false., fill=0d0)
-            call realloc(yy, (/Ni, Nj/), keepExisting=.false., fill=0d0)
-            call realloc(kk, (/Ni, Nj/), keepExisting=.false., fill=0)
+            call realloc(xx, [Ni, Nj], keepExisting=.false., fill=0.0_dp)
+            call realloc(yy, [Ni, Nj], keepExisting=.false., fill=0.0_dp)
+            call realloc(kk, [Ni, Nj], keepExisting=.false., fill=0)
             do j = j1, j2
                do i = i1, i2
-                  xx(i - i1 + 1, j - j1 + 1) = dble(i)
-                  yy(i - i1 + 1, j - j1 + 1) = dble(j)
+                  xx(i - i1 + 1, j - j1 + 1) = real(i, kind=dp)
+                  yy(i - i1 + 1, j - j1 + 1) = real(j, kind=dp)
                end do
             end do
             call find_nearest_flownodes_kdtree(treeglob, Ni * Nj, xx, yy, kk, jakdtree, INDTP_2D, ierror)
@@ -836,8 +858,12 @@ contains
                jakdtree = 0
             end if
 
-            if (allocated(xx)) deallocate (xx)
-            if (allocated(yy)) deallocate (yy)
+            if (allocated(xx)) then
+               deallocate (xx)
+            end if
+            if (allocated(yy)) then
+               deallocate (yy)
+            end if
          end if
 
          if (jampi == 0) then ! sequential
@@ -846,8 +872,8 @@ contains
                   if (jakdtree == 1) then
                      k = kk(i - i1 + 1, j - j1 + 1)
                   else
-                     x = dble(i)
-                     y = dble(j)
+                     x = real(i, kind=dp)
+                     y = real(j, kind=dp)
                      call in_flowcell(x, y, K)
                   end if
 
@@ -860,10 +886,14 @@ contains
             end do
          else
 !        allocate work arrays
-            if (allocated(workin)) deallocate (workin)
+            if (allocated(workin)) then
+               deallocate (workin)
+            end if
             allocate (workin(2, Ni, Nj))
-            workin = 0d0
-            if (allocated(workout)) deallocate (workout)
+            workin = 0.0_dp
+            if (allocated(workout)) then
+               deallocate (workout)
+            end if
             allocate (workout(2, Ni, Nj))
 
             do j = j1, j2
@@ -871,8 +901,8 @@ contains
                   if (jakdtree == 1) then
                      k = kk(i - i1 + 1, j - j1 + 1)
                   else
-                     x = dble(i)
-                     y = dble(j)
+                     x = real(i, kind=dp)
+                     y = real(j, kind=dp)
                      call in_flowcell(x, y, K)
                   end if
 
@@ -886,16 +916,16 @@ contains
                   if (k > 0) then
                      if (idomain(k1) == my_rank) then
 !                   jasea(i,j) = 1
-                        workin(1, i - i1 + 1, j - j1 + 1) = 1d0
-                        workin(2, i - i1 + 1, j - j1 + 1) = 0d0 ! dummy
+                        workin(1, i - i1 + 1, j - j1 + 1) = 1.0_dp
+                        workin(2, i - i1 + 1, j - j1 + 1) = 0.0_dp ! dummy
                      else
-                        workin(1, i - i1 + 1, j - j1 + 1) = 0d0
-                        workin(2, i - i1 + 1, j - j1 + 1) = 0d0 ! dummy
+                        workin(1, i - i1 + 1, j - j1 + 1) = 0.0_dp
+                        workin(2, i - i1 + 1, j - j1 + 1) = 0.0_dp ! dummy
                      end if
                   else
 !                   jasea(i,j) = 0
-                     workin(1, i - i1 + 1, j - j1 + 1) = 0d0
-                     workin(2, i - i1 + 1, j - j1 + 1) = 0d0 ! dummy
+                     workin(1, i - i1 + 1, j - j1 + 1) = 0.0_dp
+                     workin(2, i - i1 + 1, j - j1 + 1) = 0.0_dp ! dummy
                   end if
                end do
             end do
@@ -919,19 +949,21 @@ contains
          ini = 1
       end if
 
-      if (allocated(kk)) deallocate (kk)
+      if (allocated(kk)) then
+         deallocate (kk)
+      end if
 
       jasea = 1
 
-      avhs = 0d0
-      area = 0d0
+      avhs = 0.0_dp
+      area = 0.0_dp
 
       if (jampi == 0) then
          do k = 1, ndx
             i = nint(xz(k))
             j = nint(yz(k))
 
-            Ds = 0d0
+            Ds = 0.0_dp
             if (jaSELFALcorrectWLwithIni == 1) then
 !           water level rise
                Ds = s1init(k)
@@ -944,7 +976,7 @@ contains
             end if
          end do
       else ! parallel
-         workin = 0d0
+         workin = 0.0_dp
 
          do k = 1, Ndx
             i = nint(xz(k))
@@ -957,7 +989,7 @@ contains
                k1 = ln(1, LL) + ln(2, LL) - k
             end if
 
-            Ds = 0d0
+            Ds = 0.0_dp
             if (jaSELFALcorrectWLwithIni == 1) then
 !           water level rise
                Ds = s1init(k)
@@ -993,13 +1025,13 @@ contains
          do i = i1, i2
             if (area(i, j) == 0.0 .and. jasea(i, j) == 1) then
                call findleftright(area, i, j, i1, i2, j1, j2, iL, iR, alf)
-               avhs(i, j) = (1d0 - alf) * avhs(iL, j) + alf * avhs(iR, j)
+               avhs(i, j) = (1.0_dp - alf) * avhs(iL, j) + alf * avhs(iR, j)
             end if
          end do
       end do
 
       !Used for testing
-      !avhs=1d0
+      !avhs=1.0_dp
 
       !Create output file
       ! open (newunit=lunfil, file='d:\output_avhs2.txt',status='unknown',position='append')
@@ -1079,13 +1111,14 @@ contains
             disR = (ii - i1) - (iR - i2)
          end if
 
-         alf = dble(disL) / dble(disL - disR)
+         alf = real(disL, kind=dp) / real(disL - disR, kind=dp)
 
       end if
    end subroutine findleftright
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
       use spherepack, only: shaec, shaeci, shsec, shseci
+      use m_timespace_data_tables, only: LOAD_LOVE_NUMBERS_H, LOAD_LOVE_NUMBERS_K
       implicit none
 
       ! Input\Output parameter
@@ -1094,10 +1127,9 @@ contains
       real(kind=dp), intent(out) :: self(i1:i2, j1:j2)
 
       ! Local parameters
-      real(kind=dp), parameter :: Me = 5.9726d24, R = 6371d3, g = 9.81d0, pi = 4d0 * atan(1.0), rhow = 1.0240164d3, rhoe = 3d0 * Me / (4d0 * pi * R * R * R)
+      real(kind=dp), parameter :: Me = 5.9726e24_dp, R = 6371e3_dp, g = 9.81_dp, pi = 4.0_dp * atan(1.0_dp), rhow = 1.0240164e3_dp, rhoe = 3.0_dp * Me / (4.0_dp * pi * R * R * R)
       integer :: nlat, nlon, lsave
       integer :: i, j, ierror, isym, nt, l, mdab, ndab, k1
-      real(kind=dp), dimension(:), allocatable :: llnh, llnk
       real(kind=dp), dimension(:), allocatable :: wshaec, wshsec
       real(kind=dp), dimension(:, :), allocatable :: a, b
       real(kind=dp), dimension(:, :), allocatable :: avhs1, self1
@@ -1115,8 +1147,6 @@ contains
       allocate (a(1:mdab, 1:ndab))
       allocate (b(1:mdab, 1:ndab))
 
-      allocate (llnh(0:1024))
-      allocate (llnk(0:1024))
       allocate (avhs1(0:180, 0:359))
       allocate (self1(0:180, 0:359))
 
@@ -1125,7 +1155,7 @@ contains
       ! and colatitude theta(i)=(i-1)*pi/(nlat)
       !For a one degree grid, we have nlon=360 and nlat=181
       !If avhs is smaller then 0 is chosen at the location of the missing values
-      avhs1 = 0d0
+      avhs1 = 0.0_dp
       k1 = 0
       do i = i1, min(i2, i1 + 360 - 1)
          do j = j1, j2
@@ -1133,9 +1163,6 @@ contains
          end do
          k1 = k1 + 1
       end do
-
-      !Load Love numbers
-      call loadlovenumber(llnh, llnk)
 
       !Computation
       isym = 0
@@ -1153,8 +1180,8 @@ contains
       end if
       if (jaselfal == 1) then
          do l = 1, ndab
-            a(1:mdab, l) = 3 * g * rhow * (1 + llnk(l - 1) - llnh(l - 1)) / rhoe / (2 * l - 1) * a(1:mdab, l)
-            b(1:mdab, l) = 3 * g * rhow * (1 + llnk(l - 1) - llnh(l - 1)) / rhoe / (2 * l - 1) * b(1:mdab, l)
+            a(1:mdab, l) = 3 * g * rhow * (1 + LOAD_LOVE_NUMBERS_K(l - 1) - LOAD_LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * a(1:mdab, l)
+            b(1:mdab, l) = 3 * g * rhow * (1 + LOAD_LOVE_NUMBERS_K(l - 1) - LOAD_LOVE_NUMBERS_H(l - 1)) / rhoe / (2 * l - 1) * b(1:mdab, l)
          end do
       end if
 
@@ -1164,7 +1191,7 @@ contains
                  wshsec, ierror)
 
       !self1 is defined on the same grid than avhs1, we put it back in the same grid than avhs
-      self = 0d0
+      self = 0.0_dp
       k1 = 0
       do i = i1, i2
          if (k1 >= 360) then
@@ -1179,2097 +1206,20 @@ contains
       end do
    end subroutine selfattraction
 
-   subroutine loadlovenumber(llnh, llnk)
-      !Define the second load Love number h' and k' up to degree 1024
-      implicit none
-
-      ! Input\Output parameter
-      real(kind=dp), dimension(0:1024), intent(out) :: llnh, llnk
-
-      !Fill arrays
-      llnh(0) = 0.0000000000d+00
-      llnh(1) = -0.1285877758d+01
-      llnh(2) = -0.9915810331d+00
-      llnh(3) = -0.1050767745d+01
-      llnh(4) = -0.1053393012d+01
-      llnh(5) = -0.1086317605d+01
-      llnh(6) = -0.1143860336d+01
-      llnh(7) = -0.1212408459d+01
-      llnh(8) = -0.1283943275d+01
-      llnh(9) = -0.1354734845d+01
-      llnh(10) = -0.1423282851d+01
-      llnh(11) = -0.1489094554d+01
-      llnh(12) = -0.1552074997d+01
-      llnh(13) = -0.1612273740d+01
-      llnh(14) = -0.1669763369d+01
-      llnh(15) = -0.1724635488d+01
-      llnh(16) = -0.1776963521d+01
-      llnh(17) = -0.1826825601d+01
-      llnh(18) = -0.1874298467d+01
-      llnh(19) = -0.1919461416d+01
-      llnh(20) = -0.1962393632d+01
-      llnh(21) = -0.2003182253d+01
-      llnh(22) = -0.2041915786d+01
-      llnh(23) = -0.2078680486d+01
-      llnh(24) = -0.2113573061d+01
-      llnh(25) = -0.2146680270d+01
-      llnh(26) = -0.2178105661d+01
-      llnh(27) = -0.2207927152d+01
-      llnh(28) = -0.2236242846d+01
-      llnh(29) = -0.2263132641d+01
-      llnh(30) = -0.2288687940d+01
-      llnh(31) = -0.2312991757d+01
-      llnh(32) = -0.2336112443d+01
-      llnh(33) = -0.2358128831d+01
-      llnh(34) = -0.2379107893d+01
-      llnh(35) = -0.2399120761d+01
-      llnh(36) = -0.2418226351d+01
-      llnh(37) = -0.2436482905d+01
-      llnh(38) = -0.2453948379d+01
-      llnh(39) = -0.2470670195d+01
-      llnh(40) = -0.2486697757d+01
-      llnh(41) = -0.2502076334d+01
-      llnh(42) = -0.2516847401d+01
-      llnh(43) = -0.2531050008d+01
-      llnh(44) = -0.2544719530d+01
-      llnh(45) = -0.2557890739d+01
-      llnh(46) = -0.2570594319d+01
-      llnh(47) = -0.2582859779d+01
-      llnh(48) = -0.2594714216d+01
-      llnh(49) = -0.2606182782d+01
-      llnh(50) = -0.2617289738d+01
-      llnh(51) = -0.2628056023d+01
-      llnh(52) = -0.2638502978d+01
-      llnh(53) = -0.2648649164d+01
-      llnh(54) = -0.2658512061d+01
-      llnh(55) = -0.2668109142d+01
-      llnh(56) = -0.2677455130d+01
-      llnh(57) = -0.2686564655d+01
-      llnh(58) = -0.2695451439d+01
-      llnh(59) = -0.2704127764d+01
-      llnh(60) = -0.2712605707d+01
-      llnh(61) = -0.2720896238d+01
-      llnh(62) = -0.2729009765d+01
-      llnh(63) = -0.2736955903d+01
-      llnh(64) = -0.2744743969d+01
-      llnh(65) = -0.2752382423d+01
-      llnh(66) = -0.2759879282d+01
-      llnh(67) = -0.2767242102d+01
-      llnh(68) = -0.2774478021d+01
-      llnh(69) = -0.2781593811d+01
-      llnh(70) = -0.2788595709d+01
-      llnh(71) = -0.2795489680d+01
-      llnh(72) = -0.2802281343d+01
-      llnh(73) = -0.2808976028d+01
-      llnh(74) = -0.2815578704d+01
-      llnh(75) = -0.2822094093d+01
-      llnh(76) = -0.2828526669d+01
-      llnh(77) = -0.2834880683d+01
-      llnh(78) = -0.2841160150d+01
-      llnh(79) = -0.2847368769d+01
-      llnh(80) = -0.2853510163d+01
-      llnh(81) = -0.2859587939d+01
-      llnh(82) = -0.2865604931d+01
-      llnh(83) = -0.2871564378d+01
-      llnh(84) = -0.2877469169d+01
-      llnh(85) = -0.2883322045d+01
-      llnh(86) = -0.2889125648d+01
-      llnh(87) = -0.2894882413d+01
-      llnh(88) = -0.2900594702d+01
-      llnh(89) = -0.2906264743d+01
-      llnh(90) = -0.2911894687d+01
-      llnh(91) = -0.2917486512d+01
-      llnh(92) = -0.2923042145d+01
-      llnh(93) = -0.2928563403d+01
-      llnh(94) = -0.2934052041d+01
-      llnh(95) = -0.2939509674d+01
-      llnh(96) = -0.2944937877d+01
-      llnh(97) = -0.2950338132d+01
-      llnh(98) = -0.2955711880d+01
-      llnh(99) = -0.2961060436d+01
-      llnh(100) = -0.2966385090d+01
-      llnh(101) = -0.2971687056d+01
-      llnh(102) = -0.2976967512d+01
-      llnh(103) = -0.2982227536d+01
-      llnh(104) = -0.2987468183d+01
-      llnh(105) = -0.2992690446d+01
-      llnh(106) = -0.2997895290d+01
-      llnh(107) = -0.3003083596d+01
-      llnh(108) = -0.3008256228d+01
-      llnh(109) = -0.3013413998d+01
-      llnh(110) = -0.3018557697d+01
-      llnh(111) = -0.3023688044d+01
-      llnh(112) = -0.3028805745d+01
-      llnh(113) = -0.3033911465d+01
-      llnh(114) = -0.3039005849d+01
-      llnh(115) = -0.3044089483d+01
-      llnh(116) = -0.3049162947d+01
-      llnh(117) = -0.3054226779d+01
-      llnh(118) = -0.3059281508d+01
-      llnh(119) = -0.3064327612d+01
-      llnh(120) = -0.3069365560d+01
-      llnh(121) = -0.3074395793d+01
-      llnh(122) = -0.3079418737d+01
-      llnh(123) = -0.3084434789d+01
-      llnh(124) = -0.3089444323d+01
-      llnh(125) = -0.3094447698d+01
-      llnh(126) = -0.3099445739d+01
-      llnh(127) = -0.3104437859d+01
-      llnh(128) = -0.3109424785d+01
-      llnh(129) = -0.3114406817d+01
-      llnh(130) = -0.3119384228d+01
-      llnh(131) = -0.3124357299d+01
-      llnh(132) = -0.3129326253d+01
-      llnh(133) = -0.3134291331d+01
-      llnh(134) = -0.3139252753d+01
-      llnh(135) = -0.3144210746d+01
-      llnh(136) = -0.3149165487d+01
-      llnh(137) = -0.3154117170d+01
-      llnh(138) = -0.3159065971d+01
-      llnh(139) = -0.3164012071d+01
-      llnh(140) = -0.3168955611d+01
-      llnh(141) = -0.3173896746d+01
-      llnh(142) = -0.3178835615d+01
-      llnh(143) = -0.3183772364d+01
-      llnh(144) = -0.3188707103d+01
-      llnh(145) = -0.3193639953d+01
-      llnh(146) = -0.3198571025d+01
-      llnh(147) = -0.3203500433d+01
-      llnh(148) = -0.3208428262d+01
-      llnh(149) = -0.3213354609d+01
-      llnh(150) = -0.3218279559d+01
-      llnh(151) = -0.3223203202d+01
-      llnh(152) = -0.3228125600d+01
-      llnh(153) = -0.3233046832d+01
-      llnh(154) = -0.3237966958d+01
-      llnh(155) = -0.3242886050d+01
-      llnh(156) = -0.3247804156d+01
-      llnh(157) = -0.3252721331d+01
-      llnh(158) = -0.3257637624d+01
-      llnh(159) = -0.3262553244d+01
-      llnh(160) = -0.3267467917d+01
-      llnh(161) = -0.3272381835d+01
-      llnh(162) = -0.3277295035d+01
-      llnh(163) = -0.3282207554d+01
-      llnh(164) = -0.3287119415d+01
-      llnh(165) = -0.3292030647d+01
-      llnh(166) = -0.3296941273d+01
-      llnh(167) = -0.3301851314d+01
-      llnh(168) = -0.3306760804d+01
-      llnh(169) = -0.3311669742d+01
-      llnh(170) = -0.3316578148d+01
-      llnh(171) = -0.3321486032d+01
-      llnh(172) = -0.3326393422d+01
-      llnh(173) = -0.3331300520d+01
-      llnh(174) = -0.3336207644d+01
-      llnh(175) = -0.3341113629d+01
-      llnh(176) = -0.3346019149d+01
-      llnh(177) = -0.3350924191d+01
-      llnh(178) = -0.3355828764d+01
-      llnh(179) = -0.3360732862d+01
-      llnh(180) = -0.3365636499d+01
-      llnh(181) = -0.3370539656d+01
-      llnh(182) = -0.3375442336d+01
-      llnh(183) = -0.3380344530d+01
-      llnh(184) = -0.3385246241d+01
-      llnh(185) = -0.3390147452d+01
-      llnh(186) = -0.3395048158d+01
-      llnh(187) = -0.3399948348d+01
-      llnh(188) = -0.3404848021d+01
-      llnh(189) = -0.3409747153d+01
-      llnh(190) = -0.3414645740d+01
-      llnh(191) = -0.3419543764d+01
-      llnh(192) = -0.3424441221d+01
-      llnh(193) = -0.3429338088d+01
-      llnh(194) = -0.3434234352d+01
-      llnh(195) = -0.3439129995d+01
-      llnh(196) = -0.3444025009d+01
-      llnh(197) = -0.3448919371d+01
-      llnh(198) = -0.3453813064d+01
-      llnh(199) = -0.3458706066d+01
-      llnh(200) = -0.3463598369d+01
-      llnh(201) = -0.3468489946d+01
-      llnh(202) = -0.3473380779d+01
-      llnh(203) = -0.3478270847d+01
-      llnh(204) = -0.3483160133d+01
-      llnh(205) = -0.3488048612d+01
-      llnh(206) = -0.3492936263d+01
-      llnh(207) = -0.3497823067d+01
-      llnh(208) = -0.3502708995d+01
-      llnh(209) = -0.3507594040d+01
-      llnh(210) = -0.3512478162d+01
-      llnh(211) = -0.3517361345d+01
-      llnh(212) = -0.3522243562d+01
-      llnh(213) = -0.3527124799d+01
-      llnh(214) = -0.3532005020d+01
-      llnh(215) = -0.3536884206d+01
-      llnh(216) = -0.3541762329d+01
-      llnh(217) = -0.3546639373d+01
-      llnh(218) = -0.3551515301d+01
-      llnh(219) = -0.3556390096d+01
-      llnh(220) = -0.3561263723d+01
-      llnh(221) = -0.3566136170d+01
-      llnh(222) = -0.3571007398d+01
-      llnh(223) = -0.3575877387d+01
-      llnh(224) = -0.3580747513d+01
-      llnh(225) = -0.3585615132d+01
-      llnh(226) = -0.3590481365d+01
-      llnh(227) = -0.3595346263d+01
-      llnh(228) = -0.3600209792d+01
-      llnh(229) = -0.3605071936d+01
-      llnh(230) = -0.3609932657d+01
-      llnh(231) = -0.3614791931d+01
-      llnh(232) = -0.3619649732d+01
-      llnh(233) = -0.3624506035d+01
-      llnh(234) = -0.3629360805d+01
-      llnh(235) = -0.3634214026d+01
-      llnh(236) = -0.3639065656d+01
-      llnh(237) = -0.3643915683d+01
-      llnh(238) = -0.3648764066d+01
-      llnh(239) = -0.3653610782d+01
-      llnh(240) = -0.3658455800d+01
-      llnh(241) = -0.3663299103d+01
-      llnh(242) = -0.3668140651d+01
-      llnh(243) = -0.3672980417d+01
-      llnh(244) = -0.3677818461d+01
-      llnh(245) = -0.3682654761d+01
-      llnh(246) = -0.3687489030d+01
-      llnh(247) = -0.3692321405d+01
-      llnh(248) = -0.3697151858d+01
-      llnh(249) = -0.3701980361d+01
-      llnh(250) = -0.3706806936d+01
-      llnh(251) = -0.3711631455d+01
-      llnh(252) = -0.3716453939d+01
-      llnh(253) = -0.3721274358d+01
-      llnh(254) = -0.3726092689d+01
-      llnh(255) = -0.3730908892d+01
-      llnh(256) = -0.3735722950d+01
-      llnh(257) = -0.3740534821d+01
-      llnh(258) = -0.3745344490d+01
-      llnh(259) = -0.3750151923d+01
-      llnh(260) = -0.3754957088d+01
-      llnh(261) = -0.3759759956d+01
-      llnh(262) = -0.3764560505d+01
-      llnh(263) = -0.3769358699d+01
-      llnh(264) = -0.3774154515d+01
-      llnh(265) = -0.3778947920d+01
-      llnh(266) = -0.3783738888d+01
-      llnh(267) = -0.3788527389d+01
-      llnh(268) = -0.3793313390d+01
-      llnh(269) = -0.3798096866d+01
-      llnh(270) = -0.3802877791d+01
-      llnh(271) = -0.3807656137d+01
-      llnh(272) = -0.3812431870d+01
-      llnh(273) = -0.3817204958d+01
-      llnh(274) = -0.3821975383d+01
-      llnh(275) = -0.3826743110d+01
-      llnh(276) = -0.3831508110d+01
-      llnh(277) = -0.3836271873d+01
-      llnh(278) = -0.3841032150d+01
-      llnh(279) = -0.3845788986d+01
-      llnh(280) = -0.3850542997d+01
-      llnh(281) = -0.3855294157d+01
-      llnh(282) = -0.3860042438d+01
-      llnh(283) = -0.3864787807d+01
-      llnh(284) = -0.3869530239d+01
-      llnh(285) = -0.3874269702d+01
-      llnh(286) = -0.3879006179d+01
-      llnh(287) = -0.3883739635d+01
-      llnh(288) = -0.3888470049d+01
-      llnh(289) = -0.3893197379d+01
-      llnh(290) = -0.3897921616d+01
-      llnh(291) = -0.3902642720d+01
-      llnh(292) = -0.3907360668d+01
-      llnh(293) = -0.3912075438d+01
-      llnh(294) = -0.3916786993d+01
-      llnh(295) = -0.3921495314d+01
-      llnh(296) = -0.3926200363d+01
-      llnh(297) = -0.3930902125d+01
-      llnh(298) = -0.3935600573d+01
-      llnh(299) = -0.3940295676d+01
-      llnh(300) = -0.3944987404d+01
-      llnh(301) = -0.3949675741d+01
-      llnh(302) = -0.3954360653d+01
-      llnh(303) = -0.3959042119d+01
-      llnh(304) = -0.3963720107d+01
-      llnh(305) = -0.3968394592d+01
-      llnh(306) = -0.3973065547d+01
-      llnh(307) = -0.3977732958d+01
-      llnh(308) = -0.3982396782d+01
-      llnh(309) = -0.3987056997d+01
-      llnh(310) = -0.3991713583d+01
-      llnh(311) = -0.3996366510d+01
-      llnh(312) = -0.4001015766d+01
-      llnh(313) = -0.4005661299d+01
-      llnh(314) = -0.4010303104d+01
-      llnh(315) = -0.4014941156d+01
-      llnh(316) = -0.4019575415d+01
-      llnh(317) = -0.4024205867d+01
-      llnh(318) = -0.4028832484d+01
-      llnh(319) = -0.4033455241d+01
-      llnh(320) = -0.4038074113d+01
-      llnh(321) = -0.4042689078d+01
-      llnh(322) = -0.4047300107d+01
-      llnh(323) = -0.4051907177d+01
-      llnh(324) = -0.4056510264d+01
-      llnh(325) = -0.4061109341d+01
-      llnh(326) = -0.4065704388d+01
-      llnh(327) = -0.4070295381d+01
-      llnh(328) = -0.4074882284d+01
-      llnh(329) = -0.4079465087d+01
-      llnh(330) = -0.4084043760d+01
-      llnh(331) = -0.4088618279d+01
-      llnh(332) = -0.4093188619d+01
-      llnh(333) = -0.4097757745d+01
-      llnh(334) = -0.4102319954d+01
-      llnh(335) = -0.4106878131d+01
-      llnh(336) = -0.4111431810d+01
-      llnh(337) = -0.4115981211d+01
-      llnh(338) = -0.4120526303d+01
-      llnh(339) = -0.4125067085d+01
-      llnh(340) = -0.4129603517d+01
-      llnh(341) = -0.4134135580d+01
-      llnh(342) = -0.4138663260d+01
-      llnh(343) = -0.4143186527d+01
-      llnh(344) = -0.4147705363d+01
-      llnh(345) = -0.4152219750d+01
-      llnh(346) = -0.4156729818d+01
-      llnh(347) = -0.4161235270d+01
-      llnh(348) = -0.4165736154d+01
-      llnh(349) = -0.4170232508d+01
-      llnh(350) = -0.4174724295d+01
-      llnh(351) = -0.4179211503d+01
-      llnh(352) = -0.4183694105d+01
-      llnh(353) = -0.4188172090d+01
-      llnh(354) = -0.4192645419d+01
-      llnh(355) = -0.4197114075d+01
-      llnh(356) = -0.4201578059d+01
-      llnh(357) = -0.4206037324d+01
-      llnh(358) = -0.4210491862d+01
-      llnh(359) = -0.4214941658d+01
-      llnh(360) = -0.4219386679d+01
-      llnh(361) = -0.4223826915d+01
-      llnh(362) = -0.4228262339d+01
-      llnh(363) = -0.4232692981d+01
-      llnh(364) = -0.4237118729d+01
-      llnh(365) = -0.4241539614d+01
-      llnh(366) = -0.4245955590d+01
-      llnh(367) = -0.4250366666d+01
-      llnh(368) = -0.4254772819d+01
-      llnh(369) = -0.4259174029d+01
-      llnh(370) = -0.4263570269d+01
-      llnh(371) = -0.4267961523d+01
-      llnh(372) = -0.4272347781d+01
-      llnh(373) = -0.4276728990d+01
-      llnh(374) = -0.4281105174d+01
-      llnh(375) = -0.4285476289d+01
-      llnh(376) = -0.4289842325d+01
-      llnh(377) = -0.4294203252d+01
-      llnh(378) = -0.4298559055d+01
-      llnh(379) = -0.4302909733d+01
-      llnh(380) = -0.4307255251d+01
-      llnh(381) = -0.4311595601d+01
-      llnh(382) = -0.4315930729d+01
-      llnh(383) = -0.4320260674d+01
-      llnh(384) = -0.4324585375d+01
-      llnh(385) = -0.4328909213d+01
-      llnh(386) = -0.4333223786d+01
-      llnh(387) = -0.4337533117d+01
-      llnh(388) = -0.4341837175d+01
-      llnh(389) = -0.4346135928d+01
-      llnh(390) = -0.4350429387d+01
-      llnh(391) = -0.4354717544d+01
-      llnh(392) = -0.4359000351d+01
-      llnh(393) = -0.4363277792d+01
-      llnh(394) = -0.4367549884d+01
-      llnh(395) = -0.4371816587d+01
-      llnh(396) = -0.4376077888d+01
-      llnh(397) = -0.4380333776d+01
-      llnh(398) = -0.4384584234d+01
-      llnh(399) = -0.4388829242d+01
-      llnh(400) = -0.4393068797d+01
-      llnh(401) = -0.4397302881d+01
-      llnh(402) = -0.4401531470d+01
-      llnh(403) = -0.4405754548d+01
-      llnh(404) = -0.4409972120d+01
-      llnh(405) = -0.4414184146d+01
-      llnh(406) = -0.4418390628d+01
-      llnh(407) = -0.4422591551d+01
-      llnh(408) = -0.4426786883d+01
-      llnh(409) = -0.4430976616d+01
-      llnh(410) = -0.4435160749d+01
-      llnh(411) = -0.4439339273d+01
-      llnh(412) = -0.4443512157d+01
-      llnh(413) = -0.4447679385d+01
-      llnh(414) = -0.4451840955d+01
-      llnh(415) = -0.4455997001d+01
-      llnh(416) = -0.4460147471d+01
-      llnh(417) = -0.4464291999d+01
-      llnh(418) = -0.4468430796d+01
-      llnh(419) = -0.4472563895d+01
-      llnh(420) = -0.4476691221d+01
-      llnh(421) = -0.4480812807d+01
-      llnh(422) = -0.4484928622d+01
-      llnh(423) = -0.4489038649d+01
-      llnh(424) = -0.4493142872d+01
-      llnh(425) = -0.4497241313d+01
-      llnh(426) = -0.4501333913d+01
-      llnh(427) = -0.4505420682d+01
-      llnh(428) = -0.4509501609d+01
-      llnh(429) = -0.4513576672d+01
-      llnh(430) = -0.4517645867d+01
-      llnh(431) = -0.4521709169d+01
-      llnh(432) = -0.4525766592d+01
-      llnh(433) = -0.4529818089d+01
-      llnh(434) = -0.4533863683d+01
-      llnh(435) = -0.4537903321d+01
-      llnh(436) = -0.4541938182d+01
-      llnh(437) = -0.4545970060d+01
-      llnh(438) = -0.4549992311d+01
-      llnh(439) = -0.4554008601d+01
-      llnh(440) = -0.4558018930d+01
-      llnh(441) = -0.4562023294d+01
-      llnh(442) = -0.4566021693d+01
-      llnh(443) = -0.4570014092d+01
-      llnh(444) = -0.4574000505d+01
-      llnh(445) = -0.4577980892d+01
-      llnh(446) = -0.4581955270d+01
-      llnh(447) = -0.4585923636d+01
-      llnh(448) = -0.4589885948d+01
-      llnh(449) = -0.4593842227d+01
-      llnh(450) = -0.4597792434d+01
-      llnh(451) = -0.4601736614d+01
-      llnh(452) = -0.4605674684d+01
-      llnh(453) = -0.4609606692d+01
-      llnh(454) = -0.4613532603d+01
-      llnh(455) = -0.4617452421d+01
-      llnh(456) = -0.4621366116d+01
-      llnh(457) = -0.4625273717d+01
-      llnh(458) = -0.4629175176d+01
-      llnh(459) = -0.4633070515d+01
-      llnh(460) = -0.4636959727d+01
-      llnh(461) = -0.4640842768d+01
-      llnh(462) = -0.4644719655d+01
-      llnh(463) = -0.4648590372d+01
-      llnh(464) = -0.4652454903d+01
-      llnh(465) = -0.4656313259d+01
-      llnh(466) = -0.4660165448d+01
-      llnh(467) = -0.4664011409d+01
-      llnh(468) = -0.4667851182d+01
-      llnh(469) = -0.4671684743d+01
-      llnh(470) = -0.4675512056d+01
-      llnh(471) = -0.4679333175d+01
-      llnh(472) = -0.4683148017d+01
-      llnh(473) = -0.4686956657d+01
-      llnh(474) = -0.4690759028d+01
-      llnh(475) = -0.4694555138d+01
-      llnh(476) = -0.4698344998d+01
-      llnh(477) = -0.4702128578d+01
-      llnh(478) = -0.4705905867d+01
-      llnh(479) = -0.4709676879d+01
-      llnh(480) = -0.4713441602d+01
-      llnh(481) = -0.4717200013d+01
-      llnh(482) = -0.4720952106d+01
-      llnh(483) = -0.4724697898d+01
-      llnh(484) = -0.4728437390d+01
-      llnh(485) = -0.4732170536d+01
-      llnh(486) = -0.4735897325d+01
-      llnh(487) = -0.4739617794d+01
-      llnh(488) = -0.4743331898d+01
-      llnh(489) = -0.4747041742d+01
-      llnh(490) = -0.4750747006d+01
-      llnh(491) = -0.4754442562d+01
-      llnh(492) = -0.4758131783d+01
-      llnh(493) = -0.4761815020d+01
-      llnh(494) = -0.4765491574d+01
-      llnh(495) = -0.4769161760d+01
-      llnh(496) = -0.4772825594d+01
-      llnh(497) = -0.4776483086d+01
-      llnh(498) = -0.4780134175d+01
-      llnh(499) = -0.4783778934d+01
-      llnh(500) = -0.4787417346d+01
-      llnh(501) = -0.4791049345d+01
-      llnh(502) = -0.4794674951d+01
-      llnh(503) = -0.4798294201d+01
-      llnh(504) = -0.4801907068d+01
-      llnh(505) = -0.4805513523d+01
-      llnh(506) = -0.4809113591d+01
-      llnh(507) = -0.4812707285d+01
-      llnh(508) = -0.4816294557d+01
-      llnh(509) = -0.4819875456d+01
-      llnh(510) = -0.4823449917d+01
-      llnh(511) = -0.4827017975d+01
-      llnh(512) = -0.4830579617d+01
-      llnh(513) = -0.4834134846d+01
-      llnh(514) = -0.4837683664d+01
-      llnh(515) = -0.4841226070d+01
-      llnh(516) = -0.4844762004d+01
-      llnh(517) = -0.4848291562d+01
-      llnh(518) = -0.4851814662d+01
-      llnh(519) = -0.4855331349d+01
-      llnh(520) = -0.4858841570d+01
-      llnh(521) = -0.4862345359d+01
-      llnh(522) = -0.4865842727d+01
-      llnh(523) = -0.4869333622d+01
-      llnh(524) = -0.4872818085d+01
-      llnh(525) = -0.4876296108d+01
-      llnh(526) = -0.4879767676d+01
-      llnh(527) = -0.4883232788d+01
-      llnh(528) = -0.4886691441d+01
-      llnh(529) = -0.4890143646d+01
-      llnh(530) = -0.4893589383d+01
-      llnh(531) = -0.4897028646d+01
-      llnh(532) = -0.4900461459d+01
-      llnh(533) = -0.4903887800d+01
-      llnh(534) = -0.4907307694d+01
-      llnh(535) = -0.4910721080d+01
-      llnh(536) = -0.4914128000d+01
-      llnh(537) = -0.4917528444d+01
-      llnh(538) = -0.4920922416d+01
-      llnh(539) = -0.4924309950d+01
-      llnh(540) = -0.4927690936d+01
-      llnh(541) = -0.4931065502d+01
-      llnh(542) = -0.4934433516d+01
-      llnh(543) = -0.4937797571d+01
-      llnh(544) = -0.4941156429d+01
-      llnh(545) = -0.4944505566d+01
-      llnh(546) = -0.4947848246d+01
-      llnh(547) = -0.4951184474d+01
-      llnh(548) = -0.4954514217d+01
-      llnh(549) = -0.4957837546d+01
-      llnh(550) = -0.4961154421d+01
-      llnh(551) = -0.4964464816d+01
-      llnh(552) = -0.4967768764d+01
-      llnh(553) = -0.4971066281d+01
-      llnh(554) = -0.4974357343d+01
-      llnh(555) = -0.4977641966d+01
-      llnh(556) = -0.4980920106d+01
-      llnh(557) = -0.4984191792d+01
-      llnh(558) = -0.4987457081d+01
-      llnh(559) = -0.4990715853d+01
-      llnh(560) = -0.4993968216d+01
-      llnh(561) = -0.4997214147d+01
-      llnh(562) = -0.5000453623d+01
-      llnh(563) = -0.5003686648d+01
-      llnh(564) = -0.5006913204d+01
-      llnh(565) = -0.5010133371d+01
-      llnh(566) = -0.5013347076d+01
-      llnh(567) = -0.5016554357d+01
-      llnh(568) = -0.5019755183d+01
-      llnh(569) = -0.5022949569d+01
-      llnh(570) = -0.5026137554d+01
-      llnh(571) = -0.5029319047d+01
-      llnh(572) = -0.5032494140d+01
-      llnh(573) = -0.5035663150d+01
-      llnh(574) = -0.5038825376d+01
-      llnh(575) = -0.5041981220d+01
-      llnh(576) = -0.5045130584d+01
-      llnh(577) = -0.5048273555d+01
-      llnh(578) = -0.5051410090d+01
-      llnh(579) = -0.5054540239d+01
-      llnh(580) = -0.5057663933d+01
-      llnh(581) = -0.5060781203d+01
-      llnh(582) = -0.5063892095d+01
-      llnh(583) = -0.5066996544d+01
-      llnh(584) = -0.5070094560d+01
-      llnh(585) = -0.5073186208d+01
-      llnh(586) = -0.5076271426d+01
-      llnh(587) = -0.5079350236d+01
-      llnh(588) = -0.5082422642d+01
-      llnh(589) = -0.5085488664d+01
-      llnh(590) = -0.5088548256d+01
-      llnh(591) = -0.5091601476d+01
-      llnh(592) = -0.5094648290d+01
-      llnh(593) = -0.5097688683d+01
-      llnh(594) = -0.5100722685d+01
-      llnh(595) = -0.5103750327d+01
-      llnh(596) = -0.5106771540d+01
-      llnh(597) = -0.5109786384d+01
-      llnh(598) = -0.5112799670d+01
-      llnh(599) = -0.5115803150d+01
-      llnh(600) = -0.5118799395d+01
-      llnh(601) = -0.5121789292d+01
-      llnh(602) = -0.5124772858d+01
-      llnh(603) = -0.5127750116d+01
-      llnh(604) = -0.5130721005d+01
-      llnh(605) = -0.5133685604d+01
-      llnh(606) = -0.5136643859d+01
-      llnh(607) = -0.5139595762d+01
-      llnh(608) = -0.5142541391d+01
-      llnh(609) = -0.5145480724d+01
-      llnh(610) = -0.5148413704d+01
-      llnh(611) = -0.5151340435d+01
-      llnh(612) = -0.5154260814d+01
-      llnh(613) = -0.5157174876d+01
-      llnh(614) = -0.5160082667d+01
-      llnh(615) = -0.5162984187d+01
-      llnh(616) = -0.5165879425d+01
-      llnh(617) = -0.5168768373d+01
-      llnh(618) = -0.5171651043d+01
-      llnh(619) = -0.5174527467d+01
-      llnh(620) = -0.5177397602d+01
-      llnh(621) = -0.5180261493d+01
-      llnh(622) = -0.5183119109d+01
-      llnh(623) = -0.5185970497d+01
-      llnh(624) = -0.5188815635d+01
-      llnh(625) = -0.5191654520d+01
-      llnh(626) = -0.5194487149d+01
-      llnh(627) = -0.5197313595d+01
-      llnh(628) = -0.5200133751d+01
-      llnh(629) = -0.5202947738d+01
-      llnh(630) = -0.5205755473d+01
-      llnh(631) = -0.5208556983d+01
-      llnh(632) = -0.5211352324d+01
-      llnh(633) = -0.5214141419d+01
-      llnh(634) = -0.5216924343d+01
-      llnh(635) = -0.5219701054d+01
-      llnh(636) = -0.5222471563d+01
-      llnh(637) = -0.5225235884d+01
-      llnh(638) = -0.5227994025d+01
-      llnh(639) = -0.5230746030d+01
-      llnh(640) = -0.5233491832d+01
-      llnh(641) = -0.5236231461d+01
-      llnh(642) = -0.5238964942d+01
-      llnh(643) = -0.5241692271d+01
-      llnh(644) = -0.5244413412d+01
-      llnh(645) = -0.5247128424d+01
-      llnh(646) = -0.5249837269d+01
-      llnh(647) = -0.5252540015d+01
-      llnh(648) = -0.5255236616d+01
-      llnh(649) = -0.5257927067d+01
-      llnh(650) = -0.5260611388d+01
-      llnh(651) = -0.5263289623d+01
-      llnh(652) = -0.5265961712d+01
-      llnh(653) = -0.5268633068d+01
-      llnh(654) = -0.5271293569d+01
-      llnh(655) = -0.5273947990d+01
-      llnh(656) = -0.5276596206d+01
-      llnh(657) = -0.5279238426d+01
-      llnh(658) = -0.5281874571d+01
-      llnh(659) = -0.5284504655d+01
-      llnh(660) = -0.5287128701d+01
-      llnh(661) = -0.5289746751d+01
-      llnh(662) = -0.5292358757d+01
-      llnh(663) = -0.5294964725d+01
-      llnh(664) = -0.5297564727d+01
-      llnh(665) = -0.5300158699d+01
-      llnh(666) = -0.5302746668d+01
-      llnh(667) = -0.5305328668d+01
-      llnh(668) = -0.5307904687d+01
-      llnh(669) = -0.5310474675d+01
-      llnh(670) = -0.5313038743d+01
-      llnh(671) = -0.5315596857d+01
-      llnh(672) = -0.5318148939d+01
-      llnh(673) = -0.5320695164d+01
-      llnh(674) = -0.5323235360d+01
-      llnh(675) = -0.5325769682d+01
-      llnh(676) = -0.5328298064d+01
-      llnh(677) = -0.5330820487d+01
-      llnh(678) = -0.5333337033d+01
-      llnh(679) = -0.5335847660d+01
-      llnh(680) = -0.5338352356d+01
-      llnh(681) = -0.5340851158d+01
-      llnh(682) = -0.5343344088d+01
-      llnh(683) = -0.5345831113d+01
-      llnh(684) = -0.5348312329d+01
-      llnh(685) = -0.5350787595d+01
-      llnh(686) = -0.5353257028d+01
-      llnh(687) = -0.5355720597d+01
-      llnh(688) = -0.5358178333d+01
-      llnh(689) = -0.5360630227d+01
-      llnh(690) = -0.5363076250d+01
-      llnh(691) = -0.5365516440d+01
-      llnh(692) = -0.5367950847d+01
-      llnh(693) = -0.5370379412d+01
-      llnh(694) = -0.5372802182d+01
-      llnh(695) = -0.5375219136d+01
-      llnh(696) = -0.5377630301d+01
-      llnh(697) = -0.5380035657d+01
-      llnh(698) = -0.5382435244d+01
-      llnh(699) = -0.5384829094d+01
-      llnh(700) = -0.5387217124d+01
-      llnh(701) = -0.5389599434d+01
-      llnh(702) = -0.5391975954d+01
-      llnh(703) = -0.5394346756d+01
-      llnh(704) = -0.5396711759d+01
-      llnh(705) = -0.5399071078d+01
-      llnh(706) = -0.5401424638d+01
-      llnh(707) = -0.5403772479d+01
-      llnh(708) = -0.5406119229d+01
-      llnh(709) = -0.5408456158d+01
-      llnh(710) = -0.5410787342d+01
-      llnh(711) = -0.5413112829d+01
-      llnh(712) = -0.5415432725d+01
-      llnh(713) = -0.5417746886d+01
-      llnh(714) = -0.5420055451d+01
-      llnh(715) = -0.5422358379d+01
-      llnh(716) = -0.5424655695d+01
-      llnh(717) = -0.5426947346d+01
-      llnh(718) = -0.5429233415d+01
-      llnh(719) = -0.5431513881d+01
-      llnh(720) = -0.5433788773d+01
-      llnh(721) = -0.5436058059d+01
-      llnh(722) = -0.5438321777d+01
-      llnh(723) = -0.5440579909d+01
-      llnh(724) = -0.5442832493d+01
-      llnh(725) = -0.5445079538d+01
-      llnh(726) = -0.5447321025d+01
-      llnh(727) = -0.5449556959d+01
-      llnh(728) = -0.5451787383d+01
-      llnh(729) = -0.5454012244d+01
-      llnh(730) = -0.5456231645d+01
-      llnh(731) = -0.5458445490d+01
-      llnh(732) = -0.5460653885d+01
-      llnh(733) = -0.5462856815d+01
-      llnh(734) = -0.5465054208d+01
-      llnh(735) = -0.5467246209d+01
-      llnh(736) = -0.5469432635d+01
-      llnh(737) = -0.5471613649d+01
-      llnh(738) = -0.5473789425d+01
-      llnh(739) = -0.5475959565d+01
-      llnh(740) = -0.5478124308d+01
-      llnh(741) = -0.5480283586d+01
-      llnh(742) = -0.5482437461d+01
-      llnh(743) = -0.5484585919d+01
-      llnh(744) = -0.5486728976d+01
-      llnh(745) = -0.5488866669d+01
-      llnh(746) = -0.5490998937d+01
-      llnh(747) = -0.5493125867d+01
-      llnh(748) = -0.5495247398d+01
-      llnh(749) = -0.5497363593d+01
-      llnh(750) = -0.5499474396d+01
-      llnh(751) = -0.5501579935d+01
-      llnh(752) = -0.5503680091d+01
-      llnh(753) = -0.5505774872d+01
-      llnh(754) = -0.5507864419d+01
-      llnh(755) = -0.5509948597d+01
-      llnh(756) = -0.5512027498d+01
-      llnh(757) = -0.5514101090d+01
-      llnh(758) = -0.5516169407d+01
-      llnh(759) = -0.5518232431d+01
-      llnh(760) = -0.5520290171d+01
-      llnh(761) = -0.5522342671d+01
-      llnh(762) = -0.5524389920d+01
-      llnh(763) = -0.5526435070d+01
-      llnh(764) = -0.5528472978d+01
-      llnh(765) = -0.5530504862d+01
-      llnh(766) = -0.5532531569d+01
-      llnh(767) = -0.5534553070d+01
-      llnh(768) = -0.5536569379d+01
-      llnh(769) = -0.5538580560d+01
-      llnh(770) = -0.5540586509d+01
-      llnh(771) = -0.5542587346d+01
-      llnh(772) = -0.5544583018d+01
-      llnh(773) = -0.5546573556d+01
-      llnh(774) = -0.5548558957d+01
-      llnh(775) = -0.5550539231d+01
-      llnh(776) = -0.5552514398d+01
-      llnh(777) = -0.5554484460d+01
-      llnh(778) = -0.5556449473d+01
-      llnh(779) = -0.5558409336d+01
-      llnh(780) = -0.5560364185d+01
-      llnh(781) = -0.5562313913d+01
-      llnh(782) = -0.5564258612d+01
-      llnh(783) = -0.5566198240d+01
-      llnh(784) = -0.5568132825d+01
-      llnh(785) = -0.5570062431d+01
-      llnh(786) = -0.5571986955d+01
-      llnh(787) = -0.5573906479d+01
-      llnh(788) = -0.5575821017d+01
-      llnh(789) = -0.5577730521d+01
-      llnh(790) = -0.5579635046d+01
-      llnh(791) = -0.5581534623d+01
-      llnh(792) = -0.5583429246d+01
-      llnh(793) = -0.5585318843d+01
-      llnh(794) = -0.5587203534d+01
-      llnh(795) = -0.5589083215d+01
-      llnh(796) = -0.5590958026d+01
-      llnh(797) = -0.5592827913d+01
-      llnh(798) = -0.5594692837d+01
-      llnh(799) = -0.5596552884d+01
-      llnh(800) = -0.5598408013d+01
-      llnh(801) = -0.5600258261d+01
-      llnh(802) = -0.5602103603d+01
-      llnh(803) = -0.5603944084d+01
-      llnh(804) = -0.5605779692d+01
-      llnh(805) = -0.5607610469d+01
-      llnh(806) = -0.5609436368d+01
-      llnh(807) = -0.5611257443d+01
-      llnh(808) = -0.5613073624d+01
-      llnh(809) = -0.5614885059d+01
-      llnh(810) = -0.5616691617d+01
-      llnh(811) = -0.5618493398d+01
-      llnh(812) = -0.5620290369d+01
-      llnh(813) = -0.5622082588d+01
-      llnh(814) = -0.5623870004d+01
-      llnh(815) = -0.5625652635d+01
-      llnh(816) = -0.5627430515d+01
-      llnh(817) = -0.5629203619d+01
-      llnh(818) = -0.5630973564d+01
-      llnh(819) = -0.5632739215d+01
-      llnh(820) = -0.5634498385d+01
-      llnh(821) = -0.5636252874d+01
-      llnh(822) = -0.5638002692d+01
-      llnh(823) = -0.5639747990d+01
-      llnh(824) = -0.5641488433d+01
-      llnh(825) = -0.5643224238d+01
-      llnh(826) = -0.5644955371d+01
-      llnh(827) = -0.5646681860d+01
-      llnh(828) = -0.5648403688d+01
-      llnh(829) = -0.5650120894d+01
-      llnh(830) = -0.5651833499d+01
-      llnh(831) = -0.5653541488d+01
-      llnh(832) = -0.5655244889d+01
-      llnh(833) = -0.5656943648d+01
-      llnh(834) = -0.5658637872d+01
-      llnh(835) = -0.5660327454d+01
-      llnh(836) = -0.5662012541d+01
-      llnh(837) = -0.5663693098d+01
-      llnh(838) = -0.5665369003d+01
-      llnh(839) = -0.5667040432d+01
-      llnh(840) = -0.5668707291d+01
-      llnh(841) = -0.5670369673d+01
-      llnh(842) = -0.5672027532d+01
-      llnh(843) = -0.5673680874d+01
-      llnh(844) = -0.5675329711d+01
-      llnh(845) = -0.5676974102d+01
-      llnh(846) = -0.5678614009d+01
-      llnh(847) = -0.5680249399d+01
-      llnh(848) = -0.5681880401d+01
-      llnh(849) = -0.5683506937d+01
-      llnh(850) = -0.5685128983d+01
-      llnh(851) = -0.5686746614d+01
-      llnh(852) = -0.5688359836d+01
-      llnh(853) = -0.5689968657d+01
-      llnh(854) = -0.5691573040d+01
-      llnh(855) = -0.5693173037d+01
-      llnh(856) = -0.5694768667d+01
-      llnh(857) = -0.5696359900d+01
-      llnh(858) = -0.5697946740d+01
-      llnh(859) = -0.5699529279d+01
-      llnh(860) = -0.5701107407d+01
-      llnh(861) = -0.5702681211d+01
-      llnh(862) = -0.5704250662d+01
-      llnh(863) = -0.5705815820d+01
-      llnh(864) = -0.5707376645d+01
-      llnh(865) = -0.5708933156d+01
-      llnh(866) = -0.5710485372d+01
-      llnh(867) = -0.5712033286d+01
-      llnh(868) = -0.5713576887d+01
-      llnh(869) = -0.5715116238d+01
-      llnh(870) = -0.5716651343d+01
-      llnh(871) = -0.5718182133d+01
-      llnh(872) = -0.5719708718d+01
-      llnh(873) = -0.5721231370d+01
-      llnh(874) = -0.5722752079d+01
-      llnh(875) = -0.5724266184d+01
-      llnh(876) = -0.5725776091d+01
-      llnh(877) = -0.5727281862d+01
-      llnh(878) = -0.5728783383d+01
-      llnh(879) = -0.5730280793d+01
-      llnh(880) = -0.5731774031d+01
-      llnh(881) = -0.5733263026d+01
-      llnh(882) = -0.5734747963d+01
-      llnh(883) = -0.5736228729d+01
-      llnh(884) = -0.5737705360d+01
-      llnh(885) = -0.5739177941d+01
-      llnh(886) = -0.5740646299d+01
-      llnh(887) = -0.5742110595d+01
-      llnh(888) = -0.5743570865d+01
-      llnh(889) = -0.5745026960d+01
-      llnh(890) = -0.5746479033d+01
-      llnh(891) = -0.5747927018d+01
-      llnh(892) = -0.5749370943d+01
-      llnh(893) = -0.5750810827d+01
-      llnh(894) = -0.5752246701d+01
-      llnh(895) = -0.5753678496d+01
-      llnh(896) = -0.5755106289d+01
-      llnh(897) = -0.5756530074d+01
-      llnh(898) = -0.5757949836d+01
-      llnh(899) = -0.5759365629d+01
-      llnh(900) = -0.5760777429d+01
-      llnh(901) = -0.5762185269d+01
-      llnh(902) = -0.5763589050d+01
-      llnh(903) = -0.5764989015d+01
-      llnh(904) = -0.5766384906d+01
-      llnh(905) = -0.5767776906d+01
-      llnh(906) = -0.5769164942d+01
-      llnh(907) = -0.5770549045d+01
-      llnh(908) = -0.5771929251d+01
-      llnh(909) = -0.5773305592d+01
-      llnh(910) = -0.5774678021d+01
-      llnh(911) = -0.5776046522d+01
-      llnh(912) = -0.5777411181d+01
-      llnh(913) = -0.5778771903d+01
-      llnh(914) = -0.5780128791d+01
-      llnh(915) = -0.5781481778d+01
-      llnh(916) = -0.5782830973d+01
-      llnh(917) = -0.5784176296d+01
-      llnh(918) = -0.5785517731d+01
-      llnh(919) = -0.5786855440d+01
-      llnh(920) = -0.5788189236d+01
-      llnh(921) = -0.5789519318d+01
-      llnh(922) = -0.5790845543d+01
-      llnh(923) = -0.5792167984d+01
-      llnh(924) = -0.5793486673d+01
-      llnh(925) = -0.5794801520d+01
-      llnh(926) = -0.5796112641d+01
-      llnh(927) = -0.5797420004d+01
-      llnh(928) = -0.5798723616d+01
-      llnh(929) = -0.5800025860d+01
-      llnh(930) = -0.5801322181d+01
-      llnh(931) = -0.5802614805d+01
-      llnh(932) = -0.5803903742d+01
-      llnh(933) = -0.5805188958d+01
-      llnh(934) = -0.5806470481d+01
-      llnh(935) = -0.5807748369d+01
-      llnh(936) = -0.5809022517d+01
-      llnh(937) = -0.5810293038d+01
-      llnh(938) = -0.5811559908d+01
-      llnh(939) = -0.5812823154d+01
-      llnh(940) = -0.5814082757d+01
-      llnh(941) = -0.5815338711d+01
-      llnh(942) = -0.5816591047d+01
-      llnh(943) = -0.5817839765d+01
-      llnh(944) = -0.5819084925d+01
-      llnh(945) = -0.5820326443d+01
-      llnh(946) = -0.5821564407d+01
-      llnh(947) = -0.5822798792d+01
-      llnh(948) = -0.5824029580d+01
-      llnh(949) = -0.5825256834d+01
-      llnh(950) = -0.5826480495d+01
-      llnh(951) = -0.5827700679d+01
-      llnh(952) = -0.5828917318d+01
-      llnh(953) = -0.5830130356d+01
-      llnh(954) = -0.5831339955d+01
-      llnh(955) = -0.5832546036d+01
-      llnh(956) = -0.5833748572d+01
-      llnh(957) = -0.5834947646d+01
-      llnh(958) = -0.5836143208d+01
-      llnh(959) = -0.5837335326d+01
-      llnh(960) = -0.5838523975d+01
-      llnh(961) = -0.5839709120d+01
-      llnh(962) = -0.5840890822d+01
-      llnh(963) = -0.5842069117d+01
-      llnh(964) = -0.5843243948d+01
-      llnh(965) = -0.5844415380d+01
-      llnh(966) = -0.5845583345d+01
-      llnh(967) = -0.5846747902d+01
-      llnh(968) = -0.5847909107d+01
-      llnh(969) = -0.5849066883d+01
-      llnh(970) = -0.5850221245d+01
-      llnh(971) = -0.5851372233d+01
-      llnh(972) = -0.5852519933d+01
-      llnh(973) = -0.5853664111d+01
-      llnh(974) = -0.5854805079d+01
-      llnh(975) = -0.5855942632d+01
-      llnh(976) = -0.5857076840d+01
-      llnh(977) = -0.5858207705d+01
-      llnh(978) = -0.5859335263d+01
-      llnh(979) = -0.5860459528d+01
-      llnh(980) = -0.5861580446d+01
-      llnh(981) = -0.5862698053d+01
-      llnh(982) = -0.5863812452d+01
-      llnh(983) = -0.5864923445d+01
-      llnh(984) = -0.5866033059d+01
-      llnh(985) = -0.5867137708d+01
-      llnh(986) = -0.5868239098d+01
-      llnh(987) = -0.5869337290d+01
-      llnh(988) = -0.5870432164d+01
-      llnh(989) = -0.5871523895d+01
-      llnh(990) = -0.5872612338d+01
-      llnh(991) = -0.5873697645d+01
-      llnh(992) = -0.5874779683d+01
-      llnh(993) = -0.5875858528d+01
-      llnh(994) = -0.5876934214d+01
-      llnh(995) = -0.5878006676d+01
-      llnh(996) = -0.5879076002d+01
-      llnh(997) = -0.5880142202d+01
-      llnh(998) = -0.5881205128d+01
-      llnh(999) = -0.5882264991d+01
-      llnh(1000) = -0.5883321683d+01
-      llnh(1001) = -0.5884375272d+01
-      llnh(1002) = -0.5885425704d+01
-      llnh(1003) = -0.5886473023d+01
-      llnh(1004) = -0.5887517204d+01
-      llnh(1005) = -0.5888558321d+01
-      llnh(1006) = -0.5889596323d+01
-      llnh(1007) = -0.5890631250d+01
-      llnh(1008) = -0.5891663079d+01
-      llnh(1009) = -0.5892691857d+01
-      llnh(1010) = -0.5893717531d+01
-      llnh(1011) = -0.5894740186d+01
-      llnh(1012) = -0.5895759785d+01
-      llnh(1013) = -0.5896776265d+01
-      llnh(1014) = -0.5897789840d+01
-      llnh(1015) = -0.5898800343d+01
-      llnh(1016) = -0.5899807814d+01
-      llnh(1017) = -0.5900812292d+01
-      llnh(1018) = -0.5901813724d+01
-      llnh(1019) = -0.5902812170d+01
-      llnh(1020) = -0.5903807651d+01
-      llnh(1021) = -0.5904800116d+01
-      llnh(1022) = -0.5905789619d+01
-      llnh(1023) = -0.5906776200d+01
-      llnh(1024) = -0.5907759788d+01
-
-      llnk(0) = -1.0000000000d+00
-      llnk(1) = -0.1000000000d+01
-      llnk(2) = -0.3054020195d+00
-      llnk(3) = -0.1960294041d+00
-      llnk(4) = -0.1336652689d+00
-      llnk(5) = -0.1047066267d+00
-      llnk(6) = -0.9033564429d-01
-      llnk(7) = -0.8206984804d-01
-      llnk(8) = -0.7655494644d-01
-      llnk(9) = -0.7243844815d-01
-      llnk(10) = -0.6913401466d-01
-      llnk(11) = -0.6635869819d-01
-      llnk(12) = -0.6395689877d-01
-      llnk(13) = -0.6183296641d-01
-      llnk(14) = -0.5992172201d-01
-      llnk(15) = -0.5817772516d-01
-      llnk(16) = -0.5656704205d-01
-      llnk(17) = -0.5506474110d-01
-      llnk(18) = -0.5365205058d-01
-      llnk(19) = -0.5231479422d-01
-      llnk(20) = -0.5104204279d-01
-      llnk(21) = -0.4982562670d-01
-      llnk(22) = -0.4865919131d-01
-      llnk(23) = -0.4753764652d-01
-      llnk(24) = -0.4645728556d-01
-      llnk(25) = -0.4541483359d-01
-      llnk(26) = -0.4440818528d-01
-      llnk(27) = -0.4343487603d-01
-      llnk(28) = -0.4249347823d-01
-      llnk(29) = -0.4158232061d-01
-      llnk(30) = -0.4070034557d-01
-      llnk(31) = -0.3984645832d-01
-      llnk(32) = -0.3901937759d-01
-      llnk(33) = -0.3821827509d-01
-      llnk(34) = -0.3744217649d-01
-      llnk(35) = -0.3669034206d-01
-      llnk(36) = -0.3596186474d-01
-      llnk(37) = -0.3525594412d-01
-      llnk(38) = -0.3457187576d-01
-      llnk(39) = -0.3390882631d-01
-      llnk(40) = -0.3326609909d-01
-      llnk(41) = -0.3264299923d-01
-      llnk(42) = -0.3203883174d-01
-      llnk(43) = -0.3145293280d-01
-      llnk(44) = -0.3088463896d-01
-      llnk(45) = -0.3033334191d-01
-      llnk(46) = -0.2979842108d-01
-      llnk(47) = -0.2927929373d-01
-      llnk(48) = -0.2877539004d-01
-      llnk(49) = -0.2828615868d-01
-      llnk(50) = -0.2781108192d-01
-      llnk(51) = -0.2734963353d-01
-      llnk(52) = -0.2690133637d-01
-      llnk(53) = -0.2646570945d-01
-      llnk(54) = -0.2604229418d-01
-      llnk(55) = -0.2563066630d-01
-      llnk(56) = -0.2523039452d-01
-      llnk(57) = -0.2484107774d-01
-      llnk(58) = -0.2446233127d-01
-      llnk(59) = -0.2409377795d-01
-      llnk(60) = -0.2373506405d-01
-      llnk(61) = -0.2338584530d-01
-      llnk(62) = -0.2304579309d-01
-      llnk(63) = -0.2271459030d-01
-      llnk(64) = -0.2239193633d-01
-      llnk(65) = -0.2207753919d-01
-      llnk(66) = -0.2177111937d-01
-      llnk(67) = -0.2147240908d-01
-      llnk(68) = -0.2118115170d-01
-      llnk(69) = -0.2089710139d-01
-      llnk(70) = -0.2062002059d-01
-      llnk(71) = -0.2034968220d-01
-      llnk(72) = -0.2008586807d-01
-      llnk(73) = -0.1982836895d-01
-      llnk(74) = -0.1957698319d-01
-      llnk(75) = -0.1933151728d-01
-      llnk(76) = -0.1909178544d-01
-      llnk(77) = -0.1885760922d-01
-      llnk(78) = -0.1862881706d-01
-      llnk(79) = -0.1840524275d-01
-      llnk(80) = -0.1818672781d-01
-      llnk(81) = -0.1797312161d-01
-      llnk(82) = -0.1776427277d-01
-      llnk(83) = -0.1756004164d-01
-      llnk(84) = -0.1736029175d-01
-      llnk(85) = -0.1716489163d-01
-      llnk(86) = -0.1697371498d-01
-      llnk(87) = -0.1678663942d-01
-      llnk(88) = -0.1660354744d-01
-      llnk(89) = -0.1642432560d-01
-      llnk(90) = -0.1624886478d-01
-      llnk(91) = -0.1607705911d-01
-      llnk(92) = -0.1590880688d-01
-      llnk(93) = -0.1574400976d-01
-      llnk(94) = -0.1558257306d-01
-      llnk(95) = -0.1542440486d-01
-      llnk(96) = -0.1526941673d-01
-      llnk(97) = -0.1511752309d-01
-      llnk(98) = -0.1496864146d-01
-      llnk(99) = -0.1482269168d-01
-      llnk(100) = -0.1467959656d-01
-      llnk(101) = -0.1453928135d-01
-      llnk(102) = -0.1440167387d-01
-      llnk(103) = -0.1426670401d-01
-      llnk(104) = -0.1413430411d-01
-      llnk(105) = -0.1400440861d-01
-      llnk(106) = -0.1387695416d-01
-      llnk(107) = -0.1375187918d-01
-      llnk(108) = -0.1362912416d-01
-      llnk(109) = -0.1350863142d-01
-      llnk(110) = -0.1339034516d-01
-      llnk(111) = -0.1327421107d-01
-      llnk(112) = -0.1316017669d-01
-      llnk(113) = -0.1304819106d-01
-      llnk(114) = -0.1293820488d-01
-      llnk(115) = -0.1283017014d-01
-      llnk(116) = -0.1272404038d-01
-      llnk(117) = -0.1261977050d-01
-      llnk(118) = -0.1251731678d-01
-      llnk(119) = -0.1241663664d-01
-      llnk(120) = -0.1231768886d-01
-      llnk(121) = -0.1222043336d-01
-      llnk(122) = -0.1212483127d-01
-      llnk(123) = -0.1203084476d-01
-      llnk(124) = -0.1193843710d-01
-      llnk(125) = -0.1184757260d-01
-      llnk(126) = -0.1175821983d-01
-      llnk(127) = -0.1167033892d-01
-      llnk(128) = -0.1158389997d-01
-      llnk(129) = -0.1149887118d-01
-      llnk(130) = -0.1141522155d-01
-      llnk(131) = -0.1133292103d-01
-      llnk(132) = -0.1125194019d-01
-      llnk(133) = -0.1117225053d-01
-      llnk(134) = -0.1109382428d-01
-      llnk(135) = -0.1101663454d-01
-      llnk(136) = -0.1094065488d-01
-      llnk(137) = -0.1086585976d-01
-      llnk(138) = -0.1079222424d-01
-      llnk(139) = -0.1071972412d-01
-      llnk(140) = -0.1064833570d-01
-      llnk(141) = -0.1057803597d-01
-      llnk(142) = -0.1050880250d-01
-      llnk(143) = -0.1044061352d-01
-      llnk(144) = -0.1037344765d-01
-      llnk(145) = -0.1030728418d-01
-      llnk(146) = -0.1024210288d-01
-      llnk(147) = -0.1017788410d-01
-      llnk(148) = -0.1011460854d-01
-      llnk(149) = -0.1005225749d-01
-      llnk(150) = -0.9990812687d-02
-      llnk(151) = -0.9930256346d-02
-      llnk(152) = -0.9870571027d-02
-      llnk(153) = -0.9811739803d-02
-      llnk(154) = -0.9753746115d-02
-      llnk(155) = -0.9696573861d-02
-      llnk(156) = -0.9640207245d-02
-      llnk(157) = -0.9584630905d-02
-      llnk(158) = -0.9529829829d-02
-      llnk(159) = -0.9475790189d-02
-      llnk(160) = -0.9422496073d-02
-      llnk(161) = -0.9369934305d-02
-      llnk(162) = -0.9318091242d-02
-      llnk(163) = -0.9266953580d-02
-      llnk(164) = -0.9216508278d-02
-      llnk(165) = -0.9166742633d-02
-      llnk(166) = -0.9117644217d-02
-      llnk(167) = -0.9069200890d-02
-      llnk(168) = -0.9021400853d-02
-      llnk(169) = -0.8974232435d-02
-      llnk(170) = -0.8927684326d-02
-      llnk(171) = -0.8881745447d-02
-      llnk(172) = -0.8836405029d-02
-      llnk(173) = -0.8791653407d-02
-      llnk(174) = -0.8747481667d-02
-      llnk(175) = -0.8703874181d-02
-      llnk(176) = -0.8660824198d-02
-      llnk(177) = -0.8618321971d-02
-      llnk(178) = -0.8576358051d-02
-      llnk(179) = -0.8534923154d-02
-      llnk(180) = -0.8494008256d-02
-      llnk(181) = -0.8453604422d-02
-      llnk(182) = -0.8413702992d-02
-      llnk(183) = -0.8374295452d-02
-      llnk(184) = -0.8335373508d-02
-      llnk(185) = -0.8296928978d-02
-      llnk(186) = -0.8258953895d-02
-      llnk(187) = -0.8221440446d-02
-      llnk(188) = -0.8184381010d-02
-      llnk(189) = -0.8147768058d-02
-      llnk(190) = -0.8111594272d-02
-      llnk(191) = -0.8075852456d-02
-      llnk(192) = -0.8040535598d-02
-      llnk(193) = -0.8005636771d-02
-      llnk(194) = -0.7971149225d-02
-      llnk(195) = -0.7937066335d-02
-      llnk(196) = -0.7903381636d-02
-      llnk(197) = -0.7870088750d-02
-      llnk(198) = -0.7837181442d-02
-      llnk(199) = -0.7804653597d-02
-      llnk(200) = -0.7772499254d-02
-      llnk(201) = -0.7740712516d-02
-      llnk(202) = -0.7709287634d-02
-      llnk(203) = -0.7678218959d-02
-      llnk(204) = -0.7647500968d-02
-      llnk(205) = -0.7617128214d-02
-      llnk(206) = -0.7587095379d-02
-      llnk(207) = -0.7557397242d-02
-      llnk(208) = -0.7528028665d-02
-      llnk(209) = -0.7498984668d-02
-      llnk(210) = -0.7470260263d-02
-      llnk(211) = -0.7441850636d-02
-      llnk(212) = -0.7413751027d-02
-      llnk(213) = -0.7385956807d-02
-      llnk(214) = -0.7358463369d-02
-      llnk(215) = -0.7331266234d-02
-      llnk(216) = -0.7304360991d-02
-      llnk(217) = -0.7277743343d-02
-      llnk(218) = -0.7251409005d-02
-      llnk(219) = -0.7225353835d-02
-      llnk(220) = -0.7199573711d-02
-      llnk(221) = -0.7174064656d-02
-      llnk(222) = -0.7148822685d-02
-      llnk(223) = -0.7123843938d-02
-      llnk(224) = -0.7099129566d-02
-      llnk(225) = -0.7074666551d-02
-      llnk(226) = -0.7050455306d-02
-      llnk(227) = -0.7026492490d-02
-      llnk(228) = -0.7002774540d-02
-      llnk(229) = -0.6979298005d-02
-      llnk(230) = -0.6956059431d-02
-      llnk(231) = -0.6933055469d-02
-      llnk(232) = -0.6910282814d-02
-      llnk(233) = -0.6887738228d-02
-      llnk(234) = -0.6865418504d-02
-      llnk(235) = -0.6843320529d-02
-      llnk(236) = -0.6821441187d-02
-      llnk(237) = -0.6799777491d-02
-      llnk(238) = -0.6778326425d-02
-      llnk(239) = -0.6757085071d-02
-      llnk(240) = -0.6736050549d-02
-      llnk(241) = -0.6715220049d-02
-      llnk(242) = -0.6694590762d-02
-      llnk(243) = -0.6674159952d-02
-      llnk(244) = -0.6653925199d-02
-      llnk(245) = -0.6633883871d-02
-      llnk(246) = -0.6614032563d-02
-      llnk(247) = -0.6594369232d-02
-      llnk(248) = -0.6574891356d-02
-      llnk(249) = -0.6555596461d-02
-      llnk(250) = -0.6536482218d-02
-      llnk(251) = -0.6517546015d-02
-      llnk(252) = -0.6498785614d-02
-      llnk(253) = -0.6480198683d-02
-      llnk(254) = -0.6461782835d-02
-      llnk(255) = -0.6443535971d-02
-      llnk(256) = -0.6425455846d-02
-      llnk(257) = -0.6407540263d-02
-      llnk(258) = -0.6389786969d-02
-      llnk(259) = -0.6372194033d-02
-      llnk(260) = -0.6354759310d-02
-      llnk(261) = -0.6337480778d-02
-      llnk(262) = -0.6320356275d-02
-      llnk(263) = -0.6303384010d-02
-      llnk(264) = -0.6286561980d-02
-      llnk(265) = -0.6269888285d-02
-      llnk(266) = -0.6253360871d-02
-      llnk(267) = -0.6236978078d-02
-      llnk(268) = -0.6220737994d-02
-      llnk(269) = -0.6204638851d-02
-      llnk(270) = -0.6188678733d-02
-      llnk(271) = -0.6172856062d-02
-      llnk(272) = -0.6157169047d-02
-      llnk(273) = -0.6141616004d-02
-      llnk(274) = -0.6126195168d-02
-      llnk(275) = -0.6110905001d-02
-      llnk(276) = -0.6095743854d-02
-      llnk(277) = -0.6080714363d-02
-      llnk(278) = -0.6065808661d-02
-      llnk(279) = -0.6051025499d-02
-      llnk(280) = -0.6036365150d-02
-      llnk(281) = -0.6021826113d-02
-      llnk(282) = -0.6007406839d-02
-      llnk(283) = -0.5993105878d-02
-      llnk(284) = -0.5978921847d-02
-      llnk(285) = -0.5964853301d-02
-      llnk(286) = -0.5950898825d-02
-      llnk(287) = -0.5937057006d-02
-      llnk(288) = -0.5923326579d-02
-      llnk(289) = -0.5909706151d-02
-      llnk(290) = -0.5896194416d-02
-      llnk(291) = -0.5882789995d-02
-      llnk(292) = -0.5869491718d-02
-      llnk(293) = -0.5856298304d-02
-      llnk(294) = -0.5843208448d-02
-      llnk(295) = -0.5830220904d-02
-      llnk(296) = -0.5817334546d-02
-      llnk(297) = -0.5804548161d-02
-      llnk(298) = -0.5791860577d-02
-      llnk(299) = -0.5779270522d-02
-      llnk(300) = -0.5766776986d-02
-      llnk(301) = -0.5754378816d-02
-      llnk(302) = -0.5742074899d-02
-      llnk(303) = -0.5729864025d-02
-      llnk(304) = -0.5717745257d-02
-      llnk(305) = -0.5705717481d-02
-      llnk(306) = -0.5693779662d-02
-      llnk(307) = -0.5681930652d-02
-      llnk(308) = -0.5670169557d-02
-      llnk(309) = -0.5658495321d-02
-      llnk(310) = -0.5646906981d-02
-      llnk(311) = -0.5635403426d-02
-      llnk(312) = -0.5623983856d-02
-      llnk(313) = -0.5612647214d-02
-      llnk(314) = -0.5601392619d-02
-      llnk(315) = -0.5590219039d-02
-      llnk(316) = -0.5579125640d-02
-      llnk(317) = -0.5568111507d-02
-      llnk(318) = -0.5557175755d-02
-      llnk(319) = -0.5546317422d-02
-      llnk(320) = -0.5535535712d-02
-      llnk(321) = -0.5524829768d-02
-      llnk(322) = -0.5514198739d-02
-      llnk(323) = -0.5503641734d-02
-      llnk(324) = -0.5493157962d-02
-      llnk(325) = -0.5482746632d-02
-      llnk(326) = -0.5472406939d-02
-      llnk(327) = -0.5462138054d-02
-      llnk(328) = -0.5451939170d-02
-      llnk(329) = -0.5441809594d-02
-      llnk(330) = -0.5431748532d-02
-      llnk(331) = -0.5421755212d-02
-      llnk(332) = -0.5411828857d-02
-      llnk(333) = -0.5401975569d-02
-      llnk(334) = -0.5392181719d-02
-      llnk(335) = -0.5382453176d-02
-      llnk(336) = -0.5372788210d-02
-      llnk(337) = -0.5363186748d-02
-      llnk(338) = -0.5353648059d-02
-      llnk(339) = -0.5344171504d-02
-      llnk(340) = -0.5334756310d-02
-      llnk(341) = -0.5325401926d-02
-      llnk(342) = -0.5316107680d-02
-      llnk(343) = -0.5306872920d-02
-      llnk(344) = -0.5297696936d-02
-      llnk(345) = -0.5288579215d-02
-      llnk(346) = -0.5279519432d-02
-      llnk(347) = -0.5270516389d-02
-      llnk(348) = -0.5261569543d-02
-      llnk(349) = -0.5252678535d-02
-      llnk(350) = -0.5243842709d-02
-      llnk(351) = -0.5235061516d-02
-      llnk(352) = -0.5226334273d-02
-      llnk(353) = -0.5217660524d-02
-      llnk(354) = -0.5209039665d-02
-      llnk(355) = -0.5200471169d-02
-      llnk(356) = -0.5191954431d-02
-      llnk(357) = -0.5183488963d-02
-      llnk(358) = -0.5175074221d-02
-      llnk(359) = -0.5166709698d-02
-      llnk(360) = -0.5158394787d-02
-      llnk(361) = -0.5150129056d-02
-      llnk(362) = -0.5141911977d-02
-      llnk(363) = -0.5133743148d-02
-      llnk(364) = -0.5125621837d-02
-      llnk(365) = -0.5117547698d-02
-      llnk(366) = -0.5109520206d-02
-      llnk(367) = -0.5101538932d-02
-      llnk(368) = -0.5093603358d-02
-      llnk(369) = -0.5085713032d-02
-      llnk(370) = -0.5077867507d-02
-      llnk(371) = -0.5070066320d-02
-      llnk(372) = -0.5062309014d-02
-      llnk(373) = -0.5054595077d-02
-      llnk(374) = -0.5046924184d-02
-      llnk(375) = -0.5039295844d-02
-      llnk(376) = -0.5031709627d-02
-      llnk(377) = -0.5024165063d-02
-      llnk(378) = -0.5016661793d-02
-      llnk(379) = -0.5009199414d-02
-      llnk(380) = -0.5001777482d-02
-      llnk(381) = -0.4994395567d-02
-      llnk(382) = -0.4987053274d-02
-      llnk(383) = -0.4979750283d-02
-      llnk(384) = -0.4972486128d-02
-      llnk(385) = -0.4965268840d-02
-      llnk(386) = -0.4958081936d-02
-      llnk(387) = -0.4950932817d-02
-      llnk(388) = -0.4943821092d-02
-      llnk(389) = -0.4936746301d-02
-      llnk(390) = -0.4929708210d-02
-      llnk(391) = -0.4922706445d-02
-      llnk(392) = -0.4915740611d-02
-      llnk(393) = -0.4908810284d-02
-      llnk(394) = -0.4901915260d-02
-      llnk(395) = -0.4895055124d-02
-      llnk(396) = -0.4888229556d-02
-      llnk(397) = -0.4881438160d-02
-      llnk(398) = -0.4874680679d-02
-      llnk(399) = -0.4867956758d-02
-      llnk(400) = -0.4861266098d-02
-      llnk(401) = -0.4854608317d-02
-      llnk(402) = -0.4847983151d-02
-      llnk(403) = -0.4841390266d-02
-      llnk(404) = -0.4834829391d-02
-      llnk(405) = -0.4828300135d-02
-      llnk(406) = -0.4821802243d-02
-      llnk(407) = -0.4815335427d-02
-      llnk(408) = -0.4808899393d-02
-      llnk(409) = -0.4802493803d-02
-      llnk(410) = -0.4796118410d-02
-      llnk(411) = -0.4789772949d-02
-      llnk(412) = -0.4783457104d-02
-      llnk(413) = -0.4777170573d-02
-      llnk(414) = -0.4770913098d-02
-      llnk(415) = -0.4764684685d-02
-      llnk(416) = -0.4758484990d-02
-      llnk(417) = -0.4752313124d-02
-      llnk(418) = -0.4746169197d-02
-      llnk(419) = -0.4740053059d-02
-      llnk(420) = -0.4733964341d-02
-      llnk(421) = -0.4727902849d-02
-      llnk(422) = -0.4721868283d-02
-      llnk(423) = -0.4715860425d-02
-      llnk(424) = -0.4709879012d-02
-      llnk(425) = -0.4703923846d-02
-      llnk(426) = -0.4697994583d-02
-      llnk(427) = -0.4692091066d-02
-      llnk(428) = -0.4686213045d-02
-      llnk(429) = -0.4680360271d-02
-      llnk(430) = -0.4674532484d-02
-      llnk(431) = -0.4668729492d-02
-      llnk(432) = -0.4662951085d-02
-      llnk(433) = -0.4657196996d-02
-      llnk(434) = -0.4651467004d-02
-      llnk(435) = -0.4645760890d-02
-      llnk(436) = -0.4640080410d-02
-      llnk(437) = -0.4634428369d-02
-      llnk(438) = -0.4628793378d-02
-      llnk(439) = -0.4623181470d-02
-      llnk(440) = -0.4617592432d-02
-      llnk(441) = -0.4612026079d-02
-      llnk(442) = -0.4606482171d-02
-      llnk(443) = -0.4600960531d-02
-      llnk(444) = -0.4595460979d-02
-      llnk(445) = -0.4589983282d-02
-      llnk(446) = -0.4584527233d-02
-      llnk(447) = -0.4579092710d-02
-      llnk(448) = -0.4573679458d-02
-      llnk(449) = -0.4568287340d-02
-      llnk(450) = -0.4562916080d-02
-      llnk(451) = -0.4557565629d-02
-      llnk(452) = -0.4552235678d-02
-      llnk(453) = -0.4546926139d-02
-      llnk(454) = -0.4541636751d-02
-      llnk(455) = -0.4536367408d-02
-      llnk(456) = -0.4531117888d-02
-      llnk(457) = -0.4525888082d-02
-      llnk(458) = -0.4520677720d-02
-      llnk(459) = -0.4515486721d-02
-      llnk(460) = -0.4510314872d-02
-      llnk(461) = -0.4505162010d-02
-      llnk(462) = -0.4500027980d-02
-      llnk(463) = -0.4494912622d-02
-      llnk(464) = -0.4489815761d-02
-      llnk(465) = -0.4484737267d-02
-      llnk(466) = -0.4479676977d-02
-      llnk(467) = -0.4474634684d-02
-      llnk(468) = -0.4469610304d-02
-      llnk(469) = -0.4464603661d-02
-      llnk(470) = -0.4459614543d-02
-      llnk(471) = -0.4454642899d-02
-      llnk(472) = -0.4449688484d-02
-      llnk(473) = -0.4444751266d-02
-      llnk(474) = -0.4439830996d-02
-      llnk(475) = -0.4434927562d-02
-      llnk(476) = -0.4430040859d-02
-      llnk(477) = -0.4425170710d-02
-      llnk(478) = -0.4420316957d-02
-      llnk(479) = -0.4415479491d-02
-      llnk(480) = -0.4410658186d-02
-      llnk(481) = -0.4405852880d-02
-      llnk(482) = -0.4401063430d-02
-      llnk(483) = -0.4396289728d-02
-      llnk(484) = -0.4391531676d-02
-      llnk(485) = -0.4386789086d-02
-      llnk(486) = -0.4382061813d-02
-      llnk(487) = -0.4377349779d-02
-      llnk(488) = -0.4372652829d-02
-      llnk(489) = -0.4367973960d-02
-      llnk(490) = -0.4363312569d-02
-      llnk(491) = -0.4358660920d-02
-      llnk(492) = -0.4354023941d-02
-      llnk(493) = -0.4349402011d-02
-      llnk(494) = -0.4344794018d-02
-      llnk(495) = -0.4340200286d-02
-      llnk(496) = -0.4335620759d-02
-      llnk(497) = -0.4331055332d-02
-      llnk(498) = -0.4326503816d-02
-      llnk(499) = -0.4321966182d-02
-      llnk(500) = -0.4317442332d-02
-      llnk(501) = -0.4312932067d-02
-      llnk(502) = -0.4308435312d-02
-      llnk(503) = -0.4303951987d-02
-      llnk(504) = -0.4299481991d-02
-      llnk(505) = -0.4295025176d-02
-      llnk(506) = -0.4290581476d-02
-      llnk(507) = -0.4286150784d-02
-      llnk(508) = -0.4281732974d-02
-      llnk(509) = -0.4277328005d-02
-      llnk(510) = -0.4272935697d-02
-      llnk(511) = -0.4268555976d-02
-      llnk(512) = -0.4264188766d-02
-      llnk(513) = -0.4259833966d-02
-      llnk(514) = -0.4255491492d-02
-      llnk(515) = -0.4251161154d-02
-      llnk(516) = -0.4246842949d-02
-      llnk(517) = -0.4242536837d-02
-      llnk(518) = -0.4238242629d-02
-      llnk(519) = -0.4233960267d-02
-      llnk(520) = -0.4229689632d-02
-      llnk(521) = -0.4225430669d-02
-      llnk(522) = -0.4221183310d-02
-      llnk(523) = -0.4216947377d-02
-      llnk(524) = -0.4212722872d-02
-      llnk(525) = -0.4208509690d-02
-      llnk(526) = -0.4204307736d-02
-      llnk(527) = -0.4200116898d-02
-      llnk(528) = -0.4195937125d-02
-      llnk(529) = -0.4191768337d-02
-      llnk(530) = -0.4187610437d-02
-      llnk(531) = -0.4183463316d-02
-      llnk(532) = -0.4179326948d-02
-      llnk(533) = -0.4175201222d-02
-      llnk(534) = -0.4171086099d-02
-      llnk(535) = -0.4166981404d-02
-      llnk(536) = -0.4162887134d-02
-      llnk(537) = -0.4158803202d-02
-      llnk(538) = -0.4154729536d-02
-      llnk(539) = -0.4150666091d-02
-      llnk(540) = -0.4146612671d-02
-      llnk(541) = -0.4142569363d-02
-      llnk(542) = -0.4138535935d-02
-      llnk(543) = -0.4134515728d-02
-      llnk(544) = -0.4130507039d-02
-      llnk(545) = -0.4126503797d-02
-      llnk(546) = -0.4122510270d-02
-      llnk(547) = -0.4118526386d-02
-      llnk(548) = -0.4114552039d-02
-      llnk(549) = -0.4110587257d-02
-      llnk(550) = -0.4106631920d-02
-      llnk(551) = -0.4102685926d-02
-      llnk(552) = -0.4098749247d-02
-      llnk(553) = -0.4094821847d-02
-      llnk(554) = -0.4090903630d-02
-      llnk(555) = -0.4086994545d-02
-      llnk(556) = -0.4083094472d-02
-      llnk(557) = -0.4079203396d-02
-      llnk(558) = -0.4075321316d-02
-      llnk(559) = -0.4071448028d-02
-      llnk(560) = -0.4067583587d-02
-      llnk(561) = -0.4063727921d-02
-      llnk(562) = -0.4059880939d-02
-      llnk(563) = -0.4056042583d-02
-      llnk(564) = -0.4052212762d-02
-      llnk(565) = -0.4048391527d-02
-      llnk(566) = -0.4044578730d-02
-      llnk(567) = -0.4040774354d-02
-      llnk(568) = -0.4036978296d-02
-      llnk(569) = -0.4033190534d-02
-      llnk(570) = -0.4029410975d-02
-      llnk(571) = -0.4025639600d-02
-      llnk(572) = -0.4021876379d-02
-      llnk(573) = -0.4018121658d-02
-      llnk(574) = -0.4014374533d-02
-      llnk(575) = -0.4010635431d-02
-      llnk(576) = -0.4006904167d-02
-      llnk(577) = -0.4003180813d-02
-      llnk(578) = -0.3999465257d-02
-      llnk(579) = -0.3995757506d-02
-      llnk(580) = -0.3992057412d-02
-      llnk(581) = -0.3988364979d-02
-      llnk(582) = -0.3984680200d-02
-      llnk(583) = -0.3981002957d-02
-      llnk(584) = -0.3977333187d-02
-      llnk(585) = -0.3973670940d-02
-      llnk(586) = -0.3970016087d-02
-      llnk(587) = -0.3966368605d-02
-      llnk(588) = -0.3962728432d-02
-      llnk(589) = -0.3959095565d-02
-      llnk(590) = -0.3955469896d-02
-      llnk(591) = -0.3951851444d-02
-      llnk(592) = -0.3948240106d-02
-      llnk(593) = -0.3944635840d-02
-      llnk(594) = -0.3941038624d-02
-      llnk(595) = -0.3937448450d-02
-      llnk(596) = -0.3933865180d-02
-      llnk(597) = -0.3930288852d-02
-      llnk(598) = -0.3926725182d-02
-      llnk(599) = -0.3923164225d-02
-      llnk(600) = -0.3919609022d-02
-      llnk(601) = -0.3916060603d-02
-      llnk(602) = -0.3912518941d-02
-      llnk(603) = -0.3908984017d-02
-      llnk(604) = -0.3905455707d-02
-      llnk(605) = -0.3901934071d-02
-      llnk(606) = -0.3898419000d-02
-      llnk(607) = -0.3894910446d-02
-      llnk(608) = -0.3891408443d-02
-      llnk(609) = -0.3887912933d-02
-      llnk(610) = -0.3884423810d-02
-      llnk(611) = -0.3880941150d-02
-      llnk(612) = -0.3877464789d-02
-      llnk(613) = -0.3873994730d-02
-      llnk(614) = -0.3870530985d-02
-      llnk(615) = -0.3867073514d-02
-      llnk(616) = -0.3863622258d-02
-      llnk(617) = -0.3860177173d-02
-      llnk(618) = -0.3856738235d-02
-      llnk(619) = -0.3853305441d-02
-      llnk(620) = -0.3849878697d-02
-      llnk(621) = -0.3846458016d-02
-      llnk(622) = -0.3843043331d-02
-      llnk(623) = -0.3839634656d-02
-      llnk(624) = -0.3836231919d-02
-      llnk(625) = -0.3832835028d-02
-      llnk(626) = -0.3829444026d-02
-      llnk(627) = -0.3826058954d-02
-      llnk(628) = -0.3822679633d-02
-      llnk(629) = -0.3819306152d-02
-      llnk(630) = -0.3815938396d-02
-      llnk(631) = -0.3812576353d-02
-      llnk(632) = -0.3809220046d-02
-      llnk(633) = -0.3805869353d-02
-      llnk(634) = -0.3802524327d-02
-      llnk(635) = -0.3799184885d-02
-      llnk(636) = -0.3795851005d-02
-      llnk(637) = -0.3792522658d-02
-      llnk(638) = -0.3789199831d-02
-      llnk(639) = -0.3785882531d-02
-      llnk(640) = -0.3782570655d-02
-      llnk(641) = -0.3779264191d-02
-      llnk(642) = -0.3775963147d-02
-      llnk(643) = -0.3772667476d-02
-      llnk(644) = -0.3769377113d-02
-      llnk(645) = -0.3766092076d-02
-      llnk(646) = -0.3762812304d-02
-      llnk(647) = -0.3759537833d-02
-      llnk(648) = -0.3756268585d-02
-      llnk(649) = -0.3753004510d-02
-      llnk(650) = -0.3749745613d-02
-      llnk(651) = -0.3746491901d-02
-      llnk(652) = -0.3743243283d-02
-      llnk(653) = -0.3740005626d-02
-      llnk(654) = -0.3736767845d-02
-      llnk(655) = -0.3733535132d-02
-      llnk(656) = -0.3730307327d-02
-      llnk(657) = -0.3727084607d-02
-      llnk(658) = -0.3723866873d-02
-      llnk(659) = -0.3720654107d-02
-      llnk(660) = -0.3717446303d-02
-      llnk(661) = -0.3714243463d-02
-      llnk(662) = -0.3711045523d-02
-      llnk(663) = -0.3707852455d-02
-      llnk(664) = -0.3704664303d-02
-      llnk(665) = -0.3701480968d-02
-      llnk(666) = -0.3698302457d-02
-      llnk(667) = -0.3695128771d-02
-      llnk(668) = -0.3691959874d-02
-      llnk(669) = -0.3688795678d-02
-      llnk(670) = -0.3685636275d-02
-      llnk(671) = -0.3682481602d-02
-      llnk(672) = -0.3679331555d-02
-      llnk(673) = -0.3676186270d-02
-      llnk(674) = -0.3673045561d-02
-      llnk(675) = -0.3669909551d-02
-      llnk(676) = -0.3666778150d-02
-      llnk(677) = -0.3663651302d-02
-      llnk(678) = -0.3660529071d-02
-      llnk(679) = -0.3657411389d-02
-      llnk(680) = -0.3654298215d-02
-      llnk(681) = -0.3651189465d-02
-      llnk(682) = -0.3648085315d-02
-      llnk(683) = -0.3644985621d-02
-      llnk(684) = -0.3641890453d-02
-      llnk(685) = -0.3638799641d-02
-      llnk(686) = -0.3635713278d-02
-      llnk(687) = -0.3632631311d-02
-      llnk(688) = -0.3629553745d-02
-      llnk(689) = -0.3626480539d-02
-      llnk(690) = -0.3623411645d-02
-      llnk(691) = -0.3620347077d-02
-      llnk(692) = -0.3617286859d-02
-      llnk(693) = -0.3614230904d-02
-      llnk(694) = -0.3611179235d-02
-      llnk(695) = -0.3608131812d-02
-      llnk(696) = -0.3605088635d-02
-      llnk(697) = -0.3602049657d-02
-      llnk(698) = -0.3599014895d-02
-      llnk(699) = -0.3595984357d-02
-      llnk(700) = -0.3592957941d-02
-      llnk(701) = -0.3589935718d-02
-      llnk(702) = -0.3586917596d-02
-      llnk(703) = -0.3583903622d-02
-      llnk(704) = -0.3580893698d-02
-      llnk(705) = -0.3577887909d-02
-      llnk(706) = -0.3574886158d-02
-      llnk(707) = -0.3571888466d-02
-      llnk(708) = -0.3568899450d-02
-      llnk(709) = -0.3565910323d-02
-      llnk(710) = -0.3562925154d-02
-      llnk(711) = -0.3559943972d-02
-      llnk(712) = -0.3556966859d-02
-      llnk(713) = -0.3553993656d-02
-      llnk(714) = -0.3551024466d-02
-      llnk(715) = -0.3548059237d-02
-      llnk(716) = -0.3545097968d-02
-      llnk(717) = -0.3542140587d-02
-      llnk(718) = -0.3539187147d-02
-      llnk(719) = -0.3536237614d-02
-      llnk(720) = -0.3533291992d-02
-      llnk(721) = -0.3530350229d-02
-      llnk(722) = -0.3527412335d-02
-      llnk(723) = -0.3524478279d-02
-      llnk(724) = -0.3521548076d-02
-      llnk(725) = -0.3518621713d-02
-      llnk(726) = -0.3515699144d-02
-      llnk(727) = -0.3512780363d-02
-      llnk(728) = -0.3509865386d-02
-      llnk(729) = -0.3506954146d-02
-      llnk(730) = -0.3504046711d-02
-      llnk(731) = -0.3501142980d-02
-      llnk(732) = -0.3498243029d-02
-      llnk(733) = -0.3495346825d-02
-      llnk(734) = -0.3492454277d-02
-      llnk(735) = -0.3489565504d-02
-      llnk(736) = -0.3486680283d-02
-      llnk(737) = -0.3483798748d-02
-      llnk(738) = -0.3480921125d-02
-      llnk(739) = -0.3478046974d-02
-      llnk(740) = -0.3475176495d-02
-      llnk(741) = -0.3472309608d-02
-      llnk(742) = -0.3469446344d-02
-      llnk(743) = -0.3466586679d-02
-      llnk(744) = -0.3463730607d-02
-      llnk(745) = -0.3460878143d-02
-      llnk(746) = -0.3458029208d-02
-      llnk(747) = -0.3455183869d-02
-      llnk(748) = -0.3452342050d-02
-      llnk(749) = -0.3449503792d-02
-      llnk(750) = -0.3446669019d-02
-      llnk(751) = -0.3443837835d-02
-      llnk(752) = -0.3441010114d-02
-      llnk(753) = -0.3438185843d-02
-      llnk(754) = -0.3435365132d-02
-      llnk(755) = -0.3432547840d-02
-      llnk(756) = -0.3429734036d-02
-      llnk(757) = -0.3426923672d-02
-      llnk(758) = -0.3424116757d-02
-      llnk(759) = -0.3421313262d-02
-      llnk(760) = -0.3418513177d-02
-      llnk(761) = -0.3415716524d-02
-      llnk(762) = -0.3412923273d-02
-      llnk(763) = -0.3410136336d-02
-      llnk(764) = -0.3407350916d-02
-      llnk(765) = -0.3404568130d-02
-      llnk(766) = -0.3401788745d-02
-      llnk(767) = -0.3399012718d-02
-      llnk(768) = -0.3396240047d-02
-      llnk(769) = -0.3393470771d-02
-      llnk(770) = -0.3390704781d-02
-      llnk(771) = -0.3387942162d-02
-      llnk(772) = -0.3385182859d-02
-      llnk(773) = -0.3382426879d-02
-      llnk(774) = -0.3379674202d-02
-      llnk(775) = -0.3376924820d-02
-      llnk(776) = -0.3374178738d-02
-      llnk(777) = -0.3371435939d-02
-      llnk(778) = -0.3368696456d-02
-      llnk(779) = -0.3365960182d-02
-      llnk(780) = -0.3363227225d-02
-      llnk(781) = -0.3360497473d-02
-      llnk(782) = -0.3357770991d-02
-      llnk(783) = -0.3355047725d-02
-      llnk(784) = -0.3352327686d-02
-      llnk(785) = -0.3349610914d-02
-      llnk(786) = -0.3346897303d-02
-      llnk(787) = -0.3344186906d-02
-      llnk(788) = -0.3341479724d-02
-      llnk(789) = -0.3338775700d-02
-      llnk(790) = -0.3336074863d-02
-      llnk(791) = -0.3333377225d-02
-      llnk(792) = -0.3330682695d-02
-      llnk(793) = -0.3327991302d-02
-      llnk(794) = -0.3325303130d-02
-      llnk(795) = -0.3322618041d-02
-      llnk(796) = -0.3319936145d-02
-      llnk(797) = -0.3317257379d-02
-      llnk(798) = -0.3314581695d-02
-      llnk(799) = -0.3311909149d-02
-      llnk(800) = -0.3309239696d-02
-      llnk(801) = -0.3306573350d-02
-      llnk(802) = -0.3303910077d-02
-      llnk(803) = -0.3301249895d-02
-      llnk(804) = -0.3298592786d-02
-      llnk(805) = -0.3295938770d-02
-      llnk(806) = -0.3293287792d-02
-      llnk(807) = -0.3290639881d-02
-      llnk(808) = -0.3287994967d-02
-      llnk(809) = -0.3285353159d-02
-      llnk(810) = -0.3282714334d-02
-      llnk(811) = -0.3280078559d-02
-      llnk(812) = -0.3277445795d-02
-      llnk(813) = -0.3274816076d-02
-      llnk(814) = -0.3272189346d-02
-      llnk(815) = -0.3269565604d-02
-      llnk(816) = -0.3266944867d-02
-      llnk(817) = -0.3264327100d-02
-      llnk(818) = -0.3261713686d-02
-      llnk(819) = -0.3259103619d-02
-      llnk(820) = -0.3256495012d-02
-      llnk(821) = -0.3253889400d-02
-      llnk(822) = -0.3251286777d-02
-      llnk(823) = -0.3248687255d-02
-      llnk(824) = -0.3246090539d-02
-      llnk(825) = -0.3243496801d-02
-      llnk(826) = -0.3240905999d-02
-      llnk(827) = -0.3238318138d-02
-      llnk(828) = -0.3235733197d-02
-      llnk(829) = -0.3233151191d-02
-      llnk(830) = -0.3230572128d-02
-      llnk(831) = -0.3227995977d-02
-      llnk(832) = -0.3225422751d-02
-      llnk(833) = -0.3222852394d-02
-      llnk(834) = -0.3220284979d-02
-      llnk(835) = -0.3217720406d-02
-      llnk(836) = -0.3215158781d-02
-      llnk(837) = -0.3212600066d-02
-      llnk(838) = -0.3210044148d-02
-      llnk(839) = -0.3207491153d-02
-      llnk(840) = -0.3204940999d-02
-      llnk(841) = -0.3202393742d-02
-      llnk(842) = -0.3199849338d-02
-      llnk(843) = -0.3197307775d-02
-      llnk(844) = -0.3194769052d-02
-      llnk(845) = -0.3192233205d-02
-      llnk(846) = -0.3189700191d-02
-      llnk(847) = -0.3187169971d-02
-      llnk(848) = -0.3184642524d-02
-      llnk(849) = -0.3182117988d-02
-      llnk(850) = -0.3179596231d-02
-      llnk(851) = -0.3177077300d-02
-      llnk(852) = -0.3174561186d-02
-      llnk(853) = -0.3172047887d-02
-      llnk(854) = -0.3169537359d-02
-      llnk(855) = -0.3167029632d-02
-      llnk(856) = -0.3164524709d-02
-      llnk(857) = -0.3162022553d-02
-      llnk(858) = -0.3159523159d-02
-      llnk(859) = -0.3157026583d-02
-      llnk(860) = -0.3154532729d-02
-      llnk(861) = -0.3152041656d-02
-      llnk(862) = -0.3149553327d-02
-      llnk(863) = -0.3147067778d-02
-      llnk(864) = -0.3144584964d-02
-      llnk(865) = -0.3142104892d-02
-      llnk(866) = -0.3139627563d-02
-      llnk(867) = -0.3137152962d-02
-      llnk(868) = -0.3134681067d-02
-      llnk(869) = -0.3132211915d-02
-      llnk(870) = -0.3129745502d-02
-      llnk(871) = -0.3127281759d-02
-      llnk(872) = -0.3124820761d-02
-      llnk(873) = -0.3122362718d-02
-      llnk(874) = -0.3119909222d-02
-      llnk(875) = -0.3117456503d-02
-      llnk(876) = -0.3115006490d-02
-      llnk(877) = -0.3112559221d-02
-      llnk(878) = -0.3110114595d-02
-      llnk(879) = -0.3107672711d-02
-      llnk(880) = -0.3105233507d-02
-      llnk(881) = -0.3102796921d-02
-      llnk(882) = -0.3100363082d-02
-      llnk(883) = -0.3097931893d-02
-      llnk(884) = -0.3095503371d-02
-      llnk(885) = -0.3093077570d-02
-      llnk(886) = -0.3090654347d-02
-      llnk(887) = -0.3088233816d-02
-      llnk(888) = -0.3085815991d-02
-      llnk(889) = -0.3083400748d-02
-      llnk(890) = -0.3080988196d-02
-      llnk(891) = -0.3078578271d-02
-      llnk(892) = -0.3076170985d-02
-      llnk(893) = -0.3073766340d-02
-      llnk(894) = -0.3071364353d-02
-      llnk(895) = -0.3068964958d-02
-      llnk(896) = -0.3066568203d-02
-      llnk(897) = -0.3064174074d-02
-      llnk(898) = -0.3061782549d-02
-      llnk(899) = -0.3059393659d-02
-      llnk(900) = -0.3057007375d-02
-      llnk(901) = -0.3054623711d-02
-      llnk(902) = -0.3052242585d-02
-      llnk(903) = -0.3049864141d-02
-      llnk(904) = -0.3047488140d-02
-      llnk(905) = -0.3045114846d-02
-      llnk(906) = -0.3042744119d-02
-      llnk(907) = -0.3040375970d-02
-      llnk(908) = -0.3038010418d-02
-      llnk(909) = -0.3035647475d-02
-      llnk(910) = -0.3033287098d-02
-      llnk(911) = -0.3030929263d-02
-      llnk(912) = -0.3028574024d-02
-      llnk(913) = -0.3026221302d-02
-      llnk(914) = -0.3023871162d-02
-      llnk(915) = -0.3021523546d-02
-      llnk(916) = -0.3019178525d-02
-      llnk(917) = -0.3016836027d-02
-      llnk(918) = -0.3014496035d-02
-      llnk(919) = -0.3012158656d-02
-      llnk(920) = -0.3009823741d-02
-      llnk(921) = -0.3007491429d-02
-      llnk(922) = -0.3005161605d-02
-      llnk(923) = -0.3002834314d-02
-      llnk(924) = -0.3000509569d-02
-      llnk(925) = -0.2998187291d-02
-      llnk(926) = -0.2995867561d-02
-      llnk(927) = -0.2993550344d-02
-      llnk(928) = -0.2991235634d-02
-      llnk(929) = -0.2988925225d-02
-      llnk(930) = -0.2986615660d-02
-      llnk(931) = -0.2984308615d-02
-      llnk(932) = -0.2982004089d-02
-      llnk(933) = -0.2979702045d-02
-      llnk(934) = -0.2977402494d-02
-      llnk(935) = -0.2975105470d-02
-      llnk(936) = -0.2972810888d-02
-      llnk(937) = -0.2970518821d-02
-      llnk(938) = -0.2968229240d-02
-      llnk(939) = -0.2965942158d-02
-      llnk(940) = -0.2963657551d-02
-      llnk(941) = -0.2961375403d-02
-      llnk(942) = -0.2959095731d-02
-      llnk(943) = -0.2956818525d-02
-      llnk(944) = -0.2954543818d-02
-      llnk(945) = -0.2952271541d-02
-      llnk(946) = -0.2950001748d-02
-      llnk(947) = -0.2947734412d-02
-      llnk(948) = -0.2945469512d-02
-      llnk(949) = -0.2943207084d-02
-      llnk(950) = -0.2940947077d-02
-      llnk(951) = -0.2938689563d-02
-      llnk(952) = -0.2936434487d-02
-      llnk(953) = -0.2934181799d-02
-      llnk(954) = -0.2931931606d-02
-      llnk(955) = -0.2929683842d-02
-      llnk(956) = -0.2927438481d-02
-      llnk(957) = -0.2925195572d-02
-      llnk(958) = -0.2922955070d-02
-      llnk(959) = -0.2920716941d-02
-      llnk(960) = -0.2918481269d-02
-      llnk(961) = -0.2916248012d-02
-      llnk(962) = -0.2914017179d-02
-      llnk(963) = -0.2911788782d-02
-      llnk(964) = -0.2909562774d-02
-      llnk(965) = -0.2907339192d-02
-      llnk(966) = -0.2905117982d-02
-      llnk(967) = -0.2902899173d-02
-      llnk(968) = -0.2900682799d-02
-      llnk(969) = -0.2898468796d-02
-      llnk(970) = -0.2896257166d-02
-      llnk(971) = -0.2894047930d-02
-      llnk(972) = -0.2891841138d-02
-      llnk(973) = -0.2889636618d-02
-      llnk(974) = -0.2887434580d-02
-      llnk(975) = -0.2885234873d-02
-      llnk(976) = -0.2883037537d-02
-      llnk(977) = -0.2880842566d-02
-      llnk(978) = -0.2878649974d-02
-      llnk(979) = -0.2876459766d-02
-      llnk(980) = -0.2874271894d-02
-      llnk(981) = -0.2872086376d-02
-      llnk(982) = -0.2869903273d-02
-      llnk(983) = -0.2867722443d-02
-      llnk(984) = -0.2865545315d-02
-      llnk(985) = -0.2863369328d-02
-      llnk(986) = -0.2861195689d-02
-      llnk(987) = -0.2859024433d-02
-      llnk(988) = -0.2856855469d-02
-      llnk(989) = -0.2854688909d-02
-      llnk(990) = -0.2852524645d-02
-      llnk(991) = -0.2850362774d-02
-      llnk(992) = -0.2848203196d-02
-      llnk(993) = -0.2846045956d-02
-      llnk(994) = -0.2843891068d-02
-      llnk(995) = -0.2841738481d-02
-      llnk(996) = -0.2839588248d-02
-      llnk(997) = -0.2837440365d-02
-      llnk(998) = -0.2835294724d-02
-      llnk(999) = -0.2833151463d-02
-      llnk(1000) = -0.2831010498d-02
-      llnk(1001) = -0.2828871870d-02
-      llnk(1002) = -0.2826735533d-02
-      llnk(1003) = -0.2824601509d-02
-      llnk(1004) = -0.2822469774d-02
-      llnk(1005) = -0.2820340370d-02
-      llnk(1006) = -0.2818213253d-02
-      llnk(1007) = -0.2816088447d-02
-      llnk(1008) = -0.2813965924d-02
-      llnk(1009) = -0.2811845711d-02
-      llnk(1010) = -0.2809727762d-02
-      llnk(1011) = -0.2807612130d-02
-      llnk(1012) = -0.2805498780d-02
-      llnk(1013) = -0.2803387663d-02
-      llnk(1014) = -0.2801278909d-02
-      llnk(1015) = -0.2799172307d-02
-      llnk(1016) = -0.2797068067d-02
-      llnk(1017) = -0.2794966114d-02
-      llnk(1018) = -0.2792866401d-02
-      llnk(1019) = -0.2790768970d-02
-      llnk(1020) = -0.2788673820d-02
-      llnk(1021) = -0.2786580911d-02
-      llnk(1022) = -0.2784490270d-02
-      llnk(1023) = -0.2782401919d-02
-      llnk(1024) = -0.2780315803d-02
-
-   end subroutine loadlovenumber
-
    !
    !
    ! ==========================================================================
    !>
    subroutine tforce(jul0, TIME, xzeta, yzeta, TIDEP, IDIM1, dstart, dstop, eps)
-
       use messagehandling
+      use m_timespace_data_tables, only: SPHERICAL_HARMONICS_DATA
       !
       ! ====================================================================
       !
-      !     Programmer     E.J.O. Schrama
+      !     Copyright © 2026, Rijkswaterstaat, All Rights Reserved.
       !
-      !     Original URL: https://repos.deltares.nl/repos/simona/bo_omgeving/simona/src/waqua/waqpro/routines/wastfr.f
-      !     $Revision: 1850 $, $Date: 2008-04-18 09:19:37 +0200 (Fri, 18 Apr 2008) $
-      !
-      !     Version 1.1    Date 22-05-2008   c81402: extended for evaluation of
-      !                                              tidal forces on grids (AVe,
-      !                                              VORtech)
-      !     Version 1.0    Date 24-01-2008   initial version
-      !
-      !     Copyright (c) "E.J.O. Schrama".
-      !     Permission to copy or distribute this software or documentation
-      !     in hard copy or soft copy granted only by written license
-      !     obtained from "Rijkswaterstaat".
-      !     All rights reserved. No part of this publication may be
-      !     reproduced, stored in a retrieval system (e.g., in memory, disk,
-      !     or core) or be transmitted by any means, electronic, mechanical,
-      !     photocopy, recording, or otherwise, without written permission
-      !     from the publisher.
+      !     This code is the result of a collaboration between Rijkswaterstaat and Deltares. Contact for the exact licensing:
+      !     https://www.rijkswaterstaat.nl/formulieren/contactformulier, software.support@deltares.nl
       !
       ! ********************************************************************
       !
@@ -3295,8 +1245,6 @@ contains
       real(kind=dp), allocatable, save :: tideuc(:, :, :), tideus(:, :, :) !       (idim1, 0:3,2:3),
 
       integer, save :: IRC = 0
-
-      character(len=40), dimension(484) :: RECS ! ZAT IN FILE 'HARMONICS'
 
       !
       !     dstart   i    starting Doodson number
@@ -3330,9 +1278,9 @@ contains
       parameter(idebug=0, i1dbg=0, i2dbg=0)
       parameter(maxdat=500) ! maximal # records in table
       parameter(maxfld=7) ! maximal # fields in table
-      parameter(pi=3.14159265358979, re=6378137d0, &
-                d2r=pi / 180d0, rmu=3.9860044d14, &
-                g=rmu / re / re, reps=1d-5)
+      parameter(pi=3.14159265358979, re=6378137.0_dp, &
+                d2r=pi / 180.0_dp, rmu=3.9860044e14_dp, &
+                g=rmu / re / re, reps=1.0e-5_dp)
 
       integer ntable, nskip
       integer itable(maxdat, maxfld)
@@ -3358,7 +1306,7 @@ contains
       !     cansum         selected sum of elements of can for fixed mq,nq
       !     cm1            cosine-component of potential
       !     d2r            conversion factor pi/180
-      !     dtab           Doodson number: dtab1 + dtab2 / 1000d0
+      !     dtab           Doodson number: dtab1 + dtab2 / 1000.0_dp
       !     dtab1          first 3 digits of Doodson number
       !     dtab2          second 3 digits of Doodson number
       !     elmnts         array needed for calculation of can, san
@@ -3399,7 +1347,7 @@ contains
       !     rlong          eastern longitude in radians
       !     rlslat         previous value of rlat
       !     rlslon         previous value of rlong
-      !     rmu            gravitational constant (3.9860044d14)
+      !     rmu            gravitational constant (3.9860044e14)
       !     san            table with scaled harmonic components
       !                    sin(argument) * amp(i)
       !     sansum         selected sum of elements of san for fixed mq,nq
@@ -3491,7 +1439,7 @@ contains
       !
       !     DATA STATEMENTS
       !
-      data plsmin/+1d0, +1d0, +1d0, +1d0, -1d0, +1d0/
+      data plsmin/+1.0_dp, +1.0_dp, +1.0_dp, +1.0_dp, -1.0_dp, +1.0_dp/
       !
       save itable, ntable, pol1, cm1, sm1, amps
       !
@@ -3510,37 +1458,34 @@ contains
 
          IRC = 1
 
-         FACTORIAL(0) = 1d0
-         FACTORIAL(1) = 1d0
-         FACTORIAL(2) = 2d0
-         FACTORIAL(3) = 6d0
-         FACTORIAL(4) = 24d0
-         FACTORIAL(5) = 120d0
-         FACTORIAL(6) = 720d0
+         FACTORIAL(0) = 1.0_dp
+         FACTORIAL(1) = 1.0_dp
+         FACTORIAL(2) = 2.0_dp
+         FACTORIAL(3) = 6.0_dp
+         FACTORIAL(4) = 24.0_dp
+         FACTORIAL(5) = 120.0_dp
+         FACTORIAL(6) = 720.0_dp
 
-         if (allocated(tideuc)) deallocate (tideuc, tideus)
-         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR); tideuc = 0d0
-         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR); tideus = 0d0
-
-         call iniharmonics(recs)
-
-         if (idebug >= 10) then
-            write (6, *) '*** Start reading the harmonics '// &
-               'table ***'
-            write (6, *)
+         if (allocated(tideuc)) then
+            deallocate (tideuc, tideus)
          end if
+         allocate (tideuc(0:3, 2:3, IDIM1), STAT=IERR)
+         tideuc = 0.0_dp
+         allocate (tideus(0:3, 2:3, IDIM1), STAT=IERR)
+         tideus = 0.0_dp
+
          !
          !        --- k and h love numbers for degree 2 and 3
          !
-         rklove(1) = 0d0
-         rklove(2) = 0.303d0
-         rklove(3) = 0.0937d0
-         rhlove(1) = 0d0
-         rhlove(2) = 0.612d0
-         rhlove(3) = 0.293d0
+         rklove(1) = 0.0_dp
+         rklove(2) = 0.303_dp
+         rklove(3) = 0.0937_dp
+         rhlove(1) = 0.0_dp
+         rhlove(2) = 0.612_dp
+         rhlove(3) = 0.293_dp
          !
          do nq = 2, 3
-            factor(nq) = (1d0 + rklove(nq) - rhlove(nq))
+            factor(nq) = (1.0_dp + rklove(nq) - rhlove(nq))
          end do
          !
          ntable = 0
@@ -3548,11 +1493,17 @@ contains
          N = 0
 10       continue
          N = N + 1
-         if (N > 484) goto 20
-         RECORD = RECS(N)
+         if (N > 484) then
+            goto 20
+         end if
+         RECORD = SPHERICAL_HARMONICS_DATA(N)
          ! read(luhar,'(a)',end=20) record
-         if (idebug >= 10) write (6, *) record
-         if (record(1:1) == '%') go to 10
+         if (idebug >= 10) then
+            write (6, *) record
+         end if
+         if (record(1:1) == '%') then
+            go to 10
+         end if
          read (record, *) (kk(i), i=1, 7), har
          !
          !            in the CTE tables there is a null line for theoretic
@@ -3566,9 +1517,9 @@ contains
          !        --- dtab is the doodson number for a table entry,
          !            select the lines where dstart <= dtab <= dstop
          !
-         dtab1 = kk(1) * 100d0 + (kk(2) + 5d0) * 10d0 + (kk(3) + 5d0)
-         dtab2 = (kk(4) + 5d0) * 100d0 + (kk(5) + 5d0) * 10d0 + (kk(6) + 5d0)
-         dtab = dtab1 + dtab2 / 1000d0
+         dtab1 = kk(1) * 100.0_dp + (kk(2) + 5.0_dp) * 10.0_dp + (kk(3) + 5.0_dp)
+         dtab2 = (kk(4) + 5.0_dp) * 100.0_dp + (kk(5) + 5.0_dp) * 10.0_dp + (kk(6) + 5.0_dp)
+         dtab = dtab1 + dtab2 / 1000.0_dp
 
          if (.not. permnt .and. abs(har) >= eps .and. dstart <= dtab .and. dtab <= dstop) then
 
@@ -3591,8 +1542,8 @@ contains
 20       continue
          ! rewind(luhar)
 
-         rlslat = -9999d0
-         rlslon = -9999d0
+         rlslat = -9999.0_dp
+         rlslon = -9999.0_dp
 
          if (idebug >= 10) then
             write (6, *) 'ntable = ', ntable, '   nskip = ', nskip
@@ -3612,8 +1563,8 @@ contains
             if (abs(rlat - rlslat) > reps) then
                do nq = 2, 3
                   do mq = 0, nq
-                     fnm = 2d0 / dble(2 * nq + 1) * factorial(nq + mq) / factorial(nq - mq)
-                     fnm = sqrt(1d0 / (2d0 * pi * fnm)) * ((-1d0)**mq)
+                     fnm = 2.0_dp / real(2 * nq + 1, kind=dp) * factorial(nq + mq) / factorial(nq - mq)
+                     fnm = sqrt(1.0_dp / (2.0_dp * pi * fnm)) * ((-1.0_dp)**mq)
                      call legpol1(rlat, nq, mq, pnm)
                      pol1(mq, nq) = fnm * pnm
                   end do
@@ -3622,8 +1573,8 @@ contains
 
             if (abs(rlong - rlslon) > reps) then
                do mq = 0, 3
-                  cm1(mq) = +cos(dble(mq) * rlong)
-                  sm1(mq) = +sin(dble(mq) * rlong)
+                  cm1(mq) = +cos(real(mq, kind=dp) * rlong)
+                  sm1(mq) = +sin(real(mq, kind=dp) * rlong)
                end do
             end if
 
@@ -3673,13 +1624,13 @@ contains
       !     --- compute tabels can, san
       !
       do i = 1, ntable
-         argum = 0d0
+         argum = 0.0_dp
          do j = 1, 6
-            argfct = dble(itable(i, j))
+            argfct = real(itable(i, j), kind=dp)
             argum = argum + argfct * elmnts(j) * plsmin(j)
          end do
-         ! argum = mod(argum, 360d0)
-         ! if (argum.lt.0d0) argum = argum + 360d0
+         ! argum = mod(argum, 360.0_dp)
+         ! if (argum.lt.0.0_dp) argum = argum + 360.0_dp
          argum = argum * d2r
          can(i) = cos(argum) * amps(i)
          san(i) = sin(argum) * amps(i)
@@ -3694,8 +1645,8 @@ contains
       !
       do nq = 2, 3
          do mq = 0, nq
-            cansum(mq, nq) = 0d0
-            sansum(mq, nq) = 0d0
+            cansum(mq, nq) = 0.0_dp
+            sansum(mq, nq) = 0.0_dp
             do i = 1, ntable
                if (itable(i, 7) == nq .and. itable(i, 1) == mq) then
                   cansum(mq, nq) = cansum(mq, nq) + can(i)
@@ -3709,7 +1660,7 @@ contains
       !
       do i1 = 1, idim1
 
-         potent = 0d0
+         potent = 0.0_dp
          do nq = 2, 3
             do mq = 0, nq
                potent = potent + tideuc(mq, nq, I1) * cansum(mq, nq)
@@ -3736,12 +1687,6 @@ contains
    subroutine astrol(mjdate, six)
       ! ====================================================================
       !
-      !     Programmer     R. D. Ray
-      !
-      !     Version 1.0    Date dec. 1990    initial version
-      !
-      ! ********************************************************************
-      !
       !     DESCRIPTION
       !
       !     This copied from richard's subroutine astrol, in goes the
@@ -3755,7 +1700,6 @@ contains
       !     by David Cartwright (personal comm., Nov. 1990).
       !     TIME is UTC in decimal MJD.
       !     All longitudes returned in degrees.
-      !     R. D. Ray    Dec. 1990
       !
       !     Non-vectorized version.
       !
@@ -3790,7 +1734,7 @@ contains
       !     --- constant values:
       !
       real(kind=dp) :: circle
-      parameter(CIRCLE=360.0d0)
+      parameter(CIRCLE=360.0_dp)
       !
       !     circle       number of degrees in a circle
       !
@@ -3799,7 +1743,7 @@ contains
       real(kind=dp) :: T, TIME, UT
       integer i
       !
-      !     T           translated time: TIME - 51544.4993D0
+      !     T           translated time: TIME - 51544.4993.0_dp
       !     TIME        input time (mjdate)
       !     UT          fractional part of mjdate: (mjdate - int(mjdate))
       !
@@ -3808,7 +1752,7 @@ contains
       !     --- start of code
       !
       TIME = mjdate
-      T = TIME - 51544.4993d0 ! reference to 2000/1/1 1200 o'clock
+      T = TIME - 51544.4993_dp ! reference to 2000/1/1 1200 o'clock
       !
       !     --- perform translations using translation table of symbols:
       !
@@ -3820,18 +1764,20 @@ contains
       !         5  N           -N'      \Omega
       !         6  p'          p_1      \overline{\omega}'
       !
-      six(2) = 218.3164d0 + 13.17639648d0 * T
-      six(3) = 280.4661d0 + 0.98564736d0 * T
-      six(4) = 83.3535d0 + 0.11140353d0 * T
-      six(5) = 125.0445d0 - 0.05295377d0 * T
-      six(6) = 282.9384d0 + 0.0000471d0 * T
+      six(2) = 218.3164_dp + 13.17639648_dp * T
+      six(3) = 280.4661_dp + 0.98564736_dp * T
+      six(4) = 83.3535_dp + 0.11140353_dp * T
+      six(5) = 125.0445_dp - 0.05295377_dp * T
+      six(6) = 282.9384_dp + 0.0000471_dp * T
       !
       !     --- get them in the right quadrant
       !
       do i = 2, 6
 
          six(i) = mod(six(i), circle)
-         if (six(i) < 0d0) six(i) = six(i) + circle
+         if (six(i) < 0.0_dp) then
+            six(i) = six(i) + circle
+         end if
 
       end do
       !
@@ -3842,7 +1788,7 @@ contains
       !         tau = alpha_G - q
       !
       UT = (mjdate - int(mjdate))
-      six(1) = 360d0 * UT + six(3) - 180d0 - six(2)
+      six(1) = 360.0_dp * UT + six(3) - 180.0_dp - six(2)
    end subroutine astrol
    !
    !
@@ -3850,10 +1796,6 @@ contains
    !>
    subroutine legpol1(theta, n, m, pnm)
       ! ====================================================================
-      !
-      !     Programmer     E. Schrama <e.j.o.schrama@tudelft.nl>
-      !
-      ! ********************************************************************
       !
       !     DESCRIPTION
       !
@@ -3889,7 +1831,7 @@ contains
       !
       !=======================================================================
       !
-      pnm = 1d38
+      pnm = 1e38_dp
 
       cp = cos(theta)
       sp = sin(theta)
@@ -3898,520 +1840,41 @@ contains
       !         obtaining associated Legendre functions?
       !
       if (n == 0) then
-         if (m == 0) pnm = 1d0
+         if (m == 0) then
+            pnm = 1.0_dp
+         end if
       else if (n == 1) then
-         if (m == 0) pnm = sp
-         if (m == 1) pnm = cp
+         if (m == 0) then
+            pnm = sp
+         end if
+         if (m == 1) then
+            pnm = cp
+         end if
       else if (n == 2) then
-         if (m == 0) pnm = 1.5d0 * sp * sp - 0.5d0
-         if (m == 1) pnm = 3.0d0 * sp * cp
-         if (m == 2) pnm = 3.0d0 * cp * cp
+         if (m == 0) then
+            pnm = 1.5_dp * sp * sp - 0.5_dp
+         end if
+         if (m == 1) then
+            pnm = 3.0_dp * sp * cp
+         end if
+         if (m == 2) then
+            pnm = 3.0_dp * cp * cp
+         end if
       else if (n == 3) then
-         if (m == 0) pnm = 2.5d0 * sp * sp * sp - 1.5d0 * sp
-         if (m == 1) pnm = cp * (7.5d0 * sp * sp - 1.5d0)
-         if (m == 2) pnm = 15d0 * cp * cp * sp
-         if (m == 3) pnm = 15d0 * cp * cp * cp
+         if (m == 0) then
+            pnm = 2.5_dp * sp * sp * sp - 1.5_dp * sp
+         end if
+         if (m == 1) then
+            pnm = cp * (7.5_dp * sp * sp - 1.5_dp)
+         end if
+         if (m == 2) then
+            pnm = 15.0_dp * cp * cp * sp
+         end if
+         if (m == 3) then
+            pnm = 15.0_dp * cp * cp * cp
+         end if
       end if
    end subroutine legpol1
-   !
-   !
-   ! ==========================================================================
-   !>
-   subroutine INIHARMONICS(RECS)
-      character(len=40), dimension(484) :: RECS ! ZAT IN FILE 'HARMONICS'
-
-      !%refsys 2000
-      !%mjd0    47893.00000000
-      !%mjd1    55196.00000000
-      !%dmjd         .11410938
-      !%ndata   64000
-      !%gmearth 3.9860044d14
-      !%reearth 6378137
-      RECS(1) = ' 0  0  0  0  0  0  2      -.31459'
-      RECS(2) = ' 0  0  0  0  1  0  2       .02793'
-      RECS(3) = ' 0  0  0  0  2  0  2      -.00028'
-      RECS(4) = ' 0  0  0  2  1  0  2       .00004'
-      RECS(5) = ' 0  0  1  0 -1 -1  2      -.00004'
-      RECS(6) = ' 0  0  1  0  0 -1  2      -.00492'
-      RECS(7) = ' 0  0  1  0  0  1  2       .00026'
-      RECS(8) = ' 0  0  1  0  1 -1  2       .00004'
-      RECS(9) = ' 0  0  2 -2 -1  0  2       .00002'
-      RECS(10) = ' 0  0  2 -2  0  0  2      -.00031'
-      RECS(11) = ' 0  0  2  0  0  0  2      -.03099'
-      RECS(12) = ' 0  0  2  0  0 -2  2      -.00012'
-      RECS(13) = ' 0  0  2  0  1  0  2       .00076'
-      RECS(14) = ' 0  0  2  0  2  0  2       .00017'
-      RECS(15) = ' 0  0  3  0  0 -1  2      -.00181'
-      RECS(16) = ' 0  0  3  0  1 -1  2       .00003'
-      RECS(17) = ' 0  0  4  0  0 -2  2      -.00007'
-      RECS(18) = ' 0  1 -3  1 -1  1  2       .00002'
-      RECS(19) = ' 0  1 -3  1  0  1  2      -.00029'
-      RECS(20) = ' 0  1 -2 -1 -2  0  2       .00002'
-      RECS(21) = ' 0  1 -2 -1 -1  0  2       .00006'
-      RECS(22) = ' 0  1 -2  1 -1  0  2       .00048'
-      RECS(23) = ' 0  1 -2  1  0  0  2      -.00673'
-      RECS(24) = ' 0  1 -2  1  1  0  2       .00044'
-      RECS(25) = ' 0  1 -1 -1  0  1  2      -.00021'
-      RECS(26) = ' 0  1 -1  0  0  0  2       .00019'
-      RECS(27) = ' 0  1 -1  1  0 -1  2       .00005'
-      RECS(28) = ' 0  1  0 -1 -2  0  2      -.00003'
-      RECS(29) = ' 0  1  0 -1 -1  0  2       .00231'
-      RECS(30) = ' 0  1  0 -1  0  0  2      -.03518'
-      RECS(31) = ' 0  1  0 -1  1  0  2       .00228'
-      RECS(32) = ' 0  1  0  1  0  0  2       .00188'
-      RECS(33) = ' 0  1  0  1  1  0  2       .00077'
-      RECS(34) = ' 0  1  0  1  2  0  2       .00021'
-      RECS(35) = ' 0  1  1 -1  0 -1  2       .00018'
-      RECS(36) = ' 0  1  2 -1  0  0  2       .00049'
-      RECS(37) = ' 0  1  2 -1  1  0  2       .00024'
-      RECS(38) = ' 0  1  2 -1  2  0  2       .00004'
-      RECS(39) = ' 0  1  3 -1  0 -1  2       .00002'
-      RECS(40) = ' 0  2 -4  2  0  0  2      -.00011'
-      RECS(41) = ' 0  2 -3  0  0  1  2      -.00039'
-      RECS(42) = ' 0  2 -3  0  1  1  2       .00002'
-      RECS(43) = ' 0  2 -2  0 -1  0  2      -.00042'
-      RECS(44) = ' 0  2 -2  0  0  0  2      -.00584'
-      RECS(45) = ' 0  2 -2  0  1  0  2       .00037'
-      RECS(46) = ' 0  2 -2  2  0  0  2       .00004'
-      RECS(47) = ' 0  2 -1 -2  0  1  2      -.00004'
-      RECS(48) = ' 0  2 -1 -1  0  0  2       .00003'
-      RECS(49) = ' 0  2 -1  0  0 -1  2       .00007'
-      RECS(50) = ' 0  2 -1  0  0  1  2      -.00020'
-      RECS(51) = ' 0  2 -1  0  1  1  2      -.00004'
-      RECS(52) = ' 0  2  0 -2 -1  0  2       .00015'
-      RECS(53) = ' 0  2  0 -2  0  0  2      -.00288'
-      RECS(54) = ' 0  2  0 -2  1  0  2       .00019'
-      RECS(55) = ' 0  2  0  0  0  0  2      -.06660'
-      RECS(56) = ' 0  2  0  0  1  0  2      -.02761'
-      RECS(57) = ' 0  2  0  0  2  0  2      -.00258'
-      RECS(58) = ' 0  2  0  0  3  0  2       .00006'
-      RECS(59) = ' 0  2  1 -2  0 -1  2       .00003'
-      RECS(60) = ' 0  2  1  0  0 -1  2       .00023'
-      RECS(61) = ' 0  2  1  0  1 -1  2       .00006'
-      RECS(62) = ' 0  2  2 -2  0  0  2       .00020'
-      RECS(63) = ' 0  2  2 -2  1  0  2       .00008'
-      RECS(64) = ' 0  2  2  0  2  0  2       .00003'
-      RECS(65) = ' 0  3 -5  1  0  1  2      -.00002'
-      RECS(66) = ' 0  3 -4  1  0  0  2      -.00018'
-      RECS(67) = ' 0  3 -3 -1  0  1  2      -.00007'
-      RECS(68) = ' 0  3 -3  1  0  1  2      -.00011'
-      RECS(69) = ' 0  3 -3  1  1  1  2      -.00005'
-      RECS(70) = ' 0  3 -2 -1 -1  0  2      -.00009'
-      RECS(71) = ' 0  3 -2 -1  0  0  2      -.00092'
-      RECS(72) = ' 0  3 -2 -1  1  0  2       .00006'
-      RECS(73) = ' 0  3 -2  1  0  0  2      -.00242'
-      RECS(74) = ' 0  3 -2  1  1  0  2      -.00100'
-      RECS(75) = ' 0  3 -2  1  2  0  2      -.00009'
-      RECS(76) = ' 0  3 -1 -1  0  1  2      -.00013'
-      RECS(77) = ' 0  3 -1 -1  1  1  2      -.00004'
-      RECS(78) = ' 0  3 -1  0  0  0  2       .00007'
-      RECS(79) = ' 0  3 -1  0  1  0  2       .00003'
-      RECS(80) = ' 0  3 -1  1  0 -1  2       .00003'
-      RECS(81) = ' 0  3  0 -3  0  0  2      -.00023'
-      RECS(82) = ' 0  3  0 -3  1 -1  2       .00003'
-      RECS(83) = ' 0  3  0 -3  1  1  2       .00003'
-      RECS(84) = ' 0  3  0 -1  0  0  2      -.01275'
-      RECS(85) = ' 0  3  0 -1  1  0  2      -.00529'
-      RECS(86) = ' 0  3  0 -1  2  0  2      -.00050'
-      RECS(87) = ' 0  3  0  1  2  0  2       .00005'
-      RECS(88) = ' 0  3  0  1  3  0  2       .00002'
-      RECS(89) = ' 0  3  1 -1  0 -1  2       .00011'
-      RECS(90) = ' 0  3  1 -1  1 -1  2       .00004'
-      RECS(91) = ' 0  4 -4  0  0  0  2      -.00008'
-      RECS(92) = ' 0  4 -4  2  0  0  2      -.00006'
-      RECS(93) = ' 0  4 -4  2  1  0  2      -.00003'
-      RECS(94) = ' 0  4 -3  0  0  1  2      -.00014'
-      RECS(95) = ' 0  4 -3  0  1  1  2      -.00006'
-      RECS(96) = ' 0  4 -2 -2  0  0  2      -.00011'
-      RECS(97) = ' 0  4 -2  0  0  0  2      -.00204'
-      RECS(98) = ' 0  4 -2  0  1  0  2      -.00084'
-      RECS(99) = ' 0  4 -2  0  2  0  2      -.00008'
-      RECS(100) = ' 0  4 -1 -2  0  1  2      -.00003'
-      RECS(101) = ' 0  4 -1  0  0 -1  2       .00003'
-      RECS(102) = ' 0  4  0 -2  0  0  2      -.00169'
-      RECS(103) = ' 0  4  0 -2  1  0  2      -.00070'
-      RECS(104) = ' 0  4  0 -2  2  0  2      -.00007'
-      RECS(105) = ' 1 -4  0  3 -1  0  2       .00014'
-      RECS(106) = ' 1 -4  0  3  0  0  2       .00075'
-      RECS(107) = ' 1 -4  1  1  0  1  2      -.00003'
-      RECS(108) = ' 1 -4  2  1 -1  0  2       .00036'
-      RECS(109) = ' 1 -4  2  1  0  0  2       .00194'
-      RECS(110) = ' 1 -4  3  1  0 -1  2       .00015'
-      RECS(111) = ' 1 -4  4 -1 -1  0  2       .00007'
-      RECS(112) = ' 1 -4  4 -1  0  0  2       .00037'
-      RECS(113) = ' 1 -4  5 -1  0 -1  2       .00004'
-      RECS(114) = ' 1 -3 -1  2  0  1  2      -.00009'
-      RECS(115) = ' 1 -3  0  0 -2  0  2      -.00004'
-      RECS(116) = ' 1 -3  0  2 -2  0  2      -.00003'
-      RECS(117) = ' 1 -3  0  2 -1  0  2       .00125'
-      RECS(118) = ' 1 -3  0  2  0  0  2       .00664'
-      RECS(119) = ' 1 -3  1  0  0  1  2      -.00011'
-      RECS(120) = ' 1 -3  1  1  0  0  2      -.00007'
-      RECS(121) = ' 1 -3  1  2  0 -1  2       .00010'
-      RECS(122) = ' 1 -3  2  0 -2  0  2      -.00004'
-      RECS(123) = ' 1 -3  2  0 -1  0  2       .00151'
-      RECS(124) = ' 1 -3  2  0  0  0  2       .00801'
-      RECS(125) = ' 1 -3  2  2  0  0  2      -.00007'
-      RECS(126) = ' 1 -3  3  0 -1 -1  2       .00010'
-      RECS(127) = ' 1 -3  3  0  0 -1  2       .00054'
-      RECS(128) = ' 1 -3  4 -2 -1  0  2       .00005'
-      RECS(129) = ' 1 -3  4 -2  0  0  2       .00024'
-      RECS(130) = ' 1 -3  4  0  0  0  2      -.00008'
-      RECS(131) = ' 1 -3  4  0  1  0  2       .00003'
-      RECS(132) = ' 1 -2 -2  1 -2  0  2      -.00004'
-      RECS(133) = ' 1 -2 -2  3  0  0  2      -.00016'
-      RECS(134) = ' 1 -2 -1  1 -1  1  2      -.00007'
-      RECS(135) = ' 1 -2 -1  1  0  1  2      -.00042'
-      RECS(136) = ' 1 -2  0 -1 -3  0  2      -.00004'
-      RECS(137) = ' 1 -2  0 -1 -2  0  2      -.00019'
-      RECS(138) = ' 1 -2  0  1 -2  0  2      -.00029'
-      RECS(139) = ' 1 -2  0  0  0  1  2       .00004'
-      RECS(140) = ' 1 -2  0  1 -1  0  2       .00947'
-      RECS(141) = ' 1 -2  0  1  0  0  2       .05019'
-      RECS(142) = ' 1 -2  0  3  0  0  2      -.00014'
-      RECS(143) = ' 1 -2  1 -1  0  1  2      -.00009'
-      RECS(144) = ' 1 -2  1  0 -1  0  2      -.00005'
-      RECS(145) = ' 1 -2  1  0  0  0  2      -.00027'
-      RECS(146) = ' 1 -2  1  1 -1 -1  2       .00007'
-      RECS(147) = ' 1 -2  1  1  0 -1  2       .00046'
-      RECS(148) = ' 1 -2  2 -1 -2  0  2      -.00005'
-      RECS(149) = ' 1 -2  2 -1 -1  0  2       .00180'
-      RECS(150) = ' 1 -2  2 -1  0  0  2       .00953'
-      RECS(151) = ' 1 -2  2  1  0  0  2      -.00055'
-      RECS(152) = ' 1 -2  2  1  1  0  2       .00017'
-      RECS(153) = ' 1 -2  3 -1 -1 -1  2       .00008'
-      RECS(154) = ' 1 -2  3 -1  0 -1  2       .00044'
-      RECS(155) = ' 1 -2  3  1  0 -1  2      -.00004'
-      RECS(156) = ' 1 -2  4 -1  0  0  2      -.00012'
-      RECS(157) = ' 1 -1 -2  0 -2  0  2      -.00012'
-      RECS(158) = ' 1 -1 -2  2 -1  0  2      -.00014'
-      RECS(159) = ' 1 -1 -2  2  0  0  2      -.00079'
-      RECS(160) = ' 1 -1 -1  0 -1  1  2      -.00011'
-      RECS(161) = ' 1 -1 -1  0  0  1  2      -.00090'
-      RECS(162) = ' 1 -1 -1  1  0  0  2       .00004'
-      RECS(163) = ' 1 -1  0  0 -2  0  2      -.00152'
-      RECS(164) = ' 1 -1  0  0 -1  0  2       .04946'
-      RECS(165) = ' 1 -1  0  0  0  0  2       .26216'
-      RECS(166) = ' 1 -1  0  2 -1  0  2       .00005'
-      RECS(167) = ' 1 -1  0  2  0  0  2      -.00169'
-      RECS(168) = ' 1 -1  0  2  1  0  2      -.00028'
-      RECS(169) = ' 1 -1  1  0 -1 -1  2       .00008'
-      RECS(170) = ' 1 -1  1  0  0 -1  2       .00076'
-      RECS(171) = ' 1 -1  2 -2  0  0  2      -.00015'
-      RECS(172) = ' 1 -1  2  0 -1  0  2       .00010'
-      RECS(173) = ' 1 -1  2  0  0  0  2      -.00343'
-      RECS(174) = ' 1 -1  2  0  1  0  2       .00075'
-      RECS(175) = ' 1 -1  2  0  2  0  2       .00005'
-      RECS(176) = ' 1 -1  3  0  0 -1  2      -.00022'
-      RECS(177) = ' 1 -1  4 -2  0  0  2      -.00007'
-      RECS(178) = ' 1  0 -3  1  0  1  2      -.00009'
-      RECS(179) = ' 1  0 -2  1 -1  0  2      -.00044'
-      RECS(180) = ' 1  0 -2  1  0  0  2      -.00193'
-      RECS(181) = ' 1  0 -1  0  0  0  2       .00005'
-      RECS(182) = ' 1  0 -1  1  0  1  2       .00010'
-      RECS(183) = ' 1  0  0 -1 -2  0  2       .00012'
-      RECS(184) = ' 1  0  0 -1 -1  0  2      -.00137'
-      RECS(185) = ' 1  0  0 -1  0  0  2      -.00741'
-      RECS(186) = ' 1  0  0  1 -1  0  2       .00059'
-      RECS(187) = ' 1  0  0  1  0  0  2      -.02062'
-      RECS(188) = ' 1  0  0  1  1  0  2      -.00414'
-      RECS(189) = ' 1  0  0  1  2  0  2       .00012'
-      RECS(190) = ' 1  0  1  0  0  0  2       .00012'
-      RECS(191) = ' 1  0  1  1  0 -1  2      -.00013'
-      RECS(192) = ' 1  0  2 -1 -1  0  2       .00011'
-      RECS(193) = ' 1  0  2 -1  0  0  2      -.00394'
-      RECS(194) = ' 1  0  2 -1  1  0  2      -.00087'
-      RECS(195) = ' 1  0  3 -1  0 -1  2      -.00017'
-      RECS(196) = ' 1  0  3 -1  1 -1  2      -.00004'
-      RECS(197) = ' 1  1 -4  0  0  2  2       .00029'
-      RECS(198) = ' 1  1 -3  0 -1  1  2      -.00006'
-      RECS(199) = ' 1  1 -3  0  0  1  2       .00713'
-      RECS(200) = ' 1  1 -2  0 -2  0  2       .00010'
-      RECS(201) = ' 1  1 -2  0 -1  0  2      -.00137'
-      RECS(202) = ' 1  1 -2  0  0  0  2       .12199'
-      RECS(203) = ' 1  1 -2  0  0  2  2      -.00007'
-      RECS(204) = ' 1  1 -2  2  0  0  2      -.00018'
-      RECS(205) = ' 1  1 -2  2  1  0  2      -.00004'
-      RECS(206) = ' 1  1 -1  0  0 -1  2      -.00102'
-      RECS(207) = ' 1  1 -1  0  0  1  2      -.00288'
-      RECS(208) = ' 1  1 -1  0  1  1  2       .00008'
-      RECS(209) = ' 1  1  0 -2 -1  0  2      -.00007'
-      RECS(210) = ' 1  1  0  0 -2  0  2      -.00005'
-      RECS(211) = ' 1  1  0  0 -1  0  2       .00730'
-      RECS(212) = ' 1  1  0  0  0  0  2      -.36872'
-      RECS(213) = ' 1  1  0  0  1  0  2      -.05002'
-      RECS(214) = ' 1  1  0  0  2  0  2       .00108'
-      RECS(215) = ' 1  1  1  0  0 -1  2      -.00292'
-      RECS(216) = ' 1  1  1  0  1 -1  2      -.00005'
-      RECS(217) = ' 1  1  2 -2  0  0  2      -.00018'
-      RECS(218) = ' 1  1  2 -2  1  0  2      -.00005'
-      RECS(219) = ' 1  1  2  0  0 -2  2      -.00007'
-      RECS(220) = ' 1  1  2  0  0  0  2      -.00525'
-      RECS(221) = ' 1  1  2  0  1  0  2       .00020'
-      RECS(222) = ' 1  1  2  0  2  0  2       .00010'
-      RECS(223) = ' 1  1  3  0  0 -1  2      -.00030'
-      RECS(224) = ' 1  2 -3  1  0  1  2      -.00017'
-      RECS(225) = ' 1  2 -2 -1 -1  0  2      -.00012'
-      RECS(226) = ' 1  2 -2  1 -1  0  2       .00012'
-      RECS(227) = ' 1  2 -2  1  0  0  2      -.00394'
-      RECS(228) = ' 1  2 -2  1  1  0  2      -.00078'
-      RECS(229) = ' 1  2 -1 -1  0  1  2      -.00013'
-      RECS(230) = ' 1  2 -1  0  0  0  2       .00011'
-      RECS(231) = ' 1  2  0 -1 -1  0  2       .00060'
-      RECS(232) = ' 1  2  0 -1  0  0  2      -.02062'
-      RECS(233) = ' 1  2  0 -1  1  0  2      -.00409'
-      RECS(234) = ' 1  2  0 -1  2  0  2       .00008'
-      RECS(235) = ' 1  2  0  1  0  0  2       .00032'
-      RECS(236) = ' 1  2  0  1  1  0  2       .00020'
-      RECS(237) = ' 1  2  0  1  2  0  2       .00012'
-      RECS(238) = ' 1  2  1 -1  0 -1  2       .00011'
-      RECS(239) = ' 1  2  2 -1  0  0  2       .00008'
-      RECS(240) = ' 1  2  2 -1  1  0  2       .00006'
-      RECS(241) = ' 1  3 -4  2  0  0  2      -.00006'
-      RECS(242) = ' 1  3 -3  0  0  1  2      -.00023'
-      RECS(243) = ' 1  3 -3  0  1  1  2      -.00004'
-      RECS(244) = ' 1  3 -2  0 -1  0  2      -.00011'
-      RECS(245) = ' 1  3 -2  0  0  0  2      -.00342'
-      RECS(246) = ' 1  3 -2  0  1  0  2      -.00067'
-      RECS(247) = ' 1  3 -1  0  0 -1  2       .00007'
-      RECS(248) = ' 1  3  0 -2 -1  0  2       .00004'
-      RECS(249) = ' 1  3  0 -2  0  0  2      -.00169'
-      RECS(250) = ' 1  3  0 -2  1  0  2      -.00034'
-      RECS(251) = ' 1  3  0  0  0  0  2      -.01128'
-      RECS(252) = ' 1  3  0  0  1  0  2      -.00723'
-      RECS(253) = ' 1  3  0  0  2  0  2      -.00151'
-      RECS(254) = ' 1  3  0  0  3  0  2      -.00010'
-      RECS(255) = ' 1  3  1  0  0 -1  2       .00004'
-      RECS(256) = ' 1  4 -4  1  0  0  2      -.00011'
-      RECS(257) = ' 1  4 -3 -1  0  1  2      -.00004'
-      RECS(258) = ' 1  4 -2 -1  0  0  2      -.00054'
-      RECS(259) = ' 1  4 -2 -1  1  0  2      -.00010'
-      RECS(260) = ' 1  4 -2  1  0  0  2      -.00041'
-      RECS(261) = ' 1  4 -2  1  1  0  2      -.00026'
-      RECS(262) = ' 1  4 -2  1  2  0  2      -.00005'
-      RECS(263) = ' 1  4  0 -3  0  0  2      -.00014'
-      RECS(264) = ' 1  4  0 -1  0  0  2      -.00216'
-      RECS(265) = ' 1  4  0 -1  1  0  2      -.00138'
-      RECS(266) = ' 1  4  0 -1  2  0  2      -.00029'
-      RECS(267) = ' 2 -4  0  4  0  0  2       .00018'
-      RECS(268) = ' 2 -4  2  2  0  0  2       .00077'
-      RECS(269) = ' 2 -4  3  2  0 -1  2       .00006'
-      RECS(270) = ' 2 -4  4  0  0  0  2       .00048'
-      RECS(271) = ' 2 -4  5  0  0 -1  2       .00006'
-      RECS(272) = ' 2 -3  0  3 -1  0  2      -.00007'
-      RECS(273) = ' 2 -3  0  3  0  0  2       .00180'
-      RECS(274) = ' 2 -3  1  1  0  1  2      -.00009'
-      RECS(275) = ' 2 -3  1  3  0 -1  2       .00004'
-      RECS(276) = ' 2 -3  2  1 -1  0  2      -.00017'
-      RECS(277) = ' 2 -3  2  1  0  0  2       .00467'
-      RECS(278) = ' 2 -3  3  1  0 -1  2       .00035'
-      RECS(279) = ' 2 -3  4 -1 -1  0  2      -.00003'
-      RECS(280) = ' 2 -3  4 -1  0  0  2       .00090'
-      RECS(281) = ' 2 -3  5 -1  0 -1  2       .00010'
-      RECS(282) = ' 2 -2 -2  4  0  0  2      -.00006'
-      RECS(283) = ' 2 -2 -1  2  0  1  2      -.00022'
-      RECS(284) = ' 2 -2  0  0 -2  0  2      -.00010'
-      RECS(285) = ' 2 -2  0  2 -1  0  2      -.00060'
-      RECS(286) = ' 2 -2  0  2  0  0  2       .01601'
-      RECS(287) = ' 2 -2  1  0  0  1  2      -.00027'
-      RECS(288) = ' 2 -2  1  1  0  0  2      -.00017'
-      RECS(289) = ' 2 -2  1  2  0 -1  2       .00025'
-      RECS(290) = ' 2 -2  2  0 -1  0  2      -.00072'
-      RECS(291) = ' 2 -2  2  0  0  0  2       .01932'
-      RECS(292) = ' 2 -2  3 -1  0  0  2      -.00004'
-      RECS(293) = ' 2 -2  3  0 -1 -1  2      -.00005'
-      RECS(294) = ' 2 -2  3  0  0 -1  2       .00130'
-      RECS(295) = ' 2 -2  4 -2  0  0  2       .00059'
-      RECS(296) = ' 2 -2  4  0  0 -2  2       .00005'
-      RECS(297) = ' 2 -2  5 -2  0 -1  2       .00005'
-      RECS(298) = ' 2 -1 -2  1 -2  0  2      -.00010'
-      RECS(299) = ' 2 -1 -2  3  0  0  2      -.00039'
-      RECS(300) = ' 2 -1 -1  1 -1  1  2       .00003'
-      RECS(301) = ' 2 -1 -1  1  0  1  2      -.00102'
-      RECS(302) = ' 2 -1  0 -1 -2  0  2      -.00046'
-      RECS(303) = ' 2 -1  0  1 -2  0  2       .00007'
-      RECS(304) = ' 2 -1  0  0  0  1  2       .00009'
-      RECS(305) = ' 2 -1  0  1 -1  0  2      -.00451'
-      RECS(306) = ' 2 -1  0  1  0  0  2       .12099'
-      RECS(307) = ' 2 -1  1 -1  0  1  2      -.00023'
-      RECS(308) = ' 2 -1  1  0  0  0  2      -.00065'
-      RECS(309) = ' 2 -1  1  1 -1 -1  2      -.00004'
-      RECS(310) = ' 2 -1  1  1  0 -1  2       .00113'
-      RECS(311) = ' 2 -1  2 -1 -1  0  2      -.00086'
-      RECS(312) = ' 2 -1  2 -1  0  0  2       .02298'
-      RECS(313) = ' 2 -1  2  1  0  0  2       .00010'
-      RECS(314) = ' 2 -1  2  1  1  0  2      -.00008'
-      RECS(315) = ' 2 -1  3 -1 -1 -1  2      -.00004'
-      RECS(316) = ' 2 -1  3 -1  0 -1  2       .00106'
-      RECS(317) = ' 2  0 -3  2  0  1  2      -.00008'
-      RECS(318) = ' 2  0 -2  0 -2  0  2      -.00028'
-      RECS(319) = ' 2  0 -2  2 -1  0  2       .00007'
-      RECS(320) = ' 2  0 -2  2  0  0  2      -.00190'
-      RECS(321) = ' 2  0 -1  0 -1  1  2       .00005'
-      RECS(322) = ' 2  0 -1  0  0  1  2      -.00217'
-      RECS(323) = ' 2  0 -1  1  0  0  2       .00010'
-      RECS(324) = ' 2  0  0  0 -2  0  2       .00033'
-      RECS(325) = ' 2  0  0  0 -1  0  2      -.02358'
-      RECS(326) = ' 2  0  0  0  0  0  2       .63194'
-      RECS(327) = ' 2  0  0  2  0  0  2       .00036'
-      RECS(328) = ' 2  0  0  2  1  0  2       .00013'
-      RECS(329) = ' 2  0  1  0 -1 -1  2      -.00004'
-      RECS(330) = ' 2  0  1  0  0 -1  2       .00192'
-      RECS(331) = ' 2  0  2 -2  0  0  2      -.00036'
-      RECS(332) = ' 2  0  2  0  0  0  2       .00072'
-      RECS(333) = ' 2  0  2  0  1  0  2      -.00036'
-      RECS(334) = ' 2  0  2  0  2  0  2       .00012'
-      RECS(335) = ' 2  0  3  0  0 -1  2       .00005'
-      RECS(336) = ' 2  1 -3  1  0  1  2      -.00022'
-      RECS(337) = ' 2  1 -2  1 -1  0  2       .00021'
-      RECS(338) = ' 2  1 -2  1  0  0  2      -.00466'
-      RECS(339) = ' 2  1 -1 -1  0  1  2      -.00007'
-      RECS(340) = ' 2  1 -1  0  0  0  2       .00010'
-      RECS(341) = ' 2  1  0 -1 -1  0  2       .00065'
-      RECS(342) = ' 2  1  0 -1  0  0  2      -.01786'
-      RECS(343) = ' 2  1  0  1 -1  0  2      -.00008'
-      RECS(344) = ' 2  1  0  1  0  0  2       .00447'
-      RECS(345) = ' 2  1  0  1  1  0  2       .00197'
-      RECS(346) = ' 2  1  0  1  2  0  2       .00028'
-      RECS(347) = ' 2  1  2 -1  0  0  2       .00085'
-      RECS(348) = ' 2  1  2 -1  1  0  2       .00041'
-      RECS(349) = ' 2  1  2 -1  2  0  2       .00005'
-      RECS(350) = ' 2  2 -4  0  0  2  2       .00070'
-      RECS(351) = ' 2  2 -3  0  0  1  2       .01719'
-      RECS(352) = ' 2  2 -2  0 -1  0  2       .00066'
-      RECS(353) = ' 2  2 -2  0  0  0  2       .29401'
-      RECS(354) = ' 2  2 -2  2  0  0  2       .00004'
-      RECS(355) = ' 2  2 -1  0  0 -1  2      -.00246'
-      RECS(356) = ' 2  2 -1  0  0  1  2       .00062'
-      RECS(357) = ' 2  2 -1  0  1  1  2      -.00004'
-      RECS(358) = ' 2  2  0  0 -1  0  2      -.00103'
-      RECS(359) = ' 2  2  0  0  0  0  2       .07992'
-      RECS(360) = ' 2  2  0  0  1  0  2       .02382'
-      RECS(361) = ' 2  2  0  0  2  0  2       .00259'
-      RECS(362) = ' 2  2  1  0  0 -1  2       .00063'
-      RECS(363) = ' 2  2  2 -2  0  0  2       .00004'
-      RECS(364) = ' 2  2  2  0  0  0  2       .00053'
-      RECS(365) = ' 2  3 -3  1  0  1  2       .00003'
-      RECS(366) = ' 2  3 -2 -1 -1  0  2       .00006'
-      RECS(367) = ' 2  3 -2 -1  0  0  2       .00004'
-      RECS(368) = ' 2  3 -2  1  0  0  2       .00085'
-      RECS(369) = ' 2  3 -2  1  1  0  2       .00037'
-      RECS(370) = ' 2  3 -2  1  2  0  2       .00004'
-      RECS(371) = ' 2  3  0 -1 -1  0  2      -.00009'
-      RECS(372) = ' 2  3  0 -1  0  0  2       .00447'
-      RECS(373) = ' 2  3  0 -1  1  0  2       .00195'
-      RECS(374) = ' 2  3  0 -1  2  0  2       .00022'
-      RECS(375) = ' 2  3  0  1  0  0  2      -.00003'
-      RECS(376) = ' 2  4 -3  0  0  1  2       .00005'
-      RECS(377) = ' 2  4 -2  0  0  0  2       .00074'
-      RECS(378) = ' 2  4 -2  0  1  0  2       .00032'
-      RECS(379) = ' 2  4 -2  0  2  0  2       .00003'
-      RECS(380) = ' 2  4  0 -2  0  0  2       .00037'
-      RECS(381) = ' 2  4  0 -2  1  0  2       .00016'
-      RECS(382) = ' 2  4  0  0  0  0  2       .00117'
-      RECS(383) = ' 2  4  0  0  1  0  2       .00101'
-      RECS(384) = ' 2  4  0  0  2  0  2       .00033'
-      RECS(385) = ' 2  4  0  0  3  0  2       .00005'
-      RECS(386) = ' 0  0  0  1  0  0  3      -.00021'
-      RECS(387) = ' 0  0  2 -1  0  0  3      -.00004'
-      RECS(388) = ' 0  1 -2  0  0  0  3       .00004'
-      RECS(389) = ' 0  1  0  0 -1  0  3       .00019'
-      RECS(390) = ' 0  1  0  0  0  0  3      -.00375'
-      RECS(391) = ' 0  1  0  0  1  0  3      -.00059'
-      RECS(392) = ' 0  1  0  0  2  0  3       .00005'
-      RECS(393) = ' 0  2 -2  1  0  0  3      -.00012'
-      RECS(394) = ' 0  2  0 -1  0  0  3      -.00061'
-      RECS(395) = ' 0  2  0 -1  1  0  3      -.00010'
-      RECS(396) = ' 0  3 -2  0  0  0  3      -.00010'
-      RECS(397) = ' 0  3  0 -2  0  0  3      -.00007'
-      RECS(398) = ' 0  3  0  0  0  0  3      -.00031'
-      RECS(399) = ' 0  3  0  0  1  0  3      -.00019'
-      RECS(400) = ' 0  3  0  0  2  0  3      -.00004'
-      RECS(401) = ' 0  4  0 -1  0  0  3      -.00008'
-      RECS(402) = ' 0  4  0 -1  1  0  3      -.00005'
-      RECS(403) = ' 1 -4  0  2  0  0  3       .00006'
-      RECS(404) = ' 1 -4  2  0  0  0  3       .00006'
-      RECS(405) = ' 1 -3  0  1 -1  0  3       .00014'
-      RECS(406) = ' 1 -3  0  1  0  0  3       .00035'
-      RECS(407) = ' 1 -3  2 -1  0  0  3       .00006'
-      RECS(408) = ' 1 -2  0  0 -2  0  3       .00004'
-      RECS(409) = ' 1 -2  0  0 -1  0  3       .00051'
-      RECS(410) = ' 1 -2  0  0  0  0  3       .00128'
-      RECS(411) = ' 1 -2  0  2  0  0  3       .00008'
-      RECS(412) = ' 1 -2  2  0  0  0  3       .00011'
-      RECS(413) = ' 1 -1  0 -1  0  0  3      -.00007'
-      RECS(414) = ' 1 -1  0  1 -1  0  3      -.00009'
-      RECS(415) = ' 1 -1  0  1  0  0  3       .00065'
-      RECS(416) = ' 1 -1  0  1  1  0  3      -.00009'
-      RECS(417) = ' 1 -1  2 -1  0  0  3       .00013'
-      RECS(418) = ' 1  0  0  0 -1  0  3      -.00059'
-      RECS(419) = ' 1  0  0  0  0  0  3       .00399'
-      RECS(420) = ' 1  0  0  0  1  0  3      -.00052'
-      RECS(421) = ' 1  1 -2  1  0  0  3       .00004'
-      RECS(422) = ' 1  1  0 -1 -1  0  3      -.00003'
-      RECS(423) = ' 1  1  0 -1  0  0  3       .00022'
-      RECS(424) = ' 1  1  0 -1  1  0  3      -.00003'
-      RECS(425) = ' 1  1  0  1  0  0  3       .00008'
-      RECS(426) = ' 1  1  0  1  1  0  3       .00003'
-      RECS(427) = ' 1  2 -2  0  0  0  3       .00005'
-      RECS(428) = ' 1  2  0  0 -1  0  3      -.00005'
-      RECS(429) = ' 1  2  0  0  0  0  3       .00146'
-      RECS(430) = ' 1  2  0  0  1  0  3       .00059'
-      RECS(431) = ' 1  2  0  0  2  0  3       .00005'
-      RECS(432) = ' 1  3 -2  1  0  0  3       .00005'
-      RECS(433) = ' 1  3  0 -1  0  0  3       .00024'
-      RECS(434) = ' 1  3  0 -1  1  0  3       .00010'
-      RECS(435) = ' 1  4 -2  0  0  0  3       .00004'
-      RECS(436) = ' 1  4  0  0  0  0  3       .00005'
-      RECS(437) = ' 1  4  0  0  1  0  3       .00005'
-      RECS(438) = ' 2 -4  2  1  0  0  3      -.00006'
-      RECS(439) = ' 2 -3  0  2  0  0  3      -.00019'
-      RECS(440) = ' 2 -3  2  0 -1  0  3      -.00003'
-      RECS(441) = ' 2 -3  2  0  0  0  3      -.00019'
-      RECS(442) = ' 2 -2  0  1 -1  0  3      -.00018'
-      RECS(443) = ' 2 -2  0  1  0  0  3      -.00107'
-      RECS(444) = ' 2 -2  2 -1 -1  0  3      -.00003'
-      RECS(445) = ' 2 -2  2 -1  0  0  3      -.00020'
-      RECS(446) = ' 2 -1  0  0 -2  0  3       .00004'
-      RECS(447) = ' 2 -1  0  0 -1  0  3      -.00066'
-      RECS(448) = ' 2 -1  0  0  0  0  3      -.00389'
-      RECS(449) = ' 2 -1  0  2  0  0  3       .00007'
-      RECS(450) = ' 2 -1  2  0  0  0  3       .00010'
-      RECS(451) = ' 2  0 -2  1  0  0  3       .00005'
-      RECS(452) = ' 2  0  0 -1 -1  0  3       .00004'
-      RECS(453) = ' 2  0  0 -1  0  0  3       .00022'
-      RECS(454) = ' 2  0  0  1 -1  0  3      -.00003'
-      RECS(455) = ' 2  0  0  1  0  0  3       .00059'
-      RECS(456) = ' 2  0  0  1  1  0  3       .00011'
-      RECS(457) = ' 2  0  2 -1  0  0  3       .00011'
-      RECS(458) = ' 2  1  0  0 -1  0  3      -.00021'
-      RECS(459) = ' 2  1  0  0  0  0  3       .00359'
-      RECS(460) = ' 2  1  0  0  1  0  3       .00067'
-      RECS(461) = ' 2  2 -2  1  0  0  3       .00004'
-      RECS(462) = ' 2  2  0 -1  0  0  3       .00019'
-      RECS(463) = ' 2  2  0 -1  1  0  3       .00004'
-      RECS(464) = ' 2  3 -2  0  0  0  3       .00004'
-      RECS(465) = ' 2  3  0  0  0  0  3       .00033'
-      RECS(466) = ' 2  3  0  0  1  0  3       .00021'
-      RECS(467) = ' 2  3  0  0  2  0  3       .00004'
-      RECS(468) = ' 2  4  0 -1  0  0  3       .00005'
-      RECS(469) = ' 3 -2  0  2  0  0  3      -.00036'
-      RECS(470) = ' 3 -2  2  0  0  0  3      -.00036'
-      RECS(471) = ' 3 -1  0  1 -1  0  3       .00012'
-      RECS(472) = ' 3 -1  0  1  0  0  3      -.00210'
-      RECS(473) = ' 3 -1  2 -1  0  0  3      -.00039'
-      RECS(474) = ' 3  0 -2  2  0  0  3       .00005'
-      RECS(475) = ' 3  0  0  0 -1  0  3       .00043'
-      RECS(476) = ' 3  0  0  0  0  0  3      -.00765'
-      RECS(477) = ' 3  1 -2  1  0  0  3       .00011'
-      RECS(478) = ' 3  1  0 -1  0  0  3       .00043'
-      RECS(479) = ' 3  1  0  1  0  0  3      -.00016'
-      RECS(480) = ' 3  1  0  1  1  0  3      -.00007'
-      RECS(481) = ' 3  2  0  0 -1  0  3       .00004'
-      RECS(482) = ' 3  2  0  0  0  0  3      -.00100'
-      RECS(483) = ' 3  2  0  0  1  0  3      -.00044'
-      RECS(484) = ' 3  2  0  0  2  0  3      -.00005'
-   end subroutine INIHARMONICS
 end module timespace_data
 !
 !
@@ -4492,7 +1955,6 @@ contains
    !>
    subroutine pinpok(xl, yl, n, x, y, inside)
 
-      ! Author: H. Kernkamp
       implicit none
 
       real(kind=dp), intent(in) :: xl, yl ! point under consideration
@@ -4510,7 +1972,9 @@ contains
 5        continue
          np = np + 1
          if (np <= n) then
-            if (x(np) /= dmiss_default) goto 5
+            if (x(np) /= dmiss_default) then
+               goto 5
+            end if
          end if
          np = np - 1
          inside = 0
@@ -4536,7 +2000,7 @@ contains
                if (rm == 0) then ! op scheve lijn
                   inside = 1
                   return
-               else if (rm > 0d0) then ! onder scheve lijn
+               else if (rm > 0.0_dp) then ! onder scheve lijn
                   if (xl == x1 .or. xl == x2) then
                      if (x1 > xl .or. x2 > xl) then
                         rechts = rechts + 1
@@ -4547,8 +2011,12 @@ contains
             end if
          end if
          i = i + 1
-         if (i < np) goto 10
-         if (mod(rechts, 2) /= 0) inside = 1 - inside
+         if (i < np) then
+            goto 10
+         end if
+         if (mod(rechts, 2) /= 0) then
+            inside = 1 - inside
+         end if
       end if
    end subroutine pinpok
    !
@@ -4713,8 +2181,12 @@ contains
       end if
 
       jgetw = 0 ! niets met gewichten, doe interpolatie
-      if (present(indxn) .and. jdla == 1) jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
-      if (present(indxn) .and. jdla == 0) jgetw = 2 !                      doe interpolatie , gebruik gewichten
+      if (present(indxn) .and. jdla == 1) then
+         jgetw = 1 ! haal gewichten       doe interpolatie , gebruik gewichten
+      end if
+      if (present(indxn) .and. jdla == 0) then
+         jgetw = 2 !                      doe interpolatie , gebruik gewichten
+      end if
 
       do n = 1, mnx
          if (kcs(n) == 1) then
@@ -4859,106 +2331,9 @@ contains
       !
       zp(2) = (a22 * b1 - a12 * b2) / det
       zp(3) = (-a21 * b1 + a11 * b2) / det
-      zp(1) = 1d0 - zp(2) - zp(3)
+      zp(1) = 1.0_dp - zp(2) - zp(3)
 
    end subroutine linweight
-   !
-   !
-   ! ==========================================================================
-   !>
-   subroutine linear(x, y, z, xp, yp, &
-                   & zp, jslo, slo)
-      use precision
-      implicit none
-      !
-      !
-      ! COMMON variables
-      !
-      real(kind=dp) :: dmiss
-
-      data dmiss/-999d0/
-      !
-      ! Global variables
-      !
-      integer, intent(in) :: jslo
-      real(kind=dp), intent(out) :: slo
-      real(kind=dp) :: xp
-      real(kind=dp) :: yp
-      real(kind=dp) :: zp
-      real(kind=dp), dimension(3) :: x
-      real(kind=dp), dimension(3) :: y
-      real(kind=dp), dimension(3), intent(in) :: z
-      !
-      !
-      ! Local variables
-      !
-
-      real(kind=dp) :: a11
-      real(kind=dp) :: a12
-      real(kind=dp) :: a21
-      real(kind=dp) :: a22
-      real(kind=dp) :: a31
-      real(kind=dp) :: a32
-      real(kind=dp) :: b1
-      real(kind=dp) :: b2
-      real(kind=dp) :: det
-      real(kind=dp) :: r3
-      real(kind=dp) :: rlam
-      real(kind=dp) :: rmhu
-      real(kind=dp) :: x3
-      real(kind=dp) :: xn
-      real(kind=dp) :: xy
-      real(kind=dp) :: y3
-      real(kind=dp) :: yn
-      real(kind=dp) :: z3
-      real(kind=dp) :: zn
-      !
-      !
-   !! executable statements -------------------------------------------------------
-      !
-      !
-      !
-      !
-      !
-      zp = dmiss
-      a11 = x(2) - x(1)
-      a21 = y(2) - y(1)
-      a12 = x(3) - x(1)
-      a22 = y(3) - y(1)
-      b1 = xp - x(1)
-      b2 = yp - y(1)
-      !
-      det = a11 * a22 - a12 * a21
-      if (abs(det) < 1e-12) then
-         return
-      end if
-      !
-      rlam = (a22 * b1 - a12 * b2) / det
-      rmhu = (-a21 * b1 + a11 * b2) / det
-      !
-      zp = z(1) + rlam * (z(2) - z(1)) + rmhu * (z(3) - z(1))
-      if (jslo == 1) then
-         a31 = z(2) - z(1)
-         a32 = z(3) - z(1)
-         x3 = (a21 * a32 - a22 * a31)
-         y3 = -(a11 * a32 - a12 * a31)
-         z3 = (a11 * a22 - a12 * a21)
-         r3 = sqrt(x3 * x3 + y3 * y3 + z3 * z3)
-         if (r3 /= 0) then
-            xn = x3 / r3
-            yn = y3 / r3
-            zn = z3 / r3
-            xy = sqrt(xn * xn + yn * yn)
-            if (zn /= 0) then
-               slo = abs(xy / zn)
-            else
-               slo = dmiss
-            end if
-         else
-            slo = dmiss
-         end if
-      end if
-   end subroutine linear
    !
    !
    ! ==========================================================================
@@ -5020,10 +2395,10 @@ contains
 
       x_dist = x_max - x_min
       y_dist = y_max - y_min
-      x_min = x_min - 0.01d0 * x_dist
-      x_max = x_max + 0.01d0 * x_dist
-      y_min = y_min - 0.01d0 * y_dist
-      y_max = y_max + 0.01d0 * y_dist
+      x_min = x_min - 0.01_dp * x_dist
+      x_max = x_max + 0.01_dp * x_dist
+      y_min = y_min - 0.01_dp * y_dist
+      y_max = y_max + 0.01_dp * y_dist
 
       x_dummy(1) = x_min
       y_dummy(1) = y_min
@@ -5185,7 +2560,7 @@ contains
       do i = 1, n
          if (kcs(i) == 1) then
             dist = (x(i) - x_a)**2 + (y(i) - y_a)**2
-            if ((dist < dist_min) .and. (z(i) /= -999d0)) then
+            if ((dist < dist_min) .and. (z(i) /= -999.0_dp)) then
                dist_min = dist
                i_min = i
             end if
@@ -5294,19 +2669,19 @@ contains
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
       kR = 0 ! idem
-      wL = 0d0
-      wR = 0d0
+      wL = 0.0_dp
+      wR = 0.0_dp
       km = 0
       crpm = 0
-      disL = 0d0
-      disR = 0d0
-      DEPS = 1d-3
+      disL = 0.0_dp
+      disR = 0.0_dp
+      DEPS = 1.0e-3_dp
 
       do k = 1, ns - 1
 
          call cross(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
-         if (SL >= 0d0 .and. SL <= 1d0 .and. SM > -DEPS .and. SM < 1.0d0 + DEPS) then ! instead of jacros==1, solves firmijn's problem
+         if (SL >= 0.0_dp .and. SL <= 1.0_dp .and. SM > -DEPS .and. SM < 1.0_dp + DEPS) then ! instead of jacros==1
             DIS = DBDISTANCE(XE, YE, XCR, YCR, jsferic, jasfer3D, dmiss)
             if (DIS < DISM) then ! Found a better intersection point
                DISM = DIS
@@ -5333,7 +2708,7 @@ contains
          end do
 
          ! Find nearest valid polyline point right of the intersection (i.e.: kcs(kR) == 1)
-         disR = (1d0 - SMM) * dis
+         disR = (1.0_dp - SMM) * dis
          do k = km + 1, ns
             if (kcs(k) == 1) then
                kR = k
@@ -5346,11 +2721,11 @@ contains
 
       if (kL /= 0 .and. kR /= 0) then
          wL = disR / (disL + disR)
-         wR = 1d0 - wL
+         wR = 1.0_dp - wL
       else if (kL /= 0) then
-         wL = 1d0
+         wL = 1.0_dp
       else if (kR /= 0) then
-         wR = 1d0
+         wR = 1.0_dp
       end if
 
    end subroutine polyindexweight
@@ -5368,10 +2743,10 @@ module timespace
 !
 ! Read time series in five possible formats:
 ! uniform       : Delft3D-FLOW format: time, uniform windspeed, direction and pressure
-! space varying : Delft3D-FLOW format: time and fields of patm, windx, windy
+! space varying : Delft3D-FLOW format: time and fields of air_pressure, windx, windy
 !                 on Delft3D-FLOW m,n grid
 ! arcinfo       : time and fields on own equidistant grid
-! spiderweb     : time and fields of patm, windspeed, direction op spiderweb grid
+! spiderweb     : time and fields of air_pressure, windspeed, direction op spiderweb grid
 ! curvi         : time and fields on own curvilinear grid
 !
 ! Main calls from Delft3D-FLOW:
@@ -5397,18 +2772,12 @@ module timespace
 !    meteogetpcorr    : returns whether pressure correction is switched on on
 !                       the boundaries
 !
-!!--pseudo code and references--------------------------------------------------
-!
-! Stef.Hummel@WlDelft.nl
-! Herman.Kernkamp@WlDelft.nl
-! Adri.Mourits@WlDelft.nl
-!
 !!--declarations----------------------------------------------------------------
    use precision
 
    use timespace_data
    use timespace_triangle
-   implicit none
+   implicit none(type, external)
 
 contains
    !
@@ -5563,7 +2932,8 @@ contains
       use m_polygon
       use m_reapol
       use m_filez, only: oldfil
-
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
+      use m_tpoly, only: inwhichpolygon
       implicit none
 
       !inputs
@@ -5579,7 +2949,7 @@ contains
       integer, optional, intent(in) :: branchindex !< (Optional) Branch index on which flow link is searched for (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       real(kind=dp), optional, intent(in) :: chainage !< (Optional) Offset along specified branch (when loc_spec_type==LOCTP_BRANCHID_CHAINAGE).
       character(len=*), optional, intent(in) :: contactId !< (Optional) Unique contactId for one flow link (when loc_spec_type==LOCTP_CONTACTID) (stored as mesh contact in input grid).
-      integer, optional, intent(in) :: linktype !< (Optional) Limit search to specific link types: only 1D flow links (linktype==IFLTP_1D), 2D (linktype==IFLTP_2D), or both (linktype==IFLTP_ALL).
+      integer, optional, intent(in) :: linktype !< (Optional) Limit search to specific link types: only 1D flow links (linktype==LINK_1D), 2D (linktype==LINK_2D), or both (linktype==LINK_ALL).
       real(kind=dp), allocatable, optional, intent(inout) :: xps(:), yps(:) !< (Optional) Arrays in which the read in polyline x,y-points can be stored (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: nps !< (Optional) Number of polyline points that have been read in (only relevant when loc_spec_type==LOCTP_POLYGON_FILE/LOCTP_POLYLINE_FILE).
       integer, optional, intent(inout) :: lftopol(:) !< (Optional) Mapping array from flow links to the polyline index that intersected that flow link (only relevant when loc_spec_type==LOCTP_POLYLINE_FILE or LOCTP_POLYLINE_XY).
@@ -5593,7 +2963,7 @@ contains
       if (present(linktype)) then
          linktype_ = linktype
       else
-         linktype_ = IFLTP_ALL
+         linktype_ = LINK_ALL
       end if
 
       numg = 0
@@ -5673,13 +3043,13 @@ contains
 
          ! select search range for flow links
          select case (linktype_)
-         case (IFLTP_1D, IFLTP_1D2D_INT, IFLTP_1D2D_LONG, IFLTP_1D2D_STREET, IFLTP_1D2D_ROOF)
+         case (LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF)
             Lstart = 1
             Lend = lnx1D
-         case (IFLTP_2D)
+         case (LINK_2D)
             Lstart = lnx1D + 1
             Lend = lnx
-         case (IFLTP_ALL)
+         case (LINK_ALL)
             Lstart = 1
             Lend = lnx
          end select
@@ -5687,7 +3057,7 @@ contains
          inp = -1
          ierr = 0
          do L = Lstart, Lend
-            if (linktype_ /= IFLTP_ALL .and. kcu(L) /= linktype_) then
+            if (linktype_ /= LINK_ALL .and. kcu(L) /= linktype_) then
                cycle
             end if
 
@@ -5709,8 +3079,12 @@ contains
       end if
 
       if (npl > 0 .and. present(xps)) then
-         if (allocated(xps)) deallocate (xps)
-         if (allocated(yps)) deallocate (yps)
+         if (allocated(xps)) then
+            deallocate (xps)
+         end if
+         if (allocated(yps)) then
+            deallocate (yps)
+         end if
          call realloc(xps, 100000)
          call realloc(yps, 100000)
          xps = xpl ! doubles a bit with xpl for polygon file
@@ -5741,6 +3115,7 @@ contains
       use m_delpol
       use m_reapol
       use m_filez, only: oldfil
+      use m_tpoly, only: inwhichpolygon
 
       implicit none
 
@@ -5836,27 +3211,25 @@ contains
    !> Combine a newly computed (external forcings-)value with an existing one, based on the operand type.
    subroutine operate(a, b, operand)
       use precision
-      implicit none
+
       real(kind=dp), intent(inout) :: a !< Current value, will be updated based on b and operand.
       real(kind=dp), intent(in) :: b !< New value, to be combined with existing value a.
-      character(len=1), intent(in) :: operand !< Operand type, valid values: 'O', 'A', '+', '*', 'X', 'N'.
+      integer, intent(in) :: operand !< Operand type
 
-      ! b = factor*b + offset ! todo doorplussen
-
-      if (operand == 'O' .or. operand == 'V') then ! Override, regardless of what was specified before
+      if (operand == OPERAND_OVERRIDE) then ! Override, regardless of what was specified before
          a = b
-      else if (operand == 'A') then ! Add, means: only if nothing was specified before
+      else if (operand == OPERAND_OVERRIDE_IF_MISSING) then ! Override, but only if nothing was specified before
          if (a == dmiss_default) then
             a = b
          end if
       else if (a /= dmiss_default) then ! algebra only if not missing
-         if (operand == '+') then
+         if (operand == OPERAND_ADD) then
             a = a + b
-         else if (operand == '*') then
+         else if (operand == OPERAND_MULTIPLY) then
             a = a * b
-         else if (operand == 'X') then
+         else if (operand == OPERAND_MAXIMUM) then
             a = max(a, b)
-         else if (operand == 'N') then
+         else if (operand == OPERAND_MINIMUM) then
             a = min(a, b)
          end if
       end if
@@ -5911,7 +3284,7 @@ contains
       ! 7 : index triangulation
       ! 8 : smoothing
       ! 9 : internal diffusion
-      character(1), intent(in) :: operand ! override, add
+      integer, intent(in) :: operand
       real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer, intent(in) :: iprimpos ! only needed for averaging, position of primitive variables in network
       ! 1 = u point, cellfacemid, 2 = zeta point, cell centre, 3 = netnode
@@ -5973,7 +3346,9 @@ contains
          inside = -1
          do k = 1, nx
             if (jakc == 1) then
-               if (kcc(k) == 0) cycle
+               if (kcc(k) == 0) then
+                  cycle
+               end if
             end if
             call dbpinpol(xu(k), yu(k), inside, dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inside == 1) then
@@ -6107,7 +3482,9 @@ contains
                msgbuf = errorInfo%message
                call warn_flush()
             end if
-            if (.not. errorInfo%success) return
+            if (.not. errorInfo%success) then
+               return
+            end if
 
 !         restore settings
             iav = iav_store
@@ -6131,7 +3508,9 @@ contains
 !     SPvdP: sample set can be large, delete it and do not make a copy
          call delsam(-1)
          if (allocated(d)) then
-            deallocate (d); mca = 0; nca = 0
+            deallocate (d)
+            mca = 0
+            nca = 0
          end if
 
       end if
@@ -6168,7 +3547,9 @@ contains
          call doclose(mout)
       end if
 
-      if (allocated(zh)) deallocate (zh)
+      if (allocated(zh)) then
+         deallocate (zh)
+      end if
 
    end function timespaceinitialfield
 
@@ -6200,15 +3581,21 @@ contains
       real(kind=dp) :: dm, dn, am, an
       integer :: m, n
 
-      dm = (x - x0) / dxa; m = int(dm); am = dm - m; m = m + 1
-      dn = (y - y0) / dya; n = int(dn); an = dn - n; n = n + 1
+      dm = (x - x0) / dxa
+      m = int(dm)
+      am = dm - m
+      m = m + 1
+      dn = (y - y0) / dya
+      n = int(dn)
+      an = dn - n
+      n = n + 1
       z = dmiss
       if (m < mca .and. n < nca .and. m >= 1 .and. n >= 1) then
          if (d(m, n) /= dmiss .and. d(m + 1, n) /= dmiss .and. d(m, n + 1) /= dmiss .and. d(m + 1, n + 1) /= dmiss) then
             z = am * an * d(m + 1, n + 1) + &
-                (1d0 - am) * an * d(m, n + 1) + &
-                (1d0 - am) * (1d0 - an) * d(m, n) + &
-                am * (1d0 - an) * d(m + 1, n)
+                (1.0_dp - am) * an * d(m, n + 1) + &
+                (1.0_dp - am) * (1.0_dp - an) * d(m, n) + &
+                am * (1.0_dp - an) * d(m + 1, n)
          end if
       end if
 
@@ -6223,6 +3610,7 @@ contains
       use geometry_module, only: dbpinpol
       use m_reapol
       use m_filez, only: oldfil
+      use timespace_parameters, only: OPERAND_ADD
       implicit none
 
       logical :: success
@@ -6233,7 +3621,7 @@ contains
       integer, intent(out) :: zz(nx)
       character(*), intent(in) :: filename ! file name for meteo data file
       integer, intent(in) :: filetype ! spw, arcinfo, uniuvp etc
-      character(1), intent(in) :: operand ! file name for meteo data file
+      integer, intent(in) :: operand
       real(kind=dp), intent(in) :: transformcoef(:) !< Transformation coefficients
       integer :: minp0, inside, k
 
@@ -6249,7 +3637,7 @@ contains
             call dbpinpol(xz(k), yz(k), inside, &
                           dmiss, JINS, NPL, xpl, ypl, zpl)
             if (inside == 1) then
-               if (operand == '+' .and. zz(k) /= imiss) then
+               if (operand == OPERAND_ADD .and. zz(k) /= imiss) then
                   zz(k) = zz(k) + transformcoef(1)
                else
                   zz(k) = transformcoef(1)
@@ -6277,6 +3665,7 @@ module m_meteo
    use m_wind
    use m_nudge
    use m_flow
+   use m_transportdata, only: numconst, const_names, ISALT
    use m_waves
    use m_ship
    use fm_external_forcings_data
@@ -6285,12 +3674,12 @@ module m_meteo
    use string_module
    use m_sediment, only: stm_included, stmpar
    use m_subsidence
-   use m_fm_icecover, only: ice_af, ice_h
+   use m_fm_icecover, only: ice_area_fraction, ice_thickness
 
    implicit none
 
    type(tEcInstance), pointer, save :: ecInstancePtr !< FM's instance of the EC-module.
-   character(maxMessageLen) :: message !< EC's message, to be passed to FM's log.
+   character(MAXIMUM_EC_MESSAGE_LENGTH) :: message !< EC's message, to be passed to FM's log.
    !
    integer, dimension(:), allocatable, target :: item_tracerbnd !< dim(numtracers)
    integer, dimension(:), allocatable, target :: item_sedfracbnd !< dim(numfracs)
@@ -6308,6 +3697,7 @@ module m_meteo
    integer, target :: item_stressxy_y !< Unique Item id of the ext-file's 'stressxy_y' quantity's y-component.
 
    integer, target :: item_frcu !< Unique Item id of the ext-file's 'frcu' quantity's component.
+   integer, target :: item_secchi_depth !< Unique Item id of the ext-file's 'secchidepth' quantity's component.
 
    integer, target :: item_apwxwy_p !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
    integer, target :: item_apwxwy_x !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'x'.
@@ -6316,6 +3706,8 @@ module m_meteo
    integer, target :: item_charnock !< Unique Item id of the ext-file's 'space var Charnock' quantity 'C'.
    integer, target :: item_waterlevelbnd !< Unique Item id of the ext-file's 'waterlevelbnd' quantity's ...-component.
    integer, target :: item_atmosphericpressure !< Unique Item id of the ext-file's 'atmosphericpressure' quantity
+   integer, target :: item_pseudo_air_pressure !< Unique Item id of the ext-file's 'pseudo_air_pressure' quantity
+   integer, target :: item_water_level_correction !< Unique Item id of the ext-file's 'water_level_correction' quantity
    integer, target :: item_sea_ice_area_fraction !< Unique Item id of the ext-file's 'sea_ice_area_fraction' quantity
    integer, target :: item_sea_ice_thickness !< Unique Item id of the ext-file's 'sea_ice_thickness' quantity
    integer, target :: item_velocitybnd !< Unique Item id of the ext-file's 'velocitybnd' quantity
@@ -6328,7 +3720,7 @@ module m_meteo
    integer, target :: item_normalvelocitybnd !< Unique Item id of the ext-file's 'normalvelocitybnd' quantity
    integer, target :: item_rainfall !< Unique Item id of the ext-file's 'rainfall' quantity
    integer, target :: item_rainfall_rate !< Unique Item id of the ext-file's 'rainfall_rate' quantity
-   integer, target :: item_airdensity !< Unique Item id of the ext-file's 'airdensity' quantity
+   integer, target :: item_air_density !< Unique Item id of the ext-file's 'airdensity' quantity
    integer, target :: item_qhbnd !< Unique Item id of the ext-file's 'qhbnd' quantity
    integer, target :: item_shiptxy !< Unique Item id of the ext-file's 'shiptxy' quantity
    integer, target :: item_movingstationtxy !< Unique Item id of the ext-file's 'movingstationtxy' quantity
@@ -6338,6 +3730,9 @@ module m_meteo
    integer, target :: item_weir_crestLevel !< Unique Item id of the structure file's 'weir crestLevel' quantity
    integer, target :: item_orifice_crestLevel !< Unique Item id of the structure file's 'orifice crestLevel' quantity
    integer, target :: item_orifice_gateLowerEdgeLevel !< Unique Item id of the structure file's 'orifice gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_crestLevel !< Unique Item id of the structure file's 'gate crestLevel' quantity
+   integer, target :: item_gate_gateLowerEdgeLevel !< Unique Item id of the structure file's 'gate gateLowerEdgeLevel' quantity
+   integer, target :: item_gate_gateOpeningWidth !< Unique Item id of the structure file's 'gate gateOpeningWidth' quantity
    integer, target :: item_general_structure_crestLevel !< Unique Item id of the structure file's 'general structure crestLevel' quantity
    integer, target :: item_general_structure_gateLowerEdgeLevel !< Unique Item id of the structure file's 'general structure gateLowerEdgeLevel' quantity
    integer, target :: item_general_structure_crestWidth !< Unique Item id of the structure file's 'general structure crestWidth' quantity
@@ -6351,31 +3746,36 @@ module m_meteo
    integer, target :: item_generalstructure !< Unique Item id of the ext-file's 'generalstructure' quantity
    integer, target :: item_lateraldischarge !< Unique Item id of the ext-file's 'generalstructure' quantity
 
-   integer, target :: item_dacs_dewpoint !< Unique Item id of the ext-file's 'dewpoint' quantity
-   integer, target :: item_dacs_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_dacs_dew_point_temperature !< Unique Item id of the ext-file's 'dewpoint' quantity
+   integer, target :: item_dacs_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_dacs_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
-   integer, target :: item_dacs_solarradiation !< Unique Item id of the ext-file's 'solarradiation' quantity
+   integer, target :: item_dacs_solar_radiation !< Unique Item id of the ext-file's 'solarradiation' quantity
 
-   integer, target :: item_dac_dewpoint !< Unique Item id of the ext-file's 'dewpoint' quantity
-   integer, target :: item_dac_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_dac_dew_point_temperature !< Unique Item id of the ext-file's 'dewpoint' quantity
+   integer, target :: item_dac_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_dac_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_hacs_humidity !< Unique Item id of the ext-file's 'humidity' quantity
-   integer, target :: item_hacs_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_hacs_relative_humidity !< Unique Item id of the ext-file's 'humidity' quantity
+   integer, target :: item_hacs_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hacs_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
-   integer, target :: item_hacs_solarradiation !< Unique Item id of the ext-file's 'solarradiation' quantity
+   integer, target :: item_hacs_solar_radiation !< Unique Item id of the ext-file's 'solarradiation' quantity
 
    integer, target :: item_hac_humidity !< Unique Item id of the ext-file's 'humidity' quantity
-   integer, target :: item_hac_airtemperature !< Unique Item id of the ext-file's 'airtemperature' quantity
+   integer, target :: item_hac_air_temperature !< Unique Item id of the ext-file's 'airtemperature' quantity
    integer, target :: item_hac_cloudiness !< Unique Item id of the ext-file's 'cloudiness' quantity
 
-   integer, target :: item_humidity !< 'humidity' (or 'dewpoint') quantity
-   integer, target :: item_airtemperature !< 'airtemperature' quantity
+   integer, target :: item_dew_point_temperature !< 'dewpoint' quantity
+   integer, target :: item_relative_humidity !< 'humidity' quantity
+   integer, target :: item_air_temperature !< 'airtemperature' quantity
    integer, target :: item_cloudiness !< 'cloudiness' quantity
-   integer, target :: item_solarradiation !< 'solarradiation' quantity
-   integer, target :: item_longwaveradiation !< 'longwaveradiation' quantity
+   integer, target :: item_solar_radiation !< 'solarradiation' quantity
+   integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
+   integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
+   integer, target :: item_bubblescreen_discharge !< Unique Item id of the new ext-file's '[BubbleScreen] air discharge' quantity
+   integer, allocatable, dimension(:), target :: item_sourcesink_constituent_delta !< Unique Item id of the new ext-file's '[SourceSink] salinityDelta/temperatureDelta/<other constituents>Delta' quantity
+
    integer, target :: item_hrms !< Unique Item id of the ext-file's 'item_hrms' quantity
    integer, target :: item_tp !< Unique Item id of the ext-file's 'item_tp' quantity
    integer, target :: item_dir !< Unique Item id of the ext-file's 'item_dir' quantity
@@ -6390,9 +3790,8 @@ module m_meteo
    integer, target :: item_distot !< Unique Item id of the ext-file's 'item_distot'  quantity
    integer, target :: item_ubot !< Unique Item id of the ext-file's 'item_ubot' quantity
 
-   integer, target :: item_nudge_tem !< 3D temperature for nudging
-   integer, target :: item_nudge_sal !< 3D salinity for nudging
-   integer, target :: item_dambreakLevelsAndWidthsFromTable !< Dambreak heights and widths
+   integer, target :: item_nudge_temperature !< 3D temperature for nudging
+   integer, target :: item_nudge_salinity !< 3D salinity for nudging
 
    integer, target :: item_subsiduplift
    integer, target :: item_ice_cover !< Unique Item id of the ext-file's 'airpressure_windx_windy' quantity 'p'.
@@ -6427,7 +3826,7 @@ module m_meteo
          character(len=*), intent(in) :: filename !< File name of meteo data file.
          integer, intent(in) :: filetype !< FM's filetype enumeration.
          integer, intent(in) :: method !< FM's method enumeration.
-         character(len=1), intent(in) :: operand !< FM's operand enumeration.
+         integer, intent(in) :: operand !< FM's operand enumeration.
          real(hp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
          real(hp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
          real(hp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
@@ -6475,6 +3874,7 @@ contains
       item_stressxy_y = ec_undef_int
 
       item_frcu = ec_undef_int
+      item_secchi_depth = ec_undef_int
 
       item_apwxwy_p = ec_undef_int
       item_apwxwy_x = ec_undef_int
@@ -6483,6 +3883,8 @@ contains
       item_charnock = ec_undef_int
       item_waterlevelbnd = ec_undef_int
       item_atmosphericpressure = ec_undef_int
+      item_pseudo_air_pressure = ec_undef_int
+      item_water_level_correction = ec_undef_int
       item_sea_ice_area_fraction = ec_undef_int
       item_sea_ice_thickness = ec_undef_int
       item_velocitybnd = ec_undef_int
@@ -6495,7 +3897,7 @@ contains
       item_normalvelocitybnd = ec_undef_int
       item_rainfall = ec_undef_int
       item_rainfall_rate = ec_undef_int
-      item_airdensity = ec_undef_int
+      item_air_density = ec_undef_int
       item_qhbnd = ec_undef_int
       item_shiptxy = ec_undef_int
       item_movingstationtxy = ec_undef_int
@@ -6505,6 +3907,9 @@ contains
       item_weir_crestLevel = ec_undef_int
       item_orifice_crestLevel = ec_undef_int
       item_orifice_gateLowerEdgeLevel = ec_undef_int
+      item_gate_crestLevel = ec_undef_int
+      item_gate_gateLowerEdgeLevel = ec_undef_int
+      item_gate_gateOpeningWidth = ec_undef_int
       item_general_structure_crestLevel = ec_undef_int
       item_general_structure_gateLowerEdgeLevel = ec_undef_int
       item_general_structure_crestWidth = ec_undef_int
@@ -6516,28 +3921,31 @@ contains
       item_damlevel = ec_undef_int
       item_gateloweredgelevel = ec_undef_int
       item_generalstructure = ec_undef_int
-      item_dacs_dewpoint = ec_undef_int
-      item_dacs_airtemperature = ec_undef_int
+      item_dacs_dew_point_temperature = ec_undef_int
+      item_dacs_air_temperature = ec_undef_int
       item_dac_cloudiness = ec_undef_int
-      item_dac_dewpoint = ec_undef_int
-      item_dac_airtemperature = ec_undef_int
+      item_dac_dew_point_temperature = ec_undef_int
+      item_dac_air_temperature = ec_undef_int
       item_dac_cloudiness = ec_undef_int
-      item_dacs_solarradiation = ec_undef_int
-      item_hacs_humidity = ec_undef_int
-      item_hacs_airtemperature = ec_undef_int
+      item_dacs_solar_radiation = ec_undef_int
+      item_hacs_relative_humidity = ec_undef_int
+      item_hacs_air_temperature = ec_undef_int
       item_hacs_cloudiness = ec_undef_int
-      item_hacs_solarradiation = ec_undef_int
-      item_humidity = ec_undef_int
-      item_airtemperature = ec_undef_int
+      item_hacs_solar_radiation = ec_undef_int
+      item_dew_point_temperature = ec_undef_int
+      item_relative_humidity = ec_undef_int
+      item_air_temperature = ec_undef_int
       item_cloudiness = ec_undef_int
-      item_solarradiation = ec_undef_int
-      item_longwaveradiation = ec_undef_int
+      item_solar_radiation = ec_undef_int
+      item_long_wave_radiation = ec_undef_int
       item_hac_humidity = ec_undef_int
-      item_hac_airtemperature = ec_undef_int
+      item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
-      item_nudge_tem = ec_undef_int
-      item_nudge_sal = ec_undef_int
+      item_nudge_temperature = ec_undef_int
+      item_nudge_salinity = ec_undef_int
       item_discharge_salinity_temperature_sorsin = ec_undef_int
+      item_sourcesink_discharge = ec_undef_int
+      item_bubblescreen_discharge = ec_undef_int
       item_hrms = ec_undef_int
       item_tp = ec_undef_int
       item_dir = ec_undef_int
@@ -6551,28 +3959,40 @@ contains
       item_diswcap = ec_undef_int
       item_distot = ec_undef_int
       item_ubot = ec_undef_int
-      item_dambreakLevelsAndWidthsFromTable = ec_undef_int
       item_subsiduplift = ec_undef_int
       !
       n_qhbnd = 0
       !
       ! tracers
-      if (allocated(item_tracerbnd)) deallocate (item_tracerbnd)
+      if (allocated(item_tracerbnd)) then
+         deallocate (item_tracerbnd)
+      end if
       allocate (item_tracerbnd(numtracers))
       item_tracerbnd = ec_undef_int
       !
-      if (allocated(item_sedfracbnd)) deallocate (item_sedfracbnd)
+      if (allocated(item_sedfracbnd)) then
+         deallocate (item_sedfracbnd)
+      end if
       allocate (item_sedfracbnd(numfracs))
       item_sedfracbnd = ec_undef_int
-      ! TO ADD: initial concentration field?
 
-      if (allocated(item_waqfun)) deallocate (item_waqfun)
+      if (allocated(item_waqfun)) then
+         deallocate (item_waqfun)
+      end if
       allocate (item_waqfun(num_time_functions))
       item_waqfun = ec_undef_int
 
-      if (allocated(item_waqsfun)) deallocate (item_waqsfun)
+      if (allocated(item_waqsfun)) then
+         deallocate (item_waqsfun)
+      end if
       allocate (item_waqsfun(nosfunext))
       item_waqsfun = ec_undef_int
+
+      if (allocated(item_sourcesink_constituent_delta)) then
+         deallocate (item_sourcesink_constituent_delta)
+      end if
+      allocate (item_sourcesink_constituent_delta(numconst))
+      item_sourcesink_constituent_delta = ec_undef_int
 
    end subroutine init_variables
 
@@ -6623,6 +4043,7 @@ contains
 
    !> Translate FM's meteo1 'method' enum to EC's 'interpolate' enum.
    subroutine method_fm_to_ec(method, ec_method)
+      use timespace_parameters
       integer, intent(in) :: method
       integer, intent(out) :: ec_method
 
@@ -6664,6 +4085,8 @@ contains
          ec_method = interpolate_unknown ! Not yet supported: only spatial, internal diffusion
       case (10)
          ec_method = interpolate_unknown ! Not yet supported: only initial vertical profiles
+      case (NEAREST_NEIGHBOUR)
+         ec_method = interpolate_nearest_neighbour
       case (7) ! TODO: EB: FM method 7, where does this come from? ! see hrms method 7
          ec_method = interpolate_time_extrapolation_ok
       case default
@@ -6675,20 +4098,40 @@ contains
 
    !> Translate FM's meteo1 'operand' enum to EC's 'operand' enum.
    subroutine operand_fm_to_ec(operand, ec_operand)
-      character, intent(in) :: operand
+      use timespace_parameters, only: FM_OVERRIDE => OPERAND_OVERRIDE, FM_ADD => OPERAND_ADD
+      integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
-      !
+      
       select case (operand)
-      case ('O')
+      case (FM_OVERRIDE)
          ec_operand = operand_replace
-      case ('V')
-         ec_operand = operand_replace_if_value
-      case ('+')
+      case (FM_ADD)
          ec_operand = operand_add
       case default
          ec_operand = operand_undefined
       end select
    end subroutine operand_fm_to_ec
+
+   !> Convert quantity names as given in user input (ini/ext file)
+   !! to a consistent internal representation.
+   pure function quantity_name_config_file_to_internal_name(quantity_input_name) result(quantity_internal_name)
+      character(len=*), intent(in) :: quantity_input_name !< given by the user in ini/ext file
+      character(len=:), allocatable :: quantity_internal_name !< consistent internal name
+
+      ! it's not safe to assume that the internal representation is always lower case
+      quantity_internal_name = trim(quantity_input_name)
+      select case (str_tolower(quantity_internal_name))
+      case ('seaiceareafraction')
+         quantity_internal_name = 'sea_ice_area_fraction'
+      case ('seaicethickness')
+         quantity_internal_name = 'sea_ice_thickness'
+      case ('bedrocksurfaceelevation')
+         quantity_internal_name = 'bedrock_surface_elevation'
+      case default
+         ! keep other names unchanged
+      end select
+
+   end function quantity_name_config_file_to_internal_name
 
    !> Convert quantity names as given in user input (ext file)
    !! to accepted Unstruc names (as used in Fortran code)
@@ -6718,21 +4161,25 @@ contains
 
    !> Translate EC's ext.force-file's item name to the integer EC item handle and to
    !> the data pointer(s), i.e. the array that will contain the values of the target item
-   function fm_ext_force_name_to_ec_item(trname, sfname, waqinput, qidname, &
+   function fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
                                          itemPtr1, itemPtr2, itemPtr3, itemPtr4, &
                                          dataPtr1, dataPtr2, dataPtr3, dataPtr4) result(success)
       use m_find_name, only: find_name
+      use string_module, only: str_tolower
 
       logical :: success
-      character(len=*), intent(in) :: trname, sfname, waqinput
+      character(len=*), intent(in) :: trname !< Tracer name (if applicatable)
+      character(len=*), intent(in) :: sfname !< Sediment fraction name (if applicatable)
+      character(len=*), intent(in) :: waqinput !< Water quality input name (if applicatable)
+      character(len=*), intent(in) :: constituent_name !< Constituent name (if applicatable)
 
-      character(len=*), intent(in) :: qidname
+      character(len=*), intent(in) :: qidname !< Quantity ID (the base quantity if combined with a tracer/sedfrac/constituent name)
 
       integer, pointer :: itemPtr1, itemPtr2, itemPtr3, itemPtr4
       real(kind=dp), dimension(:), pointer :: dataPtr1, dataPtr2, dataPtr3, dataPtr4
 
-      ! for tracers:
-      integer :: itrac, isf, ifun, isfun
+      ! for tracers, sediment fractions, water quality functions and constituents:
+      integer :: itrac, isf, ifun, isfun, iconst
 
       success = .true.
 
@@ -6744,7 +4191,7 @@ contains
       dataPtr2 => null()
       dataPtr3 => null()
       dataPtr4 => null()
-      select case (trim(qidname))
+      select case (str_tolower(trim(qidname)))
       case ('windx')
          itemPtr1 => item_windx
          dataPtr1 => wx
@@ -6758,10 +4205,10 @@ contains
          dataPtr2 => wy
       case ('sea_ice_area_fraction')
          itemPtr1 => item_sea_ice_area_fraction
-         dataPtr1 => ice_af
+         dataPtr1 => ice_area_fraction ! here we require fp == dp
       case ('sea_ice_thickness')
          itemPtr1 => item_sea_ice_thickness
-         dataPtr1 => ice_h
+         dataPtr1 => ice_thickness ! here we require fp == dp
       case ('stressx')
          itemPtr1 => item_stressx
          dataPtr1 => wdsu_x
@@ -6773,19 +4220,22 @@ contains
          dataPtr1 => wdsu_x
          itemPtr2 => item_stressxy_y
          dataPtr2 => wdsu_y
-      case ('friction_coefficient_time_dependent')
+      case ('friction_coefficient_time_dependent', 'frictioncoefficient')
          itemPtr1 => item_frcu
          dataPtr1 => frcu
+      case ('secchidepth')
+         itemPtr1 => item_secchi_depth
+         dataPtr1 => spatial_secchi_depth
       case ('airpressure_windx_windy', 'airpressure_stressx_stressy')
          itemPtr1 => item_apwxwy_p
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
          itemPtr2 => item_apwxwy_x
          dataPtr2 => ec_pwxwy_x
          itemPtr3 => item_apwxwy_y
          dataPtr3 => ec_pwxwy_y
       case ('airpressure_windx_windy_charnock')
          itemPtr1 => item_apwxwy_p
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
          itemPtr2 => item_apwxwy_x
          dataPtr2 => ec_pwxwy_x
          itemPtr3 => item_apwxwy_y
@@ -6798,7 +4248,7 @@ contains
       case ('waterlevelbnd', 'neumannbnd', 'riemannbnd', 'outflowbnd')
          itemPtr1 => item_waterlevelbnd
          dataPtr1 => zbndz
-      case ('velocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'absgenbnd', 'riemannubnd')
+      case ('velocitybnd', 'criticaloutflowbnd', 'weiroutflowbnd', 'absgenbnd')
          itemPtr1 => item_velocitybnd
          dataPtr1 => zbndu
       case ('dischargebnd')
@@ -6824,7 +4274,13 @@ contains
          dataPtr1 => zbndn
       case ('airpressure', 'atmosphericpressure')
          itemPtr1 => item_atmosphericpressure
-         dataPtr1 => patm
+         dataPtr1 => air_pressure
+      case ('pseudoairpressure')
+         itemPtr1 => item_pseudo_air_pressure
+         dataPtr1 => pseudo_air_pressure
+      case ('waterlevelcorrection')
+         itemPtr1 => item_water_level_correction
+         dataPtr1 => water_level_correction
       case ('rainfall')
          itemPtr1 => item_rainfall
          dataPtr1 => rain
@@ -6832,8 +4288,8 @@ contains
          itemPtr1 => item_rainfall_rate
          dataPtr1 => rain
       case ('airdensity')
-         itemPtr1 => item_airdensity
-         dataPtr1 => airdensity
+         itemPtr1 => item_air_density
+         dataPtr1 => air_density
       case ('qhbnd')
          itemPtr1 => item_qhbnd
          dataPtr1 => qhbndz
@@ -6851,39 +4307,45 @@ contains
       case ('pump_capacity') ! flow1d pump
          itemPtr1 => item_pump_capacity
          dataPtr1 => qpump ! TODO: UNST-2724: needs more thinking, see issue comments.
-      case ('culvert_valveOpeningHeight') ! flow1d culvert
+      case ('culvert_valveopeningheight') ! flow1d culvert
          itemPtr1 => item_culvert_valveOpeningHeight
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('weir_crestLevel') ! flow1d weir
+      case ('weir_crestlevel') ! flow1d weir
          itemPtr1 => item_weir_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('orifice_crestLevel') ! flow1d orifice
+      case ('orifice_crestlevel') ! flow1d orifice
          itemPtr1 => item_orifice_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('orifice_gateLowerEdgeLevel') ! flow1d orifice
+      case ('orifice_gateloweredgelevel') ! flow1d orifice
          itemPtr1 => item_orifice_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_crestLevel') ! flow1d general structure
+      case ('gate_crestlevel') ! flow1d gate
+         itemPtr1 => item_gate_crestLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateloweredgelevel') ! flow1d gate
+         itemPtr1 => item_gate_gateLowerEdgeLevel
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('gate_gateopeningwidth') ! flow1d gate
+         itemPtr1 => item_gate_gateOpeningWidth
+         !dataPtr1  => null() ! flow1d structure has its own data structure
+      case ('general_structure_crestlevel') ! flow1d general structure
          itemPtr1 => item_general_structure_crestLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_gateLowerEdgeLevel') ! flow1d general structure
+      case ('general_structure_gateloweredgelevel') ! flow1d general structure
          itemPtr1 => item_general_structure_gateLowerEdgeLevel
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_crestWidth') ! flow1d general structure
+      case ('general_structure_crestwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_crestWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('general_structure_gateOpeningWidth') ! flow1d general structure
+      case ('general_structure_gateopeningwidth') ! flow1d general structure
          itemPtr1 => item_general_structure_gateOpeningWidth
          !dataPtr1  => null() ! flow1d structure has its own data structure
-      case ('longCulvert_valveRelativeOpening')
+      case ('longculvert_valverelativeopening')
          itemPtr1 => item_longculvert_valve_relative_opening
-      case ('valve1D')
+      case ('valve1d')
          itemPtr1 => item_valve1D
       case ('damlevel')
          itemPtr1 => item_damlevel
-      case ('dambreakLevelsAndWidths')
-         itemPtr1 => item_dambreakLevelsAndWidthsFromTable
-         dataPtr1 => dambreakLevelsAndWidthsFromTable
       case ('lateral_discharge')
          itemPtr1 => item_lateraldischarge
          !dataPtr1 => qplat ! Don't set this here, done in adduniformtimerelation_objects().
@@ -6895,77 +4357,98 @@ contains
          dataPtr1 => zcgen
       case ('humidity_airtemperature_cloudiness')
          itemPtr1 => item_hac_humidity
-         dataPtr1 => rhum
-         itemPtr2 => item_hac_airtemperature
-         dataPtr2 => tair
+         dataPtr1 => relative_humidity
+         itemPtr2 => item_hac_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_hac_cloudiness
-         dataPtr3 => clou
+         dataPtr3 => cloudiness
       case ('humidity_airtemperature_cloudiness_solarradiation')
-         itemPtr1 => item_hacs_humidity
-         dataPtr1 => rhum
-         itemPtr2 => item_hacs_airtemperature
-         dataPtr2 => tair
+         itemPtr1 => item_hacs_relative_humidity
+         dataPtr1 => relative_humidity
+         itemPtr2 => item_hacs_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_hacs_cloudiness
-         dataPtr3 => clou
-         itemPtr4 => item_hacs_solarradiation
-         dataPtr4 => qrad
+         dataPtr3 => cloudiness
+         itemPtr4 => item_hacs_solar_radiation
+         dataPtr4 => solar_radiation
       case ('dewpoint_airtemperature_cloudiness')
-         itemPtr1 => item_dac_dewpoint
-         dataPtr1 => rhum ! Relative humidity array used to store dewpoints
-         itemPtr2 => item_dac_airtemperature
-         dataPtr2 => tair
+         itemPtr1 => item_dac_dew_point_temperature
+         dataPtr1 => dew_point_temperature
+         itemPtr2 => item_dac_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_dac_cloudiness
-         dataPtr3 => clou
+         dataPtr3 => cloudiness
       case ('dewpoint_airtemperature_cloudiness_solarradiation')
-         itemPtr1 => item_dacs_dewpoint
-         dataPtr1 => rhum ! Relative humidity array used to store dewpoints
-         itemPtr2 => item_dacs_airtemperature
-         dataPtr2 => tair
+         itemPtr1 => item_dacs_dew_point_temperature
+         dataPtr1 => dew_point_temperature
+         itemPtr2 => item_dacs_air_temperature
+         dataPtr2 => air_temperature
          itemPtr3 => item_dacs_cloudiness
-         dataPtr3 => clou
-         itemPtr4 => item_dacs_solarradiation
-         dataPtr4 => qrad
+         dataPtr3 => cloudiness
+         itemPtr4 => item_dacs_solar_radiation
+         dataPtr4 => solar_radiation
       case ('humidity')
-         itemPtr1 => item_humidity
-         dataPtr1 => rhum ! Relative humidity
+         itemPtr1 => item_relative_humidity
+         dataPtr1 => relative_humidity
       case ('dewpoint')
-         itemPtr1 => item_humidity
-         dataPtr1 => rhum ! Relative humidity array used to store dewpoints
+         itemPtr1 => item_dew_point_temperature
+         dataPtr1 => dew_point_temperature
       case ('airtemperature')
-         itemPtr1 => item_airtemperature
-         dataPtr1 => tair
+         itemPtr1 => item_air_temperature
+         dataPtr1 => air_temperature
       case ('cloudiness')
          itemPtr1 => item_cloudiness
-         dataPtr1 => clou
-      case ('solarradiation')
-         itemPtr1 => item_solarradiation
-         dataPtr1 => qrad
+         dataPtr1 => cloudiness
+      case ('solarradiation', 'netsolarradiation')
+         itemPtr1 => item_solar_radiation
+         dataPtr1 => solar_radiation
       case ('longwaveradiation')
-         itemPtr1 => item_longwaveradiation
-         dataPtr1 => longwave
-      case ('nudge_salinity_temperature')
-         itemPtr2 => item_nudge_sal
-         dataPtr2 => nudge_sal
-         itemPtr1 => item_nudge_tem
-         dataPtr1 => nudge_tem
+         itemPtr1 => item_long_wave_radiation
+         dataPtr1 => long_wave_radiation
+      case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
+         itemPtr2 => item_nudge_salinity
+         dataPtr2 => nudge_salinity
+         itemPtr1 => item_nudge_temperature
+         dataPtr1 => nudge_temperature
       case ('discharge_salinity_temperature_sorsin')
          itemPtr1 => item_discharge_salinity_temperature_sorsin
-         ! Do not point to array qstss here.
-         ! qstss might be reallocated after initialization (when coupled to Cosumo)
+         ! Do not point to array source_sink_all_discharges here.
+         ! source_sink_all_discharges might be reallocated after initialization (when coupled to Cosumo)
+         ! and must be an argument when calling ec_gettimespacevalue.
+         nullify (dataPtr1)
+      case ('sourcesink_discharge')
+         itemPtr1 => item_sourcesink_discharge
+         ! Do not point to array source_sink_all_discharges here.
+         ! source_sink_all_discharges might be reallocated after initialization (when coupled to Cosumo)
+         ! and must be an argument when calling ec_gettimespacevalue.
+         nullify (dataPtr1)
+      case ('bubblescreen_discharge')
+         itemPtr1 => item_bubblescreen_discharge
+         ! Do not point to an array here as it might be reallocated after initialization
+         nullify (dataPtr1)
+      case ('sourcesink_constituentdelta')
+         if (strcmpi(constituent_name, 'salinity')) then
+            iconst = ISALT
+         else
+            iconst = find_name(const_names, constituent_name)
+         end if
+         itemPtr1 => item_sourcesink_constituent_delta(iconst)
+         ! Do not point to array source_sink_all_discharges here.
+         ! source_sink_all_discharges might be reallocated after initialization (when coupled to Cosumo)
          ! and must be an argument when calling ec_gettimespacevalue.
          nullify (dataPtr1)
       case ('hrms', 'wavesignificantheight')
          itemPtr1 => item_hrms
          dataPtr1 => hwavcom
-         jamapwav_hwav = 1
+         map_write_settings%wav_hwav = 1
       case ('tp', 'tps', 'rtp', 'waveperiod')
          itemPtr1 => item_tp
          dataPtr1 => twavcom
-         jamapwav_twav = 1
+         map_write_settings%wav_twav = 1
       case ('dir', 'wavedirection')
          itemPtr1 => item_dir
          dataPtr1 => phiwav
-         jamapwav_phiwav = 1
+         map_write_settings%wav_phiwav = 1
          ! wave height needed as the weighting factor for direction interpolation
          itemPtr2 => item_hrms
          dataPtr2 => hwavcom
@@ -7021,15 +4504,14 @@ contains
          dataPtr1 => sfuninp(isfun, :)
       case ('initialtracer')
          continue
-      case ('friction_coefficient_Chezy', 'friction_coefficient_Manning', 'friction_coefficient_WalLlawNikuradse', &
-            'friction_coefficient_WhiteColebrook', 'friction_coefficient_StricklerNikuradse', &
-            'friction_coefficient_Strickler', 'friction_coefficient_deBosBijkerk')
+      case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
+            'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
+            'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
          itemPtr1 => item_frcutim ! the same for all types (type is stored elsewhere)
       case ('bedrock_surface_elevation')
          itemPtr1 => item_subsiduplift
          dataPtr1 => subsupl
       case default
-         call mess(LEVEL_FATAL, 'm_meteo::fm_ext_force_name_to_ec_item: Unsupported quantity specified in ext-file (construct target field): '//qidname)
          success = .false.
       end select
    end function fm_ext_force_name_to_ec_item
@@ -7044,14 +4526,14 @@ contains
       ! FM re-initialize call: First destroy the EC-module instance.
       if (associated(ecInstancePtr)) then
          if (.not. ecFreeInstance(ecInstancePtr)) then
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
       end if
       ! FM initialize call or second phase of re-initialize call.
       if (.not. associated(ecInstancePtr)) then
          call init_variables()
          if (.not. ecCreateInstance(ecInstancePtr)) then
-            message = dumpECMessageStack(LEVEL_WARN, callback_msg)
+            message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
          end if
       end if
       if (jsferic == 1) then
@@ -7077,14 +4559,20 @@ contains
       if (itemId == ec_undef_int) then ! if Target Item already exists, do NOT create a new one ...
          itemId = ecCreateItem(ecInstancePtr)
          success = ecSetItemRole(instancePtr, itemId, itemType_target)
-         if (success) success = ecSetItemQuantity(instancePtr, itemId, quantityId)
+         if (success) then
+            success = ecSetItemQuantity(instancePtr, itemId, quantityId)
+         end if
       end if
       ! ... but we would like to use the newest targetFIELD for this item, since old targetFIELDs can refer to the
       ! wrong data location (Arr1DPtr). This happens in the case that the demand-side arrays are reallocated while
       ! building the targets! Same is done for the elementset, so we are sure to always connect the latest
       ! elementset to this target.
-      if (success) success = ecSetItemElementSet(instancePtr, itemId, elementSetId)
-      if (success) success = ecSetItemTargetField(instancePtr, itemId, fieldId)
+      if (success) then
+         success = ecSetItemElementSet(instancePtr, itemId, elementSetId)
+      end if
+      if (success) then
+         success = ecSetItemTargetField(instancePtr, itemId, fieldId)
+      end if
    end function createItem
 
    ! ==========================================================================
@@ -7101,13 +4589,21 @@ contains
       real(kind=dp), pointer, optional :: inputptr !< pointer to an input arg for the converter (for QHBND)
       !
       success = ecSetConverterType(instancePtr, converterId, convtype)
-      if (success) success = ecSetConverterOperand(instancePtr, converterId, operand)
-      if (success) success = ecSetConverterInterpolation(instancePtr, converterId, method)
+      if (success) then
+         success = ecSetConverterOperand(instancePtr, converterId, operand)
+      end if
+      if (success) then
+         success = ecSetConverterInterpolation(instancePtr, converterId, method)
+      end if
       if (present(srcmask)) then
-         if (success) success = ecSetConverterMask(instancePtr, converterId, srcmask)
+         if (success) then
+            success = ecSetConverterMask(instancePtr, converterId, srcmask)
+         end if
       end if
       if (present(inputptr)) then
-         if (success) success = ecSetConverterInputPointer(instancePtr, converterId, inputptr)
+         if (success) then
+            success = ecSetConverterInputPointer(instancePtr, converterId, inputptr)
+         end if
       end if
 
    end function initializeConverter
@@ -7123,8 +4619,12 @@ contains
       integer, intent(inout) :: targetItemId !<
       !
       success = ecAddConnectionSourceItem(instancePtr, connectionId, sourceItemId)
-      if (success) success = ecAddConnectionTargetItem(instancePtr, connectionId, targetItemId)
-      if (success) success = ecAddItemConnection(instancePtr, targetItemId, connectionId)
+      if (success) then
+         success = ecAddConnectionTargetItem(instancePtr, connectionId, targetItemId)
+      end if
+      if (success) then
+         success = ecAddItemConnection(instancePtr, targetItemId, connectionId)
+      end if
    end function initializeConnection
 
    ! ==========================================================================
@@ -7192,12 +4692,14 @@ contains
       it = 0
 
       nt = ceiling((t1 - t0) / dt) + 1
-      if (allocated(target_array)) deallocate (target_array)
+      if (allocated(target_array)) then
+         deallocate (target_array)
+      end if
       allocate (target_array(nt * blksize))
       arr1dPtr => ecItemGetArr1DPtr(instancePtr, itemId, 2)
       blksize = size(arr1dPtr)
 
-      call clearECMessage()
+      call clear_ec_message()
       do while (t0 + it * dt < t1)
          if (.not. ec_gettimespacevalue_by_itemID(instancePtr, itemId, irefdate, tzone, tunit, t0 + it * dt, &
                                                   target_array(it * blksize + 1:(it + 1) * blksize))) then
@@ -7217,76 +4719,97 @@ contains
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       character(len=*), intent(in) :: group_name !< unique group name
       real(kind=dp), intent(in) :: timesteps !< get data corresponding to this number of timesteps since FM's refdate
-      real(kind=dp), dimension(:), pointer :: ptm, prh, ptd
       !
       success = .false.
       !
       if (trim(group_name) == 'rainfall') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'rainfall_rate') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_rainfall_rate, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'airdensity') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_airdensity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_density, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hac_humidity, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'humidity_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_humidity, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_hacs_relative_humidity, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dac_dew_point_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dewpoint, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dacs_dew_point_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'dewpoint') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_humidity, irefdate, tzone, tunit, timesteps)) return ! Relative humidity array used to store dewpoints
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_airtemperature, irefdate, tzone, tunit, timesteps)) return ! update tair for conversion of dewpoint to humidity
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dew_point_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
+      end if
+      if (trim(group_name) == 'airtemperature') then
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_air_temperature, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
 
-      if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dewpoint /= ec_undef_int) &
+      if ((trim(group_name) == 'dewpoint_airtemperature_cloudiness' .and. item_dac_dew_point_temperature /= ec_undef_int) &
           .or. &
-          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dewpoint /= ec_undef_int) &
+          (trim(group_name) == 'dewpoint_airtemperature_cloudiness_solarradiation' .and. item_dacs_dew_point_temperature /= ec_undef_int) &
           .or. &
-          (trim(group_name) == 'dewpoint' .and. item_humidity /= ec_undef_int)) then
-         ! Conversion of dewpoint to relative humidity
-         ptd => rhum
-         prh => rhum
-         ptm => tair
-         call dewpt2rhum(ptd, ptm, prh) ! convert dewpoint temperatures to relative humidity (percentage)
+          (trim(group_name) == 'dewpoint' .and. item_dew_point_temperature /= ec_undef_int)) then
+         relative_humidity = calculate_relative_humidity(dew_point_temperature, air_temperature)
       end if
+
       if (index(group_name, 'airpressure_windx_windy') == 1) then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_apwxwy_p, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_apwxwy_p, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (trim(group_name) == 'bedrock_surface_elevation') then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_subsiduplift, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_subsiduplift, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       if (index(group_name, 'wavedirection') == 1) then
-         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dir, irefdate, tzone, tunit, timesteps)) return
+         if (.not. ec_gettimespacevalue_by_itemID(instancePtr, item_dir, irefdate, tzone, tunit, timesteps)) then
+            return
+         end if
       end if
       success = .true.
    end function ec_gettimespacevalue_by_name
 
-   subroutine dewpt2rhum(td, tm, rh)
-      ! in-place conversion of dewpoint temperature to relative humidity, given the air temperature
-      ! $$RH(T,T_d) = \exp\left[\frac{BT}{C+T} - \frac{BT_d}{C+T_d}\right] \times 100$$
-      use physicalconsts, only: CtoKelvin
-      implicit none
-      real(kind=dp), dimension(:), pointer :: td !< dewpoint temperature
-      real(kind=dp), dimension(:), pointer :: tm !< air temperature
-      real(kind=dp), dimension(:), pointer :: rh !< relative humidity
+   !> Computes relative humidity (%) from dew point and air temperature (degC)
+   pure elemental function calculate_relative_humidity(td, tm) result(rh)
+      real(kind=dp), intent(in) :: td !< dew point temperature temperature (degC)
+      real(kind=dp), intent(in) :: tm !< air temperature (degC)
+      real(kind=dp) :: rh !< relative humidity (%)
 
-      real(kind=dp), parameter :: B = 17.502 ! exactly as in
-      real(kind=dp), parameter :: C = -32.19
-      integer :: i, n
-      td => rh ! Dewpoint temperature was stored in the array where relative humidity will be stored
-      n = size(td)
-      do i = 1, n
-         rh(i) = exp(B * td(i) / (C + td(i) + CtoKelvin) - B * tm(i) / (C + tm(i) + CtoKelvin)) * 100.d0
-      end do
-   end subroutine dewpt2rhum
+      real(kind=dp), parameter :: B = 17.502_dp
+      real(kind=dp), parameter :: C = 240.96_dp
+
+      ! Computation based on Tetens / Magnus formula for water vapour saturation pressure
+      ! expressed using temperatures in Celsius scale.
+      ! C equals 240.97 in Eq (8) of Buck (1981)
+      ! Eq (7.5) of ECMWF (2023) uses temperatures in Kelvin scale:
+      ! with a1 * (td - t0) / (td - a4) where a1 = 17.502, t0 = 273.16, a4 = 32.19 (= 273.15 - 240.96)
+
+      rh = exp(B * td / (C + td) - B * tm / (C + tm)) * 100.0_dp
+   end function calculate_relative_humidity
 
 end module m_meteo

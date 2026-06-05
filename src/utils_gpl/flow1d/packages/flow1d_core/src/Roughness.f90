@@ -1,7 +1,7 @@
 module m_Roughness
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU Affero General Public License as
@@ -50,9 +50,9 @@ module m_Roughness
    public functionTypeStringToInteger
    public frictionTypeIntegerToString
 
-   real(kind=dp) :: vonkar = 0.41 !< von Karman constant ()
-   real(kind=dp) :: ag = 9.81_dp !< gravity acceleration
-   real(kind=dp) :: sag !< = sqrt(ag)
+   real(kind=dp), parameter :: vonkar = 0.41 !< von Karman constant ()
+   real(kind=dp), parameter :: ag = 9.81_dp !< gravity acceleration
+   real(kind=dp), parameter :: sag  = sqrt(ag)
 
 !   public setCrossSectionIncrement
 !
@@ -142,7 +142,6 @@ contains
          deallocate (rgs%rough)
       else
          ! set some parameters (not the correct location)
-         sag = sqrt(ag)
          rgs%version = -1
       end if
 
@@ -241,7 +240,7 @@ contains
       case (R_MANNING)
          frictionTypeIntegerToString = 'Manning'
       case (R_WALL_LAW_NIKURADSE)
-         frictionTypeIntegerToString = 'WallLawNikuradse'
+         frictionTypeIntegerToString = 'wallLawNikuradse'
       case (R_WHITE_COLEBROOK)
          frictionTypeIntegerToString = 'WhiteColebrook'
       case (R_NIKURADSE)
@@ -249,7 +248,7 @@ contains
       case (R_STRICKLER)
          frictionTypeIntegerToString = 'Strickler'
       case (R_BOS_BIJKERK)
-         frictionTypeIntegerToString = 'deBosBijkerk'
+         frictionTypeIntegerToString = 'DeBosBijkerk'
       case default
          frictionTypeIntegerToString = 'unknown'
       end select

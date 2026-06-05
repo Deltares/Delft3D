@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -42,121 +42,122 @@ using namespace rtctools::utilities;
 
 namespace rtctools
 {
-namespace timeseries
-{
-
-/**
-  * @brief The class contains the time series and supplies interfaces to them.
-  */
-class timeSeriesModel
-{
-	private:
-		/**
-		 * @brief Value tensor with 3D tensor of
-		 * input and output time series, dimensions are representing
-		 * ensembles, time steps, and series
-		 */
-		timeSeriesTensorInterface *valueTensor;
-
-		/**
-		 * @brief Csv interface for exporting data in Excel format (tab-separated)
-		 */
-		csvInterface *csvInt;
-
-		/**
-		 * @brief OpenMI interface for online coupling of models
-		 */
-		openMIInterface *openMIInt;
-
-		/**
-		 * @brief SAX2 parsing interface for reading / writing PI XML
-		 */
-		piTimeSeriesSAX2Handler *piSAX2Int;
-
-		/**
-		 * @brief State interface for reading / writing of states in openda / treeVector format (xml).
-		 */
-		stateInterface *stateInt;
-
-		int nImport;
-		int nExport;
-
-		void readTimeSeriesTensor(boost::filesystem::path schemaDir, boost::filesystem::path workDir, string filename, long long t1, long long t2, long long dt, 
-			int nEnsemble, vector<int>& ensembleMap, bool adjointOutput, bool limitedMemory);
-
-	public:
-
-		/**
-		 * @brief Constructor.
-		 *
-		 * @param runtimeFilename Filename of file with runtime config
-		 * @param dataFilename Filename of file with data config
-		 */
-		timeSeriesModel(boost::filesystem::path schemaDir, boost::filesystem::path workDir, string filename, long long t1, long long t2, long long dt, 
-			int nEnsemble, vector<int>& ensembleMap, bool adjointOutput, bool limitedMemory);
-
-		/**
-		 * @brief Destructor.
-		 */
-		~timeSeriesModel(void);
-
-		/**
-		 * @brief Reads time series data from all available interfaces.
-		 */
-		void read(void);
+    namespace timeseries
+    {
 
         /**
-         * @brief Opens file(s) for writing
+         * @brief The class contains the time series and supplies interfaces to them.
          */
-        void openFiles(bool adjointOutput);
+        class timeSeriesModel
+        {
+        private:
+            /**
+             * @brief Value tensor with 3D tensor of
+             * input and output time series, dimensions are representing
+             * ensembles, time steps, and series
+             */
+            timeSeriesTensorInterface* valueTensor;
 
-		void write(bool adjointOutput);
+            /**
+             * @brief Csv interface for exporting data in Excel format (tab-separated)
+             */
+            csvInterface* csvInt;
 
-		/**
-		 * @brief Writes time series data into all available interfaces.
-		 */
-        void write(bool parInt, int timeStep, bool isLastTimeStep, std::vector<string>& additionalTimeseriesNames, std::vector<int>& additionalTimeseries);
+            /**
+             * @brief OpenMI interface for online coupling of models
+             */
+            openMIInterface* openMIInt;
 
-        /**
-         * @brief Closes file(s) for writing
-         */
-        void closeFiles(bool adjointOutput);
+            /**
+             * @brief SAX2 parsing interface for reading / writing PI XML
+             */
+            piTimeSeriesSAX2Handler* piSAX2Int;
 
+            /**
+             * @brief State interface for reading / writing of states in openda / treeVector format (xml).
+             */
+            stateInterface* stateInt;
 
-		/**
-		 * @brief Gets the time series tensor.
-		 */
-		timeSeriesTensorInterface* getTimeSeriesTensor();
+            int nImport;
+            int nExport;
 
-		/**
-		 * @brief Gets the OpenMI interface.
-		 */
-		openMIInterface* getOpenMIInterface();
+            void readTimeSeriesTensor(boost::filesystem::path schemaDir, boost::filesystem::path workDir,
+                                      string filename, long long t1, long long t2, long long dt, int nEnsemble,
+                                      vector<int>& ensembleMap, bool adjointOutput, bool limitedMemory);
 
-		/**
-		 * @brief Gets the CSV interface.
-		 */
-		csvInterface* getCsvInterface() { return csvInt; };
+        public:
+            /**
+             * @brief Constructor.
+             *
+             * @param runtimeFilename Filename of file with runtime config
+             * @param dataFilename Filename of file with data config
+             */
+            timeSeriesModel(boost::filesystem::path schemaDir, boost::filesystem::path workDir, string filename,
+                            long long t1, long long t2, long long dt, int nEnsemble, vector<int>& ensembleMap,
+                            bool adjointOutput, bool limitedMemory);
 
-		/**
-		 * @brief Gets the PI-XML SAX interface.
-		 */
-		piTimeSeriesSAX2Handler* getPISAXInterface() { return piSAX2Int; };
+            /**
+             * @brief Destructor.
+             */
+            ~timeSeriesModel(void);
 
-		double getValue(int ensembleId, int tIndex, int sIndex);
-		void setValue(int ensembleId, int tIndex, int sIndex, double value);
+            /**
+             * @brief Reads time series data from all available interfaces.
+             */
+            void read(void);
 
-      void writeState(string filename, int tIndex);
+            /**
+             * @brief Opens file(s) for writing
+             */
+            void openFiles(bool adjointOutput);
 
-		int getNImport() { return nImport; };
-		int getNExport() { return nExport; };
+            void write(bool adjointOutput);
 
-      void writeStateExport(int tIndex, bool isSnapshot = false);
-};
+            /**
+             * @brief Writes time series data into all available interfaces.
+             */
+            void write(bool parInt, int timeStep, bool isLastTimeStep, std::vector<string>& additionalTimeseriesNames,
+                       std::vector<int>& additionalTimeseries);
 
-char* convert2CStr(string str) ;
+            /**
+             * @brief Closes file(s) for writing
+             */
+            void closeFiles(bool adjointOutput);
 
-} // end namespace timeseries
+            /**
+             * @brief Gets the time series tensor.
+             */
+            timeSeriesTensorInterface* getTimeSeriesTensor();
+
+            /**
+             * @brief Gets the OpenMI interface.
+             */
+            openMIInterface* getOpenMIInterface();
+
+            /**
+             * @brief Gets the CSV interface.
+             */
+            csvInterface* getCsvInterface() { return csvInt; };
+
+            /**
+             * @brief Gets the PI-XML SAX interface.
+             */
+            piTimeSeriesSAX2Handler* getPISAXInterface() { return piSAX2Int; };
+
+            double getValue(int ensembleId, int tIndex, int sIndex);
+            void setValue(int ensembleId, int tIndex, int sIndex, double value);
+
+            void writeState(string filename, int tIndex);
+
+            int getNImport() { return nImport; };
+            int getNExport() { return nExport; };
+
+            void writeStateExport(int tIndex, bool isSnapshot = false);
+        };
+
+        char* convert2CStr(string str);
+
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* TIMESERIESMODEL_H */

@@ -1,1 +1,0 @@
-mcc('-m','-v','hello_world.m')

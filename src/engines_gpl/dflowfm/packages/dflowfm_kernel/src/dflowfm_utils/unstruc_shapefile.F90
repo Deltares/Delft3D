@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,7 +43,7 @@ module unstruc_shapefile
    use unstruc_files, only: defaultFilename
    use m_partitioninfo, only: my_rank, jampi
    use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
-   
+
    implicit none
 
 contains
@@ -323,8 +323,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -551,8 +553,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -585,7 +589,7 @@ contains
 
             ! write CRESTWIDTH
             if (allocated(gates)) then
-               j = dbfwriteattribute(shphandle, ishape, id_sillwidth, min(1d10, gates(n)%sill_width))
+               j = dbfwriteattribute(shphandle, ishape, id_sillwidth, min(1.0e10_dp, gates(n)%sill_width))
             end if
 
             if (j /= 1) then
@@ -721,8 +725,10 @@ contains
                L = openbndlin(Lb) ! Net link
                k1 = kn(1, L)
                k2 = kn(2, L)
-               tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-               tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+               tmp_x(1) = xk(k1)
+               tmp_x(2) = xk(k2)
+               tmp_y(1) = yk(k1)
+               tmp_y(2) = yk(k2)
                shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
                ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -883,8 +889,10 @@ contains
          k = ln2lne(La) ! netnode
          k1 = kn(1, k)
          k2 = kn(2, k)
-         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         tmp_x(1) = xk(k1)
+         tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1)
+         tmp_y(2) = yk(k2)
          shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
          ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1020,9 +1028,10 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: ksrc, numsrc, xsrc, ysrc, nxsrc, srcname, arsrc, qstss
+      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, &
+         source_sink_max_xy_points, source_sink_name, source_sink_area, source_sink_all_discharges
       use m_flowgeom, only: xz, yz
-      use m_transportdata, only: NUMCONST
+      
       implicit none
 
       integer, parameter :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)
@@ -1084,26 +1093,30 @@ contains
          return
       end if
 
-      do i = 1, numsrc
-         objectid = srcname(i)
+      do i = 1, num_source_sink
+         objectid = source_sink_name(i)
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
 
          ! create a shape object with the "simple" method, for each shape 2 components are added x, y
-         k1 = ksrc(1, i) ! flownode
-         k2 = ksrc(4, i)
+         k1 = source_sink_indices(1, i) ! flownode
+         k2 = source_sink_indices(4, i)
          if (k1 <= 0 .and. k2 <= 0) then ! if both points are not in the domain
             cycle
          else
-            maxnr = nxsrc(i)
+            maxnr = source_sink_max_xy_points(i)
             if (k1 > 0) then
-               tmp_x(1) = xz(k1); tmp_y(1) = yz(k1)
+               tmp_x(1) = xz(k1)
+               tmp_y(1) = yz(k1)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(1) = xsrc(i, 1); tmp_y(1) = ysrc(i, 1)
+               tmp_x(1) = source_sink_x(i, 1)
+               tmp_y(1) = source_sink_y(i, 1)
             end if
             if (k2 > 0) then
-               tmp_x(2) = xz(k2); tmp_y(2) = yz(k2)
+               tmp_x(2) = xz(k2)
+               tmp_y(2) = yz(k2)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(2) = xsrc(i, maxnr); tmp_y(2) = ysrc(i, maxnr)
+               tmp_x(2) = source_sink_x(i, maxnr)
+               tmp_y(2) = source_sink_y(i, maxnr)
             end if
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
@@ -1126,8 +1139,8 @@ contains
             end if
 
             ! write area
-            if (allocated(arsrc)) then
-               j = dbfwriteattribute(shphandle, ishape, id_area, arsrc(i))
+            if (allocated(source_sink_area)) then
+               j = dbfwriteattribute(shphandle, ishape, id_area, source_sink_area(i))
             end if
 
             if (j /= 1) then
@@ -1136,16 +1149,16 @@ contains
             end if
 
             ! determine source and sink points
-            if (qstss((NUMCONST + 1) * (i - 1) + 1) > 0) then
-               snkx = xsrc(i, 1)
-               snky = ysrc(i, 1)
-               srcx = xsrc(i, maxnr)
-               srcy = ysrc(i, maxnr)
+            if (source_sink_all_discharges(1, i) > 0) then
+               snkx = source_sink_x(i, 1)
+               snky = source_sink_y(i, 1)
+               srcx = source_sink_x(i, maxnr)
+               srcy = source_sink_y(i, maxnr)
             else
-               snkx = xsrc(i, maxnr)
-               snky = ysrc(i, maxnr)
-               srcx = xsrc(i, 1)
-               srcy = ysrc(i, 1)
+               snkx = source_sink_x(i, maxnr)
+               snky = source_sink_y(i, maxnr)
+               srcx = source_sink_x(i, 1)
+               srcy = source_sink_y(i, 1)
             end if
             ! write ORIGXSNK
             j = dbfwriteattribute(shphandle, ishape, id_origxsnk, snkx)
@@ -1237,8 +1250,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1334,8 +1349,10 @@ contains
          k = kdryarea(L)
          k1 = kn(1, k)
          k2 = kn(2, k)
-         tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-         tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+         tmp_x(1) = xk(k1)
+         tmp_x(2) = xk(k2)
+         tmp_y(1) = yk(k1)
+         tmp_y(2) = yk(k2)
          shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
          ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1487,8 +1504,10 @@ contains
             k = ln2lne(La) ! netnode
             k1 = kn(1, k)
             k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
+            tmp_x(1) = xk(k1)
+            tmp_x(2) = xk(k2)
+            tmp_y(1) = yk(k1)
+            tmp_y(2) = yk(k2)
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
             ! write the shape object to the shapefile object as i-th element, -1 = append
@@ -1581,19 +1600,19 @@ contains
 
 !> Write a shape file for dam breaks
    subroutine unc_write_shp_dambreak()
-      use fm_external_forcings_data, only: ndambreaksignals, dambreak_ids, L1dambreaksg, L2dambreaksg, kdambreak
+      use m_dambreak_breach, only: get_dambreak_names, retrieve_set_of_flowlinks_dambreak
       use network_data, only: kn, xk, yk
       use m_flowgeom, only: ln2lne
-      implicit none
 
-      integer, parameter :: lencharattr = 256, tshp = shpt_arc ! arcs (Polylines, possible in parts)
-      type(shpfileobject) :: shphandle
-      type(shpobject) :: shpobj
-      integer :: i, ishape, j, k, k1, k2, L, La, Lf, n
-      character(len=lencharattr) :: filename, objectid
-      character(len=6) :: lenobj_loc
-      integer :: id_objectid, id_flowlinknr
-      real(kind=dp) :: tmp_x(2), tmp_y(2)
+      integer, parameter :: ATTR_LENGTH = 256, SHAPE_TYPE = shpt_arc ! arcs (Polylines, possible in parts)
+      type(shpfileobject) :: shape_files
+      type(shpobject) :: shape_object
+      integer :: shape_element, shape_index, net_link, k1, k2, link_index, flow_link, dambreak_index
+      character(len=ATTR_LENGTH) :: file_name, object_name
+      character(len=6) :: string_shape_element
+      integer :: object_index, flowlinknr_index
+      character(len=:), dimension(:), allocatable :: dambreak_names
+      integer, dimension(:), allocatable :: dambreak_links
 
       if (jampi == 0) then
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dam breaks.')
@@ -1601,80 +1620,79 @@ contains
          call mess(LEVEL_INFO, 'SHAPEFILE: Writing a shape file for dam breaks for subdomain:', my_rank)
       end if
 
-      ! create a new shapefile object with data of type tshp and associate it to a file, filename does not include extension
-      filename = defaultFilename('shpdambreak')
-      shphandle = shpcreate(trim(filename), tshp)
+      ! create a new shapefile object with data of shape type and associate it to a file, file_name does not include extension
+      file_name = defaultFilename('shpdambreak')
+      shape_files = shpcreate(trim(file_name), SHAPE_TYPE)
       ! error check
-      if (shpfileisnull(shphandle) .or. dbffileisnull(shphandle)) then
-         call mess(LEVEL_ERROR, 'SHAPEFILE: Could not open shape file '''//trim(filename)//''' for writing.')
+      if (shpfileisnull(shape_files) .or. dbffileisnull(shape_files)) then
+         call mess(LEVEL_ERROR, 'SHAPEFILE: Could not open shape file '''//trim(file_name)//''' for writing.')
          return
       end if
 
       ! add 2 dbf fields: ObjectID, FLOWLINKNR
-      id_objectid = dbfaddfield(shphandle, 'ObjectID', ftstring, lencharattr, 0)
-      if (id_objectid /= 0) then
-         call mess(LEVEL_ERROR, 'SHAPEFILE: Could not add field "ObjectID" to shape file '''//trim(filename)//'''.')
+      object_index = dbfaddfield(shape_files, 'ObjectID', FTSTRING, ATTR_LENGTH, 0)
+      if (object_index /= 0) then
+         call mess(LEVEL_ERROR, 'SHAPEFILE: Could not add field "ObjectID" to shape file '''//trim(file_name)//'''.')
          return
       end if
 
-      id_flowlinknr = dbfaddfield(shphandle, 'FLOWLINKNR', ftinteger, 10, 0)
-      if (id_flowlinknr /= 1) then
-         call mess(LEVEL_ERROR, 'SHAPEFILE: Could not add field "FLOWLINKNR" to shape file '''//trim(filename)//'''.')
+      flowlinknr_index = dbfaddfield(shape_files, 'FLOWLINKNR', FTINTEGER, 10, 0)
+      if (flowlinknr_index /= 1) then
+         call mess(LEVEL_ERROR, 'SHAPEFILE: Could not add field "FLOWLINKNR" to shape file '''//trim(file_name)//'''.')
          return
       end if
 
-      do n = 1, ndambreaksignals
+      dambreak_names = get_dambreak_names()
+      do dambreak_index = 1, ubound(dambreak_names, 1)
 
-      !! add shapes
-         i = 0
-         do L = L1dambreaksg(n), L2dambreaksg(n)
+      !! add shape
+         shape_element = 0
+         dambreak_links = retrieve_set_of_flowlinks_dambreak(dambreak_index)
+         do link_index = 1, ubound(dambreak_links, 1)
             ! create a shape object with the "simple" method, for each shape 2 components are added x, y
-            Lf = kdambreak(3, L)
-            if (Lf == 0) cycle
+            flow_link = dambreak_links(link_index)
+            if (flow_link == 0) then
+               cycle
+            end if
 
-            write (lenobj_loc, '(I4.4)') i
-            objectid = trim(dambreak_ids(n))//'_'//lenobj_loc
-            !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
+            write (string_shape_element, '(I4.4)') shape_element
+            object_name = trim(dambreak_names(dambreak_index))//'_'//string_shape_element
+            !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(object_name)//'''.')
 
-            La = abs(Lf)
-            k = ln2lne(La) ! netnode
-            k1 = kn(1, k)
-            k2 = kn(2, k)
-            tmp_x(1) = xk(k1); tmp_x(2) = xk(k2)
-            tmp_y(1) = yk(k1); tmp_y(2) = yk(k2)
-            shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
+            net_link = ln2lne(abs(flow_link))
+            k1 = kn(1, net_link)
+            k2 = kn(2, net_link)
+            shape_object = shpcreatesimpleobject(SHAPE_TYPE, 2, [xk(k1), xk(k2)], [yk(k1), yk(k2)])
 
-            ! write the shape object to the shapefile object as i-th element, -1 = append
-            ishape = shpwriteobject(shphandle, -1, shpobj)
-            if (ishape == -1) then
-               call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write '''//trim(objectid)//'''shape object to shapefile object.')
+            ! write the shape object to the shapefile object as i-th shape element, -1 = append
+            shape_index = shpwriteobject(shape_files, -1, shape_object)
+            if (shape_index == -1) then
+               call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write '''//trim(object_name)//'''shape object to shapefile object.')
                return
             end if
 
             ! destroy the shape object to avoid memory leaks
-            call shpdestroyobject(shpobj)
+            call shpdestroyobject(shape_object)
 
             ! write the attributes of different types for the i-th shape object to the shapefile object
             ! write ObjectID
-            j = dbfwriteattribute(shphandle, ishape, id_objectid, trim(objectid))
-            if (j /= 1) then
-               call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write attribute "ObjectID" to shape'''//trim(objectid)//'''.')
+            if (dbfwriteattribute(shape_files, shape_index, object_index, trim(object_name)) /= 1) then
+               call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write attribute "ObjectID" to shape'''//trim(object_name)//'''.')
                return
             end if
 
             ! write flowlink nr.
-            j = dbfwriteattribute(shphandle, ishape, id_flowlinknr, Lf)
-            if (j /= 1) then
-               call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write attribute "FLOWLINKNR" to shape'''//trim(objectid)//'''.')
+            if (dbfwriteattribute(shape_files, shape_index, flowlinknr_index, flow_link) /= 1) then
+               call mess(LEVEL_ERROR, 'SHAPEFILE: Could not write attribute "FLOWLINKNR" to shape'''//trim(object_name)//'''.')
                return
             end if
 
-            i = i + 1
+            shape_element = shape_element + 1
          end do
       end do
 
       ! close the shapefile object
-      call shpclose(shphandle)
+      call shpclose(shape_files)
 
    end subroutine unc_write_shp_dambreak
 #endif

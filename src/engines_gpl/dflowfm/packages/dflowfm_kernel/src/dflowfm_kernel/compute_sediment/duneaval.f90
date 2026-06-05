@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,11 +42,10 @@ contains
 
    subroutine duneaval(error)
       use precision, only: dp
-      use m_fm_erosed
-      use m_sediment
-      use m_flowgeom
-      use m_flow
-      use message_module
+      use m_fm_erosed, only: hswitch, wetslope, dryslope, e_dzdn, e_dzdt, avaltime, morfac, lsedtot, fixfac, frac, dzmaxdune, rhosol
+      use m_sediment, only: avalflux
+      use m_flowgeom, only: lnx, wu_mor, ln, acl, bl, dx, lnxi, ba
+      use m_flow, only: hs
 
       implicit none
 
@@ -57,12 +56,16 @@ contains
       real(kind=dp) :: fixf, frc
 
       error = .true.
-      avalflux = 0d0
+      avalflux = 0.0_dp
 
       do L = 1, lnx
-         if (wu_mor(L) == 0d0) cycle
-         k1 = ln(1, L); k2 = ln(2, L)
-         ac1 = acL(L); ac2 = 1d0 - ac1
+         if (wu_mor(L) == 0.0_dp) then
+            cycle
+         end if
+         k1 = ln(1, L)
+         k2 = ln(2, L)
+         ac1 = acL(L)
+         ac2 = 1.0_dp - ac1
          if (hs(k1) > hswitch .or. hs(k2) > hswitch) then
             slpmax = wetslope
          else
@@ -71,7 +74,7 @@ contains
          !
          slp = sqrt(e_dzdn(L) * e_dzdn(L) + e_dzdt(L) * e_dzdt(L))
          if (slp > slpmax) then
-            avflux = (bl(k2) - bl(k1) + slpmax * e_dzdn(L) / slp * Dx(L)) / avaltime / max(morfac, 1d0)
+            avflux = (bl(k2) - bl(k1) + slpmax * e_dzdn(L) / slp * Dx(L)) / avaltime / max(morfac, 1.0_dp)
             do lsd = 1, lsedtot
                !
                ! Apply upwind sediment availability for structures
@@ -90,7 +93,7 @@ contains
                end if
 
                avflux = avflux * fixf * frc
-               maxflux = dzmaxdune / max(morfac, 1d0)
+               maxflux = dzmaxdune / max(morfac, 1.0_dp)
 
                if (abs(maxflux) < abs(avflux)) then
                   if (avflux > 0) then

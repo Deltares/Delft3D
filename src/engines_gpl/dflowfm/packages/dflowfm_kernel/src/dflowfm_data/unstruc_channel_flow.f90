@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -49,7 +49,7 @@ contains
       CSCalculationOption = CS_TYPE_PREISMAN !< calculation option for total area computation in 1d
       useVolumeTables = .false.
       useVolumeTableFile = .false.
-      tableIncrement = 0.1d0
+      tableIncrement = 0.1_dp
 !call dealloc(network)
    end subroutine default_channel_flow
 

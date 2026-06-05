@@ -17,6 +17,17 @@
         </environments>
     </program>
 
+    <program name="dimr_opl" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+        <path>bin/run_dimr.bat</path>
+        <shell ref="command_prompt"/>
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <environments>
+            <environment name="LIBEXT" type="string">.dll</environment>
+        </environments>
+    </program>
+
     <program name="vs">
         <shell ref="command_prompt"/>
         <path>thirdparty\vs\win64\vs.exe</path>
@@ -37,6 +48,9 @@
             <from>teamcity_artifacts/x64</from>
         </location>
         <path>bin/run_delpar.bat</path>
+        <environments>
+            <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+        </environments>
     </program>
 
     <program name="plct" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
@@ -46,4 +60,20 @@
             <from>teamcity_artifacts/plct</from>
         </location>
     </program>
+
+    <program name="waqpb_export" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <path>bin/run_waqpb_export.bat</path>
+    </program>
+
+    <program name="waqpb_import" logOutputToFile="true" addSearchPaths="true">
+        <location ref="engines" type="check">
+            <from>teamcity_artifacts/x64</from>
+        </location>
+        <path>bin/run_waqpb_import.bat</path>
+    </program>
+
+
 </programs>

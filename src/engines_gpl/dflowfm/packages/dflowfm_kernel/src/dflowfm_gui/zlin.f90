@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,8 @@
 
 module m_zlin
 
+   use m_waveconst
+
    implicit none
 
 contains
@@ -61,7 +63,9 @@ contains
       L = LL
       if (kmx > 0) then
          call getLtoplot(LL, L)
-         if (L < 0) return
+         if (L < 0) then
+            return
+         end if
       end if
 
       linval = ndraw(29)
@@ -84,11 +88,12 @@ contains
 
          if (LL <= lnx1D) then
             if (prof1D(1, LL) < 0) then ! profile interpolation
-               ka = -prof1D(1, LL); kb = -prof1D(2, LL)
+               ka = -prof1D(1, LL)
+               kb = -prof1D(2, LL)
                alfa = prof1d(3, LL)
                if (profiles1D(ka)%frccf /= dmiss .and. profiles1D(kb)%frccf /= dmiss .and. &
                    profiles1D(ka)%frctp == profiles1D(kb)%frctp) then
-                  zlin = (1d0 - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
+                  zlin = (1.0_dp - alfa) * profiles1D(ka)%frccf + alfa * profiles1D(kb)%frccf
                end if
             end if
          end if
@@ -101,7 +106,7 @@ contains
       else if (linval == 11) then
          zlin = bob(2, LL)
       else if (linval == 12) then
-         zlin = dble(kcu(LL))
+         zlin = real(kcu(LL), kind=dp)
       else if (linval == 13) then
          zlin = vicLu(L)
       else if (linval == 14) then
@@ -125,9 +130,10 @@ contains
                zlin = aifu(LL) ! ccr(lv2(LL))
             end if
          else
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (diaveg(k1) > 0 .and. diaveg(k2) > 0) then
-               zlin = 0.5d0 * (diaveg(k1) + diaveg(k2))
+               zlin = 0.5_dp * (diaveg(k1) + diaveg(k2))
             else
                zlin = max(diaveg(k1), diaveg(k2))
             end if
@@ -136,16 +142,18 @@ contains
          if (javeg == 0) then
             zlin = (s1(ln(2, LL)) - s1(ln(1, LL))) * dxi(LL)
          else
-            k1 = ln(1, L); k2 = ln(2, L)
-            zlin = 0.5d0 * (rnveg(k1) + rnveg(k2))
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            zlin = 0.5_dp * (rnveg(k1) + rnveg(k2))
          end if
       else if (linval == 24) then
          if (javeg == 0) then
             zlin = cfuhi(LL)
          else
-            k1 = ln(1, L); k2 = ln(2, L)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             if (stemheight(k1) > 0 .and. stemheight(k2) > 0) then
-               zlin = 0.5d0 * (stemheight(k1) + stemheight(k2))
+               zlin = 0.5_dp * (stemheight(k1) + stemheight(k2))
             else
                zlin = max(stemheight(k1), stemheight(k2))
             end if
@@ -160,7 +168,8 @@ contains
          end if
       else if (linval == 27) then
          if (jawind > 0) then
-            zlin = wdsu_x(LL); jamapwindstress = 1
+            zlin = wdsu_x(LL)
+            map_write_settings%windstress = 1
          end if
       else if (linval == 28) then
          zlin = abs(cosphiu(LL))
@@ -192,19 +201,25 @@ contains
          if (kmx > 0) then
             zlin = turkin0(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(1, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(1, LL)
+            end if
          end if
       else if (linval == 42) then
          if (kmx > 0) then
             zlin = tureps0(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(2, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(2, LL)
+            end if
          end if
       else if (linval == 43) then
          if (kmx > 0) then
             zlin = vicwwu(L)
          else
-            if (LL <= lnx1D) zlin = prof1D(3, LL)
+            if (LL <= lnx1D) then
+               zlin = prof1D(3, LL)
+            end if
          end if
       else if (linval == 44) then
          zlin = ustb(LL)
@@ -212,13 +227,16 @@ contains
          if (jawind > 0 .and. kmx > 0) then
             zlin = ustw(LL)
          else if (L < ltop(LL)) then
-            k1 = ln(1, L); k2 = ln(2, L)
-            n1 = ln(1, LL); zb1 = zws(kbot(n1) - 1)
-            n2 = ln(2, LL); zb2 = zws(kbot(n2) - 1)
+            k1 = ln(1, L)
+            k2 = ln(2, L)
+            n1 = ln(1, LL)
+            zb1 = zws(kbot(n1) - 1)
+            n2 = ln(2, LL)
+            zb2 = zws(kbot(n2) - 1)
             omega1 = qw(k1) / a1(ln(1, LL))
             omega2 = qw(k2) / a1(ln(2, LL))
 
-            zlin = 0.5d0 * omega1 + 0.5d0 * omega2 + 0.5d0 * (u0(L) + u0(L + 1)) * (zws(k2) - zb2 - (zws(k1) - zb1)) * dxi(LL)
+            zlin = 0.5_dp * omega1 + 0.5_dp * omega2 + 0.5_dp * (u0(L) + u0(L + 1)) * (zws(k2) - zb2 - (zws(k1) - zb1)) * dxi(LL)
          end if
       else if (linval == 46) then
          if (hu(LL) > epshu) then
@@ -231,37 +249,37 @@ contains
             zlin = dmiss
          end if
       else if (linval == 48) then
-         if (jawave > 2 .and. jawave < 5) then
+         if (jawave > WAVE_FETCH_YOUNG .and. jawave < WAVE_UNIFORM) then
             zlin = wavfu(L)
          end if
       else if (linval == 54 .and. stm_included) then
          select case (sedparopt)
          case (1)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + sedtra%e_sbcn(LL, lll)
             end do
             zlin = dum
          case (2)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedsus
                dum = dum + sedtra%e_ssn(LL, lll)
             end do
             zlin = dum
          case (3)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + sedtra%e_sbwn(LL, lll)
             end do
             zlin = dum
          case (4)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + sedtra%e_sswn(LL, lll)
             end do
             zlin = dum
          case (5)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedsus
                dum = dum + sedtra%e_ssn(LL, lll)
             end do
@@ -270,16 +288,17 @@ contains
             end do
             zlin = dum
          case (6)
-            dum = 0d0
+            dum = 0.0_dp
             do lll = 1, stmpar%lsedtot
                dum = dum + bermslopecontrib(LL, lll)
             end do
             zlin = dum
          case (7)
-            zlin = merge(1.0d0, 0.0d0, bermslopeindex(LL))
+            zlin = merge(1.0_dp, 0.0_dp, bermslopeindex(LL))
          end select
       else if (linval == 49) then
-         zlin = Ltop(LL) - Lbot(LL) + 1; zlin = max(zlin, 0d0)
+         zlin = Ltop(LL) - Lbot(LL) + 1
+         zlin = max(zlin, 0.0_dp)
       else if (linval == 50) then
          zlin = kmxL(LL)
       else if (linval == 51) then

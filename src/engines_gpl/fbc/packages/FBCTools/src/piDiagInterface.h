@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -33,54 +33,55 @@ using namespace std;
 namespace rtctools
 {
 
-/**
-  * @brief Diagnostics interface with static functions for handling diagnistigs messages.
-  */
-class RTCTOOLS_DLL_API piDiagInterface
-{
-	public:
-		/**
-		 * @brief Initialize the interface.
-		 */
-		static void initializeRtcDiagWriter(boost::filesystem::path workDir = boost::filesystem::path("."), bool eventCodeOutput = false);
+    /**
+     * @brief Diagnostics interface with static functions for handling diagnistigs messages.
+     */
+    class RTCTOOLS_DLL_API piDiagInterface
+    {
+    public:
+        /**
+         * @brief Initialize the interface.
+         */
+        static void initializeRtcDiagWriter(boost::filesystem::path workDir = boost::filesystem::path("."),
+                                            bool eventCodeOutput = false);
 
-		/**
-		 * @brief Get logging level.
-		 */
-		static int getLogLevel();
+        /**
+         * @brief Get logging level.
+         */
+        static int getLogLevel();
 
-		/**
-		 * @brief Get logging level.
-		 */
-		static bool getIncludeError();
+        /**
+         * @brief Get logging level.
+         */
+        static bool getIncludeError();
 
-		/**
-		 * @brief Set logging level.
-		 */
-		static void setLogLevel(int logLevel);
+        /**
+         * @brief Set logging level.
+         */
+        static void setLogLevel(int logLevel);
 
-		/**
-		 * @brief Set logging level.
-		 */
-		static void setEventCode(bool eventCode);
+        /**
+         * @brief Set logging level.
+         */
+        static void setEventCode(bool eventCode);
 
-		static void setFlush(bool flag);
+        static void setFlush(bool flag);
 
-		/**
-		 * @brief Add line to the diag model.
-		 */
-		static void addLine(int level, string description, string eventCode = "");
+        /**
+         * @brief Add line to the diag model.
+         */
+        static void addLine(int level, string description, string eventCode = "");
 
-		/**
-		 * @brief Writes diag model to file.
-		 */
-		static void write(void);
+        /**
+         * @brief Writes diag model to file.
+         */
+        static void write(void);
 
-		/**
-		 * @brief free memory used by diag model
-		 */
-		static void freeRtcDiagWriter(void);
-};
+        /**
+         * @brief free memory used by diag model
+         */
+        static void freeRtcDiagWriter(void);
+    };
 
-}
-#endif //PIDIAGINTERFACE_H
+} // namespace rtctools
+#endif // PIDIAGINTERFACE_H

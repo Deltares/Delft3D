@@ -17,6 +17,9 @@ if(WIN32)
     set(petsc_module ${third_party_open_path}/petsc/${cmake_directory})
 endif(WIN32)
 
+# precice
+set(precice_module ${third_party_open_path}/precice)
+
 # triangle_c
 set(triangle_c_module ${third_party_open_path}/triangle/${cmake_directory})
 
@@ -33,13 +36,9 @@ set(proj_module ${checkout_src_root}/third_party_open/proj)
 
 # netcdf
 set(netcdf_module ${third_party_open_path}/netcdf/${cmake_directory})
-set(netcdf_version "netCDF 4.6.1")
-
+set(netcdf_version "netcdf-c-4.9.2")
 # polypack
 set(polypack_module ${third_party_open_path}/polypack)
-
-# icepack
-set(icepack_module ${third_party_open_path}/icepack/${cmake_directory})
 
 # interacter_stub
 set(interacter_stub_module ${third_party_path}/interacter_stub)
@@ -61,9 +60,22 @@ set(spherepack_module ${third_party_open_path}/spherepack/${cmake_directory})
 #intel redist
 set(intelredist_module ${third_party_open_path}/intelredist)
 
+set(gdal_module ${third_party_open_path}/gdal)
+set(zlib_module ${third_party_open_path}/zlib)
+set(curl_module ${third_party_open_path}/curl)
+set(hdf5_module ${third_party_open_path}/hdf5)
+set(microsoftredist_module ${third_party_open_path}/microsoftredist)
+
+# getopt
+set(getopt_module ${third_party_open_path}/getopt/${cmake_directory})
+
 if(WIN32)
-    set(Tecplot_module ${third_party_open_path}/Tecplot)
-    set(GISInternals_module ${third_party_open_path}/GISInternals)
     set(pthreads_module ${third_party_open_path}/pthreads)
     set(expat_module ${third_party_open_path}/expat)
 endif(WIN32)
+
+# precicef (preCICE fortran bindings)
+set(precicef_module "${third_party_open_path}/precicef")
+
+# pugixml
+set(pugixml_module ${third_party_open_path}/pugixml)

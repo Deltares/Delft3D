@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,10 +36,10 @@ contains
       use precision, only: dp
 !     TEKEN EEN LIJN IN GRID (MET CIRKELS ROND DE UITEINDEN)
       use m_missing, only: xymis
-      use m_cirr
-      use m_set_col
-      use m_movabs
-      use m_lnabs
+      use m_cirr, only: cirr
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       integer :: mmax, nmax, m1, n1, m2, n2, ncol
       real(kind=dp) :: X(MMAX, NMAX), Y(MMAX, NMAX)
@@ -48,8 +48,12 @@ contains
 
       call SETCOL(NCOL)
       ISTART = 0
-      if (M1 /= 0) call CIRR(X(M1, N1), Y(M1, N1), NCOL)
-      if (M2 /= 0) call CIRR(X(M2, N2), Y(M2, N2), NCOL)
+      if (M1 /= 0) then
+         call CIRR(X(M1, N1), Y(M1, N1), NCOL)
+      end if
+      if (M2 /= 0) then
+         call CIRR(X(M2, N2), Y(M2, N2), NCOL)
+      end if
       if (M1 /= 0 .and. M2 /= 0) then
          IN = sign(1, M2 - M1)
          JN = sign(1, N2 - N1)

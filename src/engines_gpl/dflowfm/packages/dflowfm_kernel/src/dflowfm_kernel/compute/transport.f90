@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,32 +43,34 @@ module m_transport_sub
 
 contains
 
-!> transport for now, advect salinity and add
-!! high order limited terms to uqcx, uqcy
+   !> transport for now, advect salinity and add
+   !! high order limited terms to uqcx, uqcy
    subroutine transport()
       use precision, only: dp
-      use m_setrho, only: setrho, setrhokk
+      use m_density, only: set_potential_density, set_pressure_dependent_density
       use m_getverticallyaveraged
-      use m_flowgeom
-      use m_flow
-      use Timers
-      use m_sediment
+      use m_flowgeom, only: ln, ndxi, lnxi, ndx, lnx, ba, mxban, nban, banf, ban
+      use m_flow, only: apply_thermobaricity, jasal, temperature_model, TEMPERATURE_MODEL_NONE, &
+                        limtyptm, limtypsed, iadvec, limtypmom, nbnds, kbnds, q1, kmxd, zbnds, salmax, kbndz, nbndu, &
+                        kbndu, nbndsd, kbndsd, kmxl, nbndtm, kbndtm, zbndtm, nbndz, kbanz, kbanu, zbndsd, dvolbot, sam0tot, sam1tot, vol1, &
+                        EPS10, saminbnd, samoutbnd, qsho, samerr, kmxn, rhowat, jarhoxu, potential_density, in_situ_density, rho, jacreep, lbot, &
+                        ltop, rhou, kbot, kmx, kplotordepthaveraged, sa1, ndkx
+      use Timers, only: timstrt, timstop
+      use m_sediment, only: jased, sedi, sed, dmorfac, tmorfspinup, jamorf, stm_included, jaceneqtr, blinc, ws, sed, sdupq, &
+                            rhosed, rhobulkrhosed, grainlay, mxgr, stmpar
       use m_netw, only: zk
-      use m_flowtimes
+      use m_flowtimes, only: keepstbndonoutflow, time1, tstart_user, dts, handle_extra
       use m_flowparameters, only: jadiagnostictransport
-      use m_physcoef, only: idensform, difmolsal
-      use m_transport, only: NUMCONST, constituents, ISALT, ITEMP
+      use m_transport, only: numconst, constituents, isalt, itemp, ised1
       use m_laterals, only: average_concentrations_for_laterals, apply_transport_is_used
-      use m_dlimitercentral
-      use m_dslim
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_get_equilibrium_transport_rates
 
       integer :: L, k, k1, k2, kb, n
 
       real(kind=dp) :: qb, wsemx, dgrlay, dtvi, hsk, dmorfax
-      integer :: j, ki, jastep, kk
+      integer :: j, jj, ki, jastep, cell_index_2d, cell_index_3d, kk
       integer :: LL, Lb, Lt, kt, km
 
       real(kind=dp) :: flx(mxgr) !< sed erosion flux (kg/s)                 , dimension = mxgr
@@ -79,12 +81,8 @@ contains
 
       call timstrt('Transport', handle_extra(52)) ! transport
 
-      if (jasal == 0) then
-         ! limtypsa = 0
-         maxitverticalforestersal = 0
-      end if
-      if (jatem == 0) then
-         limtypTM = 0; maxitverticalforestertem = 0
+      if (temperature_model == TEMPERATURE_MODEL_NONE) then
+         limtypTM = 0
       end if
       if (jased == 0) then
          limtypsed = 0
@@ -103,7 +101,8 @@ contains
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(isalt, kb) = zbnds(kk) ! inflow
@@ -124,13 +123,14 @@ contains
 
       end if
 
-      if (jatem > 0) then
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
          do k = 1, nbndtm ! set 1D or 3D temp boundary conditions
             LL = kbndTM(3, k)
             call getLbotLtop(LL, Lb, Lt)
             kb = 0
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) >= 0 .or. keepstbndonoutflow == 1) then
                   kk = kmxd * (k - 1) + L - Lb + 1
                   constituents(itemp, kb) = zbndTM(kk) ! inflow
@@ -148,7 +148,6 @@ contains
             end if
 
          end do
-         ! tem1 = tem1 + 50d0 ! tkelvn
       end if
 
       if (jased > 0 .and. jased < 4) then
@@ -174,7 +173,7 @@ contains
          if (dmorfac > 0 .and. time1 >= tstart_user + TMorfspinup) then
             jamorf = 1
          end if
-         dvolbot = 0d0
+         dvolbot = 0.0_dp
 
       end if
 
@@ -186,24 +185,29 @@ contains
       if (jasal > 0) then !  compute salt error
 
          sam0tot = sam1tot
-         sam1tot = 0d0
+         sam1tot = 0.0_dp
 
-         !$OMP PARALLEL DO                &
-         !$OMP PRIVATE(kk,kb,kt,km,k)     &
+         !$OMP PARALLEL DO &
+         !$OMP PRIVATE(cell_index_3d,kb,kt,km) &
          !$OMP REDUCTION(+:sam1tot)
-         do kk = 1, ndxi
-            call getkbotktop(kk, kb, kt)
-            if (kt < kb) cycle
-            if (vol1(kb) < eps10) cycle
+         do cell_index_2d = 1, ndxi
+            call getkbotktop(cell_index_2d, kb, kt)
+            if (kt < kb) then
+               cycle
+            end if
+            if (vol1(kb) < EPS10) then
+               cycle
+            end if
             km = kt - kb + 1
 
-            do k = kb, kt
-               sam1tot = sam1tot + constituents(isalt, k) * vol1(k)
+            do cell_index_3d = kb, kt
+               sam1tot = sam1tot + constituents(isalt, cell_index_3d) * vol1(cell_index_3d)
             end do
          end do
          !$OMP END PARALLEL DO
 
-         saminbnd = 0d0; samoutbnd = 0d0
+         saminbnd = 0.0_dp
+         samoutbnd = 0.0_dp
 
          do LL = lnxi + 1, 0 !  lnx                                ! copy on outflow
             call getLbotLtop(LL, Lb, Lt)
@@ -211,7 +215,8 @@ contains
                cycle
             end if
             do L = Lb, Lt
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (q1(L) > 0) then
                   saminbnd = saminbnd + q1(L) * constituents(isalt, kb) * dts ! mass in
                else
@@ -222,75 +227,74 @@ contains
          samerr = sam1tot - sam0tot !  - saminbnd + samoutbnd
       end if
 
-      ! !$OMP PARALLEL DO             &
-      ! !$OMP PRIVATE(kk)
-      do kk = 1, ndx ! i
-         call setrhokk(kk)
+      !$OMP PARALLEL DO &
+      !$OMP PRIVATE(cell_index_2d)
+      do cell_index_2d = 1, ndx
+         call set_potential_density(potential_density, cell_index_2d)
       end do
-      ! !$OMP END PARALLEL DO
+      !$OMP END PARALLEL DO
+
+      if (apply_thermobaricity) then
+         !$OMP PARALLEL DO &
+         !$OMP PRIVATE(cell_index_2d)
+         do cell_index_2d = 1, ndx
+            ! calculate the in-situ density (function of salinity, temperature and pressure)
+            call set_pressure_dependent_density(in_situ_density, cell_index_2d)
+         end do
+         !$OMP END PARALLEL DO
+      end if
 
       if (stm_included) then
-         !$OMP PARALLEL DO             &
-         !$OMP PRIVATE(kk,kb,kt,k)
-         do kk = 1, ndx ! i5
-            call getkbotktop(kk, kb, kt)
-            do k = kt + 1, kb + kmxn(kk) - 1
-               rhowat(k) = rhowat(kt) ! UNST-5170
+         !$OMP PARALLEL DO &
+         !$OMP PRIVATE(cell_index_2d,kb,kt,cell_index_3d)
+         do cell_index_2d = 1, ndx
+            call getkbotktop(cell_index_2d, kb, kt)
+            do cell_index_3d = kt + 1, kb + kmxn(cell_index_2d) - 1
+               rhowat(cell_index_3d) = rhowat(kt) ! UNST-5170
             end do
          end do
          !$OMP END PARALLEL DO
       end if
 
-      ! propagate rho
-      if (jabaroctimeint == 5) then ! rho advection
-         dts = 0.5d0 * dts
-         if (jarhoxu > 0) then
-            rho0 = rho
-         end if
-         call update_constituents(1) ! do rho only
-         dts = 2.0d0 * dts
-      end if
-
-! endif ! came from if (jasal > 0 .or. jatem > 0) then line 676, a jump to inside a check, I remove this check for clarity
-
       if (jarhoxu > 0 .and. jacreep == 1) then
          do LL = 1, lnx
             do L = Lbot(LL), Ltop(LL)
-               k1 = ln(1, L); k2 = ln(2, L)
-               rhou(L) = 0.5d0 * (rho(k1) + rho(k2))
+               k1 = ln(1, L)
+               k2 = ln(2, L)
+               rhou(L) = 0.5_dp * (rho(k1) + rho(k2))
             end do
          end do
       end if
 
       if (jased > 0 .and. jased < 4) then
 
-         dmorfax = max(1d0, dmorfac)
+         dmorfax = max(1.0_dp, dmorfac)
 
          if (jaceneqtr == 1) then ! original cell centre equilibriumtransport approach
 
-            if (dmorfac > 0d0) then
-               blinc = 0d0
+            if (dmorfac > 0.0_dp) then
+               blinc = 0.0_dp
             end if
 
             jastep = 1 ! 1 = first hor. transport, then limiting
 
-            !$OMP PARALLEL DO    &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(k,flx,seq,wse,hsk,dtvi,wsemx,j,qb,dgrlay,kb) &
             !$OMP REDUCTION(+:dvolbot)
             do k = 1, ndxi
                kb = kbot(k)
-               if (vol1(kb) > 0d0) then
+               if (vol1(kb) > 0.0_dp) then
 
-                  flx = 0d0
+                  flx = 0.0_dp
                   if (kmx == 0) then
                      call getequilibriumtransportrates(k, seq, wse, mxgr, hsk) ! get per flowcell and store in small array seq
                   else
                      wse = ws
-                     seq(1) = 0d0
+                     seq(1) = 0.0_dp
                   end if
 
                   dtvi = dts / vol1(kb)
-                  wsemx = 0.45d0 * vol1(kb) / (ba(k) * dts)
+                  wsemx = 0.45_dp * vol1(kb) / (ba(k) * dts)
                   do j = 1, mxgr
 
                      if (Wse(j) > wsemx) then
@@ -319,7 +323,7 @@ contains
 
                else
 
-                  sed(:, k) = 0d0
+                  sed(:, k) = 0.0_dp
 
                end if
             end do
@@ -327,15 +331,15 @@ contains
 
          else
 
-            sedi = 0d0
+            sedi = 0.0_dp
 
-            !$OMP PARALLEL DO    &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(kk,flx, seq, wse, hsk,n,k,dtvi,wsemx,j,qb,dgrlay,kb) &
             !$OMP REDUCTION(+:dvolbot)
 
             do kk = 1, mxban
 
-               flx = 0d0
+               flx = 0.0_dp
 
                call getequilibriumtransportrates(kk, seq, wse, mxgr, hsk) ! get per netnode and store in small array seq
 
@@ -346,7 +350,7 @@ contains
                if (vol1(kb) > 0 .and. hsk > 0) then
 
                   dtvi = dts / vol1(kb) ! (s/m3)
-                  wsemx = 0.45d0 * vol1(kb) / (ba(k) * dts) ! (m/s) was 0.45
+                  wsemx = 0.45_dp * vol1(kb) / (ba(k) * dts) ! (m/s) was 0.45
 
                   do j = 1, mxgr
                      if (Wse(j) > wsemx) then
@@ -356,7 +360,7 @@ contains
                      flx(j) = qb * (seq(j) - sed(j, kb)) ! (m3/s).(kg/m3) = kg/s   , positive = erosion
 
                      !  if (zk(n) > skmx(n) ) then                           ! no flux if net point above max surrouding waterlevels
-                     !     flx(j) = max( 0d0, flx(j) )
+                     !     flx(j) = max( 0.0_dp, flx(j) )
                      !  endif
 
                      sedi(j, k) = sedi(j, k) + dtvi * flx(j) ! vertical transport (s/m3)*(kg/s) = (kg/m3)
@@ -368,20 +372,17 @@ contains
                         zk(n) = zk(n) + dgrlay
                         dvolbot = dvolbot + banf(kk) * dgrlay
                      end if
-
                   end do
-
                end if
-
             end do
             !$OMP END PARALLEL DO
 
-            !$OMP PARALLEL DO    &
+            !$OMP PARALLEL DO &
             !$OMP PRIVATE(k,j,kb)
             do k = 1, ndxi
                kb = kbot(k)
                do j = 1, mxgr
-                  sed(j, kb) = max(0d0, sed(j, kb) + sedi(j, k))
+                  sed(j, kb) = max(0.0_dp, sed(j, kb) + sedi(j, k))
                end do
             end do
             !$OMP END PARALLEL DO
@@ -397,17 +398,25 @@ contains
          end if
          do L = Lb, Lt
             if (q1(L) < 0) then
-               kb = ln(1, L); ki = ln(2, L)
+               kb = ln(1, L)
+               ki = ln(2, L)
                if (jasal > 0 .and. keepstbndonoutflow == 0) then
                   constituents(isalt, kb) = constituents(isalt, ki)
                end if
-               if (jatem > 0 .and. keepstbndonoutflow == 0) then
+               if (temperature_model /= TEMPERATURE_MODEL_NONE .and. keepstbndonoutflow == 0) then
                   constituents(itemp, kb) = constituents(itemp, ki)
                end if
                if (jased > 0) then
-                  do j = 1, mxgr
-                     sed(j, kb) = sed(j, ki)
-                  end do
+                  if (stm_included) then
+                     do j = 1, stmpar%lsedsus
+                        jj = ised1 + j - 1
+                        constituents(jj, kb) = constituents(jj, ki)
+                     end do
+                  else
+                     do j = 1, mxgr
+                        sed(j, kb) = sed(j, ki)
+                     end do
+                  end if
                end if
             end if
          end do
@@ -418,18 +427,6 @@ contains
             call getverticallyaveraged(sa1, ndkx)
          end if
       end if
-
-      do k = 1, 0 !  ndxi ! for test selectiveZ.mdu
-         if (xz(k) > 270) then
-            do kk = kbot(k), ktop(k)
-               if (zws(kk) < -5d0) then
-                  constituents(isalt, kk) = 30d0
-               else
-                  constituents(isalt, kk) = 0d0
-               end if
-            end do
-         end if
-      end do
 
       if (numconst > 0 .and. apply_transport_is_used) then
          call average_concentrations_for_laterals(numconst, kmx, kmxn, vol1, constituents, dts)

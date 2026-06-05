@@ -1,4 +1,4 @@
-!!  Copyright (C)  Stichting Deltares, 2012-2023.
+!!  Copyright (C)  Stichting Deltares, 2012-2026.
 !!
 !!  This program is free software: you can redistribute it and/or modify
 !!  it under the terms of the GNU General Public License version 3,
@@ -56,7 +56,6 @@ module m_statistical_output
 contains
 
    subroutine reallocate_output_set(output_set)
-      use m_alloc
 
       type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
 
@@ -77,7 +76,6 @@ contains
    end subroutine reallocate_output_set
 
    subroutine reallocate_output_set_cropped(output_set, crop)
-      use m_alloc
 
       type(t_output_variable_set), intent(inout) :: output_set !< output variable set to reallocate
       logical, intent(in) :: crop !< whether to crop the output set to its current count
@@ -143,16 +141,24 @@ contains
    !> Update the stat_output of an item, depending on the operation_type.
    elemental subroutine update_statistical_output(item, dts)
       use precision, only: dp
+      use m_missing, only: dmiss
+      use precision_basics, only: equal
+
       type(t_output_variable_item), intent(inout) :: item !< statistical output item to update
       real(kind=dp), intent(in) :: dts !< current timestep
+
+      if (item%operation_type == SO_CURRENT) then
+         return
+      end if
+
+      item%missing = item%missing .or. equal(item%source_input, dmiss)
 
       if (item%operation_type == SO_MIN .or. item%operation_type == SO_MAX) then ! max/min of moving average requested
          call update_moving_average_data(item%moving_average_data, item%source_input, dts)
       end if
 
       select case (item%operation_type)
-      case (SO_CURRENT)
-         return
+
       case (SO_AVERAGE)
          item%stat_output = item%stat_output + item%source_input * dts
          item%time_step_sum = item%time_step_sum + dts
@@ -165,14 +171,21 @@ contains
       end select
    end subroutine update_statistical_output
 
-   !> Perform the final time interval averaging on an item,
-   !! after all values haven been summed up in %stat_output.
+   !> Perform the final time interval averaging on an item, after all values haven been summed up in %stat_output.
+   ! additionally, set the final output value to dmiss if any data was missing during the interval.
    elemental subroutine finalize_average(item)
+      use m_missing, only: dmiss
 
       type(t_output_variable_item), intent(inout) :: item !< The item to be processed. Will be double-checked on its operation type.
 
       if (item%operation_type == SO_AVERAGE) then
          item%stat_output = item%stat_output / item%time_step_sum
+      end if
+
+      if (any(item%operation_type == [SO_AVERAGE, SO_MIN, SO_MAX])) then ! missing array is allocated for any averaging output
+         where (item%missing)
+            item%stat_output = dmiss
+         end where
       end if
 
    end subroutine finalize_average
@@ -196,6 +209,9 @@ contains
       case default
          return
       end select
+
+      item%missing = .false. ! reset missing flag for new output interval
+
    end subroutine reset_statistical_output
 
    !> Create a new output item and add it to the output set according to output quantity config
@@ -326,10 +342,9 @@ contains
       select case (item%operation_type)
       case (SO_CURRENT)
          item%stat_output => item%source_input
-      case (SO_AVERAGE)
+      case (SO_MIN, SO_MAX, SO_AVERAGE)
          allocate (item%stat_output(input_size))
-      case (SO_MIN, SO_MAX)
-         allocate (item%stat_output(input_size))
+         allocate(item%missing(input_size))
       case (SO_NONE)
          continue
       case default

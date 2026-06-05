@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,7 +45,7 @@ contains
       use m_flow, only: Lbot, Ltop, kmx
       use m_transport, only: ISED1, ISEDN, fluxhor, fluxhortot
       use m_flowtimes, only: dts
-      use timers
+      use timers, only: timon, timstrt, timstop
 
       implicit none
 
@@ -54,7 +54,9 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_horfluxtot", ithndl)
+      if (timon) then
+         call timstrt("comp_horfluxtot", ithndl)
+      end if
 
       if (kmx < 1) then
          do L = 1, Lnx
@@ -74,7 +76,9 @@ contains
          end do
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine comp_horfluxtot
 
 end module m_comp_horfluxtot

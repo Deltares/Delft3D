@@ -52,6 +52,21 @@ set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/src/ocpids.F
 # Set additional compilation properties, specific for Debug mode
 target_compile_options(${library_name} PRIVATE "SHELL:$<$<CONFIG:Debug>:${check_nopointers_flag}>")
 
+# Set additional compilation flags to match with Deltares-SWAN outside Delft3D
+if (WIN32)
+    target_compile_options(${library_name} PRIVATE
+                                                  "${avx2_flag}"
+                                                  "${traceback_flag}"
+                                                  "${heap_arrays_20_flag}"
+                                                  "${automatic_local_variable_storage_flag}"
+                                                  "${floating_point_source_flag}"
+                                                  "${floating_point_speculation_safe_flag}")
+endif(WIN32)
+if (UNIX)
+    target_compile_options(${library_name} PRIVATE
+                                                  "SHELL:${avx2_flag}")
+endif(UNIX)
+
 # Define preprocessor definitions 
 if (WIN32)
     target_compile_definitions(${library_name} PRIVATE "WIN32;USE_MPI")

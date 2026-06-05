@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,6 +37,7 @@ module m_observations
    use fm_external_forcings_data
    use MessageHandling, only: IdLen
    use precision, only: dp
+   use m_waveconst
 
    implicit none
 
@@ -56,19 +57,12 @@ contains
 
 !> (re)initialize valobs and set pointers for observation stations
    subroutine init_valobs()
-      implicit none
-
       call init_valobs_pointers()
-
       call alloc_valobs()
-
-      return
    end subroutine init_valobs
 
 !> (re)allocate valobs work array
    subroutine alloc_valobs()
-      use m_partitioninfo
-      implicit none
 
       if (allocated(valobs)) then
          deallocate (valobs)
@@ -76,10 +70,8 @@ contains
 
       if (IPNT_NUM > 0) then
          allocate (valobs(numobs + nummovobs, IPNT_NUM))
-         valobs = 0d0 ! should not be DMISS, since DMISS is used for global reduction in parallel computations
+         valobs = 0.0_dp ! should not be DMISS, since DMISS is used for global reduction in parallel computations
       end if
-
-      return
    end subroutine alloc_valobs
 
 !> set the pointers in the valobs work array
@@ -88,13 +80,13 @@ contains
 !! IPNT_XXX are the pointers in the "valobs" array,
 !! which is being reduced in parallel runs
    subroutine init_valobs_pointers()
-      use m_flowparameters, only: jawave, jahistaucurrent, jatem, jahisrain, jahis_airdensity, jahisinfilt, jased, jasal, jahiswqbot3d, jahistur
-      use m_flow, only: iturbulencemodel, idensform, kmx, density_is_pressure_dependent
+      use m_flowparameters, only: jawave, his_write_settings, temperature_model, TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, &
+                                  TEMPERATURE_MODEL_COMPOSITE, jased, jasal
+      use m_flow, only: iturbulencemodel, idensform, kmx, apply_thermobaricity, use_density
       use m_transport, only: ITRA1, ITRAN, ISED1, ISEDN
       use m_fm_wq_processes, only: noout, numwqbots
       use m_sediment, only: stm_included, stmpar
-      use m_wind, only: japatm, jawind
-      implicit none
+      use m_wind, only: air_pressure_available, jawind
 
       integer :: i, i0, numfracs, nlyrs
 
@@ -149,8 +141,10 @@ contains
       IVAL_TEPS = 0
       IVAL_VIU = 0
       IVAL_VICWWS = 0
+      IVAL_DIFWWS = 0
       IVAL_VICWWU = 0
       IVAL_RICH = 0
+      IVAL_RICHS = 0
       IVAL_WS1 = 0
       IVAL_WSN = 0
       IVAL_SEDDIF1 = 0
@@ -167,6 +161,7 @@ contains
       IVAL_QFRE = 0
       IVAL_QFRC = 0
       IVAL_QTOT = 0
+
       IVAL_RAIN = 0
       IVAL_INFILTCAP = 0
       IVAL_INFILTACT = 0
@@ -219,189 +214,196 @@ contains
 
 !  2D
       i = 0
-      i0 = i; 
-      i = i + 1; IVAL_S1 = i
-      i = i + 1; IVAL_HS = i
-      i = i + 1; IVAL_BL = i
-      i = i + 1; IVAL_SMX = i
-      i = i + 1; IVAL_CMX = i
+      i0 = i
+      IVAL_S1 = next_index(i)
+      IVAL_HS = next_index(i)
+      IVAL_BL = next_index(i)
+      IVAL_SMX = next_index(i)
+      IVAL_CMX = next_index(i)
       if (jawind > 0) then
-         i = i + 1; IVAL_WX = i
-         i = i + 1; IVAL_WY = i
+         IVAL_WX = next_index(i)
+         IVAL_WY = next_index(i)
       end if
-      if (japatm > 0) then
-         i = i + 1; IVAL_PATM = i
+      if (air_pressure_available) then
+         IVAL_PATM = next_index(i)
       end if
-      if (jawave > 0) then
-         i = i + 1; IVAL_WAVEH = i
-         i = i + 1; IVAL_WAVED = i
-         i = i + 1; IVAL_WAVET = i
-         i = i + 1; IVAL_WAVEL = i
-         i = i + 1; IVAL_WAVER = i
-         i = i + 1; IVAL_WAVEU = i
+      if (jawave > NO_WAVES) then
+         IVAL_WAVEH = next_index(i)
+         IVAL_WAVED = next_index(i)
+         IVAL_WAVET = next_index(i)
+         IVAL_WAVEL = next_index(i)
+         IVAL_WAVER = next_index(i)
+         IVAL_WAVEU = next_index(i)
       end if
-      if (jahistaucurrent > 0) then
-         i = i + 1; IVAL_TAUX = i
-         i = i + 1; IVAL_TAUY = i
+      if (his_write_settings%taucurrent > 0) then
+         IVAL_TAUX = next_index(i)
+         IVAL_TAUY = next_index(i)
       end if
-      if (jatem > 1) then
-         i = i + 1; IVAL_TAIR = i
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         IVAL_TAIR = next_index(i)
       end if
       if (jawind > 0) then
-         i = i + 1; IVAL_WIND = i
+         IVAL_WIND = next_index(i)
       end if
-      if (jatem == 5) then
-         i = i + 1; IVAL_RHUM = i
-         i = i + 1; IVAL_CLOU = i
-         i = i + 1; IVAL_QSUN = i
-         i = i + 1; IVAL_QEVA = i
-         i = i + 1; IVAL_QCON = i
-         i = i + 1; IVAL_QLON = i
-         i = i + 1; IVAL_QFRE = i
-         i = i + 1; IVAL_QFRC = i
+      if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         IVAL_RHUM = next_index(i)
+         IVAL_CLOU = next_index(i)
+         IVAL_QSUN = next_index(i)
+         IVAL_QEVA = next_index(i)
+         IVAL_QCON = next_index(i)
+         IVAL_QLON = next_index(i)
+         IVAL_QFRE = next_index(i)
+         IVAL_QFRC = next_index(i)
       end if
-      if (jatem > 1) then
-         i = i + 1; IVAL_QTOT = i
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+         IVAL_QTOT = next_index(i)
       end if
-      if (jahisrain > 0) then
-         i = i + 1; IVAL_RAIN = i
+      call set_value_indices_for_ice(i)
+      if (his_write_settings%rain > 0) then
+         IVAL_RAIN = next_index(i)
       end if
-      if (jahis_airdensity > 0) then
-         i = i + 1; IVAL_AIRDENSITY = i
+      if (his_write_settings%airdensity > 0) then
+         IVAL_AIRDENSITY = next_index(i)
       end if
-      if (jahisinfilt > 0) then
-         i = i + 1; IVAL_INFILTCAP = i
-         i = i + 1; IVAL_INFILTACT = i
+      if (his_write_settings%infilt > 0) then
+         IVAL_INFILTCAP = next_index(i)
+         IVAL_INFILTACT = next_index(i)
       end if
       if (numwqbots > 0) then
-         i = i + 1; IVAL_WQB1 = i
-         i = i + numwqbots - 1; IVAL_WQBN = i
+         IVAL_WQB1 = next_index(i)
+         IVAL_WQBN = next_index(i, numwqbots - 1)
       end if
       if (stm_included .and. jased > 0) then
          numfracs = stmpar%lsedtot
-         i = i + 1; IVAL_MUDFRAC = i
-         i = i + 1; IVAL_SANDFRAC = i
-         i = i + 1; IVAL_SBCX1 = i ! should be done per fraction
-         i = i + numfracs - 1; IVAL_SBCXN = i
-         i = i + 1; IVAL_SBCY1 = i
-         i = i + numfracs - 1; IVAL_SBCYN = i
-         i = i + 1; IVAL_SSCX1 = i
-         i = i + numfracs - 1; IVAL_SSCXN = i ! on purpose lsedtot, see alloc in morphology_data_module
-         i = i + 1; IVAL_SSCY1 = i
-         i = i + numfracs - 1; IVAL_SSCYN = i
-         if (jawave > 0) then
-            i = i + 1; IVAL_SBWX1 = i
-            i = i + numfracs - 1; IVAL_SBWXN = i
-            i = i + 1; IVAL_SBWY1 = i
-            i = i + numfracs - 1; IVAL_SBWYN = i
-            i = i + 1; IVAL_SSWX1 = i
-            i = i + numfracs - 1; IVAL_SSWXN = i
-            i = i + 1; IVAL_SSWY1 = i
-            i = i + numfracs - 1; IVAL_SSWYN = i
+         IVAL_MUDFRAC = next_index(i)
+         IVAL_SANDFRAC = next_index(i)
+         IVAL_SBCX1 = next_index(i) ! should be done per fraction
+         IVAL_SBCXN = next_index(i, numfracs - 1)
+         IVAL_SBCY1 = next_index(i)
+         IVAL_SBCYN = next_index(i, numfracs - 1)
+         IVAL_SSCX1 = next_index(i)
+         IVAL_SSCXN = next_index(i, numfracs - 1)
+         IVAL_SSCY1 = next_index(i)
+         IVAL_SSCYN = next_index(i, numfracs - 1)
+         if (jawave > NO_WAVES) then
+            IVAL_SBWX1 = next_index(i)
+            IVAL_SBWXN = next_index(i, numfracs - 1)
+            IVAL_SBWY1 = next_index(i)
+            IVAL_SBWYN = next_index(i, numfracs - 1)
+            IVAL_SSWX1 = next_index(i)
+            IVAL_SSWXN = next_index(i, numfracs - 1)
+            IVAL_SSWY1 = next_index(i)
+            IVAL_SSWYN = next_index(i, numfracs - 1)
          end if
-         i = i + 1; IVAL_TAUB = i
+         IVAL_TAUB = next_index(i)
          if (stmpar%morlyr%settings%iunderlyr == 1) then
-            i = i + 1; IVAL_DPSED = i
-            i = i + 1; IVAL_BODSED1 = i
-            i = i + numfracs - 1; IVAL_BODSEDN = i
+            IVAL_DPSED = next_index(i)
+            IVAL_BODSED1 = next_index(i)
+            IVAL_BODSEDN = next_index(i, numfracs - 1)
          end if
-         i = i + 1; IVAL_FRAC1 = i
-         i = i + numfracs - 1; IVAL_FRACN = i
-         i = i + 1; IVAL_FIXFAC1 = i
-         i = i + numfracs - 1; IVAL_FIXFACN = i
-         i = i + 1; IVAL_HIDEXP1 = i
-         i = i + numfracs - 1; IVAL_HIDEXPN = i
+         IVAL_FRAC1 = next_index(i)
+         IVAL_FRACN = next_index(i, numfracs - 1)
+         IVAL_FIXFAC1 = next_index(i)
+         IVAL_FIXFACN = next_index(i, numfracs - 1)
+         IVAL_HIDEXP1 = next_index(i)
+         IVAL_HIDEXPN = next_index(i, numfracs - 1)
          if (stmpar%lsedsus > 0) then
             numfracs = stmpar%lsedsus
-            i = i + 1; IVAL_SOUR1 = i
-            i = i + numfracs - 1; IVAL_SOURN = i
-            i = i + 1; IVAL_SINK1 = i
-            i = i + numfracs - 1; IVAL_SINKN = i
+            IVAL_SOUR1 = next_index(i)
+            IVAL_SOURN = next_index(i, numfracs - 1)
+            IVAL_SINK1 = next_index(i)
+            IVAL_SINKN = next_index(i, numfracs - 1)
             if (stmpar%morpar%flufflyr%iflufflyr > 0) then
-               i = i + 1; IVAL_MFLUFF1 = i
-               i = i + numfracs - 1; IVAL_MFLUFFN = i
+               IVAL_MFLUFF1 = next_index(i)
+               IVAL_MFLUFFN = next_index(i, numfracs - 1)
             end if
          end if
       end if
       MAXNUMVALOBS2D = i - i0
 
 !  3D, layer centered
-      i0 = i; 
-      i = i + 1; IVAL_UCX = i
-      i = i + 1; IVAL_UCY = i
+      i0 = i
+      IVAL_UCX = next_index(i)
+      IVAL_UCY = next_index(i)
       if (kmx > 0) then
-         i = i + 1; IVAL_UCZ = i
-         i = i + 1; IVAL_UCXQ = i
-         i = i + 1; IVAL_UCYQ = i
+         IVAL_UCZ = next_index(i)
+         IVAL_UCXQ = next_index(i)
+         IVAL_UCYQ = next_index(i)
       end if
-      if (jawave > 0) then
-         i = i + 1; IVAL_UCXST = i
-         i = i + 1; IVAL_UCYST = i
+      if (jawave > NO_WAVES) then
+         IVAL_UCXST = next_index(i)
+         IVAL_UCYST = next_index(i)
       end if
       if (jasal > 0) then
-         i = i + 1; IVAL_SA1 = i
+         IVAL_SA1 = next_index(i)
       end if
-      if (jatem > 0) then
-         i = i + 1; IVAL_TEM1 = i
+      if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+         IVAL_TEM1 = next_index(i)
       end if
-      i = i + 1; IVAL_UMAG = i
-      i = i + 1; IVAL_QMAG = i
+      IVAL_UMAG = next_index(i)
+      IVAL_QMAG = next_index(i)
       if (ITRA1 > 0) then
-         i = i + 1; IVAL_TRA1 = i
-         i = i + ITRAN - ITRA1; IVAL_TRAN = i !< All tracers (NOT only the ones with bnd)
+         IVAL_TRA1 = next_index(i)
+         IVAL_TRAN = next_index(i, ITRAN - ITRA1) !< All tracers (NOT only the ones with bnd)
       end if
       if (noout > 0) then
-         i = i + 1; IVAL_HWQ1 = i
-         i = i + noout - 1; IVAL_HWQN = i !< All waq history outputs
+         IVAL_HWQ1 = next_index(i)
+         IVAL_HWQN = next_index(i, noout - 1) !< All waq history outputs
       end if
-      if (numwqbots > 0 .and. jahiswqbot3d == 1) then
-         i = i + 1; IVAL_WQB3D1 = i
-         i = i + numwqbots - 1; IVAL_WQB3DN = i !< All 3D waqbot history outputs
+      if (numwqbots > 0 .and. his_write_settings%wqbot3d == 1) then
+         IVAL_WQB3D1 = next_index(i)
+         IVAL_WQB3DN = next_index(i, numwqbots - 1) !< All 3D waqbot history outputs
       end if
       if (stm_included .and. ISED1 > 0) then
-         i = i + 1; IVAL_SF1 = i
-         i = i + ISEDN - ISED1; IVAL_SFN = i
+         IVAL_SF1 = next_index(i)
+         IVAL_SFN = next_index(i, ISEDN - ISED1)
       end if
       if (jased > 0 .and. .not. stm_included) then
-         i = i + 1; IVAL_SED = i
+         IVAL_SED = next_index(i)
       end if
-      if (kmx > 0) then
-         i = i + 1; IVAL_ZCS = i
+
+      if (kmx >= 0) then
+         IVAL_ZCS = next_index(i)
       end if
-      if (jasal > 0 .or. jatem > 0 .or. jased > 0) then
-         i = i + 1; IVAL_RHOP = i
-         if (density_is_pressure_dependent()) then
-            i = i + 1; IVAL_RHO = i
+      if (use_density()) then
+         IVAL_RHOP = next_index(i)
+         if (apply_thermobaricity) then
+            IVAL_RHO = next_index(i)
          end if
       end if
-      if (jahistur > 0) then
-         i = i + 1; IVAL_VIU = i
+      if (his_write_settings%tur > 0) then
+         IVAL_VIU = next_index(i)
       end if
       MAXNUMVALOBS3D = i - i0
 
 !  3D, layer interfaces
       i0 = i
+
+      if (kmx >= 0) then
+         IVAL_ZWS = next_index(i)
+         IVAL_ZWU = next_index(i)
+      end if
       if (kmx > 0) then
-         i = i + 1; IVAL_ZWS = i
-         i = i + 1; IVAL_ZWU = i
-         i = i + 1; IVAL_BRUV = i
-         if (iturbulencemodel > 0 .and. jahistur > 0) then
-            i = i + 1; IVAL_TKIN = i
-            i = i + 1; IVAL_TEPS = i
-            i = i + 1; IVAL_VICWWS = i
-            i = i + 1; IVAL_VICWWU = i
+         IVAL_BRUV = next_index(i)
+         if (iturbulencemodel > 0 .and. his_write_settings%tur > 0) then
+            IVAL_TKIN = next_index(i)
+            IVAL_TEPS = next_index(i)
+            IVAL_VICWWS = next_index(i)
+            IVAL_DIFWWS = next_index(i)
+            IVAL_VICWWU = next_index(i)
          end if
          if (idensform > 0) then
-            i = i + 1; IVAL_RICH = i
+            IVAL_RICH = next_index(i)
+            IVAL_RICHS = next_index(i)
          end if
          if (jased > 0 .and. stm_included .and. ISED1 > 0) then
-            i = i + 1; IVAL_SEDDIF1 = i
-            i = i + ISEDN - ISED1; IVAL_SEDDIFN = i
+            IVAL_SEDDIF1 = next_index(i)
+            IVAL_SEDDIFN = next_index(i, ISEDN - ISED1)
          end if
       end if
       if (jased > 0 .and. stm_included .and. ISED1 > 0) then ! also 2d
-         i = i + 1; IVAL_WS1 = i
-         i = i + ISEDN - ISED1; IVAL_WSN = i
+         IVAL_WS1 = next_index(i)
+         IVAL_WSN = next_index(i, ISEDN - ISED1)
       end if
       MAXNUMVALOBS3Dw = i - i0
 
@@ -411,12 +413,12 @@ contains
          numfracs = stmpar%lsedtot
          if (stmpar%morlyr%settings%iunderlyr == 2) then
             nlyrs = stmpar%morlyr%settings%nlyr
-            i = i + 1; IVAL_POROS = i
-            i = i + 1; IVAL_THLYR = i
-            i = i + 1; IVAL_MSED1 = i
-            i = i + numfracs - 1; IVAL_MSEDN = i
-            i = i + 1; IVAL_LYRFRAC1 = i
-            i = i + numfracs - 1; IVAL_LYRFRACN = i
+            IVAL_POROS = next_index(i)
+            IVAL_THLYR = next_index(i)
+            IVAL_MSED1 = next_index(i)
+            IVAL_MSEDN = next_index(i, numfracs - 1)
+            IVAL_LYRFRAC1 = next_index(i)
+            IVAL_LYRFRACN = next_index(i, numfracs - 1)
          end if
       end if
       MAXNUMVALOBSLYR = i - i0
@@ -463,8 +465,10 @@ contains
       IPNT_TEPS = ivalpoint(IVAL_TEPS, kmx, nlyrs)
       IPNT_VIU = ivalpoint(IVAL_VIU, kmx, nlyrs)
       IPNT_VICWWS = ivalpoint(IVAL_VICWWS, kmx, nlyrs)
+      IPNT_DIFWWS = ivalpoint(IVAL_DIFWWS, kmx, nlyrs)
       IPNT_VICWWU = ivalpoint(IVAL_VICWWU, kmx, nlyrs)
       IPNT_RICH = ivalpoint(IVAL_RICH, kmx, nlyrs)
+      IPNT_RICHS = ivalpoint(IVAL_RICHS, kmx, nlyrs)
       IPNT_RHOP = ivalpoint(IVAL_RHOP, kmx, nlyrs)
       IPNT_RHO = ivalpoint(IVAL_RHO, kmx, nlyrs)
       IPNT_WS1 = ivalpoint(IVAL_WS1, kmx, nlyrs)
@@ -494,6 +498,7 @@ contains
       IPNT_QFRE = ivalpoint(IVAL_QFRE, kmx, nlyrs)
       IPNT_QFRC = ivalpoint(IVAL_QFRC, kmx, nlyrs)
       IPNT_QTOT = ivalpoint(IVAL_QTOT, kmx, nlyrs)
+      call set_valobs_pointers_for_ice(kmx, nlyrs)
       IPNT_RAIN = ivalpoint(IVAL_RAIN, kmx, nlyrs)
       IPNT_INFILTCAP = ivalpoint(IVAL_INFILTCAP, kmx, nlyrs)
       IPNT_INFILTACT = ivalpoint(IVAL_INFILTACT, kmx, nlyrs)
@@ -516,23 +521,83 @@ contains
 
       IPNT_NUM = ivalpoint(0, kmx, nlyrs) - 1
 
-      return
-
    end subroutine init_valobs_pointers
 
-!> pointer of variable in valobs work array
-   integer function ivalpoint(ivar, kmx, nlyrs)
-      use messageHandling
+   !> set the value indices for ice variables
+   subroutine set_value_indices_for_ice(i)
+      use m_fm_icecover, only: ice_data, icecover_output_flags
 
-      implicit none
+      integer, intent(inout) :: i !< current index
+
+      type(icecover_output_flags), pointer :: hisout
+
+      hisout => ice_data%hisout
+      IVAL_ICE_S1 = conditional_next_index(hisout%ice_s1, i)
+      IVAL_ICE_ZMIN = conditional_next_index(hisout%ice_zmin, i)
+      IVAL_ICE_ZMAX = conditional_next_index(hisout%ice_zmax, i)
+      IVAL_ICE_AREA_FRACTION = conditional_next_index(hisout%ice_area_fraction, i)
+      IVAL_ICE_THICKNESS = conditional_next_index(hisout%ice_thickness, i)
+      IVAL_ICE_PRESSURE = conditional_next_index(hisout%ice_pressure, i)
+      IVAL_ICE_TEMPERATURE = conditional_next_index(hisout%ice_temperature, i)
+      IVAL_SNOW_THICKNESS = conditional_next_index(hisout%snow_thickness, i)
+      IVAL_SNOW_TEMPERATURE = conditional_next_index(hisout%snow_temperature, i)
+   end subroutine set_value_indices_for_ice
+
+   !> increment the current index and returns it
+   function next_index(current_index, increment) result(res)
+      integer, intent(inout) :: current_index !< current index
+      integer, optional, intent(in) :: increment !< increment value
+      integer :: res
+
+      if (present(increment)) then
+         current_index = current_index + increment
+      else
+         current_index = current_index + 1
+      end if
+      res = current_index
+   end function next_index
+
+   !> conditionally increments and returns the current index, or returns 0
+   function conditional_next_index(condition, current_index) result(res)
+      logical, intent(in) :: condition !< condition to check
+      integer, intent(inout) :: current_index !< current index
+      integer :: res
+
+      if (condition) then
+         res = next_index(current_index)
+      else
+         res = 0
+      end if
+   end function conditional_next_index
+
+   !> set pointers of ice variables in valobs work array
+   subroutine set_valobs_pointers_for_ice(kmx, nlyrs)
+      integer, intent(in) :: kmx !< number of layers
+      integer, intent(in) :: nlyrs !< number of bed layers
+
+      IPNT_ICE_S1 = conditional_ivalpoint(IVAL_ICE_S1, kmx, nlyrs)
+      IPNT_ICE_ZMIN = conditional_ivalpoint(IVAL_ICE_ZMIN, kmx, nlyrs)
+      IPNT_ICE_ZMAX = conditional_ivalpoint(IVAL_ICE_ZMAX, kmx, nlyrs)
+      IPNT_ICE_AREA_FRACTION = conditional_ivalpoint(IVAL_ICE_AREA_FRACTION, kmx, nlyrs)
+      IPNT_ICE_THICKNESS = conditional_ivalpoint(IVAL_ICE_THICKNESS, kmx, nlyrs)
+      IPNT_ICE_PRESSURE = conditional_ivalpoint(IVAL_ICE_PRESSURE, kmx, nlyrs)
+      IPNT_ICE_TEMPERATURE = conditional_ivalpoint(IVAL_ICE_TEMPERATURE, kmx, nlyrs)
+      IPNT_SNOW_THICKNESS = conditional_ivalpoint(IVAL_SNOW_THICKNESS, kmx, nlyrs)
+      IPNT_SNOW_TEMPERATURE = conditional_ivalpoint(IVAL_SNOW_TEMPERATURE, kmx, nlyrs)
+   end subroutine set_valobs_pointers_for_ice
+
+   !> retrieve pointer of variable in valobs work array
+   function ivalpoint(ivar, kmx, nlyrs) result(ipnt)
+      use messageHandling, only: mess, LEVEL_ERROR
 
       integer, intent(in) :: ivar !< observation station variable number
       integer, intent(in) :: kmx !< maximum number of layers
       integer, intent(in) :: nlyrs !< maximum number of bed layers
+      integer :: ipnt !< pointer to the variable in the valobs array
 
       integer :: i, istart, iend
 
-      ivalpoint = 1
+      ipnt = 1
 
       istart = 0
       iend = 0
@@ -541,24 +606,30 @@ contains
       istart = iend + 1
       iend = iend + MAXNUMVALOBS2D
       do i = 1, MAXNUMVALOBS2D
-         if (i == ivar) return
-         ivalpoint = ivalpoint + 1
+         if (i == ivar) then
+            return
+         end if
+         ipnt = ipnt + 1
       end do
 
 !  3D, layer centers (dim(kmx))
       istart = iend + 1
       iend = iend + MAXNUMVALOBS3D
       do i = istart, iend
-         if (i == ivar) return
-         ivalpoint = ivalpoint + max(kmx, 1)
+         if (i == ivar) then
+            return
+         end if
+         ipnt = ipnt + max(kmx, 1)
       end do
 
 !  3D, layer interfaces (dim(kmx+1))
       istart = iend + 1
       iend = iend + MAXNUMVALOBS3Dw
       do i = istart, iend
-         if (i == ivar) return
-         ivalpoint = ivalpoint + max(kmx, 1) + 1
+         if (i == ivar) then
+            return
+         end if
+         ipnt = ipnt + max(kmx, 1) + 1
       end do
 
       if (nlyrs > 0) then
@@ -566,17 +637,31 @@ contains
          istart = iend + 1
          iend = iend + MAXNUMVALOBSLYR
          do i = istart, iend
-            if (i == ivar) return
-            ivalpoint = ivalpoint + nlyrs
+            if (i == ivar) then
+               return
+            end if
+            ipnt = ipnt + nlyrs
          end do
       end if
 
       if (ivar /= 0) then
          call mess(LEVEL_ERROR, 'ivalpoint: numbering error')
       end if
-
-      return
    end function ivalpoint
+
+   !> retrieve pointer of variable in valobs work array, or 0 if variable index is not set
+   function conditional_ivalpoint(ival, kmx, nlyrs) result(ipnt)
+      integer, intent(in) :: ival !< index of the variable
+      integer, intent(in) :: kmx !< number of layers
+      integer, intent(in) :: nlyrs !< number of bed layers
+      integer :: ipnt !< pointer to the variable in the valobs array
+
+      if (ival > 0) then
+         ipnt = ivalpoint(ival, kmx, nlyrs)
+      else
+         ipnt = 0
+      end if
+   end function conditional_ivalpoint
 
 !> Returns the index/position of a named station in the global set arrays of this module.
    subroutine getObservationIndex(statname, index)
@@ -608,7 +693,7 @@ contains
 !> Adds an observation point to the existing points.
 !! New observation point may be a moving one or not.
    subroutine addObservation(x, y, name, isMoving, loctype, iOP)
-      use m_alloc
+      use m_alloc, only: realloc
       use m_GlobalParameters, only: INDTP_ALL
       real(kind=dp), intent(in) :: x !< x-coordinate
       real(kind=dp), intent(in) :: y !< y-coordinate
@@ -654,11 +739,14 @@ contains
          call realloc(xyobs, 2 * (nummovobs + capacity_))
          call realloc(kobs, numobs + nummovobs + capacity_)
          call realloc(lobs, numobs + nummovobs + capacity_)
+         call realloc(neighbour_nodes_obs, [3, numobs + nummovobs + capacity_])
+         call realloc(neighbour_weights_obs, [3, numobs + nummovobs + capacity_])
          call realloc(namobs, numobs + nummovobs + capacity_)
          call realloc(smxobs, numobs + nummovobs + capacity_)
          call realloc(cmxobs, numobs + nummovobs + capacity_)
          call realloc(locTpObs, numobs + nummovobs + capacity_)
          call realloc(obs2OP, numobs + nummovobs + capacity_)
+         call realloc(intobs, numobs + nummovobs + capacity_)
       end if
 
       ! Before adding new normal observation station:
@@ -674,6 +762,7 @@ contains
             cmxobs(i + 1) = cmxobs(i)
             locTpObs(i + 1) = locTpObs(i)
             obs2OP(i + 1) = obs2OP(i)
+            intobs(i + 1) = intobs(i)
          end do
          numobs = numobs + 1
          inew = numobs
@@ -685,11 +774,12 @@ contains
       ! Add the actual station (moving or static)
       xobs(inew) = x
       yobs(inew) = y
+      intobs(inew) = 0
       namobs(inew) = name_
       kobs(inew) = -999 ! Cell number is set elsewhere
       lobs(inew) = -999 ! Flow link number is set elsewhere
-      smxobs(inew) = -999d0 ! max waterlevel
-      cmxobs(inew) = -999d0 ! max velocity mag.
+      smxobs(inew) = -999.0_dp ! max waterlevel
+      cmxobs(inew) = -999.0_dp ! max velocity mag.
       locTpObs(inew) = loctype_
       if (present(iOP)) then
          obs2OP(inew) = iOP ! mapping from global obs index to local *.ini obs
@@ -701,13 +791,13 @@ contains
 
 !> Adds observation points that are read from *.ini file to the normal obs adm
    subroutine addObservation_from_ini(network, filename)
-      use m_network
+      use m_network, only: t_network, mess, level_error
+      use odugrid, only: odu_get_xy_coordinates
+      use m_save_ugrid_state, only: meshgeom1d
+      use dfm_error, only: dfm_noerr
       use m_sferic, only: jsferic
-      use m_ObservationPoints
-      use odugrid
-      use m_save_ugrid_state
-      use dfm_error
-      implicit none
+      use m_ObservationPoints, only: t_ObservationPoint
+
       type(t_network), intent(inout) :: network !< network
       character(len=*), intent(in) :: filename !< filename of the obs file
 
@@ -760,11 +850,21 @@ contains
          call addObservation(pOPnt%x, pOPnt%y, pOPnt%name, loctype=pOPnt%locationtype, iOP=i)
       end do
 
-      if (allocated(branchIdx_tmp)) deallocate (branchIdx_tmp)
-      if (allocated(Chainage_tmp)) deallocate (Chainage_tmp)
-      if (allocated(ibrch2obs)) deallocate (ibrch2obs)
-      if (allocated(xx_tmp)) deallocate (xx_tmp)
-      if (allocated(yy_tmp)) deallocate (yy_tmp)
+      if (allocated(branchIdx_tmp)) then
+         deallocate (branchIdx_tmp)
+      end if
+      if (allocated(Chainage_tmp)) then
+         deallocate (Chainage_tmp)
+      end if
+      if (allocated(ibrch2obs)) then
+         deallocate (ibrch2obs)
+      end if
+      if (allocated(xx_tmp)) then
+         deallocate (xx_tmp)
+      end if
+      if (allocated(yy_tmp)) then
+         deallocate (yy_tmp)
+      end if
 
    end subroutine addObservation_from_ini
 
@@ -789,6 +889,7 @@ contains
             k = k + 1
             xobs(k) = xobs(i)
             yobs(k) = yobs(i)
+            intobs(k) = intobs(i)
             kobs(k) = kobs(i)
             lobs(k) = lobs(i)
             namobs(k) = namobs(i)
@@ -819,6 +920,9 @@ contains
          deallocate (cmxobs)
          deallocate (locTpObs)
          deallocate (obs2OP)
+        deallocate (intobs)
+         deallocate (neighbour_nodes_obs)
+         deallocate (neighbour_weights_obs)
       end if
 
       call dealloc(network%obs) ! deallocate obs (defined in *.ini file)
@@ -833,6 +937,9 @@ contains
       allocate (cmxobs(capacity_))
       allocate (locTpObs(capacity_))
       allocate (obs2OP(capacity_))
+     allocate (intobs(capacity_))
+      allocate (neighbour_nodes_obs(3, capacity_))
+      allocate (neighbour_weights_obs(3, capacity_))
 
       kobs = -999
       lobs = -999
@@ -850,7 +957,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_inquire_flowgeom
       use dfm_error
-      implicit none
+
       character(len=*), intent(in) :: filename !< File containing the observation points. Either a *_obs.xyn or a *_obs.ini.
       integer, intent(in) :: jadoorladen !< Append to existing observation points or not
 
@@ -866,12 +973,15 @@ contains
          tok = index(filename, '.xy')
          if (tok > 0) then
             call loadObservations_from_xyn(filename)
-         else
-            tok = index(filename, '.ini')
-            if (tok > 0) then
-               call readObservationPoints(network, filename)
-               call addObservation_from_ini(network, filename)
-            end if
+         end if
+         tok = index(filename, '.pli')
+         if (tok > 0) then
+             call loadObservations_from_pli(filename)
+         end if
+         tok = index(filename, '.ini')
+         if (tok > 0) then
+            call readObservationPoints(network, filename)
+            call addObservation_from_ini(network, filename)
          end if
       else
          call mess(LEVEL_ERROR, "Observation file '"//trim(filename)//"' not found!")
@@ -886,7 +996,6 @@ contains
       use dfm_error
       use m_filez, only: oldfil, readerror, doclose
 
-      implicit none
       character(len=*), intent(in) :: filename
 
       integer :: mobs, L, L2
@@ -924,8 +1033,6 @@ contains
       use m_sferic, only: jsferic
       use m_filez, only: doclose, newfil
 
-      implicit none
-
       character(len=*), intent(in) :: filename
 
       integer :: mobs, i
@@ -944,4 +1051,30 @@ contains
 
    end subroutine saveObservations
 
+   !> Reads observation points from a *.pli file.
+   !! Set intobs to 1 as .pli files are interpolated (not snapped to the grid).
+   subroutine loadObservations_from_pli(filename)
+      
+      use m_filez,   only: oldfil
+      use m_polygon
+      use m_reapol_nampli, only: reapol_nampli
+      
+
+      implicit none
+      character(len=*), intent(in) :: filename
+      
+      ! locals
+      integer                       :: minp,istat, ipli 
+      character(5)                  :: numstr 
+
+      call oldfil(minp, filename)
+      ipli = 0
+      call reapol_nampli(minp, 0, 1, ipli)
+      
+      do istat = 1, npl
+          write(numstr,'(i4.4)') istat
+          call addObservation(xpl(istat), ypl(istat), trim(nampli(1))//'_'//numstr)
+          intobs(numobs) = 1
+      end do
+   end subroutine loadObservations_from_pli
 end module m_observations

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,11 +37,11 @@ contains
 !
    subroutine DISP2C(X, Y, N, RCIR, NCOL)
       use precision, only: dp
-      use m_missing
-      use m_jgrline8
-      use m_set_col
-      use m_inview
-      use m_movabs
+      use m_missing, only: dmiss
+      use m_jgrline8, only: jgrline8
+      use m_set_col, only: setcol
+      use m_inview, only: inview
+      use m_movabs, only: movabs
 
       integer :: n, ncol
       real(kind=dp) :: X(N), Y(N), rcir
@@ -49,12 +49,16 @@ contains
       integer :: i, istart, in
 !     LAAT EEN TWEEDIMENSIONALE FUNCTIE ZIEN MET CIRKELS
 
-      if (N <= 0) return
+      if (N <= 0) then
+         return
+      end if
       call SETCOL(NCOL)
 
       call JGRLINE8(x, y, N)
 
-      if (rcir == 0) return
+      if (rcir == 0) then
+         return
+      end if
 
       if (NCOL /= 0) then
 
@@ -64,7 +68,9 @@ contains
                call MOVABS(X(I), Y(I))
                call CIR(RCIR)
                in = in + 1
-               if (in > 5000) exit
+               if (in > 5000) then
+                  exit
+               end if
             end if
          end do
 

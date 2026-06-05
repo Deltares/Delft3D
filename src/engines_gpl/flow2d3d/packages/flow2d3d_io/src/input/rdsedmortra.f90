@@ -4,7 +4,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
                      & nambnd    ,lsec      ,tstart    ,tunit     ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                     
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                     
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -193,7 +193,7 @@ subroutine rdsedmortra(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
     call rdtrafrm(lundia    ,error     ,filtrn    ,lsedtot   , &
                 & ipardef   ,rpardef   ,NPARDEF   ,gdp%gdtrapar, &
                 & gdp%gdmorpar%moroutput%sedpar, &
-                & gdp%gdsedpar%sedtyp  ,gdp%gdsedpar%sedblock  , &
+                & gdp%gdsedpar%sedtyp  ,filsed, gdp%gdsedpar%sedblock  , &
                 & gdp%griddim, gdp%gdinttim%julday, gdp%gdsedpar%max_mud_sedtyp)
     endif
     if (.not.error) then

@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -28,6 +28,9 @@
 !  $HeadURL$
 !-------------------------------------------------------------------------------
 !
+!> @file cosumo_bmi.f90
+!<
+!> \include{doc} c-sumo-bmi-mainpage.dox
 module m_cosumo_bmi_version
    implicit none
    !

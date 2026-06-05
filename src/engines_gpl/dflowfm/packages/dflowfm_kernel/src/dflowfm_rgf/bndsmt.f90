@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,9 +44,9 @@ contains
 
    subroutine BNDSMT(XR, YR, XI2, YI2, XJ2, YJ2, ATP, M1, N1, M2, N2)
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_get_ij
+      use m_grid, only: mmax, nmax, mnmax, nc, mc, ijc, xc, yc
+      use m_gridsettings, only: bfac
+      use m_get_ij, only: get_ij
 
       real(kind=dp) :: bfe
       integer :: i
@@ -96,7 +96,9 @@ contains
 
       allocate (XH(MNMAX), YH(MNMAX), XH2(MNMAX), YH2(MNMAX))
 
-      if (BFAC == 0) return
+      if (BFAC == 0) then
+         return
+      end if
       BFE = 1 - BFAC
 
 !     DE HORIZONTALEN
@@ -120,10 +122,10 @@ contains
                ILR = IR - 1
                IL = IR
                NUM = IL - IFF + 1
-               call GETIJ(XC, XH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
-               call GETIJ(XJ2, XH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
-               call GETIJ(YC, YH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
-               call GETIJ(YJ2, YH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(XC, XH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(XJ2, XH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(YC, YH, MMAX, NMAX, MNMAX, IFF, IL, J, J)
+               call get_ij(YJ2, YH2, MMAX, NMAX, MNMAX, IFF, IL, J, J)
 
                do IRR = IFR, ILR
                   if (IRR >= M1 .and. IRR <= M2 .and. &
@@ -146,7 +148,7 @@ contains
                         Y2 = YR(IRR, JR + 1)
                         QB = ATP(IRR - 1, JR)
                         QC = ATP(IRR, JR)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y3 - Y1) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X1 - X3) / RN
@@ -160,7 +162,7 @@ contains
                         Y2 = YR(IRR, JR - 1)
                         QB = ATP(IRR - 1, JR - 1)
                         QC = ATP(IRR, JR - 1)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y1 - Y3) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X3 - X1) / RN
@@ -208,10 +210,10 @@ contains
                JLR = JR - 1
                JL = JR
                NUM = JL - JF + 1
-               call GETIJ(XC, XH, MMAX, NMAX, MNMAX, I, I, JF, JL)
-               call GETIJ(XI2, XH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
-               call GETIJ(YC, YH, MMAX, NMAX, MNMAX, I, I, JF, JL)
-               call GETIJ(YI2, YH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(XC, XH, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(XI2, XH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(YC, YH, MMAX, NMAX, MNMAX, I, I, JF, JL)
+               call get_ij(YI2, YH2, MMAX, NMAX, MNMAX, I, I, JF, JL)
 
                do JRR = JFR, JLR
                   if (JRR >= N1 .and. JRR <= N2 .and. &
@@ -232,9 +234,9 @@ contains
                         Y1 = YR(IR, JRR - 1)
                         Y3 = YR(IR, JRR + 1)
                         Y2 = YR(IR + 1, JRR)
-                        QC = 1d0 / ATP(IR, JRR)
-                        QB = 1d0 / ATP(IR, JRR - 1)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QC = 1.0_dp / ATP(IR, JRR)
+                        QB = 1.0_dp / ATP(IR, JRR - 1)
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y1 - Y3) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X3 - X1) / RN
@@ -246,9 +248,9 @@ contains
                         Y1 = YR(IR, JRR - 1)
                         Y3 = YR(IR, JRR + 1)
                         Y2 = YR(IR - 1, JRR)
-                        QC = 1d0 / ATP(IR - 1, JRR)
-                        QB = 1d0 / ATP(IR - 1, JRR - 1)
-                        QBC = 1d0 / QB + 1d0 / QC
+                        QC = 1.0_dp / ATP(IR - 1, JRR)
+                        QB = 1.0_dp / ATP(IR - 1, JRR - 1)
+                        QBC = 1.0_dp / QB + 1.0_dp / QC
                         RN = QB + QC + QBC
                         XX1 = (QB * X1 + QBC * X2 + QC * X3 + Y3 - Y1) / RN
                         YY1 = (QB * Y1 + QBC * Y2 + QC * Y3 + X1 - X3) / RN

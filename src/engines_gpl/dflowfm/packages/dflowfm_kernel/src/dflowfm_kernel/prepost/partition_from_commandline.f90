@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -85,15 +85,16 @@ contains
       end if
       netstat = NETSTAT_OK
 
-!  delete dry points and dry areas
-      call delete_dry_points_and_areas()
+      call delete_dry_points_and_areas(update_blcell=.true.)
 
-      if (nump1d2d < 1) return
+      if (nump1d2d < 1) then
+         return
+      end if
 
       call cosphiunetcheck(1)
 
       if (md_Ndomains > 0) then ! use METIS
-         call partition_METIS_to_idomain(md_Ndomains, md_jacontiguous, md_pmethod, md_partseed)
+         call partition_METIS_to_idomain(idomain, md_Ndomains, md_jacontiguous, md_pmethod, md_partseed)
 !     generate partitioning polygons
          Ndomains = md_Ndomains
          if (japolygon == 1) then
@@ -104,6 +105,7 @@ contains
          call generate_partitioning_from_pol()
       end if
 
+      netstat = NETSTAT_OK !> reset netstat before writing partitions
       if (ndomains > 1) then
          call partition_write_domains(trim(fnam), md_icgsolver, jacells, japolygon, md_partugrid)
       end if

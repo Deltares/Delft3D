@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -36,11 +36,11 @@ module m_jgtext
 contains
    subroutine JGTEXT(TEX, X, Y, NCOL, WIC, HIC, JAHOOG) ! grafische tekst, grafische posities, met kleurblokjes ERONDER
       use precision, only: dp
-      use unstruc_colors
-      use m_box_nop
-      use m_fbox_nop
-      use m_set_col
-      use m_draw_text
+      use unstruc_colors, only: kltex
+      use m_box_nop, only: boxnop
+      use m_fbox_nop, only: fboxnop
+      use m_set_col, only: setcol
+      use m_draw_text, only: drawtext
 
       real(kind=dp) :: hic, WIC
       integer :: jahoog
@@ -59,10 +59,10 @@ contains
       call DRAWTEXT(real(X), real(Y), TEX)
       call GETPOS(XP, YP)
 
-      XA = XP + 0.3d0 * WIC
-      YA = YP - 0.8d0 * HIC + JAHOOG * HIC
-      XB = XA + 1.3d0 * WIC
-      YB = YA + 0.7d0 * HIC
+      XA = XP + 0.3_dp * WIC
+      YA = YP - 0.8_dp * HIC + JAHOOG * HIC
+      XB = XA + 1.3_dp * WIC
+      YB = YA + 0.7_dp * HIC
 
       if (NCOL /= 0) then
          call SETCOL(NCOL)

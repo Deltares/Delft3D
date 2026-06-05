@@ -1,8 +1,8 @@
-subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
+subroutine rwbcb(lundia    ,lunrd     ,filinp_in ,error     ,itstrt    , &
                & itfinish  ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -57,7 +57,7 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     integer         , intent(in)  :: lundia     !  Description and declaration in inout.igs
     integer         , intent(in)  :: lunrd      !  Unit number for input file
     logical         , intent(out) :: error      !  Flag=TRUE if an error is encountered
-    character(*)    , intent(in)  :: filinp     !  Name of input file
+    character(*)    , intent(in)  :: filinp_in  !  Name of input file
 !
 !
 ! Local variables
@@ -78,7 +78,6 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     integer                        :: lninp                ! Help var. specifying the length of input file name 
     integer                        :: lrec                 ! Length of record 
     integer                        :: lunout               ! Unit number for transformed file 
-    integer                        :: newlun
     integer                        :: nrecs                ! Number of records in table 
     integer                        :: stapos               ! Start position of scan 
     integer                        :: timref               ! Reference time read 
@@ -95,6 +94,7 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     character(20)                  :: loca20               ! Name of barrier location 
     character(20)                  :: timuni               ! Time unit read 
     character(300)                 :: errmsg               ! errormessage text 
+    character(:), allocatable      :: filinp               ! Name of input file
 !
 !
 !! executable statements -------------------------------------------------------
@@ -105,6 +105,7 @@ subroutine rwbcb(lundia    ,lunrd     ,filinp    ,error     ,itstrt    , &
     dt      => gdp%gdexttim%dt
     !
     icurec = 0
+    filinp = filinp_in
     call remove_leading_spaces(filinp    ,lninp     )
     timscl = 1.0
     !

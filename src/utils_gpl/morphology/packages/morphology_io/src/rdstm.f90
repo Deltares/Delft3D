@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -175,7 +175,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     ! 
     !  For 1D branches read the node relation definitions
     !
-    call ini_noderel(stm%nrd, stm%sedpar, stm%lsedtot)
+    call ini_noderel(lundia, stm%nrd, stm%sedpar, stm%lsedtot)
     !     
     ! Read morphology parameters
     !
@@ -219,7 +219,7 @@ subroutine rdstm(stm, griddim, filsed, filmor, filtrn, &
     call rdtrafrm(lundia, error, filtrn, stm%lsedtot, &
                 & ipardef, rpardef, NPARDEF, stm%trapar, &
                 & stm%morpar%moroutput%sedpar, &
-                & stm%sedpar%sedtyp, stm%sedpar%sedblock, &
+                & stm%sedpar%sedtyp, filsed, stm%sedpar%sedblock, &
                 & griddim, julrefday, stm%sedpar%max_mud_sedtyp)
     if (error) return
     !

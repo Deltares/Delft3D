@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,11 +41,9 @@ module m_extract_rho
 contains
 
    subroutine extract_rho()
-      use m_transport
-      use m_flow
-      use m_sediment
-      use m_transport
-      use timers
+      use m_transport, only: constituents
+      use m_flow, only: ndkx, rho, sa1
+      use timers, only: timon, timstrt, timstop
 
       implicit none
 
@@ -53,14 +51,18 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("extract_rho", ithndl)
+      if (timon) then
+         call timstrt("extract_rho", ithndl)
+      end if
 
       do k = 1, Ndkx
          rho(k) = constituents(1, k)
          constituents(1, k) = sa1(k)
       end do
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
    end subroutine extract_rho
 

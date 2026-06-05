@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -45,19 +45,20 @@ contains
    subroutine solve_vertical(NUMCONST, ISED1, ISEDN, thetavert, Ndkx, kmx, &
                              zws, qw, vol1, kbot, ktop, &
                              sumhorflux, fluxver, source, sink, &
-                             difsed, sigdifi, vicwws, &
+                             sigdifi, vicwws, &
                              nsubsteps, jaupdate, ndeltasteps, sed, &
                              a, b, c, d, e, sol, rhs)
       use precision, only: dp
       use m_make_rhs, only: make_rhs
-      use m_flowgeom, only: Ndxi, Ndx, ba, kfs ! static mesh information
+      use m_flowgeom, only: Ndxi, kfs, ba, ndx ! static mesh information
       use m_flowtimes, only: dts
-      use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity ! do not use m_flow, please put this in the argument list
+      use m_flow, only: kmxn, xlozmidov, rhomean, rho, ag, a1, wsf, jaimplicitfallvelocity
+      use m_turbulence, only: difwws
       use m_flowparameters, only: epshu, testdryflood
       use m_sediment, only: mtd, jased
       use m_fm_erosed, only: tpsnumber
-      use sediment_basics_module
-      use timers
+      use timers, only: timon, timstrt, timstop
+      use m_transport, only: isalt
 
       implicit none
 
@@ -77,41 +78,41 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: fluxver !< vertical fluxes
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: source !< sources
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sink !< sinks
-      real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicoww+difmod)
       real(kind=dp), dimension(Ndkx), intent(in) :: vicwws !< vertical eddy viscosity, NOTE: real, not double
       real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
       integer, dimension(Ndx), intent(in) :: jaupdate !< update cell (1) or not (0)
       integer, dimension(Ndx), intent(in) :: ndeltasteps !< number of substeps
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(inout) :: sed !< transported quantities
-      real(kind=dp), dimension(kmx, NUMCONST) :: a, b, c, d ! work array: aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
-      real(kind=dp), dimension(kmx) :: sol, e ! work array: solution and dummy array in tridag, respectively
-      real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
 
+      real(kind=dp), dimension(kmx, NUMCONST) :: a, b, c, d ! work array: aj(i,j)*sed(j,k-1) + bj(i,j)*sed(j,k) + c(i,j)*sed(j,k+1) = d(i), i=k-kb+1
+      real(kind=dp), dimension(kmx) :: ac, bc, cc, dc, sol, e ! work array: solution and dummy array in tridag, respectively
+      real(kind=dp), dimension(NUMCONST, Ndkx) :: rhs ! work array: right-hand side, dim(NUMCONST,Ndkx)
       real(kind=dp) :: fluxfac, dvol1i, dvol2i
       real(kind=dp) :: dtbazi, dtba, ozmid, bruns
-
-      integer :: kk, k, kb, kt, ktx
+      integer :: kk, k, kb, kt, ktx, nel
       integer :: j, n
-
       real(kind=dp) :: dt_loc
       real(kind=dp) :: qw_loc
-
-      real(kind=dp), parameter :: dtol = 1d-8
-
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("solve_vertical", ithndl)
+      if (timon) then
+         call timstrt("solve_vertical", ithndl)
+      end if
 
       dt_loc = dts
-
-      rhs = 0d0
+      rhs = 0.0_dp
+      ac = 0.0_dp
+      bc = 0.0_dp
+      cc = 0.0_dp
+      dc = 0.0_dp
 
       call make_rhs(NUMCONST, thetavert, Ndkx, kmx, vol1, kbot, ktop, sumhorflux, fluxver, source, sed, nsubsteps, jaupdate, ndeltasteps, rhs)
 
       ! construct and solve system
       !$OMP PARALLEL DO                                                 &
-      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc) &
+      !$OMP PRIVATE(kk,kb,ktx,kt,a,b,c,sol,j,d,k,n,dvol1i,dvol2i,fluxfac,e,dtbazi,dtba,ozmid,bruns,qw_loc,ac,bc,cc,dc,nel) &
       !$OMP FIRSTPRIVATE(dt_loc)
       do kk = 1, Ndxi
          if (nsubsteps > 1) then
@@ -126,18 +127,20 @@ contains
 
          kb = kbot(kk)
          kt = ktop(kk)
-         if (kfs(kk) <= 0) cycle
+         if (kfs(kk) <= 0) then
+            cycle
+         end if
 
          ktx = kb + kmxn(kk) - 1
-         a = 0d0
-         c = 0d0
-         sol = 0d0
+         a = 0.0_dp
+         c = 0.0_dp
+         sol = 0.0_dp
 
 !     add linearized sinks to diagonal
          do k = kb, kt
             n = k - kb + 1 ! layer number
             do j = 1, NUMCONST
-               b(n, j) = 1d0 + dt_loc * sink(j, k)
+               b(n, j) = 1.0_dp + dt_loc * sink(j, k)
             end do
          end do
 
@@ -149,40 +152,37 @@ contains
             end do
          end do
 
-         ! if ( s1(kk)-bl(kk) > epshsdif ) then
-         ! if ( s1(kk)-zws(kb-1) > epshsdif ) then
-
          do k = kb, kt - 1 ! assume zero-fluxes at boundary and top
             n = k - kb + 1 ! layer number
-            dvol1i = 1d0 / max(vol1(k), dtol) ! dtol: safety
-            if (testdryflood == 2) dvol1i = 1d0 / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
-            dvol2i = 1d0 / max(vol1(k + 1), dtol) ! dtol: safety
-            if (testdryflood == 2) dvol2i = 1d0 / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
+            dvol1i = 1.0_dp / max(vol1(k), dtol) ! dtol: safety
+            if (testdryflood == 2) then
+               dvol1i = 1.0_dp / max(vol1(k), epshu * ba(kk) / max(kt - kb + 1, 1))
+            end if
+            dvol2i = 1.0_dp / max(vol1(k + 1), dtol) ! dtol: safety
+            if (testdryflood == 2) then
+               dvol2i = 1.0_dp / max(vol1(k + 1), epshu * ba(kk) / max(kt - kb + 1, 1))
+            end if
             dtba = dt_loc * ba(kk)
-            dtbazi = dtba / max(1d-4, 0.5d0 * (zws(k + 1) - zws(k - 1))) ! another safety check
-
-            ozmid = 0d0
-            if (xlozmidov > 0d0) then
+            dtbazi = dtba / max(1.0e-4_dp, 0.5_dp * (zws(k + 1) - zws(k - 1))) ! another safety check
+            ozmid = 0.0_dp
+            if (xlozmidov > 0.0_dp) then
                if (rho(k) < rho(k - 1)) then
-                  bruns = (rho(k - 1) - rho(k)) / (0.5d0 * (zws(k + 1) - zws(k - 1))) ! = -drhodz
+                  bruns = (rho(k - 1) - rho(k)) / (0.5_dp * (zws(k + 1) - zws(k - 1))) ! = -drhodz
                   bruns = sqrt(bruns * ag / rhomean)
-                  ozmid = 0.2d0 * xlozmidov * xlozmidov * bruns
+                  ozmid = 0.2_dp * xlozmidov * xlozmidov * bruns
                end if
             end if
 
             do j = 1, NUMCONST
-
-!           ! diffusion
-               if (jased > 3 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
-                  fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + difsed(j)) * dtbazi
-                  ! i.w.  + vicwws/van rijn                              + background (dicoww)
+               ! diffusion
+               if (jased == 4 .and. j >= ISED1 .and. j <= ISEDN) then ! sediment d3d
+                  fluxfac = (ozmid + mtd%seddif(j - ISED1 + 1, k) / tpsnumber(j - ISED1 + 1) + get_difsedw(kk, j)) * dtbazi
                else
-                  fluxfac = (sigdifi(j) * vicwws(k) + difsed(j) + ozmid) * dtbazi
+                  fluxfac = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid) * dtbazi
+                  if (j == ISALT) then
+                     difwws(k) = (sigdifi(j) * vicwws(k) + get_difsedw(kk, j) + ozmid)
+                  end if
                end if
-
-!           BEGIN DEBUG
-!            fluxfac = dt_loc * (difsed(j)) *ba(kk) / ( 0.5d0*(zws(k+1) - zws(k-1)) )  ! m3
-!           END DEBUG
 
                b(n, j) = b(n, j) + fluxfac * dvol1i
                c(n, j) = c(n, j) - fluxfac * dvol1i
@@ -190,12 +190,8 @@ contains
                b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
                a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
 
-!           advection
-               if (thetavert(j) > 0d0) then ! semi-implicit, use central scheme
-                  ! BEGIN DEBUG
-                  ! if ( .false. .and. thetavert(j).gt.0d0 ) then ! semi-implicit, use central scheme
-                  ! END DEBUG
-
+               ! advection
+               if (thetavert(j) > 0.0_dp) then ! semi-implicit, use central scheme
                   if (jased > 0 .and. jaimplicitfallvelocity == 0) then ! explicit fallvelocity
                      if (jased < 4) then
                         qw_loc = qw(k) - wsf(j) * a1(kk)
@@ -205,8 +201,7 @@ contains
                   else
                      qw_loc = qw(k)
                   end if
-
-                  fluxfac = qw_loc * 0.5d0 * thetavert(j) * dt_loc
+                  fluxfac = qw_loc * 0.5_dp * thetavert(j) * dt_loc
 
                   a(n + 1, j) = a(n + 1, j) - fluxfac * dvol2i
                   b(n + 1, j) = b(n + 1, j) - fluxfac * dvol2i
@@ -216,64 +211,58 @@ contains
                end if
 
                if (jased > 0 .and. jaimplicitfallvelocity == 1) then
-                  fluxfac = 0d0
-                  if (jased > 3) then
+                  fluxfac = 0.0_dp
+                  if (jased == 4) then
                      if (j >= ISED1 .and. j <= ISEDN) then
                         fluxfac = mtd%ws(k, j - ISED1 + 1) * a1(kk) * dt_loc
                      else
+                        ! tracers
                         fluxfac = wsf(j) * a1(kk) * dt_loc
                      end if
                   else
                      fluxfac = wsf(j) * a1(kk) * dt_loc
                   end if
-
-                  if (fluxfac > 0d0) then
+                  if (fluxfac > 0.0_dp) then
                      c(n, j) = c(n, j) - fluxfac * dvol1i
                      b(n + 1, j) = b(n + 1, j) + fluxfac * dvol2i
-                  else if (fluxfac < 0d0) then
+                  else if (fluxfac < 0.0_dp) then
                      b(n, j) = b(n, j) - fluxfac * dvol1i
                      a(n + 1, j) = a(n + 1, j) + fluxfac * dvol2i
                   end if
-
                end if
-
             end do
          end do
 
 !     solve system(s)
          do j = 1, NUMCONST
-!         if ( kk.eq.2 .and. j.eq.1 ) then
-!            do k=kb,kt
-!               n = k-kb+1
-!               write(6,*) n, a(n,j), b(n,j), c(n,j), d(n,j)
-!            end do
-!         end if
-
-            call tridag(a(1, j), b(1, j), c(1, j), d(1, j), e, sol, kt - kb + 1)
-
-            sed(j, kb:kt) = sol(1:kt - kb + 1)
+            ! make this compiler safe, ie don't pass first element and assume memory contiguity
+            nel = kt - kb + 1
+            ac(1:nel) = a(1:nel, j)
+            bc(1:nel) = b(1:nel, j)
+            cc(1:nel) = c(1:nel, j)
+            dc(1:nel) = d(1:nel, j)
+            call tridag(ac, bc, cc, dc, e, sol, nel)
+            sed(j, kb:kt) = sol(1:nel)
             sed(j, kt + 1:ktx) = sed(j, kt)
-
-!        BEGIN DEBUG
-!         do k=kb,kt
-!            if ( j.eq.1 .and. ( sed(j,k).gt.30.0001 .or. sed(j,k).lt.-0.0001 ) ) then
-!               continue
-!               write(6,*) 'kk=', kk, 'lay=', k-kb+1
-!               write(6,*) 'rhs=', rhs(j,k)
-!               write(6,*) 'sed=', sed(j,k)
-!               call qnerror(' ', ' ', ' ')
-!            end if
-!         end do
-!        END DEBUG
-
          end do
-
       end do
-
       !$OMP END PARALLEL DO
-
-      if (timon) call timstop(ithndl)
-      return
+      if (timon) then
+         call timstop(ithndl)
+      end if
    end subroutine solve_vertical
+
+   !> Get vertical diffusivity at a given node and add constituent specific molecular diffusivity.
+   pure function get_difsedw(node_index, constituent_index) result(val)
+      use m_physcoef, only: dicoww
+      use m_transport, only: molecular_diffusion_coeff
+      use precision, only: dp
+      integer, intent(in) :: node_index !< base node index (1:Ndxi)
+      integer, intent(in) :: constituent_index !< constituent index (1:NUMCONST)
+      real(kind=dp) :: val ! return value
+
+      !total diffusivity is user specified background diffusivity plus molecular diffusivity depending on constituent
+      val = dicoww%get(node_index) + molecular_diffusion_coeff(constituent_index)
+   end function get_difsedw
 
 end module m_solve_vertical

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,16 +42,16 @@ contains
 
    subroutine inworld(xx) ! shifts x coordinates in world window, only call if jsferic == 1
       use precision, only: dp
-      use m_missing
-      use m_sferic
+      use m_missing, only: dmiss
+      use m_sferic, only: xwleft
 
       real(kind=dp) :: xx
       if (xx /= dmiss) then
          do while (xx < xwleft)
-            xx = xx + 360d0
+            xx = xx + 360.0_dp
          end do
-         do while (xx > xwleft + 360d0)
-            xx = xx - 360d0
+         do while (xx > xwleft + 360.0_dp)
+            xx = xx - 360.0_dp
          end do
       end if
    end subroutine inworld

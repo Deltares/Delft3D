@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,13 +39,12 @@ contains
 
    subroutine bermslopenudging(error)
       use precision, only: dp
-      use m_sediment
-      use m_fm_erosed
+      use m_sediment, only: bermslopeindex, bermslopeindexbed, bermslopeindexsus, hwav, stmpar
+      use m_fm_erosed, only: bermslopegamma, bermslopedepth, bermslopebed, bermslopesus, e_dzdn, e_dzdt, bermslopefac, bermslope, morfac, lsedtot, bed, has_bedload, e_sbcn, e_sbct, e_sbwn, e_sbwt, sus, lsed, e_ssn, e_sswn, e_sswt
+      use m_waveconst, only: no_waves
       use m_flow, only: hu, epshu
       use m_flowgeom, only: lnx, ln, wu_mor
-      use m_waves, only: hwav
       use m_flowparameters, only: jawave
-      use m_debug
 
       logical, intent(out) :: error
 
@@ -60,10 +59,13 @@ contains
       bermslopeindexbed = .false.
       bermslopeindexsus = .false.
       !
-      if (jawave > 0) then
+      if (jawave > NO_WAVES) then
          do L = 1, lnx
-            if (hu(L) < epshu) cycle
-            k1 = ln(1, L); k2 = ln(2, L)
+            if (hu(L) < epshu) then
+               cycle
+            end if
+            k1 = ln(1, L)
+            k2 = ln(2, L)
             hwavu = max(hwav(k1), hwav(k2))
             if (hwavu > bermslopegamma * hu(L)) then
                bermslopeindex(L) = .true.
@@ -72,7 +74,9 @@ contains
       end if
       ! Criteria cannot be combined as hwav not allocated for jawave==0
       do L = 1, lnx
-         if (hu(L) < epshu) cycle
+         if (hu(L) < epshu) then
+            cycle
+         end if
          if (hu(L) < bermslopedepth) then ! to check: hu value up to date? Replace by weighted hs?
             bermslopeindex(L) = .true.
          else
@@ -88,22 +92,31 @@ contains
       end if
       !
       do L = 1, lnx
-         if (hu(L) <= epshu) cycle
-         if (wu_mor(L) == 0) cycle
-         if (.not. bermslopeindexbed(L) .and. .not. bermslopeindexsus(L)) cycle
+         if (hu(L) <= epshu) then
+            cycle
+         end if
+         if (wu_mor(L) == 0) then
+            cycle
+         end if
+         if (.not. bermslopeindexbed(L) .and. .not. bermslopeindexsus(L)) then
+            cycle
+         end if
          !
-         k1 = ln(1, L); k2 = ln(2, L)
+         k1 = ln(1, L)
+         k2 = ln(2, L)
          !
          ! Transports positive outgoing
          !
-         slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1d-8)
-         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1d0)
+         slope = max(hypot(e_dzdn(L), e_dzdt(L)), 1.0e-8_dp)
+         slpfac = bermslopefac * (-e_dzdn(L) + bermslope * e_dzdn(L) / slope) / max(morfac, 1.0_dp)
          do lsd = 1, lsedtot
             !
             ! slope magnitude smaller than bermslope leads to transport away from the cell, ie outward
             ! minus sign because e_dzdn is defined as bl1-bl2 in fm_erosed
             if (bermslopeindexbed(L) .and. bed /= 0.0) then
-               if (.not. has_bedload(stmpar%sedpar%tratyp(lsd))) cycle
+               if (.not. has_bedload(stmpar%sedpar%tratyp(lsd))) then
+                  cycle
+               end if
                trmag_u = hypot(e_sbcn(L, lsd), e_sbct(L, lsd))
                flx = trmag_u * slpfac
                e_sbcn(L, lsd) = e_sbcn(L, lsd) - flx
@@ -140,9 +153,9 @@ contains
 
    subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
       use precision, only: dp
-      use m_fm_erosed
+      use m_fm_erosed, only: fixfac, frac
+      use m_flowgeom, only: lnxi
       use m_flow, only: hu, epshu
-      use m_flowgeom
 
       implicit none
 

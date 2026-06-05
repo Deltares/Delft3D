@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,20 +42,20 @@ module m_comp_fluxhor3d
 contains
 
    subroutine comp_fluxhor3D(NUMCONST, limtyp, Ndkx, Lnkx, u1, q1, sqi, vol1, kbot, Lbot, Ltop, kmxn, kmxL, sed, difsed, sigdifi, &
-                             viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu, difsedsp)
+                             viu, nsubsteps, jaupdatehorflux, ndeltasteps, jaupdateconst, flux, dsedx, dsedy, jalimitdiff, dxiAu, difsedsp, background_diffusion_factor)
       use precision, only: dp
-      use m_flowgeom, only: Ndx, Lnx, ln, nd, klnup, slnup, dxi, acl, csu, snu, wcx1, wcx2, wcy1, wcy2, Dx ! static mesh information
+      use m_flowgeom, only: Lnx, ln, dxi, wcx1, wcy1, wcx2, wcy2, klnup, slnup, acl, csu, snu, Dx, nd, ndx
+      use MessageHandling, only: msgbuf, mess, level_warn
+      use timers, only: timon, timstrt, timstop
+      use m_dlimiter, only: dlimiter
+      use m_dlimitercentral, only: dlimitercentral
+      use m_dlimiter_nonequi, only: dlimiter_nonequi ! static mesh information
       use m_flowtimes, only: dts
       use m_flowparameters, only: cflmx
       use m_flow, only: jadiusp, diusp, dicouv, jacreep, dsalL, dtemL, &
                         number_steps_limited_visc_flux_links, MAX_PRINTS_LIMITED_VISC_FLUX_LINKS
       use m_transport, only: ISALT, ITEMP
-      use m_missing
-      use MessageHandling
-      use timers
-      use m_dlimiter
-      use m_dlimitercentral
-      use m_dlimiter_nonequi
+      use m_partitioninfo, only:  is_3d_layer_in_current_partition
 
       implicit none
 
@@ -76,7 +76,8 @@ contains
       real(kind=dp), dimension(NUMCONST, Ndkx), intent(in) :: sed !< transported quantities
       real(kind=dp), dimension(NUMCONST), intent(in) :: difsed !< scalar-specific diffusion coefficent (dicouv)
       real(kind=dp), dimension(NUMCONST, lnx), optional, intent(in) :: difsedsp !< spatially-varying diffusion coefficient (optional). If present, it overwrites the scalar in `difsed`
-      real, dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
+      real(kind=dp), dimension(NUMCONST), optional, intent(in) :: background_diffusion_factor !< factor multipling background diffusion `dicouv` (optional). By default it is 1.0, so background diffusion is applied. If set to 0.0, background diffusion is not applied.
+      real(kind=dp), dimension(Lnkx), intent(in) :: viu !< spatially varying horizontal eddy viscosity, NOTE: real, not double
       real(kind=dp), dimension(NUMCONST), intent(in) :: sigdifi !< 1/(Prandtl number) for heat, 1/(Schmidt number) for mass
       integer, intent(in) :: nsubsteps !< number of substeps
       integer, dimension(Lnx), intent(in) :: jaupdatehorflux !< update horizontal flux (1) or not (0)
@@ -87,6 +88,8 @@ contains
       real(kind=dp), dimension(NUMCONST, ndkx), intent(inout) :: dsedy !< grry
       integer, intent(in) :: jalimitdiff !< limit diffusion (for time step) (1) or not (0)
       real(kind=dp), dimension(Lnkx), intent(in) :: dxiAu !< area of horizontal diffusive flux divided by Dx
+
+      real(kind=dp), dimension(NUMCONST) :: background_diffusion_factor_local !< local copy of `background_diffusion_factor`. As `background_diffusion_factor` is optional, it cannot be allocated if not present and we need a copy to handle it.
 
       real(kind=dp) :: sl1L, sl2L, sl3L, sl1R, sl2R, sl3R
       real(kind=dp) :: cf, sedkuL, sedkuR, ds1L, ds2L, ds1R, ds2R
@@ -105,15 +108,25 @@ contains
 
       integer(4) :: ithndl = 0
 
-      if (timon) call timstrt("comp_fluxhor3D", ithndl)
+      if (timon) then
+         call timstrt("comp_fluxhor3D", ithndl)
+      end if
+
+      if (present(background_diffusion_factor)) then
+         background_diffusion_factor_local = background_diffusion_factor
+      else
+         background_diffusion_factor_local = 1.0_dp
+      end if
 
       dt_loc = dts
 
       if (limtyp == 6) then
 
-         dsedx = 0d0; dsedy = 0d0
+         dsedx = 0.0_dp
+         dsedy = 0.0_dp
          do LL = 1, lnx
-            Lb = Lbot(LL); Lt = Lb - 1 + kmxL(LL)
+            Lb = Lbot(LL)
+            Lt = Lb - 1 + kmxL(LL)
             do L = Lb, Lt
                k1 = ln(1, L)
                k2 = ln(2, L)
@@ -161,12 +174,12 @@ contains
             kk2R = (1 - iswitchR) * klnup(5, LL) + iswitchR * kk1R ! make kk2R safe for when it is not intented to be used
 
 !        get the weights in the stencil
-            sl1L = (dble(1 - iswitchL) * slnup(1, LL) + dble(iswitchL) * 1d0)
-            sl2L = dble(1 - iswitchL) * slnup(2, LL)
+            sl1L = (real(1 - iswitchL, kind=dp) * slnup(1, LL) + real(iswitchL, kind=dp) * 1.0_dp)
+            sl2L = real(1 - iswitchL, kind=dp) * slnup(2, LL)
             sl3L = slnup(3, LL)
 
-            sl1R = (dble(1 - iswitchR) * slnup(4, LL) + dble(iswitchR) * 1d0)
-            sl2R = dble(1 - iswitchR) * slnup(5, LL)
+            sl1R = (real(1 - iswitchR, kind=dp) * slnup(4, LL) + real(iswitchR, kind=dp) * 1.0_dp)
+            sl2R = real(1 - iswitchR, kind=dp) * slnup(5, LL)
             sl3R = slnup(6, LL)
 
 !        make cell indices safe
@@ -224,61 +237,67 @@ contains
 
             end if
 
-            if (u1(L) > 0d0) then
-               is = 1; ku = k1; half = acL(LL)
+            if (u1(L) > 0.0_dp) then
+               is = 1
+               ku = k1
+               half = acL(LL)
             else
-               is = -1; ku = k2; half = 1d0 - acl(LL)
+               is = -1
+               ku = k2
+               half = 1.0_dp - acl(LL)
             end if
 
-            QL = max(q1(L), 0d0)
-            QR = min(q1(L), 0d0)
+            QL = max(q1(L), 0.0_dp)
+            QR = min(q1(L), 0.0_dp)
 
             do j = 1, NUMCONST
-               if (jaupdateconst(j) /= 1) cycle
+               if (jaupdateconst(j) /= 1) then
+                  cycle
+               end if
 
                sedL = sed(j, k1)
                sedR = sed(j, k2)
 
                if (Limtyp == 7) then
-                  flux(j, L) = q1(L) * 0.5d0 * (sedR + sedL) ! central only for cursusdemo
+                  flux(j, L) = q1(L) * 0.5_dp * (sedR + sedL) ! central only for cursusdemo
                else if (Limtyp == 6) then
                   if (klnup(1, LL) /= 0) then ! used to detect disabled higher-order
                      ds2 = is * (sedR - sedL)
                      ds1 = is * (dsedx(j, ku) * csu(LL) + dsedy(j, ku) * snu(LL)) * Dx(LL)
-                     flux(j, L) = q1(L) * (sed(j, ku) + half * max(0d0, 1d0 - cf) * dlimitercentral(ds1, ds2, limtyp))
+                     flux(j, L) = q1(L) * (sed(j, ku) + half * max(0.0_dp, 1.0_dp - cf) * dlimitercentral(ds1, ds2, limtyp))
                   end if
                else if (limtyp == 9) then ! MC on non-equidistant mesh
-                  if (kk1L /= 0 .and. q1(L) > 0d0 .and. jaL > 0) then
+                  if (kk1L /= 0 .and. q1(L) > 0.0_dp .and. jaL > 0) then
                      sedkuL = sed(j, k1L) * sl1L + sed(j, k2L) * sl2L
                      ds2L = sed(j, k2) - sed(j, k1)
                      ds1L = (sed(j, k1) - sedkuL) * sl3L
 !                   sedL = sedL +      acl(LL) *max(0d0,1d0-cf) * dlimiter_nonequi(ds1L,ds2L,acl(LL),sl3L) * ds2L
-                     sedL = sedL + acl(LL) * max(0d0, 1d0 - cf) * dlimiter_nonequi(ds1L, ds2L, acl(LL), 1d0) * ds2L
+                     sedL = sedL + acl(LL) * max(0.0_dp, 1.0_dp - cf) * dlimiter_nonequi(ds1L, ds2L, acl(LL), 1.0_dp) * ds2L
                   end if
 
-                  if (kk1R /= 0 .and. q1(L) < 0d0 .and. jaR > 0) then
+                  if (kk1R /= 0 .and. q1(L) < 0.0_dp .and. jaR > 0) then
                      sedkuR = sed(j, k1R) * sl1R + sed(j, k2R) * sl2R
                      ds2R = sed(j, k1) - sed(j, k2)
                      ds1R = (sed(j, k2) - sedkuR) * sl3R
 !                   sedR = sedR + (1d0-acl(LL))*max(0d0,1d0-cf) * dlimiter_nonequi(ds1R,ds2R,1d0-acl(LL),sl3R) * ds2R
-                     sedR = sedR + (1d0 - acl(LL)) * max(0d0, 1d0 - cf) * dlimiter_nonequi(ds1R, ds2R, 1d0 - acl(LL), 1d0) * ds2R
+                     sedR = sedR + (1.0_dp - acl(LL)) * max(0.0_dp, 1.0_dp - cf) * dlimiter_nonequi(ds1R, ds2R, 1.0_dp - acl(LL), 1.0_dp) * ds2R
                   end if
 
                   flux(j, L) = QL * sedL + QR * sedR
                else
 
-                  if (kk1L /= 0 .and. q1(L) > 0d0 .and. jaL > 0) then
+                  if (kk1L /= 0 .and. q1(L) > 0.0_dp .and. jaL > 0) then
                      sedkuL = sed(j, k1L) * sl1L + sed(j, k2L) * sl2L
                      ds2L = sed(j, k2) - sed(j, k1)
                      ds1L = (sed(j, k1) - sedkuL) * sl3L
-                     sedL = sedL + acl(LL) * max(0d0, 1d0 - cf) * dlimiter(ds1L, ds2L, limtyp) * ds2L
+                     sedL = sedL + acl(LL) * max(0.0_dp, 1.0_dp - cf) * dlimiter(ds1L, ds2L, limtyp) * ds2L
                   end if
 
-                  if (kk1R /= 0 .and. q1(L) < 0d0 .and. jaR > 0) then
+                  if (kk1R /= 0 .and. q1(L) < 0.0_dp .and. jaR > 0) then
                      sedkuR = sed(j, k1R) * sl1R + sed(j, k2R) * sl2R
                      ds2R = sed(j, k1) - sed(j, k2)
                      ds1R = (sed(j, k2) - sedkuR) * sl3R
-                     sedR = sedR + (1d0 - acl(LL)) * max(0d0, 1d0 - cf) * dlimiter(ds1R, ds2R, limtyp) * ds2R
+                     sedR = sedR + (1.0_dp - acl(LL)) * max(0.0_dp, 1.0_dp - cf) * dlimiter(ds1R, ds2R, limtyp) * ds2R
                   end if
 
                   flux(j, L) = QL * sedL + QR * sedR
@@ -293,7 +312,7 @@ contains
 !$OMP END PARALLEL DO
 
 !  diffusion
-      if (dicouv >= 0d0 .and. jalimitdiff /= 3) then
+      if (dicouv >= 0.0_dp .and. jalimitdiff /= 3) then
          number_limited_links = 0
          !$OMP PARALLEL DO                             &
          !$OMP PRIVATE(LL,dfac1,dfac2,Lb,Lt,L,k1,k2,fluxfacMaxL,fluxfacMaxR,j,difcoeff,fluxfac,diuspL,flux_max_limit,difsed_const) &
@@ -314,8 +333,8 @@ contains
                !dfac1 = 0.2d0
                !dfac2 = 0.2d0
 
-               dfac1 = 1d0 / dble(nd(ln(1, LL))%lnx)
-               dfac2 = 1d0 / dble(nd(ln(2, LL))%lnx)
+               dfac1 = 1.0_dp / real(nd(ln(1, LL))%lnx, kind=dp)
+               dfac2 = 1.0_dp / real(nd(ln(2, LL))%lnx, kind=dp)
             end if
 
             if (jadiusp == 1) then
@@ -323,7 +342,7 @@ contains
             else
                diuspL = dicouv
             end if
-         
+
             Lb = Lbot(LL)
             Lt = Ltop(LL)
             do L = Lb, Lt
@@ -334,16 +353,18 @@ contains
                   fluxfacMaxR = dfac2 * (vol1(k2) / dt_loc - sqi(k2))
                end if
                do j = 1, NUMCONST
-                   
-                  if (jaupdateconst(j) /= 1) cycle
 
-                  if (PRESENT(difsedsp)) then
-                     difsed_const=difsedsp(j,LL)
+                  if (jaupdateconst(j) /= 1) then
+                     cycle
+                  end if
+
+                  if (present(difsedsp)) then
+                     difsed_const = difsedsp(j, LL)
                   else
-                     difsed_const=difsed(j)
-                  endif
-                  
-                  difcoeff = sigdifi(j) * viu(L) + difsed_const + diuspL ! without smagorinsky, viu is 0 ,
+                     difsed_const = difsed(j)
+                  end if
+
+                  difcoeff = sigdifi(j) * viu(L) + difsed_const + background_diffusion_factor_local(j) * diuspL ! without smagorinsky, viu is 0 ,
                   ! difsed only contains molecular value,
                   ! so then you only get user specified value
 
@@ -351,12 +372,14 @@ contains
                   if (jalimitdiff == 1) then
                      flux_max_limit = min(fluxfacMaxL, fluxfacMaxR)
                      if (fluxfac > flux_max_limit) then
-                        fluxfac = flux_max_limit ! zie Borsboom sobek note
-                        !$omp atomic
-                        number_limited_links = number_limited_links + 1
+                        fluxfac = flux_max_limit
+                        if (is_3d_layer_in_current_partition(k1) .and. is_3d_layer_in_current_partition(k2)) then
+                           !$omp atomic
+                           number_limited_links = number_limited_links + 1
+                        end if
                      end if
                   end if
-                  fluxfac = max(fluxfac, 0d0)
+                  fluxfac = max(fluxfac, 0.0_dp)
                   if (jacreep /= 1) then
                      flux(j, L) = flux(j, L) - fluxfac * (sed(j, k2) - sed(j, k1))
                   else
@@ -389,7 +412,9 @@ contains
          end if
       end if
 
-      if (timon) call timstop(ithndl)
+      if (timon) then
+         call timstop(ithndl)
+      end if
       return
 
    end subroutine comp_fluxhor3D

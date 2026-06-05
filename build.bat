@@ -5,6 +5,7 @@ rem Default arguments.
 rem No default value means that the option is a flag that is either on or off.
 rem A variable that can have arguments requires a default value (can be "")
 set config=fm-suite
+set sln_extension=sln
 set build=
 set vs=0
 set coverage=
@@ -74,7 +75,7 @@ if !ERRORLEVEL! NEQ 0 exit /B %~1
 
 
 echo.
-echo Generated Visual Studio solution file: %root%\build_%config%\%config%.sln
+echo Generated Visual Studio solution file: %root%\build_%config%\%config%.%sln_extension%
 echo Finished
 goto :end
 
@@ -111,13 +112,6 @@ rem =================================
 
     if !-help! == 1 (
         goto :usage
-    )
-
-    set configs="all fm-suite d3d4-suite dflowfm_interacter dimr drr dwaq dwaves flow2d3d swan tests tools tools_gpl"
-    set "modified=!configs:%-config%=!"
-    if !modified!==!configs! (
-        echo ERROR: Configuration !-config! not recognized
-        goto :argument_error
     )
 
     set config=!-config!
@@ -197,6 +191,10 @@ rem =================================
         set oneapi=24
         echo Found: Intel Fortran 2024
     )
+    if NOT "%IFORT_COMPILER25%" == "" (
+        set oneapi=25
+        echo Found: Intel Fortran 2025
+    )
 
     if "!oneapi!" == "" (
         echo Warning: Could not find Intel OneAPI version in environment.
@@ -242,6 +240,12 @@ rem =================================
     if "%vs2022_found%" == "true" (
         set vs=2022
         echo Found: VisualStudio 17 2022
+    )
+
+    if "%VisualStudioVersion%" == "18.0" (
+        set vs=2026
+        set sln_extension=slnx
+        echo Found: VisualStudio 18 2026
     )
 
     if "!vs!" == "0" (
@@ -308,6 +312,9 @@ rem =======================
     if "!vs!" == "2022" (
         set generator="Visual Studio 17 2022"
     )
+    if "!vs!" == "2026" (
+        set generator="Visual Studio 18 2026"
+    )
     set cmake_generator_arg=
     if not "!generator!" == "" (
         set "cmake_generator_arg=-G !generator!"
@@ -366,7 +373,7 @@ rem =======================
 :insert_coverage
     rem Insert options to implement the build objects with hooks for the code-coverage tool.
     rem This code is running from within build_%~1
-    python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.sln
+    python %root%\src\scripts_lgpl\win64\testcoverage\addcovoptions.py %~1.%sln_extension%
 
 rem =======================
 rem === Build =============
@@ -417,7 +424,7 @@ rem =======================
     echo     The following actions will be executed:
     echo     - Create directory 'build_^<CONFIG^>', where ^<CONFIG^> can be specified by the -config option.
     echo       Delete it first when it already exists, unless -keep_build is specified
-    echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln' inside 'build_^<CONFIG^>'
+    echo     - Execute 'CMake ^<CONFIG^>' to create file '^<CONFIG^>.sln(x)' inside 'build_^<CONFIG^>'
     echo.
     echo [OPTIONS]: space separated list of options, sometimes followed by a value, in any order
     echo.
@@ -434,7 +441,6 @@ rem =======================
     echo   flow2d3d           : Delft3D-FLOW
     echo   swan               : SWAN
     echo   fbc                : FBC-tools
-    echo   tests
     echo   tools
     echo   tools_gpl
     echo.
@@ -442,13 +448,12 @@ rem =======================
     echo -coverage: Instrument object files for code-coverage tool (codecov).                  Example: -coverage
     echo -build: Run build and install steps after running cmake.                              Example: -build
     echo -vs: desired visual studio version.                                                   Example: -vs 2019
-    echo -compiler: desired Intel compiler, either ifort (default) or ifx.                     Example: -compiler ifx
+    echo -compiler: desired Intel compiler, either ifort or ifx (default).                     Example: -compiler ifx
     echo -build_type: build optimization level.                                                Example: -build_type Release
 rem extra four spaces required for aligning Example, compensating for ^ characters:
     echo -keep_build: do not delete the 'build_^<CONFIG^>' and 'install_^<CONFIG^>' folders.       Example: -keep_build
     echo.
-    echo More info  : https://oss.deltares.nl/web/delft3d/source-code
-    echo About CMake: https://git.deltares.nl/oss/delft3d/-/tree/main/src/cmake/doc/README
+    echo More info  : https://github.com/Deltares/Delft3D
     echo.
     set ERRORLEVEL=1
     goto :end

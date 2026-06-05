@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,11 +44,11 @@ contains
 
    subroutine updateValuesOnLaterals(tim1, timestep)
       use m_flowtimes, only: ti_his, time_his, ti_hiss
-      use m_laterals, only: qqLat, numlatsg, num_layers, qplat, qplatCum, qplatCumPre, qplatAve, qLatReal, &
-                            qLatRealCum, qLatRealCumPre, qLatRealAve, n1latsg, n1latsg, n2latsg, nnlat
-      use precision
-      use m_alloc
-      use m_flowparameters, only: eps10
+      use m_laterals, only: qLatReal, numlatsg, n1latsg, n2latsg, nnlat, num_layers, qqLat, qplatCum, qplat, &
+                            qLatRealCum, qplatAve, qplatCumPre, qLatRealAve, qLatRealCumPre
+      use precision, only: dp, comparereal
+      use m_alloc, only: realloc
+      use m_flowparameters, only: EPS10
       use m_partitioninfo, only: jampi, reduce_double_sum, is_ghost_node
 
       real(kind=dp), intent(in) :: tim1 !< Current (new) time
@@ -58,12 +58,12 @@ contains
       real(kind=dp), allocatable :: qLatRealCumTmp(:), qLatRealMPI(:)
 
       ! If current time has not reached the history output start time yet, do not update
-      if (comparereal(tim1, ti_hiss, eps10) < 0) then
+      if (comparereal(tim1, ti_hiss, EPS10) < 0) then
          return
       end if
 
       ! Compute realized discharge
-      qLatReal = 0d0
+      qLatReal = 0.0_dp
       ! sum over 3rd dimension of qqlat
       do i = 1, numlatsg
          do k1 = n1latsg(i), n2latsg(i)
@@ -80,7 +80,7 @@ contains
       end do
 
       ! At the starting time of history output, average discharge is 0, and skip the following computing
-      if (comparereal(tim1, ti_hiss, eps10) == 0) then
+      if (comparereal(tim1, ti_hiss, EPS10) == 0) then
          return
       end if
 
@@ -94,13 +94,13 @@ contains
       end do
 
       ! At the history output time, compute average discharge in the past His-interval
-      if (comparereal(tim1, time_his, eps10) == 0 .and. ti_his > 0) then
+      if (comparereal(tim1, time_his, EPS10) == 0 .and. ti_his > 0) then
          if (jampi == 1) then
-            call realloc(qLatRealMPI, numlatsg, keepExisting=.false., fill=0d0)
+            call realloc(qLatRealMPI, numlatsg, keepExisting=.false., fill=0.0_dp)
             call reduce_double_sum(numlatsg, qLatReal, qLatRealMPI)
             qLatReal(1:numlatsg) = qLatRealMPI(1:numlatsg)
 
-            call realloc(qLatRealCumTmp, numlatsg, keepExisting=.false., fill=0d0)
+            call realloc(qLatRealCumTmp, numlatsg, keepExisting=.false., fill=0.0_dp)
             call reduce_double_sum(numlatsg, qLatRealCum, qLatRealCumTmp)
          end if
          do i_lat = 1, numlatsg

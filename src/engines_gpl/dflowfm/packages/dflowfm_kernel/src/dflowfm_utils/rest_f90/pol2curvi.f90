@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -54,13 +54,11 @@ contains
       use m_tranfn2, only: tranfn2
       use m_get_polstartend, only: get_polstartend
       use precision, only: dp
-      use m_grid
-      use m_gridsettings
-      use m_alloc
-      use m_missing
-      use m_polygon
-      use m_qnerror
-      use m_increase_grid
+      use m_grid, only: mc, nc, mmax, nmax, xc, yc
+      use m_gridsettings, only: mfac, nfac
+      use m_polygon, only: npl, xpl, ypl
+      use m_qnerror, only: qnerror
+      use m_increase_grid, only: increasegrid
 
       integer, intent(in) :: i1, i2, i3 !< first, second and third corner point in polygon, respectively
       integer, intent(in) :: ja4 !< use polygon for fourth side (1) or not (0)
@@ -79,15 +77,23 @@ contains
 
       ierror = 1
 
-      if (NPL <= 4) goto 1234
+      if (NPL <= 4) then
+         goto 1234
+      end if
 
 !  get start and end pointers in polygon
       call get_polstartend(NPL, XPL, YPL, i1, istart, iend)
       numsubpol = iend - istart + 1
 
 !  get grid size and orientation
-      mcR = i2 - i1; if (mcR < 0) mcR = mcR + numsubpol
-      mcL = i1 - i2; if (mcL < 0) mcL = mcL + numsubpol
+      mcR = i2 - i1
+      if (mcR < 0) then
+         mcR = mcR + numsubpol
+      end if
+      mcL = i1 - i2
+      if (mcL < 0) then
+         mcL = mcL + numsubpol
+      end if
 
       if (mcR <= mcL) then
          idir = 1
@@ -97,8 +103,14 @@ contains
          mc = mcL + 1
       end if
 
-      ncR = i3 - i2; if (ncR < 0) ncR = ncR + numsubpol
-      ncL = i2 - i3; if (ncL < 0) ncL = ncL + numsubpol
+      ncR = i3 - i2
+      if (ncR < 0) then
+         ncR = ncR + numsubpol
+      end if
+      ncL = i2 - i3
+      if (ncL < 0) then
+         ncL = ncL + numsubpol
+      end if
 
       if (idir == 1) then
          nc = ncR + 1
@@ -108,8 +120,12 @@ contains
 
 !  get fourth corner index
       i4 = i3 + idir * (mc - 1)
-      if (i4 < istart) i4 = i4 + numsubpol
-      if (i4 > iend) i4 = i4 - numsubpol
+      if (i4 < istart) then
+         i4 = i4 + numsubpol
+      end if
+      if (i4 > iend) then
+         i4 = i4 - numsubpol
+      end if
 
 !  check if polygon suffices
       if (ja4 == 1) then
@@ -137,15 +153,19 @@ contains
             xh(j, 1) = xpl(ipoint)
             yh(j, 1) = ypl(ipoint)
             ipoint = ipoint - idir
-            if (ipoint < istart) ipoint = ipoint + numsubpol
-            if (ipoint > iend) ipoint = ipoint - numsubpol
+            if (ipoint < istart) then
+               ipoint = ipoint + numsubpol
+            end if
+            if (ipoint > iend) then
+               ipoint = ipoint - numsubpol
+            end if
          end do
       else
 !     interpolate fourth side
          do i = 1, nc
-            xi = dble(i - 1) / dble(nc - 1)
-            xh(i, 1) = (1d0 - xi) * xpl(i1) + xi * xpl(i4)
-            yh(i, 1) = (1d0 - xi) * ypl(i1) + xi * ypl(i4)
+            xi = real(i - 1, kind=dp) / real(nc - 1, kind=dp)
+            xh(i, 1) = (1.0_dp - xi) * xpl(i1) + xi * xpl(i4)
+            yh(i, 1) = (1.0_dp - xi) * ypl(i1) + xi * ypl(i4)
          end do
       end if
 
@@ -154,8 +174,12 @@ contains
          xh(j, 2) = xpl(ipoint)
          yh(j, 2) = ypl(ipoint)
          ipoint = ipoint + idir
-         if (ipoint < istart) ipoint = ipoint + numsubpol
-         if (ipoint > iend) ipoint = ipoint - numsubpol
+         if (ipoint < istart) then
+            ipoint = ipoint + numsubpol
+         end if
+         if (ipoint > iend) then
+            ipoint = ipoint - numsubpol
+         end if
       end do
 
       ipoint = i1
@@ -163,8 +187,12 @@ contains
          xh(i, 3) = xpl(ipoint)
          yh(i, 3) = ypl(ipoint)
          ipoint = ipoint + idir
-         if (ipoint < istart) ipoint = ipoint + numsubpol
-         if (ipoint > iend) ipoint = ipoint - numsubpol
+         if (ipoint < istart) then
+            ipoint = ipoint + numsubpol
+         end if
+         if (ipoint > iend) then
+            ipoint = ipoint - numsubpol
+         end if
       end do
 
       ipoint = i4
@@ -172,8 +200,12 @@ contains
          xh(i, 4) = xpl(ipoint)
          yh(i, 4) = ypl(ipoint)
          ipoint = ipoint - idir
-         if (ipoint < istart) ipoint = ipoint + numsubpol
-         if (ipoint > iend) ipoint = ipoint - numsubpol
+         if (ipoint < istart) then
+            ipoint = ipoint + numsubpol
+         end if
+         if (ipoint > iend) then
+            ipoint = ipoint - numsubpol
+         end if
       end do
 
 !  increase grid
@@ -196,8 +228,12 @@ contains
       end if
 
 !  deallocate
-      if (allocated(xh)) deallocate (xh)
-      if (allocated(yh)) deallocate (yh)
+      if (allocated(xh)) then
+         deallocate (xh)
+      end if
+      if (allocated(yh)) then
+         deallocate (yh)
+      end if
 
       return
    end subroutine pol2curvi

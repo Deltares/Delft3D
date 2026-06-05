@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,9 +43,9 @@ contains
 
    subroutine grow_ijc(lowold, uppold, lowobj, uppobj, init)
       use precision, only: dp
-      use m_alloc
-      use m_grid
-      use m_missing
+      use m_alloc, only: realloc
+      use m_grid, only: ijc
+      use m_missing, only: imiss
 
       integer, dimension(2), intent(inout) :: lowold, uppold !< current array sizes
       integer, dimension(2), intent(in) :: lowobj, uppobj !< objective array sizes
@@ -60,8 +60,8 @@ contains
       real(kind=dp), parameter :: FAC = 1.2 ! growfactor of blocksizes
 
       if (init == 1) then
-         blocklow = (/1, 1/)
-         blockupp = (/1, 1/)
+         blocklow = [1, 1]
+         blockupp = [1, 1]
       end if
 
       lownew = lowold
@@ -81,10 +81,12 @@ contains
          end do
 
          do i = 1, 2
-            if (lownew(i) /= lowold(i)) &
-               blocklow(i) = ceiling(dble(blocklow(i)) * FAC)
-            if (uppnew(i) /= uppold(i)) &
-               blockupp(i) = ceiling(dble(blockupp(i)) * FAC)
+            if (lownew(i) /= lowold(i)) then
+               blocklow(i) = ceiling(real(blocklow(i), kind=dp) * FAC)
+            end if
+            if (uppnew(i) /= uppold(i)) then
+               blockupp(i) = ceiling(real(blockupp(i), kind=dp) * FAC)
+            end if
          end do
 
          call realloc(ijc, uppnew, lownew, fill=IMISS)

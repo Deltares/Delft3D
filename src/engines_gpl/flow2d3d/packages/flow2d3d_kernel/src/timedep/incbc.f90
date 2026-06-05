@@ -13,7 +13,7 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                & typbnd    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -213,7 +213,6 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
     integer                             :: n              ! Loop variable 
     integer                             :: n1             ! Pointer var. relating NOB to MNBND 
     integer                             :: nend           ! End coord. (in the y-dir.) of an open bound. section 
-    integer, external                   :: newlun
     integer                             :: ngg            ! N-coord. of the actual open boundary point, which may differ from the ori- ginal position due to grid staggering 
     integer                             :: np
     integer                             :: npbi           ! N index of point at boundary inside domain
@@ -884,7 +883,9 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                       gvvz1 = (3.0_fp*gvv(ngg-1,msta)      - gvv(ngg-2,msta)     ) / 2.0_fp
                       gvvz2 = (3.0_fp*gvv(ngg-1,msta-incx) - gvv(ngg-2,msta-incx)) / 2.0_fp
                    else
-                      ! nob(6) is always 1 or 2 for open boundaries that are not east or west boundaries
+                      ! nob(4) and nob(6) can't both be 0
+                      gvvz1 = 0.0_fp
+                      gvvz2 = 0.0_fp
                    endif
                 case (1)
                    if (nob(6,n) == 1) then
@@ -914,7 +915,9 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                          gvvz2 = (3.0_fp*gvv(ngg  ,msta-incx) - gvv(ngg-1,msta-incx)) / 2.0_fp
                       endif
                    else
-                      ! nob(6) is always 1 or 2 for open boundaries that are not east or west boundaries
+                      ! nob(6) can be 0 at the start/end of diagonal boundaries
+                      gvvz1 = 0.0_fp
+                      gvvz2 = 0.0_fp
                    endif
                 case (2)
                    if (nob(6,n) == 1) then
@@ -944,7 +947,9 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                          gvvz2 = (3.0_fp*gvv(ngg  ,msta-incx) - gvv(ngg-1,msta-incx)) / 2.0_fp
                       endif
                    else
-                      ! nob(6) is always 1 or 2 for open boundaries that are not east or west boundaries
+                      ! nob(6) can be 0 at the start/end of diagonal boundaries
+                      gvvz1 = 0.0_fp
+                      gvvz2 = 0.0_fp
                    endif
                 case default
                    ! nob(4) is always 0, 1 or 2
@@ -972,7 +977,9 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                       guuz1 = (3.0_fp*guu(nsta     ,mgg-1) - guu(nsta     ,mgg-2)) / 2.0_fp
                       guuz2 = (3.0_fp*guu(nsta-incy,mgg-1) - guu(nsta-incy,mgg-2)) / 2.0_fp
                    else
-                      ! nob(4) is always 1 or 2 for open boundaries that are not north or south boundaries
+                      ! nob(4) and nob(6) can't both be 0
+                      guuz1 = 0.0_fp
+                      guuz2 = 0.0_fp
                    endif
                 case (1)
                    if (nob(4,n) == 1) then
@@ -1002,7 +1009,9 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                          guuz2 = (3.0_fp*guu(nsta-incy,mgg)   - guu(nsta-incy,mgg-1)) / 2.0_fp
                       endif
                    else
-                      ! nob(4) is always 1 or 2 for open boundaries that are not north or south boundaries
+                      ! nob(4) can be 0 at the start/end of diagonal boundaries
+                      guuz1 = 0.0_fp
+                      guuz2 = 0.0_fp
                    endif
                 case (2)
                    if (nob(4,n) == 1) then
@@ -1032,7 +1041,9 @@ subroutine incbc(lundia    ,timnow    ,zmodel    ,nmax      ,mmax      , &
                          guuz2 = (3.0_fp*guu(nsta-incy,mgg)   - guu(nsta-incy,mgg-1)) / 2.0_fp
                       endif
                    else
-                      ! nob(4) is always 1 or 2 for open boundaries that are not north or south boundaries
+                      ! nob(4) can be 0 at the start/end of diagonal boundaries
+                      guuz1 = 0.0_fp
+                      guuz2 = 0.0_fp
                    endif
                 case default
                    ! nob(6) is always 0, 1 or 2

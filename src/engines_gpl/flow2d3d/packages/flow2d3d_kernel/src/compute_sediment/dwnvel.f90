@@ -6,7 +6,7 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
                 & deltav    ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -129,10 +129,8 @@ subroutine dwnvel(nmmax     ,kmax      ,icx       , &
           zumod(nm) = 0.0_fp
           cycle
        endif
-       
        call find_cell_centre_index(gdp,nm,icx,s1,dps,kcs,kcu,kmax,kcv,kfu,kfv,deltau,deltav,sig,&
                                 & nm_u1,nm_u2,nm_v1,nm_v2,kmx,ufac,vfac)
-      
        !
        uu = ufac * (  kfu(nm_u1)*u0eul(nm_u1, kmx)*hu(nm_u1) &
           &         + kfu(nm_u2)*u0eul(nm_u2, kmx)*hu(nm_u2)  )

@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,19 +43,17 @@ contains
    !> test iterative solver (as "mpitest")
    subroutine soltest(iCFL, icgsolver_loc, maxsubmatvecs, iepsdiff, iepscg)
       use m_make_matrix, only: make_matrix
-      use m_solve_guus, only: solve_matrix
+      use m_solve_guus, only: solve_matrix, pack_matrix
       use precision, only: dp
       use m_update_matrix, only: update_matrix
-      use m_partitioninfo
-      use m_timer
-      use m_flowgeom
+      use m_partitioninfo, only: jampi, jaoverlap, update_ghosts, itype_sall, idomain, my_rank, nghostlist_sall, ndomains, ighostlist_sall
+      use m_timer, only: jatimer, starttimer, itotal, stoptimer, gettimer, itotalsol, impicomm
+      use m_flowgeom, only: jarenumber, ndx, ndxi, nd
+      use m_flowparameters, only: icgsolver, epshu
+      use m_reduce, only: epsdiff, epscg, maxmatvecs, ccrsav, ccr
+      use m_flow, only: hu, realloc, s1, itsol
       use network_data, only: xzw
-      use m_flowparameters
-      use m_reduce
-      use m_flow
-      use m_alloc
       use m_flow_modelinit, only: flow_modelinit
-      use m_solve_guus, only: pack_matrix
 
       integer, intent(in) :: iCFL !< wave-based Courant number
       integer, intent(in) :: icgsolver_loc ! icgsolver (if > 0)
@@ -74,14 +72,14 @@ contains
       integer :: ierror
 
       jarenumber = 0
-      CFL = 10d0
+      CFL = 10.0_dp
 !      maxdge = 0d0
 !      icgsolver = 4
 !      ipre = 0
       Nruns = 1
 
-      if (iCFL > 0d0) then
-         CFL = dble(iCFL)
+      if (iCFL > 0.0_dp) then
+         CFL = real(iCFL, kind=dp)
       end if
 
 !     settings from command line
@@ -90,11 +88,11 @@ contains
       end if
 
       if (iepsdiff > 0) then
-         epsdiff = 10d0**(-iepsdiff)
+         epsdiff = 10.0_dp**(-iepsdiff)
       end if
 
       if (iepscg > 0) then
-         epscg = 10d0**(-iepscg)
+         epscg = 10.0_dp**(-iepscg)
       end if
 
       if (maxsubmatvecs > 0) then
@@ -148,12 +146,14 @@ contains
       allocate (dmask(Ndx))
 
 !     activate all cells
-      hu = epshu + 1d0
+      hu = epshu + 1.0_dp
 
 !     set exact solution
       sex = xzw
 
-      if (jatimer == 1) call starttimer(ITOTAL)
+      if (jatimer == 1) then
+         call starttimer(ITOTAL)
+      end if
 
 !!     prepare matrix
 !      if ( jatimer.eq.1 ) call starttimer(IREDUCE)
@@ -171,12 +171,12 @@ contains
 !     pack matrix
       call pack_matrix()
 
-      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0d0)
+      call realloc(ccrsav, ubound(ccr, 1), lbound(ccr, 1), keepExisting=.false., fill=0.0_dp)
       ccrsav = ccr
 
 !     solve system
       do irun = 1, Nruns
-         s1 = 0d0
+         s1 = 0.0_dp
          ccr = ccrsav
 
 !         if (icgsolver.eq.6) call setPETSCmatrixEntries()
@@ -185,10 +185,12 @@ contains
          call solve_matrix(s1, Ndx, itsol)
 
       end do
-      if (jatimer == 1) call stoptimer(ITOTAL)
+      if (jatimer == 1) then
+         call stoptimer(ITOTAL)
+      end if
 
 !     unmask all cells
-      dmask = 0d0
+      dmask = 0.0_dp
 
       if (jampi == 1) then
          call update_ghosts(ITYPE_SALL, 1, Ndx, s1, ierror)
@@ -196,7 +198,7 @@ contains
 !        mask all ghost cells
          do i = 1, Ndx
             if (idomain(i) /= my_rank) then
-               dmask(i) = 1d0
+               dmask(i) = 1.0_dp
             end if
          end do
 
@@ -204,10 +206,10 @@ contains
          call update_ghosts(ITYPE_SALL, 1, Ndx, dmask, ierror)
       end if
 
-      diffmax = 0d0
+      diffmax = 0.0_dp
       do i = 1, Ndxi
-         if (nd(i)%lnx > 0 .and. dmask(i) == 0d0) then
-            if (abs(s1(i) - sex(i)) > 1d-10) then
+         if (nd(i)%lnx > 0 .and. dmask(i) == 0.0_dp) then
+            if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
                continue
             end if
             diffmax = max(diffmax, abs(s1(i) - sex(i)))
@@ -216,7 +218,7 @@ contains
 
       do ii = 1, nghostlist_sall(ndomains - 1)
          i = ighostlist_sall(ii)
-         if (abs(s1(i) - sex(i)) > 1d-10) then
+         if (abs(s1(i) - sex(i)) > 1.0e-10_dp) then
             continue
          end if
       end do
@@ -230,8 +232,12 @@ contains
 
 1234  continue
 
-      if (allocated(sex)) deallocate (sex)
-      if (allocated(dmask)) deallocate (dmask)
+      if (allocated(sex)) then
+         deallocate (sex)
+      end if
+      if (allocated(dmask)) then
+         deallocate (dmask)
+      end if
 
       return
    end subroutine soltest

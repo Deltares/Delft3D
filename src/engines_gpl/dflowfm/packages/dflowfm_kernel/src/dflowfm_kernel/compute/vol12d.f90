@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,9 +51,10 @@ contains
       use m_addlink1d, only: addlink1D
       use m_addclosed_2d_walls, only: addclosed_2D_walls
       use m_flowgeom, only: ndx2d, ndx, lnx1d, kcu, wetlink2d, onlywetlinks, lnxi, lnx, wetlinkbnd, ja1d2dinternallinktype
-      use unstruc_channel_flow
-      use m_flow
-      use m_VolumeTables
+      use unstruc_channel_flow, only: usevolumetables, network, get_volume, get_surface
+      use m_flow, only: nonlin1d, nonlin2d, slotw1d, slotw2d, nonlin, vol1, s1, a1, s1m, a1m, nshiptxy, japressurehull, v1ship
+      use m_VolumeTables, only: vltb
+      use m_storage, only: t_storage
 
       implicit none
 
@@ -145,12 +146,16 @@ contains
 
       do L = lnxi + 1, lnx
          if (kcu(L) == -1) then
-            if (japerim == 0 .and. nonlin1D == 0) cycle
+            if (japerim == 0 .and. nonlin1D == 0) then
+               cycle
+            end if
             if (japerim == 1 .or. .not. useVolumeTables) then
                call addlink1D(L, japerim) ! 1D boundary links
             end if
          else
-            if (japerim == 0 .and. nonlin2D == 0) cycle
+            if (japerim == 0 .and. nonlin2D == 0) then
+               cycle
+            end if
             call addlink2D(L, japerim) ! 2D boundary links
          end if
       end do

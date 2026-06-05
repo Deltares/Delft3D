@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -51,11 +51,18 @@ contains
       real(kind=dp) :: vtot, roav, zz, rhok, bmin
       integer k, kk
 
-      upot = 0d0; ukin = 0d0; ueaa = 0d0; vtot = 0d0; roav = 0d0; bmin = 1d9
+      upot = 0.0_dp
+      ukin = 0.0_dp
+      ueaa = 0.0_dp
+      vtot = 0.0_dp
+      roav = 0.0_dp
+      bmin = 1.0e9_dp
 
       do kk = 1, ndx
          bmin = min(bmin, bl(kk))
-         if (hs(kk) == 0) cycle
+         if (hs(kk) == 0) then
+            cycle
+         end if
          do k = kbot(kk), ktop(kk)
             vtot = vtot + vol1(k) ! m3
             if (jasal > 0) then
@@ -65,17 +72,19 @@ contains
             end if
          end do
       end do
-      if (vtot == 0d0) then
+      if (vtot == 0.0_dp) then
          return
       end if
 
       roav = roav / vtot ! kg/m3
 
       do kk = 1, ndx
-         if (hs(kk) == 0) cycle
+         if (hs(kk) == 0) then
+            cycle
+         end if
          do k = kbot(kk), ktop(kk)
             if (kmx > 0) then
-               zz = (zws(k) + zws(k - 1)) * 0.5d0 - bmin ! m
+               zz = (zws(k) + zws(k - 1)) * 0.5_dp - bmin ! m
             else
                zz = s1(k) - bmin
             end if
@@ -86,7 +95,7 @@ contains
             end if
             ueaa = ueaa + vol1(k) * zz * (rho(k) - roav) ! kg.m
             upot = upot + vol1(k) * zz * rho(k) ! kg.m
-            ukin = ukin + vol1(k) * rho(k) * (ucx(k) * ucx(k) + ucy(k) * ucy(k)) * 0.5d0 ! kg.m2/s2
+            ukin = ukin + vol1(k) * rho(k) * (ucx(k) * ucx(k) + ucy(k) * ucy(k)) * 0.5_dp ! kg.m2/s2
          end do
       end do
 
@@ -94,8 +103,12 @@ contains
       upot = upot * ag / vtot
       ukin = ukin * 0.5 / vtot
 
-      if (upot0 == dmiss) upot0 = upot
-      if (ukin0 == dmiss) ukin0 = ukin
+      if (upot0 == dmiss) then
+         upot0 = upot
+      end if
+      if (ukin0 == dmiss) then
+         ukin0 = ukin
+      end if
 
 ! upot = upot - upot0
       !

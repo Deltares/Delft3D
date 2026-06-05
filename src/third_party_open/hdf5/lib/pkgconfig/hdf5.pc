@@ -1,0 +1,14 @@
+prefix=C:/checkouts/hdf5-hdf5-1_14_2/install
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: hdf5
+Description: HDF5 (Hierarchical Data Format 5) Software Library
+Version: 1.14.2
+
+Cflags: -I${includedir}
+Libs: -L${libdir}  -lhdf5
+Requires: 
+Libs.private:  -lhdf5  -lshlwapi -lC:/share/VS15/x64/lib/zlib.lib
+Requires.private: 

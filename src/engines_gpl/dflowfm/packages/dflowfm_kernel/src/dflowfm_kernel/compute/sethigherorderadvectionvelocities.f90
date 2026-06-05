@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,12 +43,11 @@ contains
 
    subroutine sethigherorderadvectionvelocities()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_sferic
+      use m_flowgeom, only: lnx, ln, acl, klnup, csu, snu, dx, slnup, dxi
+      use m_flow, only: limtypmom, kmx, qa, hs, chkadvd, ducxdx, ducxdy, ducydx, ducydy, ucx, ucy, u1, ucxu, ucyu, kbot, kmxn, kmxl, ktop
+      use m_sferic, only: jasfer3d
+      use m_get_Lbot_Ltop, only: getlbotltop
       use m_flowtimes, only: dts
-      use m_dslim
-      use m_get_Lbot_Ltop
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_nodup2linx, only: nodup2linx
@@ -59,7 +58,9 @@ contains
       real(kind=dp) :: half, sl1, sl2, sl3, cf, ucxku, ucyku, ds1x, ds1y, ds2x, ds2y
       real(kind=dp) :: dsx, dsy
 
-      if (limtypmom < 1) return
+      if (limtypmom < 1) then
+         return
+      end if
 
       if (kmx == 0) then
 
@@ -70,28 +71,41 @@ contains
          do L = 1, lnx ! upwind (supq) + limited high order (dsq)
 
             LL = L
-            if (qa(LL) /= 0d0) then
+            if (qa(LL) /= 0.0_dp) then
 
-               k1 = ln(1, L); k2 = ln(2, L)
+               k1 = ln(1, L)
+               k2 = ln(2, L)
 
                if (qa(LL) > 0) then
                   !   ->      ds1   ds2
-                  k = k1; kd = k2; is = 1; half = acl(LL); ip = 0 !   ->   ku     k     kd
+                  k = k1
+                  kd = k2
+                  is = 1
+                  half = acl(LL)
+                  ip = 0 !   ->   ku     k     kd
                   n12 = 1
                   ib = 0
                else
                   !   <-      ds2   ds1
-                  k = k2; kd = k1; is = -1; half = 1d0 - acl(LL); ip = 3 !   <-   kd     k     ku
+                  k = k2
+                  kd = k1
+                  is = -1
+                  half = 1.0_dp - acl(LL)
+                  ip = 3 !   <-   kd     k     ku
                   n12 = 2
                   ib = 2
                end if
 
-               if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) cycle
+               if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) then
+                  cycle
+               end if
 
                if (limtypmom == 6) then
 
 !         use klnup to check for disabled higher-order correction
-                  if (klnup(1, LL) == 0) cycle
+                  if (klnup(1, LL) == 0) then
+                     cycle
+                  end if
 
                   if (jasfer3D == 0) then
                      ! ds1x =  -ducdx(k)*is
@@ -105,7 +119,10 @@ contains
 
                else
 
-                  kku = klnup(1 + ip, LL); if (kku == 0) cycle
+                  kku = klnup(1 + ip, LL)
+                  if (kku == 0) then
+                     cycle
+                  end if
                   ku = abs(kku)
 
                   if (kku < 0) then
@@ -119,8 +136,12 @@ contains
                      end if
                   else
 
-                     ku2 = abs(klnup(2 + ip, LL)); if (ku2 == 0) cycle
-                     sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
+                     ku2 = abs(klnup(2 + ip, LL))
+                     if (ku2 == 0) then
+                        cycle
+                     end if
+                     sl1 = slnup(1 + ip, LL)
+                     sl2 = slnup(2 + ip, LL)
                      if (jasfer3D == 0) then
                         ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
                         ucyku = ucy(ku) * sl1 + ucy(ku2) * sl2
@@ -142,7 +163,7 @@ contains
                end if
 
                cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
-               cf = half * max(0d0, 1d0 - cf)
+               cf = half * max(0.0_dp, 1.0_dp - cf)
                if (jasfer3D == 0) then
                   ds2x = ucx(kd) - ucx(k)
                   ds2y = ucy(kd) - ucy(k)
@@ -151,16 +172,16 @@ contains
                   ds2y = nod2liny(LL, 3 - n12, ucx(kd), ucy(kd)) - nod2liny(LL, n12, ucx(k), ucy(k))
                end if
 
-!       if (abs(ds2x)  > eps10 .and. abs(ds1x) > eps10) then
+!       if (abs(ds2x)  > EPS10 .and. abs(ds1x) > EPS10) then
 !           ds = cf*dslim(ds1x, ds2x, limtypmom)  ! no cf, see belanger
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucxu(L)    =  ucxu(L)  + ds
 !           endif
 !       endif
 !
-!       if (abs(ds2y)  > eps10 .and. abs(ds1y) > eps10) then
+!       if (abs(ds2y)  > EPS10 .and. abs(ds1y) > EPS10) then
 !           ds =  cf*dslim(ds1y, ds2y, limtypmom)  ! no cf, see belanger
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucyu(L)    =  ucyu(L)  + ds
 !           endif
 !       endif
@@ -179,36 +200,49 @@ contains
 
          do LL = 1, lnx ! upwind (supq) + limited high order (dsq)
 
-            if (qa(LL) /= 0d0) then
+            if (qa(LL) /= 0.0_dp) then
 
                call getLbotLtop(LL, Lb, Lt)
 
                do L = Lb, Lt
 
-                  k1 = ln(1, L); k2 = ln(2, L)
+                  k1 = ln(1, L)
+                  k2 = ln(2, L)
 
                   if (qa(L) > 0) then
                      !   ->      ds1   ds2
-                     k = k1; kd = k2; is = 1; half = acl(LL); ip = 0 !   ->   ku     k     kd
+                     k = k1
+                     kd = k2
+                     is = 1
+                     half = acl(LL)
+                     ip = 0 !   ->   ku     k     kd
                      n12 = 1
                      ib = 0
 
                   else
                      !   <-      ds2   ds1
-                     k = k2; kd = k1; is = -1; half = 1d0 - acl(LL); ip = 3 !   <-   kd     k     ku
+                     k = k2
+                     kd = k1
+                     is = -1
+                     half = 1.0_dp - acl(LL)
+                     ip = 3 !   <-   kd     k     ku
                      n12 = 2
                      ib = 2
 
                   end if
 
-                  if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) cycle
+                  if (hs(ln(1, LL)) < Chkadvd .or. hs(ln(2, LL)) < Chkadvd) then
+                     cycle
+                  end if
 
                   if (limtypmom == 6) then
 !         ds1x =  -ducdx(k)*is
 !         ds1y =  -ducdy(k)*is
 
 !        use klnup to check for disabled higher-order correction
-                     if (klnup(1, LL) == 0) cycle
+                     if (klnup(1, LL) == 0) then
+                        cycle
+                     end if
 
 !         ds1x = (ducxdx(k)*csu(LL) + ducxdy(k)*snu(LL)) * is * Dx(LL)
 !         ds1y = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
@@ -218,8 +252,15 @@ contains
 
                   else
 
-                     kku = klnup(1 + ip, LL); if (kku == 0) cycle; kkua = abs(kku)
-                     ku = kbot(kkua) + kmxn(kkua) - (Lb + kmxL(LL) - L); if (ku < kbot(kkua) .or. ku > ktop(kkua)) cycle
+                     kku = klnup(1 + ip, LL)
+                     if (kku == 0) then
+                        cycle
+                     end if
+                     kkua = abs(kku)
+                     ku = kbot(kkua) + kmxn(kkua) - (Lb + kmxL(LL) - L)
+                     if (ku < kbot(kkua) .or. ku > ktop(kkua)) then
+                        cycle
+                     end if
 
                      if (kku < 0) then
 
@@ -234,9 +275,13 @@ contains
                      else
 
                         kkub = abs(klnup(2 + ip, LL))
-                        ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L); if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) cycle
+                        ku2 = kbot(kkub) + kmxn(kkub) - (Lb + kmxL(LL) - L)
+                        if (ku2 < kbot(kkub) .or. ku2 > ktop(kkub)) then
+                           cycle
+                        end if
 
-                        sl1 = slnup(1 + ip, LL); sl2 = slnup(2 + ip, LL)
+                        sl1 = slnup(1 + ip, LL)
+                        sl2 = slnup(2 + ip, LL)
 
                         if (jasfer3D == 0) then
                            ucxku = ucx(ku) * sl1 + ucx(ku2) * sl2
@@ -260,7 +305,7 @@ contains
                   end if
 
                   cf = dts * abs(u1(L)) * dxi(LL) ! cflj(L)  !cfli(k ) ! cflj(L)
-                  cf = half * max(0d0, 1d0 - cf)
+                  cf = half * max(0.0_dp, 1.0_dp - cf)
                   if (jasfer3D == 0) then
                      ds2x = ucx(kd) - ucx(k)
                      ds2y = ucy(kd) - ucy(k)
@@ -275,17 +320,17 @@ contains
                   !  ds1y_6 = (ducydx(k)*csu(LL) + ducydy(k)*snu(LL)) * is * Dx(LL)
                   ! END DEBUG
 
-!       if (abs(ds2x)  > eps10 .and. abs(ds1x) > eps10) then
+!       if (abs(ds2x)  > EPS10 .and. abs(ds1x) > EPS10) then
 !           ds = cf*dslim(ds1x, ds2x, limtypmom)
 !           ! BEGIN DEBUG
 !           !   ds_6 = cf*dslim(ds1x_6, ds2x, 6)
 !           ! END DEBUG
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucxu(L)    =  ucxu(L)  + ds
 !           endif
 !       endif
 !
-!       if (abs(ds2y)  > eps10 .and. abs(ds1y) > eps10) then
+!       if (abs(ds2y)  > EPS10 .and. abs(ds1y) > EPS10) then
 !           ds =  cf*dslim(ds1y, ds2y, limtypmom)
 !           ! BEGIN DEBUG
 !           !   ds_6 = cf*dslim(ds1y_6, ds2y, 6)
@@ -293,7 +338,7 @@ contains
 !           !       continue
 !           !    end if
 !           ! END DEBUG
-!           if (abs(ds) > eps10) then
+!           if (abs(ds) > EPS10) then
 !               ucyu(L)    =  ucyu(L)  + ds
 !           endif
 !       endif

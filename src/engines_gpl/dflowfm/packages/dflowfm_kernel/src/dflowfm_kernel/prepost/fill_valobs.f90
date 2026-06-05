@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,33 +43,54 @@ contains
 
    subroutine fill_valobs()
       use precision, only: dp
-      use m_linkstocentercartcomp
-      use m_flow
-      use m_flowtimes
-      use m_transport
+      use m_linkstocentercartcomp, only: linkstocentercartcomp
+      use m_flow, only: kmx, realloc, ndkx, jawave, no_waves, his_write_settings, ucmag, jaeulervel, &
+                        flow_without_waves, workx, taus, worky, jawaveswartdelwaq, jased, dmiss, javiusp, viclu, viusp, &
+                        vicouv, s1, nshiptxy, zsp, wave_surfbeat, ucx, ucy, zws, hs, epshu, ucz, jasal, temperature_model, &
+                        TEMPERATURE_MODEL_NONE, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
+                        potential_density, apply_thermobaricity, in_situ_density, squ, sqi, iturbulencemodel, vicwws, difwws, &
+                        drhodz, brunt_vaisala_coefficient, idensform, jarichardsononoutput, richs, hu, vicwwu, turkin1, tureps1, &
+                        rich, infiltrationmodel, dfm_hyd_infilt_const, dfm_hyd_infilt_horton, &
+                        infiltcap, infilt, qsunmap, qevamap, qconmap, qlongmap, qfrevamap, qfrconmap, qtotmap, &
+                        use_density
+      use m_flowtimes, only: handle_extra
+      use m_transport, only: constituents, isalt, itemp, itra1, ised1
+      use m_flowgeom, only: ndx, lnx, bl, nd, ln, wcl, bob, ba
+      use m_observations_data, only: valobs, numobs, nummovobs, kobs, lobs, ipnt_s1, ipnt_hs, ipnt_bl, ipnt_cmx, cmxobs, &
+                                     ipnt_wx, ipnt_wy, ipnt_patm, ipnt_waver, ipnt_waveh, ipnt_wavet, ipnt_waved, ipnt_wavel, ipnt_waveu, ipnt_taux, &
+                                     ipnt_tauy, ival_sbcx1, ival_sbcxn, ipnt_sbcx1, ival_sbcy1, ival_sbcyn, ipnt_sbcy1, ival_sscx1, ival_sscxn, &
+                                     ipnt_sscx1, ival_sscy1, ival_sscyn, ipnt_sscy1, ival_sbwx1, ival_sbwxn, ipnt_sbwx1, ival_sbwy1, ival_sbwyn, &
+                                     ipnt_sbwy1, ival_sswx1, ival_sswxn, ipnt_sswx1, ival_sswy1, ival_sswyn, ipnt_sswy1, ipnt_taub, ival_bodsed1, &
+                                     ival_bodsedn, ipnt_bodsed1, ipnt_dpsed, ival_msed1, ival_msedn, ipnt_msed1, ival_lyrfrac1, ival_lyrfracn, &
+                                     ipnt_lyrfrac1, ipnt_poros, ipnt_thlyr, ival_frac1, ival_fracn, ipnt_frac1, ipnt_mudfrac, ipnt_sandfrac, &
+                                     ival_mfluff1, ival_mfluffn, ipnt_mfluff1, ival_fixfac1, ival_fixfacn, ipnt_fixfac1, ival_hidexp1, ival_hidexpn, &
+                                     ipnt_hidexp1, ival_sour1, ival_sourn, ipnt_sour1, ival_sink1, ival_sinkn, ipnt_sink1, ival_wqb1, ival_wqbn, &
+                                     ipnt_wqb1, ipnt_ucxq, ipnt_ucyq, ipnt_zcs, ipnt_ucx, ipnt_ucy, ipnt_ucxst, ipnt_ucyst, ipnt_ucz, ipnt_sa1, &
+                                     ipnt_tem1, ipnt_viu, ipnt_rhop, ipnt_rho, ipnt_umag, ipnt_qmag, ival_tra1, ival_tran, ipnt_tra1, ival_hwq1, &
+                                     ival_hwqn, ipnt_hwq1, ival_wqb3d1, ival_wqb3dn, ipnt_wqb3d1, ival_sf1, ival_sfn, ipnt_sf1, ival_ws1, ival_wsn, &
+                                     ipnt_ws1, ipnt_sed, ipnt_smx, smxobs, ipnt_zws, ipnt_vicwws, ipnt_difwws, ipnt_bruv, ipnt_richs, ival_seddif1, &
+                                     ival_seddifn, ipnt_seddif1, ipnt_zwu, ipnt_vicwwu, ipnt_tkin, ipnt_teps, ipnt_rich, ipnt_rain, ipnt_airdensity, &
+                                     ipnt_infiltcap, ipnt_infiltact, ipnt_wind, ipnt_tair, ipnt_rhum, ipnt_clou, ipnt_qsun, ipnt_qeva, ipnt_qcon, &
+                                     ipnt_qlon, ipnt_qfre, ipnt_qfrc, ipnt_qtot, neighbour_nodes_obs, neighbour_weights_obs, intobs, xobs, yobs, namobs
+      use m_sediment, only: stm_included, stmpar, ustokes, hwav, twav, phiwav, rlabda, uorb, sedtra, fp, mtd, sed
+      use Timers, only: timon, timstrt, timstop
+      use m_gettaus, only: gettaus
+      use m_gettauswave, only: gettauswave
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getlbotltop
+      use m_get_Lbot_Ltop_max, only: getlbotltopmax
+      use m_get_layer_indices, only: getlayerindices
+      use m_get_layer_indices_l_max, only: getlayerindiceslmax
+      use m_reconstruct_ucz, only: reconstructucz
+      use m_get_ucx_ucy_eul_mag, only: getucxucyeulmag
+      use m_get_link1, only: getlink1
       use m_fm_wq_processes, only: kbx, wqbot, waqoutputs
-      use m_flowgeom
-      use m_observations_data
-      use m_sediment
-      use m_waves, only: hwav, twav, phiwav, rlabda, uorb, ustokes
       use m_xbeach_data, only: R
-      use m_ship
-      use Timers
-      use m_alloc
       use fm_statistical_output, only: model_is_3d
-      use m_gettaus
-      use m_gettauswave
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
-      use m_get_Lbot_Ltop_max
-      use m_get_layer_indices
-      use m_get_layer_indices_l_max
-      use m_reconstruct_ucz
-      use m_get_ucx_ucy_eul_mag
-      use m_get_link1
       use m_links_to_centers, only: links_to_centers
-      use m_setrho, only: setrhofixedp
-      use m_wind, only: wx, wy, jawind, japatm, patm, jarain, rain, airdensity, tair, rhum, clou
+      use m_wind, only: wx, wy, jawind, air_pressure_available, air_pressure, jarain, rain, air_density, air_temperature, relative_humidity, cloudiness
+      use fm_location_types
+      use messagehandling, only: LEVEL_WARN, msgbuf, mess      
 
       implicit none
 
@@ -77,42 +98,69 @@ contains
       integer :: link_id_nearest
       integer :: kmx_const, kk_const, nlyrs
       real(kind=dp) :: wavfac
-      real(kind=dp) :: dens, prsappr, drhodz, rhomea
+      real(kind=dp) :: dens
       real(kind=dp) :: ux, uy, um
       real(kind=dp), allocatable :: wa(:, :)
       real(kind=dp), allocatable :: frac(:, :)
       real(kind=dp), allocatable :: poros(:)
       real(kind=dp), allocatable :: ueux(:)
       real(kind=dp), allocatable :: ueuy(:)
+      real(kind=dp), allocatable :: water_depth(:)
+      real(kind=dp), allocatable :: ship_level(:)
+      real(kind=dp), allocatable :: cell_z_centers(:)
       real(kind=dp), allocatable :: vius(:) !< Flowlink-averaged horizontal viscosity (viu) at s-point
 
       kmx_const = kmx
+      if (kmx == 0) then
+         kmx_const = 1 ! to make numbering work
+      end if
       nlyrs = 0
 
-      if (timon) call timstrt("fill_valobs", handle_extra(55))
-      !
-      if (.not. allocated(ueux)) then
-         call realloc(ueux, ndkx, keepExisting=.false., fill=0d0)
-         call realloc(ueuy, ndkx, keepExisting=.false., fill=0d0)
+      if (timon) then
+         call timstrt("fill_valobs", handle_extra(55))
       end if
       !
-      if (jawave > 0) then
-         if (jahissigwav == 0) then
-            wavfac = 1d0
+      if (.not. allocated(ueux)) then
+         call realloc(ueux, ndkx, keepExisting=.false., fill=0.0_dp)
+         call realloc(ueuy, ndkx, keepExisting=.false., fill=0.0_dp)
+      end if
+      if (.not. allocated(water_depth)) then
+         ! Allocate as 2D arry for water levels
+         call realloc(water_depth, ndx, keepExisting=.false., fill=0.0_dp)
+         water_depth = s1 - bl
+      end if
+      if (model_is_3D() .and. .not. allocated(cell_z_centers)) then
+         ! Allocate as 2D arry for cell z centers
+         call realloc(cell_z_centers, ndkx, keepExisting=.false., fill=0.0_dp)
+         do j = 2, ndkx
+            cell_z_centers(j) = 0.5_dp * (zws(j) + zws(j - 1))
+         end do
+
+      end if
+      if ((nshiptxy > 0) .and. allocated(zsp) .and. (.not. allocated(ship_level))) then
+         call realloc(ship_level, ndx, keepExisting=.false., fill=0.0_dp)
+         ship_level = s1 + zsp
+      end if
+
+      if (jawave > NO_WAVES) then
+         if (his_write_settings%sigwav == 0) then
+            wavfac = 1.0_dp
          else
-            wavfac = sqrt(2d0)
+            wavfac = sqrt(2.0_dp)
          end if
-         if (allocated(wa)) deallocate (wa)
+         if (allocated(wa)) then
+            deallocate (wa)
+         end if
          allocate (wa(1:2, 1:max(kmx, 1)))
       end if
 
       ! get velocities here (and not at velocity writing)
-      if (jahistaucurrent > 0 .or. jahisvelocity > 0 .or. jahisvelvec > 0) then
-         call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, jahisvelocity)
+      if (his_write_settings%taucurrent > 0 .or. his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
+         call getucxucyeulmag(ndkx, ueux, ueuy, ucmag, jaeulervel, his_write_settings%velocity)
       end if
 
-      if (jahistaucurrent > 0) then
-         if ((jawave == 0 .or. flowWithoutWaves)) then
+      if (his_write_settings%taucurrent > 0) then
+         if ((jawave == NO_WAVES .or. flow_without_waves)) then
             ! fill taus
             call gettaus(1, 1)
 
@@ -120,14 +168,15 @@ contains
             if (kmx == 0) then
 
                do k = 1, ndx
-                  workx(k) = taus(k) * ueux(k) / max(ucmag(k), 1d-4)
-                  worky(k) = taus(k) * ueuy(k) / max(ucmag(k), 1d-4)
+                  workx(k) = taus(k) * ueux(k) / max(ucmag(k), 1.0e-4_dp)
+                  worky(k) = taus(k) * ueuy(k) / max(ucmag(k), 1.0e-4_dp)
                end do
             else
                do k = 1, ndx
                   call getkbotktop(k, kb, kt)
-                  ux = ueux(kb); uy = ueuy(kb)
-                  um = max(hypot(ux, uy), 1d-4)
+                  ux = ueux(kb)
+                  uy = ueuy(kb)
+                  um = max(hypot(ux, uy), 1.0e-4_dp)
                   workx(k) = taus(k) * ux / um
                   worky(k) = taus(k) * uy / um
                end do
@@ -139,16 +188,20 @@ contains
       !
       if (stm_included .and. jased > 0) then
          if (stmpar%morlyr%settings%iunderlyr == 2) then
-            if (allocated(frac)) deallocate (frac)
+            if (allocated(frac)) then
+               deallocate (frac)
+            end if
             allocate (frac(stmpar%lsedtot, 1:stmpar%morlyr%settings%nlyr))
             frac = dmiss
-            if (allocated(poros)) deallocate (poros)
+            if (allocated(poros)) then
+               deallocate (poros)
+            end if
             allocate (poros(1:stmpar%morlyr%settings%nlyr))
             poros = dmiss
          end if
       end if
 
-      if (jahistur > 0) then
+      if (his_write_settings%tur > 0) then
          if (.not. allocated(vius)) then
             allocate (vius(ndkx))
             ! Set initial value of horizontal viscosity to user-defined value
@@ -171,9 +224,25 @@ contains
       end if
 
       valobs = DMISS
+
       do i = 1, numobs + nummovobs
          k = max(kobs(i), 1)
          link_id_nearest = lobs(i)
+         if ((intobs(i) == 0) .or. (neighbour_nodes_obs(1, i) == 0)) then
+            ! Treat snapped stations as interpolated ones!
+            ! And treat interpolated ones that could not have been interpolated as snapped ones (because they are out of interpolation boundaries)
+            if (intobs(i) /= 0 .and. kobs(i) /= 0) then
+               write (msgbuf, '(a, a, a, f0.10, a, f0.10, a)') "Unable to interpolate ", trim(namobs(i)), " (", xobs(i), ", ", yobs(i), ").  It is probably located near the grid boundary and therefore snapped."
+               call mess(LEVEL_WARN, msgbuf)
+            end if
+            neighbour_nodes_obs(1, i) = k
+            neighbour_nodes_obs(2, i) = k
+            neighbour_nodes_obs(3, i) = k
+            neighbour_weights_obs(1, i) = 1.0
+            neighbour_weights_obs(2, i) = 0.0
+            neighbour_weights_obs(3, i) = 0.0
+         end if
+
          if (kobs(i) > 0) then ! rely on reduce_kobs to have selected the right global flow nodes
 
             if (model_is_3D()) then
@@ -186,56 +255,117 @@ contains
                nlayb = 1
             end if
 
-            if (jawave > 0 .and. .not. flowWithoutWaves) then
-               wa = 0d0
+            if (jawave > NO_WAVES .and. .not. flow_without_waves) then
+               wa = 0.0_dp
                call linkstocentercartcomp(k, ustokes, wa) ! wa now 2*1 value or 2*1 vertical slice
             end if
 
-!        store values in valobs work array
             valobs(i, :) = dmiss ! Intended to have dmiss on inactive layers for output.
-            ! It is taken care of in subroutine reduce_valobs for parallel computation.
-            valobs(i, IPNT_S1) = s1(k)
+            ! Fill valobs: Start with interpolateds values of hydrodynamic quantities needed for off-line nesting
+            !              (water levels, velocities, salinity and temperature). Treat other quantities (water quality, morphology, turbulence) as before (snapped)
+            !
+            ! Water levels
+
+            call interpolate_and_fill_valobs(s1, i, IPNT_S1, UNC_LOC_S)
+
             if (nshiptxy > 0) then
                if (allocated(zsp)) then
-                  valobs(i, IPNT_S1) = valobs(i, IPNT_S1) + zsp(k)
+                  call interpolate_and_fill_valobs(ship_level, i, IPNT_S1, UNC_LOC_S)
                end if
             end if
 
-            valobs(i, IPNT_HS) = s1(k) - bl(k)
+            ! Water Depth
+            call interpolate_and_fill_valobs(water_depth, i, IPNT_HS, UNC_LOC_S)
 
-            valobs(i, IPNT_BL) = bl(k)
-
+            ! Bed level
+            call interpolate_and_fill_valobs(bl, i, IPNT_BL, UNC_LOC_S)
             valobs(i, IPNT_CMX) = cmxobs(i)
+
+            ! For now here: interpolate velocities, salinity and temperature (not within loop from kb to ke, taken care of in interpolate horizontal)
+
+            ! Horizontal velocities (3D)
+            if (his_write_settings%velocity > 0 .or. his_write_settings%velvec > 0) then
+               call interpolate_and_fill_valobs(ueux, i, IPNT_UCX, UNC_LOC_S3D)
+               call interpolate_and_fill_valobs(ueuy, i, IPNT_UCY, UNC_LOC_S3D)
+            end if
+
+            ! Vertical velocities (3D)
+            if (model_is_3D()) then
+               call interpolate_and_fill_valobs(ucz, i, IPNT_UCZ, UNC_LOC_S3D)
+            end if
+
+            ! Velocity magnitude (3D)
+            if (his_write_settings%velocity > 0) then
+               call interpolate_and_fill_valobs(ucmag, i, IPNT_UMAG, UNC_LOC_S3D)
+            end if
+
+            ! Depth averaged velocities (first ndx points of ucx/ucy array)
+            if (model_is_3D()) then
+               call interpolate_and_fill_valobs(ucx, i, IPNT_UCXQ, UNC_LOC_S)
+               call interpolate_and_fill_valobs(ucy, i, IPNT_UCYQ, UNC_LOC_S)
+            end if
+
+            ! Salinity (interpolated)
+            if (jasal > 0) then
+               call interpolate_and_fill_valobs(constituents(isalt, :), i, IPNT_SA1, UNC_LOC_S3D)
+            end if
+
+            ! Temperature
+            ! if (jatem > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+               call interpolate_and_fill_valobs(constituents(itemp, :), i, IPNT_TEM1, UNC_LOC_S3D)
+            end if
+
+            ! Finally; vertical positions
+            ! Maybe not the right place to do this, fille interfaces with bed level and water surface in case of 2d model
+
+            if (model_is_3D()) then
+               !       interface
+               call interpolate_and_fill_valobs(zws, i, IPNT_ZWS, UNC_LOC_W)
+               call interpolate_and_fill_valobs(cell_z_centers, i, IPNT_ZCS, UNC_LOC_S3D)
+            else
+               valobs(i, IPNT_ZWS) = valobs(i, IPNT_BL)
+               valobs(i, IPNT_ZWS + 1) = valobs(i, IPNT_S1)
+               valobs(i, IPNT_ZCS) = 0.5_dp * (valobs(i, IPNT_BL) + valobs(i, IPNT_S1))
+            end if
+
+            ! Frome here: everything as snapped!!!
             if (jawind > 0) then
-               valobs(i, IPNT_wx) = 0d0
-               valobs(i, IPNT_wy) = 0d0
+               valobs(i, IPNT_wx) = 0.0_dp
+               valobs(i, IPNT_wy) = 0.0_dp
                do LL = 1, nd(k)%lnx
                   LLL = abs(nd(k)%ln(LL))
-                  k1 = ln(1, LLL); k2 = ln(2, LLL)
-                  k3 = 1; if (nd(k)%ln(LL) > 0) k3 = 2
+                  k1 = ln(1, LLL)
+                  k2 = ln(2, LLL)
+                  k3 = 1
+                  if (nd(k)%ln(LL) > 0) then
+                     k3 = 2
+                  end if
                   valobs(i, IPNT_wx) = valobs(i, IPNT_wx) + wx(LLL) * wcL(k3, LLL)
                   valobs(i, IPNT_wy) = valobs(i, IPNT_wy) + wy(LLL) * wcL(k3, LLL)
                end do
             end if
-            if (jaPATM > 0 .and. allocated(patm)) then
-               valobs(i, IPNT_PATM) = PATM(k)
+            if (air_pressure_available .and. allocated(air_pressure)) then
+               valobs(i, IPNT_PATM) = air_pressure(k)
             end if
 
-            if (jawave == 4 .and. allocated(R)) then
+            if (jawave == WAVE_SURFBEAT .and. allocated(R)) then
                valobs(i, IPNT_WAVER) = R(k)
             end if
 
-            if (jawave > 0 .and. allocated(hwav)) then
+            call collect_ice_values(valobs, i, k)
+
+            if (jawave > NO_WAVES .and. allocated(hwav)) then
                valobs(i, IPNT_WAVEH) = hwav(k) * wavfac
                valobs(i, IPNT_WAVET) = twav(k)
-               if (.not. flowWithoutWaves) then
-                  valobs(i, IPNT_WAVED) = modulo(270d0 - phiwav(k), 360d0) ! Direction from
+               if (.not. flow_without_waves) then
+                  valobs(i, IPNT_WAVED) = modulo(270.0_dp - phiwav(k), 360.0_dp) ! Direction from
                   valobs(i, IPNT_WAVEL) = rlabda(k)
                   valobs(i, IPNT_WAVEU) = uorb(k)
                end if
             end if
 
-            if (jahistaucurrent > 0) then
+            if (his_write_settings%taucurrent > 0) then
                valobs(i, IPNT_TAUX) = workx(k)
                valobs(i, IPNT_TAUY) = worky(k)
             end if
@@ -257,7 +387,7 @@ contains
                   ii = j - IVAL_SSCY1 + 1
                   valobs(i, IPNT_SSCY1 + ii - 1) = sedtra%sscy(k, ii)
                end do
-               if (jawave > 0 .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                   do j = IVAL_SBWX1, IVAL_SBWXN
                      ii = j - IVAL_SBWX1 + 1
                      valobs(i, IPNT_SBWX1 + ii - 1) = sedtra%sbwx(k, ii)
@@ -297,13 +427,13 @@ contains
                            frac(l, n) = stmpar%morlyr%state%msed(l, n, k) / (dens * stmpar%morlyr%state%svfrac(n, k) * &
                                                                              stmpar%morlyr%state%thlyr(n, k))
                         else
-                           frac(l, n) = 0d0
+                           frac(l, n) = 0.0_dp
                         end if
                      end do
                   end do
                   !
                   if (stmpar%morlyr%settings%iporosity > 0) then
-                     poros = 1d0 - stmpar%morlyr%state%svfrac(:, k)
+                     poros = 1.0_dp - stmpar%morlyr%state%svfrac(:, k)
                   end if
                   !
                   do klay = 1, nlyrs
@@ -365,24 +495,10 @@ contains
                end do
             end if
 
-            if (model_is_3D()) then
-               valobs(i, IPNT_UCXQ) = ucx(k)
-               valobs(i, IPNT_UCYQ) = ucy(k)
-            end if
-
             do kk = kb, kt
                klay = kk - kb + nlayb
 
-               if (model_is_3D()) then
-                  valobs(i, IPNT_ZCS + klay - 1) = 0.5d0 * (zws(kk) + zws(kk - 1))
-               end if
-
-               if (jahisvelocity > 0 .or. jahisvelvec > 0) then
-                  valobs(i, IPNT_UCX + klay - 1) = ueux(kk)
-                  valobs(i, IPNT_UCY + klay - 1) = ueuy(kk)
-               end if
-
-               if (jawave > 0 .and. .not. flowWithoutWaves) then
+               if (jawave > NO_WAVES .and. .not. flow_without_waves) then
                   if (hs(k) > epshu) then
                      if (kmx == 0) then
                         kk_const = 1
@@ -397,31 +513,18 @@ contains
                if (model_is_3D()) then
                   valobs(i, IPNT_UCZ + klay - 1) = ucz(kk)
                end if
-               if (jasal > 0) then
-                  valobs(i, IPNT_SA1 + klay - 1) = constituents(isalt, kk)
-               end if
-               if (jatem > 0) then
-                  valobs(i, IPNT_TEM1 + klay - 1) = constituents(itemp, kk)
-               end if
-               if (jahistur > 0) then
+
+               if (his_write_settings%tur > 0) then
                   valobs(i, IPNT_VIU + klay - 1) = vius(kk)
                end if
-               if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
-                  if (density_is_pressure_dependent()) then
-                     valobs(i, IPNT_RHOP + klay - 1) = setrhofixedp(kk, 0d0)
-                     valobs(i, IPNT_RHO + klay - 1) = rho(kk)
-                  else
-                     valobs(i, IPNT_RHOP + klay - 1) = rho(kk)
+               if (use_density() .and. his_write_settings%rho > 0) then
+                  valobs(i, IPNT_RHOP + klay - 1) = potential_density(kk)
+                  if (apply_thermobaricity) then
+                     valobs(i, IPNT_RHO + klay - 1) = in_situ_density(kk)
                   end if
                end if
-               if (jahisvelocity > 0) then
-                  valobs(i, IPNT_UMAG + klay - 1) = ucmag(kk)
-               end if
-               valobs(i, IPNT_QMAG + klay - 1) = 0.5d0 * (squ(kk) + sqi(kk))
 
-               if (kmx == 0) then
-                  kmx_const = 1 ! to make numbering below work
-               end if
+               valobs(i, IPNT_QMAG + klay - 1) = 0.5_dp * (squ(kk) + sqi(kk))
 
                if (IVAL_TRA1 > 0) then
                   do j = IVAL_TRA1, IVAL_TRAN
@@ -470,22 +573,21 @@ contains
                call getlayerindices(k, nlayb, nrlay)
                do kk = kb - 1, kt
                   klay = kk - kb + nlayb + 1
-                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
-                  if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                  ! Taken care of by interpolate_horizontal
+!                  valobs(i, IPNT_ZWS + klay - 1) = zws(kk)
+                  if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
                      valobs(i, IPNT_VICWWS + klay - 1) = vicwws(kk)
+                     valobs(i, IPNT_DIFWWS + klay - 1) = difwws(kk)
                   end if
-                  if ((jasal > 0 .or. jatem > 0 .or. jased > 0) .and. jahisrho > 0) then
+                  if (use_density() .and. his_write_settings%rho > 0) then
                      if (zws(kt) - zws(kb - 1) > epshu .and. kk > kb - 1 .and. kk < kt) then
-                        if (density_is_pressure_dependent()) then
-                           prsappr = ag * rhomean * (zws(kt) - zws(kk))
-                           drhodz = (setrhofixedp(kk + 1, prsappr) - setrhofixedp(kk, prsappr)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
-                        else
-                           drhodz = (rho(kk + 1) - rho(kk)) / max(0.5d0 * (zws(kk + 1) - zws(kk - 1)), epshs)
-                        end if
-                        rhomea = 0.5d0 * (rho(kk + 1) + rho(kk))
-                        valobs(i, IPNT_BRUV + klay - 1) = -ag * drhodz / rhomea
+                        valobs(i, IPNT_BRUV + klay - 1) = drhodz(kk) * brunt_vaisala_coefficient
                      end if
                   end if
+                  if (idensform > 0 .and. jaRichardsononoutput > 0) then
+                     valobs(i, IPNT_RICHS + klay - 1) = richs(kk)
+                  end if
+
                   if (IVAL_WS1 > 0) then
                      do j = IVAL_WS1, IVAL_WSN
                         ii = j - IVAL_WS1 + 1
@@ -506,10 +608,10 @@ contains
                   do L = Lb - 1, Lt
                      klay = L - Lb + nlaybL + 1
                      valobs(i, IPNT_ZWU + klay - 1) = min(bob(1, link_id_nearest), bob(2, link_id_nearest)) + hu(L)
-                     if (iturbulencemodel >= 2 .and. jahistur > 0) then
+                     if (iturbulencemodel >= 2 .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_VICWWU + klay - 1) = vicwwu(L)
                      end if
-                     if (iturbulencemodel >= 3 .and. jahistur > 0) then
+                     if (iturbulencemodel >= 3 .and. his_write_settings%tur > 0) then
                         valobs(i, IPNT_TKIN + klay - 1) = turkin1(L)
                         valobs(i, IPNT_TEPS + klay - 1) = tureps1(L)
                      end if
@@ -521,51 +623,48 @@ contains
             end if
 
 !        Rainfall
-            if (jarain > 0 .and. jahisrain > 0) then
+            if (jarain > 0 .and. his_write_settings%rain > 0) then
                valobs(i, IPNT_RAIN) = rain(k)
             end if
 
-            if (allocated(airdensity) .and. jahis_airdensity > 0) then
-               valobs(i, IPNT_AIRDENSITY) = airdensity(k)
+            if (allocated(air_density) .and. his_write_settings%airdensity > 0) then
+               valobs(i, IPNT_AIRDENSITY) = air_density(k)
             end if
 
 !        Infiltration
-            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. jahisinfilt > 0) then
-               valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1d3 * 3600d0 ! m/s -> mm/hr
-               if (ba(k) > 0d0) then
-                  valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1d3 * 3600d0 ! m/s -> mm/hr
+            if ((infiltrationmodel == DFM_HYD_INFILT_CONST .or. infiltrationmodel == DFM_HYD_INFILT_HORTON) .and. his_write_settings%infilt > 0) then
+               valobs(i, IPNT_INFILTCAP) = infiltcap(k) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
+               if (ba(k) > 0.0_dp) then
+                  valobs(i, IPNT_INFILTACT) = infilt(k) / ba(k) * 1.0e3_dp * 3600.0_dp ! m/s -> mm/hr
                else
-                  valobs(i, IPNT_INFILTACT) = 0d0
+                  valobs(i, IPNT_INFILTACT) = 0.0_dp
                end if
             end if
 
 !        Heatflux
-            if (jatem > 0 .and. jahisheatflux > 0) then
+            if (temperature_model /= TEMPERATURE_MODEL_NONE .and. his_write_settings%heatflux > 0) then
                call getlink1(k, LL)
                if (jawind > 0) then
                   valobs(i, IPNT_WIND) = sqrt(wx(LL) * wx(LL) + wy(LL) * wy(LL))
                end if
 
-               if (jatem > 1) then ! also heat modelling involved
-                  valobs(i, IPNT_TAIR) = Tair(k)
+               if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then ! also heat modelling involved
+                  valobs(i, IPNT_TAIR) = air_temperature(k)
+                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
 
-               if (jatem == 5 .and. allocated(Rhum) .and. allocated(Clou)) then
-                  valobs(i, IPNT_RHUM) = Rhum(k)
-                  valobs(i, IPNT_CLOU) = Clou(k)
-               end if
+               if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+                  if (allocated(relative_humidity) .and. allocated(cloudiness)) then
+                     valobs(i, IPNT_RHUM) = relative_humidity(k)
+                     valobs(i, IPNT_CLOU) = cloudiness(k)
+                  end if
 
-               if (jatem == 5) then
                   valobs(i, IPNT_QSUN) = Qsunmap(k)
                   valobs(i, IPNT_QEVA) = Qevamap(k)
                   valobs(i, IPNT_QCON) = Qconmap(k)
                   valobs(i, IPNT_QLON) = Qlongmap(k)
                   valobs(i, IPNT_QFRE) = Qfrevamap(k)
                   valobs(i, IPNT_QFRC) = Qfrconmap(k)
-               end if
-
-               if (jatem > 1) then
-                  valobs(i, IPNT_QTOT) = Qtotmap(k)
                end if
             end if
          else
@@ -575,10 +674,121 @@ contains
 
 !  No need to copy empty layers from top anymore, they have been filled with dmiss
 
-      if (allocated(wa)) deallocate (wa)
+      if (allocated(wa)) then
+         deallocate (wa)
+      end if
 
-      if (timon) call timstop(handle_extra(55))
-      return
+      if (timon) then
+         call timstop(handle_extra(55))
+      end if
    end subroutine fill_valobs
+
+   !> Support routine to collect the values of the ice quantities at the observation stations
+   subroutine collect_ice_values(valobs, i, k)
+      use precision, only: dp
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, fm_is_allocated_ice
+      use m_fm_icecover, only: ice_s1, ice_zmin, ice_zmax, ice_area_fraction, ice_thickness, ice_pressure, ice_temperature, snow_thickness, snow_temperature
+      use m_observations_data, only: IPNT_ICE_S1, IPNT_ICE_ZMIN, IPNT_ICE_ZMAX, &
+                                     IPNT_ICE_AREA_FRACTION, IPNT_ICE_THICKNESS, IPNT_ICE_PRESSURE, IPNT_ICE_TEMPERATURE, &
+                                     IPNT_SNOW_THICKNESS, IPNT_SNOW_TEMPERATURE
+
+      real(kind=dp), dimension(:, :), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: k !< face index associated with the observation station
+
+      if (ja_icecover == ICECOVER_NONE .or. .not. fm_is_allocated_ice()) then
+         return
+      end if
+
+      call conditional_assign(valobs, i, IPNT_ICE_S1, ice_s1, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMIN, ice_zmin, k)
+      call conditional_assign(valobs, i, IPNT_ICE_ZMAX, ice_zmax, k)
+      call conditional_assign(valobs, i, IPNT_ICE_AREA_FRACTION, ice_area_fraction, k)
+      call conditional_assign(valobs, i, IPNT_ICE_THICKNESS, ice_thickness, k)
+      call conditional_assign(valobs, i, IPNT_ICE_PRESSURE, ice_pressure, k)
+      call conditional_assign(valobs, i, IPNT_ICE_TEMPERATURE, ice_temperature, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_THICKNESS, snow_thickness, k)
+      call conditional_assign(valobs, i, IPNT_SNOW_TEMPERATURE, snow_temperature, k)
+   end subroutine collect_ice_values
+
+   !> Support routine to conditionally assign values to the target variable
+   subroutine conditional_assign(valobs, i, ipnt, array, k)
+      use precision, only: dp, fp
+
+      real(kind=dp), dimension(:, :), intent(inout) :: valobs !< values at observations stations
+      integer, intent(in) :: i !< index of the observation station
+      integer, intent(in) :: ipnt !< pointer index in valobs
+      real(kind=fp), dimension(:), intent(in) :: array !< array from which to assign value
+      integer, intent(in) :: k !< face index associated with the observation station
+
+      if (ipnt > 0) then
+         valobs(i, ipnt) = real(array(k), dp)
+      end if
+   end subroutine conditional_assign
+
+   !> Interpolate flow values for a particular observation station using the nearby grid point values.
+   !!
+   !! Interpolation is only horizontally, within each computational layer.
+   !! Interpolation points and weights are supposed to be already available in neighbour_nodes_obs and neighbour_weights_obs.
+   subroutine interpolate_and_fill_valobs(values_on_grid, i_station, ipnt_valobs, loc_type)
+
+      use precision, only: dp
+      use fm_statistical_output, only: model_is_3d
+      use m_observations_data, only: neighbour_nodes_obs, neighbour_weights_obs, valobs
+      use m_get_kbot_ktop, only: getkbotktop
+
+      use m_get_layer_indices, only: getlayerindices
+      use fm_location_types, only: UNC_LOC_S3D, UNC_LOC_W
+
+      real(kind=dp), intent(in) :: values_on_grid(:) !< Array containing the actual values to be interpolated. Typically a state array from m_flow.
+      integer, intent(in) :: i_station !< Station index (in all relevant observation arrays, such as xobs, valobs).
+      integer, intent(in) :: ipnt_valobs !< Starting index of this quantity inside the valobs(i_station, :) slice, typically one of the IPNT_* integers from m_observations_data.
+      integer, intent(in) :: loc_type !< Location type, one of the constants from fm_location_types, .e.g., UNC_LOC_S3D.
+
+      real(kind=dp) :: value
+      real(kind=dp) :: weighttot
+
+      integer :: kb_tmp(3), kt_tmp(3), nlayb_tmp(3), nrlay_tmp(3), i_point, kstart, kstop, pntnr, klay, oneDown
+
+      oneDown = 0
+
+      do i_point = 1, 3
+         if (model_is_3D() .and. (loc_type == UNC_LOC_S3D .or. loc_type == UNC_LOC_W)) then
+            call getkbotktop(neighbour_nodes_obs(i_point, i_station), kb_tmp(i_point), kt_tmp(i_point))
+            call getlayerindices(neighbour_nodes_obs(i_point, i_station), nlayb_tmp(i_point), nrlay_tmp(i_point))
+
+         else
+            kb_tmp(i_point) = neighbour_nodes_obs(i_point, i_station)
+            kt_tmp(i_point) = neighbour_nodes_obs(i_point, i_station)
+            nlayb_tmp(i_point) = 1
+            nrlay_tmp(i_point) = 1
+         end if
+      end do
+
+      ! Values ar interfaces stored 1 below (interface 1 effectively corresponds with layer 0)
+      if (loc_type == UNC_LOC_W) then
+         nrlay_tmp = nrlay_tmp + 1
+         oneDown = 1
+      end if
+
+      ! Determine lowest and highest layer numbers needed for horizontal interpolation.
+      kstart = minval(nlayb_tmp)
+      kstop = maxval(nlayb_tmp + nrlay_tmp - 1)
+
+      do klay = kstart, kstop
+
+         value = 0.0_dp
+         weighttot = 0.0_dp
+
+         do i_point = 1, 3
+            if ((klay >= nlayb_tmp(i_point)) .and. (klay <= nlayb_tmp(i_point) + nrlay_tmp(i_point) - 1)) then
+               pntnr = kb_tmp(i_point) - nlayb_tmp(i_point) + klay - oneDown
+               value = value + values_on_grid(pntnr) * neighbour_weights_obs(i_point, i_station)
+               weighttot = weighttot + neighbour_weights_obs(i_point, i_station)
+            end if
+         end do
+         valobs(i_station, ipnt_valobs + klay - 1) = value / weighttot
+      end do
+   end subroutine interpolate_and_fill_valobs
 
 end module m_fill_valobs

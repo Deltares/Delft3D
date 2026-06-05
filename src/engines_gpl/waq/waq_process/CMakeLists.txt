@@ -20,3 +20,9 @@ target_compile_options(${library_name} PRIVATE ${qauto_threaded_flags})
 target_compile_options(${library_name} PRIVATE ${waq_default_flags})
 
 set_target_properties(${library_name} PROPERTIES FOLDER engines_gpl/waq)
+
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/bloom.spe DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.dat DESTINATION share/delft3d)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/proc_def.def DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/csvFiles DESTINATION share/delft3d)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/../engines_gpl/waq/resources/process_lib/subFiles DESTINATION share/delft3d)

@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,54 +21,43 @@
  * @date 2011
  */
 
-
-#include "intervalController.h" 
+#include "intervalController.h"
 #include <stdexcept>
 #include <algorithm>
 
 using namespace rtctools::schematization::rules;
 
-intervalController::intervalController(string id,
-							           string name,
-							 		   double settingBelow,
-							 		   double settingAbove,
-							 		   double settingMaxSpeed,
-									   double settingMaxStep,
-									   double deadbandSetpointAbsolute,
-									   double deadbandSetpointRelative,
-									   int iXIn,
-									   int iSPIn,
-									   int iYOut,
-									   int iStatusOut)
-	: rule(id, name)
+intervalController::intervalController(string id, string name, double settingBelow, double settingAbove,
+                                       double settingMaxSpeed, double settingMaxStep, double deadbandSetpointAbsolute,
+                                       double deadbandSetpointRelative, int iXIn, int iSPIn, int iYOut, int iStatusOut)
+    : rule(id, name)
 {
-	this->settingBelow = settingBelow;
-	this->settingAbove = settingAbove;
-	this->settingMaxSpeed = settingMaxSpeed;
-	this->settingMaxStep = settingMaxStep;
-	this->deadbandSetpointAbsolute = deadbandSetpointAbsolute;
-	this->deadbandSetpointRelative = deadbandSetpointRelative;
-	this->iXIn = iXIn;
-	this->iSPIn = iSPIn;
-	this->iYOut = iYOut;
-	this->iStatusOut = iStatusOut;
+    this->settingBelow = settingBelow;
+    this->settingAbove = settingAbove;
+    this->settingMaxSpeed = settingMaxSpeed;
+    this->settingMaxStep = settingMaxStep;
+    this->deadbandSetpointAbsolute = deadbandSetpointAbsolute;
+    this->deadbandSetpointRelative = deadbandSetpointRelative;
+    this->iXIn = iXIn;
+    this->iSPIn = iSPIn;
+    this->iYOut = iYOut;
+    this->iStatusOut = iStatusOut;
 }
 
-intervalController::~intervalController(void)
+intervalController::~intervalController(void) {}
+
+void intervalController::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
-}
+    double xOld = stateOld[iXIn];
+    double yOld = stateOld[iYOut];
+    double setpoint = stateNew[iSPIn];
+    double statusOld = stateOld[iStatusOut];
 
-void intervalController::solve(double *stateOld, double *stateNew, long long t, double dt)
-{
-	double xOld = stateOld[iXIn];
-	double yOld = stateOld[iYOut];
-	double setpoint = stateNew[iSPIn];
-	double statusOld = stateOld[iStatusOut];
+    // evaluate new status
+    double statusNew = statusOld;
 
-	// evaluate new status
-	double statusNew = statusOld;
-
-    if (xOld == xOld) {
+    if (xOld == xOld)
+    {
         if (deadbandSetpointAbsolute == deadbandSetpointAbsolute)
         {
             if (xOld > setpoint + 0.5 * deadbandSetpointAbsolute)
@@ -86,8 +75,8 @@ void intervalController::solve(double *stateOld, double *stateNew, long long t, 
         }
         else if (deadbandSetpointRelative == deadbandSetpointRelative)
         {
-            double above = setpoint + abs(0.5*setpoint*deadbandSetpointRelative / 100.0);
-            double below = setpoint - abs(0.5*setpoint*deadbandSetpointRelative / 100.0);
+            double above = setpoint + abs(0.5 * setpoint * deadbandSetpointRelative / 100.0);
+            double below = setpoint - abs(0.5 * setpoint * deadbandSetpointRelative / 100.0);
 
             if (xOld > above)
             {
@@ -104,33 +93,45 @@ void intervalController::solve(double *stateOld, double *stateNew, long long t, 
         }
     }
 
-	// apply settings
-	double yNew;
-	if (yOld==yOld) {
-		yNew = yOld;
-	} else {
-		yNew = (settingBelow+settingAbove)/2.0;
-	}
-	if (statusNew == -1.0) {
-		yNew = settingBelow;
-	} else if (statusNew == 1.0) {
-		yNew = settingAbove;
-	} 
+    // apply settings
+    double yNew;
+    if (yOld == yOld)
+    {
+        yNew = yOld;
+    }
+    else
+    {
+        yNew = (settingBelow + settingAbove) / 2.0;
+    }
+    if (statusNew == -1.0)
+    {
+        yNew = settingBelow;
+    }
+    else if (statusNew == 1.0)
+    {
+        yNew = settingAbove;
+    }
 
-	// correct for maximum rate of change
-	if (settingMaxSpeed==settingMaxSpeed) {
-		yNew = max(yNew, yOld - settingMaxSpeed*dt);
-		yNew = min(yNew, yOld + settingMaxSpeed*dt);
-	} else if (settingMaxStep==settingMaxStep) {
-		yNew = max(yNew, yOld - settingMaxStep);
-		yNew = min(yNew, yOld + settingMaxStep);
-	}
+    // correct for maximum rate of change
+    if (settingMaxSpeed == settingMaxSpeed)
+    {
+        yNew = max(yNew, yOld - settingMaxSpeed * dt);
+        yNew = min(yNew, yOld + settingMaxSpeed * dt);
+    }
+    else if (settingMaxStep == settingMaxStep)
+    {
+        yNew = max(yNew, yOld - settingMaxStep);
+        yNew = min(yNew, yOld + settingMaxStep);
+    }
 
-	stateNew[iYOut] = yNew;
-	stateNew[iStatusOut] = statusNew;
+    stateNew[iYOut] = yNew;
+    stateNew[iStatusOut] = statusNew;
 }
 
-void intervalController::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew)
+void intervalController::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* dStateOld,
+                                  double* dStateNew)
 {
-	throw runtime_error("void intervalController::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *dStateOld, double *dStateNew) not implemented");
+    throw runtime_error(
+        "void intervalController::solveDer(double *stateOld, double *stateNew, long long t, double dt, double "
+        "*dStateOld, double *dStateNew) not implemented");
 }

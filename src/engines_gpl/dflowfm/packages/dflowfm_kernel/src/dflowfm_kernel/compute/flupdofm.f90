@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,9 +42,9 @@ contains
    subroutine flupdofm(m, il, ir, istru, velheight, &
                        husb, hdsb, uu, ud, teken, relax)
       use precision, only: dp
-      use m_strucs
-      use m_flowgeom
-      use m_flow
+      use m_strucs, only: strhis2
+      use m_flowgeom, only: nd, iadv, iadv_general_structure
+      use m_flow, only: s1, u1
 
       implicit none
 !
@@ -85,27 +85,28 @@ contains
 
       L = abs(m)
       iflip = max(0, sign(1, m)) ! iflip: 0 if flow link has same orientation as structure's left-right, 1 if opposite (because then the 'left' str point == ln(2,Lf))
-      if (relax /= 1d0) then
-         husb = s1(il) * relax + (1.d0 - relax) * strhis2(9 + iflip, istru) ! TODO: HK: strhis2 is not yet filled anywhere (no relaxation possible)
-         hdsb = s1(ir) * relax + (1.d0 - relax) * strhis2(10 - iflip, istru)
+      if (relax /= 1.0_dp) then
+         husb = s1(il) * relax + (1.0_dp - relax) * strhis2(9 + iflip, istru) ! TODO: HK: strhis2 is not yet filled anywhere (no relaxation possible)
+         hdsb = s1(ir) * relax + (1.0_dp - relax) * strhis2(10 - iflip, istru)
       else
          husb = s1(il)
          hdsb = s1(ir)
       end if
-      uu = 0.d0
-      ud = 0.d0
+      uu = 0.0_dp
+      ud = 0.0_dp
       if (velheight) then
-         uu = 0d0; ud = 0d0
+         uu = 0.0_dp
+         ud = 0.0_dp
          do k = 1, nd(il)%lnx
             LL = abs(nd(il)%ln(k))
-            if (iadv(LL) /= 22) then ! any non-structure point
+            if (iadv(LL) /= IADV_GENERAL_STRUCTURE) then ! any non-structure point
                uu = max(uu, abs(u1(LL)))
             end if
          end do
 
          do k = 1, nd(ir)%lnx
             LL = abs(nd(ir)%ln(k))
-            if (iadv(LL) /= 22) then ! any non-structure point
+            if (iadv(LL) /= IADV_GENERAL_STRUCTURE) then ! any non-structure point
                ud = max(ud, abs(u1(LL)))
             end if
          end do
@@ -116,21 +117,25 @@ contains
          !ud = csu(L)*ucxku + snu(L)*ucyku
       end if
 
-      if (u1(L) > 0d0) then
-         teken = 1d0
-      else if (u1(L) < 0d0) then
-         teken = -1d0
+      if (u1(L) > 0.0_dp) then
+         teken = 1.0_dp
+      else if (u1(L) < 0.0_dp) then
+         teken = -1.0_dp
       else if (s1(iL) > s1(ir)) then
-         teken = 1d0
+         teken = 1.0_dp
       elseif (s1(iL) < s1(ir)) then
-         teken = -1d0
+         teken = -1.0_dp
       else ! s1(iL) == s1(ir)
-         teken = -dble(sign(1, m)) ! account for orientation of flow link w.r.t. structure
+         teken = -real(sign(1, m), kind=dp) ! account for orientation of flow link w.r.t. structure
       end if
 
       if (teken < 0) then
-         tem = hdsb; hdsb = husb; husb = tem
-         tem = ud; ud = uu; uu = tem
+         tem = hdsb
+         hdsb = husb
+         husb = tem
+         tem = ud
+         ud = uu
+         uu = tem
       end if
 
    end subroutine flupdofm

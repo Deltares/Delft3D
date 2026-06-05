@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,9 +53,13 @@ contains
       integer :: jpoint, jstart, jend, jadoall, nplsav
       real(kind=dp), allocatable :: xplsav(:), yplsav(:)
 
-      allocate (xplsav(npl), yplsav(npl)); xplsav = xpl(1:npl); yplsav = ypl(1:npl); nplsav = npl
+      allocate (xplsav(npl), yplsav(npl))
+      xplsav = xpl(1:npl)
+      yplsav = ypl(1:npl)
+      nplsav = npl
 
-      jpoint = 1; jadoall = 0
+      jpoint = 1
+      jadoall = 0
       do while (jpoint < NPLsav)
 
          !get subpolyline

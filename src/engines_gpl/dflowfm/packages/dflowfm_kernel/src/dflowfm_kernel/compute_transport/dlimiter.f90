@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -41,13 +41,17 @@ contains
       integer, intent(in) :: limtyp !< first order upwind (0) or MC (>0)
 
       real(kind=dp) :: r
-      real(kind=dp), parameter :: dtol = 1d-16
+      real(kind=dp), parameter :: dtol = 1.0e-16_dp
 
-      real(kind=dp), parameter :: TWO = 2.0d0
+      real(kind=dp), parameter :: TWO = 2.0_dp
 
-      dlimiter = 0d0
-      if (limtyp == 0) return
-      if (d1 * d2 < dtol) return
+      dlimiter = 0.0_dp
+      if (limtyp == 0) then
+         return
+      end if
+      if (d1 * d2 < dtol) then
+         return
+      end if
 
       r = d1 / d2 ! d1/d2
 
@@ -56,7 +60,7 @@ contains
 !      dlimiter = dble(min(limtyp,1)) * (r + abs(r) ) / (1 + abs(r) )
 !   else
 !!     Monotinized Central
-      dlimiter = max(0d0, min(TWO * r, TWO, 0.5d0 * (1d0 + r)))
+      dlimiter = max(0.0_dp, min(TWO * r, TWO, 0.5_dp * (1.0_dp + r)))
 !   end if
 
    end function dlimiter

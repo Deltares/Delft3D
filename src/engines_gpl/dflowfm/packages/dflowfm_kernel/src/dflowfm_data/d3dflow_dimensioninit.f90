@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -37,10 +37,8 @@ module m_d3dflow_dimensioninit
 contains
 
    subroutine D3Dflow_dimensioninit()
-      use m_flowgeom
-      use grid_dimens_module
+      use m_flowgeom, only: simplegrid_dimens, griddim, ndx, ndxi, mesh_unstructured, partition_noncont, nd, lnxi, lnx, ln, xz, yz
       use m_partitioninfo, only: jampi, idomain, iglobal_s, my_rank
-      use m_flow !, only: ndkx, lnkx
       use network_data, only: xk, yk
       ! use m_cell_geometry, ony: xz, yz, ndx
       implicit none
@@ -59,7 +57,9 @@ contains
       griddim%parttype = PARTITION_NONCONT
 
       allocate (griddim%ncellnodes(ndx), stat=istat)
-      if (istat == 0) allocate (griddim%indexnode1(ndx), stat=istat)
+      if (istat == 0) then
+         allocate (griddim%indexnode1(ndx), stat=istat)
+      end if
       if (istat == 0) then
          istart = 1
          do nm = 1, ndxi
@@ -82,7 +82,9 @@ contains
          end do
          griddim%celltype(ndxi + 1:ndx) = 2 ! Boundary cells
       end if
-      if (istat == 0) allocate (griddim%cell2node(istart - 1), stat=istat)
+      if (istat == 0) then
+         allocate (griddim%cell2node(istart - 1), stat=istat)
+      end if
       if (istat == 0) then
          istart = 1
          do nm = 1, ndxi

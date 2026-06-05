@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -36,40 +36,40 @@ using namespace std;
 
 namespace rtctools
 {
-namespace schematization
-{
+    namespace schematization
+    {
 
-class parameterInterface
-{
-public:
-	parameterInterface();
-	~parameterInterface() {};
+        class parameterInterface
+        {
+        public:
+            parameterInterface();
+            ~parameterInterface() {};
 
-	void addFileContent(string schemaLocation, string filename, fileTypeEnum type, prefixEnum prefix);
-	bool getBoolParameter(string id);
-	int getIntParameter(string id);
-	string getStringParameter(string id);
-	int getNDblParameter();
-	double getDblParameter(string id);
-	void setDblParameter(string id, double value);
-	void setDblParameters(int nPar, string* id, double* value);
-	map<string,vector<double> > getTableRowMap(string id);
-	map<string,vector<string> > getTableColStrMap(string id);
-	map<string,vector<double> > getTableColDblMap(string id);
-	void write(string filename);
+            void addFileContent(string schemaLocation, string filename, fileTypeEnum type, prefixEnum prefix);
+            bool getBoolParameter(string id);
+            int getIntParameter(string id);
+            string getStringParameter(string id);
+            int getNDblParameter();
+            double getDblParameter(string id);
+            void setDblParameter(string id, double value);
+            void setDblParameters(int nPar, string* id, double* value);
+            map<string, vector<double>> getTableRowMap(string id);
+            map<string, vector<string>> getTableColStrMap(string id);
+            map<string, vector<double>> getTableColDblMap(string id);
+            void write(string filename);
 
-private:
-	map<string,bool> boolParMap;
-	map<string,int> intParMap;
-	map<string,double> dblParMap;
-	map<string,string> stringParMap;
+        private:
+            map<string, bool> boolParMap;
+            map<string, int> intParMap;
+            map<string, double> dblParMap;
+            map<string, string> stringParMap;
 
-	map<string,map<string,vector<double> > > tableRowMap;
-	map<string,map<string,vector<string> > > tableColStrMap;
-	map<string,map<string,vector<double> > > tableColDblMap;
-};
+            map<string, map<string, vector<double>>> tableRowMap;
+            map<string, map<string, vector<string>>> tableColStrMap;
+            map<string, map<string, vector<double>>> tableColDblMap;
+        };
 
-} // end namespace schematization
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif /* PARAMETER_INTERFACE_H */

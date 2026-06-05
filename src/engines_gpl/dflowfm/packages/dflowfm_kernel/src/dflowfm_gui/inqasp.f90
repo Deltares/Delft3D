@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -39,8 +39,8 @@ contains
 
    subroutine INQASP(ASP)
       use precision, only: dp
-      use m_devices
-      use m_screenarea
+      use m_devices, only: npy, npx
+      use m_screenarea, only: ybot, xleft
 
       real(kind=dp) :: asp
       real(kind=dp) :: dx
@@ -48,11 +48,11 @@ contains
       real(kind=dp) :: xright
       real(kind=dp) :: ytop
 
-      YTOP = max(0.95d0, 1 - YBOT)
-      XRIGHT = max(0.90d0, 1 - XLEFT)
+      YTOP = max(0.95_dp, 1 - YBOT)
+      XRIGHT = max(0.90_dp, 1 - XLEFT)
       DX = XRIGHT - XLEFT
       DY = YTOP - YBOT
-      ASP = (DY * dble(NPY)) / (DX * dble(NPX))
+      ASP = (DY * real(NPY, kind=dp)) / (DX * real(NPX, kind=dp))
       return
    end
 

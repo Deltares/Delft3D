@@ -2,7 +2,7 @@ module m_rdtrt
 
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -380,8 +380,6 @@ subroutine rdtrt(lundia    ,error     ,lftrto    ,dt        , &
     !
     txtput1 = 'DtTrt'
     write (msgtmp, '(a,a,f7.3,a)') txtput1,': ',rtimtt*d3d_tunit,' seconds'
-    call SetMessage(LEVEL_INFO, msgtmp)
-    write (msgtmp, '(a,a,i5,a)') txtput1,': every ',itimtt,' timesteps'
     call SetMessage(LEVEL_INFO, msgtmp)
     !
     ! Trtdef: trachytope definition file (must exist, no default)
@@ -1356,6 +1354,12 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
        else
           rttaru(mttaru) = real(ifield(3),fp)
        endif
+       if (rttaru(mttaru)<0.0_fp) then
+          call SetMessage(LEVEL_ERROR, 'Trachytopes: Negative roughness value in file ' // trim(filnam) // ', Record: ' // trim(rec132))
+          error = .true.
+          close (luntmp2)
+          goto 9999
+       endif
     elseif (nrflds==4) then
        !
        ! Handle pending block if applicable
@@ -1420,6 +1424,13 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
        else
           rttaru(mttaru) = real(ifield(4),fp)
        endif
+       if (rttaru(mttaru)<0.0_fp) then
+          call SetMessage(LEVEL_ERROR, 'Trachytopes: Negative roughness value in file ' // trim(filnam) // ', Record: ' // trim(rec132))
+          error = .true.
+          close (luntmp2)
+          goto 9999
+       endif
+
     elseif (nrflds==5) then
        ! Unstructured input based on x,y,z, of velocity point of net link
        !
@@ -1498,6 +1509,12 @@ subroutine rdttar(filnam    ,lundia    ,error     ,nttaru    ,ittaru    , &
           rttaru(mttaru) = rfield(5)
        else
           rttaru(mttaru) = real(ifield(5),fp)
+       endif
+       if (rttaru(mttaru)<0.0_fp) then
+          call SetMessage(LEVEL_ERROR, 'Trachytopes: Negative roughness value in file ' // trim(filnam) // ', Record: ' // trim(rec132))
+          error = .true.
+          close (luntmp2)
+          goto 9999
        endif
     else
        !

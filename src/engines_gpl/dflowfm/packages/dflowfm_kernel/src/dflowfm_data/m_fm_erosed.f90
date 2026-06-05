@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,6 @@ module m_fm_erosed
    logical :: link1_initialized = .false.
 
    real(fp), dimension(:, :), pointer :: seddif !< Sediment diffusion
-   real(fp), dimension(:, :), pointer :: sed !< Sediment concentration work array
    real(fp), dimension(:), pointer :: blchg !< Bed level change (> 0 = sedimentation, < 0 = erosion)
    real(fp), dimension(:), pointer :: dzbdt !< Bed level change time rate
    real(fp), dimension(:), pointer :: uau !< velocity asymmetry
@@ -75,6 +74,7 @@ module m_fm_erosed
    !     sedpar
    integer, pointer :: nmudfrac
    logical, dimension(:), pointer :: cmpupdfrac
+   logical, pointer :: spatial_d50
    real(fp), dimension(:), pointer :: rhosol
    real(fp), dimension(:), pointer :: cdryb
    real(fp), dimension(:, :, :), pointer :: logseddia
@@ -164,6 +164,7 @@ module m_fm_erosed
    real(fp), pointer :: bermslopegamma !< bermslope nudging applied for region where Hrms/h>bermslopegamma
    real(fp), pointer :: bermslopedepth !< minimum depth to apply nudging
    real(fp), pointer :: ti_sedtrans !< sediment transport computation start time in TUnits
+   integer, pointer :: ithresh !< switch for method to compute the `fixfac` array.
 
    ! trapar
    integer, dimension(:), pointer :: iform
@@ -185,18 +186,24 @@ module m_fm_erosed
    real(fp), dimension(:, :), pointer :: dbodsd
    real(fp), dimension(:), pointer :: dcwwlc
    real(fp), dimension(:), pointer :: dm
+   real(fp), dimension(:), pointer :: dm_he
    real(fp), dimension(:), pointer :: dg
+   real(fp), dimension(:), pointer :: dg_he
    real(fp), dimension(:), pointer :: dgsd
+   real(fp), dimension(:), pointer :: dgsd_he
    real(fp), dimension(:, :), pointer :: dxx
+   real(fp), dimension(:, :), pointer :: dxx_he
    real(fp), dimension(:), pointer :: e_dzdn
    real(fp), dimension(:), pointer :: e_dzdt
    real(fp), dimension(:), pointer :: epsclc
    real(fp), dimension(:), pointer :: epswlc
    real(fp), dimension(:, :), pointer :: fixfac
    real(fp), dimension(:, :), pointer :: frac
+   real(fp), dimension(:, :), pointer :: frac_he
    integer, dimension(:), pointer :: kfsed
    integer, dimension(:, :), pointer :: kmxsed
    real(fp), dimension(:), pointer :: mudfrac
+   real(fp), dimension(:), pointer :: mudfrac_he
    real(fp), dimension(:), pointer :: sandfrac
    real(fp), dimension(:, :), pointer :: hidexp
    real(fp), dimension(:), pointer :: rsdqlc

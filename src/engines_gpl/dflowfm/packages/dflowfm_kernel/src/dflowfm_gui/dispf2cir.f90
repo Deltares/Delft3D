@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,10 +38,10 @@ contains
 
    subroutine DISPF2cir(X, Y, N, Rcx, Rcy, NCOL)
       use precision, only: dp
-      use m_fbox
-      use m_set_col
-      use m_movabs
-      use m_lnabs
+      use m_fbox, only: fbox
+      use m_set_col, only: setcol
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
 
       integer :: i
       integer :: n
@@ -54,9 +54,13 @@ contains
          call LNABS(X(I), Y(I))
       end do
       call MOVABS(X(1), Y(1))
-      if (rcx > 0) call fbox(x(1) - rcx, y(1) - rcy, x(1) + rcx, y(1) + rcy) ! CIR(RCIR)
+      if (rcx > 0) then
+         call fbox(x(1) - rcx, y(1) - rcy, x(1) + rcx, y(1) + rcy) ! CIR(RCIR)
+      end if
       do I = 2, N
-         if (rcx > 0) call fbox(x(i) - rcx, y(i) - rcy, x(i) + rcx, y(i) + rcy) ! CIR(RCIR)
+         if (rcx > 0) then
+            call fbox(x(i) - rcx, y(i) - rcy, x(i) + rcx, y(i) + rcy) ! CIR(RCIR)
+         end if
       end do
 
       return

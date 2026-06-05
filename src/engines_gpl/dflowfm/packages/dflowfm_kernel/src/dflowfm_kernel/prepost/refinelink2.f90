@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,13 +53,16 @@ contains
       integer :: lnu
       real(kind=dp) :: XM, YM
 
-      K1 = KN(1, L12); KC(K1) = 5
-      K2 = KN(2, L12); KC(K2) = 5
+      K1 = KN(1, L12)
+      KC(K1) = 5
+      K2 = KN(2, L12)
+      KC(K2) = 5
 
-      KN(1, L12) = 0; KN(2, L12) = 0
+      KN(1, L12) = 0
+      KN(2, L12) = 0
 
-      XM = 0.5d0 * (XK(K1) + XK(K2))
-      YM = 0.5d0 * (YK(K1) + YK(K2))
+      XM = 0.5_dp * (XK(K1) + XK(K2))
+      YM = 0.5_dp * (YK(K1) + YK(K2))
 
       call DSETNEWPOINT(XM, YM, K12)
       call NEWLINK(K1, K12, lnu) ! fast version without refinement

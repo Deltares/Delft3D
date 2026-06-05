@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -31,38 +31,46 @@
 !
 module m_find_crossed_links_kdtree2
    implicit none
+
+   integer, parameter :: ITYPE_NETLINK_DUAL = 1 !< cross with dual netlink
+   integer, parameter :: ITYPE_FLOWLINK = 2 !< cross with flowlink
+   integer, parameter :: ITYPE_NETLINK = 3 !< cross with netlink
+   integer, parameter :: ITYPE_FLOWLINK_1D_DUAL = 4 !< cross with dual 1D flowlink
+
+   integer, parameter :: BOUNDARY_NONE = 0 !< do not include boundary links
+   integer, parameter :: BOUNDARY_ALL = 1 !< include all boundary links
+   integer, parameter :: BOUNDARY_2D = 2 !< include only 2d boundary links
+
 contains
 !---------------------------------------------------------------
 ! the following subroutines use kdtree2
 !---------------------------------------------------------------
 !> find links crossed by polyline with kdtree2
-   subroutine find_crossed_links_kdtree2(treeinst, NPL, xpl, ypl, itype, nLinks, jaboundarylinks, numcrossedLinks, iLink, iPol, dSL, ierror)
+   subroutine find_crossed_links_kdtree2(treeinst, NPL, xpl, ypl, itype, n_links_polyline_nodes, jaboundarylinks, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
       use precision, only: dp
       use network_data, only: numL, kn, xk, yk
-      use m_flowgeom
-      use kdtree2Factory
-      use m_sferic
+      use m_flowgeom, only: lnx, lnxi, lnx1db, ln, xz, yz, lnx1d, lncn
+      use kdtree2Factory, only: kdtree_instance, ntreedim, build_kdtree, make_queryvector_kdtree, kdtree2_r_count, realloc_results_kdtree, kdtree2_n_nearest, itree_empty, delete_kdtree2
+      use m_sferic, only: jsferic, jasfer3d
+      use m_readyy, only: readyy
+      use m_get_link_neighboring_cell_coords, only: get_link_neighboringcellcoords
+      use m_movabs, only: movabs
+      use m_lnabs, only: lnabs
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_missing, only: dmiss
       use geometry_module, only: dbdistance, crossinbox
-      use m_readyy
-      use m_get_link_neighboring_cell_coords
-      use m_movabs
-      use m_lnabs
 
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length
       real(kind=dp), dimension(NPL), intent(in) :: xpl, ypl !< polyline node coordinates
-      integer, intent(in) :: itype !< netlinks (1: cross with dual link, 3: cross with netlink itself) or flowlinks(2)
-      integer, intent(in) :: nLinks !< number of links ( Lnx for flowlinks, numL for netlinks)
-      integer, intent(in) :: jaboundarylinks !< include boundary links:
-      !< (0) do not include boundary links
-      !< (1) include all boundary links
-      !< (2) include only 2d boundary links
-      integer, intent(out) :: numcrossedLinks !< number of crossed flowlinks
-      integer, dimension(nLinks), intent(inout) :: iLink !< crossed flowlinks
-      integer, dimension(nLinks), intent(inout) :: iPol !< polygon section
-      real(kind=dp), dimension(nLinks), intent(inout) :: dSL !< polygon section cross location
+      integer, intent(in) :: itype !< Type of intersection (ITYPE_NETLINK_DUAL, ITYPE_FLOWLINK, ITYPE_NETLINK, ITYPE_FLOWLINK_1D_DUAL)
+      integer, intent(in) :: n_links_polyline_nodes !< array_size e.g. number of links ( Lnx for flowlinks, numL for netlinks) or npl for number of polyline nodes
+      integer, intent(in) :: jaboundarylinks !< include boundary links ( BOUNDARY_NONE, BOUNDARY_ALL, BOUNDARY_2D )
+      integer, intent(out) :: intersection_count !< number of link intersections
+      integer, dimension(n_links_polyline_nodes), intent(inout) :: crossed_links !< crossed flowlinks
+      integer, dimension(n_links_polyline_nodes), intent(inout) :: polygon_nodes !< list of polygon starting nodes
+      real(kind=dp), dimension(n_links_polyline_nodes), intent(inout) :: polygon_segment_weights !< polygon section cross location
+
       integer, intent(out) :: ierror !< ierror (1) or not (0)
 
       real(kind=dp), dimension(:), allocatable :: x, y
@@ -84,16 +92,18 @@ contains
 
       ierror = 1
 
-      numcrossedLinks = 0
+      intersection_count = 0
 
-      if (NPL < 1) goto 1234 ! nothing to do
+      if (NPL < 1) then
+         goto 1234 ! nothing to do
+      end if
 
       LnxiORLnx = 0
 
-      if (itype == 1 .or. itype == 3) then ! netlinks
+      if (itype == ITYPE_NETLINK_DUAL .or. itype == ITYPE_NETLINK) then ! netlinks
          LnxiORLnx = numL
-      else ! if ( itype.eq.2 ) then   ! flowlinks
-         if (jaboundarylinks == 1 .or. jaboundarylinks == 2) then
+      else ! flowlinks
+         if (jaboundarylinks == BOUNDARY_ALL .or. jaboundarylinks == BOUNDARY_2D) then
             LnxiORLnx = Lnx
          else
             LnxiORLnx = Lnxi
@@ -105,7 +115,7 @@ contains
       allocate (treeinst%qv(NTREEDIM))
 
 !     determine maximum polygon section length, and administer polygon sections
-      dmaxpollen = 0d0
+      dmaxpollen = 0.0_dp
       num = 0
       do i = 1, NPL - 1
          if (xpl(i) /= DMISS .and. xpl(i + 1) /= DMISS) then
@@ -147,41 +157,47 @@ contains
 
       do L = 1, LnxiORLnx
          if (mod(L, kint) == 0) then
-            af = dble(L) / dble(LnxiORLnx)
+            af = real(L, kind=dp) / real(LnxiORLnx, kind=dp)
             call readyy('Finding crossed links', af)
 !            write(6,"(F4.1, ' %')") af*100d0
          end if
 
-         if (jaboundarylinks == 2 .and. L > lnxi .and. L <= lnx1db) then
+         if (jaboundarylinks == BOUNDARY_2D .and. L > lnxi .and. L <= lnx1db) then
             ! Skip 1d boundaries
             cycle
          end if
 
-         if (itype == 1) then ! netlinks, cross with dual links
+         if (itype == ITYPE_NETLINK_DUAL) then ! netlinks, cross with dual links
             call get_link_neighboringcellcoords(L, isactive, xa, ya, xb, yb)
             if (isactive /= 1) then
                cycle
             end if
-         else if (itype == 2) then ! flowlinks
-            n1 = ln(1, L); n2 = ln(2, L)
-            xa = xz(n1); ya = yz(n1)
-            xb = xz(n2); yb = yz(n2)
-         else if (itype == 3) then ! netlinks, cross with netlinks
+         else if (itype == ITYPE_FLOWLINK) then ! flowlinks
+            n1 = ln(1, L)
+            n2 = ln(2, L)
+            xa = xz(n1)
+            ya = yz(n1)
+            xb = xz(n2)
+            yb = yz(n2)
+         else if (itype == ITYPE_NETLINK) then ! netlinks, cross with netlinks
             n1 = kn(1, L)
             n2 = kn(2, L)
             xa = xk(n1)
             ya = yk(n1)
             xb = xk(n2)
             yb = yk(n2)
-         else if (itype == 4) then
+         else if (itype == ITYPE_FLOWLINK_1D_DUAL) then
             if (L <= lnx1D) then ! flowlinks, cross with perpendicular in 1D
-               n1 = ln(1, L); n2 = ln(2, L)
-               xc = xz(n1); yc = yz(n1)
-               xd = xz(n2); yd = yz(n2)
-               xa = 0.5d0 * (xc + xd) - 0.5d0 * (yd - yc)
-               ya = 0.5d0 * (yc + yd) + 0.5d0 * (xd - xc)
-               xb = 0.5d0 * (xc + xd) + 0.5d0 * (yd - yc)
-               yb = 0.5d0 * (yc + yd) - 0.5d0 * (xd - xc)
+               n1 = ln(1, L)
+               n2 = ln(2, L)
+               xc = xz(n1)
+               yc = yz(n1)
+               xd = xz(n2)
+               yd = yz(n2)
+               xa = 0.5_dp * (xc + xd) - 0.5_dp * (yd - yc)
+               ya = 0.5_dp * (yc + yd) + 0.5_dp * (xd - xc)
+               xb = 0.5_dp * (xc + xd) + 0.5_dp * (yd - yc)
+               yb = 0.5_dp * (yc + yd) - 0.5_dp * (xd - xc)
                call movabs(xa, ya)
                call lnabs(xb, yb)
             else ! flowlinks, cross with netlinks in 2D
@@ -199,12 +215,14 @@ contains
          dlinlen = dbdistance(xa, ya, xb, yb, jsferic, jasfer3D, dmiss)
 
 !        determine square search radius
-         R2search = 1.1d0 * (dlinlen + dmaxpollen)**2 ! 1.1d0: safety
+         R2search = 1.1_dp * (dlinlen + dmaxpollen)**2 ! 1.1d0: safety
 
 !        count number of points in search area
          NN = kdtree2_r_count(treeinst%tree, treeinst%qv, R2search)
 
-         if (NN == 0) cycle ! no links found
+         if (NN == 0) then
+            cycle ! no links found
+         end if
 
 !        reallocate if necessary
          call realloc_results_kdtree(treeinst, NN)
@@ -218,20 +236,22 @@ contains
             call crossinbox(XPL(k), YPL(k), XPL(k + 1), YPL(k + 1), Xa, Ya, Xb, Yb, jacros, SL, SM, XCR, YCR, CRP, jsferic, dmiss)
 
             if (jacros == 1) then
-               numcrossedLinks = numcrossedLinks + 1
+               intersection_count = intersection_count + 1
 
-               if (numcrossedLinks > ubound(iLink, 1)) then
+               if (intersection_count > ubound(crossed_links, 1)) then
                   call mess(LEVEL_ERROR, 'find_crossed_links_kdtree2: array size too small')
                end if
 
-               iLink(numcrossedLinks) = L
-               iPol(numcrossedLinks) = k
-               dSL(numcrossedLinks) = SL
+               crossed_links(intersection_count) = L
+               polygon_nodes(intersection_count) = k
+               polygon_segment_weights(intersection_count) = SL
             end if
          end do
       end do
 
-      call readyy(' ', -1d0)
+      call sort_crossed_links(crossed_links, polygon_nodes, polygon_segment_weights, n_links_polyline_nodes, intersection_count)
+
+      call readyy(' ', -1.0_dp)
 
       call mess(LEVEL_INFO, 'done')
 
@@ -239,11 +259,63 @@ contains
 1234  continue
 
 !     deallocate
-      if (treeinst%itreestat /= ITREE_EMPTY) call delete_kdtree2(treeinst)
-      if (allocated(ipolsection)) deallocate (ipolsection)
-      if (allocated(x)) deallocate (x)
-      if (allocated(y)) deallocate (y)
+      if (treeinst%itreestat /= ITREE_EMPTY) then
+         call delete_kdtree2(treeinst)
+      end if
+      if (allocated(ipolsection)) then
+         deallocate (ipolsection)
+      end if
+      if (allocated(x)) then
+         deallocate (x)
+      end if
+      if (allocated(y)) then
+         deallocate (y)
+      end if
 
       return
    end subroutine find_crossed_links_kdtree2
+
+   !> sort intersections of crossed_links first on links and subsequently polygon index
+   subroutine sort_crossed_links(crossed_links, polygon_nodes, polygon_segment_weights, n_links_polyline_nodes, intersection_count)
+      use stdlib_sorting, only: sort_index
+      use precision, only: dp
+
+      integer, dimension(n_links_polyline_nodes), intent(in) :: crossed_links !< crossed link indices
+      integer, dimension(n_links_polyline_nodes), intent(inout) :: polygon_nodes !< starting node of intersected polygon segment
+      real(kind=dp), dimension(n_links_polyline_nodes), intent(inout) :: polygon_segment_weights !< relative length of polygon segment from starting node till intersection
+      integer, intent(in) :: n_links_polyline_nodes !< array_size e.g. number of links ( Lnx for flowlinks, numL for netlinks) or npl for number of polyline nodes
+      integer, intent(in) :: intersection_count !< number of link intersections
+
+      integer, dimension(:), allocatable :: new_index !< index of sorted polygon_nodes
+      real(kind=dp), dimension(:), allocatable :: polygon_segment_weights_copy !< copy of intersection length polygon_segment_weights
+
+      integer :: k
+      integer :: n
+      integer :: n_start
+      integer :: n_end
+
+      allocate (new_index(n_links_polyline_nodes))
+      allocate (polygon_segment_weights_copy(n_links_polyline_nodes))
+
+      polygon_segment_weights_copy = polygon_segment_weights
+      ! The following loop finds the n_start and n_end of which have the same crossed_link value
+      n_start = 1 ! initialise n_start
+      do n = 1, intersection_count
+         do n_end = n_start, intersection_count - 1
+            if (crossed_links(n_end + 1) > crossed_links(n_start)) then
+               exit ! the next crossed_link value is larger than the considered crossed_link value, so n_end is found
+            end if
+         end do
+         call sort_index(polygon_nodes(n_start:n_end), new_index(n_start:n_end)) ! sorts polygon_nodes, and returns sorting order in new_index
+         do k = n_start, n_end
+            polygon_segment_weights(k) = polygon_segment_weights_copy(n_start - 1 + new_index(k)) ! sort polygon_segment_weights according to the same ordering
+         end do
+         n_start = n_end + 1 ! reinitialise n_start
+         if (n_start > intersection_count) then
+            exit ! if n_start exceeds the intersection_count then the loop is complete
+         end if
+      end do
+
+   end subroutine
+
 end module m_find_crossed_links_kdtree2

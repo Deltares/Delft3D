@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -58,7 +58,6 @@ module network_data
    use m_dimens
    use m_landboundary
    use m_polygon
-   use geometry_module, only: INTERNAL_NETLINKS_EDGE
 
    implicit none
 
@@ -111,6 +110,15 @@ module network_data
 
    ! Net link related :
    integer, allocatable, target :: kn(:, :) !< [-] Net links: kn(1,:)=from-idx, kn(2,:)=to-idx, kn(3,:)=net link type (0/1/2/3/4) {"shape": [3, "numl"]}
+   integer, public, parameter :: LINK_1D = 1 !< Type code for flow links that are 1D
+   integer, public, parameter :: LINK_2D = 2 !< Type code for flow links that are 2D
+   integer, public, parameter :: LINK_1D2D_INTERNAL = 3 !< Type code for 1D2D flow links of type 'internal'
+   integer, public, parameter :: LINK_1D2D_LONGITUDINAL = 4 !< Type code for 1D2D flow links of type 'longitudinal'
+   integer, public, parameter :: LINK_1D2D_STREETINLET = 5 !< Type code for 1D2D flow links of type 'gully/street inlet'
+   integer, public, parameter :: LINK_1D_MAINBRANCH = 6 !< Type code for flow links that are 1D main branch (with interpolation)
+   integer, public, parameter :: LINK_1D2D_ROOF = 7 !< Type code for 1D2D flow links of type 'roof/gutter pipe'
+   integer, public, parameter :: LINK_ALL = 10 !< Type code for flow links that are of any type
+
    integer, allocatable :: KN0(:, :) !< Backup for kn.
    integer, allocatable :: LC(:) !< (numl) Mask array for net links.
    integer, allocatable :: LC0(:) !< Backup for lc.
@@ -157,14 +165,13 @@ module network_data
 
 !  integer                          :: jacenterinside = 1                !< Force cell center inside or not: 1 = inside, on edge ,  0 = true circumcenter
    double precision :: dcenterinside = 1d0 !< Force cell center inside cell with factor dcenterinside, 1: confined by cell edges, 0: at mass center
-   integer :: circumcenter_method = INTERNAL_NETLINKS_EDGE !< Computation of circumcenter (iterate each edge - 1=internal netlinks; iterate each loop - 2=internal netlinks, 3=all netlinks)
 
    double precision :: removesmalllinkstrsh = 1d-1 !< 0.0 = remove no links ,  0.1 = remove links smaller than 0.1 sqrt(ba)
    !< used for removelinks, but *also* in geominit: no flow link created if dx < dxtrsh
 
    integer :: maxfaceallow = 4 !< Nr. of faces allowed in removesmallflowlinks
 
-   integer :: NUMITCOURANT = 5 !< Nr. of smooth. iter. in Courant network (need samples).
+   integer :: numitcourant = 5 !< Nr. of smooth. iter. in Courant network (need samples).
 
    double precision :: SMALLESTSIZEINCOURANT = 100d0 !< Smallest cellsize generated in Courant network.
 
@@ -182,7 +189,7 @@ module network_data
 
    double precision :: TOOCLOSE = 0.001d0 !< Network points closer than tooclose are merged
 
-   double precision :: CONNECT1DEND = 0d0 !< Merge 1D endpoint ti closest branch point
+   double precision :: connect1dend = 0d0 !< Merge 1D endpoint ti closest branch point
 
    double precision :: Unidx1D = 100d0 !< Uniform 1D dx in copylandboundaryto1Dnetw
 
@@ -341,10 +348,9 @@ contains
       JOCHECKNET = 0
       zkUNI = -5d0
       dcenterinside = 1d0
-      circumcenter_method = INTERNAL_NETLINKS_EDGE
       removesmalllinkstrsh = 1d-1
       maxfaceallow = 4
-      NUMITCOURANT = 0
+      numitcourant = 0
       SMALLESTSIZEINCOURANT = 100d0
       TRIAREAREMFRAC = 0.2d0
       linmin = 0
@@ -358,7 +364,7 @@ contains
       cosphiutrsh = 0.5d0
       CORNERCOS = 0.25d0
       TOOCLOSE = 0.001d0
-      CONNECT1DEND = 0d0
+      connect1dend = 0d0
       Unidx1D = 100d0
       makeorthocenters = 0
       strip_mesh = 0

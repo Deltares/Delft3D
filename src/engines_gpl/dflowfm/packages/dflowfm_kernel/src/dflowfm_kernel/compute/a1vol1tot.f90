@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,11 +42,11 @@ contains
 
    subroutine a1vol1tot()
       use precision, only: dp
-      use m_flowgeom
-      use m_flow
-      use m_partitioninfo
-      use m_flowtimes
-      use precision_basics
+      use m_flowgeom, only: ndxi, bare
+      use m_flow, only: a1tot, a1, vol1tot, vol1, interceptionmodel, dfm_hyd_intercept_layer, vol1icept, intercepths, jagrw, volgrw, volgrwini, EPS10, volcur, idx_voltot, idx_stor, vol1ini
+      use m_partitioninfo, only: jampi, idomain, my_rank, reduce_double_sum
+      use m_flowtimes, only: time1, tstart_user
+      use precision_basics, only: comparereal
       implicit none
 
       real(kind=dp), dimension(1) :: dum
@@ -60,9 +60,9 @@ contains
             vol1icept = sum(bare(1:ndxi) * InterceptHs(1:ndxi))
          end if
       else
-         a1tot = 0d0
-         vol1tot = 0d0
-         vol1icept = 0d0
+         a1tot = 0.0_dp
+         vol1tot = 0.0_dp
+         vol1icept = 0.0_dp
 
          do k = 1, Ndxi
             if (idomain(k) == my_rank) then
@@ -88,14 +88,14 @@ contains
          end if
       end if
 
-      if (comparereal(time1, tstart_user, eps10) == 0) then
+      if (comparereal(time1, tstart_user, EPS10) == 0) then
          volcur(IDX_VOLTOT) = vol1tot
          volcur(IDX_STOR) = vol1tot
          vol1ini = vol1tot
 
 !   vol1ini needs to be global
          if (jampi == 1) then
-            call reduce_double_sum(1, (/vol1ini/), dum)
+            call reduce_double_sum(1, [vol1ini], dum)
             vol1ini = dum(1)
          end if
       end if

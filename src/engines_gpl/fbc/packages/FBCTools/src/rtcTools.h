@@ -1,4 +1,4 @@
-// Copyright (C) 2013 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,11 +21,10 @@
  * @date 2013
  */
 
-
 #ifndef RTCTOOLS_H
 #define RTCTOOLS_H
 
 void usage();
-int main(int argc, char *argv[]);
+int main(int argc, char* argv[]);
 
-#endif //RTCTOOLS_H
+#endif // RTCTOOLS_H

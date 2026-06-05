@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -32,48 +32,39 @@ using namespace rtctools::utilities;
 
 namespace rtctools
 {
-namespace schematization
-{
-namespace rules
-{
+    namespace schematization
+    {
+        namespace rules
+        {
 
-class guideBandRule : public rule
-{
+            class guideBandRule : public rule
+            {
+            public:
+                /** Default constructor */
+                guideBandRule(string id, string name, dateLookupTableConverter* xMin, dateLookupTableConverter* xMax,
+                              double yMin, int iYMin, double yMax, int iYMax, int iXIn, int iYIn, int iYOut);
 
-public:
-	/** Default constructor */
-	guideBandRule(string id, 
-				  string name, 
-				  dateLookupTableConverter *xMin, 
-				  dateLookupTableConverter *xMax,
-				  double yMin,
-				  int iYMin,
-				  double yMax,
-				  int iYMax,
-				  int iXIn, 
-				  int iYIn, 
-				  int iYOut);
+                /** Default destructor */
+                ~guideBandRule() {};
 
-	/** Default destructor */
-	~guideBandRule() {};
+                void solve(double* stateOld, double* stateNew, long long t, double dt);
+                void solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld,
+                              double* objNew);
 
-	void solve(double *stateOld, double *stateNew, long long t, double dt);
-	void solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew);
+            private:
+                dateLookupTableConverter* xMin;
+                dateLookupTableConverter* xMax;
+                double yMin;
+                int iYMin;
+                double yMax;
+                int iYMax;
+                int iXIn;
+                int iYIn;
+                int iYOut;
+            };
 
-private:
-	dateLookupTableConverter *xMin;
-    dateLookupTableConverter *xMax;
-	double yMin;
-	int iYMin;
-	double yMax;
-	int iYMax;
-    int iXIn;
-    int iYIn;
-    int iYOut;
-};
-
-} // end namespace rules
-} // end namespace schematization
+        } // end namespace rules
+    } // end namespace schematization
 } // end namespace rtctools
 
 #endif // GUIDEBANDRULE_H

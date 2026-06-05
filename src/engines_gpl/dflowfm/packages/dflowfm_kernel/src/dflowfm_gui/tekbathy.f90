@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -53,7 +53,9 @@ contains
       integer :: k, ja, nn, ncol
       real(kind=dp) :: zn
 
-      if (ndraw(39) == 0) return
+      if (ndraw(39) == 0) then
+         return
+      end if
 
       nodewhat = ndraw(28)
       ndraw(28) = 3

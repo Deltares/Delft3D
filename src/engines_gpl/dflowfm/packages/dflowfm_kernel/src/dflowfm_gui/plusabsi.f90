@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,8 +50,12 @@ contains
 
       integer, parameter :: MAXOP = 64
       integer :: NUMK, NUML, KEY
-      real(kind=dp) XK(NUMK), YK(NUMK), ZK(NUMK), XI, YI, ZI
-      integer KN(3, NUML)
+      real(kind=dp) :: XI, YI, ZI
+      real(kind=dp), dimension(numk), intent(in) :: XK
+      real(kind=dp), dimension(numk), intent(in) :: YK
+      real(kind=dp), dimension(numk), intent(in) :: ZK
+      integer, dimension(3, NUML), intent(inout) :: KN
+
       integer, intent(inout) :: kndefault !< Default uniform value (e.g. kn3typ), will be changed too at call site when user changes it in the dialog.
       character(len=40) OPTION(MAXOP)
 
@@ -95,7 +99,9 @@ contains
             ICHANGE = NWHAT
             if (A == dmiss) then
                call GETREAL('FIRST SPECIFY UNIFORM VALUE = ', A)
-               if (A /= dmiss) JA = 1
+               if (A /= dmiss) then
+                  JA = 1
+               end if
                goto 10
             else
                JA = 1
@@ -120,16 +126,18 @@ contains
          end if
       end if
       call SAVENET()
-      call READYY('CHANGE FIELD VALUES', 0d0)
+      call READYY('CHANGE FIELD VALUES', 0.0_dp)
       KMOD = max(1, NUML / 100)
       do L = 1, NUML
          if (mod(L, KMOD) == 0) then
-            AF = dble(L) / dble(NUML)
+            AF = real(L, kind=dp) / real(NUML, kind=dp)
             call READYY('CHANGE FIELD VALUES', AF)
          end if
          K1 = KN(1, L)
          K2 = KN(2, L)
-         if (K1 == 0 .or. K2 == 0) cycle
+         if (K1 == 0 .or. K2 == 0) then
+            cycle
+         end if
          XI = (XK(K1) + XK(K2)) / 2
          YI = (YK(K1) + YK(K2)) / 2
          ZI = (ZK(K1) + ZK(K2)) / 2
@@ -137,7 +145,9 @@ contains
          JA = 0
          if (NPL >= 3) then
             call DPINPOK(XI, YI, ZI, NPL, XPL, YPL, INHUL, jins, dmiss)
-            if (INHUL == 1) JA = 1
+            if (INHUL == 1) then
+               JA = 1
+            end if
          else
             JA = 1
          end if
@@ -150,21 +160,29 @@ contains
             else if (ICHANGE == 2) then
                kn(3, L) = IA
             else if (ICHANGE == 3) then
-               if (RD == dmiss) kn(3, L) = max(kn(3, L), IA)
+               if (RD == dmiss) then
+                  kn(3, L) = max(kn(3, L), IA)
+               end if
             else if (ICHANGE == 4) then
-               if (RD == dmiss) kn(3, L) = min(kn(3, L), IA)
+               if (RD == dmiss) then
+                  kn(3, L) = min(kn(3, L), IA)
+               end if
             else if (ICHANGE == 5) then
-               if (RD == dmiss) kn(3, L) = kn(3, L) + IA
+               if (RD == dmiss) then
+                  kn(3, L) = kn(3, L) + IA
+               end if
             else if (ICHANGE == 6) then
-               if (RD == dmiss) kn(3, L) = kn(3, L) * IA
+               if (RD == dmiss) then
+                  kn(3, L) = kn(3, L) * IA
+               end if
             else if (ICHANGE == 7) then
                kn(3, L) = int(dmiss)
             end if
          end if
       end do
-      call READYY('CHANGE FIELD VALUES', -1d0)
+      call READYY('CHANGE FIELD VALUES', -1.0_dp)
       KEY = 3
-      return
+
    end subroutine PLUSABSI
 
 end module m_plusabsi

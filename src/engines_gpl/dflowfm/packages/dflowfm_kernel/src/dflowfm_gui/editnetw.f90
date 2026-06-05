@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -311,7 +311,7 @@ contains
             end if
          else if (JADD == 8) then ! split line
             if (KP == 0) then
-               call splitlink(xp, yp, 0, 0.9d0, 1, ierror) ! use (xp,yp) and no link specified, use cos parallelogram tolerance and plot
+               call splitlink(xp, yp, 0, 0.9_dp, 1, ierror) ! use (xp,yp) and no link specified, use cos parallelogram tolerance and plot
             end if
          else if (JADD == 88) then ! insert meshline
             if (KP == 0) then

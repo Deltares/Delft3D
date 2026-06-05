@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -28,11 +28,13 @@
 !-------------------------------------------------------------------------------
 
 module m_inidat
+
    use m_wrilan, only: wrilan
    use m_ininumbers, only: ininumbers
    use m_wrirgf, only: wrirgf
    use m_maketekaltimes, only: maketekaltimes
 
+   use precision, only: dp
    implicit none
 
    private
@@ -70,12 +72,16 @@ contains
       use m_paramtext
       use m_increase_grid
       use m_ini_sferic
+      use m_start_parameters, only: md_jaautostart
+      use properties, only: deprecate_pound_wrapped_values
 
       real(kind=dp) :: dx
       integer :: k
       real(kind=dp) :: rk
       real(kind=dp) :: rmiss
       integer, save :: jaSkipCmdLineArgs = 0 !< Later set to 1, to read cmdline args just once.
+
+      deprecate_pound_wrapped_values = .true.
 
       !  1=CLS
       !  2=GRID/NET    1=RECHT   2=SPLINE
@@ -201,37 +207,48 @@ contains
       call ZERONET()
 !write (*,*) 'zeronet'
 
-      XK0 = 0; YK0 = 0; ZK0 = 0
+      XK0 = 0
+      YK0 = 0
+      ZK0 = 0
       !XK1  = 0 ; YK1  = 0 ; ZK1  = 0
       RK = 0
 
-      RNOD = dmiss; RLIN = dmiss
+      RNOD = dmiss
+      RLIN = dmiss
 
-      XLAN = xymis; YLAN = xymis; ZLAN = 0; NCLAN = 0
-      XPL = 0; YPL = 0
+      XLAN = xymis
+      YLAN = xymis
+      ZLAN = 0
+      NCLAN = 0
+      XPL = 0
+      YPL = 0
 
-      KN = 0; KN0 = 0
+      KN = 0
+      KN0 = 0
 
-      NMK = 0; NMK0 = 0
-      KC = 0; KC0 = 0
-      LC = 0; LC0 = 0
+      NMK = 0
+      NMK0 = 0
+      KC = 0
+      KC0 = 0
+      LC = 0
+      LC0 = 0
 
-      DX = 1.0d20
+      DX = 1.0e20_dp
       RMISS = -999
-      ZUPW = 1d0
-      AG = 9.81d0
+      ZUPW = 1.0_dp
+      AG = 9.81_dp
       PI = acos(-1.)
       RHOW = 1000
       JVAST = 0
       RLENGTH = 1
-      RWIDTH = 0.01d0
-      RTHICK = 0.01d0
+      RWIDTH = 0.01_dp
+      RTHICK = 0.01_dp
       LFAC = 2
       MOMENTS = 1
 
       XYZ = 0
 
-      TWOPI = 2 * acos(-1d0)
+      TWOPI = 2 * acos(-1.0_dp)
       WAVLEN = WAVCEL * WAVPER
       WAVKX = TWOPI / WAVLEN
       WAVOM = TWOPI / WAVPER
@@ -307,7 +324,8 @@ contains
             !CALL OLDFIL (MINP, inarg)
             call loadNetwork(trim(inarg), istat, 0)
             if (istat == 0) then
-               md_netfile = ' '; md_netfile = trim(inarg)
+               md_netfile = ' '
+               md_netfile = trim(inarg)
             end if
          else if (EXT == '.bmp' .or. EXT == '.BMP') then
             call LOADBITMAP(inarg)

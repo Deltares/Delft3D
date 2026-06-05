@@ -1,6 +1,6 @@
 """Process runner for test suite.
 
-Copyright (C)  Stichting Deltares, 2024
+Copyright (C)  Stichting Deltares, 2026
 """
 
 import copy
@@ -25,20 +25,25 @@ from src.utils.paths import Paths
 class Program:
     """Process runner that runs a program (part of a test case)."""
 
-    # global variables
-    __error: Optional[Exception] = None
-
     # constructor
     def __init__(self, program_config: ProgramConfig, settings: TestBenchSettings) -> None:
-        if not program_config:
-            raise RuntimeError("Cannot instantiate a program without a configuration")
         self.__program_config = program_config
         self.__settings: TestBenchSettings = copy.deepcopy(settings)
+        self.__last_return_code: int = 0
+        self.__error: Exception | None = None
 
     @property
     def name(self) -> str:
         """The name of the Program."""
         return self.__program_config.name
+
+    @property
+    def last_return_code(self) -> int:
+        return self.__last_return_code
+
+    @property
+    def ignore_return_code(self) -> bool:
+        return self.__program_config.ignore_return_value
 
     def run(self, logger: ILogger) -> None:
         self.__execute__(logger)
@@ -103,7 +108,7 @@ class Program:
             if program_config.shell_remove_quotes:
                 self.__program_config.shell_remove_quotes = True
 
-    def getError(self):
+    def getError(self) -> Exception | None:
         """Return sub process errors if any."""
         return self.__error
 
@@ -126,6 +131,7 @@ class Program:
 
             # write output while executing, optionally create a log file
             self.__handle_process_output(logger, completed_process)
+            self.__last_return_code = completed_process.returncode
 
             # check results
             if completed_process.returncode != 0:
@@ -158,7 +164,7 @@ class Program:
             return
         file_logger: Optional[FileLogger] = None
 
-        if self.__settings.run_mode == ModeType.REFERENCE:
+        if self.__settings.command_line_settings.run_mode == ModeType.REFERENCE:
             time_str = datetime.now().strftime("%y%m%d_%H%M%S")
             unique_name = f"{self.__program_config.name}={time_str}.log"
             log_file = os.path.abspath(os.path.join(str(self.__program_config.working_directory), unique_name))
@@ -169,7 +175,7 @@ class Program:
             )
 
         logger.debug(f"Program output will be written to: {log_file}")
-        file_logger = FileLogger(self.__settings.log_level, unique_name, log_file)
+        file_logger = FileLogger(self.__settings.command_line_settings.log_level, unique_name, log_file)
         for line in completed_process.stdout.splitlines():
             file_logger.debug(line.decode())
 
@@ -192,7 +198,7 @@ class Program:
         )
 
         program_env = self.__program_config.environment
-        tb_root = self.__settings.test_bench_root
+        tb_root = self.__settings.command_line_settings.test_bench_root
 
         if tb_root is not None:
             program_env["TestBenchRoot"] = tb_root

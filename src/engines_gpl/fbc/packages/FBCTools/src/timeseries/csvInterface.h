@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -35,38 +35,40 @@ using namespace std;
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-class csvInterface 
-{
-private:
-	timeSeriesTensorInterface *tsTensor;
-	boost::filesystem::path workDir;
-	char decimalSeparator;
-	char delimiter;
-	bool adjointOutput;
-    ofstream* files;
-	void write(char filename[], int n, string* series, double** data);
-	void write(ofstream& file, int timeStep, double *data);
-    void write(ofstream& file, int timeStep, double *data, std::vector<string>& additionalTimeSerieNames, std::vector<int>& additionalTimeserie);
+        class csvInterface
+        {
+        private:
+            timeSeriesTensorInterface* tsTensor;
+            boost::filesystem::path workDir;
+            char decimalSeparator;
+            char delimiter;
+            bool adjointOutput;
+            ofstream* files;
+            void write(char filename[], int n, string* series, double** data);
+            void write(ofstream& file, int timeStep, double* data);
+            void write(ofstream& file, int timeStep, double* data, std::vector<string>& additionalTimeSerieNames,
+                       std::vector<int>& additionalTimeserie);
 
-public:
-	csvInterface(timeSeriesTensorInterface* valueTensor, boost::filesystem::path workDir, 
-		char decimalSeparator = '.', char delimiter = ',', bool adjointOutput = false);
-	~csvInterface();
+        public:
+            csvInterface(timeSeriesTensorInterface* valueTensor, boost::filesystem::path workDir,
+                         char decimalSeparator = '.', char delimiter = ',', bool adjointOutput = false);
+            ~csvInterface();
 
-    void openFiles();
-	void writeFiles(string filename, vector<string> series, double*** tensor);
-	void writeFiles(string filename, int nSeries, string* series, double*** tensor);
-    void writeFiles(int timeStep);
-    void writeFiles(int timeStep, std::vector<string>& additionalTimeSerieNames, std::vector<int>& additionalTimeseries);
+            void openFiles();
+            void writeFiles(string filename, vector<string> series, double*** tensor);
+            void writeFiles(string filename, int nSeries, string* series, double*** tensor);
+            void writeFiles(int timeStep);
+            void writeFiles(int timeStep, std::vector<string>& additionalTimeSerieNames,
+                            std::vector<int>& additionalTimeseries);
 
-    void closeFiles();
-	void write(int timeStep);
-};
+            void closeFiles();
+            void write(int timeStep);
+        };
 
-} // end namespace timeseries
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* CSVINTERFACE_H */

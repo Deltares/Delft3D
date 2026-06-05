@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -29,15 +29,15 @@
 namespace rtctools
 {
 
-/**
-  * @brief
-  */
-class rtcToolsOptimizer
-{
-	public:
-		virtual int optimize() = 0;
-		virtual void write(boost::filesystem::path filename) = 0;
-};
+    /**
+     * @brief
+     */
+    class rtcToolsOptimizer
+    {
+    public:
+        virtual int optimize() = 0;
+        virtual void write(boost::filesystem::path filename) = 0;
+    };
 
-}
-#endif //RTCTOOLSOPTIMIZER_H
+} // namespace rtctools
+#endif // RTCTOOLSOPTIMIZER_H

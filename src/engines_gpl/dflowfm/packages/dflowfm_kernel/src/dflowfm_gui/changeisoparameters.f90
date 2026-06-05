@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,15 +38,15 @@ contains
 
    subroutine CHANGEISOPARAMETERS()
       use precision, only: dp
-      use unstruc_colors
-      use unstruc_display_data
+      use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
+      use unstruc_display_data, only: npos
+      use m_depmax, only: jaauto, nv, vmin, vmax, dv, nis, nie, val
+      use m_helpnow, only: nlevel, wrdkey
+      use m_scalepos, only: xsc, ysc, ndec, scalesize
+      use m_depmax2, only: jaauto2, nv2, vmin2, vmax2, dv2, nis2, nie2, val2
+      use m_help, only: help
+      use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
-      use m_depmax
-      use m_helpnow
-      use m_scalepos
-      use m_depmax2
-      use m_help
-      use m_highlight_form_line
 
       real(kind=dp) :: dvi, dvi2
       real(kind=dp) :: dvnu
@@ -262,14 +262,18 @@ contains
 
             call IFormGetDouble(16, XSC)
             call IFormGetDouble(18, YSC)
-            XSC = max(0d0, min(XSC, 1d0))
-            YSC = max(0d0, min(YSC, 1d0))
+            XSC = max(0.0_dp, min(XSC, 1.0_dp))
+            YSC = max(0.0_dp, min(YSC, 1.0_dp))
             call IFORMGETINTEGER(20, NDEC)
-            if (NDEC > 7) NDEC = 7
+            if (NDEC > 7) then
+               NDEC = 7
+            end if
             call IFormGetDouble(22, SCALESIZE)
-            SCALESIZE = max(0d0, min(SCALESIZE, 1d0))
+            SCALESIZE = max(0.0_dp, min(SCALESIZE, 1.0_dp))
 
-            if (DVNU /= DVI .or. VMAXN /= VMAX .or. VMINN /= VMIN) JAAUTO = 0
+            if (DVNU /= DVI .or. VMAXN /= VMAX .or. VMINN /= VMIN) then
+               JAAUTO = 0
+            end if
 
             if (JAAUTO == 0) then
                DV = (NV - 1) * DVNU
@@ -304,8 +308,9 @@ contains
                NIE2 = max(NIS2 + NV2 + 1, min(NIEN, 254))
             end if
 
-            if (DVNU /= DVI2 .or. VMAXN /= VMAX2 .or. &
-                VMINN /= VMIN2) JAAUTO2 = 0
+            if (DVNU /= DVI2 .or. VMAXN /= VMAX2 .or. VMINN /= VMIN2) then
+               JAAUTO2 = 0
+            end if
 
             if (JAAUTO2 == 0) then
                DV2 = (NV2 - 1) * DVNU

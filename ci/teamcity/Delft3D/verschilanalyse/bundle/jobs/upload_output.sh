@@ -1,16 +1,17 @@
 #! /bin/bash
 #SBATCH --job-name=va-upload-output
-#SBATCH --output=/p/devops-dsc/verschilanalyse/report/logs/va-upload-output-%j.out
 #SBATCH --time=04:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=16vcpu
 #SBATCH --cpus-per-task=16
+#SBATCH --partition=16vcpu_spot
+#SBATCH --account=verschilanalyse
+#SBATCH --qos=verschilanalyse
 
 set -eo pipefail
 
-if [[ -z "$BUCKET" || -z "$OUTPUT_PREFIX" || -z "$VAHOME" ]]; then
-    >&2 echo "Environment variables BUCKET, OUTPUT_PREFIX or VAHOME not set."
+if ! util.check_vars_are_set BUCKET CURRENT_PREFIX VAHOME MODELS_PATH; then
+    >&2 echo "Abort"
     exit 1
 fi
 
@@ -25,9 +26,9 @@ function zip_output {
     zip -r "$ZIP_PATH" . \
         -i '*_map.nc' -i '*_his.nc' -i '*_fou.nc' \
         -i '*.dia' -i '*.out' -i '*.tek'
-    
+
     # Remove zip if it is empty
-    if ! zipinfo "$ZIP_PATH" | grep -q '^-' ; then
+    if ! zipinfo "$ZIP_PATH" | grep -q '^-'; then
         echo "removing empty zip: $ZIP_PATH"
         rm -f "$ZIP_PATH"
     fi
@@ -39,14 +40,15 @@ rm -rf "$TMP_ARCHIVE_DIR"
 mkdir -p "$TMP_ARCHIVE_DIR"
 
 # Archive all output per individual (non-empty) model directory.
-find "${VAHOME}/input" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 \
-    | xargs -0 -P8 -I'{}' bash -c 'zip_output "{}"'
+find "${VAHOME}/${MODELS_PATH}" -mindepth 1 -maxdepth 1 -type d '!' -empty -print0 |
+    xargs -0 -P8 -I'{}' bash -c 'zip_output "{}"'
 
 # Upload the archives to MinIO.
 docker run --rm \
     --volume="${HOME}/.aws:/root/.aws:ro" --volume="${TMP_ARCHIVE_DIR}:/data:ro" \
-    docker.io/amazon/aws-cli:2.22.7 \
+    -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
+    docker.io/amazon/aws-cli:2.32.14 \
     --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-    s3 sync --delete --no-progress /data "${BUCKET}/${OUTPUT_PREFIX}/output"
+    s3 sync --delete --no-progress /data "${BUCKET}/${CURRENT_PREFIX}/output"
 
 rm -rf "$TMP_ARCHIVE_DIR"

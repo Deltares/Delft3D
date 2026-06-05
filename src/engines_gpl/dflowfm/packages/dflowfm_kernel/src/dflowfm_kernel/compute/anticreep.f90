@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -27,10 +27,6 @@
 !
 !-------------------------------------------------------------------------------
 
-!
-!
-
-! Anti-creep
 module m_anticreep
 
    implicit none
@@ -41,73 +37,117 @@ module m_anticreep
 
 contains
 
+   !> Reduces spurious horizontal layer motion ("creep") in stratified flows.
    subroutine anticreep(L)
       use precision, only: dp
+      use m_flow, only: kmx, zws, BACKGROUNDWATERTEMPERATURE, BACKGROUNDSALINITY, ag, rhomean, adve, baroclinic_force_prev, dsall, dteml, &
+                        layertype, LAYTP_SIGMA
+      use m_flowgeom, only: ln, bob, acl, dx
+      use m_transport, only: isalt, itemp, constituents
+      use m_flowparameters, only: jasal, temperature_model, TEMPERATURE_MODEL_NONE
+      use m_get_kbot_ktop, only: getkbotktop
+      use m_get_Lbot_Ltop, only: getLbotLtop
+      use m_density_formulas, only: derivative_density_to_salinity_eckart, derivative_density_to_temperature_eckart
+      use precision_basics, only: comparereal
 
-      use m_flow
-      use m_flowgeom
-      use m_transport
-      use m_flowparameters
-      use m_get_kbot_ktop
-      use m_get_Lbot_Ltop
-      use m_dens_eck
+      integer, intent(in) :: L !< Horizontal link index
 
-      implicit none
-      real(kind=dp), allocatable, dimension(:) :: polal ! Z-coordinate horizontal layers in nm
-      real(kind=dp), allocatable, dimension(:) :: pocol
-      real(kind=dp), allocatable, dimension(:) :: polar ! Z-coordinate horizontal layers in nmu
-      real(kind=dp), allocatable, dimension(:) :: pocor
-      real(kind=dp), allocatable, dimension(:) :: poflu ! Z-coordinate gradient flux
-      real(kind=dp), allocatable, dimension(:) :: point
-      real(kind=dp), allocatable, dimension(:) :: drho, dsal, dtem
-      real(kind=dp), allocatable, dimension(:) :: kicol, kicor
+      real(kind=dp), allocatable, save :: polal(:), pocol(:), polar(:), pocor(:)
+      real(kind=dp), allocatable, save :: poflu(:), point(:), drho(:), dsal(:), dtem(:)
+      integer, allocatable, save :: kicol(:), kicor(:)
 
-      integer :: k1, k2, kbl, kbr, ktl, ktr, kll, krr, kl, kr, kl1, kl2, kr1, kr2
-      integer :: kpoint, kf, k, j, Lb, Lt, LL, kfmax, kfmax1, kflux
-      integer, intent(in) :: L
-      real(kind=dp) :: grad, grad1, grad2, cl, cr, flux, flux1
-      real(kind=dp) :: zbot, ztop, zmid, zbed, farea
-      real(kind=dp) :: rhods, rhodt, temp, sal, dummy, dpbdx
+      integer :: k1, k2, kbl, kbr, ktl, ktr, j
+      integer :: kll, krr, kl, kr, kl1, kl2, kr1, kr2
+      integer :: k, kf, kflux, kpoint, kmx_l, kmx_r, kmx_eff
+      integer :: LL, Lb, Lt, kfmax, kfmax1
 
-      allocate (polal(0:kmx), pocol(0:kmx), polar(0:kmx), pocor(0:kmx))
-      allocate (poflu(0:2 * kmx + 1), kicol(0:2 * kmx + 1), kicor(0:2 * kmx + 1))
-      allocate (point(0:2 * kmx + 1), drho(0:2 * kmx + 1), dsal(0:2 * kmx + 1), dtem(0:2 * kmx + 1))
+      real(kind=dp) :: grad, grad1, grad2
+      real(kind=dp) :: cl, cr, flux, flux1, farea
+      real(kind=dp) :: zbot, ztop, zmid, zbed
+      real(kind=dp) :: drho_dsalinity, drho_dtemperature
+      real(kind=dp) :: sal, temp, baroclinic_force
+      real(kind=dp) :: weight_left, weight_right
 
-      if (jasal == 0 .and. jatem == 0) return
+      ! Allocate once
+      if (.not. allocated(polal)) then
+         allocate (polal(0:kmx), pocol(1:kmx), polar(0:kmx), pocor(1:kmx))
+         allocate (poflu(0:2 * kmx + 1), point(0:2 * kmx + 1))
+         allocate (drho(1:2 * kmx + 1), dsal(1:2 * kmx + 1), dtem(1:2 * kmx + 1))
+         allocate (kicol(1:2 * kmx + 1), kicor(1:2 * kmx + 1))
+      end if
 
-      k1 = ln(1, L); k2 = ln(2, L)
+      if (jasal == 0 .and. temperature_model == TEMPERATURE_MODEL_NONE) then
+         return
+      end if
+
+      k1 = ln(1, L)
+      k2 = ln(2, L)
       call getkbotktop(k1, kbl, ktl)
       call getkbotktop(k2, kbr, ktr)
       call getLbotLtop(L, Lb, Lt)
-      zbed = (bob(1, L) + bob(2, L)) * 0.5d0 ! interpolates the bed level on flow link
+
+      if (layertype == LAYTP_SIGMA) then
+         kmx_l = kmx
+         kmx_r = kmx
+      else
+         kmx_l = ktl - kbl + 1
+         kmx_r = ktr - kbr + 1
+      end if
+      kmx_eff = max(kmx_l, kmx_r)
+
+      weight_left = acl(L)
+      weight_right = 1.0_dp - weight_left
+
+      zbed = (bob(1, L) + bob(2, L)) * 0.5_dp ! interpolates the bed level on flow link
       !
       !***position horizontal interfaces left and right
       !
-      polal = 0d0
-      pocol = 0d0
-      polar = 0d0
-      pocor = 0d0
+      polal = 0.0_dp
+      pocol = 0.0_dp
+      polar = 0.0_dp
+      pocor = 0.0_dp
       polal(0) = zws(kbl - 1)
       polar(0) = zws(kbr - 1)
-      do k = 1, kmx
+      do k = 1, kmx_l
          kl = kbl + k - 1
-         kr = kbr + k - 1
          polal(k) = zws(kl)
+         pocol(k) = (zws(kl) + zws(kl - 1)) * 0.5_dp
+      end do
+      do k = 1, kmx_r
+         kr = kbr + k - 1
          polar(k) = zws(kr)
-         pocol(k) = (zws(kl) + zws(kl - 1)) * 0.5d0
-         pocor(k) = (zws(kr) + zws(kr - 1)) * 0.5d0
+         pocor(k) = (zws(kr) + zws(kr - 1)) * 0.5_dp
       end do
       !
       !***merge polal and polar
       !
       kll = 0
       krr = 0
-      do k = 0, 2 * kmx + 1
+      do k = 0, 2 * kmx_eff + 1
          j = 0
-         if (polal(kll) < polar(krr)) then
+         if (comparereal(polal(kll), polar(krr)) == 0) then ! Values are equal, consume both pointers
             point(k) = polal(kll)
             kll = kll + 1
-            if (kll > kmx) then
+            krr = krr + 1
+            if (kll > kmx_l .and. krr > kmx_r) then
+               kpoint = k
+               j = 1
+               exit
+            else if (kll > kmx_l) then
+               kpoint = k + 1
+               point(kpoint) = polar(krr)
+               j = 1
+               exit
+            else if (krr > kmx_r) then
+               kpoint = k + 1
+               point(kpoint) = polal(kll)
+               j = 1
+               exit
+            end if
+         else if (polal(kll) < polar(krr)) then
+            point(k) = polal(kll)
+            kll = kll + 1
+            if (kll > kmx_l) then
                kpoint = k + 1
                point(kpoint) = polar(krr)
                j = 1
@@ -116,7 +156,7 @@ contains
          else
             point(k) = polar(krr)
             krr = krr + 1
-            if (krr > kmx) then
+            if (krr > kmx_r) then
                kpoint = k + 1
                point(kpoint) = polal(kll)
                j = 1
@@ -124,14 +164,16 @@ contains
             end if
          end if
       end do
-      if (j == 0) kpoint = 2 * kmx + 1
+      if (j == 0) then
+         kpoint = 2 * kmx_eff + 1
+      end if
       !
       !***position flux points
       !
-      poflu = 0d0
+      poflu = 0.0_dp
       kflux = kpoint
       do k = 1, kflux
-         poflu(k) = 0.5d0 * (point(k) + point(k - 1))
+         poflu(k) = 0.5_dp * (point(k) + point(k - 1))
       end do
       !
       !***k-index concentration points left and right for flux point
@@ -141,14 +183,14 @@ contains
       do kf = 1, kflux
          kicol(kf) = 0
          kicor(kf) = 0
-         do k = kll, kmx
+         do k = kll, kmx_l
             if (poflu(kf) >= polal(k - 1) .and. poflu(kf) <= polal(k)) then
                kicol(kf) = k
                kll = k
                exit
             end if
          end do
-         do k = krr, kmx
+         do k = krr, kmx_r
             if (poflu(kf) >= polar(k - 1) .and. poflu(kf) <= polar(k)) then
                kicor(kf) = k
                krr = k
@@ -159,19 +201,23 @@ contains
       !
       !***computation diffusive flux using limiter
       !
-      drho = 0d0
-      dsal = 0d0
-      dtem = 0d0
+      drho(1:kflux) = 0.0_dp
+      dsal(1:kflux) = 0.0_dp
+      dtem(1:kflux) = 0.0_dp
       do kf = kflux, 1, -1
          kll = kicol(kf)
          krr = kicor(kf)
-         if (kll * krr == 0) cycle
+         if (kll * krr == 0) then
+            cycle
+         end if
          kl = kbl + kll - 1 ! changes the number of layer to number of cell
          kr = kbr + krr - 1
-         if (point(kf) <= zbed) exit
-         drho(kf) = 0d0
-         dsal(kf) = 0d0
-         dtem(kf) = 0d0
+         if (point(kf) <= zbed) then
+            exit
+         end if
+         drho(kf) = 0.0_dp
+         dsal(kf) = 0.0_dp
+         dtem(kf) = 0.0_dp
          !
          !***flux
          !
@@ -217,85 +263,105 @@ contains
 
          if (jasal > 0) then
             cl = constituents(isalt, kl2)
-            if (kl1 >= kbl .and. kl1 <= ktl) cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(isalt, kl1) &
-                                                   + (pocor(krr) - pocol(kl1 - kbl + 1)) * constituents(isalt, kl2)) &
-                                                  / (pocol(kl2 - kbl + 1) - pocol(kl1 - kbl + 1))
+            if (kl1 >= kbl .and. kl1 <= ktl) then
+               cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(isalt, kl1) &
+                     + (pocor(krr) - pocol(kl1 - kbl + 1)) * constituents(isalt, kl2)) &
+                    / (pocol(kl2 - kbl + 1) - pocol(kl1 - kbl + 1))
+            end if
             cr = constituents(isalt, kr2)
-            if (kr1 >= kbr .and. kr1 <= ktr) cr = ((pocor(kr2 - kbr + 1) - pocol(kll)) * constituents(isalt, kr1) &
-                                                   + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(isalt, kr2)) &
-                                                  / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
-            grad1 = (constituents(isalt, kr) - cl) ! / dx(L)
-            grad2 = (cr - constituents(isalt, kL)) ! / dx(L)
-            grad = 0d0; if (grad1 * grad2 > 0d0) grad = 2.0d0 * grad1 * grad2 / (grad1 + grad2)
-            sal = acl(L) * constituents(isalt, kl) + (1d0 - acl(L)) * constituents(isalt, kr)
+            if (kr1 >= kbr .and. kr1 <= ktr) then
+               cr = ((pocor(kr2 - kbr + 1) - pocol(kll)) * constituents(isalt, kr1) &
+                     + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(isalt, kr2)) &
+                    / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
+            end if
+            grad1 = (constituents(isalt, kr) - cl)
+            grad2 = (cr - constituents(isalt, kL))
+            grad = 0.0_dp
+            if (grad1 * grad2 > 0.0_dp) then
+               grad = 2.0_dp * grad1 * grad2 / (grad1 + grad2)
+            end if
+            sal = acl(L) * constituents(isalt, kl) + (1.0_dp - acl(L)) * constituents(isalt, kr)
             temp = backgroundwatertemperature
-            if (jatem > 0) temp = acl(L) * constituents(itemp, kl) + (1d0 - acl(L)) * constituents(itemp, kr)
-            call dens_eck(temp, sal, dummy, rhods, dummy)
-            drho(kf) = drho(kf) + rhods * grad
+            if (temperature_model /= TEMPERATURE_MODEL_NONE) then
+               temp = acl(L) * constituents(itemp, kl) + (1.0_dp - acl(L)) * constituents(itemp, kr)
+            end if
+            drho_dsalinity = derivative_density_to_salinity_eckart(sal, temp)
+            drho(kf) = drho(kf) + drho_dsalinity * grad
             dsal(kf) = grad
          end if
 
-         if (jatem > 0) then
+         if (temperature_model /= TEMPERATURE_MODEL_NONE) then
             cl = constituents(itemp, kl2)
-            if (kl1 >= kbl .and. kl1 <= ktl) cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(itemp, kl1) &
-                                                   + (pocor(krr) - pocol(kl1 - kbl + 1)) * constituents(itemp, kl2)) &
-                                                  / (pocol(kl2 - kbl + 1) - pocol(kl1 - kbl + 1))
-            cr = constituents(itemp, kr2)
-            if (kr1 >= kbr .and. kr1 <= ktr) cr = ((pocor(kr2 - kbr + 1) - pocol(kll)) * constituents(itemp, kr1) &
-                                                   + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(itemp, kr2)) &
-                                                  / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
-            grad1 = (constituents(itemp, kr) - cl) ! / dx(L)
-            grad2 = (cr - constituents(itemp, kl)) ! / dx(L)
-            grad = 0d0; if (grad1 * grad2 > 0d0) grad = 2.0d0 * grad1 * grad2 / (grad1 + grad2)
-            temp = acl(L) * constituents(itemp, kl) + (1d0 - acl(L)) * constituents(itemp, kr)
+            if (kl1 >= kbl .and. kl1 <= ktl) then
+               cl = ((pocol(kl2 - kbl + 1) - pocor(krr)) * constituents(itemp, kl1) &
+                     + (pocor(krr) - pocol(kl1 - kbl + 1)) * constituents(itemp, kl2)) &
+                    / (pocol(kl2 - kbl + 1) - pocol(kl1 - kbl + 1))
+               cr = constituents(itemp, kr2)
+            end if
+            if (kr1 >= kbr .and. kr1 <= ktr) then
+               cr = ((pocor(kr2 - kbr + 1) - pocol(kll)) * constituents(itemp, kr1) &
+                     + (pocol(kll) - pocor(kr1 - kbr + 1)) * constituents(itemp, kr2)) &
+                    / (pocor(kr2 - kbr + 1) - pocor(kr1 - kbr + 1))
+            end if
+            grad1 = (constituents(itemp, kr) - cl)
+            grad2 = (cr - constituents(itemp, kl))
+            grad = 0.0_dp
+            if (grad1 * grad2 > 0.0_dp) then
+               grad = 2.0_dp * grad1 * grad2 / (grad1 + grad2)
+            end if
+            temp = acl(L) * constituents(itemp, kl) + (1.0_dp - acl(L)) * constituents(itemp, kr)
             sal = backgroundsalinity
-            if (jasal > 0) sal = acl(L) * constituents(isalt, kl) + (1d0 - acl(L)) * constituents(isalt, kr)
-            call dens_eck(temp, sal, dummy, dummy, rhodt)
-            drho(kf) = drho(kf) + rhodt * grad
+            if (jasal > 0) then
+               sal = acl(L) * constituents(isalt, kl) + (1.0_dp - acl(L)) * constituents(isalt, kr)
+            end if
+            drho_dtemperature = derivative_density_to_temperature_eckart(sal, temp)
+            drho(kf) = drho(kf) + drho_dtemperature * grad
             dtem(kf) = grad
          end if
       end do
 
-      dpbdx = 0d0
-      flux1 = 0d0
+      baroclinic_force = 0.0_dp
+      flux1 = 0.0_dp
       kfmax = kflux
       kfmax1 = kflux
-      do k = kmx, 1, -1
-         ztop = acl(L) * zws(kbl + k - 1) + (1d0 - acl(L)) * zws(kbr + k - 1)
-         zbot = acl(L) * zws(kbl + k - 2) + (1d0 - acl(L)) * zws(kbr + k - 2)
-         if (ztop - zbot < 1d-4) cycle
-         zmid = (zbot + ztop) * 0.5d0
-         LL = Lb + k - 1
+
+      do LL = Lt, Lb, -1
+         k1 = ln(1, LL)
+         k2 = ln(2, LL)
+         ztop = weight_left * zws(k1) + weight_right * zws(k2)
+         zbot = weight_left * zws(k1 - 1) + weight_right * zws(k2 - 1)
+         if (ztop - zbot < 1.0e-4_dp) then
+            cycle
+         end if
+         zmid = (zbot + ztop) * 0.5_dp
          do kf = kfmax, 1, -1 ! HK: double inside loop, same as D3D => too much work
             kll = kicol(kf)
             krr = kicor(kf)
-            if (point(kf) <= zbed) exit
-            if (kll * krr == 0) cycle
+            if (point(kf) <= zbed) then
+               exit
+            end if
+            if (kll * krr == 0) then
+               cycle
+            end if
             if (zmid < point(kf - 1)) then
                flux = ag * (point(kf) - point(kf - 1)) * drho(kf) / rhomean
                flux1 = flux1 + flux
-               dpbdx = flux1
+               baroclinic_force = flux1
             elseif (zmid < point(kf) .and. zmid >= point(kf - 1)) then
                flux = ag * (point(kf) - zmid) * drho(kf) / rhomean
-               dpbdx = flux1 + flux
+               baroclinic_force = flux1 + flux
                kfmax = kf
                exit
             end if
          end do
-         if (jabaroctimeint <= 1) then ! explicit
-            adve(LL) = adve(LL) + dpbdx / dx(L) !   to compensate for not dividing by dx above
-         else
-            adve(LL) = adve(LL) + (1.5d0 * dpbdx - 0.5d0 * dpbdx0(LL)) / dx(L) !   to compensate for not dividing by dx above
-         end if
-         if (abs(jabaroctimeint) >= 2) then
-            dpbdx0(LL) = dpbdx
-         end if
+         adve(LL) = adve(LL) + (1.5_dp * baroclinic_force - 0.5_dp * baroclinic_force_prev(LL)) / dx(L) ! To compensate for not dividing by dx above
+         baroclinic_force_prev(LL) = baroclinic_force
 
          do kf = kfmax1, 1, -1
-            farea = -max(point(kf) - ztop, 0d0) & ! to find the flux area between the flux pieces and the sigma layer
-                    + max(point(kf) - zbot, 0d0) &
-                    - max(point(kf - 1) - zbot, 0d0)
-            if (farea < 0) then
+            farea = -max(point(kf) - ztop, 0.0_dp) & ! to find the flux area between the flux pieces and the sigma layer
+                    + max(point(kf) - zbot, 0.0_dp) &
+                    - max(point(kf - 1) - zbot, 0.0_dp)
+            if (comparereal(farea, 0.0_dp) == -1) then
                kfmax1 = kf
                exit
             end if
@@ -305,14 +371,6 @@ contains
          dsalL(LL) = dsalL(LL) / (ztop - zbot)
          dtemL(LL) = dtemL(LL) / (ztop - zbot)
       end do
-
-      if (abs(jabaroctimeint) >= 2) then
-         jabaroctimeint = abs(jabaroctimeint)
-      end if
-
-      deallocate (polal, pocol, polar, pocor)
-      deallocate (poflu, kicol, kicor)
-      deallocate (point, drho, dsal, dtem)
 
    end subroutine anticreep
 

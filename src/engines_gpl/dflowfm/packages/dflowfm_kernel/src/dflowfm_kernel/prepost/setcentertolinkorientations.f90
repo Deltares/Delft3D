@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,10 +42,10 @@ contains
 
    subroutine setcentertolinkorientations()
       use precision, only: dp
-      use m_flowgeom
+      use m_flowgeom, only: csb, snb, lnx, lncn, ln, xz, yz
+      use m_sferic, only: jsferic, jasfer3d
+      use m_alloc, only: aerr
       use network_data, only: xk, yk
-      use m_sferic
-      use m_alloc
       use geometry_module, only: half, spher2locvec
       use m_missing, only: dmiss
 
@@ -56,16 +56,24 @@ contains
 
       integer :: ierr
 
-      real(kind=dp), parameter :: dtol = 1d-8
+      real(kind=dp), parameter :: dtol = 1.0e-8_dp
 
-      if (allocated(csb)) deallocate (csb)
-      if (allocated(snb)) deallocate (snb)
+      if (allocated(csb)) then
+         deallocate (csb)
+      end if
+      if (allocated(snb)) then
+         deallocate (snb)
+      end if
 
-      if (jsferic == 0 .or. jasfer3D == 0) return
+      if (jsferic == 0 .or. jasfer3D == 0) then
+         return
+      end if
 
-      allocate (csb(2, Lnx), stat=ierr); csb = 1d0
+      allocate (csb(2, Lnx), stat=ierr)
+      csb = 1.0_dp
       call aerr('csb(2,Lnx)', ierr, 2 * Lnx)
-      allocate (snb(2, Lnx), stat=ierr); snb = 0d0
+      allocate (snb(2, Lnx), stat=ierr)
+      snb = 0.0_dp
       call aerr('snb(2,Lnx)', ierr, 2 * Lnx)
 
       do L = 1, Lnx
@@ -79,7 +87,7 @@ contains
             k = ln(i, L)
 
 !         compute orientation w.r.t. link mid point
-            call spher2locvec(xz(k), yz(k), 1, (/xL/), (/yL/), (/1d0/), (/0d0/), csb(i, L), snb(i, L), jsferic, jasfer3D, dmiss)
+            call spher2locvec(xz(k), yz(k), 1, [xL], [yL], [1.0_dp], [0.0_dp], csb(i, L), snb(i, L), jsferic, jasfer3D, dmiss)
          end do
       end do
 

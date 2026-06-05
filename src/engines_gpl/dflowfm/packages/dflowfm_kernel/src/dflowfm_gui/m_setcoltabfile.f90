@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,7 +42,7 @@ module m_setcoltabfile
       module subroutine SETCOLTABFILE(FILNAM, JASECOND)
          implicit none
          integer :: jasecond
-         character FILNAM * (*)
+         character(len=*), intent(in) :: filnam
       end subroutine SETCOLTABFILE
    end interface
 

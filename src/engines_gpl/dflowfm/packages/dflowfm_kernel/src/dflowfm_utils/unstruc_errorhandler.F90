@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -38,7 +38,7 @@ contains
       use unstruc_files, only: mdia, close_all_files
       use dfm_error, only: dfm_genericerror
 #ifdef HAVE_MPI
-      use mpi
+      use mpi, only: mpi_abort
       use m_partitioninfo, only: DFM_COMM_ALLWORLD, jampi
 #endif
 
@@ -59,7 +59,7 @@ contains
             call MPI_Abort(DFM_COMM_ALLWORLD, DFM_GENERICERROR, ierr)
          end if
 #endif
-         stop
+         error stop 1
       end if
    end subroutine unstruc_errorhandler
 

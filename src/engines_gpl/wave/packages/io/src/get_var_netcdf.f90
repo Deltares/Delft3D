@@ -2,7 +2,7 @@ subroutine get_var_netcdf(i_flow, wavetime, varname, vararr, mmax, nmax, basenam
                         & lastvalidflowfield, kmax, flowVelocityType)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -37,6 +37,7 @@ subroutine get_var_netcdf(i_flow, wavetime, varname, vararr, mmax, nmax, basenam
     use wave_data
     use flow_data, only: num_subdomains
     use netcdf
+    use nc_check, only : nc_check_err
     !
     implicit none
 !

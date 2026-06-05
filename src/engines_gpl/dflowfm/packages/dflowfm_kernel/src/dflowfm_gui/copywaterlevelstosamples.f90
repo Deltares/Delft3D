@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -50,7 +50,9 @@ contains
          if (hs(n) >= wetplot) then
             k = k + 1
             call increasesam(k)
-            xs(k) = xz(n); ys(k) = yz(n); zs(k) = znod(n)
+            xs(k) = xz(n)
+            ys(k) = yz(n)
+            zs(k) = znod(n)
          end if
       end do
       ns = k

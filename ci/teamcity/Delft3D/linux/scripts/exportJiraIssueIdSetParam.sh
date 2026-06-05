@@ -6,7 +6,7 @@ PULL_REQUEST_BRANCH="${PULL_REQUEST_BRANCH:-%teamcity.pullRequest.source.branch%
 PARAM_NAME="${PARAM_NAME:-%param_name%}"
 DEFAULT_JIRA_ISSUE_ID="UNKNOWN-0000"
 
-if [[ "${BUILD_BRANCH}" == *merge-request* ]]; then
+if [[ "${BUILD_BRANCH}" == *pull* ]]; then
     BRANCH_NAME="${PULL_REQUEST_BRANCH}"
 else
     BRANCH_NAME="${BUILD_BRANCH}"

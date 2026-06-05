@@ -45,12 +45,12 @@ target_compile_options(${executable_name} PRIVATE ${openmp_flag})
 set_target_properties(${executable_name} PROPERTIES FOLDER engines_gpl/part)
 
 if(WIN32)
-    set_target_properties(${executable_name} PROPERTIES LINK_FLAGS "/LARGEADDRESSAWARE /STACK:20000000")
     configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
 install(TARGETS ${executable_name} RUNTIME DESTINATION bin)
 install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/run_delpar.${platform_extension} DESTINATION bin)
+install(FILES ${CMAKE_SOURCE_DIR}/../engines_gpl/part/resources/data/leewayfactors.csv DESTINATION share/delft3d)
 if(WIN32)
     install(PROGRAMS ${CMAKE_CURRENT_LIST_DIR}/../resources/scripts/dshell_run_delpar.${platform_extension} DESTINATION bin)
 endif(WIN32)

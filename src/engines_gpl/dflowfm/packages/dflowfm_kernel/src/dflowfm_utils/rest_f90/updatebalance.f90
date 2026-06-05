@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -32,6 +32,7 @@
 
 module m_updatebalance
 
+   use precision, only: dp
    implicit none
 
    private
@@ -41,8 +42,8 @@ module m_updatebalance
 contains
 
    subroutine updateBalance()
-      use m_flow
-      use m_partitioninfo
+      use m_flow, only: cumvolcur, max_idx, volcur, idx_stor, voltot, vol1ini, idx_voltot, idx_icept
+      use m_partitioninfo, only: jampi, reduce_bal
 
       integer :: ivar
 
@@ -64,7 +65,7 @@ contains
          end if
       end do
 
-      cumvolcur = 0d0
+      cumvolcur = 0.0_dp
    end subroutine updateBalance
 
 end module m_updatebalance

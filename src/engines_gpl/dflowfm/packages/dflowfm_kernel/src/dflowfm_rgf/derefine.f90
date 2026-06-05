@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -43,8 +43,8 @@ contains
       use m_gridsettings, only: mfac, nfac
       use messagehandling, only: LEVEL_DEBUG, mess
       use m_missing, only: dmiss
-      use m_readyy
-      use m_qnerror
+      use m_readyy, only: readyy
+      use m_qnerror, only: qnerror
 
       integer :: m1, n1, m2, n2, num
       integer :: I, J, IR, INOW, JR, JNOW, MFA, NFA, MFAA, NFAA, MD, ND
@@ -64,7 +64,7 @@ contains
       call SAVEgrd()
 
       call mess(LEVEL_DEBUG, 'DEREFINE BY: ', MFAC, NFAC)
-      call READYY('DEREFINE', 0d0)
+      call READYY('DEREFINE', 0.0_dp)
 
       XR = dmiss
       YR = dmiss
@@ -73,8 +73,12 @@ contains
       ND = N2 - N1
       MFAA = MFAC
       NFAA = NFAC
-      if (MD == 0) MFAA = 1
-      if (ND == 0) NFAA = 1
+      if (MD == 0) then
+         MFAA = 1
+      end if
+      if (ND == 0) then
+         NFAA = 1
+      end if
 
       IR = 1
       INOW = 1
@@ -111,8 +115,8 @@ contains
 !     MC = INOW
 !     NC = JNOW
 
-      call READYY('DEREFINE', 1d0)
-      call READYY('DEREFINE', -1d0)
+      call READYY('DEREFINE', 1.0_dp)
+      call READYY('DEREFINE', -1.0_dp)
       deallocate (XR, YR)
       return
    end subroutine derefine

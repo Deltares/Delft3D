@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -44,10 +44,8 @@ contains
    !! sqrt(g/C2) in both in 2D and in 3D
    subroutine setcfuhi()
       use precision, only: dp
-      use m_flowtimes
-      use m_flow
+      use m_flow, only: jatrt, frcmax, ifrctypuni, cfuhi, jaconveyance2d, kmx, hu, epshs, huvli, frcu, u1, v, ifrcutp, ag, z0ucur, vonkar, sag, epsz0, z0urou
       use m_flowgeom, only: lnx, lnx1d
-      use m_missing
       use m_get_chezy, only: get_chezy
 
       ! locals
@@ -55,8 +53,9 @@ contains
       integer :: l
 
       ! NOTE: When frcuni==0, the initial friction fields in frcu also become noneffective:
-      if (jatrt == 0 .and. (frcmax == 0d0 .or. ifrctypuni == -999)) then
-         cfuhi = 0; return
+      if (jatrt == 0 .and. (frcmax == 0.0_dp .or. ifrctypuni == -999)) then
+         cfuhi = 0
+         return
       end if
       if (jaconveyance2D >= 1) then ! .and. kmx <=1 ) then
          return
@@ -72,17 +71,17 @@ contains
             do L = lnx1D + 1, lnx
                if (hu(L) > 0) then
                   if (jaconveyance2D == 0) then ! original default
-                     h0 = max(epshs, 1d0 / huvli(L))
+                     h0 = max(epshs, 1.0_dp / huvli(L))
                   else if (jaconveyance2D == -1) then ! better for straight test
                      h0 = max(epshs, hu(L)) ! does it whole not
                   end if
                   frcn = frcu(L)
-                  if (frcn > 0d0) then
+                  if (frcn > 0.0_dp) then
                      cz = get_chezy(h0, frcn, u1(L), v(L), ifrcutp(L))
                      cfuhi(L) = ag / (h0 * cz * cz)
-                     z0ucur(L) = h0 * exp(-1d0 - vonkar * cz / sag)
+                     z0ucur(L) = h0 * exp(-1.0_dp - vonkar * cz / sag)
                   else
-                     cfuhi(L) = 0d0
+                     cfuhi(L) = 0.0_dp
                      z0ucur(L) = epsz0
                   end if
                   z0urou(L) = z0ucur(L) ! 3D analogue in getustbcfhi

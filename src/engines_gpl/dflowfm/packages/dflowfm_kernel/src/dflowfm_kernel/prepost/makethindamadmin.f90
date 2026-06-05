@@ -1,6 +1,6 @@
 !----- AGPL --------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2017-2024.
+!  Copyright (C)  Stichting Deltares, 2017-2026.
 !
 !  This file is part of Delft3D (D-Flow Flexible Mesh component).
 !
@@ -42,9 +42,9 @@ contains
 
    subroutine makethindamadmin()
       use precision, only: dp
-      use m_flowgeom
-      use network_data
-      use m_alloc
+      use m_flowgeom, only: nthd, lne2ln, thindam
+      use network_data, only: nump, netcell, kn, xzw, yzw, xk, yk
+      use m_alloc, only: aerr
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: getdxdy, duitpl, dlinedis
       use m_missing, only: dmiss
@@ -64,7 +64,9 @@ contains
       end do
 
       ! set up thin dam structure
-      if (allocated(thindam)) deallocate (thindam)
+      if (allocated(thindam)) then
+         deallocate (thindam)
+      end if
       allocate (thindam(6, nthd), stat=ierr)
       call aerr('thindam(6,nthd)', ierr, 6 * nthd)
 
@@ -85,11 +87,13 @@ contains
 
                call duitpl(xzw(k1), yzw(k1), xk(k3), yk(k3), xzw(k1), yzw(k1), xk(k4), yk(k4), sig, jsferic)
                call dlinedis(xzw(k1), yzw(k1), xk(k3), yk(k3), xk(k4), yk(k4), JA, DIS, XN, YN, jsferic, jasfer3D, dmiss)
-               a = 0d0; b = 0d0
+               a = 0.0_dp
+               b = 0.0_dp
                call getdxdy(xk(k3), yk(k3), xk(k4), yk(k4), a, b, jsferic)
                rrr = sqrt(a * a + b * b)
-               cs = 0d0; sn = 0d0
-               if (rrr /= 0d0) then
+               cs = 0.0_dp
+               sn = 0.0_dp
+               if (rrr /= 0.0_dp) then
                   cs = sig * a / rrr
                   sn = sig * b / rrr
                end if

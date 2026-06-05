@@ -1,3 +1,5 @@
+module m_fallve
+contains
 subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 & kcs       ,kfs       ,u0        ,v0        , &
                 & wphy      ,r0        ,rtur0     ,ltur      ,thick     , &
@@ -8,7 +10,7 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
                 & taubmx    ,lstsci    ,rich      ,gdp       )
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
-!  Copyright (C)  Stichting Deltares, 2011-2024.                                
+!  Copyright (C)  Stichting Deltares, 2011-2026.                                
 !                                                                               
 !  This program is free software: you can redistribute it and/or modify         
 !  it under the terms of the GNU General Public License as published by         
@@ -385,3 +387,5 @@ subroutine fallve(kmax      ,nmmax     ,lsal      ,ltem      ,lsed      , &
     enddo           ! nm
     deallocate (localpar, stat = istat)
 end subroutine fallve          
+
+end module m_fallve

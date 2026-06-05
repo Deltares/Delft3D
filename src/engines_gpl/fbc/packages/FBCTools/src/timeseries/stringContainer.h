@@ -1,4 +1,4 @@
-// Copyright (C) 2015 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -27,32 +27,31 @@
 #include <string>
 #include <map>
 
-
 using namespace std;
 
 namespace rtctools
 {
-namespace timeseries
-{
+    namespace timeseries
+    {
 
-/**
-  * @brief The class contains the time series and supplies interfaces to them.
-  */
-class stringContainer
-{
-	private:
-		map<string,string> container;
+        /**
+         * @brief The class contains the time series and supplies interfaces to them.
+         */
+        class stringContainer
+        {
+        private:
+            map<string, string> container;
 
-	public:
-		stringContainer();
-		~stringContainer() {};
+        public:
+            stringContainer();
+            ~stringContainer() {};
 
-		void addString(int a, int b, int c, string s);
-		void setString(int a, int b, int c, string s);
-		string getString(int a, int b, int c) const;
-};
+            void addString(int a, int b, int c, string s);
+            void setString(int a, int b, int c, string s);
+            string getString(int a, int b, int c) const;
+        };
 
-} // end namespace timeseries
+    } // end namespace timeseries
 } // end namespace rtctools
 
 #endif /* STRINGCONTAINER_H */

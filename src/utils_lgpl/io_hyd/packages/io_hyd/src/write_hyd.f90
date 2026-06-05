@@ -1,6 +1,6 @@
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@
       use m_hydmod
       use system_utils
       use m_hyd_keys  ! keywords in hydfile
-      use m_date_time_utils_external, only : write_date_time
+      use m_date_time_utils_external, only : fill_in_date_time
 
       implicit none
 
@@ -74,7 +74,7 @@
 
       write(lunhyd,'(A,A)') 'file-created-by  '//trim(version_full)
 
-      call write_date_time(rundat)
+      call fill_in_date_time(rundat)
       datetime = rundat(1:4)//'-'//rundat(6:7)//'-'//rundat(9:10)//','//rundat(11:19)
       write(lunhyd,'(A,A)') 'file-creation-date  '//datetime
 
@@ -139,6 +139,11 @@
          call remove_path(hyd%file_vdf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') vert_diffusion_file, trim(filename)
       else
          write(lunhyd,'(a,''     '',a)') vert_diffusion_file, 'none'
+      endif
+      if ( hyd%vel_present ) then
+         call remove_path(hyd%file_vel%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') velocities_file, trim(filename)
+      else
+         write(lunhyd,'(a,''     '',a)') velocities_file, 'none'
       endif
       if (hyd%geometry .eq. HYD_GEOM_CURVI) then
          call remove_path(hyd%file_srf%name,filename) ; write(lunhyd,'(a,'' '''''',a,'''''''')') surfaces_file, trim(filename)

@@ -1,4 +1,4 @@
-// Copyright (C) 2014 Deltares
+// Copyright (C) 2026 Deltares
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
@@ -21,39 +21,42 @@
  * @date 2014
  */
 
-#include "limiterRule.h" 
+#include "limiterRule.h"
 #include <stdexcept>
 
 using namespace rtctools;
 using namespace rtctools::schematization::rules;
 
-
-limiterRule::limiterRule(string id,
-					     string name,
-					     limiterRule::Mode mode,
-						 limiterRule::INPUT iInput)
-	: rule(id, name), mode(mode), iInput(iInput)
-{ }
-
-void limiterRule::solve(double *stateOld, double *stateNew, long long t, double dt)
+limiterRule::limiterRule(string id, string name, limiterRule::Mode mode, limiterRule::INPUT iInput)
+    : rule(id, name), mode(mode), iInput(iInput)
 {
-	double threshold;
-	if (iInput.threshold.source==VALUE) {
-		threshold = iInput.threshold.value;
-	} else {
-		threshold = stateOld[iInput.threshold.indx];
-	}
-	if (mode==PERCENTAGE) threshold *= stateOld[iInput.x]/100.0;
-
-	double xOld = stateOld[iInput.x];
-	double xNew = stateNew[iInput.x];
-	if (threshold==threshold && xOld==xOld && xNew==xNew) {
-		if (xNew-xOld > +threshold) stateNew[iInput.x] = xOld + threshold;
-		if (xNew-xOld < -threshold) stateNew[iInput.x] = xOld - threshold;
-	}
 }
 
-void limiterRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew)
+void limiterRule::solve(double* stateOld, double* stateNew, long long t, double dt)
 {
-	throw runtime_error("void limiterRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double *objNew) not implemented");
+    double threshold;
+    if (iInput.threshold.source == VALUE)
+    {
+        threshold = iInput.threshold.value;
+    }
+    else
+    {
+        threshold = stateOld[iInput.threshold.indx];
+    }
+    if (mode == PERCENTAGE) threshold *= stateOld[iInput.x] / 100.0;
+
+    double xOld = stateOld[iInput.x];
+    double xNew = stateNew[iInput.x];
+    if (threshold == threshold && xOld == xOld && xNew == xNew)
+    {
+        if (xNew - xOld > +threshold) stateNew[iInput.x] = xOld + threshold;
+        if (xNew - xOld < -threshold) stateNew[iInput.x] = xOld - threshold;
+    }
+}
+
+void limiterRule::solveDer(double* stateOld, double* stateNew, long long t, double dt, double* objOld, double* objNew)
+{
+    throw runtime_error(
+        "void limiterRule::solveDer(double *stateOld, double *stateNew, long long t, double dt, double *objOld, double "
+        "*objNew) not implemented");
 }

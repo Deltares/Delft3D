@@ -5,7 +5,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dimr_configuration
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dflowfm_configuration_basic.cmake)
  
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaq_configuration.cmake)
- 
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dwaves_configuration.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/flow2d3d_configuration.cmake)
@@ -17,6 +17,8 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/rtc_configuration.
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/drr_configuration.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/fbc_configuration.cmake)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/components/dsle_configuration.cmake)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/configurations/miscellaneous/tools_configuration.cmake)
 
@@ -35,11 +37,6 @@ if(NOT TARGET plugin_culvert)
 endif()
 if(NOT TARGET plugin_delftflow_traform)
     add_subdirectory(${checkout_src_root}/plugins_lgpl/plugin_delftflow_traform plugin_delftflow_traform)
-endif()
-
-if(UNIX)
-  # install
-  add_subdirectory(${checkout_src_root}/${install_flow2d3d_module} install_flow2d3d)
 endif()
 
 # Project name must be at the end of the configuration: it might get a name when including other configurations and needs to overwrite that

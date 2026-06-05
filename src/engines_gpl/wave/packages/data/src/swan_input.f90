@@ -1,7 +1,7 @@
 module swan_input
 !----- GPL ---------------------------------------------------------------------
 !
-!  Copyright (C)  Stichting Deltares, 2011-2024.
+!  Copyright (C)  Stichting Deltares, 2011-2026.
 !
 !  This program is free software: you can redistribute it and/or modify
 !  it under the terms of the GNU General Public License as published by
@@ -100,6 +100,13 @@ module swan_input
    !
    integer, parameter :: SWAN_MODE_EXE = 0
    integer, parameter :: SWAN_MODE_LIB = 1
+   integer, parameter :: NUM_ACCUR = 0
+   integer, parameter :: NUM_STOPC = 1
+   !
+   real, parameter :: DEFAULT_TOLERANCE_RELATIVE_STOPC = 0.01
+   real, parameter :: DEFAULT_TOLERANCE_ABSOLUTE_STOPC = 0.005
+   real, parameter :: DEFAULT_TOLERANCE_ACCUR = 0.02
+
    !
    type swan_dom
       real :: freqmax ! maximum frequency
@@ -121,7 +128,9 @@ module swan_input
       integer :: myb
       integer :: mxc
       integer :: myc
-      integer :: vegetation
+      integer :: vegetation !> corresponds with idrag in SWAN: 1: Suzuki, 2: Jacobsen. "true" is allowed for backwards compatibility, corresponding to idrag=1
+                            !> Behaviour is changed with introducing the separate parameter veg_from_flow for keyword VegSVNPlants:
+                            !> It used to be: vegetation=1: Suzuki, vegetation=2:VegSVNPlants
       integer :: ice = 0
       integer, dimension(5) :: qextnd ! 0: not used, 1: used and not extended, 2: used and extended
       integer :: flowVelocityType = FVT_DEPTH_AVERAGED
@@ -130,6 +139,7 @@ module swan_input
       !    FVT_DEPTH_AVERAGED (default): use depth averaged FLOW velocity
       !    FVT_WAVE_DEPENDENT          : use FLOW velocity, averaged in a wave dependent way
       logical :: cgnum
+      logical :: veg_from_flow !> true if vegetation is read from flow and passed through to SWAN (input keyword: VegSVNPlants)
       character(256) :: botfil
       character(256) :: curlif
       character(256) :: depfil
@@ -236,7 +246,7 @@ module swan_input
       logical :: curviwind
       logical :: fshift
       logical :: hotfile
-      logical :: nautconv
+      logical :: nautical_convention
       logical :: output_points
       logical :: output_pnt_file
       logical :: output_spec1d
@@ -278,10 +288,12 @@ module swan_input
       real :: deltcom ! Not used: COM write interval
       real :: inthotf
       real :: depmin
-      real :: dh_abs
       real :: diffr_coeff
-      real :: drel
-      real :: dt_abs
+      integer :: num_type !> Either NUM_ACCUR or NUM_STOPC
+      real :: tolerance_relative !> Relative tolerance used with both "num stopc" and "num accur"
+      real :: tolerance_absolute !> Absolute tolerance used with "num stopc"
+      real :: tolerance_absolute_wave_height !> Absolute tolerance for wave height used with "num accur"
+      real :: tolerance_absolute_wave_period !> Absolute tolerance for wave period used with "num accur"
       real :: dxw
       real :: dyw
       real :: excval
@@ -290,7 +302,7 @@ module swan_input
       real :: grav
       real, dimension(7) :: icecoeff
       real :: icewind
-      real :: northdir
+      real :: north_direction
       real :: percwet
       real :: rho
       real :: rhomud
@@ -539,11 +551,13 @@ contains
       logical :: ex !< flag indicating whether file exists
       logical :: flag
       logical :: success
+      logical :: enable_num_accur !< TRUE when parameters are specified for "num accur"
+      logical :: enable_num_stopc !< TRUE when parameters are specified for "num stopc"
       real :: def_startdir
       real :: def_enddir
       real :: def_freqmin
       real :: def_freqmax
-      real :: tscale
+      real(hp) :: tscale
       real, dimension(2) :: xy
       character(10) :: exemode
       character(10) :: versionstring
@@ -725,9 +739,9 @@ contains
       call str_lower(parname, len(parname))
       select case (parname)
       case ('nautical')
-         sr%nautconv = .true.
+         sr%nautical_convention = .true.
       case ('cartesian')
-         sr%nautconv = .false.
+         sr%nautical_convention = .false.
       case default
          write (*, *) 'SWAN_INPUT: missing or invalid direction convention'
          call handle_errors_mdw(sr)
@@ -754,7 +768,7 @@ contains
       sr%tzone = 0.0
       call prop_get(mdw_ptr, 'General', 'TZone', sr%tzone)
       !
-      tscale = 60.0
+      tscale = 60.0_hp
       call prop_get(mdw_ptr, 'General', 'TScale', tscale)
       call settscale(wavedata%time, tscale)
       !
@@ -1033,14 +1047,14 @@ contains
       !
       sr%grav = 9.81
       sr%rho = 1025.0
-      sr%northdir = 90.0
+      sr%north_direction = 90.0
       sr%depmin = 0.05
       sr%inrhog = 1
       sr%wlevelcorr = 0.0
       sr%maxerr = 2
       call prop_get(mdw_ptr, 'Constants', 'Gravity', sr%grav)
       call prop_get(mdw_ptr, 'Constants', 'WaterDensity', sr%rho)
-      call prop_get(mdw_ptr, 'Constants', 'NorthDir', sr%northdir)
+      call prop_get(mdw_ptr, 'Constants', 'NorthDir', sr%north_direction)
       call prop_get(mdw_ptr, 'Constants', 'MinimumDepth', sr%depmin)
       call prop_get(mdw_ptr, 'Constants', 'WaterLevelCorrection', sr%wlevelcorr)
       call prop_get(mdw_ptr, 'Constants', 'MaxErrorLevel', sr%maxerr)
@@ -1198,9 +1212,14 @@ contains
       sr%num_scheme = 1
       sr%cdd = 0.5
       sr%css = 0.5
-      sr%drel = 0.02
-      sr%dh_abs = 0.02
-      sr%dt_abs = 0.02
+
+      enable_num_accur = .false.
+      enable_num_stopc = .false.
+      
+      sr%tolerance_relative = -1.0 ! Default value will be set after checking whether "num accur" or "num stopc" is used
+      sr%tolerance_absolute = DEFAULT_TOLERANCE_ABSOLUTE_STOPC
+      sr%tolerance_absolute_wave_height = DEFAULT_TOLERANCE_ACCUR
+      sr%tolerance_absolute_wave_period = DEFAULT_TOLERANCE_ACCUR
       sr%percwet = 98.0
       sr%itermx = 15
       sr%gamma0 = 3.3
@@ -1223,9 +1242,46 @@ contains
       end select
       call prop_get(mdw_ptr, 'Numerics', 'DirSpaceCDD', sr%cdd)
       call prop_get(mdw_ptr, 'Numerics', 'FreqSpaceCSS', sr%css)
-      call prop_get(mdw_ptr, 'Numerics', 'RChHsTm01', sr%drel)
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanHs', sr%dh_abs)
-      call prop_get(mdw_ptr, 'Numerics', 'RChMeanTm01', sr%dt_abs)
+      !
+      ! "num stopc" parameters
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DRelHinc', sr%tolerance_relative, 0.0, 1.0) ) then
+         enable_num_stopc = .true.
+      end if
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'DAbsHinc', sr%tolerance_absolute, 0.0, 100.0) ) then
+         enable_num_stopc = .true.
+      end if
+      !
+      ! "num accur" parameters
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChHsTm01', sr%tolerance_relative, 0.0, 1.0) ) then
+         enable_num_accur = .true.
+      end if
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanHs', sr%tolerance_absolute_wave_height, 0.0, 100.0) ) then
+         enable_num_accur = .true.
+      end if
+      if ( prop_get_checked(sr, mdw_ptr, 'Numerics', 'RChMeanTm01', sr%tolerance_absolute_wave_period, 0.0, 100.0) ) then
+         enable_num_accur = .true.
+      end if
+      !
+      ! Check (combinations of) enable_num_accur and enable_num_stopc
+      if (enable_num_accur .and. enable_num_stopc) then
+         write (*, *) 'SWAN_INPUT: Tolerances specified for both "num_accur" and "num_stopc"'
+         call handle_errors_mdw(sr)
+      end if
+      if (enable_num_accur == .false. .and. enable_num_stopc == .false.) then
+         enable_num_stopc = .true.
+      end if
+      if (enable_num_stopc) then
+         sr%num_type = NUM_STOPC
+         if (sr%tolerance_relative < 0.0) then
+            sr%tolerance_relative = DEFAULT_TOLERANCE_RELATIVE_STOPC
+         end if
+      else if (enable_num_accur) then
+         sr%num_type = NUM_ACCUR
+         if (sr%tolerance_relative < 0.0) then
+            sr%tolerance_relative = DEFAULT_TOLERANCE_ACCUR
+         end if
+      end if
+      !
       call prop_get(mdw_ptr, 'Numerics', 'PercWet', sr%percwet)
       call prop_get(mdw_ptr, 'Numerics', 'MaxIter', sr%itermx)
       call prop_get(mdw_ptr, 'Numerics', 'AlfaUnderRelax', sr%alfa)
@@ -1511,6 +1567,13 @@ contains
          ! Read computational grid
          !
          call prop_get(tmp_ptr, '*', 'Grid', dom%curlif)
+         if (count_words(dom%curlif) > 1) then
+            write (*, '(a,i0,3a)') 'SWAN_INPUT: Grid ', domainnr, ' with name "', trim(dom%curlif) ,'" contains spaces which is not permitted.'
+            call replace_char(dom%curlif,32,95)  ! replace ' ' by '_'
+            call replace_char(dom%curlif,9,95)   ! replace tab by '_'
+            write (*, '(3a)') 'SWAN_INPUT: To resolve this, rename grid to e.g. "', trim(dom%curlif) ,'" and adjust input accordingly.'
+            call handle_errors_mdw(sr)
+         end if
          call readgriddims(dom%curlif, dom%mxc, dom%myc)
          if (dom%curlif == '') then
             write (*, *) 'SWAN_INPUT: grid not found for domain', domainnr
@@ -1546,31 +1609,40 @@ contains
             call handle_errors_mdw(sr)
          end if
          !
-         flag = .false.
-         dom%vegetation = 0
-         call prop_get(tmp_ptr, '*', 'Vegetation', flag)
-         if (flag) then
-            dom%vegetation = 1
+         dom%vegetation = -999
+         dom%veg_from_flow = .false.
+         call prop_get(tmp_ptr, '*', 'Vegetation', dom%vegetation)
+         if (dom%vegetation == -999) then
+            ! Backwards compatible: allow "Vegetation = true"
+            flag = .false.
+            call prop_get(tmp_ptr, '*', 'Vegetation', flag)
+            if (flag) then
+               dom%vegetation = 1
+            else
+               dom%vegetation = 0
+            end if
          end if
-         flag = .false.
-         call prop_get(tmp_ptr, '*', 'VegSVNPlants', flag)
-         if (flag) then
-            dom%vegetation = 2
+         call prop_get(tmp_ptr, '*', 'VegSVNPlants', dom%veg_from_flow)
+         if (dom%veg_from_flow .and. dom%vegetation<=0) then
+            ! Backwards compatibility:
+            ! If VegSVNPlants is true and Vegetation is not specified by the user, set Vegetation=1
+            dom%vegetation = 1
          end if
          if (dom%vegetation >= 1) then
             call prop_get(tmp_ptr, '*', 'VegHeight', dom%veg_height)
             call prop_get(tmp_ptr, '*', 'VegDiamtr', dom%veg_diamtr)
             call prop_get(tmp_ptr, '*', 'VegDrag', dom%veg_drag)
          end if
-         if (dom%vegetation == 1) then
+         if (.not.dom%veg_from_flow) then
+            ! When veg_from_flow is true, VegNstems will be set by flow
+            ! When veg_from_flow is false, the user has to define VegNstems or provide a related map file
             call prop_get(tmp_ptr, '*', 'VegNstems', dom%veg_nstems)
             !
             ! Read vegetation map
             !
             call prop_get(tmp_ptr, '*', 'VegetationMap', dom%vegfil)
-            if (dom%vegfil == '') then
+            if (dom%vegetation> 0 .and. dom%vegfil == '') then
                write (*, *) 'SWAN_INPUT: no vegetation map used for domain ', domainnr
-               !call handle_errors_mdw(sr)
             end if
          end if
          !
@@ -1578,6 +1650,13 @@ contains
          if (dom%vegetation > 0) then
             sr%output_veg = 1
          end if
+         select case (dom%vegetation)
+         case (1)
+            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Suzuki'
+         case (2)
+            write (*,'(a)') '*** MESSAGE: Vegetation: idrag = Jacobsen'
+         case default
+         end select
          !
          ! Read directional space
          !
@@ -2723,7 +2802,7 @@ contains
       line(1:22) = 'SET   LEVEL =         '
       line(23:47) = 'NOR =           DEPMIN = '
       write (line(15:21), '(F6.2)') wlevelcorr
-      write (line(29:34), '(F6.2)') sr%northdir
+      write (line(29:34), '(F6.2)') sr%north_direction
       write (line(48:53), '(F6.2)') sr%depmin
       line(54:55) = ' _'
       write (luninp, '(1X,A)') line
@@ -2740,7 +2819,7 @@ contains
       line(54:55) = ' _'
       write (luninp, '(1X,A)') line
       line = ' '
-      if (sr%nautconv) then
+      if (sr%nautical_convention) then
          line(7:11) = 'NAUT '
       else
          line(7:11) = 'CART '
@@ -2952,8 +3031,29 @@ contains
       !
       !     Vegetation map
       !
-      if (dom%vegetation == 1) then
-         if (dom%vegfil /= '') then
+      if (dom%vegetation >= 1) then
+         if (.not.dom%veg_from_flow) then
+            if (dom%vegfil /= '') then
+               write (luninp, '(1X,A)') '$'
+               lijn = 'INPGRID _'
+               line(1:19) = 'NPLANTS CURV 0. 0. '
+               write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
+               write (luninp, '(1X,A)') lijn
+               write (luninp, '(1X,A)') trim(line)
+               line = ' '
+               !
+               !     File-name vegetation map (use temporary file)
+               !
+               line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
+               write (luninp, '(1X,A)') trim(line)
+            end if
+            line = ' '
+            line(1:10) = 'VEGETATION'
+            write (line(15:), '(I0,1X,F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%vegetation, dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
+            write (luninp, '(1X,A)') line
+            line = ' '
+         else
+            ! dom%veg_from_flow is true
             write (luninp, '(1X,A)') '$'
             lijn = 'INPGRID _'
             line(1:19) = 'NPLANTS CURV 0. 0. '
@@ -2966,32 +3066,12 @@ contains
             !
             line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
             write (luninp, '(1X,A)') trim(line)
+            line = ' '
+            line(1:10) = 'VEGETATION'
+            write (line(15:), '(I0,1X,F6.2,1X,F7.4,1X,A,1X,F6.2)') dom%vegetation, sr%veg_height, sr%veg_diamtr, "1", dom%veg_drag
+            write (luninp, '(1X,A)') line
+            line = ' '
          end if
-         line = ' '
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,1I4,1X,F6.2)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
-         write (luninp, '(1X,A)') line
-         line = ' '
-      end if
-      !
-      if (dom%vegetation == 2) then
-         write (luninp, '(1X,A)') '$'
-         lijn = 'INPGRID _'
-         line(1:19) = 'NPLANTS CURV 0. 0. '
-         write (line(20:29), '(2(I4,1X))') dom%mxc, dom%myc
-         write (luninp, '(1X,A)') lijn
-         write (luninp, '(1X,A)') trim(line)
-         line = ' '
-         !
-         !     File-name vegetation map (use temporary file)
-         !
-         line = 'READINP NPLANTS 1.0 '''//trim(vegfil)//''' 4 0 FREE'
-         write (luninp, '(1X,A)') trim(line)
-         line = ' '
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,A,1X,F6.2)') sr%veg_height, sr%veg_diamtr, "1", dom%veg_drag
-         write (luninp, '(1X,A)') line
-         line = ' '
       end if
 !-----------------------------------------------------------------------
       !
@@ -3060,8 +3140,6 @@ contains
          line(ind + 11:ind + 14) = 'FREE'
          line(ind + 15:79) = ' '
          write (luninp, '(1X,A)') trim(line)
-         ! The WU drag formulation is used to be backwards compatible
-         write (luninp, '(1X,A)') 'WIND DRAG WU'
          line(1:79) = ' '
       end if
       line(1:2) = '$ '
@@ -3079,10 +3157,6 @@ contains
             write (line(11:20), '(F10.2)') wvel
             line(21:25) = ' DIR='
             write (line(26:35), '(F10.2)') wdir
-            !line(36:37)   = ' '
-
-            line(36:) = ' DRAG WU'
-
             write (luninp, '(1X,A)') line
          else
          end if
@@ -3347,8 +3421,10 @@ contains
          if (sr%whitecap == 2) then
             line = 'GEN3 WESTH'
          else
-            line(1:8) = 'GEN3 '
+            line = 'GEN3 KOMEN'
          end if
+         ! Always add (wind related) drag formula. It doesn't harm if there is no wind.
+         line = trim(line)//' DRAG WU'
       else
       end if
       write (luninp, '(1X,A)') line
@@ -3388,9 +3464,8 @@ contains
               & ' nu=', sr%viscmud
       end if
       if (sr%triads) then
-         line(1:6) = 'TRIAD '
-         write (line(15:41), '(a,F7.4,a,F7.4)') 'trfac=', sr%cftriad1, ' cutfr=', sr%cftriad2
-         line(44:66) = ' urcrit=0.2 urslim=0.01'
+         line(1:16) = 'TRIAD itriad=11 '
+         write (line(17:43), '(a,F7.4,a,F7.4)') 'trfac=', sr%cftriad1, ' cutfr=', sr%cftriad2
          write (luninp, '(1X,A)') line
          line = ' '
       end if
@@ -3411,7 +3486,7 @@ contains
          line(11:) = ' '
          write (luninp, '(1X,A)') line
       else if (sr%whitecap == 1) then
-         line(1:20) = 'WCAP KOMEN delta=0  '
+         line(1:20) = 'WCAP KOMEN delta=1  '
          write (luninp, '(1X,A)') line
          !else
          !   line(1:20)  = 'WCAP   CSM   4   2  '
@@ -3424,12 +3499,6 @@ contains
       if (.not. sr%fshift) then
          line(1:10) = 'OFF FSHIFT'
          line(11:) = ' '
-         write (luninp, '(1X,A)') line
-         line = ' '
-      end if
-      if (dom%vegetation == 1) then
-         line(1:10) = 'VEGETATION'
-         write (line(15:), '(F6.2,1X,F7.4,1X,I4,1X,F7.4)') dom%veg_height, dom%veg_diamtr, dom%veg_nstems, dom%veg_drag
          write (luninp, '(1X,A)') line
          line = ' '
       end if
@@ -3459,19 +3528,30 @@ contains
       line(1:2) = '$ '
       write (luninp, '(1X,A)') line
       line = ' '
-      line(1:10) = 'NUM ACCUR '
-      if (sr%modsim /= 3) then
-         if (sr%alfa > 0.0) then
-            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4,1X,F8.3)') &
-                 & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, 'STAT', sr%itermx, sr%alfa
+      if (sr%num_type == NUM_STOPC) then
+         line(1:10) = 'NUM STOPC '
+         if (sr%modsim /= 3) then
+            write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0,A,F7.5)') &
+               & 'DABS=', sr%tolerance_absolute, ' DREL=', sr%tolerance_relative, ' CURVAT=0.005 NPNTS=', sr%percwet, ' STAT MXITST=', sr%itermx, ' ALFA=', sr%alfa
          else
-            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,I4)') &
-            & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, sr%itermx
+            write (line(15:), '(A,F7.5,A,F7.5,A,F0.3,A,I0)') &
+            & 'DABS=', sr%tolerance_absolute, ' DREL=', sr%tolerance_relative, ' CURVAT=0.005 NPNTS=', sr%percwet, ' NONSTAT MXITNS=', sr%itermx
          end if
       else
-         write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4)') &
-         & sr%drel, sr%dh_abs, sr%dt_abs, sr%percwet, &
-         & 'NONSTAT', sr%itermx
+         line(1:10) = 'NUM ACCUR '
+         if (sr%modsim /= 3) then
+            if (sr%alfa > 0.0) then
+               write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4,1X,F8.3)') &
+                    & sr%tolerance_relative, sr%tolerance_absolute_wave_height, sr%tolerance_absolute_wave_period, sr%percwet, 'STAT', sr%itermx, sr%alfa
+            else
+               write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,I4)') &
+               & sr%tolerance_relative, sr%tolerance_absolute_wave_height, sr%tolerance_absolute_wave_period, sr%percwet, sr%itermx
+            end if
+         else
+            write (line(15:), '(F8.3,1X,F8.3,1X,F8.3,1X,F8.3,1X,A,1X,I4)') &
+            & sr%tolerance_relative, sr%tolerance_absolute_wave_height, sr%tolerance_absolute_wave_period, sr%percwet, &
+            & 'NONSTAT', sr%itermx
+         end if
       end if
       write (luninp, '(1X,A)') trim(line)
 !-----------------------------------------------------------------------
@@ -4308,7 +4388,9 @@ contains
          pointname(maxPointNameLength + 1:) = ' '
       end if
    end function get_pointname
-
+!
+!
+!==============================================================================
 !> add nest index as to the string
    subroutine add_inest(nnest, line, i, inest)
 
@@ -4325,5 +4407,30 @@ contains
          i = i + 3
       end if
    end subroutine
+!
+!
+!==============================================================================
+   !> Use the success return value of prop_get
+   !> Check if value_out is between lower_bound and upper_bound
+   function prop_get_checked(sr, mdw_ptr, group, key, value_out, lower_bound, upper_bound) result(success)
+      use properties
+
+      type(swan_type) :: sr
+      type(tree_data), pointer :: mdw_ptr
+      character(*), intent(in) :: group
+      character(*), intent(in) :: key
+      real, intent(out) :: value_out
+      real, intent(in) :: lower_bound
+      real, intent(in) :: upper_bound
+      logical :: success
+      
+      call prop_get(mdw_ptr, group, key, value_out, success)
+      if (success) then
+         if (value_out < lower_bound .or. value_out > upper_bound) then
+            write (*, *) 'SWAN_INPUT: parameter ', key, ' (', value_out, ') is out of bounds [', lower_bound, ',', upper_bound, ']'
+            call handle_errors_mdw(sr)
+         end if
+      end if  
+   end function prop_get_checked
 
 end module swan_input
