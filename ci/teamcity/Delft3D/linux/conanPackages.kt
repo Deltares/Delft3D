@@ -53,7 +53,7 @@ object LinuxConanPackages : BuildType({
 
                 python run_conan.py upload --remote=delft3d-conan-dev --ci
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
+            dockerImage = "%dep.${LinuxBuildTools.id}.harbor_repo%:%dep.${LinuxBuildTools.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerRunParameters = "--rm -e CONAN_LOGIN_USERNAME_DELFT3D_CONAN_DEV=%nexus_conan_username% -e CONAN_PASSWORD_DELFT3D_CONAN_DEV=%nexus_conan_password%"
             dockerPull = true
@@ -78,7 +78,7 @@ object LinuxConanPackages : BuildType({
     }
 
     dependencies {
-        dependency(LinuxThirdPartyLibs) {
+        dependency(LinuxBuildTools) {
             snapshot {
                 onDependencyFailure = FailureAction.FAIL_TO_START
                 onDependencyCancel = FailureAction.CANCEL
