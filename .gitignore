@@ -66,3 +66,6 @@ test/deltares_testbench/data/cases/*
 # precice
 examples/dflowfm/**/precice_debug_output.txt
 examples/dflowfm/**/precice-run/**
+
+# conan
+conan/**/test_package/**
