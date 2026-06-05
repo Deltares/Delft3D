@@ -26,7 +26,7 @@ object WindowsConanPackages : BuildType({
     allowExternalStatus = true
 
     params {
-        param("container.tag", "vs2022-intel2024")
+        param("container.tag", "vs2022-intel2024-ltsc2025")
         param("nexus_conan_username", DslContext.getParameter("nexus_conan_username"))
         password("nexus_conan_password", DslContext.getParameter("nexus_conan_password"))
         param("env.CONAN_HOME", "C:/conan-cache")
@@ -78,6 +78,6 @@ object WindowsConanPackages : BuildType({
     }
 
     requirements {
-        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2025")
+        doesNotEqual("teamcity.agent.jvm.os.name", "Windows Server 2022")
     }
 })
