@@ -9,6 +9,7 @@ add_library(dflowfm_io SHARED
     src/MduModel.cpp
     src/dflowfm_io.cpp
     src/ini/IniData.cpp
+    src/ini/IniFile.cpp
     src/ini/IniFormatter.cpp
     src/ini/IniParser.cpp
     src/ini/IniProperty.cpp
