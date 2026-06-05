@@ -671,6 +671,12 @@ contains
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       end if
 
+      if (len(trim(md_inifieldfile)) > 0) then
+         ! read tracer properties from inifield file, needed for correctly initializing numtracers.
+         call read_initialtracer_properties_from_infield_file(trim(md_inifieldfile), nx, kce, numz, numu, nums, numtm, numsd, &
+            numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+      end if
+
       do while (ja_ext_force == 1) ! read legacy format *.ext file
 
          call readprovider(mext, qid, filename, filetype, method, operand, transformcoef, ja_ext_force, varname)
@@ -702,6 +708,111 @@ contains
       numbnp = nbndz + nbndu + nbnd1d2d ! nr of boundary points =
 
    end subroutine findexternalboundarypoints
+
+
+   subroutine read_initialtracer_properties_from_infield_file(filename, nx, kce, numz, numu, nums, numtm, &
+         numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+      use properties
+      use tree_data_types
+      use tree_structures
+      use fm_external_forcings_data, only: transformcoef
+      use fm_external_forcings_utils, only: read_tracer_properties
+      use system_utils
+      use unstruc_files, only: resolvePath
+      use m_alloc
+      use string_module, only: strcmpi
+      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
+      use unstruc_inifields, only: resolve_initial_3d_target
+      use m_qnerror
+      use messagehandling, only: msgbuf, err_flush
+
+      character(len=*), intent(in) :: filename
+      integer, intent(in) :: nx
+      integer, dimension(nx), intent(inout) :: kce
+      integer, intent(inout) :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
+
+      type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data), pointer :: node_ptr !
+      integer :: filetype !< possible values POLY_TIM: use polygon file as location reference, or NODE_ID: use nodeId as a location reference
+      integer :: istat !
+      integer, parameter :: ini_key_len = 32 !
+      integer, parameter :: ini_value_len = 256 !
+      character(len=ini_key_len) :: groupname !
+      character(len=ini_value_len) :: quantity !
+      character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
+      real(kind=dp) :: return_time !
+      real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
+      real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
+
+      ! logical :: success
+      ! integer :: target_location_type
+      ! integer :: first_index
+      ! real(kind=dp), dimension(:, :), pointer :: target_array_3d
+
+      integer :: i
+      integer :: num_items_in_file
+      logical :: file_ok
+      logical :: property_ok
+      character(len=256) :: basedir, fnam
+      integer :: major, minor
+
+      call tree_create(trim(filename), bnd_ptr)
+      call prop_file('ini', trim(filename), bnd_ptr, istat)
+      if (istat /= 0) then
+         call qnerror('Initial field file ', trim(filename), ' could not be read')
+         return
+      end if
+
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
+      minor = 0
+      call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in initial field file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new initial field file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
+         call err_flush()
+         return
+      end if
+
+      call split_filename(filename, basedir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
+
+      num_items_in_file = 0
+      if (associated(bnd_ptr%child_nodes)) then
+         num_items_in_file = size(bnd_ptr%child_nodes)
+      end if
+
+      do i = 1, num_items_in_file
+         node_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         groupname = tree_get_name(bnd_ptr%child_nodes(i)%node_ptr)
+         if (strcmpi(groupname, 'Initial')) then
+            quantity = ''
+
+            call prop_get(node_ptr, '', 'quantity', quantity, property_ok)
+            if (.not. property_ok) then
+               call qnerror('Expected property', 'quantity', 'for initial field definition')
+            end if
+
+            ! if initialtracer quantity is found, call resolve_initial_3d_target to initialize numtracers and trnames.
+            if (quantity(1:13) == 'initialtracer') then
+               call read_tracer_properties(node_ptr, transformcoef)
+
+               call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, &
+                  numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, &
+                  width1D=width1D, blDepth=blDepth)
+
+               ! success = resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index)
+            end if
+
+         end if
+      end do
+
+      call tree_destroy(bnd_ptr)
+
+   end subroutine read_initialtracer_properties_from_infield_file
+
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
