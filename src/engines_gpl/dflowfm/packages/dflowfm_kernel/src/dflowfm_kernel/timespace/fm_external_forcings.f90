@@ -1733,9 +1733,9 @@ contains
       integer :: iresult
 
       call setup(iresult)
-
-      call init_new(md_inifieldfile, iresult)
-
+      if (iresult == DFM_NOERR) then
+         call init_new(md_inifieldfile, iresult)
+      end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
