@@ -27,7 +27,7 @@ namespace ini
         }
     }
 
-    bool IniData::ContainsSection(const std::string& name) const
+    bool IniData::HasSection(const std::string& name) const
     {
         if (name.empty())
         {

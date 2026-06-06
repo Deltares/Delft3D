@@ -60,7 +60,7 @@ namespace ini
         properties.insert(properties.end(), propertiesToAdd.begin(), propertiesToAdd.end());
     }
 
-    bool IniSection::ContainsProperty(const std::string& key) const
+    bool IniSection::HasProperty(const std::string& key) const
     {
         if (key.empty())
         {

@@ -51,7 +51,7 @@ namespace ini::test
 
         const IniData iniData = parser.Parse(GetParam());
 
-        EXPECT_TRUE(iniData.ContainsSection("section"));
+        EXPECT_TRUE(iniData.HasSection("section"));
     }
 
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserValidSectionFormatTest,
@@ -68,7 +68,7 @@ namespace ini::test
 
         const IniData iniData = parser.Parse("[" + sectionName + "]");
 
-        EXPECT_TRUE(iniData.ContainsSection(sectionName));
+        EXPECT_TRUE(iniData.HasSection(sectionName));
     }
 
     INSTANTIATE_TEST_SUITE_P(IniParserTest, IniParserSpecialCharactersSectionNameTest,
@@ -164,7 +164,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
 
         EXPECT_EQ(iniData.size(), 2);
-        ASSERT_TRUE(iniData.ContainsSection("section"));
+        ASSERT_TRUE(iniData.HasSection("section"));
     }
 
     TEST(IniParserTest, Parse_MultipleSections_SectionsHaveLineNumbers)
@@ -175,8 +175,8 @@ namespace ini::test
 
         const IniData iniData = parser.Parse(ini);
 
-        ASSERT_TRUE(iniData.ContainsSection("section1"));
-        ASSERT_TRUE(iniData.ContainsSection("section2"));
+        ASSERT_TRUE(iniData.HasSection("section1"));
+        ASSERT_TRUE(iniData.HasSection("section2"));
 
         const IniSection section1 = iniData.GetSection("section1");
         const IniSection section2 = iniData.GetSection("section2");
@@ -314,7 +314,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        ASSERT_TRUE(section.ContainsProperty("property"));
+        ASSERT_TRUE(section.HasProperty("property"));
         const IniProperty property = section.GetProperty("property");
 
         EXPECT_EQ(property.GetValue(), "value");
@@ -336,7 +336,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        ASSERT_TRUE(section.ContainsProperty(propertyKey));
+        ASSERT_TRUE(section.HasProperty(propertyKey));
         const IniProperty property = section.GetProperty(propertyKey);
 
         EXPECT_EQ(property.GetValue(), "value");
@@ -422,7 +422,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        ASSERT_TRUE(section.ContainsProperty(normalizedKey));
+        ASSERT_TRUE(section.HasProperty(normalizedKey));
         const IniProperty property = section.GetProperty(normalizedKey);
 
         EXPECT_EQ(property.GetValue(), "value");
@@ -468,7 +468,7 @@ namespace ini::test
         const IniSection section = iniData.GetSection("section");
 
         EXPECT_EQ(section.size(), 2);
-        ASSERT_TRUE(section.ContainsProperty("property"));
+        ASSERT_TRUE(section.HasProperty("property"));
     }
 
     TEST(IniParserTest, Parse_MultipleProperties_PropertiesHaveLineNumbers)
@@ -480,8 +480,8 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        ASSERT_TRUE(section.ContainsProperty("property1"));
-        ASSERT_TRUE(section.ContainsProperty("property2"));
+        ASSERT_TRUE(section.HasProperty("property1"));
+        ASSERT_TRUE(section.HasProperty("property2"));
 
         const IniProperty property1 = section.GetProperty("property1");
         const IniProperty property2 = section.GetProperty("property2");
@@ -499,7 +499,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        ASSERT_TRUE(section.ContainsProperty("property"));
+        ASSERT_TRUE(section.HasProperty("property"));
         const IniProperty property = section.GetProperty("property");
 
         EXPECT_TRUE(property.GetValue().empty());
@@ -518,7 +518,7 @@ namespace ini::test
         const IniData iniData = parser.Parse(ini);
         const IniSection section = iniData.GetSection("section");
 
-        ASSERT_TRUE(section.ContainsProperty("property"));
+        ASSERT_TRUE(section.HasProperty("property"));
 
         const IniProperty property = section.GetProperty("property");
 

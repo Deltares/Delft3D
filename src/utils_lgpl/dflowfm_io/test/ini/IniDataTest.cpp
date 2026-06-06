@@ -195,37 +195,37 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // ContainsSection
+    // HasSection
     // -------------------------------------------------------------------------
 
-    TEST(IniDataTest, ContainsSection_EmptyName_ThrowsInvalidArgument)
+    TEST(IniDataTest, HasSection_EmptyName_ThrowsInvalidArgument)
     {
         IniData iniData;
 
-        EXPECT_THROW(iniData.ContainsSection(""), std::invalid_argument);
+        EXPECT_THROW(iniData.HasSection(""), std::invalid_argument);
     }
 
-    class IniDataContainsSectionCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    class IniDataHasSectionCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniDataContainsSectionCaseInsensitiveTest, ContainsSection_ExistingCaseInsensitiveName_ReturnsTrue)
+    TEST_P(IniDataHasSectionCaseInsensitiveTest, HasSection_ExistingCaseInsensitiveName_ReturnsTrue)
     {
         IniData iniData;
         iniData.AddSection("TestSection");
 
-        EXPECT_TRUE(iniData.ContainsSection(GetParam()));
+        EXPECT_TRUE(iniData.HasSection(GetParam()));
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniDataTest, IniDataContainsSectionCaseInsensitiveTest,
+    INSTANTIATE_TEST_SUITE_P(IniDataTest, IniDataHasSectionCaseInsensitiveTest,
                              ::testing::Values("testsection", "TestSection", "TESTSECTION"));
 
-    TEST(IniDataTest, ContainsSection_SectionDoesNotExist_ReturnsFalse)
+    TEST(IniDataTest, HasSection_SectionDoesNotExist_ReturnsFalse)
     {
         IniData iniData;
         iniData.AddSection("TestSection");
 
-        EXPECT_FALSE(iniData.ContainsSection("OtherSection"));
+        EXPECT_FALSE(iniData.HasSection("OtherSection"));
     }
 
     // -------------------------------------------------------------------------
@@ -343,7 +343,7 @@ namespace ini::test
 
         iniData.RemoveAllSections(GetParam());
 
-        EXPECT_FALSE(iniData.ContainsSection("Section1"));
+        EXPECT_FALSE(iniData.HasSection("Section1"));
         EXPECT_EQ(iniData.size(), 1);
     }
 
@@ -374,7 +374,7 @@ namespace ini::test
         iniData.RemoveAllSections([](const IniSection& s) { return s.IsNameEqualTo("Section1"); });
 
         EXPECT_EQ(iniData.size(), 1);
-        EXPECT_FALSE(iniData.ContainsSection("Section1"));
+        EXPECT_FALSE(iniData.HasSection("Section1"));
     }
 
     TEST(IniDataTest, RemoveAllSections_PredicateDoesNotMatch_DoesNothing)

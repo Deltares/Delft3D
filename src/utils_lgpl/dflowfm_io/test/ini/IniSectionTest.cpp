@@ -558,37 +558,37 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // ContainsProperty
+    // HasProperty
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, ContainsProperty_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniSectionTest, HasProperty_EmptyKey_ThrowsInvalidArgument)
     {
         IniSection section("TestSection");
 
-        EXPECT_THROW(section.ContainsProperty(""), std::invalid_argument);
+        EXPECT_THROW(section.HasProperty(""), std::invalid_argument);
     }
 
-    class IniSectionContainsPropertyCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    class IniSectionHasPropertyCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniSectionContainsPropertyCaseInsensitiveTest, ContainsProperty_ExistingKeyCaseInsensitive_ReturnsTrue)
+    TEST_P(IniSectionHasPropertyCaseInsensitiveTest, HasProperty_ExistingKeyCaseInsensitive_ReturnsTrue)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "TestValue");
 
-        EXPECT_TRUE(section.ContainsProperty(GetParam()));
+        EXPECT_TRUE(section.HasProperty(GetParam()));
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionContainsPropertyCaseInsensitiveTest,
+    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionHasPropertyCaseInsensitiveTest,
                              ::testing::Values("testkey", "TestKey", "TESTKEY"));
 
-    TEST(IniSectionTest, ContainsProperty_PropertyDoesNotExist_ReturnsFalse)
+    TEST(IniSectionTest, HasProperty_PropertyDoesNotExist_ReturnsFalse)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "TestValue");
 
-        EXPECT_FALSE(section.ContainsProperty("OtherKey"));
+        EXPECT_FALSE(section.HasProperty("OtherKey"));
     }
 
     // -------------------------------------------------------------------------
@@ -1071,7 +1071,7 @@ namespace ini::test
 
         section.RemoveAllProperties(GetParam());
 
-        EXPECT_FALSE(section.ContainsProperty("Key1"));
+        EXPECT_FALSE(section.HasProperty("Key1"));
         EXPECT_EQ(section.size(), 1);
     }
 
@@ -1101,7 +1101,7 @@ namespace ini::test
 
         section.RemoveAllProperties([](const IniProperty& p) { return p.GetValue() == "Value1"; });
 
-        EXPECT_FALSE(section.ContainsProperty("Key1"));
+        EXPECT_FALSE(section.HasProperty("Key1"));
         EXPECT_EQ(section.size(), 1);
     }
 

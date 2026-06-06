@@ -56,7 +56,7 @@ namespace ini
         /// @param name The name of the section to locate (case-insensitive).
         /// @return @c true if a section with the specified name is found; otherwise @c false.
         /// @throws std::invalid_argument When @p name is empty.
-        bool ContainsSection(const std::string& name) const;
+        bool HasSection(const std::string& name) const;
 
         /// @brief Returns the first section with the specified name.
         /// @param name The name to search for (case-insensitive).

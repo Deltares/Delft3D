@@ -99,7 +99,7 @@ namespace ini::tests
 
         const IniFile file = IniFile::LoadFrom(path);
 
-        EXPECT_TRUE(file.GetData().ContainsSection("general"));
+        EXPECT_TRUE(file.GetData().HasSection("general"));
     }
 
     TEST_F(IniFileTest, LoadFrom_ValidFile_PopulatesProperty)
@@ -110,7 +110,7 @@ namespace ini::tests
 
         const IniSection& section = file.GetData().GetSection("general");
 
-        EXPECT_TRUE(section.ContainsProperty("key"));
+        EXPECT_TRUE(section.HasProperty("key"));
         EXPECT_EQ(section.GetProperty("key").GetValue(), "value");
     }
 
@@ -122,9 +122,9 @@ namespace ini::tests
 
         const IniData& data = file.GetData();
 
-        EXPECT_TRUE(data.ContainsSection("general"));
-        EXPECT_TRUE(data.ContainsSection("physics"));
-        EXPECT_TRUE(data.ContainsSection("numerics"));
+        EXPECT_TRUE(data.HasSection("general"));
+        EXPECT_TRUE(data.HasSection("physics"));
+        EXPECT_TRUE(data.HasSection("numerics"));
     }
 
     // ============================================================
@@ -145,7 +145,7 @@ namespace ini::tests
 
         file.Load();
 
-        EXPECT_TRUE(file.GetData().ContainsSection("general"));
+        EXPECT_TRUE(file.GetData().HasSection("general"));
     }
 
     TEST_F(IniFileTest, Load_CalledTwice_ReplacesData)
@@ -159,8 +159,8 @@ namespace ini::tests
 
         const IniData& data = file.GetData();
 
-        EXPECT_FALSE(data.ContainsSection("general"));
-        EXPECT_TRUE(data.ContainsSection("physics"));
+        EXPECT_FALSE(data.HasSection("general"));
+        EXPECT_TRUE(data.HasSection("physics"));
     }
 
     // ============================================================
@@ -241,7 +241,7 @@ namespace ini::tests
 
         const IniFile reader = IniFile::LoadFrom(path);
 
-        EXPECT_TRUE(reader.GetData().ContainsSection("general"));
+        EXPECT_TRUE(reader.GetData().HasSection("general"));
     }
 
     TEST_F(IniFileTest, SaveThenLoad_SectionWithProperty_RoundTrips)
@@ -256,8 +256,8 @@ namespace ini::tests
         const IniFile reader = IniFile::LoadFrom(path);
         const IniData& data = reader.GetData();
 
-        EXPECT_TRUE(data.ContainsSection("general"));
-        EXPECT_TRUE(data.GetSection("general").ContainsProperty("key"));
+        EXPECT_TRUE(data.HasSection("general"));
+        EXPECT_TRUE(data.GetSection("general").HasProperty("key"));
         EXPECT_EQ(data.GetSection("general").GetProperty("key").GetValue(), "value");
     }
 

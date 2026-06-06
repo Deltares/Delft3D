@@ -194,7 +194,7 @@ namespace ini
         /// @param key The key to search for (case-insensitive).
         /// @return @c true if a matching property was found; otherwise @c false.
         /// @throws std::invalid_argument When @p key is empty.
-        bool ContainsProperty(const std::string& key) const;
+        bool HasProperty(const std::string& key) const;
 
         /// @brief Returns the first property with the specified key.
         /// @param key The key to search for (case-insensitive).
