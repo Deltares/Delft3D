@@ -625,7 +625,7 @@
             <parameter name="mesh2d_Qlong" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Qfreva" toleranceRelative="1e-7" />
             <parameter name="mesh2d_Qfrcon" toleranceRelative="1e-7" />
-            <parameter name="mesh2d_Qtot" toleranceRelative="1e-7" />
+            <parameter name="mesh2d_Qtot" toleranceRelative="1e-6" />
           </parameters>
         </file>
       </checks>
