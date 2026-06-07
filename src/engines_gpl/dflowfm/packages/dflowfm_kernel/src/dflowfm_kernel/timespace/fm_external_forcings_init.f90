@@ -1460,6 +1460,8 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use m_bubblescreen, only: compute_bubblescreen_area
       use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen
+      use m_partitioninfo, only: jampi, reduce_cells
+      use m_flowgeom, only: ndx
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -1484,6 +1486,8 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
+      integer :: n_cells
+      integer, dimension(:), allocatable :: bubblescreen_cells
 
       ! Initialization
       i_bubblescreen = 0
@@ -1527,7 +1531,16 @@ contains
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
-               num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + bubblescreen%num_flowcells
+               n_cells = bubblescreen%num_flowcells
+               ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
+               ! and then EC-module will be left with dangling pointers. 
+               bubblescreen_cells = bubblescreen%flowcell_indices
+               if (jampi == 1) then
+                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+                  n_cells = size(bubblescreen_cells)
+               end if
+
+               num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + n_cells
                bubblescreen%total_area = compute_bubblescreen_area(bubblescreen)
                call realloc(bubblescreen%is_active, bubblescreen%num_flowcells, fill=.true.)
             end if
