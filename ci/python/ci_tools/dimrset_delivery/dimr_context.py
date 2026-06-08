@@ -209,17 +209,11 @@ class DimrAutomationContext:
         if missing_password or missing_username:
             if is_jira:
                 if missing_password:
-                    token = getpass(
-                        prompt=f"Enter your {service} Personal Access Token (PAT):", stream=None
-                    )
+                    token = getpass(prompt=f"Enter your {service} Personal Access Token (PAT):", stream=None)
                     if not token:
-                        raise ValueError(
-                            f"{service.value} Personal Access Token is required but not provided"
-                        )
+                        raise ValueError(f"{service.value} Personal Access Token is required but not provided")
                     username = (cred.username if cred else "") or ""
-                    return CredentialEntry(
-                        required=True, credential=Credentials(username=username, password=token)
-                    )
+                    return CredentialEntry(required=True, credential=Credentials(username=username, password=token))
                 return None
             else:
                 username = input(f"Enter your {service} username:")

@@ -210,15 +210,17 @@ class TestDimrAutomationContext:
 
     def test_init_with_jira_pat_only_no_prompt(self) -> None:
         """Jira with PAT only (no username) does not trigger credential prompts."""
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.services",
-            Jira=Mock(spec=Jira),
-            TeamCity=Mock(spec=TeamCity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ), patch("ci_tools.dimrset_delivery.dimr_context.input") as mock_input, patch(
-            "ci_tools.dimrset_delivery.dimr_context.getpass"
-        ) as mock_getpass:
+        with (
+            patch.multiple(
+                "ci_tools.dimrset_delivery.services",
+                Jira=Mock(spec=Jira),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
+            ),
+            patch("ci_tools.dimrset_delivery.dimr_context.input") as mock_input,
+            patch("ci_tools.dimrset_delivery.dimr_context.getpass") as mock_getpass,
+        ):
             # Simulate the arg values coming from TeamCity: username=None/empty, PAT present.
             # (The helper uses "" for missing; real argparse path uses None - both should work.)
             context = self._create_context(
@@ -277,15 +279,17 @@ class TestDimrAutomationContext:
             ),
         )
 
-        with patch.multiple(
-            "ci_tools.dimrset_delivery.services",
-            Jira=Mock(spec=Jira),
-            TeamCity=Mock(spec=TeamCity),
-            SshClient=Mock(spec=SshClient),
-            GitClient=Mock(spec=GitClient),
-        ), patch("ci_tools.dimrset_delivery.dimr_context.input") as mock_input, patch(
-            "ci_tools.dimrset_delivery.dimr_context.getpass"
-        ) as mock_getpass:
+        with (
+            patch.multiple(
+                "ci_tools.dimrset_delivery.services",
+                Jira=Mock(spec=Jira),
+                TeamCity=Mock(spec=TeamCity),
+                SshClient=Mock(spec=SshClient),
+                GitClient=Mock(spec=GitClient),
+            ),
+            patch("ci_tools.dimrset_delivery.dimr_context.input") as mock_input,
+            patch("ci_tools.dimrset_delivery.dimr_context.getpass") as mock_getpass,
+        ):
             context = DimrAutomationContext(build_id="build-xyz", dry_run=True, credentials=store)
             services = Services(context)
 
