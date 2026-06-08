@@ -5,8 +5,6 @@
 #include "ini/IniParserOptions.h"
 #include "ini/IniScheme.h"
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include <filesystem>
 
 namespace ini
@@ -33,7 +31,7 @@ namespace ini
     /// file.GetData().AddSection("general");
     /// file.Save();
     /// @endcode
-    class DFLOWFM_IO_EXPORT IniFile
+    class IniFile
     {
     public:
         /// @brief Constructs an empty @ref IniFile associated with the specified path.

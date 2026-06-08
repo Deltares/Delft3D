@@ -4,8 +4,6 @@
 #include "ini/IniFormatterOptions.h"
 #include "ini/IniScheme.h"
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include <ostream>
 #include <string>
 
@@ -20,7 +18,7 @@ namespace ini
     ///
     ///          The INI file format can be customized through @ref GetScheme(),
     ///          which specifies the characters that define sections, properties and comments.
-    class DFLOWFM_IO_EXPORT IniFormatter
+    class IniFormatter
     {
     public:
         /// @brief Gets the scheme that defines the format of the INI file.

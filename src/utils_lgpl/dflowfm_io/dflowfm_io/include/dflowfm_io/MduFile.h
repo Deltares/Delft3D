@@ -1,10 +1,10 @@
 #pragma once
 
 #include <filesystem>
+#include <memory>
 
 #include <dflowfm_io/dflowfm_io_export.h>
 #include <dflowfm_io/MduModel.h>
-#include <ini/IniFile.h>
 
 namespace dflowfm_io
 {
@@ -13,6 +13,13 @@ namespace dflowfm_io
     {
     public:
         explicit MduFile(std::filesystem::path path);
+        ~MduFile();
+
+        MduFile(MduFile&&) noexcept;
+        MduFile& operator=(MduFile&&) noexcept;
+
+        MduFile(const MduFile&) = delete;
+        MduFile& operator=(const MduFile&) = delete;
 
         static MduFile LoadFrom(std::filesystem::path path);
 
@@ -22,7 +29,9 @@ namespace dflowfm_io
         const MduModel& GetModel() const { return model; }
 
     private:
-        ini::IniFile iniFile;
+        struct Impl;
+        std::unique_ptr<Impl> impl_;
+
         MduModel model;
     };
 

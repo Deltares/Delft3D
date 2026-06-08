@@ -2,8 +2,6 @@
 
 #include "ini/IniProperty.h"
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include <functional>
 #include <optional>
 #include <string>
@@ -26,7 +24,7 @@ namespace ini
     ///          single value string, while multi-value properties contain a multi-value string.
     ///
     ///          Property keys are compared in a case-insensitive manner.
-    class DFLOWFM_IO_EXPORT IniSection
+    class IniSection
     {
     public:
         /// @brief Constructs an @ref IniSection with the specified name.

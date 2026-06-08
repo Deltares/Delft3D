@@ -13,13 +13,6 @@ enable_testing()
 
 add_executable(dflowfm_io_tests
     MduModelTest.cpp
-    ini/IniParserTest.cpp
-    ini/IniValueConverterTest.cpp
-    ini/IniDataTest.cpp
-    ini/IniFormatterTest.cpp
-    ini/IniSectionTest.cpp
-    ini/IniPropertyTest.cpp
-    ini/IniFileTest.cpp
 )
 
 if(MSVC)

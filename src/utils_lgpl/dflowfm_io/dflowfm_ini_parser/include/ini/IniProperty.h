@@ -2,8 +2,6 @@
 
 #include "ini/IniValueConverter.h"
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include <string>
 #include <vector>
 
@@ -14,7 +12,7 @@ namespace ini
     ///
     /// @details This class encapsulates a key-value pair in an INI section. The value can either
     ///          be a single value or a multi-value string, where a delimiter separates individual values.
-    class DFLOWFM_IO_EXPORT IniProperty
+    class IniProperty
     {
     public:
         /// @brief Constructs an @ref IniProperty with the specified key and optional value and comment.

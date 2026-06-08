@@ -2,8 +2,6 @@
 
 #include "ini/StringUtils.h"
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include <chrono>
 #include <sstream>
 #include <stdexcept>
@@ -15,7 +13,7 @@ namespace ini
 {
 
     /// @brief Provides methods for converting values from and to string representations suitable for INI files.
-    class DFLOWFM_IO_EXPORT IniValueConverter
+    class IniValueConverter
     {
     public:
         /// @brief Converts the specified value to its string representation for INI serialization.

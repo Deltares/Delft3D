@@ -3,10 +3,24 @@
 #include <dflowfm_io/MduFile.h>
 #include <dflowfm_io/MduConverter.h>
 
+#include "ini/IniFile.h"
+
 namespace dflowfm_io
 {
+    struct MduFile::Impl
+    {
+        ini::IniFile iniFile;
 
-    MduFile::MduFile(std::filesystem::path path) : iniFile(ini::IniFile(std::move(path))) {}
+        explicit Impl(std::filesystem::path path) : iniFile(std::move(path)) {}
+    };
+
+    MduFile::MduFile(std::filesystem::path path) : impl_(std::make_unique<Impl>(std::move(path))) {}
+
+    MduFile::~MduFile() = default;
+
+    MduFile::MduFile(MduFile&&) noexcept = default;
+
+    MduFile& MduFile::operator=(MduFile&&) noexcept = default;
 
     MduFile MduFile::LoadFrom(std::filesystem::path path)
     {
@@ -18,8 +32,8 @@ namespace dflowfm_io
 
     void MduFile::Load()
     {
-        iniFile.Load();
-        ini::IniData& iniData = iniFile.GetData();
+        impl_->iniFile.Load();
+        ini::IniData& iniData = impl_->iniFile.GetData();
 
         MduConverter mduConverter;
         ConversionResult<MduModel> result = mduConverter.ToModel(iniData);
@@ -31,7 +45,7 @@ namespace dflowfm_io
 
         if (!result.IsValid())
         {
-            throw std::runtime_error("Failed to read MDU file: " + iniFile.GetPath().string());
+            throw std::runtime_error("Failed to read MDU file: " + impl_->iniFile.GetPath().string());
         }
 
         model = std::move(result.value);

@@ -1,6 +1,6 @@
 # Specify the modules to be included
 
-# dflowfm_io (C++ library via FetchContent)
+# dflowfm_io (C++ libraries via FetchContent)
 if(NOT TARGET dflowfm_io)
     FetchContent_MakeAvailable(dflowfm_io)
 endif()

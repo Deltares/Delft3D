@@ -2,8 +2,6 @@
 
 #include "ini/IniSection.h"
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include <functional>
 #include <string>
 #include <vector>
@@ -20,7 +18,7 @@ namespace ini
     ///          found with the specified name is operated upon.
     ///
     ///          Section names are compared in a case-insensitive manner.
-    class DFLOWFM_IO_EXPORT IniData
+    class IniData
     {
     public:
         /// @brief Returns an iterator to the first section in the INI data.
