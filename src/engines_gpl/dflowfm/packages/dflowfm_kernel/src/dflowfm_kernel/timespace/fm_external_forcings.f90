@@ -1907,15 +1907,8 @@ contains
          allocate (mbaname(0))
       end if
 
-      ! (re-)initialize flags/counters related to temperature forcings
+      ! (re-)initialize flags/counters
       itempforcingtyp = 0
-      btempforcingtypA = .false.
-      btempforcingtypC = .false.
-      btempforcingtypD = .false.
-      btempforcingtypH = .false.
-      btempforcingtypS = .false.
-      btempforcingtypL = .false.
-
       ja_friction_coefficient_time_dependent = 0
 
       if (.not. allocated(sah)) then
