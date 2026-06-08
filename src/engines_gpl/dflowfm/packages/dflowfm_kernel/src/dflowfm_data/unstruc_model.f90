@@ -1090,7 +1090,10 @@ contains
          call msg_flush()
       end if
 
-      ! ibuf = 1
+      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
+      if (kmx > 1) then
+         autotimestep = AUTO_TIMESTEP_3D_INOUT
+      end if
       call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
       call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
       if (success .and. jadum /= 0) then
@@ -1196,11 +1199,6 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
-
-      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
-      if (kmx > 1) then
-         autotimestep = AUTO_TIMESTEP_3D_INOUT
-      end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
 
