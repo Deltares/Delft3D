@@ -29,7 +29,11 @@ target_include_directories(dflowfm_io
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-add_subdirectory(wrappers/fortran)
+# TODO Make a cmake option?
+get_property(_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+if("Fortran" IN_LIST _languages)
+    add_subdirectory(wrappers/fortran)
+endif()
 
 add_subdirectory(test)
 
