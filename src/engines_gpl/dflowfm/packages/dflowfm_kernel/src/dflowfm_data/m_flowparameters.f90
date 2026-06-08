@@ -127,13 +127,6 @@ module m_flowparameters
 
    integer :: itempforcingtyp !< Forcing parameter types 1,2 relative humidity, 3,4 dew point temperature, see code
 
-   logical :: btempforcingtypA !< Forcing parameter air temperature is given as a separate field or not
-   logical :: btempforcingtypC !< Forcing parameter cloudiness given as a separate field or not
-   logical :: btempforcingtypD !< Forcing parameter dew point temperature given as a separate field or not
-   logical :: btempforcingtypH !< Forcing parameter relative humidity given as a separate field or not
-   logical :: btempforcingtypS !< Forcing parameter solar radiation given as a separate field or not
-   logical :: btempforcingtypL !< Forcing parameter long wave radiation given as a separate field or not
-
    integer :: jarhoxu !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term
 
    integer :: jawave !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=surfbeat, 5=Const, 7=Offline Wave Coupling
