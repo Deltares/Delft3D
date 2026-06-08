@@ -7,6 +7,7 @@ import jetbrains.buildServer.configs.kotlin.triggers.*
 
 import Delft3D.template.*
 import Delft3D.step.*
+import Delft3D.linux.containers.*
 
 
 object TestPythonCiTools : BuildType({
@@ -43,65 +44,39 @@ object TestPythonCiTools : BuildType({
     }
 
     steps {
-        python {
-            name = "Check code formatting"
+        script {
+            name "Install dependencies"
             workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "ruff"
-                scriptArguments = "format --diff"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
+            scriptContent = """
+                #!/usr/bin/env bash
+                uv sync
+            """.trimIndent()
+            dockerImage = "%dep.${Delft3DPython.id}.harbor_repo%:%dep.${Delft3DPython.id}.env.IMAGE_TAG%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --rm
+                --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
+            """.trimIndent()
         }
-        python {
-            name = "Run linter"
+        script {
+            name "Run checks"
             workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "ruff"
-                scriptArguments = "check --output-format=junit --output-file=ruff.xml"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-        }
-        python {
-            name = "Run type checker"
-            workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "mypy"
-                scriptArguments = "ci_tools --junit-xml=mypy.xml"
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
-        }
-        python {
-            name = "Run unit tests"
-            workingDir = "ci/python"
-            pythonVersion = customPython { executable = "python3.11" }
-            environment = venv {
-                requirementsFile = ""
-                pipArgs = "--editable .[all]"
-            }
-            command = module {
-                module = "pytest"
-                scriptArguments = """
-                    --junitxml=pytest.xml
-                    --cov-report=html
-                    --cov=.
-                """.trimIndent()
-            }
-            executionMode = BuildStep.ExecutionMode.ALWAYS
+            scriptContent = """
+                #!/usr/bin/env bash
+                set -eo pipefail
+                uv run ruff format --diff
+                uv run ruff check --output-format=junit --output-file=ruff.xml
+                uv run mypy ci_tools --junit-xml=mypy.xml
+                uv run pytest --junitxml=pytest.xml --cov-report=html --cov=.
+            """.trimIndent()
+            dockerImage = "%dep.${Delft3DPython.id}.harbor_repo%:%dep.${Delft3DPython.id}.env.IMAGE_TAG%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --rm
+                --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
+            """.trimIndent()
         }
     }
 
@@ -113,6 +88,15 @@ object TestPythonCiTools : BuildType({
                 +:ci/python/mypy.xml
                 +:ci/python/pytest.xml
             """.trimIndent()
+        }
+    }
+
+    dependencies {
+        dependency(LinuxPython) {
+            snapshot {
+                onDependencyFailure = FailureAction.FAIL_TO_START
+                onDependencyCancel = FailureAction.CANCEL
+            }
         }
     }
 
