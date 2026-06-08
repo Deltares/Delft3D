@@ -785,7 +785,7 @@ contains
                call qnerror('Expected property', 'quantity', 'for initial field definition')
             end if
 
-            ! When initialtracer is found, get tracername and add tracer boundary
+            ! When initialtracer is found, get tracername and add tracer boundary.
             if (quantity(1:13) == 'initialtracer') then
                call read_tracer_properties(node_ptr, transformcoef)
 
