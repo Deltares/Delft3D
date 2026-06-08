@@ -86,7 +86,7 @@ contains
       end if
 
       if (file_name(len_trim(file_name)-3:) == '.ini') then
-         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Please move the content of '// trim(file_name) //' to the external forcings file.' 
+         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '// trim(file_name) //' to the external forcings file.' 
          call warn_flush()
       end if
 
