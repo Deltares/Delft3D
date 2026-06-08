@@ -13,6 +13,9 @@ ARG INTEL_ONEAPI_VERSION=2024
 RUN --mount=type=cache,target=/var/cache/dnf,id=compilers-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
 set -eo pipefail
 
+# Enable RPM caching in the /var/cache/dnf directory.
+echo 'keepcache=1' >> /etc/dnf/dnf.conf
+
 cat <<EOT > /etc/yum.repos.d/oneAPI.repo
 [oneAPI]
 name=Intel® oneAPI repository
@@ -32,8 +35,8 @@ dnf config-manager --set-enabled powertools
 # modern version than the standard, since the Intel C++ compiler
 # uses the standard library of gcc/g++.
 dnf install --assumeyes \
-    which binutils patchelf diffutils procps m4 make gcc-toolset-14 \
-    wget perl python3 xz
+    binutils patchelf diffutils xz procps m4 make gcc-toolset-14 \
+    perl wget which less unzip git
 
 # For Intel oneAPI, explicitly list the common-vars version, otherwise some much newer versions of packages will also be installed
 # as dependencies. Furthure, do not use intel 2023.2.1, since the dependencies of mkl 2023.2.0 will then also install the C++
@@ -105,36 +108,57 @@ done
 EOF
 
 # ninja is required for building cmake
-RUN <<"EOF"
+RUN --mount=type=cache,target=/var/cache/ninja <<"EOF"
 set -eo pipefail
-wget https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+
+URL=https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+INSTALLER_DIR=/var/cache/ninja/$(basename $(dirname "$URL"))
+if [[ -d "$INSTALLER_DIR" ]]; then
+echo "CACHED $INSTALLER_DIR"
+else
+    mkdir -p $INSTALLER_DIR
+    wget --quiet --output-document="${INSTALLER_DIR}/ninja-linux.zip" $URL
+fi
+
+pushd $INSTALLER_DIR
 unzip ninja-linux.zip
 chmod +x ninja
 mv ninja /usr/bin/
-rm ninja-linux.zip
-
-echo "Installed ninja version:" $(ninja --version)
-EOF
-
-# CMake
-RUN --mount=type=cache,target=/var/cache/src/,id=cmake-cache-${INTEL_ONEAPI_VERSION} <<"EOF"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${BASEDIR}.tar.gz..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-export CC=icx CXX=icpx CFLAGS="-O3" CXXFLAGS="-O3"
-
-pushd /var/cache/src/cmake-4.2.3
-./bootstrap --parallel=$(nproc) -- -DCMAKE_USE_OPENSSL=OFF
-make --jobs=$(nproc)
-make install
 popd
 EOF
+
+RUN --mount=type=cache,target=/var/cache/cmake <<"EOF"
+set -eo pipefail
+
+URL=https://github.com/Kitware/CMake/releases/download/v4.2.3/cmake-4.2.3-linux-x86_64.sh
+INSTALLER_DIR=/var/cache/cmake/$(basename -s '.sh' "$URL")
+if [[ -d "$INSTALLER_DIR" ]]; then
+    echo "CACHED $INSTALLER_DIR"
+else
+    mkdir -p $INSTALLER_DIR
+    wget --quiet --output-document="${INSTALLER_DIR}/install_cmake.sh" $URL
+fi
+
+pushd $INSTALLER_DIR
+sh install_cmake.sh --skip-license --prefix=/usr
+popd
+EOF
+
+RUN wget --quiet --output-document=- https://astral.sh/uv/0.11.11/install.sh | UV_INSTALL_DIR=/usr/bin sh
+
+RUN <<"EOF"
+set -eo pipefail
+
+# Configure `uv` to install python and tools in the `/opt/uv` directory. So they are shared with all users.
+export UV_PYTHON_INSTALL_DIR=/opt/uv/share/uv/python
+export UV_TOOL_DIR=/opt/uv/share/uv/tools
+export UV_PYTHON_BIN_DIR=/opt/uv/bin
+export UV_TOOL_BIN_DIR=/opt/uv/bin
+
+# Install python and python tools.
+uv python install 3.12 --default
+uv tool install 'conan ~= 2.29.0'
+EOF
+
+# Add python 3.12 and uv tools to PATH for all users.
+ENV PATH=/opt/uv/bin:$PATH
