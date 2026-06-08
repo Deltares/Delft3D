@@ -1511,42 +1511,37 @@ contains
       call prop_get(md_ptr, 'veg', 'Arealeaf', arealeaf)
       call prop_get(md_ptr, 'veg', 'Cdleaf', Cdleaf)
 
+      call prop_get(md_ptr, 'sediment', 'Sedimentmodelnr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D3D
       !ideally this is moved to a subroutine that groups reworking
-      call prop_get(md_ptr, 'sediment', 'sedimentModelNr', jased) ! 1 = krone, 2 = svr, 3 engelund, 4=D-Morphology
-      call prop_get(md_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity)
-
       if (jadpuopt == 2 .and. jased /= 4) then
-         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and sedimentModelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Dpuopt = 2 and Sedimentmodelnr /= 4. It is not possible to compute the bed level at velocity points as the mean if you are not running a morphodynamic simulation. Consider running morphodynamics without bed level update or set [geometry] Dpuopt = 1 (min value).')
       end if
-      
-      call prop_get(md_ptr, 'sediment', 'sedFile', md_sedfile, success)
-      call prop_get(md_ptr, 'sediment', 'morFile', md_morfile, success)
+      call prop_get(md_ptr, 'sediment', 'SedFile', md_sedfile, success)
+      call prop_get(md_ptr, 'sediment', 'MorFile', md_morfile, success)
+
       stm_included = (len_trim(md_sedfile) /= 0 .and. len_trim(md_morfile) /= 0 .and. jased == 4)
       if (jased == 4 .and. .not. stm_included) then
-         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: sedimentModelNr=4, but no *.sed or no *.mor file specified.')
+         call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Sedimentmodelnr=4, but no *.sed or no *.mor file specified.')
       end if
 
-      if (jased == 4) then
-         call prop_get(md_ptr, 'sediment', 'dredgeFile', md_dredgefile, success)
-         call prop_get(md_ptr, 'sediment', 'bndTreatment', jabndtreatment, success) ! separate treatment boundary links in upwinding transports
-         call prop_get(md_ptr, 'sediment', 'sourSink', jasourcesink, success) ! switch off source or sink terms for sed advection
-         call prop_get(md_ptr, 'sediment', 'morphoPol', md_morphopol, success) ! Only apply mormerge operation/bottom change in polygon
-         call prop_get(md_ptr, 'sediment', 'inMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
-         call prop_get(md_ptr, 'sediment', 'morCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
-         call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
-         call prop_get(md_ptr, 'sediment', 'masBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
-         call prop_get(md_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
-         call prop_get(md_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
-         call prop_get(md_ptr, 'sediment', 'diffusionCal', seddif_cal, success) ! Calibration factor for susp. sed. diffusion, only applied if strictly positive
-         call prop_get(md_ptr, 'sediment', 'diffusionScaling', difparam, success) ! Scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive
-      endif
+      call prop_get(md_ptr, 'sediment', 'DredgeFile', md_dredgefile, success)
+      call prop_get(md_ptr, 'sediment', 'BndTreatment', jabndtreatment, success) ! separate treatment boundary links in upwinding transports
+      call prop_get(md_ptr, 'sediment', 'SourSink', jasourcesink, success) ! switch off source or sink terms for sed advection
+      call prop_get(md_ptr, 'sediment', 'MorphoPol', md_morphopol, success) ! Only apply mormerge operation/bottom change in polygon
+      call prop_get(md_ptr, 'sediment', 'InMorphoPol', inmorphopol, success) ! value of the update inside morphopol (only 0 or 1 make sense)
+      call prop_get(md_ptr, 'sediment', 'MorCFL', jamorcfl, success) ! use morphological time step restriction (1, default) or not (0)
+      call prop_get(md_ptr, 'sediment', 'DzbDtMax', dzbdtmax, success) ! Max bottom level change per timestep
+      call prop_get(md_ptr, 'sediment', 'MasBalMinDep', botcrit, success) ! Minimum depth *after* bottom update for SSC adaptation mass balance
+      call prop_get(md_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, success) ! Mormerge operation at dtuser timesteps (1) or dts (0, default)
+      call prop_get(md_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, success) ! Upper limit of cell centre SSC concentration after transport timestep. Default 1d6 (effectively switched off)
+      call prop_get(md_ptr, 'sediment', 'diffusionCal', seddif_cal, success) ! Calibration factor for susp. sed. diffusion, only applied if strictly positive
+      call prop_get(md_ptr, 'sediment', 'diffusionScaling', difparam, success) ! Scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive
+
+      call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
+      MxgrKrone = -1
+      call prop_get(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
 
       if (jased > 0 .and. .not. stm_included) then
-
-         call prop_get(md_ptr, 'sediment', 'Nr_of_sedfractions', Mxgr)
-         MxgrKrone = -1
-         call prop_get(md_ptr, 'sediment', 'MxgrKrone', MxgrKrone)
-
          if (Mxgr <= 0) then
             call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of sediment fractions (Nr_of_sedfractions) should be larger than 0.')
          elseif (MxgrKrone < 0) then
@@ -1556,12 +1551,16 @@ contains
                MxgrKrone = 0
             end if
          elseif (MxgrKrone == 0 .and. jased == 1) then
-            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be set to 0 for sedimentModelNr = 1.')
+            call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be set to 0 for Sedimentmodelnr = 1.')
          elseif (MxgrKrone > Mxgr) then
             call mess(LEVEL_ERROR, 'unstruc_model::readMDUFile: Number of cohesive fractions (MxgrKrone) can''t be larger than total number of fractions (Nr_of_sedfractions).')
          end if
+      end if
+      call prop_get(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
+      call prop_get(md_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity)
 
-         call prop_get(md_ptr, 'sediment', 'Seddenscoupling', jaseddenscoupling)
+      if (jased * mxgr > 0 .and. .not. stm_included) then
+
          call allocgrains()
 
          call prop_get(md_ptr, 'sediment', 'D50', D50, Mxgr)
@@ -3504,21 +3503,21 @@ contains
       end if
 
       if (writeall .or. jased > 0) then
-         call prop_set(prop_ptr, 'sediment', 'sedimentModelNr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
-         call prop_set(prop_ptr, 'sediment', 'implicitFallVelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')
+         call prop_set(prop_ptr, 'sediment', 'Sedimentmodelnr', jased, 'Sediment model nr, (0=no, 1=Krone, 2=SvR2007, 3=E-H, 4=MorphologyModule)')
+         call prop_set(prop_ptr, 'sediment', 'Implicitfallvelocity', jaimplicitfallvelocity, '1=Impl., 0 = Expl.')
 
          if (jased == 4) then
-            call prop_set(prop_ptr, 'sediment', 'sedFile', trim(md_sedfile), 'Sediment characteristics file (*.sed)')
-            call prop_set(prop_ptr, 'sediment', 'morFile', trim(md_morfile), 'Morphology settings file (*.mor)')
-            call prop_set(prop_ptr, 'sediment', 'dredgeFile', trim(md_dredgefile), 'Dredging/dumping settings file (*.dad)')
-            call prop_set(prop_ptr, 'sediment', 'morphoPol', md_morphopol, 'Only apply bed updating wihtin specified polygon (*.pol)')
-            call prop_set(prop_ptr, 'sediment', 'morCFL', jamorcfl, 'Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)')
+            call prop_set(prop_ptr, 'sediment', 'SedFile', trim(md_sedfile), 'Sediment characteristics file (*.sed)')
+            call prop_set(prop_ptr, 'sediment', 'MorFile', trim(md_morfile), 'Morphology settings file (*.mor)')
+            call prop_set(prop_ptr, 'sediment', 'DredgeFile', trim(md_dredgefile), 'Dredging/dumping settings file (*.dad)')
+            call prop_set(prop_ptr, 'sediment', 'MorphoPol', md_morphopol, 'Only apply bed updating wihtin specified polygon (*.pol)')
+            call prop_set(prop_ptr, 'sediment', 'MorCFL', jamorcfl, 'Use CFL-like condition for morphologic updating (0=no, 1=yes) (default yes)')
             call prop_set(prop_ptr, 'sediment', 'DzbDtMax', dzbdtmax, 'Maximum bed level change (m) per time step for the case MorCFL=1 (default=0.1 m)')
-            call prop_set(prop_ptr, 'sediment', 'inMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
-            call prop_set(prop_ptr, 'sediment', 'mormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
-            call prop_set(prop_ptr, 'sediment', 'upperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
-            call prop_set(prop_ptr, 'sediment', 'diffusionCal', seddif_cal, 'Calibration factor for susp. sed. diffusion, only applied if strictly positive (default=0)')
-            call prop_set(prop_ptr, 'sediment', 'diffusionScaling', difparam, 'Scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive (default=10)')
+            call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
+            call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
+            call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
+            call prop_get(prop_ptr, 'sediment', 'DiffusionCal', seddif_cal, 'Scaling factor for susp. sed. diffusion throughout water column, only applied if strictly positive (default=0)')
+            call prop_get(prop_ptr, 'sediment', 'DiffusionScaling', difparam, 'Additional scaling factor for susp. sed. diffusion below reference level, only applied if strictly positive (default=10)')
          end if
 
          if (jased /= 4) then
