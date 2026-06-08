@@ -1935,27 +1935,6 @@ contains
          return
       end if
 
-      ! First initialize new-style IniFieldFile quantities.
-      ! if (len_trim(md_inifieldfile) > 0) then
-      !    call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
-      !    inquire (file=trim(md_inifieldfile), exist=exist)
-      !    if (exist) then
-      !       call init_new(md_inifieldfile, iresult)
-      !       if (iresult /= DFM_NOERR) then
-      !          call timstop(handle_extra(49)) ! initialize_initial_fields
-      !          return
-      !       end if
-      !    else
-      !       call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
-      !       write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
-      !       call warn_flush()
-      !       iresult = DFM_EXTFORCERROR
-      !       call timstop(handle_extra(49)) ! initialize_initial_fields
-      !       return
-      !    end if
-      !    call timstop(handle_extra(49)) ! initialize_initial_fields
-      ! end if
-
       if (jatimespace == 0) then
          return ! Just cleanup and close ext file.
       end if
