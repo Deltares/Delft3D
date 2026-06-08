@@ -47,11 +47,8 @@ object TestPythonCiTools : BuildType({
         script {
             name "Install dependencies"
             workingDir = "ci/python"
-            scriptContent = """
-                #!/usr/bin/env bash
-                uv sync
-            """.trimIndent()
-            dockerImage = "%dep.${Delft3DPython.id}.harbor_repo%:%dep.${Delft3DPython.id}.env.IMAGE_TAG%"
+            scriptContent = "uv sync"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-python:3.12"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -70,7 +67,7 @@ object TestPythonCiTools : BuildType({
                 uv run mypy ci_tools --junit-xml=mypy.xml
                 uv run pytest --junitxml=pytest.xml --cov-report=html --cov=.
             """.trimIndent()
-            dockerImage = "%dep.${Delft3DPython.id}.harbor_repo%:%dep.${Delft3DPython.id}.env.IMAGE_TAG%"
+            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-python:3.12"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -88,15 +85,6 @@ object TestPythonCiTools : BuildType({
                 +:ci/python/mypy.xml
                 +:ci/python/pytest.xml
             """.trimIndent()
-        }
-    }
-
-    dependencies {
-        dependency(LinuxPython) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
-            }
         }
     }
 
