@@ -1,13 +1,13 @@
 #pragma once
 
-#include <ostream>
-#include <string>
-
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include "ini/IniData.h"
 #include "ini/IniFormatterOptions.h"
 #include "ini/IniScheme.h"
+
+#include <dflowfm_io/dflowfm_io_export.h>
+
+#include <ostream>
+#include <string>
 
 namespace ini
 {

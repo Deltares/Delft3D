@@ -1,12 +1,15 @@
 #pragma once
 
+#include "ini/StringUtils.h"
+
+#include <dflowfm_io/dflowfm_io_export.h>
+
 #include <chrono>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <vector>
-
-#include <dflowfm_io/dflowfm_io_export.h>
 
 namespace ini
 {
@@ -69,7 +72,7 @@ namespace ini
         template <typename T>
         static T FromString(const std::string& value)
         {
-            const std::string trimmed = Trim(value);
+            const std::string trimmed = trim(value);
 
             if constexpr (std::is_same_v<T, std::string>)
             {
@@ -104,7 +107,7 @@ namespace ini
 
             while (std::getline(iss, token, delimiter))
             {
-                const std::string trimmed = Trim(token);
+                const std::string trimmed = trim(token);
                 if (!trimmed.empty())
                 {
                     result.push_back(FromString<T>(trimmed));
@@ -151,8 +154,6 @@ namespace ini
 
             return result;
         }
-
-        static std::string Trim(const std::string& value);
     };
 
 } // namespace ini

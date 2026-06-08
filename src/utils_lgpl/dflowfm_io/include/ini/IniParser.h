@@ -1,18 +1,18 @@
 #pragma once
 
-#include <istream>
-#include <optional>
-#include <string>
-#include <unordered_set>
-#include <vector>
-
-#include <dflowfm_io/dflowfm_io_export.h>
-
 #include "ini/IniData.h"
 #include "ini/IniParserOptions.h"
 #include "ini/IniProperty.h"
 #include "ini/IniScheme.h"
 #include "ini/IniSection.h"
+
+#include <dflowfm_io/dflowfm_io_export.h>
+
+#include <istream>
+#include <optional>
+#include <string>
+#include <unordered_set>
+#include <vector>
 
 namespace ini
 {
@@ -104,9 +104,6 @@ namespace ini
 
         std::string CleanupMultiLineValue(std::string value) const;
         std::string CleanupQuotedValue(std::string value) const;
-
-        static std::string Trim(std::string s);
-        static std::string TrimEnd(std::string s, char c);
     };
 
 } // namespace ini

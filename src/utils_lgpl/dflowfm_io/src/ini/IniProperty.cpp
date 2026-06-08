@@ -1,6 +1,6 @@
 #include "ini/IniProperty.h"
+#include "ini/StringUtils.h"
 
-#include <algorithm>
 #include <iostream>
 #include <stdexcept>
 
@@ -39,17 +39,12 @@ namespace ini
             throw std::invalid_argument("Property key cannot be empty.");
         }
 
-        return std::equal(key.begin(), key.end(), other.begin(), other.end(),
-                          [](char a, char b) { return std::tolower(a) == std::tolower(b); });
+        return iequals(key, other);
     }
 
     bool IniProperty::operator==(const IniProperty& other) const
     {
-        return IsKeyEqualTo(other.key) &&
-               std::equal(value.begin(), value.end(), other.value.begin(), other.value.end(),
-                          [](char a, char b) { return std::tolower(a) == std::tolower(b); }) &&
-               std::equal(comment.begin(), comment.end(), other.comment.begin(), other.comment.end(),
-                          [](char a, char b) { return std::tolower(a) == std::tolower(b); }) &&
+        return IsKeyEqualTo(other.key) && iequals(value, other.value) && iequals(comment, other.comment) &&
                lineNumber == other.lineNumber;
     }
 

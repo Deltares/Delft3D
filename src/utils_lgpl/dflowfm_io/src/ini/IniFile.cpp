@@ -1,10 +1,9 @@
 #include "ini/IniFile.h"
+#include "ini/IniFormatter.h"
+#include "ini/IniParser.h"
 
 #include <fstream>
 #include <stdexcept>
-
-#include "ini/IniFormatter.h"
-#include "ini/IniParser.h"
 
 namespace ini
 {

@@ -1,12 +1,12 @@
-#include <algorithm>
-#include <format>
-#include <sstream>
-#include <stdexcept>
-
 #include "ini/IniParser.h"
 #include "ini/IniData.h"
 #include "ini/IniSection.h"
 #include "ini/IniProperty.h"
+#include "ini/StringUtils.h"
+
+#include <algorithm>
+#include <format>
+#include <sstream>
 
 namespace ini
 {
@@ -59,7 +59,7 @@ namespace ini
     void IniParser::CleanCurrentLine()
     {
         std::replace(currentLine.begin(), currentLine.end(), '\t', ' ');
-        currentLine = Trim(currentLine);
+        currentLine = trim(currentLine);
     }
 
     void IniParser::ParseCurrentLine()
@@ -136,7 +136,7 @@ namespace ini
         }
 
         const std::size_t commentIndex = currentLine.find(scheme.commentDelimiter);
-        const std::string comment = Trim(currentLine.substr(commentIndex + 1));
+        const std::string comment = trim(currentLine.substr(commentIndex + 1));
 
         blockComments.push_back(comment);
     }
@@ -145,7 +145,7 @@ namespace ini
     {
         const std::size_t startIndex = currentLine.find(scheme.sectionStartDelimiter);
         const std::size_t endIndex = currentLine.rfind(scheme.sectionEndDelimiter);
-        const std::string sectionName = Trim(currentLine.substr(startIndex + 1, endIndex - startIndex - 1));
+        const std::string sectionName = trim(currentLine.substr(startIndex + 1, endIndex - startIndex - 1));
 
         ValidateSectionName(sectionName);
         AddNewSection(sectionName);
@@ -191,22 +191,22 @@ namespace ini
         }
 
         const std::size_t assignmentIndex = currentLine.find(scheme.propertyAssignmentDelimiter);
-        const std::string key = Trim(currentLine.substr(0, assignmentIndex));
+        const std::string key = trim(currentLine.substr(0, assignmentIndex));
         ValidatePropertyKey(key);
 
         const std::size_t commentIndex = currentLine.rfind(scheme.commentDelimiter);
         const std::size_t valueStartIndex = assignmentIndex + 1;
 
         std::string value = commentIndex > assignmentIndex
-                                ? Trim(currentLine.substr(valueStartIndex, commentIndex - valueStartIndex))
-                                : Trim(currentLine.substr(valueStartIndex));
+                                ? trim(currentLine.substr(valueStartIndex, commentIndex - valueStartIndex))
+                                : trim(currentLine.substr(valueStartIndex));
         ValidatePropertyValue(value);
 
         value = CleanupMultiLineValue(std::move(value));
         value = CleanupQuotedValue(std::move(value));
 
         const std::string comment = (commentIndex != std::string::npos && options.parseComments)
-                                        ? Trim(currentLine.substr(commentIndex + 1))
+                                        ? trim(currentLine.substr(commentIndex + 1))
                                         : std::string{};
 
         AddNewProperty(key, value, comment);
@@ -255,11 +255,11 @@ namespace ini
         const std::size_t commentIndex = currentLine.rfind(scheme.commentDelimiter);
 
         std::string value =
-            commentIndex != std::string::npos ? Trim(currentLine.substr(0, commentIndex)) : Trim(currentLine);
+            commentIndex != std::string::npos ? trim(currentLine.substr(0, commentIndex)) : trim(currentLine);
         value = CleanupMultiLineValue(std::move(value));
 
         const std::string comment = (commentIndex != std::string::npos && options.parseComments)
-                                        ? Trim(currentLine.substr(commentIndex + 1))
+                                        ? trim(currentLine.substr(commentIndex + 1))
                                         : std::string{};
 
         AddValueAndComment(value, comment);
@@ -288,7 +288,7 @@ namespace ini
             }
             valueStream << values[i];
         }
-        currentProperty->SetValue(Trim(valueStream.str()));
+        currentProperty->SetValue(trim(valueStream.str()));
 
         std::ostringstream commentStream;
         for (std::size_t i = 0; i < inlineComments.size(); ++i)
@@ -299,7 +299,7 @@ namespace ini
             }
             commentStream << inlineComments[i];
         }
-        currentProperty->SetComment(Trim(commentStream.str()));
+        currentProperty->SetComment(trim(commentStream.str()));
 
         values.clear();
         inlineComments.clear();
@@ -308,8 +308,8 @@ namespace ini
 
     std::string IniParser::CleanupMultiLineValue(std::string value) const
     {
-        value = TrimEnd(std::move(value), scheme.multiLineValueDelimiter);
-        value = TrimEnd(std::move(value), ' ');
+        value = trim_end(std::move(value), scheme.multiLineValueDelimiter);
+        value = trim_end(std::move(value), ' ');
         return value;
     }
 
@@ -324,19 +324,6 @@ namespace ini
         const std::size_t endIndex = value.find_last_not_of({scheme.valueQuoteDelimiter, ' '});
 
         return startIndex == std::string::npos ? std::string{} : value.substr(startIndex, endIndex - startIndex + 1);
-    }
-
-    std::string IniParser::Trim(std::string s)
-    {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char c) { return !std::isspace(c); }));
-        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char c) { return !std::isspace(c); }).base(), s.end());
-        return s;
-    }
-
-    std::string IniParser::TrimEnd(std::string s, char c)
-    {
-        s.erase(std::find_if(s.rbegin(), s.rend(), [c](char ch) { return ch != c; }).base(), s.end());
-        return s;
     }
 
 } // namespace ini

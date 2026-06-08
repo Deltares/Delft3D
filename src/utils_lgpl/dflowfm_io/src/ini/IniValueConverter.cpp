@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <array>
 #include <format>
-#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <unordered_map>
@@ -60,20 +59,6 @@ namespace ini
         }
 
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid date/time.");
-    }
-
-    std::string IniValueConverter::Trim(const std::string& value)
-    {
-        constexpr std::string_view whitespace = " \t\r\n";
-
-        const auto begin = value.find_first_not_of(whitespace);
-        if (begin == std::string::npos)
-        {
-            return {};
-        }
-
-        const auto end = value.find_last_not_of(whitespace);
-        return value.substr(begin, end - begin + 1);
     }
 
 } // namespace ini

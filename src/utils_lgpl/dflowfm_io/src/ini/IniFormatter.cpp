@@ -1,9 +1,9 @@
-#include <iomanip>
-#include <sstream>
-
 #include "ini/IniFormatter.h"
 #include "ini/IniProperty.h"
 #include "ini/IniSection.h"
+
+#include <iomanip>
+#include <sstream>
 
 namespace ini
 {

@@ -1,10 +1,10 @@
 #include "ini/IniSection.h"
+#include "ini/IniProperty.h"
+#include "ini/StringUtils.h"
 
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
-
-#include "ini/IniProperty.h"
 
 namespace ini
 {
@@ -221,8 +221,7 @@ namespace ini
             throw std::invalid_argument("Section name cannot be empty.");
         }
 
-        return std::equal(name.begin(), name.end(), other.begin(), other.end(),
-                          [](char a, char b) { return std::tolower(a) == std::tolower(b); });
+        return iequals(name, other);
     }
 
     bool IniSection::operator==(const IniSection& other) const
