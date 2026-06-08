@@ -80,7 +80,7 @@ object LinuxBuild : BuildType({
                 export CMAKE_LIBRARY_PATH=/usr/local/lib:${'$'}CMAKE_LIBRARY_PATH
 
                 # Initialize Conan and install pre-built dependencies from Nexus
-                python run_conan.py --initialize-conan=deltares --ci
+                python run_conan.py initialize deltares --ci
                 python build.py --config %product% --build --build-type %build_type% --ci --build-dir build --install-dir install
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
