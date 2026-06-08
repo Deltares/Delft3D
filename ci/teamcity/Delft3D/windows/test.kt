@@ -85,7 +85,6 @@ object WindowsTest : BuildType({
             param("nexus_username", "%nexus_username%")
             param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
         }
         powerShell {
             name = "Extract artifact"
@@ -104,26 +103,35 @@ object WindowsTest : BuildType({
                 """.trimIndent()
             }
         }
-        python {
+        // script is necessary to dynamically set the copy-failed-cases depending on the paramter
+        script {
+
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-            command = file {
-                filename = "TestBench.py"
-                scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
-                    --compare
-                    --config "configs/%configfile%"
-                    --filter "testcase=%case_filter%"
-                    --log-level DEBUG
-                    --parallel
+                scriptContent = """   
+                    @echo off
+
+                    set argsList=--username %s3_dsctestbench_accesskey% ^
+                    --password %s3_dsctestbench_secret% ^
+                    --compare ^
+                    --config configs/%configfile% ^
+                    --filter testcase=%case_filter% ^
+                    --log-level DEBUG ^
+                    --parallel ^
                     --teamcity
-                """.trimIndent() + if ("%copy_failed_cases%" == "true" && "%copy_tested_cases%" != "true" ) "\n--copy-failed-cases" else ""
-                // If all cases will be copies we don't also have to copy the failed ones
-            }
+
+                    if "%copy_failed_cases%"=="true" (
+                        set argsList=%%argsList%% --copy-failed-cases
+                    )
+
+                    python TestBench.py %%argsList%%
+
+            """.trimIndent()
+        
+
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }

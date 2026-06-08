@@ -100,7 +100,7 @@ module fm_external_forcings
          integer, intent(in) :: link2cell(:, :) !< indices of cells connected by links
       end subroutine
    end interface
-   
+
    interface
       module function sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink) result(is_successful)
          use tree_data_types, only: tree_data
@@ -114,7 +114,7 @@ module fm_external_forcings
          real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
          real(kind=dp), dimension(2), intent(out) :: z_range_source
          real(kind=dp), dimension(2), intent(out) :: z_range_sink
-         
+
          logical :: is_successful
       end function sourcesink_parse_coordinates
    end interface
@@ -149,7 +149,7 @@ contains
       use m_flow, only: wind_speed_factor
       use m_meteo
       use m_flowgeom, only: ln, lnx, ndx
-      use precision_basics 
+      use precision_basics
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use dfm_error
       use m_tauwavefetch, only: tauwavefetch
@@ -757,12 +757,16 @@ contains
          return
       end if
 
-      ! check FileVersion
-      major = 1
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in '''//trim(filename)//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, '. Ignoring this file.'
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
          call err_flush()
          return
       end if
@@ -1729,9 +1733,6 @@ contains
       integer :: iresult
 
       call setup(iresult)
-      !if (iresult == DFM_NOERR) then
-      !   call init_new(md_inifieldfile, iresult)
-      !end if
       if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
@@ -1750,8 +1751,7 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
-         btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
@@ -1763,7 +1763,6 @@ contains
       use m_sobekdfm, only: init_1d2d
       use timespace_data, only: settimespacerefdat
       use timers, only: timstop, timstrt
-      use unstruc_inifields, only: initialize_initial_fields
       use m_qnerror
       use m_flow_init_structurecontrol, only: flow_init_structurecontrol
       use m_setzminmax, only: setzminmax
@@ -1773,11 +1772,11 @@ contains
       integer, intent(out) :: iresult
 
       integer :: ierr
-      logical :: exist
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
       integer, parameter :: N4 = 6
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
+      logical :: exist
 
       iresult = DFM_NOERR
 
@@ -1794,15 +1793,8 @@ contains
          allocate (mbaname(0))
       end if
 
-      ! (re-)initialize flags/counters related to temperature forcings
+      ! (re-)initialize flags/counters
       itempforcingtyp = 0
-      btempforcingtypA = .false.
-      btempforcingtypC = .false.
-      btempforcingtypD = .false.
-      btempforcingtypH = .false.
-      btempforcingtypS = .false.
-      btempforcingtypL = .false.
-
       ja_friction_coefficient_time_dependent = 0
 
       if (.not. allocated(sah)) then
@@ -1827,7 +1819,7 @@ contains
          call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
          inquire (file=trim(md_inifieldfile), exist=exist)
          if (exist) then
-            iresult = initialize_initial_fields(md_inifieldfile)
+            call init_new(md_inifieldfile, iresult)
             if (iresult /= DFM_NOERR) then
                call timstop(handle_extra(49)) ! initialize_initial_fields
                return
@@ -2568,6 +2560,7 @@ contains
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: realloc
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
+      use unstruc_inifields, only: finalize_1dfield_global_values
 
       integer :: j, k, ierr, l, n, itp, kk, k1, k2, kb, kt, nstor, i, ja
       integer :: imba, needextramba, needextrambar
@@ -2576,6 +2569,12 @@ contains
       type(t_storage), pointer :: stors(:)
 
       call finalize_source_sinks()
+      if (allocated(thrtt)) then
+         call init_threttimes()
+      end if
+
+      call finalize_1dfield_global_values()
+
       ! Cleanup:
       if (jafrculin == 0 .and. allocated(frculin)) then
          deallocate (frculin)
@@ -3026,8 +3025,8 @@ contains
       end if
    end function check_keyword_zerozbndinflowadvection
 
-subroutine allocatewindarrays()
-      use m_wind, only: wx, wy 
+   subroutine allocatewindarrays()
+      use m_wind, only: wx, wy
       use m_flow, only: wdsu, wdsu_x, wdsu_y
       use m_flowgeom, only: lnx
       use m_alloc, only: realloc, aerr
