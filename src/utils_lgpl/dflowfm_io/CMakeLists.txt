@@ -6,6 +6,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(dflowfm_io SHARED
+    include/dflowfm_io/MduModel.h
+    include/ini/IniData.h
+    include/ini/IniFile.h
+    include/ini/IniFormatter.h
+    include/ini/IniFormatterOptions.h
+    include/ini/IniParser.h
+    include/ini/IniParserOptions.h
+    include/ini/IniProperty.h
+    include/ini/IniScheme.h
+    include/ini/IniSection.h
+    include/ini/IniValueConverter.h
+
     src/MduModel.cpp
     src/dflowfm_io.cpp
     src/ini/IniData.cpp
