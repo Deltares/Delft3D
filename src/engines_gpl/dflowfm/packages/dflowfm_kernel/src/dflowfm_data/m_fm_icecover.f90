@@ -415,7 +415,9 @@ contains
 !! let's see if we can make it gradually more modular and move functionality to the icecover_module.
    subroutine update_icecover()
       use precision, only: fp
-      use m_flowgeom, only: ndx
+      use m_flow, only: s1
+      use m_flowgeom, only: ndx, bl
+      use m_flowparameters, only: epshu
       use m_flowtimes, only: dts
       use m_wind, only: air_temperature, rain, jarain
       use physicalconsts, only: celsius_to_kelvin
@@ -426,6 +428,7 @@ contains
       integer :: n !< loop index, grid cell number
       real(fp) :: ice_thickness_change !< change in ice thickness based on heat exchange (m)
       real(fp) :: snow_thickness_change !< change in snow thickness based on heat exchange (m)
+      real(fp) :: water_depth !<local water depth (m)
 
       select case (ja_icecover)
       case (ICECOVER_SEMTNER)
@@ -442,38 +445,44 @@ contains
 
          ! Compute ice growth or melt of snow and ice
          do n = 1, ndx
-            if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
-               if (qh_air2ice(n) > qh_ice2wat(n) .and. snow_thickness(n) > 0.0_fp) then
-                  ! melting of snow due to heat exchange with air
-                  snow_thickness_change = dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat
-                  if (-snow_thickness_change < snow_thickness(n)) then
-                     ! snow melt less than snow layer thickness
-                     snow_thickness(n) = snow_thickness(n) + snow_thickness_change
-                     ice_thickness_change = 0.0_fp
+             
+            ! determine wetting-drying status   
+            water_depth = s1(n) - bl(n)
+            if (water_depth > 1.1_dp * epshu) then
+            
+               if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
+                  if (qh_air2ice(n) > qh_ice2wat(n) .and. snow_thickness(n) > 0.0_fp) then
+                     ! melting of snow due to heat exchange with air
+                     snow_thickness_change = dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat
+                     if (-snow_thickness_change < snow_thickness(n)) then
+                        ! snow melt less than snow layer thickness
+                        snow_thickness(n) = snow_thickness(n) + snow_thickness_change
+                        ice_thickness_change = 0.0_fp
+                     else
+                        ! snow melt more than snow layer thickness
+                        ice_thickness_change = (snow_thickness_change + snow_thickness(n)) * snow_latentheat / ice_latentheat
+                        snow_thickness(n) = 0.0_fp
+                        snow_temperature(n) = celsius_to_kelvin(0.0_fp)
+                     end if
+                     ! ice_thickness_change initialize based on remaining heat exchange with air
+                     ! additional ice_thickness_change due to heat exchange with water
+                     ice_thickness_change = ice_thickness_change + dts * (0.0_fp + qh_ice2wat(n)) / ice_latentheat
                   else
-                     ! snow melt more than snow layer thickness
-                     ice_thickness_change = (snow_thickness_change + snow_thickness(n)) * snow_latentheat / ice_latentheat
-                     snow_thickness(n) = 0.0_fp
-                     snow_temperature(n) = celsius_to_kelvin(0.0_fp)
+                     ! no snow: ice freezes or melts due to net heat exchange with air and water
+                     ice_thickness_change = dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
                   end if
-                  ! ice_thickness_change initialize based on remaining heat exchange with air
-                  ! additional ice_thickness_change due to heat exchange with water
-                  ice_thickness_change = ice_thickness_change + dts * (0.0_fp + qh_ice2wat(n)) / ice_latentheat
-               else
-                  ! no snow: ice freezes or melts due to net heat exchange with air and water
-                  ice_thickness_change = dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
-               end if
 
-               ice_thickness(n) = ice_thickness(n) + ice_thickness_change
-               if (ice_thickness(n) > 0.0_fp) then
-                  ice_area_fraction(n) = 1.0_fp
-               else
-                  ice_thickness(n) = 0.0_fp
-                  snow_thickness(n) = 0.0_fp
-                  ice_area_fraction(n) = 0.0_fp
-                  ice_temperature(n) = celsius_to_kelvin(0.0_fp)
+                  ice_thickness(n) = ice_thickness(n) + ice_thickness_change
+                  if (ice_thickness(n) > 0.0_fp) then
+                     ice_area_fraction(n) = 1.0_fp
+                  else
+                     ice_thickness(n) = 0.0_fp
+                     snow_thickness(n) = 0.0_fp
+                     ice_area_fraction(n) = 0.0_fp
+                     ice_temperature(n) = celsius_to_kelvin(0.0_fp)
+                  end if
                end if
-            end if
+            endif  
          end do
 
       case default
