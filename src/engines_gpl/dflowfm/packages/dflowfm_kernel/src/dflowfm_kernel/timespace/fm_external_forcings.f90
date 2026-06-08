@@ -671,10 +671,10 @@ contains
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
       end if
 
+      ! Read initial tracer properties from extforce and inifield file, needed for correctly initializing numtracers.
+      call read_initialtracer_properties(trim(md_extfile_new), nx)
       if (len(trim(md_inifieldfile)) > 0) then
-         ! read tracer properties from inifield file, needed for correctly initializing numtracers.
-         call read_initialtracer_properties_from_infield_file(trim(md_inifieldfile), nx, kce, numz, numu, nums, numtm, numsd, &
-            numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+         call read_initialtracer_properties(trim(md_inifieldfile), nx)
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -709,13 +709,12 @@ contains
 
    end subroutine findexternalboundarypoints
 
-
-   subroutine read_initialtracer_properties_from_infield_file(filename, nx, kce, numz, numu, nums, numtm, &
-         numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+   !> Read tracer properties from extforce and inifield file, needed for correctly initializing numtracers.
+   subroutine read_initialtracer_properties(filename, nx)
       use properties
       use tree_data_types
       use tree_structures
-      use fm_external_forcings_data, only: transformcoef
+      use fm_external_forcings_data, only: transformcoef, ketr, numtracers, namtraclen
       use fm_external_forcings_utils, only: read_tracer_properties
       use system_utils
       use unstruc_files, only: resolvePath
@@ -726,23 +725,19 @@ contains
       use m_qnerror
       use messagehandling, only: msgbuf, err_flush
 
-      character(len=*), intent(in) :: filename
-      integer, intent(in) :: nx
-      integer, dimension(nx), intent(inout) :: kce
-      integer, intent(inout) :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf
+      character(len=*), intent(in) :: filename !< Name of the inifield file to read
+      integer, intent(in) :: nx !< Number of boundary points (size of kce)
 
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       type(tree_data), pointer :: node_ptr !
-      integer :: filetype !< possible values POLY_TIM: use polygon file as location reference, or NODE_ID: use nodeId as a location reference
       integer :: istat !
       integer, parameter :: ini_key_len = 32 !
       integer, parameter :: ini_value_len = 256 !
       character(len=ini_key_len) :: groupname !
       character(len=ini_value_len) :: quantity !
-      character(len=ini_value_len) :: location_file !< contains either the name of the polygon file (.pli) or the nodeId
-      real(kind=dp) :: return_time !
-      real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
-      real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: itrac, janew
 
       integer :: i
       integer :: num_items_in_file
@@ -754,7 +749,7 @@ contains
       call tree_create(trim(filename), bnd_ptr)
       call prop_file('ini', trim(filename), bnd_ptr, istat)
       if (istat /= 0) then
-         call qnerror('Initial field file ', trim(filename), ' could not be read')
+         call qnerror('Extforce or initial field file ', trim(filename), ' could not be read')
          return
       end if
 
@@ -763,9 +758,9 @@ contains
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
       if (.not. file_ok) then
-         write (msgbuf, '(a,a,a)') 'File version number not found in initial field file ''', trim(filename), '''.'
+         write (msgbuf, '(a,a,a)') 'File version number not found in extforce or initial field file ''', trim(filename), '''.'
       else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new initial field file detected in ''' &
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new extforce or initial field file detected in ''' &
             //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
          call err_flush()
@@ -790,13 +785,18 @@ contains
                call qnerror('Expected property', 'quantity', 'for initial field definition')
             end if
 
-            ! if initialtracer quantity is found, call resolve_initial_3d_target to initialize numtracers and trnames.
+            ! When initialtracer is found, get tracername and add tracer boundary
             if (quantity(1:13) == 'initialtracer') then
                call read_tracer_properties(node_ptr, transformcoef)
 
-               call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, &
-                  numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, &
-                  width1D=width1D, blDepth=blDepth)
+               call get_tracername(quantity, tracnam, qidnam)
+               tracunit = " "
+               call add_bndtracer(tracnam, tracunit, itrac, janew)
+
+               if (janew == 1) then
+                  ! realloc ketr
+                  call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
+               end if
 
             end if
          end if
@@ -804,7 +804,7 @@ contains
 
       call tree_destroy(bnd_ptr)
 
-   end subroutine read_initialtracer_properties_from_infield_file
+   end subroutine read_initialtracer_properties
 
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
@@ -951,7 +951,6 @@ contains
             end if
 
             file_ok = file_ok .and. group_ok
-
          else
             ! warning: unknown group
          end if
@@ -1028,8 +1027,9 @@ contains
       integer, intent(in) :: nx !
       integer, dimension(nx), intent(inout) :: kce !
       real(kind=dp), intent(in) :: return_time
-      integer, intent(inout) :: numz, numu, nums, numtm, numsd, & !
-                                numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf !
+      integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
+                                numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+      integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
       real(kind=dp), dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc
@@ -1230,17 +1230,7 @@ contains
             call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
-         end if
-
-      else if (qid(1:13) == 'initialtracer') then
-         call get_tracername(qid, tracnam, qidnam)
-         tracunit = " "
-         call add_bndtracer(tracnam, tracunit, itrac, janew)
-
-         if (janew == 1) then
-!       realloc ketr
-            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
-         end if
+         end if         
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
          call get_sedfracname(qidfm, sfnam, qidnam)
@@ -1858,8 +1848,7 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
-                                  btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
