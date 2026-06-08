@@ -1,11 +1,9 @@
 #pragma once
 
-#include <dflowfm_io/dflowfm_io_export.h>
-
 namespace dflowfm_io
 {
 
-class DFLOWFM_IO_EXPORT MduModel
+class MduModel
 {
 public:
     MduModel() = default;

@@ -1,4 +1,4 @@
-add_library(dflowfm_io SHARED
+add_library(dflowfm_io STATIC
     include/dflowfm_io/ConversionResult.h
     include/dflowfm_io/IssueReport.h
     include/dflowfm_io/MduConverter.h
@@ -7,7 +7,6 @@ add_library(dflowfm_io SHARED
     include/dflowfm_io/MduSchema.h
     include/dflowfm_io/StringUtils.h
 
-    src/dflowfm_io.cpp
     src/IssueReport.cpp
     src/MduConverter.cpp
     src/MduFile.cpp
@@ -18,22 +17,10 @@ target_link_libraries(dflowfm_io
     PRIVATE dflowfm_ini_parser
 )
 
-include(GenerateExportHeader)
-generate_export_header(dflowfm_io
-    EXPORT_FILE_NAME ${CMAKE_CURRENT_BINARY_DIR}/dflowfm_io/dflowfm_io_export.h
-)
-
 target_include_directories(dflowfm_io
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_BINARY_DIR}
 )
-
-# TODO Make a cmake option?
-get_property(_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
-if("Fortran" IN_LIST _languages)
-    add_subdirectory(wrappers/fortran)
-endif()
 
 add_subdirectory(test)
 

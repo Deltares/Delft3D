@@ -3,7 +3,7 @@ add_library(dflowfm_io_fortran
 )
 
 target_link_libraries(dflowfm_io_fortran
-    PUBLIC dflowfm_io
+    PUBLIC dflowfm_io_api
 )
 
 target_include_directories(dflowfm_io_fortran

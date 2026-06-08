@@ -3,13 +3,12 @@
 #include <filesystem>
 #include <memory>
 
-#include <dflowfm_io/dflowfm_io_export.h>
 #include <dflowfm_io/MduModel.h>
 
 namespace dflowfm_io
 {
 
-    class DFLOWFM_IO_EXPORT MduFile
+    class MduFile
     {
     public:
         explicit MduFile(std::filesystem::path path);

@@ -4,22 +4,25 @@ import platform
 
 
 def _find_project_root():
-    """Walk up from this file to find the project root (where CMakeLists.txt lives)."""
+    """Walk up from this file to find the top-level project root (contains CMakeLists.txt with 'project(')."""
     d = os.path.dirname(os.path.abspath(__file__))
+    result = None
     while True:
-        if os.path.isfile(os.path.join(d, "CMakeLists.txt")):
-            return d
+        cmake_file = os.path.join(d, "CMakeLists.txt")
+        if os.path.isfile(cmake_file):
+            result = d
         parent = os.path.dirname(d)
         if parent == d:
-            return None
+            break
         d = parent
+    return result
 
 
 def _load_library():
     if platform.system() == "Windows":
-        lib_name = "dflowfm_io.dll"
+        lib_name = "dflowfm_io_api.dll"
     else:
-        lib_name = "libdflowfm_io.so"
+        lib_name = "libdflowfm_io_api.so"
 
     # Explicit override via environment variable
     lib_dir = os.environ.get("DFLOWFM_IO_LIB_DIR", "")
