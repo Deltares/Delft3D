@@ -4512,8 +4512,6 @@ contains
          isfun = find_name(sfunname, waqinput)
          itemPtr1 => item_waqsfun(isfun)
          dataPtr1 => sfuninp(isfun, :)
-      case ('initialtracer')
-         continue
       case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')
