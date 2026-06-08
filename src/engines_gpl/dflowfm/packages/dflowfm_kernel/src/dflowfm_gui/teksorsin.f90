@@ -93,8 +93,8 @@ contains
          k = source_sinks%indices(n, 4)
          if (k /= 0) then
             n2 = source_sinks%max_xy_points(n)
-            xp = source_sinks%x(n2, n)
-            yp = source_sinks%y(n2, n)
+            xp = source_sinks%x(n, n2)
+            yp = source_sinks%y(n, n2)
             if (inview(xp, yp)) then
                if (source_sinks%discharge(n) > 0) then
                   ncol = 221
