@@ -191,13 +191,40 @@ class DimrAutomationContext:
         service: ServiceName,
         credential_entry: CredentialEntry,
     ) -> Optional[CredentialEntry]:
-        if credential_entry is None or (
-            credential_entry.required
-            and (not credential_entry.credential.password or not credential_entry.credential.username)
-        ):
-            username = input(f"Enter your {service} username:")
-            password = getpass(prompt=f"Enter your {service} password:", stream=None)
-            if username == "" or password == "":
-                raise ValueError(f"{service.value} credentials are required but not provided")
-            return CredentialEntry(required=True, credential=Credentials(username, password))
+        """
+        Prompt for missing required credentials.
+
+        Jira uses PAT-only auth. Only password (the token) is required; username is optional.
+        Other services require both.
+        """
+        if credential_entry is None or not credential_entry.required:
+            return None
+
+        cred = credential_entry.credential
+        is_jira = service == ServiceName.JIRA
+
+        missing_password = not cred or not cred.password
+        missing_username = (not cred or not cred.username) and not is_jira
+
+        if missing_password or missing_username:
+            if is_jira:
+                if missing_password:
+                    token = getpass(
+                        prompt=f"Enter your {service} Personal Access Token (PAT):", stream=None
+                    )
+                    if not token:
+                        raise ValueError(
+                            f"{service.value} Personal Access Token is required but not provided"
+                        )
+                    username = (cred.username if cred else "") or ""
+                    return CredentialEntry(
+                        required=True, credential=Credentials(username=username, password=token)
+                    )
+                return None
+            else:
+                username = input(f"Enter your {service} username:")
+                password = getpass(prompt=f"Enter your {service} password:", stream=None)
+                if username == "" or password == "":
+                    raise ValueError(f"{service.value} credentials are required but not provided")
+                return CredentialEntry(required=True, credential=Credentials(username, password))
         return None
