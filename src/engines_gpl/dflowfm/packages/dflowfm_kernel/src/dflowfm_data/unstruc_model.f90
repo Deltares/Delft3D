@@ -3516,8 +3516,8 @@ contains
             call prop_set(prop_ptr, 'sediment', 'InMorphoPol', inmorphopol, 'Value of the update inside MorphoPol (0=inside polygon no update, 1=inside polygon yes update)')
             call prop_set(prop_ptr, 'sediment', 'MormergeDtUser', jamormergedtuser, 'Mormerge operation at dtuser timesteps (1) or dts (0, default)')
             call prop_set(prop_ptr, 'sediment', 'UpperLimitSSC', upperlimitssc, 'Upper limit of cell centre SSC concentration after transport timestep. Default 1e6 (effectively switched off)')
-            call prop_get(prop_ptr, 'sediment', 'DiffusionCal', seddif_cal, 'Scaling factor for susp. sed. diffusion throughout water column, only applied if strictly positive (default=0)')
-            call prop_get(prop_ptr, 'sediment', 'DiffusionScaling', difparam, 'Additional scaling factor for susp. sed. diffusion below reference level, only applied if strictly positive (default=10)')
+            call prop_set(prop_ptr, 'sediment', 'diffusionCal', seddif_cal, 'Calibration factor for susp. sed. diffusion, only applied if strictly positive (default=0)')
+            call prop_set(prop_ptr, 'sediment', 'diffusionScaling', difparam, 'Scaling factor for near-bed susp. sed. diffusion, only applied if strictly positive (default=10)')
          end if
 
          if (jased /= 4) then
