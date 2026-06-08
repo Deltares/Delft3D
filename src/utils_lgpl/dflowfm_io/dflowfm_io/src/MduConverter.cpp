@@ -1,106 +1,57 @@
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
+#include <dflowfm_io/MduValidator.h>
 
 using namespace ini;
 
 namespace dflowfm_io
 {
-    MduConverter::MduConverter() : mduSchema(BuildMduSchema()) {}
-
-    ConversionResult<MduModel> MduConverter::ToModel(const IniData& iniData)
+    static const IniSection* GetSection(const IniData& iniData, const std::string& name)
     {
-        ValidateStructure(iniData);
-        ConvertValues(iniData);
-
-        return {std::move(mduModel), std::move(report)};
+        return iniData.HasSection(name) ? &iniData.GetSection(name) : nullptr;
     }
 
-    void MduConverter::ValidateStructure(const IniData& iniData)
+    static const IniProperty* GetProperty(const IniSection& section, const std::string& key)
     {
-        ValidateSchemaAgainstData(iniData);
-        ValidateDataAgainstSchema(iniData);
+        return section.HasProperty(key) ? &section.GetProperty(key) : nullptr;
     }
 
-    void MduConverter::ValidateSchemaAgainstData(const IniData& iniData)
+    template <typename T>
+    static void TryConvert(const IniProperty* property, IssueReport& report, T& field)
     {
-        for (const auto& ss : mduSchema.sections)
+        if (!property || !property->HasValue()) return;
+
+        if (!property->TryGetConvertedValue(field))
+            report.AddError(property->GetLineNumber(), "Property {} value \"{}\" could not be converted.",
+                            property->GetKey(), property->GetValue());
+    }
+
+    ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
+    {
+        MduValidator validator;
+        IssueReport report = validator.Validate(iniData);
+
+        MduData mduData;
+
+        if (const auto* generalSection = GetSection(iniData, "general"))
         {
-            if (!iniData.HasSection(ss.name))
-            {
-                if (ss.required)
-                {
-                    report.AddError("Section [{}] is missing.", ss.name);
-                }
-
-                for (const auto& ps : ss.properties)
-                {
-                    if (ps.required)
-                    {
-                        report.AddError("Property [{}].{} is missing.", ss.name, ps.key);
-                    }
-                }
-
-                continue;
-            }
-
-            const IniSection& section = iniData.GetSection(ss.name);
-            for (const auto& ps : ss.properties)
-            {
-                if (!section.HasProperty(ps.key))
-                {
-                    if (ps.required)
-                    {
-                        report.AddError("Property [{}].{} is missing.", ss.name, ps.key);
-                    }
-                    else if (ps.HasDefault())
-                    {
-                        report.AddInfo("Property [{}].{} is not provided. Default is used: \"{}\".", ss.name, ps.key,
-                                       ps.default_value);
-                    }
-                    continue;
-                }
-
-                const IniProperty& property = section.GetProperty(ps.key);
-                if (!property.HasValue())
-                {
-                    if (ps.required)
-                    {
-                        report.AddError(property.GetLineNumber(), "Property [{}].{} is empty.", ss.name, ps.key);
-                    }
-                    else if (ps.HasDefault())
-                    {
-                        report.AddInfo(property.GetLineNumber(), "Property [{}].{} is empty. Default is used: \"{}\".",
-                                       ss.name, ps.key, ps.default_value);
-                    }
-                }
-            }
+            TryConvert(GetProperty(*generalSection, "program"), report, mduData.general.program);
+            TryConvert(GetProperty(*generalSection, "fileVersion"), report, mduData.general.fileVersion);
         }
-    }
 
-    void MduConverter::ValidateDataAgainstSchema(const IniData& iniData)
-    {
-        for (const auto& section : iniData)
+        if (const auto* geometrySection = GetSection(iniData, "geometry"))
         {
-            const auto* ss = mduSchema.FindSection(section.GetName());
-            if (!ss)
-            {
-                report.AddWarning(section.GetLineNumber(), "Section [{}] is not a supported section.",
-                                  section.GetName());
-                continue;
-            }
-
-            for (const auto& property : section)
-            {
-                const auto* ps = ss->FindProperty(property.GetKey());
-                if (!ps)
-                {
-                    report.AddWarning(property.GetLineNumber(), "Property [{}].{} is not a supported property.",
-                                      section.GetName(), property.GetKey());
-                }
-            }
+            TryConvert(GetProperty(*geometrySection, "netFile"), report, mduData.geometry.netFile);
+            TryConvert(GetProperty(*geometrySection, "useCaching"), report, mduData.geometry.useCaching);
         }
-    }
 
-    void MduConverter::ConvertValues(const IniData& iniData) {}
+        if (const auto* numericsSection = GetSection(iniData, "numerics"))
+        {
+            TryConvert(GetProperty(*numericsSection, "cflMax"), report, mduData.numerics.cflMax);
+            TryConvert(GetProperty(*numericsSection, "kmx"), report, mduData.numerics.kmx);
+        }
+
+        return {std::move(mduData), std::move(report)};
+    }
 
 } // namespace dflowfm_io

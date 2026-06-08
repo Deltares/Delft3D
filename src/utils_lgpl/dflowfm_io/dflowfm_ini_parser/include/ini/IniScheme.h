@@ -3,7 +3,7 @@
 namespace ini
 {
 
-    /// @brief Defines the format of an INI file through customization of the characters
+    /// @brief Defines the format of an INI file through customization of the delimiters
     ///        that define sections, property value assignment and comments.
     ///
     /// @details By default, the various delimiters for the INI file are set to:

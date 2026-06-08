@@ -12,7 +12,7 @@ endif()
 enable_testing()
 
 add_executable(dflowfm_io_tests
-    MduModelTest.cpp
+    MduDataTest.cpp
 )
 
 if(MSVC)

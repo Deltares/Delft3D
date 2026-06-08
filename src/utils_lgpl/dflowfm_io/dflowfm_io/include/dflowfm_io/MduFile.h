@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <memory>
 
-#include <dflowfm_io/MduModel.h>
+#include <dflowfm_io/MduData.h>
 
 namespace dflowfm_io
 {
@@ -24,14 +24,12 @@ namespace dflowfm_io
 
         void Load();
 
-        MduModel& GetModel() { return model; }
-        const MduModel& GetModel() const { return model; }
+        MduData& GetData();
+        const MduData& GetData() const;
 
     private:
         struct Impl;
         std::unique_ptr<Impl> impl_;
-
-        MduModel model;
     };
 
 } // namespace dflowfm_io

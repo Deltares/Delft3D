@@ -29,6 +29,14 @@ namespace dflowfm_io
                            [severity](const Issue& issue) { return issue.severity == severity; });
     }
 
+    void IssueReport::Merge(const IssueReport& other)
+    {
+        for (const auto& issue : other.issues)
+        {
+            AddIssue(issue.severity, issue.lineNumber, issue.message);
+        }
+    }
+
     std::string IssueReport::Format() const
     {
         std::ostringstream oss;

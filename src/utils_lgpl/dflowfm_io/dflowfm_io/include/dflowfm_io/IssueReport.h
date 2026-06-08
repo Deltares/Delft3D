@@ -65,6 +65,8 @@ namespace dflowfm_io
         bool HasWarnings() const;
         bool HasErrors() const;
 
+        void Merge(const IssueReport& other);
+
         std::string Format() const;
 
         bool empty() const;

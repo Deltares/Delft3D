@@ -127,6 +127,16 @@ namespace ini::tests
         EXPECT_TRUE(data.HasSection("numerics"));
     }
 
+    TEST_F(IniFileTest, LoadFrom_DuplicateSectionsNotAllowed_ThrowsFailure)
+    {
+        const auto path = CreateFile("test.ini", "[general]\n[general]\n");
+
+        IniFileOptions options;
+        options.parserOptions.allowDuplicateSections = false;
+
+        EXPECT_THROW(IniFile::LoadFrom(path, options), std::runtime_error);
+    }
+
     // ============================================================
     // Load
     // ============================================================

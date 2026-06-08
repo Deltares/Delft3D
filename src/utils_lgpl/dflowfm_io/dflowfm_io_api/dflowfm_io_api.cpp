@@ -4,7 +4,7 @@
 
 #include <dflowfm_io_api/dflowfm_io_api.h>
 
-#include <dflowfm_io/MduModel.h>
+#include <dflowfm_io/MduData.h>
 
 static std::string last_error;
 
@@ -47,7 +47,7 @@ dflowfm_io_result_t mdu_model_create(MduModelHandle* handle_out)
 
     return exception_to_result([&]()
     {
-        *handle_out = new dflowfm_io::MduModel();
+        *handle_out = new dflowfm_io::MduData();
     });
 }
 
@@ -59,7 +59,7 @@ dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle)
     {
         if (*handle)
         {
-            delete static_cast<dflowfm_io::MduModel*>(*handle);
+            delete static_cast<dflowfm_io::MduData*>(*handle);
             *handle = nullptr;
         }
     });
@@ -72,6 +72,6 @@ dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_
 
     return exception_to_result([&]()
     {
-        *value_out = static_cast<dflowfm_io::MduModel*>(handle)->GetDummyValue();
+        *value_out = static_cast<dflowfm_io::MduData*>(handle)->GetDummyValue();
     });
 }

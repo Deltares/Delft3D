@@ -8,7 +8,8 @@
 namespace ini
 {
 
-    IniFile::IniFile(std::filesystem::path path) : path(std::move(path))
+    IniFile::IniFile(std::filesystem::path path, IniFileOptions options)
+        : path(std::move(path)), options(std::move(options))
     {
         if (this->path.empty())
         {
@@ -16,10 +17,9 @@ namespace ini
         }
     }
 
-    IniFile IniFile::LoadFrom(std::filesystem::path path, IniParserOptions options)
+    IniFile IniFile::LoadFrom(std::filesystem::path path, IniFileOptions options)
     {
-        IniFile file(std::move(path));
-        file.parserOptions = std::move(options);
+        IniFile file(std::move(path), std::move(options));
         file.Load();
 
         return file;
@@ -44,8 +44,8 @@ namespace ini
         }
 
         IniParser parser;
-        parser.SetScheme(scheme);
-        parser.SetOptions(parserOptions);
+        parser.SetScheme(options.scheme);
+        parser.SetOptions(options.parserOptions);
 
         data = parser.Parse(stream);
     }
@@ -59,8 +59,8 @@ namespace ini
         }
 
         IniFormatter formatter;
-        formatter.SetScheme(scheme);
-        formatter.SetOptions(formatterOptions);
+        formatter.SetScheme(options.scheme);
+        formatter.SetOptions(options.formatterOptions);
 
         formatter.Format(data, stream);
     }

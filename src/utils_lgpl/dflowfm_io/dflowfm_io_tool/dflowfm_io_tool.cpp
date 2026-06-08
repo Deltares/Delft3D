@@ -1,30 +1,48 @@
 #include <filesystem>
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <dflowfm_io/MduFile.h>
 
 using namespace dflowfm_io;
+using namespace std;
 
 int main(int argc, char* argv[])
 {
     if (argc != 2)
     {
-        std::cerr << "Usage: dflowfm_io_tool <path_to_mdu_file>\n";
+        cerr << "Usage: dflowfm_io_tool <path_to_mdu_file>\n";
         return 1;
     }
 
-    std::string path = argv[1];
+    string path = argv[1];
+    MduFile mduFile(path);
 
     try
     {
-        MduFile mduFile = MduFile::LoadFrom(path);
+        mduFile.Load();
     }
     catch (const std::exception& e)
     {
-        std::cerr << e.what() << "\n";
+        cerr << "Error loading '" << path << "': " << e.what() << "\n";
         return 1;
     }
 
-    std::cout << "Successfully loaded: " << path << "\n";
+    const MduData& data = mduFile.GetData();
+
+    cout << "\nSuccessfully loaded: " << path << "\n\n";
+
+    cout << "[general]\n";
+    cout << "  program     = " << data.general.program << "\n";
+    cout << "  fileVersion = " << data.general.fileVersion << "\n";
+
+    cout << "[geometry]\n";
+    cout << "  netFile    = " << data.geometry.netFile << "\n";
+    cout << "  useCaching = " << boolalpha << data.geometry.useCaching << "\n";
+
+    cout << "[numerics]\n";
+    cout << "  cflMax = " << data.numerics.cflMax << "\n";
+    cout << "  kmx    = " << data.numerics.kmx << "\n";
+
     return 0;
 }
