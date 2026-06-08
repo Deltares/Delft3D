@@ -6,7 +6,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(dflowfm_io SHARED
+    include/dflowfm_io/ConversionResult.h
+    include/dflowfm_io/IssueReport.h
+    include/dflowfm_io/MduConverter.h
+    include/dflowfm_io/MduFile.h
     include/dflowfm_io/MduModel.h
+    include/dflowfm_io/MduSchema.h
+    include/dflowfm_io/StringUtils.h
     include/ini/IniData.h
     include/ini/IniFile.h
     include/ini/IniFormatter.h
@@ -17,9 +23,13 @@ add_library(dflowfm_io SHARED
     include/ini/IniScheme.h
     include/ini/IniSection.h
     include/ini/IniValueConverter.h
+    include/ini/StringUtils.h
 
-    src/MduModel.cpp
     src/dflowfm_io.cpp
+    src/IssueReport.cpp
+    src/MduConverter.cpp
+    src/MduFile.cpp
+    src/MduModel.cpp
     src/ini/IniData.cpp
     src/ini/IniFile.cpp
     src/ini/IniFormatter.cpp
@@ -41,6 +51,20 @@ target_include_directories(dflowfm_io
 )
 
 add_subdirectory(wrappers/fortran)
+
+add_executable(dflowfm_io_tool
+    src/dflowfm_io_tool.cpp
+)
+
+target_link_libraries(dflowfm_io_tool
+    PRIVATE dflowfm_io
+)
+
+target_include_directories(dflowfm_io_tool
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_BINARY_DIR}
+)
 
 add_subdirectory(test)
 
