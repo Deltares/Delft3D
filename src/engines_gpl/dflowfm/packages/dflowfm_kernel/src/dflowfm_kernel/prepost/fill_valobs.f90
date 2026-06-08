@@ -353,12 +353,7 @@ contains
             if (IVAL_WQB1 > 0) then
                  call realloc(waq_tmp, ndx, keepExisting=.false., fill=0.0_dp)
             end if
-            
-            ! 3D array for other quantities
-            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0 .or. IVAL_TRA1 >0) then
-               call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp) 
-            end if
-                        
+                                    
             ! Bed quantities 2D
             if (IVAL_WQB1 > 0) then
                do j = IVAL_WQB1, IVAL_WQBN
@@ -369,6 +364,12 @@ contains
                   end do
                   call interpolate_and_fill_valobs(waq_tmp,i,IPNT_WQB1 + ii - 1, UNC_LOC_S,wet_or_dry)
                end do
+            end if
+            
+            ! 3D array for other quantities
+            if (IVAL_HWQ1 > 0 .or. IVAL_WQB3D1 > 0 .or. IVAL_SF1 > 0 .or. IVAL_TRA1 >0) then
+               if (allocated(waq_tmp)) deallocate(waq_tmp)  
+               call realloc(waq_tmp, ndkx, keepExisting=.false., fill=0.0_dp) 
             end if
 
             ! Bed quantities 3D
