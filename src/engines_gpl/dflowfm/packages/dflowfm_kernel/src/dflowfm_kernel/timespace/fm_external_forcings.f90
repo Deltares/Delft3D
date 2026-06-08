@@ -744,11 +744,6 @@ contains
       real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
       real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
 
-      ! logical :: success
-      ! integer :: target_location_type
-      ! integer :: first_index
-      ! real(kind=dp), dimension(:, :), pointer :: target_array_3d
-
       integer :: i
       integer :: num_items_in_file
       logical :: file_ok
@@ -803,9 +798,7 @@ contains
                   numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, &
                   width1D=width1D, blDepth=blDepth)
 
-               ! success = resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index)
             end if
-
          end if
       end do
 
