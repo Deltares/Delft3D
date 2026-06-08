@@ -985,9 +985,6 @@ contains
                   air_temperature = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypA = .true.
-               end if
 
             else if (qid == 'airdensity') then
 
@@ -1010,9 +1007,6 @@ contains
                   relative_humidity = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypH = .true.
-               end if
 
             else if (qid == 'dewpoint') then
 
@@ -1021,11 +1015,7 @@ contains
                   call aerr('dew_point_temperature(ndx)', ierr, ndx)
                   dew_point_temperature = 0.0_dp
                end if
-
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypD = .true.
-               end if
 
             else if (qid == 'sea_ice_area_fraction' .or. qid == 'sea_ice_thickness') then
 
@@ -1057,9 +1047,6 @@ contains
                   cloudiness = 0.0_dp
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
-               if (success) then
-                  btempforcingtypC = .true.
-               end if
 
             else if (qid == 'solarradiation') then
 
@@ -1070,7 +1057,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
                   solar_radiation_available = .true.
                end if
 
@@ -1083,7 +1069,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypS = .true.
                   net_solar_radiation_available = .true.
                end if
 
@@ -1095,7 +1080,6 @@ contains
                end if
                success = ec_addtimespacerelation(qid, xz, yz, kcs, kx, filename, filetype, method, operand, varname=varname)
                if (success) then
-                  btempforcingtypL = .true.
                   long_wave_radiation_available = .true.
                end if
 

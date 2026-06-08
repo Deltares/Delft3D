@@ -1751,8 +1751,7 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
-                                  btempforcingtypl, ja_friction_coefficient_time_dependent
+      use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
       use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
@@ -1794,15 +1793,8 @@ contains
          allocate (mbaname(0))
       end if
 
-      ! (re-)initialize flags/counters related to temperature forcings
+      ! (re-)initialize flags/counters
       itempforcingtyp = 0
-      btempforcingtypA = .false.
-      btempforcingtypC = .false.
-      btempforcingtypD = .false.
-      btempforcingtypH = .false.
-      btempforcingtypS = .false.
-      btempforcingtypL = .false.
-
       ja_friction_coefficient_time_dependent = 0
 
       if (.not. allocated(sah)) then

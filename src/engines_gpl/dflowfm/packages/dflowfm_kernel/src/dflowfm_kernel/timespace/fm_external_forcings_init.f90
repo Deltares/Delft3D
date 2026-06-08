@@ -1010,10 +1010,8 @@ contains
    function enable_quantity(quantity) result(success)
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
-                        pseudo_air_pressure_available, water_level_correction_available
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
-                                  btempforcingtypS, itempforcingtyp
-
+                        sensible_heat_flux_available, latent_heat_flux_available, pseudo_air_pressure_available, water_level_correction_available
+      use m_flowparameters, only: itempforcingtyp
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
@@ -1087,18 +1085,8 @@ contains
       case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
          jawind = 1
 
-      case ('airtemperature')
-         btempforcingtypA = .true.
-
-      case ('cloudiness')
-         btempforcingtypC = .true.
-
-      case ('humidity')
-         btempforcingtypH = .true.
-
       case ('dewpoint')
          itempforcingtyp = 5
-         btempforcingtypD = .true.
 
       case ('solarradiation')
          if (net_solar_radiation_available) then
@@ -1107,7 +1095,6 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          solar_radiation_available = .true.
 
       case ('netsolarradiation')
@@ -1117,12 +1104,16 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          net_solar_radiation_available = .true.
 
       case ('longwaveradiation')
-         btempforcingtypL = .true.
          long_wave_radiation_available = .true.
+
+      case ('sensibleheatflux')
+         sensible_heat_flux_available = .true.
+
+      case ('latentheatflux')
+         latent_heat_flux_available = .true.
 
       case ('humidity_airtemperature_cloudiness')
          itempforcingtyp = 1
@@ -1566,7 +1557,6 @@ contains
 
    end subroutine initialize_bubblescreens
 
-
    !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.
    function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
@@ -1683,7 +1673,7 @@ contains
       end if
 
       is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                                                      trim(discharge_input), bi, 1, bubblescreen_air_discharge)
+                                                     trim(discharge_input), bi, 1, bubblescreen_air_discharge)
 
       if (.not. is_successful) then
          write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
@@ -1696,7 +1686,7 @@ contains
 
    end function add_bubblescreen_source_sinks
 
-      !> Get several target grid properties for a given location type.
+   !> Get several target grid properties for a given location type.
    !!
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
@@ -1715,7 +1705,7 @@ contains
       logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying
       integer, intent(out) :: ierr
 
-         ierr = DFM_NOERR
+      ierr = DFM_NOERR
 
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
@@ -1743,108 +1733,114 @@ contains
       end select
    end subroutine get_location_target_properties
 
-      !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
-      subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         use fm_location_types
-         use m_flowgeom, only: ndx, lnx, xz, yz, kcs
-         use timespace_parameters, only: LOCTP_POLYGON_FILE
-         use timespace, only: selectelset_internal_nodes, selectelset_internal_links
-         use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
+   !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
+   subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+      use fm_location_types
+      use m_flowgeom, only: ndx, lnx, xz, yz, kcs
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_nodes, selectelset_internal_links
+      use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
 
-         integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
-         integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
-         character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
-         integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-         logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
-         integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
+      integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
+      integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
+      character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
+      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+      logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
+      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
-         integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
-         integer :: number_of_selected_points, point
+      integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
+      integer :: number_of_selected_points, point
 
-         ierr = DFM_NOERR
+      ierr = DFM_NOERR
 
-         allocate (mask(target_num_points), source=0)
+      allocate (mask(target_num_points), source=0)
 
-         if (len_trim(target_mask_file) > 0) then
-            ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
-            allocate (selected_points(target_num_points), source=0)
-            select case (target_location_type)
-            case (UNC_LOC_S)
-               ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
-               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                               target_mask_file)
-            case (UNC_LOC_U)
-               ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
-               call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                               target_mask_file)
-            case default
-               ierr = DFM_NOTIMPLEMENTED
-               return
-            end select
-
-            do point = 1, number_of_selected_points
-               mask(selected_points(point)) = 1
-            end do
-            if (invert_mask) then
-               mask = ieor(mask, 1)
-            end if
-         else
-            if (target_location_type == UNC_LOC_S) then
-               ! 100% masking: accept all flow locations that were already active in their own mask array.
-               where (kcs /= 0) mask = 1
-            else
-               mask = 1
-            end if
-         end if
-      end subroutine construct_target_mask
-
-      !> Scan the quantity name for heat relatede quantities.
-      function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
-         use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
-         use m_flowgeom, only: ndx
-         use m_alloc, only: aerr, realloc
-         use fm_location_types, only: UNC_LOC_S
-         character(len=*), intent(in) :: quantity !< Name of the data set.
-         integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
-         integer, intent(out) :: kx !< Number of individual quantities in the data set
-         logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
-
-         integer :: ierr
-
-         kx = 1
-         success = .true.
-         target_location_type = UNC_LOC_S
-         select case (quantity)
-
-         case ('airtemperature')
-            call realloc(air_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('air_temperature(ndx)', ierr, ndx)
-         case ('cloudiness')
-            call realloc(cloudiness, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('cloudiness(ndx)', ierr, ndx)
-         case ('humidity')
-            call realloc(relative_humidity, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('relative_humidity(ndx)', ierr, ndx)
-         case ('dewpoint')
-            call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('dew_point_temperature(ndx)', ierr, ndx)
-         case ('solarradiation', 'netsolarradiation')
-            call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('solar_radiation(ndx)', ierr, ndx)
-         case ('longwaveradiation')
-            call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('long_wave_radiation(ndx)', ierr, ndx)
-         case ('humidity_airtemperature_cloudiness')
-            kx = 3
-         case ('dewpoint_airtemperature_cloudiness')
-            kx = 3
-         case ('humidity_airtemperature_cloudiness_solarradiation')
-            kx = 4
-         case ('dewpoint_airtemperature_cloudiness_solarradiation')
-            kx = 4
+      if (len_trim(target_mask_file) > 0) then
+         ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
+         allocate (selected_points(target_num_points), source=0)
+         select case (target_location_type)
+         case (UNC_LOC_S)
+            ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
+            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                            target_mask_file)
+         case (UNC_LOC_U)
+            ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
+            call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                            target_mask_file)
          case default
-            success = .false.
+            ierr = DFM_NOTIMPLEMENTED
+            return
          end select
-      end function scan_for_heat_quantities
 
-   end submodule fm_external_forcings_init
+         do point = 1, number_of_selected_points
+            mask(selected_points(point)) = 1
+         end do
+         if (invert_mask) then
+            mask = ieor(mask, 1)
+         end if
+      else
+         if (target_location_type == UNC_LOC_S) then
+            ! 100% masking: accept all flow locations that were already active in their own mask array.
+            where (kcs /= 0) mask = 1
+         else
+            mask = 1
+         end if
+      end if
+   end subroutine construct_target_mask
+
+   !> Scan the quantity name for heat relatede quantities.
+   function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
+      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
+      use m_flowgeom, only: ndx
+      use m_alloc, only: aerr, realloc
+      use fm_location_types, only: UNC_LOC_S
+      character(len=*), intent(in) :: quantity !< Name of the data set.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
+      integer, intent(out) :: kx !< Number of individual quantities in the data set
+      logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
+
+      integer :: ierr
+
+      kx = 1
+      success = .true.
+      target_location_type = UNC_LOC_S
+      select case (quantity)
+
+      case ('airtemperature')
+         call realloc(air_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('air_temperature(ndx)', ierr, ndx)
+      case ('cloudiness')
+         call realloc(cloudiness, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('cloudiness(ndx)', ierr, ndx)
+      case ('humidity')
+         call realloc(relative_humidity, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('relative_humidity(ndx)', ierr, ndx)
+      case ('dewpoint')
+         call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('dew_point_temperature(ndx)', ierr, ndx)
+      case ('solarradiation', 'netsolarradiation')
+         call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('solar_radiation(ndx)', ierr, ndx)
+      case ('longwaveradiation')
+         call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('long_wave_radiation(ndx)', ierr, ndx)
+      case ('sensibleheatflux')
+         call realloc(sensible_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sensible_heat_flux(ndx)', ierr, ndx)
+      case ('latentheatflux')
+         call realloc(latent_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('latent_heat_flux(ndx)', ierr, ndx)
+      case ('humidity_airtemperature_cloudiness')
+         kx = 3
+      case ('dewpoint_airtemperature_cloudiness')
+         kx = 3
+      case ('humidity_airtemperature_cloudiness_solarradiation')
+         kx = 4
+      case ('dewpoint_airtemperature_cloudiness_solarradiation')
+         kx = 4
+      case default
+         success = .false.
+      end select
+   end function scan_for_heat_quantities
+
+end submodule fm_external_forcings_init
