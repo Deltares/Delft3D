@@ -924,8 +924,8 @@ contains
       integer, intent(in) :: nx !
       integer, dimension(nx), intent(inout) :: kce !
       real(kind=dp), intent(in) :: return_time
-      integer, intent(inout) :: numz, numu, nums, numtm, numsd, & !
-                                numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf !
+      integer, intent(in) :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+      integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
       real(kind=dp), dimension(NUMGENERALKEYWRD), optional, intent(in) :: tfc

@@ -95,7 +95,7 @@ contains
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
-      use m_longculverts_data, only: newculverts
+      use network_data, only: LINK_1D2D_STREETINLET     
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn
@@ -964,7 +964,7 @@ contains
          call aerr('frculin(lnx)', ierr, lnx)
       end if
 
-      if (network%loaded .or. stm_included .or. newculverts) then
+      if (network%loaded .or. stm_included .or. any(kcu == LINK_1D2D_STREETINLET)) then
          call realloc(u_to_umain, lnkx, stat=ierr, fill=1.0_dp, keepexisting=.false.)
          call aerr('u_to_umain(lnkx)', ierr, lnkx)
          call realloc(q1_main, lnkx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
