@@ -777,7 +777,7 @@ contains
       do i = 1, num_items_in_file
          node_ptr => bnd_ptr%child_nodes(i)%node_ptr
          groupname = tree_get_name(bnd_ptr%child_nodes(i)%node_ptr)
-         if (strcmpi(groupname, 'Initial')) then
+         if (strcmpi(groupname, 'Initial') .or. strcmpi(groupname, 'Spatial')) then
             quantity = ''
 
             call prop_get(node_ptr, '', 'quantity', quantity, property_ok)
