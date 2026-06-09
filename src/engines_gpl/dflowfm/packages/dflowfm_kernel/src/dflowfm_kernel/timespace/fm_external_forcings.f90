@@ -521,27 +521,9 @@ contains
          end if
       end if
 
-! if (ja_ext_force == 0 .and. .not. ext_force_bnd_used) then
-!    return
-! endif
-
       if (allocated(xe)) then
          deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
       end if
-
-      !mx1Dend = 0                                        ! count MAX nr of 1D endpoints
-      !do L = 1,numl1D
-      !   if ( kn(3,L) == 1) then                         ! zeker weten
-      !      k1 = kn(1,L) ; k2 = kn(2,L)
-      !      if (nmk(k1) == 1 .and. nmk(k2) == 2 .and. lne(1,L) < 0 .or. &
-      !          nmk(k2) == 1 .and. nmk(k1) == 2 .and. lne(2,L) < 0 ) then
-      !          mx1Dend = mx1Dend + 1
-      !      endif
-      !   endif
-      !enddo
-      !
-      !
-      !nx = numl + mx1Dend
 
       ! count number of 2D links and 1D endpoints
       call count_links(mx1Dend, Nx)
@@ -669,6 +651,12 @@ contains
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
+
+         call read_initialtracer_properties(trim(md_extfile_new), nx)
+      end if
+      
+      if (len(trim(md_inifieldfile)) > 0) then
+         call read_initialtracer_properties(trim(md_inifieldfile), nx)
       end if
 
       do while (ja_ext_force == 1) ! read legacy format *.ext file
@@ -702,6 +690,104 @@ contains
       numbnp = nbndz + nbndu + nbnd1d2d ! nr of boundary points =
 
    end subroutine findexternalboundarypoints
+
+   !> Read tracer properties from extforce and inifield file, needed for correctly initializing numtracers.
+   subroutine read_initialtracer_properties(filename, nx)
+      use properties
+      use tree_data_types
+      use tree_structures
+      use fm_external_forcings_data, only: transformcoef, ketr, numtracers, namtraclen
+      use fm_external_forcings_utils, only: read_tracer_properties
+      use system_utils
+      use unstruc_files, only: resolvePath
+      use m_alloc
+      use string_module, only: strcmpi
+      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
+      use unstruc_inifields, only: resolve_initial_3d_target
+      use m_qnerror
+      use messagehandling, only: msgbuf, err_flush
+
+      character(len=*), intent(in) :: filename !< Name of the inifield file to read
+      integer, intent(in) :: nx !< Number of boundary points (size of kce)
+
+      type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data), pointer :: node_ptr !
+      integer :: istat !
+      integer, parameter :: ini_key_len = 32 !
+      integer, parameter :: ini_value_len = 256 !
+      character(len=ini_key_len) :: groupname !
+      character(len=ini_value_len) :: quantity !
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: itrac, janew
+
+      integer :: i
+      integer :: num_items_in_file
+      logical :: file_ok
+      logical :: property_ok
+      character(len=256) :: basedir, fnam
+      integer :: major, minor
+
+      call tree_create(trim(filename), bnd_ptr)
+      call prop_file('ini', trim(filename), bnd_ptr, istat)
+      if (istat /= 0) then
+         call qnerror('Extforce or initial field file ', trim(filename), ' could not be read')
+         return
+      end if
+
+      ! check FileVersion TODO: why is this done twice also in init_new? either remove this call or make a generic function
+      major = 0
+      minor = 0
+      call get_version_number(bnd_ptr, major=major, minor=minor, success=file_ok)
+      if (.not. file_ok) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in extforce or initial field file ''', trim(filename), '''.'
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new extforce or initial field file detected in ''' &
+            //filename//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
+         call err_flush()
+         return
+      end if
+
+      call split_filename(filename, basedir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
+
+      num_items_in_file = 0
+      if (associated(bnd_ptr%child_nodes)) then
+         num_items_in_file = size(bnd_ptr%child_nodes)
+      end if
+
+      do i = 1, num_items_in_file
+         node_ptr => bnd_ptr%child_nodes(i)%node_ptr
+         groupname = tree_get_name(bnd_ptr%child_nodes(i)%node_ptr)
+         if (strcmpi(groupname, 'Initial') .or. strcmpi(groupname, 'Spatial')) then
+            quantity = ''
+
+            call prop_get(node_ptr, '', 'quantity', quantity, property_ok)
+            if (.not. property_ok) then
+               call qnerror('Expected property', 'quantity', 'for initial field definition')
+            end if
+
+            ! When initialtracer is found, get tracername and add tracer boundary.
+            if (quantity(1:13) == 'initialtracer') then
+               call read_tracer_properties(node_ptr, transformcoef)
+
+               call get_tracername(quantity, tracnam, qidnam)
+               tracunit = " "
+               call add_bndtracer(tracnam, tracunit, itrac, janew)
+
+               if (janew == 1) then
+                  ! realloc ketr
+                  call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
+               end if
+
+            end if
+         end if
+      end do
+
+      call tree_destroy(bnd_ptr)
+
+   end subroutine read_initialtracer_properties
+
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
@@ -847,7 +933,6 @@ contains
             end if
 
             file_ok = file_ok .and. group_ok
-
          else
             ! warning: unknown group
          end if
@@ -924,7 +1009,8 @@ contains
       integer, intent(in) :: nx !
       integer, dimension(nx), intent(inout) :: kce !
       real(kind=dp), intent(in) :: return_time
-      integer, intent(in) :: numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+      integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
+                                numt, numuxy, numn, num1d2d, numw, numtr, numsf !
       integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
@@ -1127,14 +1213,14 @@ contains
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
-
-      else if (qid(1:13) == 'initialtracer') then
+      
+      else if (qid(1:13) == 'initialtracer') then ! Obsolete, still required for old extforce file support
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-!       realloc ketr
+            ! realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
@@ -1152,7 +1238,6 @@ contains
 
             sfnames(numfracs) = trim(sfnam)
             isf = numfracs
-
          end if
 
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesf(nbndsf(isf) + 1:, isf), numsf, usemask=.false., rrtolrel=rrtolrel)
@@ -1734,6 +1819,9 @@ contains
 
       call setup(iresult)
       if (iresult == DFM_NOERR) then
+         call init_new(md_inifieldfile, iresult)
+      end if
+      if (iresult == DFM_NOERR) then
          call init_new(md_extfile_new, iresult)
       end if
       if (iresult == DFM_NOERR) then
@@ -1751,9 +1839,8 @@ contains
       use m_transport, only: const_names
       use m_fm_wq_processes, only: wqbotnames
       use m_mass_balance_areas, only: mbaname
-      use m_flowparameters, only: itempforcingtyp, btempforcingtypa, btempforcingtypc, btempforcingtyph, btempforcingtyps, &
-                                  btempforcingtypl, ja_friction_coefficient_time_dependent
-      use m_flowtimes, only: refdat, julrefdat, timjan, handle_extra
+      use m_flowparameters, only: itempforcingtyp, ja_friction_coefficient_time_dependent
+      use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
       use unstruc_model, only: md_inifieldfile
@@ -1777,7 +1864,6 @@ contains
       integer, parameter :: N4 = 6
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
-      logical :: exist
 
       iresult = DFM_NOERR
 
@@ -1794,15 +1880,8 @@ contains
          allocate (mbaname(0))
       end if
 
-      ! (re-)initialize flags/counters related to temperature forcings
+      ! (re-)initialize flags/counters
       itempforcingtyp = 0
-      btempforcingtypA = .false.
-      btempforcingtypC = .false.
-      btempforcingtypD = .false.
-      btempforcingtypH = .false.
-      btempforcingtypS = .false.
-      btempforcingtypL = .false.
-
       ja_friction_coefficient_time_dependent = 0
 
       if (.not. allocated(sah)) then
@@ -1820,27 +1899,6 @@ contains
       if (.not. flow_init_structurecontrol()) then
          iresult = DFM_EXTFORCERROR
          return
-      end if
-
-      ! First initialize new-style IniFieldFile quantities.
-      if (len_trim(md_inifieldfile) > 0) then
-         call timstrt('Init iniFieldFile', handle_extra(49)) ! initialize_initial_fields
-         inquire (file=trim(md_inifieldfile), exist=exist)
-         if (exist) then
-            call init_new(md_inifieldfile, iresult)
-            if (iresult /= DFM_NOERR) then
-               call timstop(handle_extra(49)) ! initialize_initial_fields
-               return
-            end if
-         else
-            call qnerror('Initial fields and parameters file '''//trim(md_inifieldfile)//''' not found.', '  ', ' ')
-            write (msgbuf, '(a,a,a)') 'Initial fields and parameters file ''', trim(md_inifieldfile), ''' not found.'
-            call warn_flush()
-            iresult = DFM_EXTFORCERROR
-            call timstop(handle_extra(49)) ! initialize_initial_fields
-            return
-         end if
-         call timstop(handle_extra(49)) ! initialize_initial_fields
       end if
 
       if (jatimespace == 0) then
@@ -2501,11 +2559,12 @@ contains
 
    end subroutine setup
 
-!> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
-!> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
-!> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+   !> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
+   !> filling the geometry of the source/sinks and bubblescreens. (used for output)  
    subroutine finalize_source_sinks()
-      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, bubblescreens, num_normal_source_sink
+      use m_source_sink, only: source_sinks
+      use fm_external_forcings_data, only: bubblescreens
       use m_alloc, only: realloc
       use m_partitioninfo, only: jampi, reduce_logical_array_or, idomain, my_rank, reduce_cells
 
@@ -2516,7 +2575,7 @@ contains
       logical, dimension(:), allocatable :: is_source_sink_bubblescreen
 
       ! actually compute is_source_sink_bubble and then negate it
-      call realloc(is_source_sink_bubblescreen, num_source_sink, fill=.false.)
+      call realloc(is_source_sink_bubblescreen, source_sinks%num_total, fill=.false.)
 
       do i = 1, size(bubblescreens)
          associate (bubblescreen => bubblescreens(i))
@@ -2535,12 +2594,12 @@ contains
       end do
 
       if(jampi == 1) then
-        call reduce_logical_array_or(num_source_sink, is_source_sink_bubblescreen)
+        call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
       end if
 
       ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
-      is_source_sink_normal = .NOT. is_source_sink_bubblescreen
-      num_normal_source_sink = count(is_source_sink_normal)
+      source_sinks%is_normal = .NOT. is_source_sink_bubblescreen
+      source_sinks%num_normal = count(source_sinks%is_normal)
 
       call fill_geometry_source_sinks()
 

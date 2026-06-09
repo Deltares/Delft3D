@@ -1,0 +1,10 @@
+[settings]
+arch=x86_64
+compiler=msvc
+compiler.cppstd=20
+compiler.runtime=dynamic
+compiler.version=194
+os=Windows
+
+[conf]
+tools.cmake.cmaketoolchain:extra_variables={'CMAKE_GENERATOR_TOOLSET': {'value': 'fortran=ifx', 'cache': True, 'type': 'STRING', 'force': True}}
