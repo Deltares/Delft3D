@@ -3457,7 +3457,7 @@ contains
             elseif (bnd%bndtyp == 5) then
                line = ' '
                line(1:9) = 'BOUN WW3 '       ! manual p54
-               line = trim(line)//' '''//trim(active_specfile)//''''//' FREE OPEN'
+               line = trim(line)//' '''//trim(sr%specfile)//''''//' FREE OPEN'
                write (luninp, '(1X,A)') line
                cycle
             end if
