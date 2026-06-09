@@ -1386,7 +1386,7 @@ contains
          branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
          contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
 
-         if (branch_idx <= 0 .and. contact_idx <= 0) then
+         if (jampi == 0 .and. branch_idx <= 0 .and. contact_idx <= 0) then
             call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '// trim(longculvert%branchId)//' '// trim(longculvert%contactId))
             return
          end if
