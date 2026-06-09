@@ -52,20 +52,16 @@ object TestPythonCiTools : BuildType({
         script {
             name = "Install dependencies"
             workingDir = "ci/python"
-    
-            // `uv sync` installs the dependencies to the uv cache (which is mounted in a volume).
-            // Then it copies them to the `.venv` dir in the working directory (which is bind mounted from the host).
-            // Since the uv cache and the `.venv` are in different filesystems `uv` cannot use a link and has to copy.
             scriptContent = """
                 #!/usr/bin/env bash
-                UV_LINK_MODE=copy uv sync --extra=all
+                uv sync --extra=all
             """.trimIndent()
-
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
                 --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
+                --env UV_LINK_MODE=copy
                 --rm
             """.trimIndent()
         }
@@ -83,7 +79,10 @@ object TestPythonCiTools : BuildType({
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
-            dockerRunParameters = "--rm"
+            dockerRunParameters = """
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
         }
     }
 
