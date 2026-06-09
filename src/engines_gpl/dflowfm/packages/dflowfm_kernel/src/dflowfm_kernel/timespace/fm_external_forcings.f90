@@ -669,10 +669,10 @@ contains
          ! first read the ini-format *.ext external forcings file (default file format for boundary conditions)
          call read_location_files_from_boundary_blocks(trim(md_extfile_new), nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
-      end if
 
-      ! Read initial tracer properties from extforce and inifield file, needed for correctly initializing numtracers.
-      call read_initialtracer_properties(trim(md_extfile_new), nx)
+         call read_initialtracer_properties(trim(md_extfile_new), nx)
+      end if
+      
       if (len(trim(md_inifieldfile)) > 0) then
          call read_initialtracer_properties(trim(md_inifieldfile), nx)
       end if
