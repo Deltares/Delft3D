@@ -77,6 +77,18 @@ namespace ini::test
                                                "#section#", "s][e[c]t][i[]on[", "https://example.com/page",
                                                "{C3BA7795-F319-4CC0-B091-783DDEBCCDF1}"));
 
+    TEST(IniParserTest, Parse_SectionWithNullChar_IniDataHasSection)
+    {
+        IniParser parser = CreateParser();
+
+        using namespace std::string_literals;
+        const std::string ini = "[section\0]"s;
+
+        const IniData iniData = parser.Parse(ini);
+
+        EXPECT_TRUE(iniData.HasSection("section"));
+    }
+
     class IniParserInvalidSectionFormatTest : public ::testing::TestWithParam<std::string>
     {
     };
@@ -346,6 +358,22 @@ namespace ini::test
                              ::testing::Values("_property_1", ".property_1", "-property_1", "property_1", "property-1",
                                                "property~1", "property*1", "property.1", "property#1", "property\\1",
                                                "property²", "p][r[o]p][e[]rt[y"));
+
+    TEST(IniParserTest, Parse_PropertyWithNullChar_SectionHasProperty)
+    {
+        IniParser parser = CreateParser();
+
+        using namespace std::string_literals;
+        const std::string ini = "[section]\nprop\0erty=val\0ue"s;
+
+        const IniData iniData = parser.Parse(ini);
+        const IniSection section = iniData.GetSection("section");
+
+        ASSERT_TRUE(section.HasProperty("property"));
+        const IniProperty property = section.GetProperty("property");
+
+        EXPECT_EQ(property.GetValue(), "value");
+    }
 
     class IniParserPropertyWithoutKeyTest : public ::testing::TestWithParam<std::string>
     {

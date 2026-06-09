@@ -58,6 +58,7 @@ namespace ini
 
     void IniParser::CleanCurrentLine()
     {
+        currentLine.erase(std::remove(currentLine.begin(), currentLine.end(), '\0'), currentLine.end());
         std::replace(currentLine.begin(), currentLine.end(), '\t', ' ');
         currentLine = trim(currentLine);
     }
