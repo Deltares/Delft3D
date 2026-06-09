@@ -82,8 +82,8 @@ jobs:
           pr_count=$(echo "${pr_list}" | jq 'length')
 
           if [ "${pr_count}" -eq 0 ]; then
-            echo "No open pull request found for branch ${{ env.BRANCH }}."
-            exit 0
+            echo "No open pull request found for branch ${{ env.BRANCH }}. Cannot proceed further."
+            exit 1
           fi
 
           if [ "${pr_count}" -gt 1 ]; then
