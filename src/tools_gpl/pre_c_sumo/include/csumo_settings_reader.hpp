@@ -75,7 +75,7 @@ namespace pre_c_sumo
 
         /**
          * @brief Construct the (expected) filepath of the FF2NF file for this diffuser.
-         * @param int subgrid_model_nr Subgrid model number of thid iffuser (typically the index on the global diffuser
+         * @param int subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
          * array)
          * @param double current_time_seconds The time of the current time stp in seconds.
          * @return std::filesystem::path With the complete FF2NF filepath for this diffuser.
@@ -84,7 +84,7 @@ namespace pre_c_sumo
                                                                 double current_time_seconds) const;
         /**
          * @brief Construct the (expected) filepath of the NF2FF file for this diffuser.
-         * @param int subgrid_model_nr Subgrid model number of thid iffuser (typically the index on the global diffuser
+         * @param int subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
          * array)
          * @param double current_time_seconds The time of the current time stp in seconds.
          * @return std::filesystem::path With the complete NF2FF filepath for this diffuser.

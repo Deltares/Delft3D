@@ -293,14 +293,14 @@ namespace pre_c_sumo
 
     const std::filesystem::path DiffuserSettings::ff2nfFilepath(int subgrid_model_nr, double current_time_seconds) const
     {
-        const std::string run_id = "FlowFM"; // TODO: obtain this from the far-field model / coupling state
+        constexpr std::string run_id = "preC-SUMO"; // TODO: obtain this from the far-field model / coupling state
         return ff2nf_dir /
                std::format("FF2NF__{}_SubMod{:03d}_{:.3f}.xml", run_id, subgrid_model_nr, current_time_seconds / 60.0);
     }
 
     const std::filesystem::path DiffuserSettings::nf2ffFilepath(int subgrid_model_nr, double current_time_seconds) const
     {
-        const std::string run_id = "FlowFM"; // TODO: obtain this from the far-field model / coupling state
+        constexpr std::string run_id = "preC-SUMO"; // TODO: obtain this from the far-field model / coupling state
         const std::filesystem::path nf2ff_dir =
             ff2nf_dir.has_parent_path() ? ff2nf_dir.parent_path() / "NF2FF" : "NF2FF";
         return nf2ff_dir /

@@ -152,6 +152,7 @@ namespace pre_c_sumo
         {
             std::println("Waiting for NF2FF file: {}", file.string());
             // Wait for the NF2FF file to be available
+            // TODO: Might be necessary to check whether writing the file is finished too
             while (!std::filesystem::exists(file))
             {
                 // Throttle CPU load.
