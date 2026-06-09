@@ -19,6 +19,9 @@ DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_create(MduModelHandle* handl
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_out);
 
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_string(MduModelHandle handle, const char* key, const char** string_out);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_string_list(MduModelHandle handle, const char* key, const char*** string_list_out, size_t* size_out);
+
 DFLOWFM_IO_API_EXPORT const char* dflowfm_io_get_last_error();
 
 #ifdef __cplusplus

@@ -61,6 +61,12 @@ _lib.mdu_model_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
 _lib.mdu_model_get_dummy_value.restype = ctypes.c_int
 _lib.mdu_model_get_dummy_value.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)]
 
+_lib.mdu_model_get_string.restype = ctypes.c_int
+_lib.mdu_model_get_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
+
+_lib.mdu_model_get_string_list.restype = ctypes.c_int
+_lib.mdu_model_get_string_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)), ctypes.POINTER(ctypes.c_size_t)]
+
 
 def _check_result(result):
     if result != DFLOWFM_IO_RESULT_SUCCESS:
@@ -82,3 +88,14 @@ class MduModel:
         value = ctypes.c_int()
         _check_result(_lib.mdu_model_get_dummy_value(self._handle, ctypes.byref(value)))
         return value.value
+
+    def get_string_value(self, key: str) -> str:
+        string_out = ctypes.c_char_p()
+        _check_result(_lib.mdu_model_get_string(self._handle, key.encode("utf-8"), ctypes.byref(string_out)))
+        return string_out.value.decode("utf-8")
+
+    def get_string_list(self, key: str) -> list[str]:
+        array_out = ctypes.POINTER(ctypes.c_char_p)()
+        size_out = ctypes.c_size_t()
+        _check_result(_lib.mdu_model_get_string_list(self._handle, key.encode("utf-8"), ctypes.byref(array_out), ctypes.byref(size_out)))
+        return [array_out[i].decode("utf-8") for i in range(size_out.value)]
