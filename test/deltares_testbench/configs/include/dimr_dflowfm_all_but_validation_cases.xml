@@ -29,7 +29,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
-      <path version="2026-02-10T15:09:03.103000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
+      <path version="2026-06-09T14:45:54.686000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -51,7 +51,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c101_longculvert_timeseries_valve" ref="dflowfm_config">
-      <path version="2026-02-10T15:09:24.270000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
+      <path version="2026-06-09T14:49:17.605000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
