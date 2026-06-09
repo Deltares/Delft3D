@@ -1,8 +1,14 @@
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
+
+#include <unordered_set>
 #include <dflowfm_io/MduValidator.h>
 
 using namespace ini;
+
+static const std::unordered_set<std::string> STRING_KEYS = {"general.program", "general.fileversion" };
+static const std::unordered_set<std::string> INTEGER_KEYS = {"geometry.kmx" };
+static const std::unordered_set<std::string> FLOATING_POINT_KEYS = {"geometry.waterlevini" };
 
 namespace dflowfm_io
 {
@@ -32,6 +38,43 @@ namespace dflowfm_io
         IssueReport report = validator.Validate(iniData);
 
         MduData mduData;
+
+        // TODO : This is a temporary solution to allow retrieving values by key without having to know the section and
+        // property names. Still very WIP / experimental.
+        mduData.entries_string["general.program"] = "D-Flow FM"; // Default value
+        for (const auto& section : iniData)
+        {
+            for (const auto& property : section)
+            {
+                const std::string key = to_lowercase(section.GetName() + "." + property.GetKey());
+                const std::string& value = property.GetValue();
+
+                if (STRING_KEYS.contains(key))
+                {
+                    mduData.entries_string[key] = value;
+                }
+                else if (INTEGER_KEYS.contains(key))
+                {
+                    int integer_value;
+                    if (property.TryGetConvertedValue(integer_value))
+                    {
+                        mduData.entries_int[key] = integer_value;
+                    }
+                } 
+                else if (FLOATING_POINT_KEYS.contains(key))
+                {
+                    double float_value;
+                    if (property.TryGetConvertedValue(float_value))
+                    {
+                        mduData.entries_double[key] = float_value;
+                    }
+                }
+            }
+        }
+
+
+
+
 
         if (const auto* generalSection = GetSection(iniData, "general"))
         {

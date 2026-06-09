@@ -14,4 +14,11 @@ namespace dflowfm_io
                });
     }
 
+    inline std::string to_lowercase(std::string_view str)
+    {
+        std::string result(str);
+        std::ranges::transform(result, result.begin(), [](unsigned char c) { return std::tolower(c); });
+        return result;
+    }
+
 } // namespace dflowfm_io

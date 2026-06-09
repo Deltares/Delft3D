@@ -61,6 +61,15 @@ _lib.mdu_model_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
 _lib.mdu_model_get_dummy_value.restype = ctypes.c_int
 _lib.mdu_model_get_dummy_value.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)]
 
+_lib.mdu_model_load_file.restype = ctypes.c_int
+_lib.mdu_model_load_file.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
+
+_lib.mdu_model_get_int.restype = ctypes.c_int
+_lib.mdu_model_get_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
+
+_lib.mdu_model_get_double.restype = ctypes.c_int
+_lib.mdu_model_get_double.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
+
 _lib.mdu_model_get_string.restype = ctypes.c_int
 _lib.mdu_model_get_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
 
@@ -70,7 +79,10 @@ _lib.mdu_model_get_string_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, cty
 
 def _check_result(result):
     if result != DFLOWFM_IO_RESULT_SUCCESS:
-        raise RuntimeError("dflowfm_io call failed")
+        # Get the last error message from the library
+        _lib.dflowfm_io_get_last_error.restype = ctypes.c_char_p    
+        error_message = _lib.dflowfm_io_get_last_error()
+        raise RuntimeError(error_message.decode('utf-8'))
 
 
 class MduModel:
@@ -87,6 +99,19 @@ class MduModel:
     def get_dummy_value(self) -> int:
         value = ctypes.c_int()
         _check_result(_lib.mdu_model_get_dummy_value(self._handle, ctypes.byref(value)))
+        return value.value
+
+    def load_file(self, filename: str) -> None:
+        _check_result(_lib.mdu_model_load_file(self._handle, filename.encode("utf-8")))
+
+    def get_int(self, key: str) -> int:
+        value = ctypes.c_int()
+        _check_result(_lib.mdu_model_get_int(self._handle, key.encode("utf-8"), ctypes.byref(value)))
+        return value.value
+
+    def get_double(self, key: str) -> float:
+        value = ctypes.c_double()
+        _check_result(_lib.mdu_model_get_double(self._handle, key.encode("utf-8"), ctypes.byref(value)))
         return value.value
 
     def get_string_value(self, key: str) -> str:

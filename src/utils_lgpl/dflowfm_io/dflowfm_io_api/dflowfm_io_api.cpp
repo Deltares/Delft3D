@@ -5,6 +5,9 @@
 
 #include <dflowfm_io_api/dflowfm_io_api.h>
 
+#include "dflowfm_io/MduFile.h"
+
+#include <stdexcept>
 #include <dflowfm_io/MduData.h>
 
 static std::string last_error;
@@ -69,6 +72,18 @@ dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle)
     });
 }
 
+dflowfm_io_result_t mdu_model_load_file(MduModelHandle handle, const char* filename)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(filename);
+
+    return exceptionToResult([&]() {
+
+        auto mdu_file = dflowfm_io::MduFile::LoadFrom(filename);
+        *static_cast<dflowfm_io::MduData*>(handle) = mdu_file.GetData();
+    });
+}
+
 dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
@@ -77,6 +92,32 @@ dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_
     return exceptionToResult([&]()
     {
         *value_out = static_cast<dflowfm_io::MduData*>(handle)->GetDummyValue();
+    });
+}
+
+dflowfm_io_result_t mdu_model_get_int(MduModelHandle handle, const char* key, int* int_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(int_out);
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        *int_out = mdu_data->getValueAsInt(key);
+    });
+}
+
+dflowfm_io_result_t mdu_model_get_double(MduModelHandle handle, const char* key, double* double_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(double_out);
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        *double_out = mdu_data->getValueAsDouble(key);
     });
 }
 
@@ -90,7 +131,9 @@ dflowfm_io_result_t mdu_model_get_string(MduModelHandle handle, const char* key,
 
     return exceptionToResult([&]()
     {
-        stored_string = "some_string_value";
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        stored_string = mdu_data->getValueAsString(key);
+
         *string_out = stored_string.c_str();
     });
 }
