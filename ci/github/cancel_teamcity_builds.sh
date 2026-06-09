@@ -238,7 +238,7 @@ function cancel_all_builds() {
 
   local locator
   printf -v locator \
-    "affectedProject:%s,branch:%s,revision:%s,sinceBuild:%s,state:any,count:1000,lookupLimit:5000,defaultFilter:false&fields=build(id)" \
+    "affectedProject:%s,branch:%s,revision:%s,sinceBuild:%s,state:any,count:200,defaultFilter:false&fields=build(id)" \
     "${TEAMCITY_PROJECT_ID}" \
     "${BRANCH}" \
     "${COMMIT_HASH}" \
