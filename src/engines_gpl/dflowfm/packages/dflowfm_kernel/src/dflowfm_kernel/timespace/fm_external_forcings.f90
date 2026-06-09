@@ -521,27 +521,9 @@ contains
          end if
       end if
 
-! if (ja_ext_force == 0 .and. .not. ext_force_bnd_used) then
-!    return
-! endif
-
       if (allocated(xe)) then
          deallocate (xe, ye, xyen) ! centre points of all net links, also needed for opening closed boundaries
       end if
-
-      !mx1Dend = 0                                        ! count MAX nr of 1D endpoints
-      !do L = 1,numl1D
-      !   if ( kn(3,L) == 1) then                         ! zeker weten
-      !      k1 = kn(1,L) ; k2 = kn(2,L)
-      !      if (nmk(k1) == 1 .and. nmk(k2) == 2 .and. lne(1,L) < 0 .or. &
-      !          nmk(k2) == 1 .and. nmk(k1) == 2 .and. lne(2,L) < 0 ) then
-      !          mx1Dend = mx1Dend + 1
-      !      endif
-      !   endif
-      !enddo
-      !
-      !
-      !nx = numl + mx1Dend
 
       ! count number of 2D links and 1D endpoints
       call count_links(mx1Dend, Nx)
@@ -1230,7 +1212,17 @@ contains
             call appendrettime(qidfm, nbndtr(itrac) + 1, return_time)
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
-         end if         
+         end if
+      
+      else if (qid(1:13) == 'initialtracer') then ! Obsolete, still required for old extforce file support
+         call get_tracername(qid, tracnam, qidnam)
+         tracunit = " "
+         call add_bndtracer(tracnam, tracunit, itrac, janew)
+
+         if (janew == 1) then
+            ! realloc ketr
+            call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
+         end if
 
       else if (qidfm(1:10) == 'sedfracbnd' .and. stm_included) then
          call get_sedfracname(qidfm, sfnam, qidnam)
@@ -1246,7 +1238,6 @@ contains
 
             sfnames(numfracs) = trim(sfnam)
             isf = numfracs
-
          end if
 
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, kesf(nbndsf(isf) + 1:, isf), numsf, usemask=.false., rrtolrel=rrtolrel)
