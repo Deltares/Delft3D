@@ -67,8 +67,6 @@ contains
       integer :: number_of_selected_points !< The number of selected points based on the target mask file.
       integer :: point !< Loop variable for points.
 
-      ierr = DFM_NOERR
-
       if (ilattype /= ILATTP_INVALID .and. any(target_location_type == [UNC_LOC_S, UNC_LOC_S3D])) then
          if (.not. allocated(mask)) then
             allocate(mask(ndxi))
@@ -124,6 +122,8 @@ contains
 
       else if (present(target_num_points) .and. present(target_mask_file) .and. present(invert_mask) .and. present(ierr)) then
 
+         ierr = DFM_NOERR
+
          if (.not. allocated(mask)) then
             allocate(mask(target_num_points))
          end if
@@ -178,9 +178,12 @@ contains
 
          end if
 
-      else ! Invalid input for constructing mask, return error.
+      else ! Invalid input for constructing mask
 
-         ierr = DFM_WRONGINPUT
+         if (present(ierr)) then
+            ierr = DFM_WRONGINPUT
+         end if
+         return
 
       end if
 
