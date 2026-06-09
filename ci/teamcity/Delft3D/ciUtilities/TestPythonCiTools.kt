@@ -45,7 +45,7 @@ object TestPythonCiTools : BuildType({
 
     steps {
         script {
-            name "Install dependencies"
+            name = "Install dependencies"
             workingDir = "ci/python"
             scriptContent = "uv sync"
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-python:3.12"
@@ -57,7 +57,7 @@ object TestPythonCiTools : BuildType({
             """.trimIndent()
         }
         script {
-            name "Run checks"
+            name = "Run checks"
             workingDir = "ci/python"
             scriptContent = """
                 #!/usr/bin/env bash
