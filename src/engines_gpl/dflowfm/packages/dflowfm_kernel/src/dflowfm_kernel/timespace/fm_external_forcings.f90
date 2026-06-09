@@ -1213,7 +1213,7 @@ contains
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
       
-      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support
+      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
