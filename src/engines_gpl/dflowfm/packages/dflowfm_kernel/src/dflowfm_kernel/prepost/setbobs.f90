@@ -139,7 +139,7 @@ contains
                ibotL = 0
             end if
             bedlevel_at_link = get_bedlevel_at_link(n1, n2, k1, k2, blu(Lf), ibotL)
-            if (jaconveyance2D >= 1) then
+            if (jaconveyance2D >= 1 .and. (ibedlevtyp >= 3 .and. ibedlevtyp <= 5)) then
                if (zk(k1) == dmiss) then
                   bob(1, Lf) = zkuni
                else

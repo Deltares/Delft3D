@@ -127,13 +127,6 @@ module m_flowparameters
 
    integer :: itempforcingtyp !< Forcing parameter types 1,2 relative humidity, 3,4 dew point temperature, see code
 
-   logical :: btempforcingtypA !< Forcing parameter air temperature is given as a separate field or not
-   logical :: btempforcingtypC !< Forcing parameter cloudiness given as a separate field or not
-   logical :: btempforcingtypD !< Forcing parameter dew point temperature given as a separate field or not
-   logical :: btempforcingtypH !< Forcing parameter relative humidity given as a separate field or not
-   logical :: btempforcingtypS !< Forcing parameter solar radiation given as a separate field or not
-   logical :: btempforcingtypL !< Forcing parameter long wave radiation given as a separate field or not
-
    integer :: jarhoxu !< rho effects in momentum, 0=no, 1=in horizontal adv, 2=+ in vertical adv, 3 = + in pressure term
 
    integer :: jawave !< Include wave model nr, 0=no, 1=fetchlimited hurdle stive + swart, 3=SWAN, 4=surfbeat, 5=Const, 7=Offline Wave Coupling
@@ -444,9 +437,7 @@ module m_flowparameters
 
    integer :: jbasqbnddownwindhs !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
-   integer :: maxitverticalforestersal !< 100, max iterations vertical forester
-
-   integer :: maxitverticalforestertem !< 100, max iterations vertical forester
+   integer :: max_iterations_vertical_forester !< Maximum number of iterations for vertical forester, used for all constituents
 
    real(kind=dp) :: salmax !< filter if sal > maxsal
 
@@ -949,8 +940,8 @@ contains
 
       jbasqbnddownwindhs = 0 !< 0 : original hu on qbnd, 1 = downwind hs on qbnd
 
-      maxitverticalforestersal = 0 !< 100, max iterations vertical forester
-      maxitverticalforestertem = 0 !< 100, max iterations vertical forester
+      ! Vertical Forester filter is turned off by default (value 0)
+      max_iterations_vertical_forester = 0
 
       salmax = 0.0_dp !< filter if sal > maxsal
       ! Remaining of variables is handled in reset_flowparameters()
