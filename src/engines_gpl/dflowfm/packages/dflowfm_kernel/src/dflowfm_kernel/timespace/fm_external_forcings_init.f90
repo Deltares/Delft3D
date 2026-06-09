@@ -42,7 +42,7 @@ contains
       use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, thrtt, set_lateral_count_in_external_forcings_file
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, set_lateral_count_in_external_forcings_file
       use m_flowgeom, only: ba
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
       use string_module, only: str_tolower
@@ -56,7 +56,7 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
-      use m_reallocsrc, only: reallocsrc
+      use m_source_sink, only: source_sinks
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -85,6 +85,11 @@ contains
          return
       end if
 
+      if (file_name(len_trim(file_name)-3:) == '.ini') then
+         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '// trim(file_name) //' to the external forcings file.' 
+         call warn_flush()
+      end if
+
       res = .true.
 
       call tree_create(file_name, bnd_ptr)
@@ -97,10 +102,13 @@ contains
       end if
 
       ! check FileVersion
-      major = 1
+      major = 0
       minor = 0
       call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
-      if ((major /= ExtfileNewMajorVersion .and. major /= 1) .or. minor > ExtfileNewMinorVersion) then
+      if (.not. is_successful) then
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
+         call warn_flush()
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
          write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
             //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
             '. Ignoring this file.'
@@ -148,7 +156,7 @@ contains
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
-         call reallocsrc(max_num_src, 0)
+         call source_sinks%initialize(max_num_src)
       end if
 
       ib = 0
@@ -217,9 +225,6 @@ contains
       call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
 
       call tree_destroy(bnd_ptr)
-      if (allocated(thrtt)) then
-         call init_threttimes()
-      end if
 
       if (res) then
          iresult = DFM_NOERR
@@ -698,25 +703,127 @@ contains
 
    end function resolve_meteo_target
 
+!> Read a 3D initial field using EC with sigma coordinates (WEIGHTFACTORS method).
+!! Encapsulates all sigma-coordinate globals (zcs, kbot, ktop) and time reference globals.
+   function read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                filetype, method, oper, variable_name, ec_item, target_data) result(res)
+      use m_setzcs, only: setzcs
+      use m_flow, only: zcs, kbot, ktop, ndkx
+      use m_flowtimes, only: irefdate, tzone, tunit, tstart_user
+      use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
+      use m_alloc, only: reallocP
+      use m_missing, only: dmiss
+
+      character(len=*), intent(in) :: quantity, forcing_file, variable_name
+      real(dp), intent(in) :: target_x(:), target_y(:)
+      integer, intent(in) :: mask(:), kx, filetype, method, oper
+      integer, intent(inout) :: ec_item
+      real(dp), pointer, intent(out) :: target_data(:)
+      logical :: res
+
+      integer, pointer :: pkbot(:), pktop(:)
+
+      call reallocP(target_data, ndkx, fill=dmiss, keepExisting=.false.)
+      call setzcs()
+      pkbot => kbot
+      pktop => ktop
+
+      res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, &
+                                    filetype, method, oper, z=zcs, pkbot=pkbot, pktop=pktop, &
+                                    varname=variable_name, tgt_item1=ec_item)
+      res = res .and. ec_gettimespacevalue_by_itemID(ecInstancePtr, ec_item, irefdate, tzone, &
+                                                     tunit, tstart_user, target_data)
+   end function read_3d_sigma_field
+
+   !> Handle a [Spatial]/[Initial]/[Parameter] block whose forcingFileType is 1dField.
+   function init_field1d_block(quantity, forcing_file, file_name) result(res)
+      use stdlib_kinds, only: c_bool
+      use timespace_parameters, only: FIELD1D
+      use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, set_global_values, set_global_water_values, finish_initialization, &
+      specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
+      use m_flowgeom, only: ndx2D, ndxi, lnx1d
+      use dfm_error, only: DFM_NOERR
+      use messageHandling, only: err_flush, msgbuf
+      use string_module, only: str_tolower
+      use m_alloc, only: realloc
+
+      character(len=*), intent(in) :: quantity !< Quantity name as it appears in the ext block.
+      character(len=*), intent(in) :: forcing_file !< Path to the 1dField .ini file.
+      character(len=*), intent(in) :: file_name !< Path to the ext file, used in error messages.
+
+      logical :: res
+
+      character(len=256) :: source_quantity_name
+      logical(kind=c_bool), allocatable :: specified_indices(:)
+      real(dp) :: global_value
+      logical :: global_value_provided
+      integer :: ierr
+
+      ! Map the FM quantity name (e.g. 'initialWaterLevel') to the name used inside
+      ! the 1dField file (e.g. 'waterlevel').
+      call fm_quantity_name_to_source_quantity_name(quantity, FIELD1D, source_quantity_name)
+      if (source_quantity_name == '') then
+         write (msgbuf, '(a)') 'Quantity '''//trim(quantity)//''' is not supported with forcingFileType=1dField'// &
+            ' in '''//trim(file_name)//'''. Supported quantities: initialWaterLevel, initialWaterDepth,'// &
+            ' initialVelocity, frictionCoefficient.'
+         call err_flush()
+         res = .false.
+         return
+      end if
+
+      ierr = init1dField(forcing_file, file_name, source_quantity_name, specified_indices, global_value, global_value_provided)
+      res = (ierr == DFM_NOERR)
+      if (.not. res) return
+
+      !> accumulate specified indices in global mask arrays, will be applied after all processing is done.
+      select case (str_tolower(source_quantity_name))
+      case ('waterlevel', 'waterdepth')
+         call realloc(specified_water_1dfield, ndxi - ndx2D, fill=.false._c_bool, keepExisting=.true.)
+         specified_water_1dfield = specified_water_1dfield .or. specified_indices
+         if (global_value_provided) then
+            water_global_value_1dfield = global_value
+            water_global_quantity_1dfield = quantity
+         end if
+
+      case ('frictioncoefficient')
+         call realloc(specified_friction_1dfield, lnx1d, fill=.false._c_bool, keepExisting=.true.)
+         specified_friction_1dfield = specified_friction_1dfield .or. specified_indices
+         if (global_value_provided) then
+            friction_global_value_1dfield = global_value
+         end if
+      end select
+
+      ! Shared post-processing: s1 = bl + hs for waterdepth, friction-type stamp, etc.
+      call finish_initialization(quantity)
+
+   end function init_field1d_block
+
    module function init_spatial_fields(block_ptr, base_dir, file_name, group_name) result(res)
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use m_sferic, only: jsferic
       use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
+      use timespace_parameters, only: WEIGHTFACTORS, FIELD1D
       use properties, only: prop_get
-      use m_alloc, only: realloc
+      use m_alloc, only: realloc, reallocP
       use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_spatial_field, only: t_spatial_field_input, read_spatial_field_block, validate_spatial_field_input, &
                                  t_averaging_input, read_averaging_input, averaging_params_to_transformcoef, &
                                  parse_location_type
-      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit
+      use unstruc_inifields, only: resolve_parameter_target, resolve_initial_target, process_hydrological_quantities, set_friction_type_values_explicit, resolve_initial_3D_target, resolve_integer_target, initialfield2Dto3D_dbl_indx
       use fm_external_forcings_data, only: NTRANSFORMCOEF
-      use timespace, only: timespaceinitialfield
+      use timespace, only: timespaceinitialfield, timespaceinitialfield_int
+      use m_setinitialverticalprofile, only: setinitialverticalprofile
+      use processes_input, only: painp
+      use m_flowparameters, only: ja_friction_coefficient_time_dependent
+      use m_heatfluxes, only: secchi_depth_is_time_varying
+      use m_laterals, only: ilattp_all
+      use timespace_parameters, only: OPERAND_OVERRIDE
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir
@@ -731,13 +838,21 @@ contains
       real(dp), dimension(:), pointer :: target_x
       real(dp), dimension(:), pointer :: target_y
       integer :: ierr
-      integer :: kx
+      integer :: kx, first_index
       integer :: ec_item
       type(t_spatial_field_input) :: input
       real(dp), parameter :: DEFAULT_AIR_PRESSURE = 100000.0_dp
+
       real(dp), dimension(:), pointer :: target_data
+      integer, dimension(:), pointer :: target_data_integer
+      real(kind=dp), dimension(:, :), pointer :: target_array_3d
+      integer :: oper_backup
 
       res = .false.
+      ec_item = ec_undef_int
+      target_data => null()
+      target_data_integer => null()
+      target_array_3d => null()
 
       input = read_spatial_field_block(block_ptr)
       res = validate_spatial_field_input(input, file_name, group_name, base_dir)
@@ -753,6 +868,11 @@ contains
                  method => input%method, &
                  variable_name => input%variable_name, &
                  is_static_field => input%is_static_field)
+
+         if (filetype == FIELD1D) then ! field1d is special, since it is not yet part of EC-module data reading+interpolation. TODO: refactor.
+            res = init_field1d_block(quantity, forcing_file, file_name)
+            return
+         end if
 
          kx = 1
          ec_item = ec_undef_int
@@ -772,30 +892,77 @@ contains
             res = resolve_meteo_target(quantity, file_name, target_location_type, target_data)
          end if
          if (.not. res) then
+            res = resolve_initial_3D_target(quantity, target_location_type, target_array_3d, first_index)
+         end if
+         if (.not. res) then
+            res = resolve_integer_target(quantity, target_location_type, target_data_integer)
+         end if
+         if (.not. res) then
+            if (str_tolower(quantity) == 'bedlevel') then
+               ! Ugly special case, bedlevel must not throw an error as it is read elsewhere.
+               res = .true.
+               return
+            end if
+         end if
+         if (.not. res) then
             write (msgbuf, '(a)') 'Unknown quantity '''//trim(quantity)//' in file '''//file_name//''': ['//group_name//'].'
             call err_flush()
             return
          end if
 
-         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+         call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
-         ! if we have a location type, simply call pepare_lateral_mask to create the mask; we construct it with construct_target_mask.
-         if (len_trim(input%location_type) > 0) then
+         if (len_trim(input%location_type) > 0 .and. (target_location_type == UNC_LOC_S .or. target_location_type == UNC_LOC_S3D)) then
+            ! Node-based quantities: use prepare_lateral_mask to set the mask to 1D, 2D or all nodes.
             call prepare_lateral_mask(mask, parse_location_type(input%location_type))
          else
+            ! Not node-based, or polygon mask override: use standard mask construction. TODO: replace with single masking function.
             call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
          end if
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
+
          if (is_static_field) then
-            block
-               real(dp) :: transformcoef(NTRANSFORMCOEF)
-               transformcoef = -999.0_dp
-               call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
-               res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
-                                           forcing_file, filetype, method, oper, &
-                                           transformcoef, target_location_type, mask)
-            end block
+            if (target_location_type == UNC_LOC_3DV) then ! vertical profiles are special
+               call setinitialverticalprofile(target_data, size(target_data), forcing_file)
+               res = .true.
+            else ! normal spatial field
+               block
+                  real(dp) :: transformcoef(NTRANSFORMCOEF)
+                  transformcoef = -999.0_dp
+                  call averaging_params_to_transformcoef(input%averaging_input, transformcoef)
+                  ! ugly extra reading for value, tracerfallvelocity and tracerdecaytime. Can be moved to t_spatial_field_input once transformcoef is eliminated
+                  call prop_get(block_ptr, '', 'value', transformcoef(1))
+                  call prop_get(block_ptr, '', 'tracerFallVelocity', transformcoef(2))
+                  call prop_get(block_ptr, '', 'tracerDecayTime', transformcoef(6))
+
+                  if (associated(target_array_3d)) then ! allocate temporary buffer for 3D
+                     call reallocP(target_data, target_num_points, fill=dmiss, keepExisting=.false.)
+                     oper_backup = oper
+                     oper = OPERAND_OVERRIDE ! first call must always override, actual operand to be applied in initialfield2Dto3D_dbl_indx
+                  end if
+
+                  if (associated(target_data)) then
+                     res = timespaceinitialfield(target_x, target_y, target_data, target_num_points, &
+                                                 forcing_file, filetype, method, oper, transformcoef, target_location_type, mask)
+                  else if (associated(target_data_integer)) then
+                     res = timespaceinitialfield_int(target_x, target_y, target_data_integer, target_num_points, forcing_file, filetype, oper, transformcoef)
+                  else if (associated(target_array_3d) .and. method == WEIGHTFACTORS) then !> special case
+                     res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
+                  end if
+
+                  if (associated(target_array_3d)) then !> 3D postprocessing
+                     oper = oper_backup
+                     call initialfield2Dto3D_dbl_indx(target_data, target_array_3d, first_index, transformcoef(13), transformcoef(14), oper)
+                     ! WAQ sp cast: waqparameter/waqsegmentnumber filled into dp buffer, cast back to painp.
+                     if (str_tolower(quantity(1:12)) == 'waqparameter' .or. str_tolower(quantity(1:15)) == 'waqsegmentnumber') then
+                        painp(first_index, 1:target_num_points) = target_data(1:target_num_points)
+                        deallocate (target_array_3D)
+                     end if
+                     deallocate (target_data)
+                  end if
+               end block
+            end if
          else
             select case (trim(str_tolower(forcing_file_type)))
             case ('bcascii')
@@ -805,15 +972,29 @@ contains
                if (len_trim(variable_name) > 0) then
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, varname=variable_name, tgt_item1=ec_item, tgt_data1=target_data)
+               else if (target_location_type == UNC_LOC_S3D) then
+                  res = read_3d_sigma_field(quantity, target_x, target_y, mask, kx, forcing_file, filetype, method, oper, variable_name, ec_item, target_data)
                else
                   res = ec_addtimespacerelation(quantity, target_x, target_y, mask, kx, forcing_file, filetype, &
                                                 method, oper, tgt_item1=ec_item, tgt_data1=target_data)
                end if
             end select
          end if
+
+         !  explicitly set time_dependent flags, not done in enable_quantity as is_static_field is not available.
+         !  TODO: remove them by handling time-dependence generically.
+         if (.not. is_static_field) then
+            select case (str_tolower(quantity))
+            case ('frictioncoefficient')
+               ja_friction_coefficient_time_dependent = 1
+            case ('secchidepth')
+               secchi_depth_is_time_varying = .true.
+            end select
+         end if
+
          if (res) then
             res = enable_quantity(quantity)
-            if (.not. res) then !> Friction coefficient is a special case, requires additional reading
+            if (.not. res) then ! Friction coefficient is a special case, requires additional reading
                if (strcmpi(quantity, 'frictioncoefficient')) then
                   res = set_friction_type_values_explicit(block_ptr, input%oper)
                end if
@@ -834,10 +1015,8 @@ contains
    function enable_quantity(quantity) result(success)
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
-                        pseudo_air_pressure_available, water_level_correction_available
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
-                                  btempforcingtypS, itempforcingtyp
-
+                        sensible_heat_flux_available, latent_heat_flux_available, pseudo_air_pressure_available, water_level_correction_available
+      use m_flowparameters, only: itempforcingtyp
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
@@ -858,7 +1037,6 @@ contains
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
@@ -912,18 +1090,8 @@ contains
       case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
          jawind = 1
 
-      case ('airtemperature')
-         btempforcingtypA = .true.
-
-      case ('cloudiness')
-         btempforcingtypC = .true.
-
-      case ('humidity')
-         btempforcingtypH = .true.
-
       case ('dewpoint')
          itempforcingtyp = 5
-         btempforcingtypD = .true.
 
       case ('solarradiation')
          if (net_solar_radiation_available) then
@@ -932,7 +1100,6 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          solar_radiation_available = .true.
 
       case ('netsolarradiation')
@@ -942,12 +1109,16 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          net_solar_radiation_available = .true.
 
       case ('longwaveradiation')
-         btempforcingtypL = .true.
          long_wave_radiation_available = .true.
+
+      case ('sensibleheatflux')
+         sensible_heat_flux_available = .true.
+
+      case ('latentheatflux')
+         latent_heat_flux_available = .true.
 
       case ('humidity_airtemperature_cloudiness')
          itempforcingtyp = 1
@@ -967,7 +1138,7 @@ contains
       end select
 
       if (success == .false.) then
-         success = .true. 
+         success = .true.
          select case (str_tolower(qid_base))
          case ('initialwaterdepth', 'waterdepth')
             s1(1:ndxi) = bl(1:ndxi) + hs(1:ndxi)
@@ -1149,8 +1320,7 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin
-      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, dzL
@@ -1219,7 +1389,7 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), source_sinks%num_total, &
                                                      1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
@@ -1264,7 +1434,7 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
                                                               1, source_sink_all_discharges(1 + i_const, :))
                continue
             end if
@@ -1277,7 +1447,8 @@ contains
 
    !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
-      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
+      use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
+      use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1293,6 +1464,9 @@ contains
       use m_GlobalParameters, only: INDTP_2D
       use messageHandling, only: err_flush, msgbuf
       use m_bubblescreen, only: compute_bubblescreen_area
+      use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen
+      use m_partitioninfo, only: jampi, reduce_cells
+      use m_flowgeom, only: ndx
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -1317,12 +1491,20 @@ contains
 
       type(tree_data), pointer :: block_ptr
       type(t_Bubblescreen) :: bubblescreen
+      integer :: n_cells
+      integer, dimension(:), allocatable :: bubblescreen_cells
 
       ! Initialization
       i_bubblescreen = 0
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
+      if (allocated(bubblescreens)) then
+         deallocate (bubblescreens)
+      end if
+      if (allocated(bubblescreen_air_discharge)) then
+         deallocate (bubblescreen_air_discharge)
+      end if
       ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
       num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
       allocate (bubblescreens(num_bubblescreens))
@@ -1354,8 +1536,18 @@ contains
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
-               num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + bubblescreen%num_flowcells
+               n_cells = bubblescreen%num_flowcells
+               ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
+               ! and then EC-module will be left with dangling pointers. 
+               bubblescreen_cells = bubblescreen%flowcell_indices
+               if (jampi == 1) then
+                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+                  n_cells = size(bubblescreen_cells)
+               end if
+
+               num_bubblescreen_source_sinks = num_bubblescreen_source_sinks + n_cells
                bubblescreen%total_area = compute_bubblescreen_area(bubblescreen)
+               call realloc(bubblescreen%is_active, bubblescreen%num_flowcells, fill=.true.)
             end if
 
             ! Add the pre-initialized bubblescreen to bubblescreens
@@ -1364,6 +1556,9 @@ contains
       end do
 
       call cleanup_cell_geom_polylines()
+      ! initialize global geometry
+      call realloc(nodeCountBubbleScreen, size(bubblescreens), fill=0)
+      nNodesBubbleScreen = 0
 
    end subroutine initialize_bubblescreens
 
@@ -1380,12 +1575,12 @@ contains
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_setsorsin
+      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
       use m_missing, only: dmiss
-      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
       use m_flowgeom, only: ndx
+      use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -1402,6 +1597,7 @@ contains
       integer :: n_cells
       integer, dimension(:), allocatable :: bubblescreen_cells
       integer :: local_count
+      integer :: tm_global_count
 
       real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
       real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
@@ -1441,8 +1637,8 @@ contains
                bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                n_cells = size(bubblescreen_cells)
             end if
-            call realloc(x_flowcell, n_cells, fill=0.0_dp)
-            call realloc(y_flowcell, n_cells, fill=0.0_dp)
+            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
+            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
             do i = 1, n_cells
                if (.not. bubblescreen_cells(i) == -1) then
                   x_flowcell(i) = xzw(bubblescreen_cells(i))
@@ -1453,6 +1649,14 @@ contains
                call reduce_double_array_max(n_cells, x_flowcell)
                call reduce_double_array_max(n_cells, y_flowcell)
             end if
+            tm_global_count = nNodesBubbleScreen
+            nNodesBubbleScreen = nNodesBubbleScreen + n_cells
+            call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+            call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+            geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
+            geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
+            nodeCountBubbleScreen(bi) = n_cells
+
             z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
             z_flowcell_sink = bubblescreen%z_level
             call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
@@ -1466,7 +1670,8 @@ contains
                call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
                if (bubblescreen_cells(cidx) /= -1) then
                   local_count = local_count + 1
-                  bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
+                  bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
+                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
                end if
             end do
          end associate
@@ -1491,9 +1696,9 @@ contains
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
    !! external forcings quantities.
-      subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, ierr)
+   subroutine get_location_target_properties(target_location_type, target_num_points, target_x, target_y, exclude_boundary_nodes, ierr)
       use fm_location_types
-      use m_flowgeom, only: ndx, lnx, xz, yz, xu, yu
+      use m_flowgeom, only: ndx, ndxi, lnx, xz, yz, xu, yu
       use network_data, only: xk, yk, numk
       use precision_basics, only: dp
       use dfm_error, only: DFM_NOERR, DFM_NOTIMPLEMENTED
@@ -1502,13 +1707,18 @@ contains
       integer, intent(out) :: target_num_points
       real(dp), dimension(:), pointer, intent(out) :: target_x
       real(dp), dimension(:), pointer, intent(out) :: target_y
+      logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying
       integer, intent(out) :: ierr
 
       ierr = DFM_NOERR
 
       select case (target_location_type)
-      case (UNC_LOC_S)
-         target_num_points = ndx
+      case (UNC_LOC_S, UNC_LOC_S3D)
+         if (exclude_boundary_nodes) then
+            target_num_points = ndxi
+         else
+            target_num_points = ndx
+         end if
          target_x => xz(1:target_num_points)
          target_y => yz(1:target_num_points)
       case (UNC_LOC_U)
@@ -1585,7 +1795,7 @@ contains
 
    !> Scan the quantity name for heat relatede quantities.
    function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
-      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
+      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
       use m_flowgeom, only: ndx
       use m_alloc, only: aerr, realloc
       use fm_location_types, only: UNC_LOC_S
@@ -1619,6 +1829,12 @@ contains
       case ('longwaveradiation')
          call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
          call aerr('long_wave_radiation(ndx)', ierr, ndx)
+      case ('sensibleheatflux')
+         call realloc(sensible_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sensible_heat_flux(ndx)', ierr, ndx)
+      case ('latentheatflux')
+         call realloc(latent_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('latent_heat_flux(ndx)', ierr, ndx)
       case ('humidity_airtemperature_cloudiness')
          kx = 3
       case ('dewpoint_airtemperature_cloudiness')

@@ -57,7 +57,8 @@ object WindowsTest : BuildType({
         )
         param("container.tag", "%build.vcs.number%")
         param("product", "unknown")
-        checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
@@ -84,7 +85,6 @@ object WindowsTest : BuildType({
             param("nexus_username", "%nexus_username%")
             param("download_to", "/downloads")
             param("nexus_password", "%nexus_password%")
-            param("nexus_url", "https://artifacts.deltares.nl/repository")
         }
         powerShell {
             name = "Extract artifact"
@@ -103,32 +103,42 @@ object WindowsTest : BuildType({
                 """.trimIndent()
             }
         }
-        python {
+        // script is necessary to dynamically set the copy-failed-cases depending on the paramter
+        script {
+
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-            command = file {
-                filename = "TestBench.py"
-                scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
-                    --compare
-                    --config "configs/%configfile%"
-                    --filter "testcase=%case_filter%"
-                    --log-level DEBUG
-                    --parallel
+                scriptContent = """   
+                    @echo off
+
+                    set argsList=--username %s3_dsctestbench_accesskey% ^
+                    --password %s3_dsctestbench_secret% ^
+                    --compare ^
+                    --config configs/%configfile% ^
+                    --filter testcase=%case_filter% ^
+                    --log-level DEBUG ^
+                    --parallel ^
                     --teamcity
-                """.trimIndent()
-            }
+
+                    if "%copy_failed_cases%"=="true" (
+                        set argsList=%%argsList%% --copy-failed-cases
+                    )
+
+                    python TestBench.py %%argsList%%
+
+            """.trimIndent()
+        
+
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount%"
         }
         script {
             name = "Copy cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
-            conditions { equals("copy_cases", "true") }
+            conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "xcopy \"data\\cases\" \"copy_cases\" /E /I /Y"
         }
