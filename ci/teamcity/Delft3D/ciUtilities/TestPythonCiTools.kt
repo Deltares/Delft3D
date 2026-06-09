@@ -37,6 +37,10 @@ object TestPythonCiTools : BuildType({
         cleanCheckout = true
     }
 
+    params {
+        param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
+    }  
+
     triggers {
         vcs { 
             branchFilter = "+:pull/*"
@@ -48,7 +52,7 @@ object TestPythonCiTools : BuildType({
             name = "Install dependencies"
             workingDir = "ci/python"
             scriptContent = "uv sync"
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-python:3.12"
+            dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = """
@@ -67,7 +71,7 @@ object TestPythonCiTools : BuildType({
                 uv run mypy ci_tools --junit-xml=mypy.xml
                 uv run pytest --junitxml=pytest.xml --cov-report=html --cov=.
             """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-python:3.12"
+            dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
             dockerRunParameters = "--rm"
