@@ -3,8 +3,9 @@ set -eo pipefail
 
 HARBOR_REPO="${HARBOR_REPO:-%harbor_repo%}"
 PYTHON_VERSION="${PYTHON_VERSION:-%python_version%}"
+ALMALINUX_BASE_VERSION="${ALMALINUX_BASE_VERSION:-%almalinux-base-version%}"
 
-IMAGE_TAG="$PYTHON_VERSION"
+IMAGE_TAG="alma${ALMALINUX_BASE_VERSION}-python${PYTHON_VERSION}"
 CACHE_FROM_ARGS="--cache-from type=registry,ref=${HARBOR_REPO}:${IMAGE_TAG}-cache"
 if [[ -n "$JIRA_ISSUE_ID" ]]; then
     IMAGE_TAG="${JIRA_ISSUE_ID}-${IMAGE_TAG}"

@@ -27,7 +27,9 @@ object LinuxPython : BuildType({
     }
 
     params {
+        param("almalinux_base_version", "8")
         param("python_version", "3.12")
+        param("base_image", "containers.deltares.nl/docker-proxy/almalinux/%almalinux_base_version%-base:latest")
         param("harbor_repo", "containers.deltares.nl/delft3d-dev/delft3d-python")
 
         // Environment variables that must be overwritten in the build.
@@ -56,6 +58,7 @@ object LinuxPython : BuildType({
                 namesAndTags = "%harbor_repo%:%env.IMAGE_TAG%"
                 commandArgs = """
                     --pull
+                    --build-arg BASE_IMAGE_URL=%base_image%
                     --build-arg PYTHON_VERSION=%python_version%
                     --cache-to type=registry,ref=%harbor_repo%:%env.IMAGE_TAG%-cache,mode=max,image-manifest=true
                     %env.CACHE_FROM_ARGS%
