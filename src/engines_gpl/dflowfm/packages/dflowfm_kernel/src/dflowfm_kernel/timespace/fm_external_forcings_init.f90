@@ -571,7 +571,7 @@ contains
 
       call ini_alloc_laterals()
 
-      call construct_mask(kclat, UNC_LOC_S, ilattype=ilattype)
+      call construct_mask(kclat, UNC_LOC_S, ilattype)
 
       numlatsg = numlatsg + 1
       call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)

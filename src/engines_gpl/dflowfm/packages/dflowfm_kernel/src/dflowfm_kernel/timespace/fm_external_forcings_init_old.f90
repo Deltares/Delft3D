@@ -294,7 +294,7 @@ contains
                select case (trim(qid(18:)))
                case ('1d', '2d')
                   ilattype = parse_location_type(qid(18:))
-                  call construct_mask(mask, UNC_LOC_S, ilattype=ilattype)
+                  call construct_mask(mask, UNC_LOC_S, ilattype)
                case default
                   mask(:) = 1
                end select
@@ -1127,7 +1127,7 @@ contains
                   ilattype = ILATTP_ALL
                end select
 
-               call construct_mask(kclat, UNC_LOC_S, ilattype=ilattype)
+               call construct_mask(kclat, UNC_LOC_S, ilattype)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)

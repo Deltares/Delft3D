@@ -2737,7 +2737,7 @@ contains
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
          call realloc(kcsini, ndx)
-         call construct_mask(kcsini, target_location_type, ilattype=iloctype)
+         call construct_mask(kcsini, target_location_type, iloctype)
          x_loc => xz(1:ndx)
          y_loc => yz(1:ndx)
          num_items = ndx

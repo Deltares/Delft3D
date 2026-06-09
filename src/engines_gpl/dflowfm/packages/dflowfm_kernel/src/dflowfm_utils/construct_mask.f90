@@ -42,83 +42,149 @@ module m_construct_mask
 
 contains
 
+   !> Construct a mask array; either based on the lateral type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
    subroutine construct_mask(mask, target_location_type, ilattype, target_num_points, target_mask_file, invert_mask, ierr)
+      use m_flowgeom, only: lnx1d, ln, lnx, ndx, ndxi, ndx2d, lnxi, prof1d, xz, yz, kcs
+      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_nodes, selectelset_internal_links
+      use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT, DFM_NOTIMPLEMENTED
+
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
       integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      integer, intent(in), optional :: ilattype !< Type of the new lateral.
+      integer, intent(in) :: ilattype !< Type of the lateral.
       integer, intent(in), optional :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
       character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
       integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
-      if (present(ilattype)) then
-         if (ilattype /= ILATTP_INVALID .and. any(target_location_type == [UNC_LOC_S, UNC_LOC_S3D])) then
-            call prepare_lateral_mask(mask, ilattype)
+      ! Local variables
+      integer :: L !< Loop variable for links.
+      integer :: n1 !< The left flow cell number in the link.
+      integer :: n2 !< The right flow cell number in the link.
+      integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
+      integer :: number_of_selected_points !< The number of selected points based on the target mask file.
+      integer :: point !< Loop variable for points.
+
+      ierr = DFM_NOERR
+
+      if (ilattype /= ILATTP_INVALID .and. any(target_location_type == [UNC_LOC_S, UNC_LOC_S3D])) then
+         if (.not. allocated(mask)) then
+            allocate(mask(ndxi))
          end if
+         mask = 0
+
+         select case (ilattype)
+         case (ILATTP_1D) ! Everything in 1D
+
+            do L = 1, lnx1D
+               n1 = ln(1, L)
+               if (n1 > ndx2d) then
+                  mask(n1) = 1
+               end if
+               n2 = ln(2, L)
+               if (n2 > ndx2d) then
+                  mask(n2) = 1
+               end if
+            end do
+
+         case (ILATTP_2D) ! Everything in 2D
+
+            do L = lnx1D + 1, lnxi
+               n1 = ln(1, L)
+               mask(n1) = 1
+               n2 = ln(2, L)
+               mask(n2) = 1
+            end do
+
+         case (ILATTP_ALL) ! Everything in 1D and 2D, except 1D pipes
+
+            do L = 1, lnx1D
+               ! When is lateral allowed?
+               ! * (X)YZ profiles pointering to profiles number: always allow
+               ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
+               if (prof1D(1, L) < 0 .or. (abs(prof1D(3, L)) /= 1 .and. prof1D(3, L) > 0)) then
+                  n1 = ln(1, L)
+                  mask(n1) = 1
+                  n2 = ln(2, L)
+                  mask(n2) = 1
+               else
+                  continue
+               end if
+            end do
+            do L = lnx1D + 1, lnxi
+               n1 = ln(1, L)
+               mask(n1) = 1
+               n2 = ln(2, L)
+               mask(n2) = 1
+            end do
+
+         end select
+
       else if (present(target_num_points) .and. present(target_mask_file) .and. present(invert_mask) .and. present(ierr)) then
-         call construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+
+         if (.not. allocated(mask)) then
+            allocate(mask(target_num_points))
+         end if
+         mask = 0
+
+         if (len_trim(target_mask_file) > 0) then
+            ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
+            allocate (selected_points(target_num_points))
+            selected_points = 0
+
+            select case (target_location_type)
+            case (UNC_LOC_S)
+
+               ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
+               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, &
+                  LOCTP_POLYGON_FILE, target_mask_file)
+
+            case (UNC_LOC_U)
+
+               ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
+               call selectelset_internal_links(lnx, selected_points, number_of_selected_points, &
+                  LOCTP_POLYGON_FILE, target_mask_file)
+
+            case default
+
+               ierr = DFM_NOTIMPLEMENTED
+               return
+
+            end select
+
+            do point = 1, number_of_selected_points
+               mask(selected_points(point)) = 1
+            end do
+
+            if (invert_mask) then
+               mask = ieor(mask, 1)
+            end if
+
+         else
+
+            if (target_location_type == UNC_LOC_S) then
+               ! 100% masking: accept all flow locations that were already active in their own mask array.
+               where (kcs /= 0)
+                  mask = 1
+               end where
+
+            else
+
+               mask = 1
+
+            end if
+
+         end if
+
+      else ! Invalid input for constructing mask, return error.
+
+         ierr = DFM_WRONGINPUT
+
       end if
 
    end subroutine construct_mask
-
-   !> Prepare the 'kclat' mask array for a specific type of lateral.
-   subroutine prepare_lateral_mask(kc, ilattype)
-      use m_flowgeom, only: lnx1d, ln, ndxi, ndx2d, lnxi, prof1d
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-
-      integer, allocatable, intent(inout) :: kc(:) !< (ndx) The mask array that is to be filled.
-      integer, intent(in) :: ilattype !< Type of the new lateral (one of ILATTP_1D|2D|1D2D)
-
-      integer :: L, k1, k2
-
-      if (.not. allocated(kc)) then
-         allocate(kc(ndxi))
-      end if
-      kc = 0
-      select case (ilattype)
-      case (ILATTP_1D) ! in everything 1D
-         do L = 1, lnx1D
-            !if (abs(prof1D(3,L)) .ne. 1 .and. prof1D(3,L) > 0 ) then ! no pipes pos or neg, others only if pos
-            k1 = ln(1, L)
-            if (k1 > ndx2d) then
-               kc(k1) = 1
-            end if
-            k2 = ln(2, L)
-            if (k2 > ndx2d) then
-               kc(k2) = 1
-            end if
-            !endif
-         end do
-      case (ILATTP_2D) ! in everything 2D
-         do L = lnx1D + 1, lnxi
-            k1 = ln(1, L)
-            kc(k1) = 1
-            k2 = ln(2, L)
-            kc(k2) = 1
-         end do
-      case (ILATTP_ALL) ! both to everything 2D, and 1D, except to 1D pipes
-         do L = 1, lnx1D
-            ! When is lateral allowed?
-            ! * (X)YZ profiles pointering to profiles number: always allow
-            ! * direct profiles (rect/circle, etc.):no pipes pos or neg, others only if pos (==non-closed)
-            if (prof1D(1, L) < 0 .or. (abs(prof1D(3, L)) /= 1 .and. prof1D(3, L) > 0)) then
-               k1 = ln(1, L)
-               kc(k1) = 1
-               k2 = ln(2, L)
-               kc(k2) = 1
-            else
-               continue
-            end if
-         end do
-         do L = lnx1D + 1, lnxi
-            k1 = ln(1, L)
-            kc(k1) = 1
-            k2 = ln(2, L)
-            kc(k2) = 1
-         end do
-      end select
-   end subroutine prepare_lateral_mask
 
    !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
    subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
