@@ -21,6 +21,7 @@ f90twtest(${test_target}
         src/test_pol_to_cellmask.f90
         src/test_longculverts.f90
         src/test_compute_horton_infiltration.f90
+        src/test_construct_mask.f90
         src/test_bubblescreen.f90
         src/test_sources_sinks.f90
         src/test_timespace_parameters.f90
@@ -39,6 +40,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_pol_to_cellmask.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_longculverts.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_compute_horton_infiltration.f90
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/test_construct_mask.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_bubblescreen.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_sources_sinks.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_timespace_parameters.f90
