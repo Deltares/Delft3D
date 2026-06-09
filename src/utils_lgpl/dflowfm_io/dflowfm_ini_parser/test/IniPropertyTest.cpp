@@ -305,6 +305,18 @@ namespace ini::test
         EXPECT_EQ(convertedValues, (std::vector<int>{10, 20, 30}));
     }
 
+    TEST(IniPropertyTest,
+         TryGetConvertedValueCollection_ValidMultiValueAndNewlineDelimiter_ReturnsTrueAndConvertedCollection)
+    {
+        IniProperty property("TestKey", "3 6 \n 9 \r\n 12");
+
+        std::vector<int> convertedValues;
+        bool result = property.TryGetConvertedValueCollection(convertedValues);
+
+        EXPECT_TRUE(result);
+        EXPECT_EQ(convertedValues, (std::vector<int>{3, 6, 9, 12}));
+    }
+
     TEST(IniPropertyTest, TryGetConvertedValueCollection_InvalidFormattedValue_ReturnsFalseAndEmptyCollection)
     {
         IniProperty property("TestKey", "TestValue");

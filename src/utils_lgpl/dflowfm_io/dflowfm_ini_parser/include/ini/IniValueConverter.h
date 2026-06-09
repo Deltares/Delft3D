@@ -94,22 +94,31 @@ namespace ini
         /// @tparam T The target type to convert each value to.
         /// @param value The string representation of the multiple values.
         /// @param delimiter The character used to separate the values in @p value. Default is a whitespace.
+        ///                  Newline characters (\r\n) are always treated as separators, regardless of this value.
         /// @return A vector containing the converted values of the specified type.
         /// @throws std::invalid_argument When one or more values do not represent a valid format.
         template <typename T>
         static std::vector<T> FromMultiValueString(const std::string& value, char delimiter = ' ')
         {
             std::vector<T> result;
-            std::istringstream iss(value);
-            std::string token;
+            const std::string delimiters = {delimiter, '\r', '\n'};
+            std::size_t start = 0;
+            std::size_t end;
 
-            while (std::getline(iss, token, delimiter))
+            while ((end = value.find_first_of(delimiters, start)) != std::string::npos)
             {
-                const std::string trimmed = trim(token);
+                const std::string trimmed = trim(value.substr(start, end - start));
                 if (!trimmed.empty())
                 {
                     result.push_back(FromString<T>(trimmed));
                 }
+                start = end + 1;
+            }
+
+            const std::string trimmed = trim(value.substr(start));
+            if (!trimmed.empty())
+            {
+                result.push_back(FromString<T>(trimmed));
             }
 
             return result;

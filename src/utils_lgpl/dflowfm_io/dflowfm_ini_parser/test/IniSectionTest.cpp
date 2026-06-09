@@ -979,6 +979,17 @@ namespace ini::test
         EXPECT_EQ(values, expected);
     }
 
+    TEST(IniSectionTest, GetMultiValuePropertyValues_ValidFormattedValueAndNewlineDelimiter_ReturnsConvertedValues)
+    {
+        IniSection section("ectionName");
+        section.AddProperty("TestKey", "3 6 \n 9 \r\n 12");
+
+        const std::vector<int> values = section.GetMultiValuePropertyValues<int>("TestKey");
+
+        const std::vector<int> expected = {3, 6, 9, 12};
+        EXPECT_EQ(values, expected);
+    }
+
     TEST(IniSectionTest, GetMultiValuePropertyValues_InvalidFormattedValue_ReturnsEmptyCollection)
     {
         IniSection section("ectionName");

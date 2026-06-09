@@ -520,10 +520,10 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(
         IniValueConverterTest, IniValueConverterFromMultiValueStringBoolTest,
         ::testing::Values(std::make_pair(" True", std::vector<bool>{true}),
-                          std::make_pair("True True True", std::vector<bool>{true, true, true}),
+                          std::make_pair("True \n True \n True", std::vector<bool>{true, true, true}),
                           std::make_pair("True Yes 1", std::vector<bool>{true, true, true}),
                           std::make_pair("False ", std::vector<bool>{false}),
-                          std::make_pair("False False False", std::vector<bool>{false, false, false}),
+                          std::make_pair("False\r\nFalse\r\nFalse", std::vector<bool>{false, false, false}),
                           std::make_pair("False No 0", std::vector<bool>{false, false, false}),
                           std::make_pair("true false 1 0 yes no",
                                          std::vector<bool>{true, false, true, false, true, false})));
@@ -564,13 +564,13 @@ namespace ini::test
 
     INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringIntTest,
                              ::testing::Values(std::make_pair("42 3", std::vector<int>{42, 3}),
-                                               std::make_pair("3 4 5", std::vector<int>{3, 4, 5}),
+                                               std::make_pair("3 \r\n 4 \r\n 5", std::vector<int>{3, 4, 5}),
                                                std::make_pair(" 0 1 -1 ", std::vector<int>{0, 1, -1}),
                                                std::make_pair(" +100 -100 0 ", std::vector<int>{100, -100, 0}),
                                                std::make_pair("   1 2 3   ", std::vector<int>{1, 2, 3}),
                                                std::make_pair("0000123 45", std::vector<int>{123, 45}),
                                                std::make_pair(" -10 20 -30 40 ", std::vector<int>{-10, 20, -30, 40}),
-                                               std::make_pair("1 2 -3 -4 5", std::vector<int>{1, 2, -3, -4, 5}),
+                                               std::make_pair("1\n2\n-3\n-4\n5", std::vector<int>{1, 2, -3, -4, 5}),
                                                std::make_pair("3  ", std::vector<int>{3})));
 
     // -------------------------------------------------------------------------
@@ -615,12 +615,12 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(
         IniValueConverterTest, IniValueConverterFromMultiValueStringDoubleTest,
         ::testing::Values(std::make_pair("3.0", std::vector<double>{3.0}),
-                          std::make_pair("2.718 3.14159", std::vector<double>{2.718, 3.14159}),
+                          std::make_pair("2.718\r\n3.14159", std::vector<double>{2.718, 3.14159}),
                           std::make_pair("1.0 2.0 -3.5", std::vector<double>{1.0, 2.0, -3.5}),
                           std::make_pair("0.0 -1.5 4.5", std::vector<double>{0.0, -1.5, 4.5}),
                           std::make_pair("1.234e+00 5.678e-001", std::vector<double>{1.234, 0.5678}),
                           std::make_pair(" 10.5 20.0 -30.0  ", std::vector<double>{10.5, 20.0, -30.0}),
-                          std::make_pair("3.14 2.71 1.62", std::vector<double>{3.14, 2.71, 1.62}),
+                          std::make_pair("3.14 \n 2.71 \n 1.62", std::vector<double>{3.14, 2.71, 1.62}),
                           std::make_pair("0.1 0.2 0.3", std::vector<double>{0.1, 0.2, 0.3})));
 
     // -------------------------------------------------------------------------
@@ -666,12 +666,12 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(
         IniValueConverterTest, IniValueConverterFromMultiValueStringFloatTest,
         ::testing::Values(std::make_pair("3.14 1.23", std::vector<float>{3.14f, 1.23f}),
-                          std::make_pair("0 -1.0 2.5", std::vector<float>{0.0f, -1.0f, 2.5f}),
+                          std::make_pair("0 \r\n -1.0\r\n2.5", std::vector<float>{0.0f, -1.0f, 2.5f}),
                           std::make_pair("-100.456 1.5 3.5", std::vector<float>{-100.456f, 1.5f, 3.5f}),
                           std::make_pair("1e3 2.5e-3", std::vector<float>{1000.0f, 0.0025f}),
                           std::make_pair("1234.567890 -1.2e+02", std::vector<float>{1234.56789f, -120.0f}),
                           std::make_pair("3.0 -4.5 5.0 2.1", std::vector<float>{3.0f, -4.5f, 5.0f, 2.1f}),
-                          std::make_pair("1.0 2.0 3.0 4.0", std::vector<float>{1.0f, 2.0f, 3.0f, 4.0f}),
+                          std::make_pair("1.0\n2.0\n3.0\n4.0", std::vector<float>{1.0f, 2.0f, 3.0f, 4.0f}),
                           std::make_pair("0.1 0.2 0.3 0.4 0.5", std::vector<float>{0.1f, 0.2f, 0.3f, 0.4f, 0.5f})));
 
     // -------------------------------------------------------------------------
@@ -725,7 +725,7 @@ namespace ini::test
         ::testing::Values(std::make_pair("2023-08-14",
                                          std::vector<std::chrono::system_clock::time_point>{
                                              MakeTimePoint(2023, 8, 14, 0, 0, 0)}),
-                          std::make_pair("2021-01-01 2022-01-01",
+                          std::make_pair("2021-01-01\r\n2022-01-01",
                                          std::vector<std::chrono::system_clock::time_point>{
                                              MakeTimePoint(2021, 1, 1, 0, 0, 0), MakeTimePoint(2022, 1, 1, 0, 0, 0)}),
                           std::make_pair("2021/01/01 2020/12/31", std::vector<std::chrono::system_clock::time_point>{
@@ -756,8 +756,8 @@ namespace ini::test
         IniValueConverterTest, IniValueConverterFromMultiValueStringStringTest,
         ::testing::Values(std::make_pair("Hello, World!", std::vector<std::string>{"Hello,", "World!"}),
                           std::make_pair(" XYZ ", std::vector<std::string>{"XYZ"}),
-                          std::make_pair("   Sample String   ", std::vector<std::string>{"Sample", "String"}),
-                          std::make_pair("A B C D E", std::vector<std::string>{"A", "B", "C", "D", "E"})));
+                          std::make_pair("Sample\r\nString", std::vector<std::string>{"Sample", "String"}),
+                          std::make_pair("A \n B \n C \n D \n E", std::vector<std::string>{"A", "B", "C", "D", "E"})));
 
     // -------------------------------------------------------------------------
     // FromMultiValueString - custom delimiter
