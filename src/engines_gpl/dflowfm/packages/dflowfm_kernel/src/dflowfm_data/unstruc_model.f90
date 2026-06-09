@@ -242,7 +242,7 @@ module unstruc_model
    integer :: npolf = 0 !< nr of polygonplotfiles saved with n key in editpol
    logical :: md_usecaching !< Use and/or generate cache file if true
 
-   integer :: md_convertlongculverts = 0 !< convert culverts (and exit program) yes (1) or no (0)
+   integer :: md_convertlongculverts = 1 !< convert culverts (and exit program) yes (1) or no (0)
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
    character(len=128) :: md_dambreak_widening_method !< method for dambreak widening
 
@@ -2722,7 +2722,7 @@ contains
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
-      call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Default: 0. Wheter or not to convert long culvert input to 1D2D long culverts')
+      call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Default: 1. Whether or not to convert long culvert input to 1D2D long culverts')
 
       ! Geometry
       call prop_set(prop_ptr, 'geometry', 'NetFile', trim(md_netfile), 'Unstructured grid file *_net.nc')
