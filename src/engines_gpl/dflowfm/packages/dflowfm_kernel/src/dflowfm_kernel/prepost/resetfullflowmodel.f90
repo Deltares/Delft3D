@@ -87,7 +87,6 @@ contains
       use fm_deprecated_keywords, only: default_fm_deprecated_keywords
       use m_sediment, only: deallocgrains, default_sediment
       use m_flow_validatestate, only: default_flow_validatestate
-      use network_data, only: nod
       use m_prefetch, only: cleanup_prefetch_arrays
 
       implicit none
