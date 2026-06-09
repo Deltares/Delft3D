@@ -45,7 +45,6 @@ contains
    !> Construct a mask array; either based on the lateral type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
    subroutine construct_mask(mask, target_location_type, ilattype, target_num_points, target_mask_file, invert_mask, ierr)
       use m_flowgeom, only: lnx1d, ln, lnx, ndx, ndxi, ndx2d, lnxi, prof1d, xz, yz, kcs
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
       use timespace_parameters, only: LOCTP_POLYGON_FILE
       use timespace, only: selectelset_internal_nodes, selectelset_internal_links
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT, DFM_NOTIMPLEMENTED
