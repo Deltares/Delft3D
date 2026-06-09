@@ -25,7 +25,7 @@ class DoublePrecisionConverter(FortranConverter):
         # Pattern to match Fortran double precision literals with D exponent
         # This matches patterns like: 1d0, 1.0d0, .5d0, 123d-5, 0.123d+10, etc.
         self.d_literal_pattern = re.compile(
-            r'''
+            r"""
             (?<!\w)                     # Not preceded by word character (negative lookbehind)
             (?P<sign>[+-]?)             # Optional sign
             (?P<significand>
@@ -39,43 +39,37 @@ class DoublePrecisionConverter(FortranConverter):
             (?P<exponent>[+-]?\d+)      # Signed exponent
             (?!_)                       # Not followed by underscore (avoid already converted)
             (?!\w)                      # Not followed by word character (negative lookahead)
-            ''',
-            re.VERBOSE
+            """,
+            re.VERBOSE,
         )
 
         # Pattern to match double precision variable declarations
         self.double_precision_pattern = re.compile(
-            r'''
+            r"""
             (?P<indent>[ \t]*)          # Capture leading whitespace (spaces and tabs only, not newlines)
             double\s+precision          # "double precision" keywords
             (?P<rest>.*)                # Everything else on the line
-            ''',
-            re.VERBOSE | re.IGNORECASE
+            """,
+            re.VERBOSE | re.IGNORECASE,
         )
 
         # Pattern to match dble() function calls
-        self.dble_pattern = re.compile(
-            r'\bdble\s*\(',
-            re.IGNORECASE
-        )
+        self.dble_pattern = re.compile(r"\bdble\s*\(", re.IGNORECASE)
 
         # Pattern to find module or submodule declaration (but not module subroutine/function/procedure)
         # submodule declarations can be: submodule(parent) name or submodule (parent) name
         self.module_pattern = re.compile(
-            r'^\s*(?:submodule\s*\([^)]+\)\s*\w+|module\s+(?!subroutine\b|function\b|procedure\b)\w+)',
-            re.MULTILINE | re.IGNORECASE
+            r"^\s*(?:submodule\s*\([^)]+\)\s*\w+|module\s+(?!subroutine\b|function\b|procedure\b)\w+)",
+            re.MULTILINE | re.IGNORECASE,
         )
 
         # Pattern to find existing precision import
-        self.precision_import_pattern = re.compile(
-            r'^\s*use\s+precision\b',
-            re.MULTILINE | re.IGNORECASE
-        )
+        self.precision_import_pattern = re.compile(r"^\s*use\s+precision\b", re.MULTILINE | re.IGNORECASE)
 
         # Pattern to find the end of use statements section
         self.use_section_end_pattern = re.compile(
-            r'^\s*(?:implicit\s+none|contains|private|public|integer|real|character|logical|type|interface)\s*',
-            re.MULTILINE | re.IGNORECASE
+            r"^\s*(?:implicit\s+none|contains|private|public|integer|real|character|logical|type|interface)\s*",
+            re.MULTILINE | re.IGNORECASE,
         )
 
     def get_name(self) -> str:
@@ -86,23 +80,23 @@ class DoublePrecisionConverter(FortranConverter):
 
     def _convert_literal(self, match) -> str:
         """Convert a single D literal to _dp format."""
-        sign = match.group('sign')
-        significand = match.group('significand')
-        exponent = match.group('exponent')
+        sign = match.group("sign")
+        significand = match.group("significand")
+        exponent = match.group("exponent")
 
         # Handle significand formatting
-        if '.' not in significand:
+        if "." not in significand:
             # Add .0 if no decimal point (e.g., 1d0 -> 1.0)
-            significand = significand + '.0'
-        elif significand.endswith('.'):
+            significand = significand + ".0"
+        elif significand.endswith("."):
             # Add 0 after trailing decimal (e.g., 1. -> 1.0)
-            significand = significand + '0'
-        elif significand.startswith('.'):
+            significand = significand + "0"
+        elif significand.startswith("."):
             # Add 0 before leading decimal (e.g., .5 -> 0.5)
-            significand = '0' + significand
+            significand = "0" + significand
 
         # Convert D exponent to E exponent and add _dp kind
-        if exponent == '0':
+        if exponent == "0":
             # Simple case: no exponent needed
             return f"{sign}{significand}_dp"
         else:
@@ -111,10 +105,10 @@ class DoublePrecisionConverter(FortranConverter):
 
     def _convert_double_precision_declaration(self, match) -> str:
         """Convert a double precision declaration to real(kind=dp) format."""
-        indent = match.group('indent')
-        rest = match.group('rest').strip()
+        indent = match.group("indent")
+        rest = match.group("rest").strip()
         # Add space only if rest doesn't start with a comma or other punctuation
-        separator = '' if rest.startswith(',') else ' '
+        separator = "" if rest.startswith(",") else " "
         return f"{indent}real(kind=dp){separator}{rest}"
 
     def _convert_dble_calls(self, text: str) -> str:
@@ -132,15 +126,15 @@ class DoublePrecisionConverter(FortranConverter):
 
                 # Find the matching closing parenthesis
                 while j < len(text) and paren_count > 0:
-                    if text[j] == '(' and not self._is_in_string_or_comment(text, j):
+                    if text[j] == "(" and not self._is_in_string_or_comment(text, j):
                         paren_count += 1
-                    elif text[j] == ')' and not self._is_in_string_or_comment(text, j):
+                    elif text[j] == ")" and not self._is_in_string_or_comment(text, j):
                         paren_count -= 1
                     j += 1
 
                 if paren_count == 0:
                     # Successfully found matching parenthesis
-                    inner_expr = text[paren_start + 1:j - 1]
+                    inner_expr = text[paren_start + 1 : j - 1]
                     result.append(f"real({inner_expr}, kind=dp)")
                     i = j
                 else:
@@ -151,7 +145,7 @@ class DoublePrecisionConverter(FortranConverter):
                 result.append(text[i])
                 i += 1
 
-        return ''.join(result)
+        return "".join(result)
 
     def convert_text(self, text: str) -> Tuple[str, bool]:
         """Convert all D literals and double precision declarations in the given text."""
@@ -160,6 +154,7 @@ class DoublePrecisionConverter(FortranConverter):
 
         # Convert D literals
         text_for_literal_check = text
+
         def replace_literal_match(match):
             if self._is_in_string_or_comment(text_for_literal_check, match.start()):
                 return match.group(0)  # Return unchanged
@@ -171,6 +166,7 @@ class DoublePrecisionConverter(FortranConverter):
 
         # Convert double precision declarations
         text_for_declaration_check = text
+
         def replace_declaration_match(match):
             if self._is_in_string_or_comment(text_for_declaration_check, match.start()):
                 return match.group(0)  # Return unchanged
@@ -196,36 +192,42 @@ class DoublePrecisionConverter(FortranConverter):
         # Check for D literals
         for match in self.d_literal_pattern.finditer(text):
             if not self._is_in_string_or_comment(text, match.start()):
-                line_num = text[:match.start()].count('\n') + 1
+                line_num = text[: match.start()].count("\n") + 1
                 literal_text = match.group(0)
-                issues.append(ConversionIssue(
-                    line_number=line_num,
-                    error_code="STYLE001",
-                    message=f"Double precision literal found: '{literal_text}' should be converted to _dp format",
-                    original_text=literal_text
-                ))
+                issues.append(
+                    ConversionIssue(
+                        line_number=line_num,
+                        error_code="STYLE001",
+                        message=f"Double precision literal found: '{literal_text}' should be converted to _dp format",
+                        original_text=literal_text,
+                    )
+                )
 
         # Check for double precision declarations
         for match in self.double_precision_pattern.finditer(text):
             if not self._is_in_string_or_comment(text, match.start()):
-                line_num = text[:match.start()].count('\n') + 1
-                issues.append(ConversionIssue(
-                    line_number=line_num,
-                    error_code="STYLE002",
-                    message="Double precision declaration found, should be 'real(kind=dp)'",
-                    original_text=match.group(0).strip()
-                ))
+                line_num = text[: match.start()].count("\n") + 1
+                issues.append(
+                    ConversionIssue(
+                        line_number=line_num,
+                        error_code="STYLE002",
+                        message="Double precision declaration found, should be 'real(kind=dp)'",
+                        original_text=match.group(0).strip(),
+                    )
+                )
 
         # Check for dble() function calls
         for match in self.dble_pattern.finditer(text):
             if not self._is_in_string_or_comment(text, match.start()):
-                line_num = text[:match.start()].count('\n') + 1
-                issues.append(ConversionIssue(
-                    line_number=line_num,
-                    error_code="STYLE003",
-                    message="dble() function found, should be 'real(..., kind=dp)'",
-                    original_text="dble()"
-                ))
+                line_num = text[: match.start()].count("\n") + 1
+                issues.append(
+                    ConversionIssue(
+                        line_number=line_num,
+                        error_code="STYLE003",
+                        message="dble() function found, should be 'real(..., kind=dp)'",
+                        original_text="dble()",
+                    )
+                )
 
         return issues
 
@@ -247,7 +249,7 @@ class DoublePrecisionConverter(FortranConverter):
         # Find where to insert the use statement
         module_end = module_match.end()
         remaining_text = text[module_end:]
-        lines = remaining_text.split('\n')
+        lines = remaining_text.split("\n")
 
         insert_line_idx = 0
         use_statements_found = False
@@ -256,11 +258,11 @@ class DoublePrecisionConverter(FortranConverter):
             stripped_line = line.strip()
 
             # Skip empty lines and comments at the beginning
-            if not stripped_line or stripped_line.startswith('!'):
+            if not stripped_line or stripped_line.startswith("!"):
                 continue
 
             # Check if this is a use statement
-            if re.match(r'^\s*use\s+', line, re.IGNORECASE):
+            if re.match(r"^\s*use\s+", line, re.IGNORECASE):
                 use_statements_found = True
                 insert_line_idx = i + 1  # Insert after this use statement
                 continue
@@ -284,12 +286,12 @@ class DoublePrecisionConverter(FortranConverter):
         if use_statements_found and insert_line_idx > 0:
             # Use indentation from previous use statement
             prev_line = lines[insert_line_idx - 1]
-            indent = prev_line[:len(prev_line) - len(prev_line.lstrip())]
+            indent = prev_line[: len(prev_line) - len(prev_line.lstrip())]
         elif insert_line_idx < len(lines):
             # Use indentation from the next line
             next_line = lines[insert_line_idx]
             if next_line.strip():
-                indent = next_line[:len(next_line) - len(next_line.lstrip())]
+                indent = next_line[: len(next_line) - len(next_line.lstrip())]
 
         # Insert the precision import
         precision_import = f"{indent}use precision, only: dp"
@@ -301,38 +303,43 @@ class DoublePrecisionConverter(FortranConverter):
             # If first line is empty (from newline after module), keep it that way
             if lines and not lines[0]:
                 # Format: module\n\n use precision... \n implicit none...
-                new_text = before_module + '\n' + precision_import + '\n' + '\n'.join(lines[1:])
+                new_text = before_module + "\n" + precision_import + "\n" + "\n".join(lines[1:])
             else:
                 # No newline after module, insert with newline
-                new_text = before_module + '\n' + precision_import + '\n' + '\n'.join(lines)
+                new_text = before_module + "\n" + precision_import + "\n" + "\n".join(lines)
         else:
-            before_insert = '\n'.join(lines[:insert_line_idx])
-            after_insert = '\n'.join(lines[insert_line_idx:])
+            before_insert = "\n".join(lines[:insert_line_idx])
+            after_insert = "\n".join(lines[insert_line_idx:])
             # If before_insert starts with newline (from empty first line), don't add extra newline
-            if before_insert and not before_insert.startswith('\n'):
-                new_text = before_module + '\n' + before_insert + '\n' + precision_import + '\n' + after_insert
+            if before_insert and not before_insert.startswith("\n"):
+                new_text = before_module + "\n" + before_insert + "\n" + precision_import + "\n" + after_insert
             elif before_insert:
                 # before_insert starts with \n (from empty lines[0]), so skip one newline
-                new_text = before_module + before_insert + '\n' + precision_import + '\n' + after_insert
+                new_text = before_module + before_insert + "\n" + precision_import + "\n" + after_insert
             else:
                 # before_insert is completely empty
-                new_text = before_module + '\n' + precision_import + '\n' + after_insert
+                new_text = before_module + "\n" + precision_import + "\n" + after_insert
 
         return new_text
 
     def get_conversion_stats(self, original_text: str) -> dict:
         """Get statistics about conversions that would be made."""
-        literal_count = sum(1 for match in self.d_literal_pattern.finditer(original_text)
-                           if not self._is_in_string_or_comment(original_text, match.start()))
+        literal_count = sum(
+            1
+            for match in self.d_literal_pattern.finditer(original_text)
+            if not self._is_in_string_or_comment(original_text, match.start())
+        )
 
-        declaration_count = sum(1 for match in self.double_precision_pattern.finditer(original_text)
-                               if not self._is_in_string_or_comment(original_text, match.start()))
+        declaration_count = sum(
+            1
+            for match in self.double_precision_pattern.finditer(original_text)
+            if not self._is_in_string_or_comment(original_text, match.start())
+        )
 
-        dble_count = sum(1 for match in self.dble_pattern.finditer(original_text)
-                        if not self._is_in_string_or_comment(original_text, match.start()))
+        dble_count = sum(
+            1
+            for match in self.dble_pattern.finditer(original_text)
+            if not self._is_in_string_or_comment(original_text, match.start())
+        )
 
-        return {
-            'literals': literal_count,
-            'declarations': declaration_count,
-            'dble_calls': dble_count
-        }
+        return {"literals": literal_count, "declarations": declaration_count, "dble_calls": dble_count}
