@@ -61,7 +61,7 @@ object TestPythonCiTools : BuildType({
             workingDir = "ci/python"
             scriptContent = """
                 #!/usr/bin/env bash
-                set -eo pipefail
+                set -exo pipefail
                 uv run ruff format --diff
                 uv run ruff check --output-format=junit --output-file=ruff.xml
                 uv run mypy ci_tools --junit-xml=mypy.xml
@@ -70,10 +70,7 @@ object TestPythonCiTools : BuildType({
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-python:3.12"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
             dockerPull = true
-            dockerRunParameters = """
-                --rm
-                --mount type=volume,source=uv-cache-python-ci-tools,destination=/root/.cache/uv
-            """.trimIndent()
+            dockerRunParameters = "--rm"
         }
     }
 

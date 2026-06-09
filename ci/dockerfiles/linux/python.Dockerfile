@@ -2,7 +2,7 @@
 
 # note that although the BASE_IMAGE_URL argument allows you to easily change the base image,
 # all the following code assumes that you're running an Alma Linux or compatible environment.
-ARG BASE_IMAGE_URL=containers.deltares.nl/base_linux_containers/8-base:latest
+ARG BASE_IMAGE_URL=containers.deltares.nl/docker-proxy/almalinux/8-base:latest
 
 FROM ${BASE_IMAGE_URL}
 
