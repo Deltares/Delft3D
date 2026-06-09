@@ -11,7 +11,7 @@ import Delft3D.ciUtilities.*
 
 object Trigger : BuildType({
 
-    description = "This is triggered for pull-requests and will schedule the appropriate testbenches."
+    description = "This is triggered for pull-requests and will schedule the appropriate pre-merge testbenches."
 
     templates(
         TemplateLinuxAgent,
