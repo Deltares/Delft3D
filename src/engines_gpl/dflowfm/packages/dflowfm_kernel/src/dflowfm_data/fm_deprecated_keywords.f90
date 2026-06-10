@@ -91,7 +91,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'writeBalanceFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 's1incInterval', OBSOLETE, 'Use [Output] classMapFile instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'waqFileBase', OBSOLETE)
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'snapshotdir', OBSOLETE)1
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'snapshotdir', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'heatFluxesOnOutput', OBSOLETE, 'Use [Output] wrihis_heatfluxes and wrimap_heatfluxes instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrimap_input_dt', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrihis_heatflux', OBSOLETE, 'Renamed to [Output] wrihis_heatfluxes.')
