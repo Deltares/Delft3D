@@ -86,26 +86,7 @@ if(WIN32)
                          interacter_stub
                          dflowfm_kernel
 )
-
-
-target_link_directories(${executable_name} PRIVATE
-                        "${mpi_library_path}"
-                        "${checkout_src_root}/third_party_open/pthreads/bin/x64")
-
-target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
-                          netCDF::netcdf
-                          "comctl32.lib"
-                          "wsock32.lib"
-                          "netapi32.lib"
-                          "kernel32.lib"
-                          "user32.lib"
-                          "Shlwapi.lib"
-                          "Gdi32.lib"
-                          "Winspool.lib"
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
-)
-
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 endif(WIN32)
 

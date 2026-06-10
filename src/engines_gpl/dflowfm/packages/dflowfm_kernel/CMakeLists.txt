@@ -193,14 +193,13 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_directories(${library_name} PUBLIC
-                                "${mpi_library_path}"
-    )
-
     target_link_libraries(${library_name} PRIVATE
-                            "${mpi_fortran_library}"
                             petsc
     )
+    if(NOT TARGET impi)
+      message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
+    endif()
+    target_link_libraries(${library_name} INTERFACE impi)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"

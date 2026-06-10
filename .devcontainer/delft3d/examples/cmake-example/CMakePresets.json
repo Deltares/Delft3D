@@ -33,6 +33,39 @@
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_fm-suite_relwithdebinfo/install",
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo"
             }
+        },
+        {
+            "name": "all-debug",
+            "displayName": "All Debug",
+            "binaryDir": "${sourceDir}/../../build_all_debug",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "all",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_all_debug/install",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "all-release",
+            "displayName": "All Release",
+            "binaryDir": "${sourceDir}/../../build_all_release",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "all",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_all_release/install",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
+            "name": "all-relwithdebinfo",
+            "displayName": "All RelWithDebInfo",
+            "binaryDir": "${sourceDir}/../../build_all_relwithdebinfo",
+            "generator": "Unix Makefiles",
+            "cacheVariables": {
+                "CONFIGURATION_TYPE:STRING": "all",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/../../build_all_relwithdebinfo/install",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
         }
     ],
     "buildPresets": [
@@ -52,7 +85,24 @@
             "name": "fm-suite-relwithdebinfo-build",
             "displayName": "FM-suite RelWithDebInfo Build",
             "configurePreset": "fm-suite-relwithdebinfo",
-            "configuration": "RelWithDebInfo",
+            "jobs": 24
+        },
+        {
+            "name": "all-debug-build",
+            "displayName": "All Debug Build",
+            "configurePreset": "all-debug",
+            "jobs": 24
+        },
+        {
+            "name": "all-release-build",
+            "displayName": "All Release Build",
+            "configurePreset": "all-release",
+            "jobs": 24
+        },
+        {
+            "name": "all-relwithdebinfo-build",
+            "displayName": "All RelWithDebInfo Build",
+            "configurePreset": "all-relwithdebinfo",
             "jobs": 24
         }
     ],
@@ -74,6 +124,24 @@
             "name": "fm-suite-relwithdebinfo-test",
             "displayName": "FM-suite RelWithDebInfo Test",
             "configuration": "RelWithDebInfo"
-        }
+        },
+        {
+            "configurePreset": "all-debug",
+            "name": "all-debug-test",
+            "displayName": "All Debug Test",
+            "configuration": "Debug"
+        },
+        {
+            "configurePreset": "all-release",
+            "name": "all-release-test",
+            "displayName": "All Release Test",
+            "configuration": "Release"
+        },
+        {
+            "configurePreset": "all-relwithdebinfo",
+            "name": "all-relwithdebinfo-test",
+            "displayName": "All RelWithDebInfo Test",
+            "configuration": "RelWithDebInfo"
+        }    
     ]
 }

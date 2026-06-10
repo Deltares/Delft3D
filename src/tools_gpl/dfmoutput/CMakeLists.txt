@@ -66,27 +66,6 @@ if (WIN32)
                         ${res_path}
     )
 
-    # Set linker properties
-    message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-    )
-
-    target_link_libraries(${executable_name} PRIVATE
-                          "comctl32.lib"
-                          "wsock32.lib"
-                          "netapi32.lib"
-                          "kernel32.lib"
-                          "user32.lib"
-                          "Shlwapi.lib"
-                          "Gdi32.lib"
-                          "Winspool.lib"
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
-    )
-
     message(STATUS "Setting target_compile_definitions in windows")
     target_compile_definitions(${executable_name} PRIVATE "WIN32")
 

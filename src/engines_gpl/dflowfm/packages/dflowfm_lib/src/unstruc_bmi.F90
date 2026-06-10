@@ -976,6 +976,7 @@ contains
       use unstruc_channel_flow, only: network
       use m_transport, only: NAMLEN, NUMCONST
       use m_laterals, only: numlatsg, nlatnd
+      use m_source_sink, only: source_sinks
       use string_module, only: str_split
 
       character(kind=c_char), intent(in) :: c_var_name(*)
@@ -1051,7 +1052,7 @@ contains
          shape(1) = network%sts%numCulverts
          shape(2) = 1
       case ("sourcesinks")
-         shape(1) = num_source_sink
+         shape(1) = source_sinks%num_total
          shape(2) = 3
          return
       case ("observations")
@@ -2017,6 +2018,7 @@ contains
       use iso_c_binding, only: c_double, c_char, c_loc
       use iso_c_utils
       use fm_external_forcings_data
+      use m_source_sink, only: source_sink_all_discharges
       use m_dambreak_breach, only: get_dambreak_depth_c_loc, get_dambreak_breach_width_c_loc, &
                                    get_dambreak_upstream_level_c_loc, get_dambreak_downstream_level_c_loc
       use m_observations
@@ -2557,6 +2559,7 @@ contains
       use m_general_structure, only: update_widths
       use m_transport, only: NUMCONST, ISALT, ITEMP
       use m_laterals, only: qplat, incoming_lat_concentration, num_layers
+      use m_source_sink, only: source_sink_all_discharges
       use string_module, only: str_token
 
       character(kind=c_char), intent(in) :: c_var_name(*) !< Name of the set variable, e.g., 'pumps'

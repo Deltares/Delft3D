@@ -41,6 +41,22 @@ if(intel_version LESS_EQUAL 23)
         PATTERN "tune" EXCLUDE)
         install(DIRECTORY ${mpi_path}/libfabric/bin/ DESTINATION bin FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
         install(DIRECTORY ${mpi_path}/bin/release/ DESTINATION bin FILES_MATCHING PATTERN "*.dll")
+
+        if(NOT TARGET impi)
+            add_library(impi SHARED IMPORTED GLOBAL)
+            set_target_properties(impi PROPERTIES
+                IMPORTED_LOCATION "${mpi_path}/bin/impi.dll"
+                IMPORTED_IMPLIB "${mpi_path}/lib/impi.lib"
+            )
+        endif()
+
+        if(NOT TARGET libfabric)
+            add_library(libfabric SHARED IMPORTED GLOBAL)
+            set_target_properties(libfabric PROPERTIES
+                IMPORTED_LOCATION "${mpi_path}/libfabric/bin/libfabric.dll"
+                IMPORTED_IMPLIB "${mpi_path}/lib/libfabric.lib"
+            )
+        endif()
     endif()
 
 elseif(intel_version GREATER_EQUAL 24)
@@ -94,6 +110,22 @@ elseif(intel_version GREATER_EQUAL 24)
         PATTERN "mpi" EXCLUDE
         PATTERN "tune" EXCLUDE)
         install(DIRECTORY ${mpi_path}/opt/mpi/libfabric/bin/ DESTINATION bin FILES_MATCHING PATTERN "*.dll" PATTERN "utils" EXCLUDE)
+
+        if(NOT TARGET impi)
+            add_library(impi SHARED IMPORTED GLOBAL)
+            set_target_properties(impi PROPERTIES
+                IMPORTED_LOCATION "${mpi_path}/bin/impi.dll"
+                IMPORTED_IMPLIB "${mpi_path}/lib/impi.lib"
+            )
+        endif()
+
+        if(NOT TARGET libfabric)
+            add_library(libfabric SHARED IMPORTED GLOBAL)
+            set_target_properties(libfabric PROPERTIES
+                IMPORTED_LOCATION "${mpi_path}/opt/mpi/libfabric/bin/libfabric.dll"
+                IMPORTED_IMPLIB "${mpi_path}/lib/libfabric.lib"
+            )
+        endif()
     endif()
 else()
     message(FATAL_ERROR "intel version ${intel_version} is not supported. \nCannot install intel redistributable libraries.")

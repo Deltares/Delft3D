@@ -46,16 +46,6 @@ if (WIN32)
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${mpi_library_path}"
-                            "${checkout_src_root}/third_party_open/pthreads/bin/x64"
-    )
-
-    target_link_libraries(${executable_name} PRIVATE
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
-    )
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
