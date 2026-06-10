@@ -41,7 +41,7 @@ contains
             num_velocity_arrays_extra, velx, vsto, isdmp, &
             defaul, prondt, prvvar, prvtyp, vararr, &
             varidx, arrpoi, arrknd, arrdm1, arrdm2, &
-            num_vars, a, num_monitoring_cells, pronam, prvpnt, &
+            num_vars, process_space_real, num_monitoring_cells, pronam, prvpnt, &
             num_defaults, surfac, jawaqsedimentationtransportcoupling)
 
         !     Deltares Software Centre
@@ -121,7 +121,7 @@ contains
         integer(kind = int_wp), intent(in) :: arrknd(78)                   !<
         integer(kind = int_wp), intent(in) :: arrdm1(78)                   !<
         integer(kind = int_wp), intent(in) :: arrdm2(78)                   !<
-        real(kind = real_wp), intent(in) :: a     (:)                    !<
+        real(kind = real_wp), intent(in) :: process_space_real(:)                    !<
         integer(kind = int_wp), intent(in) :: num_monitoring_cells
         character(10) :: pronam(num_processes_activated)               !< Name of called module
         integer(kind = int_wp), intent(in) :: prvpnt(num_processes_activated)                !< entry in process io pointers (cummulative of prvnio)
@@ -186,14 +186,14 @@ contains
 
             ! Calculate the "quasi-number" of time steps for BLOOM
             ! Given BLOOM step is in days
-            ndtblo = nint( 86400.0_dp * a(ipndt) / dts )
+            ndtblo = nint( 86400.0_dp * process_space_real(ipndt) / dts )
             prondt(bloom_status_ind) = ndtblo
 
             ! This timestep fractional step ?
             ! Enclose the time in an interval, rather than look for equality, as the time step
             ! may be dynamic. (The half timestep is to neutralise the rounding errors)
             if ( time >= time_bloom_next - 0.5_dp * dts ) then
-                time_bloom_next = time_bloom_next + 86400.0_dp * a(ipndt)
+                time_bloom_next = time_bloom_next + 86400.0_dp * process_space_real(ipndt)
 
                 flux = 0.0
 
@@ -206,7 +206,7 @@ contains
 
                 call calculate_single_process (bloom_status_ind, bloom_ind, prvnio, prvtyp, prvvar, vararr, &
                         varidx, arrknd, arrpoi, arrdm1, arrdm2, &
-                        num_cells, a, process_space_int, increm, &
+                        num_cells, process_space_real, process_space_int, increm, &
                         noflux, iflux, promnr, flux, iexpnt, &
                         iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
                         pronam, dll_opb)
@@ -278,7 +278,7 @@ contains
 
                     call calculate_single_process (iproc, prvpnt(iproc), prvnio, prvtyp, prvvar, vararr, &
                             varidx, arrknd, arrpoi, arrdm1, arrdm2, &
-                            num_cells, a, process_space_int, increm, &
+                            num_cells, process_space_real, process_space_int, increm, &
                             noflux, iflux, promnr, flux, iexpnt, &
                             iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
                             pronam, dll_opb)
@@ -329,7 +329,7 @@ contains
 
     subroutine calculate_single_process (iproc, k, prvnio, prvtyp, prvvar, vararr, &
             varidx, arrknd, arrpoi, arrdm1, arrdm2, num_cells, &
-            a, process_space_int, increm, noflux, iflux, promnr, &
+            process_space_real, process_space_int, increm, noflux, iflux, promnr, &
             flux, iexpnt, iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, &
             num_exchanges_bottom_dir, pronam, dll_opb)
 
@@ -346,7 +346,7 @@ contains
                 process_space_int (:), increm(:), &
                 iflux (:), promnr(:), &
                 iexpnt(:), iknmrk(:)
-        real                a(:), flux(*)
+        real                process_space_real(:), flux(*)
         character(len=10)        pronam(*)
         integer(c_intptr_t), intent(in) :: dll_opb     ! open proces library dll handle
         !
@@ -396,7 +396,7 @@ contains
 
         !     compute fluxes
         ipflux = iflux(iproc)
-        call procal (a, promnr(iproc), flux(ipflux:(noflux*num_cells*num_grids)), process_space_int(k:), increm(k:), &
+        call procal (process_space_real, promnr(iproc), flux(ipflux:(noflux*num_cells*num_grids)), process_space_int(k:), increm(k:), &
                 num_cells, noflux, iexpnt, iknmrk(1:), num_exchanges_u_dir, &
                 num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, pronam(iproc), &
                 iproc, dll_opb)
