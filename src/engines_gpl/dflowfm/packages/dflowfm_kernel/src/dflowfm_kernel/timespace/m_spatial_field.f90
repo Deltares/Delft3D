@@ -275,8 +275,8 @@ contains
          end if
 
          if (len_trim(input%operand_string) == 1) then
-            write (msgbuf, '(a)') 'Block in file '''//file_name//''': ['//group_name//']. Operand value '''//trim(input%operand_string)//'''. is deprecated, ' &
-               //'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': operand value '''//trim(input%operand_string)//''' is deprecated. ' &
+               //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
       end if
