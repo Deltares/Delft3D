@@ -48,6 +48,14 @@ contains
         call realloc(zk, numk + array_size_margin_, stat=istat, fill=0.0_dp)
         call realloc(kc, numk + array_size_margin_, stat=istat, fill=1)
         call realloc(nmk, numk + array_size_margin_, stat=istat, fill=2)
+        if(allocated(nod)) then
+            do i = 1, size(nod)
+                if (allocated(nod(i)%lin)) then
+                    deallocate(nod(i)%lin)
+                end if
+            end do
+            deallocate(nod)
+        end if
         allocate(nod(numk + array_size_margin_))
 
         ! Place (rows+1)x(columns+1) grid nodes (the cell corners).
