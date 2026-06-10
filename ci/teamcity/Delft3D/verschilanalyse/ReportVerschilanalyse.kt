@@ -45,7 +45,6 @@ object ReportVerschilanalyse: BuildType({
             dockerRunParameters = """
                 --rm
                 --entrypoint=/bin/bash
-                --volume="%env.AWS_SHARED_CREDENTIALS_FILE%:/root/.aws/credentials:ro"
                 -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" 
             """.trimIndent()
         }
@@ -111,9 +110,6 @@ object ReportVerschilanalyse: BuildType({
     features {
         perfmon {}
         swabra {}
-        provideAwsCredentials {
-            awsConnectionId = "minio_verschilanalyse_connection"
-        }
         dockerRegistryConnections {
             loginToRegistry = on {
                 dockerRegistryId = "DOCKER_REGISTRY_DELFT3D"

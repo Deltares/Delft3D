@@ -5352,6 +5352,7 @@ contains
       use messagehandling, only: err_flush
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
 
       implicit none
 
@@ -8196,19 +8197,19 @@ contains
       !
       if (map_write_settings%near_field == 1) then
          call realloc(work1d, ndkx, keepExisting=.false., fill=0.0_dp)
-         do isrc = num_source_sink - num_source_sink_for_nearfield + 1, num_source_sink
+         do isrc = source_sinks%num_total - source_sinks%num_nearfield + 1, source_sinks%num_total
             !
             ! Sinks
-            n = source_sink_indices(1, isrc)
+            n = source_sinks%indices(isrc, 1)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sink_z_bottom(1, isrc)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, 1)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sink_z_top(1, isrc)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, 1)) then
                      nktop = nk
                   end if
                end do
@@ -8218,16 +8219,16 @@ contains
             end if
             !
             ! Sources
-            n = source_sink_indices(4, isrc)
+            n = source_sinks%indices(isrc, 4)
             if (n /= 0) then
                call getkbotktop(n, kbot_, ktop_)
                nkbot = kbot_
                nktop = ktop_
                do nk = kbot_, ktop_
-                  if (zws(nk) < source_sink_z_bottom(2, isrc)) then
+                  if (zws(nk) < source_sinks%z_bottom(isrc, 2)) then
                      nkbot = nk
                   end if
-                  if (zws(nk) < source_sink_z_top(2, isrc)) then
+                  if (zws(nk) < source_sinks%z_top(isrc, 2)) then
                      nktop = nk
                   end if
                end do
@@ -11211,7 +11212,7 @@ contains
       janetbnd_loc = 0
       jaidomain_loc = 0
       jaiglobal_s_loc = 0
-      iconv = UNC_CONV_CFOLD
+      iconv = UNC_CONV_UGRID
 
       if (present(janetcell)) then
          janetcell_loc = janetcell
@@ -11263,6 +11264,7 @@ contains
       use geometry_module, only: get_startend, normaloutchk
       use gridoperations
       use m_copynetboundstopol
+      use m_tpoly, only: polorientation
 
       integer, intent(in) :: inetfile
 
@@ -16185,7 +16187,7 @@ contains
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
                k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the netnode index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (size(meshgeom1d%nodeidx_inverse) > 0) then
+               if (associated(meshgeom1d%nodeidx_inverse)) then
                   k1 = meshgeom1d%nodeidx_inverse(k1)
                end if
                nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)

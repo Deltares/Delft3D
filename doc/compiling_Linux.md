@@ -39,7 +39,7 @@ Containers are lightweight, isolated environments that package an application an
 - To build the Delft3D source code, we use the `third-party-libs` container created in the last step of the prerequisites:
   ```
   # Optionally repeat: export TAG=oneapi-2024
-  docker build . -f doc/delft3d.Dockerfile \
+  sudo docker build . -f doc/delft3d.Dockerfile \
       -t localhost/delft3d:$TAG \
       --build-arg INTEL_ONEAPI_VERSION=2024 \
       --build-arg INTEL_FORTRAN_COMPILER=ifx \
@@ -50,7 +50,7 @@ Containers are lightweight, isolated environments that package an application an
 - Alternatively, you can open the build container interactively while making the current folder (root of the repository) available as `/delft3d`:
   ```
   # Optionally repeat: export TAG=oneapi-2024
-  docker run -it -v .:/delft3d localhost/third-party-libs:$TAG
+  sudo docker run -it -v .:/delft3d localhost/third-party-libs:$TAG
   ```
   and subsequently inside the container go to that folder, and run the build script.
   Unfortunately, you have to make sure that some paths have been properly set such that the build process can find all dependencies.

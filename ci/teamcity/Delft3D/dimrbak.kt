@@ -61,7 +61,7 @@ object DIMRbak : BuildType({
         param("DIMRset_ver", "%release_version%")
         param("dimrbakker_username", DslContext.getParameter("dimrbakker_username"))
         password("dimrbakker_password", DslContext.getParameter("dimrbakker_password"))
-        password("dimrbakker_personal_access_token", DslContext.getParameter("dimrbakker_personal_access_token"))
+        password("dimrbakker_jira_pat", DslContext.getParameter("dimrbakker_jira_pat"))
         param("dry_run", if (DslContext.getParameter("enable_dimrbak").lowercase() == "true") "" else "--dry-run")
     }
 
@@ -74,8 +74,7 @@ object DIMRbak : BuildType({
                     --build_id "%teamcity.build.id%"
                     --teamcity-username "%dimrbakker_username%"
                     --teamcity-password "%dimrbakker_password%"
-                    --jira-username "%dimrbakker_username%"
-                    --jira-PAT "%dimrbakker_password%"
+                    --jira-PAT "%dimrbakker_jira_pat%"
                     --ssh-username "%dimrbakker_username%"
                     --ssh-password "%dimrbakker_password%"
                     --git-username "deltares-service-account"
@@ -88,7 +87,9 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
+        // The Assert access rights step is non-fatal for the pipeline (subsequent steps use ALWAYS).
         python {
             name = "Download artifacts from TeamCity and on file share using H7"
             command = module {
@@ -125,6 +126,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Update Excel sheet"
@@ -144,6 +146,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Prepare email template"
@@ -161,6 +164,7 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
         python {
             name = "Generate DIMRset release notes"
@@ -168,8 +172,7 @@ object DIMRbak : BuildType({
                 module = "ci_tools.dimrset_delivery.publish_release_changelog"
                 scriptArguments = """
                     --build_id "%teamcity.build.id%"
-                    --jira-username "%dimrbakker_username%"
-                    --jira-PAT "%dimrbakker_password%"
+                    --jira-PAT "%dimrbakker_jira_pat%"
                     --git-username "deltares-service-account"
                     --git-PAT "%github_deltares-service-account_access_token%"
                     --ssh-username "%dimrbakker_username%"
@@ -182,6 +185,8 @@ object DIMRbak : BuildType({
                 requirementsFile = ""
                 pipArgs = "--editable .[all]"
             }
+            executionMode = BuildStep.ExecutionMode.ALWAYS
         }
+        // All steps use executionMode=ALWAYS so the pipeline continues even if an earlier step fails.
     }
 })

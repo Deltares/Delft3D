@@ -103,8 +103,34 @@ module timespace_parameters
    integer, parameter :: OPERAND_MAXIMUM = 5 !< Take the maximum of existing and new value.
 contains
 
+!> Converts operand string to an operand enum integer. Supports both the new operand strings (e.g. 'override') and the legacy
+!! single-character strings (e.g. 'O') for backward compatibility. Returns OPERAND_UNKNOWN when an invalid operand string is given.
    function convert_operand_string_to_integer(string) result(operand)
-      character(len=*), intent(in) :: string !< file type string
+      character(len=*), intent(in) :: string !< operand string
+      integer :: operand !< operand enumeration integer
+
+      select case (trim(str_tolower(string)))
+      case ('override')
+         operand = OPERAND_OVERRIDE
+      case ('overrideifmissing')
+         operand = OPERAND_OVERRIDE_IF_MISSING
+      case ('add')
+         operand = OPERAND_ADD
+      case ('multiply')
+         operand = OPERAND_MULTIPLY
+      case ('minimum')
+         operand = OPERAND_MINIMUM
+      case ('maximum')
+         operand = OPERAND_MAXIMUM
+      case default
+         ! Try to parse the string as a legacy operand string (single character) as a fallback
+         operand = convert_legacy_operand_string_to_integer(string)
+      end select
+   end function convert_operand_string_to_integer
+
+!> Converts a legacy operand string (e.g. 'O') to an operand enum integer. Returns OPERAND_UNKNOWN when an invalid operand string is given.
+   function convert_legacy_operand_string_to_integer(string) result(operand)
+      character(len=*), intent(in) :: string !< operand string
       integer :: operand !< operand enumeration integer
 
       select case (trim(str_tolower(string)))
@@ -126,7 +152,7 @@ contains
       case default
          operand = OPERAND_UNKNOWN
       end select
-   end function convert_operand_string_to_integer
+   end function convert_legacy_operand_string_to_integer
 
 !> Converts fileType string to an integer.
 !! Returns -1 when an invalid type string is given.
@@ -205,6 +231,10 @@ contains
          method = METHOD_TRIANGULATION
       case ('uniform')
          method = SPACEANDTIME
+      case ('polygon')
+         method = INSIDE_POLYGON
+      case ('1dfield')
+         method = JUSTUPDATE
       case default
          method = METHOD_UNKNOWN
       end select
