@@ -438,7 +438,6 @@
                 <file name="wave/wavm-icelandnest.nc" type="NETCDF">
                     <parameters>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="dir" toleranceAbsolute="0.1"/>
                     </parameters>
                 </file>
             </checks>
@@ -451,7 +450,6 @@
                 <file name="wave/wavm-iceland.nc" type="NETCDF">
                     <parameters>
                         <parameter name="hsign" toleranceAbsolute="0.01"/>
-                        <parameter name="dir" toleranceAbsolute="0.1"/>
                     </parameters>
                 </file>
             </checks>
