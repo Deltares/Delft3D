@@ -141,6 +141,9 @@ module m_ec_module
       module procedure ecFileReaderFindItem
    end interface ecFindItemInFileReader
    
+   interface ecFindItemsInFileReader
+      module procedure ecFileReaderFindItems
+   end interface ecFindItemsInFileReader   
    interface ecGetFileReaderNumberOfItems
       module procedure ecFileReaderGetNumberOfItems
    end interface ecGetFileReaderNumberOfItems

@@ -1812,6 +1812,10 @@ contains
    function flow_initexternalforcings() result(iresult) ! This is the general hook-up to wind and boundary conditions
       use unstruc_model, only: md_extfile_new, md_inifieldfile
       use dfm_error, only: DFM_NOERR
+      use unstruc_messages, only: callback_msg
+      use m_meteo
+
+
       integer :: iresult
 
       call setup(iresult)
@@ -1827,6 +1831,9 @@ contains
       if (iresult == DFM_NOERR) then
          call finalize()
       end if
+
+      call ecInstancePrintState(ecInstancePtr, callback_msg, LEVEL_INFO)
+
 
    end function flow_initexternalforcings
 

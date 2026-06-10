@@ -47,6 +47,7 @@ module m_ec_filereader
    public :: ecFileReaderFree1dArray
    public :: ecFileReaderReadNextRecord
    public :: ecFileReaderFindItem
+   public :: ecFileReaderFindItems
    public :: ecFileReaderAddItem
    public :: ecFileReaderGetNumberOfItems
    public :: ecFileReaderGetItem
@@ -439,6 +440,37 @@ module m_ec_filereader
 
       ! =======================================================================
 
+
+      !> Find a source Item with itemId in FileReader with fileReaderId.
+      !! Failure is indicated by returning ec_undef_int.
+      function ecFileReaderFindItems(instancePtr, fileReaderId, name) result(itemIds)
+         use m_alloc
+         integer, dimension(:), allocatable    :: itemIds       !< unique Item id
+         type(tEcInstance), pointer            :: instancePtr  !< intent(in)
+         integer,                   intent(in) :: fileReaderId !< unique FileReader id
+         character(len=*),          intent(in) :: name         !< Quantity name which identifies the requested Item
+         !
+         type(tEcFileReader), pointer :: fileReaderPtr !< FileReader corresponding to fileReaderId
+         integer                      :: i             !< loop counter
+         integer                      :: nItems        !< number of items in the FileReader
+         !
+         fileReaderPtr => ecSupportFindFileReader(instancePtr, fileReaderId)
+         nItems = 0
+         if (associated(fileReaderPtr)) then
+            do i=1, fileReaderPtr%nItems
+               if (strcmpi(fileReaderPtr%items(i)%ptr%quantityPtr%name, name)) then
+                  nItems = nItems + 1
+                  call realloc(itemIds, nItems, keepExisting = .true.)
+                  itemIds(nItems) = fileReaderPtr%items(i)%ptr%id
+               end if
+            end do
+         end if
+
+         if (size(itemIds) == 0) then
+            call set_ec_message("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
+         end if
+      end function ecFileReaderFindItems
+
       !> Find a source Item with itemId in FileReader with fileReaderId.
       !! Failure is indicated by returning ec_undef_int.
       function ecFileReaderFindItem(instancePtr, fileReaderId, name) result(itemId)
@@ -465,7 +497,6 @@ module m_ec_filereader
             call set_ec_message("ERROR: ec_filereader::ecFileReaderFindItem: Cannot find a FileReader with the supplied name: "//trim(name))
          end if
       end function ecFileReaderFindItem
-
       ! =======================================================================
 
       !> Find the x-th source Item in FileReader with fileReaderId.

@@ -528,9 +528,17 @@ module m_ec_instance
                   write(line,'(a,i5.5)') 'Target Item ', targetItemPtr%id
                endif
                call messenger(lvl, line)
+               write(line,'(a,z16)') 'Target Field Ptr 0x', loc(targetItemPtr%targetFieldPtr)
+               call messenger(lvl, line)
+               write(line,'(a,z16)') 'Target Item Ptr 0x', loc(targetItemPtr%targetFieldPtr%arr1dPtr)
+               call messenger(lvl, line)
                if (associated(targetItemPtr%elementSetPtr)) then
                   write(line,'(a,i5.5,a,i1,a)') 'Element Set ', targetItemPtr%elementSetPtr%id
                   call messenger(lvl, line)
+                  if (associated(targetItemPtr%elementSetPtr%z)) then
+                     write(line,'(a,z16)') 'Element Set ZPtr 0x', loc(targetItemPtr%elementSetPtr%z)
+                     call messenger(lvl, line)
+                  end if
                end if
                if (targetItemPtr%nConnections==0) then
                   write(line,'(a,i5.5,a)') '   TARGET ITEM ',targetItemPtr%id,' HAS NO CONNECTIONS !!!'

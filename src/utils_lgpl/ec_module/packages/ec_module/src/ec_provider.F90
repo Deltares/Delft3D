@@ -1776,6 +1776,7 @@ contains
       real(dp), dimension(:), allocatable :: xs !< x-coordinates of support points
       real(dp), dimension(:), allocatable :: ys !< y-coordinates of support points
       integer, dimension(:), allocatable :: mask !< support point mask array (for polytime ElementSet)
+      integer, dimension(:), allocatable ::z_connections !< extra ec module connections for vertical interpolation
       integer :: n_points !< number of support points
       integer :: n_signals !< Number of forcing signals created (at most n_signals==n_points, but warn if n_signals==0)
       character(len=:), allocatable :: rec !< a read line
@@ -1801,6 +1802,7 @@ contains
       integer :: bctfiletype
       logical :: file_exists
       !
+      integer :: zTargetItemId = 0
 
 !        initialization
       quantityname = quantityname_in
@@ -1834,12 +1836,14 @@ contains
          return
       end if
       ! Read the support point coordinate pairs.
-      allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), plipointlbls(n_points), stat=istat)
+      allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), &
+      plipointlbls(n_points), z_connections(n_points), stat=istat)
       if (istat /= 0) then
          call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
       end if
       mask = 1
       itemIDList = ec_undef_int
+      z_connections = 0
       do i = 1, n_points
          call GetLine(fileReaderPtr%fileHandle, rec, istat)
          if (index(rec, '!') > 0) rec = rec(1:index(rec, '!') - 1) ! trim commented  (!)
@@ -1918,6 +1922,7 @@ contains
       plipointlbl = polyline_name
       call str_upper(quantityname)
       n_signals = 0 ! Record whether at least one child provider is created for this polytim.
+
       do i = 1, n_points
          ! Process a *.tim file.
          bcBlockId = ecInstanceCreateBCBlock(InstancePtr)
@@ -1959,8 +1964,22 @@ contains
                exit
             end if
          end if
+         if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D) then
+            zTargetItemId = ecInstanceCreateItem(instancePtr)
+
+            fieldId = ecInstanceCreateField(instancePtr)
+            
+            if (.not. ecItemSetRole(instancePtr, zTargetItemId, itemPT%role)) return
+            if (.not. ecItemSetType(instancePtr, zTargetItemId, itemPT%accessType)) return
+            if (.not. ecItemSetQuantity(instancePtr, zTargetItemId, itemPT%quantityPtr%id)) return
+            if (.not. ecItemSetElementSet(instancePtr, zTargetItemId, itemPT%elementSetPtr%id)) return
+            if (.not. ecItemSetTargetField(instancePtr, zTargetItemId, fieldId)) return
+
+         end if
+
          if (.not. ecProviderConnectSourceItemsToTargets(instancePtr, bcBlockPtr%func, id, itemId, i, &
-                                                         n_signals, maxlay, itemIDList, qname=quantityname)) then
+                                                         n_signals, maxlay, itemIDList, qname=quantityname, &
+                                                         z_connection=z_connections(i), zTargetItemId=zTargetItemId)) then
             !
             ! No sub-FileReader made.
             mask(i) = 0
@@ -1998,6 +2017,23 @@ contains
       ! Since the main FileReader's Item is a target, the TimeFrame is not set.
       ! Add successfully created source Item to the main FileReader
       if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, itemPT%id)) return
+
+      block
+         type(tEcConnection), pointer :: connectionPtr
+
+         if (zTargetItemId /= 0) then
+            if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, zTargetItemId)) return
+         end if
+         do i = 1, n_points
+            if (z_connections(i) > 0) then
+               connectionPtr => ecSupportFindConnection(instancePtr, z_connections(i))
+               connectionPtr%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr => itemPT%elementSetPtr%z
+               connectionPtr%isZSource = .true.
+               print *, "Adding vertical interpolation", connectionPtr%sourceItemsPtr(1)%ptr%id
+            end if
+         end do
+      end block
+      
       !
       ! close pli file
       close (fileReaderPtr%fileHandle, iostat=istat)
@@ -2083,7 +2119,8 @@ contains
 
 !==============================================================================================================
 
-   function ecProviderConnectSourceItemsToTargets(instancePtr, signaltype, fileReaderId, targetItemId, targetIndex, n_signals, maxlay, itemIDList, qname) result(itemFound)
+   function ecProviderConnectSourceItemsToTargets(instancePtr, signaltype, fileReaderId, targetItemId, targetIndex, n_signals, &
+         maxlay, itemIDList, qname, z_connection, zTargetItemId) result(itemFound)
       logical :: itemFound
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer :: fileReaderId ! file reader id
@@ -2095,8 +2132,14 @@ contains
       integer :: subconverterId, magnitude, j, connectionId, nr_fourier_items, anItemId
       type(tEcItem), pointer :: itemt3D
       character(len=*), optional :: qname
+      integer, intent(out),  optional :: z_connection ! INOUT
+      integer, intent(in), optional :: zTargetItemId
 
       itemFound = .false.
+
+      if (present(z_connection)) then
+         z_connection = 0
+      end if
 
       select case (signaltype)
       case (BC_FUNC_TSERIES, BC_FUNC_CONSTANT)
@@ -2189,7 +2232,29 @@ contains
          if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, magnitude)) return
          if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, targetItemId)) return
          if (.not. ecItemAddConnection(instancePtr, targetItemId, connectionId)) return
+
          n_signals = n_signals + 1
+
+         block
+            if (present(z_connection) .and. present(zTargetItemId)) then
+               if (zTargetItemId /= 0) then
+                  subconverterId = ecInstanceCreateConverter(instancePtr)
+                  if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
+                           ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                           ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
+                           ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
+                  ! Construct a new Connection.
+                  connectionId = ecInstanceCreateConnection(instancePtr)
+                  if (.not. ecConnectionSetConverter(instancePtr, connectionId, subconverterId)) return
+
+                  if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, magnitude)) return
+                  if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) return
+                  if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) return
+
+                  z_connection = connectionId
+               end if
+            end if 
+         end block
          itemFound = .true.
       end select
 

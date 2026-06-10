@@ -1076,9 +1076,9 @@ contains
       case (convType_uniform)
          success = ecConverterUniform(connection, timesteps%mjd())
          !TK_ Temp interpolate z coordinate (mus be more elegant way of doing this, only if z coordinates are time dependent, i.e. origintae froem his file
-         if (success .and.  associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) ) then
-             success = ecConverterUniform(connection, timesteps%mjd(),arr1D = .false.)
-         end if
+         ! if (success .and.  associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) ) then
+         !     success = ecConverterUniform(connection, timesteps%mjd(),arr1D = .false.)
+         ! end if
       case (convType_uniform_to_magnitude)
          success = ecConverterUniformToMagnitude(connection, timesteps%mjd())
       case (convType_unimagdir)
@@ -1206,6 +1206,8 @@ contains
       if (present(arr1D)) then
           quantityValues = arr1D
       end if
+
+      quantityValues = .not. connection%isZSource
 
       if (quantityValues) then
          valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
@@ -1359,15 +1361,15 @@ contains
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
 
-            if (quantityValues) then
+            ! if (quantityValues) then
                from = (j - 1) * (maxlay * n_data) + 1
                thru = (j) * (maxlay * n_data)
                targetField%arr1dPtr(from:thru) = valuesT
-            else ! Vertical positions
-                from = (j - 1) * maxlay + 1
-                thru = (j)     * maxlay
-                connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT(1:from - thru + 1)
-            end if
+            ! else ! Vertical positions
+            !     from = (j - 1) * maxlay + 1
+            !     thru = (j)     * maxlay
+            !     connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT(1:from - thru + 1)
+            ! end if
 
             targetField%timesteps = timesteps
          case (operand_add) ! TODO: AvD/EB: it seems that operand_add does not support targetIndex (offset). Should we not make this available?
@@ -1678,6 +1680,8 @@ contains
       real(dp), dimension(:), pointer :: zmin => null() !< vertical min
       real(dp), dimension(:), pointer :: zmax => null() !< vertical max
       real(dp) :: missing
+      real(hp), pointer :: debug_ptr(:)
+
 
       integer :: idx !< helper variable
       integer :: vectormax
@@ -1842,6 +1846,9 @@ contains
                   end if
 
                   ! Prepare sigmaL and valL
+                  debug_ptr => connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dptr
+                  write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"src:", debug_ptr
+
                   maxlay_srcL = 0
                   sigmaLL = ec_undef_hp
                   vmaskL = .false.
@@ -1931,6 +1938,7 @@ contains
                         end if
                         !
                      end do ! target layers
+                  write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"tgt:", connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
                   end if ! are we averaging the source in the vertical direction ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
             case default

@@ -214,6 +214,7 @@ module m_ec_typedefs
       integer :: id !< unique Connection number, set by ecInstanceCreateConnection
       type(tEcConverter), pointer :: converterPtr => null() !< converter between source and target items
       type(tEcItemPtr), dimension(:), pointer :: sourceItemsPtr => null() !< source items, stored in tEcInstance%ecItemsPtr
+      logical :: isZSource = .false. !< is this connection source pointing to arrzPTR instead of arr1dPTR in the source Item?
       integer :: nSourceItems !< Number of source Items <= size(sourceItemsPtr)
       type(tEcItemPtr), dimension(:), pointer :: targetItemsPtr => null() !< target items, stored in tEcInstance%ecItemsPtr
       integer :: nTargetItems !< Number of target Items <= size(targetItemsPtr)
