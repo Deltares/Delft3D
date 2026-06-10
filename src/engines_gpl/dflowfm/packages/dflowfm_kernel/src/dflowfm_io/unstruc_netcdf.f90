@@ -11212,7 +11212,7 @@ contains
       janetbnd_loc = 0
       jaidomain_loc = 0
       jaiglobal_s_loc = 0
-      iconv = UNC_CONV_CFOLD
+      iconv = UNC_CONV_UGRID
 
       if (present(janetcell)) then
          janetcell_loc = janetcell
@@ -16187,7 +16187,7 @@ contains
                ! Also store the original mesh1d/network variables in the new flowgeom order for ndx1d nodes:
                k1 = nodePermutation(nd(ndx2d + n)%nod(1)) ! This is the netnode index from *before* setnodadm(),
                ! i.e., as was read from input *_net.nc file.
-               if (size(meshgeom1d%nodeidx_inverse) > 0) then
+               if (associated(meshgeom1d%nodeidx_inverse)) then
                   k1 = meshgeom1d%nodeidx_inverse(k1)
                end if
                nodebranchidx_remap(n) = meshgeom1d%nodebranchidx(k1)
