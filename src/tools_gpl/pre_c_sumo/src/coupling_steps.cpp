@@ -182,20 +182,28 @@ namespace pre_c_sumo
         std::println("Sending dummy sources/sinks data to far-field...");
         // TESTDATA: set sources_sinks data
         sources_sinks.clearData();
-        sources_sinks.addData(1.0, 3.0, -9.95, -9.45, -0.20E+02); // sink 2, source 1
-        sources_sinks.addData(2.0, 4.0, -9.95, -9.45, -0.20E+02); // sink 2, source 2
-        sources_sinks.addData(3.0, 1.0, -5.0, -5.0, 0.20E+02);    // source 1, sink 2
-        sources_sinks.addData(4.0, 2.0, -5.0, -5.0, 0.20E+02);    // source 2, sink 2
-        sources_sinks.addData(5.0, 0.0, -5.0, -5.0, 0.50E+01);    // intake fraction to source 1
-        sources_sinks.addData(6.0, 0.0, -5.0, -5.0, 0.50E+01);    // intake fraction to source 2
-        sources_sinks.addData(7.0, 0.0, 0.0, 0.0, 0.10E+02);      // intake sink
-        participant.writeData("sources_sinks_nodes", "sources_sinks_id", sources_sinks.precice_ids, sources_sinks.ids);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_connected_id", sources_sinks.precice_ids,
-                              sources_sinks.connected_ids);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_z_min", sources_sinks.precice_ids,
-                              sources_sinks.z_mins);
-        participant.writeData("sources_sinks_nodes", "sources_sinks_z_max", sources_sinks.precice_ids,
-                              sources_sinks.z_maxs);
+        sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.000, 350.365, -5.0, -5.0,
+                              0.20E+02); // sink 2, source 1
+        sources_sinks.addData(252.500, 350.048, -9.95, -9.45, 1050.500, 350.365, -5.0, -5.0,
+                              0.20E+02); // sink 2, source 2
+
+        sources_sinks.addData(0.0, 0.0, 0.0, 0.0, 1050.000, 350.365, -5.0, -5.0,
+                              0.50E+01); // intake fraction to source 1
+        sources_sinks.addData(0.0, 0.0, 0.0, 0.0, 1050.500, 350.365, -5.0, -5.0,
+                              0.50E+01);                                               // intake fraction to source 2
+        sources_sinks.addData(1500.6, 1000.6, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.10E+02); // intake sink
+        participant.writeData("sources_sinks_nodes", "sinks_x", sources_sinks.precice_ids, sources_sinks.sinks_x);
+        participant.writeData("sources_sinks_nodes", "sinks_y", sources_sinks.precice_ids, sources_sinks.sinks_y);
+        participant.writeData("sources_sinks_nodes", "sinks_z_min", sources_sinks.precice_ids,
+                              sources_sinks.sinks_z_min);
+        participant.writeData("sources_sinks_nodes", "sinks_z_max", sources_sinks.precice_ids,
+                              sources_sinks.sinks_z_max);
+        participant.writeData("sources_sinks_nodes", "sources_x", sources_sinks.precice_ids, sources_sinks.sources_x);
+        participant.writeData("sources_sinks_nodes", "sources_y", sources_sinks.precice_ids, sources_sinks.sources_y);
+        participant.writeData("sources_sinks_nodes", "sources_z_min", sources_sinks.precice_ids,
+                              sources_sinks.sources_z_min);
+        participant.writeData("sources_sinks_nodes", "sources_z_max", sources_sinks.precice_ids,
+                              sources_sinks.sources_z_max);
         participant.writeData("sources_sinks_nodes", "sources_sinks_discharge", sources_sinks.precice_ids,
                               sources_sinks.discharges);
     }
