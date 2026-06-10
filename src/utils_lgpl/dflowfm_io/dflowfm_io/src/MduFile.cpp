@@ -1,8 +1,8 @@
 #include <dflowfm_io/MduFile.h>
 #include <dflowfm_io/MduConverter.h>
 
-#include "ini/IniFile.h"
-#include "ini/IniParserOptions.h"
+#include <ini/IniFile.h>
+#include <ini/IniParserOptions.h>
 
 #include <iostream>
 #include <fstream>
@@ -21,45 +21,16 @@ namespace dflowfm_io
             },
     };
 
-    struct MduFile::Impl
-    {
-        IniFile iniFile{mduIniOptions};
-        MduData mduData;
-    };
-
-    MduFile::MduFile() : impl_(std::make_unique<Impl>()) {}
-
-    MduFile::~MduFile() = default;
-
-    MduFile::MduFile(MduFile&&) noexcept = default;
-
-    MduFile& MduFile::operator=(MduFile&&) noexcept = default;
-
-    MduFile MduFile::LoadFrom(std::istream& in)
-    {
-        MduFile file;
-        file.Load(in);
-
-        return file;
-    }
-
-    MduFile MduFile::LoadFrom(const std::filesystem::path& path)
-    {
-        MduFile file;
-        file.Load(path);
-
-        return file;
-    }
-
-    void MduFile::Load(std::istream& in)
+    MduData MduFile::Load(std::istream& in)
     {
         if (in.fail())
         {
             throw std::ios_base::failure("Stream is not in a readable state.");
         }
 
-        impl_->iniFile.Load(in);
-        IniData& iniData = impl_->iniFile.GetData();
+        IniFile iniFile{mduIniOptions};
+        iniFile.Load(in);
+        IniData& iniData = iniFile.GetData();
 
         ConversionResult<MduData> result = MduConverter::Convert(iniData);
 
@@ -73,10 +44,10 @@ namespace dflowfm_io
             throw std::runtime_error("Failed to load MDU file.");
         }
 
-        impl_->mduData = std::move(result.value);
+        return std::move(result.value);
     }
 
-    void MduFile::Load(const std::filesystem::path& path)
+    MduData MduFile::Load(const std::filesystem::path& path)
     {
         if (path.empty())
         {
@@ -89,17 +60,17 @@ namespace dflowfm_io
             throw std::ios_base::failure("Failed to open file for reading: " + path.string());
         }
 
-        Load(stream);
+        return Load(stream);
     }
 
-    void MduFile::Save(std::ostream& out)
+    void MduFile::Save(std::ostream& out, const MduData& data)
     {
         if (out.fail())
         {
             throw std::ios_base::failure("Stream is not in a writable state.");
         }
 
-        ConversionResult<IniData> result = MduConverter::Convert(impl_->mduData);
+        ConversionResult<IniData> result = MduConverter::Convert(data);
 
         if (result.HasIssues())
         {
@@ -111,11 +82,12 @@ namespace dflowfm_io
             throw std::runtime_error("Failed to save MDU file.");
         }
 
-        impl_->iniFile.SetData(result.value);
-        impl_->iniFile.Save(out);
+        IniFile iniFile{mduIniOptions};
+        iniFile.SetData(result.value);
+        iniFile.Save(out);
     }
 
-    void MduFile::Save(const std::filesystem::path& path)
+    void MduFile::Save(const std::filesystem::path& path, const MduData& data)
     {
         if (path.empty())
         {
@@ -128,12 +100,7 @@ namespace dflowfm_io
             throw std::ios_base::failure("Failed to open file for writing: " + path.string());
         }
 
-        Save(stream);
+        Save(stream, data);
     }
-
-    MduData& MduFile::GetData() { return impl_->mduData; }
-    const MduData& MduFile::GetData() const { return impl_->mduData; }
-
-    void MduFile::SetData(MduData data) { impl_->mduData = std::move(data); }
 
 } // namespace dflowfm_io

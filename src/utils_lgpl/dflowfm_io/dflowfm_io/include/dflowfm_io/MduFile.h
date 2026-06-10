@@ -2,7 +2,6 @@
 
 #include <filesystem>
 #include <istream>
-#include <memory>
 #include <ostream>
 
 #include <dflowfm_io/MduData.h>
@@ -13,32 +12,13 @@ namespace dflowfm_io
     class MduFile
     {
     public:
-        MduFile();
-        ~MduFile();
+        MduFile() = delete;
 
-        MduFile(MduFile&&) noexcept;
-        MduFile& operator=(MduFile&&) noexcept;
+        static MduData Load(std::istream& in);
+        static MduData Load(const std::filesystem::path& path);
 
-        MduFile(const MduFile&) = delete;
-        MduFile& operator=(const MduFile&) = delete;
-
-        static MduFile LoadFrom(std::istream& in);
-        static MduFile LoadFrom(const std::filesystem::path& path);
-
-        void Load(std::istream& in);
-        void Load(const std::filesystem::path& path);
-
-        void Save(std::ostream& out);
-        void Save(const std::filesystem::path& path);
-
-        MduData& GetData();
-        const MduData& GetData() const;
-
-        void SetData(MduData data);
-
-    private:
-        struct Impl;
-        std::unique_ptr<Impl> impl_;
+        static void Save(std::ostream& out, const MduData& data);
+        static void Save(const std::filesystem::path& path, const MduData& data);
     };
 
 } // namespace dflowfm_io

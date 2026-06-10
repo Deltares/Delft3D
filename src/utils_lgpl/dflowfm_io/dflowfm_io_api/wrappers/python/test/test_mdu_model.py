@@ -36,6 +36,29 @@ class TestMduModel(unittest.TestCase):
         self.assertIsNotNone(model._handle)
         self.assertEqual(model.get_string("general.program"), "D-Flow FM")
 
+    def test_save_to_lines(self):
+        expected_lines = [
+            "[General]",
+            "Program               = D-Flow FM",
+            "fileVersion           = 1.02",
+            "",
+            "[geometry]",
+            "netFile               = FlowFM_net.nc",
+            "useCaching            = True",
+            "kmx                   = 0",
+            "waterLevIni           = 0.0000000e+00",
+            "dryPointsFile         = dry.pol dry.xyz",
+            "",
+            "[numerics]",
+            "cflMax                = 7.0000000e-01",
+            ""
+        ]
+
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        actual_lines = [line.strip() for line in model.save_to_lines()]
+        self.assertEqual(actual_lines, expected_lines)
+
     def test_multiple_instances(self):
         model1 = MduModel()
         model1.load_from_file(MDU_PATH)

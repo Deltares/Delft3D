@@ -79,9 +79,8 @@ dflowfm_io_result_t mdu_model_load_from_file(MduModelHandle handle, const char* 
     ENSURE_ARGUMENT_NOT_NULL(filename);
 
     return exceptionToResult([&]() {
-
-        auto mdu_file = dflowfm_io::MduFile::LoadFrom(filename);
-        *static_cast<dflowfm_io::MduData*>(handle) = mdu_file.GetData();
+        auto mdu_data = dflowfm_io::MduFile::Load(filename);
+        *static_cast<dflowfm_io::MduData*>(handle) = mdu_data;
     });
 }
 
@@ -93,8 +92,35 @@ dflowfm_io_result_t mdu_model_load_from_string(MduModelHandle handle, const char
     return exceptionToResult([&]() {
         const std::string data_str(data, size);
         std::istringstream stream(data_str);
-        auto mdu_file = dflowfm_io::MduFile::LoadFrom(stream);
-        *static_cast<dflowfm_io::MduData*>(handle) = mdu_file.GetData();
+        auto mdu_data = dflowfm_io::MduFile::Load(stream);
+        *static_cast<dflowfm_io::MduData*>(handle) = mdu_data;
+    });
+}
+
+dflowfm_io_result_t mdu_model_save_to_file(MduModelHandle handle, const char* filename)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(filename);
+
+    return exceptionToResult([&]() {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        dflowfm_io::MduFile::Save(filename, *mdu_data);
+    });
+}
+
+dflowfm_io_result_t mdu_model_save_to_string(MduModelHandle handle, const char** data_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(data_out);
+
+    static std::string stored_string;
+
+    return exceptionToResult([&]() {
+        std::ostringstream stream;
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        dflowfm_io::MduFile::Save(stream, *mdu_data);
+        stored_string = stream.str();
+        *data_out = stored_string.c_str();
     });
 }
 
@@ -214,7 +240,7 @@ dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* k
     static std::vector<std::string> stored_paths;
     static std::vector<const char*> stored_pointers;
 
-    return exceptionToResult([&]()
+    return exceptionToResult([&]() 
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
         const auto& paths = mdu_data->getValueAs<std::vector<std::filesystem::path>>(key);

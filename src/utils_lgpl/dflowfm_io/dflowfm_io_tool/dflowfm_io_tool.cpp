@@ -17,19 +17,17 @@ int main(int argc, char* argv[])
     }
 
     string path = argv[1];
-    MduFile mduFile;
-
-    try
-    {
-        mduFile.Load(path);
-    }
-    catch (const std::exception& e)
-    {
-        cerr << "Error loading '" << path << "': " << e.what() << "\n";
-        return 1;
-    }
-
-    const MduData& data = mduFile.GetData();
+    const MduData data = [&]() -> MduData {
+        try
+        {
+            return MduFile::Load(path);
+        }
+        catch (const std::exception& e)
+        {
+            cerr << "Error loading '" << path << "': " << e.what() << "\n";
+            exit(1);
+        }
+    }();
 
     cout << "\nSuccessfully loaded: " << path << "\n\n";
 
@@ -70,10 +68,9 @@ int main(int argc, char* argv[])
     }
 
     std::ostringstream stream;
-
     try
     {
-        mduFile.Save(stream);
+        MduFile::Save(stream, data);
     }
     catch (const std::exception& e)
     {

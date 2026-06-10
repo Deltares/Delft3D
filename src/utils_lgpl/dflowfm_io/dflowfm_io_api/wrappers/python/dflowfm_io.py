@@ -83,6 +83,14 @@ class MduModel:
         encoded = "\n".join(data).encode("utf-8")
         _check_result(_lib.mdu_model_load_from_string(self._handle, encoded, len(encoded)))
 
+    def save_to_file(self, filename: str) -> None:
+        _check_result(_lib.mdu_model_save_to_file(self._handle, filename.encode("utf-8")))
+
+    def save_to_lines(self) -> list[str]:
+        string_out = ctypes.c_char_p()
+        _check_result(_lib.mdu_model_save_to_string(self._handle, ctypes.byref(string_out)))
+        return string_out.value.decode("utf-8").splitlines()
+
     def get_int(self, key: str) -> int:
         value = ctypes.c_int()
         _check_result(_lib.mdu_model_get_int(self._handle, key.encode("utf-8"), ctypes.byref(value)))
