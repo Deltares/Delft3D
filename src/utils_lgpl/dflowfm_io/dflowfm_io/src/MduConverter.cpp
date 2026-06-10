@@ -6,9 +6,20 @@
 
 using namespace ini;
 
-static const std::unordered_set<std::string> STRING_KEYS = {"general.program", "general.fileversion" };
-static const std::unordered_set<std::string> INTEGER_KEYS = {"geometry.kmx" };
-static const std::unordered_set<std::string> FLOATING_POINT_KEYS = {"geometry.waterlevini" };
+enum class ValueType
+{
+    String,
+    StringList,
+    Integer,
+    FloatingPoint
+};
+
+static const std::unordered_map<std::string, ValueType> KEY_VALUE_TYPES = {
+    {"general.program", ValueType::String},
+    {"general.fileversion", ValueType::String},
+    {"geometry.kmx", ValueType::Integer},
+    {"geometry.waterlevini", ValueType::FloatingPoint}
+};
 
 namespace dflowfm_io
 {
@@ -41,34 +52,52 @@ namespace dflowfm_io
 
         // TODO : This is a temporary solution to allow retrieving values by key without having to know the section and
         // property names. Still very WIP / experimental.
-        mduData.entries_string["general.program"] = "D-Flow FM"; // Default value
+        mduData.data_entries["general.program"] = "D-Flow FM"; // Default value
         for (const auto& section : iniData)
         {
             for (const auto& property : section)
             {
                 const std::string key = to_lowercase(section.GetName() + "." + property.GetKey());
-                const std::string& value = property.GetValue();
 
-                if (STRING_KEYS.contains(key))
+                auto it = KEY_VALUE_TYPES.find(key);
+                if (it == KEY_VALUE_TYPES.end())
                 {
-                    mduData.entries_string[key] = value;
+                    continue; // Unrecognized key, skip
                 }
-                else if (INTEGER_KEYS.contains(key))
+
+                const ValueType value_type = it->second;
+                std::optional<MduData::Value> converted_value = std::nullopt;
+                if (value_type == ValueType::String)
                 {
-                    int integer_value;
-                    if (property.TryGetConvertedValue(integer_value))
-                    {
-                        mduData.entries_int[key] = integer_value;
-                    }
-                } 
-                else if (FLOATING_POINT_KEYS.contains(key))
-                {
-                    double float_value;
-                    if (property.TryGetConvertedValue(float_value))
-                    {
-                        mduData.entries_double[key] = float_value;
-                    }
+                    std::string value;
+                    if (property.TryGetConvertedValue(value)) converted_value = value;
                 }
+                else if (value_type == ValueType::Integer)
+                {
+                    int intValue;
+                    if (property.TryGetConvertedValue(intValue)) converted_value = intValue;
+                }
+                else if (value_type == ValueType::FloatingPoint)
+                {
+                    double doubleValue;
+                    if (property.TryGetConvertedValue(doubleValue)) converted_value = doubleValue;
+                }
+                else if (value_type == ValueType::StringList)
+                {
+                    std::vector<std::string> values;
+                    if (property.TryGetConvertedValueCollection(values)) converted_value = values;
+                }
+                else
+                {
+                    continue; // Unrecognized value type, skip
+                }
+
+                if (!converted_value.has_value())
+                {
+                    // TODO error
+                }
+                                
+                mduData.data_entries[key] = std::move(*converted_value);
             }
         }
 

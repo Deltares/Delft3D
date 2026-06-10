@@ -104,7 +104,7 @@ dflowfm_io_result_t mdu_model_get_int(MduModelHandle handle, const char* key, in
     return exceptionToResult([&]()
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
-        *int_out = mdu_data->getValueAsInt(key);
+        *int_out = mdu_data->getValueAs<int>(key);
     });
 }
 
@@ -117,7 +117,7 @@ dflowfm_io_result_t mdu_model_get_double(MduModelHandle handle, const char* key,
     return exceptionToResult([&]()
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
-        *double_out = mdu_data->getValueAsDouble(key);
+        *double_out = mdu_data->getValueAs<double>(key);
     });
 }
 
@@ -132,7 +132,7 @@ dflowfm_io_result_t mdu_model_get_string(MduModelHandle handle, const char* key,
     return exceptionToResult([&]()
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
-        stored_string = mdu_data->getValueAsString(key);
+        stored_string = mdu_data->getValueAs<std::string>(key);
 
         *string_out = stored_string.c_str();
     });

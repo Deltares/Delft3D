@@ -2,7 +2,12 @@
 
 #include <string>
 #include <string_view>
+#include <variant>
 #include <unordered_map>
+#include <vector>
+#include <stdexcept>
+
+#include "dflowfm_io/StringUtils.h"
 
 namespace dflowfm_io
 {
@@ -36,13 +41,19 @@ namespace dflowfm_io
         Geometry geometry;
         Numerics numerics;
 
-        double getValueAsDouble(std::string_view key) const;
-        int getValueAsInt(std::string_view key) const;
-        std::string getValueAsString(std::string_view key) const;
+        template <typename T>
+        T& getValueAs(std::string_view key)
+        {
+            auto it = data_entries.find(dflowfm_io::to_lowercase(key));
+            if (it == data_entries.end())
+            {
+                throw std::runtime_error("key/value pair not found: " + std::string(key));
+            }
+            return std::get<T>(it->second);
+        }
 
-        std::unordered_map<std::string, std::string> entries_string;
-        std::unordered_map<std::string, double> entries_double;
-        std::unordered_map<std::string, int> entries_int;
+        using Value = std::variant<std::string, double, int, std::vector<std::string>>;
+        std::unordered_map<std::string, Value> data_entries;
     };
 
 } // namespace dflowfm_io
