@@ -625,6 +625,7 @@ contains
          call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
          call fm_precice_adapter_builder%set_cell_center_mesh_2d("fm_flow_cells", ndx, xz, yz)
          call fm_precice_adapter_builder%set_cell_center_mesh_3d("fm_flow_cells_3d", ndx, kmx, xz, yz, zws)
+         call fm_precice_adapter_builder%set_sources_sinks_mesh_name("sources_sinks_nodes")
       end if
 
       iresult = DFM_NOERR
