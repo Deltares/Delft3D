@@ -113,21 +113,7 @@ object LinuxBuild : BuildType({
             """.trimIndent()
             dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-            dockerRunParameters = "--rm"
-            dockerPull = true
-        }
-        script {
-            name = "Install system libexpat.so"
-            scriptContent = """
-                #!/usr/bin/env bash
-                source /etc/bashrc
-                set -eo pipefail
-
-                cp /lib64/libexpat.so* build_%product%/install/lib/
-            """.trimIndent()
-            dockerImage = "containers.deltares.nl/delft3d-dev/delft3d-third-party-libs:%dep.${LinuxThirdPartyLibs.id}.env.IMAGE_TAG%"
-            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
-            dockerRunParameters = "--rm"
+            dockerRunParameters = "--rm --mount type=volume,source=delft3d-conan-cache,target=/conan-cache"
             dockerPull = true
         }
     }
