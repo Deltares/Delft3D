@@ -41,6 +41,7 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Lateral', 'flow', DEPRECATED, 'Use [Lateral] discharge instead.')
 
       ! Adding OBSOLETE MDU keywords
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Model', 'mduFormatVersion', OBSOLETE, 'Use [General] fileVersion (with version >= 1.07) instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bathymetryFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'bedLevelFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'botLevUni', OBSOLETE)
@@ -49,6 +50,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'manholeFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'noOptimizedPolygon', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenter', OBSOLETE, 'Use [Geometry] circumcenterMethod instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'thinDykeFile', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', '1dNetworkFile', OBSOLETE, 'Use individual keywords such as [Geometry] StructureFile, CrossDefFile, etc. instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'hkad', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'iThinDykeScheme', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'thinDykeContraction', OBSOLETE)
@@ -64,12 +67,37 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'FacLaxTurbVer', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsTKE', OBSOLETE, 'Use [Physics] TKEMin instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'epsEPS', OBSOLETE, 'Use [Physics] EPSMin (k-epsilon turbulence model) or [Physics] TAUmin (k-tau turbulence model) instead.')
-      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'Allowcoolingbelowzero', OBSOLETE, &
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaOrgSethu', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'CFLWaveFrac', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'jaEmbed1d', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_umin', OBSOLETE, 'Use [Numerics] lateral_fixedweir_umin instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_umin_method', OBSOLETE, 'Use [Numerics] lateral_fixedweir_umin_method instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'sobekdfm_minimal_1d2d_embankment', OBSOLETE, 'Use [Numerics] lateral_fixedweir_1d2d_embankment instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'relax', OBSOLETE, 'Use [Numerics] lateral_fixedweir_relax instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'wridia_viscosity_diffusivity_limit', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'qhrelax', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'allowCoolingBelowZero', OBSOLETE, &
                                   'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'RhoairRhowater', OBSOLETE, &
                                   'This keyword is replaced with rhoWaterInWindStress in the [Wind] block in the MDU-file.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'effectSpiral', OBSOLETE, 'Use Espir contained in MorFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Physics', 'stericCorrection', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Sedtrails', 'allowCoolingBelowZero', OBSOLETE, &
+                                  'Consider using MDU-keyword salinityDependentFreezingPoint to allow cooling below zero degrees Celsius.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Wind', 'gapres', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Waves', 'waveNikuradse', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Time', 'autoTimeStepDiff', OBSOLETE, 'Use [Time] autoTimeStepVisc instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Trachytopes', 'trtdt', OBSOLETE, 'Use [Trachytopes] dtTrt instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'writeBalanceFile', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 's1incInterval', OBSOLETE, 'Use [Output] classMapFile instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'waqFileBase', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'snapshotdir', OBSOLETE)1
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'heatFluxesOnOutput', OBSOLETE, 'Use [Output] wrihis_heatfluxes and wrimap_heatfluxes instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrimap_input_dt', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrihis_heatflux', OBSOLETE, 'Renamed to [Output] wrihis_heatfluxes.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Output', 'wrishp_enc', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'wriWaqBot3dOutput', OBSOLETE, 'Remove it or use [Output] wriHis_wqBot3d and wriMap_wqBot3d instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Processes', 'processFluxIntegration', OBSOLETE)
 
    end subroutine default_fm_deprecated_keywords
 
