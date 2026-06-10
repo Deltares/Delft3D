@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <filesystem>
-#include <fstream>
+#include <sstream>
 #include <stdexcept>
 
 #include "ini/IniFile.h"
@@ -9,104 +9,45 @@
 namespace ini::tests
 {
 
-    class IniFileTest : public ::testing::Test
-    {
-    protected:
-        void SetUp() override
-        {
-            tempDir = std::filesystem::temp_directory_path() / "IniFileTest";
-            std::filesystem::create_directories(tempDir);
-        }
-
-        void TearDown() override { std::filesystem::remove_all(tempDir); }
-
-        std::filesystem::path CreateFile(const std::string& filename, const std::string& content) const
-        {
-            const auto path = tempDir / filename;
-            std::ofstream stream(path);
-            stream << content;
-            return path;
-        }
-
-        std::filesystem::path tempDir;
-    };
-
     // ============================================================
-    // Constructor
+    // Load (stream)
     // ============================================================
 
-    TEST_F(IniFileTest, Constructor_EmptyPath_ThrowsInvalidArgument)
+    TEST(IniFileTest, Load_FailedStream_ThrowsFailure)
     {
-        EXPECT_THROW(IniFile(""), std::invalid_argument);
+        std::istringstream stream;
+        stream.setstate(std::ios::failbit);
+        IniFile file;
+
+        EXPECT_THROW(file.Load(stream), std::ios_base::failure);
     }
 
-    TEST_F(IniFileTest, Constructor_ValidPath_SetsPath)
+    TEST(IniFileTest, Load_EmptyStream_ReturnsEmptyData)
     {
-        const auto path = tempDir / "test.ini";
+        std::istringstream stream("");
+        IniFile file;
 
-        const IniFile file(path);
-
-        EXPECT_EQ(file.GetPath(), path);
-    }
-
-    TEST_F(IniFileTest, Constructor_ValidPath_DataIsEmpty)
-    {
-        const IniFile file(tempDir / "test.ini");
+        file.Load(stream);
 
         EXPECT_TRUE(file.GetData().empty());
     }
 
-    // ============================================================
-    // LoadFrom
-    // ============================================================
-
-    TEST_F(IniFileTest, LoadFrom_EmptyPath_ThrowsInvalidArgument)
+    TEST(IniFileTest, Load_ValidStream_PopulatesSection)
     {
-        EXPECT_THROW(IniFile::LoadFrom(""), std::invalid_argument);
-    }
+        std::istringstream stream("[general]\n");
+        IniFile file;
 
-    TEST_F(IniFileTest, LoadFrom_NonExistentFile_ThrowsFailure)
-    {
-        EXPECT_THROW(IniFile::LoadFrom(tempDir / "nonexistent.ini"), std::ios_base::failure);
-    }
-
-    TEST_F(IniFileTest, LoadFrom_Directory_ThrowsFailure)
-    {
-        EXPECT_THROW(IniFile::LoadFrom(tempDir), std::ios_base::failure);
-    }
-
-    TEST_F(IniFileTest, LoadFrom_EmptyFile_ReturnsEmptyData)
-    {
-        const auto path = CreateFile("empty.ini", "");
-
-        const IniFile file = IniFile::LoadFrom(path);
-
-        EXPECT_TRUE(file.GetData().empty());
-    }
-
-    TEST_F(IniFileTest, LoadFrom_ValidFile_SetsPath)
-    {
-        const auto path = CreateFile("test.ini", "[general]\n");
-
-        const IniFile file = IniFile::LoadFrom(path);
-
-        EXPECT_EQ(file.GetPath(), path);
-    }
-
-    TEST_F(IniFileTest, LoadFrom_ValidFile_PopulatesSection)
-    {
-        const auto path = CreateFile("test.ini", "[general]\n");
-
-        const IniFile file = IniFile::LoadFrom(path);
+        file.Load(stream);
 
         EXPECT_TRUE(file.GetData().HasSection("general"));
     }
 
-    TEST_F(IniFileTest, LoadFrom_ValidFile_PopulatesProperty)
+    TEST(IniFileTest, Load_ValidStream_PopulatesProperty)
     {
-        const auto path = CreateFile("test.ini", "[general]\nkey=value\n");
+        std::istringstream stream("[general]\nkey=value\n");
+        IniFile file;
 
-        const IniFile file = IniFile::LoadFrom(path);
+        file.Load(stream);
 
         const IniSection& section = file.GetData().GetSection("general");
 
@@ -114,11 +55,12 @@ namespace ini::tests
         EXPECT_EQ(section.GetProperty("key").GetValue(), "value");
     }
 
-    TEST_F(IniFileTest, LoadFrom_MultipleSections_PopulatesAllSections)
+    TEST(IniFileTest, Load_MultipleSections_PopulatesAllSections)
     {
-        const auto path = CreateFile("test.ini", "[general]\n[physics]\n[numerics]\n");
+        std::istringstream stream("[general]\n[physics]\n[numerics]\n");
+        IniFile file;
 
-        const IniFile file = IniFile::LoadFrom(path);
+        file.Load(stream);
 
         const IniData& data = file.GetData();
 
@@ -127,45 +69,14 @@ namespace ini::tests
         EXPECT_TRUE(data.HasSection("numerics"));
     }
 
-    TEST_F(IniFileTest, LoadFrom_DuplicateSectionsNotAllowed_ThrowsFailure)
+    TEST(IniFileTest, Load_CalledTwice_ReplacesData)
     {
-        const auto path = CreateFile("test.ini", "[general]\n[general]\n");
+        IniFile file;
+        std::istringstream first("[general]\n");
+        file.Load(first);
 
-        IniFileOptions options;
-        options.parserOptions.allowDuplicateSections = false;
-
-        EXPECT_THROW(IniFile::LoadFrom(path, options), std::runtime_error);
-    }
-
-    // ============================================================
-    // Load
-    // ============================================================
-
-    TEST_F(IniFileTest, Load_NonExistentFile_ThrowsFailure)
-    {
-        IniFile file(tempDir / "nonexistent.ini");
-
-        EXPECT_THROW(file.Load(), std::ios_base::failure);
-    }
-
-    TEST_F(IniFileTest, Load_ValidFile_PopulatesData)
-    {
-        const auto path = CreateFile("test.ini", "[general]\nkey=value\n");
-        IniFile file(path);
-
-        file.Load();
-
-        EXPECT_TRUE(file.GetData().HasSection("general"));
-    }
-
-    TEST_F(IniFileTest, Load_CalledTwice_ReplacesData)
-    {
-        const auto path = CreateFile("test.ini", "[general]\n");
-        IniFile file(path);
-        file.Load();
-
-        CreateFile("test.ini", "[physics]\n");
-        file.Load();
+        std::istringstream second("[physics]\n");
+        file.Load(second);
 
         const IniData& data = file.GetData();
 
@@ -173,52 +84,70 @@ namespace ini::tests
         EXPECT_TRUE(data.HasSection("physics"));
     }
 
-    // ============================================================
-    // Save
-    // ============================================================
-
-    TEST_F(IniFileTest, Save_NonExistentDirectory_ThrowsFailure)
+    TEST(IniFileTest, Load_DuplicateSectionsNotAllowed_ThrowsFailure)
     {
-        IniFile file(tempDir / "nonexistent" / "test.ini");
+        std::istringstream stream("[general]\n[general]\n");
 
-        EXPECT_THROW(file.Save(), std::ios_base::failure);
+        IniFileOptions options;
+        options.parserOptions.allowDuplicateSections = false;
+
+        IniFile file(options);
+
+        EXPECT_THROW(file.Load(stream), std::runtime_error);
     }
 
-    TEST_F(IniFileTest, Save_ValidPath_CreatesFile)
+    // ============================================================
+    // Load (path)
+    // ============================================================
+
+    TEST(IniFileTest, Load_EmptyPath_ThrowsInvalidArgument)
     {
-        const auto path = tempDir / "output.ini";
-        IniFile file(path);
+        IniFile file;
 
-        file.Save();
-
-        EXPECT_TRUE(std::filesystem::exists(path));
+        EXPECT_THROW(file.Load(""), std::invalid_argument);
     }
 
-    TEST_F(IniFileTest, Save_WithSection_WritesSection)
+    TEST(IniFileTest, Load_NonExistentFile_ThrowsFailure)
     {
-        const auto path = tempDir / "output.ini";
-        IniFile file(path);
+        IniFile file;
+
+        EXPECT_THROW(file.Load("/nonexistent/path/test.ini"), std::ios_base::failure);
+    }
+
+    // ============================================================
+    // Save (stream)
+    // ============================================================
+
+    TEST(IniFileTest, Save_FailedStream_ThrowsFailure)
+    {
+        std::ostringstream stream;
+        stream.setstate(std::ios::failbit);
+        IniFile file;
+
+        EXPECT_THROW(file.Save(stream), std::ios_base::failure);
+    }
+
+    TEST(IniFileTest, Save_WithSection_WritesSection)
+    {
+        std::ostringstream stream;
+        IniFile file;
         file.GetData().AddSection("general");
 
-        file.Save();
+        file.Save(stream);
 
-        std::ifstream stream(path);
-        const std::string content((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
-
-        EXPECT_NE(content.find("[general]"), std::string::npos);
+        EXPECT_NE(stream.str().find("[general]"), std::string::npos);
     }
 
-    TEST_F(IniFileTest, Save_WithSectionAndProperty_WritesSectionAndProperty)
+    TEST(IniFileTest, Save_WithSectionAndProperty_WritesSectionAndProperty)
     {
-        const auto path = tempDir / "output.ini";
-        IniFile file(path);
+        std::ostringstream stream;
+        IniFile file;
         auto& section = file.GetData().AddSection("general");
         section.AddProperty("key", "value");
 
-        file.Save();
+        file.Save(stream);
 
-        std::ifstream stream(path);
-        const std::string content((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+        const std::string content = stream.str();
 
         EXPECT_NE(content.find("[general]"), std::string::npos);
         EXPECT_NE(content.find("key"), std::string::npos);
@@ -226,44 +155,63 @@ namespace ini::tests
     }
 
     // ============================================================
+    // Save (path)
+    // ============================================================
+
+    TEST(IniFileTest, Save_EmptyPath_ThrowsInvalidArgument)
+    {
+        IniFile file;
+
+        EXPECT_THROW(file.Save(""), std::invalid_argument);
+    }
+
+    TEST(IniFileTest, Save_NonExistentDirectory_ThrowsFailure)
+    {
+        IniFile file;
+
+        EXPECT_THROW(file.Save("/nonexistent/path/test.ini"), std::ios_base::failure);
+    }
+
+    // ============================================================
     // Round-trip
     // ============================================================
 
-    TEST_F(IniFileTest, SaveThenLoad_EmptyData_RoundTrips)
+    TEST(IniFileTest, SaveThenLoad_EmptyData_RoundTrips)
     {
-        const auto path = tempDir / "roundtrip.ini";
+        std::stringstream stream;
+        IniFile writer;
+        writer.Save(stream);
 
-        IniFile writer(path);
-        writer.Save();
-
-        const IniFile reader = IniFile::LoadFrom(path);
+        IniFile reader;
+        reader.Load(stream);
 
         EXPECT_TRUE(reader.GetData().empty());
     }
 
-    TEST_F(IniFileTest, SaveThenLoad_SingleSection_RoundTrips)
+    TEST(IniFileTest, SaveThenLoad_SingleSection_RoundTrips)
     {
-        const auto path = tempDir / "roundtrip.ini";
-
-        IniFile writer(path);
+        std::stringstream stream;
+        IniFile writer;
         writer.GetData().AddSection("general");
-        writer.Save();
+        writer.Save(stream);
 
-        const IniFile reader = IniFile::LoadFrom(path);
+        IniFile reader;
+        reader.Load(stream);
 
         EXPECT_TRUE(reader.GetData().HasSection("general"));
     }
 
-    TEST_F(IniFileTest, SaveThenLoad_SectionWithProperty_RoundTrips)
+    TEST(IniFileTest, SaveThenLoad_SectionWithProperty_RoundTrips)
     {
-        const auto path = tempDir / "roundtrip.ini";
-
-        IniFile writer(path);
+        std::stringstream stream;
+        IniFile writer;
         auto& section = writer.GetData().AddSection("general");
         section.AddProperty("key", "value");
-        writer.Save();
+        writer.Save(stream);
 
-        const IniFile reader = IniFile::LoadFrom(path);
+        IniFile reader;
+        reader.Load(stream);
+
         const IniData& data = reader.GetData();
 
         EXPECT_TRUE(data.HasSection("general"));
@@ -275,9 +223,9 @@ namespace ini::tests
     // SetData
     // ============================================================
 
-    TEST_F(IniFileTest, SetData_WithEmptyData_ClearsExistingData)
+    TEST(IniFileTest, SetData_WithEmptyData_ClearsExistingData)
     {
-        IniFile file(tempDir / "test.ini");
+        IniFile file;
         file.GetData().AddSection("general");
 
         file.SetData(IniData{});

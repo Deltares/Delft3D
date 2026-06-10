@@ -17,11 +17,11 @@ int main(int argc, char* argv[])
     }
 
     string path = argv[1];
-    MduFile mduFile(path);
+    MduFile mduFile;
 
     try
     {
-        mduFile.Load();
+        mduFile.Load(path);
     }
     catch (const std::exception& e)
     {

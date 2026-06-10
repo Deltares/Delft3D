@@ -11,7 +11,7 @@ namespace dflowfm_io
     class MduFile
     {
     public:
-        explicit MduFile(std::filesystem::path path);
+        MduFile();
         ~MduFile();
 
         MduFile(MduFile&&) noexcept;
@@ -20,9 +20,11 @@ namespace dflowfm_io
         MduFile(const MduFile&) = delete;
         MduFile& operator=(const MduFile&) = delete;
 
-        static MduFile LoadFrom(std::filesystem::path path);
+        static MduFile LoadFrom(std::istream& in);
+        static MduFile LoadFrom(const std::filesystem::path& path);
 
-        void Load();
+        void Load(std::istream& in);
+        void Load(const std::filesystem::path& path);
 
         MduData& GetData();
         const MduData& GetData() const;

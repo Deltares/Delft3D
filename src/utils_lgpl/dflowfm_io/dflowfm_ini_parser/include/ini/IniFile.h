@@ -4,6 +4,8 @@
 #include "ini/IniFileOptions.h"
 
 #include <filesystem>
+#include <istream>
+#include <ostream>
 
 namespace ini
 {
@@ -14,52 +16,56 @@ namespace ini
     ///          @ref IniFileOptions instance to the constructor, or modified afterwards
     ///          through @ref GetOptions().
     ///
-    /// @par Example - Loading an existing file
+    /// @par Example - Loading from a file
     /// @code{.cpp}
-    /// IniFile file = IniFile::LoadFrom("input.ini");
+    /// IniFile file;
+    /// file.Load("input.ini");
     /// const IniSection& general = file.GetData().GetSection("general");
     /// @endcode
     ///
-    /// @par Example - Loading with custom options
+    /// @par Example - Loading from a stream
     /// @code{.cpp}
-    /// IniFileOptions options;
-    /// options.parserOptions.allowDuplicateSections = false;
-    /// IniFile file = IniFile::LoadFrom("input.ini", options);
+    /// std::stringstream ss("[general]\nkey=value\n");
+    /// IniFile file;
+    /// file.Load(ss);
     /// @endcode
     ///
-    /// @par Example - Creating a new file
+    /// @par Example - Saving to a file
     /// @code{.cpp}
-    /// IniFile file("output.ini");
-    /// file.GetData().AddSection("general");
-    /// file.Save();
+    /// IniData data;
+    /// data.AddSection("general");
+    /// IniFile file;
+    /// file.SetData(std::move(data));
+    /// file.Save("output.ini");
     /// @endcode
     class IniFile
     {
     public:
-        /// @brief Constructs an empty @ref IniFile associated with the specified path.
-        /// @param path The path of the INI file.
+        /// @brief Constructs an empty @ref IniFile.
         /// @param options The options controlling reading and writing behavior.
-        /// @throws std::invalid_argument When @p path is empty.
-        explicit IniFile(std::filesystem::path path, IniFileOptions options = {});
+        explicit IniFile(IniFileOptions options = {});
 
-        /// @brief Creates an @ref IniFile by loading and parsing the file at the specified path.
+        /// @brief Loads and parses from the specified stream into the @ref IniData.
+        /// @param in The stream to read from.
+        /// @throws std::ios_base::failure When the stream cannot be read.
+        void Load(std::istream& in);
+
+        /// @brief Loads and parses the file at the specified path into the @ref IniData.
         /// @param path The path of the INI file.
-        /// @param options The options controlling reading and writing behavior.
-        /// @return An @ref IniFile with the loaded data.
         /// @throws std::invalid_argument When @p path is empty.
         /// @throws std::ios_base::failure When the file cannot be read.
-        static IniFile LoadFrom(std::filesystem::path path, IniFileOptions options = {});
+        void Load(const std::filesystem::path& path);
 
-        /// @brief Loads and parses the file into the internal @ref IniData.
-        /// @throws std::ios_base::failure When the file cannot be read.
-        void Load();
+        /// @brief Formats and writes the @ref IniData to the specified stream.
+        /// @param out The stream to write to.
+        /// @throws std::ios_base::failure When the stream cannot be written.
+        void Save(std::ostream& out) const;
 
-        /// @brief Formats and saves the internal @ref IniData to the file.
+        /// @brief Formats and saves the @ref IniData to the file at the specified path.
+        /// @param path The path of the INI file.
+        /// @throws std::invalid_argument When @p path is empty.
         /// @throws std::ios_base::failure When the file cannot be written.
-        void Save() const;
-
-        /// @brief Gets the path of the INI file.
-        const std::filesystem::path& GetPath() const { return path; }
+        void Save(const std::filesystem::path& path) const;
 
         /// @brief Gets the options controlling reading and writing behavior.
         IniFileOptions& GetOptions() { return options; }
@@ -74,7 +80,6 @@ namespace ini
         void SetData(IniData value) { data = std::move(value); }
 
     private:
-        std::filesystem::path path;
         IniFileOptions options;
         IniData data;
     };

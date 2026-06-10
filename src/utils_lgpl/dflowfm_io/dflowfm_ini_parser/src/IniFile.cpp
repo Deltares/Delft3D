@@ -8,33 +8,27 @@
 namespace ini
 {
 
-    IniFile::IniFile(std::filesystem::path path, IniFileOptions options)
-        : path(std::move(path)), options(std::move(options))
+    IniFile::IniFile(IniFileOptions options) : options(std::move(options)) {}
+
+    void IniFile::Load(std::istream& in)
     {
-        if (this->path.empty())
+        if (in.fail())
+        {
+            throw std::ios_base::failure("Stream is not in a readable state.");
+        }
+
+        IniParser parser;
+        parser.SetScheme(options.scheme);
+        parser.SetOptions(options.parserOptions);
+
+        data = parser.Parse(in);
+    }
+
+    void IniFile::Load(const std::filesystem::path& path)
+    {
+        if (path.empty())
         {
             throw std::invalid_argument("Path must not be empty.");
-        }
-    }
-
-    IniFile IniFile::LoadFrom(std::filesystem::path path, IniFileOptions options)
-    {
-        IniFile file(std::move(path), std::move(options));
-        file.Load();
-
-        return file;
-    }
-
-    void IniFile::Load()
-    {
-        if (!std::filesystem::exists(path))
-        {
-            throw std::ios_base::failure("File does not exist: " + path.string());
-        }
-
-        if (!std::filesystem::is_regular_file(path))
-        {
-            throw std::ios_base::failure("Path is not a regular file: " + path.string());
         }
 
         std::ifstream stream(path);
@@ -43,26 +37,37 @@ namespace ini
             throw std::ios_base::failure("Failed to open file for reading: " + path.string());
         }
 
-        IniParser parser;
-        parser.SetScheme(options.scheme);
-        parser.SetOptions(options.parserOptions);
-
-        data = parser.Parse(stream);
+        Load(stream);
     }
 
-    void IniFile::Save() const
+    void IniFile::Save(std::ostream& out) const
     {
-        std::ofstream stream(path);
-        if (!stream.is_open())
+        if (out.fail())
         {
-            throw std::ios_base::failure("Failed to open file for writing: " + path.string());
+            throw std::ios_base::failure("Stream is not in a writable state.");
         }
 
         IniFormatter formatter;
         formatter.SetScheme(options.scheme);
         formatter.SetOptions(options.formatterOptions);
 
-        formatter.Format(data, stream);
+        formatter.Format(data, out);
+    }
+
+    void IniFile::Save(const std::filesystem::path& path) const
+    {
+        if (path.empty())
+        {
+            throw std::invalid_argument("Path must not be empty.");
+        }
+
+        std::ofstream stream(path);
+        if (!stream.is_open())
+        {
+            throw std::ios_base::failure("Failed to open file for writing: " + path.string());
+        }
+
+        Save(stream);
     }
 
 } // namespace ini

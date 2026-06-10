@@ -1,10 +1,12 @@
-#include <iostream>
-
 #include <dflowfm_io/MduFile.h>
 #include <dflowfm_io/MduConverter.h>
 
 #include "ini/IniFile.h"
 #include "ini/IniParserOptions.h"
+
+#include <iostream>
+#include <fstream>
+#include <stdexcept>
 
 using namespace ini;
 
@@ -17,17 +19,16 @@ namespace dflowfm_io
                 .allowDuplicateProperties = false,
                 .allowMultiLineValues = true,
             },
+        .formatterOptions = {},
     };
 
     struct MduFile::Impl
     {
-        IniFile iniFile;
+        IniFile iniFile{mduIniOptions};
         MduData mduData;
-
-        explicit Impl(std::filesystem::path path) : iniFile(std::move(path), mduIniOptions) {}
     };
 
-    MduFile::MduFile(std::filesystem::path path) : impl_(std::make_unique<Impl>(std::move(path))) {}
+    MduFile::MduFile() : impl_(std::make_unique<Impl>()) {}
 
     MduFile::~MduFile() = default;
 
@@ -35,17 +36,30 @@ namespace dflowfm_io
 
     MduFile& MduFile::operator=(MduFile&&) noexcept = default;
 
-    MduFile MduFile::LoadFrom(std::filesystem::path path)
+    MduFile MduFile::LoadFrom(std::istream& in)
     {
-        MduFile file(std::move(path));
-        file.Load();
+        MduFile file;
+        file.Load(in);
 
         return file;
     }
 
-    void MduFile::Load()
+    MduFile MduFile::LoadFrom(const std::filesystem::path& path)
     {
-        impl_->iniFile.Load();
+        MduFile file;
+        file.Load(path);
+
+        return file;
+    }
+
+    void MduFile::Load(std::istream& in)
+    {
+        if (in.fail())
+        {
+            throw std::ios_base::failure("Stream is not in a readable state.");
+        }
+
+        impl_->iniFile.Load(in);
         IniData& iniData = impl_->iniFile.GetData();
 
         ConversionResult<MduData> result = MduConverter::Convert(iniData);
@@ -57,10 +71,26 @@ namespace dflowfm_io
 
         if (!result.IsValid())
         {
-            throw std::runtime_error("Failed to read MDU file: " + impl_->iniFile.GetPath().string());
+            throw std::runtime_error("Failed to read MDU file.");
         }
 
         impl_->mduData = std::move(result.value);
+    }
+
+    void MduFile::Load(const std::filesystem::path& path)
+    {
+        if (path.empty())
+        {
+            throw std::invalid_argument("Path must not be empty.");
+        }
+
+        std::ifstream stream(path);
+        if (!stream.is_open())
+        {
+            throw std::ios_base::failure("Failed to open file for reading: " + path.string());
+        }
+
+        Load(stream);
     }
 
     MduData& MduFile::GetData() { return impl_->mduData; }
