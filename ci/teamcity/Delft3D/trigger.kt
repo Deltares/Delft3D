@@ -37,6 +37,7 @@ object Trigger : BuildType({
         param("matrix_list_lnx64", "dummy_value")
         param("matrix_list_win64", "dummy_value")
         param("product", "auto-select")
+        checkbox("copy_failed_cases", "false", description = "Copy failed Linux/Windows test cases to ZIP.", checked = "true", unchecked = "false")
     }
 
     steps {
@@ -84,6 +85,7 @@ object Trigger : BuildType({
                             <properties>
                                 <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_lnx64%"/>
+                                <property name="copy_failed_cases" value="%copy_failed_cases%"/>
                             </properties>
                             <snapshot-dependencies>
                                 <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
@@ -120,6 +122,7 @@ object Trigger : BuildType({
                             <properties>
                                 <property name="product" value="%product%"/>
                                 <property name="configfile" value="%matrix_list_win64%"/>
+                                <property name="copy_failed_cases" value="%copy_failed_cases%"/>
                             </properties>
                             <snapshot-dependencies>
                                 <build id="%teamcity.build.id%" buildTypeId="%system.teamcity.buildType.id%"/>
@@ -316,8 +319,10 @@ object Trigger : BuildType({
                 }
                 branchFilter = ""
                 triggerBuild = always()
+                buildParams {
+                    param("copy_failed_cases", "true")
+                }
                 param("revisionRuleBuildBranch", "<default>")
-                param("copy_failed_cases", "true")
             }
             vcs {
                 quietPeriodMode = VcsTrigger.QuietPeriodMode.USE_CUSTOM
