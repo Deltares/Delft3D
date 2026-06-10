@@ -10,28 +10,6 @@
 
 using namespace ini;
 
-enum class ValueType
-{
-    Path,
-    String,
-    Integer,
-    IntBool,
-    FloatingPoint,
-    StringList,
-    PathList
-};
-
-static const std::unordered_map<std::string, ValueType> KEY_VALUE_TYPES = {
-    {"general.program", ValueType::String},
-    {"general.fileversion", ValueType::String},
-    {"geometry.kmx", ValueType::Integer},
-    {"geometry.waterlevini", ValueType::FloatingPoint},
-    {"geometry.netfile", ValueType::Path},
-    {"geometry.drypointsfile", ValueType::PathList},
-    {"geometry.usecaching", ValueType::IntBool}, 
-    {"numerics.cflmax", ValueType::FloatingPoint},
-};
-
 namespace dflowfm_io
 {
     static const IniSection* GetSection(const IniData& iniData, const std::string& name)
@@ -44,16 +22,6 @@ namespace dflowfm_io
         return section.HasProperty(key) ? &section.GetProperty(key) : nullptr;
     }
 
-    template <typename T>
-    static void TryConvert(const IniProperty* property, IssueReport& report, T& field)
-    {
-        if (!property || !property->HasValue()) return;
-
-        if (!property->TryGetConvertedValue(field))
-            report.AddError(property->GetLineNumber(), "Property {} value \"{}\" could not be converted.",
-                            property->GetKey(), property->GetValue());
-    }
-
     ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
     {
         MduValidator validator;
@@ -61,9 +29,8 @@ namespace dflowfm_io
 
         MduData mduData;
 
-        // TODO : This is a temporary solution to allow retrieving values by key without having to know the section and
-        // property names. Still very WIP / experimental.
         mduData.data_entries["general.program"] = std::string("D-Flow FM"); // Default value
+
         for (const auto& section : iniData)
         {
             for (const auto& property : section)
@@ -73,13 +40,19 @@ namespace dflowfm_io
 
                 const std::string key = to_lowercase(section.GetName() + "." + property.GetKey());
 
-                auto it = KEY_VALUE_TYPES.find(key);
-                if (it == KEY_VALUE_TYPES.end())
+                auto* mdu_schema_section = MDU_SCHEMA.FindSection(section.GetName());
+                if (!mdu_schema_section)
                 {
-                    continue; // Unrecognized key, skip
+                    continue; // Unrecognized section, skip
                 }
 
-                const ValueType value_type = it->second;
+                auto* mdu_schema_property = mdu_schema_section->FindProperty(property.GetKey());
+                if (!mdu_schema_property)
+                {
+                    continue; // Unrecognized property, skip
+                }
+
+                const ValueType value_type = mdu_schema_property->value_type;
                 std::optional<MduData::Value> converted_value = std::nullopt;
                 if (value_type == ValueType::Path)
                 {
@@ -137,9 +110,7 @@ namespace dflowfm_io
         IniData iniData;
         IssueReport report;
 
-        MduSchema schema = BuildMduSchema();
-
-        for (const auto& sectionSchema : schema.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.sections)
         {
             auto& iniSection = iniData.AddSection(sectionSchema.name);
 
@@ -147,18 +118,7 @@ namespace dflowfm_io
             {
                 const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
 
-                auto it = KEY_VALUE_TYPES.find(key);
-                if (it == KEY_VALUE_TYPES.end())
-                {
-                    assert(false); // TODO decent error handling
-                }
-
-                if (!mduData.hasValue(key))
-                {
-                    continue; // TODO error handling
-                }
-
-                const ValueType value_type = it->second;
+                const ValueType value_type = propertySchema.value_type;
                 if (value_type == ValueType::Path)
                 {
                     const auto& value = mduData.getValueAs<std::filesystem::path>(key);

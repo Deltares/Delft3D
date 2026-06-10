@@ -9,7 +9,6 @@
 
 #include "dflowfm_io/MduFile.h"
 
-#include <stdexcept>
 #include <dflowfm_io/MduData.h>
 
 static std::string last_error;

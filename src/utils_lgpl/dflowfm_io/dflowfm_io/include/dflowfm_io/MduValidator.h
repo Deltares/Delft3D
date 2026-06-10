@@ -10,15 +10,13 @@ namespace dflowfm_io
     class MduValidator
     {
     public:
-        explicit MduValidator(MduSchema schema = BuildMduSchema());
+        explicit MduValidator();
 
         IssueReport Validate(const ini::IniData& iniData) const;
 
     private:
         void ValidateRequired(const ini::IniData& iniData, IssueReport& report) const;
         void ValidateUnsupported(const ini::IniData& iniData, IssueReport& report) const;
-
-        const MduSchema schema;
     };
 
 } // namespace dflowfm_io

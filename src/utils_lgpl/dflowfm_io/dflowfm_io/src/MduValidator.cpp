@@ -10,7 +10,7 @@ using namespace ini;
 namespace dflowfm_io
 {
 
-    MduValidator::MduValidator(MduSchema schema) : schema(std::move(schema)) {}
+    MduValidator::MduValidator() {}
 
     IssueReport MduValidator::Validate(const IniData& iniData) const
     {
@@ -22,7 +22,7 @@ namespace dflowfm_io
 
     void MduValidator::ValidateRequired(const IniData& iniData, IssueReport& report) const
     {
-        for (const auto& sectionSchema : schema.sections)
+        for (const auto& sectionSchema : MDU_SCHEMA.sections)
         {
             if (!iniData.HasSection(sectionSchema.name))
             {
@@ -66,7 +66,7 @@ namespace dflowfm_io
     {
         for (const auto& section : iniData)
         {
-            const auto* sectionSchema = schema.FindSection(section.GetName());
+            const auto* sectionSchema = MDU_SCHEMA.FindSection(section.GetName());
             if (!sectionSchema)
             {
                 report.AddWarning(section.GetLineNumber(), "Section [{}] is not a supported section.",
