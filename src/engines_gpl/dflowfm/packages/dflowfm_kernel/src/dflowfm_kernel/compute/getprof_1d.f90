@@ -123,7 +123,7 @@ contains
 
          return
 
-      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. network%loaded) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
+      else if ((abs(kcu(ll)) == 1 .or. abs(kcu(ll)) == 5) .and. (network%loaded .or. has_flow1d_cross_section(LL))) then !flow1d used only for 1d channels and not for 1d2d roofs and gullies
          cz = 0.0_dp
 
          if (japerim == 0) then ! calculate total area and volume
@@ -177,7 +177,7 @@ contains
          return
       end if
 
-! No flow1d cross input, OR a 1d2d link. Proceed with conventional prof1D approach.
+! No flow1d cross input Proceed with conventional prof1D approach.
       if (prof1D(1, LL) >= 0) then ! direct profile based upon link value
          ka = 0
          kb = 0 ! do not use profiles
@@ -300,4 +300,23 @@ contains
       end if
 
    end subroutine getprof_1D
+
+   !> Returns true if the given link has a flow1d cross section, so that the 1D flow solver may be used even if no network is loaded.
+   ! For now, the only links that can have this property are long culvert links.
+   function has_flow1d_cross_section(L) result(res)
+      use unstruc_channel_flow, only: network
+      use m_longculverts_data, only: newculverts
+      integer, intent(in) :: L
+      logical :: res
+
+      res = .false.
+      ! For now this check is only valid for long culverts. Once
+      if (associated(network%adm%line2cross) .and. newculverts) then
+         if (L > 0 .and. L <= size(network%adm%line2cross, 1)) then
+            res = (network%adm%line2cross(L, 2)%c1 > 0)
+         end if
+      end if
+
+   end function has_flow1d_cross_section
+
 end module m_get_prof_1D

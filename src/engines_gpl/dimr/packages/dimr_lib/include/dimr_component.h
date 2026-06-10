@@ -47,12 +47,13 @@ struct dimr_component
 #else
     void* libHandle; // (Linux) Handle to the loaded library for this component.
 #endif
-    char* inputFile;  // Component inputFile name
-    char* workingDir; // Component working directory
-    int* processes;   // (Optional) list of processes ranks that this component needs to run in.
-    int numProcesses; // Count of processes array.
-    bool onThisRank;  // Whether this component needs to run on current process rank.
-    char* mpiCommVar; // (Optional) Variable name for component's MPI communicator (must be accesible via BMI).
+    char* inputFile;       // Component inputFile name
+    char* workingDir;      // Component working directory
+    int* processes;        // (Optional) list of processes ranks that this component needs to run in.
+    int numProcesses;      // Count of processes array.
+    int mpi_barrier_sleep; // Time to sleep in milliseconds while this component is updating
+    bool onThisRank;       // Whether this component needs to run on current process rank.
+    char* mpiCommVar;      // (Optional) Variable name for component's MPI communicator (must be accesible via BMI).
     MPI_Comm mpiComm; // An MPI communicator specific for this component (may run on less processes than master dimr).
     BMI_INITIALIZE dllInitialize;         // entry point in dll
     BMI_UPDATE dllUpdate;                 // entry point in dll

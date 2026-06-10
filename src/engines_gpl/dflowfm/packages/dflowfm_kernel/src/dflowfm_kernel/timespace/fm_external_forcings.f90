@@ -1202,7 +1202,6 @@ contains
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-!       realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
@@ -1214,13 +1213,12 @@ contains
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
       
-      else if (qid(1:13) == 'initialtracer') then ! Obsolete, still required for old extforce file support
+      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-            ! realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
@@ -1231,7 +1229,6 @@ contains
          if (isf == 0) then ! add
 
             numfracs = numfracs + 1
-!       realloc
             call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
