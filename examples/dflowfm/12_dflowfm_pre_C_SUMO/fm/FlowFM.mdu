@@ -139,7 +139,7 @@ RestartFile                       =                 # Restart netcdf-file, eithe
 RestartDateTime                   =                 # Restart date and time when restarting from *_map.nc [YYYY-MM-DD HH:MM:SS]
 
 [external forcing]
-ExtForceFileNew                   = sources.ext     # New format for external forcings file *.ext, link with bc-format boundary conditions specification
+ExtForceFileNew                   =   # New format for external forcings file *.ext, link with bc-format boundary conditions specification
 
 [trachytopes]
 TrtRou                            = N               # Include alluvial and vegetation roughness (trachytopes) (Y: yes, N: no)

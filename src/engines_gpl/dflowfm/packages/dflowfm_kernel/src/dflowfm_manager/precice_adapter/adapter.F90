@@ -9,7 +9,7 @@ module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
    use precision, only: dp
    use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
-   use m_source_sink, only: source_sinks
+   use m_source_sink, only: source_sinks, source_sink_all_discharges
 
    implicit none(type, external)
 
@@ -34,11 +34,15 @@ module precice_adapter
       type(quantity_t) :: hs = quantity_t(standard_name="sea_floor_depth_below_sea_surface", is_active=.false.)
       type(quantity_t) :: rho = quantity_t(standard_name="sea_water_potential_density", is_active=.true.)
       ! Reading
-      type(quantity_t) :: sosi_id = quantity_t(standard_name="sources_sinks_id", is_active=.false.)
-      type(quantity_t) :: sosi_connected_id = quantity_t(standard_name="sources_sinks_connected_id", is_active=.false.)
-      type(quantity_t) :: sosi_zmin = quantity_t(standard_name="sources_sinks_z_min", is_active=.false.)
-      type(quantity_t) :: sosi_zmax = quantity_t(standard_name="sources_sinks_z_max", is_active=.false.)
-      type(quantity_t) :: sosi_discharge = quantity_t(standard_name="sources_sinks_discharge", is_active=.false.)
+      type(quantity_t) :: sinks_x = quantity_t(standard_name="sinks_x", is_active=.false.)
+      type(quantity_t) :: sinks_y = quantity_t(standard_name="sinks_y", is_active=.false.)
+      type(quantity_t) :: sinks_z_min = quantity_t(standard_name="sinks_z_min", is_active=.false.)
+      type(quantity_t) :: sinks_z_max = quantity_t(standard_name="sinks_z_max", is_active=.false.)
+      type(quantity_t) :: sources_x = quantity_t(standard_name="sources_x", is_active=.false.)
+      type(quantity_t) :: sources_y = quantity_t(standard_name="sources_y", is_active=.false.)
+      type(quantity_t) :: sources_z_min = quantity_t(standard_name="sources_z_min", is_active=.false.)
+      type(quantity_t) :: sources_z_max = quantity_t(standard_name="sources_z_max", is_active=.false.)
+      type(quantity_t) :: sources_sinks_discharge = quantity_t(standard_name="sources_sinks_discharge", is_active=.false.)
    end type quantities_t
 
    !> Concrete preCICE adapter implementation.
@@ -64,11 +68,15 @@ module precice_adapter
       integer(kind=c_int) :: mesh_size = 0_c_int ! Number of vertices in the mesh: N
       integer(kind=c_int) :: mesh_3d_size = 0_c_int ! Number of vertices in the 3D mesh: N*kmax
       integer(kind=c_int) :: mesh_sources_sinks_size = 0_c_int ! Number of vertices in the sources_sinks_mesh
-      integer(kind=c_int), dimension(:), allocatable :: sources_sinks_ids ! IDs read from preCICE for the sources/sinks mesh
-      integer(kind=c_int), dimension(:), allocatable :: sources_sinks_connected_ids ! connected_IDs read from preCICE for the sources/sinks mesh
-      real(kind=c_double), dimension(:), allocatable :: sources_sinks_zmin ! zmin values read from preCICE for the sources/sinks mesh
-      real(kind=c_double), dimension(:), allocatable :: sources_sinks_zmax ! zmax values read from preCICE for the sources/sinks mesh
-      real(kind=c_double), dimension(:), allocatable :: sources_sinks_discharge  ! discharges read from preCICE for the sources/sinks mesh
+      real(kind=c_double), dimension(:), allocatable :: sinks_x
+      real(kind=c_double), dimension(:), allocatable :: sinks_y
+      real(kind=c_double), dimension(:), allocatable :: sinks_z_min
+      real(kind=c_double), dimension(:), allocatable :: sinks_z_max
+      real(kind=c_double), dimension(:), allocatable :: sources_x
+      real(kind=c_double), dimension(:), allocatable :: sources_y
+      real(kind=c_double), dimension(:), allocatable :: sources_z_min
+      real(kind=c_double), dimension(:), allocatable :: sources_z_max
+      real(kind=c_double), dimension(:), allocatable :: sources_sinks_discharge
    contains
       procedure :: initialize => precice_adapter_initialize
       procedure :: update => precice_adapter_update
@@ -82,6 +90,9 @@ module precice_adapter
 
 contains
 
+
+
+   !===========================================================================
    !> Constructor for `precice_adapter_t`.
    !! Allocates and populates a new adapter instance with the provided settings and mesh coordinates.
    !! @return pointer to newly allocated `precice_adapter_t` instance.
@@ -125,6 +136,9 @@ contains
 
    end function precice_adapter_constructor
 
+
+
+   !===========================================================================
    !> Initialize the preCICE adapter and preCICE participant.
    !! Creates the preCICE participant (with or without communicator), registers mesh vertices,
    !! produces initial data if required, and calls preCICE initialize.
@@ -158,7 +172,7 @@ contains
       if (sources_sinks_mesh_dims /= 2) then
          call mess(LEVEL_ERROR, 'preCICE mesh "'//trim(self%sources_sinks_mesh_name)//'" does not have 2 dimensions.')
       endif
-      self%sources_sinks_bounding_box = [-1.0, 1.0, -1.0, 1.0]
+      self%sources_sinks_bounding_box = [-1.0, 1.0, -1.0, 1.0] ! All coupled_sources_sinks have coordinates 0.0,0.0
       call precicef_set_mesh_access_region(self%sources_sinks_mesh_name, self%sources_sinks_bounding_box, len(self%sources_sinks_mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
@@ -170,6 +184,9 @@ contains
       summed_time_progress = 0.0
    end subroutine precice_adapter_initialize
 
+
+
+   !===========================================================================
    !> Advance the coupling when the accumulated model_time reaches the preCICE time_window.
    !! Accumulate timesteps, if the preCICE time_window is reached:
    !! - Remesh the 3D mesh
@@ -213,8 +230,8 @@ contains
             call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
          end if
          call precice_adapter_write_data(self)
-         ! call precice_adapter_read_data(self, max_timestep)
-         ! call precice_adapter_add_to_fm_administration(self)
+         call precice_adapter_read_data(self, max_timestep)
+         call precice_adapter_add_to_fm_administration(self)
          call precicef_advance(max_timestep)
          ! Reset summed_time_progress after advancing
          summed_time_progress = 0.0
@@ -223,6 +240,9 @@ contains
       end if
    end subroutine precice_adapter_update
 
+
+
+   !===========================================================================
    !> Finalize the preCICE adapter and perform preCICE shutdown.
    subroutine precice_adapter_finalize(self)
       use precice, only: precicef_finalize
@@ -234,6 +254,9 @@ contains
       call precicef_finalize()
    end subroutine precice_adapter_finalize
 
+
+
+   !===========================================================================
    !> Write the currently active model quantities to the registered preCICE meshes.
    !! Quantities published:
    !! - `hs` (sea_floor_depth_below_sea_surface) written to 2D mesh when active.
@@ -272,6 +295,17 @@ contains
       end if
    end subroutine precice_adapter_write_data
 
+
+
+   !===========================================================================
+   !> Read the quantities from preCICE for the coupled sources and sinks
+   !! Store them in the adapter instance for later use in the FM administration
+   !! Quantities read:
+   !! - `vertex_ids`                                         created by preCICE, added to source_sinks%name
+   !! - `mesh_coordinates`                                   not needed, they are all zero
+   !! - `sinks_x, sinks_y, sinks_z_min, sinks_z_max`         might be zero if this is a source-only coupling
+   !! - `sources_x, sources_y, sources_z_min, sources_z_max` might be zero if this is a sink-only coupling
+   !! - `discharge`
    subroutine precice_adapter_read_data(self, current_time_in_window)
       use precice, only: precicef_get_mesh_vertex_size, &
                          precicef_get_mesh_vertex_ids_and_coordinates, &
@@ -282,9 +316,6 @@ contains
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
       real(kind=dp), intent(in) :: current_time_in_window
-
-      real(kind=c_double), dimension(:), allocatable :: buffer
-
       
       call precicef_get_mesh_vertex_size(self%sources_sinks_mesh_name, self%mesh_sources_sinks_size, len(self%sources_sinks_mesh_name))
       call realloc(self%vertex_ids_sources_sinks, self%mesh_sources_sinks_size, keepExisting=.false.)
@@ -294,112 +325,125 @@ contains
                                                         self%vertex_ids_sources_sinks, &
                                                         self%sources_sinks_mesh_coordinates, &
                                                         len(self%sources_sinks_mesh_name))
-      allocate (buffer(self%mesh_sources_sinks_size))
-
-      ! Read Ids
+      ! Read sinks_x
+      call realloc(self%sinks_x, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
-                              self%quantities%sosi_id%standard_name, &
+                              self%quantities%sinks_x%standard_name, &
                               self%mesh_sources_sinks_size, &
                               self%vertex_ids_sources_sinks, &
                               current_time_in_window, &
-                              buffer, &
-                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sosi_id%standard_name)))
-      self%sources_sinks_ids = nint(buffer)
-      
-      ! Read connected Ids
+                              self%sinks_x, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_x%standard_name)))
+      ! Read sinks_y
+      call realloc(self%sinks_y, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
-                              self%quantities%sosi_connected_id%standard_name, &
+                              self%quantities%sinks_y%standard_name, &
                               self%mesh_sources_sinks_size, &
                               self%vertex_ids_sources_sinks, &
                               current_time_in_window, &
-                              buffer, &
-                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sosi_connected_id%standard_name)))
-      self%sources_sinks_connected_ids = nint(buffer)
-      
-      ! Read zmin
-      call realloc(self%sources_sinks_zmin, self%mesh_sources_sinks_size, keepExisting=.false.)
+                              self%sinks_y, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_y%standard_name)))
+      ! Read sinks_z_min
+      call realloc(self%sinks_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
-                              self%quantities%sosi_zmin%standard_name, &
+                              self%quantities%sinks_z_min%standard_name, &
                               self%mesh_sources_sinks_size, &
                               self%vertex_ids_sources_sinks, &
                               current_time_in_window, &
-                              self%sources_sinks_zmin, &
-                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sosi_zmin%standard_name)))
-      
-      ! Read zmax
-      call realloc(self%sources_sinks_zmax, self%mesh_sources_sinks_size, keepExisting=.false.)
+                              self%sinks_z_min, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_z_min%standard_name)))
+      ! Read sinks_z_max
+      call realloc(self%sinks_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
-                              self%quantities%sosi_zmax%standard_name, &
+                              self%quantities%sinks_z_max%standard_name, &
                               self%mesh_sources_sinks_size, &
                               self%vertex_ids_sources_sinks, &
                               current_time_in_window, &
-                              self%sources_sinks_zmax, &
-                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sosi_zmax%standard_name)))
-      
+                              self%sinks_z_max, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_z_max%standard_name)))
+      ! Read sources_x
+      call realloc(self%sources_x, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_x%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_x, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_x%standard_name)))
+      ! Read sources_y
+      call realloc(self%sources_y, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_y%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_y, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_y%standard_name)))
+      ! Read sources_z_min
+      call realloc(self%sources_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_z_min%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_z_min, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_z_min%standard_name)))
+      ! Read sources_z_max
+      call realloc(self%sources_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call precicef_read_data(self%sources_sinks_mesh_name, &
+                              self%quantities%sources_z_max%standard_name, &
+                              self%mesh_sources_sinks_size, &
+                              self%vertex_ids_sources_sinks, &
+                              current_time_in_window, &
+                              self%sources_z_max, &
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_z_max%standard_name)))
       ! Read discharge
       call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
-                              self%quantities%sosi_discharge%standard_name, &
+                              self%quantities%sources_sinks_discharge%standard_name, &
                               self%mesh_sources_sinks_size, &
                               self%vertex_ids_sources_sinks, &
                               current_time_in_window, &
                               self%sources_sinks_discharge, &
-                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sosi_discharge%standard_name)))
+                              len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_sinks_discharge%standard_name)))
    end subroutine precice_adapter_read_data
 
+
+
+   !===========================================================================
+   !> Add the coupled sources and sinks read from preCICE to the FM administration
+   !! Compare with the 3 nearfield::*ToSrc functions for the coupling via DIMR
+   !! Assumption: a coupled_source_sink from preCICE is not completely empty
+   !! No checks needed: invalid data will be zero and need to be zero in the FM administration
+   !! TODO: When computing in parallel, checks might be needed for sources/sinks outside the local domain
+   !! TODO: Add constituents
+   !! TODO: Add momentum
+   !! TODO, optionally: lump sources/sinks in the same cell
+   !! TODO, optionally: dealloc self%sink/self%source arrays after use
    subroutine precice_adapter_add_to_fm_administration(self)
-      !use fm_external_forcings_data, only: num_source_sink, num_source_sink_for_nearfield, source_sink_all_discharges, source_sink_indices, source_sink_z_bottom, source_sink_z_top, source_sink_name
       use m_cellmask_from_polygon_set, only: init_cell_geom_as_polylines, point_find_netcell, cleanup_cell_geom_polylines
-      !use m_reallocsrc, only: reallocsrc
 
       class(precice_adapter_t), intent(inout) :: self
-      !integer :: cell_id
-      !integer :: i
-      !integer, allocatable, dimension(:,:) :: map_id_to_sosi_index
-      !integer, allocatable, dimension(:) :: findloc_results
-      !integer :: sosi_id
-      
+      integer :: i
 
       call init_cell_geom_as_polylines()
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       
-      self%mesh_sources_sinks_size = size(self%sources_sinks_ids)
-      !allocate(map_id_to_sosi_index(2, self%mesh_sources_sinks_size))
-      !allocate(findloc_results(self%mesh_sources_sinks_size))
-      !map_id_to_sosi_index = 0
-      !do i = 1, self%mesh_sources_sinks_size
-      !   if (self%sources_sinks_ids(i) > 0) then
-      !      cell_id = point_find_netcell(self%sources_sinks_mesh_coordinates((i-1)*2+1), self%sources_sinks_mesh_coordinates((i-1)*2+2))
-      !      if (cell_id == 0) cycle
-      !      sosi_id = 0
-      !      if (self%sources_sinks_connected_ids(i) > 0) then
-      !         findloc_results = FINDLOC(map_id_to_sosi_index(1,:), self%sources_sinks_connected_ids(i))
-      !      end if
-      !      if (sosi_id == 0) then
-      !         ! This is a new source/sink that is not connected to any existing one, so we need to add it to the FM administration.
-      !         num_source_sink_for_nearfield = num_source_sink_for_nearfield + 1
-      !         num_source_sink = num_source_sink + 1
-      !         sosi_id = num_source_sink
-      !         map_id_to_sosi_index(1, i) = self%sources_sinks_ids(i)
-      !         map_id_to_sosi_index(2, i) = num_source_sink
-      !         call reallocsrc(num_source_sink, 2)
-      !         write (source_sink_name(num_source_sink), '(a,i0.4)') "precice ", i
-      !         source_sink_all_discharges(1, num_source_sink) = ABS(self%sources_sinks_discharge(i))
-      !      end if
-      !      if (self%sources_sinks_discharge(i) > 0.0_dp) then
-      !         ! Source
-      !         source_sink_indices(4, sosi_id) = cell_id
-      !         source_sink_z_bottom(2, sosi_id) = self%sources_sinks_zmin(i)
-      !         source_sink_z_top(2, sosi_id) = self%sources_sinks_zmax(i)
-      !      else
-      !         ! Sink
-      !         source_sink_indices(1, sosi_id) = cell_id
-      !         source_sink_z_bottom(1, sosi_id) = self%sources_sinks_zmin(i)
-      !         source_sink_z_top(1, sosi_id) = self%sources_sinks_zmax(i)
-      !      end if
-      !   end if
-      !end do
+      do i = 1, self%mesh_sources_sinks_size
+         source_sinks%num_total = source_sinks%num_total + 1
+         source_sinks%num_nearfield = source_sinks%num_nearfield + 1
+         call source_sinks%resize(source_sinks%num_total)
+         write(source_sinks%name(source_sinks%num_total), '(a,i0.4)') "preC-SUMO_", self%vertex_ids_sources_sinks(i)
+         source_sinks%indices(source_sinks%num_total, 1) = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
+         source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, 1) = self%sinks_z_max(i)
+         source_sinks%indices(source_sinks%num_total, 4) = point_find_netcell(self%sources_x(i), self%sources_y(i))
+         source_sinks%z_bottom(source_sinks%num_total, 2) = self%sources_z_min(i)
+         source_sinks%z_top(source_sinks%num_total, 2) = self%sources_z_max(i)
+         source_sink_all_discharges(1, source_sinks%num_total) = ABS(self%sources_sinks_discharge(i))
+      end do
+
       call cleanup_cell_geom_polylines()
    end subroutine precice_adapter_add_to_fm_administration
 
