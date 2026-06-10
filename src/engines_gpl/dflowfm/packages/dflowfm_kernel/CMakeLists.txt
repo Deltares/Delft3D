@@ -199,7 +199,7 @@ if (WIN32)
     if(NOT TARGET impi)
       message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
     endif()
-    target_link_libraries(${library_name} INTERFACE impi)
+    target_link_libraries(${library_name} PRIVATE impi)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
