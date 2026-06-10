@@ -25,23 +25,29 @@ TEST(CSumoSettingsReaderTest, ParsesFileVersion)
 TEST(CSumoSettingsReaderTest, ReturnsNF2FFFilePaths)
 {
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const std::filesystem::path expected_dir = "NF2FF";
+    const std::filesystem::path expected_filename = "NF2FF__preC-SUMO_SubMod001_10.000.xml";
+    const std::filesystem::path expected_filepath = expected_dir / expected_filename;
     ASSERT_TRUE(result.has_value());
     EXPECT_FALSE(result->diffusers().empty());
-    EXPECT_EQ(result->diffusers()[0].nf2ffFilepath(1, 600.0), "NF2FF\\NF2FF__preC-SUMO_SubMod001_10.000.xml");
+    EXPECT_EQ(result->diffusers()[0].nf2ffFilepath(1, 600.0), expected_filepath);
     EXPECT_FALSE(result->nf2ffFilepaths(600.0).empty());
     EXPECT_EQ(result->nf2ffFilepaths(600.0).size(), 1);
-    EXPECT_EQ(result->nf2ffFilepaths(600.0)[0], "NF2FF\\NF2FF__preC-SUMO_SubMod001_10.000.xml");
+    EXPECT_EQ(result->nf2ffFilepaths(600.0)[0], expected_filepath);
 }
 
 TEST(CSumoSettingsReaderTest, ReturnsFF2NFFilePaths)
 {
     const auto result = pre_c_sumo::CSumoSettingsReader::fromString(pre_c_sumo::test::full_settings_xml);
+    const std::filesystem::path expected_dir = "FF2NF";
+    const std::filesystem::path expected_filename = "FF2NF__preC-SUMO_SubMod001_10.000.xml";
+    const std::filesystem::path expected_filepath = expected_dir / expected_filename;
     ASSERT_TRUE(result.has_value());
     EXPECT_FALSE(result->diffusers().empty());
-    EXPECT_EQ(result->diffusers()[0].ff2nfFilepath(1, 600.0), "FF2NF\\FF2NF__preC-SUMO_SubMod001_10.000.xml");
+    EXPECT_EQ(result->diffusers()[0].ff2nfFilepath(1, 600.0), expected_filepath);
     EXPECT_FALSE(result->ff2nfFilepaths(600.0).empty());
     EXPECT_EQ(result->ff2nfFilepaths(600.0).size(), 1);
-    EXPECT_EQ(result->ff2nfFilepaths(600.0)[0], "FF2NF\\FF2NF__preC-SUMO_SubMod001_10.000.xml");
+    EXPECT_EQ(result->ff2nfFilepaths(600.0)[0], expected_filepath);
 }
 
 TEST(CSumoSettingsReaderTest, ReturnsErrorOnInvalidXml)
