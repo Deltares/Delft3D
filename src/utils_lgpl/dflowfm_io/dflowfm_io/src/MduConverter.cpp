@@ -12,16 +12,6 @@ using namespace ini;
 
 namespace dflowfm_io
 {
-    static const IniSection* GetSection(const IniData& iniData, const std::string& name)
-    {
-        return iniData.HasSection(name) ? &iniData.GetSection(name) : nullptr;
-    }
-
-    static const IniProperty* GetProperty(const IniSection& section, const std::string& key)
-    {
-        return section.HasProperty(key) ? &section.GetProperty(key) : nullptr;
-    }
-
     ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
     {
         MduValidator validator;
@@ -50,38 +40,31 @@ namespace dflowfm_io
                 std::optional<MduData::Value> converted_value = std::nullopt;
                 if (value_type == ValueType::Path)
                 {
-                    std::filesystem::path value;
-                    if (property.TryGetConvertedValue(value)) converted_value = value;
+                    converted_value = property.TryGetConvertedValue<std::filesystem::path>();
                 }
                 else if (value_type == ValueType::String)
                 {
-                    std::string value;
-                    if (property.TryGetConvertedValue(value)) converted_value = value;
+                    converted_value = property.TryGetConvertedValue<std::string>();
                 }
                 else if (value_type == ValueType::Integer)
                 {
-                    int intValue;
-                    if (property.TryGetConvertedValue(intValue)) converted_value = intValue;
+                    converted_value = property.TryGetConvertedValue<int>();
                 }
                 else if (value_type == ValueType::IntBool)
                 {
-                    bool value;
-                    if (property.TryGetConvertedValue(value)) converted_value = value;
+                    converted_value = property.TryGetConvertedValue<bool>();
                 }
                 else if (value_type == ValueType::FloatingPoint)
                 {
-                    double doubleValue;
-                    if (property.TryGetConvertedValue(doubleValue)) converted_value = doubleValue;
+                    converted_value = property.TryGetConvertedValue<double>();
                 }
                 else if (value_type == ValueType::StringList)
                 {
-                    std::vector<std::string> values;
-                    if (property.TryGetConvertedValueCollection(values)) converted_value = values;
+                    converted_value = property.TryGetConvertedValueCollection<std::string>();
                 }
                 else if (value_type == ValueType::PathList)
                 {
-                    std::vector<std::filesystem::path> values;
-                    if (property.TryGetConvertedValueCollection(values)) converted_value = values;
+                    converted_value = property.TryGetConvertedValueCollection<std::filesystem::path>();
                 }
                 else
                 {

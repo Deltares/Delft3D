@@ -2,6 +2,7 @@
 
 #include "ini/IniValueConverter.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -89,55 +90,47 @@ namespace ini
 
         /// @brief Tries to convert the property value to the specified type.
         /// @tparam T The type to convert to.
-        /// @param convertedValue The converted value if successful; otherwise the default value of @p T.
-        /// @return @c true if the conversion succeeded; otherwise @c false.
+        /// @return The converted value if successful; otherwise std::nullopt.
         template <typename T>
-        bool TryGetConvertedValue(T& convertedValue) const
+        std::optional<T> TryGetConvertedValue() const
         {
             if (!HasValue())
             {
-                convertedValue = T{};
-                return false;
+                return std::nullopt;
             }
 
             try
             {
-                convertedValue = IniValueConverter::FromString<T>(value);
-                return true;
+                return IniValueConverter::FromString<T>(value);
             }
             catch (const std::exception& ex)
             {
-                convertedValue = T{};
                 LogValueConversionError(typeid(T).name(), ex);
-                return false;
+                return std::nullopt;
             }
         }
 
         /// @brief Tries to convert the property value, which can be a delimited string, to a
         ///        collection of the specified type.
         /// @tparam T The type to convert the values to.
-        /// @param convertedValues The converted values if successful; otherwise an empty collection.
         /// @param delimiter The character used to separate the values. The default is a space.
-        /// @return @c true if the conversion succeeded; otherwise @c false.
+        /// @return The converted values if successful; otherwise std::nullopt.
         template <typename T>
-        bool TryGetConvertedValueCollection(std::vector<T>& convertedValues, char delimiter = ' ') const
+        std::optional<std::vector<T>> TryGetConvertedValueCollection(char delimiter = ' ') const
         {
             if (!HasValue())
             {
-                convertedValues = {};
-                return false;
+                return std::nullopt;
             }
 
             try
             {
-                convertedValues = IniValueConverter::FromMultiValueString<T>(value, delimiter);
-                return true;
+                return IniValueConverter::FromMultiValueString<T>(value, delimiter);
             }
             catch (const std::exception& ex)
             {
-                convertedValues = {};
                 LogValueConversionError(typeid(T).name(), ex);
-                return false;
+                return std::nullopt;
             }
         }
 

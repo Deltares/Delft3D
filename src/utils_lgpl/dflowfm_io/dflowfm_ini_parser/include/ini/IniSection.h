@@ -226,13 +226,8 @@ namespace ini
                 return defaultValue;
             }
 
-            T convertedValue{};
-            if (!it->TryGetConvertedValue(convertedValue))
-            {
-                return defaultValue;
-            }
-
-            return convertedValue;
+            auto convertedValue = it->TryGetConvertedValue<T>();
+            return convertedValue.value_or(defaultValue);
         }
 
         /// @brief Gets the values of all properties with the specified key.
@@ -257,10 +252,9 @@ namespace ini
                     continue;
                 }
 
-                T convertedValue{};
-                if (property.TryGetConvertedValue(convertedValue))
+                if (auto convertedValue = property.TryGetConvertedValue<T>())
                 {
-                    result.push_back(std::move(convertedValue));
+                    result.push_back(std::move(*convertedValue));
                 }
             }
 
@@ -282,13 +276,8 @@ namespace ini
                 return {};
             }
 
-            std::vector<T> convertedValues;
-            if (!it->TryGetConvertedValueCollection(convertedValues, delimiter))
-            {
-                return {};
-            }
-
-            return convertedValues;
+            auto convertedValues = it->TryGetConvertedValueCollection<T>(delimiter);
+            return convertedValues.value_or(std::vector<T>{});
         }
 
         /// @brief Removes the specified property from the section.

@@ -178,154 +178,135 @@ namespace ini::test
     // TryGetConvertedValue
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, TryGetConvertedValue_EmptyValue_ReturnsFalseAndDefaultValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_EmptyValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "");
 
-        double convertedValue = 1.0;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<double>();
 
-        EXPECT_FALSE(result);
-        EXPECT_EQ(convertedValue, 0.0);
+        EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_ValidIntValue_ReturnsTrueAndConvertedValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_ValidIntValue_ReturnsConvertedValue)
     {
         IniProperty property("TestKey", "42");
 
-        int convertedValue = 0;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<int>();
 
-        EXPECT_TRUE(result);
-        EXPECT_EQ(convertedValue, 42);
+        EXPECT_TRUE(result.has_value());
+        EXPECT_EQ(*result, 42);
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_ValidDoubleValue_ReturnsTrueAndConvertedValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_ValidDoubleValue_ReturnsConvertedValue)
     {
         IniProperty property("TestKey", "2.7100000e+00");
 
-        double convertedValue = 0.0;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<double>();
 
-        EXPECT_TRUE(result);
-        EXPECT_DOUBLE_EQ(convertedValue, 2.71);
+        EXPECT_TRUE(result.has_value());
+        EXPECT_DOUBLE_EQ(*result, 2.71);
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_ValidStringValue_ReturnsTrueAndConvertedValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_ValidStringValue_ReturnsConvertedValue)
     {
         IniProperty property("TestKey", "TestValue");
 
-        std::string convertedValue;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<std::string>();
 
-        EXPECT_TRUE(result);
-        EXPECT_EQ(convertedValue, "TestValue");
+        EXPECT_TRUE(result.has_value());
+        EXPECT_EQ(*result, "TestValue");
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_InvalidIntValue_ReturnsFalseAndDefaultValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_InvalidIntValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        int convertedValue = 99;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<int>();
 
-        EXPECT_FALSE(result);
-        EXPECT_EQ(convertedValue, 0);
+        EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_InvalidDoubleValue_ReturnsFalseAndDefaultValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_InvalidDoubleValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        double convertedValue = 99.0;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<double>();
 
-        EXPECT_FALSE(result);
-        EXPECT_EQ(convertedValue, 0.0);
+        EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_InvalidFloatValue_ReturnsFalseAndDefaultValue)
+    TEST(IniPropertyTest, TryGetConvertedValue_InvalidFloatValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        float convertedValue = 99.0f;
-        bool result = property.TryGetConvertedValue(convertedValue);
+        auto result = property.TryGetConvertedValue<float>();
 
-        EXPECT_FALSE(result);
-        EXPECT_EQ(convertedValue, 0.0f);
+        EXPECT_FALSE(result.has_value());
     }
 
     // -------------------------------------------------------------------------
     // TryGetConvertedValueCollection
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, TryGetConvertedValueCollection_EmptyValue_ReturnsFalseAndEmptyCollection)
+    TEST(IniPropertyTest, TryGetConvertedValueCollection_EmptyValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "");
 
-        std::vector<double> convertedValues;
-        bool result = property.TryGetConvertedValueCollection(convertedValues);
+        auto result = property.TryGetConvertedValueCollection<double>();
 
-        EXPECT_FALSE(result);
-        EXPECT_TRUE(convertedValues.empty());
+        EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValueCollection_ValidSingleIntValue_ReturnsTrueAndConvertedCollection)
+    TEST(IniPropertyTest, TryGetConvertedValueCollection_ValidSingleIntValue_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "10");
 
-        std::vector<int> convertedValues;
-        bool result = property.TryGetConvertedValueCollection(convertedValues);
+        auto result = property.TryGetConvertedValueCollection<int>();
 
-        EXPECT_TRUE(result);
-        EXPECT_EQ(convertedValues, (std::vector<int>{10}));
+        EXPECT_TRUE(result.has_value());
+        EXPECT_EQ(*result, (std::vector<int>{10}));
     }
 
     TEST(IniPropertyTest,
-         TryGetConvertedValueCollection_ValidMultiValueAndSpaceDelimiter_ReturnsTrueAndConvertedCollection)
+         TryGetConvertedValueCollection_ValidMultiValueAndSpaceDelimiter_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "10 20 30");
 
-        std::vector<int> convertedValues;
-        bool result = property.TryGetConvertedValueCollection(convertedValues, ' ');
+        auto result = property.TryGetConvertedValueCollection<int>(' ');
 
-        EXPECT_TRUE(result);
-        EXPECT_EQ(convertedValues, (std::vector<int>{10, 20, 30}));
+        EXPECT_TRUE(result.has_value());
+        EXPECT_EQ(*result, (std::vector<int>{10, 20, 30}));
     }
 
     TEST(IniPropertyTest,
-         TryGetConvertedValueCollection_ValidMultiValueAndSemicolonDelimiter_ReturnsTrueAndConvertedCollection)
+         TryGetConvertedValueCollection_ValidMultiValueAndSemicolonDelimiter_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "10;20;30");
 
-        std::vector<int> convertedValues;
-        bool result = property.TryGetConvertedValueCollection(convertedValues, ';');
+        auto result = property.TryGetConvertedValueCollection<int>(';');
 
-        EXPECT_TRUE(result);
-        EXPECT_EQ(convertedValues, (std::vector<int>{10, 20, 30}));
+        EXPECT_TRUE(result.has_value());
+        EXPECT_EQ(*result, (std::vector<int>{10, 20, 30}));
     }
 
     TEST(IniPropertyTest,
-         TryGetConvertedValueCollection_ValidMultiValueAndNewlineDelimiter_ReturnsTrueAndConvertedCollection)
+         TryGetConvertedValueCollection_ValidMultiValueAndNewlineDelimiter_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "3 6 \n 9 \r\n 12");
 
-        std::vector<int> convertedValues;
-        bool result = property.TryGetConvertedValueCollection(convertedValues);
+        auto result = property.TryGetConvertedValueCollection<int>();
 
-        EXPECT_TRUE(result);
-        EXPECT_EQ(convertedValues, (std::vector<int>{3, 6, 9, 12}));
+        EXPECT_TRUE(result.has_value());
+        EXPECT_EQ(*result, (std::vector<int>{3, 6, 9, 12}));
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValueCollection_InvalidFormattedValue_ReturnsFalseAndEmptyCollection)
+    TEST(IniPropertyTest, TryGetConvertedValueCollection_InvalidFormattedValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        std::vector<int> convertedValues;
-        bool result = property.TryGetConvertedValueCollection(convertedValues);
+        auto result = property.TryGetConvertedValueCollection<int>();
 
-        EXPECT_FALSE(result);
-        EXPECT_TRUE(convertedValues.empty());
+        EXPECT_FALSE(result.has_value());
     }
 
     // -------------------------------------------------------------------------
