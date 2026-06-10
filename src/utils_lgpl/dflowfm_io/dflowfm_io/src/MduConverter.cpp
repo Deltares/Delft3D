@@ -101,28 +101,6 @@ namespace dflowfm_io
             }
         }
 
-
-
-
-
-        if (const auto* generalSection = GetSection(iniData, "general"))
-        {
-            TryConvert(GetProperty(*generalSection, "program"), report, mduData.general.program);
-            TryConvert(GetProperty(*generalSection, "fileVersion"), report, mduData.general.fileVersion);
-        }
-
-        if (const auto* geometrySection = GetSection(iniData, "geometry"))
-        {
-            TryConvert(GetProperty(*geometrySection, "netFile"), report, mduData.geometry.netFile);
-            TryConvert(GetProperty(*geometrySection, "useCaching"), report, mduData.geometry.useCaching);
-        }
-
-        if (const auto* numericsSection = GetSection(iniData, "numerics"))
-        {
-            TryConvert(GetProperty(*numericsSection, "cflMax"), report, mduData.numerics.cflMax);
-            TryConvert(GetProperty(*numericsSection, "kmx"), report, mduData.numerics.kmx);
-        }
-
         return {std::move(mduData), std::move(report)};
     }
 

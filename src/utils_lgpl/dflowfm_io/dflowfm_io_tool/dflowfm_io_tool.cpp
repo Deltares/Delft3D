@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <variant>
 #include <dflowfm_io/MduFile.h>
 
 using namespace dflowfm_io;
@@ -32,17 +33,29 @@ int main(int argc, char* argv[])
 
     cout << "\nSuccessfully loaded: " << path << "\n\n";
 
-    cout << "[general]\n";
-    cout << "  program     = " << data.general.program << "\n";
-    cout << "  fileVersion = " << data.general.fileVersion << "\n";
+    struct PrintValue
+    {
+        void operator()(const string& v) const { cout << v; }
+        void operator()(int v) const { cout << v; }
+        void operator()(double v) const { cout << v; }
+        void operator()(const vector<string>& v) const
+        {
+            cout << "[";
+            for (size_t i = 0; i < v.size(); ++i)
+            {
+                if (i > 0) cout << ", ";
+                cout << v[i];
+            }
+            cout << "]";
+        }
+    };
 
-    cout << "[geometry]\n";
-    cout << "  netFile    = " << data.geometry.netFile << "\n";
-    cout << "  useCaching = " << boolalpha << data.geometry.useCaching << "\n";
-
-    cout << "[numerics]\n";
-    cout << "  cflMax = " << data.numerics.cflMax << "\n";
-    cout << "  kmx    = " << data.numerics.kmx << "\n";
+    for (const auto& [key, value] : data.data_entries)
+    {
+        cout << "  " << key << " = ";
+        visit(PrintValue{}, value);
+        cout << "\n";
+    }
 
     return 0;
 }
