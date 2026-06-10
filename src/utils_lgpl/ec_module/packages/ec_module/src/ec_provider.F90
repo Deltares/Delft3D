@@ -1776,7 +1776,6 @@ contains
       real(dp), dimension(:), allocatable :: xs !< x-coordinates of support points
       real(dp), dimension(:), allocatable :: ys !< y-coordinates of support points
       integer, dimension(:), allocatable :: mask !< support point mask array (for polytime ElementSet)
-      integer, dimension(:), allocatable ::z_connections !< extra ec module connections for vertical interpolation
       integer :: n_points !< number of support points
       integer :: n_signals !< Number of forcing signals created (at most n_signals==n_points, but warn if n_signals==0)
       character(len=:), allocatable :: rec !< a read line
@@ -1790,7 +1789,7 @@ contains
       integer :: id !< dummy, catches ids which are not used
       integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID
       integer :: maxLay
-      type(tEcItem), pointer :: itemPT
+      type(tEcItem), pointer :: itemPT, zItemPT
       type(tEcItem), pointer :: itemt3D
       type(tEcItem), pointer :: sourceItem
       integer, dimension(:), allocatable :: itemIDList
@@ -1837,13 +1836,12 @@ contains
       end if
       ! Read the support point coordinate pairs.
       allocate (xs(n_points), ys(n_points), mask(n_points), itemIDList(n_points), &
-      plipointlbls(n_points), z_connections(n_points), stat=istat)
+      plipointlbls(n_points), stat=istat)
       if (istat /= 0) then
          call set_ec_message("ERROR: ec_provider::ecProviderCreatePolyTimItemsBC: allocation error. N_points = ", n_points)
       end if
       mask = 1
       itemIDList = ec_undef_int
-      z_connections = 0
       do i = 1, n_points
          call GetLine(fileReaderPtr%fileHandle, rec, istat)
          if (index(rec, '!') > 0) rec = rec(1:index(rec, '!') - 1) ! trim commented  (!)
@@ -1979,7 +1977,7 @@ contains
 
          if (.not. ecProviderConnectSourceItemsToTargets(instancePtr, bcBlockPtr%func, id, itemId, i, &
                                                          n_signals, maxlay, itemIDList, qname=quantityname, &
-                                                         z_connection=z_connections(i), zTargetItemId=zTargetItemId)) then
+                                                         zTargetItemId=zTargetItemId)) then
             !
             ! No sub-FileReader made.
             mask(i) = 0
@@ -2018,21 +2016,11 @@ contains
       ! Add successfully created source Item to the main FileReader
       if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, itemPT%id)) return
 
-      block
-         type(tEcConnection), pointer :: connectionPtr
-
-         if (zTargetItemId /= 0) then
-            if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, zTargetItemId)) return
-         end if
-         do i = 1, n_points
-            if (z_connections(i) > 0) then
-               connectionPtr => ecSupportFindConnection(instancePtr, z_connections(i))
-               connectionPtr%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr => itemPT%elementSetPtr%z
-               connectionPtr%isZSource = .true.
-               print *, "Adding vertical interpolation", connectionPtr%sourceItemsPtr(1)%ptr%id
-            end if
-         end do
-      end block
+      if (zTargetItemId /= 0) then
+         if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, zTargetItemId)) return
+         zItemPT => ecSupportFindItem(instancePtr, zTargetItemId)
+         zItemPT%targetFieldPtr%arr1dPtr => itemPT%elementSetPtr%z
+      end if
       
       !
       ! close pli file
@@ -2120,7 +2108,7 @@ contains
 !==============================================================================================================
 
    function ecProviderConnectSourceItemsToTargets(instancePtr, signaltype, fileReaderId, targetItemId, targetIndex, n_signals, &
-         maxlay, itemIDList, qname, z_connection, zTargetItemId) result(itemFound)
+         maxlay, itemIDList, qname, zTargetItemId) result(itemFound)
       logical :: itemFound
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer :: fileReaderId ! file reader id
@@ -2132,14 +2120,9 @@ contains
       integer :: subconverterId, magnitude, j, connectionId, nr_fourier_items, anItemId
       type(tEcItem), pointer :: itemt3D
       character(len=*), optional :: qname
-      integer, intent(out),  optional :: z_connection ! INOUT
       integer, intent(in), optional :: zTargetItemId
 
       itemFound = .false.
-
-      if (present(z_connection)) then
-         z_connection = 0
-      end if
 
       select case (signaltype)
       case (BC_FUNC_TSERIES, BC_FUNC_CONSTANT)
@@ -2236,7 +2219,9 @@ contains
          n_signals = n_signals + 1
 
          block
-            if (present(z_connection) .and. present(zTargetItemId)) then
+            type(tEcConnection), pointer :: connectionPtr
+
+            if (present(zTargetItemId)) then
                if (zTargetItemId /= 0) then
                   subconverterId = ecInstanceCreateConverter(instancePtr)
                   if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
@@ -2251,7 +2236,8 @@ contains
                   if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) return
                   if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) return
 
-                  z_connection = connectionId
+                  connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
+                  connectionPtr%isZSource = .true.
                end if
             end if 
          end block
