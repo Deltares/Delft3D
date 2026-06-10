@@ -3,6 +3,7 @@
 
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
+#include <dflowfm_io/MduSchema.h>
 
 #include <cassert>
 #include <dflowfm_io/MduValidator.h>
@@ -82,8 +83,8 @@ namespace dflowfm_io
                 std::optional<MduData::Value> converted_value = std::nullopt;
                 if (value_type == ValueType::Path)
                 {
-                    std::string path_as_string;
-                    if (property.TryGetConvertedValue(path_as_string)) converted_value = std::filesystem::path(path_as_string);
+                    std::filesystem::path value;
+                    if (property.TryGetConvertedValue(value)) converted_value = value;
                 }
                 else if (value_type == ValueType::String)
                 {
@@ -112,16 +113,8 @@ namespace dflowfm_io
                 }
                 else if (value_type == ValueType::PathList)
                 {
-                    std::vector<std::string> paths_as_strings;
-                    if (property.TryGetConvertedValueCollection(paths_as_strings))
-                    {
-                        std::vector<std::filesystem::path> paths;
-                        for (const auto& path_str : paths_as_strings)
-                        {
-                            paths.emplace_back(path_str);
-                        }
-                        converted_value = paths;
-                    }
+                    std::vector<std::filesystem::path> values;
+                    if (property.TryGetConvertedValueCollection(values)) converted_value = values;
                 }
                 else
                 {
@@ -137,6 +130,78 @@ namespace dflowfm_io
         }
 
         return {std::move(mduData), std::move(report)};
+    }
+
+    ConversionResult<IniData> MduConverter::Convert(const MduData& mduData)
+    {
+        IniData iniData;
+        IssueReport report;
+
+        MduSchema schema = BuildMduSchema();
+
+        for (const auto& sectionSchema : schema.sections)
+        {
+            auto& iniSection = iniData.AddSection(sectionSchema.name);
+
+            for (const auto& propertySchema : sectionSchema.properties)
+            {
+                const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
+
+                auto it = KEY_VALUE_TYPES.find(key);
+                if (it == KEY_VALUE_TYPES.end())
+                {
+                    assert(false); // TODO decent error handling
+                }
+
+                if (!mduData.hasValue(key))
+                {
+                    continue; // TODO error handling
+                }
+
+                const ValueType value_type = it->second;
+                if (value_type == ValueType::Path)
+                {
+                    const auto& value = mduData.getValueAs<std::filesystem::path>(key);
+                    iniSection.AddProperty(propertySchema.key, value.string());
+                }
+                else if (value_type == ValueType::String)
+                {
+                    std::string value = mduData.getValueAs<std::string>(key);
+                    iniSection.AddProperty(propertySchema.key, value);
+                }
+                else if (value_type == ValueType::Integer)
+                {
+                    int value = mduData.getValueAs<int>(key);
+                    iniSection.AddProperty(propertySchema.key, value);
+                }
+                else if (value_type == ValueType::IntBool)
+                {
+                    bool value = mduData.getValueAs<bool>(key);
+                    iniSection.AddProperty(propertySchema.key, value);
+                }
+                else if (value_type == ValueType::FloatingPoint)
+                {
+                    double value = mduData.getValueAs<double>(key);
+                    iniSection.AddProperty(propertySchema.key, value);
+                }
+                else if (value_type == ValueType::StringList)
+                {
+                    const auto& values = mduData.getValueAs<std::vector<std::string>>(key);
+                    iniSection.AddMultiValueProperty(propertySchema.key, values);
+                }
+                else if (value_type == ValueType::PathList)
+                {
+                    const auto& values = mduData.getValueAs<std::vector<std::filesystem::path>>(key);
+                    iniSection.AddMultiValueProperty(propertySchema.key, values);
+                }
+                else
+                {
+                    throw std::logic_error("INTERNAL ERROR: Unhandled value type");
+                }
+            }
+        }
+
+        return {std::move(iniData), std::move(report)};
     }
 
 } // namespace dflowfm_io

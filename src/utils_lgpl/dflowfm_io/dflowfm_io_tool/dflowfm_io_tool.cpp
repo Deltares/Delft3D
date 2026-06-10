@@ -69,5 +69,20 @@ int main(int argc, char* argv[])
         cout << "\n";
     }
 
+    std::ostringstream stream;
+
+    try
+    {
+        mduFile.Save(stream);
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Error saving: " << e.what() << "\n ";
+        return 1;
+    }
+
+    cout << "\nSuccessfully saved to stream:\n\n";
+    cout << stream.str();
+
     return 0;
 }

@@ -77,7 +77,7 @@ namespace ini
 
         /// @brief Sets the INI data.
         /// @param value The new INI data.
-        void SetData(IniData value) { data = std::move(value); }
+        void SetData(IniData data) { this->data = std::move(data); }
 
     private:
         IniFileOptions options;

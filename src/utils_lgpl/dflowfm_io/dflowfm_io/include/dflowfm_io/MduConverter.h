@@ -10,6 +10,7 @@ namespace dflowfm_io
     {
     public:
         static ConversionResult<MduData> Convert(const ini::IniData& iniData);
+        static ConversionResult<ini::IniData> Convert(const MduData& mduData);
     };
 
 } // namespace dflowfm_io

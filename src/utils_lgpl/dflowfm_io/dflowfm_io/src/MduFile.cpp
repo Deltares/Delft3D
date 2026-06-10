@@ -19,7 +19,6 @@ namespace dflowfm_io
                 .allowDuplicateProperties = false,
                 .allowMultiLineValues = true,
             },
-        .formatterOptions = {},
     };
 
     struct MduFile::Impl
@@ -71,7 +70,7 @@ namespace dflowfm_io
 
         if (!result.IsValid())
         {
-            throw std::runtime_error("Failed to read MDU file.");
+            throw std::runtime_error("Failed to load MDU file.");
         }
 
         impl_->mduData = std::move(result.value);
@@ -93,7 +92,48 @@ namespace dflowfm_io
         Load(stream);
     }
 
+    void MduFile::Save(std::ostream& out)
+    {
+        if (out.fail())
+        {
+            throw std::ios_base::failure("Stream is not in a writable state.");
+        }
+
+        ConversionResult<IniData> result = MduConverter::Convert(impl_->mduData);
+
+        if (result.HasIssues())
+        {
+            std::cout << result.FormatIssues();
+        }
+
+        if (!result.IsValid())
+        {
+            throw std::runtime_error("Failed to save MDU file.");
+        }
+
+        impl_->iniFile.SetData(result.value);
+        impl_->iniFile.Save(out);
+    }
+
+    void MduFile::Save(const std::filesystem::path& path)
+    {
+        if (path.empty())
+        {
+            throw std::invalid_argument("Path must not be empty.");
+        }
+
+        std::ofstream stream(path);
+        if (!stream.is_open())
+        {
+            throw std::ios_base::failure("Failed to open file for writing: " + path.string());
+        }
+
+        Save(stream);
+    }
+
     MduData& MduFile::GetData() { return impl_->mduData; }
     const MduData& MduFile::GetData() const { return impl_->mduData; }
+
+    void MduFile::SetData(MduData data) { impl_->mduData = std::move(data); }
 
 } // namespace dflowfm_io

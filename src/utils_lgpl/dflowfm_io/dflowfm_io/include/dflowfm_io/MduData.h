@@ -16,8 +16,13 @@ namespace dflowfm_io
     {
         int GetDummyValue() const;
 
+        bool hasValue(std::string_view key) const
+        {
+            return data_entries.find(dflowfm_io::to_lowercase(key)) != data_entries.end();
+        }
+
         template <typename T>
-        T& getValueAs(std::string_view key)
+        const T& getValueAs(std::string_view key) const
         {
             auto it = data_entries.find(dflowfm_io::to_lowercase(key));
             if (it == data_entries.end())
@@ -25,6 +30,12 @@ namespace dflowfm_io
                 throw std::runtime_error("key/value pair not found: " + std::string(key));
             }
             return std::get<T>(it->second);
+        }
+
+        template <typename T>
+        T& getValueAs(std::string_view key)
+        {
+            return const_cast<T&>(std::as_const(*this).getValueAs<T>(key));
         }
 
         using Value = std::variant<std::filesystem::path, std::string, double, int, bool, std::vector<std::string>, std::vector<std::filesystem::path>>;

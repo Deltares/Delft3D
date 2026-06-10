@@ -1,7 +1,9 @@
 #pragma once
 
 #include <filesystem>
+#include <istream>
 #include <memory>
+#include <ostream>
 
 #include <dflowfm_io/MduData.h>
 
@@ -26,8 +28,13 @@ namespace dflowfm_io
         void Load(std::istream& in);
         void Load(const std::filesystem::path& path);
 
+        void Save(std::ostream& out);
+        void Save(const std::filesystem::path& path);
+
         MduData& GetData();
         const MduData& GetData() const;
+
+        void SetData(MduData data);
 
     private:
         struct Impl;
