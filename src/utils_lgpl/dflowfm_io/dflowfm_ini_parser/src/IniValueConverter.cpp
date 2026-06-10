@@ -21,6 +21,8 @@ namespace ini
         return std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(value));
     }
 
+    std::string IniValueConverter::PathToString(const std::filesystem::path& value) { return value.string(); }
+
     bool IniValueConverter::BoolFromString(const std::string& value)
     {
         static const std::unordered_map<std::string, bool> mappings = {
@@ -59,6 +61,11 @@ namespace ini
         }
 
         throw std::invalid_argument("String '" + value + "' was not recognized as a valid date/time.");
+    }
+
+    std::filesystem::path IniValueConverter::PathFromString(const std::string& value)
+    {
+        return std::filesystem::path(value);
     }
 
 } // namespace ini

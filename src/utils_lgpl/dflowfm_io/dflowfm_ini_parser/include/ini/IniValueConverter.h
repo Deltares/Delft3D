@@ -3,6 +3,7 @@
 #include "ini/StringUtils.h"
 
 #include <chrono>
+#include <filesystem>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -34,6 +35,10 @@ namespace ini
             else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
             {
                 return TimePointToString(value);
+            }
+            else if constexpr (std::is_same_v<T, std::filesystem::path>)
+            {
+                return PathToString(value);
             }
             else
             {
@@ -84,6 +89,10 @@ namespace ini
             {
                 return TimePointFromString(trimmed);
             }
+            else if constexpr (std::is_same_v<T, std::filesystem::path>)
+            {
+                return PathFromString(trimmed);
+            }
             else
             {
                 return DefaultFromString<T>(trimmed);
@@ -129,6 +138,7 @@ namespace ini
         static std::string FloatToString(double value);
         static std::string FloatToString(float value);
         static std::string TimePointToString(std::chrono::system_clock::time_point value);
+        static std::string PathToString(const std::filesystem::path& value);
 
         template <typename T>
         static std::string DefaultToString(const T& value)
@@ -140,6 +150,7 @@ namespace ini
 
         static bool BoolFromString(const std::string& value);
         static std::chrono::system_clock::time_point TimePointFromString(const std::string& value);
+        static std::filesystem::path PathFromString(const std::string& value);
 
         template <typename T>
         static T DefaultFromString(const std::string& value)

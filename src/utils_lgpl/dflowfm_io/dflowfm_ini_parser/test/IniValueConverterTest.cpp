@@ -107,6 +107,28 @@ namespace ini::test
                           std::make_pair(MakeTimePoint(2000, 1, 1, 0, 0, 0), "2000-01-01 00:00:00")));
 
     // -------------------------------------------------------------------------
+    // ToString - path
+    // -------------------------------------------------------------------------
+
+    class IniValueConverterToStringPathTest
+        : public ::testing::TestWithParam<std::pair<std::filesystem::path, std::string>>
+    {
+    };
+
+    TEST_P(IniValueConverterToStringPathTest, ToString_PathValue_ReturnsFormattedString)
+    {
+        auto [value, expected] = GetParam();
+        EXPECT_EQ(IniValueConverter::ToString(value), expected);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringPathTest,
+                             ::testing::Values(std::make_pair(std::filesystem::path("foo/bar.txt"), "foo/bar.txt"),
+                                               std::make_pair(std::filesystem::path("C:\\some\\path"),
+                                                              "C:\\some\\path"),
+                                               std::make_pair(std::filesystem::path("relative"), "relative"),
+                                               std::make_pair(std::filesystem::path(""), "")));
+
+    // -------------------------------------------------------------------------
     // ToString - string
     // -------------------------------------------------------------------------
 
@@ -319,6 +341,28 @@ namespace ini::test
                           std::make_pair("2020/01/01", MakeTimePoint(2020, 01, 01, 0, 0, 0))));
 
     // -------------------------------------------------------------------------
+    // FromString - path
+    // -------------------------------------------------------------------------
+
+    class IniValueConverterFromStringPathTest
+        : public ::testing::TestWithParam<std::pair<std::string, std::filesystem::path>>
+    {
+    };
+
+    TEST_P(IniValueConverterFromStringPathTest, FromString_PathFormattedString_ReturnsPathValue)
+    {
+        auto [value, expected] = GetParam();
+        EXPECT_EQ(IniValueConverter::FromString<std::filesystem::path>(value), expected);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringPathTest,
+                             ::testing::Values(std::make_pair("foo/bar.txt", std::filesystem::path("foo/bar.txt")),
+                                               std::make_pair("C:\\some\\path",
+                                                              std::filesystem::path("C:\\some\\path")),
+                                               std::make_pair("relative", std::filesystem::path("relative")),
+                                               std::make_pair(" trimmed ", std::filesystem::path("trimmed"))));
+
+    // -------------------------------------------------------------------------
     // FromString - string
     // -------------------------------------------------------------------------
 
@@ -448,6 +492,27 @@ namespace ini::test
             std::make_pair(std::vector<std::chrono::system_clock::time_point>{MakeTimePoint(2020, 12, 31, 23, 59, 59),
                                                                               MakeTimePoint(2020, 1, 1, 12, 0, 0)},
                            "2020-12-31 23:59:59 2020-01-01 12:00:00")));
+
+    // -------------------------------------------------------------------------
+    // ToMultiValueString - path
+    // -------------------------------------------------------------------------
+
+    class IniValueConverterToMultiValueStringPathTest
+        : public ::testing::TestWithParam<std::pair<std::vector<std::filesystem::path>, std::string>>
+    {
+    };
+
+    TEST_P(IniValueConverterToMultiValueStringPathTest, ToMultiValueString_PathValues_ReturnsFormattedString)
+    {
+        auto [values, expected] = GetParam();
+        EXPECT_EQ(IniValueConverter::ToMultiValueString(values), expected);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(
+        IniValueConverterTest, IniValueConverterToMultiValueStringPathTest,
+        ::testing::Values(std::make_pair(std::vector<std::filesystem::path>{"foo/bar.txt"}, "foo/bar.txt"),
+                          std::make_pair(std::vector<std::filesystem::path>{"foo/bar.txt", "baz/qux.txt"},
+                                         "foo/bar.txt baz/qux.txt")));
 
     // -------------------------------------------------------------------------
     // ToMultiValueString - string
@@ -731,6 +796,33 @@ namespace ini::test
                           std::make_pair("2021/01/01 2020/12/31", std::vector<std::chrono::system_clock::time_point>{
                                                                       MakeTimePoint(2021, 1, 1, 0, 0, 0),
                                                                       MakeTimePoint(2020, 12, 31, 0, 0, 0)})));
+
+    // -------------------------------------------------------------------------
+    // FromMultiValueString - path
+    // -------------------------------------------------------------------------
+
+    TEST(IniValueConverterTest, FromMultiValueString_EmptyPathString_ReturnsEmptyVector)
+    {
+        EXPECT_EQ(IniValueConverter::FromMultiValueString<std::filesystem::path>(""),
+                  std::vector<std::filesystem::path>{});
+    }
+
+    class IniValueConverterFromMultiValueStringPathTest
+        : public ::testing::TestWithParam<std::pair<std::string, std::vector<std::filesystem::path>>>
+    {
+    };
+
+    TEST_P(IniValueConverterFromMultiValueStringPathTest, FromMultiValueString_PathFormattedString_ReturnsPathValues)
+    {
+        auto [value, expected] = GetParam();
+        EXPECT_EQ(IniValueConverter::FromMultiValueString<std::filesystem::path>(value), expected);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(
+        IniValueConverterTest, IniValueConverterFromMultiValueStringPathTest,
+        ::testing::Values(std::make_pair("foo/bar.txt", std::vector<std::filesystem::path>{"foo/bar.txt"}),
+                          std::make_pair("foo/bar.txt\r\nbaz/qux.txt",
+                                         std::vector<std::filesystem::path>{"foo/bar.txt", "baz/qux.txt"})));
 
     // -------------------------------------------------------------------------
     // FromMultiValueString - string
