@@ -111,7 +111,7 @@ contains
       if (extrapolation_method_legacy /= 0) then
          res%is_extrapolation_allowed = .true.
       end if
-      
+
    end function read_spatial_field_block
 
    !> Read averaging keywords from any ini-file block into a t_averaging_input.
@@ -245,13 +245,13 @@ contains
       if (len_trim(input%operand_string) > 0) then
          input%oper = convert_operand_string_to_integer(input%operand_string)
          if (input%oper == OPERAND_UNKNOWN) then
-            write (msgbuf, '(a)') 'Invalid block in file '''//file_name//''': ['//group_name//']. Unknown operand '''//input%operand_string//'''.'
+            write (msgbuf, '(a)') 'Invalid block in file '''//file_name//''': ['//group_name//']. Unknown operand '''//trim(input%operand_string)//'''.'
             call err_flush()
             return
          end if
 
          if (len_trim(input%operand_string) == 1) then
-            write (msgbuf, '(a)') 'Block in file '''//file_name//''': ['//group_name//']. Operand value '''//input%operand_string//'''. is deprecated, ' &
+            write (msgbuf, '(a)') 'Block in file '''//file_name//''': ['//group_name//']. Operand value '''//trim(input%operand_string)//'''. is deprecated, ' &
                //'replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
             call warn_flush()
          end if
@@ -277,7 +277,7 @@ contains
          return
       end if
 
-      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method )
+      input%is_static_field = is_static_file_type(input%forcing_file_type, input%method)
 
       call update_method_in_case_extrapolation(input%method, input%is_extrapolation_allowed)
 
