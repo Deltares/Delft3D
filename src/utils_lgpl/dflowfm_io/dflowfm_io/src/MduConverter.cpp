@@ -41,16 +41,10 @@ namespace dflowfm_io
                 const std::string key = to_lowercase(section.GetName() + "." + property.GetKey());
 
                 auto* mdu_schema_section = MDU_SCHEMA.FindSection(section.GetName());
-                if (!mdu_schema_section)
-                {
-                    continue; // Unrecognized section, skip
-                }
+                if (!mdu_schema_section) continue; // Unrecognized section, skip
 
                 auto* mdu_schema_property = mdu_schema_section->FindProperty(property.GetKey());
-                if (!mdu_schema_property)
-                {
-                    continue; // Unrecognized property, skip
-                }
+                if (!mdu_schema_property) continue; // Unrecognized property, skip
 
                 const ValueType value_type = mdu_schema_property->value_type;
                 std::optional<MduData::Value> converted_value = std::nullopt;
@@ -117,6 +111,7 @@ namespace dflowfm_io
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
+                if (!mduData.hasValue(key)) continue;
 
                 const ValueType value_type = propertySchema.value_type;
                 if (value_type == ValueType::Path)
