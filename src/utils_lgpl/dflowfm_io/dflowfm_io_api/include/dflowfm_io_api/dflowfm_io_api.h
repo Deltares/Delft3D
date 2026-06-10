@@ -23,9 +23,12 @@ DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_load_file(MduModelHandle han
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_dummy_value(MduModelHandle handle, int* value_out);
 
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_int(MduModelHandle handle, const char* key, int* int_out);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_bool(MduModelHandle handle, const char* key, int* bool_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_double(MduModelHandle handle, const char* key, double* double_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_string(MduModelHandle handle, const char* key, const char** string_out);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_path(MduModelHandle handle, const char* key, const char** path_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_string_list(MduModelHandle handle, const char* key, const char*** string_list_out, size_t* size_out);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* key, const char*** path_list_out, size_t* size_out);
 
 #ifdef __cplusplus
 }

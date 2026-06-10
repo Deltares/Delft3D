@@ -1,6 +1,7 @@
 import ctypes
 import os
 import platform
+from pathlib import Path
 
 
 def _find_project_root():
@@ -52,38 +53,12 @@ _lib = _load_library()
 DFLOWFM_IO_RESULT_SUCCESS = 0
 DFLOWFM_IO_RESULT_ERROR = 1
 
-_lib.mdu_model_create.restype = ctypes.c_int
-_lib.mdu_model_create.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-
-_lib.mdu_model_destroy.restype = ctypes.c_int
-_lib.mdu_model_destroy.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
-
-_lib.mdu_model_get_dummy_value.restype = ctypes.c_int
-_lib.mdu_model_get_dummy_value.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_int)]
-
-_lib.mdu_model_load_file.restype = ctypes.c_int
-_lib.mdu_model_load_file.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-
-_lib.mdu_model_get_int.restype = ctypes.c_int
-_lib.mdu_model_get_int.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_int)]
-
-_lib.mdu_model_get_double.restype = ctypes.c_int
-_lib.mdu_model_get_double.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_double)]
-
-_lib.mdu_model_get_string.restype = ctypes.c_int
-_lib.mdu_model_get_string.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_char_p)]
-
-_lib.mdu_model_get_string_list.restype = ctypes.c_int
-_lib.mdu_model_get_string_list.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_char_p)), ctypes.POINTER(ctypes.c_size_t)]
-
 
 def _check_result(result):
     if result != DFLOWFM_IO_RESULT_SUCCESS:
-        # Get the last error message from the library
         _lib.dflowfm_io_get_last_error.restype = ctypes.c_char_p    
         error_message = _lib.dflowfm_io_get_last_error()
         raise RuntimeError(error_message.decode('utf-8'))
-
 
 class MduModel:
     def __init__(self):
@@ -114,7 +89,7 @@ class MduModel:
         _check_result(_lib.mdu_model_get_double(self._handle, key.encode("utf-8"), ctypes.byref(value)))
         return value.value
 
-    def get_string_value(self, key: str) -> str:
+    def get_string(self, key: str) -> str:
         string_out = ctypes.c_char_p()
         _check_result(_lib.mdu_model_get_string(self._handle, key.encode("utf-8"), ctypes.byref(string_out)))
         return string_out.value.decode("utf-8")
@@ -124,3 +99,19 @@ class MduModel:
         size_out = ctypes.c_size_t()
         _check_result(_lib.mdu_model_get_string_list(self._handle, key.encode("utf-8"), ctypes.byref(array_out), ctypes.byref(size_out)))
         return [array_out[i].decode("utf-8") for i in range(size_out.value)]
+
+    def get_bool(self, key: str) -> bool:
+        value = ctypes.c_int()
+        _check_result(_lib.mdu_model_get_bool(self._handle, key.encode("utf-8"), ctypes.byref(value)))
+        return value.value != 0
+
+    def get_path(self, key: str) -> Path:
+        path_out = ctypes.c_char_p()
+        _check_result(_lib.mdu_model_get_path(self._handle, key.encode("utf-8"), ctypes.byref(path_out)))
+        return Path(path_out.value.decode("utf-8"))
+
+    def get_path_list(self, key: str) -> list[Path]:
+        array_out = ctypes.POINTER(ctypes.c_char_p)()
+        size_out = ctypes.c_size_t()
+        _check_result(_lib.mdu_model_get_path_list(self._handle, key.encode("utf-8"), ctypes.byref(array_out), ctypes.byref(size_out)))
+        return [Path(array_out[i].decode("utf-8")) for i in range(size_out.value)]

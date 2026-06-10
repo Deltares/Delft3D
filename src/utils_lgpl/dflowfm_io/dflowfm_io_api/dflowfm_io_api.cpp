@@ -2,6 +2,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include <dflowfm_io_api/dflowfm_io_api.h>
 
@@ -108,6 +109,19 @@ dflowfm_io_result_t mdu_model_get_int(MduModelHandle handle, const char* key, in
     });
 }
 
+dflowfm_io_result_t mdu_model_get_bool(MduModelHandle handle, const char* key, int* bool_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(bool_out);
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        *bool_out = mdu_data->getValueAs<bool>(key) ? 1 : 0;
+    });
+}
+
 dflowfm_io_result_t mdu_model_get_double(MduModelHandle handle, const char* key, double* double_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
@@ -138,6 +152,23 @@ dflowfm_io_result_t mdu_model_get_string(MduModelHandle handle, const char* key,
     });
 }
 
+dflowfm_io_result_t mdu_model_get_path(MduModelHandle handle, const char* key, const char** path_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(path_out);
+
+    static std::string stored_path;
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        stored_path = mdu_data->getValueAs<std::filesystem::path>(key).string();
+
+        *path_out = stored_path.c_str();
+    });
+}
+
 dflowfm_io_result_t mdu_model_get_string_list(MduModelHandle handle, const char* key, const char*** string_list_out, size_t* size_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
@@ -150,16 +181,36 @@ dflowfm_io_result_t mdu_model_get_string_list(MduModelHandle handle, const char*
 
     return exceptionToResult([&]()
     {
-        stored_strings.clear();
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        stored_strings = mdu_data->getValueAs<std::vector<std::string>>(key);
         stored_pointers.clear();
-        stored_strings.emplace_back("first_string");
-        stored_strings.emplace_back("second_string");
-        for (const auto& s : stored_strings)
-        {
-            stored_pointers.emplace_back(s.c_str());
-        }
-        
+        for (const auto& s : stored_strings) stored_pointers.push_back(s.c_str());
+
         *string_list_out = stored_pointers.data();
+        *size_out = stored_pointers.size();
+    });
+}
+
+dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* key, const char*** path_list_out, size_t* size_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(path_list_out);
+    ENSURE_ARGUMENT_NOT_NULL(size_out);
+
+    static std::vector<std::string> stored_paths;
+    static std::vector<const char*> stored_pointers;
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        const auto& paths = mdu_data->getValueAs<std::vector<std::filesystem::path>>(key);
+        stored_paths.clear();
+        stored_pointers.clear();
+        for (const auto& p : paths) stored_paths.push_back(p.string());
+        for (const auto& s : stored_paths) stored_pointers.push_back(s.c_str());
+
+        *path_list_out = stored_pointers.data();
         *size_out = stored_pointers.size();
     });
 }
