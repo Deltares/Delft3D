@@ -13,42 +13,56 @@ MDU_PATH = os.path.join(os.path.dirname(__file__), "tide-2.mdu")
 class TestMduModel(unittest.TestCase):
     def test_create_and_destroy(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         self.assertIsNotNone(model._handle)
         del model
 
-    def test_get_dummy_value(self):
+    def test_load_from_lines(self):
+        mdu_data = [
+            "[General]",
+            "Program                                   = D-Flow FM",
+            "Version                                   = 1.2.184",
+            "fileType                                  = modelDef",
+            "fileVersion                               = 1.09",
+            "",
+            "[geometry]",
+            "NetFile                                   = simplechannel_net.nc# Unstructured grid file *_net.nc",
+            "",
+            "[numerics]"
+        ]
+
         model = MduModel()
-        model.load_file(MDU_PATH)
-        self.assertEqual(model.get_dummy_value(), 42)
+        model.load_from_lines(mdu_data)
+        self.assertIsNotNone(model._handle)
+        self.assertEqual(model.get_string("general.program"), "D-Flow FM")
 
     def test_multiple_instances(self):
         model1 = MduModel()
-        model1.load_file(MDU_PATH)
+        model1.load_from_file(MDU_PATH)
         model2 = MduModel()
-        model2.load_file(MDU_PATH)
-        self.assertEqual(model1.get_dummy_value(), 42)
-        self.assertEqual(model2.get_dummy_value(), 42)
+        model2.load_from_file(MDU_PATH)
+        self.assertEqual(model1.get_string("general.program"), "D-Flow FM")
+        self.assertEqual(model2.get_string("general.program"), "D-Flow FM")
         del model1
         del model2
 
     def test_get_int_value(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_int("geometry.kmx")
         self.assertIsInstance(result, int)
         self.assertEqual(result, 0)
 
     def test_get_double_value(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_double("geometry.waterlevini")
         self.assertIsInstance(result, float)
         self.assertAlmostEqual(result, 0.0)
 
     def test_get_string(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_string("general.program")
         self.assertIsInstance(result, str)
         self.assertEqual(result, "D-Flow FM")
@@ -60,7 +74,7 @@ class TestMduModel(unittest.TestCase):
     # Currently the test MDU file doesn't have any string lists to use in these tests
     # def test_get_string_list(self):
     #     model = MduModel()
-    #     model.load_file(MDU_PATH)
+    #     model.load_from_file(MDU_PATH)
     #     result = model.get_string_list("general.program")
     #     self.assertIsInstance(result, list)
     #     for item in result:
@@ -71,41 +85,41 @@ class TestMduModel(unittest.TestCase):
 
     # def test_string_list_lifetime(self):
     #     model = MduModel()
-    #     model.load_file(MDU_PATH)
+    #     model.load_from_file(MDU_PATH)
     #     result = model.get_string_list("any_key")
     #     # The returned list should remain valid even after the model is deleted
     #     del model
     #     self.assertEqual(len(result), 2)
     #     self.assertEqual(result[0], "first_string")
 
-    def test_load_file_nonexistent_raises(self):
+    def test_load_from_file_nonexistent_raises(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
-            model.load_file("nonexistent_file.mdu")
+            model.load_from_file("nonexistent_file.mdu")
 
     def test_get_int_unknown_key_raises(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
             model.get_int("unknown_key")
 
     def test_get_double_unknown_key_raises(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
             model.get_double("unknown_key")
 
     def test_get_bool(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_bool("geometry.usecaching")
         self.assertIsInstance(result, bool)
         self.assertTrue(result)
 
     def test_get_path(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_path("geometry.netfile")
         self.assertIsInstance(result, Path)
         self.assertEqual(result, Path("FlowFM_net.nc"))
@@ -115,7 +129,7 @@ class TestMduModel(unittest.TestCase):
 
     def test_get_path_list(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_path_list("geometry.drypointsfile")
         self.assertIsInstance(result, list)
         self.assertEqual(len(result), 2)
@@ -128,19 +142,19 @@ class TestMduModel(unittest.TestCase):
 
     def test_get_double(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         result = model.get_double("numerics.cflmax")
         self.assertAlmostEqual(result, 0.7)
 
     def test_get_bool_unknown_key_raises(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
             model.get_bool("unknown_key")
 
     def test_get_path_unknown_key_raises(self):
         model = MduModel()
-        model.load_file(MDU_PATH)
+        model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
             model.get_path("unknown_key")
 

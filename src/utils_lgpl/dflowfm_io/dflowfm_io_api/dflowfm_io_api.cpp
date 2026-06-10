@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <sstream>
 
 #include <dflowfm_io_api/dflowfm_io_api.h>
 
@@ -73,7 +74,7 @@ dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle)
     });
 }
 
-dflowfm_io_result_t mdu_model_load_file(MduModelHandle handle, const char* filename)
+dflowfm_io_result_t mdu_model_load_from_file(MduModelHandle handle, const char* filename)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(filename);
@@ -81,6 +82,19 @@ dflowfm_io_result_t mdu_model_load_file(MduModelHandle handle, const char* filen
     return exceptionToResult([&]() {
 
         auto mdu_file = dflowfm_io::MduFile::LoadFrom(filename);
+        *static_cast<dflowfm_io::MduData*>(handle) = mdu_file.GetData();
+    });
+}
+
+dflowfm_io_result_t mdu_model_load_from_string(MduModelHandle handle, const char* data, size_t size)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(data);
+
+    return exceptionToResult([&]() {
+        const std::string data_str(data, size);
+        std::istringstream stream(data_str);
+        auto mdu_file = dflowfm_io::MduFile::LoadFrom(stream);
         *static_cast<dflowfm_io::MduData*>(handle) = mdu_file.GetData();
     });
 }

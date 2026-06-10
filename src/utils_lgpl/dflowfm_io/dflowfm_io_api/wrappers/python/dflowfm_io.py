@@ -76,8 +76,12 @@ class MduModel:
         _check_result(_lib.mdu_model_get_dummy_value(self._handle, ctypes.byref(value)))
         return value.value
 
-    def load_file(self, filename: str) -> None:
-        _check_result(_lib.mdu_model_load_file(self._handle, filename.encode("utf-8")))
+    def load_from_file(self, filename: str) -> None:
+        _check_result(_lib.mdu_model_load_from_file(self._handle, filename.encode("utf-8")))
+
+    def load_from_lines(self, data: list[str]) -> None:
+        encoded = "\n".join(data).encode("utf-8")
+        _check_result(_lib.mdu_model_load_from_string(self._handle, encoded, len(encoded)))
 
     def get_int(self, key: str) -> int:
         value = ctypes.c_int()
