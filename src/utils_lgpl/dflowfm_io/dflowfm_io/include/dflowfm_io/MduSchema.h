@@ -59,12 +59,14 @@ namespace dflowfm_io
                     "geometry", true, {
                         { "netFile", true },
                         { "useCaching", false, "1" },
+                        {"kmx", false, "0"},
+                        {"waterLevIni", false, "0"},
+                        {"dryPointsFile", false, ""}
                     }
                 },
                 SectionSchema {
                     "numerics", true, {
                         { "cflMax", false, "0.7" },
-                        { "kmx", false, "0" }
                     }
                 }
             },

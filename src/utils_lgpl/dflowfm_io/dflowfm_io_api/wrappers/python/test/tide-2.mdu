@@ -12,7 +12,7 @@ PathsRelativeToParent             = 0                                           
 [geometry]
 NetFile                           = FlowFM_net.nc                                                       # Unstructured grid file *_net.nc
 BathymetryFile                    =                                                                     # Bathymetry points file *.xyb
-DryPointsFile                     =                                                                     # Dry points file *.xyz (third column dummy z values), or dry areas polygon file *.pol (third column 1/-1: inside/outside)
+DryPointsFile                     = dry.pol dry.xyz                                                     # Dry points file *.xyz (third column dummy z values), or dry areas polygon file *.pol (third column 1/-1: inside/outside)
 GridEnclosureFile                 =                                                                     # Enclosure polygon file *.pol (third column 1/-1: inside/outside)
 WaterLevIniFile                   =                                                                     # Initial water levels sample file *.xyz
 LandBoundaryFile                  =                                                                     # Land boundaries file *.ldb, used for visualization

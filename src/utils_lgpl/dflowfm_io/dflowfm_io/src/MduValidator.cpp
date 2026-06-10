@@ -41,7 +41,7 @@ namespace dflowfm_io
                 if (!section.HasProperty(propertySchema.key))
                 {
                     if (propertySchema.required)
-                        report.AddError("Property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
+                        report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
                     else if (propertySchema.HasDefault())
                         report.AddInfo("Property [{}].{} is not provided. Default is used: \"{}\".", sectionSchema.name,
                                        propertySchema.key, propertySchema.default_value);
@@ -52,10 +52,10 @@ namespace dflowfm_io
                 if (!property.HasValue())
                 {
                     if (propertySchema.required)
-                        report.AddError(property.GetLineNumber(), "Property [{}].{} is empty.", sectionSchema.name,
+                        report.AddError(property.GetLineNumber(), "Required property [{}].{} is specified without a value.", sectionSchema.name,
                                         propertySchema.key);
                     else if (propertySchema.HasDefault())
-                        report.AddInfo(property.GetLineNumber(), "Property [{}].{} is empty. Default is used: \"{}\".",
+                        report.AddInfo(property.GetLineNumber(), "Property [{}].{} is specified without a value. Default is used: \"{}\".",
                                        sectionSchema.name, propertySchema.key, propertySchema.default_value);
                 }
             }

@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include <stdexcept>
+#include <filesystem>
 
 #include "dflowfm_io/StringUtils.h"
 
@@ -26,7 +27,7 @@ namespace dflowfm_io
             return std::get<T>(it->second);
         }
 
-        using Value = std::variant<std::string, double, int, std::vector<std::string>>;
+        using Value = std::variant<std::filesystem::path, std::string, double, int, bool, std::vector<std::string>, std::vector<std::filesystem::path>>;
         std::unordered_map<std::string, Value> data_entries;
     };
 

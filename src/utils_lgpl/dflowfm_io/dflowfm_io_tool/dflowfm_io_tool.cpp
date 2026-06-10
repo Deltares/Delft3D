@@ -35,9 +35,11 @@ int main(int argc, char* argv[])
 
     struct PrintValue
     {
-        void operator()(const string& v) const { cout << v; }
-        void operator()(int v) const { cout << v; }
-        void operator()(double v) const { cout << v; }
+        void operator()(const std::filesystem::path& v) const { cout << v << " (path)"; }
+        void operator()(const string& v) const { cout << v << " (string)"; }
+        void operator()(int v) const { cout << v << " (int)"; }
+        void operator()(bool b) const { cout << std::boolalpha << b << " (bool)"; }
+        void operator()(double v) const { cout << v << " (double)"; }
         void operator()(const vector<string>& v) const
         {
             cout << "[";
@@ -46,7 +48,17 @@ int main(int argc, char* argv[])
                 if (i > 0) cout << ", ";
                 cout << v[i];
             }
-            cout << "]";
+            cout << "] (string list)";
+        }
+        void operator()(const vector<std::filesystem::path>& v) const
+        {
+            cout << "[";
+            for (size_t i = 0; i < v.size(); ++i)
+            {
+                if (i > 0) cout << ", ";
+                cout << v[i];
+            }
+            cout << "] (path list)";
         }
     };
 
