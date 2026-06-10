@@ -943,7 +943,7 @@ contains
       sl = slotw1D
 
       call prop_get(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
-
+      
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
 
@@ -977,7 +977,7 @@ contains
 
       call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [numerics] block
       call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
-
+      
       call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
       call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
       call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
@@ -1054,122 +1054,6 @@ contains
 
       call prop_get(md_ptr, 'geometry', 'ChangeStructureDimensions', changeStructureDimensions)
 
-! Time
-      call prop_get(md_ptr, 'Time', 'refDate', refdat)
-      read (refdat, *) irefdate
-      success = ymd2modified_jul(irefdate, refdate_mjd)
-      if (.not. success) then
-         call mess(LEVEL_ERROR, 'Something went wrong in conversion from refDate to Modified Julian Date')
-      end if
-      call prop_get(md_ptr, 'Time', 'tZone', Tzone)
-      call prop_get(md_ptr, 'Time', 'tUnit', md_tunit)
-      call prop_get(md_ptr, 'Time', 'tStart', tstart_user)
-      call prop_get(md_ptr, 'Time', 'tStop', tstop_user)
-      select case (md_tunit)
-      case ('D')
-         tfac = 3600.0_dp * 24.0_dp
-      case ('H')
-         tfac = 3600.0_dp
-      case ('M')
-         tfac = 60.0_dp
-      case default
-         tfac = 1.0_dp
-      end select
-      tstart_user = tstart_user * tfac
-      tstop_user = tstop_user * tfac
-
-      call setTUDUnitString()
-
-      call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
-
-      ! Set default values if not specified in MDU
-      if (dt_user <= 0) then
-         dt_user = 300.0_dp
-         dt_max = 60.0_dp
-         autotimestep = AUTO_TIMESTEP_2D_OUT
-      end if
-
-      call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
-
-      call prop_get(md_ptr, 'Time', 'dtMax', dt_max)
-      if (dt_max > dt_user) then
-         dt_max = dt_user
-         write (msgbuf, '(a,f9.3)') 'dtMax should be <= dtUser. It has been reset to: ', dt_max
-         call msg_flush()
-      end if
-
-      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
-      if (kmx > 1) then
-         autotimestep = AUTO_TIMESTEP_3D_INOUT
-      end if
-      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
-      call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
-      if (success .and. jadum /= 0) then
-         call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
-      end if
-      call prop_get(md_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, success)
-      if (success .and. ja_timestep_auto_visc /= 0) then
-         if (ja_timestep_auto_visc /= 1234) then
-!         hide feature
-            call mess(LEVEL_ERROR, 'autoTimeStepVisc not supported')
-         else
-            ja_timestep_auto_visc = 1
-         end if
-      end if
-
-      call prop_get(md_ptr, 'Time', 'autoTimeStepNoStruct', ja_timestep_nostruct, success)
-      call prop_get(md_ptr, 'Time', 'autoTimeStepNoQout', ja_timestep_noqout, success)
-
-      call prop_get(md_ptr, 'Time', 'dtFacMax', dt_fac_max)
-
-      call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
-
-      call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
-
-      call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
-      if (len_trim(start_date_time) > 0 .and. success) then
-         call datetimestring_to_seconds(start_date_time, refdat, tim, iostat)
-         if (iostat == 0) then
-            Tstart_user = tim
-         end if
-      end if
-
-      ! Set default tstart_tlfsmo_user after possible start_date_time
-      call prop_get(md_ptr, 'Time', 'tStartTlfsmo', tstart_tlfsmo_user, success)
-      if (success) then
-         tstart_tlfsmo_user = tstart_tlfsmo_user * tfac
-      else
-         tstart_tlfsmo_user = tstart_user
-      end if
-
-      call prop_get(md_ptr, 'Time', 'startDateTimeTlfsmo', start_date_time_tlfsmo, success)
-      if (len_trim(start_date_time_tlfsmo) > 0 .and. success) then
-         call datetimestring_to_seconds(start_date_time_tlfsmo, refdat, tim, iostat)
-         if (iostat == 0) then
-            tstart_tlfsmo_user = tim
-         end if
-      end if
-
-      if (tstart_tlfsmo_user > tstart_user) then
-         tstart_tlfsmo_user = tstart_user
-         call mess(LEVEL_WARN, 'tStartTlfsmo should be <= tStart. tStartTlfsmo has been reset to tStart.')
-      end if
-
-      call prop_get(md_ptr, 'Time', 'stopDateTime', stop_date_time, success)
-      if (len_trim(stop_date_time) > 0 .and. success) then
-         call datetimestring_to_seconds(stop_date_time, refdat, tim, iostat)
-         if (iostat == 0) then
-            Tstop_user = tim
-         end if
-      end if
-
-      ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness)
-      if (dt_update_roughness < dt_User) then
-         ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
-         call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
-      end if
-
       ! 1D Volume tables
       useVolumeTables = .false.
       call prop_get(md_ptr, 'volumeTables', 'useVolumeTables', useVolumeTables)
@@ -1207,6 +1091,11 @@ contains
       call prop_get(md_ptr, 'numerics', 'Limtypmom', limtypmom)
       call prop_get(md_ptr, 'numerics', 'Limtypsa', limtypsa)
       call prop_get(md_ptr, 'numerics', 'Limtypw', limtypw)
+
+      ! Default autotimestep value for 3D is AUTO_TIMESTEP_3D_INOUT
+      if (kmx > 1) then
+         autotimestep = AUTO_TIMESTEP_3D_INOUT
+      end if
 
       call prop_get(md_ptr, 'numerics', 'TransportAutoTimestepdiff', jatransportautotimestepdiff)
 
@@ -1517,7 +1406,7 @@ contains
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
       wall_z0 = wall_ks / 30.0_dp
-
+      
       call prop_get(md_ptr, 'physics', 'TidalForcing', jatidep)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading', jaselfal)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading_correct_wl_with_ini', jaSELFALcorrectWLwithIni)
@@ -1557,7 +1446,7 @@ contains
       call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2))
 
       diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
-
+      
       if (secchi_depth(2) > 0) then
          diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
          secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
@@ -1725,7 +1614,7 @@ contains
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
             ti_st_array = 0.0_dp
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-
+            
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
@@ -1893,6 +1782,118 @@ contains
       !
       call prop_get(md_ptr, 'hydrology', 'InterceptionModel', interceptionmodel)
 
+! Time
+      call prop_get(md_ptr, 'Time', 'refDate', refdat)
+      read (refdat, *) irefdate
+      success = ymd2modified_jul(irefdate, refdate_mjd)
+      if (.not. success) then
+         call mess(LEVEL_ERROR, 'Something went wrong in conversion from refDate to Modified Julian Date')
+      end if
+      call prop_get(md_ptr, 'Time', 'tZone', Tzone)
+      call prop_get(md_ptr, 'Time', 'tUnit', md_tunit)
+      call prop_get(md_ptr, 'Time', 'tStart', tstart_user)
+      call prop_get(md_ptr, 'Time', 'tStop', tstop_user)
+      select case (md_tunit)
+      case ('D')
+         tfac = 3600.0_dp * 24.0_dp
+      case ('H')
+         tfac = 3600.0_dp
+      case ('M')
+         tfac = 60.0_dp
+      case default
+         tfac = 1.0_dp
+      end select
+      tstart_user = tstart_user * tfac
+      tstop_user = tstop_user * tfac
+
+      call setTUDUnitString()
+
+      call prop_get(md_ptr, 'Time', 'dtUser', dt_user)
+
+      ! Set default values if not specified in MDU
+      if (dt_user <= 0) then
+         dt_user = 300.0_dp
+         dt_max = 60.0_dp
+         autotimestep = AUTO_TIMESTEP_2D_OUT
+      end if
+
+      call prop_get(md_ptr, 'Time', 'dtNodal', dt_nodal)
+
+      call prop_get(md_ptr, 'Time', 'dtMax', dt_max)
+      if (dt_max > dt_user) then
+         dt_max = dt_user
+         write (msgbuf, '(a,f9.3)') 'dtMax should be <= dtUser. It has been reset to: ', dt_max
+         call msg_flush()
+      end if
+
+      ! ibuf = 1
+      call prop_get(md_ptr, 'Time', 'autoTimeStep', autotimestep, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStepDiff', jadum, success)
+      if (success .and. jadum /= 0) then
+         call mess(LEVEL_ERROR, 'autoTimeStepDiff not supported')
+      end if
+      call prop_get(md_ptr, 'Time', 'autoTimeStepVisc', ja_timestep_auto_visc, success)
+      if (success .and. ja_timestep_auto_visc /= 0) then
+         if (ja_timestep_auto_visc /= 1234) then
+!         hide feature
+            call mess(LEVEL_ERROR, 'autoTimeStepVisc not supported')
+         else
+            ja_timestep_auto_visc = 1
+         end if
+      end if
+
+      call prop_get(md_ptr, 'Time', 'autoTimeStepNoStruct', ja_timestep_nostruct, success)
+      call prop_get(md_ptr, 'Time', 'autoTimeStepNoQout', ja_timestep_noqout, success)
+
+      call prop_get(md_ptr, 'Time', 'dtFacMax', dt_fac_max)
+
+      call prop_get(md_ptr, 'Time', 'dtInit', dt_init)
+
+      call prop_get(md_ptr, 'Time', 'timeStepAnalysis', ja_time_step_analysis)
+
+      call prop_get(md_ptr, 'Time', 'startDateTime', start_date_time, success)
+      if (len_trim(start_date_time) > 0 .and. success) then
+         call datetimestring_to_seconds(start_date_time, refdat, tim, iostat)
+         if (iostat == 0) then
+            Tstart_user = tim
+         end if
+      end if
+
+      ! Set default tstart_tlfsmo_user after possible start_date_time
+      call prop_get(md_ptr, 'Time', 'tStartTlfsmo', tstart_tlfsmo_user, success)
+      if (success) then
+         tstart_tlfsmo_user = tstart_tlfsmo_user * tfac
+      else
+         tstart_tlfsmo_user = tstart_user
+      end if
+
+      call prop_get(md_ptr, 'Time', 'startDateTimeTlfsmo', start_date_time_tlfsmo, success)
+      if (len_trim(start_date_time_tlfsmo) > 0 .and. success) then
+         call datetimestring_to_seconds(start_date_time_tlfsmo, refdat, tim, iostat)
+         if (iostat == 0) then
+            tstart_tlfsmo_user = tim
+         end if
+      end if
+
+      if (tstart_tlfsmo_user > tstart_user) then
+         tstart_tlfsmo_user = tstart_user
+         call mess(LEVEL_WARN, 'tStartTlfsmo should be <= tStart. tStartTlfsmo has been reset to tStart.')
+      end if
+
+      call prop_get(md_ptr, 'Time', 'stopDateTime', stop_date_time, success)
+      if (len_trim(stop_date_time) > 0 .and. success) then
+         call datetimestring_to_seconds(stop_date_time, refdat, tim, iostat)
+         if (iostat == 0) then
+            Tstop_user = tim
+         end if
+      end if
+
+      ! Set update frequency for the time dependent roughness from frictFile.
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness,success)
+      if (success .and. dt_update_roughness < dt_User) then
+         ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
+         call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
+      end if
       !
       ! TIDAL TURBINES: Insert calls to rdturbine and echoturbine here (use the structure_turbines variable defined in m_structures)
       !
@@ -1978,7 +1979,7 @@ contains
          call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
          call set_time_interval(ti_com_array, ti_coms, ti_com, ti_come, tstart_user, tstop_user, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
-
+   
          call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
          if (success) then
             ti_com = huge(0.0_hp)
@@ -2015,7 +2016,7 @@ contains
       if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
          call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
       end if
-
+      
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
@@ -2332,14 +2333,14 @@ contains
             call mess(LEVEL_WARN, '''EulerVelocities'' is set to 0, because 3Dstokesprofile is set to 0.')
             jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          end if
-      end if
+      end if     
 
       if (jawave == WAVE_SURFBEAT) then ! not for Delta Shell
          call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
          call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
          ti_wav_array = 0.0_dp
          call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
-
+         
          if (ti_wav_array(2) < 0.0_dp) then
             ti_wav_array(2) = 0.0_dp
             ti_wav_array(3) = 0.0_dp
@@ -2607,7 +2608,7 @@ contains
    subroutine create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
       use MessageHandling, only: mess, LEVEL_FATAL
       use m_alloc, only: aerr
-
+      
       ! Parameters
       real(kind=dp), allocatable, intent(inout) :: map_classes_ucdir(:) !< the constructed classes
       real(kind=dp), intent(in) :: map_classes_ucdirstep !< the input step size
@@ -2632,7 +2633,7 @@ contains
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
-
+      
    end subroutine create_direction_classes
 
 !> Write a model definition to a file.
@@ -3114,7 +3115,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
       end if
       if (writeall .or. Noderivedtypes > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes, '0=use der. types. , 1,2,3,4,5 etc = do use them')
+         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes,  '0=use der. types. , 1,2,3,4,5 etc = do use them')
       end if
       if (writeall .or. jposhchk /= 2) then
          call prop_set(prop_ptr, 'numerics', 'jposhchk', jposhchk, 'Check for positive waterdepth (0: no, 1: 0.7*dts, just redo, 2: 1.0*dts, close all links, 3: 0.7*dts, close all links, 4: 1.0*dts, reduce au, 5: 0.7*dts, reduce au, 6: 1.0*dts, close outflowing links, 7: 0.7*dts, close outflowing links)')
@@ -3579,7 +3580,7 @@ contains
 
       if (jaspacevarcharn .and. (wind_drag_type /= CD_TYPE_CHARNOCK1955 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS)) then
          write (msgbuf, '(a,i0,a)') &
-            'Inconsistent configuration: a time- and space-varying Charnock coefficient was '// &
+            'Inconsistent configuration: a time- and space-varying Charnock coefficient was ' // &
             'specified in the .ext file, but [wind] ICdtyp is set to ', &
             wind_drag_type, '. Expected ICdtyp = 4 (Charnock) or 8 (Charnock + viscous term).'
          call mess(LEVEL_ERROR, msgbuf)
@@ -4174,8 +4175,8 @@ contains
 
    !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, as read from the MDU file.
    ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
-   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the
-   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds.
+   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 
+   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds. 
    ! If `read_interval_input` is `.false.`. Don't read `interval_input`, and only set the defaults.
    subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, read_interval_input, interval_name)
       use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
@@ -4192,7 +4193,7 @@ contains
 
       interval_name_ = ''
       if (present(interval_name)) then
-         interval_name_ = ' '//trim(interval_name) ! Prepend extra space to get nice string formatting.
+         interval_name_ = ' ' // trim(interval_name)  ! Prepend extra space to get nice string formatting.
       end if
 
       ! If `read_interval_input` is `.false.`: Only set `interval_start/stop` to `simulation_start/stop`.
@@ -4204,24 +4205,24 @@ contains
 
       interval_step = interval_input(1)
 
-      if (.not. equal(interval_input(2), 0.0_dp)) then ! A value of zero means: Use `simulation_start`.
+      if (.not. equal(interval_input(2), 0.0_dp)) then  ! A value of zero means: Use `simulation_start`.
          if (simulation_start <= interval_input(2) .and. interval_input(2) <= simulation_stop) then
             interval_start = interval_input(2)
          else
-            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid'//trim(interval_name_)//': Start time (', floor(interval_input(2)), &
-               ') must lie between TStart (', floor(simulation_start), ') and TStop (', floor(simulation_stop), &
-               '). Setting'//trim(interval_name_)//' start time to TStart.'
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Start time (', floor(interval_input(2)), &
+               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
+               '). Setting' // trim(interval_name_) // ' start time to TStart.'
             call warn_flush()
          end if
       end if
 
-      if (.not. equal(interval_input(3), 0.0_dp)) then ! A value of zero means: Use `simulation_stop`.
+      if (.not. equal(interval_input(3), 0.0_dp)) then  ! A value of zero means: Use `simulation_stop`.
          if (simulation_start <= interval_input(3) .and. interval_input(3) <= simulation_stop) then
             interval_end = interval_input(3)
          else
-            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid'//trim(interval_name_)//': Stop time (', floor(interval_input(3)), &
-               ') must lie between TStart (', floor(simulation_start), ') and TStop (', floor(simulation_stop), &
-               '). Setting'//trim(interval_name_)//' stop time to TStop.'
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Stop time (', floor(interval_input(3)), &
+               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
+               '). Setting' // trim(interval_name_) // ' stop time to TStop.'
             call warn_flush()
          end if
       end if
