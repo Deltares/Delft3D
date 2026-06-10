@@ -88,15 +88,7 @@ namespace pre_c_sumo
         {
             coordinates.clear();
             precice_ids.clear();
-            sinks_x.clear();
-            sinks_y.clear();
-            sinks_z_min.clear();
-            sinks_z_max.clear();
-            sources_x.clear();
-            sources_y.clear();
-            sources_z_min.clear();
-            sources_z_max.clear();
-            discharges.clear();
+            clearData();
         }
 
         void clearData()
@@ -112,7 +104,7 @@ namespace pre_c_sumo
             discharges.clear();
         }
 
-        void setCoordinatesDimension(const int dimension)
+        void setCoordinatesDimension(const std::size_t dimension)
         {
             coordinates.resize(dimension * 2, 0.0);
             precice_ids.resize(dimension, 0); // Assuming 2D coordinates (x, y)
