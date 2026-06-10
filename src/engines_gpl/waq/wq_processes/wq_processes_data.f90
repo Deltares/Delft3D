@@ -152,7 +152,7 @@ module processes_pointers
                                                "SEDAAP", "SEDAGG", "SEDCAR", "SEDHM ", "SEDIM ", &
                                                "SEDNU2", "SEDOMV", "SEDSOD", "SEDTYR", "RESBUF", &
                                                "RESDM ", "BURIAL", "DIGGIN", "S12TIM", "S12TRA", &
-                                               "RESANT", "ADVTRA", "TRASE2"] !< Processes for adsorption, sedimentation, and resuspension
+                                               "RESANT", "SOMSED", "ADVTRA", "TRASE2"] !< Processes for adsorption, sedimentation, and resuspension
     logical, allocatable :: alwaysprocess(:) !< Is an always process or not
     logical, allocatable :: adssedresprocess(:) !< Is adsorption, sedimentation, or resuspension process or not
     logical, allocatable :: runprocess(:) !< Whether to run this process or not
