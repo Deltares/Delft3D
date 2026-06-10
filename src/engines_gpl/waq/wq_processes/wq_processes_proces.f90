@@ -54,7 +54,7 @@ contains
         use m_wq_processes_integrate_velocities
         use m_wq_processes_integrate_fluxes
         use m_wq_processes_derivatives
-        use processes_pointers, only : dll_opb
+        use processes_pointers, only : dll_opb, runprocess
         use process_registration
         use timers
 
@@ -178,84 +178,86 @@ contains
         !     BLOOM fractional step (derivs assumed zero at entry)
 
         if (bloom_status_ind > 0) then         !     Check presence of BLOOM module for this run
-            ivar = prvvar(bloom_ind)
-            iarr = vararr(ivar)
-            iv_idx = varidx(ivar)
-            ip_arr = arrpoi(iarr)
-            ipndt = ip_arr + iv_idx - 1
-
-            ! Calculate the "quasi-number" of time steps for BLOOM
-            ! Given BLOOM step is in days
-            ndtblo = nint( 86400.0_dp * process_space_real(ipndt) / dts )
-            prondt(bloom_status_ind) = ndtblo
-
-            ! This timestep fractional step ?
-            ! Enclose the time in an interval, rather than look for equality, as the time step
-            ! may be dynamic. (The half timestep is to neutralise the rounding errors)
-            if ( time >= time_bloom_next - 0.5_dp * dts ) then
-                time_bloom_next = time_bloom_next + 86400.0_dp * process_space_real(ipndt)
-
-                flux = 0.0
-
-                !           set dts and delt, bloom itself will multiply with prondt
-                dtspro = prondt(bloom_status_ind) * dts
-                ipp_dts = num_defaults - 2 * num_processes_activated + bloom_status_ind
-                ipp_delt = num_defaults - num_processes_activated + bloom_status_ind
-                defaul(ipp_dts) = dts
-                defaul(ipp_delt) = dts / real(itfact)
-
-                call calculate_single_process (bloom_status_ind, bloom_ind, prvnio, prvtyp, prvvar, vararr, &
-                        varidx, arrknd, arrpoi, arrdm1, arrdm2, &
-                        num_cells, process_space_real, process_space_int, increm, &
-                        noflux, iflux, promnr, flux, iexpnt, &
-                        iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
-                        pronam, dll_opb)
-
-                if (bloom_status_ind /= num_processes_activated) then
-                    nfluxp = iflux(bloom_status_ind + 1) - iflux(bloom_status_ind)
-                else
-                    nfluxp = noflux - iflux(bloom_status_ind) + 1
-                endif
-                if (nfluxp > 0) then
-                    !              Construct derivatives for these fluxes on this grid
-                    call wq_processes_derivatives (deriv, num_substances_total, noflux, stochi, iflux (bloom_status_ind), &
-                            nfluxp, flux, num_cells, volume, prondt(bloom_status_ind))
-
-                    !              For balances store FLXDMP
-                    if (ibflag > 0) then
-                        ndt = prondt(bloom_status_ind) * dts / 86400.0
-                        do iseg = 1, num_cells
-                            if (isdmp(iseg) > 0) then
-                                nflux1 = iflux (bloom_status_ind)
-                                vol = volume(iseg)
-                                ips = isdmp(iseg)
-                                if(ips<1) cycle
-                                do iflx = nflux1, nflux1 + nfluxp - 1
-                                    if(flux(iflx, iseg)>0) then
-                                        flxdmp(1, iflx, ips) = flxdmp(1, iflx, ips) + flux(iflx, iseg) * vol * ndt
-                                    else
-                                        flxdmp(2, iflx, ips) = flxdmp(2, iflx, ips) - flux(iflx, iseg) * vol * ndt
-                                    endif
-                                enddo
-                            endif
-                        enddo
+            if (runprocess(bloom_status_ind)) then
+                ivar = prvvar(bloom_ind)
+                iarr = vararr(ivar)
+                iv_idx = varidx(ivar)
+                ip_arr = arrpoi(iarr)
+                ipndt = ip_arr + iv_idx - 1
+    
+                ! Calculate the "quasi-number" of time steps for BLOOM
+                ! Given BLOOM step is in days
+                ndtblo = nint( 86400.0_dp * process_space_real(ipndt) / dts )
+                prondt(bloom_status_ind) = ndtblo
+    
+                ! This timestep fractional step ?
+                ! Enclose the time in an interval, rather than look for equality, as the time step
+                ! may be dynamic. (The half timestep is to neutralise the rounding errors)
+                if ( time >= time_bloom_next - 0.5_dp * dts ) then
+                    time_bloom_next = time_bloom_next + 86400.0_dp * process_space_real(ipndt)
+    
+                    flux = 0.0
+    
+                    !           set dts and delt, bloom itself will multiply with prondt
+                    dtspro = prondt(bloom_status_ind) * dts
+                    ipp_dts = num_defaults - 2 * num_processes_activated + bloom_status_ind
+                    ipp_delt = num_defaults - num_processes_activated + bloom_status_ind
+                    defaul(ipp_dts) = dts
+                    defaul(ipp_delt) = dts / real(itfact)
+    
+                    call calculate_single_process (bloom_status_ind, bloom_ind, prvnio, prvtyp, prvvar, vararr, &
+                            varidx, arrknd, arrpoi, arrdm1, arrdm2, &
+                            num_cells, process_space_real, process_space_int, increm, &
+                            noflux, iflux, promnr, flux, iexpnt, &
+                            iknmrk, num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir, &
+                            pronam, dll_opb)
+    
+                    if (bloom_status_ind /= num_processes_activated) then
+                        nfluxp = iflux(bloom_status_ind + 1) - iflux(bloom_status_ind)
+                    else
+                        nfluxp = noflux - iflux(bloom_status_ind) + 1
                     endif
-
-                endif
-
-                if (istep == 1) then
-                    deriv(:, :) = 0.0d0
-                    if (ibflag > 0) flxdmp = 0.0d0
-                else
-                    !              Scale fluxes and update "processes" accumulation arrays
-                    atfac = 1.0 / real(itfact, 8)
-                    do iseg = 1, num_cells
-                        deriv (iseg, :) = deriv(iseg, :) * atfac
-                    enddo
-
-                    !                 Integrate the process fluxes
-                    call wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
-                             num_substances_transported, num_substances_total, num_cells, surfac)
+                    if (nfluxp > 0) then
+                        !              Construct derivatives for these fluxes on this grid
+                        call wq_processes_derivatives (deriv, num_substances_total, noflux, stochi, iflux (bloom_status_ind), &
+                                nfluxp, flux, num_cells, volume, prondt(bloom_status_ind))
+    
+                        !              For balances store FLXDMP
+                        if (ibflag > 0) then
+                            ndt = prondt(bloom_status_ind) * dts / 86400.0
+                            do iseg = 1, num_cells
+                                if (isdmp(iseg) > 0) then
+                                    nflux1 = iflux (bloom_status_ind)
+                                    vol = volume(iseg)
+                                    ips = isdmp(iseg)
+                                    if(ips<1) cycle
+                                    do iflx = nflux1, nflux1 + nfluxp - 1
+                                        if(flux(iflx, iseg)>0) then
+                                            flxdmp(1, iflx, ips) = flxdmp(1, iflx, ips) + flux(iflx, iseg) * vol * ndt
+                                        else
+                                            flxdmp(2, iflx, ips) = flxdmp(2, iflx, ips) - flux(iflx, iseg) * vol * ndt
+                                        endif
+                                    enddo
+                                endif
+                            enddo
+                        endif
+    
+                    endif
+    
+                    if (istep == 1) then
+                        deriv(:, :) = 0.0d0
+                        if (ibflag > 0) flxdmp = 0.0d0
+                    else
+                        !              Scale fluxes and update "processes" accumulation arrays
+                        atfac = 1.0 / real(itfact, 8)
+                        do iseg = 1, num_cells
+                            deriv (iseg, :) = deriv(iseg, :) * atfac
+                        enddo
+    
+                        !                 Integrate the process fluxes
+                        call wq_processes_integrate_fluxes (conc, amass, deriv, volume, dts, &
+                                 num_substances_transported, num_substances_total, num_cells, surfac)
+                    endif
                 endif
             endif
         endif
@@ -264,8 +266,8 @@ contains
         flux = 0.0
 
         do iproc = 1, num_processes_activated
-            !        NOT bloom
-            if (iproc /= bloom_status_ind) then
+            !        NOT bloom and runprocess is true
+            if (iproc /= bloom_status_ind .and. runprocess(iproc)) then
                 !           Check fractional step
                 if (mod(istep - 1, prondt(iproc)) == 0) then
 

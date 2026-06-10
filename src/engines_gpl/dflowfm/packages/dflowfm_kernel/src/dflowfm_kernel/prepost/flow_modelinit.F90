@@ -126,7 +126,7 @@ contains
       use m_set_frcu_mor
       use m_flow_obsinit
       use m_set_model_boundingbox, only: set_model_boundingbox
-      use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step
+      use m_fm_wq_processes_sub, only: fm_wq_processes_ini_proc, fm_wq_processes_ini_sub, fm_wq_processes_step, WQ_RUNALL
       use m_tauwavefetch, only: tauwavefetch
       use m_fill_constituents, only: fill_constituents
       use precice_adapter_facade, only: precice_adapter_is_enabled, precice_adapter_get_builder, precice_adapter_builder_t
@@ -428,9 +428,9 @@ contains
             call fm_wq_processes_ini_proc()
             jawaqproc = 2
             if (ti_waqproc > 0.0_dp) then
-               call fm_wq_processes_step(ti_waqproc, tstart_user)
+               call fm_wq_processes_step(ti_waqproc, tstart_user, WQ_RUNALL)
             else
-               call fm_wq_processes_step(dt_init, tstart_user)
+               call fm_wq_processes_step(dt_init, tstart_user, WQ_RUNALL)
             end if
          end if
       end if

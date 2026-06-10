@@ -147,6 +147,16 @@ module processes_pointers
     integer(kind = int_wp), allocatable :: ivpnw(:)        !< New velocity pointers
     real(kind = real_wp), allocatable :: defaul(:)       !< Values for default constants
 
+    character(10) :: alwaysprocesses(5) = ["DDEPTH", "TOTDEP", "WKCOMP", "SEDCOM", "CALTAU"] !< Processes that are always called.
+    character(10) :: adssedresprocesses(23) = ["PARTMP", "ADSPO4", "RFPART", "FLOCSD", "CALSED", &
+                                               "SEDAAP", "SEDAGG", "SEDCAR", "SEDHM ", "SEDIM ", &
+                                               "SEDNU2", "SEDOMV", "SEDSOD", "SEDTYR", "RESBUF", &
+                                               "RESDM ", "BURIAL", "DIGGIN", "S12TIM", "S12TRA", &
+                                               "RESANT", "ADVTRA", "TRASE2"] !< Processes for adsorption, sedimentation, and resuspension
+    logical, allocatable :: alwaysprocess(:) !< Is an always process or not
+    logical, allocatable :: adssedresprocess(:) !< Is adsorption, sedimentation, or resuspension process or not
+    logical, allocatable :: runprocess(:) !< Whether to run this process or not
+
     integer(kind = int_wp), allocatable :: process_space_int(:)        !< Start index in process_space_real array
     integer(kind = int_wp), allocatable :: increm(:)       !< Increment in process_space_real array
 

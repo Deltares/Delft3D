@@ -1357,7 +1357,7 @@ contains
       end if
    end subroutine add_wqbot
 
-   module subroutine fm_wq_processes_step(dt, time)
+   module subroutine fm_wq_processes_step(dt, time, processselection)
       use m_fm_wq_processes
       use m_wq_processes_proces
       use m_mass_balance_areas
@@ -1368,6 +1368,7 @@ contains
 
       real(kind=dp), intent(in) :: dt !< timestep for waq in seconds
       real(kind=dp), intent(in) :: time !< time     for waq in seconds
+      integer, intent(in) :: processselection !< indicator for which processes to run (WQ_RUNALL, WQ_RUNADSSEDMOR, WQ_RUNOTHER)
 
       integer :: ipoiconc
 
@@ -1380,6 +1381,14 @@ contains
 
       if (jawaqproc == 0) then
          return
+      end if
+
+      if (processselection == WQ_RUNADSSEDMOR) then
+         runprocess = alwaysprocess .or. adssedresprocess
+      else if (processselection == WQ_RUNOTHER) then
+         runprocess = .not. adssedresprocess
+      else !run all processes
+         runprocess = .true.
       end if
 
       if (timon) then

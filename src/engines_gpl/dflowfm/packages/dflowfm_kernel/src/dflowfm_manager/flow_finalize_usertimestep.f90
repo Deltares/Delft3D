@@ -34,7 +34,7 @@
 !!
 !! Should be called directly after a flow_run_usertimestep.
 module m_flow_finalize_usertimestep
-   use m_fm_wq_processes_sub, only: fm_wq_processes_step
+   use m_fm_wq_processes_sub, only: fm_wq_processes_step, WQ_RUNALL, WQ_RUNOTHER
 
    implicit none
 
@@ -55,6 +55,7 @@ contains
       use m_timer
       use m_flow
       use m_flowgeom
+      use m_fm_wq_processes, only: jawaqsedimentationtransportcoupling
       use m_trachy
       use dfm_error
       use precision_basics, only: comparereal
@@ -80,13 +81,17 @@ contains
 
       do_fourier = (md_fou_step == 0)
 
-!   call fm_wq_processes_step(dt_user,time_user)
+!   call fm_wq_processes_step(dt_user, time_user, WQ_RUNALL)
       if (ti_waqproc > 0) then
          if (comparereal(time_user, time_waqproc, EPS10) == 0) then
             if (jatimer == 1) then
                call starttimer(IFMWAQ)
             end if
-            call fm_wq_processes_step(ti_waqproc, time_user)
+            if (jawaqsedimentationtransportcoupling == 0) then
+               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNALL)
+            else
+               call fm_wq_processes_step(ti_waqproc, time_user, WQ_RUNOTHER)
+            end if
             if (jatimer == 1) then
                call stoptimer(IFMWAQ)
             end if
