@@ -118,8 +118,8 @@ contains
       ntot = numobs + nummovobs
       do l = 1, stmpar%lsedtot
          k = ntot * (l - 1)
-         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / stmpar%sedpar%sedtrans_unitcov_fac(l)
-         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / stmpar%sedpar%sedtrans_unitcov_fac(l)
+         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
       end do
    end subroutine assign_sediment_transport
 
@@ -405,7 +405,7 @@ contains
       
       associate (data_pointer => data_pointer) ! Unused, since obscrs_data is a module variable
       end associate
-
+      
       if (ncrs == 0) then
          return
       end if
@@ -428,7 +428,7 @@ contains
          IP = IPNT_HUA + num
          if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
             l = sedtot2sedsus(num - ISED1 + 1)
-            rhol = stmpar%sedpar%sedtrans_unitcov_fac(l)
+            rhol = stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
          else
             rhol = 1.0_dp ! dummy
          end if
@@ -2282,7 +2282,7 @@ contains
       use m_waveconst
       use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, ICECOVER_SEMTNER
       use, intrinsic :: iso_c_binding
-
+      
       type(t_output_quantity_config_set), intent(inout) :: output_config_set !< output config for which an output set is needed.
       type(t_output_variable_set), intent(inout) :: output_set !< output set that items need to be added to
 

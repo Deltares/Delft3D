@@ -406,7 +406,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              allocate(rbuff2(nostat,lsedtot), stat=istat)
              do l = 1, lsedtot
                 do n = 1, nostat
-                   rbuff2(n, l) = zsbu(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = zsbu(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -419,7 +419,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              do l = 1, lsedtot
                 do n = 1, nostat
-                   rbuff2(n, l) = zsbv(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = zsbv(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -437,7 +437,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              allocate(rbuff2(nostat, lsed), stat=istat)
              do l = 1, lsed
                 do n = 1, nostat
-                   rbuff2(n, l) = zssu(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = zssu(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -450,7 +450,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              do l = 1, lsed
                 do n = 1, nostat
-                   rbuff2(n, l) = zssv(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = zssv(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -565,7 +565,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              allocate(rbuff2(ntruv, lsedtot), stat=istat)
              do l = 1, lsedtot
                 do n = 1, ntruv
-                   rbuff2(n, l) = sbtr(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = sbtr(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -578,7 +578,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              do l = 1, lsedtot
                 do n = 1, ntruv
-                   rbuff2(n, l) = sbtrc(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = sbtrc(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -596,7 +596,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              allocate(rbuff2(ntruv, lsed), stat=istat)
              do l = 1, lsed
                 do n = 1, ntruv
-                   rbuff2(n, l) = sstr(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = sstr(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &
@@ -609,7 +609,7 @@ subroutine wrsedh(lundia    ,error     ,filename  ,ithisc    ,ntruv     , &
              !
              do l = 1, lsed
                 do n = 1, ntruv
-                   rbuff2(n, l) = sstrc(n, l) / gdp%gdsedpar%sedtrans_unitcov_fac(l)
+                   rbuff2(n, l) = sstrc(n, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
              call wrtarray_n(fds, filename, filetype, grnam5, &

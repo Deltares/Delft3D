@@ -413,8 +413,8 @@ contains
             qu = 0.0_fp
             qv = 0.0_fp
             do ll = 1, stmpar%lsedtot
-               qu = qu + sbcx(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll) + sbwx(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll)
-               qv = qv + sbcy(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll) + sbwy(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll)
+               qu = qu + sbcx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sbwx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
+               qv = qv + sbcy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sbwy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
             end do
             call local_stats_vec(morstatflg(:, 3), k, qu, qv, wght)
          end if
@@ -423,8 +423,8 @@ contains
             qu = 0.0_fp
             qv = 0.0_fp
             do ll = 1, stmpar%lsedsus
-               qu = qu + sscx(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll) + sswx(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll)
-               qv = qv + sscy(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll) + sswy(k, ll) / stmpar%sedpar%sedtrans_unitcov_fac(ll)
+               qu = qu + sscx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sswx(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
+               qv = qv + sscy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll) + sswy(k, ll) / stmpar%morpar%moroutput%unit_transport_conversion_factor(ll)
             end do
             call local_stats_vec(morstatflg(:, 4), k, qu, qv, wght)
          end if
