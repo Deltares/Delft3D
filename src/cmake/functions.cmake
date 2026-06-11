@@ -230,11 +230,11 @@ endfunction()
 # Return
 # source_files : The source files that were gathered.
 function(get_fortran_source_files_recursive source_directory source_files)
-    file(GLOB_RECURSE source ${source_directory} *.f90
-                        ${source_directory} *.F90
-                        ${source_directory} *.for
-                        ${source_directory} *.f
-                        ${source_directory} *.F)
+    file(GLOB_RECURSE source ${source_directory}/*.f90
+                        ${source_directory}/*.F90
+                        ${source_directory}/*.for
+                        ${source_directory}/*.f
+                        ${source_directory}/*.F)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 
