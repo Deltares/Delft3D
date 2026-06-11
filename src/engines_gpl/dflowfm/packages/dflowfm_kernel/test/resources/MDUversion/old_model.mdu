@@ -130,7 +130,6 @@ PavIni            = 0
 
 [waves]
 Wavemodelnr       = 0
-WaveNikuradse     = 0.01
 Rouwav            = FR84
 Gammax            = 1
 
