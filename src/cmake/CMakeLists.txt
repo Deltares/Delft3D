@@ -422,7 +422,7 @@ if(${configuration_type} STREQUAL ${d3d4-suite_configuration})
 endif()
 
 if(UNIX)
-    add_subdirectory(${checkout_src_root}/${install_all_module} install_all)
+    add_subdirectory(${checkout_src_root}/${install_linux_libs_module} install_linux_libs)
 endif()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/../../bsd-2.txt
