@@ -56,7 +56,7 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
-      use m_reallocsrc, only: reallocsrc
+      use m_source_sink, only: source_sinks
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -83,6 +83,11 @@ contains
       if (len_trim(file_name) <= 0) then
          ! empty line in MDU is allowed: exit without error
          return
+      end if
+
+      if (file_name(len_trim(file_name)-3:) == '.ini') then
+         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '// trim(file_name) //' to the external forcings file.' 
+         call warn_flush()
       end if
 
       res = .true.
@@ -151,7 +156,7 @@ contains
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
-         call reallocsrc(max_num_src, 0)
+         call source_sinks%initialize(max_num_src)
       end if
 
       ib = 0
@@ -1315,8 +1320,7 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin
-      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, dzL
@@ -1385,7 +1389,7 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), source_sinks%num_total, &
                                                      1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
@@ -1430,7 +1434,7 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
                                                               1, source_sink_all_discharges(1 + i_const, :))
                continue
             end if
@@ -1443,7 +1447,8 @@ contains
 
    !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
-      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
+      use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
+      use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1570,8 +1575,7 @@ contains
       use network_data
       use m_flow
       use fm_external_forcings_data
-      use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-      use m_setsorsin
+      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
       use m_missing, only: dmiss
       use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
       use m_alloc, only: realloc
@@ -1649,8 +1653,8 @@ contains
             nNodesBubbleScreen = nNodesBubbleScreen + n_cells
             call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
             call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-            geomXBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = x_flowcell
-            geomYBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = y_flowcell
+            geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
+            geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
             nodeCountBubbleScreen(bi) = n_cells
 
             z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
@@ -1667,7 +1671,7 @@ contains
                if (bubblescreen_cells(cidx) /= -1) then
                   local_count = local_count + 1
                   bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
-                  bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
+                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
                end if
             end do
          end associate
