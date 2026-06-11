@@ -114,6 +114,7 @@ type icecover_type
    real(fp) :: snow_conductivity                 !< conductivity of snow (W m-1 K-1)
    real(fp) :: snow_latentheat                   !< latent heat of snow (kJ kg-1)
    real(fp) :: frict_val                         !< friction coefficient of ice cover (unit depends on frict_type)
+   real(fp) :: ice_wetting_drying_threshold      !< wetting drying threshold for ice growth or melt (m)
    !
    ! state
    !

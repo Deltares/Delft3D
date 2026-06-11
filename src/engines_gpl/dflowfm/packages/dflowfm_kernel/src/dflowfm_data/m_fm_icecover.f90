@@ -73,13 +73,14 @@ module m_fm_icecover
    real(fp), pointer :: ice_conductivity !< module pointer to ice_conductivity inside ice_data
    real(fp), pointer :: ice_latentheat !< module pointer to ice_latentheat inside ice_data
    real(fp), pointer :: ice_frcuni !< module pointer to frict_val inside ice_data
+   real(fp), pointer :: ice_wetting_drying_threshold !< module pointer to ice_wetting_drying_threshold
 
    real(fp), pointer :: snow_albedo !< module pointer to snow_albedo inside ice_data
    real(fp), pointer :: snow_conductivity !< module pointer to snow_conductivity inside ice_data
    real(fp), pointer :: snow_latentheat !< module pointer to snow_latentheat inside ice_data
 
    character(len=*), parameter :: MDU_ICE_CHAPTER = 'ice' !< name of the ice chapter in the mdu file
-
+   
 contains
 
 !> Nullify/initialize ice data structure.
@@ -130,6 +131,7 @@ contains
       ice_density => ice_data%ice_density
       ice_frict_type => ice_data%frict_type
       ice_frcuni => ice_data%frict_val
+      ice_wetting_drying_threshold => ice_data%ice_wetting_drying_threshold
 
       snow_albedo => ice_data%snow_albedo
       snow_conductivity => ice_data%snow_conductivity
@@ -415,8 +417,8 @@ contains
 !! let's see if we can make it gradually more modular and move functionality to the icecover_module.
    subroutine update_icecover()
       use precision, only: fp
-      use m_flow, only: s1
-      use m_flowgeom, only: ndx, bl
+      use m_flow, only: hs
+      use m_flowgeom, only: ndx
       use m_flowparameters, only: epshu
       use m_flowtimes, only: dts
       use m_wind, only: air_temperature, rain, jarain
@@ -428,7 +430,6 @@ contains
       integer :: n !< loop index, grid cell number
       real(fp) :: ice_thickness_change !< change in ice thickness based on heat exchange (m)
       real(fp) :: snow_thickness_change !< change in snow thickness based on heat exchange (m)
-      real(fp) :: water_depth !<local water depth (m)
 
       select case (ja_icecover)
       case (ICECOVER_SEMTNER)
@@ -446,9 +447,17 @@ contains
          ! Compute ice growth or melt of snow and ice
          do n = 1, ndx
              
-            ! determine wetting-drying status   
-            water_depth = s1(n) - bl(n)
-            if (water_depth > 1.1_dp * epshu) then
+            ! Determine wetting-drying status for ice growth or melt for computational cell (n).
+            !
+            ! This is a trial-and-error approach. For example, variabele KFS, which indeed is meant for the wetting-drying status - isn't suited for our check because
+            ! it is based on the criterion "Volume(n) > 0.0". Thus, for very thin waterdepths (HS) computational cells are still wet. This also holds for (much) smaller
+            ! values than EPSHU. which is used for wetting-drying at flow links. The goal is to have a criterion that is close to the criterion for flow links. 
+            ! In dried ares the HS values are often close to EPSHU. For example a few percent smaller. In these cells we would like to switch off ice growth or melt. 
+            ! Therefore, as a first guess we propose to apply ïce growth or melt only for "HS > 1.1 * EPSHU". 
+            ! 
+            ice_wetting_drying_threshold = 1.1_dp * epshu
+ 
+            if (hs(n) > ice_wetting_drying_threshold) then
             
                if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
                   if (qh_air2ice(n) > qh_ice2wat(n) .and. snow_thickness(n) > 0.0_fp) then
@@ -482,7 +491,7 @@ contains
                      ice_temperature(n) = celsius_to_kelvin(0.0_fp)
                   end if
                end if
-            endif  
+            end if  
          end do
 
       case default
