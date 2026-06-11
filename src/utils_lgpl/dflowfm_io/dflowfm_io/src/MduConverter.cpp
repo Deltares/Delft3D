@@ -91,50 +91,64 @@ namespace dflowfm_io
         {
             auto& iniSection = iniData.AddSection(sectionSchema.name);
 
+            if (iniData.size() == 1)
+            {
+                iniSection.AddComment(MDU_SCHEMA.description);
+                iniSection.AddComment("");
+            }
+
+            iniSection.AddComment(sectionSchema.description);
+
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
                 if (!mduData.hasValue(key)) continue;
 
                 const ValueType value_type = propertySchema.value_type;
+                IniProperty* addedProperty = nullptr;
                 if (value_type == ValueType::Path)
                 {
                     const auto& value = mduData.getValueAs<std::filesystem::path>(key);
-                    iniSection.AddProperty(propertySchema.key, value.string());
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::String)
                 {
                     std::string value = mduData.getValueAs<std::string>(key);
-                    iniSection.AddProperty(propertySchema.key, value);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::Integer)
                 {
                     int value = mduData.getValueAs<int>(key);
-                    iniSection.AddProperty(propertySchema.key, value);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::IntBool)
                 {
                     bool value = mduData.getValueAs<bool>(key);
-                    iniSection.AddProperty(propertySchema.key, value);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::FloatingPoint)
                 {
                     double value = mduData.getValueAs<double>(key);
-                    iniSection.AddProperty(propertySchema.key, value);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::StringList)
                 {
                     const auto& values = mduData.getValueAs<std::vector<std::string>>(key);
-                    iniSection.AddMultiValueProperty(propertySchema.key, values);
+                    addedProperty = &iniSection.AddMultiValueProperty(propertySchema.key, values);
                 }
                 else if (value_type == ValueType::PathList)
                 {
                     const auto& values = mduData.getValueAs<std::vector<std::filesystem::path>>(key);
-                    iniSection.AddMultiValueProperty(propertySchema.key, values);
+                    addedProperty = &iniSection.AddMultiValueProperty(propertySchema.key, values);
                 }
                 else
                 {
                     throw std::logic_error("INTERNAL ERROR: Unhandled value type");
+                }
+
+                if (addedProperty && !propertySchema.description.empty())
+                {
+                    addedProperty->SetComment(propertySchema.description);
                 }
             }
         }

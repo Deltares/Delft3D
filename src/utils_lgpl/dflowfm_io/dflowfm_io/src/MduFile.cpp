@@ -19,6 +19,7 @@ namespace dflowfm_io
                 .allowDuplicateProperties = false,
                 .allowMultiLineValues = true,
             },
+        .formatterOptions{.writeEmptySections = false},
     };
 
     MduData MduFile::Load(std::istream& in)

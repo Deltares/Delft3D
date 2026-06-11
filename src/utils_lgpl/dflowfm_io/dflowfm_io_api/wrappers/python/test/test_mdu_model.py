@@ -38,19 +38,24 @@ class TestMduModel(unittest.TestCase):
 
     def test_save_to_lines(self):
         expected_lines = [
-            "[General]",
-            "Program               = D-Flow FM",
+            "# The master definition file of D-Flow FM",
+            "#",
+            "# This section contains the program name and its version.",
+            "[general]",
+            "program               = D-Flow FM           # Program.",
             "fileVersion           = 1.02",
             "",
+            "# In this section, the main entry comprises the specification of the grid (i.e. the netCDF network file). In addition, thin dams and thin dykes can be specified.",
             "[geometry]",
-            "netFile               = FlowFM_net.nc",
-            "useCaching            = True",
-            "kmx                   = 0",
-            "waterLevIni           = 0.0000000e+00",
-            "dryPointsFile         = dry.pol dry.xyz",
+            "netFile               = FlowFM_net.nc       # Net file (*_net.nc) containing mesh information.",
+            "useCaching            = True                # Use caching for geometrical/network-related items.",
+            "kmx                   = 0                   # Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM.",
+            "waterLevIni           = 0.0000000e+00       # Initial water levels sample file (*.xyz).",
+            "dryPointsFile         = dry.pol dry.xyz     # Dry points file (*.xyz), third column dummy z values, or polygon file (*.pol).",
             "",
+            "# This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.",
             "[numerics]",
-            "cflMax                = 7.0000000e-01",
+            "cflMax                = 7.0000000e-01       # Maximum Courant nr.",
             ""
         ]
 
