@@ -1640,6 +1640,7 @@ contains
                             'up                                      ', &
                             'ocean_sigma_coordinate                  '  /)
 
+            k = len_trim(mesh_name)
             write(layer_dim_name, '(3a)') mesh_name(1:k), '_layer_dlwq'
             ierror = nf90_def_var(nc_id, layer_dim_name, nf90_float, (/ layers_dim_id /), cum_layer_var_id)
             if (ierror /= 0) then
