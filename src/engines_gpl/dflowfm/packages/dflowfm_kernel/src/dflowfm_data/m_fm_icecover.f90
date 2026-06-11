@@ -259,7 +259,7 @@ contains
       use m_flowgeom, only: nd
       use m_physcoef, only: vonkar
       use physicalconsts, only: celsius_to_kelvin, kelvin_to_celsius
-      use m_heatfluxes, only: cpw
+      use m_heatfluxes, only: SPECIFIC_HEAT_WATER
       use m_wind, only: air_temperature
       use ieee_arithmetic, only: ieee_is_nan
 
@@ -397,7 +397,7 @@ contains
          !
          ! Calculate heat flux out of the ocean
          !
-         qh_ice2wat(n) = rhow * cpw * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze))
+         qh_ice2wat(n) = rhow * SPECIFIC_HEAT_WATER * c_tz * min(-0.01_fp, max(0.0_fp, tempwat - t_freeze))
          !
          ! adaptation of QH_ICE2WAT conform KNMI approach (QH_ICE2WAT = 2.4 W/m2)
          !

@@ -56,7 +56,7 @@ contains
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
-      use m_reallocsrc, only: reallocsrc
+      use m_source_sink, only: source_sinks
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
@@ -151,7 +151,7 @@ contains
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
-         call reallocsrc(max_num_src, 0)
+         call source_sinks%initialize(max_num_src)
       end if
 
       ib = 0
@@ -1010,10 +1010,8 @@ contains
    function enable_quantity(quantity) result(success)
       use m_wind, only: jaspacevarcharn, ja_airdensity, air_pressure_available, jawind, jarain, &
                         jaqin, solar_radiation_available, net_solar_radiation_available, long_wave_radiation_available, &
-                        pseudo_air_pressure_available, water_level_correction_available
-      use m_flowparameters, only: btempforcingtypA, btempforcingtypC, btempforcingtypD, btempforcingtypH, btempforcingtypL, &
-                                  btempforcingtypS, itempforcingtyp
-
+                        sensible_heat_flux_available, latent_heat_flux_available, pseudo_air_pressure_available, water_level_correction_available
+      use m_flowparameters, only: itempforcingtyp
       use stdlib_kinds, only: c_bool
       use tree_data_types
       use tree_structures
@@ -1087,18 +1085,8 @@ contains
       case ('windx', 'windy', 'windxy', 'stressxy', 'stressx', 'stressy')
          jawind = 1
 
-      case ('airtemperature')
-         btempforcingtypA = .true.
-
-      case ('cloudiness')
-         btempforcingtypC = .true.
-
-      case ('humidity')
-         btempforcingtypH = .true.
-
       case ('dewpoint')
          itempforcingtyp = 5
-         btempforcingtypD = .true.
 
       case ('solarradiation')
          if (net_solar_radiation_available) then
@@ -1107,7 +1095,6 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          solar_radiation_available = .true.
 
       case ('netsolarradiation')
@@ -1117,12 +1104,16 @@ contains
             success = .false.
             return
          end if
-         btempforcingtypS = .true.
          net_solar_radiation_available = .true.
 
       case ('longwaveradiation')
-         btempforcingtypL = .true.
          long_wave_radiation_available = .true.
+
+      case ('sensibleheatflux')
+         sensible_heat_flux_available = .true.
+
+      case ('latentheatflux')
+         latent_heat_flux_available = .true.
 
       case ('humidity_airtemperature_cloudiness')
          itempforcingtyp = 1
@@ -1324,8 +1315,7 @@ contains
       use m_transport, only: NAMLEN, NUMCONST, const_names, ISALT, ITEMP, ISED1, ISEDN, ISPIR, ITRA1, ITRAN
       use netcdf_utils, only: ncu_sanitize_name
       use m_missing, only: dmiss
-      use m_addsorsin, only: addsorsin
-      use fm_external_forcings_data, only: num_source_sink, source_sink_all_discharges
+      use m_source_sink, only: addsorsin, source_sinks, source_sink_all_discharges
       use dfm_error, only: DFM_NOERR
       use m_filez, only: oldfil
       use m_polygon, only: xpl, ypl, zpl, dzL
@@ -1394,7 +1384,7 @@ contains
 
       quantity_id = 'sourcesink_discharge' ! New quantity name in .bc files
       !call resolvePath(filename, basedir) ! TODO!
-      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), num_source_sink, &
+      is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), 'discharge', trim(discharge_input), source_sinks%num_total, &
                                                      1, source_sink_all_discharges(1, :))
 
       if (.not. is_successful) then
@@ -1439,7 +1429,7 @@ contains
             if (is_read) then
                quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
-               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), num_source_sink, &
+               is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
                                                               1, source_sink_all_discharges(1 + i_const, :))
                continue
             end if
@@ -1452,7 +1442,8 @@ contains
 
    !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
-      use fm_external_forcings_data, only: num_source_sink, t_Bubblescreen, bubblescreens
+      use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
+      use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1566,139 +1557,136 @@ contains
 
    end subroutine initialize_bubblescreens
 
-
    !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.
-      function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
-         use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
-         use m_filez, only: oldfil
-         use m_reapol, only: reapol
-         use messageHandling, only: err_flush, msgbuf, msg_flush
-         use tree_data_types, only: tree_data
-         use m_polygon, only: xpl, ypl, zpl, npl
-         use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
-         use network_data
-         use m_flow
-         use fm_external_forcings_data
-         use m_addsorsin, only: addsorsin, addsorsin_from_polyline_file
-         use m_setsorsin
-         use m_missing, only: dmiss
-         use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
-         use m_alloc, only: realloc
-         use m_flowgeom, only: ndx
-         use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
+   function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
+      use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
+      use m_filez, only: oldfil
+      use m_reapol, only: reapol
+      use messageHandling, only: err_flush, msgbuf, msg_flush
+      use tree_data_types, only: tree_data
+      use m_polygon, only: xpl, ypl, zpl, npl
+      use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline
+      use network_data
+      use m_flow
+      use fm_external_forcings_data
+      use m_source_sink, only: addsorsin, addsorsin_from_polyline_file, setsorsin, source_sinks
+      use m_missing, only: dmiss
+      use m_partitioninfo, only: jampi, reduce_cells, reduce_double_array_max, my_rank
+      use m_alloc, only: realloc
+      use m_flowgeom, only: ndx
+      use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
 
+      ! Parameters
+      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
 
-         ! Parameters
-         type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
-         character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-         character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-         character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
+      ! Local variables
+      logical :: is_successful !< Success flag
+      integer :: cidx !< Index for crossed cells
+      integer :: i, bi !< Loop indices
+      integer :: ierr !< Error code
+      integer :: bubblescreen_source_sink_count
+      integer :: n_cells
+      integer, dimension(:), allocatable :: bubblescreen_cells
+      integer :: local_count
+      integer :: tm_global_count
 
-         ! Local variables
-         logical :: is_successful !< Success flag
-         integer :: cidx !< Index for crossed cells
-         integer :: i, bi !< Loop indices
-         integer :: ierr !< Error code
-         integer :: bubblescreen_source_sink_count
-         integer :: n_cells
-         integer, dimension(:), allocatable :: bubblescreen_cells
-         integer :: local_count
-         integer :: tm_global_count
+      real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
+      real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
+      real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
+      real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
+      real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
-         real(kind=dp), dimension(:), allocatable :: x_flowcell !< x-coordinate of flow cell
-         real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
-         real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
-         real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
-         real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
+      character(len=:), allocatable :: id !< Bubblescreen id
+      character(len=:), allocatable :: srcid !< Source id
+      character(len=:), allocatable :: location_file !< Bubblescreen location file
+      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
 
-         character(len=:), allocatable :: id !< Bubblescreen id
-         character(len=:), allocatable :: srcid !< Source id
-         character(len=:), allocatable :: location_file !< Bubblescreen location file
-         character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      ! Initialization
+      is_successful = .false.
+      bubblescreen_source_sink_count = 0
+      local_count = 0
 
-         ! Initialization
-         is_successful = .false.
-         bubblescreen_source_sink_count = 0
-         local_count = 0
+      ! Read bubble screen attributes from the tree node
+      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
+      if (is_successful) then
+         allocate (character(len=len_trim(id) + 50) :: srcid)
 
-         ! Read bubble screen attributes from the tree node
-         is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
-         if (is_successful) then
-            allocate (character(len=len_trim(id) + 50) :: srcid)
+         ! Find the bubblescreen with matching id
+         do i = 1, size(bubblescreens)
+            if (trim(bubblescreens(i)%id) == trim(id)) then
+               bi = i
+               exit
+            end if
+         end do
 
-            ! Find the bubblescreen with matching id
-            do i = 1, size(bubblescreens)
-               if (trim(bubblescreens(i)%id) == trim(id)) then
-                  bi = i
-                  exit
+         associate (bubblescreen => bubblescreens(bi))
+
+            n_cells = bubblescreen%num_flowcells
+            bubblescreen_cells = bubblescreen%flowcell_indices
+            ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
+            if (jampi == 1) then
+               bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
+               n_cells = size(bubblescreen_cells)
+            end if
+            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
+            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
+            do i = 1, n_cells
+               if (.not. bubblescreen_cells(i) == -1) then
+                  x_flowcell(i) = xzw(bubblescreen_cells(i))
+                  y_flowcell(i) = yzw(bubblescreen_cells(i))
                end if
             end do
+            if (jampi == 1) then
+               call reduce_double_array_max(n_cells, x_flowcell)
+               call reduce_double_array_max(n_cells, y_flowcell)
+            end if
+            tm_global_count = nNodesBubbleScreen
+            nNodesBubbleScreen = nNodesBubbleScreen + n_cells
+            call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+            call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
+            geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
+            geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
+            nodeCountBubbleScreen(bi) = n_cells
 
-            associate (bubblescreen => bubblescreens(bi))
+            z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
+            z_flowcell_sink = bubblescreen%z_level
+            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
+            ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
+            do cidx = 1, n_cells
+               ! Create the source/sink name
+               bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
+               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
 
-               n_cells = bubblescreen%num_flowcells
-               bubblescreen_cells = bubblescreen%flowcell_indices
-               ! we need the global number of bubblescreen cells, addsorsin must be called on every partition
-               if (jampi == 1) then
-                  bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
-                  n_cells = size(bubblescreen_cells)
+               ! Create a linked source/sink in the flow cell
+               call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
+               if (bubblescreen_cells(cidx) /= -1) then
+                  local_count = local_count + 1
+                  bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
+                  bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
                end if
-               call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
-               call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
-               do i = 1, n_cells
-                  if (.not. bubblescreen_cells(i) == -1) then
-                     x_flowcell(i) = xzw(bubblescreen_cells(i))
-                     y_flowcell(i) = yzw(bubblescreen_cells(i))
-                  end if
-               end do
-               if (jampi == 1) then
-                  call reduce_double_array_max(n_cells, x_flowcell)
-                  call reduce_double_array_max(n_cells, y_flowcell)
-               end if
-               tm_global_count = nNodesBubbleScreen
-               nNodesBubbleScreen = nNodesBubbleScreen + n_cells
-               call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-               call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-               geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
-               geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
-               nodeCountBubbleScreen(bi) = n_cells
+            end do
+         end associate
+      end if
 
-               z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
-               z_flowcell_sink = bubblescreen%z_level
-               call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
-               ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
-               do cidx = 1, n_cells
-                  ! Create the source/sink name
-                  bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
-                  write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
+      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
+                                                     trim(discharge_input), bi, 1, bubblescreen_air_discharge)
 
-                  ! Create a linked source/sink in the flow cell
-                  call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
-                  if (bubblescreen_cells(cidx) /= -1) then
-                     local_count = local_count + 1
-                     bubblescreen%flowcell_indices(local_count) = bubblescreen_cells(cidx) !> the order bubblescreen_cells and flowcell_indices is not the same, so overwrite this
-                     bubblescreen%source_sink_indices(local_count) = num_source_sink !> global counter which has just been incremented by addsorsin
-                  end if
-               end do
-            end associate
-         end if
+      if (.not. is_successful) then
+         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
+            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
+         call err_flush()
+         return
+      end if
 
-         is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                                                        trim(discharge_input), bi, 1, bubblescreen_air_discharge)
+      is_successful = .true.
 
-         if (.not. is_successful) then
-            write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-               //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
-            call err_flush()
-            return
-         end if
+   end function add_bubblescreen_source_sinks
 
-         is_successful = .true.
-
-      end function add_bubblescreen_source_sinks
-
-      !> Get several target grid properties for a given location type.
+   !> Get several target grid properties for a given location type.
    !!
    !! Properties include: coordinates and location count,
    !! typically used in setting up the time-space relations for
@@ -1717,7 +1705,7 @@ contains
       logical, intent(in) :: exclude_boundary_nodes !> equals is_static_field, boundary nodes are only included for time-varying
       integer, intent(out) :: ierr
 
-         ierr = DFM_NOERR
+      ierr = DFM_NOERR
 
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
@@ -1745,108 +1733,114 @@ contains
       end select
    end subroutine get_location_target_properties
 
-      !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
-      subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
-         use fm_location_types
-         use m_flowgeom, only: ndx, lnx, xz, yz, kcs
-         use timespace_parameters, only: LOCTP_POLYGON_FILE
-         use timespace, only: selectelset_internal_nodes, selectelset_internal_links
-         use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
+   !> Construct target mask array for later ec_addtimespacerelation/timespaceinitialfield calls.
+   subroutine construct_target_mask(mask, target_num_points, target_mask_file, target_location_type, invert_mask, ierr)
+      use fm_location_types
+      use m_flowgeom, only: ndx, lnx, xz, yz, kcs
+      use timespace_parameters, only: LOCTP_POLYGON_FILE
+      use timespace, only: selectelset_internal_nodes, selectelset_internal_links
+      use dfm_error, only: DFM_NOTIMPLEMENTED, DFM_NOERR
 
-         integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
-         integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
-         character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
-         integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-         logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
-         integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
+      integer, dimension(:), allocatable, intent(out) :: mask !< Mask array for the target element set.
+      integer, intent(in) :: target_num_points !< Number of points in target element set. Will be used to allocate the mask array.
+      character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
+      integer, intent(in) :: target_location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
+      logical, intent(in) :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
+      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
-         integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
-         integer :: number_of_selected_points, point
+      integer, dimension(:), allocatable :: selected_points !< Array of selected points based on the target mask file.
+      integer :: number_of_selected_points, point
 
-         ierr = DFM_NOERR
+      ierr = DFM_NOERR
 
-         allocate (mask(target_num_points), source=0)
+      allocate (mask(target_num_points), source=0)
 
-         if (len_trim(target_mask_file) > 0) then
-            ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
-            allocate (selected_points(target_num_points), source=0)
-            select case (target_location_type)
-            case (UNC_LOC_S)
-               ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
-               call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                               target_mask_file)
-            case (UNC_LOC_U)
-               ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
-               call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
-                                               target_mask_file)
-            case default
-               ierr = DFM_NOTIMPLEMENTED
-               return
-            end select
-
-            do point = 1, number_of_selected_points
-               mask(selected_points(point)) = 1
-            end do
-            if (invert_mask) then
-               mask = ieor(mask, 1)
-            end if
-         else
-            if (target_location_type == UNC_LOC_S) then
-               ! 100% masking: accept all flow locations that were already active in their own mask array.
-               where (kcs /= 0) mask = 1
-            else
-               mask = 1
-            end if
-         end if
-      end subroutine construct_target_mask
-
-      !> Scan the quantity name for heat relatede quantities.
-      function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
-         use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation
-         use m_flowgeom, only: ndx
-         use m_alloc, only: aerr, realloc
-         use fm_location_types, only: UNC_LOC_S
-         character(len=*), intent(in) :: quantity !< Name of the data set.
-         integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
-         integer, intent(out) :: kx !< Number of individual quantities in the data set
-         logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
-
-         integer :: ierr
-
-         kx = 1
-         success = .true.
-         target_location_type = UNC_LOC_S
-         select case (quantity)
-
-         case ('airtemperature')
-            call realloc(air_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('air_temperature(ndx)', ierr, ndx)
-         case ('cloudiness')
-            call realloc(cloudiness, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('cloudiness(ndx)', ierr, ndx)
-         case ('humidity')
-            call realloc(relative_humidity, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('relative_humidity(ndx)', ierr, ndx)
-         case ('dewpoint')
-            call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('dew_point_temperature(ndx)', ierr, ndx)
-         case ('solarradiation', 'netsolarradiation')
-            call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('solar_radiation(ndx)', ierr, ndx)
-         case ('longwaveradiation')
-            call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
-            call aerr('long_wave_radiation(ndx)', ierr, ndx)
-         case ('humidity_airtemperature_cloudiness')
-            kx = 3
-         case ('dewpoint_airtemperature_cloudiness')
-            kx = 3
-         case ('humidity_airtemperature_cloudiness_solarradiation')
-            kx = 4
-         case ('dewpoint_airtemperature_cloudiness_solarradiation')
-            kx = 4
+      if (len_trim(target_mask_file) > 0) then
+         ! Mask flow nodes/links/etc. based on inside polygon(s), or outside.
+         allocate (selected_points(target_num_points), source=0)
+         select case (target_location_type)
+         case (UNC_LOC_S)
+            ! in: kcs, all allowed flow nodes, out: mask: all masked flow nodes.
+            call selectelset_internal_nodes(xz, yz, kcs, ndx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                            target_mask_file)
+         case (UNC_LOC_U)
+            ! in: no link pre-mask, all flow links, out: mask: all masked flow links.
+            call selectelset_internal_links(lnx, selected_points, number_of_selected_points, LOCTP_POLYGON_FILE, &
+                                            target_mask_file)
          case default
-            success = .false.
+            ierr = DFM_NOTIMPLEMENTED
+            return
          end select
-      end function scan_for_heat_quantities
 
-   end submodule fm_external_forcings_init
+         do point = 1, number_of_selected_points
+            mask(selected_points(point)) = 1
+         end do
+         if (invert_mask) then
+            mask = ieor(mask, 1)
+         end if
+      else
+         if (target_location_type == UNC_LOC_S) then
+            ! 100% masking: accept all flow locations that were already active in their own mask array.
+            where (kcs /= 0) mask = 1
+         else
+            mask = 1
+         end if
+      end if
+   end subroutine construct_target_mask
+
+   !> Scan the quantity name for heat relatede quantities.
+   function scan_for_heat_quantities(quantity, target_location_type, kx) result(success)
+      use m_wind, only: air_temperature, cloudiness, dew_point_temperature, relative_humidity, solar_radiation, long_wave_radiation, sensible_heat_flux, latent_heat_flux
+      use m_flowgeom, only: ndx
+      use m_alloc, only: aerr, realloc
+      use fm_location_types, only: UNC_LOC_S
+      character(len=*), intent(in) :: quantity !< Name of the data set.
+      integer, intent(out) :: target_location_type !< Type of the quantity, either UNC_LOC_S or UNC_LOC_U. For heat quantities this is always UNC_LOC_S
+      integer, intent(out) :: kx !< Number of individual quantities in the data set
+      logical :: success !< Return value, indicates whether the quantity is supported in this subroutine.
+
+      integer :: ierr
+
+      kx = 1
+      success = .true.
+      target_location_type = UNC_LOC_S
+      select case (quantity)
+
+      case ('airtemperature')
+         call realloc(air_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('air_temperature(ndx)', ierr, ndx)
+      case ('cloudiness')
+         call realloc(cloudiness, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('cloudiness(ndx)', ierr, ndx)
+      case ('humidity')
+         call realloc(relative_humidity, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('relative_humidity(ndx)', ierr, ndx)
+      case ('dewpoint')
+         call realloc(dew_point_temperature, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('dew_point_temperature(ndx)', ierr, ndx)
+      case ('solarradiation', 'netsolarradiation')
+         call realloc(solar_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('solar_radiation(ndx)', ierr, ndx)
+      case ('longwaveradiation')
+         call realloc(long_wave_radiation, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('long_wave_radiation(ndx)', ierr, ndx)
+      case ('sensibleheatflux')
+         call realloc(sensible_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('sensible_heat_flux(ndx)', ierr, ndx)
+      case ('latentheatflux')
+         call realloc(latent_heat_flux, ndx, stat=ierr, fill=0.0_dp, keepexisting=.false.)
+         call aerr('latent_heat_flux(ndx)', ierr, ndx)
+      case ('humidity_airtemperature_cloudiness')
+         kx = 3
+      case ('dewpoint_airtemperature_cloudiness')
+         kx = 3
+      case ('humidity_airtemperature_cloudiness_solarradiation')
+         kx = 4
+      case ('dewpoint_airtemperature_cloudiness_solarradiation')
+         kx = 4
+      case default
+         success = .false.
+      end select
+   end function scan_for_heat_quantities
+
+end submodule fm_external_forcings_init
