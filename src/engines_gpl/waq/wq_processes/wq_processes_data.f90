@@ -148,7 +148,7 @@ module processes_pointers
     real(kind = real_wp), allocatable :: defaul(:)       !< Values for default constants
 
     character(10) :: alwaysprocesses(5) = ["DDEPTH", "TOTDEP", "WKCOMP", "SEDCOM", "CALTAU"] !< Processes that are always called.
-    character(10) :: adssedresprocesses(23) = ["PARTMP", "ADSPO4", "RFPART", "FLOCSD", "CALSED", &
+    character(10) :: adssedresprocesses(24) = ["PARTMP", "ADSPO4", "RFPART", "FLOCSD", "CALSED", &
                                                "SEDAAP", "SEDAGG", "SEDCAR", "SEDHM ", "SEDIM ", &
                                                "SEDNU2", "SEDOMV", "SEDSOD", "SEDTYR", "RESBUF", &
                                                "RESDM ", "BURIAL", "DIGGIN", "S12TIM", "S12TRA", &
