@@ -31,7 +31,8 @@
 !! at which various FM state data can be located.
 !! Consists mainly of staggered grid locations and various object locations.
 module fm_location_types
-   implicit none
+   implicit none(type, external)
+
    private
 
    public get_location_specifier_string
@@ -48,6 +49,13 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_WU = 16 !< Data location: vertical viscosity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_3DV = 17 !< Data location: vertical positions at pressure points and constant for
                                                           !! all gridpoints.
+
+   ! Spatial locations:
+   integer, parameter, public :: SPATIAL_LOCATION_INVALID = -1 !< Invalid spatial location.
+   integer, parameter, public :: SPATIAL_LOCATION_1D = 1 !< Spatial location: 1D element.
+   integer, parameter, public :: SPATIAL_LOCATION_2D = 2 !< Spatial location: 2D element.
+   integer, parameter, public :: SPATIAL_LOCATION_ALL = 3 !< Spatial location: all elements (1D and 2D).
+
 
    ! Model global:
    integer, parameter, public :: UNC_LOC_GLOBAL = 21 !< Data location: model global (e.g. water balance)
@@ -75,6 +83,7 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_DUMP = 40 !< Data location: dump
    integer, parameter, public :: UNC_LOC_DRED_LINK = 41 !< Data location: dredge links
    integer, parameter, public :: UNC_LOC_BUBBLE_SCREEN = 43 !< Data location: bubble screen
+   
 contains
    !> Convert a location specifier to a human-readable string
    function get_location_specifier_string(location_specifier) result(string)

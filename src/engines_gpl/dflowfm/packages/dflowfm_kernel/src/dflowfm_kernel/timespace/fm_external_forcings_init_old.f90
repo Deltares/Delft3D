@@ -64,7 +64,7 @@ contains
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_construct_mask, only: construct_mask, parse_location_type
+      use m_construct_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_qnerror
@@ -78,7 +78,7 @@ contains
 
       integer, intent(inout) :: iresult !< integer error code, is preserved in case earlier errors occur.
 
-      integer :: ja, method, lenqidnam, ierr, ilattype, isednum, kk, k, kb, kt, iconst
+      integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
       real(kind=dp) :: maxSearchRadius
@@ -293,8 +293,7 @@ contains
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
                case ('1d', '2d')
-                  ilattype = parse_location_type(qid(18:))
-                  call construct_mask(mask, UNC_LOC_S, ilattype)
+                  call construct_mask(mask, UNC_LOC_S, trim(qid(18:)))
                case default
                   mask(:) = 1
                end select
@@ -1100,18 +1099,7 @@ contains
 
                call ini_alloc_laterals()
 
-               select case (trim(qid(17:)))
-               case ('1d')
-                  ilattype = ILATTP_1D
-               case ('2d')
-                  ilattype = ILATTP_2D
-               case ('1d2d')
-                  ilattype = ILATTP_ALL
-               case default
-                  ilattype = ILATTP_ALL
-               end select
-
-               call construct_mask(kclat, UNC_LOC_S, ilattype)
+               call construct_mask(kclat, UNC_LOC_S, trim(qid(17:)))
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)
