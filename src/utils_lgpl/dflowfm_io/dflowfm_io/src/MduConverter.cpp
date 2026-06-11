@@ -128,7 +128,7 @@ namespace dflowfm_io
                 else if (value_type == ValueType::IntBool)
                 {
                     bool value = mduData.getValueAs<bool>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value ? "1" : "0");
                 }
                 else if (value_type == ValueType::FloatingPoint)
                 {
