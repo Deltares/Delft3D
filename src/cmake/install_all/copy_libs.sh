@@ -3,7 +3,7 @@ set -euo pipefail
 
 BIN_DIR="$1"
 CONAN_GENERATORS_DIR="$2"
-LIB_DIR="${BIN_DIR}/../lib"
+LIB_DIR="$(realpath --canonicalize-missing "${BIN_DIR}/../lib")"
 
 # Activate the Conan run environment, which prepends every Conan package library
 # directory to LD_LIBRARY_PATH, so `ldd` resolves the Conan libraries first.
@@ -24,7 +24,8 @@ find "$BIN_DIR" -type f -executable -print0 \
     | grep --invert-match '^$' \
     | sort --unique \
     | while read -r lib; do
-          if [[ -f "$lib" ]]; then
+          # Skip libraries that ldd already resolved inside LIB_DIR
+          if [[ -f "$lib" && "$(dirname "$(realpath "$lib")")" != "$LIB_DIR" ]]; then
               cp --verbose --preserve=links "$lib" "$LIB_DIR/"
           fi
       done
