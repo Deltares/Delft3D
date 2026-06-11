@@ -8,7 +8,7 @@
 module precice_adapter
    use precice_adapter_interface, only: precice_adapter_interface_t
    use precision, only: dp
-   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double
+   use, intrinsic :: iso_c_binding, only: c_int, c_char, c_double, c_null_char
    use m_source_sink, only: source_sinks, source_sink_all_discharges
 
    implicit none(type, external)
@@ -16,6 +16,7 @@ module precice_adapter
    private
    real(kind=dp), save :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
+   public :: precice_adapter_add_to_fm_administration !> Needs to be public for unittesting
 
    !> Maximum length for preCICE standard name strings stored in quantity_t.
    integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
@@ -434,7 +435,7 @@ contains
          source_sinks%num_total = source_sinks%num_total + 1
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
          call source_sinks%resize(source_sinks%num_total)
-         write(source_sinks%name(source_sinks%num_total), '(a,i0.4)') "preC-SUMO_", self%vertex_ids_sources_sinks(i)
+         write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
          source_sinks%indices(source_sinks%num_total, 1) = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
          source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)
          source_sinks%z_top(source_sinks%num_total, 1) = self%sinks_z_max(i)
