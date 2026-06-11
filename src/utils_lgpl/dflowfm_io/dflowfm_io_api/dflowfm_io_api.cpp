@@ -363,7 +363,7 @@ dflowfm_io_result_t mdu_model_set_double_list(MduModelHandle handle, const char*
     return exceptionToResult([&]()
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
-        std::vector<double> double_vector(double_list, double_list + size);
-        mdu_data->setValue(key, double_vector);
+        std::vector<double> vec(double_list, double_list + size);
+        mdu_data->setValue(key, vec);
     });
 }

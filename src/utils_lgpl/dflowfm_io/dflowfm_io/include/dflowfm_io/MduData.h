@@ -18,7 +18,7 @@ namespace dflowfm_io
 
         bool hasValue(std::string_view key) const
         {
-            return data_entries.find(dflowfm_io::to_lowercase(key)) != data_entries.end();
+            return data_entries.contains(dflowfm_io::to_lowercase(key));
         }
 
         template <typename T>
@@ -41,6 +41,11 @@ namespace dflowfm_io
         template <typename T>
         void setValue(std::string_view key, T value)
         {
+            auto it = data_entries.find(dflowfm_io::to_lowercase(key));
+            if (it == data_entries.end())
+            {
+                throw std::runtime_error("key/value pair not found: " + std::string(key));
+            }
             data_entries[dflowfm_io::to_lowercase(key)] = std::move(value);
         }
 

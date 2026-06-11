@@ -56,6 +56,10 @@ class TestMduModel(unittest.TestCase):
             "# This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.",
             "[numerics]",
             "cflMax                = 7.0000000e-01       # Maximum Courant nr.",
+            "",
+            "# The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "[wind]",
+            "cdBreakPoints         = 6.3000000e-04 7.2300000e-03",
             ""
         ]
 
@@ -294,6 +298,54 @@ class TestMduModel(unittest.TestCase):
         result = model.get_double_list("wind.cdbreakpoints")
         self.assertEqual(len(result), 1)
         self.assertAlmostEqual(result[0], 3.14)
+
+    def test_set_nonexisting_key_int(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_int("nonexisting.key", 42)
+
+    def test_set_nonexisting_key_bool(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_bool("nonexisting.key", True)
+
+    def test_set_nonexisting_key_double(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_double("nonexisting.key", 3.14)
+
+    def test_set_nonexisting_key_string(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_string("nonexisting.key", "hello")
+
+    def test_set_nonexisting_key_path(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_path("nonexisting.key", Path("some/path.nc"))
+
+    def test_set_nonexisting_key_string_list(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_string_list("nonexisting.key", ["a", "b"])
+
+    def test_set_nonexisting_key_path_list(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_path_list("nonexisting.key", [Path("a.pol")])
+
+    def test_set_nonexisting_key_double_list(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_double_list("nonexisting.key", [1.0, 2.0])
 
 
 if __name__ == "__main__":

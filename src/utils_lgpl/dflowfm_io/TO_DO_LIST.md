@@ -1,0 +1,9 @@
+**TO DO**
+- Consider a formatting setting in mdu.json to control the formatting of floating point values (6.3000e-04 VS 0.00063)
+- What to do with properties that are empty? Default value? Null?
+- Do certain values need to be nullable?
+- Do we want automatic padding with between values and comments?
+- Talk to Mostafa about python api design
+- How do we handle reporting in the C api (warnings, errors, info, etc)
+- Apply the loading-MDU-validation when saving. This prevents writing a file that you then can't load.
+- Do we want immediate feedback when setting an invalid value (e.g. out of valid range)

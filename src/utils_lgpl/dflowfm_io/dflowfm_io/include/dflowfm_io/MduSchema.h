@@ -17,7 +17,8 @@ namespace dflowfm_io
         IntBool,
         FloatingPoint,
         StringList,
-        PathList
+        PathList,
+        FloatingPointList,
     };
 
     struct PropertySchema
@@ -84,6 +85,11 @@ namespace dflowfm_io
             SectionSchema {
                 "numerics", true, "This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.", {
                     { "cflMax", false, ValueType::FloatingPoint, "0.7", "Maximum Courant nr." },
+                }
+            },
+            SectionSchema {
+                "wind", false, "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information", {
+                    { "cdBreakPoints", false, ValueType::FloatingPointList, "0.00063 0.00723", "Wind drag breakpoints."},
                 }
             }
         }

@@ -66,6 +66,10 @@ namespace dflowfm_io
                 {
                     converted_value = property.TryGetConvertedValueCollection<std::filesystem::path>();
                 }
+                else if (value_type == ValueType::FloatingPointList)
+                {
+                    converted_value = property.TryGetConvertedValueCollection<double>();
+                }
                 else
                 {
                     throw std::logic_error("INTERNAL ERROR: Unhandled value type");
@@ -140,6 +144,11 @@ namespace dflowfm_io
                 {
                     const auto& values = mduData.getValueAs<std::vector<std::filesystem::path>>(key);
                     addedProperty = &iniSection.AddMultiValueProperty(propertySchema.key, values);
+                }
+                else if (value_type == ValueType::FloatingPointList)
+                {
+                    const auto& values = mduData.getValueAs<std::vector<double>>(key);
+                    iniSection.AddMultiValueProperty(propertySchema.key, values);
                 }
                 else
                 {
