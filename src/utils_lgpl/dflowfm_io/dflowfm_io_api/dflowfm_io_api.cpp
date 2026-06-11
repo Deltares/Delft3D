@@ -1,3 +1,4 @@
+#include <chrono>
 #include <exception>
 #include <functional>
 #include <string>
@@ -270,6 +271,20 @@ dflowfm_io_result_t mdu_model_get_double_list(MduModelHandle handle, const char*
     });
 }
 
+dflowfm_io_result_t mdu_model_get_datetime(MduModelHandle handle, const char* key, int64_t* epoch_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(epoch_out);
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        const auto& tp = mdu_data->getValueAs<std::chrono::system_clock::time_point>(key);
+        *epoch_out = std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
+    });
+}
+
 dflowfm_io_result_t mdu_model_set_int(MduModelHandle handle, const char* key, int value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
@@ -365,5 +380,17 @@ dflowfm_io_result_t mdu_model_set_double_list(MduModelHandle handle, const char*
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
         std::vector<double> vec(double_list, double_list + size);
         mdu_data->setValue(key, vec);
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_datetime(MduModelHandle handle, const char* key, int64_t epoch)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        auto tp = std::chrono::system_clock::time_point(std::chrono::seconds(epoch));
+        mdu_data->setValue(key, tp);
     });
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 #include <string_view>
 #include <variant>
@@ -50,6 +51,7 @@ namespace dflowfm_io
         }
 
         using Value = std::variant<std::filesystem::path, std::string, double, int, bool, 
+            std::chrono::system_clock::time_point,
             std::vector<std::string>, std::vector<std::filesystem::path>, std::vector<double>>;
         std::unordered_map<std::string, Value> data_entries;
     };

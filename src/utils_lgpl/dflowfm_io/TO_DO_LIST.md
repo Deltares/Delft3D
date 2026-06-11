@@ -1,5 +1,6 @@
 **TO DO**
-- Consider a formatting setting in mdu.json to control the formatting of floating point values (6.3000e-04 VS 0.00063)
+- Consider a formatting setting in mdu.json to control the formatting of floating point values (6.3000e-04 VS 0.00063).
+- Consider a formatting setting in mdu.json to control the formatting of floating point values (yyyymmdd vs yyyymmddhhmmss).
 - What to do with properties that are empty? Default value? Null?
 - Do certain values need to be nullable?
 - Do we want automatic padding with between values and comments?

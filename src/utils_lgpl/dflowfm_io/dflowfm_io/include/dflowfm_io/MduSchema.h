@@ -16,6 +16,7 @@ namespace dflowfm_io
         Integer,
         IntBool,
         FloatingPoint,
+        DateTime,
         StringList,
         PathList,
         FloatingPointList,
@@ -90,6 +91,11 @@ namespace dflowfm_io
             SectionSchema {
                 "wind", false, "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information", {
                     { "cdBreakPoints", false, ValueType::FloatingPointList, "0.00063 0.00723", "Wind drag breakpoints."},
+                }
+            },
+            SectionSchema {
+                "time", false, "This section contains the time settings for the model, such as start and stop time of the simulation.", {
+                    { "refDate", false, ValueType::DateTime, "20010101", "Reference date. By default midnight is taken (00h00m00s)." },
                 }
             }
         }

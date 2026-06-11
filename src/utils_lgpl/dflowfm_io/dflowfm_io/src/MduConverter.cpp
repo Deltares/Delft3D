@@ -1,3 +1,4 @@
+#include <chrono>
 #include <unordered_set>
 #include <filesystem>
 
@@ -57,6 +58,10 @@ namespace dflowfm_io
                 else if (value_type == ValueType::FloatingPoint)
                 {
                     converted_value = property.TryGetConvertedValue<double>();
+                }
+                else if (value_type == ValueType::DateTime)
+                {
+                    converted_value = property.TryGetConvertedValue<std::chrono::system_clock::time_point>();
                 }
                 else if (value_type == ValueType::StringList)
                 {
@@ -133,6 +138,11 @@ namespace dflowfm_io
                 else if (value_type == ValueType::FloatingPoint)
                 {
                     double value = mduData.getValueAs<double>(key);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
+                }
+                else if (value_type == ValueType::DateTime)
+                {
+                    const auto& value = mduData.getValueAs<std::chrono::system_clock::time_point>(key);
                     addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::StringList)

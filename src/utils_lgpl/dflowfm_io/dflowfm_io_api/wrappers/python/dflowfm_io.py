@@ -1,6 +1,7 @@
 import ctypes
 import os
 import platform
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -162,3 +163,12 @@ class MduModel:
     def set_double_list(self, key: str, values: list[float]) -> None:
         arr = (ctypes.c_double * len(values))(*values)
         _check_result(_lib.mdu_model_set_double_list(self._handle, key.encode("utf-8"), arr, ctypes.c_size_t(len(values))))
+
+    def get_datetime(self, key: str) -> datetime:
+        epoch_out = ctypes.c_int64()
+        _check_result(_lib.mdu_model_get_datetime(self._handle, key.encode("utf-8"), ctypes.byref(epoch_out)))
+        return datetime.fromtimestamp(epoch_out.value, tz=timezone.utc)
+
+    def set_datetime(self, key: str, value: datetime) -> None:
+        epoch = int(value.timestamp())
+        _check_result(_lib.mdu_model_set_datetime(self._handle, key.encode("utf-8"), ctypes.c_int64(epoch)))

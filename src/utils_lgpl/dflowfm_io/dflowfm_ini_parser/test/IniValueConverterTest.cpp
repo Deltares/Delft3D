@@ -338,7 +338,11 @@ namespace ini::test
         ::testing::Values(std::make_pair("2023-08-14 12:10:01", MakeTimePoint(2023, 8, 14, 12, 10, 1)),
                           std::make_pair("2020/01/01 00:00:00", MakeTimePoint(2020, 1, 1, 0, 0, 0)),
                           std::make_pair("2022-12-31", MakeTimePoint(2022, 12, 31, 0, 0, 0)),
-                          std::make_pair("2020/01/01", MakeTimePoint(2020, 01, 01, 0, 0, 0))));
+                          std::make_pair("2020/01/01", MakeTimePoint(2020, 1, 1, 0, 0, 0)),
+                          std::make_pair("20200130", MakeTimePoint(2020, 1, 30, 0, 0, 0)),
+                          std::make_pair("20010101", MakeTimePoint(2001, 1, 1, 0, 0, 0)),
+                          std::make_pair("20200130120000", MakeTimePoint(2020, 1, 30, 12, 0, 0)),
+                          std::make_pair("20231231235959", MakeTimePoint(2023, 12, 31, 23, 59, 59))));
 
     // -------------------------------------------------------------------------
     // FromString - path

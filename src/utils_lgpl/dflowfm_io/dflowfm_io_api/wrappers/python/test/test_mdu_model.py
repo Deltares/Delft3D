@@ -1,6 +1,7 @@
 import unittest
 import sys
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -60,6 +61,10 @@ class TestMduModel(unittest.TestCase):
             "# The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
             "[wind]",
             "cdBreakPoints         = 6.3000000e-04 7.2300000e-03",
+            "",
+            "# This section contains the time settings for the model, such as start and stop time of the simulation.",
+            "[time]",
+            "refDate               = 2001-01-01 00:00:00 # Reference date. By default midnight is taken (00h00m00s).",
             ""
         ]
 
@@ -346,6 +351,32 @@ class TestMduModel(unittest.TestCase):
         model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
             model.set_double_list("nonexisting.key", [1.0, 2.0])
+
+    def test_set_nonexisting_key_datetime(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.set_datetime("nonexisting.key", datetime(2020, 1, 1, tzinfo=timezone.utc))
+
+    def test_get_datetime(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        result = model.get_datetime("time.refdate")
+        self.assertIsInstance(result, datetime)
+        self.assertEqual(result, datetime(2001, 1, 1, tzinfo=timezone.utc))
+
+    def test_set_datetime(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        new_dt = datetime(2025, 6, 11, 8, 30, 22, tzinfo=timezone.utc)
+        model.set_datetime("time.refdate", new_dt)
+        self.assertEqual(model.get_datetime("time.refdate"), new_dt)
+
+    def test_get_datetime_unknown_key_raises(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        with self.assertRaises(RuntimeError):
+            model.get_datetime("nonexisting.key")
 
 
 if __name__ == "__main__":
