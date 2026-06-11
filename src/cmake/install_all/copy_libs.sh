@@ -1,18 +1,32 @@
 #!/bin/bash
+set -euo pipefail
 
-BIN_DIR="${1:-bin}"
+BIN_DIR="$1"
+CONAN_GENERATORS_DIR="$2"
 LIB_DIR="${BIN_DIR}/../lib"
 
-# Find all executables in BIN_DIR
-find "$BIN_DIR" -type f -executable | while read -r exe; do
-    ldd "$exe" 2>/dev/null | awk '/=>/ {print $3}' | grep -v '^$'
-done | sort -u > /tmp/all_libs.txt
+# Activate the Conan run environment, which prepends every Conan package library
+# directory to LD_LIBRARY_PATH, so `ldd` resolves the Conan libraries first.
+# This scales automatically as more dependencies move to Conan.
+if [[ -f "$CONAN_GENERATORS_DIR/conanrun.sh" ]]; then
+    source "$CONAN_GENERATORS_DIR/conanrun.sh"
+else
+    echo "ERROR: $CONAN_GENERATORS_DIR/conanrun.sh not found; refusing to run as ldd" \
+         "could resolve system libraries instead of the Conan-provided ones." >&2
+    exit 1
+fi
 
-# Copy each library to LIB_DIR
-while read -r lib; do
-    if [ -f "$lib" ]; then
-        cp -v --preserve=links "$lib" "$LIB_DIR/"
-    fi
-done < /tmp/all_libs.txt
+# Find the runtime dependencies of every executable and copy them to LIB_DIR.
+mkdir --parents "$LIB_DIR"
+find "$BIN_DIR" -type f -executable -print0 \
+    | { xargs --null --no-run-if-empty ldd 2>/dev/null || true; } \
+    | awk '/=>/ {print $3}' \
+    | grep --invert-match '^$' \
+    | sort --unique \
+    | while read -r lib; do
+          if [[ -f "$lib" ]]; then
+              cp --verbose --preserve=links "$lib" "$LIB_DIR/"
+          fi
+      done
 
 echo "All dependencies copied to $LIB_DIR"

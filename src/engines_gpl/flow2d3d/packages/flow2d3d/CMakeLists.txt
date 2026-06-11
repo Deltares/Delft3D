@@ -177,6 +177,8 @@ install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )
 
+install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)
+
 if (UNIX)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/submit_dflow2d3d.sh                DESTINATION bin)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../engines_gpl/flow2d3d/scripts/rd2d3d.sh                          DESTINATION bin)

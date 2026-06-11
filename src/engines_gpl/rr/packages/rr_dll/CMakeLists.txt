@@ -57,3 +57,4 @@ set_target_properties (${library_name} PROPERTIES FOLDER engines_gpl/rr)
 install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )
+install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)

@@ -1,7 +1,10 @@
 install(CODE "
     include(\"${CMAKE_CURRENT_LIST_DIR}/../functions.cmake\")
     execute_process(
-        COMMAND bash \"${CMAKE_CURRENT_SOURCE_DIR}/copy_libs.sh\" \"${CMAKE_INSTALL_PREFIX}/bin\"
+        COMMAND bash
+            \"${CMAKE_CURRENT_SOURCE_DIR}/copy_libs.sh\"
+            \"${CMAKE_INSTALL_PREFIX}/bin\"
+            \"${CMAKE_BINARY_DIR}/conan/generators\"
         RESULT_VARIABLE result
     )
     if(NOT result EQUAL 0)

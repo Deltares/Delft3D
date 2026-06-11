@@ -97,3 +97,4 @@ set(build_dir ${CMAKE_BINARY_DIR})
 install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )
+install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)
