@@ -80,7 +80,6 @@ module m_fm_icecover
    real(fp), pointer :: snow_latentheat !< module pointer to snow_latentheat inside ice_data
 
    character(len=*), parameter :: MDU_ICE_CHAPTER = 'ice' !< name of the ice chapter in the mdu file
- 
 contains
 
 !> Nullify/initialize ice data structure.
