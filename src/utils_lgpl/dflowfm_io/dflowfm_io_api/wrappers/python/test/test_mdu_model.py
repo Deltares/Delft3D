@@ -59,6 +59,41 @@ class TestMduModel(unittest.TestCase):
         actual_lines = [line.strip() for line in model.save_to_lines()]
         self.assertEqual(actual_lines, expected_lines)
 
+    def test_save_to_file(self):
+        import tempfile
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        model.set_string("general.program", "Modified")
+        with tempfile.NamedTemporaryFile(suffix=".mdu", delete=False) as f:
+            tmp_path = f.name
+        try:
+            model.save_to_file(tmp_path)
+            # Reload and verify
+            model2 = MduModel()
+            model2.load_from_file(tmp_path)
+            self.assertEqual(model2.get_string("general.program"), "Modified")
+        finally:
+            os.unlink(tmp_path)
+
+    def test_load_change_save_roundtrip(self):
+        import tempfile
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        model.set_int("geometry.kmx", 10)
+        model.set_double("numerics.cflmax", 0.5)
+        model.set_bool("geometry.usecaching", False)
+        with tempfile.NamedTemporaryFile(suffix=".mdu", delete=False) as f:
+            tmp_path = f.name
+        try:
+            model.save_to_file(tmp_path)
+            model2 = MduModel()
+            model2.load_from_file(tmp_path)
+            self.assertEqual(model2.get_int("geometry.kmx"), 10)
+            self.assertAlmostEqual(model2.get_double("numerics.cflmax"), 0.5)
+            self.assertFalse(model2.get_bool("geometry.usecaching"))
+        finally:
+            os.unlink(tmp_path)
+
     def test_multiple_instances(self):
         model1 = MduModel()
         model1.load_from_file(MDU_PATH)
@@ -180,6 +215,41 @@ class TestMduModel(unittest.TestCase):
         model.load_from_file(MDU_PATH)
         with self.assertRaises(RuntimeError):
             model.get_path("unknown_key")
+
+    def test_set_int(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertNotEqual(model.get_int("geometry.kmx"), 5)
+        model.set_int("geometry.kmx", 5)
+        self.assertEqual(model.get_int("geometry.kmx"), 5)
+
+    def test_set_bool(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertTrue(model.get_bool("geometry.usecaching"))
+        model.set_bool("geometry.usecaching", False)
+        self.assertFalse(model.get_bool("geometry.usecaching"))
+
+    def test_set_double(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertNotAlmostEqual(model.get_double("numerics.cflmax"), 0.9)
+        model.set_double("numerics.cflmax", 0.9)
+        self.assertAlmostEqual(model.get_double("numerics.cflmax"), 0.9)
+
+    def test_set_string(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertNotEqual(model.get_string("general.program"), "My Program")
+        model.set_string("general.program", "My Program")
+        self.assertEqual(model.get_string("general.program"), "My Program")
+
+    def test_set_path(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertNotEqual(model.get_path("geometry.netfile"), Path("new_net.nc"))
+        model.set_path("geometry.netfile", Path("new_net.nc"))
+        self.assertEqual(model.get_path("geometry.netfile"), Path("new_net.nc"))
 
 if __name__ == "__main__":
     unittest.main()

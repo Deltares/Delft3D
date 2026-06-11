@@ -38,6 +38,12 @@ namespace dflowfm_io
             return const_cast<T&>(std::as_const(*this).getValueAs<T>(key));
         }
 
+        template <typename T>
+        void setValue(std::string_view key, T value)
+        {
+            data_entries[dflowfm_io::to_lowercase(key)] = std::move(value);
+        }
+
         using Value = std::variant<std::filesystem::path, std::string, double, int, bool, std::vector<std::string>, std::vector<std::filesystem::path>>;
         std::unordered_map<std::string, Value> data_entries;
     };

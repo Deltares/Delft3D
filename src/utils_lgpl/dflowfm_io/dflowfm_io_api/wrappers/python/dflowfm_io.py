@@ -127,3 +127,18 @@ class MduModel:
         size_out = ctypes.c_size_t()
         _check_result(_lib.mdu_model_get_path_list(self._handle, key.encode("utf-8"), ctypes.byref(array_out), ctypes.byref(size_out)))
         return [Path(array_out[i].decode("utf-8")) for i in range(size_out.value)]
+
+    def set_int(self, key: str, value: int) -> None:
+        _check_result(_lib.mdu_model_set_int(self._handle, key.encode("utf-8"), ctypes.c_int(value)))
+
+    def set_bool(self, key: str, value: bool) -> None:
+        _check_result(_lib.mdu_model_set_bool(self._handle, key.encode("utf-8"), ctypes.c_int(1 if value else 0)))
+
+    def set_double(self, key: str, value: float) -> None:
+        _check_result(_lib.mdu_model_set_double(self._handle, key.encode("utf-8"), ctypes.c_double(value)))
+
+    def set_string(self, key: str, value: str) -> None:
+        _check_result(_lib.mdu_model_set_string(self._handle, key.encode("utf-8"), value.encode("utf-8")))
+
+    def set_path(self, key: str, value: Path | str) -> None:
+        _check_result(_lib.mdu_model_set_path(self._handle, key.encode("utf-8"), str(value).encode("utf-8")))

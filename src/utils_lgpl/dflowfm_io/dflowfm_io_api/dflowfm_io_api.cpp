@@ -253,3 +253,61 @@ dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* k
         *size_out = stored_pointers.size();
     });
 }
+
+dflowfm_io_result_t mdu_model_set_int(MduModelHandle handle, const char* key, int value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        mdu_data->setValue(key, value);
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_bool(MduModelHandle handle, const char* key, int value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        mdu_data->setValue(key, value != 0);
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_double(MduModelHandle handle, const char* key, double value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        mdu_data->setValue(key, value);
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_string(MduModelHandle handle, const char* key, const char* value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(value);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        mdu_data->setValue(key, std::string(value));
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_path(MduModelHandle handle, const char* key, const char* value)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(value);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        mdu_data->setValue(key, std::filesystem::path(value));
+    });
+}
