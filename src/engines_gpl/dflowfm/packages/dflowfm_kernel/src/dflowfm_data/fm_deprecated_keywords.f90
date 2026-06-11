@@ -52,6 +52,8 @@ contains
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'circumcenter', OBSOLETE, 'Use [Geometry] circumcenterMethod instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'thinDykeFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', '1dNetworkFile', OBSOLETE, 'Use individual keywords such as [Geometry] StructureFile, CrossDefFile, etc. instead.')
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'roughnessFiles', OBSOLETE)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'nodeFile', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'hkad', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'iThinDykeScheme', OBSOLETE)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Numerics', 'thinDykeContraction', OBSOLETE)
