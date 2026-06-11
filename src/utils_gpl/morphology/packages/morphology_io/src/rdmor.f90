@@ -215,23 +215,7 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
           !
           call read_morphology_output_options(mor_ptr, morpar%moroutput, lsedtot, filmor, lundia, error)
           if (error) return
-          !
-          ! Initialise sedtrans_unitcov_fac according to Transptype
-          allocate(sedpar%sedtrans_unitcov_fac(lsedtot), stat = istat)
-          do l = 1, lsedtot
-              select case (morpar%moroutput%transptype)
-                 case default
-                    call write_error('RDMOR: error in initialisation of Transptype',unit=lundia)
-                    error = .true.
-                    return
-                 case (0)
-                    sedpar%sedtrans_unitcov_fac(l) = 1.0_dp
-                 case (1)
-                    sedpar%sedtrans_unitcov_fac(l) = sedpar%cdryb(l)
-                 case (2)
-                    sedpar%sedtrans_unitcov_fac(l) = sedpar%rhosol(l)
-              end select
-          end do                 
+          !                 
           !
           call set_sediment_percentiles(mor_ptr, morpar%moroutput, pxxstr)
           !
@@ -282,6 +266,23 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
        end if
        !
     end if
+    !
+    ! Initialise unit_transport_conversion_factor according to Transptype
+    allocate(morpar%moroutput%unit_transport_conversion_factor(lsedtot), stat = istat)
+    do l = 1, lsedtot
+        select case (morpar%moroutput%transptype)
+            case default
+            call write_error('RDMOR: error in initialisation of Transptype',unit=lundia)
+            error = .true.
+            return
+            case (0)
+            morpar%moroutput%unit_transport_conversion_factor(l) = 1.0_dp
+            case (1)
+            morpar%moroutput%unit_transport_conversion_factor(l) = sedpar%cdryb(l)
+            case (2)
+            morpar%moroutput%unit_transport_conversion_factor(l) = sedpar%rhosol(l)
+        end select
+    end do  
     !
     call remove_double_percentiles(morpar, nxxuser, nxxprog, xxprog, max_nuserfrac, rfield)
     !

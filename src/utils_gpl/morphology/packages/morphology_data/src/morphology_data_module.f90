@@ -252,6 +252,7 @@ module morphology_data_module
       integer :: nstatqnt ! number of quantities for morphology statistics output
       integer :: weightflg ! weighting by time or dbodsd
       real(fp), dimension(3) :: avgintv ! interval, start, stop for writing statistics (FM only)
+      real(fp), allocatable , dimension(:) :: unit_transport_conversion_factor !  Factor for converting the unit of sediment transport quantities in the his/map writers
       !
       logical :: aks
       logical :: cumavg
@@ -599,7 +600,6 @@ type sedpar_type
     real(fp) :: d_micro   !  characteristic diameter of micro flocs [m]
     real(fp) :: ustar_macro   ! characteristic shear velocity of macro flocs [m/s]
     real(fp) :: version   !  interpreter version
-    real(fp), allocatable :: sedtrans_unitcov_fac(:) !  Factor for converting the unit of sediment transport quantities in the his/map writers
     !
     ! reals
     !
