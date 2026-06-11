@@ -96,7 +96,6 @@ namespace ini::test
         const std::string expected =
             "# comment1\n"
             "# comment2\n"
-            "\n"
             "[section]\n";
 
         EXPECT_EQ(ini, expected);

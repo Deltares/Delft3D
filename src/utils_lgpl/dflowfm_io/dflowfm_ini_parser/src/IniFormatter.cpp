@@ -46,7 +46,6 @@ namespace ini
         if (options.writeComments && !comments.empty())
         {
             WriteComments(comments, stream);
-            WriteNewLine(stream);
         }
 
         stream << scheme.sectionStartDelimiter << section.GetName() << scheme.sectionEndDelimiter;
