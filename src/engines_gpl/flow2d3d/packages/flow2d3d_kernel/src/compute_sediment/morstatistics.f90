@@ -156,8 +156,8 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
             qu = 0.0_fp
             qv = 0.0_fp
             do lsed = 1, lsedtot
-                qu = qu + 0.5_fp*(sbuu(nm, lsed)+sbuu(nmd, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
-                qv = qv + 0.5_fp*(sbvv(nm, lsed)+sbvv(ndm, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
+                qu = qu + 0.5_fp*(sbuu(nm, lsed)+sbuu(nmd, lsed)) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(lsed)
+                qv = qv + 0.5_fp*(sbvv(nm, lsed)+sbvv(ndm, lsed)) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(lsed)
             enddo
             q = sqrt(qu**2 + qv**2)
             call local_stats(moroutput%statflg(:,3), nm, q, wght)
@@ -167,8 +167,8 @@ subroutine morstats_full(gdp, dbodsd, s1, dps, umean, vmean, sbuu, sbvv, ssuu, s
             qu = 0.0_fp
             qv = 0.0_fp
             do lsed = 1, lsedsus
-                qu = qu + 0.5_fp*(ssuu(nm, lsed)+ssuu(nmd, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
-                qv = qv + 0.5_fp*(ssvv(nm, lsed)+ssuu(ndm, lsed)) / gdp%gdsedpar%sedtrans_unitcov_fac(lsed)
+                qu = qu + 0.5_fp*(ssuu(nm, lsed)+ssuu(nmd, lsed)) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(lsed)
+                qv = qv + 0.5_fp*(ssvv(nm, lsed)+ssuu(ndm, lsed)) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(lsed)
             enddo
             q = sqrt(qu**2 + qv**2)
             call local_stats(moroutput%statflg(:,4), nm, q, wght)
