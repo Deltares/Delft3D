@@ -4819,6 +4819,24 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f019_c092_tracer_diffusion_explicit_local_timestep_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-05-29T13:20:35.560000">e02_dflowfm/f019_transport/c092_tracer_diffusion_explicit_local_timestep_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_map.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately +-3.0e-4 --> 
+      			<parameter name="mesh2d_tracer" toleranceAbsolute="3e-4" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -7e-10 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="1e-9" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>       
     <testCase name="e02_f020_c034_salinity_freezing" ref="dflowfm_default">
       <path version="2025-12-12T14:33:06.073000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
       <maxRunTime>60.0000000</maxRunTime>

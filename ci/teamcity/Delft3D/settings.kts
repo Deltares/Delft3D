@@ -59,10 +59,12 @@ project {
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildType(LinuxDevContainer)
+            buildType(LinuxPython)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
+                LinuxPython,
             )
         }        
         subProject {
