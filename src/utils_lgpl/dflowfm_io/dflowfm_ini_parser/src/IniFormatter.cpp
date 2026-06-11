@@ -26,9 +26,17 @@ namespace ini
     {
         for (const IniSection& section : iniData)
         {
-            WriteSection(section, stream);
-            WriteNewLine(stream);
+            if (CanWriteSection(section))
+            {
+                WriteSection(section, stream);
+                WriteNewLine(stream);
+            }
         }
+    }
+
+    bool IniFormatter::CanWriteSection(const IniSection& section) const
+    {
+        return !section.empty() || options.writeEmptySections;
     }
 
     void IniFormatter::WriteSection(const IniSection& section, std::ostream& stream) const

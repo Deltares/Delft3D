@@ -57,6 +57,7 @@ namespace ini
         void WriteComments(const std::vector<std::string>& comments, std::ostream& stream) const;
         void WriteComment(const std::string& comment, std::ostream& stream) const;
         void WriteNewLine(std::ostream& stream) const;
+        bool CanWriteSection(const IniSection& section) const;
         bool CanWriteProperty(const IniProperty& property) const;
     };
 

@@ -32,6 +32,9 @@ namespace ini
         /// @brief Indicates whether comments are written during formatting.
         bool writeComments = true;
 
+        /// @brief Indicates whether sections without properties are written.
+        bool writeEmptySections = true;
+
         /// @brief Indicates whether properties without a value are written.
         bool writePropertyWithoutValue = false;
     };

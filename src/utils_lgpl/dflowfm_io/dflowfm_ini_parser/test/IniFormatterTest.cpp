@@ -156,6 +156,38 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
+    // Format - WriteEmptySections
+    // -------------------------------------------------------------------------
+
+    TEST(IniFormatterTest, Format_WriteEmptySectionsIsFalse_SkipsEmptySection)
+    {
+        IniData iniData = CreateIniData(CreateEmptySection());
+        IniFormatter formatter = CreateFormatter();
+
+        IniFormatterOptions& options = formatter.GetOptions();
+        options.writeEmptySections = false;
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected = "";
+
+        EXPECT_EQ(ini, expected);
+    }
+
+    TEST(IniFormatterTest, Format_WriteEmptySectionsIsTrue_WritesEmptySection)
+    {
+        IniData iniData = CreateIniData(CreateEmptySection());
+        IniFormatter formatter = CreateFormatter();
+
+        IniFormatterOptions& options = formatter.GetOptions();
+        options.writeEmptySections = true;
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected = "[section]\n";
+
+        EXPECT_EQ(ini, expected);
+    }
+
+    // -------------------------------------------------------------------------
     // Format - WritePropertyWithoutValue
     // -------------------------------------------------------------------------
 
