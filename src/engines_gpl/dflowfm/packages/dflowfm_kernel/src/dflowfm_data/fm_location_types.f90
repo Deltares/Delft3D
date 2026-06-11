@@ -52,9 +52,9 @@ module fm_location_types
 
    ! Spatial locations:
    integer, parameter, public :: SPATIAL_LOCATION_INVALID = -1 !< Invalid spatial location.
-   integer, parameter, public :: SPATIAL_LOCATION_1D = 1 !< Spatial location: 1D element.
-   integer, parameter, public :: SPATIAL_LOCATION_2D = 2 !< Spatial location: 2D element.
-   integer, parameter, public :: SPATIAL_LOCATION_ALL = 3 !< Spatial location: all elements (1D and 2D).
+   integer, parameter, public :: SPATIAL_LOCATION_1D = 0 !< Spatial location: 1D element.
+   integer, parameter, public :: SPATIAL_LOCATION_2D = 1 !< Spatial location: 2D element.
+   integer, parameter, public :: SPATIAL_LOCATION_ALL = 2 !< Spatial location: all elements (1D and 2D).
 
 
    ! Model global:
