@@ -1840,7 +1840,6 @@ contains
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
-      use unstruc_model, only: md_inifieldfile
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
       use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname

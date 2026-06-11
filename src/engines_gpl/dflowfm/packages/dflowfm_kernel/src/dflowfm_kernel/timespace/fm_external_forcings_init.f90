@@ -1199,12 +1199,9 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
-      use m_filez, only: oldfil
-      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl, m_polygon_destructor
-      use m_reapol, only: reapol
-
+      use m_polygon, only: dzL, npl
+      use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
@@ -1216,16 +1213,14 @@ contains
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
 
-      character(len=INI_VALUE_LEN) :: location_file
       character(len=INI_VALUE_LEN) :: sourcesink_id
-
-      integer :: num_coordinates
-      integer :: ierr
-      integer :: polyline_file_lun ! polyline file logical unit number
+      real(kind=dp), dimension(:), allocatable :: z_coordinates
+      integer :: num_columns
       logical :: is_successful
       logical :: is_read
       logical :: source_z_in_ext_file, sink_z_in_ext_file
-      logical :: have_location_file, have_location_coordinates
+      logical :: have_location_file
+      integer :: npts
 
       is_successful = .false.
       z_range_source(:) = dmiss
@@ -1237,78 +1232,49 @@ contains
       call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, source_z_in_ext_file)
       call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, sink_z_in_ext_file)
 
-      call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
-      if (have_location_file) then
-         ! Read data from polyline file
-         call resolvePath(location_file, base_dir)
+      ! Read the id for error messages
+      sourcesink_id = ' '
+      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
 
-         call oldfil(polyline_file_lun, location_file)
-         if (polyline_file_lun == 0) then
-            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '"//trim(location_file)//"'"
-            call err_flush()
-            return
-         end if
-         ierr = m_polygon_destructor()
-         call reapol(polyline_file_lun, 0)
-         if (npl == 0) then
-            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '"//trim(location_file)//"'"
-            call err_flush()
-            return
-         end if
+      ! Use generic polyline reader
+      call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+      if (.not. is_successful) return
+
+      ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
+      have_location_file = (num_columns > 0)
+      if (have_location_file) then
+         npts = size(z_coordinates)
 
          ! Avoid having two places specifying the same (and potentially conflicting) z data.
-         if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
+         if (num_columns > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
             write (msgbuf, '(a)') 'Error in source sink initialization, source/sink z information cannot be specified both ' &
                //'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
             call err_flush()
+            is_successful = .false.
             return
          end if
 
          if (.not. source_z_in_ext_file) then
-            z_range_source(1) = zpl(npl)
-            if (colpl > 3) then
-               z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+            z_range_source(1) = z_coordinates(npts)
+            if (num_columns > 3) then
+               ! 4th column (dzL) needs to be read from the polygon module directly,
+               ! since read_polyline_coordinates only returns the 3rd column (zpl).
+               z_range_source(2) = dzL(npl)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
-            z_range_sink(1) = zpl(1)
-            if (colpl > 3) then
-               z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+            z_range_sink(1) = z_coordinates(1)
+            if (num_columns > 3) then
+               z_range_sink(2) = dzL(1)
             end if
          end if
-
-         allocate (x_coordinates(npl), stat=ierr)
-         allocate (y_coordinates(npl), stat=ierr)
-         x_coordinates = xpl(1:npl)
-         y_coordinates = ypl(1:npl)
-      else
-         ! Read data directly from ext file
-         call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
-         if (is_read) then
-            if (num_coordinates <= 0) then
-               call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-               write (msgbuf, '(a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
-               call err_flush()
-               return
-            end if
-            allocate (x_coordinates(num_coordinates), stat=ierr)
-            call prop_get(block_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
-            if (is_read) then
-               allocate (y_coordinates(num_coordinates), stat=ierr)
-               call prop_get(block_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
-            end if
-         end if
-         have_location_coordinates = is_read
       end if
 
-      if (.not. have_location_file .and. .not. have_location_coordinates) then
-         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Location information is incomplete or missing.'
-         call err_flush()
-         return
-      end if
-
+      if (allocated(z_coordinates)) deallocate(z_coordinates)
       is_successful = .true.
+
    end function
 
    !> Read sourcesink blocks from new external forcings file.

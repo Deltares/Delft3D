@@ -437,18 +437,18 @@ contains
    !> Loads the long culverts from a structures.ini file and
    !! creates extra netnodes+links for them.
    subroutine loadLongCulvertsAsNetwork(structurefile, jaKeepExisting, ierr)
-      !use network_data
       use dfm_error
-
       use string_module, only: strcmpi
-      use m_polygon
-      use m_missing
       use m_Roughness
       use m_readstructures
       use m_network
       use messageHandling
       use properties
       use unstruc_channel_flow
+      use system_utils, only: split_filename
+      use m_alloc, only: realloc
+      use m_missing, only: dmiss
+      use m_read_location_info, only: read_polyline_coordinates
 
       implicit none
 
@@ -461,13 +461,23 @@ contains
       character(len=IdLen) :: typestr
       character(len=IdLen) :: st_id
       character(len=IdLen) :: txt
+      character(len=IdLen) :: base_dir, fnam
       integer :: readerr, nstr, i, numcoords
       integer, allocatable, dimension(:) :: links
       logical :: success
       integer :: istart
       integer :: nlongculverts0, iref
+      integer :: num_columns
+
+      real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:), z_coordinates(:)
+
+      ! Local concatenated polyline arrays for make1D2DLongCulverts (dmiss-separated segments).
+      real(kind=dp), allocatable :: xpl_local(:), ypl_local(:), zpl_local(:)
+      integer :: npl_local
 
       ierr = DFM_NOERR
+
+      call split_filename(structurefile, base_dir, fnam) ! Needed to resolve locationFile= paths.
 
       nlongculverts0 = nlongculverts ! Remember any old longculvert count
 
@@ -477,11 +487,8 @@ contains
             deallocate (longculverts)
          end if
       end if
-      call savepol()
-      xpl = dmiss
-      ypl = dmiss
-      zpl = dmiss
-      npl = 0
+
+      npl_local = 0
 
       ! Temporarily put structures.ini file into a property tree
       call tree_create(trim(structurefile), strs_ptr)
@@ -518,33 +525,30 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          end if
+
          if (success) then
-            call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+            call read_polyline_coordinates(str_ptr, trim(st_id), structurefile, base_dir, 'longCulvert', &
+                                           x_coordinates, y_coordinates, z_coordinates, num_columns, success)
          end if
+
          if (success) then
+            numcoords = size(x_coordinates)
             longculverts(nlongculverts)%id = st_id
+            longculverts(nlongculverts)%xcoords = x_coordinates
+            longculverts(nlongculverts)%ycoords = y_coordinates
 
             allocate (longculverts(nlongculverts)%bl(numcoords))
-            call increasepol(numcoords, 0)
+            longculverts(nlongculverts)%bl = z_coordinates
 
-            call prop_get(str_ptr, '', 'xCoordinates', xpl(npl + 1:), numcoords, success)
-            if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'xCoordinates not found for long culvert: '//trim(st_id))
-            else
-               longculverts(nlongculverts)%xcoords = xpl(npl + 1:npl + numcoords)
-            end if
-            call prop_get(str_ptr, '', 'yCoordinates', ypl(npl + 1:), numcoords, success)
-            if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'yCoordinates not found for long culvert: '//trim(st_id))
-            else
-               longculverts(nlongculverts)%ycoords = ypl(npl + 1:npl + numcoords)
-            end if
-            call prop_get(str_ptr, '', 'zCoordinates', zpl(npl + 1:), numcoords, success)
-            if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'zCoordinates not found for long culvert: '//trim(st_id))
-            end if
-            longculverts(nlongculverts)%bl = zpl(npl + 1:npl + numcoords)
-            npl = npl + numcoords + 1 ! TODO: UNST-4328: success1 checking done later in readStructureFile().
+            ! Append this culvert's coordinates (plus dmiss separator) to the local concatenated arrays.
+            call realloc(xpl_local, npl_local + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(ypl_local, npl_local + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(zpl_local, npl_local + numcoords + 1, keepExisting=.true., fill=dmiss)
+            xpl_local(npl_local + 1:npl_local + numcoords) = x_coordinates
+            ypl_local(npl_local + 1:npl_local + numcoords) = y_coordinates
+            zpl_local(npl_local + 1:npl_local + numcoords) = z_coordinates
+            ! xpl_local(npl_local + numcoords + 1) stays dmiss: the segment separator.
+            npl_local = npl_local + numcoords + 1
 
             call get_value_or_addto_forcinglist(str_ptr, 'valveRelativeOpening', longculverts(nlongculverts)%valve_relative_opening, st_id, &
                                                 ST_LONGCULVERT, network%forcinglist, success)
@@ -608,19 +612,18 @@ contains
                   call SetMessage(LEVEL_ERROR, 'frictionValue not found for long culvert: '//st_id)
                end if
             end if
-            if (.not. success) then
-               ! Some error during reading: decrement counter to ignore this long culvert.
-               nlongculverts = nlongculverts - 1
-            end if
+         end if
 
+         if (.not. success) then
+            ! Some error during reading: decrement counter to ignore this long culvert.
+            nlongculverts = nlongculverts - 1
          end if
 
       end do
-      if (.not. newculverts) then
 
-         allocate (links(npl))
-         call make1D2DLongCulverts(xpl, ypl, zpl, npl, links)
-         call restorepol()
+      if (.not. newculverts) then
+         allocate (links(npl_local))
+         call make1D2DLongCulverts(xpl_local, ypl_local, zpl_local, npl_local, links)
          istart = 1
          do i = nlongculverts0 + 1, nlongculverts
             longculverts(i)%netlinks = links(istart:istart + longculverts(i)%numlinks - 1)

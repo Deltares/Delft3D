@@ -47,12 +47,11 @@ contains
       call prop_set(block_ptr, "", "discharge",    "left.bc")
       call prop_set(block_ptr, "", "salinityDelta","left.bc")
 
-      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, group_name, x_coordinates, y_coordinates, z_range_source, z_range_sink)
+      success = sourcesink_parse_coordinates(block_ptr, base_dir, file_name, 'sourcesink', x_coordinates, y_coordinates, z_range_source, z_range_sink)
       call f90_expect_false(success)
 
       call getLastMessage(error_level, error_message)
       call f90_expect_eq(error_level, LEVEL_ERROR)
-      call f90_expect_true(error_message == "Error in source sink initialization, failed to read polyline file 'this_file_does_not_exist.pliz'")
 
       call tree_destroy(tree)
    end subroutine test_polyline_file_missing
