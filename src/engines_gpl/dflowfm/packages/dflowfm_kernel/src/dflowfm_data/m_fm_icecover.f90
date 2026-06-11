@@ -80,7 +80,7 @@ module m_fm_icecover
    real(fp), pointer :: snow_latentheat !< module pointer to snow_latentheat inside ice_data
 
    character(len=*), parameter :: MDU_ICE_CHAPTER = 'ice' !< name of the ice chapter in the mdu file
-   
+ 
 contains
 
 !> Nullify/initialize ice data structure.
@@ -453,7 +453,7 @@ contains
             ! it is based on the criterion "Volume(n) > 0.0". Thus, for very thin waterdepths (HS) computational cells are still wet. This also holds for (much) smaller
             ! values than EPSHU. which is used for wetting-drying at flow links. The goal is to have a criterion that is close to the criterion for flow links. 
             ! In dried ares the HS values are often close to EPSHU. For example a few percent smaller. In these cells we would like to switch off ice growth or melt. 
-            ! Therefore, as a first guess we propose to apply ïce growth or melt only for "HS > 1.1 * EPSHU". 
+            ! Therefore, as a first guess we propose to apply Ã¯ce growth or melt only for "HS > 1.1 * EPSHU". 
             ! 
             ice_wetting_drying_threshold = 1.1_dp * epshu
  
@@ -491,7 +491,7 @@ contains
                      ice_temperature(n) = celsius_to_kelvin(0.0_fp)
                   end if
                end if
-            end if  
+            end if
          end do
 
       case default
