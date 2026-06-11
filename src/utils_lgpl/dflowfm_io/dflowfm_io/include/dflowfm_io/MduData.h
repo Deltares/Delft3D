@@ -44,7 +44,8 @@ namespace dflowfm_io
             data_entries[dflowfm_io::to_lowercase(key)] = std::move(value);
         }
 
-        using Value = std::variant<std::filesystem::path, std::string, double, int, bool, std::vector<std::string>, std::vector<std::filesystem::path>>;
+        using Value = std::variant<std::filesystem::path, std::string, double, int, bool, 
+            std::vector<std::string>, std::vector<std::filesystem::path>, std::vector<double>>;
         std::unordered_map<std::string, Value> data_entries;
     };
 

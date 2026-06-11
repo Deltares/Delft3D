@@ -150,6 +150,13 @@ class TestMduModel(unittest.TestCase):
     #     self.assertEqual(len(result), 2)
     #     self.assertEqual(result[0], "first_string")
 
+    # def test_set_string_list(self):
+    #     model = MduModel()
+    #     model.load_from_file(MDU_PATH)
+    #     new_values = ["value1", "value2", "value3"]
+    #     model.set_string_list("general.somelistkey", new_values)
+    #     self.assertEqual(model.get_string_list("general.somelistkey"), new_values)
+
     def test_load_from_file_nonexistent_raises(self):
         model = MduModel()
         model.load_from_file(MDU_PATH)
@@ -250,6 +257,39 @@ class TestMduModel(unittest.TestCase):
         self.assertNotEqual(model.get_path("geometry.netfile"), Path("new_net.nc"))
         model.set_path("geometry.netfile", Path("new_net.nc"))
         self.assertEqual(model.get_path("geometry.netfile"), Path("new_net.nc"))
+
+    def test_set_path_list(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        new_paths = [Path("a.pol"), Path("b.xyz"), Path("c.nc")]
+        model.set_path_list("geometry.drypointsfile", new_paths)
+        self.assertEqual(model.get_path_list("geometry.drypointsfile"), new_paths)
+
+    def test_set_double_list(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        new_values = [0.001, 0.005, 0.01]
+        model.set_double_list("wind.cdbreakpoints", new_values)
+        result = model.get_double_list("wind.cdbreakpoints")
+        self.assertEqual(len(result), 3)
+        for expected, actual in zip(new_values, result):
+            self.assertAlmostEqual(actual, expected)
+
+    def test_set_double_list_empty(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        model.set_double_list("wind.cdbreakpoints", [])
+        result = model.get_double_list("wind.cdbreakpoints")
+        self.assertEqual(result, [])
+
+    def test_set_double_list_single_value(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        model.set_double_list("wind.cdbreakpoints", [3.14])
+        result = model.get_double_list("wind.cdbreakpoints")
+        self.assertEqual(len(result), 1)
+        self.assertAlmostEqual(result[0], 3.14)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -32,12 +32,16 @@ DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_string(MduModelHandle ha
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_path(MduModelHandle handle, const char* key, const char** path_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_string_list(MduModelHandle handle, const char* key, const char*** string_list_out, size_t* size_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* key, const char*** path_list_out, size_t* size_out);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_get_double_list(MduModelHandle handle, const char* key, const double** double_list_out, size_t* size_out);
 
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_int(MduModelHandle handle, const char* key, int value);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_bool(MduModelHandle handle, const char* key, int value);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_double(MduModelHandle handle, const char* key, double value);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_string(MduModelHandle handle, const char* key, const char* value);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_path(MduModelHandle handle, const char* key, const char* value);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_string_list(MduModelHandle handle, const char* key, const char** string_list, size_t size);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_path_list(MduModelHandle handle, const char* key, const char** path_list, size_t size);
+DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_model_set_double_list(MduModelHandle handle, const char* key, const double* double_list, size_t size);
 
 #ifdef __cplusplus
 }

@@ -58,6 +58,16 @@ int main(int argc, char* argv[])
             }
             cout << "] (path list)";
         }
+        void operator()(const vector<double>& v) const
+        {
+            cout << "[";
+            for (size_t i = 0; i < v.size(); ++i)
+            {
+                if (i > 0) cout << ", ";
+                cout << v[i];
+            }
+            cout << "] (double list)";
+        }
     };
 
     for (const auto& [key, value] : data.data_entries)

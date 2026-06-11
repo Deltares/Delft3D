@@ -254,6 +254,22 @@ dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* k
     });
 }
 
+dflowfm_io_result_t mdu_model_get_double_list(MduModelHandle handle, const char* key, const double** double_list_out, size_t* size_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(double_list_out);
+    ENSURE_ARGUMENT_NOT_NULL(size_out);
+
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        const auto& doubles = mdu_data->getValueAs<std::vector<double>>(key);
+        *double_list_out = doubles.data();
+        *size_out = doubles.size();
+    });
+}
+
 dflowfm_io_result_t mdu_model_set_int(MduModelHandle handle, const char* key, int value)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
@@ -309,5 +325,45 @@ dflowfm_io_result_t mdu_model_set_path(MduModelHandle handle, const char* key, c
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
         mdu_data->setValue(key, std::filesystem::path(value));
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_string_list(MduModelHandle handle, const char* key, const char** string_list, size_t size)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(string_list);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        std::vector<std::string> vec(string_list, string_list + size);
+        mdu_data->setValue(key, vec);
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_path_list(MduModelHandle handle, const char* key, const char** path_list, size_t size)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(path_list);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        std::vector<std::filesystem::path> vec;
+        for (size_t i = 0; i < size; ++i) vec.emplace_back(path_list[i]);
+        mdu_data->setValue(key, vec);
+    });
+}
+
+dflowfm_io_result_t mdu_model_set_double_list(MduModelHandle handle, const char* key, const double* double_list, size_t size)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(key);
+    ENSURE_ARGUMENT_NOT_NULL(double_list);
+    return exceptionToResult([&]()
+    {
+        auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
+        std::vector<double> double_vector(double_list, double_list + size);
+        mdu_data->setValue(key, double_vector);
     });
 }

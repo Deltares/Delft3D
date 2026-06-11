@@ -142,3 +142,23 @@ class MduModel:
 
     def set_path(self, key: str, value: Path | str) -> None:
         _check_result(_lib.mdu_model_set_path(self._handle, key.encode("utf-8"), str(value).encode("utf-8")))
+
+    def set_string_list(self, key: str, values: list[str]) -> None:
+        encoded = [v.encode("utf-8") for v in values]
+        arr = (ctypes.c_char_p * len(encoded))(*encoded)
+        _check_result(_lib.mdu_model_set_string_list(self._handle, key.encode("utf-8"), arr, ctypes.c_size_t(len(encoded))))
+
+    def set_path_list(self, key: str, values: list[Path | str]) -> None:
+        encoded = [str(v).encode("utf-8") for v in values]
+        arr = (ctypes.c_char_p * len(encoded))(*encoded)
+        _check_result(_lib.mdu_model_set_path_list(self._handle, key.encode("utf-8"), arr, ctypes.c_size_t(len(encoded))))
+
+    def get_double_list(self, key: str) -> list[float]:
+        array_out = ctypes.POINTER(ctypes.c_double)()
+        size_out = ctypes.c_size_t()
+        _check_result(_lib.mdu_model_get_double_list(self._handle, key.encode("utf-8"), ctypes.byref(array_out), ctypes.byref(size_out)))
+        return [array_out[i] for i in range(size_out.value)]
+
+    def set_double_list(self, key: str, values: list[float]) -> None:
+        arr = (ctypes.c_double * len(values))(*values)
+        _check_result(_lib.mdu_model_set_double_list(self._handle, key.encode("utf-8"), arr, ctypes.c_size_t(len(values))))
