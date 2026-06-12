@@ -229,13 +229,7 @@ module m_ec_filereader
                   if (fileReaderPtr%nItems==1) then         ! RL: preserving original code
                      success = ecBCReadBlock(fileReaderPtr, fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%timesteps, &
                                                             fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arr1dPtr)
-                     if (success) then
-                        ! Set z-value for time interpolation, (mis)use ELEMENTSETPTR%Z to determine z-coordinate needed or not 
-                        if (associated(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%Z) .and. &
-                            index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0 ) then           !                           strcmpi(fileReaderPtr%items(1)%ptr%ELEMENTSETPTR%origin,'nchis')) then
-                           fileReaderPtr%items(1)%ptr%sourceT0FieldPtr%arrzPtr(1:size(fileReaderPtr%BC%VP)) = fileReaderPtr%BC%VP
-                        end if
- 
+                     if (success) then 
                         fieldPtrA => fileReaderPtr%items(1)%ptr%sourceT1FieldPtr
                         fileReaderPtr%items(1)%ptr%sourceT1FieldPtr => fileReaderPtr%items(1)%ptr%sourceT0FieldPtr
                         fileReaderPtr%items(1)%ptr%sourceT0FieldPtr => fieldPtrA

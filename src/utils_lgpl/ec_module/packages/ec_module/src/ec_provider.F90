@@ -1525,15 +1525,7 @@ contains
          if (.not. ecArcinfoAndT3dReadBlock(fileReaderPtr, fileReaderPtr%fileHandle, 1, numlay * vectormax, 1, valueptr)) return
       case (provFile_bc)
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT0FieldPtr%arr1dPtr, valueptr%sourceT0FieldPtr%timesteps)) return
-         ! Initialise, vertical coordinates, for T0 
-         if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then 
-             valueptr%sourceT0FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
-         end if
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
-         ! Initialise for T1
-         if (index(trim(filereaderptr%filename)//'|', '_his.nc|') > 0) then  
-            valueptr%sourceT1FieldPtr%arrzPtr(1:size(filereaderPTR%bc%vp)) = filereaderPTR%bc%vp
-         end if
               
          case default
          call set_EC_Message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")

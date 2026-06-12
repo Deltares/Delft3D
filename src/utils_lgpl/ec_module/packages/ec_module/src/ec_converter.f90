@@ -1338,11 +1338,7 @@ contains
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
-
-            from = (j - 1) * (maxlay * n_data) + 1
-            thru = (j) * (maxlay * n_data)
             targetField%arr1dPtr(from:thru) = valuesT
-
             targetField%timesteps = timesteps
          case (operand_add) ! TODO: AvD/EB: it seems that operand_add does not support targetIndex (offset). Should we not make this available?
             ! Add all values to one target Item or each value to its own target Item.
