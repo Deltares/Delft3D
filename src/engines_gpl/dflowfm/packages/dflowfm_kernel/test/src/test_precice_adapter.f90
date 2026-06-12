@@ -66,17 +66,7 @@ contains
       call flow_geominit(0)
 
       ! Setup adapter
-      adapter%mesh_sources_sinks_size = 1
-      call realloc(adapter%vertex_ids_sources_sinks, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sinks_x, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sinks_y, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sinks_z_min, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sinks_z_max, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sources_x, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sources_y, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sources_z_min, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sources_z_max, adapter%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(adapter%sources_sinks_discharge, adapter%mesh_sources_sinks_size, keepExisting=.false.)
+      call precice_adapter_allocate_read_arrays(adapter, 1)
       adapter%vertex_ids_sources_sinks(1) = 123
       adapter%sinks_x(1) = 5.0
       adapter%sinks_y(1) = 5.0
@@ -106,6 +96,7 @@ contains
       ! Cleanup
       call cleanup_cell_geom_polylines()
       call cleanup_netcells()
+      call precice_adapter_deallocate_read_arrays(adapter)
    end subroutine test_adapter_add_to_fm_administration
    !$f90tw )
 

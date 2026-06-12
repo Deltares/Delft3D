@@ -17,6 +17,8 @@ module precice_adapter
    real(kind=dp), save :: summed_time_progress !> Cumulative time progress since the last preCICE advance, used to determine when to call precicef_advance.
    public :: precice_adapter_t
    public :: precice_adapter_add_to_fm_administration !> Needs to be public for unittesting
+   public :: precice_adapter_deallocate_read_arrays !> Needs to be public for unittesting
+   public :: precice_adapter_allocate_read_arrays !> Needs to be public for unittesting
 
    !> Maximum length for preCICE standard name strings stored in quantity_t.
    integer, parameter :: MAX_STANDARD_NAME_LENGTH = 50
@@ -250,10 +252,56 @@ contains
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
+      call precice_adapter_deallocate_read_arrays(self)
       if (loc(self) >= 0) continue ! Suppress unused error.
 
       call precicef_finalize()
    end subroutine precice_adapter_finalize
+
+
+
+   !===========================================================================
+   !> Deallocate the arrays used for reading the sources/sinks data from preCICE.
+   subroutine precice_adapter_deallocate_read_arrays(self)
+      implicit none(type, external)
+      class(precice_adapter_t), intent(inout) :: self
+
+      if (allocated(self%vertex_ids_sources_sinks)) deallocate(self%vertex_ids_sources_sinks)
+      if (allocated(self%sinks_x)) deallocate(self%sinks_x)
+      if (allocated(self%sinks_y)) deallocate(self%sinks_y)
+      if (allocated(self%sinks_z_min)) deallocate(self%sinks_z_min)
+      if (allocated(self%sinks_z_max)) deallocate(self%sinks_z_max)
+      if (allocated(self%sources_x)) deallocate(self%sources_x)
+      if (allocated(self%sources_y)) deallocate(self%sources_y)
+      if (allocated(self%sources_z_min)) deallocate(self%sources_z_min)
+      if (allocated(self%sources_z_max)) deallocate(self%sources_z_max)
+      if (allocated(self%sources_sinks_discharge)) deallocate(self%sources_sinks_discharge)
+   end subroutine precice_adapter_deallocate_read_arrays
+
+
+
+   !===========================================================================
+   !> Allocate or reallocate the arrays for reading the sources/sinks data from preCICE.
+   subroutine precice_adapter_allocate_read_arrays(self, dimension_in)
+      use m_alloc, only: realloc
+
+      implicit none(type, external)
+      class(precice_adapter_t), intent(inout) :: self
+      integer, intent(in) :: dimension_in
+
+      self%mesh_sources_sinks_size = dimension_in
+
+      call realloc(self%vertex_ids_sources_sinks, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_x, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_y, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sinks_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_x, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_y, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
+      call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
+   end subroutine precice_adapter_allocate_read_arrays
 
 
 
@@ -312,22 +360,20 @@ contains
                          precicef_get_mesh_vertex_ids_and_coordinates, &
                          precicef_read_data
       use precision, only: dp
-      use m_alloc, only: realloc
       use MessageHandling, only: mess, LEVEL_ERROR
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
       real(kind=dp), intent(in) :: current_time_in_window
+      integer :: mesh_sources_sinks_size
       
-      call precicef_get_mesh_vertex_size(self%sources_sinks_mesh_name, self%mesh_sources_sinks_size, len(self%sources_sinks_mesh_name))
-      call realloc(self%vertex_ids_sources_sinks, self%mesh_sources_sinks_size, keepExisting=.false.)
-      call realloc(self%sources_sinks_mesh_coordinates, self%mesh_sources_sinks_size * 2, keepExisting=.false.) ! Assuming 2D coordinates (x,y) 
+      call precicef_get_mesh_vertex_size(self%sources_sinks_mesh_name, mesh_sources_sinks_size, len(self%sources_sinks_mesh_name))
+      call precice_adapter_allocate_read_arrays(self, mesh_sources_sinks_size)
       call precicef_get_mesh_vertex_ids_and_coordinates(self%sources_sinks_mesh_name, &
                                                         self%mesh_sources_sinks_size, &
                                                         self%vertex_ids_sources_sinks, &
                                                         self%sources_sinks_mesh_coordinates, &
                                                         len(self%sources_sinks_mesh_name))
       ! Read sinks_x
-      call realloc(self%sinks_x, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sinks_x%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -336,7 +382,6 @@ contains
                               self%sinks_x, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_x%standard_name)))
       ! Read sinks_y
-      call realloc(self%sinks_y, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sinks_y%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -345,7 +390,6 @@ contains
                               self%sinks_y, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_y%standard_name)))
       ! Read sinks_z_min
-      call realloc(self%sinks_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sinks_z_min%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -354,7 +398,6 @@ contains
                               self%sinks_z_min, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_z_min%standard_name)))
       ! Read sinks_z_max
-      call realloc(self%sinks_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sinks_z_max%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -363,7 +406,6 @@ contains
                               self%sinks_z_max, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sinks_z_max%standard_name)))
       ! Read sources_x
-      call realloc(self%sources_x, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sources_x%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -372,7 +414,6 @@ contains
                               self%sources_x, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_x%standard_name)))
       ! Read sources_y
-      call realloc(self%sources_y, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sources_y%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -381,7 +422,6 @@ contains
                               self%sources_y, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_y%standard_name)))
       ! Read sources_z_min
-      call realloc(self%sources_z_min, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sources_z_min%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -390,7 +430,6 @@ contains
                               self%sources_z_min, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_z_min%standard_name)))
       ! Read sources_z_max
-      call realloc(self%sources_z_max, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sources_z_max%standard_name, &
                               self%mesh_sources_sinks_size, &
@@ -399,7 +438,6 @@ contains
                               self%sources_z_max, &
                               len(self%sources_sinks_mesh_name), len(trim(self%quantities%sources_z_max%standard_name)))
       ! Read discharge
-      call realloc(self%sources_sinks_discharge, self%mesh_sources_sinks_size, keepExisting=.false.)
       call precicef_read_data(self%sources_sinks_mesh_name, &
                               self%quantities%sources_sinks_discharge%standard_name, &
                               self%mesh_sources_sinks_size, &
