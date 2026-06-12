@@ -5,6 +5,7 @@
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/MduSchema.h>
+#include <dflowfm_io/MduSchemaData.h>
 
 #include <cassert>
 #include <dflowfm_io/MduValidator.h>

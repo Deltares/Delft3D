@@ -44,7 +44,7 @@ class TestMduModel(unittest.TestCase):
             "# This section contains the program name and its version.",
             "[general]",
             "program               = D-Flow FM           # Program.",
-            "fileVersion           = 1.02",
+            "fileVersion           = 1.02                # File version. Do not edit this.",
             "",
             "# In this section, the main entry comprises the specification of the grid (i.e. the netCDF network file). In addition, thin dams and thin dykes can be specified.",
             "[geometry]",

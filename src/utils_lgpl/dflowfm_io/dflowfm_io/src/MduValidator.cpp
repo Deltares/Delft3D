@@ -1,5 +1,6 @@
 #include <dflowfm_io/MduValidator.h>
 #include <dflowfm_io/MduSchema.h>
+#include <dflowfm_io/MduSchemaData.h>
 #include <dflowfm_io/IssueReport.h>
 #include <ini/IniData.h>
 #include <ini/IniSection.h>
