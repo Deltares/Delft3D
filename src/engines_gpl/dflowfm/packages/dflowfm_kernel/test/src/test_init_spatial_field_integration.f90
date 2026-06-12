@@ -23,7 +23,7 @@ module test_init_spatial_fields_integration
 contains
 
    !> Set up a minimal 1-cell s-point grid so that get_location_target_properties
-   !! and construct_target_mask do not dereference unallocated arrays.
+   !! and construct_mask do not dereference unallocated arrays.
    subroutine setup_minimal_grid()
       ndx = 1
       ndxi = 1
