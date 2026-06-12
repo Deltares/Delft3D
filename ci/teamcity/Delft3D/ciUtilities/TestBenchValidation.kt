@@ -27,9 +27,7 @@ object TestBenchValidation : BuildType({
     """.trimIndent()
 
     params {
-        param("env.IMAGE_NAME", "containers.deltares.nl/delft3d-dev/testbench-validation")
-        param("env.BUILD_BRANCH", "%teamcity.build.branch%")
-        param("env.PULL_REQUEST_SOURCE_BRANCH", "%teamcity.pullRequest.source.branch%")
+        param("docker_image", "containers.deltares.nl/delft3d-dev/delft3d-python:alma8-python3.12")
     }
 
     vcs {
@@ -55,10 +53,7 @@ object TestBenchValidation : BuildType({
                     +:/test/deltares_testbench/TestBench.py
                     +:/test/deltares_testbench/pip/*-requirements.txt
                     +:/test/deltares_testbench/pyproject.toml
-                    +:/test/deltares_testbench/ci/dockerfiles/testbench.Dockerfile
-                    +:/test/deltares_testbench/docker-bake.hcl
                     +:/ci/teamcity/Delft3D/ciUtilities/TestBenchValidation.kt
-                    +:/ci/teamcity/Delft3D/ciUtilities/scripts/validateReports.sh
                 """.trimIndent()
                 branchFilter = """
                     +:pull/*
@@ -70,15 +65,42 @@ object TestBenchValidation : BuildType({
     }
 
     steps {
-        dockerCommand {
-            name = "Run validation"
-            commandType = other {
-                subCommand = "buildx"
-                workingDir = "test/deltares_testbench"
-                commandArgs = "bake validate"
-            }
+        script {
+            name = "Install dependencies"
+            workingDir = "test/deltares_testbench"
+            scriptContent = """
+                #!/usr/bin/env bash
+                uv pip sync pip/lnx-dev-requirements.txt
+            """.trimIndent()
+            dockerImage = "%docker_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --mount type=volume,source=uv-cache-test-bench-validation,destination=/root/.cache/uv
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
         }
-        validateReports {}
+        script {
+            name = "Run checks"
+            workingDir = "ci/python"
+            scriptContent = """
+                #!/usr/bin/env bash
+                set -exo pipefail
+                
+                mkdir -p report
+                uv run ruff format --diff . > report/ruff_format.patch
+                uv run ruff check --select F4,F5,F6,F7,W,I --output-format=junit --output-file=report/ruff_check.xml
+                uv run pytest --junitxml=report/pytest.xml --cov-report=html:report/htmlcov --cov=.
+            """.trimIndent()
+            dockerImage = "%docker_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --env UV_LINK_MODE=copy
+                --rm
+            """.trimIndent()
+        }
     }
 
     features {
@@ -95,16 +117,3 @@ object TestBenchValidation : BuildType({
         contains("teamcity.agent.jvm.os.name", "Linux")
     }
 })
-
-/**
- * Check if the report files exist, and fail the build if there's something wrong with them.
- */
-fun BuildSteps.validateReports(init: ScriptBuildStep.() -> Unit): BuildStep {
-    val result = ScriptBuildStep(init)
-    result.name = "Validate reports"
-    result.workingDir = "test/deltares_testbench"
-    val script = File(DslContext.baseDir, "ciUtilities/scripts/validateReports.sh")
-    result.scriptContent = Util.readScript(script)
-    step(result)
-    return result
-}
