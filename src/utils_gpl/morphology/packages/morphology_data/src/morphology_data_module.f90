@@ -252,6 +252,7 @@ module morphology_data_module
       integer :: nstatqnt ! number of quantities for morphology statistics output
       integer :: weightflg ! weighting by time or dbodsd
       real(fp), dimension(3) :: avgintv ! interval, start, stop for writing statistics (FM only)
+      real(fp), allocatable , dimension(:) :: unit_transport_conversion_factor !  Factor for converting the unit of sediment transport quantities in the his/map writers
       !
       logical :: aks
       logical :: cumavg
@@ -514,7 +515,6 @@ module morphology_data_module
       real(hp), dimension(:), pointer :: mergebuf ! buffer array for communcation with mormerge
       real(fp), dimension(:), pointer :: xx ! percentile xx (dxx stored in erosed.ig*)
       real(fp), dimension(:), pointer :: thetsd ! global dry bank erosion factor
-      real(fp), allocatable , dimension(:) :: unit_transport_conversion_factor !  Factor for converting the unit of sediment transport quantities in the his/map writers
       !
       ! logicals
       !

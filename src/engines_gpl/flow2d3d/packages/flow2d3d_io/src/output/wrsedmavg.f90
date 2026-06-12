@@ -244,7 +244,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbuuc(nm, l) / (gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                      rbuff3(n, m, l) = sbuuc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                    enddo
                 enddo
              enddo
@@ -264,7 +264,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbvvc(nm, l) / (gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                      rbuff3(n, m, l) = sbvvc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                    enddo
                 enddo
              enddo
@@ -288,7 +288,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                    do m = 1, mmax
                       do n = 1, nmaxus
                          call n_and_m_to_nm(n, m, nm, gdp)
-                         rbuff3(n, m, l) = ssuuc(nm, l) / (gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                         rbuff3(n, m, l) = ssuuc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                       enddo
                    enddo
                 enddo
@@ -308,7 +308,7 @@ subroutine wrsedmavg(lundia    ,error     ,filename  ,itmapc    ,mmax      , &
                    do m = 1, mmax
                       do n = 1, nmaxus
                          call n_and_m_to_nm(n, m, nm, gdp)
-                         rbuff3(n, m, l) = ssvvc(nm, l) / (gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l) * dmorfs)
+                         rbuff3(n, m, l) = ssvvc(nm, l) / (moroutput%unit_transport_conversion_factor(l) * dmorfs)
                       enddo
                    enddo
                 enddo

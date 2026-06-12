@@ -521,7 +521,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcu(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbcu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -539,7 +539,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcv(nm,l)/ gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbcv(nm,l)/ moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -562,7 +562,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcuu(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbcuu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -580,7 +580,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbcvv(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbcvv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -603,7 +603,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwu(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbwu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -621,7 +621,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwv(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbwv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -644,7 +644,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwuu(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbwuu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -662,7 +662,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sbwvv(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sbwvv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -685,7 +685,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswu(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sswu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -703,7 +703,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswv(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sswv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -726,7 +726,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswuu(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sswuu(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -744,7 +744,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sswvv(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sswvv(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -765,7 +765,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           do l = 1, lsedtot
              do m = 1, mmax
                 do n = 1, nmaxus
-                   rbuff3(n, m, l) = sbuu(n, m, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                   rbuff3(n, m, l) = sbuu(n, m, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
           enddo
@@ -780,7 +780,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
           do l = 1, lsedtot
              do m = 1, mmax
                 do n = 1, nmaxus
-                   rbuff3(n, m, l) = sbvv(n, m, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                   rbuff3(n, m, l) = sbvv(n, m, l) / moroutput%unit_transport_conversion_factor(l)
                 enddo
              enddo
           enddo
@@ -813,7 +813,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = ssuu(nm, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = ssuu(nm, l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -831,7 +831,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = ssvv(nm, l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = ssvv(nm, l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -851,7 +851,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = sucor(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = sucor(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
@@ -867,7 +867,7 @@ subroutine wrsedm(lundia    ,error     ,mmax      ,kmax      ,nmaxus    , &
                 do m = 1, mmax
                    do n = 1, nmaxus
                       call n_and_m_to_nm(n, m, nm, gdp)
-                      rbuff3(n, m, l) = svcor(nm,l) / gdp%gdmorpar%moroutput%unit_transport_conversion_factor(l)
+                      rbuff3(n, m, l) = svcor(nm,l) / moroutput%unit_transport_conversion_factor(l)
                    enddo
                 enddo
              enddo
