@@ -8,3 +8,4 @@
 - How do we handle reporting in the C api (warnings, errors, info, etc)
 - Apply the loading-MDU-validation when saving. This prevents writing a file that you then can't load.
 - Do we want immediate feedback when setting an invalid value (e.g. out of valid range)
+- Support typed enums in dflowfm_io for custom validation rules (currently enums are converted to ints)

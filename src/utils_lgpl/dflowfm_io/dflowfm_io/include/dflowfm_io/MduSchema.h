@@ -3,6 +3,7 @@
 #include <chrono>
 #include <filesystem>
 #include <locale>
+#include <map>
 #include <string>
 #include <variant>
 #include <vector>
@@ -18,6 +19,8 @@ namespace dflowfm_io
         Float,
         IntBool,
         Path,
+        Enum,
+        IntEnum,
         PathList,
         StringList,
         FloatList,
@@ -43,6 +46,7 @@ namespace dflowfm_io
         ValueType value_type;
         std::optional<Value> default_value;
         std::string default_value_str;
+        std::map<std::string, std::string> enum_values;
         std::string description;
     };
 

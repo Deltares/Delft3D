@@ -40,7 +40,9 @@ class TestMduModel(unittest.TestCase):
             "# This section contains the program name and its version.",
             "[general]",
             "program               = D-Flow FM           # Program.",
+            "fileType              = modelDef            # File type. Do not edit this.",
             "fileVersion           = 1.02                # File version. Do not edit this.",
+            "autoStart             = 0                   # Autostart simulation after loading MDU or not.",
             "",
             "# In this section, the main entry comprises the specification of the grid (i.e. the netCDF network file). In addition, thin dams and thin dykes can be specified.",
             "[geometry]",
@@ -53,6 +55,7 @@ class TestMduModel(unittest.TestCase):
             "# This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.",
             "[numerics]",
             "cflMax                = 7.0000000e-01       # Maximum Courant nr.",
+            "flowSolver            = generic1d2d3d       # Flow solver.",
             "",
             "# The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
             "[wind]",
@@ -221,6 +224,20 @@ class TestMduModel(unittest.TestCase):
         result = model.get_double("numerics.cflmax")
         self.assertAlmostEqual(result, 0.7)
 
+    def test_get_intenum(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        result = model.get_int("general.autostart")
+        self.assertIsInstance(result, int)
+        self.assertEqual(result, 0)
+
+    def test_get_enum(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        result = model.get_int("general.filetype")
+        self.assertIsInstance(result, int)
+        self.assertEqual(result, 0)
+
     def test_get_bool_unknown_key_raises(self):
         model = MduModel()
         model.load_from_file(MDU_PATH)
@@ -252,6 +269,16 @@ class TestMduModel(unittest.TestCase):
         model = MduModel()
         model.load_from_lines(MDU_MINIMAL_REQUIRED_ONLY)
         self.assertEqual(model.get_string("general.program"), "D-Flow FM")
+
+    def test_get_intenum_default_value(self):
+        model = MduModel()
+        model.load_from_lines(MDU_MINIMAL_REQUIRED_ONLY)
+        self.assertEqual(model.get_int("general.autoStart"), 0)
+
+    def test_get_enum_default_value(self):
+        model = MduModel()
+        model.load_from_lines(MDU_MINIMAL_REQUIRED_ONLY)
+        self.assertEqual(model.get_int("numerics.flowSolver"), 0)
 
     def test_get_double_list_default_value(self):
         model = MduModel()
@@ -294,6 +321,20 @@ class TestMduModel(unittest.TestCase):
         self.assertNotEqual(model.get_string("general.program"), "My Program")
         model.set_string("general.program", "My Program")
         self.assertEqual(model.get_string("general.program"), "My Program")
+
+    def test_set_intenum(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertNotEqual(model.get_int("general.autostart"), 1)
+        model.set_int("general.autostart", 1)
+        self.assertEqual(model.get_int("general.autostart"), 1)
+
+    def test_set_enum(self):
+        model = MduModel()
+        model.load_from_file(MDU_PATH)
+        self.assertNotEqual(model.get_int("numerics.flowSolver"), 1)
+        model.set_int("numerics.flowSolver", 1)
+        self.assertEqual(model.get_int("numerics.flowSolver"), 1)
 
     def test_set_path(self):
         model = MduModel()

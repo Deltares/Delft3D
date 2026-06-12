@@ -1,26 +1,81 @@
-#include <cassert>
-#include <chrono>
-#include <filesystem>
-#include <unordered_set>
-
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/MduSchemaData.h>
 #include <dflowfm_io/MduValidator.h>
 
+#include <cassert>
+#include <chrono>
+#include <filesystem>
+#include <format>
+#include <unordered_set>
+#include <variant>
+
 using namespace ini;
 
 namespace dflowfm_io
 {
 
-    const IniProperty* FindProperty(const IniData& iniData, const std::string& name, const std::string& key)
+    static const IniProperty* FindProperty(
+        const IniData& iniData,
+        const std::string& sectionName,
+        const std::string& propertyKey)
     {
-        if (!iniData.HasSection(name)) return nullptr;
-        const auto& section = iniData.GetSection(name);
+        if (!iniData.HasSection(sectionName)) return nullptr;
+        const auto& section = iniData.GetSection(sectionName);
 
-        if (!section.HasProperty(key)) return nullptr;
-        return &section.GetProperty(key);
+        if (!section.HasProperty(propertyKey)) return nullptr;
+        return &section.GetProperty(propertyKey);
+    }
+
+    static std::optional<int> ConvertEnum(
+        const IniProperty& iniProperty,
+        const PropertySchema& propertySchema)
+    {
+        auto str_value = iniProperty.GetValue();
+        if (str_value.empty())
+            return std::nullopt;
+
+        int index = 0;
+        for (const auto& [k, v] : propertySchema.enum_values)
+        {
+            if (iequals(k, str_value))
+                return index;
+            ++index;
+        }
+
+        return std::nullopt;
+    }
+
+    static std::optional<int> ConvertIntEnum(
+        const IniProperty& iniProperty,
+        const PropertySchema& propertySchema)
+    {
+        auto int_value = iniProperty.TryGetConvertedValue<int>();
+        if (!int_value.has_value())
+            return std::nullopt;
+
+        int val = *int_value;
+        if (propertySchema.enum_values.count(std::to_string(val)) > 0)
+            return val;
+
+        return std::nullopt;
+    }
+
+    static std::string ConvertEnumToString(
+        int index,
+        const PropertySchema& propertySchema)
+    {
+        int i = 0;
+        for (const auto& [k, v] : propertySchema.enum_values)
+        {
+            if (i == index)
+                return k;
+            ++i;
+        }
+
+        throw std::out_of_range(std::format("enum index {} out of range for property '{}'.",
+            index, propertySchema.key));
     }
 
     ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
@@ -69,6 +124,14 @@ namespace dflowfm_io
                 {
                     converted_value = iniProperty->TryGetConvertedValue<double>();
                 }
+                else if (value_type == ValueType::Enum)
+                {
+                    converted_value = ConvertEnum(*iniProperty, propertySchema); 
+                }
+                else if (value_type == ValueType::IntEnum)
+                {
+                    converted_value = ConvertIntEnum(*iniProperty, propertySchema);
+                }
                 else if (value_type == ValueType::DateTime)
                 {
                     converted_value = iniProperty->TryGetConvertedValue<std::chrono::system_clock::time_point>();
@@ -92,7 +155,9 @@ namespace dflowfm_io
 
                 if (!converted_value.has_value())
                 {
-                    assert(false); // TODO decent error handling
+                    report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\".",
+                                    sectionSchema.name, propertySchema.key, iniProperty->GetValue());
+                    continue;
                 }
 
                 mduData.data_entries[key] = std::move(*converted_value);
@@ -149,6 +214,17 @@ namespace dflowfm_io
                 else if (value_type == ValueType::Float)
                 {
                     double value = mduData.getValueAs<double>(key);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
+                }
+                else if (value_type == ValueType::Enum)
+                {
+                    int value = mduData.getValueAs<int>(key);
+                    const std::string str_value = ConvertEnumToString(value, propertySchema);
+                    addedProperty = &iniSection.AddProperty(propertySchema.key, str_value);
+                }
+                else if (value_type == ValueType::IntEnum)
+                {
+                    int value = mduData.getValueAs<int>(key);
                     addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
                 else if (value_type == ValueType::DateTime)

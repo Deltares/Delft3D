@@ -4,6 +4,7 @@
 [General]
 Program                           = D-Flow FM                                                           # Program name
 Version                           = Deltares, D-Flow FM1.2.184.16121e1c11da6767019cb454759df52aec1670fe # FM kernel Version
+FileType                          = modelDef
 FileVersion                       = 1.02                                                                # File format version (do not edit this)
 GuiVersion                        = 4.16.0.7431                                                         # DeltaShell FM suite version
 AutoStart                         = 0                                                                   # Autostart simulation after loading MDU (0: no, 1: autostart, 2: autostartstop)
@@ -81,6 +82,7 @@ AntiCreep                         = 0                                           
 Maxwaterleveldiff                 = 0                                                                   # Upper bound on water level changes (<=0: no bounds)
 Maxvelocitydiff                   = 0                                                                   # Upper bound on velocity changes (<=0: no bounds)
 Epshu                             = 0.0001                                                              # Threshold water depth for wet and dry cells
+FlowSolver                        = generic1d2d3d
 
 [physics]
 UnifFrictType                     = 1                                                                   # Uniform friction type (0: Chezy, 1: Manning, 2: White-Colebrook)

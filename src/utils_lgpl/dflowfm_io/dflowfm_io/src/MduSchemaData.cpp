@@ -24,10 +24,34 @@ namespace dflowfm_io
                         .description   = "Program."
                     },
                     PropertySchema {
+                        .key               = "fileType",
+                        .required          = true,
+                        .value_type        = ValueType::Enum,
+                        .default_value     = std::string{"modelDef"},
+                        .default_value_str = "modelDef",
+                        .enum_values       = {
+                            {"modelDef", "model definition file"}
+                        },
+                        .description       = "File type. Do not edit this."
+                    },
+                    PropertySchema {
                         .key         = "fileVersion",
                         .required    = true,
                         .value_type  = ValueType::String,
                         .description = "File version. Do not edit this."
+                    },
+                    PropertySchema {
+                        .key               = "autoStart",
+                        .required          = false,
+                        .value_type        = ValueType::IntEnum,
+                        .default_value     = 0,
+                        .default_value_str = "0",
+                        .enum_values       = {
+                            {"0", "no"},
+                            {"1", "autostart"},
+                            {"2", "autostartstop"}
+                        },
+                        .description = "Autostart simulation after loading MDU or not."
                     },
                 }
             },
@@ -86,6 +110,18 @@ namespace dflowfm_io
                         .default_value = 0.7,
                         .default_value_str = "0.7",
                         .description   = "Maximum Courant nr."
+                    },
+                    PropertySchema {
+                        .key           = "flowSolver",
+                        .required      = false,
+                        .value_type    = ValueType::Enum,
+                        .default_value = 0,
+                        .default_value_str = "generic1d2d3d",
+                        .enum_values       = {
+                            {"generic1d2d3d", "generic solver"},
+                            {"implicit1d", "implicit 1D solver"}
+                        },
+                        .description   = "Flow solver."
                     },
                 }
             },
