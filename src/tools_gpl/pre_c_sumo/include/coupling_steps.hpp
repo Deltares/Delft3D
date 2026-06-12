@@ -9,6 +9,7 @@
 
 #include "csumo_settings_reader.hpp"
 #include "parsing_types.hpp"
+#include "NF2FF_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
 
 namespace pre_c_sumo
@@ -85,11 +86,15 @@ namespace pre_c_sumo
      *
      * For each diffuser configured in `csumoSettings` this will wait for
      * the corresponding NF2FF file to appear. If `csumoSettings` contains
-     * a parse error, the behaviour is undefined in the demo implementation.
+     * a parse error, the function returns immediately without waiting.
+     *
+     * Note: If any diffuser is configured, this function will wait
+     *       INDEFINITELY for file(s) to appear.
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @param current_time_seconds Current time in seconds.
      */
-    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings);
+    void waitForNF2FFFiles(const CSumoSettingsReader& csumoSettings, double current_time_seconds);
 
     /**
      * @brief Read NF2FF files and extract the required data.
@@ -98,8 +103,11 @@ namespace pre_c_sumo
      * data that will be converted to sources/sinks.
      *
      * @param csumoSettings Expected C-SUMO settings or a parse error.
+     * @returns std::vector<NF2FFReader> with the content of all NF2FF files of all
+     * diffusers in the settings.
      */
-    void readNF2FFFiles(const CSumoSettingsReader& csumoSettings);
+    const std::vector<NF2FFReader> readNF2FFFiles(const CSumoSettingsReader& csumoSettings,
+                                                  double current_time_seconds);
 
     /**
      * @brief Convert NF data to sources and sinks to be communicated via preCICE.

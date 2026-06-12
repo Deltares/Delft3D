@@ -12,6 +12,7 @@ object DIMRbak : BuildType({
     )
 
     name = "Publish DIMRset"
+    description = "Distribute to P-drive, publish release notes, and prepare email for DIMRset releases."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
 
@@ -91,7 +92,7 @@ object DIMRbak : BuildType({
         }
         // The Assert access rights step is non-fatal for the pipeline (subsequent steps use ALWAYS).
         python {
-            name = "Download artifacts from TeamCity and on file share using H7"
+            name = "Download artifacts from TeamCity and deliver on file share using H7"
             command = module {
                 module = "ci_tools.dimrset_delivery.download_and_install_artifacts"
                 scriptArguments = """
