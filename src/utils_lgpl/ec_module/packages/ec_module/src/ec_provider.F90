@@ -2253,7 +2253,6 @@ contains
          n_signals = n_signals + 1
 
          block
-            type(tEcConnection), pointer :: connectionPtr
             integer :: zItemId
 
             if (present(zTargetItemId) .and. present(zFileReaderId)) then
@@ -2272,9 +2271,6 @@ contains
                   if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, zItemId)) return
                   if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) return
                   if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) return
-
-                  connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
-                  ! connectionPtr%isZSource = .true.
                end if
             end if 
          end block

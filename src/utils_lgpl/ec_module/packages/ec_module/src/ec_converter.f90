@@ -1172,7 +1172,7 @@ contains
       !! Supports linear interpolation in time, no interpolation in space and no weights.
       !! Supports overwriting and adding-to the entire target Field array, as well all as overwriting only one array element.
       !! Converts source(i) to target(i).
-   function ecConverterUniform(connection, timesteps, arr1D) result(success)
+   function ecConverterUniform(connection, timesteps) result(success)
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
@@ -1191,8 +1191,6 @@ contains
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
       !
       integer, dimension(:), pointer :: targetMask
-      logical, optional              :: arr1D  ! Interpolate on time series or depth values
-      logical                        :: quantityValues ! interpolation on quantity like water level or salinity etc.
 
       success = .false.
       valuesT0 => null()
@@ -1202,28 +1200,8 @@ contains
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
 
-      quantityValues = .true.
-      if (present(arr1D)) then
-          quantityValues = arr1D
-      end if
-
-      quantityValues = .not. connection%isZSource
-
-      if (quantityValues) then
-         valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
-         valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
-      else
-         ! Time series interpolation on depth values
-         if (all(connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arrzPTR == ec_undef_hp)  .and. &
-             all(connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arrzPTR == ec_undef_hp) ) then
-            ! No timeinterpolation needed for old nc file! (z values fixed in time), arrZ is not defined
-            success = .true.
-            return
-         else
-            valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arrzPTR
-            valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arrzPTR
-         end if
-      end if
+      valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
+      valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
 
       n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
       if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then
@@ -1361,15 +1339,9 @@ contains
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
 
-            ! if (quantityValues) then
-               from = (j - 1) * (maxlay * n_data) + 1
-               thru = (j) * (maxlay * n_data)
-               targetField%arr1dPtr(from:thru) = valuesT
-            ! else ! Vertical positions
-            !     from = (j - 1) * maxlay + 1
-            !     thru = (j)     * maxlay
-            !     connection%targetItemsPtr(1)%ptr%ElementSetPtr%z(from:thru) = valuesT(1:from - thru + 1)
-            ! end if
+            from = (j - 1) * (maxlay * n_data) + 1
+            thru = (j) * (maxlay * n_data)
+            targetField%arr1dPtr(from:thru) = valuesT
 
             targetField%timesteps = timesteps
          case (operand_add) ! TODO: AvD/EB: it seems that operand_add does not support targetIndex (offset). Should we not make this available?
