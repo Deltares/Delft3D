@@ -1787,14 +1787,14 @@ contains
       character(len=:), allocatable :: polyline_name !< polyline name read from pli-file
       character(len=4) :: cnum !< temp integer converted to a string
       integer :: id !< dummy, catches ids which are not used
-      integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID
+      integer :: quantityId, elementSetId, fieldId, itemId, BCBlockID, zBCBlockId
       integer :: maxLay
       type(tEcItem), pointer :: itemPT, zItemPT
       type(tEcItem), pointer :: itemt3D
       type(tEcItem), pointer :: sourceItem
       integer, dimension(:), allocatable :: itemIDList
       integer :: vectormax
-      type(tEcBCBlock), pointer :: bcBlockPtr
+      type(tEcBCBlock), pointer :: bcBlockPtr, zBCBlockPtr
       logical :: all_points_are_corr
       logical :: has_label
       integer :: lblstart
@@ -1802,6 +1802,8 @@ contains
       logical :: file_exists
       !
       integer :: zTargetItemId = 0
+      integer :: zFileReaderId
+      type(tEcFileReader), pointer :: zFileReaderPtr
 
 !        initialization
       quantityname = quantityname_in
@@ -1809,6 +1811,7 @@ contains
       itemPT => null()
       sourceItem => null()
       itemt3D => null()
+      zFileReaderPtr => null()
       maxlay = 0
       vectormax = 1
       !
@@ -1975,9 +1978,19 @@ contains
 
          end if
 
+         if (zTargetItemId /= 0) then 
+            zBCBlockId = ecInstanceCreateBCBlock(InstancePtr)
+            zBCBlockPtr => ecSupportFindBCBlock(instancePtr, zBCBlockId)
+
+            if (.not. ecProviderInitializeBCBlock(InstancePtr, zBCBlockId, fileReaderPtr%tframe%k_refdate, &
+                                                fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &
+                                                zFileReaderId, bctfilename, bctfiletype, "zcoordinate_c", plipointlbl, &
+                                                istat, dtnodal=fileReaderPtr%tframe%dtnodal)) return
+         end if
+
          if (.not. ecProviderConnectSourceItemsToTargets(instancePtr, bcBlockPtr%func, id, itemId, i, &
                                                          n_signals, maxlay, itemIDList, qname=quantityname, &
-                                                         zTargetItemId=zTargetItemId)) then
+                                                         zTargetItemId=zTargetItemId, zFileReaderId=zFileReaderId)) then
             !
             ! No sub-FileReader made.
             mask(i) = 0
@@ -2017,6 +2030,26 @@ contains
       if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, itemPT%id)) return
 
       if (zTargetItemId /= 0) then
+
+         ! ! Create a separate file reader for Z values from the NetCDF file
+         ! ! Use the same BCBlock parameters as the main quantity, but for Z coordinate
+         ! zFileReaderId = ecInstanceCreateFileReader(instancePtr)
+         ! if (zFileReaderId == ec_undef_int) return
+         ! zFileReaderPtr => ecSupportFindFileReader(instancePtr, zFileReaderId)
+         ! zFileReaderPtr%vectormax = 1  ! Z is scalar
+         
+         ! ! Copy time frame information from the main file reader
+         ! zFileReaderPtr%tframe%k_refdate = fileReaderPtr%tframe%k_refdate
+         ! zFileReaderPtr%tframe%k_timezone = fileReaderPtr%tframe%k_timezone
+         ! zFileReaderPtr%tframe%k_timestep_unit = fileReaderPtr%tframe%k_timestep_unit
+         ! zFileReaderPtr%tframe%dtnodal = fileReaderPtr%tframe%dtnodal
+         ! zFileReaderPtr%ofType = provFile_t3D
+         ! zFileReaderPtr%fileName = bctfilename
+
+         
+         ! Add Z item to the new file reader
+         ! if (.not. ecFileReaderAddItem(instancePtr, zFileReaderId, zTargetItemId)) return         
+         ! if (.not. ecFileReaderAddItem(instancePtr, zFileReaderId, zTargetItemId)) return
          if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, zTargetItemId)) return
          zItemPT => ecSupportFindItem(instancePtr, zTargetItemId)
          zItemPT%targetFieldPtr%arr1dPtr => itemPT%elementSetPtr%z
@@ -2108,7 +2141,7 @@ contains
 !==============================================================================================================
 
    function ecProviderConnectSourceItemsToTargets(instancePtr, signaltype, fileReaderId, targetItemId, targetIndex, n_signals, &
-         maxlay, itemIDList, qname, zTargetItemId) result(itemFound)
+         maxlay, itemIDList, qname, zTargetItemId, zFileReaderId) result(itemFound)
       logical :: itemFound
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer :: fileReaderId ! file reader id
@@ -2121,6 +2154,7 @@ contains
       type(tEcItem), pointer :: itemt3D
       character(len=*), optional :: qname
       integer, intent(in), optional :: zTargetItemId
+      integer, intent(in), optional :: zFileReaderId
 
       itemFound = .false.
 
@@ -2220,9 +2254,11 @@ contains
 
          block
             type(tEcConnection), pointer :: connectionPtr
+            integer :: zItemId
 
-            if (present(zTargetItemId)) then
+            if (present(zTargetItemId) .and. present(zFileReaderId)) then
                if (zTargetItemId /= 0) then
+                  
                   subconverterId = ecInstanceCreateConverter(instancePtr)
                   if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
                            ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
@@ -2231,13 +2267,14 @@ contains
                   ! Construct a new Connection.
                   connectionId = ecInstanceCreateConnection(instancePtr)
                   if (.not. ecConnectionSetConverter(instancePtr, connectionId, subconverterId)) return
+                  zItemId = ecFileReaderFindItem(instancePtr, zFileReaderId, trim("uniform_item"))
 
-                  if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, magnitude)) return
+                  if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, zItemId)) return
                   if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) return
                   if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) return
 
                   connectionPtr => ecSupportFindConnection(instancePtr, connectionId)
-                  connectionPtr%isZSource = .true.
+                  ! connectionPtr%isZSource = .true.
                end if
             end if 
          end block

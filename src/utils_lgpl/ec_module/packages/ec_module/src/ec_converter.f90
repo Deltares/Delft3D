@@ -1847,7 +1847,7 @@ contains
 
                   ! Prepare sigmaL and valL
                   debug_ptr => connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dptr
-                  write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"src:", debug_ptr
+                  ! write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"src:", debug_ptr
 
                   maxlay_srcL = 0
                   sigmaLL = ec_undef_hp
@@ -1938,7 +1938,7 @@ contains
                         end if
                         !
                      end do ! target layers
-                  write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"tgt:", connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
+                  ! write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"tgt:", connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
                   end if ! are we averaging the source in the vertical direction ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
             case default
