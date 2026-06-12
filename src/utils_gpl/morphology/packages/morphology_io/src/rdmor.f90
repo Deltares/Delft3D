@@ -215,7 +215,6 @@ subroutine rdmor(lundia    ,error     ,filmor_in ,lsec      ,lsedtot   , &
           !
           call read_morphology_output_options(mor_ptr, morpar%moroutput, lsedtot, filmor, lundia, error)
           if (error) return
-          !                 
           !
           call set_sediment_percentiles(mor_ptr, morpar%moroutput, pxxstr)
           !
