@@ -48,8 +48,7 @@ contains
       use unstruc_shapefile
       use m_monitoring_crosssections, only: ncrs, crs
       use m_observations_data, only: numobs, kobs
-      use fm_external_forcings_data, only: nweirgen, ngategen, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen
-      use m_source_sink, only: source_sinks
+      use fm_external_forcings_data, only: nweirgen, ngategen, num_source_sink, source_sink_indices, gate2cgen, L1cgensg, L2cgensg, npumpsg, L1pumpsg, L2pumpsg, ngenstru, genstru2cgen, weir2cgen
       use m_dambreak_breach, only: should_write_dambreaks
       use m_thindams
       use m_sobekdfm, only: nbnd1d2d
@@ -170,9 +169,9 @@ contains
 
       ! source-sinks
       if (jashp_src > 0) then
-         jawrite = source_sinks%num_total
-         do n = 1, source_sinks%num_total
-            if (source_sinks%indices(n, 1) <= 0 .and. source_sinks%indices(n, 4) <= 0) then
+         jawrite = num_source_sink
+         do n = 1, num_source_sink
+            if (source_sink_indices(1, n) <= 0 .and. source_sink_indices(4, n) <= 0) then
                jawrite = jawrite - 1
             end if
          end do

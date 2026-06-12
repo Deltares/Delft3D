@@ -1,7 +1,6 @@
 module m_bubblescreen
    use precision_basics, only: dp, comparereal
-   use fm_external_forcings_data, only: t_BubbleScreen, bubblescreens, bubblescreen_air_discharge
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
+   use fm_external_forcings_data, only: t_BubbleScreen, bubblescreens, source_sink_indices, source_sink_all_discharges, bubblescreen_air_discharge, source_sink_z_bottom, source_sink_z_top
    use m_alloc, only: realloc
    use messageHandling, only: err_flush, msgbuf, msg_flush, warn_flush
 
@@ -197,7 +196,7 @@ contains
       use m_transport, only: numconst
 
       ! Parameters
-      integer, intent(in) :: source_sink_index !< [-] Index of source/sink
+      integer, intent(in) :: source_sink_index !< [-] Index of source/sink in {fm_external_forcings_data::source_sink_indices}
       real(kind=dp), intent(in) :: discharge !< [m3/s] Water discharge for this source/sink
 
       source_sink_all_discharges(1, source_sink_index) = abs(discharge)
@@ -213,16 +212,16 @@ contains
    subroutine update_bubblescreen_source_sink_layer_indices(source_sink_index, k_start, k_stop, k_max_velocity)
       use m_flow, only: zws
       ! Parameters
-      integer, intent(in) :: source_sink_index !< [-] Index of source/sink
+      integer, intent(in) :: source_sink_index !< [-] Index of source/sink in {fm_external_forcings_data::source_sink_indices}
       integer, intent(in) :: k_start !< [-] Start active layer index (bottom); in {m_flow::zws}
       integer, intent(in) :: k_stop !< [-] Stop active layer index (top); in {m_flow::zws}
       integer, intent(in) :: k_max_velocity !< [-] Layer index with maximum downward velocity; in {m_flow::zws}
 
       ! Update source/sink top and bottom z-levels
-      source_sinks%z_bottom(source_sink_index, 1) = (zws(k_start) + zws(k_start + 1)) / 2.0_dp
-      source_sinks%z_bottom(source_sink_index, 2) = (zws(k_max_velocity) + zws(k_max_velocity + 1)) / 2.0_dp
-      source_sinks%z_top(source_sink_index, 1) = (zws(k_max_velocity) + zws(k_max_velocity - 1)) / 2.0_dp
-      source_sinks%z_top(source_sink_index, 2) = (zws(k_stop) + zws(k_stop - 1)) / 2.0_dp
+      source_sink_z_bottom(1, source_sink_index) = (zws(k_start) + zws(k_start + 1)) / 2.0_dp
+      source_sink_z_bottom(2, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity + 1)) / 2.0_dp
+      source_sink_z_top(1, source_sink_index) = (zws(k_max_velocity) + zws(k_max_velocity - 1)) / 2.0_dp
+      source_sink_z_top(2, source_sink_index) = (zws(k_stop) + zws(k_stop - 1)) / 2.0_dp
 
    end subroutine update_bubblescreen_source_sink_layer_indices
 

@@ -87,7 +87,6 @@ contains
       use m_lnabs
       use m_zlin
       use m_znod
-      use m_source_sink, only: source_sinks
 
       implicit none
 
@@ -702,36 +701,36 @@ contains
 
       call setcol(121)
       if (kmx > 0) then
-         do n = 1, source_sinks%num_total ! teksorsin rai
-            qsrck = source_sinks%discharge(n)
-            kk = source_sinks%indices(n, 1) ! 2D pressure cell nr from
+         do n = 1, num_source_sink ! teksorsin rai
+            qsrck = source_sink_water_discharge(n)
+            kk = source_sink_indices(1, n) ! 2D pressure cell nr from
             if (japol == 1) then
                if (kc(kk) == 0) then
                   cycle
                end if
             end if
 
-            if (kk /= 0 .and. source_sinks%indices(n, 2) > 0) then
+            if (kk /= 0 .and. source_sink_indices(2, n) > 0) then
                xp(1) = xz(kk)
                bup = 0.1_dp * sqrt(ba(kk))
-               do k = source_sinks%indices(n, 2), source_sinks%indices(n, 3)
+               do k = source_sink_indices(2, n), source_sink_indices(3, n)
                   yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   ! CALL KCIR(XP(1),YP(1),qsrck)
                   call fbox(xz(kk) - bup, zws(k - 1), xz(kk) + bup, zws(k))
                end do
             end if
 
-            kk = source_sinks%indices(n, 4) ! 2D pressure cell nr to
+            kk = source_sink_indices(4, n) ! 2D pressure cell nr to
             if (japol == 1) then
                if (kc(kk) == 0) then
                   cycle
                end if
             end if
 
-            if (kk /= 0 .and. source_sinks%indices(n, 5) > 0) then
+            if (kk /= 0 .and. source_sink_indices(5, n) > 0) then
                xp(1) = xz(kk)
                bup = 0.1_dp * sqrt(ba(kk))
-               do k = source_sinks%indices(n, 5), source_sinks%indices(n, 6)
+               do k = source_sink_indices(5, n), source_sink_indices(6, n)
                   yp(1) = 0.5_dp * (zws(k) + zws(k - 1))
                   ! CALL KCIR(XP(1),YP(1),qsrck)
                   call fbox(xz(kk) - bup, zws(k - 1), xz(kk) + bup, zws(k))

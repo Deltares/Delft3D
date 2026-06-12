@@ -28,8 +28,6 @@
 
 module mass_balance_areas_routines
    use precision, only: dp
-   use m_source_sink, only: source_sinks
-
    implicit none
 
    private
@@ -151,8 +149,8 @@ contains
 
       call realloc(mbaflowhor, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowhortot, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbaflowsorsin, [2, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbaflowsorsintot, [2, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowsorsin, [2, num_source_sink], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbaflowsorsintot, [2, num_source_sink], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowraineva, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbaflowrainevatot, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafloweva, nomba, keepExisting=.false., fill=0.0_dp)
@@ -186,20 +184,24 @@ contains
 
       call realloc(mbafluxhor, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxhortot, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbafluxsorsin, [2, 2, numconst, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
-      call realloc(mbafluxsorsintot, [2, 2, numconst, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxsorsin, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
+      call realloc(mbafluxsorsintot, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheat, [2, nomba], keepExisting=.false., fill=0.0_dp)
       call realloc(mbafluxheattot, [2, nomba], keepExisting=.false., fill=0.0_dp)
+
+      if (.not. allocated(source_sink_name)) then
+         allocate (source_sink_name(0))
+      end if
 
       if (jampi == 1) then
          call realloc(mbavolumereduce, nomba, keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowhorreduce, [2, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-         call realloc(mbaflowsorsinreduce, [2, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbaflowsorsinreduce, [2, num_source_sink], keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowrainevareduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbaflowevareduce, nomba, keepExisting=.false., fill=0.0_dp)
          call realloc(mbamassreduce, [nombs, nomba], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxhorreduce, [2, numconst, nombabnd, nombabnd], keepExisting=.false., fill=0.0_dp)
-         call realloc(mbafluxsorsinreduce, [2, 2, numconst, source_sinks%num_total], keepExisting=.false., fill=0.0_dp)
+         call realloc(mbafluxsorsinreduce, [2, 2, numconst, num_source_sink], keepExisting=.false., fill=0.0_dp)
          call realloc(mbafluxheatreduce, [2, nomba], keepExisting=.false., fill=0.0_dp)
       end if
 
@@ -272,11 +274,11 @@ contains
          call reduce_int_array_sum(nomba * nombabnd, mbalnused)
       end if
 
-      call realloc(mbasorsin, [2, source_sinks%num_total], keepExisting=.true., fill=0)
-      call realloc(mbasorsinout, [2, source_sinks%num_total], keepExisting=.true., fill=0)
-      do isrc = 1, source_sinks%num_total
-         kk1 = source_sinks%indices(isrc, 1) ! 2D pressure cell nr FROM
-         kk2 = source_sinks%indices(isrc, 4) ! 2D pressure cell nr TO
+      call realloc(mbasorsin, [2, num_source_sink], keepExisting=.true., fill=0)
+      call realloc(mbasorsinout, [2, num_source_sink], keepExisting=.true., fill=0)
+      do isrc = 1, num_source_sink
+         kk1 = source_sink_indices(1, isrc) ! 2D pressure cell nr FROM
+         kk2 = source_sink_indices(4, isrc) ! 2D pressure cell nr TO
          if (kk1 > 0) then
             mbasorsin(1, isrc) = mbadef(kk1)
             if (jampi == 1) then
@@ -298,7 +300,7 @@ contains
       end do
 
       if (jampi == 1) then
-         call reduce_int_array_sum(2 * source_sinks%num_total, mbasorsinout)
+         call reduce_int_array_sum(2 * num_source_sink, mbasorsinout)
       end if
 
       call realloc(flxdmp, [2, num_fluxes, nomba], keepExisting=.false., fill=0.0_dp) !< Fluxes at dump segments
@@ -417,6 +419,7 @@ contains
       use m_mass_balance_areas
       use m_fm_wq_processes
       use m_partitioninfo
+      use fm_external_forcings_data, only: num_source_sink
       use m_flowparameters, only: jambawritetxt, jambawritecsv, jambawritenetcdf, jambawritecsv, jambawritetxt
       use m_transport, only: numconst
       use m_sediment, only: stm_included
@@ -444,7 +447,7 @@ contains
          mbavolumeend(:) = mbavolumereduce(:)
          call reduce_double_sum(2 * nombabnd * nombabnd, mbaflowhor, mbaflowhorreduce)
          mbaflowhor(:, :, :) = mbaflowhorreduce(:, :, :)
-         call reduce_double_sum(2 * source_sinks%num_total, mbaflowsorsin, mbaflowsorsinreduce)
+         call reduce_double_sum(2 * num_source_sink, mbaflowsorsin, mbaflowsorsinreduce)
          mbaflowsorsin(:, :) = mbaflowsorsinreduce(:, :)
          call reduce_double_sum(2 * nomba, mbaflowraineva, mbaflowrainevareduce)
          mbaflowraineva(:, :) = mbaflowrainevareduce(:, :)
@@ -455,7 +458,7 @@ contains
          mbamassend(:, :) = mbamassreduce(:, :)
          call reduce_double_sum(2 * numconst * nombabnd * nombabnd, mbafluxhor, mbafluxhorreduce)
          mbafluxhor(:, :, :, :) = mbafluxhorreduce(:, :, :, :)
-         call reduce_double_sum(2 * 2 * numconst * source_sinks%num_total, mbafluxsorsin, mbafluxsorsinreduce)
+         call reduce_double_sum(2 * 2 * numconst * num_source_sink, mbafluxsorsin, mbafluxsorsinreduce)
          mbafluxsorsin(:, :, :, :) = mbafluxsorsinreduce(:, :, :, :)
          call reduce_double_sum(2 * nomba, mbafluxheat, mbafluxheatreduce)
          mbafluxheat(:, :) = mbafluxheatreduce(:, :)
@@ -734,6 +737,7 @@ contains
    subroutine comp_horflowmba()
       use m_flow, only: Lbot, Ltop, q1
       use m_flowtimes, only: dts
+      use fm_external_forcings_data, only: num_source_sink, source_sink_water_discharge
       use m_mass_balance_areas
       use timers
 
@@ -763,8 +767,8 @@ contains
          end do
       end do
 
-      do n = 1, source_sinks%num_total
-         qsrck = source_sinks%discharge(n)
+      do n = 1, num_source_sink
+         qsrck = source_sink_water_discharge(n)
          if (qsrck > 0) then
             if (mbasorsin(2, n) /= 0) then
                mbaflowsorsin(2, n) = mbaflowsorsin(2, n) + qsrck * dts
@@ -1201,6 +1205,7 @@ contains
    subroutine mba_prepare_names_flows(imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_mass_balance_areas
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1244,17 +1249,17 @@ contains
 
       ! sources and sinks
       if (jambalumpsrc == 0) then
-         do isrc = 1, source_sinks%num_total
+         do isrc = 1, num_source_sink
             if (mbasorsinout(1, isrc) == imba) then
-               call add_name(balance, labelsrc, source_sinks%name(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
             if (mbasorsinout(2, isrc) == imba) then
-               call add_name(balance, labelsrc, source_sinks%name(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
          end do
       else
          check = .false.
-         do isrc = 1, source_sinks%num_total
+         do isrc = 1, num_source_sink
             if (any(mbasorsinout(:, isrc) == imba)) then
                check = .true.
                exit
@@ -1279,6 +1284,7 @@ contains
    subroutine mba_prepare_values_flows(imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use fm_external_forcings_data, only: num_source_sink
       use m_mass_balance_areas
 
       integer, intent(in) :: imba !< index mass balance area
@@ -1336,7 +1342,7 @@ contains
 
       ! sources and sinks
       has_entry = .false.
-      do isrc = 1, source_sinks%num_total
+      do isrc = 1, num_source_sink
          if (mbasorsinout(1, isrc) == imba) then
             call add_values(flows, imbf, p_mbaflowsorsin(1:2, isrc), jambalumpsrc, has_entry)
          end if
@@ -1362,6 +1368,7 @@ contains
    subroutine mba_prepare_names_flows_whole_model()
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_mass_balance_areas
 
       integer :: jmba !< index of other mass balance area or open boundary
@@ -1389,12 +1396,12 @@ contains
 
       ! sources and sinks
       if (jambalumpsrc == 0) then
-         do isrc = 1, source_sinks%num_total
+         do isrc = 1, num_source_sink
             if (mbasorsinout(1, isrc) > 0) then
-               call add_name(balance, labelsrc, source_sinks%name(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
             if (mbasorsinout(2, isrc) > 0) then
-               call add_name(balance, labelsrc, source_sinks%name(isrc))
+               call add_name(balance, labelsrc, source_sink_name(isrc))
             end if
          end do
       else
@@ -1417,6 +1424,7 @@ contains
    subroutine mba_prepare_values_flows_whole_model(overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, jambalumpsrc
       use m_wind, only: jarain, jaevap
+      use fm_external_forcings_data, only: num_source_sink
       use m_mass_balance_areas
 
       logical, intent(in) :: overall_balance !< balance period: use the total begin arrays, or just the last period
@@ -1465,7 +1473,7 @@ contains
 
       ! sources and sinks
       has_entry = .false.
-      do isrc = 1, source_sinks%num_total
+      do isrc = 1, num_source_sink
          if (mbasorsinout(1, isrc) > 0) then
             call add_values(flows, imbf, p_mbaflowsorsin(1:2, isrc), jambalumpsrc, has_entry)
          end if
@@ -1491,6 +1499,7 @@ contains
    subroutine mba_prepare_names_fluxes(imbs, imba)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1555,17 +1564,17 @@ contains
 
          ! sources and sinks
          if (jambalumpsrc == 0) then
-            do isrc = 1, source_sinks%num_total
+            do isrc = 1, num_source_sink
                if (mbasorsinout(1, isrc) == imba) then
-                  call add_name(balance, labelsrc, source_sinks%name(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
                if (mbasorsinout(2, isrc) == imba) then
-                  call add_name(balance, labelsrc, source_sinks%name(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
             end do
          else
             check = .false.
-            do isrc = 1, source_sinks%num_total
+            do isrc = 1, num_source_sink
                if (any(mbasorsinout(:, isrc) == imba)) then
                   check = .true.
                   exit
@@ -1643,6 +1652,7 @@ contains
    subroutine mba_prepare_values_fluxes(imbs, imba, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
+      use fm_external_forcings_data, only: num_source_sink
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -1744,7 +1754,7 @@ contains
 
          ! sources and sinks
          has_entry = .false.
-         do isrc = 1, source_sinks%num_total
+         do isrc = 1, num_source_sink
             if (mbasorsinout(1, isrc) == imba) then
                call add_values(fluxes, imbf, p_mbafluxsorsin(1:2, 1, imbs, isrc), jambalumpsrc, has_entry)
             end if
@@ -1817,6 +1827,7 @@ contains
    subroutine mba_prepare_names_fluxes_whole_model(imbs)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpmba, &
                                   jambalumpbnd, jambalumpsrc, jambalumpproc
+      use fm_external_forcings_data, only: num_source_sink, source_sink_name
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use m_fm_erosed, only: lsed, iflufflyr
@@ -1866,12 +1877,12 @@ contains
 
          ! sources and sinks
          if (jambalumpsrc == 0) then
-            do isrc = 1, source_sinks%num_total
+            do isrc = 1, num_source_sink
                if (mbasorsinout(1, isrc) > 0) then
-                  call add_name(balance, labelsrc, source_sinks%name(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
                if (mbasorsinout(2, isrc) > 0) then
-                  call add_name(balance, labelsrc, source_sinks%name(isrc))
+                  call add_name(balance, labelsrc, source_sink_name(isrc))
                end if
             end do
          else
@@ -1934,6 +1945,7 @@ contains
    subroutine mba_prepare_values_fluxes_whole_model(imbs, overall_balance)
       use m_flowparameters, only: temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, jambalumpbnd, &
                                   jambalumpsrc, jambalumpproc
+      use fm_external_forcings_data, only: num_source_sink
       use m_transport, only: numconst, itemp
       use m_mass_balance_areas
       use processes_pointers, only: nfluxsys, fluxsys, ipfluxsys, stochi
@@ -2026,7 +2038,7 @@ contains
 
          ! sources and sinks
          has_entry = .false.
-         do isrc = 1, source_sinks%num_total
+         do isrc = 1, num_source_sink
             if (mbasorsinout(1, isrc) > 0) then
                call add_values(fluxes, imbf, p_mbafluxsorsin(1:2, 1, imbs, isrc), jambalumpsrc, has_entry)
             end if

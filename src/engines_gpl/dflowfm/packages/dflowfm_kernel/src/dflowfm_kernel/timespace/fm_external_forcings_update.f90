@@ -37,7 +37,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
-                      item_lateraldischarge, npumpswithlevels, item_discharge_salinity_temperature_sorsin, &
+                      item_lateraldischarge, npumpswithlevels, num_source_sink, item_discharge_salinity_temperature_sorsin, source_sink_all_discharges, &
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, item_relative_humidity, &
                       item_solar_radiation, item_cloudiness, &
@@ -51,7 +51,6 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
                       sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt
-   use m_source_sink, only: source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
    use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -65,6 +64,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
+   use m_setsorsin, only: setsorsin
 
    implicit none
 
@@ -216,7 +216,7 @@ contains
          call update_pumps_with_levels()
       end if
 
-      if (source_sinks%num_total > 0) then
+      if (num_source_sink > 0) then
          ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
          ! This avoids copying while satisfying the 1D array interface requirement
          source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges

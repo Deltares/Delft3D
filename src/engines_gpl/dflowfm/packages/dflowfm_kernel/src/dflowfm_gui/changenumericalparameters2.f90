@@ -38,9 +38,8 @@ contains
 
    subroutine CHANGENUMERICALPARAMETERS2()
       use m_flow, only: iturbulencemodel, jaustarint, javakeps, idensform, jarhoxu, javasal, ifixedweirscheme, tsigma, cffacver, &
-         cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, jalogprofatubndin, &
+         cffachormom, cfexphormom, cfconhormom, javatem, javiuplus3d, jaqaisq1, source_sink_add_k_to_turkin, jalogprofatubndin, &
          javau, jacomp, drop2d, drop3d, jastructurelayersactive, max_iterations_pressure_density
-      use m_source_sink, only: source_sinks
       use unstruc_colors, only: hlpfor, hlpbck, iws, ihs, lblfor, lblbck
       use unstruc_display_data, only: npos
       use m_helpnow, only: nlevel, wrdkey
@@ -287,7 +286,7 @@ contains
       i = i + 1
       call IFORMputINTEGER(2 * i, jaqaisq1)
       i = i + 1
-      if (source_sinks%add_k_to_turkin) then
+      if (source_sink_add_k_to_turkin) then
          temp_source_sink_add_k_to_turkin = 1
       else 
          temp_source_sink_add_k_to_turkin = 0
@@ -380,7 +379,7 @@ contains
             call IFORMGETINTEGER(2 * i, jaqaisq1)
             i = i + 1
             call IFORMGETINTEGER(2 * i, temp_source_sink_add_k_to_turkin)
-            source_sinks%add_k_to_turkin = (temp_source_sink_add_k_to_turkin == 1)
+            source_sink_add_k_to_turkin = (temp_source_sink_add_k_to_turkin == 1)
             i = i + 1
             call IFORMGETINTEGER(2 * i, jaLogprofatubndin)
             i = i + 1

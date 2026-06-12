@@ -15,8 +15,7 @@ contains
       use fm_external_forcings, only: init_new
       use m_flow_geominit, only: flow_geominit
       use Timers, only: timini
-      use fm_external_forcings_data, only: bubblescreen_air_discharge
-      use m_source_sink, only: source_sink_all_discharges
+      use fm_external_forcings_data, only: source_sink_all_discharges, bubblescreen_air_discharge
       use m_meteo, only: initialize_ec_module, item_sourcesink_discharge, ecInstancePtr, ec_gettimespacevalue, item_bubblescreen_discharge
       use m_cell_geometry, only: xz, yz, ndx        ! use fm_external_forcings, only: init_new
       use m_flowgeom, only: kcs
