@@ -1,7 +1,12 @@
 #include <dflowfm_io/MduSchemaData.h>
 
+#include <chrono>
+#include <string>
+#include <vector>
+
 namespace dflowfm_io
 {
+
     const MduSchema MDU_SCHEMA {
         .description = "The master definition file of D-Flow FM",
         .sections = {
@@ -14,7 +19,8 @@ namespace dflowfm_io
                         .key           = "program",
                         .required      = false,
                         .value_type    = ValueType::String,
-                        .default_value = "D-Flow FM",
+                        .default_value = std::string{"D-Flow FM"},
+                        .default_value_str = "D-Flow FM",
                         .description   = "Program."
                     },
                     PropertySchema {
@@ -40,21 +46,24 @@ namespace dflowfm_io
                         .key           = "useCaching",
                         .required      = false,
                         .value_type    = ValueType::IntBool,
-                        .default_value = "1",
+                        .default_value = true,
+                        .default_value_str = "1",
                         .description   = "Use caching for geometrical/network-related items."
                     },
                     PropertySchema {
                         .key           = "kmx",
                         .required      = false,
-                        .value_type    = ValueType::Integer,
-                        .default_value = "0",
+                        .value_type    = ValueType::Int,
+                        .default_value = 0,
+                        .default_value_str = "0",
                         .description   = "Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM."
                     },
                     PropertySchema {
                         .key           = "waterLevIni",
                         .required      = false,
-                        .value_type    = ValueType::FloatingPoint,
-                        .default_value = "0.0",
+                        .value_type    = ValueType::Float,
+                        .default_value = 0.0,
+                        .default_value_str = "0.0",
                         .description   = "Initial water levels sample file (*.xyz)."
                     },
                     PropertySchema {
@@ -67,14 +76,15 @@ namespace dflowfm_io
             },
             SectionSchema {
                 .name        = "numerics",
-                .required    = true,
+                .required    = false,
                 .description = "This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.",
                 .properties  = {
                     PropertySchema {
                         .key           = "cflMax",
                         .required      = false,
-                        .value_type    = ValueType::FloatingPoint,
-                        .default_value = "0.7",
+                        .value_type    = ValueType::Float,
+                        .default_value = 0.7,
+                        .default_value_str = "0.7",
                         .description   = "Maximum Courant nr."
                     },
                 }
@@ -87,8 +97,9 @@ namespace dflowfm_io
                     PropertySchema {
                         .key           = "cdBreakPoints",
                         .required      = false,
-                        .value_type    = ValueType::FloatingPointList,
-                        .default_value = "0.00063, 0.00723",
+                        .value_type    = ValueType::FloatList,
+                        .default_value = std::vector<double>{0.00063, 0.00723},
+                        .default_value_str = "0.00063, 0.00723",
                         .description   = "Wind drag breakpoints."
                     },
                 }
@@ -102,7 +113,8 @@ namespace dflowfm_io
                         .key           = "refDate",
                         .required      = false,
                         .value_type    = ValueType::DateTime,
-                        .default_value = "20010101",
+                        .default_value = std::chrono::sys_days{std::chrono::year{2001}/std::chrono::month{1}/std::chrono::day{1}},
+                        .default_value_str = "20210101",
                         .description   = "Reference date. By default midnight is taken (00h00m00s)."
                     },
                 }

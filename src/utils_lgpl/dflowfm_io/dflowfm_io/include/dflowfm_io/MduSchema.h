@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+#include <filesystem>
 #include <locale>
 #include <string>
 #include <variant>
@@ -11,25 +13,36 @@ namespace dflowfm_io
 {
     enum class ValueType
     {
-        Path,
         String,
-        Integer,
+        Int,
+        Float,
         IntBool,
-        FloatingPoint,
-        DateTime,
-        StringList,
+        Path,
         PathList,
-        FloatingPointList,
+        StringList,
+        FloatList,
+        DateTime,
     };
+
+    using Value = std::variant<
+        std::string,
+        int,
+        double,
+        bool,
+        std::filesystem::path,
+        std::chrono::system_clock::time_point,
+        std::vector<std::string>,
+        std::vector<std::filesystem::path>,
+        std::vector<double>
+    >;
 
     struct PropertySchema
     {
-        bool HasDefault() const { return !default_value.empty(); }
-
         std::string key;
         bool required;
         ValueType value_type;
-        std::string default_value;
+        std::optional<Value> default_value;
+        std::string default_value_str;
         std::string description;
     };
 
@@ -38,9 +51,7 @@ namespace dflowfm_io
         const PropertySchema* FindProperty(const std::string& key) const
         {
             for (const auto& ps : properties)
-            {
                 if (iequals(ps.key, key)) return &ps;
-            }
             return nullptr;
         }
 
@@ -55,9 +66,7 @@ namespace dflowfm_io
         const SectionSchema* FindSection(const std::string& name) const
         {
             for (const auto& ss : sections)
-            {
                 if (iequals(ss.name, name)) return &ss;
-            }            
             return nullptr;
         }
 

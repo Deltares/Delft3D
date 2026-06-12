@@ -1,15 +1,12 @@
 #pragma once
 
-#include <chrono>
 #include <string>
 #include <string_view>
-#include <variant>
 #include <unordered_map>
-#include <vector>
 #include <stdexcept>
-#include <filesystem>
 
-#include "dflowfm_io/StringUtils.h"
+#include <dflowfm_io/MduSchema.h>
+#include <dflowfm_io/StringUtils.h>
 
 namespace dflowfm_io
 {
@@ -50,9 +47,6 @@ namespace dflowfm_io
             data_entries[dflowfm_io::to_lowercase(key)] = std::move(value);
         }
 
-        using Value = std::variant<std::filesystem::path, std::string, double, int, bool, 
-            std::chrono::system_clock::time_point,
-            std::vector<std::string>, std::vector<std::filesystem::path>, std::vector<double>>;
         std::unordered_map<std::string, Value> data_entries;
     };
 

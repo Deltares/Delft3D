@@ -1,19 +1,28 @@
+#include <cassert>
 #include <chrono>
-#include <unordered_set>
 #include <filesystem>
+#include <unordered_set>
 
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/MduSchemaData.h>
-
-#include <cassert>
 #include <dflowfm_io/MduValidator.h>
 
 using namespace ini;
 
 namespace dflowfm_io
 {
+
+    const IniProperty* FindProperty(const IniData& iniData, const std::string& name, const std::string& key)
+    {
+        if (!iniData.HasSection(name)) return nullptr;
+        const auto& section = iniData.GetSection(name);
+
+        if (!section.HasProperty(key)) return nullptr;
+        return &section.GetProperty(key);
+    }
+
     ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
     {
         MduValidator validator;
@@ -21,60 +30,60 @@ namespace dflowfm_io
 
         MduData mduData;
 
-        mduData.data_entries["general.program"] = std::string("D-Flow FM"); // Default value
-
-        for (const auto& section : iniData)
+        for (const auto& sectionSchema : MDU_SCHEMA.sections)
         {
-            for (const auto& property : section)
+            for (const auto& propertySchema : sectionSchema.properties)
             {
-                // Often properties are present in the MDU file but no value is specified. Skip these.
-                if (!property.HasValue()) continue;
+                const auto* iniProperty = FindProperty(iniData, sectionSchema.name, propertySchema.key);
 
-                const std::string key = to_lowercase(section.GetName() + "." + property.GetKey());
+                const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
 
-                auto* mdu_schema_section = MDU_SCHEMA.FindSection(section.GetName());
-                if (!mdu_schema_section) continue; // Unrecognized section, skip
+                // A property may be absent or have no value in the MDU file; 
+                // fall back to the schema default if one is defined.
+                if (!iniProperty || !iniProperty->HasValue())
+                {
+                    if (propertySchema.default_value.has_value())
+                        mduData.data_entries[key] = *propertySchema.default_value;
+                    continue;
+                }
 
-                auto* mdu_schema_property = mdu_schema_section->FindProperty(property.GetKey());
-                if (!mdu_schema_property) continue; // Unrecognized property, skip
-
-                const ValueType value_type = mdu_schema_property->value_type;
-                std::optional<MduData::Value> converted_value = std::nullopt;
+                const ValueType value_type = propertySchema.value_type;
+                std::optional<Value> converted_value = std::nullopt;
                 if (value_type == ValueType::Path)
                 {
-                    converted_value = property.TryGetConvertedValue<std::filesystem::path>();
+                    converted_value = iniProperty->TryGetConvertedValue<std::filesystem::path>();
                 }
                 else if (value_type == ValueType::String)
                 {
-                    converted_value = property.TryGetConvertedValue<std::string>();
+                    converted_value = iniProperty->TryGetConvertedValue<std::string>();
                 }
-                else if (value_type == ValueType::Integer)
+                else if (value_type == ValueType::Int)
                 {
-                    converted_value = property.TryGetConvertedValue<int>();
+                    converted_value = iniProperty->TryGetConvertedValue<int>();
                 }
                 else if (value_type == ValueType::IntBool)
                 {
-                    converted_value = property.TryGetConvertedValue<bool>();
+                    converted_value = iniProperty->TryGetConvertedValue<bool>();
                 }
-                else if (value_type == ValueType::FloatingPoint)
+                else if (value_type == ValueType::Float)
                 {
-                    converted_value = property.TryGetConvertedValue<double>();
+                    converted_value = iniProperty->TryGetConvertedValue<double>();
                 }
                 else if (value_type == ValueType::DateTime)
                 {
-                    converted_value = property.TryGetConvertedValue<std::chrono::system_clock::time_point>();
+                    converted_value = iniProperty->TryGetConvertedValue<std::chrono::system_clock::time_point>();
                 }
                 else if (value_type == ValueType::StringList)
                 {
-                    converted_value = property.TryGetConvertedValueCollection<std::string>();
+                    converted_value = iniProperty->TryGetConvertedValueCollection<std::string>();
                 }
                 else if (value_type == ValueType::PathList)
                 {
-                    converted_value = property.TryGetConvertedValueCollection<std::filesystem::path>();
+                    converted_value = iniProperty->TryGetConvertedValueCollection<std::filesystem::path>();
                 }
-                else if (value_type == ValueType::FloatingPointList)
+                else if (value_type == ValueType::FloatList)
                 {
-                    converted_value = property.TryGetConvertedValueCollection<double>();
+                    converted_value = iniProperty->TryGetConvertedValueCollection<double>();
                 }
                 else
                 {
@@ -85,6 +94,7 @@ namespace dflowfm_io
                 {
                     assert(false); // TODO decent error handling
                 }
+
                 mduData.data_entries[key] = std::move(*converted_value);
             }
         }
@@ -126,7 +136,7 @@ namespace dflowfm_io
                     std::string value = mduData.getValueAs<std::string>(key);
                     addedProperty = &iniSection.AddProperty(propertySchema.key, value);
                 }
-                else if (value_type == ValueType::Integer)
+                else if (value_type == ValueType::Int)
                 {
                     int value = mduData.getValueAs<int>(key);
                     addedProperty = &iniSection.AddProperty(propertySchema.key, value);
@@ -136,7 +146,7 @@ namespace dflowfm_io
                     bool value = mduData.getValueAs<bool>(key);
                     addedProperty = &iniSection.AddProperty(propertySchema.key, value ? "1" : "0");
                 }
-                else if (value_type == ValueType::FloatingPoint)
+                else if (value_type == ValueType::Float)
                 {
                     double value = mduData.getValueAs<double>(key);
                     addedProperty = &iniSection.AddProperty(propertySchema.key, value);
@@ -156,7 +166,7 @@ namespace dflowfm_io
                     const auto& values = mduData.getValueAs<std::vector<std::filesystem::path>>(key);
                     addedProperty = &iniSection.AddMultiValueProperty(propertySchema.key, values);
                 }
-                else if (value_type == ValueType::FloatingPointList)
+                else if (value_type == ValueType::FloatList)
                 {
                     const auto& values = mduData.getValueAs<std::vector<double>>(key);
                     iniSection.AddMultiValueProperty(propertySchema.key, values);
