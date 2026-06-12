@@ -1,16 +1,4 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
-    <testCase name="e02_f001_c220_drypoints_pol" ref="dflowfm_default">
-      <path version="2024-08-26T13:35:00">e02_dflowfm/f001_general/c220_drypoints_pol</path>
-      <maxRunTime>15.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/norway_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
@@ -520,125 +508,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f005_c016_waterlevel_bc_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c016_waterlevel_bc_tim_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c017_waterlevel_bc_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c017_waterlevel_bc_tim_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c018_waterlevel_bc_cmp_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c018_waterlevel_bc_cmp_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c019_waterlevel_bc_cmp_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c019_waterlevel_bc_cmp_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f005_c021_astronomic_cmp_mismatchstart" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c021_astronomic_cmp_mismatchstart</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c022_astronomic_bc_cmp_standard" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c022_astronomic_bc_cmp_standard</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c023_astronomic_bc_cmp_mismatchstart" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c023_astronomic_bc_cmp_mismatchstart</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c024_astronomic_bc_cmp_corr" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c024_astronomic_bc_cmp_corr</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c025_astronomic_bc_cmp_tim" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c025_astronomic_bc_cmp_tim</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c026_astronomic_bc_cmp_corr_tim" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c026_astronomic_bc_cmp_corr_tim</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/astronomic_his.nc" type="netCDF">
@@ -714,82 +585,6 @@
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c035_discharge_cmp_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c036_discharge_bc_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c036_discharge_bc_tim_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c037_discharge_bc_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c037_discharge_bc_tim_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c038_discharge_bc_cmp_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c038_discharge_bc_cmp_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c039_discharge_bc_cmp_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c039_discharge_bc_cmp_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
         <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
@@ -898,82 +693,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f005_c046_velocity_bc_tim_bnd" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c046_velocity_bc_tim_bnd</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c047_velocity_bc_tim_hybrid" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c047_velocity_bc_tim_hybrid</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c048_velocity_bc_cmp_bnd" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c048_velocity_bc_cmp_bnd</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c049_velocity_bc_cmp_hybrid" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c049_velocity_bc_cmp_hybrid</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f005_c050_neumann_tim_1d" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c050_neumann_tim_1d</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -988,54 +707,6 @@
     </testCase>
     <testCase name="e02_f005_c051_neumann_tim_2d" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c051_neumann_tim_2d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c054_neumann_bc_tim_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c054_neumann_bc_tim_1d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c055_neumann_bc_tim_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c055_neumann_bc_tim_2d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c056_neumann_bc_cmp_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c056_neumann_bc_cmp_1d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c057_neumann_bc_cmp_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c057_neumann_bc_cmp_2d</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
@@ -1246,54 +917,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f005_c074_outflow_bc_tim_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c074_outflow_bc_tim_1d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c075_outflow_bc_tim_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c075_outflow_bc_tim_2d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c076_outflow_bc_cmp_1d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c076_outflow_bc_cmp_1d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c077_outflow_bc_cmp_2d" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c077_outflow_bc_cmp_2d</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/neumannbox_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f005_c081_qhbnd_refined" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c081_qhbnd_refined</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1351,94 +974,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f005_c084_qhbnd_bc" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c084_qhbnd_bc</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c085_qhbnd_bc_refined" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c085_qhbnd_bc_refined</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c086_qhbnd_bc_refined_twice" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c086_qhbnd_bc_refined_twice</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c087_qhbnd_bc_doubleboundary" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c087_qhbnd_bc_doubleboundary</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c088_qhbnd_bc_tripleboundary" ref="dflowfm_default">
-      <path version="2024-04-10T16:35:00">e02_dflowfm/f005_boundary_conditions/c088_qhbnd_bc_tripleboundary</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/testcase01_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" tolerance="0.02" />
-            <parameter name="mesh2d_ucmag" tolerance="0.02" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f005_c091_salinity_tim_varying" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c091_salinity_tim_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1455,48 +990,6 @@
     </testCase>
     <testCase name="e02_f005_c092_salinity_cmp_varying" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c092_salinity_cmp_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c093_salinity_bc_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c093_salinity_bc_tim_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c094_salinity_bc_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c094_salinity_bc_tim_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c095_salinity_bc_cmp_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c095_salinity_bc_cmp_varying</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
@@ -1585,82 +1078,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f005_c104_tracer_bc_tim_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c104_tracer_bc_tim_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c105_tracer_bc_tim_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c105_tracer_bc_tim_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c106_tracer_bc_cmp_constant" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c106_tracer_bc_cmp_constant</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c107_tracer_bc_cmp_varying" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c107_tracer_bc_cmp_varying</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/tfl_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f005_c120_coastal_riemann_cmp_2d" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c120_coastal_riemann_cmp_2d</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -1669,70 +1086,6 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c130_discharge_bc_tim_varying_tm1" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c130_discharge_bc_tim_varying_tm1</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c131_discharge_bc_tim_varying_tm2" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c131_discharge_bc_tim_varying_tm2</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplechannel_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/simplechannel_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c140_waterlevel_bc_julian" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c140_waterlevel_bc_julian</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f005_c144_waterlevel_tim_iso8601" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f005_boundary_conditions/c144_waterlevel_tim_iso8601</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>
@@ -2155,150 +1508,6 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c051_maas_circumcenter1" ref="dflowfm_default">
-      <path version="2025-01-17T06:00:21.718000">e02_dflowfm/f008_network/c051_maas_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c052_maas_circumcenter2" ref="dflowfm_default">
-      <path version="2025-01-16T19:15:41.354000">e02_dflowfm/f008_network/c052_maas_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c053_maas_circumcenter3" ref="dflowfm_default">
-      <path version="2025-01-16T19:15:51.129000">e02_dflowfm/f008_network/c053_maas_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c054_maas_circumcenter1" ref="dflowfm_default">
-      <path version="2025-01-16T19:15:58.191000">e02_dflowfm/f008_network/c054_maas_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c055_maas_circumcenter2" ref="dflowfm_default">
-      <path version="2025-01-16T19:16:05.645000">e02_dflowfm/f008_network/c055_maas_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c056_maas_circumcenter3" ref="dflowfm_default">
-      <path version="2025-01-16T19:16:14.885000">e02_dflowfm/f008_network/c056_maas_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/maas_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c061_diamond_circumcenter1" ref="dflowfm_default">
-      <path version="2025-01-17T06:05:02.360000">e02_dflowfm/f008_network/c061_diamond_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c062_diamond_circumcenter2" ref="dflowfm_default">
-      <path version="2025-01-16T19:16:40.505000">e02_dflowfm/f008_network/c062_diamond_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c063_diamond_circumcenter3" ref="dflowfm_default">
-      <path version="2025-01-16T19:16:47.887000">e02_dflowfm/f008_network/c063_diamond_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c064_diamond_circumcenter1" ref="dflowfm_default">
-      <path version="2025-01-16T19:16:54.793000">e02_dflowfm/f008_network/c064_diamond_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c065_diamond_circumcenter2" ref="dflowfm_default">
-      <path version="2025-01-16T19:17:02.937000">e02_dflowfm/f008_network/c065_diamond_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f008_c066_diamond_circumcenter3" ref="dflowfm_default">
-      <path version="2025-01-16T19:17:09.863000">e02_dflowfm/f008_network/c066_diamond_circumcenter1</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/diamond_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_face_x" toleranceAbsolute="0.000000001" />
-            <parameter name="mesh2d_face_y" toleranceAbsolute="0.000000001" />
           </parameters>
         </file>
       </checks>
@@ -2743,19 +1952,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f009_c090_weir_length" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f009_weirs/c090_weir_length</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfm/dflowfmoutput/FlowFM_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="weirgen_crest_width" location="structure01" toleranceAbsolute="0.0001" />
-            <parameter name="weirgen_crest_width" location="structure02" toleranceAbsolute="0.0001" />
-            <parameter name="weirgen_crest_width" location="structure03" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f010_c011_gate_free" ref="dflowfm_default">
       <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c011_gate_free</path>
       <maxRunTime>200.0</maxRunTime>
@@ -2886,81 +2082,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f010_c060_bridge_pillar" ref="dflowfm_default">
-      <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c060_bridge_pillar</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/bridge-1_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/bridge-1_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f010_c061_bridge_pillar_grid_coarsening" ref="dflowfm_default">
-      <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c061_bridge_pillar_grid_coarsening</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/brugp_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/brugp_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f010_c062_bridge_pillar_grid_coarsening_unstruc" ref="dflowfm_default">
-      <path version="2024-01-11T16:00:00">e02_dflowfm/f010_structures/c062_bridge_pillar_grid_coarsening_unstruc</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/brugp_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/brugp_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f010_c019_gate" ref="dflowfm_default">
-      <path version="2024-11-25T18:34:12.295000">e02_dflowfm/f010_structures/c019_gate</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-         <file name="dflowfm/output/dflow-fm_his.nc" type="netCDF">
-            <parameters>
-              <parameter name="gategen_discharge" toleranceRelative="0.7" />
-              <parameter name="gategen_crest_level" toleranceAbsolute="0.0003" />
-              <parameter name="gategen_crest_width" toleranceAbsolute="0.0003" />
-              <parameter name="gategen_crest_width" toleranceAbsolute="0.0003" />
-              <parameter name="gategen_flow_through_height" toleranceAbsolute="0.01" />
-              <parameter name="gategen_gate_opening_width" toleranceAbsolute="0.002" />
-              <parameter name="gategen_s1up" toleranceAbsolute="0.01" />
-              <parameter name="gategen_s1dn" toleranceAbsolute="0.01" />
-            </parameters>
-         </file>
-      </checks>
-   </testCase>
     <testCase name="e02_f011_c015_sobey_uniform_squares" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f011_wind/c015_sobey_uniform_squares</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -3895,20 +3016,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f012_c100_dambreak_fiat" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c100_dambreak_fiat</path>
-      <maxRunTime>10.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/dambreak2ddrybreach_fou.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_fourier001_min" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_fourier001_min_depth" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_fourier002_max" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_fourier002_max_depth" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f012_c101_fourier_analysis_compdt" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c101_fourier_analysis_compdt</path>
       <maxRunTime>10.0</maxRunTime>
@@ -3942,19 +3049,6 @@
       <maxRunTime>10.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/windcase_fou.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_fourier001_min" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_fourier002_max" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_average003_avg" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f012_c105_salinity_fourier" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c105_salinity_fourier</path>
-      <maxRunTime>10.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_fou.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_fourier001_min" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_fourier002_max" toleranceAbsolute="0.0001" />
@@ -4295,18 +3389,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f016_c014_dcsm_enclosure_dryarea" ref="dflowfm_default">
-      <path version="2024-08-26T13:40:00">e02_dflowfm/f016_drypoints/c014_dcsm_enclosure_dryarea</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/dcsm_test_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f017_c010_sourcesink_2D" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f017_sources_sinks/c010_sourcesink_2D</path>
       <maxRunTime>20.0</maxRunTime>
@@ -4322,20 +3404,6 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f019_c020_thatcherharleman" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f019_transport/c020_thatcherharleman</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/tfl_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="salinity" toleranceAbsolute="0.0001" />
-            <parameter name="x_velocity" toleranceAbsolute="0.0001" />
-            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>
@@ -4446,28 +3514,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f006_c067_rain_netcdf_stations" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f006_external_forcing/c067_rain_netcdf_stations</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplerain_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="rain" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f006_c068_rain_netcdf_stations_targetmask" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f006_external_forcing/c068_rain_netcdf_stations_targetmask</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/simplerain_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_rainfall_rate" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
     <testCase name="e02_f006_c070_atmosphericpressure" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f006_external_forcing/c070_Atmosphericpressure</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -4563,28 +3609,6 @@
           </parameters>
         </file>
         <file name="dflowfmoutput/test_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh2d_sedfrac_concentration" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f022_c04_concentration_bnds" ref="dflowfm_default">
-      <path version="2024-01-11T16:40:00">e02_dflowfm/f022_morphology_2D/c04_concentration_bnds</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/da3_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="sbcx" toleranceAbsolute="0.000001" />
-            <parameter name="sed" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/da3_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
@@ -5901,324 +4925,6 @@
         <file name="tst_bed.xyz" ignore="true" />
       </checks>
     </testCase>
-    <testCase name="e02_f037_c01_EH_ZW" ref="dflowfm_default">
-      <path version="2024-08-26T13:45:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c01_mc_sediment_transport_Engelund_Hansen</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c01_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sbcx" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c02_MPM_ZW" ref="dflowfm_default">
-      <path version="2024-08-26T13:45:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c02_mc_sediment_transport_MPM</path>
-      <maxRunTime>2.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c02_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sbcx" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c11_bifurcation" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c11_sediment_transport_bifurcation</path>
-      <maxRunTime>20.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c01_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sbn" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c12_bifurcation_k5_m1" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c12_sediment_transport_bifurcation_k5_m1</path>
-      <maxRunTime>30.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c01_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sbn" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c13_bifurcation_table" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c13_sediment_transport_bifurcation_table</path>
-      <maxRunTime>30.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c01_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sbn" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c31_shoal_ZW" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c31_shoal_ds_IBedCond0_us_IBedCond1</path>
-      <maxRunTime>35.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c31_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c32_shoal_ZW_toe" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c32_shoal_ds_IBedCond0_us_IBedCond1_toe</path>
-      <maxRunTime>35.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c32_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c33_shoal_ZW_toe_sd_low" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c33_shoal_ds_IBedCond0_us_IBedCond1_toe_sd_low</path>
-      <maxRunTime>35.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c33_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c34_shoal_ZW_toe_sd_high" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c34_shoal_ds_IBedCond0_us_IBedCond1_toe_sd_high</path>
-      <maxRunTime>35.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c34_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c35_shoal_ZW_floodplain" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c35_shoal_ds_IBedCond0_us_IBedCond1_floodplain</path>
-      <maxRunTime>35.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c35_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.005" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.005" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c36_shoal_ZW_cn" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c36_shoal_ds_IBedCond0_us_IBedCond1_cn</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c36_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.005" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.005" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c37_shoal_ZW_cn_angle" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c37_shoal_ds_IBedCond0_us_IBedCond1_cn_angle</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c37_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.005" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.005" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c38_shoal_ZW_angle" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c38_shoal_ds_IBedCond0_us_IBedCond1_angle</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c38_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.005" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.005" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c39_shoal_ds_IBedCond0_us_IBedCond1_cn_reversed" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c39_shoal_ds_IBedCond0_us_IBedCond1_cn_reversed</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c39_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.005" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.005" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c41_shoal_ds_IBedCond0_us_IBedCond1_suspended" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c41_shoal_ds_IBedCond0_us_IBedCond1_suspended</path>
-      <maxRunTime>200.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c31_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_ssn" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sbn" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_sedfrac_concentration" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c61_wl_q_roughness_ZW" ref="dflowfm_default">
-      <path version="2024-04-10T16:45:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c61_wl_q_dependent_roughness</path>
-      <maxRunTime>25.0000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c61_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-            <parameter name="cross_section_discharge" toleranceAbsolute="0.01" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c71_no_summerdike_ZW" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c71_no_summerdike</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c71_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c72_with_summerdike" ref="dflowfm_default">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c72_with_summerdike</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/c72_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="waterlevel" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c73_with_summerdike_transition_height" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c73_with_summerdike_transition_height</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f037_c74_with_summerdike_transition_height_default" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c74_with_summerdike_transition_height_default</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
-    <testCase name="e02_f037_c75_no_summerdike" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c75_no_summerdike</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
-    <testCase name="e02_f037_c90_supercritical_flow" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c90_supercritical_flow</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
-    <testCase name="e02_f037_c91_bifurcation_pure1d" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f037_mor1d_tabulated_crosssections/c91_bifurcation_pure1d</path>
-      <maxRunTime>7.5000000</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
     <testCase name="e02_f040_c01_uniform_ibed_1" ref="dflowfm_default">
       <path version="2024-08-26T13:50:00">e02_dflowfm/f040_subsidence/c01_uniform_ibed_1</path>
       <maxRunTime>7.5000000</maxRunTime>
@@ -6387,30 +5093,6 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f092_c04_exer_10_2d_westernscheldt" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c04_exer_10_2d_westernscheldt</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/westernscheldt01_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>  
-    <testCase name="e02_f092_c08_exer_12_2d_bend_course_model" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c08_exer_12_2d_bend_course_model</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/cb_2d_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>  
     <testCase name="e02_f092_c10_exer_13_r01_vlissingen_course_model" ref="dflowfm_config">
       <path version="2024-01-11T16:30:00">e02_dflowfm/f092_tutorial_course_models/c10_exer_13_r01_vlissingen_course_model</path>
       <maxRunTime>90.0</maxRunTime>
@@ -6431,83 +5113,6 @@
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase> 
-    <testCase name="e02_f123_c81_dad_inside_dumping" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f123_dredge-dump/c81_dad_inside_dumping</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="dred_discharge" toleranceAbsolute="0.001" />
-            <parameter name="dump_discharge" toleranceAbsolute="0.001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f123_c82_dad_inside_dumping_with_floodplain" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f123_dredge-dump/c82_dad_inside_dumping_with_floodplain</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="dred_discharge" toleranceAbsolute="0.001" />
-            <parameter name="dump_discharge" toleranceAbsolute="0.001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_bodsed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f123_c83_dad_nourishment_mixed_sediment" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f123_dredge-dump/c83_dad_nourishment_mixed_sediment</path>
-      <maxRunTime>90.0</maxRunTime>
-      <checks>
-        <file name="dflowfmoutput/Flow1D_his.nc" type="netCDF">
-          <parameters>
-            <parameter name="dred_discharge" toleranceAbsolute="0.001" />
-            <parameter name="dump_discharge" toleranceAbsolute="0.001" />
-          </parameters>
-        </file>
-        <file name="dflowfmoutput/Flow1D_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_msed" toleranceAbsolute="0.1600" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_n" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_crs_z" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f100_c04_closed_channel_circle" ref="dflowfm_config">
-      <path version="2024-01-11T16:30:00">e02_dflowfm/f100_1D/c04_closed_channel_circle</path>
-      <checks>
-        <file name="DFM_OUTPUT_FlowFM/FlowFM_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_q1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
       </checks>
@@ -6579,32 +5184,6 @@
           </parameters>
         </file>
         <file name="rst/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>        
-      </checks>
-    </testCase>
-    <testCase name="e02_f422_c04_concentration_bnds" ref="dflowfm_restart">
-      <path version="2024-05-22T03:49:00">e02_dflowfm/f422_morphology_2D_restart/c04_concentration_bnds</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="main/dflowfmoutput/da3_20050127_002000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>
-        <file name="rst/dflowfmoutput/da3_20050127_002000_rst.nc" type="netCDF">
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
@@ -7934,30 +6513,6 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f422_c68_dad_2dredge1dump_layered_bed_no_flow" ref="dflowfm_restart">
-      <path version="2024-05-22T05:05:00">e02_dflowfm/f422_morphology_2D_restart/c68_dad_2dredge1dump_layered_bed_no_flow</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="main/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>
-        <file name="rst/dflowfmoutput/test_20000218_003000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>        
-      </checks>
-    </testCase>
     <testCase name="e02_f422_c70_boundary_condition_icond0" ref="dflowfm_restart">
       <path version="2024-05-22T03:52:00">e02_dflowfm/f422_morphology_2D_restart/c70_boundary_condition_icond0</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -8348,32 +6903,6 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f422_c86_drycellerosion" ref="dflowfm_restart">
-      <path version="2024-12-11T14:31:12.077000">e02_dflowfm/f422_morphology_2D_restart/c86_drycellerosion</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="main/dflowfmoutput/test_20010101_040000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>
-        <file name="rst/dflowfmoutput/test_20010101_040000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>        
-      </checks>
-    </testCase>
     <testCase name="e02_f422_c87_restart_graded_inicomp" ref="dflowfm_restart">
       <path version="2024-05-22T03:52:00">e02_dflowfm/f422_morphology_2D_restart/c87_restart_graded_inicomp</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -8415,32 +6944,6 @@
           </parameters>
         </file>
         <file name="rst/dflowfmoutput/str_20151101_001010_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>        
-      </checks>
-    </testCase>
-    <testCase name="e02_f422_c90_struiksma_bend" ref="dflowfm_restart">
-      <path version="2024-05-22T03:53:00">e02_dflowfm/f422_morphology_2D_restart/c90_struiksma_bend</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="main/dflowfmoutput/struiksma83_20000101_040000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>
-        <file name="rst/dflowfmoutput/struiksma83_20000101_040000_rst.nc" type="netCDF">
           <parameters>
             <parameter name="time" toleranceAbsolute="0.0000001" />
             <parameter name="timestep" toleranceAbsolute="0.0000001" />
@@ -8582,32 +7085,6 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f422_c96_drycellerosion_spatial" ref="dflowfm_restart">
-      <path version="2024-12-11T14:31:37.934000">e02_dflowfm/f422_morphology_2D_restart/c96_drycellerosion_spatial</path>
-      <maxRunTime>15000.0000000</maxRunTime>
-      <checks>
-        <file name="main/dflowfmoutput/test_20010101_040000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>
-        <file name="rst/dflowfmoutput/test_20010101_040000_rst.nc" type="netCDF">
-          <parameters>
-            <parameter name="time" toleranceAbsolute="0.0000001" />
-            <parameter name="timestep" toleranceAbsolute="0.0000001" />
-            <parameter name="s1" toleranceAbsolute="0.0000001" />
-            <parameter name="q1" toleranceAbsolute="0.0000001" />
-            <parameter name="mor_bl" toleranceAbsolute="0.0000001" />
-            <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
-          </parameters>
-        </file>        
-      </checks>
-    </testCase>
     <testCase name="e02_f422_c97_trench_VR93_SedTransStt" ref="dflowfm_restart">
       <path version="2024-05-22T03:53:00">e02_dflowfm/f422_morphology_2D_restart/c97_trench_VR93_SedTransStt</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -8632,44 +7109,6 @@
             <parameter name="bl_bnd" toleranceAbsolute="0.0000001" />
           </parameters>
         </file>        
-      </checks>
-    </testCase>
-    <testCase name="e02_f500_c01_hydro" ref="dflowfm_default">
-      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c01_hydro</path>
-      <maxRunTime>600.0000000</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f500_c02_morpho" ref="dflowfm_default">
-      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c02_morpho</path>
-      <maxRunTime>600.0000000</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
-      </checks>
-    </testCase>
-    <testCase name="e02_f500_c03_morpho_junctions" ref="dflowfm_default">
-      <path version="2024-07-15T14:00:00">e02_dflowfm/f500_implicit1d/c03_morpho_junctions</path>
-      <maxRunTime>600.0000000</maxRunTime>
-      <checks>
-        <file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
-          <parameters>
-            <parameter name="mesh1d_s1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_u1" toleranceAbsolute="0.0001" />
-            <parameter name="mesh1d_mor_bl" toleranceAbsolute="0.0001" />
-          </parameters>
-        </file>
       </checks>
     </testCase>
     <testCase name="e02_f044_c01_waveforcing_1" ref="dflowfm_default">
