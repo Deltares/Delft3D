@@ -395,7 +395,7 @@ contains
       use properties, only: has_key, prop_get
       use tree_data_types, only: tree_data
       use timespace_parameters, only: LOCTP_NODEID, LOCTP_BRANCHID_CHAINAGE, LOCTP_POLYGON_XY, LOCTP_POLYGON_FILE
-      use m_laterals, only: ILATTP_1D
+      use fm_location_types, only: SPATIAL_LOCATION_1D
       use unstruc_files, only: resolvePath
 
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to lateral block in extforce file; child node of the extforce file tree
@@ -449,7 +449,7 @@ contains
       if (has_node_id) then
          call prop_get(block_ptr, 'Lateral', 'nodeId', node_id)
          loc_spec_type = LOCTP_NODEID
-         ilattype = ILATTP_1D
+         ilattype = SPATIAL_LOCATION_1D
          is_success = .true.
          return
       end if
@@ -464,7 +464,7 @@ contains
          call prop_get(block_ptr, 'Lateral', 'chainage', chainage)
          if (len_trim(branch_id) > 0 .and. chainage /= dmiss .and. chainage >= 0.0_dp) then
             loc_spec_type = LOCTP_BRANCHID_CHAINAGE
-            ilattype = ILATTP_1D
+            ilattype = SPATIAL_LOCATION_1D
             is_success = .true.
             return
          else
@@ -512,10 +512,11 @@ contains
       use messageHandling, only: err_flush, msgbuf, mess, LEVEL_ERROR, LEVEL_INFO
       use string_module, only: str_tolower
       use tree_data_types, only: tree_data
-      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, ILATTP_1D, ILATTP_2D, ILATTP_ALL, kclat, numlatsg, nnlat, nlatnd, apply_transport
+      use m_laterals, only: qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat, nlatnd, apply_transport
       use m_flowgeom, only: ndxi, xz, yz
       use m_alloc, only: realloc, reserve_sufficient_space
       use fm_external_forcings_data, only: kx, qid
+      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_wind, only: jaqin
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
@@ -557,13 +558,13 @@ contains
       end if
       select case (str_tolower(trim(item_type)))
       case ('1d')
-         ilattype = ILATTP_1D
+         ilattype = SPATIAL_LOCATION_1D
       case ('2d')
-         ilattype = ILATTP_2D
+         ilattype = SPATIAL_LOCATION_2D
       case ('1d2d', 'all')
-         ilattype = ILATTP_ALL
+         ilattype = SPATIAL_LOCATION_ALL
       case default
-         ilattype = ILATTP_ALL
+         ilattype = SPATIAL_LOCATION_ALL
       end select
 
       call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
@@ -805,7 +806,7 @@ contains
       use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D
+      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
@@ -821,7 +822,6 @@ contains
       use processes_input, only: painp
       use m_flowparameters, only: ja_friction_coefficient_time_dependent
       use m_heatfluxes, only: secchi_depth_is_time_varying
-      use m_laterals, only: ilattp_all
       use timespace_parameters, only: OPERAND_OVERRIDE
       use m_flowgeom_mask, only: construct_mask
 

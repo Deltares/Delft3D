@@ -51,7 +51,7 @@ contains
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
       integer, intent(in) :: location_type !< Location type (one of UNC_LOC_S/S3D/U/...).
-      character(len=*), intent(in) :: spatial_location_type !< Spatial location type (one of SPATIAL_LOCATION_1D/2D/ALL).
+      character(len=*), intent(in) :: spatial_location_type !< Spatial location type (one of SPATIAL_LOCATION_ALL/1D/2D).
       character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
       integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
@@ -302,7 +302,7 @@ contains
 
    !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
    !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns ILATTP_INVALID when the string is absent, returns ILATTP_INVALID when unrecognized.
+   !! Returns SPATIAL_LOCATION_INVALID when the string is absent, returns SPATIAL_LOCATION_INVALID when unrecognized.
    function parse_spatial_location_type(location_type_string) result(spatial_location_type)
       use string_module, only: str_tolower
       use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID

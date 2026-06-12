@@ -48,14 +48,13 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_W = 6 !< Data location: vertical velocity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_WU = 16 !< Data location: vertical viscosity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_3DV = 17 !< Data location: vertical positions at pressure points and constant for
-                                                          !! all gridpoints.
+                                                  !! all gridpoints.
 
    ! Spatial locations:
    integer, parameter, public :: SPATIAL_LOCATION_INVALID = -1 !< Invalid spatial location.
-   integer, parameter, public :: SPATIAL_LOCATION_1D = 0 !< Spatial location: 1D element.
-   integer, parameter, public :: SPATIAL_LOCATION_2D = 1 !< Spatial location: 2D element.
-   integer, parameter, public :: SPATIAL_LOCATION_ALL = 2 !< Spatial location: all elements (1D and 2D).
-
+   integer, parameter, public :: SPATIAL_LOCATION_ALL = 0 !< Spatial location: all elements (1D and 2D).
+   integer, parameter, public :: SPATIAL_LOCATION_1D = 1 !< Spatial location: 1D element.
+   integer, parameter, public :: SPATIAL_LOCATION_2D = 2 !< Spatial location: 2D element.
 
    ! Model global:
    integer, parameter, public :: UNC_LOC_GLOBAL = 21 !< Data location: model global (e.g. water balance)

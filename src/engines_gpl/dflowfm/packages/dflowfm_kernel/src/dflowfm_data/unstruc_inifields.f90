@@ -489,7 +489,7 @@ contains
       use fm_external_forcings_utils, only: read_tracer_properties
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
       use m_ec_parameters, only: interpolate_time, interpolate_spacetimeSaveWeightFactors
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_grw
       use m_Roughness, only: frictionTypeStringToInteger
 
@@ -662,17 +662,17 @@ contains
 
          call prop_get(node_ptr, '', 'locationType ', locationType, retVal)
          if (.not. retVal) then
-            ilocType = ILATTP_ALL
+            ilocType = SPATIAL_LOCATION_ALL
          else
             select case (trim(str_tolower(locationType)))
             case ('1d')
-               ilocType = ILATTP_1D
+               ilocType = SPATIAL_LOCATION_1D
             case ('2d')
-               ilocType = ILATTP_2D
+               ilocType = SPATIAL_LOCATION_2D
             case ('1d2d')
-               ilocType = ILATTP_ALL
+               ilocType = SPATIAL_LOCATION_ALL
             case default
-               ilocType = ILATTP_ALL
+               ilocType = SPATIAL_LOCATION_ALL
             end select
          end if
 
@@ -2731,7 +2731,7 @@ contains
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
       integer, intent(out) :: num_items !< The number of target locations.
-      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all. Used for filling the kcsini mask array. Valid values: ILATTP_1D, ILATTP_2D, ILATTP_ALL.
+      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all. Used for filling the kcsini mask array. Valid values: SPATIAL_LOCATION_ALL/1D/2D.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
 
       select case (target_location_type)
