@@ -26,6 +26,9 @@
                 <credential ref="commandline"/>
                 <root>{server_base_url}/references</root>
             </location>
+            <location name="local">
+                <root>./data/engines</root>
+            </location>
         </locations>
     </config>
     <!--
@@ -43,71 +46,63 @@
                 <argument>/C</argument>
             </arguments>
         </program>
-        <program name="dimr" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
-            <path>bin/run_dimr.bat</path>
-            <shell ref="command_prompt"/>
+        <program name="dimr" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true">
             <location ref="reference_engines" type="reference">
                 <from>win64</from>
             </location>
-            <location ref="engines_to_compare" type="check">
-                <from>teamcity_artifacts/x64</from>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
             </location>
-            <path>bin/run_dimr.bat</path>
-            <shell ref="command_prompt"/>
+            <path>bin/run_dimr_parallel.bat</path>
             <environments>
-                <environment name="D3D_HOME" type="path">[programpath(dimr)]\..\..\..</environment>
-                <environment name="ARCH" type="raw">win64</environment>
                 <environment name="OMP_NUM_THREADS" type="raw">1</environment>
-                <environment name="OMP_NUM_THREADS_SWAN" type="raw">1</environment>
+                <environment name="OMP_NUM_THREADS_SWAN" type="raw">4</environment>
             </environments>
         </program>
-        <program name="vs">
-            <shell ref="command_prompt"/>
-            <path>thirdparty\vs\win64\vs.exe</path>
+        <!--
+            On Windows "run_dimr_parallel.bat" can not handle a sequential computation when OMP_NUM_THREADS_SWAN is bigger than 1
+            Workaround: define program "dimr_seq", a copy of "dimr" with only "run_dimr_parallel.bat" replaced by "run_dimr.bat"
+        -->
+        <program name="dimr_seq" ignoreStandardError="true" ignoreReturnValue="true" logOutputToFile="true" programStringRemoveQuotes="true">
+            <location ref="reference_engines" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, wil be file by TeamCity -->
+            </location>
+            <path>bin/run_dimr.bat</path>
             <environments>
-                <environment name="PAGER" type="raw">more</environment>
+                <environment name="OMP_NUM_THREADS" type="raw">1</environment>
+                <environment name="OMP_NUM_THREADS_SWAN" type="raw">4</environment>
             </environments>
+        </program>
+        <program name="dflowfm" logOutputToFile="true" programStringRemoveQuotes="true" addSearchPaths="true">
+            <location ref="reference_engines" type="reference">
+                <from>win64</from>
+            </location>
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/x64</from> <!-- just the first part of the directory structure, will be filled by TeamCity -->
+            </location>
+            <workingDirectory>fm</workingDirectory>
+            <path>bin/run_dflowfm.bat</path>
+            <shell ref="command_prompt"/>
         </program>
     </programs>
     <!--
     default testCases
     -->
     <defaultTestCases>
-        <testCase name="dimr_trunk">
-            <programs>
-                <program ref="dimr">
-                    <arguments>
-                        <argument>dimr_config.xml</argument>
-                    </arguments>
-                </program>
-            </programs>
+        <testCase name="dimr">
             <location ref="reference_results" type="reference">
                 <from>win64</from>
             </location>
             <location ref="cases" type="input">
                 <from>.</from>
             </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
-        </testCase>
-		<testCase name="dimr_noconf">
-            <programs>
-                <program ref="dimr">
-                    <arguments>
-                        <argument>dimr.xml</argument>
-                    </arguments>
-                </program>
-            </programs>
-            <location ref="reference_results" type="reference">
-                <from>win64</from>
-            </location>
-            <location ref="cases" type="input">
-                <from>.</from>
-            </location>
-            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+            <maxRunTime>600.0</maxRunTime> <!-- seconds -->
         </testCase>
     </defaultTestCases>
-    <!--
-    testCases
-    -->
-    <xi:include href="../include/dimr_dwaves_all_cases.xml"/>
+
+  <xi:include href="../include/dimr_dflowfm_drtc_dwaves_parallel.xml"/>
+
 </deltaresTestbench_v3>
