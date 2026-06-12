@@ -266,6 +266,7 @@ contains
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
+      if (allocated(self%sources_sinks_mesh_coordinates)) deallocate(self%sources_sinks_mesh_coordinates)
       if (allocated(self%vertex_ids_sources_sinks)) deallocate(self%vertex_ids_sources_sinks)
       if (allocated(self%sinks_x)) deallocate(self%sinks_x)
       if (allocated(self%sinks_y)) deallocate(self%sinks_y)
@@ -291,6 +292,7 @@ contains
 
       self%mesh_sources_sinks_size = dimension_in
 
+      call realloc(self%sources_sinks_mesh_coordinates, 2 * self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%vertex_ids_sources_sinks, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sinks_x, self%mesh_sources_sinks_size, keepExisting=.false.)
       call realloc(self%sinks_y, self%mesh_sources_sinks_size, keepExisting=.false.)
