@@ -28,7 +28,7 @@
 !
 !-------------------------------------------------------------------------------
 
-module m_construct_mask
+module m_flowgeom_mask
    use precision_basics, only: dp
    use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
 
@@ -45,32 +45,34 @@ module m_construct_mask
 
 contains
 
-   !> Construct a mask array; either based on the lateral type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
-   subroutine construct_mask_string_spatial_location(mask, location_type, spatial_location, target_mask_file, invert_mask, ierr)
+   !> Construct a spatial mask array for flow geometry; either based on the location type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
+   !! Can be called for the various topological target location types (e.g., cells, flow links, etc.)
+   subroutine construct_mask_string_spatial_location(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
-      integer, intent(in) :: location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      character(len=*), intent(in) :: spatial_location !< The spatial location parameter (one from fm_location_types::SPATIAL_LOCATION_*) for this quantity's target element set.
+      integer, intent(in) :: location_type !< Location type (one of UNC_LOC_S/S3D/U/...).
+      character(len=*), intent(in) :: spatial_location_type !< Spatial location type (one of SPATIAL_LOCATION_1D/2D/ALL).
       character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
       integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
       if (present(target_mask_file) .and. present(invert_mask) .and. present(ierr)) then
-         call construct_mask_integer_spatial_location(mask, location_type, parse_spatial_location_type(spatial_location), target_mask_file, invert_mask, ierr)
+         call construct_mask_integer_spatial_location(mask, location_type, parse_spatial_location_type(spatial_location_type), target_mask_file, invert_mask, ierr)
       else
-         call construct_mask_integer_spatial_location(mask, location_type, parse_spatial_location_type(spatial_location))
+         call construct_mask_integer_spatial_location(mask, location_type, parse_spatial_location_type(spatial_location_type))
       end if
 
    end subroutine construct_mask_string_spatial_location
 
-   !> Construct a mask array; either based on the lateral type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
-   subroutine construct_mask_integer_spatial_location(mask, location_type, spatial_location, target_mask_file, invert_mask, ierr)
+   !> Construct a spatial mask array for flow geometry; either based on the location type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
+   !! Can be called for the various topological target location types (e.g., cells, flow links, etc.)
+   subroutine construct_mask_integer_spatial_location(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
       use m_flowgeom, only: lnx, ndx
 
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
       integer, intent(in) :: location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      integer, intent(in) :: spatial_location !< The spatial location parameter (one from fm_location_types::SPATIAL_LOCATION_*) for this quantity's target element set.
+      integer, intent(in) :: spatial_location_type !< The spatial location parameter (one from fm_location_types::SPATIAL_LOCATION_*) for this quantity's target element set.
       character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
       integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
@@ -90,8 +92,8 @@ contains
       end if
       mask = 0
 
-      if (any(spatial_location == [SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL])) then
-         call apply_spatial_location_mask(mask, location_type, spatial_location)
+      if (any(spatial_location_type == [SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL])) then
+         call apply_spatial_location_mask(mask, location_type, spatial_location_type)
       end if
 
       if (present(target_mask_file) .and. present(ierr)) then
@@ -107,20 +109,20 @@ contains
    end subroutine construct_mask_integer_spatial_location
 
    !> Apply a spatial location mask to the provided mask array, based on the provided spatial location parameter (1D, 2D, or all).
-   subroutine apply_spatial_location_mask(mask, location_type, spatial_location)
+   subroutine apply_spatial_location_mask(mask, location_type, spatial_location_type)
       use m_flowgeom, only: lnx1d, ln, ndx2d, lnxi, prof1d
 
       ! Parameters
       integer, dimension(:), intent(inout) :: mask !< Mask array for the target element set.
       integer, intent(in) :: location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*).
-      integer, intent(in) :: spatial_location !< The spatial location parameter (one from fm_location_types::SPATIAL_LOCATION_*).
+      integer, intent(in) :: spatial_location_type !< The spatial location parameter (one from fm_location_types::SPATIAL_LOCATION_*).
 
       ! Local variables
       integer :: L !< Loop variable for links.
       integer :: n1 !< The left flow cell number in the link.
       integer :: n2 !< The right flow cell number in the link.
 
-      select case (spatial_location)
+      select case (spatial_location_type)
       case (SPATIAL_LOCATION_1D)
 
          select case (location_type)
@@ -301,30 +303,30 @@ contains
    !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
    !! ILATTP_* enum used by prepare_lateral_mask.
    !! Returns ILATTP_INVALID when the string is absent, returns ILATTP_INVALID when unrecognized.
-   function parse_spatial_location_type(location_type_string) result(spatial_location)
+   function parse_spatial_location_type(location_type_string) result(spatial_location_type)
       use string_module, only: str_tolower
       use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID
 
       ! Parameters
       character(len=*), intent(in) :: location_type_string
-      integer :: spatial_location
+      integer :: spatial_location_type
 
       if (len_trim(location_type_string) == 0) then
-         spatial_location = SPATIAL_LOCATION_INVALID
+         spatial_location_type = SPATIAL_LOCATION_INVALID
          return
       end if
 
       select case (str_tolower(trim(location_type_string)))
       case ('1d')
-         spatial_location = SPATIAL_LOCATION_1D
+         spatial_location_type = SPATIAL_LOCATION_1D
       case ('2d')
-         spatial_location = SPATIAL_LOCATION_2D
+         spatial_location_type = SPATIAL_LOCATION_2D
       case ('1d2d', 'all')
-         spatial_location = SPATIAL_LOCATION_ALL
+         spatial_location_type = SPATIAL_LOCATION_ALL
       case default
-         spatial_location = SPATIAL_LOCATION_ALL
+         spatial_location_type = SPATIAL_LOCATION_ALL
       end select
 
    end function parse_spatial_location_type
 
-end module m_construct_mask
+end module m_flowgeom_mask

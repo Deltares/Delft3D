@@ -2726,7 +2726,7 @@ contains
       use network_data, only: xk, yk, numk
       use m_flowgeom, only: ndx, lnx, xu, yu
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_CN
-      use m_construct_mask, only: construct_mask
+      use m_flowgeom_mask, only: construct_mask
 
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.

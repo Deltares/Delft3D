@@ -519,7 +519,7 @@ contains
       use m_wind, only: jaqin
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
-      use m_construct_mask, only: construct_mask
+      use m_flowgeom_mask, only: construct_mask
       use fm_location_types, only: UNC_LOC_S
       use timespace, only: selectelset_internal_nodes
 
@@ -823,7 +823,7 @@ contains
       use m_heatfluxes, only: secchi_depth_is_time_varying
       use m_laterals, only: ilattp_all
       use timespace_parameters, only: OPERAND_OVERRIDE
-      use m_construct_mask, only: construct_mask
+      use m_flowgeom_mask, only: construct_mask
 
       type(tree_data), pointer, intent(in) :: block_ptr
       character(len=*), intent(in) :: base_dir

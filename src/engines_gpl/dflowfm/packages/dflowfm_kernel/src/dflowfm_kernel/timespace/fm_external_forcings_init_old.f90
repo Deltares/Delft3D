@@ -64,7 +64,7 @@ contains
       use m_ec_spatial_extrapolation, only: init_spatial_extrapolation
       use unstruc_inifields, only: set_friction_type_values
       use timers, only: timstop, timstrt
-      use m_construct_mask, only: construct_mask
+      use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN
       use m_qnerror
