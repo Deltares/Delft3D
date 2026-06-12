@@ -1793,11 +1793,13 @@ contains
       integer :: bctfiletype
       logical :: file_exists
       !
-      integer :: zTargetItemId = 0
+      integer :: zTargetItemId
       integer :: zFileReaderId
       type(tEcFileReader), pointer :: zFileReaderPtr
 
 !        initialization
+      zTargetItemId = 0
+      zFileReaderId = 0
       quantityname = quantityname_in
       success = .false.
       itemPT => null()
