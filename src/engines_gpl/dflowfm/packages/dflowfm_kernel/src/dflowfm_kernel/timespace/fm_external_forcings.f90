@@ -65,6 +65,17 @@ module fm_external_forcings
    end interface
 
    interface
+      module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+      end subroutine prepare_air_pressure_temperature_dew_point_temperature
+   end interface
+
+   interface
+      module subroutine compute_air_water_interaction_most_fluxes()
+      end subroutine compute_air_water_interaction_most_fluxes
+   end interface
+
+   interface
       module subroutine init_new(external_force_file_name, iresult)
          character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
          integer, intent(inout) :: iresult
@@ -121,6 +132,9 @@ module fm_external_forcings
 
    public :: set_external_forcings
    public :: calculate_wind_stresses
+   public :: prepare_wind
+   public :: prepare_air_pressure_temperature_dew_point_temperature
+   public :: compute_air_water_interaction_most_fluxes
    public :: sourcesink_parse_coordinates
 
    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
@@ -351,19 +365,25 @@ contains
 
    end subroutine prepare_wind_model_data
 
-!> Gets windstress (and air pressure) from input files, and sets the windstress
-   subroutine calculate_wind_stresses(time_in_seconds, iresult)
+!> Prepare wind data if jawind=1 and air_pressure_available
+   subroutine prepare_wind(time_in_seconds, iresult)
       use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
+
       if (jawind == 1 .or. air_pressure_available) then
          call prepare_wind_model_data(time_in_seconds, iresult)
-         if (iresult /= DFM_NOERR) then
-            return
-         end if
       end if
+   end subroutine prepare_wind
+
+!> Gets windstress (and air pressure) from input files, and sets the windstress
+   subroutine calculate_wind_stresses(iresult)
+      use m_wind, only: jawind
+      use dfm_error, only: DFM_NOERR
+
+      integer, intent(out) :: iresult !< Error indicator
 
       if (jawind > 0) then
          call setwindstress()

@@ -267,11 +267,11 @@ contains
       if (janudge == ON) then
          call setzcs()
       end if
-      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
-      if (is_error_at_any_processor(error)) then
-         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
-         return
-      end if
+      !call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
+      !if (is_error_at_any_processor(error)) then
+      !   call qnerror('Error occurred when setting external forcings.', ' ', ' ')
+      !   return
+      !end if
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
@@ -376,6 +376,12 @@ contains
       end if
       if (itemp > OFF) then
          call fill_constituents_with_temperature()
+      end if
+
+      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
+      if (is_error_at_any_processor(error)) then
+         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
+         return
       end if
 
       call initialise_density_at_cell_centres()
