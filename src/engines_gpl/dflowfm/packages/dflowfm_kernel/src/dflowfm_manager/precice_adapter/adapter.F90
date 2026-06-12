@@ -466,20 +466,28 @@ contains
 
       class(precice_adapter_t), intent(inout) :: self
       integer :: i
+      integer :: sink_cell
+      integer :: source_cell
 
       call init_cell_geom_as_polylines()
       source_sinks%num_total = source_sinks%num_total - source_sinks%num_nearfield
       source_sinks%num_nearfield = 0
       
       do i = 1, self%mesh_sources_sinks_size
+         sink_cell = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
+         source_cell = point_find_netcell(self%sources_x(i), self%sources_y(i))
+         if (sink_cell == 0 .and. source_cell == 0) then
+            write(*,*) "Warning: Both source and sink for vertex ", self%vertex_ids_sources_sinks(i), " are outside the domain. Skipping this source/sink."
+            cycle ! Skip this source/sink if both the source and sink location are outside the domain.
+         end if
          source_sinks%num_total = source_sinks%num_total + 1
          source_sinks%num_nearfield = source_sinks%num_nearfield + 1
          call source_sinks%resize(source_sinks%num_total)
          write(source_sinks%name(source_sinks%num_total), '(a,i0.4,a)') "preC-SUMO_", self%vertex_ids_sources_sinks(i), c_null_char
-         source_sinks%indices(source_sinks%num_total, 1) = point_find_netcell(self%sinks_x(i), self%sinks_y(i))
+         source_sinks%indices(source_sinks%num_total, 1) = sink_cell
          source_sinks%z_bottom(source_sinks%num_total, 1) = self%sinks_z_min(i)
          source_sinks%z_top(source_sinks%num_total, 1) = self%sinks_z_max(i)
-         source_sinks%indices(source_sinks%num_total, 4) = point_find_netcell(self%sources_x(i), self%sources_y(i))
+         source_sinks%indices(source_sinks%num_total, 4) = source_cell
          source_sinks%z_bottom(source_sinks%num_total, 2) = self%sources_z_min(i)
          source_sinks%z_top(source_sinks%num_total, 2) = self%sources_z_max(i)
          source_sink_all_discharges(1, source_sinks%num_total) = ABS(self%sources_sinks_discharge(i))
