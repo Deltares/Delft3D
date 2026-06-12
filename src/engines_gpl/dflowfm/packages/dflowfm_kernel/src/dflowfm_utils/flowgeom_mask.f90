@@ -77,24 +77,23 @@ contains
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
       integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
+      ! Local variables
+      integer :: num_elements !< The number of elements in the mask array, based on the location type.
+
       ! Allocate and initialize mask array based on location type.
       if (.not. allocated(mask)) then
          select case (location_type)
          case (UNC_LOC_S, UNC_LOC_S3D)
-
-            allocate (mask(ndx))
-
+            num_elements = ndx
          case (UNC_LOC_U)
-
-            allocate (mask(lnx))
-
+            num_elements = lnx
          end select
       end if
+
+      allocate (mask(num_elements))
       mask = 0
 
-      if (any(spatial_location_type == [SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL])) then
-         call apply_spatial_location_mask(mask, location_type, spatial_location_type)
-      end if
+      call apply_spatial_location_mask(mask, location_type, spatial_location_type)
 
       if (present(target_mask_file) .and. present(ierr)) then
          call apply_polygon_mask(mask, location_type, target_mask_file, ierr)
@@ -110,7 +109,7 @@ contains
 
    !> Apply a spatial location mask to the provided mask array, based on the provided spatial location parameter (1D, 2D, or all).
    subroutine apply_spatial_location_mask(mask, location_type, spatial_location_type)
-      use m_flowgeom, only: lnx1d, ln, ndx2d, lnxi, prof1d
+      use m_flowgeom, only: lnx1d, ln, ndx2d, lnx, prof1d
 
       ! Parameters
       integer, dimension(:), intent(inout) :: mask !< Mask array for the target element set.
@@ -156,7 +155,7 @@ contains
          select case (location_type)
          case (UNC_LOC_S, UNC_LOC_S3D)
 
-            do L = lnx1D + 1, lnxi
+            do L = lnx1D + 1, lnx
                n1 = ln(1, L)
                mask(n1) = 1
                n2 = ln(2, L)
@@ -165,7 +164,7 @@ contains
 
          case (UNC_LOC_U)
 
-            do L = lnx1D + 1, lnxi
+            do L = lnx1D + 1, lnx
                mask(L) = 1
             end do
 
@@ -189,7 +188,7 @@ contains
                   continue
                end if
             end do
-            do L = lnx1D + 1, lnxi
+            do L = lnx1D + 1, lnx
                n1 = ln(1, L)
                mask(n1) = 1
                n2 = ln(2, L)
@@ -206,11 +205,17 @@ contains
                end if
             end do
 
-            do L = lnx1D + 1, lnxi
+            do L = lnx1D + 1, lnx
                mask(L) = 1
             end do
 
          end select
+
+      case (SPATIAL_LOCATION_INVALID)
+
+         ! No spatial mask applied, return input mask.
+         continue
+      
       end select
 
    end subroutine
