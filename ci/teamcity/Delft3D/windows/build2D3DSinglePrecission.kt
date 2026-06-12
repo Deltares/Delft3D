@@ -8,7 +8,7 @@ import Delft3D.step.*
 
 object WindowsBuild2D3DSP : BuildType({
 
-    description = "CMake build 2D3D single-precision. This is necessary for Delft3D 4."
+    description = "CMake build 2D3D single-precision. This is part of the Delft3D 4 delivery."
 
     templates(
         TemplateMergeRequest,
