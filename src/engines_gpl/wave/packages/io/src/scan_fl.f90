@@ -1,4 +1,4 @@
-subroutine scan_fl(checkVersionNumber, versionNumberOK)
+subroutine scan_fl(checkVersionNumber, versionNumberOK, filnam)
 !----- GPL ---------------------------------------------------------------------
 !                                                                               
 !  Copyright (C)  Stichting Deltares, 2011-2026.                                
@@ -41,6 +41,7 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
 ! Global variables
 !
     logical, intent(in)  :: checkVersionNumber
+    character(*), intent(in)  :: filnam
 !
 ! Local variables
 !
@@ -54,21 +55,21 @@ subroutine scan_fl(checkVersionNumber, versionNumberOK)
 !! executable statements -------------------------------------------------------
 !
     verLen = len_trim(versionNumberOK)
-    open (newunit = uh, file = 'PRINT', form = 'FORMATTED')
+    open (newunit = uh, file = trim(filnam), form = 'FORMATTED')
 100 continue
        read (uh, '(A)', end = 200) line
        call small(line, 80)
        k   = index(line, 'severe')
        if (k > 0) then
-          write (*, '(a)') '*** ERROR: SWAN file PRINT contains SEVERE errors'
+          write (*, '(3a)') '*** ERROR: SWAN file ', trim(filnam), ' contains SEVERE errors'
           close (uh)
-          call wavestop(1, '*** ERROR: SWAN file PRINT contains SEVERE errors')
+          call wavestop(1, '*** ERROR: SWAN file '//trim(filnam)//' contains SEVERE errors')
        endif
        k = index(line, 'error')
        if (k > 0) then
-          write (*, '(a)') '*** ERROR: SWAN file PRINT contains ERRORS'
+          write (*, '(3a)') '*** ERROR: SWAN file ', trim(filnam), ' contains ERRORS'
           close (uh)
-          call wavestop(1, '*** ERROR: SWAN file PRINT contains ERRORS')
+          call wavestop(1, '*** ERROR: SWAN file '//trim(filnam)//' contains ERRORS')
        endif
        if (checkVersionNumber) then
           k = index(line, 'version number')

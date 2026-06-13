@@ -4667,6 +4667,8 @@ contains
 
       ! Local variables
       character(15), external :: datetime_to_string
+      character(256) :: netcdf_fname
+      character(256) :: native_fname
       logical :: exists
 
       line = ' '
@@ -4674,20 +4676,25 @@ contains
 
       ! define the name of the hotfile to be used
       !
-      write (fname, '(a,i0,5a)') 'hot_', inest, '_', trim(sr%usehottime(1:8)), '_', trim(sr%usehottime(10:15)), '.nc'
+      write (netcdf_fname, '(a,i0,5a)') 'hot_', inest, '_', trim(sr%usehottime(1:8)), '_', trim(sr%usehottime(10:15)), '.nc'
+      write (native_fname, '(a,i0,5a)') 'hot_', inest, '_', trim(sr%usehottime(1:8)), '_', trim(sr%usehottime(10:15)), '.hot'
       !
-      ! use it when it exists
+      ! Prefer the merged NetCDF hotstart when it exists. A rank-suffixed
+      ! .nc-001 file is only a temporary binary staging file and is not a
+      ! valid NetCDF hotstart.
       !
+      fname = netcdf_fname
       inquire (file=trim(fname), exist=exists)
       if (exists) then
-         line = "INITIAL HOTSTART '"//trim(fname)//"' NETCDF"
+         line = "INITIAL HOTSTART SINGLE '"//trim(fname)//"' NETCDF"
          write (*, '(2a)') '  Using SWAN hotstart file: ', trim(fname)
-      else ! check if there exists at least 1 partioned hotfile
-         write (fname, '(a,i0,5a,i3.3,a)') 'hot_', inest, '_', trim(sr%usehottime(1:8)), '_', trim(sr%usehottime(10:15)), '-', 1, '.nc'
+      else
+         ! Native SWAN hotfiles may still exist from older or fallback runs.
+         write (fname, '(a,i0,5a,i3.3)') 'hot_', inest, '_', trim(sr%usehottime(1:8)), '_', trim(sr%usehottime(10:15)), '.hot-', 1
          inquire (file=trim(fname), exist=exists)
          if (exists) then
-            write (fname, '(a,i0,5a)') 'hot_', inest, '_', trim(sr%usehottime(1:8)), '_', trim(sr%usehottime(10:15)), '.nc' ! swan input needs filename without partition no
-            line = 'INITIAL HOTSTART '''//trim(fname)//''''' NETCDF'
+            fname = native_fname
+            line = "INITIAL HOTSTART '"//trim(fname)//"' UNFORMATTED"
             write (*, '(2a)') '  Using SWAN hotstart file: ', trim(fname)
          else
             ! No hotfile, set usehottime to 0.0 to flag that it isn't used

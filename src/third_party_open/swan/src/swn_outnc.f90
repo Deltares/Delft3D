@@ -427,9 +427,21 @@ contains
                 call MSGERR(4, errmsg)
                 return
             end if
+            if ( tmip < 0 .or. tmip > MIP ) then
+                write(errmsg,'("Invalid tmip ",I0," while reading ",A," at time ",A)') &
+                     tmip, trim(binfile), CHTIME
+                call MSGERR(4, errmsg)
+                return
+            end if
             if ( tmip == 0 ) cycle
 
-            read(binnr) ips(1:tmip)
+            read(binnr, IOSTAT=ierr) ips(1:tmip)
+            if ( ierr /= 0 ) then
+                write(errmsg,'("Reading point indices from ", A, "(",I3,") , time ", A, ", returned IOSTAT ", I3)') &
+                     trim(binfile), binnr, CHTIME, ierr
+                call MSGERR(4, errmsg)
+                return
+            end if
             do tip = 1, tmip
               ip = ips(tip)
               read(binnr, iostat = ierr) xref, yref, spcaux%E(:, ip), spcaux%depth(ip), &
@@ -672,6 +684,7 @@ contains
                   return
               end if
               write_header = .true.
+              read_header(irq) = .true.
           else
               write_header = .false.
           end if
@@ -1109,6 +1122,7 @@ contains
 !
 ! 3) Define new record axe (run or time) and spectral grid
 !
+            if ( allocated(recordaxe(irq)%content) ) deallocate(recordaxe(irq)%content)
             allocate(recordaxe(irq)%content(1))
             recordaxe(irq)%ncontent = 1
 
@@ -1488,6 +1502,7 @@ contains
         inquire( FILE=ncfile, EXIST=file_exists )
 
         if ( .not. file_exists) then
+            if ( allocated(recordaxe(irq)%content) ) deallocate(recordaxe(irq)%content)
             allocate(recordaxe(irq)%content(1))
 
             recordaxe(irq)%ncontent = 1
