@@ -1,7 +1,6 @@
 #include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/MduSchema.h>
-#include <dflowfm_io/MduSchemaData.h>
 #include <dflowfm_io/MduValidator.h>
 
 #include <cassert>
@@ -78,6 +77,73 @@ namespace dflowfm_io
             index, propertySchema.key));
     }
 
+    static std::optional<Value> GetPropertyValue(
+        const IniProperty& iniProperty,
+        const PropertySchema& propertySchema)
+    {
+        switch (propertySchema.value_type)
+        {
+            case ValueType::Path:
+                return iniProperty.TryGetConvertedValue<std::filesystem::path>();
+            case ValueType::String:
+                return iniProperty.TryGetConvertedValue<std::string>();
+            case ValueType::Int:
+                return iniProperty.TryGetConvertedValue<int>();
+            case ValueType::IntBool:
+                return iniProperty.TryGetConvertedValue<bool>();
+            case ValueType::Float:
+                return iniProperty.TryGetConvertedValue<double>();
+            case ValueType::Enum:
+                return ConvertEnum(iniProperty, propertySchema);
+            case ValueType::IntEnum:
+                return ConvertIntEnum(iniProperty, propertySchema);
+            case ValueType::DateTime:
+                return iniProperty.TryGetConvertedValue<std::chrono::system_clock::time_point>();
+            case ValueType::StringList:
+                return iniProperty.TryGetConvertedValueCollection<std::string>();
+            case ValueType::PathList:
+                return iniProperty.TryGetConvertedValueCollection<std::filesystem::path>();
+            case ValueType::FloatList:
+                return iniProperty.TryGetConvertedValueCollection<double>();
+            default:
+                throw std::logic_error("INTERNAL ERROR: Unhandled value type");
+        }
+    }
+
+    static IniProperty CreateProperty(
+        const MduData& mduData,
+        const PropertySchema& propertySchema,
+        const std::string& key)
+    {
+        switch (propertySchema.value_type)
+        {
+            case ValueType::Path:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::filesystem::path>(key));
+            case ValueType::String:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::string>(key));
+            case ValueType::Int:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<int>(key));
+            case ValueType::IntBool:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<bool>(key) ? "1" : "0");
+            case ValueType::Float:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<double>(key));
+            case ValueType::Enum:
+                return IniProperty::Create(propertySchema.key, ConvertEnumToString(mduData.getValueAs<int>(key), propertySchema));
+            case ValueType::IntEnum:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<int>(key));
+            case ValueType::DateTime:
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::chrono::system_clock::time_point>(key));
+            case ValueType::StringList:
+                return IniProperty::CreateFromCollection(propertySchema.key, mduData.getValueAs<std::vector<std::string>>(key));
+            case ValueType::PathList:
+                return IniProperty::CreateFromCollection(propertySchema.key, mduData.getValueAs<std::vector<std::filesystem::path>>(key));
+            case ValueType::FloatList:
+                return IniProperty::CreateFromCollection(propertySchema.key, mduData.getValueAs<std::vector<double>>(key));
+            default:
+                throw std::logic_error("INTERNAL ERROR: Unhandled value type");
+        }
+    }
+
     ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
     {
         MduValidator validator;
@@ -90,10 +156,9 @@ namespace dflowfm_io
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 const auto* iniProperty = FindProperty(iniData, sectionSchema.name, propertySchema.key);
-
                 const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
 
-                // A property may be absent or have no value in the MDU file; 
+                // A property may be absent or have no value in the MDU file;
                 // fall back to the schema default if one is defined.
                 if (!iniProperty || !iniProperty->HasValue())
                 {
@@ -102,57 +167,7 @@ namespace dflowfm_io
                     continue;
                 }
 
-                const ValueType value_type = propertySchema.value_type;
-                std::optional<Value> converted_value = std::nullopt;
-                if (value_type == ValueType::Path)
-                {
-                    converted_value = iniProperty->TryGetConvertedValue<std::filesystem::path>();
-                }
-                else if (value_type == ValueType::String)
-                {
-                    converted_value = iniProperty->TryGetConvertedValue<std::string>();
-                }
-                else if (value_type == ValueType::Int)
-                {
-                    converted_value = iniProperty->TryGetConvertedValue<int>();
-                }
-                else if (value_type == ValueType::IntBool)
-                {
-                    converted_value = iniProperty->TryGetConvertedValue<bool>();
-                }
-                else if (value_type == ValueType::Float)
-                {
-                    converted_value = iniProperty->TryGetConvertedValue<double>();
-                }
-                else if (value_type == ValueType::Enum)
-                {
-                    converted_value = ConvertEnum(*iniProperty, propertySchema); 
-                }
-                else if (value_type == ValueType::IntEnum)
-                {
-                    converted_value = ConvertIntEnum(*iniProperty, propertySchema);
-                }
-                else if (value_type == ValueType::DateTime)
-                {
-                    converted_value = iniProperty->TryGetConvertedValue<std::chrono::system_clock::time_point>();
-                }
-                else if (value_type == ValueType::StringList)
-                {
-                    converted_value = iniProperty->TryGetConvertedValueCollection<std::string>();
-                }
-                else if (value_type == ValueType::PathList)
-                {
-                    converted_value = iniProperty->TryGetConvertedValueCollection<std::filesystem::path>();
-                }
-                else if (value_type == ValueType::FloatList)
-                {
-                    converted_value = iniProperty->TryGetConvertedValueCollection<double>();
-                }
-                else
-                {
-                    throw std::logic_error("INTERNAL ERROR: Unhandled value type");
-                }
-
+                auto converted_value = GetPropertyValue(*iniProperty, propertySchema);
                 if (!converted_value.has_value())
                 {
                     report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\".",
@@ -187,75 +202,17 @@ namespace dflowfm_io
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
-                if (!mduData.hasValue(key)) continue;
-
-                const ValueType value_type = propertySchema.value_type;
-                IniProperty* addedProperty = nullptr;
-                if (value_type == ValueType::Path)
+                if (!mduData.hasValue(key))
                 {
-                    const auto& value = mduData.getValueAs<std::filesystem::path>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
-                }
-                else if (value_type == ValueType::String)
-                {
-                    std::string value = mduData.getValueAs<std::string>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
-                }
-                else if (value_type == ValueType::Int)
-                {
-                    int value = mduData.getValueAs<int>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
-                }
-                else if (value_type == ValueType::IntBool)
-                {
-                    bool value = mduData.getValueAs<bool>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value ? "1" : "0");
-                }
-                else if (value_type == ValueType::Float)
-                {
-                    double value = mduData.getValueAs<double>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
-                }
-                else if (value_type == ValueType::Enum)
-                {
-                    int value = mduData.getValueAs<int>(key);
-                    const std::string str_value = ConvertEnumToString(value, propertySchema);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, str_value);
-                }
-                else if (value_type == ValueType::IntEnum)
-                {
-                    int value = mduData.getValueAs<int>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
-                }
-                else if (value_type == ValueType::DateTime)
-                {
-                    const auto& value = mduData.getValueAs<std::chrono::system_clock::time_point>(key);
-                    addedProperty = &iniSection.AddProperty(propertySchema.key, value);
-                }
-                else if (value_type == ValueType::StringList)
-                {
-                    const auto& values = mduData.getValueAs<std::vector<std::string>>(key);
-                    addedProperty = &iniSection.AddMultiValueProperty(propertySchema.key, values);
-                }
-                else if (value_type == ValueType::PathList)
-                {
-                    const auto& values = mduData.getValueAs<std::vector<std::filesystem::path>>(key);
-                    addedProperty = &iniSection.AddMultiValueProperty(propertySchema.key, values);
-                }
-                else if (value_type == ValueType::FloatList)
-                {
-                    const auto& values = mduData.getValueAs<std::vector<double>>(key);
-                    iniSection.AddMultiValueProperty(propertySchema.key, values);
-                }
-                else
-                {
-                    throw std::logic_error("INTERNAL ERROR: Unhandled value type");
+                    if (propertySchema.required)
+                        report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
+                    continue;
                 }
 
-                if (addedProperty && !propertySchema.description.empty())
-                {
-                    addedProperty->SetComment(propertySchema.description);
-                }
+                IniProperty property = CreateProperty(mduData, propertySchema, key);
+                property.SetComment(propertySchema.description);
+
+                iniSection.AddProperty(std::move(property));
             }
         }
 

@@ -78,4 +78,6 @@ namespace dflowfm_io
         std::vector<SectionSchema> sections;
     };
 
+    extern const MduSchema MDU_SCHEMA;
+
 } // namespace dflowfm_io

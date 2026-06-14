@@ -5,7 +5,6 @@ add_library(dflowfm_io STATIC
     include/dflowfm_io/MduData.h
     include/dflowfm_io/MduFile.h
     include/dflowfm_io/MduSchema.h
-    include/dflowfm_io/MduSchemaData.h
     include/dflowfm_io/MduValidator.h
     include/dflowfm_io/StringUtils.h
 
@@ -13,7 +12,7 @@ add_library(dflowfm_io STATIC
     src/MduConverter.cpp
     src/MduData.cpp
     src/MduFile.cpp
-    src/MduSchemaData.cpp
+    src/MduSchema.cpp
     src/MduValidator.cpp
 )
 

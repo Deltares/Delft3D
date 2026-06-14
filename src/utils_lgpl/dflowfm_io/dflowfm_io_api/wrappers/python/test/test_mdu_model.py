@@ -59,7 +59,7 @@ class TestMduModel(unittest.TestCase):
             "",
             "# The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
             "[wind]",
-            "cdBreakPoints         = 6.3000000e-04 7.2300000e-03",
+            "cdBreakPoints         = 6.3000000e-04 7.2300000e-03# Wind drag breakpoints.",
             "",
             "# This section contains the time settings for the model, such as start and stop time of the simulation.",
             "[time]",
