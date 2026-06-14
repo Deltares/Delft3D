@@ -1,7 +1,7 @@
 module test_wave_friction_activation
    use assertions_gtest
    use precision, only: dp
-   use m_tauwave, only: wave_friction_activation
+   use m_tauwave, only: wave_friction_activation, wave_current_friction_coefficient
    implicit none
 
 contains
@@ -24,6 +24,19 @@ contains
       call f90_expect_near(wave_friction_activation(0.4_dp, 0.1_dp, 0.3_dp), 1.0_dp, 1.0e-12_dp, &
                            "Values above the upper threshold should preserve wave friction.")
    end subroutine test_smooth_transition
+   !$f90tw)
+
+   !$f90tw TESTCODE(TEST, test_wave_friction_activation, test_friction_blend_floor, test_friction_blend_floor,
+   subroutine test_friction_blend_floor() bind(C)
+      call f90_expect_near(wave_current_friction_coefficient(0.02_dp, 0.08_dp, 0.0_dp), 0.02_dp, 1.0e-12_dp, &
+                           "Inactive waves should keep current-only friction.")
+      call f90_expect_near(wave_current_friction_coefficient(0.02_dp, 0.08_dp, 1.0_dp), 0.08_dp, 1.0e-12_dp, &
+                           "Fully active waves should use wave-current friction.")
+      call f90_expect_near(wave_current_friction_coefficient(0.02_dp, 0.08_dp, 0.25_dp), 0.035_dp, 1.0e-12_dp, &
+                           "Partial activation should blend from current-only to wave-current friction.")
+      call f90_expect_near(wave_current_friction_coefficient(0.02_dp, 0.0_dp, 1.0_dp), 0.02_dp, 1.0e-12_dp, &
+                           "Invalid wave-current friction should fall back to current-only friction.")
+   end subroutine test_friction_blend_floor
    !$f90tw)
 
 end module test_wave_friction_activation

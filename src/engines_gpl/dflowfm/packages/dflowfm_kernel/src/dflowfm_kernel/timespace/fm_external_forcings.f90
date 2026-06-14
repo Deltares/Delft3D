@@ -402,7 +402,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          hwavcom(kb) = hwavcom(ki)
-         twavcom(kb) = twavcom(ki)
+         twav(kb) = twav(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
          sxwav(kb) = sxwav(ki)
@@ -440,7 +440,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          hwavcom(kb) = hwavcom(ki)
-         twavcom(kb) = twavcom(ki)
+         twav(kb) = twav(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
          sxwav(kb) = sxwav(ki)
@@ -2570,6 +2570,10 @@ contains
       integer :: i, j, sidx
       integer :: flownode_nr !< Flow node number
       logical, dimension(:), allocatable :: is_source_sink_bubblescreen
+
+      if (source_sinks%num_total == 0) then
+         return ! nothing to do
+      end if
 
       ! actually compute is_source_sink_bubble and then negate it
       call realloc(is_source_sink_bubblescreen, source_sinks%num_total, fill=.false.)

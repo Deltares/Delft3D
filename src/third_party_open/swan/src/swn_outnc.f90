@@ -309,12 +309,14 @@ contains
                                              EQREAL, STPNOW
       integer                             :: ip, ierr, otype, xpctime2, &
                                              i, tmip, binnr, irq, &
-                                             tip, ips(MIP), iproc, nref, ilpos
+                                             tip, ips(MIP), iproc, nref, ilpos, &
+                                             nread, nunique
       integer, save                       :: IENT=0
       character(len=80)                   :: binfile, ncfile, basefile
       character(len=256)                  :: errmsg
       type(spcaux_type)                   :: spcaux, lspcaux
       real                                :: xref, yref
+      logical                             :: seen(MIP)
 
 !
 !  9. Subroutines calling
@@ -338,6 +340,9 @@ contains
 ! a. Prepare spectra/auxilary data struct
 !
         irq        = OQI(2)
+        nread      = 0
+        nunique    = 0
+        seen       = .false.
         spcaux%mip = MIP
         allocate(spcaux%hs(MIP), spcaux%depth(MIP), spcaux%ux(MIP), spcaux%uy(MIP), &
                  spcaux%wndx(MIP), spcaux%wndy(MIP), spcaux%xc(MIP), spcaux%yc(MIP))
@@ -371,6 +376,7 @@ contains
 ! open and read binary files
 !
         binfile = OUTP_FILES(irq)
+        ncfile  = OUTP_FILES(irq)
 
         ! nref is unitnr set while writing the binary file.
         nref = HIOPEN + IRQ
@@ -384,8 +390,21 @@ contains
               write(binfile, '(A,"-",I3.3)') trim(basefile), iproc
             inquire(unit=binnr, opened=lopen)
 
-            if ( .not. lopen) then
-                open(file=binfile, unit=binnr, form='unformatted', IOSTAT=ierr)
+            if ( lopen ) then
+                rewind(unit=binnr, IOSTAT=ierr)
+                if (ierr /= 0) then
+                    write(errmsg, '("Rewinding ",A, " on ",I3, " failed with IOSTAT ",I3)') trim(binfile), binnr, ierr
+                    call MSGERR(4, errmsg)
+                    return
+                end if
+            else
+                inquire(file=binfile, exist=file_exists)
+                if ( .not. file_exists ) then
+                    write(errmsg, '("Parallel spectral staging file ",A, " does not exist")') trim(binfile)
+                    call MSGERR(4, errmsg)
+                    return
+                end if
+                open(file=binfile, unit=binnr, form='unformatted', status='old', action='read', IOSTAT=ierr)
                 if (ierr /= 0) then
                     write(errmsg, '("Opening ",A, " on ",I3, " failed with IOSTAT ",I3)') trim(binfile), binnr, ierr
                     call MSGERR(4, errmsg)
@@ -434,6 +453,7 @@ contains
                 return
             end if
             if ( tmip == 0 ) cycle
+            nread = nread + tmip
 
             read(binnr, IOSTAT=ierr) ips(1:tmip)
             if ( ierr /= 0 ) then
@@ -444,6 +464,16 @@ contains
             end if
             do tip = 1, tmip
               ip = ips(tip)
+              if ( ip < 1 .or. ip > MIP ) then
+                write(errmsg,'("Invalid point index ",I0," while reading ",A," at time ",A)') &
+                     ip, trim(binfile), CHTIME
+                call MSGERR(4, errmsg)
+                return
+              end if
+              if ( .not. seen(ip) ) then
+                seen(ip) = .true.
+                nunique  = nunique + 1
+              end if
               read(binnr, iostat = ierr) xref, yref, spcaux%E(:, ip), spcaux%depth(ip), &
                           spcaux%ux(ip), spcaux%uy(ip), spcaux%hs(ip), spcaux%wndx(ip), spcaux%wndy(ip)
 
@@ -455,6 +485,19 @@ contains
               end if
             end do ! points
         end do !nproc
+        if ( nunique <= 0 ) then
+            write(errmsg,'("No spectra were read while collecting ",A," at time ",A)') &
+                 trim(ncfile), CHTIME
+            call MSGERR(4, errmsg)
+            return
+        end if
+        if ( LCOMPGRD .and. optg == 5 .and. nunique < MIP ) then
+            write(errmsg,'("Incomplete parallel spectral hotstart collection for ",A, &
+                 &": read ",I0," records covering ",I0," of ",I0," points at time ",A)') &
+                 trim(ncfile), nread, nunique, MIP, CHTIME
+            call MSGERR(4, errmsg)
+            return
+        end if
         !
         ! MPI with a cold start shows some interesting initial values
         ! remove them
@@ -496,6 +539,7 @@ contains
                               lspcaux)
       USE OCPCOMM2
       USE TIMECOMM, only: TINIC, TFINC, TIMCO
+      use SwanGriddata, only: ivertg, nvertsg
 !
 !
 !   --|-----------------------------------------------------------|--
@@ -575,14 +619,16 @@ contains
 !
 !  5. Local variables
 !
-      logical                                        :: EQREAL, lopen, do_open_files, write_header
+      logical                                        :: EQREAL, lopen, do_open_files, write_header, &
+                                                        direct_compgrid_spectrum, direct_done
       integer                                        :: ip, ierr, otype, xpctmp(2), xpctime, &
                                                         pnr, ri, i, tmip, irq, iproc, &
-                                                        binnr, xi, yi, npnts
+                                                        binnr, xi, yi, npnts, id, is, local_ip
       integer, allocatable                           :: ips(:)
       integer, save                                  :: IENT=0
       character(len=80)                              :: outfile
       character(len=256)                             :: errmsg
+      external                                       :: SWSYNC
 !  8. Subroutines used
 !
 !     SWCMSP
@@ -626,6 +672,8 @@ contains
 
       if (RTYPE(3:3) .eq. 'R') lspcaux%relative = .true.
       if (RTYPE(4:4) .eq. 'C') lspcaux%is2d     = .true.
+      direct_compgrid_spectrum = PARLL .and. OPTG == 5 .and. LCOMPGRD .and. &
+                                  lspcaux%is2d .and. lspcaux%relative
 !
 ! b. collect auxillary data / set default (task e. set hs and wind values)
 !
@@ -716,7 +764,22 @@ contains
         do ip = 1, MIP
             if ( IONOD(ip).eq.IPROC ) then
                 tmip      = tmip + 1
-                ips(tmip) = ip
+                if ( direct_compgrid_spectrum ) then
+                    if ( .not. allocated(ivertg) ) then
+                        write(errmsg,'("Missing global vertex map for parallel unstructured hotstart at time ",A)') CHTIME
+                        call MSGERR(4, errmsg)
+                        return
+                    end if
+                    if ( ip > size(ivertg) .or. ivertg(ip) < 1 .or. ivertg(ip) > nvertsg ) then
+                        write(errmsg,'("Invalid global vertex index for local point ",I0," at time ",A)') &
+                             ip, CHTIME
+                        call MSGERR(4, errmsg)
+                        return
+                    end if
+                    ips(tmip) = ivertg(ip)
+                else
+                    ips(tmip) = ip
+                end if
             end if
         end do
         if ( NSTATM > 0 ) then
@@ -745,7 +808,7 @@ contains
           call MSGERR(4, errmsg)
           return
         end if
-        if ( tmip /= 0 ) write(OQI(1)) ips
+        if ( tmip /= 0 ) write(OQI(1)) ips(1:tmip)
 
       end if
 
@@ -755,10 +818,26 @@ contains
              IONOD(ip).eq.INODE ) then
           ! if depth > 0 and not a dummy value
           if ( lspcaux%depth(ip) > epsilon(1.) .and. abs(lspcaux%depth(ip) - OVEXCV(4)) > epsilon(1.) ) then
-            call SWCMSP (otype, lspcaux%xc(ip), lspcaux%yc(ip), AC2, lspcaux%E(:, ip), SPCSIG, &
-                         lspcaux%depth(ip) , dep2, lspcaux%ux(ip), lspcaux%uy(ip),        &
-                         SPCDIR(1,2), SPCDIR(1,3), 1., KGRPNT,  &
-                         CROSS(1,IP), ierr)
+            direct_done = .false.
+            if ( direct_compgrid_spectrum ) then
+                local_ip = ip
+                if ( local_ip >= 1 .and. local_ip <= size(AC2, 3) ) then
+                    do is = 1, MSC
+                        do id = 1, MDC
+                            lspcaux%E(id + (is - 1) * MDC, ip) = AC2(id, is, local_ip) * SPCSIG(is)
+                        end do
+                    end do
+                    ierr = 0
+                    direct_done = .true.
+                end if
+            end if
+
+            if ( .not. direct_done ) then
+                call SWCMSP (otype, lspcaux%xc(ip), lspcaux%yc(ip), AC2, lspcaux%E(:, ip), SPCSIG, &
+                             lspcaux%depth(ip) , dep2, lspcaux%ux(ip), lspcaux%uy(ip),        &
+                             SPCDIR(1,2), SPCDIR(1,3), 1., KGRPNT,  &
+                             CROSS(1,IP), ierr)
+            end if
 
             ! when ierr > 0 then energy == 0. That's fine.
 
@@ -775,6 +854,10 @@ contains
           end if
         end if
       end do
+      if ( PARLL ) then
+          flush(OQI(1))
+          call SWSYNC
+      end if
 
       deallocate(ips)
 

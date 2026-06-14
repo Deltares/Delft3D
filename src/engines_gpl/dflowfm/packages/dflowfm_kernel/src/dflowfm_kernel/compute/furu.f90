@@ -69,7 +69,7 @@ contains
       integer :: kup, kdo, iup
 
       real(kind=dp) :: bui, cu, du, du0, gdxi, ds
-      real(kind=dp) :: slopec, hup, hdo, u1L, v2, frL, u1L0, zbndun, zbndu0n
+      real(kind=dp) :: slopec, hup, hdo, u1L, v2, frL, friction_coeff, u1L0, zbndun, zbndu0n
       real(kind=dp) :: qk0, qk1, dzb, hdzb, z00 !
       real(kind=dp) :: st2
       real(kind=dp) :: twot = 2.0_dp / 3.0_dp, hb, h23, ustbLL, agp, vLL
@@ -170,9 +170,17 @@ contains
                   if (jawave > NO_WAVES .and. .not. flow_without_waves) then ! Delft3D-Wave Stokes-drift correction
 
                      if (modind < 9) then
-                        frL = cfwavhi(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
+                        friction_coeff = cfwavhi(L)
+                        if (friction_coeff <= 0.0_dp) then
+                           friction_coeff = cfuhi(L)
+                        end if
+                        frL = friction_coeff * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                      elseif (modind == 9) then
-                        frL = cfhi_vanrijn(L) * hypot(u1L - ustokes(L), v(L) - vstokes(L))
+                        friction_coeff = cfhi_vanrijn(L)
+                        if (friction_coeff <= 0.0_dp) then
+                           friction_coeff = cfuhi(L)
+                        end if
+                        frL = friction_coeff * hypot(u1L - ustokes(L), v(L) - vstokes(L))
                      elseif (modind == 10) then ! Ruessink 2003
                         uorbL = 0.5_dp * (uorb(k1) + uorb(k2))
                         frL = cfuhi(L) * sqrt((u1L - ustokes(L))**2 + (v(L) - vstokes(L))**2 + (1.16_dp * uorbL * fsqrtt)**2)

@@ -944,7 +944,7 @@ contains
       sl = slotw1D
 
       call prop_get(md_ptr, 'geometry', 'Sillheightmin', sillheightmin)
-      
+
       kmx = 0
       call prop_get(md_ptr, 'geometry', 'Kmx', kmx)
 
@@ -978,7 +978,7 @@ contains
 
       call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [numerics] block
       call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
-      
+
       call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
       call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
       call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
@@ -1407,7 +1407,7 @@ contains
       call prop_get(md_ptr, 'physics', 'irov', irov)
       call prop_get(md_ptr, 'physics', 'wall_ks', wall_ks)
       wall_z0 = wall_ks / 30.0_dp
-      
+
       call prop_get(md_ptr, 'physics', 'TidalForcing', jatidep)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading', jaselfal)
       call prop_get(md_ptr, 'physics', 'SelfAttractionLoading_correct_wl_with_ini', jaSELFALcorrectWLwithIni)
@@ -1447,7 +1447,7 @@ contains
       call prop_get(md_ptr, 'physics', 'SecchiDepthNonPenetrativeFraction', secchi_radiation_fraction(2))
 
       diffuse_attenuation_coefficient(1) = secchi_depth(1) / POOLE_ATKINS_PARAMETER
-      
+
       if (secchi_depth(2) > 0) then
          diffuse_attenuation_coefficient(2) = secchi_depth(2) / POOLE_ATKINS_PARAMETER
          secchi_radiation_fraction(1) = 1.0_dp - secchi_radiation_fraction(2)
@@ -1615,7 +1615,7 @@ contains
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsAnalysis', sedtrails_analysis, success)
             ti_st_array = 0.0_dp
             call prop_get(md_ptr, 'sedtrails', 'SedtrailsInterval', ti_st_array, 3, success)
-            
+
             if (ti_st_array(1) > 0.0_dp) then
                ti_st_array(1) = max(ti_st_array(1), dt_user)
             end if
@@ -1672,6 +1672,8 @@ contains
       call prop_get(md_ptr, 'waves', 'Wavemodelnr', jawave)
       call prop_get(md_ptr, 'waves', 'Waveforcing', waveforcing)
       call prop_get(md_ptr, 'waves', 'WavePeakEnhancementFactor', JONSWAPgamma0)
+      call prop_get(md_ptr, 'waves', 'WarnMissingWaveData', jawavewarnmissingdata)
+
       if (jawave == 6) then ! backward compatibility
          write (msgbuf, '(a,i0,a)') 'Wavemodelnr = ', jawave, ' is now merged with the offline wave functionality (wavemodelnr=7), and option 6 is deprecated.'
          call mess(LEVEL_WARN, msgbuf)
@@ -2006,7 +2008,7 @@ contains
          call prop_get(md_ptr, 'output', 'ComInterval', ti_com_array, 3, success)
          call set_time_interval(ti_com_array, ti_coms, ti_com, ti_come, tstart_user, tstop_user, success)
          call check_time_interval(ti_coms, ti_com, ti_come, dt_user, 'ComInterval', tstart_user)
-   
+
          call prop_get(md_ptr, 'output', 'ComOutputTimeVector', md_ctvfile, success)
          if (success) then
             ti_com = huge(0.0_hp)
@@ -2043,7 +2045,7 @@ contains
       if (md_mapformat == IFORMAT_NETCDF .and. strcmpi(md_nc_map_precision, 'single')) then
          call mess(LEVEL_WARN, 'MapFormat = 1 (NetCDF) does not support single precision output, output will be in double precision. Consider upgrading to MapFormat=4 (UGRID) for single precision output support.')
       end if
-      
+
       call prop_get(md_ptr, 'output', 'NcHisDataPrecision', md_nc_his_precision, success)
       call prop_get(md_ptr, 'output', 'NcCompression', md_nccompress, success, value_parsed)
       if (success .and. .not. value_parsed) then
@@ -2360,14 +2362,14 @@ contains
             call mess(LEVEL_WARN, '''EulerVelocities'' is set to 0, because 3Dstokesprofile is set to 0.')
             jaeulervel = WAVE_EULER_VELOCITIES_OUTPUT_OFF
          end if
-      end if     
+      end if
 
       if (jawave == WAVE_SURFBEAT) then ! not for Delta Shell
          call prop_get(md_ptr, 'output', 'AvgWaveQuantities', jaavgwavquant)
          call prop_get(md_ptr, 'output', 'AvgWaveQuantitiesFile', md_avgwavquantfile, success)
          ti_wav_array = 0.0_dp
          call prop_get(md_ptr, 'output', 'AvgWaveOutputInterval', ti_wav_array, 3, success)
-         
+
          if (ti_wav_array(2) < 0.0_dp) then
             ti_wav_array(2) = 0.0_dp
             ti_wav_array(3) = 0.0_dp
@@ -2635,7 +2637,7 @@ contains
    subroutine create_direction_classes(map_classes_ucdir, map_classes_ucdirstep)
       use MessageHandling, only: mess, LEVEL_FATAL
       use m_alloc, only: aerr
-      
+
       ! Parameters
       real(kind=dp), allocatable, intent(inout) :: map_classes_ucdir(:) !< the constructed classes
       real(kind=dp), intent(in) :: map_classes_ucdirstep !< the input step size
@@ -2660,7 +2662,7 @@ contains
       do i = 1, n - 1
          map_classes_ucdir(i) = real(i, kind=dp) * map_classes_ucdirstep
       end do
-      
+
    end subroutine create_direction_classes
 
 !> Write a model definition to a file.
@@ -3144,7 +3146,7 @@ contains
          call prop_set(prop_ptr, 'numerics', 'Maxdegree', Maxdge, 'Maximum degree in Gauss elimination')
       end if
       if (writeall .or. Noderivedtypes > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes,  '0=use der. types. , 1,2,3,4,5 etc = do use them')
+         call prop_set(prop_ptr, 'numerics', 'Noderivedtypes', Noderivedtypes, '0=use der. types. , 1,2,3,4,5 etc = do use them')
       end if
       if (writeall .or. jposhchk /= 2) then
          call prop_set(prop_ptr, 'numerics', 'jposhchk', jposhchk, 'Check for positive waterdepth (0: no, 1: 0.7*dts, just redo, 2: 1.0*dts, close all links, 3: 0.7*dts, close all links, 4: 1.0*dts, reduce au, 5: 0.7*dts, reduce au, 6: 1.0*dts, close outflowing links, 7: 0.7*dts, close outflowing links)')
@@ -3609,7 +3611,7 @@ contains
 
       if (jaspacevarcharn .and. (wind_drag_type /= CD_TYPE_CHARNOCK1955 .and. wind_drag_type /= CD_TYPE_CHARNOCK_PLUS_VISCOUS)) then
          write (msgbuf, '(a,i0,a)') &
-            'Inconsistent configuration: a time- and space-varying Charnock coefficient was ' // &
+            'Inconsistent configuration: a time- and space-varying Charnock coefficient was '// &
             'specified in the .ext file, but [wind] ICdtyp is set to ', &
             wind_drag_type, '. Expected ICdtyp = 4 (Charnock) or 8 (Charnock + viscous term).'
          call mess(LEVEL_ERROR, msgbuf)
@@ -3711,6 +3713,8 @@ contains
             fww = 0
          end if
          call prop_set(prop_ptr, 'waves', 'FlowWithoutWaves', fww, '1: Do not use wave data in the flow computations, it will only be passed through to D-WAQ; 0: use wave information. Default 0.')
+         call prop_set(prop_ptr, 'waves', 'WarnMissingWaveData', jawavewarnmissingdata, &
+                       '1: warn when online WAVE data is not available from the COM file yet; 0: suppress this warning. Default 1.')
          if (writeall .or. hwavuni /= 0.0_dp) then
             call prop_set(prop_ptr, 'waves', 'Hwavuni', hwavuni, 'root mean square wave height (m)')
             call prop_set(prop_ptr, 'waves', 'Twavuni', twavuni, 'root mean square wave period (s)')
@@ -4216,8 +4220,8 @@ contains
 
    !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, as read from the MDU file.
    ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
-   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 
-   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds. 
+   ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the
+   ! `simulation_start` and `simulation_end` respectively. Write a warning to the log if the start or end are out of bounds.
    ! If `read_interval_input` is `.false.`. Don't read `interval_input`, and only set the defaults.
    subroutine set_time_interval(interval_input, interval_start, interval_step, interval_end, simulation_start, simulation_stop, read_interval_input, interval_name)
       use messagehandling, only: LEVEL_WARN, msgbuf, mess, warn_flush
@@ -4234,7 +4238,7 @@ contains
 
       interval_name_ = ''
       if (present(interval_name)) then
-         interval_name_ = ' ' // trim(interval_name)  ! Prepend extra space to get nice string formatting.
+         interval_name_ = ' '//trim(interval_name) ! Prepend extra space to get nice string formatting.
       end if
 
       ! If `read_interval_input` is `.false.`: Only set `interval_start/stop` to `simulation_start/stop`.
@@ -4246,24 +4250,24 @@ contains
 
       interval_step = interval_input(1)
 
-      if (.not. equal(interval_input(2), 0.0_dp)) then  ! A value of zero means: Use `simulation_start`.
+      if (.not. equal(interval_input(2), 0.0_dp)) then ! A value of zero means: Use `simulation_start`.
          if (simulation_start <= interval_input(2) .and. interval_input(2) <= simulation_stop) then
             interval_start = interval_input(2)
          else
-            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Start time (', floor(interval_input(2)), &
-               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
-               '). Setting' // trim(interval_name_) // ' start time to TStart.'
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid'//trim(interval_name_)//': Start time (', floor(interval_input(2)), &
+               ') must lie between TStart (', floor(simulation_start), ') and TStop (', floor(simulation_stop), &
+               '). Setting'//trim(interval_name_)//' start time to TStart.'
             call warn_flush()
          end if
       end if
 
-      if (.not. equal(interval_input(3), 0.0_dp)) then  ! A value of zero means: Use `simulation_stop`.
+      if (.not. equal(interval_input(3), 0.0_dp)) then ! A value of zero means: Use `simulation_stop`.
          if (simulation_start <= interval_input(3) .and. interval_input(3) <= simulation_stop) then
             interval_end = interval_input(3)
          else
-            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid' // trim(interval_name_) // ': Stop time (', floor(interval_input(3)), &
-               ') must lie between TStart (', floor(simulation_start) ,') and TStop (', floor(simulation_stop), &
-               '). Setting' // trim(interval_name_) // ' stop time to TStop.'
+            write (msgbuf, '(A,I0,A,I0,A,I0,A)') 'Invalid'//trim(interval_name_)//': Stop time (', floor(interval_input(3)), &
+               ') must lie between TStart (', floor(simulation_start), ') and TStop (', floor(simulation_stop), &
+               '). Setting'//trim(interval_name_)//' stop time to TStop.'
             call warn_flush()
          end if
       end if
