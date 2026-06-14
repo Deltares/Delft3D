@@ -19,7 +19,7 @@ namespace ini
 
     IniSection& IniData::AddSection(IniSection section) { return sections.emplace_back(std::move(section)); }
 
-    void IniData::AddMultipleSections(std::vector<IniSection> sectionsToAdd)
+    void IniData::AddSections(std::vector<IniSection> sectionsToAdd)
     {
         for (IniSection& section : sectionsToAdd)
         {

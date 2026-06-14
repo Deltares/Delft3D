@@ -50,7 +50,7 @@ namespace dflowfm_io
         const IniProperty& iniProperty,
         const PropertySchema& propertySchema)
     {
-        auto int_value = iniProperty.TryGetConvertedValue<int>();
+        auto int_value = iniProperty.TryGetValue<int>();
         if (!int_value.has_value())
             return std::nullopt;
 
@@ -84,27 +84,27 @@ namespace dflowfm_io
         switch (propertySchema.value_type)
         {
             case ValueType::Path:
-                return iniProperty.TryGetConvertedValue<std::filesystem::path>();
+                return iniProperty.TryGetValue<std::filesystem::path>();
             case ValueType::String:
-                return iniProperty.TryGetConvertedValue<std::string>();
+                return iniProperty.TryGetValue<std::string>();
             case ValueType::Int:
-                return iniProperty.TryGetConvertedValue<int>();
+                return iniProperty.TryGetValue<int>();
             case ValueType::IntBool:
-                return iniProperty.TryGetConvertedValue<bool>();
+                return iniProperty.TryGetValue<bool>();
             case ValueType::Float:
-                return iniProperty.TryGetConvertedValue<double>();
+                return iniProperty.TryGetValue<double>();
             case ValueType::Enum:
                 return ConvertEnum(iniProperty, propertySchema);
             case ValueType::IntEnum:
                 return ConvertIntEnum(iniProperty, propertySchema);
             case ValueType::DateTime:
-                return iniProperty.TryGetConvertedValue<std::chrono::system_clock::time_point>();
+                return iniProperty.TryGetValue<std::chrono::system_clock::time_point>();
             case ValueType::StringList:
-                return iniProperty.TryGetConvertedValueCollection<std::string>();
+                return iniProperty.TryGetValues<std::string>();
             case ValueType::PathList:
-                return iniProperty.TryGetConvertedValueCollection<std::filesystem::path>();
+                return iniProperty.TryGetValues<std::filesystem::path>();
             case ValueType::FloatList:
-                return iniProperty.TryGetConvertedValueCollection<double>();
+                return iniProperty.TryGetValues<double>();
             default:
                 throw std::logic_error("INTERNAL ERROR: Unhandled value type");
         }
@@ -134,11 +134,11 @@ namespace dflowfm_io
             case ValueType::DateTime:
                 return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::chrono::system_clock::time_point>(key));
             case ValueType::StringList:
-                return IniProperty::CreateFromCollection(propertySchema.key, mduData.getValueAs<std::vector<std::string>>(key));
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::vector<std::string>>(key));
             case ValueType::PathList:
-                return IniProperty::CreateFromCollection(propertySchema.key, mduData.getValueAs<std::vector<std::filesystem::path>>(key));
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::vector<std::filesystem::path>>(key));
             case ValueType::FloatList:
-                return IniProperty::CreateFromCollection(propertySchema.key, mduData.getValueAs<std::vector<double>>(key));
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::vector<double>>(key));
             default:
                 throw std::logic_error("INTERNAL ERROR: Unhandled value type");
         }

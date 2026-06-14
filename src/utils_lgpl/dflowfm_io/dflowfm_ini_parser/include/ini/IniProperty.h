@@ -56,7 +56,8 @@ namespace ini
         /// @param value The new line number.
         void SetLineNumber(int value) { lineNumber = value; }
 
-        /// @brief Creates a new @ref IniProperty with the specified key and a string representation of @p value.
+        /// @brief Creates a new @ref IniProperty with the specified key and a string
+        ///        representation of @p value.
         /// @tparam T The type of the value.
         /// @param key The key of the property.
         /// @param value The value to convert and store.
@@ -75,7 +76,7 @@ namespace ini
         /// @param separator The character used to separate the values. The default is a space.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        static IniProperty CreateFromCollection(std::string key, const std::vector<T>& values, char separator = ' ')
+        static IniProperty Create(std::string key, const std::vector<T>& values, char separator = ' ')
         {
             return IniProperty(std::move(key), IniValueConverter::ToMultiValueString(values, separator));
         }
@@ -92,7 +93,7 @@ namespace ini
         /// @tparam T The type to convert to.
         /// @return The converted value if successful; otherwise std::nullopt.
         template <typename T>
-        std::optional<T> TryGetConvertedValue() const
+        std::optional<T> TryGetValue() const
         {
             if (!HasValue())
             {
@@ -103,9 +104,8 @@ namespace ini
             {
                 return IniValueConverter::FromString<T>(value);
             }
-            catch (const std::exception& ex)
+            catch (const std::exception&)
             {
-                LogValueConversionError(typeid(T).name(), ex);
                 return std::nullopt;
             }
         }
@@ -116,7 +116,7 @@ namespace ini
         /// @param delimiter The character used to separate the values. The default is a space.
         /// @return The converted values if successful; otherwise std::nullopt.
         template <typename T>
-        std::optional<std::vector<T>> TryGetConvertedValueCollection(char delimiter = ' ') const
+        std::optional<std::vector<T>> TryGetValues(char delimiter = ' ') const
         {
             if (!HasValue())
             {
@@ -127,9 +127,8 @@ namespace ini
             {
                 return IniValueConverter::FromMultiValueString<T>(value, delimiter);
             }
-            catch (const std::exception& ex)
+            catch (const std::exception&)
             {
-                LogValueConversionError(typeid(T).name(), ex);
                 return std::nullopt;
             }
         }
@@ -138,7 +137,7 @@ namespace ini
         /// @tparam T The type of the value.
         /// @param value The new value to convert and store.
         template <typename T>
-        void SetConvertedValue(const T& value)
+        void SetValue(const T& value)
         {
             this->value = IniValueConverter::ToString(value);
         }
@@ -148,7 +147,7 @@ namespace ini
         /// @param values The collection of values to convert and store.
         /// @param separator The character used to separate the values. The default is a space.
         template <typename T>
-        void SetConvertedValueFromCollection(const std::vector<T>& values, char separator = ' ')
+        void SetValues(const std::vector<T>& values, char separator = ' ')
         {
             value = IniValueConverter::ToMultiValueString(values, separator);
         }
@@ -167,13 +166,10 @@ namespace ini
         bool operator!=(const IniProperty& other) const;
 
     private:
+        int lineNumber{0};
         std::string key;
         std::string value;
         std::string comment;
-
-        int lineNumber{0};
-
-        void LogValueConversionError(const std::string& targetType, const std::exception& ex) const;
     };
 
 } // namespace ini

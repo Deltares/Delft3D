@@ -23,10 +23,14 @@ namespace ini
     public:
         /// @brief Returns an iterator to the first section in the INI data.
         std::vector<IniSection>::iterator begin() { return sections.begin(); }
+
+        /// @copydoc IniData::begin()
         std::vector<IniSection>::const_iterator begin() const { return sections.begin(); }
 
         /// @brief Returns an iterator past the last section in the INI data.
         std::vector<IniSection>::iterator end() { return sections.end(); }
+
+        /// @copydoc IniData::end()
         std::vector<IniSection>::const_iterator end() const { return sections.end(); }
 
         /// @brief Returns the number of sections in the INI data.
@@ -48,7 +52,7 @@ namespace ini
 
         /// @brief Adds a collection of sections to the INI data.
         /// @param sectionsToAdd The sections to add.
-        void AddMultipleSections(std::vector<IniSection> sectionsToAdd);
+        void AddSections(std::vector<IniSection> sectionsToAdd);
 
         /// @brief Returns whether the INI data contains a section with the specified name.
         /// @param name The name of the section to locate (case-insensitive).
@@ -62,6 +66,8 @@ namespace ini
         /// @throws std::invalid_argument When @p name is empty.
         /// @throws std::out_of_range When no section with @p name was found.
         IniSection& GetSection(const std::string& name);
+
+        /// @copydoc IniData::GetSection(const std::string&)
         const IniSection& GetSection(const std::string& name) const;
 
         /// @brief Removes the specified section from the INI data.
@@ -103,6 +109,8 @@ namespace ini
         /// @return A reference to the section at the specified index.
         /// @throws std::out_of_range When @p index is out of range.
         IniSection& operator[](std::size_t index) { return sections.at(index); }
+
+        /// @copydoc IniData::operator[](std::size_t)
         const IniSection& operator[](std::size_t index) const { return sections.at(index); }
 
     private:

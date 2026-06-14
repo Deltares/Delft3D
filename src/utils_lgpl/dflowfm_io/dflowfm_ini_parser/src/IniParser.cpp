@@ -176,7 +176,7 @@ namespace ini
         IniSection& section = iniData.AddSection(name);
 
         section.SetLineNumber(lineNumber);
-        section.AddMultipleComments(blockComments);
+        section.AddComments(blockComments);
 
         currentSection = &section;
 

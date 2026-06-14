@@ -178,16 +178,16 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddMultipleSections
+    // AddSections
     // -------------------------------------------------------------------------
 
-    TEST(IniDataTest, AddMultipleSections_ValidSections_AddsSections)
+    TEST(IniDataTest, AddSections_ValidSections_AddsSections)
     {
         IniData iniData;
         IniSection section1("Section1");
         IniSection section2("Section2");
 
-        iniData.AddMultipleSections({section1, section2});
+        iniData.AddSections({section1, section2});
 
         EXPECT_EQ(iniData.size(), 2);
         EXPECT_EQ(iniData[0], section1);

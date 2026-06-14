@@ -150,6 +150,18 @@ namespace ini::test
         EXPECT_EQ(section[0], addedProperty);
     }
 
+    TEST(IniSectionTest, AddProperty_ValidFloatValue_AddsPropertyWithValue)
+    {
+        IniSection section("TestSection");
+
+        IniProperty& addedProperty = section.AddProperty("TestKey", 1.22f);
+
+        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(addedProperty.GetValue(), "1.2200000e+00");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], addedProperty);
+    }
+
     TEST(IniSectionTest, AddProperty_ValidDoubleValue_AddsPropertyWithValue)
     {
         IniSection section("TestSection");
@@ -258,21 +270,21 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddMultiValueProperty
+    // AddProperty - key/values
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, AddMultiValueProperty_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniSectionTest, AddProperty_EmptyKeyAndValidValues_ThrowsInvalidArgument)
     {
         IniSection section("TestSection");
 
-        EXPECT_THROW(section.AddMultiValueProperty("", std::vector<int>{1, 2, 4}), std::invalid_argument);
+        EXPECT_THROW(section.AddProperty("", std::vector<int>{1, 2, 4}), std::invalid_argument);
     }
 
-    TEST(IniSectionTest, AddMultiValueProperty_EmptyValues_AddsPropertyWithEmptyValue)
+    TEST(IniSectionTest, AddProperty_EmptyValues_AddsPropertyWithEmptyValue)
     {
         IniSection section("TestSection");
 
-        IniProperty& addedProperty = section.AddMultiValueProperty("TestKey", std::vector<std::string>{});
+        IniProperty& addedProperty = section.AddProperty("TestKey", std::vector<std::string>{});
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(addedProperty.GetValue().empty());
@@ -280,11 +292,11 @@ namespace ini::test
         EXPECT_EQ(section[0], addedProperty);
     }
 
-    TEST(IniSectionTest, AddMultiValueProperty_ValidValuesAndSpaceSeparator_AddsPropertyWithMultiValue)
+    TEST(IniSectionTest, AddProperty_ValidValuesAndSpaceSeparator_AddsPropertyWithMultiValue)
     {
         IniSection section("TestSection");
 
-        IniProperty& addedProperty = section.AddMultiValueProperty("TestKey", std::vector<int>{8, 9, 2}, ' ');
+        IniProperty& addedProperty = section.AddProperty("TestKey", std::vector<int>{8, 9, 2}, ' ');
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "8 9 2");
@@ -292,11 +304,11 @@ namespace ini::test
         EXPECT_EQ(section[0], addedProperty);
     }
 
-    TEST(IniSectionTest, AddMultiValueProperty_ValidValuesAndSemicolonSeparator_AddsPropertyWithMultiValue)
+    TEST(IniSectionTest, AddProperty_ValidValuesAndSemicolonSeparator_AddsPropertyWithMultiValue)
     {
         IniSection section("TestSection");
 
-        IniProperty& addedProperty = section.AddMultiValueProperty("TestKey", std::vector<int>{8, 9, 2}, ';');
+        IniProperty& addedProperty = section.AddProperty("TestKey", std::vector<int>{8, 9, 2}, ';');
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "8;9;2");
@@ -305,43 +317,69 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddMultipleProperties - key/values
+    // AddProperties - key/values
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, AddMultipleProperties_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniSectionTest, AddProperties_EmptyKey_ThrowsInvalidArgument)
     {
         IniSection section("TestSection");
 
-        EXPECT_THROW(section.AddMultipleProperties("", std::vector<std::string>{"TestValue"}), std::invalid_argument);
+        EXPECT_THROW(section.AddProperties("", std::vector<std::string>{"TestValue"}), std::invalid_argument);
     }
 
-    TEST(IniSectionTest, AddMultipleProperties_EmptyValues_AddsNoProperties)
+    TEST(IniSectionTest, AddProperties_EmptyValues_AddsNoProperties)
     {
         IniSection section("TestSection");
 
-        section.AddMultipleProperties("TestKey", std::vector<std::string>{});
+        section.AddProperties("TestKey", std::vector<std::string>{});
 
         EXPECT_TRUE(section.empty());
     }
 
-    TEST(IniSectionTest, AddMultipleProperties_ValidIntValues_AddsProperties)
+    TEST(IniSectionTest, AddProperties_ValidIntValues_AddsProperties)
     {
         IniSection section("TestSection");
 
-        section.AddMultipleProperties("TestKey", std::vector<int>{133, 133});
+        section.AddProperties("TestKey", std::vector<int>{12, 34});
 
         ASSERT_EQ(section.size(), 2);
         EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "133");
+        EXPECT_EQ(section[0].GetValue(), "12");
         EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "133");
+        EXPECT_EQ(section[1].GetValue(), "34");
     }
 
-    TEST(IniSectionTest, AddMultipleProperties_ValidStringValues_AddsProperties)
+    TEST(IniSectionTest, AddProperties_ValidFloatValues_AddsProperties)
     {
         IniSection section("TestSection");
 
-        section.AddMultipleProperties("TestKey", std::vector<std::string>{"TestValue", "TestValue"});
+        section.AddProperties("TestKey", std::vector<float>{0.1f, 0.2f});
+
+        ASSERT_EQ(section.size(), 2);
+        EXPECT_EQ(section[0].GetKey(), "TestKey");
+        EXPECT_EQ(section[0].GetValue(), "1.0000000e-01");
+        EXPECT_EQ(section[1].GetKey(), "TestKey");
+        EXPECT_EQ(section[1].GetValue(), "2.0000000e-01");
+    }
+
+    TEST(IniSectionTest, AddProperties_ValidDoubleValues_AddsProperties)
+    {
+        IniSection section("TestSection");
+
+        section.AddProperties("TestKey", std::vector<double>{10.1, 20.2});
+
+        ASSERT_EQ(section.size(), 2);
+        EXPECT_EQ(section[0].GetKey(), "TestKey");
+        EXPECT_EQ(section[0].GetValue(), "1.0100000e+01");
+        EXPECT_EQ(section[1].GetKey(), "TestKey");
+        EXPECT_EQ(section[1].GetValue(), "2.0200000e+01");
+    }
+
+    TEST(IniSectionTest, AddProperties_ValidStringValues_AddsProperties)
+    {
+        IniSection section("TestSection");
+
+        section.AddProperties("TestKey", std::vector<std::string>{"TestValue", "TestValue"});
 
         ASSERT_EQ(section.size(), 2);
         EXPECT_EQ(section[0].GetKey(), "TestKey");
@@ -351,25 +389,25 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddMultipleProperties - IniProperty collection
+    // AddProperties - IniProperty collection
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, AddMultipleProperties_EmptyCollection_AddsNoProperties)
+    TEST(IniSectionTest, AddProperties_EmptyCollection_AddsNoProperties)
     {
         IniSection section("TestSection");
 
-        section.AddMultipleProperties({});
+        section.AddProperties({});
 
         EXPECT_TRUE(section.empty());
     }
 
-    TEST(IniSectionTest, AddMultipleProperties_ValidProperties_AddsProperties)
+    TEST(IniSectionTest, AddProperties_ValidProperties_AddsProperties)
     {
         IniSection section("TestSection");
         IniProperty property1("TestKey1", "TestValue1");
         IniProperty property2("TestKey2", "TestValue2");
 
-        section.AddMultipleProperties({property1, property2});
+        section.AddProperties({property1, property2});
 
         ASSERT_EQ(section.size(), 2);
         EXPECT_EQ(section[0], property1);
@@ -377,10 +415,10 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddOrUpdateProperty
+    // AddOrUpdateProperty - key/value
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, AddOrUpdateProperty_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniSectionTest, AddOrUpdateProperty_EmptyKeyAndValidValue_ThrowsInvalidArgument)
     {
         IniSection section("TestSection");
 
@@ -447,27 +485,27 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddOrUpdateMultiValueProperty
+    // AddOrUpdateProperty - key/values
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, AddOrUpdateMultiValueProperty_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniSectionTest, AddOrUpdateProperty_EmptyKeyAndValidValues_ThrowsInvalidArgument)
     {
         IniSection section("TestSection");
 
-        EXPECT_THROW(section.AddOrUpdateMultiValueProperty("", std::vector<int>{}), std::invalid_argument);
+        EXPECT_THROW(section.AddOrUpdateProperty("", std::vector<int>{1, 2, 2}), std::invalid_argument);
     }
 
-    class IniSectionAddOrUpdateMultiValuePropertyCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    class IniSectionAddOrUpdatePropertyCollectionCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniSectionAddOrUpdateMultiValuePropertyCaseInsensitiveTest,
-           AddOrUpdateMultiValueProperty_ExistingKeyCaseInsensitive_UpdatesPropertyValue)
+    TEST_P(IniSectionAddOrUpdatePropertyCollectionCaseInsensitiveTest,
+           AddOrUpdateProperty_ExistingKeyCaseInsensitive_UpdatesPropertyValue)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "TestValue");
 
-        IniProperty& updatedProperty = section.AddOrUpdateMultiValueProperty(GetParam(), std::vector<int>{9, 2, 9});
+        IniProperty& updatedProperty = section.AddOrUpdateProperty(GetParam(), std::vector<int>{9, 2, 9});
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "9 2 9");
@@ -475,15 +513,15 @@ namespace ini::test
         EXPECT_EQ(section[0], updatedProperty);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionAddOrUpdateMultiValuePropertyCaseInsensitiveTest,
+    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionAddOrUpdatePropertyCollectionCaseInsensitiveTest,
                              ::testing::Values("testkey", "TestKey", "TESTKEY"));
 
-    TEST(IniSectionTest, AddOrUpdateMultiValueProperty_ExistingKeyAndValidValuesAndSpaceSeparator_UpdatesPropertyValue)
+    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndValidValuesAndSpaceSeparator_UpdatesPropertyValue)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "TestValue");
 
-        IniProperty& updatedProperty = section.AddOrUpdateMultiValueProperty("TestKey", std::vector<int>{1, 1, 1}, ' ');
+        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{1, 1, 1}, ' ');
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "1 1 1");
@@ -491,13 +529,12 @@ namespace ini::test
         EXPECT_EQ(section[0], updatedProperty);
     }
 
-    TEST(IniSectionTest,
-         AddOrUpdateMultiValueProperty_ExistingKeyAndValidValuesAndSemicolonSeparator_UpdatesPropertyValue)
+    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndValidValuesAndSemicolonSeparator_UpdatesPropertyValue)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "TestValue");
 
-        IniProperty& updatedProperty = section.AddOrUpdateMultiValueProperty("TestKey", std::vector<int>{1, 1, 1}, ';');
+        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{1, 1, 1}, ';');
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_EQ(updatedProperty.GetValue(), "1;1;1");
@@ -505,12 +542,12 @@ namespace ini::test
         EXPECT_EQ(section[0], updatedProperty);
     }
 
-    TEST(IniSectionTest, AddOrUpdateMultiValueProperty_ExistingKeyAndEmptyValues_UpdatesPropertyToEmptyValue)
+    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndEmptyValues_UpdatesPropertyToEmptyValue)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "TestValue");
 
-        IniProperty& updatedProperty = section.AddOrUpdateMultiValueProperty("TestKey", std::vector<int>{});
+        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{});
 
         EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(updatedProperty.GetValue().empty());
@@ -518,12 +555,11 @@ namespace ini::test
         EXPECT_EQ(section[0], updatedProperty);
     }
 
-    TEST(IniSectionTest,
-         AddOrUpdateMultiValueProperty_NonExistingKeyAndValidValuesAndSpaceSeparator_AddsPropertyWithValue)
+    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndValidValuesAndSpaceSeparator_AddsPropertyWithValue)
     {
         IniSection section("TestSection");
 
-        IniProperty& addedProperty = section.AddOrUpdateMultiValueProperty("TestKey", std::vector<int>{9, 2, 1}, ' ');
+        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{9, 2, 1}, ' ');
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "9 2 1");
@@ -531,12 +567,11 @@ namespace ini::test
         EXPECT_EQ(section[0], addedProperty);
     }
 
-    TEST(IniSectionTest,
-         AddOrUpdateMultiValueProperty_NonExistingKeyAndValidValuesAndSemicolonSeparator_AddsPropertyWithValue)
+    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndValidValuesAndSemicolonSeparator_AddsPropertyWithValue)
     {
         IniSection section("TestSection");
 
-        IniProperty& addedProperty = section.AddOrUpdateMultiValueProperty("TestKey", std::vector<int>{9, 2, 1}, ';');
+        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{9, 2, 1}, ';');
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_EQ(addedProperty.GetValue(), "9;2;1");
@@ -544,12 +579,12 @@ namespace ini::test
         EXPECT_EQ(section[0], addedProperty);
     }
 
-    TEST(IniSectionTest, AddOrUpdateMultiValueProperty_NonExistingKeyAndEmptyValues_AddsPropertyWithEmptyValue)
+    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndEmptyValues_AddsPropertyWithEmptyValue)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "TestValue");
 
-        IniProperty& addedProperty = section.AddOrUpdateMultiValueProperty("TestKey", std::vector<double>{});
+        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", std::vector<double>{});
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
         EXPECT_TRUE(addedProperty.GetValue().empty());
@@ -724,6 +759,16 @@ namespace ini::test
         EXPECT_EQ(value, 42);
     }
 
+    TEST(IniSectionTest, GetPropertyValueGeneric_ValidFloatValue_ReturnsConvertedValue)
+    {
+        IniSection section("ectionName");
+        section.AddProperty("TestKey", "1.1300000e+00");
+
+        const double value = section.GetPropertyValue<float>("TestKey");
+
+        EXPECT_DOUBLE_EQ(value, 1.13f);
+    }
+
     TEST(IniSectionTest, GetPropertyValueGeneric_ValidDoubleValue_ReturnsConvertedValue)
     {
         IniSection section("ectionName");
@@ -754,16 +799,6 @@ namespace ini::test
         EXPECT_EQ(value, -1);
     }
 
-    TEST(IniSectionTest, GetPropertyValueGeneric_InvalidDoubleValue_ReturnsDefault)
-    {
-        IniSection section("ectionName");
-        section.AddProperty("TestKey", "TestValue");
-
-        const double value = section.GetPropertyValue<double>("TestKey", -999.0);
-
-        EXPECT_DOUBLE_EQ(value, -999.0);
-    }
-
     TEST(IniSectionTest, GetPropertyValueGeneric_InvalidFloatValue_ReturnsDefault)
     {
         IniSection section("ectionName");
@@ -772,6 +807,16 @@ namespace ini::test
         const float value = section.GetPropertyValue<float>("TestKey", -999.0f);
 
         EXPECT_FLOAT_EQ(value, -999.0f);
+    }
+
+    TEST(IniSectionTest, GetPropertyValueGeneric_InvalidDoubleValue_ReturnsDefault)
+    {
+        IniSection section("ectionName");
+        section.AddProperty("TestKey", "TestValue");
+
+        const double value = section.GetPropertyValue<double>("TestKey", -999.0);
+
+        EXPECT_DOUBLE_EQ(value, -999.0);
     }
 
     // -------------------------------------------------------------------------
@@ -862,25 +907,38 @@ namespace ini::test
     TEST(IniSectionTest, GetAllPropertyValuesGeneric_ValidIntValues_ReturnsConvertedValues)
     {
         IniSection section("ectionName");
-        section.AddProperty("TestKey", "9");
+        section.AddProperty("TestKey", "1");
         section.AddProperty("TestKey", "9");
 
         const std::vector<int> values = section.GetAllPropertyValues<int>("TestKey");
 
-        const std::vector<int> expected = {9, 9};
+        const std::vector<int> expected = {1, 9};
         EXPECT_EQ(values, expected);
+    }
+
+    TEST(IniSectionTest, GetAllPropertyValuesGeneric_ValidFloatValues_ReturnsConvertedValues)
+    {
+        IniSection section("ectionName");
+        section.AddProperty("TestKey", "0.1000000e+00");
+        section.AddProperty("TestKey", "0.2000000e+00");
+
+        const std::vector<float> values = section.GetAllPropertyValues<float>("TestKey");
+
+        ASSERT_EQ(values.size(), 2);
+        EXPECT_FLOAT_EQ(values[0], 0.1f);
+        EXPECT_FLOAT_EQ(values[1], 0.2f);
     }
 
     TEST(IniSectionTest, GetAllPropertyValuesGeneric_ValidDoubleValues_ReturnsConvertedValues)
     {
         IniSection section("ectionName");
-        section.AddProperty("TestKey", "5.1100000e+00");
+        section.AddProperty("TestKey", "3.0200000e+00");
         section.AddProperty("TestKey", "5.1100000e+00");
 
         const std::vector<double> values = section.GetAllPropertyValues<double>("TestKey");
 
         ASSERT_EQ(values.size(), 2);
-        EXPECT_DOUBLE_EQ(values[0], 5.11);
+        EXPECT_DOUBLE_EQ(values[0], 3.02);
         EXPECT_DOUBLE_EQ(values[1], 5.11);
     }
 
@@ -908,94 +966,94 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // GetMultiValuePropertyValues
+    // GetPropertyValues
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniSectionTest, GetPropertyValues_EmptyKey_ThrowsInvalidArgument)
     {
         IniSection section("TestSection");
 
-        EXPECT_THROW(section.GetMultiValuePropertyValues<std::string>(""), std::invalid_argument);
+        EXPECT_THROW(section.GetPropertyValues<std::string>(""), std::invalid_argument);
     }
 
-    class IniSectionGetMultiValuePropertyValuesCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    class IniSectionGetPropertyValuesCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
     {
     };
 
-    TEST_P(IniSectionGetMultiValuePropertyValuesCaseInsensitiveTest,
-           GetMultiValuePropertyValues_ExistingKeyCaseInsensitive_ReturnsConvertedValues)
+    TEST_P(IniSectionGetPropertyValuesCaseInsensitiveTest,
+           GetPropertyValues_ExistingKeyCaseInsensitive_ReturnsConvertedValues)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "1 2 3");
 
-        const std::vector<int> values = section.GetMultiValuePropertyValues<int>(GetParam());
+        const std::vector<int> values = section.GetPropertyValues<int>(GetParam());
 
         const std::vector<int> expected = {1, 2, 3};
         EXPECT_EQ(values, expected);
     }
 
-    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionGetMultiValuePropertyValuesCaseInsensitiveTest,
+    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionGetPropertyValuesCaseInsensitiveTest,
                              ::testing::Values("testkey", "TestKey", "TESTKEY"));
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_NonExistingKey_ReturnsEmptyCollection)
+    TEST(IniSectionTest, GetPropertyValues_NonExistingKey_ReturnsEmptyCollection)
     {
         IniSection section("TestSection");
         section.AddProperty("TestKey", "TestValue");
 
-        const std::vector<std::string> values = section.GetMultiValuePropertyValues<std::string>("NonExistentKey");
+        const std::vector<std::string> values = section.GetPropertyValues<std::string>("NonExistentKey");
 
         EXPECT_TRUE(values.empty());
     }
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_EmptyValue_ReturnsEmptyCollection)
+    TEST(IniSectionTest, GetPropertyValues_EmptyValue_ReturnsEmptyCollection)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "");
 
-        const std::vector<std::string> values = section.GetMultiValuePropertyValues<std::string>("TestKey");
+        const std::vector<std::string> values = section.GetPropertyValues<std::string>("TestKey");
 
         EXPECT_TRUE(values.empty());
     }
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_ValidFormattedValueAndSpaceDelimiter_ReturnsConvertedValues)
+    TEST(IniSectionTest, GetPropertyValues_ValidFormattedValueAndSpaceDelimiter_ReturnsConvertedValues)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "10 20 30");
 
-        const std::vector<int> values = section.GetMultiValuePropertyValues<int>("TestKey", ' ');
+        const std::vector<int> values = section.GetPropertyValues<int>("TestKey", ' ');
 
         const std::vector<int> expected = {10, 20, 30};
         EXPECT_EQ(values, expected);
     }
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_ValidFormattedValueAndSemicolonDelimiter_ReturnsConvertedValues)
+    TEST(IniSectionTest, GetPropertyValues_ValidFormattedValueAndSemicolonDelimiter_ReturnsConvertedValues)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "10;20;30");
 
-        const std::vector<int> values = section.GetMultiValuePropertyValues<int>("TestKey", ';');
+        const std::vector<int> values = section.GetPropertyValues<int>("TestKey", ';');
 
         const std::vector<int> expected = {10, 20, 30};
         EXPECT_EQ(values, expected);
     }
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_ValidFormattedValueAndNewlineDelimiter_ReturnsConvertedValues)
+    TEST(IniSectionTest, GetPropertyValues_ValidFormattedValueAndNewlineDelimiter_ReturnsConvertedValues)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "3 6 \n 9 \r\n 12");
 
-        const std::vector<int> values = section.GetMultiValuePropertyValues<int>("TestKey");
+        const std::vector<int> values = section.GetPropertyValues<int>("TestKey");
 
         const std::vector<int> expected = {3, 6, 9, 12};
         EXPECT_EQ(values, expected);
     }
 
-    TEST(IniSectionTest, GetMultiValuePropertyValues_InvalidFormattedValue_ReturnsEmptyCollection)
+    TEST(IniSectionTest, GetPropertyValues_InvalidFormattedValue_ReturnsEmptyCollection)
     {
         IniSection section("ectionName");
         section.AddProperty("TestKey", "TestValue");
 
-        const std::vector<int> values = section.GetMultiValuePropertyValues<int>("TestKey");
+        const std::vector<int> values = section.GetPropertyValues<int>("TestKey");
 
         EXPECT_TRUE(values.empty());
     }
@@ -1239,14 +1297,14 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddMultipleComments
+    // AddComments
     // -------------------------------------------------------------------------
 
-    TEST(IniSectionTest, AddMultipleComments_ValidComments_AddsComments)
+    TEST(IniSectionTest, AddComments_ValidComments_AddsComments)
     {
         IniSection section("TestSection");
 
-        section.AddMultipleComments({"TestComment1", "TestComment2"});
+        section.AddComments({"TestComment1", "TestComment2"});
 
         const std::vector<std::string> expected = {"TestComment1", "TestComment2"};
         EXPECT_EQ(section.GetComments(), expected);

@@ -51,10 +51,14 @@ namespace ini
 
         /// @brief Returns an iterator to the first property in the section.
         std::vector<IniProperty>::iterator begin() { return properties.begin(); }
+
+        /// @copydoc IniSection::begin()
         std::vector<IniProperty>::const_iterator begin() const { return properties.begin(); }
 
         /// @brief Returns an iterator past the last property in the section.
         std::vector<IniProperty>::iterator end() { return properties.end(); }
+
+        /// @copydoc IniSection::end()
         std::vector<IniProperty>::const_iterator end() const { return properties.end(); }
 
         /// @brief Returns the number of properties in the the section.
@@ -123,9 +127,9 @@ namespace ini
         /// @return A reference to the added property.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        IniProperty& AddMultiValueProperty(const std::string& key, const std::vector<T>& values, char separator = ' ')
+        IniProperty& AddProperty(const std::string& key, const std::vector<T>& values, char separator = ' ')
         {
-            return AddProperty(IniProperty::CreateFromCollection(key, values, separator));
+            return AddProperty(IniProperty::Create(key, values, separator));
         }
 
         /// @brief Adds multiple properties with the same key to the section, each with a different value.
@@ -134,7 +138,7 @@ namespace ini
         /// @param values The collection of values for the properties to add.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        void AddMultipleProperties(const std::string& key, const std::vector<T>& values)
+        void AddProperties(const std::string& key, const std::vector<T>& values)
         {
             for (const auto& value : values)
             {
@@ -144,7 +148,7 @@ namespace ini
 
         /// @brief Adds a collection of properties to the section.
         /// @param propertiesToAdd The properties to add.
-        void AddMultipleProperties(const std::vector<IniProperty>& propertiesToAdd);
+        void AddProperties(const std::vector<IniProperty>& propertiesToAdd);
 
         /// @brief Adds a new property with the specified key and value to the section, or updates
         ///        the value of the first property found with the specified key.
@@ -162,7 +166,7 @@ namespace ini
                 return AddProperty(key, value);
             }
 
-            it->SetConvertedValue(value);
+            it->SetValue(value);
             return *it;
         }
 
@@ -175,16 +179,15 @@ namespace ini
         /// @return A reference to the added or updated property.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        IniProperty& AddOrUpdateMultiValueProperty(const std::string& key, const std::vector<T>& values,
-                                                   char separator = ' ')
+        IniProperty& AddOrUpdateProperty(const std::string& key, const std::vector<T>& values, char separator = ' ')
         {
             const auto it = FindProperty(key);
             if (it == end())
             {
-                return AddMultiValueProperty(key, values, separator);
+                return AddProperty(key, values, separator);
             }
 
-            it->SetConvertedValueFromCollection(values, separator);
+            it->SetValues(values, separator);
             return *it;
         }
 
@@ -200,6 +203,8 @@ namespace ini
         /// @throws std::invalid_argument When @p key is empty.
         /// @throws std::out_of_range When no property with @p key was found.
         IniProperty& GetProperty(const std::string& key);
+
+        /// @copydoc IniSection::GetProperty(const std::string&)
         const IniProperty& GetProperty(const std::string& key) const;
 
         /// @brief Gets the value of the first property with the specified key, or a default value
@@ -226,7 +231,7 @@ namespace ini
                 return defaultValue;
             }
 
-            auto convertedValue = it->TryGetConvertedValue<T>();
+            auto convertedValue = it->TryGetValue<T>();
             return convertedValue.value_or(defaultValue);
         }
 
@@ -252,7 +257,7 @@ namespace ini
                     continue;
                 }
 
-                if (auto convertedValue = property.TryGetConvertedValue<T>())
+                if (auto convertedValue = property.TryGetValue<T>())
                 {
                     result.push_back(std::move(*convertedValue));
                 }
@@ -268,7 +273,7 @@ namespace ini
         /// @return The converted values, or an empty collection if the property was not found.
         /// @throws std::invalid_argument When @p key is empty.
         template <typename T>
-        std::vector<T> GetMultiValuePropertyValues(const std::string& key, char delimiter = ' ') const
+        std::vector<T> GetPropertyValues(const std::string& key, char delimiter = ' ') const
         {
             const auto it = FindProperty(key);
             if (it == end())
@@ -276,7 +281,7 @@ namespace ini
                 return {};
             }
 
-            auto convertedValues = it->TryGetConvertedValueCollection<T>(delimiter);
+            auto convertedValues = it->TryGetValues<T>(delimiter);
             return convertedValues.value_or(std::vector<T>{});
         }
 
@@ -312,7 +317,7 @@ namespace ini
 
         /// @brief Adds a collection of comments to the section.
         /// @param commentsToAdd The comments to add.
-        void AddMultipleComments(const std::vector<std::string>& commentsToAdd);
+        void AddComments(const std::vector<std::string>& commentsToAdd);
 
         /// @brief Removes the specified comment from the section.
         /// @param comment The comment to remove.
@@ -341,13 +346,13 @@ namespace ini
         /// @return A reference to the property at the specified index.
         /// @throws std::out_of_range When @p index is out of range.
         IniProperty& operator[](std::size_t index) { return properties.at(index); }
+
+        /// @copydoc IniSection::operator[](std::size_t)
         const IniProperty& operator[](std::size_t index) const { return properties.at(index); }
 
     private:
-        std::string name;
-
         int lineNumber{0};
-
+        std::string name;
         std::vector<IniProperty> properties;
         std::vector<std::string> comments;
 

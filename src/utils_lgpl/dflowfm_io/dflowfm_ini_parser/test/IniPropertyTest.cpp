@@ -65,7 +65,7 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // Create
+    // Create - key/value
     // -------------------------------------------------------------------------
 
     TEST(IniPropertyTest, Create_EmptyKey_ThrowsInvalidArgument)
@@ -89,6 +89,14 @@ namespace ini::test
         EXPECT_EQ(property.GetValue(), "42");
     }
 
+    TEST(IniPropertyTest, Create_ValidFloatValue_CreatesProperty)
+    {
+        IniProperty property = IniProperty::Create("TestKey", 1.01f);
+
+        EXPECT_EQ(property.GetKey(), "TestKey");
+        EXPECT_EQ(property.GetValue(), "1.0100000e+00");
+    }
+
     TEST(IniPropertyTest, Create_ValidDoubleValue_CreatesProperty)
     {
         IniProperty property = IniProperty::Create("TestKey", 2.71);
@@ -106,33 +114,33 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // CreateFromCollection
+    // Create - key/values
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, CreateFromCollection_EmptyKey_ThrowsInvalidArgument)
+    TEST(IniPropertyTest, Create_EmptyKeyAndEmptyValues_ThrowsInvalidArgument)
     {
-        EXPECT_THROW(IniProperty::CreateFromCollection("", std::vector<std::string>{}), std::invalid_argument);
+        EXPECT_THROW(IniProperty::Create("", std::vector<std::string>{}), std::invalid_argument);
     }
 
-    TEST(IniPropertyTest, CreateFromCollection_EmptyValues_CreatesPropertyWithEmptyValue)
+    TEST(IniPropertyTest, Create_EmptyValues_ThrowsInvalidArgument)
     {
-        IniProperty property = IniProperty::CreateFromCollection("TestKey", std::vector<std::string>{});
+        IniProperty property = IniProperty::Create("TestKey", std::vector<std::string>{});
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "");
     }
 
-    TEST(IniPropertyTest, CreateFromCollection_ValidValuesAndSpaceSeparator_CreatesProperty)
+    TEST(IniPropertyTest, Create_ValidValuesAndSpaceSeparator_CreatesProperty)
     {
-        IniProperty property = IniProperty::CreateFromCollection("TestKey", std::vector<int>{8, 2, 3}, ' ');
+        IniProperty property = IniProperty::Create("TestKey", std::vector<int>{8, 2, 3}, ' ');
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "8 2 3");
     }
 
-    TEST(IniPropertyTest, CreateFromCollection_ValidValuesAndSemicolonSeparator_CreatesProperty)
+    TEST(IniPropertyTest, Create_ValidValuesAndSemicolonSeparator_CreatesProperty)
     {
-        IniProperty property = IniProperty::CreateFromCollection("TestKey", std::vector<int>{8, 2, 3}, ';');
+        IniProperty property = IniProperty::Create("TestKey", std::vector<int>{8, 2, 3}, ';');
 
         EXPECT_EQ(property.GetKey(), "TestKey");
         EXPECT_EQ(property.GetValue(), "8;2;3");
@@ -175,207 +183,223 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // TryGetConvertedValue
+    // TryGetValue
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, TryGetConvertedValue_EmptyValue_ReturnsNullopt)
+    TEST(IniPropertyTest, TryGetValue_EmptyValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "");
 
-        auto result = property.TryGetConvertedValue<double>();
+        auto result = property.TryGetValue<double>();
 
         EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_ValidIntValue_ReturnsConvertedValue)
+    TEST(IniPropertyTest, TryGetValue_ValidIntValue_ReturnsConvertedValue)
     {
         IniProperty property("TestKey", "42");
 
-        auto result = property.TryGetConvertedValue<int>();
+        auto result = property.TryGetValue<int>();
 
         EXPECT_TRUE(result.has_value());
         EXPECT_EQ(*result, 42);
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_ValidDoubleValue_ReturnsConvertedValue)
+    TEST(IniPropertyTest, TryGetValue_ValidFloatValue_ReturnsConvertedValue)
+    {
+        IniProperty property("TestKey", "1.0100000e+00");
+
+        auto result = property.TryGetValue<float>();
+
+        EXPECT_TRUE(result.has_value());
+        EXPECT_FLOAT_EQ(*result, 1.01f);
+    }
+
+    TEST(IniPropertyTest, TryGetValue_ValidDoubleValue_ReturnsConvertedValue)
     {
         IniProperty property("TestKey", "2.7100000e+00");
 
-        auto result = property.TryGetConvertedValue<double>();
+        auto result = property.TryGetValue<double>();
 
         EXPECT_TRUE(result.has_value());
         EXPECT_DOUBLE_EQ(*result, 2.71);
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_ValidStringValue_ReturnsConvertedValue)
+    TEST(IniPropertyTest, TryGetValue_ValidStringValue_ReturnsConvertedValue)
     {
         IniProperty property("TestKey", "TestValue");
 
-        auto result = property.TryGetConvertedValue<std::string>();
+        auto result = property.TryGetValue<std::string>();
 
         EXPECT_TRUE(result.has_value());
         EXPECT_EQ(*result, "TestValue");
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_InvalidIntValue_ReturnsNullopt)
+    TEST(IniPropertyTest, TryGetValue_InvalidIntValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        auto result = property.TryGetConvertedValue<int>();
+        auto result = property.TryGetValue<int>();
 
         EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_InvalidDoubleValue_ReturnsNullopt)
+    TEST(IniPropertyTest, TryGetValue_InvalidFloatValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        auto result = property.TryGetConvertedValue<double>();
+        auto result = property.TryGetValue<float>();
 
         EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValue_InvalidFloatValue_ReturnsNullopt)
+    TEST(IniPropertyTest, TryGetValue_InvalidDoubleValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        auto result = property.TryGetConvertedValue<float>();
+        auto result = property.TryGetValue<double>();
 
         EXPECT_FALSE(result.has_value());
     }
 
     // -------------------------------------------------------------------------
-    // TryGetConvertedValueCollection
+    // TryGetValues
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, TryGetConvertedValueCollection_EmptyValue_ReturnsNullopt)
+    TEST(IniPropertyTest, TryGetValues_EmptyValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "");
 
-        auto result = property.TryGetConvertedValueCollection<double>();
+        auto result = property.TryGetValues<double>();
 
         EXPECT_FALSE(result.has_value());
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValueCollection_ValidSingleIntValue_ReturnsConvertedCollection)
+    TEST(IniPropertyTest, TryGetValues_ValidSingleIntValue_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "10");
 
-        auto result = property.TryGetConvertedValueCollection<int>();
+        auto result = property.TryGetValues<int>();
 
         EXPECT_TRUE(result.has_value());
         EXPECT_EQ(*result, (std::vector<int>{10}));
     }
 
-    TEST(IniPropertyTest,
-         TryGetConvertedValueCollection_ValidMultiValueAndSpaceDelimiter_ReturnsConvertedCollection)
+    TEST(IniPropertyTest, TryGetValues_ValidMultiValueAndSpaceDelimiter_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "10 20 30");
 
-        auto result = property.TryGetConvertedValueCollection<int>(' ');
+        auto result = property.TryGetValues<int>(' ');
 
         EXPECT_TRUE(result.has_value());
         EXPECT_EQ(*result, (std::vector<int>{10, 20, 30}));
     }
 
-    TEST(IniPropertyTest,
-         TryGetConvertedValueCollection_ValidMultiValueAndSemicolonDelimiter_ReturnsConvertedCollection)
+    TEST(IniPropertyTest, TryGetValues_ValidMultiValueAndSemicolonDelimiter_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "10;20;30");
 
-        auto result = property.TryGetConvertedValueCollection<int>(';');
+        auto result = property.TryGetValues<int>(';');
 
         EXPECT_TRUE(result.has_value());
         EXPECT_EQ(*result, (std::vector<int>{10, 20, 30}));
     }
 
-    TEST(IniPropertyTest,
-         TryGetConvertedValueCollection_ValidMultiValueAndNewlineDelimiter_ReturnsConvertedCollection)
+    TEST(IniPropertyTest, TryGetValues_ValidMultiValueAndNewlineDelimiter_ReturnsConvertedCollection)
     {
         IniProperty property("TestKey", "3 6 \n 9 \r\n 12");
 
-        auto result = property.TryGetConvertedValueCollection<int>();
+        auto result = property.TryGetValues<int>();
 
         EXPECT_TRUE(result.has_value());
         EXPECT_EQ(*result, (std::vector<int>{3, 6, 9, 12}));
     }
 
-    TEST(IniPropertyTest, TryGetConvertedValueCollection_InvalidFormattedValue_ReturnsNullopt)
+    TEST(IniPropertyTest, TryGetValues_InvalidFormattedValue_ReturnsNullopt)
     {
         IniProperty property("TestKey", "TestValue");
 
-        auto result = property.TryGetConvertedValueCollection<int>();
+        auto result = property.TryGetValues<int>();
 
         EXPECT_FALSE(result.has_value());
     }
 
     // -------------------------------------------------------------------------
-    // SetConvertedValue
+    // SetValue
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, SetConvertedValue_EmptyStringValue_ValueIsSetToEmptyString)
+    TEST(IniPropertyTest, SetValue_EmptyStringValue_ValueIsSetToEmptyString)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValue(std::string(""));
+        property.SetValue(std::string(""));
 
         EXPECT_EQ(property.GetValue(), "");
     }
 
-    TEST(IniPropertyTest, SetConvertedValue_ValidIntValue_UpdatesValue)
+    TEST(IniPropertyTest, SetValue_ValidIntValue_UpdatesValue)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValue(11);
+        property.SetValue(11);
 
         EXPECT_EQ(property.GetValue(), "11");
     }
 
-    TEST(IniPropertyTest, SetConvertedValue_ValidDoubleValue_UpdatesValue)
+    TEST(IniPropertyTest, SetValue_ValidFloatValue_UpdatesValue)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValue(0.123);
+        property.SetValue(12.33f);
+
+        EXPECT_EQ(property.GetValue(), "1.2330000e+01");
+    }
+
+    TEST(IniPropertyTest, SetValue_ValidDoubleValue_UpdatesValue)
+    {
+        IniProperty property("TestKey");
+
+        property.SetValue(0.123);
 
         EXPECT_EQ(property.GetValue(), "1.2300000e-01");
     }
 
-    TEST(IniPropertyTest, SetConvertedValue_ValidStringValue_UpdatesValue)
+    TEST(IniPropertyTest, SetValue_ValidStringValue_UpdatesValue)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValue(std::string("TestValue"));
+        property.SetValue(std::string("TestValue"));
 
         EXPECT_EQ(property.GetValue(), "TestValue");
     }
 
     // -------------------------------------------------------------------------
-    // SetConvertedValueFromCollection
+    // SetValues
     // -------------------------------------------------------------------------
 
-    TEST(IniPropertyTest, SetConvertedValueFromCollection_EmptyCollection_ValueIsSetToEmptyString)
+    TEST(IniPropertyTest, SetValues_EmptyCollection_ValueIsSetToEmptyString)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValueFromCollection(std::vector<int>{});
+        property.SetValues(std::vector<int>{});
 
         EXPECT_EQ(property.GetValue(), "");
     }
 
-    TEST(IniPropertyTest, SetConvertedValueFromCollection_ValidValuesAndSpaceSeparator_UpdatesValue)
+    TEST(IniPropertyTest, SetValues_ValidValuesAndSpaceSeparator_UpdatesValue)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValueFromCollection(std::vector<int>{5, 1, 8}, ' ');
+        property.SetValues(std::vector<int>{5, 1, 8}, ' ');
 
         EXPECT_EQ(property.GetValue(), "5 1 8");
     }
 
-    TEST(IniPropertyTest, SetConvertedValueFromCollection_ValidValuesAndSemicolonSeparator_UpdatesValue)
+    TEST(IniPropertyTest, SetValues_ValidValuesAndSemicolonSeparator_UpdatesValue)
     {
         IniProperty property("TestKey");
 
-        property.SetConvertedValueFromCollection(std::vector<int>{5, 1, 8}, ';');
+        property.SetValues(std::vector<int>{5, 1, 8}, ';');
 
         EXPECT_EQ(property.GetValue(), "5;1;8");
     }

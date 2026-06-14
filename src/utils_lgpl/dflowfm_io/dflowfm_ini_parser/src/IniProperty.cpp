@@ -50,10 +50,4 @@ namespace ini
 
     bool IniProperty::operator!=(const IniProperty& other) const { return !(*this == other); }
 
-    void IniProperty::LogValueConversionError(const std::string& targetType, const std::exception& ex) const
-    {
-        std::cerr << "Failed to convert value '" << value << "' of property '" << key << "' to type '" << targetType
-                  << "': " << ex.what() << '\n';
-    }
-
 } // namespace ini

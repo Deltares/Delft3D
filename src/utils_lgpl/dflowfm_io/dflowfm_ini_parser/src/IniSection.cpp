@@ -55,7 +55,7 @@ namespace ini
         }
     }
 
-    void IniSection::AddMultipleProperties(const std::vector<IniProperty>& propertiesToAdd)
+    void IniSection::AddProperties(const std::vector<IniProperty>& propertiesToAdd)
     {
         properties.insert(properties.end(), propertiesToAdd.begin(), propertiesToAdd.end());
     }
@@ -193,7 +193,7 @@ namespace ini
 
     void IniSection::AddComment(std::string comment) { comments.emplace_back(std::move(comment)); }
 
-    void IniSection::AddMultipleComments(const std::vector<std::string>& commentsToAdd)
+    void IniSection::AddComments(const std::vector<std::string>& commentsToAdd)
     {
         comments.insert(comments.end(), commentsToAdd.begin(), commentsToAdd.end());
     }

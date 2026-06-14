@@ -69,10 +69,14 @@ namespace ini
 
         /// @brief Gets the options controlling reading and writing behavior.
         IniFileOptions& GetOptions() { return options; }
+
+        /// @copydoc IniFile::GetOptions()
         const IniFileOptions& GetOptions() const { return options; }
 
         /// @brief Gets the INI data.
         IniData& GetData() { return data; }
+
+        /// @copydoc IniFile::GetData()
         const IniData& GetData() const { return data; }
 
         /// @brief Sets the INI data.
