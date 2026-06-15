@@ -337,7 +337,8 @@ contains
             if (strcmpi(property_name, 'forcingFile')) then
                forcing_file = property_value
                call resolvePath(forcing_file, base_dir)
-               if (operand /= OPERAND_OVERRIDE .and. operand /= OPERAND_ADD) then
+
+               if (operand == OPERAND_UNKNOWN) then ! If no operand value is given, use default (override, but add if quantity-pli combination already registered)
                   operand = OPERAND_OVERRIDE
                   if (quantity_pli_combination_is_registered(quantity, location_file)) then
                      operand = OPERAND_ADD
