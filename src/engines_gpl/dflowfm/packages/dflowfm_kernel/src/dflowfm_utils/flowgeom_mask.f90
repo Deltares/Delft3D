@@ -50,7 +50,7 @@ contains
    subroutine construct_mask_string_spatial_location(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
-      integer, intent(in) :: location_type !< Location type (one of UNC_LOC_S/S3D/U/...).
+      integer, intent(in) :: location_type !< Location type (one of UNC_LOC_CN/S/S3D/U/...).
       character(len=*), intent(in) :: spatial_location_type !< Spatial location type (one of SPATIAL_LOCATION_ALL/1D/2D).
       character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
       logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
