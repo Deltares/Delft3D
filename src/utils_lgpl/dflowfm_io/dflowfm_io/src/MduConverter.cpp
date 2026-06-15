@@ -53,7 +53,7 @@ namespace dflowfm_io
         return EnumValue{it->first};
     }
 
-    static std::string ConvertEnumToString(
+    static const std::pair<const int, std::string>& FindEnumEntry(
         EnumValue enum_value,
         const PropertySchema& propertySchema)
     {
@@ -63,7 +63,17 @@ namespace dflowfm_io
             throw std::out_of_range(std::format("enum numerical value {} out of range for property '{}'.",
                                                 enum_value.value, propertySchema.key));
         }
-        return it->second;
+        return *it;
+    }
+
+    static std::string ConvertEnumToString(EnumValue enum_value, const PropertySchema& propertySchema)
+    {
+        return FindEnumEntry(enum_value, propertySchema).second;
+    }
+
+    static int ConvertEnumToInt(EnumValue enum_value, const PropertySchema& propertySchema) s
+    {
+        return FindEnumEntry(enum_value, propertySchema).first;
     }
 
     static std::optional<Value> GetPropertyValue(
@@ -119,7 +129,7 @@ namespace dflowfm_io
             case ValueType::Enum:
                 return IniProperty::Create(propertySchema.key, ConvertEnumToString(mduData.getValueAs<EnumValue>(key), propertySchema));
             case ValueType::IntEnum:
-                return IniProperty::Create(propertySchema.key, mduData.getValueAs<EnumValue>(key).value);
+                return IniProperty::Create(propertySchema.key, ConvertEnumToInt(mduData.getValueAs<EnumValue>(key), propertySchema));
             case ValueType::DateTime:
                 return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::chrono::system_clock::time_point>(key));
             case ValueType::StringList:
