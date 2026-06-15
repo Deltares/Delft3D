@@ -99,7 +99,6 @@ UnifFrictCoef     = 0.023
 UnifFrictType     = 1
 UnifFrictCoef1D   = 0.023
 UnifFrictCoefLin  = 0
-Umodlin           = 0
 Vicouv            = 1
 Dicouv            = 1
 Vicoww            = 5E-05
