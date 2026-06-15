@@ -2,7 +2,6 @@
     "build": {
         "dockerfile": "Dockerfile"
     },
-
     "postCreateCommand": "bash .devcontainer/delft3d/scripts/post_create_command.sh",
     "mounts": [
         // Persist the bash history into a Docker volume, so you don't lose your bash history when restarting the container.
@@ -18,6 +17,11 @@
             "source": "delft3d-aws",
             "target": "/home/dev/.aws",
         },
+        {
+            "type": "volume",
+            "source": "delft3d-conan",
+            "target": "/home/dev/.conan2",
+        },
     ],
     "runArgs": ["--ulimit", "stack=-1:-1"],
     "customizations": {
@@ -27,13 +31,10 @@
                 "ms-vscode.cmake-tools",
                 "fortran-lang.linter-gfortran",
                 "ms-vscode.cpptools",
-                "vscjava.vscode-maven",
-                "fwcd.kotlin",
                 "ms-python.python",
                 "ms-python.mypy-type-checker",
                 "charliermarsh.ruff",
                 "tamasfe.even-better-toml",
-                "ms-vscode.hexeditor",
             ]
         }
     }

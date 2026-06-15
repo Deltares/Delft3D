@@ -15,7 +15,9 @@ get_fortran_source_files(${src_path} sources)
 
 # Define the executable
 set(executable_name dfmoutput)
-add_executable(${executable_name} ${sources} ${rc_version_file})
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${res_path}")
+add_executable(${executable_name} ${sources})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Add dependencies
 if (UNIX)
@@ -27,7 +29,7 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff)
+                         netCDF::netcdff)
 
     target_link_libraries(${executable_name} PRIVATE
                           ${oss_dependencies})
@@ -39,7 +41,7 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff)
+                         netCDF::netcdff)
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 endif(WIN32)
@@ -59,14 +61,10 @@ endif(WIN32)
 set_source_files_properties(${fortran_version_file}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 
-#target_link_libraries(${executable_name} PRIVATE netcdf)
-
 if (WIN32)
     include_directories(${version_include_dir}
                         ${res_path}
     )
-
-
 
     message(STATUS "Setting target_compile_definitions in windows")
     target_compile_definitions(${executable_name} PRIVATE "WIN32")
