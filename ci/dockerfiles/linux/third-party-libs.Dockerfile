@@ -124,40 +124,12 @@ make install
 popd
 EOF-metis
 
-FROM base AS expat
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-RUN --mount=type=cache,target=/var/cache/src/,id=expat-${CACHE_ID_SUFFIX} <<"EOF-expat"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz'
-BASEDIR='libexpat-R_2_6_2/expat'
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-[[ $DEBUG = "0" ]] && FLAGS="-O3 -DNDEBUG -fPIC" || FLAGS="-g -O0 -fPIC"
-
-pushd "/var/cache/src/${BASEDIR}"
-./buildconf.sh
-./configure CC=icx CXX=icpx CFLAGS="$FLAGS" CXXFLAGS="$FLAGS"
-make --jobs=$(nproc)
-make install
-popd
-EOF-expat
-
 FROM base AS xerces-c
 
 ARG DEBUG
 ARG CACHE_ID_SUFFIX
 
-RUN --mount=type=cache,target=/var/cache/src/,id=xerxes-c-${CACHE_ID_SUFFIX} <<"EOF-xerces-c"
+RUN --mount=type=cache,target=/var/cache/src/,id=xerces-c-${CACHE_ID_SUFFIX} <<"EOF-xerces-c"
 source /etc/bashrc
 set -eo pipefail
 
@@ -221,73 +193,6 @@ make
 make install
 popd
 EOF-petsc
-
-FROM base AS sqlite3
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=compression-libs --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=sqlite3-${CACHE_ID_SUFFIX} <<"EOF-sqlite3"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://www.sqlite.org/2024/sqlite-autoconf-3460100.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-pushd "/var/cache/src/${BASEDIR}"
-if [[ $DEBUG = "0" ]]; then
-    ./configure CC=icx CFLAGS="-O3 -DNDEBUG"
-else
-    ./configure CC=icx CFLAGS="-g -O0" CPPFLAGS="-DSQLITE_DEBUG"
-fi
-make --jobs=$(nproc)
-make install
-popd
-EOF-sqlite3
-
-FROM base AS tiff
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=compression-libs --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=tiff-${CACHE_ID_SUFFIX} <<"EOF-tiff"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://download.osgeo.org/libtiff/tiff-4.7.1.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-mkdir --parents "/var/cache/src/${BASEDIR}/build"
-pushd "/var/cache/src/${BASEDIR}/build"
-if [[ $DEBUG = "0" ]]; then
-    cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-        -DCMAKE_C_FLAGS="-O3 -DNDEBUG" -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release
-else
-    cmake .. -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-        -DCMAKE_C_FLAGS="-g -O0" -DCMAKE_CXX_FLAGS="-g -O0" \
-        -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Debug
-fi
-make --jobs=$(nproc)
-make install
-popd
-EOF-tiff
 
 FROM base AS hdf5
 
@@ -410,101 +315,6 @@ make --jobs=$(nproc)
 make install
 popd
 EOF-netcdf-fortran
-
-FROM base AS proj
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=tiff --link /usr/local/ /usr/local/
-COPY --from=sqlite3 --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=proj-${CACHE_ID_SUFFIX} <<"EOF-proj"
-source /etc/bashrc
-set -eo pipefail
-
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
-export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH
-export CMAKE_INCLUDE_PATH=/usr/local/include:$CMAKE_INCLUDE_PATH
-export CMAKE_LIBRARY_PATH=/usr/local/lib:$CMAKE_LIBRARY_PATH
-
-URL='https://download.osgeo.org/proj/proj-9.7.1.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
-
-mkdir --parents "/var/cache/src/${BASEDIR}/build"
-pushd "/var/cache/src/${BASEDIR}/build"
-cmake .. \
-    -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DSQLITE3_INCLUDE_DIR=/usr/local/include \
-    -DSQLITE3_LIBRARY=/usr/local/lib/libsqlite3.so \
-    -DEXE_SQLITE3=/usr/local/bin/sqlite3 \
-    -DENABLE_TIFF=ON \
-    -DENABLE_CURL=OFF \
-    -DBUILD_PROJSYNC=OFF \
-    -DBUILD_TESTING=OFF \
-    -DBUILD_APPS=OFF
-cmake --build . --config $BUILD_TYPE --parallel $(nproc)
-cmake --build . --target install
-popd
-EOF-proj
-
-FROM base AS gdal
-
-ARG DEBUG
-ARG CACHE_ID_SUFFIX
-
-COPY --from=expat --link /usr/local/ /usr/local/
-COPY --from=xerces-c --link /usr/local/ /usr/local/
-COPY --from=netcdf --link /usr/local/ /usr/local/
-COPY --from=proj --link /usr/local/ /usr/local/
-
-RUN --mount=type=cache,target=/var/cache/src/,id=gdal-${CACHE_ID_SUFFIX} <<"EOF-gdal"
-source /etc/bashrc
-set -eo pipefail
-
-URL='https://github.com/OSGeo/gdal/releases/download/v3.9.2/gdal-3.9.2.tar.gz'
-BASEDIR=$(basename -s '.tar.gz' "$URL")
-if [[ -d "/var/cache/src/${BASEDIR}" ]]; then
-    echo "CACHED ${BASEDIR}"
-else
-    echo "Fetching ${URL}..."
-    wget --quiet --output-document=- "$URL" | tar --extract --gzip --file=- --directory='/var/cache/src'
-fi
-
-mkdir --parents "/var/cache/src/${BASEDIR}/build"
-pushd "/var/cache/src/${BASEDIR}/build"
-
-[[ $DEBUG = "0" ]] && BUILD_TYPE="Release" || BUILD_TYPE="Debug"
-
-cmake .. \
-    -DCMAKE_C_COMPILER=icx -DCMAKE_CXX_COMPILER=icpx \
-    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DGDAL_BUILD_OPTIONAL_DRIVERS=OFF -DOGR_BUILD_OPTIONAL_DRIVERS=OFF \
-    -DGDAL_USE_MYSQL=OFF -DGDAL_USE_SQLITE3=ON \
-    -DGDAL_USE_HDF5=ON -DGDAL_USE_NETCDF=ON \
-    -DGDAL_USE_EXPAT=ON -DGDAL_USE_XERCESC=ON \
-    -DGDAL_USE_ZSTD=ON -DGDAL_USE_ZLIB=ON \
-    -DGDAL_USE_TIFF=ON -DGDAL_USE_CURL=OFF
-
-cmake --build . --config $BUILD_TYPE --parallel $(nproc)
-cmake --build . --target install
-
-popd
-EOF-gdal
 
 FROM base as esmf
 
@@ -855,9 +665,8 @@ EOT
 
 COPY --from=uuid --link /usr/local /usr/local/
 COPY --from=metis --link /usr/local /usr/local/
+COPY --from=xerces-c --link /usr/local /usr/local/
 COPY --from=petsc --link /usr/local/ /usr/local/
-COPY --from=netcdf --link /usr/local /usr/local/
-COPY --from=gdal --link /usr/local/ /usr/local/
 COPY --from=esmf --link /usr/local/ /usr/local/
 COPY --from=boost --link /usr/local/ /usr/local/
 COPY --from=googletest --link /usr/local/ /usr/local/
