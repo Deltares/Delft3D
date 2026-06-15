@@ -146,11 +146,15 @@ module m_ec_parameters
    integer, parameter :: ztype_z = 1 !< z (absolute) coordinates
    !
    ! enumeration for operand types
-   integer, parameter :: operand_undefined = 0
-   integer, parameter :: operand_add = 1
-   integer, parameter :: operand_replace = 2
-   integer, parameter :: operand_replace_element = 3
-   integer, parameter :: operand_add_element = 4
+   integer, parameter :: EC_OPERAND_UNDEFINED = 0 !< EC equivalent of FM's OPERAND_UNKNOWN
+   integer, parameter :: EC_OPERAND_ADD = 1 !< EC quivalent of FM's OPERAND_ADD
+   integer, parameter :: EC_OPERAND_REPLACE = 2 !< EC equivalent of FM's OPERAND_OVERRIDE
+   integer, parameter :: EC_OPERAND_REPLACE_ELEMENT = 3
+   integer, parameter :: EC_OPERAND_ADD_ELEMENT = 4
+   integer, parameter :: EC_OPERAND_REPLACE_IF_MISSING = 5 !< EC equivalent of FM's OPERAND_OVERRIDE_IF_MISSING
+   integer, parameter :: EC_OPERAND_MULTIPLY = 6 !< EC equivalent of FM's OPERAND_MULTIPLY
+   integer, parameter :: EC_OPERAND_MINIMUM = 7 !< EC equivalent of FM's OPERAND_MINIMUM
+   integer, parameter :: EC_OPERAND_MAXIMUM = 8 !< EC equivalent of FM's OPERAND_MAXIMUM
    !
    ! enumeration for tEcConverter types
    integer, parameter :: convType_undefined = 0

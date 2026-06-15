@@ -172,7 +172,7 @@ contains
          return
       end if
       call operand_fm_to_ec(operand, ec_operand)
-      if (ec_operand == operand_undefined) then
+      if (ec_operand == EC_OPERAND_UNDEFINED) then
          write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
             ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
          call err_flush()
@@ -566,7 +566,7 @@ contains
             call mess(LEVEL_ERROR, message)
             return
          end if
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, operand_replace_element, ec_method)
+         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, EC_OPERAND_REPLACE_ELEMENT, ec_method)
          if (success) then
             success = ecSetConverterElement(ecInstancePtr, converterId, targetIndex)
          end if
@@ -574,7 +574,7 @@ contains
          ! count qh boundaries
          n_qhbnd = n_qhbnd + 1
          inputptr => atqh_all(n_qhbnd)
-         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, operand_replace_element, interpolate_passthrough, inputptr=inputptr)
+         success = initializeConverter(ecInstancePtr, converterId, ec_convtype, EC_OPERAND_REPLACE_ELEMENT, interpolate_passthrough, inputptr=inputptr)
          if (success) then
             success = ecSetConverterElement(ecInstancePtr, converterId, n_qhbnd)
          end if
