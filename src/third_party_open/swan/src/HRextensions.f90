@@ -31,7 +31,7 @@ module HRextensions
     use netcdf_tools
     use nctablemd, only : nctable_record, get_nctable_record
     use M_GENARR, only: SPCSIG
-    use M_PARALL, only : IAMMASTER, MXCGL, MYCGL, MCGRDGL, KGRPGL, SWREAL, MXF, MXL, MYF, MYL
+    use M_PARALL, only : IAMMASTER, MXCGL, MYCGL, MCGRDGL, KGRPGL, SWREAL, SWINT, MXF, MXL, MYF, MYL
     use SwanGriddata, only : ivertg, nverts, nvertsg
     use agioncmd
     use SWCOMM2, only : NUMGRD, NBGRPT, NBSPEC, XOFFS, YOFFS, OPTG
@@ -53,7 +53,7 @@ contains
         real, dimension(:,:,:)                 :: AC2
 
         integer                                :: jx, jy, ix, iy, indx, iindx, &
-                                                  ncid, ri, is, global_ip, local_ip, nglob
+                                                  ncid, ri, is, global_ip, local_ip, nglob, spc_as_map_i
         integer, dimension(:), allocatable     :: ig2loc
         type(recordaxe_type)                   :: recordaxe
         type(mapgrid_type)                     :: mapgrid
@@ -63,12 +63,21 @@ contains
         real, dimension(:,:,:, :), allocatable :: density
         logical                                :: spc_as_map, STPNOW
 
+        spc_as_map = .false.
+        spc_as_map_i = 0
+
         if ( IAMMASTER ) then
             call open_ncfile( ncfile, 'read', ncid)
 
             call swn_hre_get_grids(ncid, recordaxe, spcgrid, mapgrid, pntgrid, spc_as_map)
             if ( STPNOW() ) return
-            
+            if ( spc_as_map ) spc_as_map_i = 1
+        end if
+
+        call SWBROADC (spc_as_map_i, 1, SWINT)
+        spc_as_map = spc_as_map_i /= 0
+
+        if ( IAMMASTER ) then
             ! For now, always pick the last field. The problem is that until the COMPUTE
             ! command is called, we have no idea at what time the computation will start
             ! and hence what record index to pick

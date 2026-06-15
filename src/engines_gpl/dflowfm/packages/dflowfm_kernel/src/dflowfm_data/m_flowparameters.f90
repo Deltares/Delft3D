@@ -454,7 +454,6 @@ module m_flowparameters
    integer :: jalogsolverconvergence !< log solver convergence message bloat - 0: no (default) ; 1: yes
    integer :: jalogtransportsolverlimiting !< log transport solver limiting message bloat - 0: no (default) ; 1: yes
    integer :: jawavewarnmissingdata !< log com file missing data message bloat - 0: no  ; 1: yes  (default)
-   
 
    integer :: jadpuopt !< option for bed level at velocity point in case of tile approach bed level: 1 = max (default). This is equivalent to min in Delft3D 4; 2 = mean.
    integer :: jaextrapbl !< option for extrapolating bed level at boundaries according to the slope: 0 = no extrapolation (default); 1 = extrapolate. Necessary for analytical solutions.

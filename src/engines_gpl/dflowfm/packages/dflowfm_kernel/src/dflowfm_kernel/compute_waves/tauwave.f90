@@ -280,15 +280,16 @@ contains
                                                                  wavefric_alpha) result(coefficient)
       implicit none
       real(kind=dp), intent(in) :: current_friction, wave_current_friction, wavefric_alpha
-      real(kind=dp) :: alpha
+      real(kind=dp) :: alpha, current_only, wave_current
 
       alpha = min(1.0_dp, max(0.0_dp, wavefric_alpha))
-      if (current_friction <= 0.0_dp) then
-         coefficient = max(0.0_dp, wave_current_friction)
-      elseif (wave_current_friction <= 0.0_dp) then
-         coefficient = current_friction
+      current_only = max(0.0_dp, current_friction)
+      wave_current = max(0.0_dp, wave_current_friction)
+
+      if (wave_current <= 0.0_dp) then
+         coefficient = current_only
       else
-         coefficient = (1.0_dp - alpha) * current_friction + alpha * wave_current_friction
+         coefficient = (1.0_dp - alpha) * current_only + alpha * wave_current
       end if
    end function wave_current_friction_coefficient
 
