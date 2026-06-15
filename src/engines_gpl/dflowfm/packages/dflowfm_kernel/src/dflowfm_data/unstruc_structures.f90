@@ -1069,36 +1069,38 @@ contains
       end if
    end subroutine get_geom_coordinates_of_structure
 
-!> Fills in the geometry arrays of source/sinks taking into account the parallel domain decomposition.
+   !> Fills in the geometry arrays of source/sinks taking into account the parallel domain decomposition.
    subroutine fill_geometry_source_sinks()
-
-      use fm_external_forcings_data, only: num_source_sink, is_source_sink_normal, source_sink_indices, num_normal_source_sink
+      use m_source_sink, only: source_sinks
       use m_flowgeom, only: xz, yz
       use m_alloc
       use m_partitioninfo, only: jampi, my_rank, reduce_int_max, reduce_double_array_max
       use m_GlobalParameters
-      implicit none
 
-      real(kind=dp), dimension(:, :), allocatable :: localGeomXSourceSink !< [m] x coordinates of source/sinks.
-      real(kind=dp), dimension(:, :), allocatable :: localGeomYSourceSink !< [m] y coordinates of source/sinks.
-
-
-      real(kind=dp), allocatable :: geom_x(:), geom_y(:)
-      integer :: i, j, k1, k2, nNodes
+      ! Local Variables
+      real(kind=dp), dimension(:,:), allocatable :: localGeomXSourceSink !< [m] x coordinates of source/sinks.
+      real(kind=dp), dimension(:,:), allocatable :: localGeomYSourceSink !< [m] y coordinates of source/sinks.
+      real(kind=dp), dimension(:), allocatable :: geom_x
+      real(kind=dp), dimension(:), allocatable :: geom_y
+      integer :: i
+      integer :: j
+      integer :: k1
+      integer :: k2
+      integer :: nNodes
 
       j = 1
 
       call realloc(geom_x, 2)
       call realloc(geom_y, 2)
-      call realloc(nodeCountSourceSink, num_normal_source_sink)
-      call realloc(localGeomXSourceSink, num_normal_source_sink, 2)
-      call realloc(localGeomYSourceSink, num_normal_source_sink, 2)
+      call realloc(nodeCountSourceSink, source_sinks%num_normal)
+      call realloc(localGeomXSourceSink, source_sinks%num_normal, 2)
+      call realloc(localGeomYSourceSink, source_sinks%num_normal, 2)
       localGeomXSourceSink = -huge(1.0_dp)
       localGeomYSourceSink = -huge(1.0_dp)
-      do i = 1, num_source_sink
-         if (is_source_sink_normal(i)) then
-            k1 = source_sink_indices(1, i)
-            k2 = source_sink_indices(4, i)
+      do i = 1, source_sinks%num_total
+         if (source_sinks%is_normal(i)) then
+            k1 = source_sinks%indices(i, 1)
+            k2 = source_sinks%indices(i, 4)
             nNodes = 0
             if (k1 > 0) then
                nNodes = nNodes + 1
@@ -1119,13 +1121,13 @@ contains
          end if
       end do
       if (jampi > 0) then
-         call reduce_int_max(num_normal_source_sink, nodeCountSourceSink)
+         call reduce_int_max(source_sinks%num_normal, nodeCountSourceSink)
       end if
       nNodesSourceSink = sum(nodeCountSourceSink)
       call realloc(geomXSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
       call realloc(geomYSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
       j = 1
-      do i = 1, num_normal_source_sink
+      do i = 1, source_sinks%num_normal
          nNodes = nodeCountSourceSink(i)
          geomXSourceSink(j:j + nNodes - 1) = localGeomXSourceSink(i, 1:nNodes)
          geomYSourceSink(j:j + nNodes - 1) = localGeomYSourceSink(i, 1:nNodes)
@@ -1135,7 +1137,6 @@ contains
          call reduce_double_array_max(nNodesSourceSink, geomXSourceSink)
          call reduce_double_array_max(nNodesSourceSink, geomYSourceSink)
       end if
-
 
    end subroutine fill_geometry_source_sinks
 

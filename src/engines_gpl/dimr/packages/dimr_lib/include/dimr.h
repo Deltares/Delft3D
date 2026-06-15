@@ -103,22 +103,25 @@ public:
     void scanConfigFile(void);
     void connectLibs(void);
 
-    void printComponentVersionStrings(Level);
+    void printComponentVersionStrings(Level my_level);
 
     void freeLibs(void);
+    void barrier(const MPI_Comm comm, const bool use_mpi, const int mpi_barrier_sleep);
     void processWaitFile(void);
-    void createDistributeMPISubGroupCommunicator(dimr_component*);
-    void runControlBlock(dimr_control_block*, double, int);
-    void runParallelInit(dimr_control_block*);
-    void runParallelFinish(dimr_control_block*);
+    void createDistributeMPISubGroupCommunicator(dimr_component* component);
+    void runControlBlock(dimr_control_block* cb, double tStep, int phase);
+    void runParallelInit(dimr_control_block* cb);
+    void runParallelFinish(dimr_control_block* cb);
     void timersInit(void);
-    void timerStart(dimr_component*);
-    void timerEnd(dimr_component*);
+    void timerStart(dimr_component* component);
+    void timerEnd(dimr_component* component);
     void timersFinish(void);
     void timerFinish(void);
-    void receive(const char*, int, BMI_SETVAR, BMI_GETVAR, double*, int*, int, int, const void*);
-    void receive_ptr(const char*, const char*, int, BMI_SETVAR, BMI_GETVAR, BMI_GETVARSHAPE, double*, int*, int, int,
-                     double*);
+    void receive(const char* name, int compType, BMI_SETVAR dllSetVar, BMI_GETVAR dllGetVar, double* targetVarPtr,
+                 int* processes, int nProc, int targetProcess, const void* transferValuePtr);
+    void receive_ptr(const char* name, const char* sourceName, int compType, BMI_SETVAR dllSetVar, BMI_GETVAR dllGetVar,
+                     BMI_GETVARSHAPE dllGetVarShape, double* targetVarPtr, int* processes, int nProc, int targetProcess,
+                     double* sourceVarPtr);
     void getAddress(const char* name, int compType, BMI_GETVAR dllGetVar, double** sourceVarPtr, int* processes,
                     int nProc, double& transfer);
     double* send(const char* name, int compType, double* sourceVarPtr, int* processes, int nProc, double* transfer);
@@ -162,28 +165,28 @@ private:
     double transferValue;
 
     // Additional destructor routine
-    void deleteControlBlock(dimr_control_block);
+    void deleteControlBlock(dimr_control_block cb);
 
     // Additional run routines
-    void runStartBlock(dimr_control_block*, double, int);
-    void runParallelUpdate(dimr_control_block*, double);
+    void runStartBlock(dimr_control_block* cb, double tStep, int phase);
+    void runParallelUpdate(dimr_control_block* cb, double tStep);
 
-    void scanControl(XmlTree*, dimr_control_block*);
-    void scanGlobalSettings(XmlTree*);
-    void scanUnits(XmlTree*);
-    void scanComponent(XmlTree*, dimr_component*);
-    void scanCoupler(XmlTree*, dimr_coupler*);
+    void scanControl(XmlTree* controlBlockXml, dimr_control_block* controlBlock);
+    void scanGlobalSettings(XmlTree* rootXml);
+    void scanUnits(XmlTree* rootXml);
+    void scanComponent(XmlTree* xmlComponent, dimr_component* newComp);
+    void scanCoupler(XmlTree* xmlCoupler, dimr_coupler* newCoup);
 
-    dimr_component* getComponent(const char*);
+    dimr_component* getComponent(const char* compName);
 
-    dimr_coupler* getCoupler(const char*);
+    dimr_coupler* getCoupler(const char* couplerName);
 
     bool IsCouplerItemTypePTR(int couplerItem);
 
-    void char_to_ints(const char*, int**, int*);
+    void char_to_ints(const char* line, int** iarr, int* count);
 
     std::map<std::string, int> ncfiles;
-    static void _log(Level, const char*); /* BMILogger function */
+    static void _log(Level level, const char* msg); /* BMILogger function */
     Clock::Timestamp timerStartStamp;
     Clock::Timestamp timerSumStamp;
 };

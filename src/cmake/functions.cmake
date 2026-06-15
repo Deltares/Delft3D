@@ -1,3 +1,30 @@
+# strip_boost_header_only_deps
+# Boost's CMake config conservatively declares compile-time header
+# dependencies (e.g. thread -> atomic, chrono, container) as
+# INTERFACE_LINK_LIBRARIES. These are not actual runtime DLL dependencies
+# (verified via dumpbin /dependents), but CMake's TARGET_RUNTIME_DLLS
+# walks INTERFACE_LINK_LIBRARIES and picks them up anyway. This function
+# strips those header-only transitive deps from the given Boost targets
+# so the corresponding DLLs don't get installed.
+#
+# Arguments
+#   TARGETS       : List of Boost targets to clean (e.g. Boost::thread Boost::log)
+#   EXCLUDE_DEPS  : List of Boost targets to remove from INTERFACE_LINK_LIBRARIES
+function(strip_boost_header_only_deps)
+    cmake_parse_arguments("" "" "" "TARGETS;EXCLUDE_DEPS" ${ARGN})
+    foreach(_target IN LISTS _TARGETS)
+        if(TARGET ${_target})
+            get_target_property(_libs ${_target} INTERFACE_LINK_LIBRARIES)
+            if(_libs)
+                foreach(_dep IN LISTS _EXCLUDE_DEPS)
+                    list(REMOVE_ITEM _libs ${_dep})
+                endforeach()
+                set_target_properties(${_target} PROPERTIES INTERFACE_LINK_LIBRARIES "${_libs}")
+            endif()
+        endif()
+    endforeach()
+endfunction()
+
 # create_target
 # Creates a target (library or executable) of a certain module
 #
@@ -53,7 +80,22 @@ function(create_target target_name source_group_name)
     endif()
 
     # combine all the given files (if any of the parameters is given)
-    set(all_source ${op_src_files} ${op_resource_files} ${source})
+    # Separate .rc files from other resource files (e.g. .F90 version files).
+    # RC files are compiled in a separate object library to avoid resource
+    # compiler command line length issues with include directories.
+    set(rc_sources "")
+    set(non_rc_resources "")
+    if(DEFINED op_resource_files)
+        foreach(f IN LISTS op_resource_files)
+            if(f MATCHES "\\.rc$")
+                list(APPEND rc_sources ${f})
+            else()
+                list(APPEND non_rc_resources ${f})
+            endif()
+        endforeach()
+    endif()
+
+    set(all_source ${op_src_files} ${non_rc_resources} ${source})
 
     if(${op_target_type} STREQUAL "library")
         if (op_shared)
@@ -64,6 +106,11 @@ function(create_target target_name source_group_name)
     else()
         # executable
         add_executable(${target_name} ${all_source})
+    endif()
+
+    if(rc_sources)
+        add_rc_object_library(${target_name} "${rc_sources}" "${version_include_dir}")
+        target_link_libraries(${target_name} PRIVATE ${target_name}_rc)
     endif()
     # Set the language of the target.
     if(UNIX)
@@ -88,11 +135,37 @@ function(create_target target_name source_group_name)
 
 endfunction()
 
+# add_rc_object_library
+# Creates a separate OBJECT library for .rc resource files, compiled as C with
+# only the specified include directories. This prevents the resource compiler
+# command line from exceeding the Windows length limit when many transitive
+# include paths (e.g. from Conan packages) are inherited by the main target.
+# The resulting object library should be linked into the main target.
+#
+# Arguments:
+#   target_name      : The name of the main target (used to derive the object library name).
+#   rc_files         : List of .rc files to compile.
+#   include_dirs     : Include directories the .rc files actually need.
+#
+# Usage:
+#   add_rc_object_library(my_target "${rc_version_file}" "${version_include_dir}")
+#   target_link_libraries(my_target PRIVATE my_target_rc)
+function(add_rc_object_library target_name rc_files include_dirs)
+    set(rc_lib_name ${target_name}_rc)
+    if(WIN32)
+        add_library(${rc_lib_name} OBJECT ${rc_files})
+        set_target_properties(${rc_lib_name} PROPERTIES LINKER_LANGUAGE C)
+        target_include_directories(${rc_lib_name} PRIVATE ${include_dirs})
+        set_target_properties(${rc_lib_name} PROPERTIES FOLDER "rc_objects")
+    else()
+        add_library(${rc_lib_name} INTERFACE)
+    endif()
+endfunction()
 
 # Create template for Visual Studio environment paths for debugging on Windows
 function(create_vs_user_files)
     cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/bin/$(TargetName).exe" TO_NATIVE_PATH_LIST debugcommand)
-    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/lib/;${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
+    cmake_path(CONVERT "${CMAKE_INSTALL_PREFIX}/share/" TO_NATIVE_PATH_LIST path_prefix)
     set(envpath "PATH=${path_prefix};%PATH%")
     set(userfilename "${CMAKE_BINARY_DIR}/template.vfproj.user")
     file(
@@ -131,9 +204,6 @@ function(configure_visual_studio_user_file executable_name)
     endif()
 endfunction()
 
-
-
-
 # get_fortran_source_files
 # Gathers Fortran *.f or *.f90 files from a given directory.
 #
@@ -160,11 +230,11 @@ endfunction()
 # Return
 # source_files : The source files that were gathered.
 function(get_fortran_source_files_recursive source_directory source_files)
-    file(GLOB_RECURSE source ${source_directory} *.f90
-                        ${source_directory} *.F90
-                        ${source_directory} *.for
-                        ${source_directory} *.f
-                        ${source_directory} *.F)
+    file(GLOB_RECURSE source ${source_directory}/*.f90
+                        ${source_directory}/*.F90
+                        ${source_directory}/*.for
+                        ${source_directory}/*.f
+                        ${source_directory}/*.F)
     set(${source_files} ${source} PARENT_SCOPE)
 endfunction()
 
@@ -187,8 +257,6 @@ function(get_module_include_path module_path library_name return_include_path)
 
     set(${return_include_path} ${public_include_path} PARENT_SCOPE)
 endfunction()
-
-
 
 # configure_package_installer
 # Configures a package for installing.
@@ -214,8 +282,6 @@ function(configure_package_installer name description_file  major minor build ge
   include(CPack)
 endfunction(configure_package_installer)
 
-
-
 # set_rpath
 # Find all binaries in "targetDir" and set rpath to "rpathValue" in these binaries
 # This function is called from the "install_and_bundle.cmake" files
@@ -226,7 +292,6 @@ endfunction(configure_package_installer)
 function(set_rpath targetDir rpathValue)
   execute_process(COMMAND find "${targetDir}" -type f -exec bash -c "patchelf --set-rpath '${rpathValue}' $1" _ {} \; -exec echo "patched rpath of: " {} \;)
 endfunction(set_rpath)
-
 
 # Use the `create_test` cmake function to create a unit test by providing the following arguments.
 # test_name:
@@ -304,7 +369,7 @@ function(create_test test_name)
         set(lib_path "LD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:$ENV{LD_LIBRARY_PATH}")
     endif (UNIX)
     if (WIN32)
-        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/lib\;$ENV{PATH}")
+        set(lib_path "PATH=${CMAKE_INSTALL_PREFIX}/bin\;$ENV{PATH}")
     endif (WIN32)
 
 

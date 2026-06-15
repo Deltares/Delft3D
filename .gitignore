@@ -57,11 +57,12 @@ src/**/FortranCInterface.h
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
+/src/delft3d-apidoc
+/src/delwaq-apidoc
 
 # dvc: ignore data but allow .dvc files
 test/deltares_testbench/data/cases/*
 !test/deltares_testbench/data/cases/**/*.dvc
-/src/delft3d-apidoc
 
 # precice
 examples/dflowfm/**/precice_debug_output.txt
