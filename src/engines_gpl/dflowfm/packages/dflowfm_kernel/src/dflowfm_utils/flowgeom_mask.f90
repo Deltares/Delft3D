@@ -30,7 +30,7 @@
 
 module m_flowgeom_mask
    use precision_basics, only: dp
-   use fm_location_types, only: UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+   use fm_location_types, only: UNC_LOC_CN, UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
 
    implicit none(type, external)
 
@@ -68,6 +68,7 @@ contains
    !! Can be called for the various topological target location types (e.g., cells, flow links, etc.)
    subroutine construct_mask_integer_spatial_location(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
       use m_flowgeom, only: lnx, ndx
+      use network_data, only: numk
 
       ! Parameters
       integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
@@ -83,6 +84,8 @@ contains
       ! Allocate and initialize mask array based on location type.
       if (.not. allocated(mask)) then
          select case (location_type)
+         case (UNC_LOC_CN)
+            num_elements = numk
          case (UNC_LOC_S, UNC_LOC_S3D)
             num_elements = ndx
          case (UNC_LOC_U)
