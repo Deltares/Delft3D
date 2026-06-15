@@ -157,13 +157,6 @@ contains
             
       allocate (character(len=0) :: positive)
       allocate (character(len=0) :: zunits)
-      
-      ! First determine old or new (his) nc file, dont like using file name to identify type but see no other way  
-      if (index(ncname,'_his.nc') > 0) then
-          ncptr%ncType = 2
-      else
-          ncptr%ncType = 1
-      endif
 
       ierr = nf90_open(trim(ncname), NF90_NOWRITE, ncptr%ncid)
       if (ierr /= NF90_NOERR) then
