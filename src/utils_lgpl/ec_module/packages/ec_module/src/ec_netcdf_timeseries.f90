@@ -245,28 +245,10 @@ contains
          positive = ''
          zunits = ''
          ! First read general information, then, only for old files, read z values 
-         if (strcmpi(trim(ncptr%variable_names(iVars)),'z') .or. strcmpi(trim(ncptr%variable_names(iVars)),'zcoordinate_c')) then 
-             ierr = ncu_get_att(ncptr%ncid, iVars, 'positive', positive)
-             if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
-                ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
-                ncptr%layervarid = iVars
-                ncptr%layerdimid = var_dimids(1, iVars) ! For convenience also store the dimension ID explicitly
-                ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
-                allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
-                if (ierr /= 0) return
-                ierr = ncu_get_att(ncptr%ncid, iVars, 'units', zunits)
-                if (ierr /= NF90_NOERR) return
-                if (strcmpi(zunits, 'm')) then
-                   if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
-                   if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
-                else
-                   if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
-                   if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
-                end if
-                if (ncptr%vptyp < 1) then
-                   call set_EC_Message("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
-                end if
-             end if
+         if (strcmpi(trim(ncptr%variable_names(iVars)),'z')) then
+            ncptr%zcoordid = iVars
+         else if (strcmpi(trim(ncptr%variable_names(iVars)),'zcoordinate_c')) then
+            ncptr%zcoordid = iVars
          end if
          
          if (strcmpi(trim(ncptr%variable_names(iVars)),'z')) then
@@ -274,6 +256,31 @@ contains
              if (ierr /= NF90_NOERR) return
          endif 
       end do
+
+      if (ncptr%zcoordid /= -1) then
+            ierr = ncu_get_att(ncptr%ncid, ncptr%zcoordid, 'positive', positive)
+            ncptr%isZTimeVarying = ncptr%variable_dimension(ncptr%zcoordid) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
+            if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
+               ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
+               ncptr%layervarid = ncptr%zcoordid
+               ncptr%layerdimid = var_dimids(1, ncptr%zcoordid) ! For convenience also store the dimension ID explicitly
+               ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
+               allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
+               if (ierr /= 0) return
+               ierr = ncu_get_att(ncptr%ncid, ncptr%zcoordid, 'units', zunits)
+               if (ierr /= NF90_NOERR) return
+               if (strcmpi(zunits, 'm')) then
+                  if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
+                  if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
+               else
+                  if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
+                  if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
+               end if
+               if (ncptr%vptyp < 1) then
+                  call set_EC_Message("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
+               end if
+            end if
+      end if
       
       ! Determine if variable represent first, component of vector quantity
       ! if so, specify names of firts and second component

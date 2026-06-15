@@ -112,6 +112,7 @@ module m_ec_typedefs
       real(hp), pointer :: vp(:) => null() !< vertical positions
       integer :: numlay = 1 !< number of vertical layers
       integer :: zInterpolationType !< Type of vertical interpolation
+      logical :: isZTimeVarying = .false. !< TRUE: vertical coordinate is time varying, FALSE: vertical coordinate is constant, -1: not yet determined
       character(len=maxFileNameLen) :: bcname = '' !< Name (identifier) for this BC block (assumed to be uniq)
       character(len=maxFileNameLen) :: qname = '' !< Quantity name with which all found quantities must identify
       character(len=maxFileNameLen) :: fname = '' !< Filename the data originates from
@@ -198,6 +199,8 @@ module m_ec_typedefs
       integer :: layervarid = -1 !< var_id for the verical layer variable
       integer :: layerdimid = -1 !< dim_id for the vertical coordinate
       character(len=50) :: timeunit !< netcdf-convention time unit definition
+      integer :: zcoordid = -1 !< var_id for the vertical coordinate variable in the netcdf file
+      logical :: isZTimeVarying = .false. !< TRUE: vertical coordinate is time varying, FALSE: vertical coordinate is constant
       integer :: vptyp = -1 !< vertical coordinate type
       real(hp), allocatable, dimension(:) :: vp !< vertical coordinate (layers)
    end type tEcNetCDF

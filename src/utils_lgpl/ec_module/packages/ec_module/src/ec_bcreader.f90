@@ -768,7 +768,6 @@ contains
     integer(kind=8)                :: savepos    !< saved position in file, for mf_read to enabled rewinding
     real(kind=hp), dimension(1:1)  :: ec_timesteps ! to read in source time from file block
     real(kind=hp)                  :: amplitude
-    integer, dimension(1)          :: nrTmp      ! Used to read vertical coordinates from his file
 
     bcPtr => fileReaderPtr%bc
 

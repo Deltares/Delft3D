@@ -198,6 +198,7 @@ contains
 
          bcBlockPtr%ftype = BC_FTYPE_NETCDF
          bcBlockPtr%vptyp = bcBlockPtr%ncptr%vptyp
+         bcBlockPtr%isZTimeVarying = bcBlockPtr%ncptr%isZTimeVarying
          if (allocated(bcBlockPtr%ncptr%vp)) then
             bcBlockPtr%vp => bcBlockPtr%ncptr%vp
             bcBlockPtr%numlay = bcBlockPtr%ncptr%nLayer
@@ -1959,7 +1960,7 @@ contains
                exit
             end if
          end if
-         if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D) then
+         if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D .and. bcBlockPtr%isZTimeVarying) then
             zTargetItemId = ecInstanceCreateItem(instancePtr)
 
             fieldId = ecInstanceCreateField(instancePtr)
@@ -2024,26 +2025,6 @@ contains
       if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, itemPT%id)) return
 
       if (zTargetItemId /= 0) then
-
-         ! ! Create a separate file reader for Z values from the NetCDF file
-         ! ! Use the same BCBlock parameters as the main quantity, but for Z coordinate
-         ! zFileReaderId = ecInstanceCreateFileReader(instancePtr)
-         ! if (zFileReaderId == ec_undef_int) return
-         ! zFileReaderPtr => ecSupportFindFileReader(instancePtr, zFileReaderId)
-         ! zFileReaderPtr%vectormax = 1  ! Z is scalar
-         
-         ! ! Copy time frame information from the main file reader
-         ! zFileReaderPtr%tframe%k_refdate = fileReaderPtr%tframe%k_refdate
-         ! zFileReaderPtr%tframe%k_timezone = fileReaderPtr%tframe%k_timezone
-         ! zFileReaderPtr%tframe%k_timestep_unit = fileReaderPtr%tframe%k_timestep_unit
-         ! zFileReaderPtr%tframe%dtnodal = fileReaderPtr%tframe%dtnodal
-         ! zFileReaderPtr%ofType = provFile_t3D
-         ! zFileReaderPtr%fileName = bctfilename
-
-         
-         ! Add Z item to the new file reader
-         ! if (.not. ecFileReaderAddItem(instancePtr, zFileReaderId, zTargetItemId)) return         
-         ! if (.not. ecFileReaderAddItem(instancePtr, zFileReaderId, zTargetItemId)) return
          if (.not. ecFileReaderAddItem(instancePtr, fileReaderPtr%id, zTargetItemId)) return
          zItemPT => ecSupportFindItem(instancePtr, zTargetItemId)
          zItemPT%targetFieldPtr%arr1dPtr => itemPT%elementSetPtr%z
