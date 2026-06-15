@@ -227,14 +227,14 @@ class TestMduModel(unittest.TestCase):
     def test_get_intenum(self):
         model = MduModel()
         model.load_from_file(MDU_PATH)
-        result = model.get_int("general.autostart")
+        result = model.get_enum("general.autostart")
         self.assertIsInstance(result, int)
         self.assertEqual(result, 0)
 
     def test_get_enum(self):
         model = MduModel()
         model.load_from_file(MDU_PATH)
-        result = model.get_int("general.filetype")
+        result = model.get_enum("general.filetype")
         self.assertIsInstance(result, int)
         self.assertEqual(result, 0)
 
@@ -273,12 +273,12 @@ class TestMduModel(unittest.TestCase):
     def test_get_intenum_default_value(self):
         model = MduModel()
         model.load_from_lines(MDU_MINIMAL_REQUIRED_ONLY)
-        self.assertEqual(model.get_int("general.autoStart"), 0)
+        self.assertEqual(model.get_enum("general.autoStart"), 0)
 
     def test_get_enum_default_value(self):
         model = MduModel()
         model.load_from_lines(MDU_MINIMAL_REQUIRED_ONLY)
-        self.assertEqual(model.get_int("numerics.flowSolver"), 0)
+        self.assertEqual(model.get_enum("numerics.flowSolver"), 0)
 
     def test_get_double_list_default_value(self):
         model = MduModel()
@@ -325,16 +325,16 @@ class TestMduModel(unittest.TestCase):
     def test_set_intenum(self):
         model = MduModel()
         model.load_from_file(MDU_PATH)
-        self.assertNotEqual(model.get_int("general.autostart"), 1)
-        model.set_int("general.autostart", 1)
-        self.assertEqual(model.get_int("general.autostart"), 1)
+        self.assertNotEqual(model.get_enum("general.autostart"), 1)
+        model.set_enum("general.autostart", 1)
+        self.assertEqual(model.get_enum("general.autostart"), 1)
 
     def test_set_enum(self):
         model = MduModel()
         model.load_from_file(MDU_PATH)
-        self.assertNotEqual(model.get_int("numerics.flowSolver"), 1)
-        model.set_int("numerics.flowSolver", 1)
-        self.assertEqual(model.get_int("numerics.flowSolver"), 1)
+        self.assertNotEqual(model.get_enum("numerics.flowSolver"), 1)
+        model.set_enum("numerics.flowSolver", 1)
+        self.assertEqual(model.get_enum("numerics.flowSolver"), 1)
 
     def test_set_path(self):
         model = MduModel()

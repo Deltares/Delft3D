@@ -27,10 +27,10 @@ namespace dflowfm_io
                         .key               = "fileType",
                         .required          = true,
                         .value_type        = ValueType::Enum,
-                        .default_value     = std::string{"modelDef"},
+                        .default_value     = EnumValue{0},
                         .default_value_str = "modelDef",
                         .enum_values       = {
-                            {"modelDef", "model definition file"}
+                            {0, "modelDef"}
                         },
                         .description       = "File type. Do not edit this."
                     },
@@ -44,12 +44,12 @@ namespace dflowfm_io
                         .key               = "autoStart",
                         .required          = false,
                         .value_type        = ValueType::IntEnum,
-                        .default_value     = 0,
+                        .default_value     = EnumValue{0},
                         .default_value_str = "0",
                         .enum_values       = {
-                            {"0", "no"},
-                            {"1", "autostart"},
-                            {"2", "autostartstop"}
+                            {0, "no"},
+                            {1, "autostart"},
+                            {2, "autostartstop"}
                         },
                         .description = "Autostart simulation after loading MDU or not."
                     },
@@ -115,11 +115,11 @@ namespace dflowfm_io
                         .key           = "flowSolver",
                         .required      = false,
                         .value_type    = ValueType::Enum,
-                        .default_value = 0,
+                        .default_value = EnumValue{0},
                         .default_value_str = "generic1d2d3d",
                         .enum_values       = {
-                            {"generic1d2d3d", "generic solver"},
-                            {"implicit1d", "implicit 1D solver"}
+                            {0, "generic1d2d3d"},
+                            {1, "implicit1d"}
                         },
                         .description   = "Flow solver."
                     },

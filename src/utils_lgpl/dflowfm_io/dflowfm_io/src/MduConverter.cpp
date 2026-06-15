@@ -14,7 +14,6 @@ using namespace ini;
 
 namespace dflowfm_io
 {
-
     static const IniProperty* FindProperty(
         const IniData& iniData,
         const std::string& sectionName,
@@ -27,54 +26,44 @@ namespace dflowfm_io
         return &section.GetProperty(propertyKey);
     }
 
-    static std::optional<int> ConvertEnum(
+    static std::optional<EnumValue> TryConvertEnum(
         const IniProperty& iniProperty,
         const PropertySchema& propertySchema)
     {
-        auto str_value = iniProperty.GetValue();
-        if (str_value.empty())
-            return std::nullopt;
+        const auto str_value = iniProperty.GetValue();
+        if (str_value.empty()) return std::nullopt;
 
-        int index = 0;
-        for (const auto& [k, v] : propertySchema.enum_values)
+        for (const auto& [number, name] : propertySchema.enum_values)
         {
-            if (iequals(k, str_value))
-                return index;
-            ++index;
+            if (iequals(name, str_value)) return EnumValue{number};
         }
-
         return std::nullopt;
     }
 
-    static std::optional<int> ConvertIntEnum(
+    static std::optional<EnumValue> TryConvertIntEnum(
         const IniProperty& iniProperty,
         const PropertySchema& propertySchema)
     {
-        auto int_value = iniProperty.TryGetValue<int>();
-        if (!int_value.has_value())
-            return std::nullopt;
+        const auto int_value = iniProperty.TryGetValue<int>();
+        if (!int_value.has_value()) return std::nullopt;
 
-        int val = *int_value;
-        if (propertySchema.enum_values.count(std::to_string(val)) > 0)
-            return val;
+        auto it = propertySchema.enum_values.find(*int_value);
+        if (it == propertySchema.enum_values.end()) return std::nullopt;
 
-        return std::nullopt;
+        return EnumValue{it->first};
     }
 
     static std::string ConvertEnumToString(
-        int index,
+        EnumValue enum_value,
         const PropertySchema& propertySchema)
     {
-        int i = 0;
-        for (const auto& [k, v] : propertySchema.enum_values)
+        auto it = propertySchema.enum_values.find(enum_value.value);
+        if (it == propertySchema.enum_values.end())
         {
-            if (i == index)
-                return k;
-            ++i;
+            throw std::out_of_range(std::format("enum numerical value {} out of range for property '{}'.",
+                                                enum_value.value, propertySchema.key));
         }
-
-        throw std::out_of_range(std::format("enum index {} out of range for property '{}'.",
-            index, propertySchema.key));
+        return it->second;
     }
 
     static std::optional<Value> GetPropertyValue(
@@ -94,9 +83,9 @@ namespace dflowfm_io
             case ValueType::Float:
                 return iniProperty.TryGetValue<double>();
             case ValueType::Enum:
-                return ConvertEnum(iniProperty, propertySchema);
+                return TryConvertEnum(iniProperty, propertySchema);
             case ValueType::IntEnum:
-                return ConvertIntEnum(iniProperty, propertySchema);
+                return TryConvertIntEnum(iniProperty, propertySchema);
             case ValueType::DateTime:
                 return iniProperty.TryGetValue<std::chrono::system_clock::time_point>();
             case ValueType::StringList:
@@ -110,7 +99,7 @@ namespace dflowfm_io
         }
     }
 
-    static IniProperty CreateProperty(
+    static IniProperty CreateIniProperty(
         const MduData& mduData,
         const PropertySchema& propertySchema,
         const std::string& key)
@@ -128,9 +117,9 @@ namespace dflowfm_io
             case ValueType::Float:
                 return IniProperty::Create(propertySchema.key, mduData.getValueAs<double>(key));
             case ValueType::Enum:
-                return IniProperty::Create(propertySchema.key, ConvertEnumToString(mduData.getValueAs<int>(key), propertySchema));
+                return IniProperty::Create(propertySchema.key, ConvertEnumToString(mduData.getValueAs<EnumValue>(key), propertySchema));
             case ValueType::IntEnum:
-                return IniProperty::Create(propertySchema.key, mduData.getValueAs<int>(key));
+                return IniProperty::Create(propertySchema.key, mduData.getValueAs<EnumValue>(key).value);
             case ValueType::DateTime:
                 return IniProperty::Create(propertySchema.key, mduData.getValueAs<std::chrono::system_clock::time_point>(key));
             case ValueType::StringList:
@@ -209,7 +198,7 @@ namespace dflowfm_io
                     continue;
                 }
 
-                IniProperty property = CreateProperty(mduData, propertySchema, key);
+                IniProperty property = CreateIniProperty(mduData, propertySchema, key);
                 property.SetComment(propertySchema.description);
 
                 iniSection.AddProperty(std::move(property));

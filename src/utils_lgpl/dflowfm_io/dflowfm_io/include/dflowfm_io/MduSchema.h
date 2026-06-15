@@ -27,12 +27,19 @@ namespace dflowfm_io
         DateTime,
     };
 
+    // Wrapper for enum values so they can be distinguished from regular integers in the Value variant.
+    struct EnumValue
+    {
+        int value;
+    };
+
     using Value = std::variant<
         std::string,
         int,
         double,
         bool,
         std::filesystem::path,
+        EnumValue,
         std::chrono::system_clock::time_point,
         std::vector<std::string>,
         std::vector<std::filesystem::path>,
@@ -46,7 +53,7 @@ namespace dflowfm_io
         ValueType value_type;
         std::optional<Value> default_value;
         std::string default_value_str;
-        std::map<std::string, std::string> enum_values;
+        std::map<int, std::string> enum_values;
         std::string description;
     };
 

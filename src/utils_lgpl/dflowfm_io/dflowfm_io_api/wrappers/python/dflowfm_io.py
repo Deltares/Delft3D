@@ -164,6 +164,14 @@ class MduModel:
         arr = (ctypes.c_double * len(values))(*values)
         _check_result(_lib.mdu_model_set_double_list(self._handle, key.encode("utf-8"), arr, ctypes.c_size_t(len(values))))
 
+    def get_enum(self, key: str) -> int:
+        value = ctypes.c_int()
+        _check_result(_lib.mdu_model_get_enum(self._handle, key.encode("utf-8"), ctypes.byref(value)))
+        return value.value
+
+    def set_enum(self, key: str, value: int) -> None:
+        _check_result(_lib.mdu_model_set_enum(self._handle, key.encode("utf-8"), ctypes.c_int(value)))
+
     def get_datetime(self, key: str) -> datetime:
         epoch_out = ctypes.c_int64()
         _check_result(_lib.mdu_model_get_datetime(self._handle, key.encode("utf-8"), ctypes.byref(epoch_out)))
