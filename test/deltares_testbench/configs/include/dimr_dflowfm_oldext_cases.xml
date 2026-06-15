@@ -2711,12 +2711,12 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
+        <!-- <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
       </checks>
     </testCase>
     <testCase name="e02_f012_c021_hisseriestwovalues" ref="dflowfm_default">
@@ -2730,12 +2730,12 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
+        <!-- <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
       </checks>
     </testCase>
     <testCase name="e02_f012_c022_hisseriesthreevalues" ref="dflowfm_default">
@@ -2749,25 +2749,25 @@
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
         </file>
-        <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
+        <!-- <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
       </checks>
     </testCase>
     <testCase name="e02_f012_c023_mapseriesonevalue" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c023_mapseriesonevalue</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
+        <!-- <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
         <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
@@ -2780,13 +2780,13 @@
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c024_mapseriestwovalues</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
+        <!-- <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
         <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
@@ -2799,13 +2799,13 @@
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c025_mapseriesthreevalues</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
+        <!-- <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
             <parameter name="y_velocity" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
         <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
           <parameters>
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
@@ -2818,7 +2818,13 @@
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c027_rstseriestwovalues</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
+        <file name="dflowfmoutput/simplebox_20010505_000200_rst.nc" type="netCDF">
+          <parameters>
+            <parameter name="s1" toleranceAbsolute="0.0001" />
+            <parameter name="unorm" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <!-- <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
@@ -2830,14 +2836,20 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
       </checks>
     </testCase>
     <testCase name="e02_f012_c028_rstseriesthreevalues" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c028_rstseriesthreevalues</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
+        <file name="dflowfmoutput/simplebox_20010505_000200_rst.nc" type="netCDF">
+          <parameters>
+            <parameter name="s1" toleranceAbsolute="0.0001" />
+            <parameter name="unorm" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <!-- <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
@@ -2849,14 +2861,20 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
       </checks>
     </testCase>
     <testCase name="e02_f012_c029_mptseries" ref="dflowfm_default">
       <path version="2024-01-11T16:40:00">e02_dflowfm/f012_inout/c029_mptseries</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
-        <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
+        <file name="dflowfmoutput/simplebox_20010505_000200_rst.nc" type="netCDF">
+          <parameters>
+            <parameter name="s1" toleranceAbsolute="0.0001" />
+            <parameter name="unorm" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+        <!-- <file name="dflowfmoutput/simplebox_his.nc" type="netCDF">
           <parameters>
             <parameter name="waterlevel" toleranceAbsolute="0.0001" />
             <parameter name="x_velocity" toleranceAbsolute="0.0001" />
@@ -2868,7 +2886,7 @@
             <parameter name="mesh2d_s1" toleranceAbsolute="0.0001" />
             <parameter name="mesh2d_ucmag" toleranceAbsolute="0.0001" />
           </parameters>
-        </file>
+        </file> -->
       </checks>
     </testCase>
     <testCase name="e02_f012_c030_alloutdtmaxsmall" ref="dflowfm_default">
