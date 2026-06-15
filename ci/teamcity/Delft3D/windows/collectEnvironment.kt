@@ -72,7 +72,10 @@ object WindowsCollectEnvironment : BuildType({
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/**
+                +:ci/teamcity/Delft3D/windows/collectEnvironment.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
                 param("trigger.type", "vcs")
