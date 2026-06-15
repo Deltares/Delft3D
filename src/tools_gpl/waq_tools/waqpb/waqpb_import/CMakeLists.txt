@@ -19,7 +19,7 @@ set(oss_dependencies    deltares_common
                         waq_utils_f
                         waqpb_lib)
 
-target_link_libraries(${executable_name} ${oss_dependencies})
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 # Set additional compilation properties
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})

@@ -439,10 +439,10 @@ contains
          end if
 
          do i = 1, source_sinks%num_total - 1
-            if (source_sinks%indices(1, i) /= 0 .and. kk == source_sinks%indices(1, i)) then
+            if (source_sinks%indices(i, 1) /= 0 .and. kk == source_sinks%indices(i, 1)) then
                write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with FROM point of ', trim(source_sinks%name(i))
                call warn_flush()
-            else if (source_sinks%indices(4, i) /= 0 .and. kk == source_sinks%indices(4, i)) then
+            else if (source_sinks%indices(i, 4) /= 0 .and. kk == source_sinks%indices(i, 4)) then
                write (msgbuf, '(4a)') 'FROM point of ', trim(source_sinks%name(source_sinks%num_total)), ' coincides with TO   point of ', trim(source_sinks%name(i))
                call warn_flush()
             end if
