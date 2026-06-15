@@ -1380,7 +1380,6 @@ contains
          jafrculin = 1
       end if
 
-      call prop_get(md_ptr, 'physics', 'Umodlin', umodlin)
       call prop_get(md_ptr, 'physics', 'Vicouv', vicouv)
       call prop_get(md_ptr, 'physics', 'Dicouv', dicouv)
       call prop_get(md_ptr, 'physics', 'Vicoww', vicoww)
@@ -3381,9 +3380,6 @@ contains
       call prop_set(prop_ptr, 'physics', 'unifFrictCoefLin', frcunilin, 'Uniform linear friction coefficient')
       if (writeall .or. frcuni1Dgrounlay > 0) then
          call prop_set(prop_ptr, 'physics', 'unifFrictCoef1DgrLay', frcuni1Dgrounlay, 'Uniform ground layer friction coefficient for ocean models (m/s) (0: no friction)')
-      end if
-      if (writeall) then
-         call prop_set(prop_ptr, 'physics', 'Umodlin', umodlin, 'Linear friction umod, for friction_type=4,5,6')
       end if
       call prop_set(prop_ptr, 'physics', 'Vicouv', vicouv, 'Uniform horizontal eddy viscosity (m2/s)')
       call prop_set(prop_ptr, 'physics', 'Dicouv', dicouv, 'Uniform horizontal eddy diffusivity (m2/s)')

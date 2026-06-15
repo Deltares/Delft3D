@@ -54,7 +54,6 @@ module m_physcoef
 
    integer :: ifrctypuni !< 0=chezy, 1=manning, 2=white colebrook D3D, 3=white colebrook Waqua (now only 2D)
    real(kind=dp) :: frcunilin !< uniform friction coeff
-   real(kind=dp) :: umodlin !< linear friction umod, friction type 4,5,6
 
    real(kind=dp) :: wall_ks !< vertical wall Nikuradse roughness (m)
    real(kind=dp) :: wall_z0 !< z0 for vertical walls, ~= Ks/30    (m)
@@ -138,7 +137,6 @@ contains
       frcmax = 0.0_dp
       ifrctypuni = 1
       frcunilin = 0.0_dp
-      umodlin = 1.0_dp
       wall_ks = 0.0_dp
       vicouv = 0.1_dp
       dicouv = 0.1_dp

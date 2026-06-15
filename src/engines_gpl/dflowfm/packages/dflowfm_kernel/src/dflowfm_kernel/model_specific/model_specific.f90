@@ -64,7 +64,7 @@ contains
       use m_flow
       use m_flowtimes
       use unstruc_colors
-      use m_equatorial, only: ampliforced, amplifreeL, amplitotal, ndxforced, ndxfreeL, ndtforced, ndtfreeL, cflforced, cflfreeL, tforce, tfreeL, amplicomp
+      use m_equatorial, only: ampliforced, amplifreeL, amplitotal, ndxforced, ndxfreeL, ndtforced, ndtfreeL, cflforced, cflfreeL, tforce, tfreeL, amplicomp, UMODLIN
       use m_statistics
       use m_monitoring_crosssections
       use time_module, only: seconds_to_datetimestring
@@ -129,7 +129,7 @@ contains
          tex = 'Teta    =            , Manlin =            , Umod =            '
          write (TEX(10:18), '(F9.5)') teta0
          write (TEX(32:40), '(F9.5)') frcuni
-         write (TEX(52:60), '(F9.5)') umodlin
+         write (TEX(52:60), '(F9.5)') UMODLIN
          call ICTEXT(trim(TEX), 6, 36, 221)
 
          tex = 'Nforced =            , Nfree  =            , Dept =            '
@@ -332,7 +332,7 @@ contains
          fr = 0
       else
          czf = h**0.1666666 / frcuni
-         fr = ag * umodlin / (czf * czf * h)
+         fr = ag * UMODLIN / (czf * czf * h)
       end if
 
       L = twopi * Ra ! earth's circumference in meters
