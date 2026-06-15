@@ -4,6 +4,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <stdexcept>
+#include <utility>
 
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/StringUtils.h>
