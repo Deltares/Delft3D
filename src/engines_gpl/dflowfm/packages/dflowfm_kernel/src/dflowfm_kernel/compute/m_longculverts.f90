@@ -58,6 +58,7 @@ module m_longculverts
    public find1d2dculvertlinks
    public initialize_Long_Culverts
    public convert1D2DLongCulverts
+   public makelongculverts_commandline
 
    interface realloc
       module procedure reallocLongCulverts
@@ -73,7 +74,7 @@ contains
       end if
 
       nlongculverts = 0 !< Number of longculverts
-
+      newculverts = .false.
       ! Remaining of variables is handled in reset_longculverts()
       call reset_longculverts()
    end subroutine default_longculverts
@@ -95,7 +96,7 @@ contains
       use messagehandling, only: mess, level_error, msgbuf, err_flush, setmessage
       use properties, only: tree_create, prop_inifile, tree_create_node, tree_put_data, node_value, tree_num_nodes, tree_get_name, prop_get, prop_set, tree_remove_child_by_name, prop_write_inifile, tree_destroy
       use unstruc_channel_flow, only: st_longculvert, network
-      use m_save_ugrid_state, only: nbranchids, meshgeom1d
+      use m_save_ugrid_state, only: nbranchids
       use system_utils, only: split_filename, cat_filename
       use string_module, only: strcmpi
       use m_filez, only: newfil
@@ -131,9 +132,9 @@ contains
       integer :: istart
       integer :: nlongculverts0
       integer :: mout
-      integer :: longculvertindex
       character(len=IdLen) :: temppath, tempname, tempext
       logical :: write_converted_files_
+      integer :: longculvertindex
 
       ierr = DFM_NOERR
 
@@ -219,11 +220,6 @@ contains
          end if
 
          nlongculverts = nlongculverts + 1
-         if (allocated(nbranchids)) then
-            longculvertindex = meshgeom1d%nbranches
-         else
-            longculvertindex = 0
-         end if
 
          call prop_get(str_ptr, '', 'id', st_id, success)
          if (.not. success) then
@@ -329,6 +325,7 @@ contains
       call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
       call restorepol()
 
+      longculvertindex = nlongculverts0
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
       do i = 1, nstr
          str_ptr => strs_ptr%child_nodes(i)%node_ptr
@@ -352,7 +349,7 @@ contains
             call err_flush()
          else
             longculvertindex = longculvertindex + 1
-            if (size(longculverts(longculvertindex)%netlinks) > 1) then
+            if (size(longculverts(longculvertindex)%netlinks) > 2) then
                call prop_set(str_ptr, '', 'branchId', longculverts(longculvertindex)%branchId)
                call add_longculvert_branch(network, longculverts(longculvertindex))
             else
@@ -368,6 +365,7 @@ contains
             call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(crsdef_output)//''' for writing.')
          else
             call prop_write_inifile(mout, prop_ptr, ierr)
+            close(mout)
          end if
       end if
 
@@ -695,13 +693,39 @@ contains
 
    end subroutine reallocLongCulverts
 
+   !> Sets up a 1D2D entry or exit link for a long culvert: assigns the cross-section,
+   !! width, prof1D and bob arrays for the given flow link.
+   subroutine setup_longculvert_1D2D_link(ilongc, Lf, bl_up, bl_dn)
+      use m_flowgeom, only: wu, bob
+      use unstruc_channel_flow, only: network
+      use m_network, only: t_network
+
+      integer, intent(in) :: ilongc !< Long culvert index
+      integer, intent(in) :: Lf !< Flow link number
+      real(kind=dp), intent(in) :: bl_up !< Bed level at upstream side of this link
+      real(kind=dp), intent(in) :: bl_dn !< Bed level at downstream side of this link
+
+      character(len=idLen) :: link_id
+
+      if (longculverts(ilongc)%is_2D2D()) then
+         link_id = longculverts(ilongc)%contactId
+      else
+         link_id = longculverts(ilongc)%branchId
+      end if
+      call add_longculvert_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
+
+      wu(Lf) = longculverts(ilongc)%width
+      bob(1, Lf) = bl_up
+      bob(2, Lf) = bl_dn
+
+   end subroutine setup_longculvert_1D2D_link
+
    !> Initializes the cross section administration for long culverts in prof1d and other relevant flow geometry arrays.
    !! * Sets netlink numbers and flowlink numbers.
    !> * Fills for the corresponding flow links the bedlevels, bobs and prof1d data.
    subroutine longculvertsToProfs(skiplinks)
       use network_data
       use m_flowgeom
-      use unstruc_channel_flow, only: network
 
       logical, intent(in) :: skiplinks !< Skip determining the flow links or not
 
@@ -771,31 +795,20 @@ contains
                   end if
                end if
             end do
+            ! Entry 1D2D link
             Lf = abs(longculverts(ilongc)%flowlinks(1))
             if (Lf > 0) then
-               block
-                  character(len=idLen) :: link_id
-                  if (longculverts(ilongc)%is_2D2D()) then
-                     link_id = longculverts(ilongc)%contactId
-                  else
-                     link_id = longculverts(ilongc)%branchId
-                  end if
-                  call add_longculvert_1D2D_crosssection(network, Lf, link_id, longculverts(ilongc)%csdefId)
-               end block
-
-               wu(Lf) = longculverts(ilongc)%width
-               bob(1, Lf) = longculverts(ilongc)%bl(1)
-               bob(2, Lf) = bl(ln(2, Lf))
+               !> take max of 1D and 2D bedlevels, as culvert cannot lie below the 2D bedlevel
+               call setup_longculvert_1D2D_link(ilongc, Lf, longculverts(ilongc)%bl(2), &
+                                                max(longculverts(ilongc)%bl(1), bl(ln(2, Lf))))
             end if
+
+            ! Exit 1D2D link
             if (longculverts(ilongc)%numlinks > 1) then
                Lf = abs(longculverts(ilongc)%flowlinks(longculverts(ilongc)%numlinks))
                if (Lf > 0) then
-                  wu(Lf) = longculverts(ilongc)%width
-                  prof1D(1, Lf) = wu(Lf)
-                  prof1D(2, Lf) = longculverts(ilongc)%height
-                  prof1D(3, Lf) = -2
-                  bob(1, Lf) = longculverts(ilongc)%bl(longculverts(ilongc)%numlinks - 1)
-                  bob(2, Lf) = bl(ln(2, Lf))
+                  call setup_longculvert_1D2D_link(ilongc, Lf, longculverts(ilongc)%bl(longculverts(ilongc)%numlinks), &
+                                                   max(longculverts(ilongc)%bl(longculverts(ilongc)%numlinks + 1), bl(ln(2, Lf))))
                end if
             end if
          end do
@@ -1066,21 +1079,38 @@ contains
       write (ipolychar, '(I0)') i_longculvert
       longculvert_name = 'longCulvert_'//trim(ipolychar)
 
-      if (poly_point_count == 2) then
-         numculvertpoints = 2
+      if (poly_point_count <= 3) then
+         !> 2-point and 3-point culverts: only 1D2D links, no branch/meshgeom1d administration.
+         !! All links get kn3typ=5. These culverts are identified by contactId.
+         longculverts(i_longculvert)%contactId = longculvert_name
 
          call longculvert_create_endpoint(xplCulv(1), yplCulv(1), zplCulv(1), k1)
-         call longculvert_create_endpoint(xplCulv(poly_point_count), yplCulv(poly_point_count), zplCulv(poly_point_count), k2)
-         xplCulv(:) = [xk(k1), xk(k2)]
-         yplCulv(:) = [yk(k1), yk(k2)]
+         xplCulv(1) = xk(k1)
+         yplCulv(1) = yk(k1)
 
          kn3typ = 5
+         do j = 2, poly_point_count - 1
+            x2 = xplCulv(j)
+            y2 = yplCulv(j)
+            z2 = zplCulv(j)
+            call setnewpoint(x2, y2, z2, k2)
+            call connectdbn(k1, k2, L)
+            if (allocated(dxe)) then
+               dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
+            end if
+            longculverts(i_longculvert)%netlinks(j - 1) = L
+            k1 = k2
+         end do
+
+         call longculvert_create_endpoint(xplCulv(poly_point_count), yplCulv(poly_point_count), zplCulv(poly_point_count), k2)
+         xplCulv(poly_point_count) = xk(k2)
+         yplCulv(poly_point_count) = yk(k2)
+
          call connectdbn(k1, k2, L)
          if (allocated(dxe)) then
             dxe(L) = dbdistance(xk(k1), yk(k1), xk(k2), yk(k2), jsferic, jasfer3D, dmiss)
          end if
-         longculverts(i_longculvert)%netlinks(1) = L
-         longculverts(i_longculvert)%contactId = longculvert_name
+         longculverts(i_longculvert)%netlinks(poly_point_count - 1) = L
 
       else ! Multi-point culvert
 
@@ -1248,7 +1278,7 @@ contains
    end subroutine addlongculvertcrosssections
 
    !> add special 1D2D crossection for the longculvert and add it to the line2cross array
-   subroutine add_longculvert_1D2D_crosssection(network, flowlink, link_id, cs_def_id)
+   subroutine add_longculvert_crosssection(network, flowlink, link_id, cs_def_id)
       use precision, only: dp
       use m_hash_search, only: hashsearch
       use m_CrossSections, only: realloc
@@ -1267,7 +1297,7 @@ contains
       ! Find cross section definition indices by ID.
       idef = hashsearch(network%CSDefinitions%hashlist, cs_def_id)
       if (idef <= 0) then
-         call SetMessage(LEVEL_ERROR, 'Cross-section definition not found: ' // trim(cs_def_id))
+         call SetMessage(LEVEL_ERROR, 'Cross-section definition not found: '//trim(cs_def_id))
          return
       end if
 
@@ -1276,16 +1306,16 @@ contains
          call realloc(network%crs)
       end if
       icrs = network%crs%count + 1
-      
-      associate(cross_section => network%crs%cross(icrs))
+
+      associate (cross_section => network%crs%cross(icrs))
          write (kchar, '(I0)') flowlink
-         cross_section%csid = trim(link_id) // "_" // trim(kchar)
+         cross_section%csid = trim(link_id)//"_"//trim(kchar)
          call finalizeCrs(network, cross_section, idef, icrs)
       end associate
 
       ! Assign new cross section along flowlink.
       network%adm%line2cross(flowlink, :) = t_chainage2cross(c1=icrs, c2=icrs, f=1.0_dp, distance=0.0_dp)
-   end subroutine add_longculvert_1D2D_crosssection
+   end subroutine add_longculvert_crosssection
 
    !> Add new branch information to the network. Only add necessary information for long culverts (incomplete!)
    subroutine add_longculvert_branch(network, longculvert)
@@ -1355,6 +1385,11 @@ contains
 
          branch_idx = hashsearch(network%brs%hashlist, longculvert%branchId)
          contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
+
+         if (jampi == 0 .and. branch_idx <= 0 .and. contact_idx <= 0) then
+            call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '// trim(longculvert%branchId)//' '// trim(longculvert%contactId))
+            return
+         end if
          !Find the last 1D node of the branch
          if (branch_idx > 0 .and. network%BRS%size >= i) then
             inode(1) = network%BRS%Branch(branch_idx)%FROMNODE%GRIDNUMBER
@@ -1652,13 +1687,16 @@ contains
          call setnodadm(0)
          call finalizeLongCulvertsInNetwork()
 
-         nbranchlongnames = nbranchids
-         nnodelongnames = nnodeids
-         allocate (nodeids(meshgeom1d%numnode), nodelongnames(meshgeom1d%numnode))
-         network%numl = meshgeom1d%numedge
-         ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
-                                                nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+         if (meshgeom1d%numedge > 0) then !> only create a network if actual 1D links exist (4+ point long culverts)
+            nbranchlongnames = nbranchids
+            nnodelongnames = nnodeids
+            call realloc(nodeids,meshgeom1d%numnode)
+            call realloc(nodelongnames,meshgeom1d%numnode)
+            network%numl = meshgeom1d%numedge
 
+            ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
+                                                   nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
+         end if
          do i = 1, nlongculverts
             call addlongculvertcrosssections(network, longculverts(i)%branchid, longculverts(i)%csDefId, longculverts(i)%bl, ierr)
          end do
