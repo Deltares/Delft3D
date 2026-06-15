@@ -82,18 +82,22 @@ contains
       integer :: num_elements !< The number of elements in the mask array, based on the location type.
 
       ! Allocate and initialize mask array based on location type.
-      if (.not. allocated(mask)) then
-         select case (location_type)
-         case (UNC_LOC_CN)
-            num_elements = numk
-         case (UNC_LOC_S, UNC_LOC_S3D)
-            num_elements = ndx
-         case (UNC_LOC_U)
-            num_elements = lnx
-         end select
+      select case (location_type)
+      case (UNC_LOC_CN)
+         num_elements = numk
+      case (UNC_LOC_S, UNC_LOC_S3D)
+         num_elements = ndx
+      case (UNC_LOC_U)
+         num_elements = lnx
+      end select
+
+      if (size(mask) /= num_elements) then
+         if (allocated(mask)) then
+            deallocate(mask)
+         end if
+         allocate(mask(num_elements))
       end if
 
-      allocate (mask(num_elements))
       mask = 0
 
       call apply_spatial_location_mask(mask, location_type, spatial_location_type)
