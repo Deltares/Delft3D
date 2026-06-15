@@ -130,6 +130,8 @@ contains
         real(kind = real_wp) :: sum               ! help variable
 
         integer(kind = int_wp) :: ithandl = 0
+        
+        !integer count_min_vols
         if (timon) call timstrt ("set_dry_cells_to_zero_and_update_volumes", ithandl)
 
         ! Initialisations
@@ -150,6 +152,7 @@ contains
 
         ivol = 0
         sumvol = 0.0
+        !count_min_vols = 0
         do ilay = 1, num_layers
             ! Use OpenMP? ikm, ivol private
             ! Is ikm important?
@@ -174,8 +177,18 @@ contains
                     iknmkv(ivol) = iknmrk(ivol)                    ! become wet again
                     volume(ivol) = max(volume(ivol), minvolume)
                 endif
+                !if (volume(ivol) == minvolume) then
+                !    count_min_vols = count_min_vols + 1
+                    !write (*,*) "volume(ivol) == minvolume"
+                    !write (*,*) ivol, volume(ivol)
+                !end if
+               
             enddo
         enddo
+        !if (count_min_vols/=0) then
+        !    write (*,*) "count_min_vols = ", count_min_vols
+        !end if
+        
         area = max(area, minarea)                             ! set minimum area
 
         if (timon) call timstop (ithandl)

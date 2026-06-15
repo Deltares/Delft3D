@@ -139,6 +139,11 @@ contains
                 ! initialize second volume array with the first one
                 nosss = num_cells + num_cells_bottom
                 call copy_real_array_elements(A(IVOL:), A(IVOL2:), nosss)
+                
+                !! DEBUG !!
+                open(unit=789, file="initial_mass_run_delwaq_branch.txt", status="replace", action="write")
+                open(unit=889, file="initial_conc_run_delwaq_branch.txt", status="replace", action="write")
+                !! DEBUG !!
             end if
 
             ! Save/restore the local persistent variables,
@@ -387,5 +392,10 @@ contains
 
         dlwqd%iaflag = iaflag
         dlwqd%itime = itime
+        
+        !! DEBUG !!
+        close(789)
+        close(889)
+        !! DEBUG !!
     end subroutine scheme_24_adaptive_time_step_flux_corrected_transport
 end module m_integration_scheme_24
