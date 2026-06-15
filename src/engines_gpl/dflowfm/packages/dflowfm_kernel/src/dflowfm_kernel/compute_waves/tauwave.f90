@@ -32,16 +32,19 @@
 
 module m_tauwave
 
+   use precision, only: dp
+
    implicit none
 
    private
 
    public :: tauwave
+   public :: wave_friction_activation
+   public :: wave_current_friction_coefficient
 
 contains
 
    subroutine tauwave()
-      use precision, only: dp
       use m_getymxpar, only: getymxpar
       use m_sferic
       use m_flowparameters
@@ -70,6 +73,8 @@ contains
       real(kind=dp) :: rksru, rksmru, gamma, ksc, uratio, ka, ca
       real(kind=dp) :: cosk1, cosk2, sink1, sink2
       real(kind=dp) :: tauwci, cphi, sphi
+      real(kind=dp) :: cfwavhi_candidate
+      real(kind=dp) :: hwavu, wavefric_alpha
 
       waveps = 1.0e-4_dp ! see taubot
       astarc = 30.*pi**2 ! critical value for astar
@@ -111,14 +116,17 @@ contains
          umod = max(1.0e-4_dp, sqrt(umodsq)) ! 3d: 1d-5
          taubu(L) = 0.0_dp
          taubxu(L) = 0.0_dp
-         cfwavhi(L) = 0.0_dp
+         cfwavhi(L) = cfuhi(L)
          if (modind == 9) then
-            cfhi_vanrijn(L) = 0.0_dp
+            cfhi_vanrijn(L) = cfuhi(L)
          end if
 
          ! interpolate uorbu, tpufrom flownodes to flowlinks
          uorbu = ac1 * uorb(k1) + ac2 * uorb(k2)
          tpu = ac1 * twav(k1) + ac2 * twav(k2)
+         hwavu = ac1 * hwav(k1) + ac2 * hwav(k2)
+         wavefric_alpha = wave_friction_activation(hwavu, wavefric_hmin, wavefric_hfull) * &
+                          wave_friction_activation(abs(uorbu), wavefric_uorbmin, wavefric_uorbfull)
 
          ! get water density on flow link
          rhoL = rhomean ! for now
@@ -160,6 +168,7 @@ contains
             ! and due to current alone
             !
             tauwav = 0.5_dp * rhoL * fw * ftauw * uorbu * uorbu ! wave related bed shear stress
+            tauwav = wavefric_alpha * tauwav
             if ((javegczu .and. cfuhi(L) > 0.0_dp) .or. trachy_resistance) then ! vegetation hk/trachy
                cdrag = cfuhi(L) * huL
             else
@@ -179,10 +188,11 @@ contains
             !
             if (jawave > NO_WAVES) then
                if (modind < 9) then
-                  cfwavhi(L) = tauwci / umod / umod / rhoL / huL ! combined w+c friction factor for furu 2d
+                  cfwavhi_candidate = tauwci / umod / umod / rhoL / huL ! combined w+c friction factor for furu 2d
+                  cfwavhi(L) = wave_current_friction_coefficient(cfuhi(L), cfwavhi_candidate, wavefric_alpha)
                elseif (modind == 9) then
                   uorbhs = sqrt(2.0_dp) * uorbu
-                  hrmsu = ac1 * hwav(k1) + ac2 * hwav(k2)
+                  hrmsu = hwavu
                   rlabdau = ac1 * rlabda(k1) + ac2 * rlabda(k2)
                   rr = -0.4_dp * sqrt(2.0_dp) / huL + 1.0_dp
                   umax = rr * 2.0_dp * uorbhs
@@ -208,7 +218,8 @@ contains
                   ka = ksc * exp(gamma * uratio)
                   ka = min(ka, 10.0_dp * ksc, 0.2_dp * huL)
                   ca = 18.0_dp * log10(12.0_dp * huL / max(ka, waveps))
-                  cfhi_vanrijn(L) = ag / (ca**2) / huL
+                  cfwavhi_candidate = ag / (ca**2) / huL
+                  cfhi_vanrijn(L) = wave_current_friction_coefficient(cfuhi(L), cfwavhi_candidate, wavefric_alpha)
                   taubu(L) = ag / ca / ca * rhoL * umod * (u1(L) + ustokes(L))
                end if
             end if
@@ -247,5 +258,37 @@ contains
       end do
       !
    end subroutine tauwave
+
+   pure real(kind=dp) function wave_friction_activation(value, value_min, value_full) result(alpha)
+      implicit none
+      real(kind=dp), intent(in) :: value, value_min, value_full
+      real(kind=dp) :: ramp
+
+      if (value_full <= value_min) then
+         alpha = 1.0_dp
+      elseif (value <= value_min) then
+         alpha = 0.0_dp
+      elseif (value >= value_full) then
+         alpha = 1.0_dp
+      else
+         ramp = (value - value_min) / (value_full - value_min)
+         alpha = ramp * ramp * (3.0_dp - 2.0_dp * ramp)
+      end if
+   end function wave_friction_activation
+
+   pure real(kind=dp) function wave_current_friction_coefficient(current_friction, wave_current_friction, &
+                                                                 wavefric_alpha) result(coefficient)
+      implicit none
+      real(kind=dp), intent(in) :: current_friction, wave_current_friction, wavefric_alpha
+      real(kind=dp) :: alpha, current_only
+
+      alpha = min(1.0_dp, max(0.0_dp, wavefric_alpha))
+      current_only = max(0.0_dp, current_friction)
+      if (wave_current_friction <= 0.0_dp) then
+         coefficient = current_only
+      else
+         coefficient = (1.0_dp - alpha) * current_only + alpha * wave_current_friction
+      end if
+   end function wave_current_friction_coefficient
 
 end module m_tauwave

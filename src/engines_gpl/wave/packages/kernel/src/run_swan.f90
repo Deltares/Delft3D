@@ -46,12 +46,14 @@ subroutine run_swan (casl)
 !
     integer                 :: ierr
     integer                 :: ind
+    integer                 :: iprint
     integer                 :: strlen 
     integer                 :: nuerr
     logical                 :: ex
+    logical                 :: print_found
     character(*)            :: casl
     character(4)            :: labl     
-    character(5)            :: prints
+    character(9)            :: prints
     character(6)            :: append
     character(256)          :: string
     character(1024)         :: swanCommand
@@ -132,16 +134,38 @@ subroutine run_swan (casl)
     !
     ! Check SWAN output file PRINT
     !
-    call scan_fl(swan_run%checkVersionNumber, swan_run%versionNumberOK)
-    prints        = 'PRINT'
     string(1:9)  = 'swn-diag.'
     string(10:)  = casl
     ind = index(string, ' ')
     string(ind:) = labl
     append       = 'append'
-    call cp_file(prints     ,string    ,append    ,nuerr             )
-    if (nuerr > 0) then
-       write (*, '(a,i3)') '*** ERROR: While appending PRINT to diag file: ', nuerr
+    print_found  = .false.
+    prints       = 'PRINT'
+    inquire (file = trim(prints), exist = ex)
+    if (ex) then
+       print_found = .true.
+       call scan_fl(swan_run%checkVersionNumber, swan_run%versionNumberOK, prints)
+       call cp_file(prints     ,string    ,append    ,nuerr             )
+       if (nuerr > 0) then
+          write (*, '(3a,i3)') '*** ERROR: While appending ', trim(prints), ' to diag file: ', nuerr
+       endif
+    endif
+    if (numranks > 1) then
+       do iprint = 1, numranks
+          write (prints, '(a,i3.3)') 'PRINT-', iprint
+          inquire (file = trim(prints), exist = ex)
+          if (ex) then
+             print_found = .true.
+             call scan_fl(swan_run%checkVersionNumber, swan_run%versionNumberOK, prints)
+             call cp_file(prints     ,string    ,append    ,nuerr             )
+             if (nuerr > 0) then
+                write (*, '(3a,i3)') '*** ERROR: While appending ', trim(prints), ' to diag file: ', nuerr
+             endif
+          endif
+       enddo
+    endif
+    if (.not. print_found) then
+       write (*, '(a)') '*** WARNING: no SWAN PRINT files found to append to diag file'
     endif
     !
     ! Remove SWAN input/output/tmp files (except SWANOUT output data file)
@@ -149,6 +173,12 @@ subroutine run_swan (casl)
     call rm_del('norm_end')
     call rm_del('INPUT')
     call rm_del('PRINT')
+    if (numranks > 1) then
+       do iprint = 1, numranks
+          write (prints, '(a,i3.3)') 'PRINT-', iprint
+          call rm_del(prints)
+       enddo
+    endif
     call rm_del('source')
     call rm_del('temp')
     call rm_del('swaninit')

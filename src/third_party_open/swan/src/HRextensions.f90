@@ -31,7 +31,8 @@ module HRextensions
     use netcdf_tools
     use nctablemd, only : nctable_record, get_nctable_record
     use M_GENARR, only: SPCSIG
-    use M_PARALL, only : IAMMASTER, MXCGL, MYCGL, MCGRDGL, KGRPGL, SWREAL, MXF, MXL, MYF, MYL
+    use M_PARALL, only : IAMMASTER, MXCGL, MYCGL, MCGRDGL, KGRPGL, SWREAL, SWINT, MXF, MXL, MYF, MYL
+    use SwanGriddata, only : ivertg, nverts, nvertsg
     use agioncmd
     use SWCOMM2, only : NUMGRD, NBGRPT, NBSPEC, XOFFS, YOFFS, OPTG
     use SWCOMM3, only : MXC, MYC, MDC, MSC, PI, PI2, DNORTH
@@ -52,7 +53,9 @@ contains
         real, dimension(:,:,:)                 :: AC2
 
         integer                                :: jx, jy, ix, iy, indx, iindx, &
-                                                  ncid, ri, is
+                                                  ncid, ri, is, global_ip, local_ip, nglob
+        integer                                :: spc_as_map_i
+        integer, dimension(:), allocatable     :: ig2loc
         type(recordaxe_type)                   :: recordaxe
         type(mapgrid_type)                     :: mapgrid
         type(pntgrid_type)                     :: pntgrid
@@ -79,27 +82,55 @@ contains
             end if
             call swn_hre_read_density(ncid, density, spc_as_map, ri)
             call close_ncfile(ncid)
+            spc_as_map_i = merge(1, 0, spc_as_map)
         end if
+        call SWBROADC(spc_as_map_i, 1, SWINT)
+        spc_as_map = spc_as_map_i /= 0
         ! assign spectra to all members
         if ( OPTG == 5 .and. .not.spc_as_map ) then
-            do jx=1,MXCGL
-                if ( IAMMASTER ) then
-                    edloc(:,:) = 0.
-                    if ( jx <= size(density, 3) ) then
-                        edloc = density(:,:, jx, 1)
+            if ( allocated(ivertg) ) then
+                nglob = nvertsg
+                allocate(ig2loc(nglob))
+                ig2loc = 0
+                do ix=1,nverts
+                    global_ip = ivertg(ix)
+                    if ( global_ip >= 1 .and. global_ip <= nglob ) ig2loc(global_ip) = ix
+                end do
+
+                do global_ip=1,nglob
+                    if ( IAMMASTER ) then
+                        edloc(:,:) = 0.
+                        if ( global_ip <= size(density, 3) ) then
+                            edloc = density(:,:, global_ip, 1)
+                        end if
                     end if
-                end if
-                call SWBROADC (edloc, MDC*MSC, SWREAL)
-                if ( MXF <= jx .and. MXL >= jx ) then
-                    indx = jx - MXF + 1
-                    if ( indx >= 1 .and. indx <= size(AC2, 3) ) then
+                    call SWBROADC (edloc, MDC*MSC, SWREAL)
+                    local_ip = ig2loc(global_ip)
+                    if ( local_ip > 0 .and. local_ip <= size(AC2, 3) ) then
                         do is=1, MSC
                             ! energy to action density
-                            AC2(:,is, indx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
+                            AC2(:,is, local_ip) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
                         end do
                     end if
-                end if
-            end do
+                end do
+                deallocate(ig2loc)
+            else
+                do jx=1,MXCGL
+                    if ( IAMMASTER ) then
+                        edloc(:,:) = 0.
+                        if ( jx <= size(density, 3) ) then
+                            edloc = density(:,:, jx, 1)
+                        end if
+                    end if
+                    call SWBROADC (edloc, MDC*MSC, SWREAL)
+                    if ( jx >= 1 .and. jx <= size(AC2, 3) ) then
+                        do is=1, MSC
+                            ! energy to action density
+                            AC2(:,is, jx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
+                        end do
+                    end if
+                end do
+            end if
         else
             do jx=1,MXCGL
                 do jy=1,MYCGL

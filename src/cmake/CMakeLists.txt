@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.30)
 
 project(CMake)
-enable_testing()
+option(BUILD_TESTING "Build test targets" ON)
+if(BUILD_TESTING)
+    enable_testing()
+endif()
 
 # enable project files grouping by folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -272,8 +275,10 @@ endif()
 
 ### Component configurations
 
-# Unit test configuration, should be findable for every configuration
-include(configurations/miscellaneous/unit_test_configuration.cmake)
+# Unit test configuration, should be findable for every configuration that builds tests.
+if(BUILD_TESTING)
+    include(configurations/miscellaneous/unit_test_configuration.cmake)
+endif()
 
 # D-Flow FM configuration
 if(${configuration_type} STREQUAL ${dflowfm_configuration})

@@ -12,7 +12,9 @@ include_component("D-WAQ tools" ${waq_include_dir}/dwaq_tools.cmake)
 include_component("D-PART kernel" ${waq_include_dir}/dpart.cmake)
 include_component("D-WAQ third party libraries" ${waq_include_dir}/dwaq_third_party.cmake)
 include_component("D-WAQ utils" ${waq_include_dir}/dwaq_utils.cmake)
-include_component("D-WAQ unit and integration tests" ${waq_include_dir}/dwaq_tests.cmake)
+if(BUILD_TESTING)
+    include_component("D-WAQ unit and integration tests" ${waq_include_dir}/dwaq_tests.cmake)
+endif()
 
 #intel MPI & MKL
 if(${configuration_type} STREQUAL ${dwaq_configuration} OR

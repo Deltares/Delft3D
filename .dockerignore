@@ -15,6 +15,10 @@
 **/__pycache__
 **/*.pyd
 
+# Local root build/install trees
+/build*/
+/install*/
+
 # Documents and other media
 **/*.doc
 **/*.pdf

@@ -64,6 +64,7 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_laterals, only: numlatsg
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
+   use m_flowparameters, only: jawavewarnmissingdata
    use m_waveconst
 
    implicit none
@@ -434,7 +435,7 @@ contains
       use ieee_arithmetic, only: ieee_is_nan
       use m_compute_wave_parameters, only: compute_wave_parameters
       use unstruc_messages, only: callback_msg
-      use messagehandling, only: LEVEL_WARN, msgbuf, warn_flush
+      use messagehandling, only: LEVEL_DEBUG, LEVEL_WARN, msgbuf, warn_flush
 
       logical, intent(in) :: initialization !< initialization phase
 
@@ -476,7 +477,11 @@ contains
                   ! - Just try it the next timestep again
                   ! - success must be set to .true., otherwise the calculation is aborted
                   !
-                  message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+                  if (jawavewarnmissingdata /= 0) then
+                     message = dump_ec_message_stack(LEVEL_WARN, callback_msg)
+                  else
+                     message = dump_ec_message_stack(LEVEL_DEBUG, callback_msg)
+                  end if
                   success = .true.
                end if
             end if

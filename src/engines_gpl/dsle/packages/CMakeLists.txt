@@ -140,7 +140,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${DSLE_SOURCE_FILES})
 set_target_properties (dsle PROPERTIES FOLDER engines_gpl/dsle)
 set_target_properties (dsle-static PROPERTIES FOLDER engines_gpl/dsle)
 # Unit tests
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 
 install(
     TARGETS

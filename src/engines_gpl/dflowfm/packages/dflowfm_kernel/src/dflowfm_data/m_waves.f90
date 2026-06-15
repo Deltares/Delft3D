@@ -65,6 +65,10 @@ module m_waves
    real(kind=dp) :: fwfac !< Soulsby factor, tune streaming
    real(kind=dp) :: fbreak !< tune breaking in tke model
    real(kind=dp) :: fwavpendep !< Layer thickness as proportion of Hrms over which wave breaking adds to TKE source. Default 0.5
+   real(kind=dp) :: wavefric_hmin !< [m] Hrms below which wave-current bed friction is current-only
+   real(kind=dp) :: wavefric_hfull !< [m] Hrms above which wave-current bed friction is fully active
+   real(kind=dp) :: wavefric_uorbmin !< [m/s] orbital velocity below which wave-current bed friction is current-only
+   real(kind=dp) :: wavefric_uorbfull !< [m/s] orbital velocity above which wave-current bed friction is fully active
 
    character(len=4) :: rouwav !< Friction model for wave induced shear stress
 
@@ -118,6 +122,10 @@ contains
       fwfac = 1.0_dp
       fbreak = 1.0_dp
       fwavpendep = 1.5_dp ! best setting based on sensitivity
+      wavefric_hmin = 0.0_dp
+      wavefric_hfull = 0.0_dp
+      wavefric_uorbmin = 0.0_dp
+      wavefric_uorbfull = 0.0_dp
 
       call reset_waves()
    end subroutine default_waves

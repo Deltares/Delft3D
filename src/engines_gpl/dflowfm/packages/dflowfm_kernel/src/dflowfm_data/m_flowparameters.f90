@@ -135,6 +135,8 @@ module m_flowparameters
 
    logical :: flow_without_waves = .false. !< True: Do not use Wave data in the flow computations, it will only be passed through to D-WAQ
 
+   integer :: jawavewarnmissingdata !< Warn when online WAVE data is not available from the COM file yet
+
    integer :: jawavestreaming !< Switch on in D3D model: >=1 : streaming mom , >= 2 : streaming mom + turb
 
    integer :: jawaveStokes !< Vertical Stokes profile: 0=no, 1 = uniform, 2 = second order Stokes profile
@@ -756,6 +758,8 @@ contains
       jawave = NO_WAVES ! Include wave model nr
 
       waveforcing = WAVEFORCING_NO_WAVEFORCES !< Include wave forcing
+
+      jawavewarnmissingdata = 1 !< Warn when online WAVE data is not available from the COM file yet
 
       jawavestreaming = WAVE_STREAMING_OFF ! Switch on in D3D model: >=1 : streaming mom
 

@@ -1724,10 +1724,6 @@
                 msc = pntgrid%npoints
             end if
 
-            ! should I scale and write in a big chuncked loop over msc?
-            ! Allocating the density array creates a new copy for all 2D spectral points in the heap.
-            allocate(density(spcgrid%ndir, spcgrid%nfreq, msc))
-
             !
             ! - scale and/or replace energy dummies with _FillValue
             ! - if scaling requested, write scale factors to netcdf
@@ -1741,16 +1737,6 @@
 
                 do ip=1, msc
                     if (scale_density(ip) < epsilon(1.) ) scale_density(ip) = epsilon(1.)
-                    do ik=1, spcgrid%nfreq
-                        do ith=1, spcgrid%ndir
-                            isp = ith + (ik - 1) * spcgrid%ndir
-                            if ( abs(e2d(isp,ip) - AGNC_DUMMY) > epsilon(1.) ) then
-                                density(ith,ik,ip) = nint(e2d(isp,ip) / scale_density(ip))
-                            else
-                                density(ith,ik,ip) = AGNC_FILL_SHORT
-                            end if
-                        end do
-                    end do
                 end do
 
                 if ( spc_as_map ) then
@@ -1759,26 +1745,36 @@
                 else
                     call nccheck ( nf90_put_var(ncid, varid_scale_density, scale_density, (/1, ti/)) )
                 end if
-            else
-                ! replace unscaled energy dummies with _FillValue
-                do ip=1, msc
-                    do ik=1, spcgrid%nfreq
-                        do ith=1, spcgrid%ndir
-                            isp = ith + (ik - 1) * spcgrid%ndir
-                            if ( abs(e2d(isp,ip) - AGNC_DUMMY) > epsilon(1.) ) then
-                                density(ith,ik,ip) = e2d(isp,ip)
-                            else
-                                density(ith,ik,ip) = NF90_FILL_FLOAT
-                        end if
-                    end do
-                end do
-            end do
             end if
 
             !
             ! chunked write to netcdf
             !
             if ( spc_as_map ) then
+                ! Map output still uses an intermediate copy because it must
+                ! reorder point-major spectra into 2D map chunks.
+                allocate(density(spcgrid%ndir, spcgrid%nfreq, msc))
+                do ip=1, msc
+                    do ik=1, spcgrid%nfreq
+                        do ith=1, spcgrid%ndir
+                            isp = ith + (ik - 1) * spcgrid%ndir
+                            if ( abs(e2d(isp,ip) - AGNC_DUMMY) > epsilon(1.) ) then
+                                if ( do_scale ) then
+                                    density(ith,ik,ip) = nint(e2d(isp,ip) / scale_density(ip))
+                                else
+                                    density(ith,ik,ip) = e2d(isp,ip)
+                                end if
+                            else
+                                if ( do_scale ) then
+                                    density(ith,ik,ip) = AGNC_FILL_SHORT
+                                else
+                                    density(ith,ik,ip) = NF90_FILL_FLOAT
+                                end if
+                            end if
+                        end do
+                    end do
+                end do
+
                 allocate(edloc(spcgrid%ndir, spcgrid%nfreq, chunksize, chunksize))
 
                 do sx=1,mapgrid%nx,chunksize
@@ -1798,19 +1794,41 @@
                     end do
                 end do
                 deallocate(edloc)
+                deallocate(density)
             else
                 do ip=1,msc, chunksize**2
                     ! abuse sx and cx for size and end index in pointlist
                     sx = minval( (/chunksize**2, msc-ip+1/) )
                     cx = ip + sx - 1
 
-                    call nccheck ( nf90_put_var(ncid, varid_density, density(:,:,ip:cx), &
+                    allocate(density(spcgrid%ndir, spcgrid%nfreq, sx))
+                    do lxi=1,sx
+                        do ik=1, spcgrid%nfreq
+                            do ith=1, spcgrid%ndir
+                                isp = ith + (ik - 1) * spcgrid%ndir
+                                if ( abs(e2d(isp,ip+lxi-1) - AGNC_DUMMY) > epsilon(1.) ) then
+                                    if ( do_scale ) then
+                                        density(ith,ik,lxi) = nint(e2d(isp,ip+lxi-1) / scale_density(ip+lxi-1))
+                                    else
+                                        density(ith,ik,lxi) = e2d(isp,ip+lxi-1)
+                                    end if
+                                else
+                                    if ( do_scale ) then
+                                        density(ith,ik,lxi) = AGNC_FILL_SHORT
+                                    else
+                                        density(ith,ik,lxi) = NF90_FILL_FLOAT
+                                    end if
+                                end if
+                            end do
+                        end do
+                    end do
+
+                    call nccheck ( nf90_put_var(ncid, varid_density, density(:,:,1:sx), &
                                                                       (/1,1,ip,ti/),      &
                                                                       (/spcgrid%ndir, spcgrid%nfreq, sx, 1/) ) )
+                    deallocate(density)
                 end do
             end if
-
-            deallocate(density)
 
             if (do_scale) deallocate(scale_density)
 

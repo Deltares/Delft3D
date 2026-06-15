@@ -402,7 +402,7 @@ contains
          kb = link2cell(1, link)
          ki = link2cell(2, link)
          hwavcom(kb) = hwavcom(ki)
-         twav(kb) = twav(ki)
+         twavcom(kb) = twavcom(ki)
          phiwav(kb) = phiwav(ki)
          uorbwav(kb) = uorbwav(ki)
          sxwav(kb) = sxwav(ki)

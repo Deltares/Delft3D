@@ -229,7 +229,7 @@ endif()
 
 # Unit tests for dflowfm and io_netcdf
 # Only for the version without interacter
-if(NOT WITH_INTERACTER)
+if(BUILD_TESTING AND NOT WITH_INTERACTER)
     if(NOT TARGET ftnunit)
         add_subdirectory(${checkout_src_root}/${ftnunit_module} ftnunit)
     endif()
@@ -249,7 +249,7 @@ if(NOT WITH_INTERACTER)
     if (NOT TARGET test_io_netcdf)
         add_subdirectory(${checkout_src_root}/${test_io_netcdf} test_io_netcdf)
     endif()
-endif(NOT WITH_INTERACTER)
+endif()
 
 # Plugins
 if(NOT TARGET plugin_culvert)

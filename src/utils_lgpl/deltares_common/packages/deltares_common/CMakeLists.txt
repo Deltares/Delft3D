@@ -75,14 +75,16 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${source}
 
 set_target_properties (${library_name} PROPERTIES FOLDER utils_lgpl/deltares_common)
 
-set(gtest_path ${CMAKE_CURRENT_SOURCE_DIR}/../../gtest)
-f90twtest(test_deltares_common_gtest
-    CFILES ${gtest_path}/test_deltares_common_gtest.cpp
-    F90FILES ${gtest_path}/test_deltares_common_gtest.f90
-             ${gtest_path}/test_malloc.f90
-    F2HFILES ${gtest_path}/test_deltares_common_gtest.f90
-             ${gtest_path}/test_malloc.f90
-    OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES deltares_common
-    VISUAL_STUDIO_PATH utils_lgpl/deltares_common/gtest
-)
+if(BUILD_TESTING)
+    set(gtest_path ${CMAKE_CURRENT_SOURCE_DIR}/../../gtest)
+    f90twtest(test_deltares_common_gtest
+        CFILES ${gtest_path}/test_deltares_common_gtest.cpp
+        F90FILES ${gtest_path}/test_deltares_common_gtest.f90
+                 ${gtest_path}/test_malloc.f90
+        F2HFILES ${gtest_path}/test_deltares_common_gtest.f90
+                 ${gtest_path}/test_malloc.f90
+        OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
+        LIBRARIES deltares_common
+        VISUAL_STUDIO_PATH utils_lgpl/deltares_common/gtest
+    )
+endif()
