@@ -72,6 +72,25 @@ namespace pre_c_sumo
         pugi::xml_node settings_xml_node; ///< The raw &lt;settings&gt; XML node from the parsed document.
                                           ///< Valid for as long as the owning CSumoSettingsReader is alive.
                                           ///< Use pugi::xml_node::append_copy() to insert it into another document.
+
+        /**
+         * @brief Construct the (expected) filepath of the FF2NF file for this diffuser.
+         * @param int subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
+         * array)
+         * @param double current_time_seconds The time of the current time stp in seconds.
+         * @return std::filesystem::path With the complete FF2NF filepath for this diffuser.
+         */
+        [[nodiscard]] const std::filesystem::path ff2nfFilepath(int subgrid_model_nr,
+                                                                double current_time_seconds) const;
+        /**
+         * @brief Construct the (expected) filepath of the NF2FF file for this diffuser.
+         * @param int subgrid_model_nr Subgrid model number of this diffuser (typically the index on the global diffuser
+         * array)
+         * @param double current_time_seconds The time of the current time stp in seconds.
+         * @return std::filesystem::path With the complete NF2FF filepath for this diffuser.
+         */
+        [[nodiscard]] const std::filesystem::path nf2ffFilepath(int subgrid_model_nr,
+                                                                double current_time_seconds) const;
     };
 
     /**
@@ -118,6 +137,22 @@ namespace pre_c_sumo
          * for as long as this CSumoSettingsReader object is alive.
          */
         [[nodiscard]] const std::vector<DiffuserSettings>& diffusers() const;
+
+        /**
+         * @brief Construct the FF2NF file paths for a given timestep.
+         *
+         * @param current time in seconds.
+         * @return std::vector<std::filesystem::path> with the expected file paths.
+         */
+        [[nodiscard]] const std::vector<std::filesystem::path> ff2nfFilepaths(double current_time_seconds) const;
+
+        /**
+         * @brief Construct the (expected) NF2FF file paths for a given timestep.
+         *
+         * @param current time in seconds.
+         * @return std::vector<std::filesystem::path> with the expected filepaths.
+         */
+        [[nodiscard]] const std::vector<std::filesystem::path> nf2ffFilepaths(double current_time_seconds) const;
 
     private:
         explicit CSumoSettingsReader(std::string file_version, std::vector<DiffuserSettings> diffusers,
