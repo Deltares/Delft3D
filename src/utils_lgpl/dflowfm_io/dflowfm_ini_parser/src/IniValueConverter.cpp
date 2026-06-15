@@ -12,13 +12,20 @@ namespace ini
 
     std::string IniValueConverter::BoolToString(bool value) { return value ? "True" : "False"; }
 
-    std::string IniValueConverter::FloatToString(double value) { return std::format("{:.7e}", value); }
+    std::string IniValueConverter::FloatToString(double value) { return std::format("{:.7g}", value); }
 
-    std::string IniValueConverter::FloatToString(float value) { return std::format("{:.7e}", value); }
+    std::string IniValueConverter::FloatToString(float value) { return std::format("{:.7g}", value); }
 
     std::string IniValueConverter::TimePointToString(std::chrono::system_clock::time_point value)
     {
-        return std::format("{:%Y-%m-%d %H:%M:%S}", std::chrono::floor<std::chrono::seconds>(value));
+        auto truncated = std::chrono::floor<std::chrono::seconds>(value);
+        auto dayTruncated = std::chrono::floor<std::chrono::days>(truncated);
+
+        if (truncated == dayTruncated)
+        {
+            return std::format("{:%Y%m%d}", truncated);
+        }
+        return std::format("{:%Y%m%d%H%M%S}", truncated);
     }
 
     std::string IniValueConverter::PathToString(const std::filesystem::path& value) { return value.string(); }

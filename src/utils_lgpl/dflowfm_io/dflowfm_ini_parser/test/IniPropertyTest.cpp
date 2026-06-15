@@ -94,7 +94,7 @@ namespace ini::test
         IniProperty property = IniProperty::Create("TestKey", 1.01f);
 
         EXPECT_EQ(property.GetKey(), "TestKey");
-        EXPECT_EQ(property.GetValue(), "1.0100000e+00");
+        EXPECT_EQ(property.GetValue(), "1.01");
     }
 
     TEST(IniPropertyTest, Create_ValidDoubleValue_CreatesProperty)
@@ -102,7 +102,7 @@ namespace ini::test
         IniProperty property = IniProperty::Create("TestKey", 2.71);
 
         EXPECT_EQ(property.GetKey(), "TestKey");
-        EXPECT_EQ(property.GetValue(), "2.7100000e+00");
+        EXPECT_EQ(property.GetValue(), "2.71");
     }
 
     TEST(IniPropertyTest, Create_ValidStringValue_CreatesProperty)
@@ -352,7 +352,7 @@ namespace ini::test
 
         property.SetValue(12.33f);
 
-        EXPECT_EQ(property.GetValue(), "1.2330000e+01");
+        EXPECT_EQ(property.GetValue(), "12.33");
     }
 
     TEST(IniPropertyTest, SetValue_ValidDoubleValue_UpdatesValue)
@@ -361,7 +361,7 @@ namespace ini::test
 
         property.SetValue(0.123);
 
-        EXPECT_EQ(property.GetValue(), "1.2300000e-01");
+        EXPECT_EQ(property.GetValue(), "0.123");
     }
 
     TEST(IniPropertyTest, SetValue_ValidStringValue_UpdatesValue)

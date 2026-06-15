@@ -157,7 +157,7 @@ namespace ini::test
         IniProperty& addedProperty = section.AddProperty("TestKey", 1.22f);
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(addedProperty.GetValue(), "1.2200000e+00");
+        EXPECT_EQ(addedProperty.GetValue(), "1.22");
         ASSERT_EQ(section.size(), 1);
         EXPECT_EQ(section[0], addedProperty);
     }
@@ -169,7 +169,7 @@ namespace ini::test
         IniProperty& addedProperty = section.AddProperty("TestKey", 2.71);
 
         EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(addedProperty.GetValue(), "2.7100000e+00");
+        EXPECT_EQ(addedProperty.GetValue(), "2.71");
         ASSERT_EQ(section.size(), 1);
         EXPECT_EQ(section[0], addedProperty);
     }
@@ -357,9 +357,9 @@ namespace ini::test
 
         ASSERT_EQ(section.size(), 2);
         EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "1.0000000e-01");
+        EXPECT_EQ(section[0].GetValue(), "0.1");
         EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "2.0000000e-01");
+        EXPECT_EQ(section[1].GetValue(), "0.2");
     }
 
     TEST(IniSectionTest, AddProperties_ValidDoubleValues_AddsProperties)
@@ -370,9 +370,9 @@ namespace ini::test
 
         ASSERT_EQ(section.size(), 2);
         EXPECT_EQ(section[0].GetKey(), "TestKey");
-        EXPECT_EQ(section[0].GetValue(), "1.0100000e+01");
+        EXPECT_EQ(section[0].GetValue(), "10.1");
         EXPECT_EQ(section[1].GetKey(), "TestKey");
-        EXPECT_EQ(section[1].GetValue(), "2.0200000e+01");
+        EXPECT_EQ(section[1].GetValue(), "20.2");
     }
 
     TEST(IniSectionTest, AddProperties_ValidStringValues_AddsProperties)
