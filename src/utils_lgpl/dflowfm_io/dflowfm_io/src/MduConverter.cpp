@@ -71,7 +71,7 @@ namespace dflowfm_io
         return FindEnumEntry(enum_value, propertySchema).second;
     }
 
-    static int ConvertEnumToInt(EnumValue enum_value, const PropertySchema& propertySchema) s
+    static int ConvertEnumToInt(EnumValue enum_value, const PropertySchema& propertySchema)
     {
         return FindEnumEntry(enum_value, propertySchema).first;
     }
