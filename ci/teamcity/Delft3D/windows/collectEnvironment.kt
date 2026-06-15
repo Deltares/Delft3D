@@ -49,7 +49,7 @@ object WindowsCollectEnvironment : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push with commit hash in tag"
             commandType = push {
                 namesAndTags = """
                     containers.deltares.nl/delft3d-dev/collect-windows:%build.vcs.number%
@@ -57,7 +57,7 @@ object WindowsCollectEnvironment : BuildType({
             }
         }
         dockerCommand {
-            name = "Docker push"
+            name = "Docker push with production tag"
             enabled = DslContext.getParameter("enable_environment_container_publishing").lowercase() == "true"
             commandType = push {
                 namesAndTags = """
