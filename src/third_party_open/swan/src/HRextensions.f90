@@ -105,7 +105,7 @@ contains
                     if ( local_ip > 0 .and. local_ip <= size(AC2, 3) ) then
                         do is=1, MSC
                             ! energy to action density
-                            AC2(:,is, local_ip) = edloc(:,is) / SPCSIG(is)
+                            AC2(:,is, local_ip) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
                         end do
                     end if
                 end do
@@ -122,7 +122,7 @@ contains
                     if ( jx >= 1 .and. jx <= size(AC2, 3) ) then
                         do is=1, MSC
                             ! energy to action density
-                            AC2(:,is, jx) = edloc(:,is) / SPCSIG(is)
+                            AC2(:,is, jx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
                         end do
                     end if
                 end do
@@ -149,7 +149,7 @@ contains
                         if ( indx /= 1 ) then
                             do is=1, MSC
                                 ! energy to action density
-                                AC2(:,is, indx) = edloc(:,is) / SPCSIG(is)
+                                AC2(:,is, indx) = edloc(:,is) / (2.0 * PI * SPCSIG(is))
                             end do
                         end if
                     end if
