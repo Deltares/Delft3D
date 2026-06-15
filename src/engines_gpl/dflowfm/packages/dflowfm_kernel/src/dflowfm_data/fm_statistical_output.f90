@@ -114,21 +114,12 @@ contains
       integer, intent(in) :: IPNT_X, IPNT_Y !< location specifier inside valobs array
 
       integer :: l, k, ntot
-      real(dp) :: rhol
 
       ntot = numobs + nummovobs
       do l = 1, stmpar%lsedtot
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            rhol = 1.0_dp
-         case (1)
-            rhol = stmpar%sedpar%cdryb(l)
-         case (2)
-            rhol = stmpar%sedpar%rhosol(l)
-         end select
          k = ntot * (l - 1)
-         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / rhol
-         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / rhol
+         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
       end do
    end subroutine assign_sediment_transport
 
@@ -190,50 +181,79 @@ contains
    end subroutine calculate_sediment_SBC
 
    subroutine filter_source_sink_discharge(source_input)
-      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge" item, to be assigned once on first call.
-      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge_out)
-      source_sink_discharge_out = pack(source_sink_all_discharges(1, :), is_source_sink_normal)
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge_out)
+      source_sink_discharge_out = pack(source_sink_all_discharges(1, :), source_sinks%is_normal)
+
    end subroutine filter_source_sink_discharge
 
    subroutine filter_source_sink_discharge2(source_input)
-      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge2" item, to be assigned once on first call.
-      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge2_out)
-      source_sink_discharge2_out = pack(source_sink_all_discharges(2, :), is_source_sink_normal)
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge2_out)
+      source_sink_discharge2_out = pack(source_sink_all_discharges(2, :), source_sinks%is_normal)
+
    end subroutine filter_source_sink_discharge2
 
    subroutine filter_source_sink_discharge3(source_input)
-      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge3" item, to be assigned once on first call.
-      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_discharge3_out)
-      source_sink_discharge3_out = pack(source_sink_all_discharges(3, :), is_source_sink_normal)
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge3_out)
+      source_sink_discharge3_out = pack(source_sink_all_discharges(3, :), source_sinks%is_normal)
+
    end subroutine filter_source_sink_discharge3
 
    subroutine filter_source_sink_cumulative_volume(source_input)
-      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_cumulative_volume
+      use m_source_sink, only: source_sinks
+
+      ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_cumulative_volume" item, to be assigned once on first call.
-      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_cumulative_volume_out)
-      source_sink_cumulative_volume_out = pack(source_sink_cumulative_volume, is_source_sink_normal)
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_cumulative_volume_out)
+      source_sink_cumulative_volume_out = pack(source_sinks%cumulative_volume, source_sinks%is_normal)
+
    end subroutine filter_source_sink_cumulative_volume
 
    subroutine filter_source_sink_water_discharge(source_input)
-      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_water_discharge, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_water_discharge" item, to be assigned once on first call.
+      
+      ! Local variables
       logical :: is_init
+
       is_init = .not. associated(source_input)
-      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_water_discharge_out)
+
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_water_discharge_out)
+
       if (is_init) then
-         source_sink_water_discharge = source_sink_all_discharges(1, :)
+         source_sinks%discharge = source_sink_all_discharges(1, :)
       end if
-      source_sink_water_discharge_out = pack(source_sink_water_discharge, is_source_sink_normal)
+
+      source_sink_water_discharge_out = pack(source_sinks%discharge, source_sinks%is_normal)
+
    end subroutine filter_source_sink_water_discharge
 
    subroutine filter_source_sink_average_discharge_previous(source_input)
-      use fm_external_forcings_data, only: num_normal_source_sink, is_source_sink_normal, source_sink_average_discharge_previous
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
       real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_average_discharge_previous" item, to be assigned once on first call.
-      call allocate_and_associate(source_input, num_normal_source_sink, source_sink_average_discharge_previous_out)
-      source_sink_average_discharge_previous_out = pack(source_sink_average_discharge_previous, is_source_sink_normal)
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_average_discharge_previous_out)
+      source_sink_average_discharge_previous_out = pack(source_sinks%average_discharge_previous, source_sinks%is_normal)
+      
    end subroutine filter_source_sink_average_discharge_previous
 
    subroutine add_station_water_quality_configs(output_config_set, idx_his_hwq)
@@ -437,14 +457,7 @@ contains
          IP = IPNT_HUA + num
          if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
             l = sedtot2sedsus(num - ISED1 + 1)
-            select case (stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1.0_dp
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
+            rhol = stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
          else
             rhol = 1.0_dp ! dummy
          end if
@@ -2279,6 +2292,7 @@ contains
       use m_ug_nc_attribute
       use m_flow
       use fm_external_forcings_data
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_structures
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity
@@ -2367,7 +2381,7 @@ contains
       !
       ! Source-sink variables
       !
-      if (his_write_settings%sourcesink > 0 .and. num_normal_source_sink > 0) then
+      if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
          function_pointer => filter_source_sink_discharge
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
          i = 1

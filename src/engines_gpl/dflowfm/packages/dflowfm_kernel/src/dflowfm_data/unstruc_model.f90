@@ -72,9 +72,9 @@ module unstruc_model
    ! 1.01 (2014-11-10): Renamed ThindykeFile/Scheme/Contraction -> FixedWeirFile/Scheme/Contraction.
    ! 1.00 (2014-09-22): first version of new permissive checking procedure. All (older) unversioned input remains accepted.
 
-   ! ExtfileNewMajorVersion = 2.02
-   integer, parameter :: ExtfileNewMajorVersion = 2
-   integer, parameter :: ExtfileNewMinorVersion = 2
+   ! ExtfileNewMajorVersion = 3.00
+   integer, parameter :: ExtfileNewMajorVersion = 3
+   integer, parameter :: ExtfileNewMinorVersion = 0
 
    ! History ExtfileNewVersion:
    ! 2.02 (2024-10-24): add [SourceSink] blocks.
@@ -242,7 +242,7 @@ module unstruc_model
    integer :: npolf = 0 !< nr of polygonplotfiles saved with n key in editpol
    logical :: md_usecaching !< Use and/or generate cache file if true
 
-   integer :: md_convertlongculverts = 0 !< convert culverts (and exit program) yes (1) or no (0)
+   integer :: md_convertlongculverts = 1 !< convert culverts (and exit program) yes (1) or no (0)
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
    character(len=128) :: md_dambreak_widening_method !< method for dambreak widening
 
@@ -759,6 +759,14 @@ contains
       integer, parameter :: maxLayers = 300
       integer :: major, minor
 
+      ! Local readout variables since they are only used to set a global (max_iterations_vertical_forester)
+      integer :: max_iterations_vertical_forester_sal !< Maximum number of iterations for vertical forester in salinity
+      integer :: max_iterations_vertical_forester_tem !< Maximum number of iterations for vertical forester in temperature
+
+      ! Salinity and temperature vertical Forester filter is turned off by default (value 0)
+      max_iterations_vertical_forester_sal = 0
+      max_iterations_vertical_forester_tem = 0
+
       istat = 0 ! Success
 
       ! Put .mdu file into a property tree
@@ -1211,9 +1219,15 @@ contains
       call prop_get(md_ptr, 'numerics', 'Teta0', teta0)
       call prop_get(md_ptr, 'numerics', 'Jbasqbnddownwindhs', jbasqbnddownwindhs)
 
-      call prop_get(md_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal)
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterSal', max_iterations_vertical_forester_sal) ! Deprecated, use maxItVerticalForester instead
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForesterTem', max_iterations_vertical_forester_tem) ! Deprecated, use maxItVerticalForester instead
+
+      ! Set max_iterations_vertical_forester to the maximum of max_iterations_vertical_forester_sal/tem
+      max_iterations_vertical_forester = max(max_iterations_vertical_forester_sal, max_iterations_vertical_forester_tem)
+
+      call prop_get(md_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester)
+
       call prop_get(md_ptr, 'numerics', 'cstbnd', jacstbnd)
-      call prop_get(md_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem)
       call prop_get(md_ptr, 'numerics', 'Turbulencemodel', Iturbulencemodel)
 
       call prop_get(md_ptr, 'numerics', 'c1e', c1e)
@@ -1875,8 +1889,8 @@ contains
       end if
 
       ! Set update frequency for the time dependent roughness from frictFile.
-      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness)
-      if (dt_update_roughness < dt_User) then
+      call prop_get(md_ptr, 'Time', 'updateRoughnessInterval', dt_update_roughness, success)
+      if (success .and. dt_update_roughness < dt_User) then
          ! NOTE: dt_update_roughness must at least be >= dt_max, but we'll enforce dt_user, because that makes more sense anyway.
          call SetMessage(LEVEL_ERROR, 'The value of "updateRoughnessInterval" must be equal to or larger than the user time step.')
       end if
@@ -2708,8 +2722,9 @@ contains
       call prop_set(prop_ptr, 'General', 'fileVersion', trim(tmpstr), 'File format version (do not edit this)')
       call prop_set(prop_ptr, 'General', 'ModelSpecific', md_specific, 'Optional ''model specific ID'', to enable certain custom runtime function calls (instead of via MDU name).')
       call prop_set(prop_ptr, 'General', 'PathsRelativeToParent', md_paths_relto_parent, 'Default: 0. Whether or not (1/0) to resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir.')
-      call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Default: 0. Wheter or not to convert long culvert input to 1D2D long culverts')
-
+      if (md_convertlongculverts /= 1) then !> hidden keyword, only write when not default.      
+         call prop_set(prop_ptr, 'General', 'ConvertLongCulverts', md_convertlongculverts, 'Whether or not (1/0) to convert long culvert input to 1D2D long culverts')
+      end if
       ! Geometry
       call prop_set(prop_ptr, 'geometry', 'NetFile', trim(md_netfile), 'Unstructured grid file *_net.nc')
       call prop_set(prop_ptr, 'geometry', 'GridEnclosureFile', trim(md_encfile), 'Enclosure file to clip outer parts from the grid *.pol')
@@ -3195,11 +3210,7 @@ contains
       call prop_set(prop_ptr, 'numerics', 'cstbnd', jacstbnd, 'Delft-3D type velocity treatment near boundaries for small coastal models (1: yes, 0: no)')
 
       if (writeall .or. kmx > 0) then
-         call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestersal', Maxitverticalforestersal, 'Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations)')
-      end if
-
-      if (writeall .or. (kmx > 0 .and. temperature_model /= TEMPERATURE_MODEL_NONE)) then
-         call prop_set(prop_ptr, 'numerics', 'Maxitverticalforestertem', Maxitverticalforestertem, 'Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations)')
+         call prop_set(prop_ptr, 'numerics', 'maxItVerticalForester', max_iterations_vertical_forester, 'Forester iterations for all constituents (0: no vertical filter, > 0: max nr of iterations)')
       end if
 
       if (writeall .or. kmx > 0) then

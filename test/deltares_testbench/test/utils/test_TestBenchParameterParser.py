@@ -63,7 +63,7 @@ class TestTestBenchParameterParser:
     @staticmethod
     def test_read_failed_tests_from_csv_no_failures_returns_empty() -> None:
         csv_content = io.StringIO(
-            "Order#,Test Name,Status,Duration(ms)\n" "1,test_passing_a,OK,100\n" "2,test_passing_b,OK,200\n"
+            "Order#,Test Name,Status,Duration(ms)\n1,test_passing_a,OK,100\n2,test_passing_b,OK,200\n"
         )
 
         result = TestBenchParameterParser.read_failed_tests_from_csv(csv_content)
@@ -72,7 +72,7 @@ class TestTestBenchParameterParser:
 
     @staticmethod
     def test_read_failed_tests_from_csv_missing_columns_raises() -> None:
-        csv_content = io.StringIO("Order#,TestName,Result\n" "1,test_a,Failure\n")
+        csv_content = io.StringIO("Order#,TestName,Result\n1,test_a,Failure\n")
 
         with pytest.raises(ValueError, match="missing required columns"):
             TestBenchParameterParser.read_failed_tests_from_csv(csv_content)

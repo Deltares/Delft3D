@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">
    <UnstructuredGrid>
-      <Piece NumberOfPoints="4" NumberOfCells="0" > 
+      <Piece NumberOfPoints="5" NumberOfCells="0" > 
          <Points> 
             <DataArray type="Float64" Name="Position" NumberOfComponents="3" format="ascii"> 
-               250  350.087  0  
-               252.5  350.048  0  
-               1050  350.365  0  
-               1050.5  350.365  0  
+               0  0  0  
+               0  0  0  
+               0  0  0  
+               0  0  0  
+               0  0  0  
             </DataArray>
          </Points> 
 
@@ -22,12 +23,36 @@
                
             </DataArray>
          </Cells>
-         <PointData Scalars="Rank sources_sinks " Vectors="">
+         <PointData Scalars="Rank sinks_x sinks_y sinks_z_min sinks_z_max sources_x sources_y sources_z_min sources_z_max sources_sinks_discharge " Vectors="">
             <DataArray type="UInt32" Name="Rank" NumberOfComponents="1" format="ascii">
-               0 0 0 0 
+               0 0 0 0 0 
             </DataArray>
-            <DataArray type="Float64" Name="sources_sinks" NumberOfComponents="1" format="ascii">
-               1.23 4.56 -1.23 -4.56 
+            <DataArray type="Float64" Name="sinks_x" NumberOfComponents="1" format="ascii">
+               252.5 252.5 0 0 1500.6 
+            </DataArray>
+            <DataArray type="Float64" Name="sinks_y" NumberOfComponents="1" format="ascii">
+               350.048 350.048 0 0 1000.6 
+            </DataArray>
+            <DataArray type="Float64" Name="sinks_z_min" NumberOfComponents="1" format="ascii">
+               -9.95 -9.95 0 0 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sinks_z_max" NumberOfComponents="1" format="ascii">
+               -9.45 -9.45 0 0 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_x" NumberOfComponents="1" format="ascii">
+               1050 1050.5 1050 1050.5 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_y" NumberOfComponents="1" format="ascii">
+               350.365 350.365 350.365 350.365 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_z_min" NumberOfComponents="1" format="ascii">
+               -5 -5 -5 -5 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_z_max" NumberOfComponents="1" format="ascii">
+               -5 -5 -5 -5 0 
+            </DataArray>
+            <DataArray type="Float64" Name="sources_sinks_discharge" NumberOfComponents="1" format="ascii">
+               20 20 5 5 10 
             </DataArray>
          </PointData> 
       </Piece>

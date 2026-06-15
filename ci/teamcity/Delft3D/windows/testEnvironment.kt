@@ -24,7 +24,7 @@ object WindowsTestEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "test-environment")
+        param("container.tag", "test-environment-ltsc2025")
     }
 
     vcs {
