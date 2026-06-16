@@ -2960,7 +2960,7 @@ contains
                         if (np > 0 .and. mp > 0) then
                            do jj = 0, 1
                               do ii = 0, 1
-                                 ipt = (mp - 1 + ii) * n_cols + np - 1 + jj
+                                 ipt = (np - 1 + jj) * n_cols + mp + ii
                                  amplitude = sourceT1Field%arr1d(ipt)
                                  phase0 = sourceItem%hframe%phases(mp + ii, np + jj)
                                  if (comparereal(amplitude, sourceMissing, .true.) == 0 .or. &
