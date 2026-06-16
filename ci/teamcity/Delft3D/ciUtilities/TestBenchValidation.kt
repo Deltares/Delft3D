@@ -70,6 +70,7 @@ object TestBenchValidation : BuildType({
             workingDir = "test/deltares_testbench"
             scriptContent = """
                 #!/usr/bin/env bash
+                uv venv
                 uv pip sync pip/lnx-dev-requirements.txt
             """.trimIndent()
             dockerImage = "%docker_image%"
