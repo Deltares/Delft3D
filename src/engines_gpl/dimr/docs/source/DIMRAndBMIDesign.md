@@ -187,7 +187,7 @@ interface and the DimrExe function pointers.
   ---------------------------------------------------------------------------
   **BMI interface (Deltares    **DimrExe function  **Function responsibility
   components)**                pointers to         (for all components)**
-                               dimr_lib**          
+                               dimr_lib**
   ---------------------------- ------------------- --------------------------
   int initialize(const char    dllInitialize       Initialize and load the
   \*config_file)                                   library
@@ -199,16 +199,16 @@ interface and the DimrExe function pointers.
                                                    clean up the model
 
   void get_start_time(double   dllGetStartTime     Gets the start time
-  \*t)                                             
+  \*t)
 
   void get_end_time(double     dllGetEndTime       Gets the end time
-  \*t)                                             
+  \*t)
 
   void get_current_time(double dllGetCurrentTime   Gets the current
   \*t)                                             simulation time
 
   void get_time_step(double    dllGetTimeStep      Gets the time step
-  \*dt)                                            
+  \*dt)
 
   void get_var_shape(const     \-                  Gets the shape of the
   char \*name, int                                 array (lengths along each
@@ -218,10 +218,10 @@ interface and the DimrExe function pointers.
   \*name, int \*rank)                              (e.g. 1 for a vector)
 
   void get_var_type(const char \-                  To be detailed
-  \*name, char \*type)                             
+  \*name, char \*type)
 
   void get_var_count(int       \-                  To be detailed
-  \*count)                                         
+  \*count)
 
   void get_var_name(int index, \-                  Gets the name of the
   char \*name)                                     variable
@@ -241,7 +241,7 @@ interface and the DimrExe function pointers.
   logger)                                          component
   ---------------------------------------------------------------------------
 
-### 5.1 Parallel simulation 
+### 5.1 Parallel simulation
 
 The DimrExe::lib_update of the dimr executable calls the update function
 of the dimr_lib (through the BMI interface), which starts processing the
