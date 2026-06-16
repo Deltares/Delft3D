@@ -1202,7 +1202,6 @@ contains
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-!       realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
          call selectelset(filename, filetype, xe, ye, xyen, kce, nx, ketr(nbndtr(itrac) + 1:, itrac), numtr, usemask=.false., rrtolrel=rrtolrel)
@@ -1214,13 +1213,12 @@ contains
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
       
-      else if (qid(1:13) == 'initialtracer') then ! Obsolete, still required for old extforce file support
+      else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
          call add_bndtracer(tracnam, tracunit, itrac, janew)
 
          if (janew == 1) then
-            ! realloc ketr
             call realloc(ketr, [Nx, numtracers], keepExisting=.true., fill=0)
          end if
 
@@ -1231,7 +1229,6 @@ contains
          if (isf == 0) then ! add
 
             numfracs = numfracs + 1
-!       realloc
             call realloc(kesf, [Nx, numfracs], keepExisting=.true., fill=0)
             call realloc(nbndsf, numfracs, keepExisting=.true., fill=0)
             call realloc(sfnames, numfracs, keepExisting=.true., fill='')
@@ -2597,9 +2594,14 @@ contains
         call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
       end if
 
-      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble)
-      source_sinks%is_normal = .NOT. is_source_sink_bubblescreen
-      source_sinks%num_normal = count(source_sinks%is_normal)
+      ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble).
+      ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
+      ! capacity, while is_source_sink_bubblescreen is sized to num_total.
+      if (allocated(source_sinks%is_normal)) then
+         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+         source_sinks%num_normal = count(source_sinks%is_normal)
+      end if
 
       call fill_geometry_source_sinks()
 
