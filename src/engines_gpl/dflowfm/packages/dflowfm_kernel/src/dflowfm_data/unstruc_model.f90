@@ -975,9 +975,9 @@ contains
          iStrchType = -1
       end if
 
-      call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [numerics] block
-      call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success)
-      
+      call prop_get(md_ptr, 'numerics', 'Keepzlayeringatbed', keepzlayeringatbed, success) ! Deprecated, moved to [geometry] block
+      call prop_get(md_ptr, 'geometry', 'Keepzlayeringatbed', keepzlayeringatbed, success)
+
       call prop_get(md_ptr, 'geometry', 'Ihuz', ihuz, success)
       call prop_get(md_ptr, 'geometry', 'Ihuzcsig', ihuzcsig, success)
       call prop_get(md_ptr, 'geometry', 'Keepzlay1bedvol', keepzlay1bedvol, success)
