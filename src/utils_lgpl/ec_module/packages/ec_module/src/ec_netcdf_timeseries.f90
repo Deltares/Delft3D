@@ -255,7 +255,7 @@ contains
 
       if (ncptr%vertical_coordinate_id /= -1) then
             ierr = ncu_get_att(ncptr%ncid, ncptr%vertical_coordinate_id, 'positive', positive)
-            ncptr%is_vertical_coord_type_varying = ncptr%variable_dimension(ncptr%vertical_coordinate_id) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
+            ncptr%is_vertical_coord_time_varying = ncptr%variable_dimension(ncptr%vertical_coordinate_id) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
             if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
                ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
                ncptr%layerdimid = var_dimids(1, ncptr%vertical_coordinate_id) ! For convenience also store the dimension ID explicitly

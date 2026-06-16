@@ -198,7 +198,7 @@ contains
 
          bcBlockPtr%ftype = BC_FTYPE_NETCDF
          bcBlockPtr%vptyp = bcBlockPtr%ncptr%vptyp
-         bcBlockPtr%isZTimeVarying = bcBlockPtr%ncptr%is_vertical_coord_type_varying
+         bcBlockPtr%isZTimeVarying = bcBlockPtr%ncptr%is_vertical_coord_time_varying
          if (allocated(bcBlockPtr%ncptr%vp)) then
             bcBlockPtr%vp => bcBlockPtr%ncptr%vp
             bcBlockPtr%numlay = bcBlockPtr%ncptr%nLayer

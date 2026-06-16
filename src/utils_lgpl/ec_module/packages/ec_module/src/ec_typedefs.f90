@@ -199,7 +199,7 @@ module m_ec_typedefs
       integer :: layerdimid = -1 !< dim_id for the vertical coordinate
       character(len=50) :: timeunit !< netcdf-convention time unit definition
       integer :: vertical_coordinate_id = -1 !< var_id for the vertical coordinate variable in the netcdf file
-      logical :: is_vertical_coord_type_varying = .false. !< TRUE: vertical coordinate is time varying, FALSE: vertical coordinate is constant
+      logical :: is_vertical_coord_time_varying = .false. !< TRUE: vertical coordinate is time varying, FALSE: vertical coordinate is constant
       integer :: vptyp = -1 !< vertical coordinate type
       real(hp), allocatable, dimension(:) :: vp !< vertical coordinate (layers)
    end type tEcNetCDF
