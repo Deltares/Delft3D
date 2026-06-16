@@ -1028,8 +1028,7 @@ contains
 
 !> Write a shape file for source-sinks
    subroutine unc_write_shp_src()
-      use fm_external_forcings_data, only: source_sink_indices, num_source_sink, source_sink_x, source_sink_y, &
-         source_sink_max_xy_points, source_sink_name, source_sink_area, source_sink_all_discharges
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_flowgeom, only: xz, yz
       
       implicit none
@@ -1093,30 +1092,30 @@ contains
          return
       end if
 
-      do i = 1, num_source_sink
-         objectid = source_sink_name(i)
+      do i = 1, source_sinks%num_total
+         objectid = source_sinks%name(i)
          !call mess(LEVEL_INFO, 'SHAPEFILE: Creating shape: '''//trim(objectid)//'''.')
 
          ! create a shape object with the "simple" method, for each shape 2 components are added x, y
-         k1 = source_sink_indices(1, i) ! flownode
-         k2 = source_sink_indices(4, i)
+         k1 = source_sinks%indices(i, 1) ! flownode
+         k2 = source_sinks%indices(i, 4)
          if (k1 <= 0 .and. k2 <= 0) then ! if both points are not in the domain
             cycle
          else
-            maxnr = source_sink_max_xy_points(i)
+            maxnr = source_sinks%max_xy_points(i)
             if (k1 > 0) then
                tmp_x(1) = xz(k1)
                tmp_y(1) = yz(k1)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(1) = source_sink_x(i, 1)
-               tmp_y(1) = source_sink_y(i, 1)
+               tmp_x(1) = source_sinks%x(i, 1)
+               tmp_y(1) = source_sinks%y(i, 1)
             end if
             if (k2 > 0) then
                tmp_x(2) = xz(k2)
                tmp_y(2) = yz(k2)
             else ! if this node is not in the model domain, then use the original coordinate
-               tmp_x(2) = source_sink_x(i, maxnr)
-               tmp_y(2) = source_sink_y(i, maxnr)
+               tmp_x(2) = source_sinks%x(i, maxnr)
+               tmp_y(2) = source_sinks%y(i, maxnr)
             end if
             shpobj = shpcreatesimpleobject(tshp, 2, tmp_x, tmp_y)
 
@@ -1139,8 +1138,8 @@ contains
             end if
 
             ! write area
-            if (allocated(source_sink_area)) then
-               j = dbfwriteattribute(shphandle, ishape, id_area, source_sink_area(i))
+            if (allocated(source_sinks%area)) then
+               j = dbfwriteattribute(shphandle, ishape, id_area, source_sinks%area(i))
             end if
 
             if (j /= 1) then
@@ -1150,15 +1149,15 @@ contains
 
             ! determine source and sink points
             if (source_sink_all_discharges(1, i) > 0) then
-               snkx = source_sink_x(i, 1)
-               snky = source_sink_y(i, 1)
-               srcx = source_sink_x(i, maxnr)
-               srcy = source_sink_y(i, maxnr)
+               snkx = source_sinks%x(i, 1)
+               snky = source_sinks%y(i, 1)
+               srcx = source_sinks%x(i, maxnr)
+               srcy = source_sinks%y(i, maxnr)
             else
-               snkx = source_sink_x(i, maxnr)
-               snky = source_sink_y(i, maxnr)
-               srcx = source_sink_x(i, 1)
-               srcy = source_sink_y(i, 1)
+               snkx = source_sinks%x(i, maxnr)
+               snky = source_sinks%y(i, maxnr)
+               srcx = source_sinks%x(i, 1)
+               srcy = source_sinks%y(i, 1)
             end if
             ! write ORIGXSNK
             j = dbfwriteattribute(shphandle, ishape, id_origxsnk, snkx)
