@@ -1,7 +1,7 @@
 #ifndef SRC_TOOLS_GPL_PRE_C_SUMO_CONNECTED_SINKS_SOURCES_HPP
 #define SRC_TOOLS_GPL_PRE_C_SUMO_CONNECTED_SINKS_SOURCES_HPP
 
-#include <precice.hpp>
+#include <precice/precice.hpp>
 #include <vector>
 
 namespace pre_c_sumo
@@ -21,7 +21,8 @@ namespace pre_c_sumo
         // clear all entries
         void clear();
         // send to preCICE
-        void write_to_precice();
+        void write_to_precice(precice::Participant& participant, std::string_view mesh_name,
+                              std::vector<int> precice_ids);
 
     private:
         // attributes
