@@ -54,7 +54,7 @@ f90twtest(${test_target}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_atmospheric_stability.f90
         ${CMAKE_CURRENT_SOURCE_DIR}/src/test_precice_adapter.f90
     OUTDIR "${CMAKE_CURRENT_BINARY_DIR}"
-    LIBRARIES dflowfm_kernel test_helpers
+    LIBRARIES dflowfm_kernel test_helpers netCDF::netcdff
     VISUAL_STUDIO_PATH engines_gpl/dflowfm/test
 )
 add_subdirectory(helpers)

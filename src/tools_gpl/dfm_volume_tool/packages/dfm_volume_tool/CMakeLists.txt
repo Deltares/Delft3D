@@ -14,7 +14,9 @@ set_source_files_properties(${fortran_version_files}
                             PROPERTIES COMPILE_OPTIONS "${file_preprocessor_flag}")
 # Define the executable
 set(executable_name dfm_volume_tool)
-add_executable(${executable_name} ${sources} ${rc_version_file})
+add_rc_object_library(${executable_name} "${rc_version_file}" "${version_include_dir};${res_path}")
+add_executable(${executable_name} ${sources})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Add dependencies
 if (UNIX)
@@ -29,7 +31,7 @@ if (UNIX)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff
+                         netCDF::netcdff
                          dfm_api_access)
 
     target_link_libraries(${executable_name} PRIVATE
@@ -45,7 +47,7 @@ if (WIN32)
                          io_netcdf
                          io_netcdf_data
                          FLAP
-                         netcdff
+                         netCDF::netcdff
                          dfm_api_access)
 
     target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
@@ -80,6 +82,7 @@ if (WIN32)
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
     target_link_options(${executable_name} PRIVATE ${nologo_flag})
+
 	configure_visual_studio_user_file(${executable_name})
 endif(WIN32)
 
