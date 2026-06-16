@@ -3260,6 +3260,10 @@ contains
       integer :: iend
       integer :: major_, minor_
 
+      ! Default to version 1.0 when no version key is present or cannot be parsed.
+      major_ = 1
+      minor_ = 0
+
       if (present(chapterin)) then
          chapterin_ = chapterin
       else
@@ -3269,6 +3273,15 @@ contains
          keyin_ = keyin
       else
          keyin_ = 'fileVersion'
+      end if
+
+      ! Set the (optional) intent(out) results to their defaults before any early
+      ! return below, so that a present major/minor is never left undefined.
+      if (present(major)) then
+         major = major_
+      end if
+      if (present(minor)) then
+         minor = minor_
       end if
 
       call prop_get_string(tree, chapterin_, keyin_, string, success)
