@@ -2457,7 +2457,7 @@
                 },
                 {
                     "key": "iniWithNudge",
-                    "default_value": 3600.0,
+                    "default_value": 0,
                     "value_type": "intenum",
                     "description": "Initialize salinity and temperature with nudge variables.",
                     "enum_values": {

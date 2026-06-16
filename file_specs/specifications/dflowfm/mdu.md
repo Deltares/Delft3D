@@ -347,7 +347,7 @@ In this field, physical model parameters can be inserted, for instance related t
 | `saliMin` | Limit for salinity to min value. | `0.0` |  | [ppt] |  |
 | `heat_eachStep` | Switch for heat each time step or each user time step. | `0` | <ul><li>**`0`**: each user time step</li><li>**`1`**: each time step</li></ul> |  |  |
 | `nudgeTimeUni` | Uniform nudge relaxation time. | `3600.0` |  | [s] |  |
-| `iniWithNudge` | Initialize salinity and temperature with nudge variables. | `3600.0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li><li>**`2`**: only initialize, no nudging</li></ul> |  |  |
+| `iniWithNudge` | Initialize salinity and temperature with nudge variables. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li><li>**`2`**: only initialize, no nudging</li></ul> |  |  |
 | `secondaryFlow` | Secondary flow. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `betaSpiral` | Weight factor of the spiral flow intensity on flow dispersion stresses. 0.0=disabled. | `0.0` |  | [-] |  |
 | `breachGrowth` | Method for distributing dam breach width over dam break flow links. | `symmetric-asymmetric` | <ul><li>**`symmetric`**: symmetrical growth</li><li>**`proportional`**: proportional growth relative to available width</li><li>**`symmetric-asymmetric`**: symmetrical growth until end reached on one side</li></ul> |  |  |
