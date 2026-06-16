@@ -74,7 +74,7 @@ if(WIN32)
                          morphology_io
                          morphology_kernel
                          morphology_plugins_c
-                         netcdff
+                         netCDF::netcdff
                          polypack
                          trachytopes_io
                          trachytopes_kernel

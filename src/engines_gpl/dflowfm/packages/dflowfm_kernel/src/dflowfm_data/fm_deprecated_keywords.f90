@@ -23,6 +23,7 @@ contains
 
       ! Adding DEPRECATED MDU keywords
       call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'AutoStart', DEPRECATED)
+      call add_deprecated_keyword(deprecated_mdu_keywords, 'General', 'ConvertLongCulverts', DEPRECATED, 'Unconverted long culverts (ConvertLongCulverts=0) will be removed in a future release.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'OrgFloorlevtoplaydef', DEPRECATED)
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'sigmaGrowthFactor', DEPRECATED, 'Use zLayerGrowthFactor instead.')
       call add_deprecated_keyword(deprecated_mdu_keywords, 'Geometry', 'Keepzlayeringatbed', DEPRECATED, 'Use [numerics] keepZLayeringAtBed instead.')
