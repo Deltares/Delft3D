@@ -1979,7 +1979,8 @@ contains
 
             if (.not. ecProviderInitializeBCBlock(InstancePtr, zBCBlockId, fileReaderPtr%tframe%k_refdate, &
                                                 fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &
-                                                zFileReaderId, bctfilename, bctfiletype, "zcoordinate_c", plipointlbl, &
+                                                zFileReaderId, bctfilename, bctfiletype, &
+                                                bcBlockPtr%ncptr%variable_names(bcBlockPtr%ncptr%zcoordid), plipointlbl, &
                                                 istat, dtnodal=fileReaderPtr%tframe%dtnodal)) return
          end if
 
