@@ -84,7 +84,7 @@ object TestBenchValidation : BuildType({
         }
         script {
             name = "Run checks"
-            workingDir = "ci/python"
+            workingDir = "test/deltares_testbench"
             scriptContent = """
                 #!/usr/bin/env bash
                 set -exo pipefail
