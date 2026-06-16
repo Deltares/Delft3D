@@ -94,7 +94,6 @@ contains
             filename = trim(pfrc%filename)
             if (.not. strcmpi(filename, 'REALTIME')) then
                call resolvePath(filename, md_structurefile_dir)
-               call resolvePath(filename, md_structurefile_dir)
             end if
             ! Time-interpolated value will be placed in structure's appropriate member field, available in
             ! %targetptr, when calling ec_gettimespacevalue.
