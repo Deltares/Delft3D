@@ -76,7 +76,8 @@
 
 
       ! copy geometry type
-      output_hyd%geometry = input_hyd%geometry
+      output_hyd%geometry   = input_hyd%geometry
+      output_hyd%layer_type = input_hyd%layer_type
 
       ! lga, only in non-regular
       ! only in structured cases!!
