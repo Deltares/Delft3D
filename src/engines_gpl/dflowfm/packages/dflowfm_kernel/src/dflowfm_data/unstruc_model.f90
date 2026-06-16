@@ -269,7 +269,6 @@ contains
       use m_trachy, only: trtdef_ptr
       use unstruc_netcdf, only: UNC_CONV_UGRID
       use unstruc_channel_flow
-      use m_fm_icecover, only: fm_ice_null
       use m_start_parameters, only: md_jaautostart, MD_AUTOSTARTSTOP, MD_NOAUTOSTART
       use unstruc_display, only: jagui
 
@@ -393,7 +392,6 @@ contains
       !md_findcells       = 0      !< If it is not zero, then the codes call findcells
       !md_pressakey       = 0      !< press a key (1) or not (0)
       !md_jasavenet = 0
-      call fm_ice_null()
 
    end subroutine resetModel
 
@@ -2696,7 +2694,7 @@ contains
       use m_circumcenter_method, only: ALL_NETLINKS_LOOP, circumcenter_tolerance, md_circumcenter_method
       use m_dambreak_breach, only: have_dambreaks_links
       use m_add_baroclinic_pressure, only: BAROC_ORIGINAL, rhointerfaces
-      use m_fm_icecover, only: fm_ice_null, ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
+      use m_fm_icecover, only: ja_icecover, ICECOVER_NONE, MDU_ICE_CHAPTER, ice_data, fm_ice_convert_value_to_string
       use m_flow_validatestate_data, only: dtavg_min_err, s01maxavg_min_err, s01_max_err, u01_max_err, umag_max_err, s1_max_warn, u1abs_max_warn, umag_max_err, ssc_max_err, umag_max_warn
 
       integer, intent(in) :: mout !< File pointer where to write to.

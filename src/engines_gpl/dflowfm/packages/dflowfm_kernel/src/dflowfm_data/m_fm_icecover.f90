@@ -83,23 +83,19 @@ module m_fm_icecover
 contains
 
 !> Nullify/initialize ice data structure.
-   subroutine fm_ice_null()
-      !
-      ! Function/routine arguments
-      !
-      ! NONE
-      !
-      ! Local variables
-      !
-      integer :: istat !< status flag for allocation
-!
-!! executable statements -------------------------------------------------------
-!
-      istat = null_icecover(ice_data)
-      call fm_ice_update_all_pointers()
-   end subroutine fm_ice_null
 
-!> Update all ice data structure.
+   !> Sets ALL variables in this module to their default values.
+   !! For a reinit prior to flow computation, call reset_fm_icecover() instead.
+   subroutine default_fm_icecover()
+      integer :: istat !< status flag for deallocation
+
+      istat = clr_icecover(ice_data)
+      istat = null_icecover(ice_data)
+
+      call fm_ice_update_all_pointers()
+   end subroutine default_fm_icecover
+
+   !> Associates all FM local ice data pointers with the current ice data structure members.
    subroutine fm_ice_update_all_pointers()
       !
       ! Function/routine arguments
@@ -167,6 +163,14 @@ contains
       qh_ice2wat => ice_data%qh_ice2wat
    end subroutine fm_ice_update_spatial_pointers
 
+   !> Resets only FM ice variables intended for a restart of an already loaded model.
+   !! Upon loading of new model/MDU, use default_fm_icecover() instead.
+   subroutine reset_fm_icecover()
+      use m_flowparameters, only: epshu
+      
+      ice_wetting_drying_threshold = 1.1_fp * epshu
+   end subroutine reset_fm_icecover
+
    !> logical flag for allocation
    function fm_is_allocated_ice() result(flag)
       logical :: flag !< logical flag for allocation
@@ -204,14 +208,6 @@ contains
          call fm_ice_update_spatial_pointers()
       end if
    end subroutine fm_ice_alloc
-
-!> Clear the arrays of ice data structure.
-   subroutine fm_ice_clr()
-      integer :: istat !< status flag for allocation
-
-      istat = clr_icecover(ice_data)
-      call fm_ice_null()
-   end subroutine fm_ice_clr
 
 !> Read the ice cover module configuration from the mdu file
    subroutine fm_ice_read(md_ptr, ierror)
