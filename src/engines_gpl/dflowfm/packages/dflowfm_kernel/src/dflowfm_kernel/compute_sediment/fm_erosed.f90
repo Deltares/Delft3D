@@ -491,7 +491,7 @@ contains
             do k = kb, kt
                zcc = 0.5_dp * (zws(k - 1) + zws(k)) ! cell centre position in vertical layer admin, using absolute height
                kmxvel = k
-               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. zcc >= (bl(kk) + deltas(kk))) then
+               if (zcc >= (bl(kk) + maxdepfrac * hs(kk)) .or. (jawave /= NO_WAVES .and. zcc >= (bl(kk) + deltas(kk)))) then
                   exit
                end if
             end do
