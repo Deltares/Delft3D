@@ -3921,48 +3921,6 @@ contains
 
    end subroutine switch_dia_file
 
-!> get output directory
-   function getoutputdir(dircat)
-      use m_flowtimes
-      use system_utils, only: FILESEP
-      implicit none
-
-      character(len=*), optional, intent(in) :: dircat !< (optional) The type of the directory: currently supported only 'waq'.
-      character(len=255) :: getoutputdir
-
-      character(len=16) :: dircat_
-
-      if (present(dircat)) then
-         dircat_ = dircat
-      else
-         dircat_ = ''
-      end if
-
-      call datum2(rundat2)
-      select case (trim(dircat_))
-      case ('waq')
-         if (len_trim(md_waqoutputdir) == 0) then
-            getoutputdir = 'DFM_DELWAQ_'//trim(md_ident_sequential)//trim(rundat2)
-         else
-            getoutputdir = trim(md_waqoutputdir)//FILESEP
-         end if
-
-      case default
-         if (len_trim(md_outputdir) == 0) then
-            !     default
-            if (len_trim(md_ident_sequential) > 0) then
-               getoutputdir = 'DFM_OUTPUT_'//trim(md_ident_sequential)//trim(rundat2)
-            else
-               getoutputdir = 'DFM_OUTPUT_'//trim(rundat2)
-            end if
-         else
-            getoutputdir = trim(md_outputdir)//FILESEP
-         end if
-      end select
-
-      return
-   end function getoutputdir
-
    !> Set the `interval_{start,step,end}` based on the values in the `interval_input` array, as read from the MDU file.
    ! The first value in `interval_input` is the step size, followed by the start and end of the interval. When the start and
    ! end are set to 0 (zero), or are outside the simulation time range, then set `interval_start` and `interval_end` to the 

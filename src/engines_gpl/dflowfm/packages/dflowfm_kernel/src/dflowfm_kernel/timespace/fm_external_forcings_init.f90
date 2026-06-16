@@ -153,11 +153,14 @@ contains
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
       call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
+
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
          call source_sinks%initialize(max_num_src)
       end if
+
+      res = res .and. add_bubblescreen_source_sinks()
 
       ib = 0
       ibqh = 0
@@ -183,15 +186,13 @@ contains
          case ('sourcesink')
             res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
 
-         case ('bubblescreen')
-            res = res .and. add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name)
-
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
             call warn_flush()
          end select
       end do
+
       threshold_abort = initial_threshold_abort
 
       if (allocated(itpenzr)) then
@@ -1425,7 +1426,7 @@ contains
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf, warn_flush
       use m_bubblescreen, only: compute_bubblescreen_area
       use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen
       use m_partitioninfo, only: jampi, reduce_cells
@@ -1448,10 +1449,8 @@ contains
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
-      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
       character(len=:), allocatable :: id !< Bubblescreen id
-      character(len=:), allocatable :: location_file !< Bubblescreen location file
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
@@ -1486,7 +1485,7 @@ contains
          if (str_tolower(group_name) == 'bubblescreen') then
             i_bubblescreen = i_bubblescreen + 1
             is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, bubblescreen%id, &
-                                                                 polygon_x_coordinates, polygon_y_coordinates, polygon_z_coordinates, num_columns, bubblescreen%z_level, discharge_input)
+                                                                 polygon_x_coordinates, polygon_y_coordinates, polygon_z_coordinates, num_columns, bubblescreen%z_level, bubblescreen%discharge_input)
             if (is_successful) then
                if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
                   if (any(polygon_z_coordinates /= dmiss)) then
@@ -1526,7 +1525,7 @@ contains
 
    !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.
-   function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   function add_bubblescreen_source_sinks() result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1544,16 +1543,10 @@ contains
       use m_flowgeom, only: ndx
       use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
 
-      ! Parameters
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
-
       ! Local variables
       logical :: is_successful !< Success flag
       integer :: cidx !< Index for crossed cells
-      integer :: i, bi !< Loop indices
+      integer :: i, j !< Loop indices
       integer :: ierr !< Error code
       integer :: bubblescreen_source_sink_count
       integer :: n_cells
@@ -1565,32 +1558,18 @@ contains
       real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
       real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
       real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
-      real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
-      character(len=:), allocatable :: id !< Bubblescreen id
-      character(len=:), allocatable :: srcid !< Source id
-      character(len=:), allocatable :: location_file !< Bubblescreen location file
-      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      character(len=305) :: srcid !< Source id (length 255 + 50 for bubblescreen index)
 
       ! Initialization
       is_successful = .false.
-      bubblescreen_source_sink_count = 0
-      local_count = 0
 
-      ! Read bubble screen attributes from the tree node
-      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
-      if (is_successful) then
-         allocate (character(len=len_trim(id) + 50) :: srcid)
+      ! Find the bubblescreen with matching id
+      do i = 1, size(bubblescreens)
 
-         ! Find the bubblescreen with matching id
-         do i = 1, size(bubblescreens)
-            if (trim(bubblescreens(i)%id) == trim(id)) then
-               bi = i
-               exit
-            end if
-         end do
-
-         associate (bubblescreen => bubblescreens(bi))
+         bubblescreen_source_sink_count = 0
+         local_count = 0
+         associate (bubblescreen => bubblescreens(i))
 
             n_cells = bubblescreen%num_flowcells
             bubblescreen_cells = bubblescreen%flowcell_indices
@@ -1599,12 +1578,12 @@ contains
                bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                n_cells = size(bubblescreen_cells)
             end if
-            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
-            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
-            do i = 1, n_cells
-               if (.not. bubblescreen_cells(i) == -1) then
-                  x_flowcell(i) = xzw(bubblescreen_cells(i))
-                  y_flowcell(i) = yzw(bubblescreen_cells(i))
+            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp), keepexisting=.false.)
+            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp), keepexisting=.false.)
+            do j = 1, n_cells
+               if (.not. bubblescreen_cells(j) == -1) then
+                  x_flowcell(j) = xzw(bubblescreen_cells(j))
+                  y_flowcell(j) = yzw(bubblescreen_cells(j))
                end if
             end do
             if (jampi == 1) then
@@ -1617,16 +1596,16 @@ contains
             call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
             geomXBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = x_flowcell
             geomYBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = y_flowcell
-            nodeCountBubbleScreen(bi) = n_cells
+            nodeCountBubbleScreen(i) = n_cells
 
             z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
             z_flowcell_sink = bubblescreen%z_level
-            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
+            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1, keepexisting=.false.)
             ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
             do cidx = 1, n_cells
                ! Create the source/sink name
                bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
-               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
+               write (srcid, '(A,I0)') trim(bubblescreen%id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
                call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
@@ -1636,18 +1615,17 @@ contains
                   bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
                end if
             end do
+
+            is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(bubblescreen%id), 'discharge', &
+                                                           trim(bubblescreen%discharge_input), i, 1, bubblescreen_air_discharge)
+
+            if (.not. is_successful) then
+               write (msgbuf, '(5a)') 'Could not initialize discharge data in ''', trim(bubblescreen%discharge_input), ''' for bubble screen with id='//trim(bubblescreen%id)//'.'
+               call err_flush()
+               return
+            end if
          end associate
-      end if
-
-      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                                                     trim(discharge_input), bi, 1, bubblescreen_air_discharge)
-
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
-         call err_flush()
-         return
-      end if
+      end do
 
       is_successful = .true.
 

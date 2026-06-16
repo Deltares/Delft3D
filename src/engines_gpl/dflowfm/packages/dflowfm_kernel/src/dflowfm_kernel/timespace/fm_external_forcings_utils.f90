@@ -213,71 +213,70 @@ contains
       call prop_get(node_ptr, '', 'tracerDecayTime', tracer_decay_time)
       transformcoef(25) = tracer_decay_time
    end subroutine
-
 !> Read bubblescreen forcing attributes from block pointer
-   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, x_coordinates, y_coordinates, z_level, discharge_input) result(success)
-      use MessageHandling, only: err_flush, msgbuf
-      use properties, only: prop_get
-      use tree_data_types, only: tree_data
-      use m_read_location_info, only: read_polyline_coordinates
+function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, &
+                                              id, x_coordinates, y_coordinates, z_coordinates, num_columns, &
+                                              z_level, discharge_input) result(success)
+   use MessageHandling, only: err_flush, msgbuf
+   use properties, only: prop_get
+   use tree_data_types, only: tree_data
+   use m_read_location_info, only: read_polyline_coordinates
 
-      ! Parameters
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-      character(len=*), intent(in) :: file_name !< Name of the ext file
-      character(len=*), intent(in) :: group_name !< Name of the group in the ext file
-      character(len=:), allocatable, intent(out) :: id !< Bubblescreen id
-      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates !< x-coordinates of bubblescreen polyline
-      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates !< y-coordinates of bubblescreen polyline
-      real(kind=dp), intent(out) :: z_level !< [m] Bubblescreen z level
-      character(len=:), allocatable, intent(out) :: discharge_input !< Bubblescreen discharge input file
-      logical :: success !< Result flag
+   ! Parameters
+   type(tree_data), pointer, intent(in) :: block_ptr
+   character(len=*), intent(in) :: base_dir
+   character(len=*), intent(in) :: file_name
+   character(len=*), intent(in) :: group_name
+   character(len=255), intent(out) :: id
+   real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+   real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+   real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
+   integer, intent(out) :: num_columns
+   real(kind=dp), intent(out) :: z_level
+   character(len=:), allocatable, intent(out) :: discharge_input
+   logical :: success
 
-      ! Local variables
-      character(len=INI_VALUE_LEN) :: readout_id
-      character(len=INI_VALUE_LEN) :: readout_discharge_input
-      real(kind=dp), dimension(:), allocatable :: z_coordinates
-      integer :: num_columns
-      logical :: is_read
+   ! Local variables
+   character(len=INI_VALUE_LEN) :: readout_id
+   character(len=INI_VALUE_LEN) :: readout_discharge_input
+   logical :: is_read
 
+   success = .false.
+   num_columns = 0
+
+   ! (required) id
+   call prop_get(block_ptr, '', 'id', readout_id, is_read)
+   if (.not. is_read .or. len_trim(readout_id) == 0) then
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''id'' is missing.'
+      call err_flush()
+      return
+   end if
+   id = trim(readout_id)
+
+   ! (required) polyline coordinates (from locationFile or inline keys)
+   call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
+                                  x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+   if (.not. success) return
+
+   ! (required) zLevel
+   call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
+   if (.not. is_read) then
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Field ''zLevel'' is missing or invalid.'
+      call err_flush()
       success = .false.
+      return
+   end if
 
-      ! (required) Read out 'id' keyword
-      call prop_get(block_ptr, '', 'id', readout_id, is_read)
-      if (.not. is_read .or. len_trim(readout_id) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
-         call err_flush()
-         return
-      else
-         id = trim(readout_id)
-      end if
+   ! (required) discharge
+   call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
+   if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
+      write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
+      call err_flush()
+      success = .false.
+      return
+   end if
+   discharge_input = trim(readout_discharge_input)
 
-      ! (required) Read polyline coordinates (from locationFile or inline numCoordinates/xCoordinates/yCoordinates)
-      call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
-                                     x_coordinates, y_coordinates, z_coordinates, num_columns, success)
-      if (.not. success) return
-
-      ! (required) Read out 'zLevel' keyword
-      call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
-      if (.not. is_read) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''zLevel'' is missing or is invalid value.'
-         call err_flush()
-         success = .false.
-         return
-      end if
-
-      ! (required) Read out 'discharge' keyword
-      call prop_get(block_ptr, '', 'discharge', readout_discharge_input, is_read)
-      if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
-         call err_flush()
-         success = .false.
-         return
-      else
-         discharge_input = trim(readout_discharge_input)
-      end if
-
-      success = .true.
-
-   end function read_bubblescreen_forcing_attributes
+   success = .true.
+end function read_bubblescreen_forcing_attributes
 end module fm_external_forcings_utils

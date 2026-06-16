@@ -221,4 +221,49 @@ module m_unstruc_model_data
    logical :: md_nccompress !< Whether or not to apply compression to NetCDF output files - NOTE: only works when NcFormat = 4
    integer :: md_fou_step !< determines if fourier analysis is updated at the end of the user time step or comp. time step
 
+contains
+
+!> get output directory, lives here to avoid cyclic dependencies.
+   function getoutputdir(dircat)
+      use m_flowtimes
+      use system_utils, only: FILESEP
+      use m_datum2, only: datum2
+      implicit none
+
+      character(len=*), optional, intent(in) :: dircat !< (optional) The type of the directory: currently supported only 'waq'.
+      character(len=255) :: getoutputdir
+
+      character(len=16) :: dircat_
+
+      if (present(dircat)) then
+         dircat_ = dircat
+      else
+         dircat_ = ''
+      end if
+
+      call datum2(rundat2)
+      select case (trim(dircat_))
+      case ('waq')
+         if (len_trim(md_waqoutputdir) == 0) then
+            getoutputdir = 'DFM_DELWAQ_'//trim(md_ident_sequential)//trim(rundat2)
+         else
+            getoutputdir = trim(md_waqoutputdir)//FILESEP
+         end if
+
+      case default
+         if (len_trim(md_outputdir) == 0) then
+            !     default
+            if (len_trim(md_ident_sequential) > 0) then
+               getoutputdir = 'DFM_OUTPUT_'//trim(md_ident_sequential)//trim(rundat2)
+            else
+               getoutputdir = 'DFM_OUTPUT_'//trim(rundat2)
+            end if
+         else
+            getoutputdir = trim(md_outputdir)//FILESEP
+         end if
+      end select
+
+      return
+   end function getoutputdir
+
 end module m_unstruc_model_data
