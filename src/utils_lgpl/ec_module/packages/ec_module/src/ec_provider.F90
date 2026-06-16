@@ -198,7 +198,7 @@ contains
 
          bcBlockPtr%ftype = BC_FTYPE_NETCDF
          bcBlockPtr%vptyp = bcBlockPtr%ncptr%vptyp
-         bcBlockPtr%isZTimeVarying = bcBlockPtr%ncptr%isZTimeVarying
+         bcBlockPtr%isZTimeVarying = bcBlockPtr%ncptr%is_vertical_coord_type_varying
          if (allocated(bcBlockPtr%ncptr%vp)) then
             bcBlockPtr%vp => bcBlockPtr%ncptr%vp
             bcBlockPtr%numlay = bcBlockPtr%ncptr%nLayer
@@ -1980,7 +1980,7 @@ contains
             if (.not. ecProviderInitializeBCBlock(InstancePtr, zBCBlockId, fileReaderPtr%tframe%k_refdate, &
                                                 fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &
                                                 zFileReaderId, bctfilename, bctfiletype, &
-                                                bcBlockPtr%ncptr%variable_names(bcBlockPtr%ncptr%zcoordid), plipointlbl, &
+                                                bcBlockPtr%ncptr%variable_names(bcBlockPtr%ncptr%vertical_coordinate_id), plipointlbl, &
                                                 istat, dtnodal=fileReaderPtr%tframe%dtnodal)) return
          end if
 

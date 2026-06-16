@@ -2578,6 +2578,7 @@ contains
       integer :: flownode_nr !< Flow node number
       logical, dimension(:), allocatable :: is_source_sink_bubblescreen
 
+      if (source_sinks%num_total == 0) return ! No source/sinks, nothing to do
       ! actually compute is_source_sink_bubble and then negate it
       call realloc(is_source_sink_bubblescreen, source_sinks%num_total, fill=.false.)
 

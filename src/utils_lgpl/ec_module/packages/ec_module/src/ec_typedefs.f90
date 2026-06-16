@@ -196,11 +196,10 @@ module m_ec_typedefs
       integer :: tsiddimid = -1 !< dim_id for the timeseries IDs coordinate
       integer :: timevarid = -1 !< var_id for the designated time variable
       integer :: timedimid = -1 !< dim_id for the time coordinate
-      integer :: layervarid = -1 !< var_id for the verical layer variable
       integer :: layerdimid = -1 !< dim_id for the vertical coordinate
       character(len=50) :: timeunit !< netcdf-convention time unit definition
-      integer :: zcoordid = -1 !< var_id for the vertical coordinate variable in the netcdf file
-      logical :: isZTimeVarying = .false. !< TRUE: vertical coordinate is time varying, FALSE: vertical coordinate is constant
+      integer :: vertical_coordinate_id = -1 !< var_id for the vertical coordinate variable in the netcdf file
+      logical :: is_vertical_coord_type_varying = .false. !< TRUE: vertical coordinate is time varying, FALSE: vertical coordinate is constant
       integer :: vptyp = -1 !< vertical coordinate type
       real(hp), allocatable, dimension(:) :: vp !< vertical coordinate (layers)
    end type tEcNetCDF

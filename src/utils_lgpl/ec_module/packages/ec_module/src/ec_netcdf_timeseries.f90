@@ -246,28 +246,23 @@ contains
          zunits = ''
          ! First read general information, then, only for old files, read z values 
          if (strcmpi(trim(ncptr%variable_names(iVars)),'z')) then
-            ncptr%zcoordid = iVars
+            ncptr%vertical_coordinate_id = iVars
          else if (strcmpi(trim(ncptr%variable_names(iVars)),'zcoordinate_c')) then
-            ncptr%zcoordid = iVars
+            ncptr%vertical_coordinate_id = iVars
          end if
-         
-         if (strcmpi(trim(ncptr%variable_names(iVars)),'z')) then
-             ierr = nf90_get_var(ncptr%ncid, ncptr%layervarid, ncptr%vp, (/1/), (/ncptr%nLayer/))
-             if (ierr /= NF90_NOERR) return
-         endif 
+
       end do
 
-      if (ncptr%zcoordid /= -1) then
-            ierr = ncu_get_att(ncptr%ncid, ncptr%zcoordid, 'positive', positive)
-            ncptr%isZTimeVarying = ncptr%variable_dimension(ncptr%zcoordid) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
+      if (ncptr%vertical_coordinate_id /= -1) then
+            ierr = ncu_get_att(ncptr%ncid, ncptr%vertical_coordinate_id, 'positive', positive)
+            ncptr%is_vertical_coord_type_varying = ncptr%variable_dimension(ncptr%vertical_coordinate_id) == 3 ! If z variable has three dimensions, we assume the vertical coordinate is time varying (e.g. z(t, station, layer))
             if (len_trim(positive) > 0) then ! Identified a layercoord variable, by its positive:up/down attribute
                ! NOTE: officially, a vertical coord var may also be identified by a unit of pressure, but we don't support that here.
-               ncptr%layervarid = ncptr%zcoordid
-               ncptr%layerdimid = var_dimids(1, ncptr%zcoordid) ! For convenience also store the dimension ID explicitly
+               ncptr%layerdimid = var_dimids(1, ncptr%vertical_coordinate_id) ! For convenience also store the dimension ID explicitly
                ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
                allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
                if (ierr /= 0) return
-               ierr = ncu_get_att(ncptr%ncid, ncptr%zcoordid, 'units', zunits)
+               ierr = ncu_get_att(ncptr%ncid, ncptr%vertical_coordinate_id, 'units', zunits)
                if (ierr /= NF90_NOERR) return
                if (strcmpi(zunits, 'm')) then
                   if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
