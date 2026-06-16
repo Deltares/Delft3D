@@ -1,0 +1,4489 @@
+{
+    "file_version": "1.0.0",
+    "file_format_version": "1.0.0",
+    "file_format_type": "ini",
+    "description": "The master definition file of D-Flow FM",
+    "ini_sections": [
+        {
+            "name": "general",
+            "description": "This section contains the program name and its version.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "program",
+                    "default_value": "D-Flow FM",
+                    "value_type": "string",
+                    "description": "Program."
+                },
+                {
+                    "key": "version",
+                    "default_value": "1.2.60.64623M",
+                    "value_type": "string",
+                    "description": "Version number of computational kernel."
+                },
+                {
+                    "key": "fileType",
+                    "default_value": "modelDef",
+                    "value_type": "enum",
+                    "description": "File type. Do not edit this.",
+                    "enum_values": {
+                        "modelDef": "model definition file"
+                    },
+                    "validation": {
+                        "is_required": true
+                    }
+                },
+                {
+                    "key": "fileVersion",
+                    "default_value": "1.09",
+                    "value_type": "string",
+                    "description": "File version. Do not edit this.",
+                    "validation": {
+                        "is_required": true
+                    }
+                },
+                {
+                    "key": "guiVersion",
+                    "value_type": "string",
+                    "description": "Version number of GUI."
+                },
+                {
+                    "key": "autoStart",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Autostart simulation after loading MDU or not.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "autostart",
+                        "2": "autostartstop"
+                    }
+                },
+                {
+                    "key": "pathsRelativeToParent",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Resolve file names (e.g. inside the *.ext file) relative to their direct parent, instead of to the toplevel MDU working dir."
+                },
+                {
+                    "key": "modelSpecific",
+                    "value_type": "string",
+                    "description": "Optional 'model specific ID', to enable certain custom runtime function calls (instead of via MDU name).",
+                    "status": "research"
+                },
+                {
+                    "key": "inputSpecific",
+                    "value_type": "intbool",
+                    "description": "Use of hardcoded specific inputs, shall not be used by users.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "geometry",
+            "description": "In this section, the main entry comprises the specification of the grid (i.e. the netCDF network file). In addition, thin dams and thin dykes can be specified.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "netFile",
+                    "value_type": "path",
+                    "description": "Net file (*_net.nc) containing mesh information.",
+                    "validation": {
+                        "is_required": true
+                    }
+                },
+                {
+                    "key": "dryPointsFile",
+                    "value_type": "list[path]",
+                    "description": "Dry points file (*.xyz), third column dummy z values, or polygon file (*.pol)."
+                },
+                {
+                    "key": "gridEnclosureFile",
+                    "value_type": "path",
+                    "description": "Enclosure file (*.pol) to clip outer parts from the grid."
+                },
+                {
+                    "key": "structureFile",
+                    "value_type": "list[path]",
+                    "description": "File (*.ini) containing list of hydraulic structures. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
+                },
+                {
+                    "key": "gulliesFile",
+                    "value_type": "path",
+                    "description": "Polyline file (*_gul.pliz), containing lowest bed level along talweg x, y, z level."
+                },
+                {
+                    "key": "roofsFile",
+                    "value_type": "path",
+                    "description": "Polyline file (*_roof.pliz), containing roofgutter heights x, y, z level."
+                },
+                {
+                    "key": "iniFieldFile",
+                    "value_type": "path",
+                    "description": "Initial and parameter field file (*.ini)."
+                },
+                {
+                    "key": "waterLevIniFile",
+                    "value_type": "path",
+                    "description": "Initial water levels sample file (*.xyz)."
+                },
+                {
+                    "key": "landBoundaryFile",
+                    "value_type": "list[path]",
+                    "description": "Land boundary file (*.ldb), only used for plotting."
+                },
+                {
+                    "key": "thinDamFile",
+                    "value_type": "list[path]",
+                    "description": "Polyline file (*_thd.pli), containing polyline(s) for tracing thin dams."
+                },
+                {
+                    "key": "fixedWeirFile",
+                    "value_type": "list[path]",
+                    "description": "Polyline file (*_fxw.pliz), containing polyline(s) with x, y, z where z = fixed weir top levels (formerly fixed weir)."
+                },
+                {
+                    "key": "pillarFile",
+                    "value_type": "list[path]",
+                    "description": "Polyline file (*_pillar.pliz), containing four colums with x, y, diameter and Cd coefficient for bridge pillars."
+                },
+                {
+                    "key": "useCaching",
+                    "value_type": "intbool",
+                    "default_value": 1,
+                    "description": "Use caching for geometrical/network-related items."
+                },
+                {
+                    "key": "vertPlizFile",
+                    "value_type": "path",
+                    "description": "Polyline file (*_vlay.pliz), containing x, y, Z where first Z = nr of layers, second Z = laytyp. For `layerType` = 3 (mixed layering in polygon regions).",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "frictFile",
+                    "value_type": "list[path]",
+                    "description": "Files with roughness data for 1D (space separated)."
+                },
+                {
+                    "key": "crossDefFile",
+                    "value_type": "path",
+                    "description": "File containing the cross section definitions for all cross section shapes."
+                },
+                {
+                    "key": "crossLocFile",
+                    "value_type": "path",
+                    "description": "File containing the location definitions of the cross sections on a 1D network."
+                },
+                {
+                    "key": "storageNodeFile",
+                    "value_type": "path",
+                    "description": "File containing the specification of storage nodes and/or manholes to add extra storage to 1D models."
+                },
+                {
+                    "key": "1D2DLinkFile",
+                    "value_type": "path",
+                    "description": "File containing the custom parameterization of 1D-2D links."
+                },
+                {
+                    "key": "allowBndAtBifurcation",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Allow 1D boundary node when connecting branch leads to bifurcation."
+                },
+                {
+                    "key": "profLocFile",
+                    "value_type": "path",
+                    "description": "(*_proflocation.xyz) x, y, z, z = profile refnumber."
+                },
+                {
+                    "key": "profDefFile",
+                    "value_type": "path",
+                    "description": "(*_profdefinition.def) definition for all profile nrs."
+                },
+                {
+                    "key": "profDefXyzFile",
+                    "value_type": "path",
+                    "description": "(*_profdefinition.def) definition for all profile nrs."
+                },
+                {
+                    "key": "partitionFile",
+                    "value_type": "path",
+                    "description": "(*_part.pol), polyline(s) x, y."
+                },
+                {
+                    "key": "dxWuiMin2D",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Smallest fraction dx/wu , set dx > `dxWuiMin2D`*wu."
+                },
+                {
+                    "key": "waterLevIni",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Initial water level.",
+                    "unit": "m AD"
+                },
+                {
+                    "key": "bedLevUni",
+                    "value_type": "float",
+                    "default_value": -5.0,
+                    "description": "Uniform bed level (only if `bedLevType`>=3), used at missing z-values in `netFile`.",
+                    "unit": "m AD"
+                },
+                {
+                    "key": "bedSlope",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Bed slope inclination, sets zk = `bedLevUni` + x*`bedSlope` and sets zbndz = xbndz*`bedSlope`.",
+                    "unit": "-"
+                },
+                {
+                    "key": "bedLevType",
+                    "value_type": "intenum",
+                    "default_value": 3,
+                    "description": "Bed level definition type.",
+                    "enum_values": {
+                        "1": "at cell center (tiles xz, yz, bl, bob=max(bl))",
+                        "2": "at face (tiles xu, yu, blu, bob=blu)",
+                        "3": "at face (using mean node values)",
+                        "4": "at face (using min node values)",
+                        "5": "at face (using max node values)",
+                        "6": "with bl based on node values"
+                    }
+                },
+                {
+                    "key": "blMeanBelow",
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "If not -999.0, below this level the cell centre bedlevel is the mean of surrouding netnodes.",
+                    "unit": "m"
+                },
+                {
+                    "key": "blMinAbove",
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "If not -999.0, above this level the cell centre bedlevel is the min of surrouding netnodes.",
+                    "unit": "m"
+                },
+                {
+                    "key": "angLat",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Angle of latitude S-N, 0=on Equator (and thus no Coriolis force). Only required for Coriolis on Cartesian grids and for heat flux modelling.",
+                    "unit": "deg"
+                },
+                {
+                    "key": "angLon",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Angle of longitude E-W, 0=Greenwich Mean Time. Only required for heat flux modelling.",
+                    "unit": "deg"
+                },
+                {
+                    "key": "conveyance2D",
+                    "value_type": "intenum",
+                    "default_value": -1,
+                    "description": "2D analytic conveyance description.",
+                    "enum_values": {
+                        "-1": "R=HU",
+                        "0": "R=H",
+                        "1": "R=A/P",
+                        "2": "K=analytic-1D conv",
+                        "3": "K=analytic-2D conv"
+                    }
+                },
+                {
+                    "key": "nonLin1D",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Non-linear 1D volumes, applicable for models with closed cross sections.",
+                    "enum_values": {
+                        "1": "treat closed sections as partially open by using a Preissmann slot",
+                        "2": "Nested Newton approach",
+                        "3": "partial Nested Newton approach"
+                    }
+                },
+                {
+                    "key": "nonLin2D",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Non-linear 2D volumes, only i.c.m. `bedLevType`=3 and `conveyance2D`>=1."
+                },
+                {
+                    "key": "slotw1D",
+                    "value_type": "float",
+                    "default_value": 0.001,
+                    "description": "Minimum slotwidth 1D.",
+                    "unit": "m"
+                },
+                {
+                    "key": "slotw2D",
+                    "value_type": "float",
+                    "default_value": 0.001,
+                    "description": "Minimum slotwidth 2D.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformWidth1D",
+                    "value_type": "float",
+                    "default_value": 2.0,
+                    "description": "Uniform width for 1D profiles and 1D2D internal links.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformHeight1D",
+                    "value_type": "float",
+                    "default_value": 3.0,
+                    "description": "Uniform height for 1D profiles and 1D2D internal links.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformWidth1DStreetInlets",
+                    "value_type": "float",
+                    "default_value": 0.2,
+                    "description": "Uniform width for street inlets.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformHeight1DStreetInlets",
+                    "value_type": "float",
+                    "default_value": 0.1,
+                    "description": "Uniform height for street inlets.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformTyp1DStreetInlets",
+                    "value_type": "intenum",
+                    "default_value": -2,
+                    "description": "Uniform cross section type for street inlets.",
+                    "enum_values": {
+                        "1": "circle",
+                        "2": "rectangle",
+                        "-2": "closed rectangle"
+                    }
+                },
+                {
+                    "key": "uniformWidth1DRoofGutterPipes",
+                    "value_type": "float",
+                    "default_value": 0.1,
+                    "description": "Uniform width for roof gutter pipes.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformHeight1DRoofGutterPipes",
+                    "value_type": "float",
+                    "default_value": 0.1,
+                    "description": "Uniform height for roof gutter pipes.",
+                    "unit": "m"
+                },
+                {
+                    "key": "uniformTyp1DRoofGutterPipes",
+                    "value_type": "intenum",
+                    "default_value": -2,
+                    "description": "Uniform cross section type for type roof gutter pipes.",
+                    "unit": "m",
+                    "enum_values": {
+                        "1": "circle",
+                        "2": "rectangle",
+                        "-2": "closed rectangle"
+                    }
+                },
+                {
+                    "key": "sillHeightMin",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Fixed weir only active if both ground heights are larger than this value.",
+                    "unit": "m AD"
+                },
+                {
+                    "key": "makeOrthoCenters",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Switch from circumcentres to orthocenters in geominit."
+                },
+                {
+                    "key": "dCenterInside",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Limit cell center; 1.0:in cell <-> 0.0:on c/g.",
+                    "unit": "-",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "circumcenterMethod",
+                    "value_type": "enum",
+                    "default_value": "internalNetlinksEdge",
+                    "description": "Circumcenter computation method.",
+                    "unit": "-",
+                    "enum_values": {
+                    "internalNetlinksEdge": "iterate each edge",
+                    "internalNetlinksLoop": "iterate each loop",
+                    "allNetlinksLoop": "iterate each edge and each loop"
+                    }
+                },
+                {
+                    "key": "circumcenterTolerance",
+                    "value_type": "float",
+                    "default_value": 1e-3,
+                    "description": "Tolerance for convergence of circumcenter method.",
+                    "unit": "m"
+                },
+                {
+                    "key": "baMin",
+                    "value_type": "float",
+                    "default_value": 1e-6,
+                    "description": "Minimum grid cell area, i.c.m. cutcells.",
+                    "unit": "m²"
+                },
+                {
+                    "key": "openBoundaryTolerance",
+                    "value_type": "float",
+                    "default_value": 3.0,
+                    "description": "Search tolerance factor between boundary polyline and grid cells.",
+                    "unit": "cell size"
+                },
+                {
+                    "key": "renumberFlowNodes",
+                    "value_type": "intbool",
+                    "default_value": 1,
+                    "description": "Renumber the flow nodes."
+                },
+                {
+                    "key": "kmx",
+                    "value_type": "int",
+                    "default_value": 0,
+                    "description": "Number of vertical layers. NB. If keyword `zLayerGrowthFactor` is used, then number of layers is determined by D-Flow FM.",
+                    "unit": "-"
+                },
+                {
+                    "key": "layerType",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Vertical layer type.",
+                    "enum_values": {
+                        "1": "sigma-layers",
+                        "2": "z- or z-sigma-layers"
+                    }
+                },
+                {
+                    "key": "numTopSig",
+                    "value_type": "int",
+                    "default_value": 0,
+                    "description": "Number of sigma-layers on top of z-layers in case of z-sigma-layers."
+                },
+                {
+                    "key": "sigmaGrowthFactor",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed.",
+                    "unit": "-",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "zLayerGrowthFactor",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Growth factor of z-Layer thickness starting below the level specified by `dzTopUniAboveZ` till the bed.",
+                    "unit": "-"
+                },
+                {
+                    "key": "floorLevTopLay",
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "The floor level of the top layer.",
+                    "unit": "m"
+                },
+                {
+                    "key": "dzTop",
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "z-layer thickness of layers above level `dzTopUniAboveZ`.",
+                    "unit": "m"
+                },
+                {
+                    "key": "dzTopUniAboveZ",
+                    "value_type": "float",
+                    "default_value": -999.0,
+                    "description": "The level above which the layers will have uniform thickness of `dzTop`.",
+                    "unit": "m"
+                },
+                {
+                    "key": "numTopSigUniform",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "The number of sigma-layers in a z-sigma-model is constant or decreasing (depending on local depth).",
+                    "enum_values": {
+                        "0": "decreasing",
+                        "1": "constant"
+                    }
+                },
+                {
+                    "key": "zLayBot",
+                    "value_type": "int",
+                    "default_value": -999,
+                    "description": "If specified, first z-layer starts from `zLayBot`, if not, it starts from the lowest bed point."
+                },
+                {
+                    "key": "zLayTop",
+                    "value_type": "int",
+                    "default_value": -999,
+                    "description": "If specified, highest z-layer starts from `zLayTop`, if not, it ends at the initial water level."
+                },
+                {
+                    "key": "stretchType",
+                    "value_type": "intenum",
+                    "default_value": -1,
+                    "description": "Stretching type for non-uniform layers.",
+                    "enum_values": {
+                        "-1": "uniform",
+                        "1": "user defined",
+                        "2": "exponential"
+                    }
+                },
+                {
+                    "key": "stretchCoef",
+                    "value_type": "list[float]",
+                    "description": "Coefficients for sigma layer. For `stretchType`=1: percentages of the layers, user defined, laycof(`kmx`). For `stretchType`=2: Stretching level, and two coefficients for layer growth, laycof(3).",
+                    "unit": "-"
+                },
+                {
+                    "key": "dxMin1D",
+                    "value_type": "float",
+                    "default_value": 0.001,
+                    "description": "Minimum 1D link length.",
+                    "unit": "m"
+                },
+                {
+                    "key": "dxDoubleAt1DEndNodes",
+                    "value_type": "intbool",
+                    "default_value": 1,
+                    "description": "Extend a 1D grid cell at the end of a network with 0.5∆x."
+                },
+                {
+                    "key": "changeVelocityAtStructures",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Ignore structure dimensions for the velocity at hydraulic structures, when calculating the surrounding cell centered flow velocities."
+                },
+                {
+                    "key": "changeStructureDimensions",
+                    "value_type": "intbool",
+                    "default_value": 1,
+                    "description": "Change the structure dimensions in case these are inconsistent with the channel dimensions. ⋄ weirs, orifices, general structures: 1. In case the crest width exceeds the surface width, the crest width is set to the surface width; 2. In case the crest level is lower than the bed level, the crest level is set to the bed level. ⋄ bridges: 1. In case the crest width exceeds the surface width, the crest width is set to the surface width; 2. In case the flow area of the bridge exceeds the upstream flow area the flow area of the bridge is set to the upstream flow area. ⋄ universal weirs: only the crest level is checked and changed. NOTE: It is strongly advised not to change this parameter (true). Since turning this option off can lead to instabilities and unrealistic results."
+                },
+                {
+                    "key": "calculateBedLevelOverNonActiveLinks",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Specifies whether the bed levels must be computed over all links of a cell including the closed boundaries, thin dams and dry points (= 0), or only the flow links. (= 1)",
+                    "status": "research"
+                },
+                {
+                    "key": "stripMesh",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Strip unused nodes and links from the mesh after clipping.",
+                    "status": "research"
+                },
+                {
+                    "key": "topLayMinThick",
+                    "value_type": "float",
+                    "description": "Minimum top layer thickness, only for Z-layers.",
+                    "unit": "m",
+                    "status": "research"
+                },
+                {
+                    "key": "helmert",
+                    "value_type": "intbool",
+                    "description": "Use Helmert.",
+                    "status": "research"
+                },
+                {
+                    "key": "waterDepthIni1D",
+                    "value_type": "float",
+                    "description": "Initial waterdepth in 1D.",
+                    "status": "research"
+                },
+                {
+                    "key": "zLayerAtuByBob",
+                    "value_type": "intbool",
+                    "description": "Lowest connected cells governed by bob instead of by bL L/R.",
+                    "status": "research"
+                },
+                {
+                    "key": "shipDefFile",
+                    "value_type": "path",
+                    "description": "File *.shd containing ship definitions.",
+                    "status": "research"
+                },
+                {
+                    "key": "bedWaveLength",
+                    "value_type": "float",
+                    "description": "Bed testcases.",
+                    "status": "research"
+                },
+                {
+                    "key": "removeSmallLinksTrsh",
+                    "value_type": "float",
+                    "description": "Remove small links.",
+                    "status": "research"
+                },
+                {
+                    "key": "createLinks1D2D",
+                    "value_type": "intbool",
+                    "description": "Rashly create links between 1D nodes and 2D cells when initializing model.",
+                    "status": "research"
+                },
+                {
+                    "key": "bedWaveAmplitude",
+                    "value_type": "float",
+                    "description": "Bed testcases.",
+                    "status": "research"
+                },
+                {
+                    "key": "uniformHu",
+                    "value_type": "float",
+                    "description": "Waterdepth in rigid-lid-like solution.",
+                    "status": "research"
+                },
+                {
+                    "key": "tSigma",
+                    "value_type": "float",
+                    "description": "Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers).",
+                    "unit": "s",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "dpuopt",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Bed level interpolation at velocity point in case of tile approach bed level.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "max",
+                        "2": "mean"
+                    }
+                },
+                {
+                    "key": "ihuzcSig",
+                    "value_type": "intenum",
+                    "description": "If `keepZLayeringAtBed`>=2.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "average of Leftsig and Rightsig",
+                        "2": "max of Leftsig and Rightsig",
+                        "3": "min of Leftsig and Rightsig",
+                        "4": "uniform"
+                    }
+                },
+                {
+                    "key": "ihuz",
+                    "value_type": "int",
+                    "description": "TODO",
+                    "status": "research"
+                },
+                {
+                    "key": "cosphiutrsh",
+                    "value_type": "float",
+                    "description": "1.0=no bad orthos.",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "cutCellList",
+                    "value_type": "path",
+                    "description": "File with names of cutcell polygons, e.g. cutcellpolygons.lst.",
+                    "status": "research"
+                },
+                {
+                    "key": "uniformTyp1D",
+                    "value_type": "int",
+                    "description": "Uniform type for channel profiles not specified by profloc.",
+                    "status": "research"
+                },
+                {
+                    "key": "1D2DInternalLinkType",
+                    "value_type": "int",
+                    "description": "Link treatment method for type-3 internal links.",
+                    "status": "research"
+                },
+                {
+                    "key": "pipeFile",
+                    "value_type": "path",
+                    "description": "File *.pliz containing pipe-based 'culverts'.",
+                    "status": "research"
+                },
+                {
+                    "key": "groundLayerThickness",
+                    "value_type": "float",
+                    "description": "Only in pipes: groundlayer thickness.",
+                    "unit": "m",
+                    "status": "research"
+                },
+                {
+                    "key": "extrBl",
+                    "value_type": "intbool",
+                    "description": "Extrapolate bed level at boundaries according to the slope.",
+                    "status": "research"
+                },
+                {
+                    "key": "keepZLay1BedVol",
+                    "value_type": "intbool",
+                    "description": "Correct volumes when `keepZLayeringAtBed`=1.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "volumeTables",
+            "description": "This section contains the settings for the volume tables used in 1D grid cells.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "useVolumeTables",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Use volume tables for 1D grid cells."
+                },
+                {
+                    "key": "increment",
+                    "default_value": 0.1,
+                    "value_type": "float",
+                    "description": "The height increment for the volume tables.",
+                    "unit": "m"
+                },
+                {
+                    "key": "useVolumeTableFile",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Read and write the volume table from/to file."
+                }
+            ]
+        },
+        {
+            "name": "numerics",
+            "description": "This section contains the settings of specific parts of the flow solver, such as limiters and the iterative solver type.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "cflMax",
+                    "default_value": 0.7,
+                    "value_type": "float",
+                    "description": "Maximum Courant nr.",
+                    "unit": "-"
+                },
+                {
+                    "key": "advecType",
+                    "default_value": 33,
+                    "value_type": "intenum",
+                    "description": "Advection type.",
+                    "enum_values": {
+                        "0": "no",
+                        "3": "Perot q(uiou)",
+                        "33": "Perot q(uio-u) fast"
+                    }
+                },
+                {
+                    "key": "advecCorrection1D2D",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Advection correction of 1D2D link volume.",
+                    "enum_values": {
+                        "0": "regular advection",
+                        "1": "link volume au*dx",
+                        "2": "advection on 1D2D switched off"
+                    }
+                },
+                {
+                    "key": "timeStepType",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "Type of time stepping.",
+                    "enum_values": {
+                        "0": "only transport",
+                        "1": "transport + velocity update",
+                        "2": "full implicit step_reduce",
+                        "3": "step_jacobi",
+                        "4": "explicit"
+                    }
+                },
+                {
+                    "key": "maxNonLinearIterations",
+                    "default_value": 100,
+                    "value_type": "int",
+                    "description": "Maximal iterations in non-linear iteration loop before a time step reduction is applied."
+                },
+                {
+                    "key": "setHorizontalBobsFor1D2D",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Bobs are set to 2D bedlevel, to prevent incorrect storage in sewer system."
+                },
+                {
+                    "key": "limTypHu",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Limiter type for waterdepth in continuity eq.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "minmod",
+                        "2": "vanLeer",
+                        "3": "Koren",
+                        "4": "Monotone Central"
+                    }
+                },
+                {
+                    "key": "limTypMom",
+                    "default_value": 4,
+                    "value_type": "intenum",
+                    "description": "Limiter type for cell center advection velocity.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "minmod",
+                        "2": "vanLeer",
+                        "4": "Monotone Central"
+                    }
+                },
+                {
+                    "key": "limTypSa",
+                    "default_value": 4,
+                    "value_type": "intenum",
+                    "description": "Limiter type for salinity transport.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "minmod",
+                        "2": "vanLeer",
+                        "4": "Monotone Central"
+                    }
+                },
+                {
+                    "key": "pure1D",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Purely 1D advection.",
+                    "enum_values": {
+                        "0": "original advection using velocity vector",
+                        "1": "pure 1D using flow volume vol1_f",
+                        "2": "pure 1D using volume vol1"
+                    }
+                },
+                {
+                    "key": "junction1D",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Advection at 1D junctions.",
+                    "enum_values": {
+                        "0": "original 1D advection using velocity vector",
+                        "1": "same as along 1D channels using `pure1D`=1"
+                    }
+                },
+                {
+                    "key": "icgSolver",
+                    "default_value": 4,
+                    "value_type": "intenum",
+                    "description": "Solver type.",
+                    "enum_values": {
+                        "4": "sobekGS + Saad-ILUD (default sequential)",
+                        "6": "PETSc (default parallel)",
+                        "7": "CG+MILU (parallel)"
+                    }
+                },
+                {
+                    "key": "logSolverConvergence",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Print time step, number of solver iterations and solver residual to diagnostic output."
+                },
+                {
+                    "key": "maxDegree",
+                    "default_value": 6,
+                    "value_type": "int",
+                    "description": "Maximum degree in Gauss elimination."
+                },
+                {
+                    "key": "fixedWeirScheme",
+                    "default_value": 9,
+                    "value_type": "intenum",
+                    "description": "Fixed weir scheme.",
+                    "enum_values": {
+                        "6": "semi-subgrid scheme",
+                        "8": "Tabellenboek",
+                        "9": "Villemonte"
+                    }
+                },
+                {
+                    "key": "fixedWeirContraction",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "flow width = flow width*`fixedWeirContraction`.",
+                    "unit": "-"
+                },
+                {
+                    "key": "fixedWeirTopWidth",
+                    "default_value": 3.0,
+                    "value_type": "float",
+                    "description": "Uniform width of the groyne part of fixed weirs.",
+                    "unit": "m"
+                },
+                {
+                    "key": "fixedWeirTalud",
+                    "default_value": 4.0,
+                    "value_type": "float",
+                    "description": "Uniform talud slope of fixed weirs."
+                },
+                {
+                    "key": "fixedWeirTopFrictCoef",
+                    "value_type": "float",
+                    "description": "Uniform friction coefficient of the groyne part of fixed weirs.",
+                    "unit": "depends on frictiontype"
+                },
+                {
+                    "key": "fixedWeirRelaxationCoef",
+                    "default_value": 0.6,
+                    "value_type": "float",
+                    "description": "Fixed weir relaxation coefficient for computation of energy loss."
+                },
+                {
+                    "key": "fixedWeirScheme1D2D",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Fixed weir scheme for 1D2D links.",
+                    "enum_values": {
+                        "0": "same as `fixedWeirScheme`",
+                        "1": "lateral iterative fixed weir scheme"
+                    }
+                },
+                {
+                    "key": "fixedWeir1D2D_dx",
+                    "default_value": 50.0,
+                    "value_type": "float",
+                    "description": "Extra delta x for lateral 1D2D fixed weirs."
+                },
+                {
+                    "key": "izBndPos",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Position of z boundary.",
+                    "enum_values": {
+                        "0": "mirroring of closest cell (as in Delft3D-FLOW)",
+                        "1": "on net boundary"
+                    }
+                },
+                {
+                    "key": "tlfSmo",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Fourier smoothing time on water level boundaries.",
+                    "unit": "s"
+                },
+                {
+                    "key": "slopeDrop2D",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Droplosses are applied if local bottom slope > `slopeDrop2D`, <=0 = no droplosses.",
+                    "unit": "m"
+                },
+                {
+                    "key": "drop1D",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Limit the downstream water level in the momentum equation to the downstream invert level, BOBdown (ζ ∗ down = max (BOBdown, ζdown))."
+                },
+                {
+                    "key": "chkAdvd",
+                    "default_value": 0.1,
+                    "value_type": "float",
+                    "description": "Check advection terms if depth < `chkAdvd`.",
+                    "unit": "m"
+                },
+                {
+                    "key": "teta0",
+                    "default_value": 0.55,
+                    "value_type": "float",
+                    "description": "Theta (implicitness) of time integration.",
+                    "unit": "-",
+                    "validation": {
+                        "range": {
+                            "min_exclusive": 0.5,
+                            "max_exclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "qhRelax",
+                    "default_value": 0.01,
+                    "value_type": "float",
+                    "description": "Relaxation on Q-h open boundaries."
+                },
+                {
+                    "key": "cstBnd",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Delft3D-FLOW type velocity treatment near boundaries for small coastal models or not."
+                },
+                {
+                    "key": "maxItVerticalForesterSal",
+                    "default_value": 0,
+                    "value_type": "int",
+                    "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0
+                        }
+                    }
+                },
+                {
+                    "key": "maxItVerticalForester",
+                    "default_value": 0,
+                    "value_type": "int",
+                    "description": "Forester iterations for salinity (0: no vertical filter for salinity, > 0: max nr of iterations).",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0
+                        }
+                    }
+                },
+                {
+                    "key": "maxItVerticalForesterTem",
+                    "default_value": 0,
+                    "value_type": "int",
+                    "description": "Forester iterations for temperature (0: no vertical filter for temperature, > 0: max nr of iterations).",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0
+                        }
+                    }
+                },
+                {
+                    "key": "transportAutoTimeStepDiff",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Auto timestepdiff in transport.",
+                    "enum_values": {
+                        "0": "lim diff, no lim Dt_tr",
+                        "1": "no lim diff, lim Dt_tr",
+                        "2": "no lim diff, no lim Dt_tr",
+                        "3": "implicit (only 2D)"
+                    }
+                },
+                {
+                    "key": "implicitDiffusion2D",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Implicit diffusion 2D."
+                },
+                {
+                    "key": "turbulenceModel",
+                    "default_value": 3,
+                    "value_type": "intenum",
+                    "description": "Turbulence model.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "constant",
+                        "2": "algebraic",
+                        "3": "k-epsilon",
+                        "4": "k-tau"
+                    }
+                },
+                {
+                    "key": "c1e",
+                    "default_value": 1.489,
+                    "value_type": "float",
+                    "description": "c1 coefficient in turbulence model."
+                },
+                {
+                    "key": "c3eStable",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "c3e coefficient (for stable stratification) in k-eps turbulance model."
+                },
+                {
+                    "key": "c3eUnstable",
+                    "default_value": 1.489,
+                    "value_type": "float",
+                    "description": "c3e coefficient (for unstable stratification) in k-eps turbulance model."
+                },
+                {
+                    "key": "antiCreep",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Include anti-creep to suppress artificial vertical diffusion."
+                },
+                {
+                    "key": "barocPOnBnd",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Include baroclinic pressure on open boundaries."
+                },
+                {
+                    "key": "maxItPresDens",
+                    "default_value": 1,
+                    "value_type": "int",
+                    "description": "Max number of iterations in pressure-density coupling, only if `thermobaricity`=true."
+                },
+                {
+                    "key": "diagnosticTransport",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "No update of transport quantities, also known as diagnostic transport."
+                },
+                {
+                    "key": "maxWaterLevelDiff",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Upper bound on water level changes, (<= 0: no bounds). Run will abort when violated.",
+                    "unit": "m"
+                },
+                {
+                    "key": "maxVelocityDiff",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Upper bound on velocity changes, (<= 0: no bounds). Run will abort when violated.",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "maxVelocity",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Upper bound on velocity (<= 0: no bounds). Run will abort when violated.",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "waterLevelWarn",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Warning level on water level (<= 0: no check).",
+                    "unit": "m AD"
+                },
+                {
+                    "key": "velocityWarn",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Warning level on velocity (<= 0: no check).",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "velMagnWarn",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Warning level on velocity magnitude (<= 0: no check).",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "minTimeStepBreak",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Smallest allowed timestep, checked on a sliding average of several timesteps. Run will abort when violated.",
+                    "unit": "s",
+                    "status": "research"
+                },
+                {
+                    "key": "epshu",
+                    "default_value": 0.0001,
+                    "value_type": "float",
+                    "description": "Threshold water depth for wetting and drying.",
+                    "unit": "m"
+                },
+                {
+                    "key": "epsMaxLev",
+                    "default_value": 1e-8,
+                    "value_type": "float",
+                    "description": "Stop criterium for non linear iteration."
+                },
+                {
+                    "key": "epsMaxLevM",
+                    "default_value": 1e-8,
+                    "value_type": "float",
+                    "description": "Stop criterium for Nested Newton loop in non-linear iteration."
+                },
+                {
+                    "key": "flowSolver",
+                    "default_value": "generic1d2d3d",
+                    "value_type": "enum",
+                    "description": "Flow solver.",
+                    "enum_values": {
+                        "generic1d2d3d": "generic solver",
+                        "implicit1d": "implicit 1D solver"
+                    }
+                },
+                {
+                    "key": "lateral_fixedweir_umin",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Minimal velocity threshold for weir losses in iterative lateral 1D2D weir coupling.",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "jasfer3D",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Corrections for spherical coordinates."
+                },
+                {
+                    "key": "cfFacVer",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Factor for including (1-CFL) in HO term vertical.",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "eddyViscosityBedFacmax",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Limit eddy viscosity at bed by factor of first layer above.",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "lateral_fixedweir_umin_method",
+                    "value_type": "int",
+                    "description": "Method for minimal velocity treshold for weir losses in iterative lateral 1D2D weir coupling.",
+                    "status": "research"
+                },
+                {
+                    "key": "lateral_fixedweir_minimal_1d2d_embankment",
+                    "value_type": "float",
+                    "description": "Minimal crest height of 1D2D SOBEK-DFM embankments.",
+                    "status": "research"
+                },
+                {
+                    "key": "testFixedWeirs",
+                    "value_type": "intenum",
+                    "description": "Test for fixed weir algorithms.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "original Villemonte (Sieben2010) approach",
+                        "1": "Sieben2007"
+                    }
+                },
+                {
+                    "key": "jposhchk",
+                    "value_type": "intenum",
+                    "default_value": 2,
+                    "description": "Check for positive waterdepth.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "0.7dts, just redo",
+                        "2": "1.0dts, close all links",
+                        "3": "0.7dts, close all links",
+                        "4": "1.0dts, reduce au",
+                        "5": "0.7dts, reduce au",
+                        "6": "1.0dts, close outflowing links",
+                        "7": "0.7dts, close outflowing links"
+                    }
+                },
+                {
+                    "key": "cfConHorMom",
+                    "value_type": "float",
+                    "description": "Constant for including (1-CFL) in HO term horizontal momentum.",
+                    "status": "research"
+                },
+                {
+                    "key": "cfFacHorMom",
+                    "value_type": "float",
+                    "description": "Factor for including (1-CFL) in HO term horizontal momentum.",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "trsh_u1lb",
+                    "value_type": "float",
+                    "description": "2D bedfriction in 3D below this threshold.",
+                    "unit": "m",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "jaupwindsrc",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Upwind advection discretization at sources/sinks.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no (higher-order)",
+                        "1": "yes (first-order)"
+                    }
+                },
+                {
+                    "key": "corioAdamsBashfordFac",
+                    "default_value": 0.5,
+                    "value_type": "float",
+                    "description": "Only when `newCorio`=1, Adams-Bashford factor in Coriolis term.",
+                    "status": "research"
+                },
+                {
+                    "key": "corioConstant",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Coriolis constant.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no change in Coriolis",
+                        "1": "Coriolis constant in Spherical models",
+                        "2": "beta plane approach both in Cartesian and Spherical coordinates"
+                    }
+                },
+                {
+                    "key": "drop3D",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Drop losses in 3D are applied if z upwind is below bob + 2/3 hu*`drop3D`.",
+                    "status": "research"
+                },
+                {
+                    "key": "zLayerCenterBedVel",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Reconstruction of center velocity at half closed bed cells.",
+                    "status": "research"
+                },
+                {
+                    "key": "horAdvTypZLayer",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Horizontal advection treatment of z-layers for dambreaks.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "default",
+                        "2": "sigma-like"
+                    }
+                },
+                {
+                    "key": "iCoriolisType",
+                    "default_value": 5,
+                    "value_type": "intenum",
+                    "description": "Coriolis type.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no Coriolis force",
+                        "5": "default approach for Coriolis (depth dependent and similar to Delft3D-FLOW)"
+                    }
+                },
+                {
+                    "key": "zwsbTol",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Tolerance for zws(kb-1) at bed.",
+                    "status": "research"
+                },
+                {
+                    "key": "cfExpHu",
+                    "value_type": "float",
+                    "description": "Exponent for including (1-CFL) in sethu.",
+                    "status": "research"
+                },
+                {
+                    "key": "jbasqbnddownwindhs",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Water depth scheme at discharge boundaries.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "original hu",
+                        "1": "downwind hs"
+                    }
+                },
+                {
+                    "key": "filterOrder",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "First-order or second order filter to suppress checkerboarding.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "first order",
+                        "2": "second order"
+                    }
+                },
+                {
+                    "key": "keepSTBndOnOutflow",
+                    "default_value": 1,
+                    "value_type": "intenum",
+                    "description": "Keep salinity and temperature signals on boundary cells at outflow.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no (like Thatcher-Harleman)",
+                        "1": "yes (use prescribed boundary conditions)"
+                    }
+                },
+                {
+                    "key": "keepZLayeringAtBed",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "Z-layering at bed.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "original bed level",
+                        "1": "adapted bed level",
+                        "2": "Ztbml approach of Delft3D-FLOW"
+                    }
+                },
+                {
+                    "key": "logProfAtUBndIn",
+                    "default_value": 1,
+                    "value_type": "intenum",
+                    "description": "ubnds inflow.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "uniform U1",
+                        "1": "log U1",
+                        "2": "log U1 and k-eps accordingly"
+                    }
+                },
+                {
+                    "key": "logProfKepsBndIn",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "3D profile at open boundaries.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "k-eps",
+                        "1": "log k-eps inflow",
+                        "2": "log k-eps in- and outflow"
+                    }
+                },
+                {
+                    "key": "epshstem",
+                    "default_value": 1e-3,
+                    "value_type": "float",
+                    "description": "Only compute heat flux + evaporation if depth > `epshstem`.",
+                    "status": "research"
+                },
+                {
+                    "key": "diffusionOnBnd",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Horizontal diffusion on open boundaries.",
+                    "status": "research"
+                },
+                {
+                    "key": "newCorio",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "New standard way of Coriolis term calculation.",
+                    "status": "research"
+                },
+                {
+                    "key": "barrierAdvection",
+                    "default_value": 1,
+                    "value_type": "intenum",
+                    "description": "Advection modelling at barriers.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "no correction",
+                        "2": "advection correction"
+                    }
+                },
+                {
+                    "key": "rhoInterfaces",
+                    "default_value": -1,
+                    "value_type": "intenum",
+                    "description": "Estimate rho at 3D layer interfaces for baroclinic pressure gradient method.",
+                    "status": "research",
+                    "enum_values": {
+                        "-1": "Original linear interpolation",
+                        "0": "Improved linear interpolation",
+                        "1": "Recompute from salinity and temperature",
+                        "2": "Use cell density"
+                    }
+                },
+                {
+                    "key": "chkdifd",
+                    "value_type": "float",
+                    "description": "Check diffusion terms if depth < `chkdifd`, only if `transportAutoTimeStepDiff`=1.",
+                    "status": "research"
+                },
+                {
+                    "key": "fixedWeirFrictScheme",
+                    "value_type": "intenum",
+                    "default_value": 0,
+                    "description": "Fixed weir friction scheme.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "friction based on hu",
+                        "1": "friction based on subgrid weir friction scheme",
+                        "2": "without weir (like WAQUA)",
+                        "3": "full undisturbed velocity reconstruction",
+                        "4": "full undisturbed velocity reconstruction"
+                    }
+                },
+                {
+                    "key": "testDryingFlooding",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Drying flooding algorithm.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "D-Flow FM",
+                        "1": "Delft3D-FLOW",
+                        "2": "similar to `0`, and volume limitation in the transport solver based on `epshu`"
+                    }
+                },
+                {
+                    "key": "turbulenceAdvection",
+                    "default_value": 3,
+                    "value_type": "intenum",
+                    "description": "Turbulance advection.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "none",
+                        "1": "upwind explicit",
+                        "2": "central explicit",
+                        "3": "horizontally explicit and vertically implicit",
+                        "4": "central implicit"
+                    }
+                },
+                {
+                    "key": "horizontalMomentumfilter",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Filter for reduction of checkerboarding."
+                },
+                {
+                    "key": "checkerboardMonitor",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Flag for checkerboarding output on history file (only for sigma layers yet)."
+                },
+                {
+                    "key": "tSpinUpTurbLogProf",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Spin up time when starting with a parabolic viscosity profile in whole model domain.",
+                    "unit": "s"
+                },
+                {
+                    "key": "vertAdvTypMom",
+                    "default_value": 6,
+                    "value_type": "intenum",
+                    "description": "Vertical advection type in momentum equation.",
+                    "enum_values": {
+                        "3": "upwind implicit",
+                        "6": "centerbased upwind explicit"
+                    }
+                },
+                {
+                    "key": "verticalAdvectionType",
+                    "default_value": "higherOrderUpwindExplicit",
+                    "value_type": "enum",
+                    "description": "Vertical advection type for salinity. Note that `verticalAdvectionType`=`centralImplicit` leads to less numerical dissipation than `verticalAdvectionType`=`higherOrderUpwindExplicit`.",
+                    "enum_values": {
+                        "centralImplicit": "theta implicit",
+                        "higherOrderUpwindExplicit": "higher order explicit, no Forester filter"
+                    }
+                },
+                {
+                    "key": "vertAdvTypSal",
+                    "default_value": 6,
+                    "value_type": "intenum",
+                    "status": "deprecated",
+                    "description": "Vertical advection type for salinity. Note that `vertAdvTypSal`=4 leads to less numerical dissipation than `vertAdvTypSal`=6.",
+                    "enum_values": {
+                        "0": "none",
+                        "4": "theta implicit",
+                        "6": "higher order explicit, no Forester filter"
+                    }
+                },
+                {
+                    "key": "vertAdvTypTem",
+                    "default_value": 6,
+                    "value_type": "intenum",
+                    "status": "deprecated",
+                    "description": "Vertical advection type for temperature. Note that `vertAdvTypTem`=4 leads to less numerical dissipation than `vertAdvTypTem`=6.",
+                    "enum_values": {
+                        "0": "none",
+                        "4": "theta implicit",
+                        "6": "higher order explicit, no Forester filter"
+                    }
+                },
+                {
+                    "key": "zeroZBndInflowAdvection",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Switch for advection at open boundary.",
+                    "enum_values": {
+                        "0": "Neumann",
+                        "1": "zero at inflow",
+                        "2": "zero at inflow and outflow"
+                    }
+                },
+                {
+                    "key": "turbulenceTimeIntegrationFactor",
+                    "value_type": "float",
+                    "unit": "-",
+                    "default_value": 0.0,
+                    "description": "0.0=Tur0 from links, 1.0=Tur0 maximal mix of values from links with nodes",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "turbulenceTimeIntegrationMethod",
+                    "value_type": "intenum",
+                    "default_value": 2,
+                    "description": "Where to apply `turbulenceTimeIntegrationFactor`",
+                    "enum_values": {
+                        "1": "apply to all cells",
+                        "2": "apply only when vertical layers are horizontally connected"
+                    }
+                },
+                {
+                    "key": "locSaltMin",
+                    "value_type": "float",
+                    "default_value": 5.0,
+                    "description": "Minimum salinity for case of lock exchange.",
+                    "status": "research"
+                },
+                {
+                    "key": "locSaltMax",
+                    "value_type": "float",
+                    "default_value": 10.0,
+                    "description": "Maximum salinity for case of lock exchange.",
+                    "status": "research"
+                },
+                {
+                    "key": "locSaltLev",
+                    "value_type": "float",
+                    "default_value": 1.0,
+                    "description": "Salinity level for case of lock exchange.",
+                    "status": "research"
+                },
+                {
+                    "key": "linContin",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Linear continuity.",
+                    "status": "research"
+                },
+                {
+                    "key": "cfExpHorMom",
+                    "value_type": "float",
+                    "description": "Exponent for including (1-CFL) in HO term horizontal momentum.",
+                    "status": "research"
+                },
+                {
+                    "key": "coriohhtrsh",
+                    "value_type": "float",
+                    "description": "Only when `newCorio`=1, 0.0=no safety in hu/hus weightings.",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "limTypW",
+                    "value_type": "intenum",
+                    "description": "Limiter type for wave action transport.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "minmod",
+                        "2": "vanLeer",
+                        "3": "Koren",
+                        "4": "Monotone Central"
+                    }
+                },
+                {
+                    "key": "huWeirRegular",
+                    "value_type": "float",
+                    "description": "For Villemonte and Tabellenboek, regular hu below `huWeirRegular`.",
+                    "status": "research"
+                },
+                {
+                    "key": "structureLayersActive",
+                    "value_type": "intenum",
+                    "description": "For Villemonte and Tabellenboek, regular hu below `huWeirRegular`.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "structure flow through all layers",
+                        "1": "structure flow only through open layers"
+                    }
+                },
+                {
+                    "key": "baOrgFracMin",
+                    "value_type": "float",
+                    "description": "Cell area = max(orgcellarea*`baOrgFracMin`, cut cell area).",
+                    "status": "research"
+                },
+                {
+                    "key": "subsuplupdates1",
+                    "value_type": "intbool",
+                    "description": "Update water levels (s1) due to subsidence/uplift.",
+                    "status": "research"
+                },
+                {
+                    "key": "linkDriedMx",
+                    "value_type": "int",
+                    "description": "Maximum numberr of Au growth steps after having dried.",
+                    "status": "research"
+                },
+                {
+                    "key": "lateral_fixedweir_relax",
+                    "value_type": "float",
+                    "description": "Relaxation factor for iterative lateral 1D2D weir coupling algorithm.",
+                    "status": "research"
+                },
+                {
+                    "key": "numlimdt_baorg",
+                    "value_type": "float",
+                    "description": "If previous numlimdt > `numlimdt_baorg` keep original cell area ba in cut cell.",
+                    "status": "research"
+                },
+                {
+                    "key": "cfFacHu",
+                    "value_type": "float",
+                    "description": "Factor for including (1-CFL) in sethu.",
+                    "status": "research"
+                },
+                {
+                    "key": "vertAdvTypMom3OnBnd",
+                    "value_type": "intenum",
+                    "default_value": 0,
+                    "description": "Vertical advection type u1 bnd UpwimpL.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "follow javau",
+                        "1": "on bnd",
+                        "2": "on and near bnd"
+                    }
+                },
+                {
+                    "key": "noDerivedTypes",
+                    "value_type": "intenum",
+                    "description": "Use derived types.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "use derived types",
+                        "1": "less",
+                        "2": "lesser",
+                        "5": "also deallocate derived types"
+                    }
+                },
+                {
+                    "key": "jarhoxu",
+                    "value_type": "intenum",
+                    "default_value": 0,
+                    "description": "Include density gradient in advection term.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no (strongly advised)",
+                        "1": "yes",
+                        "2": "also in barotropic and baroclinic pressure term",
+                        "3": "also in vertical advection",
+                        "4": "also in vertical advection"
+                    }
+                },
+                {
+                    "key": "ilutype",
+                    "value_type": "string",
+                    "description": "TODO.",
+                    "status": "research"
+                },
+                {
+                    "key": "nlevel",
+                    "value_type": "string",
+                    "description": "TODO.",
+                    "status": "research"
+                },
+                {
+                    "key": "dtol",
+                    "value_type": "string",
+                    "description": "TODO.",
+                    "status": "research"
+                },
+                {
+                    "key": "pillarFarFieldVelocity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Use far-field velocity for pillars.",
+                    "status": "research"
+                },
+                {
+                    "key": "minWaterlevelChangeBreak",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Stop the simulation when the rolling mean of the maximum water level change is below this value (considered when larger than 0.0).",
+                    "unit": "m"
+                }
+            ]
+        },
+        {
+            "name": "physics",
+            "description": "In this field, physical model parameters can be inserted, for instance related to friction modelling and turbulence modelling.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "unifFrictCoef",
+                    "default_value": 0.023,
+                    "value_type": "float",
+                    "description": "Uniform friction coefficient.",
+                    "unit": "depends on `unifFrictType`",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "unifFrictType",
+                    "default_value": 1,
+                    "value_type": "intenum",
+                    "description": "Uniform friction type.",
+                    "enum_values": {
+                        "0": "Chezy",
+                        "1": "Manning",
+                        "2": "White-Colebrook",
+                        "3": "White-Colebrook in WAQUA"
+                    }
+                },
+                {
+                    "key": "unifFrictCoef1D",
+                    "default_value": 0.023,
+                    "value_type": "float",
+                    "description": "Uniform friction coefficient in 1D links.",
+                    "unit": "depends on `unifFrictType`",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+				{
+                    "key": "unifFrictCoef1D2D",
+                    "value_type": "float",
+                    "default_value": 0.023,
+                    "description": "Uniform friction coefficient in 1D2D links.",
+                    "unit": "depends on `unifFrictType`",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "unifFrictCoefLin",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Uniform linear friction coefficient.",
+                    "unit": "m/s",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0
+                        }
+                    }
+                },
+                {
+                    "key": "vicouv",
+                    "default_value": 0.1,
+                    "value_type": "float",
+                    "description": "Uniform horizontal eddy viscosity.",
+                    "unit": "m²/s"
+                },
+                {
+                    "key": "dicouv",
+                    "default_value": 0.1,
+                    "value_type": "float",
+                    "description": "Uniform horizontal eddy diffusivity.",
+                    "unit": "m²/s"
+                },
+                {
+                    "key": "vicoww",
+                    "default_value": 0.000001,
+                    "value_type": "float",
+                    "description": "Background vertical eddy viscosity.",
+                    "unit": "m²/s"
+                },
+                {
+                    "key": "dicoww",
+                    "default_value": 0.000001,
+                    "value_type": "float",
+                    "description": "Background vertical eddy diffusivity.",
+                    "unit": "m²/s"
+                },
+                {
+                  "key": "vicwminb",
+                  "default_value": 0.0,
+                  "value_type": "float",
+                  "description": "Minimum viscosity in production and buoyancy term.",
+                  "unit": "m²/s"
+                },
+                {
+                    "key": "xlOzmidov",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Ozmidov length scale, 0.0=no contribution of internal waves to vertical diffusion.",
+                    "unit": "m"
+                },
+				{
+                    "key": "TKEMin",
+                    "default_value": 1e-32,
+                    "value_type": "float",
+                    "description": "Minimum turbulence kinetic energy (TKE) value in k-eps turbulence model.",
+                    "status": "research",
+					"unit": "m²/s²"
+                },
+                {
+                    "key": "EPSMin",
+                    "default_value": 1e-32,
+                    "value_type": "float",
+                    "description": "Minimum turbulent dissipation rate (EPS) value in k-eps turbulence model.",
+                    "status": "research",
+					"unit": "m²/s²"
+                },
+                {
+                    "key": "TAUMin",
+                    "default_value": 1e-32,
+                    "value_type": "float",
+                    "description": "Minimum turbulent time scale (TAU) value in k-tau turbulence model.",
+                    "status": "research",
+					"unit": "m²/s²"
+                },
+                {
+                    "key": "Smagorinsky",
+                    "default_value": 0.2,
+                    "value_type": "float",
+                    "description": "Add Smagorinsky horizontal turbulence: vicu = vicu + ((`Smagorinsky`*dx)^2)*S.",
+                    "unit": "-"
+                },
+                {
+                    "key": "Elder",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Add Elder contribution: vicu = vicu + (`Elder`*kappa*ustar*H/6); e.g. 1.0.",
+                    "unit": "-"
+                },
+                {
+                    "key": "irov",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Wall friction.",
+                    "enum_values": {
+                        "0": "free slip",
+                        "1": "partial slip using `wall_ks`"
+                    }
+                },
+                {
+                    "key": "wall_ks",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Nikuradse roughness for side walls, wall_z0=`wall_ks`/30.",
+                    "unit": "m"
+                },
+                {
+                    "key": "rhoMean",
+                    "default_value": 1000.0,
+                    "value_type": "float",
+                    "description": "Average water density.",
+                    "unit": "kg/m³"
+                },
+                {
+                    "key": "iDensForm",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "Density calculation.",
+                    "enum_values": {
+                        "0": "uniform",
+                        "1": "Eckart",
+                        "2": "UNESCO",
+                        "3": "UNESCO83",
+                        "13": "`3`+pressure"
+                    }
+                },
+                {
+                    "key": "thermobaricity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Include pressure effects on water density. Only works for `iDensForm`=3 (UNESCO83)."
+                },
+                {
+                    "key": "ag",
+                    "default_value": 9.81,
+                    "value_type": "float",
+                    "description": "Gravitational acceleration.",
+                    "unit": "m/s²"
+                },
+                {
+                    "key": "tidalForcing",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Tidal forcing, if jserfic=1."
+                },
+                {
+                    "key": "itcap",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Upper limit on internal tides dissipation.",
+                    "unit": "W/m²"
+                },
+                {
+                    "key": "doodsonStart",
+                    "default_value": 55.565,
+                    "value_type": "float",
+                    "description": "Doodson start time for tidal forcing.",
+                    "unit": "s"
+                },
+                {
+                    "key": "doodsonStop",
+                    "default_value": 375.575,
+                    "value_type": "float",
+                    "description": "Doodson stop time for tidal forcing.",
+                    "unit": "s"
+                },
+                {
+                    "key": "doodsonEps",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Doodson tolerance level for tidal forcing.",
+                    "unit": "s"
+                },
+                {
+                    "key": "villemonteCD1",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Calibration coefficient for Villemonte.",
+                    "unit": "-"
+                },
+                {
+                    "key": "villemonteCD2",
+                    "default_value": 10.0,
+                    "value_type": "float",
+                    "description": "Calibration coefficient for Villemonte.",
+                    "unit": "-"
+                },
+                {
+                    "key": "salinity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Include salinity."
+                },
+                {
+                    "key": "initialSalinity",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Initial salinity concentration.",
+                    "unit": "ppt"
+                },
+                {
+                    "key": "sal0AboveZLev",
+                    "default_value": -999.0,
+                    "value_type": "float",
+                    "description": "Salinity 0 above level.",
+                    "unit": "m"
+                },
+                {
+                    "key": "deltaSalinity",
+                    "default_value": -999.0,
+                    "value_type": "float",
+                    "description": "Uniform initial salinity.",
+                    "unit": "ppt"
+                },
+                {
+                    "key": "backgroundSalinity",
+                    "default_value": 30.0,
+                    "value_type": "float",
+                    "description": "Background salinity for eqn. of state if salinity not computed.",
+                    "unit": "psu"
+                },
+                {
+                    "key": "temperature",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Include temperature.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "only transport",
+                        "3": "excess model of D3D",
+                        "5": "composite (ocean) model"
+                    }
+                },
+                {
+                    "key": "initialTemperature",
+                    "default_value": 6.0,
+                    "value_type": "float",
+                    "description": "Initial temperature.",
+                    "unit": "°C"
+                },
+                {
+                    "key": "backgroundWaterTemperature",
+                    "default_value": 20.0,
+                    "value_type": "float",
+                    "description": "Background water temperature for eqn. of state if temperature not computed.",
+                    "unit": "°C"
+                },
+                {
+                    "key": "secchiDepth",
+                    "default_value": 2.0,
+                    "value_type": "float",
+                    "description": "Water clarity parameter.",
+                    "unit": "m"
+                },
+                {
+                    "key": "stanton",
+                    "default_value": 0.0013,
+                    "value_type": "float",
+                    "description": "Coefficient for convective heat flux, if negative, then Cd wind is used.",
+                    "unit": "-"
+                },
+                {
+                    "key": "dalton",
+                    "default_value": 0.0013,
+                    "value_type": "float",
+                    "description": "Coefficient for evaporative heat flux, if negative, then Cd wind is used.",
+                    "unit": "-"
+                },
+                                {
+                    "key": "albedo",
+                    "default_value": 0.06,
+                    "value_type": "float",
+                    "description": "Albedo coefficient. Fraction of solar radiation reflected by the water surface.",
+                    "unit": "-"
+                },
+                {
+                    "key": "tempMax",
+                    "default_value": -999.0,
+                    "value_type": "float",
+                    "description": "Limit the temperature to max value.",
+                    "unit": "°C"
+                },
+                {
+                    "key": "tempMin",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Limit the temperature to min value.",
+                    "unit": "°C"
+                },
+                {
+                    "key": "saliMax",
+                    "default_value": -999.0,
+                    "value_type": "float",
+                    "description": "Limit for salinity to max value.",
+                    "unit": "ppt"
+                },
+                {
+                    "key": "saliMin",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Limit for salinity to min value.",
+                    "unit": "ppt"
+                },
+                {
+                    "key": "heat_eachStep",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Switch for heat each time step or each user time step.",
+                    "enum_values": {
+                        "0": "each user time step",
+                        "1": "each time step"
+                    }
+                },
+                {
+                    "key": "nudgeTimeUni",
+                    "default_value": 3600.0,
+                    "value_type": "float",
+                    "description": "Uniform nudge relaxation time.",
+                    "unit": "s"
+                },
+                {
+                    "key": "iniWithNudge",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Initialize salinity and temperature with nudge variables.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "yes",
+                        "2": "only initialize, no nudging"
+                    }
+                },
+                {
+                    "key": "secondaryFlow",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Secondary flow."
+                },
+                {
+                    "key": "betaSpiral",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Weight factor of the spiral flow intensity on flow dispersion stresses. 0.0=disabled.",
+                    "unit": "-"
+                },
+                {
+                    "key": "breachGrowth",
+                    "default_value": "symmetric-asymmetric",
+                    "value_type": "enum",
+                    "description": "Method for distributing dam breach width over dam break flow links.",
+                    "enum_values": {
+                        "symmetric": "symmetrical growth",
+                        "proportional": "proportional growth relative to available width",
+                        "symmetric-asymmetric": "symmetrical growth until end reached on one side"
+                    }
+                },
+                {
+                    "key": "thermobaricityInPressureGradient",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Apply thermobaricity in computing the baroclinic pressure gradient.",
+                    "status": "research"
+                },
+                {
+                    "key": "surfTempSmoFac",
+                    "value_type": "float",
+                    "description": "Horizontal smoothing factor for surface water in heatflux computations.",
+                    "status": "research",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "selfAttractionLoading_correct_wl_with_ini",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Correct water level with initial water level in self attraction and loading.",
+                    "status": "research"
+                },
+                {
+                    "key": "nfEntrainmentMomentum",
+                    "value_type": "intbool",
+                    "description": "Use momentum transfer in NearField related entrainment.",
+                    "status": "research"
+                },
+                {
+                    "key": "equili",
+                    "value_type": "intbool",
+                    "description": "Equilibrium spiral flow intensity.",
+                    "status": "research"
+                },
+                {
+                    "key": "soilTempThick",
+                    "value_type": "float",
+                    "default_value": 0.0,
+                    "description": "Use soil temperature buffer if >0.0",
+                    "unit": "m",
+                    "status": "research"
+                },
+                {
+                    "key": "selfAttractionLoading",
+                    "value_type": "intenum",
+                    "default_value": 0,
+                    "description": "Use self attraction and loading.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "yes",
+                        "2": "only self attraction"
+                    }
+                },
+                {
+                    "key": "prandtlNumberTemperature",
+                    "value_type": "float",
+                    "description": "Turbulent Prandtl number for temperature.",
+                    "status": "research"
+                },
+                {
+                    "key": "schmidtNumberSalinity",
+                    "value_type": "float",
+                    "description": "Turbulent Schmidt number for salinity.",
+                    "status": "research"
+                },
+                {
+                    "key": "schmidtNumberTracer",
+                    "value_type": "float",
+                    "description": "Turbulent Schmidt number for tracer(s).",
+                    "status": "research"
+                },
+                {
+                    "key": "umodLin",
+                    "value_type": "float",
+                    "description": "Linear friction umod.",
+                    "status": "research"
+                },
+                {
+                    "key": "jadelvappos",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Only positive forced evaporation fluxes.",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "freeConvectionCoefficient",
+                    "default_value": 0.14,
+                    "value_type": "float",
+                    "description": "Free convection turbulence coefficient.",
+                    "status": "research"
+                },
+                {
+                    "key": "uniffrictcoef1dgrlay",
+                    "value_type": "float",
+                    "description": "Uniform ground layer friction coefficient for ocean models.",
+                    "unit": "m/s",
+                    "status": "research"
+                },
+                {
+                    "key": "salinityDependentFreezingPoint",
+                    "value_type": "intbool",
+                    "description": "Enable computation of negative temperature values by adjusting freezing point based on salinity levels. `tempMin` should be below 0 degrees Celsius."
+                }
+            ]
+        },
+        {
+            "name": "sediment",
+            "description": "This section contains the setting for sediment transport and morphology.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "sedimentModelNr",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "Sediment model number.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "Krone",
+                        "2": "SvR2007",
+                        "3": "E-H",
+                        "4": "MorphologyModule"
+                    }
+                },
+                {
+                    "key": "morFile",
+                    "value_type": "path",
+                    "description": "Morphology settings file (*.mor)."
+                },
+                {
+                    "key": "sedFile",
+                    "value_type": "path",
+                    "description": "Sediment characteristics file (*.sed)."
+                },
+                {
+                    "key": "jaceneqtr",
+                    "value_type": "int",
+                    "description": "TODO"
+                },
+                {
+                    "key": "mxgrkrone",
+                    "value_type": "int",
+                    "description": "Highest fraction index treated by Krone.",
+                    "status": "research"
+                },
+                {
+                    "key": "sedDensCoupling",
+                    "value_type": "intbool",
+                    "description": "Sed rho coupling.",
+                    "status": "research"
+                },
+                {
+                    "key": "implicitFallVelocity",
+                    "value_type": "intenum",
+                    "description": "Implicit or explicit fall velocity",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "implicit",
+                        "1": "explicit"
+                    }
+                },
+                {
+                    "key": "nr_of_sedfractions",
+                    "value_type": "int",
+                    "description": "Number of sediment fractions.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "sedtrails",
+            "description": "",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "sedTrailsGrid",
+                    "value_type": "path",
+                    "description": "Grid file for sedtrails output locations on corners.",
+                    "status": "research"
+                },
+                {
+                    "key": "sedtrailsAnalysis",
+                    "value_type": "enum",
+                    "description": "Sedtrails analysis.",
+                    "enum_values": {
+                        "all": "",
+                        "transport": "",
+                        "flowvelocity": "",
+                        "soulsby": ""
+                    },
+                    "status": "research"
+                },
+                {
+                    "key": "sedtrailsInterval",
+                    "value_type": "list[float]",
+                    "description": "Sedtrails output, given as 'interval' 'start period' 'end period'",
+                    "status": "research"
+                },
+                {
+                    "key": "sedtrailsOutputFile",
+                    "value_type": "path",
+                    "description": "Sedtrails time-averaged output file.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "wind",
+            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "icdTyp",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "Wind drag coefficient type.",
+                    "enum_values": {
+                        "1": "Constant",
+                        "2": "Smith&Banke (2 pts)",
+                        "3": "Smith&Banke (3 pts)",
+                        "4": "Charnock 1955",
+                        "5": "Hwang 2005",
+                        "6": "Wuest 2005",
+                        "7": "Hersbach 2011 (2 pts)",
+                        "8": "`4`+viscous"
+                    }
+                },
+                {
+                    "key": "cdBreakPoints",
+                    "default_value": [
+                        0.00063,
+                        0.00723
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Wind drag breakpoints.",
+                    "unit": "-",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
+                },
+                {
+                    "key": "windSpeedBreakpoints",
+                    "default_value": [
+                        0.0,
+                        100.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Wind speed breakpoints.",
+                    "unit": "m/s",
+                    "validation": {
+                        "min_length": 1,
+                        "max_length": 3
+                    }
+                },
+                {
+                    "key": "rhoAir",
+                    "default_value": 1.2,
+                    "value_type": "float",
+                    "description": "Air density.",
+                    "unit": "kg/m³"
+                },
+                {
+                    "key": "computedAirDensity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Compute air density. Requires quantities airpressure, airtemperature and dewpoint in ext-file."
+                },
+                {
+                    "key": "stressToWind",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Switch between wind speed and wind stress approach for wind forcing.",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "relativeWind",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Wind speed factor relative to top-layer water speed*`relativeWind` (0.0=no relative wind, 1.0=using full top layer speed).",
+                    "unit": "kg/m³",
+                    "validation": {
+                        "range": {
+                            "min_inclusive": 0.0,
+                            "max_inclusive": 1.0
+                        }
+                    }
+                },
+                {
+                    "key": "windPartialDry",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Reduce windstress on water if link partially dry, only for `bedLevType`=3."
+                },
+                {
+                    "key": "pavBnd",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Average air pressure on open boundaries, only applied if value > 0.",
+                    "unit": "N/m²"
+                },
+                {
+                    "key": "pavIni",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Initial air pressure, only applied if value > 0.",
+                    "unit": "N/m²"
+                },
+                {
+                    "key": "windHuOrZwsBased",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Wind drag hu or zws based.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "hu",
+                        "1": "zws"
+                    }
+                },
+                {
+                    "key": "varyingAirDensity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Compute air density.",
+                    "status": "research"
+                },
+                {
+                    "key": "wind_eachstep",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Switch for wind and air pressure each time step or each user time step.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "each user time step",
+                        "1": "each time step"
+                    }
+                },
+                {
+                    "key": "rhoWaterInWindStress",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Water density used in computation of wind stress.",
+                    "enum_values": {
+                        "0": "Rhomean",
+                        "1": "local (surface) density of model"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "waves",
+            "description": "The wind section prescribes the dependency of the wind drag coefficient to the wind velocity through 2 or 3 breakpoints. This field also contains pressure information",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "waveModelNr",
+                    "default_value": 3,
+                    "value_type": "intenum",
+                    "description": "Wave model nr.",
+                    "enum_values": {
+                        "0": "none",
+                        "1": "fetch/depth limited hurdlestive",
+                        "2": "Young-Verhagen",
+                        "3": "SWAN",
+                        "4": "wave group forcing",
+                        "5": "uniform",
+                        "6": "SWAN-NetCDF"
+                    }
+                },
+                {
+                    "key": "rouWav",
+                    "default_value": "FR84",
+                    "value_type": "enum",
+                    "description": "Friction model for wave induced shear stress.",
+                    "enum_values": {
+                        "FR84": "Fredsøe (1984)",
+                        "MS90": "Myrhaug and Slaattelid (1990)",
+                        "HT91": "Huynh-Thanh and Temperville (1991)",
+                        "GM79": "Grant and Madsen (1979)",
+                        "DS88": "Davies et al. (1988)",
+                        "BK67": "Bijker (1967)",
+                        "CJ85": "Christoffersen and Jonsson (1985)",
+                        "OY88": "O' Connor and Yoo (1988)",
+                        "VR04": "Van Rijn et al. (2004)"
+                    }
+                },
+                {
+                    "key": "gammaX",
+                    "default_value": 0.5,
+                    "value_type": "float",
+                    "description": "Maximum wave height/water depth ratio."
+                },
+                {
+                    "key": "flowWithoutWaves",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Exclude Wave data in the flow computations, passing it directly to D-WAQ."
+                },
+                {
+                    "key": "surfBeatInput",
+                    "value_type": "path",
+                    "description": "File with surf beat input conditions."
+                },
+                {
+                    "key": "waveSwartDelwaq",
+                    "value_type": "intbool",
+                    "description": "If `waveSwartDelwaq`=1 and tiWaq> 0, then increase tauwave to Delwaq with 0.5rhofwuorbuorb.",
+                    "status": "research"
+                },
+                {
+                    "key": "hwavuni",
+                    "value_type": "float",
+                    "description": "Root mean square wave height.",
+                    "unit": "m",
+                    "status": "research"
+                },
+                {
+                    "key": "tiFetchComp",
+                    "value_type": "float",
+                    "description": "Time interval fetch comp if `waveModelNr`=1,2.",
+                    "unit": "s",
+                    "status": "research"
+                },
+                {
+                    "key": "phiwavuni",
+                    "value_type": "float",
+                    "description": "Root mean square wave direction, math convention.",
+                    "unit": "deg",
+                    "status": "research"
+                },
+                {
+                    "key": "3DWaveStreaming",
+                    "value_type": "int",
+                    "description": "Influence of wave streaming. 0: no, 1: added to adve.",
+                    "status": "research"
+                },
+                {
+                    "key": "3DWaveBoundaryLayer",
+                    "value_type": "intenum",
+                    "description": "Boundary layer formulation.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "Sana"
+                    }
+                },
+                {
+                    "key": "twavuni",
+                    "value_type": "float",
+                    "description": "Root mean square wave period.",
+                    "unit": "s",
+                    "status": "research"
+                },
+                {
+                    "key": "uorbfac",
+                    "value_type": "intenum",
+                    "description": "Orbital velocities.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "D3D style",
+                        "1": "Guza style"
+                    }
+                },
+                {
+                    "key": "3DStokesProfile",
+                    "value_type": "intenum",
+                    "description": "Stokes profile.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "uniform over depth",
+                        "2": "second-order Stokes theory",
+                        "3": "`2` with vertical stokes gradient in adve."
+                    }
+                },
+                {
+                    "key": "jamapsigwav",
+                    "value_type": "intenum",
+                    "default_value": 0,
+                    "description": "Wave height on map output",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "hrms wave height",
+                        "1": "sign wave height"
+                    }
+                },
+                {
+                    "key": "hminlw",
+                    "value_type": "float",
+                    "description": "Cut-off depth for application of wave forces in momentum balance.",
+                    "status": "research"
+                },
+                {
+                    "key": "jahissigwav",
+                    "value_type": "intenum",
+                    "default_value": 1,
+                    "description": "Wave height on his output",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "hrms wave height",
+                        "1": "sign wave height"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "grw",
+            "description": "This section contains the settings for ground water flow.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "groundWater",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Use (horizontal) ground water flow."
+                },
+                {
+                    "key": "infiltrationModel",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Infiltration method.",
+                    "enum_values": {
+                        "0": "no infiltration",
+                        "1": "interception layer",
+                        "2": "constant infiltration capacity",
+                        "3": "model unsaturated/saturated (with grw)",
+                        "4": "Horton"
+                    }
+                },
+                {
+                    "key": "hInterceptionLayer",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Intercept this amount of rain.",
+                    "unit": "m"
+                },
+                {
+                    "key": "unifInfiltrationCapacity",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Uniform maximum infiltration capacity.",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "conductivity",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Non-dimensionless K conductivity saturated, Q = K*A*i (m³/s).",
+                    "unit": "m/s"
+                },
+                {
+                    "key": "h_aquiferuni",
+                    "default_value": 20.0,
+                    "value_type": "float",
+                    "description": "Level of impervious layer is bgrw = bl - `h_aquiferuni`, if negative, bgrw = `bgrwuni`.",
+                    "unit": "m"
+                },
+                {
+                    "key": "bgrwuni",
+                    "default_value": -999.0,
+                    "value_type": "float",
+                    "description": "Uniform level of impervious layer, only used if `h_aquiferuni` is negative.",
+                    "unit": "m"
+                },
+                {
+                    "key": "h_unsatini",
+                    "default_value": 0.2,
+                    "value_type": "float",
+                    "description": "Initial level ground water is bedlevel - `h_unsatini`, if negative, sgrw = `sgrwini`.",
+                    "unit": "m"
+                },
+                {
+                    "key": "sgrwini",
+                    "default_value": -999.0,
+                    "value_type": "float",
+                    "description": "Initial ground water level, if `h_unsatini` < 0.",
+                    "unit": "m"
+                }
+            ]
+        },
+        {
+            "name": "hydrology",
+            "description": "This section contains the settings for hydrology.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "interceptionModel",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Interception model.",
+                    "enum_values": {
+                        "0": "none",
+                        "1": "on, via layer thickness"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "time",
+            "description": "This section contains the time settings for the model, such as start and stop time of the simulation.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "refDate",
+                    "default_value": "20010101",
+                    "value_type": "datetime",
+                    "description": "Reference date. By default midnight is taken (00h00m00s).",
+                    "unit": "yyyymmdd"
+                },
+                {
+                    "key": "tZone",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Data Sources in GMT are interrogated with time in minutes since `refDate`-`tZone`*60.",
+                    "unit": "min"
+                },
+                {
+                    "key": "tUnit",
+                    "default_value": "S",
+                    "value_type": "enum",
+                    "description": "Time units in MDU.",
+                    "enum_values": {
+                        "D": "days",
+                        "H": "hours",
+                        "M": "minutes",
+                        "S": "seconds"
+                    }
+                },
+                {
+                    "key": "dtUser",
+                    "default_value": 300.0,
+                    "value_type": "float",
+                    "description": "User timestep in seconds (interval for external forcing update & his/map output).",
+                    "unit": "s"
+                },
+                {
+                    "key": "dtNodal",
+                    "default_value": 21600.0,
+                    "value_type": "float",
+                    "description": "Time interval for updating nodal factors in astronomical boundary conditions.",
+                    "unit": "s"
+                },
+                {
+                    "key": "dtMax",
+                    "default_value": 30.0,
+                    "value_type": "float",
+                    "description": "Maximum timestep in seconds.",
+                    "unit": "s"
+                },
+                {
+                    "key": "dtInit",
+                    "default_value": 1.0,
+                    "value_type": "float",
+                    "description": "Initial timestep in seconds.",
+                    "unit": "s"
+                },
+                {
+                    "key": "tStart",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Start time w.r.t. `refDate`.",
+                    "unit": "tUnit"
+                },
+                {
+                    "key": "tStop",
+                    "default_value": 86400.0,
+                    "value_type": "float",
+                    "description": "Stop time w.r.t. `refDate`.",
+                    "unit": "tUnit"
+                },
+                {
+                    "key": "startDateTime",
+                    "value_type": "datetime",
+                    "description": "Computation start datetime, when specified, overrides `tStart`.",
+                    "unit": "yyyymmddhhmmss"
+                },
+                {
+                    "key": "stopDateTime",
+                    "value_type": "datetime",
+                    "description": "Computation stop datetime, when specified, overrides `tStop`.",
+                    "unit": "yyyymmddhhmmss"
+                },
+                {
+                    "key": "updateRoughnessInterval",
+                    "default_value": 86400.0,
+                    "value_type": "float",
+                    "description": "Update interval for time dependent roughness parameters.",
+                    "unit": "s"
+                },
+                {
+                    "key": "tStartTlfsmo",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Start time w.r.t. `refDate` of Fourier smoothing time on water level boundaries.",
+                    "unit": "tUnit"
+                },
+                {
+                    "key": "startDateTimeTlfsmo",
+                    "value_type": "datetime",
+                    "description": "Computation start datetime w.r.t. `refDate` of Fourier smoothing time on water level boundaries, when specified, overrides `tStartTlfsmo`.",
+                    "unit": "yyyymmddhhmmss"
+                },
+                {
+                    "key": "autoTimestep",
+                    "default_value": 1,
+                    "value_type": "intenum",
+                    "description": "Automatic timestepping limited by the CFL condition. Several options are available controlling which flows are used in the CFL limit. Options 1 and 5 are the default for 2D and 3D models, respectively.",
+                    "enum_values": {
+                        "0": "Use no CFL timestep limit (use constant timestepping)",
+                        "1": "For 2D-models; use outflows in CFL timestep limit",
+                        "3": "For 3D-models; use horizontal outflows (per cell-layer) in CFL timestep limit",
+                        "4": "For 3D-models; use horizontal in- and outflows (per cell-layer) in CFL timestep limit",
+                        "5": "For 3D-models; use in- or outflows (per cell-column) in CFL timestep limit"
+                    }
+                },
+                {
+                    "key": "autoTimestepNoStruct",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Exclude structure links (and neighbours) from time step limitation."
+                },
+                {
+                    "key": "autoTimestepNoQOut",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Exclude negative qin terms from time step limitation."
+                },
+                {
+                    "key": "dtFacMax",
+                    "default_value": 1.1,
+                    "value_type": "float",
+                    "description": "Max timestep increase factor in successive time steps."
+                },
+                {
+                    "key": "timeStepAnalysis",
+                    "value_type": "intbool",
+                    "default_value": 0,
+                    "description": "Write time steps analysis file *.steps.",
+                    "status": "research"
+                },
+                {
+                    "key": "autoTimeStepVisc",
+                    "value_type": "intbool",
+                    "description": "Use time step limitation based on explicit diffusive term.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "restart",
+            "description": "This section contains the settings for restarting from a previous simulation.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "restartFile",
+                    "value_type": "path",
+                    "description": "Restart file, only from NetCDF-file, hence: either *_rst.nc or *_map.nc."
+                },
+                {
+                    "key": "restartDateTime",
+                    "value_type": "datetime",
+                    "description": "Restart time, only relevant but obligatory in case of restart from *_map.nc.",
+                    "unit": "yyyymmddhhmmss"
+                },
+                {
+                    "key": "rstIgnoreBl",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Ignore bed level from restart.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "external forcing",
+            "description": "This section contains the settings for external forcings.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "extForceFile",
+                    "value_type": "path",
+                    "description": "Old format for external forcings file *.ext, link with tim/cmp-format boundary conditions specification."
+                },
+                {
+                    "key": "extForceFileNew",
+                    "value_type": "list[path]",
+                    "description": "New format for external forcings file *.ext, link with bc-format boundary conditions specification. Supports multiple filenames separated by spaces. Filenames containing spaces must be placed inside double quotes."
+                },
+                {
+                    "key": "rainfall",
+                    "value_type": "intbool",
+                    "description": "Include rainfall."
+                },
+                {
+                    "key": "qExt",
+                    "value_type": "intbool",
+                    "description": "Include user Qin/out, externally provided."
+                },
+                {
+                    "key": "evaporation",
+                    "value_type": "intbool",
+                    "description": "Include evaporation in water balance."
+                },
+                {
+                    "key": "windExt",
+                    "value_type": "intenum",
+                    "description": "Include wind, externally provided.",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "reserved for EC",
+                        "2": "yes"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "trachytopes",
+            "description": "This section contains the settings for trachytopes allowing the usage of different types of roughness formulations at different locations.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "trtRou",
+                    "default_value": "N",
+                    "value_type": "enum",
+                    "description": "Flag for trachytopes.",
+                    "enum_values": {
+                        "Y": "on",
+                        "N": "off"
+                    }
+                },
+                {
+                    "key": "trtDef",
+                    "value_type": "path",
+                    "description": "File (*.ttd) including trachytope definitions."
+                },
+                {
+                    "key": "trtL",
+                    "value_type": "path",
+                    "description": "File (*.arl) including distribution of trachytope definitions."
+                },
+                {
+                    "key": "dtTrt",
+                    "default_value": 60.0,
+                    "value_type": "float",
+                    "description": "Interval for updating of bottom roughness due to trachytopes in seconds.",
+                    "unit": "s"
+                },
+                {
+                    "key": "trtMxR",
+                    "default_value": 8,
+                    "value_type": "int",
+                    "description": "Maximum recursion level for composite trachytope definitions."
+                },
+                {
+                    "key": "trtMth",
+                    "value_type": "intenum",
+                    "description": "Area averaging method.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "Nikuradse k based",
+                        "2": "Chezy C based (parallel and serial)"
+                    }
+                },
+                {
+                    "key": "trtMnh",
+                    "value_type": "float",
+                    "description": "Minimum water depth for roughness computations.",
+                    "status": "research"
+                },
+                {
+                    "key": "trtCll",
+                    "value_type": "path",
+                    "description": "Calibration factor file for roughness from trachytopes.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "output",
+            "description": "This section contains the settings for various output files.",
+            "is_unique": true,
+            "ini_properties": [
+                {
+                    "key": "wrishp_crs",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing cross sections to shape file."
+                },
+                {
+                    "key": "wrishp_dambreak",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing dambreaks to shape file."
+                },
+                {
+                    "key": "wrishp_dryarea",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing dry areas to shape file."
+                },
+                {
+                    "key": "wrishp_enc",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing enclosures to shape file."
+                },
+                {
+                    "key": "wrishp_emb",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing embankments to shape file."
+                },
+                {
+                    "key": "wrishp_fxw",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing fixed weirs to shape file."
+                },
+                {
+                    "key": "wrishp_gate",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing gates to shape file."
+                },
+                {
+                    "key": "wrishp_genstruc",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing general structures to shape file."
+                },
+                {
+                    "key": "wrishp_obs",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing observation points to shape file."
+                },
+                {
+                    "key": "wrishp_pump",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing pumps to shape file."
+                },
+                {
+                    "key": "wrishp_src",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing sources and sinks to shape file."
+                },
+                {
+                    "key": "wrishp_thd",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing thin dams to shape file."
+                },
+                {
+                    "key": "wrishp_weir",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Writing weirs to shape file."
+                },
+                {
+                    "key": "outputDir",
+                    "value_type": "path",
+                    "description": "Output directory of map-, his-, rst-, dat- and timins files, default: DFM_OUTPUT_<modelname>. Set to . for no dir/current dir."
+                },
+                {
+                    "key": "waqOutputDir",
+                    "value_type": "path",
+                    "description": "Output directory of Water Quality files."
+                },
+                {
+                    "key": "flowGeomFile",
+                    "value_type": "path",
+                    "description": "*_flowgeom.nc Flow geometry file in NetCDF format."
+                },
+                {
+                    "key": "obsFile",
+                    "value_type": "list[path]",
+                    "description": "Space separated list of files, containing information about observation points."
+                },
+                {
+                    "key": "deleteObsPointsOutsideGrid",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Delete observation points outside the grid."
+                },
+                {
+                    "key": "crsFile",
+                    "value_type": "list[path]",
+                    "description": "Space separated list of files, containing information about observation cross sections."
+                },
+                {
+                    "key": "fouFile",
+                    "value_type": "path",
+                    "description": "Name of attribute file that defines the *_fou.nc Fourier output file in NetCDF format."
+                },
+                {
+                    "key": "fouUpdateStep",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Fourier output type.",
+                    "enum_values": {
+                        "0": "every user step",
+                        "1": "every computational step",
+                        "2": "equal to his output"
+                    }
+                },
+                {
+                    "key": "hisFile",
+                    "value_type": "path",
+                    "description": "*_his.nc History file in NetCDF format."
+                },
+                {
+                    "key": "hisInterval",
+                    "default_value": [
+                        300.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "History output, given as 'interval' 'start period' 'end period'.",
+                    "unit": "s"
+                },
+                {
+                    "key": "xlsInterval",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Interval between XLS history.",
+                    "unit": "s"
+                },
+                {
+                    "key": "mapFile",
+                    "value_type": "path",
+                    "description": "*_map.nc Map file in NetCDF format."
+                },
+                {
+                    "key": "mapInterval",
+                    "default_value": [
+                        1200.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Map file output, given as 'interval' 'start period' 'end period'.",
+                    "unit": "s"
+                },
+                {
+                    "key": "rstInterval",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Restart file output, given as 'interval' 'start period' 'end period'.",
+                    "unit": "s"
+                },
+                {
+                    "key": "comInterval",
+                    "default_value": 300.0,
+                    "value_type": "float",
+                    "description": "Comfile write times, given as 'interval' 'start period' 'end period' w.r.t. `refDate`.",
+                    "unit": "s"
+                },
+                {
+                    "key": "mapFormat",
+                    "default_value": 4,
+                    "value_type": "intenum",
+                    "description": "Map file format.",
+                    "enum_values": {
+                        "1": "NetCDF",
+                        "4": "NetCDF UGRID"
+                    }
+                },
+                {
+                    "key": "ncFormat",
+                    "default_value": 3,
+                    "value_type": "intenum",
+                    "description": "Format for all NetCDF output files.",
+                    "enum_values": {
+                        "3": "classic",
+                        "4": "NetCDF4+HDF5"
+                    }
+                },
+                {
+                    "key": "ncMapDataPrecision",
+                    "default_value": "single",
+                    "value_type": "enum",
+                    "description": "Precision for NetCDF data in map files (double or single).",
+                    "enum_values": {
+                        "double": "double precision",
+                        "single": "single precision"
+                    }
+                },
+                {
+                    "key": "ncHisDataPrecision",
+                    "default_value": "single",
+                    "value_type": "enum",
+                    "description": "Precision for NetCDF data in his files (double or single).",
+                    "enum_values": {
+                        "double": "double precision",
+                        "single": "single precision"
+                    }
+                },
+                {
+                    "key": "ncCompression",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Apply compression to NetCDF output files. Only works when `ncFormat`=4."
+                },
+                {
+                    "key": "ncNoUnlimited",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write full-length time-dimension instead of unlimited dimension. Might require `ncFormat`=4."
+                },
+                {
+                    "key": "ncNoForcedFlush",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Do not force flushing of map-like files every output timestep."
+                },
+                {
+                    "key": "ncWriteLatLon",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write extra lat-lon coordinates for all projected coordinate variables in each NetCDF file (for CF-compliancy)."
+                },
+                {
+                    "key": "wriHis_balance",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write mass balance totals to his file."
+                },
+                {
+                    "key": "wriHis_structure_gen",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write general structure parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_dam",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write dam parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_pump",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write pump parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_gate",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write gate parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_weir",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write weir parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_orifice",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write orifice parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_bridge",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write bridge parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_culvert",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write culvert parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_longculvert",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write long culvert parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_damBreak",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write dam break parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_uniWeir",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write universal weir parameters to his file."
+                },
+                {
+                    "key": "wriHis_structure_compound",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write compound structure parameters to his file."
+                },
+                {
+                    "key": "wriHis_lateral",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write lateral data."
+                },
+                {
+                    "key": "wriHis_velocity",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write velocity magnitude in observation point to his file."
+                },
+                {
+                    "key": "wriHis_discharge",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write discharge magnitude in observation point to his file."
+                },
+                {
+                    "key": "wriHis_sourcesink",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write sources-sinks statistics to his file."
+                },
+                {
+                    "key": "wriHis_turbulence",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write k, eps and vicww to his file."
+                },
+                {
+                    "key": "wriHis_wind",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write wind velocities to his file."
+                },
+                {
+                    "key": "wriHis_rain",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write precipitation to his file."
+                },
+                {
+                    "key": "wriHis_airdensity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write air density to his file."
+                },
+                {
+                    "key": "wriHis_infiltration",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write infiltration to his file."
+                },
+                {
+                    "key": "wriHis_temperature",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write temperature to his file."
+                },
+                {
+                    "key": "wriHis_waves",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write wave data to his file."
+                },
+                {
+                    "key": "wriHis_heat_fluxes",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write heat fluxes to his file."
+                },
+                {
+                    "key": "wriHis_salinity",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write salinity to his file."
+                },
+                {
+                    "key": "wriHis_density",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write density to his file."
+                },
+                {
+                    "key": "wriHis_waterlevel_s1",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write water level to his file."
+                },
+                {
+                    "key": "wriHis_bedlevel",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write bed level to his file."
+                },
+                {
+                    "key": "wriHis_waterdepth",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write water depth to his file."
+                },
+                {
+                    "key": "wriHis_velocity_vector",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write velocity vectors to his file."
+                },
+                {
+                    "key": "wriHis_upward_velocity_component",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write upward velocity to his file."
+                },
+                {
+                    "key": "wriHis_sediment",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write sediment transport to his file."
+                },
+                {
+                    "key": "wriHis_constituents",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write tracers to his file."
+                },
+                {
+                    "key": "wriHis_zcor",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write vertical coordinates to his file."
+                },
+                {
+                    "key": "wriHis_taucurrent",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write mean bed shear stress to his file."
+                },
+                {
+                    "key": "wriHis_wqBot",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write water quality bottom variables to his file."
+                },
+                {
+                    "key": "wriHis_wqBot3d",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write 3D water quality bottom variables to his file."
+                },
+                {
+                    "key": "wriMap_waterlevel_s0",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write water levels at old time level to map file."
+                },
+                {
+                    "key": "wriMap_waterlevel_s1",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write water levels at new time level to map file."
+                },
+                {
+                    "key": "wriMap_evaporation",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write evaporation to map file."
+                },
+                {
+                    "key": "wriMap_velocity_component_u0",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write velocities at old time level to map file."
+                },
+                {
+                    "key": "wriMap_velocity_component_u1",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write velocities at new time level to map file."
+                },
+                {
+                    "key": "wriMap_velocity_vector",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write cell-center velocity vectors to map file."
+                },
+                {
+                    "key": "wriMap_upward_velocity_component",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write upward velocity component to map file."
+                },
+                {
+                    "key": "wriMap_density_rho",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write density to map file."
+                },
+                {
+                    "key": "wriMap_horizontal_viscosity_viu",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write horizontal viscosity to map file."
+                },
+                {
+                    "key": "wriMap_horizontal_diffusivity_diu",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write horizontal diffusivity to map file."
+                },
+                {
+                    "key": "wriMap_flow_flux_q1",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write fluxes to map file."
+                },
+                {
+                    "key": "wriMap_spiral_flow",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write spiral flow to map file."
+                },
+                {
+                    "key": "wriMap_numlimdt",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write numlimdt to map file."
+                },
+                {
+                    "key": "wriXyz_numlimdt",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write numlimdt to xyz file This option is useful when a map file is not written."
+                },
+                {
+                    "key": "wriMap_taucurrent",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write bottom friction to map file."
+                },
+                {
+                    "key": "wriMap_chezy",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write chezy roughness in flow elements to map file."
+                },
+                {
+                    "key": "wriMap_chezy_on_flow_links",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write chezy roughness on flow links to map file."
+                },
+                {
+                    "key": "writePart_domain",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write partition domain info, for postprocessing."
+                },
+                {
+                    "key": "velocityDirectionClassesInterval",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Class map's step size of class values for velocity direction."
+                },
+                {
+                    "key": "velocityMagnitudeClasses",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Class map's list of class values for velocity magnitudes."
+                },
+                {
+                    "key": "wriMap_input_roughness",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write chezy input roughness on flow links to map file."
+                },
+                {
+                    "key": "wriMap_turbulence",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write turbulence to map file."
+                },
+                {
+                    "key": "wriMap_rain",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write rainfall rate to map file."
+                },
+                {
+                    "key": "wriMap_wind",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write winds to map file."
+                },
+                {
+                    "key": "wriMap_airdensity",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write air density to map file."
+                },
+                {
+                    "key": "wriMap_calibration",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write roughness calibration factors to map file."
+                },
+                {
+                    "key": "wriMap_salinity",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write salinity to map file."
+                },
+                {
+                    "key": "wriMap_temperature",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write temperature to map file."
+                },
+                {
+                    "key": "wriMap_constituents",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write tracers and others constituents to map file."
+                },
+                {
+                    "key": "wriMap_sediment",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write sediment transport to map file."
+                },
+                {
+                    "key": "wriMap_waves",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write wave variables to map file."
+                },
+                {
+                    "key": "wriMap_z0",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write current-related roughness height to map file."
+                },
+                {
+                    "key": "wriMap_trachytopes",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write roughness from trachytopes to map file."
+                },
+                {
+                    "key": "wriMap_nudging",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write nudging to map file."
+                },
+                {
+                    "key": "wriTek_cdWind",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write wind friction coefficients to tek file."
+                },
+                {
+                    "key": "wriMap_heat_fluxes",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write heat fluxes to map file."
+                },
+                {
+                    "key": "wriMap_fixed_weir_energy_loss",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write energy losses of fixed weirs to map file. `wriMap_waterdepth_on_ground` and `wriMap_volume_on_ground`."
+                },
+                {
+                    "key": "wriMap_wet_waterdepth_threshold",
+                    "default_value": 2e-5,
+                    "value_type": "float",
+                    "description": "Waterdepth threshold above which a grid point counts as 'wet'. Defaults to 0.2*`epshu`. It is used for `wriMap_time_water_on_ground`, `wriMap_waterdepth_on_ground` and `wriMap_volume_on_ground`."
+                },
+                {
+                    "key": "wriMap_time_water_on_ground",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write cumulative time when water is above ground level (only for 1D nodes) to map file."
+                },
+                {
+                    "key": "wriMap_freeboard",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write freeboard (only for 1D nodes) to map file."
+                },
+                {
+                    "key": "wriMap_waterdepth_on_ground",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write waterdepth that is above ground level to map file (only for 1D nodes)."
+                },
+                {
+                    "key": "wriMap_volume_on_ground",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write volume that is above ground level to map file (only for 1D nodes)."
+                },
+                {
+                    "key": "wriMap_total_net_inflow_1d2d",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write current total 1D2D net inflow (discharge) and cumulative total 1D2D net inflow (volume) to map file (only for 1D nodes)."
+                },
+                {
+                    "key": "wriMap_total_net_inflow_lateral",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write current total lateral net inflow (discharge) and cumulative total lateral net inflow (volume) to map file (only for 1D nodes)."
+                },
+                {
+                    "key": "wriMap_water_level_gradient",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write water level gradient to map file (only for 1D links)."
+                },
+                {
+                    "key": "wriMap_tidal_potential",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write tidal potential to map file."
+                },
+                {
+                    "key": "wriMap_sal_potential",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write self attraction and loading potential to map file."
+                },
+                {
+                    "key": "wriMap_internal_tides_dissipation",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write internal tides dissipation to map file."
+                },
+                {
+                    "key": "wriMap_flow_analysis",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write flow analysis data to the map file."
+                },
+                {
+                    "key": "wriMap_volume1",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write volumes to map file."
+                },
+                {
+                    "key": "wriMap_waterdepth",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write water depths to map file."
+                },
+                {
+                    "key": "wriMap_waterdepth_hu",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write water depths on u-points to map file."
+                },
+                {
+                    "key": "wriMap_ancillary_variables",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write ancillary variables attributes to map file."
+                },
+                {
+                    "key": "wriMap_flowarea_au",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write low areas au to map file."
+                },
+                {
+                    "key": "wriMap_velocity_magnitude",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write cell-center velocity vector magnitude to map file."
+                },
+                {
+                    "key": "wriMap_velocity_vectorq",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write cell-center velocity vectors (discharge-based) to map file."
+                },
+                {
+                    "key": "wriMap_flow_flux_q1_main",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write flow flux in main channel to map file."
+                },
+                {
+                    "key": "wriMap_interception",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write interception to map file."
+                },
+                {
+                    "key": "wriMap_windstress",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write wind stress to map file."
+                },
+                {
+                    "key": "wriMap_cdWind",
+                    "default_value": 1,
+                    "value_type": "intbool",
+                    "description": "Write wind friction coeffs to map file."
+                },
+                {
+                    "key": "wriMap_bnd",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write boundary points to map file."
+                },
+                {
+                    "key": "wriMap_Qin",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write sum of all influxes to map file."
+                },
+                {
+                    "key": "wriMap_dtCell",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write time step per cell based on CFL."
+                },
+                {
+                    "key": "wriMap_wqBot3d",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write 3D water quality bottom variables to map file."
+                },
+                {
+                    "key": "wriMap_every_dt",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write output to map file every computational timestep, between start and stop time from `mapInterval`."
+                },
+                {
+                    "key": "mapOutputTimeVector",
+                    "value_type": "path",
+                    "description": "File (.mpt) containing fixed map output times (s) w.r.t. `refDate`."
+                },
+                {
+                    "key": "comOutputTimeVector",
+                    "value_type": "path",
+                    "description": "File (.ctv) containing fixed comfile write times (s) w.r.t. `refDate`."
+                },
+                {
+                    "key": "fullGridOutput",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Full grid output mode for layer positions.",
+                    "enum_values": {
+                        "0": "compact",
+                        "1": "full time-varying grid layer data"
+                    }
+                },
+                {
+                    "key": "eulerVelocities",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write Eulerian velocities."
+                },
+                {
+                    "key": "classMapFile",
+                    "value_type": "path",
+                    "description": "Name of class map file."
+                },
+                {
+                    "key": "waterLevelClasses",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Series of values between which water level classes are computed."
+                },
+                {
+                    "key": "waterDepthClasses",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Series of values between which water depth classes are computed."
+                },
+                {
+                    "key": "classMapInterval",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Interval between class map file outputs.",
+                    "unit": "s"
+                },
+                {
+                    "key": "waqInterval",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Interval between DELWAQ file outputs.",
+                    "unit": "s"
+                },
+                {
+                    "key": "statsInterval",
+                    "default_value": -60.0,
+                    "value_type": "float",
+                    "description": "Interval between screen step outputs in seconds simulation time, if negative in seconds wall clock time.",
+                    "unit": "s"
+                },
+                {
+                    "key": "timingsInterval",
+                    "default_value": [
+                        0.0
+                    ],
+                    "value_type": "list[float]",
+                    "description": "Timings output interval.",
+                    "unit": "s"
+                },
+                {
+                    "key": "richardsonOnOutput",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Write Richardson number."
+                },
+                {
+                    "key": "mbaLumpSourceSinks",
+                    "value_type": "intbool",
+                    "description": "Lump MBA source/sink mass balance terms.",
+                    "status": "research"
+                },
+                {
+                    "key": "wrimap_nearfield",
+                    "value_type": "intbool",
+                    "description": "Write NearField parameters.",
+                    "status": "research"
+                },
+                {
+                    "key": "writeDfmInterpretedValues",
+                    "value_type": "intbool",
+                    "description": "Write DFM interpreted values.",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaLumpBoundaries",
+                    "value_type": "intbool",
+                    "description": "Lump MBA boundary mass balance terms.",
+                    "status": "research"
+                },
+                {
+                    "key": "waqHorAggr",
+                    "value_type": "path",
+                    "description": "DELWAQ output horizontal aggregation file (*.dwq).",
+                    "status": "research"
+                },
+                {
+                    "key": "writeDetailedTimers",
+                    "value_type": "intbool",
+                    "description": "Write detailed timers output file.",
+                    "status": "research"
+                },
+                {
+                    "key": "metadataFile",
+                    "value_type": "path",
+                    "description": "Metadata NetCDF file with user-defined global dataset attributes (*_meta.nc).",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaInterval",
+                    "value_type": "float",
+                    "description": "Mass balance area output interval.",
+                    "unit": "s",
+                    "status": "research"
+                },
+                {
+                    "key": "wrirst_bnd",
+                    "value_type": "intbool",
+                    "description": "Write water level.",
+                    "status": "research"
+                },
+                {
+                    "key": "generateUuid",
+                    "value_type": "intbool",
+                    "description": "Generate UUID as unique dataset identifier and include in output NetCDF files.",
+                    "status": "research"
+                },
+                {
+                    "key": "timeSplitInterval",
+                    "value_type": "string",
+                    "description": "Time splitting interval after which a new output file is started. Format: value+unit, e.g. '1M'.",
+                    "unit": "Y, M, D, h, m, s",
+                    "status": "research"
+                },
+                {
+                    "key": "rugFile",
+                    "value_type": "path",
+                    "description": "Polyline file *_rug.pli defining runup gauges.",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaWriteCsv",
+                    "value_type": "intbool",
+                    "description": "Write mass balance area output to a CSV file.",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaLumpFromToMba",
+                    "value_type": "intbool",
+                    "description": "Lump MBA from/to other areas mass balance terms.",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaLumpProcesses",
+                    "value_type": "intbool",
+                    "description": "Lump MBA processes mass balance terms.",
+                    "status": "research"
+                },
+                {
+                    "key": "waqVertAggr",
+                    "value_type": "path",
+                    "description": "DELWAQ output vertical aggregation file (*.vag).",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaWriteNetcdf",
+                    "value_type": "intbool",
+                    "description": "Write mass balance area output to a NetCDF file.",
+                    "status": "research"
+                },
+                {
+                    "key": "mbaWriteTxt",
+                    "value_type": "intbool",
+                    "description": "Write mass balance area output to a TXT file.",
+                    "status": "research"
+                },
+                {
+                    "key": "wrimap_ice",
+                    "value_type": "intbool",
+                    "description": "Write output to map file for ice cover.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "calibration",
+            "is_unique": true,
+            "description": "This section contains roughness calibration settings.",
+            "ini_properties": [
+                {
+                    "key": "useCalibration",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Activate calibration factor friction multiplier.",
+                    "status": "research"
+                },
+                {
+                    "key": "definitionFile",
+                    "value_type": "path",
+                    "description": "File (*.cld) containing calibration definitions.",
+                    "status": "research"
+                },
+                {
+                    "key": "areaFile",
+                    "value_type": "path",
+                    "description": "File (*.cll) containing area distribution of calibration definitions.",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "processes",
+            "is_unique": true,
+            "description": "This section settings for online water quality processes.",
+            "ini_properties": [
+                {
+                    "key": "substanceFile",
+                    "value_type": "path",
+                    "description": "Substance file name.",
+                    "status": "research"
+                },
+                {
+                    "key": "substanceDensityCoupling",
+                    "value_type": "intbool",
+                    "description": "Substance rho coupling.",
+                    "status": "research"
+                },
+                {
+                    "key": "additionalHistoryOutputFile",
+                    "value_type": "path",
+                    "description": "Extra history output filename.",
+                    "status": "research"
+                },
+                {
+                    "key": "statisticsFile",
+                    "value_type": "path",
+                    "description": "Statistics definition file.",
+                    "status": "research"
+                },
+                {
+                    "key": "thetaVertical",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Theta value for vertical transport of water quality substances.",
+                    "unit": "-",
+                    "status": "deprecated"
+                },
+                {
+                    "key": "dtProcesses",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Waq processes time step. Must be a multiple of `dtUser`. If `dtProcesses` is negative, water quality processes are calculated with every hydrodynamic time step.",
+                    "unit": "s",
+                    "status": "research"
+                },
+                {
+                    "key": "processFluxIntegration",
+                    "default_value": 1,
+                    "value_type": "intenum",
+                    "description": "Process fluxes integration option.",
+                    "status": "research",
+                    "enum_values": {
+                        "1": "WAQ",
+                        "2": "D-Flow FM"
+                    }
+                },
+                {
+                    "key": "volumeDryThreshold",
+                    "default_value": 0.001,
+                    "value_type": "float",
+                    "description": "Volume below which segments are marked as dry.",
+                    "unit": "m³",
+                    "status": "research"
+                },
+                {
+                    "key": "depthDryThreshold",
+                    "default_value": 0.001,
+                    "value_type": "float",
+                    "description": "Water depth below which segments are marked as dry.",
+                    "unit": "m",
+                    "status": "research"
+                }
+            ]
+        },
+        {
+            "name": "particles",
+            "is_unique": true,
+            "description": "This section contains settings for particle tracking.",
+            "ini_properties": [
+                {
+                    "key": "particlesFile",
+                    "value_type": "path",
+                    "description": "Initial particle locations file (*.xyz)."
+                },
+                {
+                    "key": "particlesReleaseFile",
+                    "value_type": "path",
+                    "description": "Particles release file (*.tim, 4 column)."
+                },
+                {
+                    "key": "addTracer",
+                    "default_value": 0,
+                    "value_type": "intbool",
+                    "description": "Add tracer or not."
+                },
+                {
+                    "key": "startTime",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Start time (if > 0).",
+                    "unit": "s"
+                },
+                {
+                    "key": "timeStep",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Time step (if > 0) or every computational time step.",
+                    "unit": "s"
+                },
+                {
+                    "key": "3DType",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "3D velocity type.",
+                    "enum_values": {
+                        "0": "depth averaged velocities",
+                        "1": "free surface/top layer velocities"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "veg",
+            "is_unique": true,
+            "description": "This section contains setting for a dynamic vegetation model",
+            "ini_properties": [
+                {
+                    "key": "vegetationModelNr",
+                    "default_value": 0,
+                    "value_type": "intenum",
+                    "description": "Vegetation model nr.",
+                    "status": "research",
+                    "enum_values": {
+                        "0": "no",
+                        "1": "Baptist DFM"
+                    }
+                },
+                {
+                    "key": "clVeg",
+                    "default_value": 0.8,
+                    "value_type": "float",
+                    "description": "Stem distance factor.",
+                    "unit": "-",
+                    "status": "research"
+                },
+                {
+                    "key": "cdVeg",
+                    "default_value": 0.7,
+                    "value_type": "float",
+                    "description": "Stem Cd coefficient.",
+                    "unit": "-",
+                    "status": "research"
+                },
+                {
+                    "key": "cbVeg",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Stem stiffness coefficient.",
+                    "unit": "-",
+                    "status": "research"
+                },
+                {
+                    "key": "rhoVeg",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Stem Rho, if > 0, bouyant stick procedure.",
+                    "unit": "kg/m³",
+                    "status": "research"
+                },
+                {
+                    "key": "stemHeightStd",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Stem height standard deviation fraction, e.g. 0.1.",
+                    "unit": "-",
+                    "status": "research"
+                },
+                {
+                    "key": "stemHeightConvention",
+                    "default_value": "upward_from_bed",
+                    "value_type": "enum",
+                    "description": "Stem height convention.",
+                    "unit": "-",
+                    "status": "research",
+                    "enum_values": {
+                        "upward_from_bed": "Upward from bed",
+                        "downward_from_surface": "Downward from surface"
+                    }
+                },
+                {
+                    "key": "densVegMinBap",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "Minimum vegeation density in Baptist formula. Only in 2D.",
+                    "unit": "1/m²",
+                    "status": "research"
+                },
+                {
+                    "key": "expChiStem",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "TODO.",
+                    "unit": "-",
+                    "status": "research"
+                },
+                {
+                    "key": "expChiLeaf",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "TODO.",
+                    "unit": "-",
+                    "status": "research"
+                },
+                {
+                    "key": "uChiStem",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "TODO.",
+                    "unit": "m/s",
+                    "status": "research"
+                },
+                {
+                    "key": "uChiLeaf",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "TODO.",
+                    "unit": "m/s",
+                    "status": "research"
+                },
+                {
+                    "key": "areaLeaf",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "TODO.",
+                    "unit": "m²",
+                    "status": "research"
+                },
+                {
+                    "key": "cdLeaf",
+                    "default_value": 0.0,
+                    "value_type": "float",
+                    "description": "TODO.",
+                    "unit": "-",
+                    "status": "research"
+                }
+            ]
+        }
+    ]
+}
