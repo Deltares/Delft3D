@@ -214,12 +214,12 @@ contains
       transformcoef(25) = tracer_decay_time
    end subroutine
 
-   !> Read bubblescreen forcing attributes from block pointer
-   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_level, discharge_input) result(success)
+!> Read bubblescreen forcing attributes from block pointer
+   function read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, x_coordinates, y_coordinates, z_level, discharge_input) result(success)
       use MessageHandling, only: err_flush, msgbuf
       use properties, only: prop_get
       use tree_data_types, only: tree_data
-      use unstruc_files, only: resolvePath
+      use m_read_location_info, only: read_polyline_coordinates
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
@@ -227,54 +227,42 @@ contains
       character(len=*), intent(in) :: file_name !< Name of the ext file
       character(len=*), intent(in) :: group_name !< Name of the group in the ext file
       character(len=:), allocatable, intent(out) :: id !< Bubblescreen id
-      character(len=:), allocatable, intent(out) :: location_file !< Bubblescreen location file name
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates !< x-coordinates of bubblescreen polyline
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates !< y-coordinates of bubblescreen polyline
       real(kind=dp), intent(out) :: z_level !< [m] Bubblescreen z level
       character(len=:), allocatable, intent(out) :: discharge_input !< Bubblescreen discharge input file
-      logical :: success !< Error code
+      logical :: success !< Result flag
 
       ! Local variables
       character(len=INI_VALUE_LEN) :: readout_id
-      character(len=INI_VALUE_LEN) :: readout_location_file
       character(len=INI_VALUE_LEN) :: readout_discharge_input
-      integer :: len
+      real(kind=dp), dimension(:), allocatable :: z_coordinates
+      integer :: num_columns
       logical :: is_read
-      logical :: have_location_file
 
       success = .false.
 
       ! (required) Read out 'id' keyword
       call prop_get(block_ptr, '', 'id', readout_id, is_read)
-      if (.not. is_read .or. len_trim(readout_id) == 0) then ! Check if id is present
+      if (.not. is_read .or. len_trim(readout_id) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''id'' is missing.'
          call err_flush()
          return
-      else ! If id is present, store it
-         id = trim(readout_id(1:len_trim(readout_id)))
+      else
+         id = trim(readout_id)
       end if
 
-      ! (required) Read out 'locationFile' keyword
-      call prop_get(block_ptr, '', 'locationFile', readout_location_file, have_location_file)
-      len = len_trim(readout_location_file)
-      if (.not. have_location_file .or. len == 0) then ! Check if locationFile is present
-         write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file is incomplete or missing.'
-         call err_flush()
-         return
-      else ! If locationFile is present, check if it has correct extension
-         call resolvePath(readout_location_file, base_dir)
-         if (readout_location_file(len-3:len) /= '.pli') then ! Check if locationFile has .pli extension
-            write (msgbuf, '(5a)') 'Incorrect locationFile specified in file ''', trim(file_name), ''': [', trim(group_name), ']. Location file should have ".pli" extension.'
-            call err_flush()
-            return
-         else ! If locationFile is valid, store it
-            location_file = trim(readout_location_file(1:len_trim(readout_location_file)))
-         end if
-      end if
+      ! (required) Read polyline coordinates (from locationFile or inline numCoordinates/xCoordinates/yCoordinates)
+      call read_polyline_coordinates(block_ptr, trim(id), file_name, base_dir, group_name, &
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, success)
+      if (.not. success) return
 
       ! (required) Read out 'zLevel' keyword
       call prop_get(block_ptr, '', 'zLevel', z_level, is_read)
-      if (.not. is_read) then ! Check if zLevel is present
+      if (.not. is_read) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', file_name, ''': [', group_name, ']. Field ''zLevel'' is missing or is invalid value.'
          call err_flush()
+         success = .false.
          return
       end if
 
@@ -283,9 +271,10 @@ contains
       if (.not. is_read .or. len_trim(readout_discharge_input) == 0) then
          write (msgbuf, '(5a)') 'Incomplete block in file ''', trim(file_name), ''': [', trim(group_name), ']. Key "discharge" is missing.'
          call err_flush()
+         success = .false.
          return
-      else ! If discharge is present, store it
-         discharge_input = trim(readout_discharge_input(1:len_trim(readout_discharge_input)))
+      else
+         discharge_input = trim(readout_discharge_input)
       end if
 
       success = .true.

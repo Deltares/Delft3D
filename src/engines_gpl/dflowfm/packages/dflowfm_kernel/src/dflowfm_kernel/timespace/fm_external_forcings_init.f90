@@ -85,8 +85,8 @@ contains
          return
       end if
 
-      if (file_name(len_trim(file_name)-3:) == '.ini') then
-         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '// trim(file_name) //' to the external forcings file.' 
+      if (file_name(len_trim(file_name) - 3:) == '.ini') then
+         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '//trim(file_name)//' to the external forcings file.'
          call warn_flush()
       end if
 
@@ -740,7 +740,7 @@ contains
       use stdlib_kinds, only: c_bool
       use timespace_parameters, only: FIELD1D
       use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, set_global_values, set_global_water_values, finish_initialization, &
-      specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
+                                   specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
       use m_flowgeom, only: ndx2D, ndxi, lnx1d
       use dfm_error, only: DFM_NOERR
       use messageHandling, only: err_flush, msgbuf
@@ -1272,7 +1272,7 @@ contains
          end if
       end if
 
-      if (allocated(z_coordinates)) deallocate(z_coordinates)
+      if (allocated(z_coordinates)) deallocate (z_coordinates)
       is_successful = .true.
 
    end function
@@ -1411,17 +1411,14 @@ contains
 
    end function init_sourcesink_forcings
 
-   !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
+   !> Read bubblescreen blocs from the extfile, read its polyline (file or inline coordinates), find flowcells crossed by the polyline and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
       use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
-      use m_filez, only: oldfil
-      use m_reapol, only: reapol
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use string_module, only: strcmpi, str_tolower
-      use m_polygon, only: npl
       use network_data
       use m_flow
       use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
@@ -1433,6 +1430,7 @@ contains
       use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen
       use m_partitioninfo, only: jampi, reduce_cells
       use m_flowgeom, only: ndx
+      use m_read_location_info, only: read_polyline_coordinates
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -1442,13 +1440,14 @@ contains
 
       ! Local variables
       logical :: is_successful
-      integer :: file_pointer
       integer :: i !< Loop index
       integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
       integer :: num_bubblescreens
       integer :: num_items_in_file
+      integer :: num_columns
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
+      real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
       character(len=:), allocatable :: id !< Bubblescreen id
@@ -1486,25 +1485,22 @@ contains
 
          if (str_tolower(group_name) == 'bubblescreen') then
             i_bubblescreen = i_bubblescreen + 1
-            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
-            bubblescreen%id = id
-
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, bubblescreen%id, &
+                                                                 polygon_x_coordinates, polygon_y_coordinates, polygon_z_coordinates, num_columns, bubblescreen%z_level, discharge_input)
             if (is_successful) then
-
-               ! Read the polyline file to polygon data and get the x,y coordinates of the polyline points
-               call savepol()
-               call oldfil(file_pointer, location_file)
-               call reapol(file_pointer, 0)
-               polygon_x_coordinates = xpl(1:npl)
-               polygon_y_coordinates = ypl(1:npl)
-               call restorepol()
-
+               if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
+                  if (any(polygon_z_coordinates /= dmiss)) then
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                        'use zLevel to specify Bubblescreen location.'
+                     call warn_flush()
+                  end if
+               end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
                ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
-               ! and then EC-module will be left with dangling pointers. 
+               ! and then EC-module will be left with dangling pointers.
                bubblescreen_cells = bubblescreen%flowcell_indices
                if (jampi == 1) then
                   bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
@@ -1619,8 +1615,8 @@ contains
             nNodesBubbleScreen = nNodesBubbleScreen + n_cells
             call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
             call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-            geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
-            geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
+            geomXBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = x_flowcell
+            geomYBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = y_flowcell
             nodeCountBubbleScreen(bi) = n_cells
 
             z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later

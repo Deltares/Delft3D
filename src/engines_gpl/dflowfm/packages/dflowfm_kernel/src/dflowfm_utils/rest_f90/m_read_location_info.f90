@@ -13,22 +13,21 @@ contains
       use properties, only: prop_get
       use m_missing, only: dmiss
       use m_filez, only: oldfil
-      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl, m_polygon_destructor
+      use m_polygon, only: xpl, ypl, zpl, npl, colpl, m_polygon_destructor
       use precision, only: dp
       use m_reapol, only: reapol
-      use system_utils, only: split_filename
       use unstruc_files, only: resolvePath
 
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to ini-file block; child node of a file tree
-      character(len=*), intent(in) :: object_id !< Id of the object being read, used in error messages
-      character(len=*), intent(in) :: file_name !< Name of the input file, only used in error messages
-      character(len=*), intent(in) :: base_dir !< Base directory of the input file, used to resolve relative paths
-      character(len=*), intent(in) :: group_name !< Name of the block type, only used in error messages
+      type(tree_data), pointer, intent(in) :: block_ptr
+      character(len=*), intent(in) :: object_id
+      character(len=*), intent(in) :: file_name
+      character(len=*), intent(in) :: base_dir
+      character(len=*), intent(in) :: group_name
 
-      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates !< x-coordinates read from file or inline
-      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates !< y-coordinates read from file or inline
-      real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates !< z-coordinates: from 3rd column of pliz, from zCoordinates key, or dmiss if unavailable
-      integer, intent(out) :: num_columns !< Number of columns found in polyline file (0 if read inline)
+      real(kind=dp), dimension(:), allocatable, intent(out) :: x_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: y_coordinates
+      real(kind=dp), dimension(:), allocatable, intent(out) :: z_coordinates
+      integer, intent(out) :: num_columns
       logical, intent(out) :: is_successful
 
       character(len=256) :: location_file
@@ -40,6 +39,7 @@ contains
 
       is_successful = .false.
       num_columns = 0
+
       call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
       if (have_location_file) then
          ! Read data from polyline file (pli or pliz)
@@ -50,6 +50,7 @@ contains
             call err_flush()
             return
          end if
+
          ierr = m_polygon_destructor()
          call reapol(polyline_file_lun, 0)
          if (npl == 0) then
@@ -64,7 +65,17 @@ contains
          allocate (z_coordinates(npl), stat=ierr)
          x_coordinates = xpl(1:npl)
          y_coordinates = ypl(1:npl)
-         z_coordinates = zpl(1:npl) ! Will be dmiss if file has no z column
+
+         if (num_columns > 2) then
+            ! pliz input: use z from file
+            z_coordinates = zpl(1:npl)
+         else
+            ! pli input: fallback to optional zCoordinates in block
+            z_coordinates = dmiss
+            call prop_get(block_ptr, '', 'zCoordinates', z_coordinates, npl, is_read)
+            ! zCoordinates optional: keep dmiss if absent
+         end if
+
       else
          ! Read data directly from block
          call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
@@ -99,7 +110,7 @@ contains
          allocate (z_coordinates(num_coordinates), stat=ierr)
          z_coordinates = dmiss
          call prop_get(block_ptr, '', 'zCoordinates', z_coordinates, num_coordinates, is_read)
-         ! zCoordinates is optional: no error if missing, z_coordinates stays dmiss
+         ! zCoordinates optional: keep dmiss if absent
       end if
 
       is_successful = .true.

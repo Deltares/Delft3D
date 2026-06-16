@@ -89,7 +89,6 @@ contains
    !! creates extra netnodes+links for them.
    subroutine convertLongCulvertsAsNetwork(structurefile, jaKeepExisting, culvertprefix, structures_output, crsdef_output, ierr, crsdeffile, write_converted_files)
       use dfm_error, only: dfm_noerr, dfm_wronginput
-      use m_polygon, only: savepol, xpl, ypl, zpl, npl, increasepol, restorepol
       use m_missing, only: dmiss
       use m_Roughness, only: frictiontypestringtointeger
       use m_readstructures, only: allowedflowdirtoint, get_value_or_addto_forcinglist
@@ -104,6 +103,8 @@ contains
       use tree_structures, only: maxlen
       use m_readCrossSections, only: parseCrossSectionDefinitionFile
       use m_CrossSections, only: fill_hashtable
+      use m_alloc, only: realloc
+      use m_read_location_info, only: read_polyline_coordinates
 
       implicit none
 
@@ -135,6 +136,10 @@ contains
       character(len=IdLen) :: temppath, tempname, tempext
       logical :: write_converted_files_
       integer :: longculvertindex
+      real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:), z_coordinates(:)
+      real(kind=dp), allocatable :: xpl(:), ypl(:), zpl(:)
+      integer :: npl
+      integer :: num_columns
 
       ierr = DFM_NOERR
 
@@ -169,11 +174,6 @@ contains
             deallocate (longculverts)
          end if
       end if
-      call savepol()
-      xpl = dmiss
-      ypl = dmiss
-      zpl = dmiss
-      npl = 0
 
       if (present(crsdeffile)) then
          call tree_create(trim(crsdeffile), prop_ptr)
@@ -203,6 +203,8 @@ contains
 
       nstr = tree_num_nodes(strs_ptr)
       call realloc(longculverts, nlongculverts + nstr)
+      npl = 0
+
       do i = 1, nstr
          str_ptr => strs_ptr%child_nodes(i)%node_ptr
 
@@ -226,10 +228,14 @@ contains
             write (msgbuf, '(a,i0,a)') 'Error Reading Structure #', i, ' from '''//trim(structurefile)//''', id is missing.'
             call err_flush()
          end if
+
          if (success) then
-            call prop_get(str_ptr, '', 'numCoordinates', numcoords, success)
+            call read_polyline_coordinates(str_ptr, trim(st_id), structurefile, temppath, 'longCulvert', &
+                                           x_coordinates, y_coordinates, z_coordinates, num_columns, success)
          end if
+
          if (success) then
+            numcoords = size(x_coordinates)
 
             call tree_create_node(prop_ptr, 'Definition', block_ptr)
             csDefId = 'CsDef_longCulvert_'//trim(st_id)
@@ -243,26 +249,21 @@ contains
             allocate (longculverts(nlongculverts)%netlinks(longculverts(nlongculverts)%numlinks))
             allocate (longculverts(nlongculverts)%flowlinks(longculverts(nlongculverts)%numlinks))
             longculverts(nlongculverts)%flowlinks = -999
+
+            longculverts(nlongculverts)%xcoords = x_coordinates
+            longculverts(nlongculverts)%ycoords = y_coordinates
             allocate (longculverts(nlongculverts)%bl(numcoords))
-            call increasepol(numcoords, 0)
-            call prop_get(str_ptr, '', 'xCoordinates', xpl(npl + 1:), numcoords, success)
-            if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'xCoordinates not found for long culvert: '//st_id)
-            else
-               longculverts(nlongculverts)%xcoords = xpl(npl + 1:npl + numcoords)
-            end if
-            call prop_get(str_ptr, '', 'yCoordinates', ypl(npl + 1:), numcoords, success)
-            if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'yCoordinates not found for long culvert: '//st_id)
-            else
-               longculverts(nlongculverts)%ycoords = ypl(npl + 1:npl + numcoords)
-            end if
-            call prop_get(str_ptr, '', 'zCoordinates', zpl(npl + 1:), numcoords, success)
-            if (.not. success) then
-               call SetMessage(LEVEL_ERROR, 'zCoordinates not found for long culvert: '//st_id)
-            end if
-            longculverts(nlongculverts)%bl = zpl(npl + 1:npl + numcoords)
-            npl = npl + numcoords + 1 ! TODO: UNST-4328: success1 checking done later in readStructureFile().
+            longculverts(nlongculverts)%bl = z_coordinates
+
+            ! Append this culvert's coordinates (plus dmiss separator) to the local concatenated arrays.
+            call realloc(xpl, npl + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(ypl, npl + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(zpl, npl + numcoords + 1, keepExisting=.true., fill=dmiss)
+            xpl(npl + 1:npl + numcoords) = x_coordinates
+            ypl(npl + 1:npl + numcoords) = y_coordinates
+            zpl(npl + 1:npl + numcoords) = z_coordinates
+            ! xpl(npl + numcoords + 1) stays dmiss: the segment separator.
+            npl = npl + numcoords + 1
 
             txt = 'both'
             call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
@@ -323,7 +324,6 @@ contains
 
       call convert1D2DLongCulverts(xpl, ypl, zpl, npl)
       call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
-      call restorepol()
 
       longculvertindex = nlongculverts0
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
@@ -365,7 +365,7 @@ contains
             call SetMessage(LEVEL_ERROR, 'Failed to open file '''//trim(crsdef_output)//''' for writing.')
          else
             call prop_write_inifile(mout, prop_ptr, ierr)
-            close(mout)
+            close (mout)
          end if
       end if
 
@@ -916,7 +916,6 @@ contains
    subroutine make1D2DLongCulverts(xplCulv, yplCulv, zplCulv, nplCulv, linksCulv)
       use precision, only: dp
       use m_missing
-      use m_polygon
       use geometry_module
       use m_alloc
       use network_data
@@ -1001,7 +1000,6 @@ contains
    subroutine convert1D2DLongCulverts(xplCulv, yplCulv, zplCulv, nplCulv)
       use precision, only: dp
       use m_missing
-      use m_polygon
       use geometry_module
       use m_alloc
       use network_data
@@ -1048,7 +1046,6 @@ contains
    subroutine process_single_longculvert(xplCulv, yplCulv, zplCulv, i_longculvert)
       use precision, only: dp
       use m_missing
-      use m_polygon
       use geometry_module
       use m_alloc
       use network_data
@@ -1390,7 +1387,7 @@ contains
          contact_idx = hashsearch(hashlist_contactids, longculvert%contactId)
 
          if (jampi == 0 .and. branch_idx <= 0 .and. contact_idx <= 0) then
-            call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '// trim(longculvert%branchId)//' '// trim(longculvert%contactId))
+            call mess(LEVEL_WARN, 'find1d2dculvertlinks: cannot find the branch or contact corresponding to the long culvert '//trim(longculvert%branchId)//' '//trim(longculvert%contactId))
             return
          end if
          !Find the last 1D node of the branch
@@ -1527,7 +1524,6 @@ contains
    subroutine count_long_culverts_in_structure_file(structurefiles)
       use dfm_error
       use string_module, only: strcmpi, strsplit
-      use m_polygon
       use m_missing
       use m_Roughness
       use m_readstructures
@@ -1693,8 +1689,8 @@ contains
          if (meshgeom1d%numedge > 0) then !> only create a network if actual 1D links exist (4+ point long culverts)
             nbranchlongnames = nbranchids
             nnodelongnames = nnodeids
-            call realloc(nodeids,meshgeom1d%numnode)
-            call realloc(nodelongnames,meshgeom1d%numnode)
+            call realloc(nodeids, meshgeom1d%numnode)
+            call realloc(nodelongnames, meshgeom1d%numnode)
             network%numl = meshgeom1d%numedge
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
