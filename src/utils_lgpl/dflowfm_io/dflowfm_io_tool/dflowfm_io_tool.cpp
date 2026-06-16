@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     const MduData data = [&]() -> MduData {
         try
         {
-            return MduFile::Load(path);
+            return MduFile::Load(path).first;
         }
         catch (const std::exception& e)
         {

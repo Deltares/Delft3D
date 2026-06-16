@@ -1,7 +1,9 @@
 import ctypes
 import os
 import platform
+from dataclasses import dataclass
 from datetime import datetime, timezone
+from enum import IntEnum
 from pathlib import Path
 
 
@@ -61,6 +63,56 @@ def _check_result(result):
         error_message = _lib.dflowfm_io_get_last_error()
         raise RuntimeError(error_message.decode('utf-8'))
 
+class Severity(IntEnum):
+    INFO = 0
+    WARNING = 1
+    ERROR = 2
+
+
+class _MduIssue(ctypes.Structure):
+    _fields_ = [
+        ("line_number", ctypes.c_int),
+        ("severity", ctypes.c_int),
+        ("message", ctypes.c_char_p),
+    ]
+
+
+@dataclass
+class Issue:
+    line_number: int
+    severity: Severity
+    message: str
+
+
+class MduReport:
+    def __init__(self, handle):
+        self._handle = handle
+
+    def __del__(self):
+        if hasattr(self, "_handle") and self._handle:
+            _lib.mdu_report_destroy(ctypes.byref(self._handle))
+            self._handle = None
+
+    def get_issues(self) -> list[Issue]:
+        array_out = ctypes.POINTER(_MduIssue)()
+        size_out = ctypes.c_size_t()
+        _check_result(_lib.mdu_report_get_issue_list(self._handle, ctypes.byref(array_out), ctypes.byref(size_out)))
+        issues = []
+        for i in range(size_out.value):
+            raw = array_out[i]
+            message = raw.message.decode("utf-8") if raw.message else ""
+            issues.append(Issue(raw.line_number, Severity(raw.severity), message))
+        return issues
+
+    def has_errors(self) -> bool:
+        return any(issue.severity == Severity.ERROR for issue in self.get_issues())
+
+    def print_overview(self) -> None:
+        for issue in self.get_issues():
+            location = f"line {issue.line_number}" if issue.line_number >= 0 else "no line"
+            print(f"[{issue.severity.name}] ({location}) {issue.message}")
+
+
 class MduModel:
     def __init__(self):
         handle = ctypes.c_void_p()
@@ -77,12 +129,16 @@ class MduModel:
         _check_result(_lib.mdu_model_get_dummy_value(self._handle, ctypes.byref(value)))
         return value.value
 
-    def load_from_file(self, filename: str) -> None:
-        _check_result(_lib.mdu_model_load_from_file(self._handle, filename.encode("utf-8")))
+    def load_from_file(self, filename: str) -> "MduReport":
+        report_handle = ctypes.c_void_p()
+        _check_result(_lib.mdu_model_load_from_file(self._handle, filename.encode("utf-8"), ctypes.byref(report_handle)))
+        return MduReport(report_handle)
 
-    def load_from_lines(self, data: list[str]) -> None:
+    def load_from_lines(self, data: list[str]) -> "MduReport":
         encoded = "\n".join(data).encode("utf-8")
-        _check_result(_lib.mdu_model_load_from_string(self._handle, encoded, len(encoded)))
+        report_handle = ctypes.c_void_p()
+        _check_result(_lib.mdu_model_load_from_string(self._handle, encoded, len(encoded), ctypes.byref(report_handle)))
+        return MduReport(report_handle)
 
     def save_to_file(self, filename: str) -> None:
         _check_result(_lib.mdu_model_save_to_file(self._handle, filename.encode("utf-8")))

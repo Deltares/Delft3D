@@ -2,7 +2,11 @@
 
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/IssueReport.h>
-#include <ini/IniData.h>
+
+namespace ini
+{
+    class IniData;
+}
 
 namespace dflowfm_io
 {

@@ -6,11 +6,12 @@
 #include <filesystem>
 #include <sstream>
 
-#include <dflowfm_io_api/dflowfm_io_api.h>
+#include "dflowfm_io_api/dflowfm_io_api.h"
 
 #include "dflowfm_io/MduFile.h"
-
-#include <dflowfm_io/MduData.h>
+#include "dflowfm_io/MduData.h"
+#include "dflowfm_io/MduValidator.h"
+#include "dflowfm_io/IssueReport.h"
 
 static std::string last_error;
 
@@ -41,6 +42,36 @@ namespace
         {
             last_error = "unknown error";
             return DFLOWFM_IO_RESULT_ERROR;
+        }
+    }
+
+    void storeStaticStrings(std::vector<std::string>&& strings, const char*** strings_out, size_t* size_out)
+    {
+        static std::vector<std::string> stored_strings;
+        static std::vector<const char*> string_ptrs;
+        
+        stored_strings = std::move(strings);
+        string_ptrs.clear();
+        for (const auto& str : stored_strings)
+        {
+            string_ptrs.push_back(str.c_str());
+        }
+
+        *strings_out = string_ptrs.data();
+        *size_out = string_ptrs.size();
+    }
+
+    mdu_severity_t toCSeverity(dflowfm_io::Severity severity)
+    {
+        switch (severity)
+        {
+        case dflowfm_io::Severity::Warning:
+            return MDU_SEVERITY_WARNING;
+        case dflowfm_io::Severity::Error:
+            return MDU_SEVERITY_ERROR;
+        case dflowfm_io::Severity::Info:
+        default:
+            return MDU_SEVERITY_INFO;
         }
     }
 } // namespace
@@ -74,27 +105,31 @@ dflowfm_io_result_t mdu_model_destroy(MduModelHandle* handle)
     });
 }
 
-dflowfm_io_result_t mdu_model_load_from_file(MduModelHandle handle, const char* filename)
+dflowfm_io_result_t mdu_model_load_from_file(MduModelHandle handle, const char* filename, MduReportHandle* report_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(filename);
+    ENSURE_ARGUMENT_NOT_NULL(report_out);
 
     return exceptionToResult([&]() {
-        auto mdu_data = dflowfm_io::MduFile::Load(filename);
+        auto [mdu_data, report] = dflowfm_io::MduFile::Load(filename);
         *static_cast<dflowfm_io::MduData*>(handle) = mdu_data;
+        *report_out = new dflowfm_io::IssueReport(std::move(report));
     });
 }
 
-dflowfm_io_result_t mdu_model_load_from_string(MduModelHandle handle, const char* data, size_t size)
+dflowfm_io_result_t mdu_model_load_from_string(MduModelHandle handle, const char* data, size_t size, MduReportHandle* report_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
     ENSURE_ARGUMENT_NOT_NULL(data);
+    ENSURE_ARGUMENT_NOT_NULL(report_out);
 
     return exceptionToResult([&]() {
         const std::string data_str(data, size);
         std::istringstream stream(data_str);
-        auto mdu_data = dflowfm_io::MduFile::Load(stream);
+        auto [mdu_data, report] = dflowfm_io::MduFile::Load(stream);
         *static_cast<dflowfm_io::MduData*>(handle) = mdu_data;
+        *report_out = new dflowfm_io::IssueReport(std::move(report));
     });
 }
 
@@ -243,18 +278,11 @@ dflowfm_io_result_t mdu_model_get_string_list(MduModelHandle handle, const char*
     ENSURE_ARGUMENT_NOT_NULL(string_list_out);
     ENSURE_ARGUMENT_NOT_NULL(size_out);
 
-    static std::vector<std::string> stored_strings;
-    static std::vector<const char*> stored_pointers;
-
     return exceptionToResult([&]()
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
-        stored_strings = mdu_data->getValueAs<std::vector<std::string>>(key);
-        stored_pointers.clear();
-        for (const auto& s : stored_strings) stored_pointers.push_back(s.c_str());
-
-        *string_list_out = stored_pointers.data();
-        *size_out = stored_pointers.size();
+        auto strings = mdu_data->getValueAs<std::vector<std::string>>(key);
+        storeStaticStrings(std::move(strings), string_list_out, size_out);
     });
 }
 
@@ -265,20 +293,16 @@ dflowfm_io_result_t mdu_model_get_path_list(MduModelHandle handle, const char* k
     ENSURE_ARGUMENT_NOT_NULL(path_list_out);
     ENSURE_ARGUMENT_NOT_NULL(size_out);
 
-    static std::vector<std::string> stored_paths;
-    static std::vector<const char*> stored_pointers;
-
     return exceptionToResult([&]() 
     {
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
         const auto& paths = mdu_data->getValueAs<std::vector<std::filesystem::path>>(key);
-        stored_paths.clear();
-        stored_pointers.clear();
-        for (const auto& p : paths) stored_paths.push_back(p.string());
-        for (const auto& s : stored_paths) stored_pointers.push_back(s.c_str());
 
-        *path_list_out = stored_pointers.data();
-        *size_out = stored_pointers.size();
+        std::vector<std::string> path_strings;
+        path_strings.reserve(paths.size());
+        for (const auto& p : paths) path_strings.push_back(p.string());
+
+        storeStaticStrings(std::move(path_strings), path_list_out, size_out);
     });
 }
 
@@ -416,5 +440,53 @@ dflowfm_io_result_t mdu_model_set_double_list(MduModelHandle handle, const char*
         auto mdu_data = static_cast<dflowfm_io::MduData*>(handle);
         std::vector<double> vec(double_list, double_list + size);
         mdu_data->setValue(key, vec);
+    });
+}
+dflowfm_io_result_t mdu_report_destroy(MduReportHandle* handle)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+
+    return exceptionToResult([&]() {
+        if (*handle)
+        {
+            delete static_cast<dflowfm_io::IssueReport*>(*handle);
+            *handle = nullptr;
+        }
+    });
+}
+
+dflowfm_io_result_t mdu_report_get_issue_list(MduReportHandle handle, const mdu_issue_t** issue_list_out, size_t* size_out)
+{
+    ENSURE_ARGUMENT_NOT_NULL(handle);
+    ENSURE_ARGUMENT_NOT_NULL(issue_list_out);
+    ENSURE_ARGUMENT_NOT_NULL(size_out);
+
+    static std::vector<std::string> stored_messages;
+    static std::vector<mdu_issue_t> stored_issues;
+
+    return exceptionToResult([&]() {
+        auto report = static_cast<dflowfm_io::IssueReport*>(handle);
+
+        stored_messages.clear();
+        stored_issues.clear();
+        for (const auto& issue : *report)
+        {
+            stored_messages.push_back(issue.message);
+        }
+
+        // Build the issue array in a second pass so the stored message strings
+        // are not reallocated while we capture pointers into them.
+        size_t index = 0;
+        for (const auto& issue : *report)
+        {
+            stored_issues.push_back(mdu_issue_t{
+                .line_number = issue.lineNumber.value_or(-1),
+                .severity = toCSeverity(issue.severity),
+                .message = stored_messages[index].c_str()});
+            ++index;
+        }
+
+        *issue_list_out = stored_issues.data();
+        *size_out = stored_issues.size();
     });
 }

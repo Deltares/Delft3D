@@ -1,12 +1,12 @@
-#include <dflowfm_io/MduFile.h>
-#include <dflowfm_io/MduConverter.h>
-
-#include <ini/IniFile.h>
-#include <ini/IniParserOptions.h>
-
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+
+#include "ini/IniFile.h"
+#include "ini/IniParserOptions.h"
+
+#include "dflowfm_io/MduFile.h"
+#include "dflowfm_io/MduConverter.h"
 
 using namespace ini;
 
@@ -22,7 +22,7 @@ namespace dflowfm_io
         .formatterOptions{.writeEmptySections = false},
     };
 
-    MduData MduFile::Load(std::istream& in)
+    std::pair<MduData, IssueReport> MduFile::Load(std::istream& in)
     {
         if (in.fail())
         {
@@ -34,21 +34,10 @@ namespace dflowfm_io
         IniData& iniData = iniFile.GetData();
 
         ConversionResult<MduData> result = MduConverter::Convert(iniData);
-
-        if (result.HasIssues())
-        {
-            std::cout << result.FormatIssues();
-        }
-
-        if (!result.IsValid())
-        {
-            throw std::runtime_error("Failed to load MDU file.");
-        }
-
-        return std::move(result.value);
+        return std::make_pair(std::move(result.value), std::move(result.report));
     }
 
-    MduData MduFile::Load(const std::filesystem::path& path)
+    std::pair<MduData, IssueReport> MduFile::Load(const std::filesystem::path& path)
     {
         if (path.empty())
         {
@@ -72,15 +61,10 @@ namespace dflowfm_io
         }
 
         ConversionResult<IniData> result = MduConverter::Convert(data);
-
-        if (result.HasIssues())
-        {
-            std::cout << result.FormatIssues();
-        }
-
         if (!result.IsValid())
         {
             throw std::runtime_error("Failed to save MDU file.");
+            // TODO add an overview of error preventing the save operation
         }
 
         IniFile iniFile{mduIniOptions};
