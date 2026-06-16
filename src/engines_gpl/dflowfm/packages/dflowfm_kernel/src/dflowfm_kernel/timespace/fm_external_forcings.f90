@@ -375,7 +375,11 @@ contains
 
       if (jawind == 1 .or. air_pressure_available) then
          call prepare_wind_model_data(time_in_seconds, iresult)
+         if (iresult /= DFM_NOERR) then
+            return
+         end if
       end if
+      iresult = DFM_NOERR
    end subroutine prepare_wind
 
 !> Gets windstress (and air pressure) from input files, and sets the windstress
