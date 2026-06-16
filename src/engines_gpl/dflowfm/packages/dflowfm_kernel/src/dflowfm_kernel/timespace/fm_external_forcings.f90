@@ -1503,6 +1503,12 @@ contains
       end if
 
       ! Now check the valuestring for either scalar/REALTIME/.tim filename
+      inquire (file=valuestring, exist=file_exists)
+      if (.not. file_exists) then
+         call mess(LEVEL_ERROR, 'File '''//trim(valuestring)//''' does not exist.')
+         success = .false.
+         return
+      end if
       read (valuestring, *, iostat=ierr) valuedble
       targetarrayptr => targetarray
       tgtitem = ec_undef_int
