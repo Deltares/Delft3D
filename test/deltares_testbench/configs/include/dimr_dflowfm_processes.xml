@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
 <testCase name="e02_f030_c001_frisianinlet_dynamo" ref="dflowfm_default">
-  <path version="2026-06-16T09:37:18.011000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
+  <path version="2026-06-16T14:24:35.335000">e02_dflowfm/f030_water_quality_processes/c001_frisianinlet_dynamo</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
       <parameters>
@@ -108,7 +108,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c002_frisianinlet_BLOOM" ref="dflowfm_default">
-  <path version="2026-06-16T09:37:27.278000">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
+  <path version="2026-06-16T14:24:39.125000">e02_dflowfm/f030_water_quality_processes/c002_frisianinlet_BLOOM</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_map.nc" type="netCDF">
       <parameters>
@@ -248,7 +248,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c003_westernscheldt_dynamo_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:37:30.435000">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
+  <path version="2026-06-16T14:24:41.815000">e02_dflowfm/f030_water_quality_processes/c003_westernscheldt_dynamo_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -366,7 +366,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c004_westernscheldt_noproc_2D" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:37:33.742000">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
+  <path version="2026-06-16T14:24:50.143000">e02_dflowfm/f030_water_quality_processes/c004_westernscheldt_noproc_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -484,7 +484,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c011_frisianinlet_dynamo_restart" ref="dflowfm_default_restart">
-  <path version="2026-06-16T09:37:37.836000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
+  <path version="2026-06-16T14:24:54.053000">e02_dflowfm/f030_water_quality_processes/c011_frisianinlet_dynamo_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_restart_map.nc" type="netCDF">
       <parameters>
@@ -592,7 +592,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c012_frisianinlet_BLOOM_restart" ref="dflowfm_default_restart">
-  <path version="2026-06-16T09:37:41.780000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
+  <path version="2026-06-16T14:24:57.838000">e02_dflowfm/f030_water_quality_processes/c012_frisianinlet_BLOOM_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_restart_map.nc" type="netCDF">
       <parameters>
@@ -732,7 +732,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c013_westernscheldt_dynamo_2D_restart" ref="dflowfm_platform_specific_refs_restart">
-  <path version="2026-06-16T09:37:45.025000">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
+  <path version="2026-06-16T14:25:01.003000">e02_dflowfm/f030_water_quality_processes/c013_westernscheldt_dynamo_2D_restart</path>
   <maxRunTime>15000.0000000</maxRunTime>
   <checks>
     <file name="dflowfmoutput/westernscheldt_restart_map.nc" type="netCDF">
@@ -852,7 +852,7 @@
 </testCase>
 
 <testCase name="e02_f030_c031_frisianinlet_waqbot_restart_2D" ref="dflowfm_default_restart">
-  <path version="2025-09-24T10:44:34.308000">e02_dflowfm/f030_water_quality_processes/c031_frisianinlet_waqbot_restart_2D</path>
+  <path version="2026-06-16T14:25:03.977000">e02_dflowfm/f030_water_quality_processes/c031_frisianinlet_waqbot_restart_2D</path>
   <checks>
     <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
       <parameters>
@@ -883,7 +883,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c032_frisianinlet_waqbot_restart" ref="dflowfm_default_restart">
-  <path version="2026-06-16T09:37:49.158000">e02_dflowfm/f030_water_quality_processes/c032_frisianinlet_waqbot_restart</path>
+  <path version="2026-06-16T14:25:06.570000">e02_dflowfm/f030_water_quality_processes/c032_frisianinlet_waqbot_restart</path>
   <checks>
     <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
       <parameters>
@@ -926,7 +926,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c033_frisianinlet_waqbot_restart_z" ref="dflowfm_default_restart">
-  <path version="2026-06-16T09:37:52.163000">e02_dflowfm/f030_water_quality_processes/c033_frisianinlet_waqbot_restart_z</path>
+  <path version="2026-06-16T14:25:09.653000">e02_dflowfm/f030_water_quality_processes/c033_frisianinlet_waqbot_restart_z</path>
   <checks>
     <file name="dflowfmoutput/f34_waqbot_restart_map.nc" type="netCDF">
       <parameters>
@@ -972,7 +972,7 @@
 
 
 <testCase name="e02_f030_c040_radsurfave_from_waqinput" ref="dflowfm_default">
-  <path version="2026-06-16T09:37:54.696000">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
+  <path version="2026-06-16T14:25:11.823000">e02_dflowfm/f030_water_quality_processes/c040_radsurfave_from_waqinput</path>
   <checks>
     <file name="output/FlowFM_map.nc" type="netCDF">
       <parameters>
@@ -989,7 +989,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c041_radsurfave_from_flow" ref="dflowfm_default">
-  <path version="2026-06-16T09:37:57.073000">e02_dflowfm/f030_water_quality_processes/c041_radsurfave_from_flow</path>
+  <path version="2026-06-16T14:25:13.875000">e02_dflowfm/f030_water_quality_processes/c041_radsurfave_from_flow</path>
   <checks>
     <file name="output/FlowFM_map.nc" type="netCDF">
       <parameters>
@@ -1006,7 +1006,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c042_radsurfave_from_flow_T0" ref="dflowfm_default">
-  <path version="2026-06-16T09:37:59.317000">e02_dflowfm/f030_water_quality_processes/c042_radsurfave_from_flow_T0</path>
+  <path version="2026-06-16T14:25:16.853000">e02_dflowfm/f030_water_quality_processes/c042_radsurfave_from_flow_T0</path>
   <checks>
     <file name="output/FlowFM_map.nc" type="netCDF">
       <parameters>
@@ -1024,7 +1024,7 @@
 </testCase>
 
 <testCase name="e02_f030_c043_frisianinlet_BLOOM_timestep" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:03.271000">e02_dflowfm/f030_water_quality_processes/c043_frisianinlet_BLOOM_timestep</path>
+  <path version="2026-06-16T14:25:20.266000">e02_dflowfm/f030_water_quality_processes/c043_frisianinlet_BLOOM_timestep</path>
   <checks>
     <file name="dflowfmoutput/f34_BLOOM_map.nc" type="netCDF">
       <parameters>
@@ -1206,7 +1206,7 @@
 </testCase>
 
 <testCase name="e02_f030_c100_spatial_parameters_2D" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:06.218000">e02_dflowfm/f030_water_quality_processes/c100_spatial_parameters_2D</path>
+  <path version="2026-06-16T14:25:23.033000">e02_dflowfm/f030_water_quality_processes/c100_spatial_parameters_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1218,7 +1218,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c101_spatial_parameters_3D" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:08.965000">e02_dflowfm/f030_water_quality_processes/c101_spatial_parameters_3D</path>
+  <path version="2026-06-16T14:25:30.975000">e02_dflowfm/f030_water_quality_processes/c101_spatial_parameters_3D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1230,7 +1230,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c102_temporal_parameters" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:22.535000">e02_dflowfm/f030_water_quality_processes/c102_temporal_parameters</path>
+  <path version="2026-06-16T14:25:33.258000">e02_dflowfm/f030_water_quality_processes/c102_temporal_parameters</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1247,7 +1247,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c103_initial_conditions_2D" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:13.170000">e02_dflowfm/f030_water_quality_processes/c103_initial_conditions_2D</path>
+  <path version="2026-06-16T14:25:36.073000">e02_dflowfm/f030_water_quality_processes/c103_initial_conditions_2D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1260,7 +1260,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c104_initial_conditions_3D" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:16.442000">e02_dflowfm/f030_water_quality_processes/c104_initial_conditions_3D</path>
+  <path version="2026-06-16T14:25:39.118000">e02_dflowfm/f030_water_quality_processes/c104_initial_conditions_3D</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1273,7 +1273,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c105_mass_balance_areas_complete" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:30.519000">e02_dflowfm/f030_water_quality_processes/c105_mass_balance_areas_complete</path>
+  <path version="2026-06-16T14:25:41.612000">e02_dflowfm/f030_water_quality_processes/c105_mass_balance_areas_complete</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1283,7 +1283,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c106_mass_balance_areas_incomplete" ref="dflowfm_default">
-  <path version="2025-07-21T12:27:33.007000">e02_dflowfm/f030_water_quality_processes/c106_mass_balance_areas_incomplete</path>
+  <path version="2026-06-16T14:25:44.032000">e02_dflowfm/f030_water_quality_processes/c106_mass_balance_areas_incomplete</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1293,7 +1293,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c107_initial_conditions" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:26.752000">e02_dflowfm/f030_water_quality_processes/c107_initial_conditions</path>
+  <path version="2026-06-16T14:25:46.541000">e02_dflowfm/f030_water_quality_processes/c107_initial_conditions</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1303,7 +1303,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c108_frisianinlet_dynamo_statistics" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:30.634000">e02_dflowfm/f030_water_quality_processes/c108_frisianinlet_dynamo_statistics</path>
+  <path version="2026-06-16T14:25:50.306000">e02_dflowfm/f030_water_quality_processes/c108_frisianinlet_dynamo_statistics</path>
   <checks>
     <file name="dflowfmoutput/f34_dynamo_map.nc" type="netCDF">
       <parameters>
@@ -1382,7 +1382,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c109_westernscheldt_dynamo_2D_statistics" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:38:33.709000">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
+  <path version="2026-06-16T14:25:53.242000">e02_dflowfm/f030_water_quality_processes/c109_westernscheldt_dynamo_2D_statistics</path>
   <checks>
     <file name="dflowfmoutput/westernscheldt_map.nc" type="netCDF">
       <parameters>
@@ -1461,7 +1461,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c110_frisianinlet_segment_function" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:37.215000">e02_dflowfm/f030_water_quality_processes/c110_frisianinlet_segment_function</path>
+  <path version="2026-06-16T14:25:56.545000">e02_dflowfm/f030_water_quality_processes/c110_frisianinlet_segment_function</path>
   <checks>
     <file name="dflowfmoutput/f34_map.nc" type="netCDF">
       <parameters>
@@ -1481,7 +1481,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c201_parallel_mba_sink_source" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:40.423000">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
+  <path version="2026-06-16T14:25:59.785000">e02_dflowfm/f030_water_quality_processes/c201_parallel_mba_sink_source</path>
   <programs>
     <program ref="dimr_plain" seq="1">
       <arguments>
@@ -1527,7 +1527,7 @@
 </testCase>
 
 <testCase name="e02_f030_c202_parallel_dredge_dump" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:44.575000">e02_dflowfm/f030_water_quality_processes/c202_parallel_dredge_dump</path>
+  <path version="2026-06-16T14:26:03.177000">e02_dflowfm/f030_water_quality_processes/c202_parallel_dredge_dump</path>
   <programs>
     <program ref="dimr_plain" seq="1">
       <arguments>
@@ -1572,7 +1572,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c300_opendllso" ref="dflowfm_default">
-  <path version="2026-06-16T09:38:48.716000">e02_dflowfm/f030_water_quality_processes/c300_opendllso</path>
+  <path version="2026-06-16T14:26:06.247000">e02_dflowfm/f030_water_quality_processes/c300_opendllso</path>
   <programs>
     <program ref="dimr_opl" seq="1">
       <arguments>
@@ -1596,7 +1596,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c401_Course_tracers" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:38:52.916000">e02_dflowfm/f030_water_quality_processes/c401_Course_tracers</path>
+  <path version="2026-06-16T14:26:09.428000">e02_dflowfm/f030_water_quality_processes/c401_Course_tracers</path>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>
@@ -1624,7 +1624,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c402_Course_bacteria" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:38:56.147000">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
+  <path version="2026-06-16T14:26:12.440000">e02_dflowfm/f030_water_quality_processes/c402_Course_bacteria</path>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>
@@ -1642,7 +1642,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c403_Course_eutrophication" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:39:02.556000">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
+  <path version="2026-06-16T14:26:18.530000">e02_dflowfm/f030_water_quality_processes/c403_Course_eutrophication</path>
   <checks>
     <file name="Computation/DFM_OUTPUT_westerscheldt01/westerscheldt01_map.nc" type="netCDF">
       <parameters>
@@ -1692,7 +1692,7 @@
   </checks>
 </testCase>
 <testCase name="e02_f030_c404_Course_river_BOD" ref="dflowfm_platform_specific_refs">
-  <path version="2026-06-16T09:39:05.881000">e02_dflowfm/f030_water_quality_processes/c404_Course_river_BOD</path>
+  <path version="2026-06-16T14:26:22.043000">e02_dflowfm/f030_water_quality_processes/c404_Course_river_BOD</path>
   <checks>
     <file name="Computation/output/Waal_map.nc" type="netCDF">
       <parameters>
