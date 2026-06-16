@@ -206,7 +206,7 @@ module m_unstruc_model_data
    integer :: npolf = 0 !< nr of polygonplotfiles saved with n key in editpol
    logical :: md_usecaching !< Use and/or generate cache file if true
 
-   integer :: md_convertlongculverts = 0 !< convert culverts (and exit program) yes (1) or no (0)
+   integer :: md_convertlongculverts = 1 !< convert culverts (and exit program) yes (1) or no (0)
    character(len=128) :: md_culvertprefix = ' ' !< prefix for generating long culvert files
    character(len=128) :: md_dambreak_widening_method !< method for dambreak widening
 
