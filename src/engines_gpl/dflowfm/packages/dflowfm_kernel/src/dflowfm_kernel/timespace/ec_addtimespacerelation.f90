@@ -1565,20 +1565,6 @@ contains
       end select
 
       if (sourceItemName /= ' ') then
-
-         ! sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-         ! if (sourceItemId == ec_undef_int) then
-         !    goto 1234
-         ! end if
-         ! if (.not. initializeConnection(ecInstancePtr, connectionId, sourceItemId, targetItemPtr1)) then
-         !    goto 1234
-         ! end if
-         ! if (present(targetIndex)) then
-         !    if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
-         !       goto 1234
-         !    end if
-         ! end if
-
          ! not a special case, connect source and target
          block
             integer, dimension(:), allocatable :: sourceItemIds
@@ -1592,11 +1578,11 @@ contains
             do idIdx = 1, size(sourceItemIds)
                sourceItemId = sourceItemIds(idIdx)
                success = ecAddConnectionSourceItem(ecInstancePtr, connectionId, sourceItemId)
-               ! if (present(targetIndex)) then
-               !    if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
-               !       goto 1234
-               !    end if
-               ! end if
+               if (present(targetIndex)) then
+                  if (.not. checkVectorMax(ecInstancePtr, sourceItemId, targetItemPtr1)) then
+                     goto 1234
+                  end if
+               end if
             end do
 
             if (success) then

@@ -76,8 +76,7 @@ contains
     character(len=*), optional,    intent(in)      :: funtype
 
     integer(kind=8)                                :: fhandle
-    integer                                        :: nrVar
-    
+    integer                                        :: nrVar    
     success = .false.
     bc%qname = quantityName
     bc%bcname = plilabel
@@ -85,7 +84,6 @@ contains
     if (associated(bc%quantity)) deallocate(bc%quantity)
     allocate(bc%quantity)
     call str_upper(bc%qname,len(trim(bc%qname)))
-    
     call str_upper(bc%bcname,len(trim(bc%bcname)))
     !
     select case (bc%ftype)
@@ -104,7 +102,6 @@ contains
           allocate(bc%columns(bc%numcols))
        endif
     case (BC_FTYPE_NETCDF)
-
        allocate(bc%ncvarndx(1))
        if (.not.ecNetCDFscan(bc%ncptr, quantityName, plilabel, bc%ncvarndx, bc%nclocndx, &
                               bc%dimvector, vectormax=bc%quantity%vectormax)) then
@@ -173,7 +170,6 @@ contains
     ! If not:
     !    find the last read position for this file, that is: the last recorded start position of a data-block
     !    start searching from there 
-
     
     bcFilePtr => bc%bcFilePtr
     blocklistPtr => bcFilePtr%blocklist

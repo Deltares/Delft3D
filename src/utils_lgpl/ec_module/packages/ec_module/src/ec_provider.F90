@@ -191,14 +191,13 @@ contains
             bcBlockPtr%ncptr => ecSupportFindNetCDF(instancePtr, netCDFId)
             if (.not. ecNetCDFInit(fileName, bcBlockPtr%ncptr, iostat)) then
                bcBlockPtr%ncptr => null()
-               write(*,*) 'initializebcblock, ecbcinit returned false'
                return
             end if
          end if
 
          bcBlockPtr%ftype = BC_FTYPE_NETCDF
          bcBlockPtr%vptyp = bcBlockPtr%ncptr%vptyp
-         bcBlockPtr%isZTimeVarying = bcBlockPtr%ncptr%is_vertical_coord_time_varying
+         bcBlockPtr%is_vertical_coord_time_varying = bcBlockPtr%ncptr%is_vertical_coord_time_varying
          if (allocated(bcBlockPtr%ncptr%vp)) then
             bcBlockPtr%vp => bcBlockPtr%ncptr%vp
             bcBlockPtr%numlay = bcBlockPtr%ncptr%nLayer
@@ -1960,7 +1959,7 @@ contains
                exit
             end if
          end if
-         if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D .and. bcBlockPtr%isZTimeVarying) then
+         if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D .and. bcBlockPtr%is_vertical_coord_time_varying) then
             zTargetItemId = ecInstanceCreateItem(instancePtr)
 
             fieldId = ecInstanceCreateField(instancePtr)

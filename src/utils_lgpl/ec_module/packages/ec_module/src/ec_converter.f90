@@ -1075,10 +1075,6 @@ contains
       select case (connection%converterPtr%ofType)
       case (convType_uniform)
          success = ecConverterUniform(connection, timesteps%mjd())
-         !TK_ Temp interpolate z coordinate (mus be more elegant way of doing this, only if z coordinates are time dependent, i.e. origintae froem his file
-         ! if (success .and.  associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) ) then
-         !     success = ecConverterUniform(connection, timesteps%mjd(),arr1D = .false.)
-         ! end if
       case (convType_uniform_to_magnitude)
          success = ecConverterUniformToMagnitude(connection, timesteps%mjd())
       case (convType_unimagdir)
@@ -1199,10 +1195,8 @@ contains
 
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
-
       valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
       valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
-
       n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
       if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then
          maxlay = size(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) / size(connection%targetItemsPtr(1)%ptr%ElementSetPtr%x)
@@ -1648,8 +1642,6 @@ contains
       real(dp), dimension(:), pointer :: zmin => null() !< vertical min
       real(dp), dimension(:), pointer :: zmax => null() !< vertical max
       real(dp) :: missing
-      real(hp), pointer :: debug_ptr(:)
-
 
       integer :: idx !< helper variable
       integer :: vectormax
@@ -1814,9 +1806,6 @@ contains
                   end if
 
                   ! Prepare sigmaL and valL
-                  debug_ptr => connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dptr
-                  ! write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"src:", debug_ptr
-
                   maxlay_srcL = 0
                   sigmaLL = ec_undef_hp
                   vmaskL = .false.
@@ -1906,7 +1895,6 @@ contains
                         end if
                         !
                      end do ! target layers
-                  ! write(*,'(F20.10,1X,a,*(F20.10,1X))') timesteps,"tgt:", connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
                   end if ! are we averaging the source in the vertical direction ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
             case default
