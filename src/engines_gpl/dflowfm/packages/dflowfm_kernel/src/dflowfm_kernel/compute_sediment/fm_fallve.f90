@@ -185,7 +185,7 @@ contains
          end if
          !
          ! loop over the interfaces in the vertical
-         ! this does not work kmx==1
+         ! NOTE: kmx==1 case is not handled yet
          !
          if (kmx > 0) then ! 3D
             call getkbotktop(k, kb, kt)
