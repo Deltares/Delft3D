@@ -4052,9 +4052,9 @@
                 },
                 {
                     "key": "writePart_domain",
-                    "default_value": 1,
+                    "default_value": 0,
                     "value_type": "intbool",
-                    "description": "Write partition domain info, for postprocessing."
+                    "description": "Write interpreted network file (DFM_interpreted_idomain_*.nc) containing domain partition info."
                 },
                 {
                     "key": "velocityDirectionClassesInterval",

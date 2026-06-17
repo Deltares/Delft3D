@@ -636,7 +636,7 @@ This section contains the settings for various output files.
 | `wriMap_taucurrent` | Write bottom friction to map file. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_chezy` | Write chezy roughness in flow elements to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `wriMap_chezy_on_flow_links` | Write chezy roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
-| `writePart_domain` | Write partition domain info, for postprocessing. | `1` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
+| `writePart_domain` | Write interpreted network file (DFM_interpreted_idomain_\*.nc) containing domain partition info. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
 | `velocityDirectionClassesInterval` | Class map's step size of class values for velocity direction. | `0.0` |  |  |  |
 | `velocityMagnitudeClasses` | Class map's list of class values for velocity magnitudes. | `0.0` |  |  |  |
 | `wriMap_input_roughness` | Write chezy input roughness on flow links to map file. | `0` | <ul><li>**`0`**: no</li><li>**`1`**: yes</li></ul> |  |  |
