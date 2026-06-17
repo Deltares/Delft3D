@@ -39,35 +39,11 @@ module m_flowgeom_mask
 
    public :: construct_mask
 
-   interface construct_mask
-      module procedure construct_mask_string_spatial_location
-      module procedure construct_mask_integer_spatial_location
-   end interface construct_mask
-
 contains
 
    !> Construct a spatial mask array for flow geometry; either based on the location type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
    !! Can be called for the various topological target location types (e.g., cells, flow links, etc.)
-   subroutine construct_mask_string_spatial_location(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
-      ! Parameters
-      integer, dimension(:), allocatable, intent(inout) :: mask !< Mask array for the target element set.
-      integer, intent(in) :: location_type !< Location type (one of UNC_LOC_CN/S/S3D/U/...).
-      character(len=*), intent(in) :: spatial_location_type !< Spatial location type (one of SPATIAL_LOCATION_ALL/1D/2D).
-      character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
-      logical, intent(in), optional :: invert_mask !< Flag to invert the mask (1s to 0s and vice versa).
-      integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
-
-      if (present(target_mask_file) .and. present(invert_mask) .and. present(ierr)) then
-         call construct_mask_integer_spatial_location(mask, location_type, parse_spatial_location_type(spatial_location_type), target_mask_file, invert_mask, ierr)
-      else
-         call construct_mask_integer_spatial_location(mask, location_type, parse_spatial_location_type(spatial_location_type))
-      end if
-
-   end subroutine construct_mask_string_spatial_location
-
-   !> Construct a spatial mask array for flow geometry; either based on the location type (1D, 2D, 1D2D) or based on a target mask file (polygon file).
-   !! Can be called for the various topological target location types (e.g., cells, flow links, etc.)
-   subroutine construct_mask_integer_spatial_location(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
+   subroutine construct_mask(mask, location_type, spatial_location_type, target_mask_file, invert_mask, ierr)
       use m_flowgeom, only: lnx, ndx
       use network_data, only: numk
 
@@ -113,7 +89,7 @@ contains
          end if
       end if
 
-   end subroutine construct_mask_integer_spatial_location
+   end subroutine construct_mask
 
    !> Apply a spatial location mask to the provided mask array, based on the provided spatial location parameter (1D, 2D, or all).
    subroutine apply_spatial_location_mask(mask, location_type, spatial_location_type)

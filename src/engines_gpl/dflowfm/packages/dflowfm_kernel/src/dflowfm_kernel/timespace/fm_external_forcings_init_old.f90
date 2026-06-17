@@ -66,7 +66,7 @@ contains
       use timers, only: timstop, timstrt
       use m_flowgeom_mask, only: construct_mask
       use fm_external_forcings_utils, only: get_tracername, get_sedfracname
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_qnerror
       use m_delpol
       use m_get_kbot_ktop
@@ -81,6 +81,7 @@ contains
       integer :: ja, method, lenqidnam, ierr, isednum, kk, k, kb, kt, iconst
       integer :: ec_item, iwqbot, layer, ktmax, idum, mx, imba, itrac
       integer :: numg, numd, numgen, npum, numklep, numvalv, nlat
+      integer :: spatial_location_type
       real(kind=dp) :: maxSearchRadius
       character(len=256) :: filename, sourcemask
       character(len=256) :: varname
@@ -293,7 +294,8 @@ contains
                ! NOTE: we intentionally re-use the lateral coding here for selection of 1D and/or 2D flow nodes
                select case (trim(qid(18:)))
                case ('1d', '2d')
-                  call construct_mask(mask, UNC_LOC_S, trim(qid(18:)))
+                  spatial_location_type = parse_spatial_location_type(trim(qid(18:)))
+                  call construct_mask(mask, UNC_LOC_S, spatial_location_type)
                case default
                   mask(:) = 1
                end select
@@ -1099,7 +1101,8 @@ contains
 
                call ini_alloc_laterals()
 
-               call construct_mask(kclat, UNC_LOC_S, trim(qid(17:)))
+               spatial_location_type = parse_spatial_location_type(trim(qid(17:)))
+               call construct_mask(kclat, UNC_LOC_S, spatial_location_type)
 
                numlatsg = numlatsg + 1
                call realloc(nnlat, max(2 * ndxi, nlatnd + ndxi), keepExisting=.true., fill=0)

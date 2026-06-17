@@ -516,7 +516,7 @@ contains
       use m_flowgeom, only: ndxi, xz, yz
       use m_alloc, only: realloc, reserve_sufficient_space
       use fm_external_forcings_data, only: kx, qid
-      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use fm_location_types, only: parse_spatial_location_type, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_wind, only: jaqin
       use properties, only: prop_get
       use unstruc_files, only: resolvePath
@@ -556,16 +556,7 @@ contains
       else
          call prop_get(block_ptr, 'Lateral', 'type', item_type, is_read)
       end if
-      select case (str_tolower(trim(item_type)))
-      case ('1d')
-         ilattype = SPATIAL_LOCATION_1D
-      case ('2d')
-         ilattype = SPATIAL_LOCATION_2D
-      case ('1d2d', 'all')
-         ilattype = SPATIAL_LOCATION_ALL
-      case default
-         ilattype = SPATIAL_LOCATION_ALL
-      end select
+      ilattype = parse_spatial_location_type(trim(item_type))
 
       call reserve_sufficient_space(apply_transport, numlatsg + 1, 0)
       call prop_get(block_ptr, 'Lateral', 'applyTransport', apply_transport(numlatsg + 1), is_read)
@@ -806,7 +797,7 @@ contains
       use string_module, only: str_tolower, strcmpi
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
-      use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use fm_location_types, only: parse_spatial_location_type, UNC_LOC_S, UNC_LOC_U, UNC_LOC_3DV, UNC_LOC_S3D, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_meteo, only: ec_addtimespacerelation, ec_gettimespacevalue_by_itemID, ecInstancePtr
       use m_flowtimes, only: tzone, tunit
       use m_ec_parameters, only: ec_undef_int
@@ -912,7 +903,7 @@ contains
 
          call get_location_target_properties(target_location_type, target_num_points, target_x, target_y, is_static_field, ierr)
 
-         call construct_mask(mask, target_location_type, input%location_type, target_mask_file, invert_mask, ierr)
+         call construct_mask(mask, target_location_type, parse_spatial_location_type(trim(input%location_type)), target_mask_file, invert_mask, ierr)
 
          call init_spatial_extrapolation(input%max_search_radius, jsferic)
 
