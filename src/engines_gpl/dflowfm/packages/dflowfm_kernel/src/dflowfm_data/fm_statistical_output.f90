@@ -114,21 +114,12 @@ contains
       integer, intent(in) :: IPNT_X, IPNT_Y !< location specifier inside valobs array
 
       integer :: l, k, ntot
-      real(dp) :: rhol
 
       ntot = numobs + nummovobs
       do l = 1, stmpar%lsedtot
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            rhol = 1.0_dp
-         case (1)
-            rhol = stmpar%sedpar%cdryb(l)
-         case (2)
-            rhol = stmpar%sedpar%rhosol(l)
-         end select
          k = ntot * (l - 1)
-         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / rhol
-         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / rhol
+         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
       end do
    end subroutine assign_sediment_transport
 
@@ -466,14 +457,7 @@ contains
          IP = IPNT_HUA + num
          if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
             l = sedtot2sedsus(num - ISED1 + 1)
-            select case (stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1.0_dp
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
+            rhol = stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
          else
             rhol = 1.0_dp ! dummy
          end if
