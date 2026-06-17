@@ -36,6 +36,7 @@ module fm_location_types
    private
 
    public get_location_specifier_string
+   public parse_spatial_location_type
 
    integer, parameter, public :: UNC_LOC_UNKNOWN = 0 !< Data location: unknown or invalid location.
    ! Grid locations:
@@ -155,4 +156,33 @@ contains
          call mess(LEVEL_ERROR, 'Programming error, please report: unrecognised location_specifier in fm_location_types::get_location_specifier_string(), location_specifier = ', location_specifier)
       end select
    end function get_location_specifier_string
+
+   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
+   !! ILATTP_* enum used by prepare_lateral_mask.
+   !! Returns SPATIAL_LOCATION_INVALID when the string is absent, returns SPATIAL_LOCATION_INVALID when unrecognized.
+   function parse_spatial_location_type(location_type_string) result(spatial_location_type)
+      use string_module, only: str_tolower
+
+      ! Parameters
+      character(len=*), intent(in) :: location_type_string
+      integer :: spatial_location_type
+
+      if (len_trim(location_type_string) == 0) then
+         spatial_location_type = SPATIAL_LOCATION_INVALID
+         return
+      end if
+
+      select case (str_tolower(trim(location_type_string)))
+      case ('1d')
+         spatial_location_type = SPATIAL_LOCATION_1D
+      case ('2d')
+         spatial_location_type = SPATIAL_LOCATION_2D
+      case ('1d2d', 'all')
+         spatial_location_type = SPATIAL_LOCATION_ALL
+      case default
+         spatial_location_type = SPATIAL_LOCATION_ALL
+      end select
+
+   end function parse_spatial_location_type
+
 end module fm_location_types

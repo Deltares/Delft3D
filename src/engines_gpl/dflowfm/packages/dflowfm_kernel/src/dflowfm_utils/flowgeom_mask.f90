@@ -30,7 +30,8 @@
 
 module m_flowgeom_mask
    use precision_basics, only: dp
-   use fm_location_types, only: UNC_LOC_CN, UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+   use fm_location_types, only: parse_spatial_location_type, UNC_LOC_CN, UNC_LOC_S, UNC_LOC_S3D, UNC_LOC_U, &
+      SPATIAL_LOCATION_INVALID, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
 
    implicit none(type, external)
 
@@ -225,9 +226,13 @@ contains
       
       end select
 
-   end subroutine
+   end subroutine apply_spatial_location_mask
 
-   !> Apply a polygon mask to the provided mask array, based on the provided target mask file and location type (flow nodes, flow links, etc.).
+   !> Apply a polygon mask to the provided mask array, based on the provided
+   !! target mask polygon file and location type (flow nodes, flow links, etc.).
+   !! The polygon mask is applied in AND/intersection fashion, that is:
+   !! the existing values of the input mask are respected: existing 0's remain 0's
+   !! and existing 1's will only remain 1 if they lie inside the polygon mask too.
    subroutine apply_polygon_mask(mask, location_type, target_mask_file, ierr)
       use m_flowgeom, only: xz, yz, kcs, ndx, lnx
       use timespace_parameters, only: LOCTP_POLYGON_FILE
@@ -237,8 +242,8 @@ contains
       ! Parameters
       integer, dimension(:), intent(inout) :: mask !< Mask array for the target element set.
       integer, intent(in) :: location_type !< The location type parameter (one from fm_location_types::UNC_LOC_*) for this quantity's target element set.
-      character(len=*), intent(in), optional :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
-      integer, intent(out), optional :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
+      character(len=*), intent(in) :: target_mask_file !< File name of the target mask file (*.pol). When empty, 100% masking is assumed.
+      integer, intent(out) :: ierr !< Result status (DFM_NOERR if succesful, or different if mask could not be constructed for this quantity's location).
 
       ! Local variables
       integer :: i !< Loop variable for mask array.
@@ -311,34 +316,5 @@ contains
       end if
 
    end subroutine apply_polygon_mask
-
-   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
-   !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns SPATIAL_LOCATION_INVALID when the string is absent, returns SPATIAL_LOCATION_INVALID when unrecognized.
-   function parse_spatial_location_type(location_type_string) result(spatial_location_type)
-      use string_module, only: str_tolower
-      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL, SPATIAL_LOCATION_INVALID
-
-      ! Parameters
-      character(len=*), intent(in) :: location_type_string
-      integer :: spatial_location_type
-
-      if (len_trim(location_type_string) == 0) then
-         spatial_location_type = SPATIAL_LOCATION_INVALID
-         return
-      end if
-
-      select case (str_tolower(trim(location_type_string)))
-      case ('1d')
-         spatial_location_type = SPATIAL_LOCATION_1D
-      case ('2d')
-         spatial_location_type = SPATIAL_LOCATION_2D
-      case ('1d2d', 'all')
-         spatial_location_type = SPATIAL_LOCATION_ALL
-      case default
-         spatial_location_type = SPATIAL_LOCATION_ALL
-      end select
-
-   end function parse_spatial_location_type
 
 end module m_flowgeom_mask

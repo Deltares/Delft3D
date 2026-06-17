@@ -489,7 +489,7 @@ contains
       use fm_external_forcings_utils, only: read_tracer_properties
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
       use m_ec_parameters, only: interpolate_time, interpolate_spacetimeSaveWeightFactors
-      use fm_location_types, only: SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
+      use fm_location_types, only: parse_spatial_location_type, SPATIAL_LOCATION_ALL
       use m_grw
       use m_Roughness, only: frictionTypeStringToInteger
 
@@ -664,16 +664,7 @@ contains
          if (.not. retVal) then
             ilocType = SPATIAL_LOCATION_ALL
          else
-            select case (trim(str_tolower(locationType)))
-            case ('1d')
-               ilocType = SPATIAL_LOCATION_1D
-            case ('2d')
-               ilocType = SPATIAL_LOCATION_2D
-            case ('1d2d')
-               ilocType = SPATIAL_LOCATION_ALL
-            case default
-               ilocType = SPATIAL_LOCATION_ALL
-            end select
+            ilocType = parse_spatial_location_type(locationType)
          end if
 
          ! if the infiltrationmodel is not horton, but a horton quantity is detected, then send a error message
