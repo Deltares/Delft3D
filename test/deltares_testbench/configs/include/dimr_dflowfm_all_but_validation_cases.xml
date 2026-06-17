@@ -9339,4 +9339,17 @@
         </file>
       </checks>
     </testCase>
+    <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
+          <testCase name="e02_f006_c400_nesting_salinity_uxuyadvection" ref="dflowfm_nesting">
+              <path version="2026-06-16T11:06:22.097000">e02_dflowfm/f006_external_forcing/c400_nesting_salinity_uxuyadvection</path>
+              <maxRunTime>60.0</maxRunTime>
+              <checks>
+                  <file name="small/output/TestFine_his.nc" type="netcdf">
+                      <parameters>
+                          <parameter name="salinity" toleranceRelative="1e-7" />
+                      </parameters>
+                  </file>
+              </checks>
+          </testCase>
+      </testCases>    
   </testCases>
