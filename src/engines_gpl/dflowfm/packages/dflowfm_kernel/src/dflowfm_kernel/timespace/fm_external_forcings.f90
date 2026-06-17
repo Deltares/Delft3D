@@ -1502,12 +1502,6 @@ contains
       end if
 
       ! Now check the valuestring for either scalar/REALTIME/.tim filename
-      inquire (file=valuestring, exist=file_exists)
-      if (.not. file_exists) then
-         call mess(LEVEL_ERROR, 'File '''//trim(valuestring)//''' does not exist.')
-         success = .false.
-         return
-      end if
       read (valuestring, *, iostat=ierr) valuedble
       targetarrayptr => targetarray
       tgtitem = ec_undef_int
@@ -1531,6 +1525,12 @@ contains
             end if
 
             fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
             ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
             if (index(trim(fnam)//'|', '.tim|') > 0) then
                ! uniform=single time series vectormax = 1
