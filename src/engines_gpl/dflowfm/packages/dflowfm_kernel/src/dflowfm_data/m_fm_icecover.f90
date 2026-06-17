@@ -421,7 +421,6 @@ contains
       use precision, only: fp
       use m_flow, only: hs
       use m_flowgeom, only: ndx
-      use m_flowparameters, only: epshu
       use m_flowtimes, only: dts
       use m_wind, only: air_temperature, rain, jarain
       use physicalconsts, only: celsius_to_kelvin
