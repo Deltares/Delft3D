@@ -261,6 +261,10 @@ contains
                ncptr%layerdimid = var_dimids(1, ncptr%vertical_coordinate_id) ! For convenience also store the dimension ID explicitly
                ncptr%nLayer = ncptr%dimlen(ncptr%layerdimid)
                allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
+               if (.not. ncptr%is_vertical_coord_time_varying) then
+                  ierr = nf90_get_var(ncptr%ncid, ncptr%vertical_coordinate_id, ncptr%vp, (/1/), (/ncptr%nLayer/))
+                  if (ierr /= NF90_NOERR) return
+               end if
                if (ierr /= 0) return
                ierr = ncu_get_att(ncptr%ncid, ncptr%vertical_coordinate_id, 'units', zunits)
                if (ierr /= NF90_NOERR) return

@@ -893,6 +893,24 @@ contains
           call set_ec_message("Datablock end (eof) has been reached in file: "//trim(bcPtr%fname))
           return
        endif
+
+      block 
+         integer, dimension(1)          :: nrTmp  
+
+         ! Use FUNC to determine whether normal or TIM3D series
+         ! First, get the vertical coordinates and store in BCPTR.VP (only for nc history files)
+         if (.not. BCPtr%ncptr%is_vertical_coord_time_varying == 2 .and. BCPtr%FUNC == BC_FUNC_TIM3D) then
+            nrTmp(1) = BCPtr%ncptr%vertical_coordinate_id 
+            if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,nrTmp,BCPtr%nclocndx,BCPtr%dimvector, &
+               BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%FUNC)) then
+               call set_EC_Message("Read failure in file: "//trim(BCPtr%fname))
+               return
+            else
+               BCPtr%VP = values
+            endif
+         endif
+      end block
+          
                  
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
           BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr.FUNC)) then
