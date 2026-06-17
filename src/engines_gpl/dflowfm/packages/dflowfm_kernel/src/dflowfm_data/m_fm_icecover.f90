@@ -166,7 +166,15 @@ contains
    !! Upon loading of new model/MDU, use default_fm_icecover() instead.
    subroutine reset_fm_icecover()
       use m_flowparameters, only: epshu
-      
+
+      ! Determine wetting-drying status for ice growth or melt for computational cell (n).
+      !
+      ! This is a trial-and-error approach. For example, variabele KFS, which indeed is meant for the wetting-drying status - isn't suited for our check because
+      ! it is based on the criterion "Volume(n) > 0.0". Thus, for very thin waterdepths (HS) computational cells are still wet. This also holds for (much) smaller
+      ! values than EPSHU. which is used for wetting-drying at flow links. The goal is to have a criterion that is close to the criterion for flow links.
+      ! In dried ares the HS values are often close to EPSHU. For example a few percent smaller. In these cells we would like to switch off ice growth or melt.
+      ! Therefore, as a first guess we propose to apply ice growth or melt only for "HS > 1.1 * EPSHU".
+      !
       ice_wetting_drying_threshold = 1.1_fp * epshu
    end subroutine reset_fm_icecover
 
@@ -440,17 +448,7 @@ contains
 
          ! Compute ice growth or melt of snow and ice
          do n = 1, ndx
-             
-            ! Determine wetting-drying status for ice growth or melt for computational cell (n).
-            !
-            ! This is a trial-and-error approach. For example, variabele KFS, which indeed is meant for the wetting-drying status - isn't suited for our check because
-            ! it is based on the criterion "Volume(n) > 0.0". Thus, for very thin waterdepths (HS) computational cells are still wet. This also holds for (much) smaller
-            ! values than EPSHU. which is used for wetting-drying at flow links. The goal is to have a criterion that is close to the criterion for flow links. 
-            ! In dried ares the HS values are often close to EPSHU. For example a few percent smaller. In these cells we would like to switch off ice growth or melt. 
-            ! Therefore, as a first guess we propose to apply ïce growth or melt only for "HS > 1.1 * EPSHU". 
-            ! 
-            ice_wetting_drying_threshold = 1.1_dp * epshu
- 
+
             if (hs(n) > ice_wetting_drying_threshold) then
             
                if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
