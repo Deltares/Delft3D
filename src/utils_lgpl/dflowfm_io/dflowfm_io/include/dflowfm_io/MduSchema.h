@@ -81,9 +81,24 @@ namespace dflowfm_io
             return nullptr;
         }
 
+        const PropertySchema* FindProperty(const std::string& key) const
+        {
+            auto dot = key.find('.');
+            if (dot == std::string::npos) return nullptr;
+
+            const auto* ss = FindSection(key.substr(0, dot));
+            if (!ss) return nullptr;
+            return ss->FindProperty(key.substr(dot + 1));
+        }
+
         std::string description;
         std::vector<SectionSchema> sections;
     };
+
+    inline std::string FormatKey(const std::string& section, const std::string& property)
+    {
+        return to_lowercase(section + "." + property);
+    }
 
     extern const MduSchema MDU_SCHEMA;
 

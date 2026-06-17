@@ -21,13 +21,13 @@ module dflowfm_io
     end type MduModel
 
     interface
-        function c_mdu_model_create(out_handle) result(res) bind(C, name="mdu_model_create")
+        function c_mdu_document_create(out_handle) result(res) bind(C, name="mdu_document_create")
             import :: c_ptr, c_int
             type(c_ptr), intent(out) :: out_handle
             integer(c_int) :: res
         end function
 
-        function c_mdu_model_destroy(handle) result(res) bind(C, name="mdu_model_destroy")
+        function c_mdu_document_destroy(handle) result(res) bind(C, name="mdu_document_destroy")
             import :: c_ptr, c_int
             type(c_ptr), intent(inout) :: handle
             integer(c_int) :: res
@@ -52,7 +52,7 @@ contains
         class(MduModel), intent(inout) :: self
         integer, intent(out) :: result_code
 
-        result_code = int(c_mdu_model_create(self%handle))
+        result_code = int(c_mdu_document_create(self%handle))
     end subroutine
 
     function mdu_model_has_valid_handle_f(self) result(valid)
@@ -100,14 +100,14 @@ contains
         class(MduModel), intent(inout) :: self
         integer, intent(out) :: result_code
 
-        result_code = int(c_mdu_model_destroy(self%handle))
+        result_code = int(c_mdu_document_destroy(self%handle))
     end subroutine
 
     subroutine mdu_model_finalizer(self)
         type(MduModel), intent(inout) :: self
         integer(c_int) :: res
 
-        res = c_mdu_model_destroy(self%handle)
+        res = c_mdu_document_destroy(self%handle)
     end subroutine
 
     subroutine mdu_model_assign(lhs, rhs)

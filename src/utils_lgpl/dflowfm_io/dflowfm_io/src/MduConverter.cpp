@@ -1,7 +1,9 @@
-#include <dflowfm_io/ConversionResult.h>
 #include <dflowfm_io/MduConverter.h>
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/MduValidator.h>
+#include <dflowfm_io/StringUtils.h>
+
+#include <ini/IniData.h>
 
 #include <cassert>
 #include <chrono>
@@ -143,7 +145,7 @@ namespace dflowfm_io
         }
     }
 
-    ConversionResult<MduData> MduConverter::Convert(const IniData& iniData)
+    std::pair<MduData, IssueReport> MduConverter::Convert(const IniData& iniData)
     {
         MduValidator validator;
         IssueReport report = validator.Validate(iniData);
@@ -155,7 +157,7 @@ namespace dflowfm_io
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 const auto* iniProperty = FindProperty(iniData, sectionSchema.name, propertySchema.key);
-                const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
+                const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
 
                 // A property may be absent or have no value in the MDU file;
                 // fall back to the schema default if one is defined.
@@ -181,10 +183,9 @@ namespace dflowfm_io
         return {std::move(mduData), std::move(report)};
     }
 
-    ConversionResult<IniData> MduConverter::Convert(const MduData& mduData)
+    IniData MduConverter::Convert(const MduData& mduData)
     {
         IniData iniData;
-        IssueReport report;
 
         for (const auto& sectionSchema : MDU_SCHEMA.sections)
         {
@@ -200,11 +201,12 @@ namespace dflowfm_io
 
             for (const auto& propertySchema : sectionSchema.properties)
             {
-                const std::string key = to_lowercase(sectionSchema.name + "." + propertySchema.key);
+                const std::string key = FormatKey(sectionSchema.name, propertySchema.key);
                 if (!mduData.hasValue(key))
                 {
                     if (propertySchema.required)
-                        report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
+                        throw std::logic_error(std::format("Required property [{}].{} is missing.",
+                                               sectionSchema.name, propertySchema.key));
                     continue;
                 }
 
@@ -215,7 +217,7 @@ namespace dflowfm_io
             }
         }
 
-        return {std::move(iniData), std::move(report)};
+        return std::move(iniData);
     }
 
 } // namespace dflowfm_io

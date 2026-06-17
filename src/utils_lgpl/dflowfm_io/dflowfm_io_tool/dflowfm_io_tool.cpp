@@ -1,10 +1,11 @@
+#include <dflowfm_io/MduDocument.h>
+
 #include <chrono>
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <variant>
-#include <dflowfm_io/MduFile.h>
 
 using namespace dflowfm_io;
 using namespace std;
@@ -18,17 +19,17 @@ int main(int argc, char* argv[])
     }
 
     string path = argv[1];
-    const MduData data = [&]() -> MduData {
-        try
-        {
-            return MduFile::Load(path).first;
-        }
-        catch (const std::exception& e)
-        {
-            cerr << "Error loading '" << path << "': " << e.what() << "\n";
-            exit(1);
-        }
-    }();
+
+    MduDocument document;
+    try
+    {
+        document.Load(path);
+    }
+    catch (const std::exception& e)
+    {
+        cerr << "Error loading '" << path << "': " << e.what() << "\n";
+        exit(1);
+    }
 
     cout << "\nSuccessfully loaded: " << path << "\n\n";
 
@@ -76,6 +77,7 @@ int main(int argc, char* argv[])
         }
     };
 
+    const MduData& data = document.GetData();
     for (const auto& [key, value] : data.data_entries)
     {
         cout << "  " << key << " = ";
@@ -86,7 +88,7 @@ int main(int argc, char* argv[])
     std::ostringstream stream;
     try
     {
-        MduFile::Save(stream, data);
+        document.Save(stream);
     }
     catch (const std::exception& e)
     {

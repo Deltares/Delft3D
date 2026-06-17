@@ -14,13 +14,11 @@ namespace dflowfm_io
     class MduValidator
     {
     public:
-        explicit MduValidator();
-
-        IssueReport Validate(const ini::IniData& iniData) const;
+        static IssueReport Validate(const ini::IniData& iniData);
 
     private:
-        void ValidateRequired(const ini::IniData& iniData, IssueReport& report) const;
-        void ValidateUnsupported(const ini::IniData& iniData, IssueReport& report) const;
+        static void ValidateRequired(const ini::IniData& iniData, IssueReport& report);
+        static void ValidateUnsupported(const ini::IniData& iniData, IssueReport& report);
     };
 
 } // namespace dflowfm_io

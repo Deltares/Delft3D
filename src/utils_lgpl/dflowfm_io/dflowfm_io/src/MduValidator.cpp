@@ -1,18 +1,15 @@
 #include <dflowfm_io/MduValidator.h>
 #include <dflowfm_io/MduSchema.h>
 #include <dflowfm_io/IssueReport.h>
+
 #include <ini/IniData.h>
 #include <ini/IniSection.h>
 #include <ini/IniProperty.h>
 
-using namespace ini;
-
 namespace dflowfm_io
 {
 
-    MduValidator::MduValidator() {}
-
-    IssueReport MduValidator::Validate(const IniData& iniData) const
+    IssueReport MduValidator::Validate(const ini::IniData& iniData)
     {
         IssueReport report;
         ValidateRequired(iniData, report);
@@ -20,7 +17,7 @@ namespace dflowfm_io
         return report;
     }
 
-    void MduValidator::ValidateRequired(const IniData& iniData, IssueReport& report) const
+    void MduValidator::ValidateRequired(const ini::IniData& iniData, IssueReport& report)
     {
         for (const auto& sectionSchema : MDU_SCHEMA.sections)
         {
@@ -35,7 +32,7 @@ namespace dflowfm_io
                 continue;
             }
 
-            const IniSection& section = iniData.GetSection(sectionSchema.name);
+            const ini::IniSection& section = iniData.GetSection(sectionSchema.name);
             for (const auto& propertySchema : sectionSchema.properties)
             {
                 if (!section.HasProperty(propertySchema.key))
@@ -48,7 +45,7 @@ namespace dflowfm_io
                     continue;
                 }
 
-                const IniProperty& property = section.GetProperty(propertySchema.key);
+                const ini::IniProperty& property = section.GetProperty(propertySchema.key);
                 if (!property.HasValue())
                 {
                     if (propertySchema.required)
@@ -62,7 +59,7 @@ namespace dflowfm_io
         }
     }
 
-    void MduValidator::ValidateUnsupported(const IniData& iniData, IssueReport& report) const
+    void MduValidator::ValidateUnsupported(const ini::IniData& iniData, IssueReport& report)
     {
         for (const auto& section : iniData)
         {
