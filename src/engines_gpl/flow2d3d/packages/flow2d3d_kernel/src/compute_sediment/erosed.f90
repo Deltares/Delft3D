@@ -90,6 +90,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
     real(fp)                             , pointer :: ag
     real(fp)                             , pointer :: vicmol
     integer                              , pointer :: nmudfrac
+    real(fp)                             , pointer :: seddif_cal
+    real(fp)                             , pointer :: difparam
     real(fp)         , dimension(:)      , pointer :: rhosol
     real(fp)         , dimension(:)      , pointer :: cdryb
     real(fp)         , dimension(:,:,:)  , pointer :: logseddia
@@ -415,6 +417,8 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !
     wave                => gdp%gdprocs%wave
     nmudfrac            => gdp%gdsedpar%nmudfrac
+    seddif_cal          => gdp%gdsedpar%seddif_param
+    difparam            => gdp%gdsedpar%difparam
     rhosol              => gdp%gdsedpar%rhosol
     cdryb               => gdp%gdsedpar%cdryb
     logseddia           => gdp%gdsedpar%logseddia
@@ -1270,15 +1274,21 @@ subroutine erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
                                &  rhosol(l)         ,caks_ss3d      ,ws(nm,kmaxsd,l)    , &
                                &  aks_ss3d          ,sourse(nm,l)   ,sour_im(nm,l)      , &
                                &  sinkse(nm,l) )
+                !
+                if (seddif_cal > 0.0_fp) then
+                   seddif(nm, :, l) = seddif_cal * seddif(nm, :, l)
+                end if
+                !
                 ! Impose relatively large vertical diffusion
                 ! coefficients for sediment in layer interfaces from
                 ! bottom of reference cell downwards, to ensure little
                 ! gradient in sed. conc. exists in this area.
-                !
-                difbot = 10.0_fp * ws(nm,kmaxsd,l) * thick1
-                do k = kmaxsd, kmax
-                   seddif(nm, k, l) = difbot
-                enddo
+                if (difparam > 0.0_fp) then
+                   difbot = difparam * ws(nm,kmaxsd, l) * thick1
+                   do k = kmaxsd, kmax
+                      seddif(nm, k, l) = difbot
+                   end do
+                end if
              endif ! suspfrac
           else
              !

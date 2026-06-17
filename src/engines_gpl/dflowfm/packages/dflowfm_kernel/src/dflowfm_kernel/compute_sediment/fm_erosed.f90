@@ -79,7 +79,6 @@ contains
       use sediment_basics_module
       use m_physcoef, only: ag, vonkar, sag, backgroundsalinity, backgroundwatertemperature, vismol, frcuni, ifrctypuni
       use m_sediment, only: stmpar, stm_included, jatranspvel, sbcx_raw, sbcy_raw, sswx_raw, sswy_raw, sbwx_raw, sbwy_raw
-      use m_sediment, only: difparam, seddif_cal
       use m_flowgeom, only: bl, dxi, csu, snu, wcx1, wcx2, wcy1, wcy2, acl, csu, snu, wcl
       use m_flow, only: s0, s1, u1, v, kmx, zws, hs, iturbulencemodel, z0urou, ifrcutp, hu, spirint, spiratx, spiraty, &
                         u_to_umain, frcu_mor, javeg, jabaptist, cfuhi, taubxu, epsz0
@@ -173,6 +172,8 @@ contains
       real(fp) :: delr
       real(fp) :: di50
       real(fp) :: difbot
+      real(fp), pointer :: seddif_cal
+      real(fp), pointer :: difparam
       real(fp) :: drho
       real(fp) :: dtmor
       real(fp) :: fracf
@@ -248,6 +249,8 @@ contains
       integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
       integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
+      seddif_cal => stmpar%sedpar%seddif_cal
+      difparam => stmpar%sedpar%difparam
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
       !
@@ -1215,7 +1218,7 @@ contains
                                  &  aks_ss3d, sourse(nm, l), sour_im(nm, l),              &
                                  &  sinkse(nm, l))
                   !
-                  if (seddif_cal > 0.0_dp) then
+                  if (seddif_cal > 0.0_fp) then
                      seddif(l, kb:kt) = seddif_cal * seddif(l, kb:kt)
                   end if
                   !
@@ -1223,7 +1226,7 @@ contains
                   ! coefficients for sediment in layer interfaces from
                   ! bottom of reference cell downwards, to ensure little
                   ! gradient in sed. conc. exists in this area.
-                  if (difparam > 0.0_dp) then
+                  if (difparam > 0.0_fp) then
                      difbot = difparam * ws(kmxsed(nm, l) - 1, l) * thick1
                      do kk = kb - 1, kmxsed(nm, l) - 1
                         seddif(l, kk) = difbot
