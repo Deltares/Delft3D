@@ -711,6 +711,17 @@
                     }
                 },
                 {
+                    "key": "keepZLayeringAtBed",
+                    "default_value": 2,
+                    "value_type": "intenum",
+                    "description": "Z-layering at bed.",
+                    "enum_values": {
+                        "0": "original bed level",
+                        "1": "adapted bed level",
+                        "2": "Ztbml approach of Delft3D-FLOW"
+                    }
+                },
+                {
                     "key": "ihuzcSig",
                     "value_type": "intenum",
                     "description": "If `keepZLayeringAtBed`>=2.",
@@ -1556,7 +1567,8 @@
                     "value_type": "intenum",
                     "description": "Z-layering at bed.",
                     "status": {
-                        "value": "research"
+                        "value": "deprecated",
+                        "comment": "Use [geometry] `keepZLayeringAtBed` instead."
                     },
                     "enum_values": {
                         "0": "original bed level",

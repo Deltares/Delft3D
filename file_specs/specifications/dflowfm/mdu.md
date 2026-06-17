@@ -137,6 +137,7 @@ In this section, the main entry comprises the specification of the grid (i.e. th
 | `uniformHu` 🔬 | Waterdepth in rigid-lid-like solution. |  |  |  | research |
 | `tSigma` ⚠️ | Sigma adaptation period for `layerType` = 4 (density controlled sigma-layers). |  |  | [s] | deprecated |
 | `dpuopt` 🔬 | Bed level interpolation at velocity point in case of tile approach bed level. | `1` | <ul><li>**`1`**: max</li><li>**`2`**: mean</li></ul> |  | research |
+| `keepZLayeringAtBed` | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  |  |
 | `ihuzcSig` 🔬 | If `keepZLayeringAtBed`>=2. |  | <ul><li>**`1`**: average of Leftsig and Rightsig</li><li>**`2`**: max of Leftsig and Rightsig</li><li>**`3`**: min of Leftsig and Rightsig</li><li>**`4`**: uniform</li></ul> |  | research |
 | `ihuz` 🔬 | TODO |  |  |  | research |
 | `cosphiutrsh` 🔬 | 1.0=no bad orthos. |  | `[0.0, 1.0]` |  | research |
@@ -243,7 +244,7 @@ This section contains the settings of specific parts of the flow solver, such as
 | `jbasqbnddownwindhs` 🔬 | Water depth scheme at discharge boundaries. | `0` | <ul><li>**`0`**: original hu</li><li>**`1`**: downwind hs</li></ul> |  | research |
 | `filterOrder` 🔬 | First-order or second order filter to suppress checkerboarding. | `2` | <ul><li>**`1`**: first order</li><li>**`2`**: second order</li></ul> |  | research |
 | `keepSTBndOnOutflow` 🔬 | Keep salinity and temperature signals on boundary cells at outflow. | `1` | <ul><li>**`0`**: no (like Thatcher-Harleman)</li><li>**`1`**: yes (use prescribed boundary conditions)</li></ul> |  | research |
-| `keepZLayeringAtBed` 🔬 | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  | research |
+| `keepZLayeringAtBed` ⚠️ | Z-layering at bed. | `2` | <ul><li>**`0`**: original bed level</li><li>**`1`**: adapted bed level</li><li>**`2`**: Ztbml approach of Delft3D-FLOW</li></ul> |  | deprecated: Use [geometry] `keepZLayeringAtBed` instead. |
 | `logProfAtUBndIn` 🔬 | ubnds inflow. | `1` | <ul><li>**`0`**: uniform U1</li><li>**`1`**: log U1</li><li>**`2`**: log U1 and k-eps accordingly</li></ul> |  | research |
 | `logProfKepsBndIn` 🔬 | 3D profile at open boundaries. | `0` | <ul><li>**`0`**: k-eps</li><li>**`1`**: log k-eps inflow</li><li>**`2`**: log k-eps in- and outflow</li></ul> |  | research |
 | `epshstem` 🔬 | Only compute heat flux + evaporation if depth > `epshstem`. | `0.001` |  |  | research |
