@@ -37,5 +37,5 @@ module m_equatorial
    integer :: ndxfreeL, ndxforced, ndtfreeL, ndtforced
    real(kind=dp) :: app = 0.0_dp, amm = 0.0_dp, ztyp = 0.20_dp
    real(kind=dp) :: ampliforced, amplitotal, amplifreeL, cflfreeL, cfLforced, TfreeL, Tforce, amplicomp
-   real(kind=dp), parameter :: UMODLIN = 1.0_dp
+   real(kind=dp), parameter :: UMODLIN = 0.0_dp
 end module m_equatorial
