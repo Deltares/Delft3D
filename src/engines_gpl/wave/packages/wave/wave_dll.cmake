@@ -4,8 +4,9 @@ set(library_files ${src_path}/wave_bmi.f90) # Because the .dll and the .exe are 
 
 # Define library
 set(library_name wave)
-add_library(${library_name} SHARED  ${library_files}
-                                    ${rc_version_file})
+add_rc_object_library(${library_name} "${rc_version_file}" "${version_include_dir};${wave_version_path}")
+add_library(${library_name} SHARED ${library_files})
+target_link_libraries(${library_name} PRIVATE ${library_name}_rc)
 
 # Set dependencies on windows
 if (WIN32)
@@ -22,24 +23,22 @@ if (WIN32)
                                 wave_kernel
                                 wave_manager
                                 nefis
-                                netcdff
+                                netCDF::netcdff
                                 triangle_c
                                 swan
-                                ) 
+                                )
 
-    target_link_libraries(${library_name} ${library_dependencies})
+    target_link_libraries(${library_name} PRIVATE ${library_dependencies})
 
     # Set linker properties
     message(STATUS "Setting linker properties in windows")
     target_link_directories(${library_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${mpi_library_path}")
 
-    target_link_libraries(${library_name}                                                   
+    target_link_libraries(${library_name} PRIVATE
                             "pthreadVC2.lib"
-                            "netcdf.lib"
                             "${mpi_fortran_library}")
 
     # Set linker options
@@ -70,18 +69,13 @@ if(UNIX)
                                 triangle_c
                                 swan
                                 esmfsm
-                                netcdff
+                                netCDF::netcdff
                                 )
 
-    target_link_libraries(${library_name}
+    target_link_libraries(${library_name} PRIVATE
          ${library_dependencies}
-         PkgConfig::NETCDF
-         )
+    )
 
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${library_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
-    #target_link_options(${library_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${library_name} PROPERTY LINKER_LANGUAGE Fortran)
 
 endif(UNIX)
@@ -100,6 +94,7 @@ set_target_properties (${library_name} PROPERTIES OUTPUT_NAME wave)
 set(install_dir ${CMAKE_BINARY_DIR})
 set(build_dir ${CMAKE_BINARY_DIR})
 
-install(TARGETS ${library_name} RUNTIME DESTINATION lib
+install(TARGETS ${library_name} RUNTIME DESTINATION bin
                                 LIBRARY DESTINATION lib
 )
+install(FILES $<TARGET_RUNTIME_DLLS:${library_name}> DESTINATION bin)
