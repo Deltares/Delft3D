@@ -3,6 +3,7 @@
 from pathlib import Path
 from unittest.mock import Mock, call
 
+import boto3
 import pytest
 
 from ci_tools.verschilanalyse.publish_artifacts_to_s3 import (
@@ -181,7 +182,7 @@ class TestPublishArtifacts:
 
     def test_raises_runtime_error_on_upload_failure(self, mock_s3: Mock, checkout_dir: Path) -> None:
         """Test that a RuntimeError is raised when an upload fails."""
-        mock_s3.upload_file.side_effect = Exception("connection error")
+        mock_s3.upload_file.side_effect = boto3.exceptions.S3UploadFailedError("connection error")
 
         with pytest.raises(RuntimeError, match="Failed to upload"):
             publish_artifacts(

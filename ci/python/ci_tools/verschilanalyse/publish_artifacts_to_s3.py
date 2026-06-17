@@ -57,7 +57,7 @@ def build_s3_key(prefix: Path, project_id: str, build_type_id: str, build_id: st
     str
         The full S3 object key.
     """
-    parts = [p for p in [prefix.as_posix(), project_id, build_type_id, build_id] if p]
+    parts = [*([prefix.as_posix()] if prefix.parts else []), project_id, build_type_id, build_id]
     prefix_path = "/".join(parts)
     return f"{prefix_path}/{relative_path.as_posix()}"
 
