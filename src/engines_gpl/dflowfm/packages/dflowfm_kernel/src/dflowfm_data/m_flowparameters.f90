@@ -225,6 +225,7 @@ module m_flowparameters
 
    integer :: nonlin !< 1 : non-linear continuity , == max(nonlin, nonlin2D) , 2 == pressurized nonlin
    integer :: nonlin1D !< 1 : non-linear continuity eq for 1D points, only for non-rectangles
+   logical :: nonlin1D_user_defined = .false. !< if true, override nonlin1D with user defined value, regardless of network%loaded status.
    integer :: nonlin2D !< 1 : non-linear continuity eq for 2D points, only for skewed bed, i.e. jaconveyance2D >= 1
 
    integer :: iproftypuni !< 1 : circle, 2 : rectan, 3 = rectan R=H, negative = closed for rain and grw

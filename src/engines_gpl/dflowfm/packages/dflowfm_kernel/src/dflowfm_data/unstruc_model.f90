@@ -933,7 +933,7 @@ contains
       call prop_get(md_ptr, 'geometry', 'Conveyance2D', Jaconveyance2D)
       call prop_get(md_ptr, 'geometry', 'Conveyance3D', Jaconveyance3D)
       call prop_get(md_ptr, 'geometry', 'Nonlin2D', Nonlin2D)
-      call prop_get(md_ptr, 'geometry', 'Nonlin1D', Nonlin1D)
+      call prop_get(md_ptr, 'geometry', 'Nonlin1D', Nonlin1D, Nonlin1D_user_defined)
       call prop_get(md_ptr, 'geometry', 'Slotw2D', slotw2D)
       call prop_get(md_ptr, 'geometry', 'Slotw1D', slotw1D)
       call prop_get(md_ptr, 'geometry', 'Dpuopt', jadpuopt)

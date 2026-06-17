@@ -94,6 +94,7 @@ contains
       use m_sediment, only: jased, stm_included
       use m_flowgeom, only: wu1duni
       use m_flow, only: nonlin1d, nonlin, flow_solver, flow_solver_sre
+      use m_flowparameters, only: nonlin1D_user_defined
       use unstruc_channel_flow, only: default_width, network, cscalculationoption, cs_type_plus
 
       integer handle_tot
@@ -105,7 +106,7 @@ contains
 
       if (network%loaded) then
          ! nonlinear computation is required for 1d flow
-         if (nonlin1D == 0) then
+         if (nonlin1D == 0 .and. .not. nonlin1D_user_defined) then
             nonLin1D = 1
          elseif (nonlin1D >= 2) then
             CSCalculationOption = CS_TYPE_PLUS
