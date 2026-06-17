@@ -1371,8 +1371,6 @@ contains
 
       integer :: ierror
 
-      associate (all_x_coordinates => longculvert%xcoords, all_y_coordinates => longculvert%ycoords)
-
          longculvert%flowlinks = 0
          jafounds = 0 ! Found the starting node or not
          jafounde = 0 ! Found the ending node or not
@@ -1427,7 +1425,7 @@ contains
                ! Find the first known flow node in the current partition (if 2D flow node was not found outside of the loop already)
                call realloc(jnode, 1, keepExisting=.false., fill=0)
                do j = is + 1, ie - 1
-                  call find_nearest_flownodes_kdtree(treeglob, 1, all_x_coordinates(j), all_y_coordinates(j), jnode, 1, INDTP_1D, ierror)
+                  call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
                   if (ierror == 0 .and. jnode(1) > 0) then
                      nodenum = jnode(1) ! For the later search
                      is = j ! this will be the starting node of the long culvert in current domain
@@ -1451,7 +1449,7 @@ contains
                ! Find the last known flow node in the current partition (if 2D flow ndoe was not found outside of the loop already)
                call realloc(jnode, 1, keepExisting=.false., fill=0)
                do j = ie - 1, is + 1, -1
-                  call find_nearest_flownodes_kdtree(treeglob, 1, all_x_coordinates(j), all_y_coordinates(j), jnode, 1, INDTP_1D, ierror)
+                  call find_nearest_flownodes_kdtree(treeglob, 1, longculvert%xcoords(j), longculvert%ycoords(j), jnode, 1, INDTP_1D, ierror)
                   if (ierror == 0 .and. jnode(1) > 0) then
                      ie = j ! this will be the ending node of the long culvert in current domain
                      jafounde = 1
@@ -1485,7 +1483,7 @@ contains
                         othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                         if (j <= ie) then
-                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), all_x_coordinates(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), all_y_coordinates(j + 1), EPS10) == 0)) then
+                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
                               longculvert%flowlinks(j) = -1 * linknum
                               exit
                            end if
@@ -1495,7 +1493,6 @@ contains
                end do
             end if
          end if
-      end associate
    end subroutine
 
    !> Find 2D netcell the longculvert endpoint is located in, add a new node and return its node number
