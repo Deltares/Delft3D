@@ -18,7 +18,12 @@ namespace dflowfm_io
                 .allowDuplicateProperties = false,
                 .allowMultiLineValues = true,
             },
-        .formatterOptions{.writeEmptySections = false},
+        .formatterOptions
+            {
+                .propertyKeyWidth = 42,
+                .propertyValueWidth = 20,
+                .writeEmptySections = false
+            },
     };
 
     void MduDocument::Load(std::istream& in)

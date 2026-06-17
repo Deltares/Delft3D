@@ -45,11 +45,12 @@ class TestMduDocument(unittest.TestCase):
         actual_lines = [line.strip() for line in doc.save_to_lines()]
         expected_present = [
             "[general]",
-            "program               = D-Flow FM           # Program.",
+            "program                                    = D-Flow FM            # Program.",
             "[geometry]",
-            "netFile               = FlowFM_net.nc       # Net file (*_net.nc) containing mesh information.",
-            "cdBreakPoints         = 0.00063 0.00723     # Wind drag breakpoints.",
-            "refDate               = 20010101            # Reference date. By default midnight is taken (00h00m00s).",
+            "netFile                                    = FlowFM_net.nc        # Net file (*_net.nc) containing mesh information.",
+            "cdBreakPoints                              = 0.00063 0.00723      # Wind drag breakpoints.",
+            "[time]",
+            "refDate                                    = 20010101             # Reference date. By default midnight is taken (00h00m00s).",
         ]
         for line in expected_present:
             self.assertIn(line, actual_lines)

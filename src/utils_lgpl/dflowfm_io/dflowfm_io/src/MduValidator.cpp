@@ -23,11 +23,11 @@ namespace dflowfm_io
         {
             if (!iniData.HasSection(sectionSchema.name))
             {
-                if (sectionSchema.required) report.AddError("Section [{}] is missing.", sectionSchema.name);
+                if (sectionSchema.required) report.AddError("Required section [{}] is missing.", sectionSchema.name);
 
                 for (const auto& propertySchema : sectionSchema.properties)
                     if (propertySchema.required)
-                        report.AddError("Property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
+                        report.AddError("Required property [{}].{} is missing.", sectionSchema.name, propertySchema.key);
 
                 continue;
             }
@@ -49,8 +49,8 @@ namespace dflowfm_io
                 if (!property.HasValue())
                 {
                     if (propertySchema.required)
-                        report.AddError(property.GetLineNumber(), "Required property [{}].{} is specified without a value.", sectionSchema.name,
-                                        propertySchema.key);
+                        report.AddError(property.GetLineNumber(), "Required property [{}].{} is specified without a value.",
+                                        sectionSchema.name, propertySchema.key);
                     else if (!propertySchema.default_value_str.empty())
                         report.AddInfo(property.GetLineNumber(), "Property [{}].{} is specified without a value. Default is used: \"{}\".",
                                        sectionSchema.name, propertySchema.key, propertySchema.default_value_str);

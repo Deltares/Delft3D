@@ -14,6 +14,7 @@ namespace ini
             options.propertyKeyWidth = 0;
             options.propertyValueWidth = 0;
             options.propertyAssignmentPadding = 0;
+            options.propertyCommentPadding = 0;
             return options;
         }
 
@@ -28,6 +29,9 @@ namespace ini
 
         /// @brief The number of spaces padding around the property assignment delimiter.
         int propertyAssignmentPadding = 1;
+
+        /// @brief The number of spaces between the property value and the comment.
+        int propertyCommentPadding = 1;
 
         /// @brief Indicates whether comments are written during formatting.
         bool writeComments = true;

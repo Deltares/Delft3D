@@ -16,6 +16,15 @@ using namespace ini;
 
 namespace dflowfm_io
 {
+
+    static std::string GetCurrentLocalTimeString()
+    {
+        const auto now = std::chrono::system_clock::now();
+        const auto nowSeconds = std::chrono::floor<std::chrono::seconds>(now);
+        const auto time = std::chrono::zoned_time{std::chrono::current_zone(), nowSeconds};
+        return std::format("{:%H:%M:%S, %d-%m-%Y}", time);
+    }
+
     static const IniProperty* FindProperty(
         const IniData& iniData,
         const std::string& sectionName,
@@ -193,11 +202,8 @@ namespace dflowfm_io
 
             if (iniData.size() == 1)
             {
-                iniSection.AddComment(MDU_SCHEMA.description);
-                iniSection.AddComment("");
+                iniSection.AddComment(std::format("Generated on {}\n", GetCurrentLocalTimeString()));
             }
-
-            iniSection.AddComment(sectionSchema.description);
 
             for (const auto& propertySchema : sectionSchema.properties)
             {

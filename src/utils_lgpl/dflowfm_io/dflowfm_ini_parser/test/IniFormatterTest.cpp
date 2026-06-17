@@ -101,6 +101,24 @@ namespace ini::test
         EXPECT_EQ(ini, expected);
     }
 
+    TEST(IniFormatterTest, Format_SectionWithEmptyComment_WritesEmptyLine)
+    {
+        IniSection section = CreateEmptySection();
+        section.AddComment("comment");
+        section.AddComment("");
+
+        IniData iniData = CreateIniData(section);
+        IniFormatter formatter = CreateFormatter();
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected =
+            "# comment\n"
+            "\n"
+            "[section]\n";
+
+        EXPECT_EQ(ini, expected);
+    }
+
     TEST(IniFormatterTest, Format_SectionWithCommentsAndWriteCommentsIsFalse_ReturnsFormattedString)
     {
         IniSection section = CreateEmptySection();
@@ -119,43 +137,8 @@ namespace ini::test
         EXPECT_EQ(ini, expected);
     }
 
-    TEST(IniFormatterTest, Format_SectionWithPropertiesAndComments_ReturnsFormattedString)
-    {
-        IniData iniData = CreateIniDataWithSingleSection();
-        IniFormatter formatter = CreateFormatter();
-
-        const std::string ini = formatter.Format(iniData);
-        const std::string expected =
-            "[section]\n"
-            "property1             = value1              # comment\n"
-            "property2             = value2              # comment\n"
-            "property3             = value3              # comment\n"
-            "\n";
-
-        EXPECT_EQ(ini, expected);
-    }
-
-    TEST(IniFormatterTest, Format_SectionWithPropertiesAndCommentsAndWriteCommentsIsFalse_ReturnsFormattedString)
-    {
-        IniData iniData = CreateIniDataWithSingleSection();
-        IniFormatter formatter = CreateFormatter();
-
-        IniFormatterOptions& options = formatter.GetOptions();
-        options.writeComments = false;
-
-        const std::string ini = formatter.Format(iniData);
-        const std::string expected =
-            "[section]\n"
-            "property1             = value1              \n"
-            "property2             = value2              \n"
-            "property3             = value3              \n"
-            "\n";
-
-        EXPECT_EQ(ini, expected);
-    }
-
     // -------------------------------------------------------------------------
-    // Format - WriteEmptySections
+    // Format - empty sections
     // -------------------------------------------------------------------------
 
     TEST(IniFormatterTest, Format_WriteEmptySectionsIsFalse_SkipsEmptySection)
@@ -187,7 +170,60 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // Format - WritePropertyWithoutValue
+    // Format - properties
+    // -------------------------------------------------------------------------
+
+    TEST(IniFormatterTest, Format_PropertiesAndComments_ReturnsFormattedString)
+    {
+        IniData iniData = CreateIniDataWithSingleSection();
+        IniFormatter formatter = CreateFormatter();
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected =
+            "[section]\n"
+            "property1             = value1               # comment\n"
+            "property2             = value2               # comment\n"
+            "property3             = value3               # comment\n"
+            "\n";
+
+        EXPECT_EQ(ini, expected);
+    }
+
+    TEST(IniFormatterTest, Format_PropertyAndEmptyComment_SkipsComment)
+    {
+        IniData iniData = CreateIniDataFromProperty("property", "value", "");
+        IniFormatter formatter = CreateFormatter();
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected =
+            "[section]\n"
+            "property              = value               \n"
+            "\n";
+
+        EXPECT_EQ(ini, expected);
+    }
+
+    TEST(IniFormatterTest, Format_PropertiesAndCommentsAndWriteCommentsIsFalse_ReturnsFormattedString)
+    {
+        IniData iniData = CreateIniDataWithSingleSection();
+        IniFormatter formatter = CreateFormatter();
+
+        IniFormatterOptions& options = formatter.GetOptions();
+        options.writeComments = false;
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected =
+            "[section]\n"
+            "property1             = value1              \n"
+            "property2             = value2              \n"
+            "property3             = value3              \n"
+            "\n";
+
+        EXPECT_EQ(ini, expected);
+    }
+
+    // -------------------------------------------------------------------------
+    // Format - properties without value
     // -------------------------------------------------------------------------
 
     TEST(IniFormatterTest, Format_WritePropertyWithoutValueIsFalse_SkipsEmptyValueProperty)
@@ -237,13 +273,41 @@ namespace ini::test
         options.propertyKeyWidth = 10;
         options.propertyValueWidth = 10;
         options.propertyAssignmentPadding = 1;
+        options.propertyCommentPadding = 1;
 
         const std::string ini = formatter.Format(iniData);
         const std::string expected =
             "[section]\n"
-            "    property1  = value1    # comment\n"
-            "    property2  = value2    # comment\n"
-            "    property3  = value3    # comment\n"
+            "    property1  = value1     # comment\n"
+            "    property2  = value2     # comment\n"
+            "    property3  = value3     # comment\n"
+            "\n";
+
+        EXPECT_EQ(ini, expected);
+    }
+
+    TEST(IniFormatterTest, Format_PropertyKeyExceedsKeyWidth_CompensatesValueWidth)
+    {
+        IniSection section = CreateEmptySection();
+        section.AddProperty(CreateProperty("short", "value1", "comment1"));
+        section.AddProperty(CreateProperty("averylongkey", "value2", "comment2"));
+        section.AddProperty(CreateProperty("medium", "value3", "comment3"));
+
+        IniData iniData = CreateIniData(section);
+        IniFormatter formatter = CreateFormatter();
+
+        IniFormatterOptions& options = formatter.GetOptions();
+        options.propertyKeyWidth = 10;
+        options.propertyValueWidth = 10;
+        options.propertyAssignmentPadding = 1;
+        options.propertyCommentPadding = 1;
+
+        const std::string ini = formatter.Format(iniData);
+        const std::string expected =
+            "[section]\n"
+            "short      = value1     # comment1\n"
+            "averylongkey = value2   # comment2\n"
+            "medium     = value3     # comment3\n"
             "\n";
 
         EXPECT_EQ(ini, expected);
@@ -255,15 +319,14 @@ namespace ini::test
         IniFormatter formatter = CreateFormatter();
 
         IniFormatterOptions options = IniFormatterOptions::EmptySpace();
-        options.writeComments = false;
         formatter.SetOptions(options);
 
         const std::string ini = formatter.Format(iniData);
         const std::string expected =
             "[section]\n"
-            "property1=value1\n"
-            "property2=value2\n"
-            "property3=value3\n"
+            "property1=value1#comment\n"
+            "property2=value2#comment\n"
+            "property3=value3#comment\n"
             "\n";
 
         EXPECT_EQ(ini, expected);
@@ -314,9 +377,9 @@ namespace ini::test
         const std::string ini = formatter.Format(iniData);
         const std::string expected =
             "<section>\n"
-            "property1             : value1              ; comment\n"
-            "property2             : value2              ; comment\n"
-            "property3             : value3              ; comment\n"
+            "property1             : value1               ; comment\n"
+            "property2             : value2               ; comment\n"
+            "property3             : value3               ; comment\n"
             "\n";
 
         EXPECT_EQ(ini, expected);
@@ -347,9 +410,9 @@ namespace ini::test
 
         const std::string expected =
             "[section]\n"
-            "property1             = value1              # comment\n"
-            "property2             = value2              # comment\n"
-            "property3             = value3              # comment\n"
+            "property1             = value1               # comment\n"
+            "property2             = value2               # comment\n"
+            "property3             = value3               # comment\n"
             "\n";
 
         EXPECT_EQ(oss.str(), expected);

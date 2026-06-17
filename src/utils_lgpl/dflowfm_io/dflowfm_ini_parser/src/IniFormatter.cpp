@@ -78,13 +78,14 @@ namespace ini
     {
         if (options.propertyIndentationLevel > 0) stream << std::setw(options.propertyIndentationLevel) << "";
 
+        const std::string& key = property.GetKey();
         if (options.propertyKeyWidth > 0)
         {
-            stream << std::left << std::setw(options.propertyKeyWidth) << property.GetKey();
+            stream << std::left << std::setw(options.propertyKeyWidth) << key;
         }
         else
         {
-            stream << property.GetKey();
+            stream << key;
         }
 
         if (options.propertyAssignmentPadding > 0)
@@ -101,7 +102,18 @@ namespace ini
 
         if (options.propertyValueWidth > 0)
         {
-            stream << std::left << std::setw(options.propertyValueWidth) << property.GetValue();
+            // If the key exceeded the configurable key width, reduce the value width to compensate
+            const int keyOverflow = static_cast<int>(key.size()) - options.propertyKeyWidth;
+            const int adjustedValueWidth = options.propertyValueWidth - std::max(0, keyOverflow);
+
+            if (adjustedValueWidth > 0)
+            {
+                stream << std::left << std::setw(adjustedValueWidth) << property.GetValue();
+            }
+            else
+            {
+                stream << property.GetValue();
+            }
         }
         else
         {
@@ -110,6 +122,11 @@ namespace ini
 
         if (options.writeComments && property.HasComment())
         {
+            if (options.propertyCommentPadding > 0)
+            {
+                stream << std::setw(options.propertyCommentPadding) << "";
+            }
+
             WriteComment(property.GetComment(), stream);
         }
     }
@@ -125,7 +142,16 @@ namespace ini
 
     void IniFormatter::WriteComment(const std::string& comment, std::ostream& stream) const
     {
-        stream << scheme.commentDelimiter << ' ' << comment;
+        if (comment.empty()) return;
+
+        stream << scheme.commentDelimiter;
+
+        if (options.propertyCommentPadding > 0)
+        {
+            stream << std::setw(options.propertyCommentPadding) << "";
+        }
+
+        stream << comment;
     }
 
     void IniFormatter::WriteNewLine(std::ostream& stream) const { stream << '\n'; }
