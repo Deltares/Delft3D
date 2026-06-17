@@ -1056,8 +1056,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f006_c021_basinnofriction_squaresfine_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T14:34:44.790000">e02_dflowfm/f006_external_forcing/c021_basinnofriction_squaresfine_oldext</path>
+    <testCase name="e02_f006_c021_oldext_basinnofriction_squaresfine" ref="dflowfm_default">
+      <path version="2026-06-17T10:06:49.520000">e02_dflowfm/f006_external_forcing/c021_oldext_basinnofriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
@@ -1075,8 +1075,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f006_c022_basinnofriction_triangles_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T14:35:18.227000">e02_dflowfm/f006_external_forcing/c022_basinnofriction_triangles_oldext</path>
+    <testCase name="e02_f006_c022_oldext_basinnofriction_triangles" ref="dflowfm_default">
+      <path version="2026-06-17T10:07:11.317000">e02_dflowfm/f006_external_forcing/c022_oldext_basinnofriction_triangles</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basintriangles_his.nc" type="netCDF">
@@ -1094,8 +1094,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f006_c024_basinwithfriction_squaresfine_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T14:35:38.472000">e02_dflowfm/f006_external_forcing/c024_basinwithfriction_squaresfine_oldext</path>
+    <testCase name="e02_f006_c024_oldext_basinwithfriction_squaresfine" ref="dflowfm_default">
+      <path version="2026-06-17T10:07:25.779000">e02_dflowfm/f006_external_forcing/c024_oldext_basinwithfriction_squaresfine</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basinsquaresfine_his.nc" type="netCDF">
@@ -1113,8 +1113,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f006_c025_basinwithfriction_triangles_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T14:35:55.493000">e02_dflowfm/f006_external_forcing/c025_basinwithfriction_triangles_oldext</path>
+    <testCase name="e02_f006_c025_oldext_basinwithfriction_triangles" ref="dflowfm_default">
+      <path version="2026-06-17T10:07:46.844000">e02_dflowfm/f006_external_forcing/c025_oldext_basinwithfriction_triangles</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/basintriangles_his.nc" type="netCDF">
@@ -2753,8 +2753,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f012_c029_mptseries_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T14:43:35.911000">e02_dflowfm/f012_inout/c029_mptseries_oldext</path>
+    <testCase name="e02_f012_c029_oldext_mptseries" ref="dflowfm_default">
+      <path version="2026-06-17T10:07:49.089000">e02_dflowfm/f012_inout/c029_oldext_mptseries</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/simplebox_map.nc" type="netCDF">
@@ -6188,8 +6188,8 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f422_c60_thindams_oldext" ref="dflowfm_restart_platform">
-      <path version="2026-06-16T13:22:29.602000">e02_dflowfm/f422_morphology_2D_restart/c60_thindams_oldext</path>
+    <testCase name="e02_f422_c60_oldext_thindams" ref="dflowfm_restart_platform">
+      <path version="2026-06-17T10:07:54.517000">e02_dflowfm/f422_morphology_2D_restart/c60_oldext_thindams</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="main/dflowfmoutput/dams_sed_20010101_002000_rst.nc" type="netCDF">
@@ -6994,8 +6994,8 @@
         </file>        
       </checks>
     </testCase>
-    <testCase name="e02_f044_c01_waveforcing_1_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T13:20:07.694000">e02_dflowfm/f044_offline_waves/c01_waveforcing_1_oldext</path>
+    <testCase name="e02_f044_c01_oldext_waveforcing_1" ref="dflowfm_default">
+      <path version="2026-06-17T10:08:04.766000">e02_dflowfm/f044_offline_waves/c01_oldext_waveforcing_1</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="output/Borkum_map.nc" type="netCDF">
@@ -7009,8 +7009,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f044_c02_waveforcing_2_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T13:20:21.696000">e02_dflowfm/f044_offline_waves/c02_waveforcing_2_oldext</path>
+    <testCase name="e02_f044_c02_oldext_waveforcing_2" ref="dflowfm_default">
+      <path version="2026-06-17T10:08:27.490000">e02_dflowfm/f044_offline_waves/c02_oldext_waveforcing_2</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="output/Borkum_map.nc" type="netCDF">
@@ -7024,8 +7024,8 @@
         </file>
       </checks>
     </testCase>
-    <testCase name="e02_f044_c03_waveforcing_3_oldext" ref="dflowfm_default">
-      <path version="2026-06-16T13:20:34.903000">e02_dflowfm/f044_offline_waves/c03_waveforcing_3_oldext</path>
+    <testCase name="e02_f044_c03_oldext_waveforcing_3" ref="dflowfm_default">
+      <path version="2026-06-17T10:08:38.290000">e02_dflowfm/f044_offline_waves/c03_oldext_waveforcing_3</path>
       <maxRunTime>600.0000000</maxRunTime>
       <checks>
         <file name="output/Borkum_map.nc" type="netCDF">
