@@ -7,11 +7,9 @@ setlocal enabledelayedexpansion
 
 rem Set the directories containing the binaries and set PATH
 set bindir=%~dp0
-set libdir=%bindir%\..\lib
-set PATH=%libdir%;%bindir%;%PATH%
+set PATH=%bindir%;%PATH%
 
 echo "    bin dir           : %bindir%"
-echo "    lib dir           : %libdir%"
 
 echo executing in this window: "%bindir%\waqpb_import.exe %*"
 "%bindir%\waqpb_import.exe" %*
