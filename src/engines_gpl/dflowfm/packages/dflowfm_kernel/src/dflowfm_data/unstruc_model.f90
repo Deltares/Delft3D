@@ -3759,7 +3759,7 @@ contains
          call prop_set(prop_ptr, 'output', 'Wrimap_wet_waterdepth_threshold', epswetout, 'Waterdepth threshold above which a grid point counts as ''wet''. Used for Wrimap_time_water_on_ground.')
       end if
 
-      call prop_set(prop_ptr, 'output', 'Writepart_domain', japartdomain, 'Write partition domain info. for postprocessing')
+      call prop_set(prop_ptr, 'output', 'Writepart_domain', japartdomain, 'Write interpreted network file (DFM_interpreted_idomain_*.nc) containing domain partition info (1: yes, 0: no)')
 
       if (use_density() .and. (writeall .or. jaRichardsononoutput > 0)) then
          call prop_set(prop_ptr, 'output', 'Richardsononoutput', jaRichardsononoutput, 'Write Richardson numbers (1: yes, 0: no)')
