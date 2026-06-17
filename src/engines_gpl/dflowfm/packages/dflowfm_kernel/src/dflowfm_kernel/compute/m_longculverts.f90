@@ -472,8 +472,8 @@ contains
       real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:), z_coordinates(:)
 
       ! Local concatenated polyline arrays for make1D2DLongCulverts (dmiss-separated segments).
-      real(kind=dp), allocatable :: xpl_local(:), ypl_local(:), zpl_local(:)
-      integer :: npl_local
+      real(kind=dp), allocatable :: all_x_coordinates(:), all_y_coordinates(:), all_z_coordinates(:)
+      integer :: all_coordinates_size
 
       ierr = DFM_NOERR
 
@@ -488,7 +488,7 @@ contains
          end if
       end if
 
-      npl_local = 0
+      all_coordinates_size = 0
 
       ! Temporarily put structures.ini file into a property tree
       call tree_create(trim(structurefile), strs_ptr)
@@ -541,14 +541,14 @@ contains
             longculverts(nlongculverts)%bl = z_coordinates
 
             ! Append this culvert's coordinates (plus dmiss separator) to the local concatenated arrays.
-            call realloc(xpl_local, npl_local + numcoords + 1, keepExisting=.true., fill=dmiss)
-            call realloc(ypl_local, npl_local + numcoords + 1, keepExisting=.true., fill=dmiss)
-            call realloc(zpl_local, npl_local + numcoords + 1, keepExisting=.true., fill=dmiss)
-            xpl_local(npl_local + 1:npl_local + numcoords) = x_coordinates
-            ypl_local(npl_local + 1:npl_local + numcoords) = y_coordinates
-            zpl_local(npl_local + 1:npl_local + numcoords) = z_coordinates
-            ! xpl_local(npl_local + numcoords + 1) stays dmiss: the segment separator.
-            npl_local = npl_local + numcoords + 1
+            call realloc(all_x_coordinates, all_coordinates_size + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(all_y_coordinates, all_coordinates_size + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(all_z_coordinates, all_coordinates_size + numcoords + 1, keepExisting=.true., fill=dmiss)
+            all_x_coordinates(all_coordinates_size + 1:all_coordinates_size + numcoords) = x_coordinates
+            all_y_coordinates(all_coordinates_size + 1:all_coordinates_size + numcoords) = y_coordinates
+            all_z_coordinates(all_coordinates_size + 1:all_coordinates_size + numcoords) = z_coordinates
+            ! all_x_coordinates(all_coordinates_size + numcoords + 1) stays dmiss: the segment separator.
+            all_coordinates_size = all_coordinates_size + numcoords + 1
 
             call get_value_or_addto_forcinglist(str_ptr, 'valveRelativeOpening', longculverts(nlongculverts)%valve_relative_opening, st_id, &
                                                 ST_LONGCULVERT, network%forcinglist, success)
@@ -622,8 +622,8 @@ contains
       end do
 
       if (.not. newculverts) then
-         allocate (links(npl_local))
-         call make1D2DLongCulverts(xpl_local, ypl_local, zpl_local, npl_local, links)
+         allocate (links(all_coordinates_size))
+         call make1D2DLongCulverts(all_x_coordinates, all_y_coordinates, all_z_coordinates, all_coordinates_size, links)
          istart = 1
          do i = nlongculverts0 + 1, nlongculverts
             longculverts(i)%netlinks = links(istart:istart + longculverts(i)%numlinks - 1)
