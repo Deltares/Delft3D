@@ -137,8 +137,8 @@ contains
       logical :: write_converted_files_
       integer :: longculvertindex
       real(kind=dp), allocatable :: x_coordinates(:), y_coordinates(:), z_coordinates(:)
-      real(kind=dp), allocatable :: xpl(:), ypl(:), zpl(:)
-      integer :: npl
+      real(kind=dp), allocatable :: all_x_coordinates(:), all_y_coordinates(:), all_z_coordinates(:)
+      integer :: all_coordinates_size
       integer :: num_columns
 
       ierr = DFM_NOERR
@@ -203,7 +203,7 @@ contains
 
       nstr = tree_num_nodes(strs_ptr)
       call realloc(longculverts, nlongculverts + nstr)
-      npl = 0
+      all_coordinates_size = 0
 
       do i = 1, nstr
          str_ptr => strs_ptr%child_nodes(i)%node_ptr
@@ -256,14 +256,14 @@ contains
             longculverts(nlongculverts)%bl = z_coordinates
 
             ! Append this culvert's coordinates (plus dmiss separator) to the local concatenated arrays.
-            call realloc(xpl, npl + numcoords + 1, keepExisting=.true., fill=dmiss)
-            call realloc(ypl, npl + numcoords + 1, keepExisting=.true., fill=dmiss)
-            call realloc(zpl, npl + numcoords + 1, keepExisting=.true., fill=dmiss)
-            xpl(npl + 1:npl + numcoords) = x_coordinates
-            ypl(npl + 1:npl + numcoords) = y_coordinates
-            zpl(npl + 1:npl + numcoords) = z_coordinates
-            ! xpl(npl + numcoords + 1) stays dmiss: the segment separator.
-            npl = npl + numcoords + 1
+            call realloc(all_x_coordinates, all_coordinates_size + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(all_y_coordinates, all_coordinates_size + numcoords + 1, keepExisting=.true., fill=dmiss)
+            call realloc(all_z_coordinates, all_coordinates_size + numcoords + 1, keepExisting=.true., fill=dmiss)
+            all_x_coordinates(all_coordinates_size + 1:all_coordinates_size + numcoords) = x_coordinates
+            all_y_coordinates(all_coordinates_size + 1:all_coordinates_size + numcoords) = y_coordinates
+            all_z_coordinates(all_coordinates_size + 1:all_coordinates_size + numcoords) = z_coordinates
+            ! all_x_coordinates(all_coordinates_size + numcoords + 1) stays dmiss: the segment separator.
+            all_coordinates_size = all_coordinates_size + numcoords + 1
 
             txt = 'both'
             call prop_get(str_ptr, '', 'allowedFlowdir', txt, success)
@@ -322,8 +322,8 @@ contains
          end if
       end do
 
-      call convert1D2DLongCulverts(xpl, ypl, zpl, npl)
-      call replaceCoordinatesInStructures(xpl, ypl, strs_ptr)
+      call convert1D2DLongCulverts(all_x_coordinates, all_y_coordinates, all_z_coordinates, all_coordinates_size)
+      call replaceCoordinatesInStructures(all_x_coordinates, all_y_coordinates, strs_ptr)
 
       longculvertindex = nlongculverts0
       ! Loop all structures once again, and for long culverts: add the newly created branchids.
@@ -405,7 +405,7 @@ contains
       logical :: success
 
       coordindex = 1
-      do i = 1, nlongculverts !< save adjusted xpl and ypl to new structure file
+      do i = 1, nlongculverts !< save adjusted all_x_coordinates and all_y_coordinates to new structure file
          longculvertindex = 0
          do j = 1, tree_num_nodes(structures) !> check all structure file blocks
             current => structures%CHILD_NODES(j)%node_ptr
@@ -1236,7 +1236,7 @@ contains
    !> Add new cross section locations on a particular branch in the network.
    !! The cross section definition (defining the long culvert's shape)
    !! must already have been read from file.
-   subroutine addlongculvertcrosssections(network, branchId, csdefId, zpl, iref)
+   subroutine addlongculvertcrosssections(network, branchId, csdefId, all_z_coordinates, iref)
       use precision, only: dp
       use m_hash_search
       use m_readCrossSections
@@ -1244,7 +1244,7 @@ contains
       type(t_network), intent(inout) :: network !< Network structure
       character(len=IdLen), intent(in) :: branchId !< Branch id on which to place the cross section
       character(len=IdLen), intent(in) :: csdefId !< Id of cross section definition
-      real(kind=dp), allocatable, intent(in) :: zpl(:) !< (numlinks+1) Bed level on the long culvert support points
+      real(kind=dp), allocatable, intent(in) :: all_z_coordinates(:) !< (numlinks+1) Bed level on the long culvert support points
       integer, intent(out) :: iref !< Index of reference cross section definition (if csdefId was found)
 
       integer :: k
@@ -1269,7 +1269,7 @@ contains
             pCrs%csid = trim(branchId)//'_'//trim(kchar)
             pCrs%branchid = indx
             pCrs%bedLevel = 0.0_dp
-            pCrs%shift = zpl(k) !number of gridpoints in branch should match zpl+2!!
+            pCrs%shift = all_z_coordinates(k) !number of gridpoints in branch should match all_z_coordinates+2!!
             pCrs%chainage = network%brs%branch(indx)%gridpointschainages(k)
             call finalizeCrs(network, pCrs, iref, inext)
          end do
@@ -1371,7 +1371,7 @@ contains
 
       integer :: ierror
 
-      associate (xpl => longculvert%xcoords, ypl => longculvert%ycoords)
+      associate (all_x_coordinates => longculvert%xcoords, all_y_coordinates => longculvert%ycoords)
 
          longculvert%flowlinks = 0
          jafounds = 0 ! Found the starting node or not
@@ -1427,7 +1427,7 @@ contains
                ! Find the first known flow node in the current partition (if 2D flow node was not found outside of the loop already)
                call realloc(jnode, 1, keepExisting=.false., fill=0)
                do j = is + 1, ie - 1
-                  call find_nearest_flownodes_kdtree(treeglob, 1, xpl(j), ypl(j), jnode, 1, INDTP_1D, ierror)
+                  call find_nearest_flownodes_kdtree(treeglob, 1, all_x_coordinates(j), all_y_coordinates(j), jnode, 1, INDTP_1D, ierror)
                   if (ierror == 0 .and. jnode(1) > 0) then
                      nodenum = jnode(1) ! For the later search
                      is = j ! this will be the starting node of the long culvert in current domain
@@ -1451,7 +1451,7 @@ contains
                ! Find the last known flow node in the current partition (if 2D flow ndoe was not found outside of the loop already)
                call realloc(jnode, 1, keepExisting=.false., fill=0)
                do j = ie - 1, is + 1, -1
-                  call find_nearest_flownodes_kdtree(treeglob, 1, xpl(j), ypl(j), jnode, 1, INDTP_1D, ierror)
+                  call find_nearest_flownodes_kdtree(treeglob, 1, all_x_coordinates(j), all_y_coordinates(j), jnode, 1, INDTP_1D, ierror)
                   if (ierror == 0 .and. jnode(1) > 0) then
                      ie = j ! this will be the ending node of the long culvert in current domain
                      jafounde = 1
@@ -1485,7 +1485,7 @@ contains
                         othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                         if (j <= ie) then
-                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), xpl(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), ypl(j + 1), EPS10) == 0)) then
+                           if ((kcu(linkabs) == 1 .or. kcu(linkabs) == 5) .and. (comparereal(xz(othernode), all_x_coordinates(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), all_y_coordinates(j + 1), EPS10) == 0)) then
                               longculvert%flowlinks(j) = -1 * linknum
                               exit
                            end if
