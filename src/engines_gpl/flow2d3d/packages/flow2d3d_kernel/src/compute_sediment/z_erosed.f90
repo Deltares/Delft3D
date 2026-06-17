@@ -410,7 +410,7 @@ subroutine z_erosed(nmmax     ,kmax      ,icx       ,icy       ,lundia    , &
 !
     wave                => gdp%gdprocs%wave
     nmudfrac            => gdp%gdsedpar%nmudfrac
-    seddif_cal          => gdp%gdsedpar%seddif_param
+    seddif_cal          => gdp%gdsedpar%seddif_cal
     difparam            => gdp%gdsedpar%difparam
     rhosol              => gdp%gdsedpar%rhosol
     cdryb               => gdp%gdsedpar%cdryb
