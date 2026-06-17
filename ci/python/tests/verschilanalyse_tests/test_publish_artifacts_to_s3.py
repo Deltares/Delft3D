@@ -1,39 +1,15 @@
 """Tests for publish_artifacts_to_s3.py."""
 
-from argparse import Namespace
 from pathlib import Path
-from unittest.mock import Mock, call, patch
+from unittest.mock import Mock, call
 
 import pytest
 
 from ci_tools.verschilanalyse.publish_artifacts_to_s3 import (
     build_s3_key,
-    create_s3_client,
     publish_artifacts,
     upload_file,
 )
-
-
-class TestCreateS3Client:
-    """Tests for create_s3_client."""
-
-    @patch("ci_tools.verschilanalyse.publish_artifacts_to_s3.boto3.client")
-    def test_create_client_with_correct_config(self, mock_boto_client: Mock) -> None:
-        """Verify the S3 client is created with the correct endpoint, credentials and config."""
-        args = Namespace(
-            endpoint_url="https://minio.example.com",
-            access_key_id="my-access-key",
-            secret_access_key="my-secret-key",
-        )
-
-        create_s3_client(args)
-
-        _, kwargs = mock_boto_client.call_args
-        assert kwargs["endpoint_url"] == "https://minio.example.com"
-        assert kwargs["aws_access_key_id"] == "my-access-key"
-        assert kwargs["aws_secret_access_key"] == "my-secret-key"
-        assert kwargs["region_name"] == "us-east-1"
-        assert kwargs["config"].signature_version == "s3v4"
 
 
 class TestBuildS3Key:
@@ -42,38 +18,36 @@ class TestBuildS3Key:
     def test_with_prefix(self) -> None:
         """Test S3 key with prefix."""
         result = build_s3_key(
-            prefix="test",
+            prefix=Path("test"),
             project_id="project",
             build_type_id="build",
             build_id="123",
             relative_path=Path("file.zip"),
         )
-
         assert result == "test/project/build/123/file.zip"
 
     def test_without_prefix(self) -> None:
         """Test S3 key without prefix."""
         result = build_s3_key(
-            prefix="",
+            Path(""),
             project_id="project",
             build_type_id="build",
             build_id="123",
             relative_path=Path("file.zip"),
         )
-
         assert result == "project/build/123/file.zip"
 
     def test_with_nested_relative_path(self) -> None:
         """Test S3 key with a nested relative path."""
         result = build_s3_key(
-            prefix="output",
+            prefix=Path("test"),
             project_id="project",
             build_type_id="build",
             build_id="123",
             relative_path=Path("subdir/file.txt"),
         )
 
-        assert result == "output/project/build/123/subdir/file.txt"
+        assert result == "test/project/build/123/subdir/file.txt"
 
 
 class TestUploadFile:
@@ -138,7 +112,7 @@ class TestPublishArtifacts:
         publish_artifacts(
             s3_client=mock_s3,
             bucket="bucket",
-            prefix="test",
+            prefix=Path("test"),
             project_id="project",
             build_type_id="build-type",
             build_id="123",
@@ -154,7 +128,7 @@ class TestPublishArtifacts:
         publish_artifacts(
             s3_client=mock_s3,
             bucket="bucket",
-            prefix="test",
+            prefix=Path("test"),
             project_id="project",
             build_type_id="build-type",
             build_id="123",
@@ -181,7 +155,7 @@ class TestPublishArtifacts:
             publish_artifacts(
                 s3_client=mock_s3,
                 bucket="bucket",
-                prefix="",
+                prefix=Path(""),
                 project_id="project",
                 build_type_id="build-type",
                 build_id="123",
@@ -198,7 +172,7 @@ class TestPublishArtifacts:
             publish_artifacts(
                 s3_client=mock_s3,
                 bucket="bucket",
-                prefix="",
+                prefix=Path(""),
                 project_id="project",
                 build_type_id="build-type",
                 build_id="123",
@@ -213,7 +187,7 @@ class TestPublishArtifacts:
             publish_artifacts(
                 s3_client=mock_s3,
                 bucket="bucket",
-                prefix="",
+                prefix=Path(""),
                 project_id="project",
                 build_type_id="build-type",
                 build_id="123",
@@ -230,7 +204,7 @@ class TestPublishArtifacts:
         publish_artifacts(
             s3_client=mock_s3,
             bucket="bucket",
-            prefix="",
+            prefix=Path(""),
             project_id="project",
             build_type_id="build-type",
             build_id="123",
