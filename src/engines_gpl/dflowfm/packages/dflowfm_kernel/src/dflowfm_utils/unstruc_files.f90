@@ -140,7 +140,7 @@ contains
       use m_flowtimes
       use time_module, only: seconds_to_datetimestring
       use system_utils, only: makedir, FILESEP
-      use unstruc_model, only: md_ident, md_obsfile, md_mapfile, md_classmap_file, md_waqfilebase, md_netfile, &
+      use m_unstruc_model_data, only: md_ident, md_obsfile, md_mapfile, md_classmap_file, md_waqfilebase, md_netfile, &
                                md_ldbfile, md_hisfile, md_pipefile, md_comfile, md_avgwavquantfile, md_avgsedquantfile, md_avgsedtrailsfile, getoutputdir
       implicit none
 
@@ -383,7 +383,7 @@ contains
 !! The filename is determined by the program name and possibly a sequence
 !! number. File-open attempts will not continue indefinitely (program may stop).
    subroutine inidia(basename)
-      use unstruc_model
+      use m_unstruc_model_data
       use unstruc_messages, only: initMessaging
 
       character(len=*) :: basename
@@ -491,7 +491,7 @@ contains
 !! If path is absolute, then that path is returned unchanged.
    subroutine resolvePath(path, basedir)
       use system_utils, only: is_abs, cat_filename
-      use unstruc_model, only: md_paths_relto_parent
+      use m_unstruc_model_data, only: md_paths_relto_parent
       character(len=*), intent(inout) :: path !< Path to be updated
       character(len=*), intent(in) :: basedir !< Basedir w.r.t. which the input path *might* be resolved, depending on PathsRelativeToParent setting.
 
