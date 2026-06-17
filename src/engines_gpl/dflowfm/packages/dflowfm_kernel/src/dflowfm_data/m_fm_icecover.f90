@@ -73,16 +73,16 @@ module m_fm_icecover
    real(fp), pointer :: ice_conductivity !< module pointer to ice_conductivity inside ice_data
    real(fp), pointer :: ice_latentheat !< module pointer to ice_latentheat inside ice_data
    real(fp), pointer :: ice_frcuni !< module pointer to frict_val inside ice_data
-   real(fp), pointer :: ice_wetting_drying_threshold !< module pointer to ice_wetting_drying_threshold
 
    real(fp), pointer :: snow_albedo !< module pointer to snow_albedo inside ice_data
    real(fp), pointer :: snow_conductivity !< module pointer to snow_conductivity inside ice_data
    real(fp), pointer :: snow_latentheat !< module pointer to snow_latentheat inside ice_data
 
    character(len=*), parameter :: MDU_ICE_CHAPTER = 'ice' !< name of the ice chapter in the mdu file
+
+   real(fp) :: ice_wetting_drying_threshold !< Wetting drying threshold for ice growth or melt (m).
 contains
 
-!> Nullify/initialize ice data structure.
 
    !> Sets ALL variables in this module to their default values.
    !! For a reinit prior to flow computation, call reset_fm_icecover() instead.
@@ -126,7 +126,6 @@ contains
       ice_density => ice_data%ice_density
       ice_frict_type => ice_data%frict_type
       ice_frcuni => ice_data%frict_val
-      ice_wetting_drying_threshold => ice_data%ice_wetting_drying_threshold
 
       snow_albedo => ice_data%snow_albedo
       snow_conductivity => ice_data%snow_conductivity
