@@ -1,5 +1,0 @@
-add_custom_target(curl)
-set_target_properties(curl PROPERTIES FOLDER third_party_open)
-if (WIN32)
-	install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/bin/libcurl.dll DESTINATION lib)
-endif(WIN32)
