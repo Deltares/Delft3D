@@ -17,9 +17,7 @@ object TemplateMergeRequest : Template({
     features {
         pullRequests {
             provider = github {
-                authType = token {
-                    token = "%github_deltares-service-account_access_token%"
-                }
+                authType = vcsRoot() 
                 filterAuthorRole = PullRequests.GitHubRoleFilter.MEMBER
                 filterSourceBranch = "+:*"
                 ignoreDrafts = true
@@ -27,3 +25,4 @@ object TemplateMergeRequest : Template({
         }
     }
 })
+
