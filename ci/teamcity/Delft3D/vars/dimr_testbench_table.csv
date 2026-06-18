@@ -77,6 +77,7 @@ fm rws acceptance parallel,dimr/dimr_dflowfm_win64_rws_acceptance_parallel.xml,F
 fm rws acceptance,dimr/dimr_dflowfm_win64_rws_acceptance.xml,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm,dimr/dimr_dflowfm_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 fm oldext,dimr/dimr_dflowfm_oldext_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
+fm container smoke test,dimr/dimr_container_smoke_test_lnx64.xml,TRUE,FALSE,FALSE,FLASE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dmorphology,dimr/dimr_dmorphology_validation_lnx64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 dmorphology,dimr/dimr_dmorphology_validation_win64.xml,TRUE,FALSE,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
 drr dnam,dimr/dimr_drr_dnam_lnx64.xml,TRUE,FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,
