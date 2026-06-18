@@ -19,6 +19,8 @@ function print_usage_info {
     echo "       print this help message and exit"
     echo "-scriptfile <scriptfile>"
     echo "       name of mormerge script file, default mormerge.tcl"
+    echo "--NNODES <nodes>"
+    echo "       number of already allocated nodes to pass to mormerge.tcl"
     exit 1
 }
 
@@ -32,6 +34,7 @@ function print_usage_info {
 mmfile=
 scriptfile=
 D3D_HOME=
+NNODES=
 ulimit -s unlimited
 
 
@@ -88,7 +91,7 @@ if [ ! -d $D3D_HOME ]; then
     print_usage_info
 fi
 export D3D_HOME
- 
+
 if [ -z "$scriptfile" ]; then
     export scriptfile=$D3D_HOME/bin/mormerge.tcl
 fi
@@ -101,7 +104,7 @@ echo "    mm-file          : $mmfile"
 echo "    scriptfile       : $scriptfile"
 echo "    D3D_HOME         : $D3D_HOME"
 echo "    Working directory: $workdir"
-echo 
+echo
 
 bindir=$D3D_HOME/bin
 libdir=$D3D_HOME/lib
@@ -111,9 +114,14 @@ export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 
 
     echo "executing:"
-    echo "$scriptfile -i $mmfile -s $scriptfile"
-    echo 
-    $scriptfile -i $mmfile -s $scriptfile
+    run_args=(-i "$mmfile" -s "$scriptfile")
+    if [ -n "$NNODES" ]; then
+        run_args+=(-n "$NNODES")
+    fi
+    printf '    %q' "$scriptfile" "${run_args[@]}"
+    echo
+    echo
+    "$scriptfile" "${run_args[@]}"
 
 
 
