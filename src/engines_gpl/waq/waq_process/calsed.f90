@@ -66,17 +66,23 @@ contains
         !     Name     Type   Library
         !     ------   -----  ------------
 
-        IMPLICIT REAL (A-H, J-Z)
-        IMPLICIT INTEGER (I)
-
         REAL     process_space_real  (*), FL    (*)
         INTEGER  IPOINT(*), INCREM(*), num_cells, NOFLUX, &
                 IEXPNT(4, *), IKNMRK(*), num_exchanges_u_dir, num_exchanges_v_dir, num_exchanges_z_dir, num_exchanges_bottom_dir
         !
         !     Local
         !
-        PARAMETER (PI = 3.14159265)
+        real, PARAMETER        :: PI = 3.14159265
         INTEGER(kind = int_wp) :: num_exchanges
+
+        integer(kind = int_wp) :: iseg, iq, iflux
+        integer(kind = int_wp) :: ip1, ip2, ip3, ip4, ip5, ip6, ip7, ip8, ip9, ip10, &
+                                  ip11, ip12, ip13, ip14, ip15, ip16, ip17, ip18, &
+                                  in14, in18, ivan
+        real                   :: v0sed, susp, crsups, n, temp, sedtc, sal, maxsal, enhfac, &
+                                  pom, pom_crit, pom_exp, flofun, salfun, pomfun, temfun, vsed, &
+                                  fpom, crsusp
+        logical :: usepom
 
         IP1 = IPOINT(1)
         IP2 = IPOINT(2)
@@ -95,7 +101,6 @@ contains
         IP15 = IPOINT(15)   ! Salinity factor
         IP16 = IPOINT(16)   ! Flocculation factor
         IP17 = IPOINT(17)   ! Organic material factor
-        IP18 = IPOINT(18)
 
         IFLUX = 0
         DO ISEG = 1, num_cells
@@ -154,7 +159,7 @@ contains
 
                 fpom = 1.0
                 if ( usepom ) then
-                    fpom = pom / pom_crit ) ** pom_crit
+                    fpom = 1.0 + ( pom / pom_crit ) ** pom_crit
                 endif
 
                 !     Bereken VSED
@@ -191,8 +196,6 @@ contains
         end do
 
         num_exchanges = num_exchanges_u_dir + num_exchanges_v_dir + num_exchanges_z_dir
-
-xxxx
 
         IP14 = IPOINT(14)
         IN14 = INCREM(14)
