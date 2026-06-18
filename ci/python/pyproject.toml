@@ -25,6 +25,7 @@ dev = [
     "types-requests~=2.32.4",
 ]
 verschilanalyse = [
+    "boto3~=1.43",
     "openpyxl~=3.1.5",
     "types-openpyxl~=3.1.5",
     "junit-xml~=1.9",
@@ -110,7 +111,7 @@ pretty = true
 show_error_context = true
 
 [[tool.mypy.overrides]]
-module = ["junit_xml.*", "s3_path_wrangler.*", "minio.*"]
+module = ["junit_xml.*", "s3_path_wrangler.*", "minio.*", "boto3", "botocore.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
