@@ -31,28 +31,11 @@ module m_get_surface_temperature
    implicit none
 
    public :: get_surface_temperature
-   public :: get_surface_temperature_from_constituents
+
 contains
 
-   !> Returns the surface-layer temperature (tem1) for all horizontal cells.
-   subroutine get_surface_temperature(surface_temperature)
-      use precision_basics, only: dp
-      use m_flow, only: tem1
-      use m_flowgeom, only: ndx
-      use m_get_kbot_ktop, only: getkbotktop
-
-      real(kind=dp), intent(out) :: surface_temperature(ndx)
-
-      integer :: n, kb, kt
-
-      do n = 1, ndx
-         call getkbotktop(n, kb, kt)
-         surface_temperature(n) = tem1(kt)
-      end do
-   end subroutine get_surface_temperature
-
    !> Returns the surface-layer temperature from constituents(itemp,:) for all horizontal cells.
-   subroutine get_surface_temperature_from_constituents(surface_temperature)
+   subroutine get_surface_temperature(surface_temperature)
       use precision_basics, only: dp
       use m_transport, only: constituents, itemp
       use m_flowgeom, only: ndx
@@ -66,6 +49,6 @@ contains
          call getkbotktop(n, kb, kt)
          surface_temperature(n) = constituents(itemp, kt)
       end do
-   end subroutine get_surface_temperature_from_constituents
+   end subroutine get_surface_temperature
 
 end module m_get_surface_temperature

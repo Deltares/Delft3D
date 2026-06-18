@@ -2258,7 +2258,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_restart">
-        <path version="2026-04-21T13:06:44.515000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+        <path version="2026-06-17T15:54:39.072000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">

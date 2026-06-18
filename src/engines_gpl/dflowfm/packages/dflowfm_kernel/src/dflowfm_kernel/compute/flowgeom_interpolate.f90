@@ -51,13 +51,9 @@ contains
 
       integer :: i_link, k1, k2
 
-      xcomp_link = 0.0_dp
-      ycomp_link = 0.0_dp
-
-      do i_link = 1, number_of_links
+      do concurrent (i_link = 1:number_of_links)
          k1 = ln(1, i_link)
          k2 = ln(2, i_link)
-
          xcomp_link(i_link) = acl(i_link) * xcomp_node(k1) + (1.0_dp - acl(i_link)) * xcomp_node(k2)
          ycomp_link(i_link) = acl(i_link) * ycomp_node(k1) + (1.0_dp - acl(i_link)) * ycomp_node(k2)
       end do
@@ -71,12 +67,9 @@ contains
 
       integer :: i_link, k1, k2
 
-      scalar_link = 0.0_dp
-
-      do i_link = 1, number_of_links
+      do concurrent (i_link = 1:number_of_links)
          k1 = ln(1, i_link)
          k2 = ln(2, i_link)
-
          scalar_link(i_link) = acl(i_link) * scalar_node(k1) + (1.0_dp - acl(i_link)) * scalar_node(k2)
       end do
    end subroutine node_to_link_scalar
@@ -94,7 +87,7 @@ contains
       xcomp_node = 0.0_dp
       ycomp_node = 0.0_dp
 
-      do i_node = 1, number_of_nodes
+      do concurrent(i_node = 1:number_of_nodes)
          do LL = 1, nd(i_node)%lnx
             LLL = abs(nd(i_node)%ln(LL))
             k = 1
@@ -117,7 +110,7 @@ contains
 
       scalar_node = 0.0_dp
 
-      do i_node = 1, number_of_nodes
+      do concurrent(i_node = 1:number_of_nodes)
          do LL = 1, nd(i_node)%lnx
             LLL = abs(nd(i_node)%ln(LL))
             k = 1

@@ -134,7 +134,6 @@ contains
          call get_timespace_value_by_item_and_consider_success_value(item_air_density, time_in_seconds)
       end if
       if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
-         ! prepare air pressure, air temperature and dew point temperature values
          call prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
       end if
       
@@ -306,30 +305,33 @@ contains
    module subroutine compute_air_water_interaction_most_fluxes()
       use precision, only: dp
       use m_flowgeom, only: ndx
-      use m_get_surface_temperature, only: get_surface_temperature_from_constituents
+      use m_get_surface_temperature, only: get_surface_temperature
       use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
       use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
       use physicalconsts, only: celsius_to_kelvin
       use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
                                   free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity
 
-      real(kind=dp), dimension(:), allocatable :: surface_temperature
-      real(kind=dp), dimension(:), allocatable :: windx, windy, charnock
-      real(kind=dp), dimension(:), allocatable :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
+      real(kind=dp), dimension(:), allocatable, save :: surface_temperature
+      real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
+      real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
       type(t_options) :: atm_stability_options
 
-      allocate(windx(ndx))
-      allocate(windy(ndx))
-      allocate(charnock(ndx))
-      allocate(surface_temperature(ndx))
-      allocate(surface_temperature_kelvin(ndx))
-      allocate(air_temperature_kelvin(ndx))
-      allocate(dew_point_temperature_kelvin(ndx))
+      if (.not. allocated(windx)) then
+         allocate(windx(ndx))
+         allocate(windy(ndx))
+         allocate(charnock(ndx))
+         allocate(surface_temperature(ndx))
+         allocate(surface_temperature_kelvin(ndx))
+         allocate(air_temperature_kelvin(ndx))
+         allocate(dew_point_temperature_kelvin(ndx))
+      end if
+      
 
       call link_to_node_vector(wx, wy, windx, windy, ndx)
       call link_to_node_scalar(wcharnock, charnock, ndx)
 
-      call get_surface_temperature_from_constituents(surface_temperature)
+      call get_surface_temperature(surface_temperature)
       surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
       air_temperature_kelvin = celsius_to_kelvin(air_temperature)
       dew_point_temperature_kelvin = celsius_to_kelvin(dew_point_temperature)
