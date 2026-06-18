@@ -463,6 +463,7 @@ contains
       real(kind=dp) :: area, width, perim, hydrad, chezy
 
       ! Arrange
+      call default_physcoef()
       call disable_timers_logging_and_mpi()
       ! Generate mesh
       grid_helper = t_grid_helper()
