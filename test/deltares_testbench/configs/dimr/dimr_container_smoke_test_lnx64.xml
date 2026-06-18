@@ -41,42 +41,56 @@
         <argument>-c</argument>
       </arguments>
     </program>
-    <program addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf" logOutputToFile="true" name="dimr" programStringRemoveQuotes="true">
+    <program addSearchPaths="true" excludeSearchPathsContaining="share/delft3d/esmf" logOutputToFile="true" name="run_dimr.sh" programStringRemoveQuotes="true">
       <location ref="reference_engines" type="reference">
         <from>lnx64</from>
       </location>
       <location ref="local" type="check">
         <from>teamcity_artifacts/lnx64</from>
-        <!-- just the first part of the directory structure, wil be file by TeamCity -->
       </location>
-      <path>bin/dimr</path>
+      <path>bin/run_dimr.sh</path>
       <environments>
         <environment name="OMP_NUM_THREADS" type="raw">1</environment>
       </environments>
     </program>
   </programs>
   <!-- ======================================================================== -->
-  <defaultTestCases>
-    <testCase name="dimr_trunk">
-      <programs>
-        <program ref="dimr">
-          <arguments>
-            <argument>dimr_config.xml</argument>
-          </arguments>
-        </program>
-      </programs>
-      <location ref="cases" type="input">
-        <!-- if "to" is not specified, "from" is used as target -->
-        <from>.</from>
-      </location>
-      <location ref="reference_results" type="reference">
-        <from>win64</from>
-      </location>
-      <maxRunTime>14400.0</maxRunTime>
-      <!-- seconds -->
-    </testCase>
-  </defaultTestCases>
+    <defaultTestCases>
+        <testCase name="dimr_trunk">
+            <programs>
+                <program ref="run_dimr.sh">
+                    <arguments>
+                        <argument>-m dimr_config.xml</argument>
+                    </arguments>
+                </program>
+            </programs>
+            <location ref="reference_results" type="reference">
+                <from>lnx64</from>
+            </location>
+            <location ref="cases" type="input">
+                <from>.</from>
+            </location>
+            <maxRunTime>6000.0</maxRunTime> <!-- seconds -->
+        </testCase>
+	<testCase name="dimr_trunk_lnx64">
+	    <programs>
+		<program ref="run_dimr.sh">
+			<arguments>
+				<argument>-m</argument>
+				<argument>dimr_config.xml</argument>
+			</arguments>
+		</program>
+	    </programs>
+	    <location ref="cases" type="input">
+		    <from>.</from>				<!-- if "to" is not specified, "from" is used as target -->
+	    </location>
+	    <location ref="reference_results" type="reference">
+		    <from>lnx64</from>
+	    </location>
+	    <maxRunTime>6000.0</maxRunTime>
+	</testCase>
+    </defaultTestCases>
   <!-- ======================================================================== -->
-    <xi:include href="../../include/dimr_smoke_test_cases.xml"/>
+    <xi:include href="../include/dimr_container_smoke_test.xml"/>
   <!-- ======================================================================== -->
 </deltaresTestbench_v3>

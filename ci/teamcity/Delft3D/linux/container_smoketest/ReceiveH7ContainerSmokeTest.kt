@@ -78,7 +78,7 @@ object LinuxReceiveH7ContainerSmokeTest : BuildType({
                     --compare 
                     --skip-run
                     --skip-download cases 
-                    --config configs/container_smoke_test/apptainer_lnx64.xml
+                    --config configs/container_smoke_tests/apptainer_lnx64.xml
                     --log-level INFO 
                     --teamcity 
                     --parallel
