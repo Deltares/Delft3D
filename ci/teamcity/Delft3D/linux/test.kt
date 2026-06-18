@@ -85,6 +85,19 @@ object LinuxTest : BuildType({
     }
 
     steps {
+        script {
+            name = "Set DVC cache directory"
+            workingDir = "test/deltares_testbench/"
+            scriptContent = "dvc cache dir /dvc/delft3d"
+            dockerImage = "%testbench_container_image%"
+            dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+            dockerPull = true
+            dockerRunParameters = """
+                --rm
+                --pull always
+                -v /dvc/delft3d:/dvc/delft3d
+            """.trimIndent()
+        }
         python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"

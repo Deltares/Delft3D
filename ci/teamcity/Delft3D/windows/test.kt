@@ -103,6 +103,17 @@ object WindowsTest : BuildType({
                 """.trimIndent()
             }
         }
+        powerShell {
+            name = "Set DVC cache directory"
+            workingDir = "test/deltares_testbench/"
+            scriptMode = script {
+                content = "dvc cache dir C:\\dvc\\delft3d"
+            }
+            dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
+            dockerImagePlatform = PythonBuildStep.ImagePlatform.Windows
+            dockerPull = true
+            dockerRunParameters = "--memory %teamcity.agent.hardware.memorySizeMb%m --cpus %teamcity.agent.hardware.cpuCount% -v \"C:\\dvc\\delft3d:C:\\dvc\\delft3d\""
+        }
         python {
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
