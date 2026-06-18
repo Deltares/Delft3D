@@ -962,7 +962,7 @@ contains
       jatekcd = 1 ! wind cd coeffs on tek
       jarstbnd = 1
       jaeverydt = 0
-      japartdomain = 1
+      japartdomain = 0
       jashp_crs = 0
       jashp_obs = 0
       jashp_weir = 0

@@ -113,11 +113,12 @@
       hyd%crs  = d_hyd%crs
       hyd%conv_type  = d_hyd%conv_type
       hyd%conv_version  = d_hyd%conv_version
-      
+
       ! copy waqgeom layer information from first domain
       hyd%waqgeom%num_layers = d_hyd%waqgeom%num_layers
       hyd%waqgeom%numtopsig = d_hyd%waqgeom%numtopsig
       hyd%waqgeom%layertype = d_hyd%waqgeom%layertype
+      hyd%layer_type        = d_hyd%waqgeom%layertype
       allocate( hyd%waqgeom%layer_zs, source = d_hyd%waqgeom%layer_zs )
       allocate( hyd%waqgeom%interface_zs, source = d_hyd%waqgeom%interface_zs )
 
@@ -603,7 +604,7 @@
             endif
          enddo
       enddo
-      
+
       ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
       ! equals the number of boundary conditions per layer times the number of layers
       if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then
@@ -1004,7 +1005,7 @@
             end if
          end do
       end do
-      
+
       ! For z-layer models, make sure the lower most boundary exist, so that the minimum value of the pointer
       ! equals the number of boundary conditions per layer times the number of layers
       if (minval(hyd%ipoint) /= -hyd%num_boundary_conditions) then

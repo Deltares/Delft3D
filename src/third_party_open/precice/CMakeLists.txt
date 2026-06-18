@@ -29,6 +29,13 @@ if(WIN32)
     find_package(Boost REQUIRED COMPONENTS log log_setup program_options thread PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../boost/boost_1_90_0/lib/cmake" GLOBAL)
     find_package(LibXml2 REQUIRED PATHS "${CMAKE_CURRENT_SOURCE_DIR}/../libxml2/libxml2-v2.15.1/lib/cmake/libxml2" GLOBAL)
 
+    # Strip Boost header-only transitive deps that are not actual runtime
+    # DLL dependencies (see functions.cmake for details).
+    strip_boost_header_only_deps(
+        TARGETS      Boost::thread Boost::log Boost::log_setup Boost::filesystem Boost::program_options
+        EXCLUDE_DEPS Boost::atomic Boost::chrono Boost::container Boost::regex Boost::serialization Boost::exception
+    )
+
     # Add Boost libraries as link libraries to precice::precice to make them available through TARGET_RUNTIME_DLLS
     target_link_libraries(precice::precice INTERFACE
         LibXml2::LibXml2
@@ -46,6 +53,6 @@ if(WIN32)
             Boost::program_options
             Boost::thread
             Boost::filesystem
-            RUNTIME DESTINATION lib
+            RUNTIME DESTINATION bin
     )
 endif(WIN32)
