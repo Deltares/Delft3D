@@ -2205,7 +2205,7 @@ contains
       use m_nudge, only: nudge_time, nudge_rate
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
-      use unstruc_model, only: md_extfile, md_ptr
+      use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions

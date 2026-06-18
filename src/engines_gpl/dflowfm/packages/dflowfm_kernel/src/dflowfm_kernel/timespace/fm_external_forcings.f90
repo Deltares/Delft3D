@@ -654,7 +654,7 @@ contains
 
          call read_initialtracer_properties(trim(md_extfile_new), nx)
       end if
-      
+
       if (len(trim(md_inifieldfile)) > 0) then
          call read_initialtracer_properties(trim(md_inifieldfile), nx)
       end if
@@ -787,7 +787,6 @@ contains
       call tree_destroy(bnd_ptr)
 
    end subroutine read_initialtracer_properties
-
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
@@ -1010,7 +1009,7 @@ contains
       integer, dimension(nx), intent(inout) :: kce !
       real(kind=dp), intent(in) :: return_time
       integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
-                                numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+                             numt, numuxy, numn, num1d2d, numw, numtr, numsf !
       integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
@@ -1212,7 +1211,7 @@ contains
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
-      
+
       else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
@@ -1526,6 +1525,12 @@ contains
             end if
 
             fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
             ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
             if (index(trim(fnam)//'|', '.tim|') > 0) then
                ! uniform=single time series vectormax = 1
@@ -1840,7 +1845,6 @@ contains
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
-      use unstruc_model, only: md_inifieldfile
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
       use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
@@ -2556,9 +2560,9 @@ contains
 
    end subroutine setup
 
-   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read.
    !> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
-   !> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   !> filling the geometry of the source/sinks and bubblescreens. (used for output)
    subroutine finalize_source_sinks()
       use m_source_sink, only: source_sinks
       use fm_external_forcings_data, only: bubblescreens
@@ -2590,16 +2594,18 @@ contains
          end associate
       end do
 
-      if(jampi == 1) then
-        call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
+      if (jampi == 1) then
+         call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
       end if
 
       ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble).
       ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
       ! capacity, while is_source_sink_bubblescreen is sized to num_total.
-      source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
-      source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
-      source_sinks%num_normal = count(source_sinks%is_normal)
+      if (allocated(source_sinks%is_normal)) then
+         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+         source_sinks%num_normal = count(source_sinks%is_normal)
+      end if
 
       call fill_geometry_source_sinks()
 

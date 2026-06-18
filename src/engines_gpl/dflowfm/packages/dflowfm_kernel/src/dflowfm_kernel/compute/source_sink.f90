@@ -111,7 +111,7 @@ contains
    !> Allocates and initializes the SourceSinks attributes to size.
    subroutine initialize_source_sinks(self, size)
       ! Parameters
-      class(SourceSinks), intent(inout) :: self
+      class(SourceSinks), intent(out) :: self
       integer, intent(in) :: size
 
       ! Allocate and intialize global source/sink arrays.
