@@ -27,6 +27,8 @@ RUN set -eo pipefail && \
     python3 -m pip install --ignore-installed --requirement "/tmp/lnx-requirements.txt" && \
     rm --verbose "/tmp/lnx-requirements.txt"
 
-ENV LD_LIBRARY_PATH=/opt/dimrset/lib
+# Do not set LD_LIBRARY_PATH globally: /opt/dimrset/lib ships libraries (e.g.
+# libexpat) that conflict with system Python modules.  The run_dimr.sh wrapper
+# sets LD_LIBRARY_PATH itself when launching Delft3D executables.
 
 CMD [ "python3" ]
