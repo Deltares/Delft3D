@@ -448,39 +448,40 @@ contains
          ! Compute ice growth or melt of snow and ice
          do n = 1, ndx
 
-            if (hs(n) > ice_wetting_drying_threshold) then
-            
-               if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
-                  if (qh_air2ice(n) > qh_ice2wat(n) .and. snow_thickness(n) > 0.0_fp) then
-                     ! melting of snow due to heat exchange with air
-                     snow_thickness_change = dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat
-                     if (-snow_thickness_change < snow_thickness(n)) then
-                        ! snow melt less than snow layer thickness
-                        snow_thickness(n) = snow_thickness(n) + snow_thickness_change
-                        ice_thickness_change = 0.0_fp
-                     else
-                        ! snow melt more than snow layer thickness
-                        ice_thickness_change = (snow_thickness_change + snow_thickness(n)) * snow_latentheat / ice_latentheat
-                        snow_thickness(n) = 0.0_fp
-                        snow_temperature(n) = celsius_to_kelvin(0.0_fp)
-                     end if
-                     ! ice_thickness_change initialize based on remaining heat exchange with air
-                     ! additional ice_thickness_change due to heat exchange with water
-                     ice_thickness_change = ice_thickness_change + dts * (0.0_fp + qh_ice2wat(n)) / ice_latentheat
-                  else
-                     ! no snow: ice freezes or melts due to net heat exchange with air and water
-                     ice_thickness_change = dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
-                  end if
+            if (hs(n) <= ice_wetting_drying_threshold) then
+               cycle
+            end if
 
-                  ice_thickness(n) = ice_thickness(n) + ice_thickness_change
-                  if (ice_thickness(n) > 0.0_fp) then
-                     ice_area_fraction(n) = 1.0_fp
+            if (air_temperature(n) < 0.0_fp .or. ice_thickness(n) > 0.0_fp) then
+               if (qh_air2ice(n) > qh_ice2wat(n) .and. snow_thickness(n) > 0.0_fp) then
+                  ! melting of snow due to heat exchange with air
+                  snow_thickness_change = dts * (-qh_air2ice(n) + 0.0_fp) / snow_latentheat
+                  if (-snow_thickness_change < snow_thickness(n)) then
+                     ! snow melt less than snow layer thickness
+                     snow_thickness(n) = snow_thickness(n) + snow_thickness_change
+                     ice_thickness_change = 0.0_fp
                   else
-                     ice_thickness(n) = 0.0_fp
+                     ! snow melt more than snow layer thickness
+                     ice_thickness_change = (snow_thickness_change + snow_thickness(n)) * snow_latentheat / ice_latentheat
                      snow_thickness(n) = 0.0_fp
-                     ice_area_fraction(n) = 0.0_fp
-                     ice_temperature(n) = celsius_to_kelvin(0.0_fp)
+                     snow_temperature(n) = celsius_to_kelvin(0.0_fp)
                   end if
+                  ! ice_thickness_change initialize based on remaining heat exchange with air
+                  ! additional ice_thickness_change due to heat exchange with water
+                  ice_thickness_change = ice_thickness_change + dts * (0.0_fp + qh_ice2wat(n)) / ice_latentheat
+               else
+                  ! no snow: ice freezes or melts due to net heat exchange with air and water
+                  ice_thickness_change = dts * (-qh_air2ice(n) + qh_ice2wat(n)) / ice_latentheat
+               end if
+
+               ice_thickness(n) = ice_thickness(n) + ice_thickness_change
+               if (ice_thickness(n) > 0.0_fp) then
+                  ice_area_fraction(n) = 1.0_fp
+               else
+                  ice_thickness(n) = 0.0_fp
+                  snow_thickness(n) = 0.0_fp
+                  ice_area_fraction(n) = 0.0_fp
+                  ice_temperature(n) = celsius_to_kelvin(0.0_fp)
                end if
             end if
          end do
