@@ -57,6 +57,7 @@ contains
       use m_reapol
       use m_find_crossed_links_kdtree2
       use m_filez, only: oldfil
+      use m_tpoly, only: inwhichpolygon, deallocpoladm
 
       integer :: i, k, L, n1, n2, k1, k2, nt, nt2, minp, lastfoundk, kL, kint, kf, jacros
       integer :: iL, numLL, intersection_count, ierror, jakdtree = 1, inp, n, ip, ip1, ip2, ierr

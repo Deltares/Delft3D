@@ -49,20 +49,16 @@ target_link_libraries(${fortrangis_library_name} PRIVATE ${fortranc_library_name
 # will introduce a duplicate definition of Shp* API functions.
 target_link_libraries(${fortrangis_library_name} INTERFACE shp)
 
-if (UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(GDAL REQUIRED IMPORTED_TARGET gdal)
+# PROJ is provided through Conan (CMakeDeps generator) on all platforms.
+# CONFIG is required to skip CMake's built-in FindProj module (if any).
+find_package(PROJ REQUIRED CONFIG)
+target_link_libraries(${fortrangis_library_name} PUBLIC PROJ::proj)
 
-    target_link_libraries(${fortrangis_library_name} INTERFACE PkgConfig::PROJ PkgConfig::GDAL)
-endif(UNIX)
-if (WIN32)
-   target_link_libraries(${fortrangis_library_name} PRIVATE PROJ::proj)
-   find_package(gdal REQUIRED HINTS "${src_path}/../gdal")
-   target_link_libraries(${fortrangis_library_name} PRIVATE GDAL::GDAL)
-endif(WIN32)
+# GDAL is provided through Conan (CMakeDeps generator) on all platforms.
+# The conan recipe exposes the GDAL::GDAL imported target.
+# CONFIG is required to skip CMake's built-in FindGDAL module.
+find_package(GDAL REQUIRED CONFIG)
+target_link_libraries(${fortrangis_library_name} PUBLIC GDAL::GDAL)
 
 # Propagate preprocessor variable definitions to any other package that uses fortrangis.
 target_compile_definitions(${fortrangis_library_name} INTERFACE HAVE_PROJ)

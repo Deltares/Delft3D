@@ -40,6 +40,7 @@ module unstruc_inifields
    use properties
    use string_module, only: str_lower, strcmpi
    use precision_basics, only: dp, sp
+   use stdlib_kinds, only: c_bool
 
    use precision, only: dp
    implicit none(type, external)
@@ -47,7 +48,8 @@ module unstruc_inifields
 
    public :: init1dField, initialize_initial_fields, spaceInit1dField, readIniFieldProvider, checkIniFieldFileVersion, &
              set_friction_type_values, initialfield2Dto3D_dbl_indx, initialfield2Dto3D, resolve_initial_target, resolve_parameter_target, process_hydrological_quantities, &
-             set_friction_type_values_explicit, finish_initialization
+             set_friction_type_values_explicit, finish_initialization, resolve_initial_3d_target, resolve_integer_target, &
+             set_global_water_values, set_global_values, fm_quantity_name_to_source_quantity_name, finalize_1dfield_global_values
 
    !> The file version number of the IniFieldFile format: d.dd, [config_major].[config_minor], e.g., 1.03
    !!
@@ -68,6 +70,14 @@ module unstruc_inifields
    ! 2.01: Added field 'frictionType'
    ! 2.00: extrapolationMethod changed from integer to logical.
    ! 1.01: initial implemented version
+
+   ! Module-level state for deferred assignment of 1dField file [Global] values.
+   logical(kind=c_bool), allocatable, public :: specified_water_1dfield(:)
+   logical(kind=c_bool), allocatable, public :: specified_friction_1dfield(:)
+   real(dp), public :: water_global_value_1dfield = -999.0_dp
+   real(dp), public :: friction_global_value_1dfield = -999.0_dp
+   character(len=256), public :: water_global_quantity_1dfield = ''
+
 contains
 
    function checkIniFieldFileVersion(inifilename, inifield_ptr) result(ierr)
@@ -155,6 +165,31 @@ contains
          call set_water_level_from_depth(bed_levels, water_depths, water_levels, mask)
       end select
    end subroutine set_global_water_values
+
+   !> Apply 1dField global values for water and friction, only for those points that have not been set already. Call once after all init_new calls.
+   subroutine finalize_1dfield_global_values()
+      use m_flow, only: s1, hs, frcu
+      use m_flowgeom, only: bl, ndx2D, ndxi, lnx1d
+      use m_missing, only: dmiss
+
+      if (allocated(specified_water_1dfield)) then
+         if (len_trim(water_global_quantity_1dfield) > 0 .and. .not. all(specified_water_1dfield)) then
+            call set_global_water_values(bl(ndx2D + 1:ndxi), hs(ndx2D + 1:ndxi), s1(ndx2D + 1:ndxi), &
+                                         specified_water_1dfield, water_global_quantity_1dfield, &
+                                         water_global_value_1dfield, '1dField global')
+         end if
+         deallocate (specified_water_1dfield)
+         water_global_quantity_1dfield = ''
+      end if
+
+      if (allocated(specified_friction_1dfield)) then
+         if (friction_global_value_1dfield /= dmiss .and. .not. all(specified_friction_1dfield)) then
+            call set_global_values(frcu(1:lnx1d), specified_friction_1dfield, friction_global_value_1dfield)
+         end if
+         deallocate (specified_friction_1dfield)
+         friction_global_value_1dfield = dmiss
+      end if
+   end subroutine finalize_1dfield_global_values
 
    !> Reads and initializes an initial field file.
    !! The IniFieldFile can contain multiple [Initial] and [Parameter] blocks
@@ -682,10 +717,10 @@ contains
             call warn_flush()
             return
          end if
-            
+
          if (len_trim(operand_ini) == 1) then
             write (msgbuf, '(5a)') 'Wrong block in file ''', trim(inifilename), ''': [', trim(groupname), '] for quantity=' &
-               //trim(quantity)//'. Field ''operand'' is set to deprecated value '''// trim(operand_ini) &
+               //trim(quantity)//'. Field ''operand'' is set to deprecated value '''//trim(operand_ini) &
                //'''. Replace with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'' or ''maximum''.'
             call warn_flush()
          end if
@@ -1338,7 +1373,6 @@ contains
       use m_flowparameters, only: jasal, inisal2D, uniformsalinityabovez, uniformsalinitybelowz, temperature_model, &
                                   TEMPERATURE_MODEL_NONE, initem2D, inivel
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, DFM_HYD_INTERCEPT_LAYER
       use m_fm_icecover, only: fm_ice_activate_by_ext_forces
       use m_sediment, only: stm_included, sed, jased, sedh
@@ -1620,7 +1654,6 @@ contains
                                   waveforcing, ja_friction_coefficient_time_dependent
       use m_flow, only: frcu, jacftrtfac, cftrtfac, viusp, diusp, DissInternalTidesPerArea, frcInternalTides2D, frculin, Cdwusp
       use m_flowgeom, only: ndx, lnx, grounlay, iadv, jagrounlay, ibot
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use fm_external_forcings_data, only: success
       use fm_external_forcings_utils, only: split_qid
       use m_heatfluxes, only: spatial_secchi_depth, secchi_depth_is_time_varying
@@ -1906,6 +1939,143 @@ contains
 
    end subroutine process_parameter_block
 
+   !> Resolve the target array and location type for quantities that are of integer type.
+   !! Returns .true. if the quantity was recognized and target_array is associated.
+   function resolve_integer_target(qid, target_location_type, target_array) result(success)
+      use fm_location_types, only: UNC_LOC_U
+      use m_flowgeom, only: iadv, ibot
+      use string_module, only: str_tolower
+
+      character(len=*), intent(in) :: qid
+      integer, intent(out) :: target_location_type
+      integer, dimension(:), pointer, intent(out) :: target_array
+      logical :: success
+
+      target_array => null()
+      target_location_type = 0
+      success = .true.
+
+      select case (str_tolower(qid))
+      case ('advectiontype')
+         target_location_type = UNC_LOC_U
+         target_array => iadv
+      case ('ibedlevtype')
+         target_location_type = UNC_LOC_U
+         target_array => ibot
+      case default
+         success = .false.
+      end select
+   end function resolve_integer_target
+
+!> Resolve the target array and location type for quantities that need to be stored in a 3D array.
+!! Returns .true. if the quantity was recognized and target_array is associated.
+   function resolve_initial_3d_target(quantity, target_location_type, target_array_3d, first_index) result(success)
+      use string_module, only: str_tolower
+      use messagehandling, only: mess, LEVEL_WARN
+      use m_flow, only: sa1
+      use m_flowparameters, only: jasal
+      use m_transport, only: const_names, ISED1
+      use m_transportdata, only: itrac2const, constituents
+      use m_sediment, only: stm_included, sed, jased, sedh
+      use m_fm_wq_processes, only: wqbotnames, wqbot
+      use m_flowgeom, only: ndx
+      use m_missing, only: dmiss
+      use m_alloc, only: realloc
+      use fm_external_forcings_data, only: trnames, NAMTRACLEN
+      use fm_external_forcings_utils, only: split_qid, get_tracername
+      use m_find_name, only: find_name
+      use m_add_bndtracer, only: add_bndtracer
+      use m_add_tracer, only: add_tracer
+      use fm_location_types, only: UNC_LOC_S
+      use processes_input, only: paname, painp, num_spatial_parameters
+
+      character(len=*), intent(in) :: quantity !< Name of the quantity
+      integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
+      real(kind=dp), dimension(:, :), pointer, intent(out) :: target_array_3d !< Output to the target 3D array.
+      integer, intent(out) :: first_index !< First index in the target array, for quantities that have multiple instances (e.g. sediment fractions, tracers, etc.).
+      logical :: success !< true if the quantity was recognized and target_array_3d is associated.
+
+      character(len=256) :: qid_base, qid_specific
+      character(len=NAMTRACLEN) :: tracnam, qidnam
+      character(len=20) :: tracunit
+      integer :: iconst, itrac, isednum, iwqbot, janew, iostat
+
+      target_array_3d => null()
+      first_index = 1
+      target_location_type = UNC_LOC_S
+      success = .true.
+
+      call split_qid(quantity, qid_base, qid_specific)
+
+      select case (str_tolower(qid_base))
+      case ('initialsalinity')
+         if (jasal <= 0) then
+            success = .false.
+            return
+         end if
+         target_array_3d(1:1, 1:size(sa1)) => sa1
+         first_index = 1
+
+      case ('initialsedfrac')
+         if (.not. stm_included) then
+            success = .false.
+            return
+         end if
+         iconst = find_name(const_names, qid_specific)
+         if (iconst <= 0) then
+            call mess(LEVEL_WARN, 'resolve_initial_3d_target: unknown sediment fraction '''//trim(qid_specific)//'''.')
+            success = .false.
+            return
+         end if
+         first_index = iconst - ISED1 + 1
+         target_array_3d => sed
+
+      case ('initialsediment')
+         if (jased <= 0) then
+            success = .false.
+            return
+         end if
+         call realloc(sedh, ndx, keepExisting=.false., fill=dmiss)
+         read (qid_specific(1:1), '(i1)', iostat=iostat) isednum
+         if (iostat /= 0) isednum = 1
+         first_index = isednum
+         target_array_3d => sed
+
+      case ('initialtracer')
+         call get_tracername(quantity, tracnam, qidnam)
+         tracunit = " "
+         call add_bndtracer(tracnam, tracunit, itrac, janew)
+         call add_tracer(qid_specific, iconst)
+         itrac = find_name(trnames, qid_specific)
+         if (itrac == 0) then
+            call mess(LEVEL_WARN, 'resolve_initial_3d_target: tracer '''//trim(qid_specific)//''' not found.')
+            success = .false.
+            return
+         end if
+         first_index = itrac2const(itrac)
+         target_array_3d => constituents
+
+      case ('initialwaqbot')
+         iwqbot = find_name(wqbotnames, qid_specific)
+         if (iwqbot == 0) then
+            call mess(LEVEL_WARN, 'resolve_initial_3d_target: WAQ bottom variable '''//trim(qid_specific)//''' not found.')
+            success = .false.
+            return
+         end if
+         first_index = iwqbot
+         target_array_3d => wqbot
+
+      case ('waqparameter', 'waqsegmentnumber')
+         target_location_type = UNC_LOC_S
+         call find_or_add_waq_input(qid_specific, paname, num_spatial_parameters, .true., &
+                                    waq_values=painp, index_waq_input=first_index)
+         allocate (target_array_3d(first_index:first_index, size(painp, 2)))
+
+      case default
+         success = .false.
+      end select
+   end function resolve_initial_3d_target
+
    !> Resolve the target array and location type for an [Initial] quantity.
    !! Handles all quantities that map to a plain real(dp) 1D array.
    function resolve_initial_target(qid, inifilename, target_location_type, target_array) result(success)
@@ -1927,8 +2097,7 @@ contains
       character(len=*), intent(in) :: inifilename !< Name of the ini file, used for warning messages.
       integer, intent(out) :: target_location_type !< Location type (UNC_LOC_S, UNC_LOC_U or UNC_LOC_3DV).
       real(kind=dp), dimension(:), pointer, intent(out) :: target_array !< Pointer to the model array. Null if not handled here.
-
-      logical :: success
+      logical :: success !< true if the quantity was recognized.
 
       target_array => null()
       target_location_type = 0
@@ -2036,7 +2205,7 @@ contains
       use m_nudge, only: nudge_time, nudge_rate
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
-      use unstruc_model, only: md_extfile, md_ptr
+      use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions
@@ -2415,7 +2584,6 @@ contains
       use m_flowgeom, only: ndxi, ndx, bl
       use m_wind, only: jaevap, evap
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: infiltcap, DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER, jadhyd, &
                                   PotEvap, ActEvap
@@ -2622,7 +2790,6 @@ contains
    !! Optionally, a vertical range can be specified, which then only updates the 3D output array elements if their vertical
    !! position lies within that range. Without this range, all 3D cells in a single  vertical column get the same 2D input value.
    subroutine initialfield2Dto3D_dbl_indx(input_array_2d, output_array_3d, first_index, vertical_range_min, vertical_range_max, operand)
-      use m_flowgeom, only: ndx
       use precision_basics
       use m_flow, only: kmx, kbot, ktop, zws
       use m_missing
@@ -2650,7 +2817,7 @@ contains
       if (vertical_range_max /= dmiss) then
          upper_limit = vertical_range_max
       end if
-      do n = 1, ndx
+      do n = 1, size(input_array_2d)
          if (input_array_2d(n) /= dmiss) then
             if (kmx == 0) then
                call operate(output_array_3d(first_index, n), input_array_2d(n), operand)

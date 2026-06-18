@@ -3563,8 +3563,30 @@ contains
       var = dum
 #endif
       return
-   end subroutine reduce_double_array_max
+    end subroutine reduce_double_array_max
 
+!> reduce a logical array, take global OR
+   subroutine reduce_logical_array_or(N, var)
+#ifdef HAVE_MPI
+      use mpi
+#endif
+
+      implicit none
+
+      integer, intent(in) :: N !< array size
+      logical, dimension(N), intent(inout) :: var !< array with logical values to be reduced across subdomains
+
+      logical, dimension(N) :: dum
+
+      integer :: ierror
+
+#ifdef HAVE_MPI
+      call MPI_allreduce(var, dum, N, mpi_logical, mpi_lor, DFM_COMM_DFMWORLD, ierror)
+      var = dum
+#endif
+      return
+    end subroutine reduce_logical_array_or
+    
    !> for an array over integers, take maximum over all subdomains (not over the array itself)
    subroutine reduce_int_max(N, var)
 #ifdef HAVE_MPI
@@ -6448,7 +6470,6 @@ contains
             ilocal_s(iglobal_s(k)) = k
          end if
       end do
-
       num_cells = 0
       ! Build global cells from ilocal_s by iterating over global_cellmask.
       ! Cells that exist globally not on current partition will have -1 in ilocal_s and thus -1 in global_cells.
@@ -6459,6 +6480,43 @@ contains
          end if
       end do
 
+
+
    end function reduce_cells
+
+   !< checks if a 3d layer is in the current partition
+   !< uses ndkx2ndx mapping.
+   !< if there is no mapping, assumes true
+   !< also returns true if there is no partitioning 
+   function is_3d_layer_in_current_partition(idx_ndkx) result(is_in_partition)
+      use m_flow, only: ndkx_to_ndx, ndkx, kmx
+      
+      integer, intent(in) :: idx_ndkx !< 3d layer index
+      logical :: is_in_partition
+
+      integer :: ndx
+
+      if (jampi == 0 .or. (.not. allocated(idomain))) then
+         is_in_partition = .true.
+         return
+      end if
+
+      if (kmx == 0) then
+         is_in_partition  = idomain(idx_ndkx) == my_rank
+         return
+      end if
+
+      if (idx_ndkx >= 1 .and. idx_ndkx <= ndkx) then
+         ndx = ndkx_to_ndx(idx_ndkx)
+      else
+         ndx = -1
+      end if
+
+      if (ndx > 0) then
+         is_in_partition  = idomain(ndx) == my_rank
+      else ! if there is no mapping, assume the layer is in the partition
+         is_in_partition = .true.
+      end if
+   end function is_3d_layer_in_current_partition
 
 end module m_partitioninfo

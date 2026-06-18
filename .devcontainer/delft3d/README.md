@@ -1,10 +1,10 @@
 # The Delft3D development container
 
 ## What is this?
-[Development containers](https://containers.dev/) is an open standard 
-allowing a [container](https://www.docker.com/resources/what-container/) to be 
+[Development containers](https://containers.dev/) is an open standard
+allowing a [container](https://www.docker.com/resources/what-container/) to be
 used as a fully featured development environment. IDEs supporting this standard
-can open the Delft3D source code project "inside a devcontainer". All of the tools 
+can open the Delft3D source code project "inside a devcontainer". All of the tools
 you need for development can be installed in this container, so ideally you shouldn't need
 to install anything else. These tools include but are not limited to:
 - Compilers
@@ -17,19 +17,19 @@ to install anything else. These tools include but are not limited to:
 - Profilers
 - Version control tools
 
-The [`devcontainer.json`](https://containers.dev/implementors/json_reference/) 
+The [`devcontainer.json`](https://containers.dev/implementors/json_reference/)
 is a configuration file that your IDE should read to initialize the devcontainer.
-It can either "pull" a ready-made container from a container registry, or build a 
+It can either "pull" a ready-made container from a container registry, or build a
 container image with build instructions from a `Dockerfile`. The configuration file
 may also contain a section with IDE extenions or plugins to install.
 
-IDE extensions are usually a shell around the tools that add some integration with 
-your IDE or add some visual annotations. Most importantly, extensions may add 
-integration with your IDE's debugging and language server capabilities. 
+IDE extensions are usually a shell around the tools that add some integration with
+your IDE or add some visual annotations. Most importantly, extensions may add
+integration with your IDE's debugging and language server capabilities.
 Enabling powerful IDE features such as visual debugging, code navigation
-and refactoring. There are also extensions that draw yellow or red 
+and refactoring. There are also extensions that draw yellow or red
 "squiggly lines" under code where the linter found a problem, or that
-enable syntax highlighting for certain source files. The extensions declared in 
+enable syntax highlighting for certain source files. The extensions declared in
 `devcontainer.json` are isolated to your 'devcontainer' environment, and should be
 installed automatically when opening the project in the devcontainer.
 
@@ -65,64 +65,77 @@ add to the `devcontainers.json`. This file is tracked in git, so anything you ad
 file will be visible to everyone else once your changes to it get merged to the `main` branch.
 
 ### Docker
-If you are on Windows, we assume you will have 
-[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) installed, along with a 
-Linux distribution of your choice. You should be able to at least open a terminal 
-inside the Linux distribution, or to open a directory inside the Linux distribution 
+If you are on Windows, we assume you will have
+[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) installed, along with a
+Linux distribution of your choice. You should be able to at least open a terminal
+inside the Linux distribution, or to open a directory inside the Linux distribution
 in your IDE of choice.
 
 #### [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 One option is to install Docker Desktop on Windows. Docker Desktop comes with an
-install wizard that will install Docker not just on Windows, but also in all Linux
-distributions you have installed with WSL. The `docker` command line program is
-available in both Windows and your WSL Linux distributions. In addition you will
+install wizard that will install Docker on both Windows and your default WSL Linux
+distribution. After the installation the `docker` command line program is
+available in both Windows and your WSL Linux distribution. In addition you will
 get the Docker Desktop GUI in Windows, that you can use to configure your Docker
 installation and to do most things that you can also do with the `docker` command
-line tool. You are also able to switch between running 'Linux containers'
-and 'Windows containers'. You need a license to use Docker Desktop. If you are a
+line program. With Docker Desktop, you're able to switch between building and running
+'Linux containers' and 'Windows containers'. You need a license to use Docker Desktop. If you are a
 Deltares employee you can request a Docker Desktop license by contacting Edward Melger.
 
 #### Installing Docker in Linux (WSL or native)
 Docker Desktop requires a license. But the official "Docker Engine", which includes
-the `docker` command line tool and the "Docker daemon", is
-[open source](https://docs.docker.com/engine/#licensing) software and doesn't require 
-a commercial license to use. For this reason, some people may prefer to install Docker 
-directly in their Linux distribution of choice (be it on Windows using WSL, or on a native 
-Linux installation). Usually docker can be installed using the Linux distribution's standard
+the `docker` command line program and the "Docker daemon", is
+[open source](https://docs.docker.com/engine/#licensing) software and doesn't require
+a commercial license to use. For this reason, some people may prefer to install Docker
+directly in their Linux distribution of choice (be it on Windows using WSL, or on a native
+Linux installation). Usually Docker can be installed using the Linux distribution's standard
 package manager. If you do that, you should be aware of the following:
-1. You will only be able to run Linux containers (You can't run Windows containers on Linux).
-2. In some Linux distributions, you will need to configure the package manager to install
-   the official Docker Engine. Read [this page](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms) 
-   for instructions.
-3. [Podman](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms)
-   is an alternative to Docker Engine. It provides the `podman` command line tool that acts
-   as a drop-in replacement for the `docker` command line tool and supports most of the same
-   options. The advantage of Podman is that, unlike Docker Engine, it does not require you
-   to run a daemon with elevated privileges on your Linux system, and so it is more secure.
-   On some Linux distribution, installing "docker" using the default package manager will
-   actually install Podman instead.
-   Podman supports most of the Docker Engine's features. But it is sometimes behind. We may
-   end up relying on Docker Engine features that Podman does not support yet. We have run into
-   compatibility issues between Podman and Docker Engine mostly when 'building' container
-   images with [BuildKit](https://docs.docker.com/build/buildkit/) features. 
+- You will only be able to build and run Linux containers (You can't run Windows containers on Linux).
+- In some Linux distributions, you will need to configure the system package manager to install
+  the official Docker Engine. Read
+  [this page](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms)
+  for instructions.
+- After installing Docker Engine, you should check the
+  [post installation steps](https://docs.docker.com/engine/install/linux-postinstall/).
+  In most cases, the Docker daemon should start automatically on startup, so you can start using Docker
+  right away. Other Linux distributions require you to start the daemon manually, or to configure it to
+  launch on startup manually. The Docker daemon runs as the root user, so it has pretty far reaching
+  privileges on your system.
+- The `docker` command line program communicates with the daemon over a
+  Unix domain socket, which only users who are in the `docker` group can use. If you do not want to
+  preface every `docker` command with `sudo`, you can add yourself to the `docker` group as follows:
+  `sudo usermod -aG docker $USER`. You can check which groups you are in by invoking: `groups`. You
+  might need to log out and log in again for your group membership to take effect.
+- On some Linux distribution, installing "docker" using the system package manager will
+  actually install [Podman](https://docs.docker.com/engine/install/#installation-procedures-for-supported-platforms) instead.
+  Podman is an alternative to Docker Engine. It provides the `podman` command line program that acts
+  as a drop-in replacement for the `docker` command line program and supports most of the same
+  options. The advantage of Podman is that, unlike Docker Engine, it does not require you
+  to run a daemon with elevated privileges on your Linux system, and so it is more secure.
+  `podman` supports most of the Docker Engine's features, but it is sometimes behind.
+  Podman is usually sufficient for pulling and running container images, but for building
+  container images we have run into compatibility issues. In particular, we are heavily
+  relying on [BuildKit](https://docs.docker.com/build/buildkit/) features in our Dockerfiles.
+  Podman's builder does not support many of these features.
 
-### Opening Delft3D 'in the devcontainer' in your IDE
+### Opening the Delft3D repository in the devcontainer in your IDE
 Once you have Docker installed you can follow the instructions for your IDE to open the
 Delft3D repository inside the devcontainer. If you are on Windows, we **strongly recommend**
 cloning the Delft3D repository in your WSL Linux distribution's filesystem. Somewhere under
-your home directory in Linux, for example (e.g. `/home/${USER}/repo/delft3d`). 
+your home directory in Linux, for example (e.g. `/home/${USER}/repo/delft3d`).
 That means that you will most likely have two separate checkouts of the Delft3D repository on
-your computer (one in your `C:\` drive and one in your WSL Linux distribution). Once you open 
-the Delft3D repository inside the devcontainer, your IDE will 'mount' the directory containing 
-the Delft3D repository on the 'host' inside the 'container'. For example, this means that the 
-files in WSL Linux under `/home/${USER}/repo/delft3d` will be available in the container under 
+your computer (one in your `C:\` drive and one in your WSL Linux distribution). Once you open
+the Delft3D repository inside the devcontainer, your IDE will 'mount' the directory containing
+the Delft3D repository on the 'host' inside the 'container'. For example, this means that the
+files in WSL Linux under `/home/${USER}/repo/delft3d` will be available in the container under
 `/workspaces/delft3d`. It is possible to mount a directory from the `C:\`
 drive inside the container, but we **discourage** this for the following reasons:
 1. The performance of file system operations (reading and writing files to disk) is noticably
-   worse when a directory in the `C:\` drive is mounted inside the devcontainer. For example, we've noticed that compilation can take over four times longer than usual.
+   worse when a directory in the `C:\` drive is mounted inside the devcontainer. For example,
+   we've noticed that compilation can take over four times longer than usual.
 2. You have used Git on Windows to clone the Delft3D repository on the `C:\`
-   drive. This means that most of the text files inside the repository have been 
-   written to disk using 'Windows line endings' (`\r\n`) instead of 'Unix line endings' 
+   drive. This means that most of the text files inside the repository have been
+   written to disk using 'Windows line endings' (`\r\n`) instead of 'Unix line endings'
    (`\n`). Inside the devcontainer, some tools (most notably Git itself) will have trouble
    handling 'Windows line endings' in the text files.
 
@@ -134,16 +147,16 @@ extension. You will need to install both of these extensions.
 
 Deltares hosts it's own our 'container registry' at
 [containers.deltares.nl](https://containers.deltares.nl). Our devcontainer is based on the
-'third-party-libs' build container stored under the `delft3d-dev` project in 
+'third-party-libs' build container stored under the `delft3d-dev` project in
 `containers.deltares.nl`. You will need access to the `delft3d-dev` project before you can
 use the build container. Then you need to login with the `docker` command line tool. You
 can do so with the following command:
 ```bash
 docker login --username $YOUR_EMAIL_ADDRESS --password $YOUR_CLI_SECRET containers.deltares.nl
 ```
-When you log into the 
+When you log into the
 [web interface of `containers.deltares.nl`](https://containers.deltares.nl),
-you can find the missing values you need to pass to the `--username` and `--password` 
+you can find the missing values you need to pass to the `--username` and `--password`
 arguments in your 'User Profile'.
 
 If you feel uneasy about your "CLI secret" ending up in your bash history. You can instead save
@@ -155,7 +168,7 @@ cat ~/.cli-secret | docker login --username $YOUR_EMAIL_ADDRESS --password-stdin
 Now you're finally ready to open the Delft3D repository in the devcontainer. The first time
 you do this may take a few minutes. The devcontainer extension must do the following:
 1. Pull the 'third-party-libs' base container image from `containers.deltares.nl` (Which is quite large)
-2. Run the instructions in the `Dockerfile` to create the final devcontainer image. 
+2. Run the instructions in the `Dockerfile` to create the final devcontainer image.
 
 Once the devcontainer image is done building it is cached on your computer. It will show
 up in `docker image ls`. This will ensure
@@ -172,10 +185,10 @@ devcontainer. We have probably run into the same problems and are able to help y
 
 ### Visual Studio Code
 Now that you are able to open Delft3D in the devcontainer it's time to start using it.
-The first thing you can do to start exploring the devcontainer is to open a 
+The first thing you can do to start exploring the devcontainer is to open a
 terminal in your IDE and look around a bit. Most likely, the terminal will open `bash` in the
 `/workspaces/delft3d` directory. This is the directory containing the Delft3D repository.
-Your IDE has mounted the directory from the Linux "host" (e.g. `/home/${USER}/repo/delft3d`) 
+Your IDE has mounted the directory from the Linux "host" (e.g. `/home/${USER}/repo/delft3d`)
 to the `/workspaces/delft3d` directory inside the container. Any changes that you
 make to the files inside the `/workspaces/delft3d` directory are persisted in the
 `/home/${USER}/repo/delft3d` directory in the host. If you restart your computer, the changes
@@ -187,7 +200,7 @@ from the one in your host (WSL) Linux system. Inside the container, you are logg
 user `dev`. `dev`'s home directory is in `/home/dev` inside the container. While in the
 container you can change the files inside `/home/dev`, but these changes will not be persisted.
 If you restart your computer the files in this directory will be reset to how they were saved
-inside the devcontainer image. The only way to persist changes to files inside a container is 
+inside the devcontainer image. The only way to persist changes to files inside a container is
 by using [volumes](https://docs.docker.com/engine/storage/volumes/) (or bind mounts).
 
 The tools you need for development should already installed. You can check by running the
@@ -207,39 +220,22 @@ some configuration to work at all, or work in a way you are satisfied with. Visu
 Code configuration files live inside the `.vscode` directory in the root directory of the
 repository. This directory is in our `.gitignore` file, because editor configuration is often
 platform dependent, environment dependent, and dependent on the "personal preferences" of
-the developer. We do provide example configuration files for Visual Studio Code in the 
+the developer. We do provide example configuration files for Visual Studio Code in the
 `.devcontainer/delft3d/examples/.vscode-example/` directory. You can copy the contents of this directory
 to the `.vscode/` directory (in the repository root) as a starting point.
 
-We currently have two files inside the `.vscode/` directory:
+We currently have three files inside the `.vscode/` directory:
 - [`settings.json`](https://code.visualstudio.com/docs/configure/settings#_settings-json-file): VSCode settings specific for this project. Includes extension settings.
 - [`launch.json`](https://code.visualstudio.com/docs/debugtest/debugging-configuration): Configuration for running and debugging code. These show up in the 'Debug' menu.
+- [`tasks.json`](https://code.visualstudio.com/docs/debugtest/tasks): Commands that users can invoke by hitting `Ctrl+P` and typing `task `.
 
 Thankfully, most extensions don't require any customization in `settings.json` and will work fine with
 the default settings. There are a few exceptions, that we will list here:
 
 #### The Modern Fortran extension
-This extension provides syntax highlighting for Fortran source code and the Fortran language server: `fortls`
-(which is pre-installed in the devcontainer). It is listed in the `devcontainer.json` file as one of the
-extensions to install. Unfortunately, the extension fails to install when (re-)building the devcontainer. But
-installing the extension 'manually' still works. Navigate to the "extensions" menu in VSCode and search for
-"Modern Fortran". The "Install" button may be greyed out, with the following warning:
-
-```⚠️ This extension is not signed by the Extension Marketplace.```
-
-You can work around this by doing the following:
-1. Clicking on the extension menu item.
-2. Then clicking on the gear (⚙️) icon.
-3. Clicking on "Install" in the context menu.
-
-This may open a dialog box, repeating the warning that the extension is not signed by the extension marketplace.
-But you can opt to install it anyway.
-
-The developers of the extension have been made aware of the issue, but it doesn't seem fixed yet.
-See: https://fortran-lang.discourse.group/t/cant-install-vscode-modern-fortran-not-signed-by-marketplace/8709
-
-You can easily verify that the "Modern Fortan" extension is installed by opening any Fortran source code file.
-By default the extension enables syntax highlighting. You may get a dialog in the bottom right of the screen
+This extension provides syntax highlighting for Fortran source code and adds support for the Fortran language server: `fortls`.
+You can easily verify that the "Modern Fortan" extension is installed by opening any Fortran source code file:
+The extension enables syntax highlighting. You may get a dialog in the bottom right of the screen
 saying "Couldn't update fortls". You can ignore this warning. We don't want the extension to be able to update
 `fortls` anyway.
 
@@ -262,31 +258,69 @@ We currently don't track `src/cmake/CMakePresets.json` in git because we have tr
 separate platform specific preset files and configuring `CMake` to load a specific preset file from
 a path other than `src/cmake/CMakePresets.json` is not supported at the moment.
 
-##### Building `fm-suite` with CMake
-You can use the CMake menu to select the "FM-suite Debug" or the "FM-suite Release" preset, listed in the example
-`CMakePresets.json`. If you select the target `install` in the "Build" menu, then the install phase will run after the build has succeeded (This copies the executables and libraries to `./build_fm-suite_{debug,release}/install`). 
-Start a build by hovering over the "Build" menu item and clicking the icon that appears. The CMake 'configure' phase will automatically be performed if necessary. The `./build_fm-suite_{debug,release}` directory should appear in the repository root.
+### Building Delft3D software
+Building Delft3D software involves three steps:
+1. Installing dependencies from our
+[Nexus package repository](https://internal-artifacts.deltares.nl/#browse/browse:delft3d-conan-dev)
+using the [Conan package manager](https://conan.io/).
+2. Configuring what Delft3D software you want to build and how with the [CMake build system](https://cmake.org).
+3. Running the build (also via CMake).
 
-The CMake extension will show all of the CMake command line invocations it is doing in the terminal. If you
-prefer working with the `cmake` command line tool, you can see what the extension is doing and repeat the
-same commands in the command line yourself.
+There's two ways to install the dependencies. You can either install them from our
+[Nexus package repository](https://internal-artifacts.deltares.nl/#browse/browse:delft3d-conan-dev), or
+you can build the packages yourself using our [recipies](/conan/recipes/). Our package repository contains pre-built
+binaries of our dependencies. Unfortunately, the package repository is currently not public, so you will need
+credentials to be able to access the packages. If you do not have access to our package repository you can still
+build the packages yourself. This will take some time. Thankfully, once you've built the
+packages, they're cached in the conan cache directory (`/home/dev/.conan2`) and you don't need to build them again
+until the recipies change. For details on setting up Conan, please check the
+[Linux build instructions](/doc/compiling_Linux.md#build-steps). We did add a few custom
+VSCode tasks to the devcontainer:
+
+#### Performing a build using `build.py`
+Run the `Delft3D: Build` task in VSCode. You can do this by pressing `Ctrl+Shift+B` command, and selecting `Delft3D: Build`.
+You will be prompted to select the "config" and the "build type". These are `fm-suite` and `Debug` by default.
+Alternatively, invoke the following command:
+```bash
+python build.py
+```
+This will build the `fm-suite` config using the `Debug` build type. You can override this by supplying command line parameters:
+```bash
+python build.py --config <config> --build-type <build-type> --build
+```
+Use `python build.py --help` to view all the options.
+
+Your build will start running and the build log will appear in the terminal window. The build files will end up in the
+build directory named `build_${CONFIG}_${BUILD_TYPE}`. So for example: `build_fm-suite_debug`. The directory
+`build_${CONFIG}_${BUILD_TYPE}/install` contains the installation bundle, with `bin`, `lib` and `share` directories.
+This directory contains all of the binaries needed to run Delft3D software.
+
+
+### Running `TestBench.py`
+Before you can run `TestBench.py`, three things need to be set up:
+1. The "virtual environment" of `TestBench.py`
+2. The directory containing the Delft3D binaries that the `TestBench.py` will invoke
+3. The credentials for MinIO, where our test case data is stored.
+
+The first two steps should automatically be taken care of by the
+[post create command script](/.devcontainer/delft3d/scripts/post_create_command.sh).
+However, you will need to install your MinIO credentials yourself. If something went wrong
+with the first two steps, the following sections will allow you to troubleshoot.
 
 #### Python virtual environment for running `TestBench.py`
-There's a shell script: `.devcontainer/delft3d/scripts/post_create_command.sh` that should install
-all of the required Python dependencies for `TestBench.py` in `test/deltares_testbench` 
-in a "virtual environment" (or "venv"). This script is run automatically after 
-(re-)building the devcontainer. If the directory `test/deltares_testbench/.venv`
-already exists this step will be *skipped*.
+Before running `TestBench.py`, you need to first activate the "virtual environment". This ensures
+that the correct version of `Python` occurs first on your `PATH`, and that `Python` has access to
+all of the required Python dependencies:
 
-There is a potential problem if you already had an existing venv inside the
-`test/deltares_testbench` directory before you started working in the devcontainer.
-Remember that the files under  `/workspaces/delft3d` are bind mounted from the host
-to the container. If you already had installed a venv in 
-`test/deltares_testbench` before on the host, then this venv is referencing a version
-of Python that only exists on the host as well. Inside the container this venv will
-not work. To work around this you can delete the existing `.venv` directory and
-make a new one from within the devcontainer:
+The [post create command script](/.devcontainer/delft3d/scripts/post_create_command.sh) should
+have taken care of creating the virtual environment for you. So all you need to do is activate it,
+before you run `TestBench.py`.
+Note that if the directory `test/deltares_testbench/.venv` already existed before (re-)building
+the container this step will be *skipped*.
 
+If, for some reason, `TestBench.py` is not working anymore due to missing libraries or
+a broken python installation. You can always remove the `.venv` directory and re-create it with
+the following commands:
 ```bash
 # From test/deltares_testbench
 rm -rf .venv
@@ -294,36 +328,16 @@ uv venv --python=3.12 .venv
 uv pip sync pip/lnx-dev-requirements.txt
 ```
 
-The `settings.json` example sets the `python.defaultInterpreterPath` setting to the
-python version inside the venv created in `test/deltares_testbench`. The linter, formatter
-and type checker are also installed in this venv, and they should automatically
-activate when you're browsing the testbench source code. There is an additional
-extension (the "Ruff" extension) that runs the formatter on the python source code
-whenever you change and save a python source code file.
+#### Setting the path to the Delft3D binaries
+For historical reasons, `TestBench.py` tries to look for programs to run in the directory
+`./data/engines/teamcity_artifacts/lnx64`. To point `TestBench.py` to your own
+freshly built Delft3D binaries, you can make this a "symbolic link" to the Delft3D install
+directory used by our build.
 
-#### Running `TestBench.py`
-Before running `TestBench.py`, you need to first activate the venv. This ensures
-that the correct version of `Python` occurs first on your `PATH`,
-and that `Python` has access to all of the installed dependencies:
-
-```bash
-# Activating the virtual environment in this shell session:
-# The following commands should be executed in `test/deltares_testbench`
-source ./.venv/bin/activate
-python TestBench.py --help
-```
-
-If successful, after the "sourcing" the activation script in `.venv/bin/activate`, the
-text `(.venv)` will appear in your command prompt. This way, you can be sure that whenever
-you invoke `python` you will be using the correct interpreter and the dependencies you
-need for running the `TestBench.py` are installed.
-
-##### Setting the path to the Delft3D binaries
-For historical reasons, `TestBench.py` tries to look for programs to run in the directory 
-`./data/engines/teamcity_artifacts/lnx64/`. To point `TestBench.py` to your own
-freshly built Delft3D binaries, you can make this a "symbolic link" to the CMake install
-directory. If this symbolic link does not exist yet, or you want to modify the location of 
-the binaries, you can do the following:
+The [post create command script](/.devcontainer/delft3d/scripts/post_create_command.sh) should
+have automatically created the symbolic link from `test/deltares_testbench/data/engines/teamcity_artifacts/lnx64`
+to the `build_fm-suite_release/install` directory. If, for some reason, the symbolic link does not exist or you
+want to modify the location of the binaries, you can do the following:
 ```bash
 # The following commands should be executed in `test/deltares_testbench`
 mkdir -p data/engines/teamcity_artifacts/
@@ -335,10 +349,10 @@ It may be necessary to remove the existing symbolic link before creating a new o
 rm -rf data/engines/teamcity_artifacts/lnx64
 ```
 
-##### Installing your MinIO credentials
-To run testbench configs `TestBench.py` automatically downloads case and reference files from MinIO 
+#### Installing your MinIO credentials
+To run testbench configs, `TestBench.py` automatically downloads case and reference files from MinIO
 (https://s3.deltares.nl). Accessing files on MinIO requires your personal MinIO credentials.
-You can generate an "access key id" and "secret access key" on the 
+You can generate an "access key id" and "secret access key" on the
 [MinIO web interface](https://s3-console.deltares.nl/access-keys). You can save these values in the file
 `/home/dev/.aws/credentials` with the following content:
 ```
@@ -350,7 +364,7 @@ aws_secret_access_key=<your-secret-access-key>
 The directory `/home/dev/.aws` is mounted in the devcontainer as a volume. So any files written there will
 be persisted. You only have to write your MinIO keys to this file once.
 
-##### Running a test case
+#### Running a test case
 You can try running a test case to verify that the path to the binaries and your credentials work. This
 command runs only a single test case from the `configs/dimr/dimr_dflowfm_lnx64.xml` testbench config.
 ```bash
@@ -364,5 +378,5 @@ python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64.xml --fil
 python TestBench.py --compare --config configs/dimr/dimr_dflowfm_lnx64.xml --parallel
 ```
 
-`TestBench.py` saves the case input files downloaded from MinIO in `./data/cases`, and the "references" 
+`TestBench.py` saves the case input files downloaded from MinIO in `./data/cases`, and the "references"
 in `./data/reference_results`. The logs for each test case are saved in `./logs`.

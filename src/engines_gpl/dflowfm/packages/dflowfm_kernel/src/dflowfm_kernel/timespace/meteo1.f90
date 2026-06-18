@@ -2777,7 +2777,7 @@ module timespace
 
    use timespace_data
    use timespace_triangle
-   implicit none
+   implicit none(type, external)
 
 contains
    !
@@ -2933,7 +2933,7 @@ contains
       use m_reapol
       use m_filez, only: oldfil
       use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF, LINK_ALL
-
+      use m_tpoly, only: inwhichpolygon
       implicit none
 
       !inputs
@@ -3115,6 +3115,7 @@ contains
       use m_delpol
       use m_reapol
       use m_filez, only: oldfil
+      use m_tpoly, only: inwhichpolygon
 
       implicit none
 
@@ -3769,6 +3770,8 @@ module m_meteo
    integer, target :: item_cloudiness !< 'cloudiness' quantity
    integer, target :: item_solar_radiation !< 'solarradiation' quantity
    integer, target :: item_long_wave_radiation !< 'longwaveradiation' quantity
+   integer, target :: item_sensible_heat_flux !< 'sensibleheatflux' quantity
+   integer, target :: item_latent_heat_flux !< 'latentheathflux' quantity
 
    integer, target :: item_discharge_salinity_temperature_sorsin !< Unique Item id of the ext-file's 'discharge_salinity_temperature_sorsin' quantity
    integer, target :: item_sourcesink_discharge !< Unique Item id of the new ext-file's '[SourceSink] discharge' quantity
@@ -3937,6 +3940,8 @@ contains
       item_cloudiness = ec_undef_int
       item_solar_radiation = ec_undef_int
       item_long_wave_radiation = ec_undef_int
+      item_sensible_heat_flux = ec_undef_int
+      item_latent_heat_flux = ec_undef_int
       item_hac_humidity = ec_undef_int
       item_hac_air_temperature = ec_undef_int
       item_hac_cloudiness = ec_undef_int
@@ -4404,6 +4409,12 @@ contains
       case ('longwaveradiation')
          itemPtr1 => item_long_wave_radiation
          dataPtr1 => long_wave_radiation
+      case ('sensibleheatflux')
+         itemPtr1 => item_sensible_heat_flux
+         dataPtr1 => sensible_heat_flux
+      case ('latentheatflux')
+          itemPtr1 => item_latent_heat_flux
+         dataPtr1 => latent_heat_flux
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          itemPtr2 => item_nudge_salinity
          dataPtr2 => nudge_salinity
@@ -4501,8 +4512,6 @@ contains
          isfun = find_name(sfunname, waqinput)
          itemPtr1 => item_waqsfun(isfun)
          dataPtr1 => sfuninp(isfun, :)
-      case ('initialtracer')
-         continue
       case ('friction_coefficient_chezy', 'friction_coefficient_manning', 'friction_coefficient_walllawnikuradse', &
             'friction_coefficient_whitecolebrook', 'friction_coefficient_stricklernikuradse', &
             'friction_coefficient_strickler', 'friction_coefficient_debosbijkerk')

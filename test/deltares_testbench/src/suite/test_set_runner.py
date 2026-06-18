@@ -124,7 +124,7 @@ class TestSetRunner(ABC):
             if not self.__settings.command_line_settings.skip_post_processing:
                 self.show_summary(results, self.__logger)
                 if self.settings.command_line_settings.copy_failed_cases:
-                    self._copy_failed_cases(results, Path("test/deltares_testbench/copy_cases"))
+                    self._copy_failed_cases(results, Path("copy_cases"))
             else:
                 self.__logger.info("No summary, because postprocessing is skipped due to argument.")
         else:
@@ -345,15 +345,12 @@ class TestSetRunner(ABC):
             Logger to log to.
         """
 
-    def _copy_failed_cases(self, results: list[TestCaseResult],  dest_path: Path):
-        
+    def _copy_failed_cases(self, results: list[TestCaseResult], dest_path: Path):
         for result in results:
             test_case_config = result.config
             test_case_results = result.results
-            
-            if any(not comparison.passed for (_,_,_,comparison) in test_case_results):
-                shutil.copytree(test_case_config.absolute_test_case_path, dest_path / test_case_config.name )
-
+            if any(not comparison.passed for (_, _, _, comparison) in test_case_results):
+                shutil.copytree(test_case_config.absolute_test_case_path, dest_path / test_case_config.name)
 
     @abstractmethod
     def create_error_result(self, test_case_config: TestCaseConfig, run_data: RunData) -> TestCaseResult:

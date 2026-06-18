@@ -1,5 +1,4 @@
-# Use the  Windows Server Core 2022 image form ICT.
-FROM containers.deltares.nl/base_windows_containers/server:ltsc2022
+FROM containers.deltares.nl/mcr-proxy/windows/server:ltsc2025
 
 # Set powershell as shell
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'Continue'; $verbosePreference='Continue';"]

@@ -83,6 +83,10 @@ contains
       contactnlinks = 0
       call dealloc(hashlist_contactids)
 
+      if (allocated(nbranchids)) then
+         deallocate(nbranchids)
+      end if
+      meshgeom1d = t_ug_meshgeom('')
       call reset_save_ugrid_state()
 
    end subroutine default_save_ugrid_state
