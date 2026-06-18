@@ -57,7 +57,7 @@ contains
 
       error = .true.
       avalflux = 0.0_dp
-      !
+
       do L = 1, lnx
          if (wu_mor(L) == 0.0_dp) then
             cycle
