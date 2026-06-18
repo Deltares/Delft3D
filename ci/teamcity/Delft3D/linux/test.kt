@@ -113,7 +113,7 @@ object LinuxTest : BuildType({
                 --rm
                 --pull always
                 --shm-size 8G
-                -v /dvc/delft3d:/dvc-cache
+                -v /dvc/delft3d:/dvc/delft3d
             """.trimIndent()
         }
         dockerCommand {
