@@ -63,8 +63,8 @@ module m_atmospheric_stability
    !! Enable terms only when they are needed for the target conditions.
    type :: t_options
       logical :: include_free_convection = .false.  !< Use in weak-wind unstable conditions (buoyancy-driven turbulence matters); usually unnecessary in moderate/strong wind or neutral/stable cases.
-      logical :: include_fqsat = .false.            !< Use when representing salinity effects on air-sea fluxes by reducing surface saturation specific humidity.
-      logical :: include_monin_obukhov = .true.     !< Use for stability-aware similarity corrections; disable for neutral conditions.
+      logical :: include_stability = .true.     !< Use for stability-aware similarity corrections; disable for neutral conditions.
+      real(kind=dp) :: fqsat = 1.0_dp               !< Salinity reducing factor of saturation humidity.
    end type t_options
 
    !> Scaling parameters data type.
@@ -82,8 +82,8 @@ module m_atmospheric_stability
 
    !> Fluxes data type.
    type :: t_fluxes
-      real(kind=dp) :: wind_stress_u = 0.0_dp
-      real(kind=dp) :: wind_stress_v = 0.0_dp
+      real(kind=dp) :: wind_stress_x = 0.0_dp
+      real(kind=dp) :: wind_stress_y = 0.0_dp
       real(kind=dp) :: latent_heat_flux = 0.0_dp
       real(kind=dp) :: sensible_heat_flux = 0.0_dp
    end type t_fluxes
@@ -94,10 +94,10 @@ module m_atmospheric_stability
 contains
 
    !> Compute turbulence scaling parameters for a point value.
-   pure function compute_scaling_parameters(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+   pure function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
                                   air_pressure, charnock, surface_temperature, options) result(result)
-      real(kind=dp), intent(in) :: wind_velocity_u         !< U wind component [m/s].
-      real(kind=dp), intent(in) :: wind_velocity_v         !< V wind component [m/s].
+      real(kind=dp), intent(in) :: wind_velocity_x         !< x-direction wind component [m/s].
+      real(kind=dp), intent(in) :: wind_velocity_y         !< y-direction wind component [m/s].
       real(kind=dp), intent(in) :: air_temperature         !< Air temperature [K].
       real(kind=dp), intent(in) :: dew_point_temperature   !< Dew-point temperature [K].
       real(kind=dp), intent(in) :: air_pressure            !< Air pressure [Pa].
@@ -131,13 +131,10 @@ contains
       integer, parameter :: MAXIMUM_ITERATION = 50
       real(kind=dp), parameter :: EPSILON = 1.0e-4_dp
 
-      wind_velocity_magnitude = sqrt(wind_velocity_u**2 + wind_velocity_v**2)
+      wind_velocity_magnitude = sqrt(wind_velocity_x**2 + wind_velocity_y**2)
       vapor_pressure = compute_saturation_pressure(dew_point_temperature)
       air_humidity = compute_specific_humidity(vapor_pressure, air_pressure)
-      salt_saturation_humidity_reduction_factor = 1.0_dp
-      if (options%include_fqsat) then
-         salt_saturation_humidity_reduction_factor = 0.98_dp
-      end if
+      salt_saturation_humidity_reduction_factor = options%fqsat
       saturated_vapor_pressure = compute_saturation_pressure(surface_temperature)
       surface_humidity = compute_specific_humidity(saturated_vapor_pressure, air_pressure)
       surface_humidity = salt_saturation_humidity_reduction_factor * surface_humidity
@@ -178,7 +175,7 @@ contains
             delta_wind_speed = sqrt(wind_velocity_magnitude**2 + convective_velocity_scale**2)
          end if
 
-         if (options%include_monin_obukhov) then
+         if (options%include_stability) then
              richardson_number = compute_richardson_number(delta_wind_speed, surface_temperature, &
                               temperature_at_wind_height, air_pressure, humidity_at_wind_height, &
                               salt_saturation_humidity_reduction_factor)
@@ -257,10 +254,10 @@ contains
 
    !> Compute arrays of scaling parameters and bulk surface fluxes.
    !! This routine gives no return values. It fills the module arrays with proper values.
-   subroutine compute_scales_and_fluxes(wind_velocity_u, wind_velocity_v, air_temperature, dew_point_temperature, &
+   subroutine compute_scales_and_fluxes(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
                              air_pressure, charnock, surface_temperature, options)
-      real(kind=dp), intent(in) :: wind_velocity_u(:)        !< U wind component [m/s].
-      real(kind=dp), intent(in) :: wind_velocity_v(:)        !< V wind component [m/s].
+      real(kind=dp), intent(in) :: wind_velocity_x(:)        !< x-direction wind component [m/s].
+      real(kind=dp), intent(in) :: wind_velocity_y(:)        !< y-direction wind component [m/s].
       real(kind=dp), intent(in) :: air_temperature(:)        !< Air temperature [K].
       real(kind=dp), intent(in) :: dew_point_temperature(:)  !< Dew-point temperature [K].
       real(kind=dp), intent(in) :: air_pressure(:)           !< Air pressure [Pa].
@@ -277,9 +274,9 @@ contains
       integer :: index
       integer :: number_of_elements
 
-      number_of_elements = size(wind_velocity_u)
+      number_of_elements = size(wind_velocity_x)
 
-      if (size(wind_velocity_v) /= number_of_elements .or. size(air_temperature) /= number_of_elements .or. &
+      if (size(wind_velocity_y) /= number_of_elements .or. size(air_temperature) /= number_of_elements .or. &
           size(dew_point_temperature) /= number_of_elements .or. size(air_pressure) /= number_of_elements .or. &
           size(charnock) /= number_of_elements .or. size(surface_temperature) /= number_of_elements) then
          error stop 'compute_scales_and_fluxes: all input arrays must have the same size.'
@@ -291,21 +288,21 @@ contains
       allocate(fluxes(number_of_elements))
 
       do index = 1, number_of_elements
-         scaling_parameter = compute_scaling_parameters(wind_velocity_u(index), wind_velocity_v(index), air_temperature(index), &
+         scaling_parameter = compute_scaling_parameters(wind_velocity_x(index), wind_velocity_y(index), air_temperature(index), &
                                          dew_point_temperature(index), air_pressure(index), charnock(index), &
                                          surface_temperature(index), options)
 
          vapor_pressure = compute_saturation_pressure(dew_point_temperature(index))
          air_density = compute_air_density(air_temperature(index), air_pressure(index), vapor_pressure)
          wind_stress_magnitude = air_density * scaling_parameter%u_star**2
-         wind_velocity_magnitude = sqrt(wind_velocity_u(index)**2 + wind_velocity_v(index)**2)
+         wind_velocity_magnitude = sqrt(wind_velocity_x(index)**2 + wind_velocity_y(index)**2)
 
          if (wind_velocity_magnitude > 1.0e-12_dp) then
-            flux%wind_stress_u = wind_stress_magnitude * wind_velocity_u(index) / wind_velocity_magnitude
-            flux%wind_stress_v = wind_stress_magnitude * wind_velocity_v(index) / wind_velocity_magnitude
+            flux%wind_stress_x = wind_stress_magnitude * wind_velocity_x(index) / wind_velocity_magnitude
+            flux%wind_stress_y = wind_stress_magnitude * wind_velocity_y(index) / wind_velocity_magnitude
          else
-            flux%wind_stress_u = 0.0_dp
-            flux%wind_stress_v = 0.0_dp
+            flux%wind_stress_x = 0.0_dp
+            flux%wind_stress_y = 0.0_dp
          end if
          flux%latent_heat_flux = air_density * CONST_Lv * scaling_parameter%u_star * scaling_parameter%q_star
          flux%sensible_heat_flux = air_density * CONST_Cpd * scaling_parameter%u_star * scaling_parameter%t_star
@@ -316,9 +313,9 @@ contains
    end subroutine compute_scales_and_fluxes
 
    !> Return wind-stress component arrays from module-stored fluxes.
-   subroutine get_wind_stress(wind_stress_u, wind_stress_v)
-      real(kind=dp), allocatable, intent(out) :: wind_stress_u(:)
-      real(kind=dp), allocatable, intent(out) :: wind_stress_v(:)
+   subroutine get_wind_stress(wind_stress_x, wind_stress_y)
+      real(kind=dp), allocatable, intent(out) :: wind_stress_x(:)
+      real(kind=dp), allocatable, intent(out) :: wind_stress_y(:)
       integer :: index
       integer :: number_of_elements
 
@@ -327,12 +324,12 @@ contains
       end if
 
       number_of_elements = size(fluxes)
-      allocate(wind_stress_u(number_of_elements))
-      allocate(wind_stress_v(number_of_elements))
+      allocate(wind_stress_x(number_of_elements))
+      allocate(wind_stress_y(number_of_elements))
 
       do index = 1, number_of_elements
-         wind_stress_u(index) = fluxes(index)%wind_stress_u
-         wind_stress_v(index) = fluxes(index)%wind_stress_v
+         wind_stress_x(index) = fluxes(index)%wind_stress_x
+         wind_stress_y(index) = fluxes(index)%wind_stress_y
       end do
    end subroutine get_wind_stress
 
@@ -626,20 +623,22 @@ contains
       real(kind=dp), parameter :: coef_c = 5.0_dp
       real(kind=dp), parameter :: coef_d = 0.35_dp
       real(kind=dp), parameter :: coef_unstable = 16.0_dp
-      real(kind=dp) :: clipped_zeta, unstable_factor, psi_unstable, psi_stable
+      real(kind=dp) :: clipped_zeta, unstable_factor, psi_stable
 
       clipped_zeta = min(stability_parameter, 5.0_dp)
-      unstable_factor = (1.0_dp - coef_unstable*clipped_zeta)**0.25_dp
-      psi_unstable = (PI/2.0_dp) - (2.0_dp*atan(unstable_factor)) + &
-                     log(((1.0_dp + unstable_factor)**2 * (1.0_dp + unstable_factor*unstable_factor)) / 8.0_dp)
-      psi_stable = (-coef_b*(clipped_zeta - (coef_c/coef_d))*exp(-coef_d*clipped_zeta)) - &
-                   coef_a*clipped_zeta - (coef_b*coef_c/coef_d)
 
       if (clipped_zeta < 0.0_dp) then
-         stability_correction = psi_unstable
+      ! unstable conditions
+         unstable_factor = (1.0_dp - coef_unstable*clipped_zeta)**0.25_dp
+         stability_correction = (PI/2.0_dp) - (2.0_dp*atan(unstable_factor)) + &
+                        log(((1.0_dp + unstable_factor)**2 * (1.0_dp + unstable_factor*unstable_factor)) / 8.0_dp)
       else if (clipped_zeta > 0.0_dp) then
+      ! stable conditions
+         psi_stable = (-coef_b*(clipped_zeta - (coef_c/coef_d))*exp(-coef_d*clipped_zeta)) - &
+                      coef_a*clipped_zeta - (coef_b*coef_c/coef_d)
          stability_correction = min(psi_stable, 1.0e30_dp)
       else
+      ! neutral conditions
          stability_correction = 0.0_dp
       end if
    end function stability_profile_momentum
