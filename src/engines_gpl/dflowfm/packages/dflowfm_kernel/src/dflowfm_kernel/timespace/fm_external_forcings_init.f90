@@ -311,6 +311,12 @@ contains
                //'Consider replacing with ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
             call warn_flush()
          end if
+
+         if (operand == OPERAND_UNKNOWN) then
+            write (msgbuf, '(a)') 'In ['//group_name//'] block in file '''//file_name//''': unknown operand value '''//trim(property_value)//''' found. ' &
+               //'Valid values are: ''override'', ''overrideIfMissing'', ''add'', ''multiply'', ''minimum'', or ''maximum''.'
+            call err_flush()
+         end if 
       end if
 
       num_items_in_block = 0

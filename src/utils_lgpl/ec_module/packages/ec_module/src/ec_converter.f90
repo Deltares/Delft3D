@@ -1288,7 +1288,7 @@ contains
                   if (allocated(connection%converterPtr%srcmask%msk)) then
                      targetField%arr1dPtr(from:thru) = valuesT * real(connection%converterPtr%srcmask%msk(from:thru), hp)
                   else
-                     targetField%arr1dPtr(from:thru) = valuesT
+                     call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
                   end if
                end do
                targetField%timesteps = timesteps
@@ -1347,6 +1347,9 @@ contains
                   targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
                   targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
                   do j = jmin, jmax
+                     from = (j - 1) * (maxlay * n_data) + 1
+                     thru = (j) * (maxlay * n_data)
+
                      if (associated(targetmask)) then
                         if (targetmask(j) == 0) then
                            cycle
@@ -1376,7 +1379,7 @@ contains
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
-            targetField%arr1dPtr(from:thru) = valuesT
+            call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
             targetField%timesteps = timesteps
 
          case (EC_OPERAND_ADD) ! TODO: AvD/EB: it seems that EC_OPERAND_ADD does not support targetIndex (offset). Should we not make this available?
@@ -1393,7 +1396,7 @@ contains
                   end if
                   from = (j - 1) * (maxlay * n_data) + 1
                   thru = (j) * (maxlay * n_data)
-                  targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) + valuesT
+                  call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
                end do
                targetField%timesteps = timesteps
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
@@ -1406,7 +1409,7 @@ contains
                            cycle
                         end if
                      end if
-                     targetField%arr1dPtr(j) = targetField%arr1dPtr(j) + valuesT(i)
+                     call apply_operand(targetField%arr1dPtr(j), valuesT(i), connection%converterPtr%operandType)
                   end do
                   targetField%timesteps = timesteps
                end do
@@ -1426,7 +1429,7 @@ contains
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
-            targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) + valuesT
+            call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
             targetField%timesteps = timesteps
 
          case (EC_OPERAND_MULTIPLY)
@@ -1443,12 +1446,7 @@ contains
                   end if
                   from = (j - 1) * (maxlay * n_data) + 1
                   thru = (j) * (maxlay * n_data)
-                  if (.not. any(targetField%arr1dPtr(from:thru) == ec_undef_hp)) then
-                     targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) * valuesT
-                  else
-                     call set_ec_message("ERROR: ec_converter::ecConverterUniform: Missing existing value(s) to multiply with.")
-                     return
-                  end if
+                  call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
                end do
                targetField%timesteps = timesteps
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
@@ -1461,12 +1459,7 @@ contains
                            cycle
                         end if
                      end if
-                     if (.not. any(targetField%arr1dPtr(from:thru) == ec_undef_hp)) then
-                        targetField%arr1dPtr(j) = targetField%arr1dPtr(j) * valuesT(i)
-                     else
-                        call set_ec_message("ERROR: ec_converter::ecConverterUniform: Missing existing value(s) to multiply with.")
-                        return
-                     end if
+                     call apply_operand(targetField%arr1dPtr(j), valuesT(i), connection%converterPtr%operandType)
                   end do
                   targetField%timesteps = timesteps
                end do
@@ -1489,12 +1482,7 @@ contains
                   end if
                   from = (j - 1) * (maxlay * n_data) + 1
                   thru = (j) * (maxlay * n_data)
-                  if (.not. any(targetField%arr1dPtr(from:thru) == ec_undef_hp)) then
-                     targetField%arr1dPtr(from:thru) = min(targetField%arr1dPtr(from:thru), valuesT)
-                  else
-                     call set_ec_message("ERROR: ec_converter::ecConverterUniform: Missing existing value(s) to minimize with.")
-                     return
-                  end if
+                  call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
                end do
                targetField%timesteps = timesteps
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
@@ -1507,12 +1495,7 @@ contains
                            cycle
                         end if
                      end if
-                     if (.not. any(targetField%arr1dPtr(from:thru) == ec_undef_hp)) then
-                        targetField%arr1dPtr(j) = min(targetField%arr1dPtr(j), valuesT(i))
-                     else
-                        call set_ec_message("ERROR: ec_converter::ecConverterUniform: Missing existing value(s) to minimize with.")
-                        return
-                     end if
+                     call apply_operand(targetField%arr1dPtr(j), valuesT(i), connection%converterPtr%operandType)
                   end do
                   targetField%timesteps = timesteps
                end do
@@ -1535,12 +1518,7 @@ contains
                   end if
                   from = (j - 1) * (maxlay * n_data) + 1
                   thru = (j) * (maxlay * n_data)
-                  if (.not. any(targetField%arr1dPtr(from:thru) == ec_undef_hp)) then
-                     targetField%arr1dPtr(from:thru) = max(targetField%arr1dPtr(from:thru), valuesT)
-                  else
-                     call set_ec_message("ERROR: ec_converter::ecConverterUniform: Missing existing value(s) to maximize with.")
-                     return
-                  end if
+                  call apply_operand(targetField%arr1dPtr(from:thru), valuesT, connection%converterPtr%operandType)
                end do
                targetField%timesteps = timesteps
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
@@ -1553,12 +1531,7 @@ contains
                            cycle
                         end if
                      end if
-                     if (.not. any(targetField%arr1dPtr(from:thru) == ec_undef_hp)) then
-                        targetField%arr1dPtr(j) = max(targetField%arr1dPtr(j), valuesT(i))
-                     else
-                        call set_ec_message("ERROR: ec_converter::ecConverterUniform: Missing existing value(s) to maximize with.")
-                        return
-                     end if
+                     call apply_operand(targetField%arr1dPtr(j), valuesT(i), connection%converterPtr%operandType)
                   end do
                   targetField%timesteps = timesteps
                end do
@@ -1695,7 +1668,7 @@ contains
                return
             end if
             do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = targetField%arr1dPtr(j) + magnitude
+               call apply_operand(targetField%arr1dPtr(j), magnitude, connection%converterPtr%operandType)
             end do
             targetField%timesteps = timesteps
 
@@ -1710,7 +1683,7 @@ contains
                return
             end if
             do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = targetField%arr1dPtr(j) * magnitude
+               call apply_operand(targetField%arr1dPtr(j), magnitude, connection%converterPtr%operandType)
             end do
             targetField%timesteps = timesteps
 
@@ -1725,7 +1698,7 @@ contains
                return
             end if
             do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = min(targetField%arr1dPtr(j), magnitude)
+               call apply_operand(targetField%arr1dPtr(j), magnitude, connection%converterPtr%operandType)
             end do
             targetField%timesteps = timesteps
 
@@ -1740,7 +1713,7 @@ contains
                return
             end if
             do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = max(targetField%arr1dPtr(j), magnitude)
+               call apply_operand(targetField%arr1dPtr(j), magnitude, connection%converterPtr%operandType)
             end do
             targetField%timesteps = timesteps
 
@@ -1822,8 +1795,8 @@ contains
          case (EC_OPERAND_REPLACE)
 
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = targetU
-               v(i) = targetV
+               call apply_operand(u(i), targetU, connection%converterPtr%operandType)
+               call apply_operand(v(i), targetV, connection%converterPtr%operandType)
             end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -1831,10 +1804,8 @@ contains
          case (EC_OPERAND_REPLACE_IF_MISSING)
 
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               if (targetField%arr1dPtr(i) == ec_undef_hp) then
-                  u(i) = targetU
-                  v(i) = targetV
-               end if
+               call apply_operand(u(i), targetU, connection%converterPtr%operandType)
+               call apply_operand(v(i), targetV, connection%converterPtr%operandType)
             end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -1842,8 +1813,8 @@ contains
          case (EC_OPERAND_ADD)
 
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = u(i) + targetU
-               v(i) = v(i) + targetV
+               call apply_operand(u(i), targetU, connection%converterPtr%operandType)
+               call apply_operand(v(i), targetV, connection%converterPtr%operandType)
             end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -1856,8 +1827,8 @@ contains
             end if
 
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = u(i) * targetU
-               v(i) = v(i) * targetV
+               call apply_operand(u(i), targetU, connection%converterPtr%operandType)
+               call apply_operand(v(i), targetV, connection%converterPtr%operandType)
             end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -1870,8 +1841,8 @@ contains
             end if
 
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = min(u(i), targetU)
-               v(i) = min(v(i), targetV)
+               call apply_operand(u(i), targetU, connection%converterPtr%operandType)
+               call apply_operand(v(i), targetV, connection%converterPtr%operandType)
             end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -1884,8 +1855,8 @@ contains
             end if
 
             do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = max(u(i), targetU)
-               v(i) = max(v(i), targetV)
+               call apply_operand(u(i), targetU, connection%converterPtr%operandType)
+               call apply_operand(v(i), targetV, connection%converterPtr%operandType)
             end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
@@ -2144,26 +2115,11 @@ contains
                            end if
                            val = wL * valL1 + wR * valR1
                            do k = kbegin, kend ! Set the average value for all vertical positions
-                              if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE) .or. &
-                                 (connection%converterPtr%operandType == EC_OPERAND_REPLACE_ELEMENT)) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-                              else if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE_IF_MISSING)) then
-                                 if (all(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) == ec_undef_hp)) then
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-                                 end if
-                              else if (connection%converterPtr%operandType == EC_OPERAND_ADD) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-                              else if (connection%converterPtr%operandType == EC_OPERAND_MULTIPLY) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) * val(1:vectormax)
-                              else if (connection%converterPtr%operandType == EC_OPERAND_MINIMUM) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-                              else if (connection%converterPtr%operandType == EC_OPERAND_MAXIMUM) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-                              end if
+                              call apply_operand(
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
+                                 val(1:vectormax), &
+                                 connection%converterPtr%operandType
+                              )
                            end do ! target layers
                         else
                            do k = kbegin, kend
@@ -2198,28 +2154,12 @@ contains
                                  call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
                                  return
                               end select
-                              !
-                              if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE) .or. &
-                                 (connection%converterPtr%operandType == EC_OPERAND_REPLACE_ELEMENT)) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-                              else if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE_IF_MISSING)) then
-                                 if (all(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) == ec_undef_hp)) then
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = val(1:vectormax)
-                                 end if
-                              else if (connection%converterPtr%operandType == EC_OPERAND_ADD) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-                              else if (connection%converterPtr%operandType == EC_OPERAND_MULTIPLY) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) * val(1:vectormax)
-                              else if (connection%converterPtr%operandType == EC_OPERAND_MINIMUM) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-                              else if (connection%converterPtr%operandType == EC_OPERAND_MAXIMUM) then
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
-                                    = max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-                              end if
-                              !
+                              
+                              call apply_operand(
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
+                                 val(1:vectormax), &
+                                 connection%converterPtr%operandType
+                              )
                            end do ! target layers
                         end if ! are we averaging the source in the vertical direction ?
                      end if ! kR > 0: right support point exists
@@ -2244,26 +2184,12 @@ contains
                      do k = 1, maxlay_tgt
                         from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                         thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
-                        if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE) .or. &
-                           (connection%converterPtr%operandType == EC_OPERAND_REPLACE_ELEMENT)) then
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
-                        else if ((connection%converterPtr%operandType == EC_OPERAND_REPLACE)) then
-                           if (all(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) == ec_undef_hp)) then
-                              connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = val(1:vectormax)
-                           end if
-                        else if (connection%converterPtr%operandType == EC_OPERAND_ADD) then
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-                              connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) + val(1:vectormax)
-                        else if (connection%converterPtr%operandType == EC_OPERAND_MULTIPLY) then
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-                              connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) * val(1:vectormax)
-                        else if (connection%converterPtr%operandType == EC_OPERAND_MINIMUM) then
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-                              min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), val(1:vectormax))
-                        else if (connection%converterPtr%operandType == EC_OPERAND_MAXIMUM) then
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) = &
-                              max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), val(1:vectormax))
-                        end if
+
+                        call apply_operand(
+                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
+                           val(1:vectormax), &
+                           connection%converterPtr%operandType
+                        )
                      end do
                   end if ! valid left or right point ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
@@ -2531,46 +2457,8 @@ contains
             call time_weight_factors(a0, a1, timesteps, t0, t1)
             rr = a0 * vv0 + a1 * vv1
 
-            select case (connection%converterPtr%operandType)
+            call apply_operand(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr, connection%converterPtr%operandType)
 
-            case (EC_OPERAND_REPLACE)
-
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case (EC_OPERAND_REPLACE_IF_MISSING)
-
-               if (connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) == ec_undef_hp) then
-                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
-                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-               end if
-
-            case (EC_OPERAND_ADD)
-
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) + rr
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case (EC_OPERAND_MULTIPLY)
-
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) * rr
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case (EC_OPERAND_MINIMUM)
-
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case (EC_OPERAND_MAXIMUM)
-
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case default
-
-               call set_ec_message("ERROR: ec_converter::ecConverterArcinfo: Unsupported operand type requested.")
-               return
-
-            end select
          end do
       case default
          call set_ec_message("ERROR: ec_converter::ecConverterArcinfo: Unsupported interpolation type requested.")
@@ -2738,15 +2626,9 @@ contains
 
          select case (connection%converterPtr%operandType)
 
-         case (EC_OPERAND_REPLACE)
+         case (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = deflection
-
-          case (EC_OPERAND_REPLACE_IF_MISSING)
-
-             if (connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) == ec_undef_hp) then
-                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = deflection
-             end if
+            call apply_operand(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection, connection%converterPtr%operandType)
 
          case (EC_OPERAND_REPLACE_ELEMENT)
 
@@ -2756,22 +2638,6 @@ contains
                return
             end if
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(connection%converterPtr%targetIndex) = deflection
-
-         case (EC_OPERAND_ADD)
-            
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) + deflection
-
-         case (EC_OPERAND_MULTIPLY)
-            
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) * deflection
-
-         case (EC_OPERAND_MINIMUM)
-            
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
-
-         case (EC_OPERAND_MAXIMUM)
-            
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
 
          case default
 
@@ -3943,11 +3809,11 @@ contains
    end subroutine polyindexweight
 
    !> Checks whether lines 1-2 and 3-4 intersect.
-      !! @param[in] x1,y1,x2,y2,x3,y3,x4,y4 x- and y-coords of line endpoints.
-      !! @param[out] jacros 1 if lines cross (intersect), 0 if not.
-      !! @param[out] sl lambda in [0,1] on line segment 1-2 (outside [0,1] if no intersection). Unchanged if no intersect!!
-      !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
-      !! @param[out] xcr,ycr x-coord. of intersection point.
+   !! @param[in] x1,y1,x2,y2,x3,y3,x4,y4 x- and y-coords of line endpoints.
+   !! @param[out] jacros 1 if lines cross (intersect), 0 if not.
+   !! @param[out] sl lambda in [0,1] on line segment 1-2 (outside [0,1] if no intersection). Unchanged if no intersect!!
+   !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
+   !! @param[out] xcr,ycr x-coord. of intersection point.
    subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS, SL, SM, XCR, YCR, CRP)
       use ieee_arithmetic, only: ieee_is_nan
 
@@ -3961,7 +3827,7 @@ contains
       real(dp) :: x21, y21, x31, y31, x43, y43, xcr, ycr
       real(dp) :: dmiss = -999_dp
 
-      !     safety check on crp (in)
+      ! safety check on crp (in)
       if (ieee_is_nan(crp)) then
          crp = 0.0_dp
       end if
@@ -3990,7 +3856,7 @@ contains
 
       DET = X43 * Y21 - Y43 * X21
 
-      !     SPvdP: make eps have proper dimension
+      ! SPvdP: make eps have proper dimension
       EPS = max(EPS * maxval((/X21, Y21, X43, Y43, X31, Y31/)), tiny(0.0_dp))
       if (abs(DET) < EPS) then
          return
@@ -4020,16 +3886,20 @@ contains
 
    !> distance point 1 -> 2
    real(dp) function dbdistance(x1, y1, x2, y2)
-      real(dp) :: x1, y1, x2, y2
+      real(dp), intent(in) :: x1
+      real(dp), intent(in) :: y1
+      real(dp), intent(in) :: x2
+      real(dp), intent(in) :: y2
+
       ! locals
       real(dp) :: ddx, ddy, rr
       real(dp) :: dmiss = -999_dp
-      !
+      
       if (x1 == DMISS .or. x2 == DMISS .or. y1 == DMISS .or. y2 == DMISS) then
          dbdistance = 0.0_dp
          return
       end if
-      !
+      
       !ddx = getdx(x1,y1,x2,y2) ! TODO : all is cartesian, kernel must provide it as such
       ddx = x2 - x1
       !ddy = getdy(x1,y1,x2,y2) ! TODO : all is cartesian, kernel must provide it as such
@@ -4042,10 +3912,8 @@ contains
       end if
    end function dbdistance
 
-!>    get field bounding box indices
+   !> get field bounding box indices
    subroutine ecConverterGetBbox(instancePtr, itemID, t01, col0, col1, row0, row1, ncols, nrows, issparse, Ndatasize)
-      implicit none
-
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: itemId !< unique Item id
       integer, intent(in) :: t01 !< field 0 (0) or 1 (other)
@@ -4087,8 +3955,6 @@ contains
    end subroutine ecConverterGetBbox
 
    subroutine MaskToSparse(n_cols, n_rows, imask, ia, ja)
-      implicit none
-
       integer, intent(in) :: n_cols !< number of columns
       integer, intent(in) :: n_rows !< number of rows
       integer, dimension(n_cols, n_rows), intent(in) :: imask !< active (1) or not (0)
@@ -4099,10 +3965,10 @@ contains
       integer :: np ! row
       integer :: i
 
-!        allocate startpointer (increments)
+      ! allocate startpointer (increments)
       allocate (ia(n_rows + 1))
 
-!        store increments of startpointer in ia
+      ! store increments of startpointer in ia
       do np = 1, n_rows
          ia(np + 1) = 0
          do mp = 1, n_cols
@@ -4112,16 +3978,16 @@ contains
          end do
       end do
 
-!        make startpointers from increments
+      ! make startpointers from increments
       ia(1) = 1
       do np = 1, n_rows
          ia(np + 1) = ia(np) + ia(np + 1)
       end do
 
-!        allocate 2nd-index numbers
+      ! allocate 2nd-index numbers
       allocate (ja(ia(n_rows + 1) - 1))
 
-!        fill 2nd-index numbers
+      ! fill 2nd-index numbers
       i = 0
       do np = 1, n_rows
          do mp = 1, n_cols
@@ -4136,8 +4002,6 @@ contains
    end subroutine MaskToSparse
 
    subroutine SetSparsityPattern(srcfld, n_cols, n_rows, ia, ja)
-      implicit none
-
       type(tEcField), intent(inout) :: srcfld !< source field
       integer, intent(in) :: n_cols !< number of columns
       integer, intent(in) :: n_rows !< number of rows
@@ -4152,19 +4016,17 @@ contains
       srcfld%ja = ja
       srcfld%issparse = 1
 
-!        effectively bounding box
+      ! effectively bounding box
       srcfld%bbox = (/1, 1, n_cols, n_rows/)
 
       return
    end subroutine SetSparsityPattern
 
-!< convert (1:ncol,2:mrow) indices of lower-left source point to sparse indices of (1:lower-left,2:upper-left) source points (out),
-!<  left-right: increasing column index,
-!<  down-up: increasing row index
-!< note: input indices are (row,col), not (col,row)
+   !< convert (1:ncol,2:mrow) indices of lower-left source point to sparse indices of (1:lower-left,2:upper-left) source points (out),
+   !!  left-right: increasing column index,
+   !!  down-up: increasing row index
+   !!  note: input indices are (row,col), not (col,row)
    subroutine ConvertToSparseIndices(n_points, indices, n_rows, ia, ja)
-      implicit none
-
       integer, intent(in) :: n_points !< number of target points
       integer, dimension(2, n_points), intent(inout) :: indices !<(mrow,ncol) indices of lower-left source point (in), sparse index of (lower-left,upper-left) source points (out)
       integer, intent(in) :: n_rows !< number of rows of source
@@ -4177,16 +4039,16 @@ contains
       integer :: mcol, nrow
 
       do i = 1, n_points
-!           get (mcol,nrow) of lower-left source point
+         ! get (mcol,nrow) of lower-left source point
          mcol = indices(2, i)
          nrow = indices(1, i)
 
-!           check if indices are assigned
+         ! check if indices are assigned
          if (mcol == 0 .or. nrow == 0) then
             cycle
          end if
 
-!           find sparse indeces of lower-left and upper-left source points
+         ! find sparse indeces of lower-left and upper-left source points
          idx = 0
          idownup = 0
          do idownup = 1, 2
@@ -4205,12 +4067,9 @@ contains
                end if
             end do
 
-!              check if index is found
             if (idx > 0) then
-!                 overwrite index
                indices(idownup, i) = idx
             else
-!                 error
                call set_ec_message("ERROR: conversion to sparse indices failed for point ", i)
             end if
          end do
@@ -4219,5 +4078,75 @@ contains
 
       return
    end subroutine ConvertToSparseIndices
+
+   !> Apply the operand to the target array with the given values, according to the operand type.
+   !! Note: for add/multiply/minimum/maximum, all existing values in the target array must be defined (not ec_undef_hp), otherwise an error is raised and no operation is performed.
+   elemental subroutine apply_operand(target_array, values, operand)
+      ! Parameters
+      real(dp), dimension(:), intent(inout) :: target_array !< target array to which the operand is applied
+      real(dp), dimension(:), intent(in) :: values !< values to apply with
+      integer, intent(in) :: operand !< operand type
+
+      ! Local variables
+      integer :: i !< loop index
+
+      select case (operand)
+
+      case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
+
+         target_array = values
+
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+
+         do i = 1, size(target_array)
+            if (target_array(i) == ec_undef_hp) then
+               target_array(i) = values(i)
+            end if
+         end do
+
+      case (EC_OPERAND_ADD)
+
+         if (.not. any(target_array == ec_undef_hp)) then
+             target_array = target_array + values
+         else
+             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to add to.")
+             return
+         end if
+
+      case (EC_OPERAND_MULTIPLY)
+
+         if (.not. any(target_array == ec_undef_hp)) then
+             target_array = target_array * values
+         else
+             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to multiply with.")
+             return
+         end if
+
+      case (EC_OPERAND_MINIMUM)
+
+         if (.not. any(target_array == ec_undef_hp)) then
+             target_array = min(target_array, values)
+         else
+             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to compare for minimum.")
+             return
+         end if
+
+      case (EC_OPERAND_MAXIMUM)
+
+         if (.not. any(target_array == ec_undef_hp)) then
+             target_array = max(target_array, values)
+         else
+             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to compare for maximum.")
+             return
+         end if
+
+      case default
+
+         call set_ec_message("ERROR: ec_converter: Unsupported operand type requested.")
+         return
+
+      end select
+
+   end subroutine apply_operand
 
 end module m_ec_converter

@@ -146,15 +146,15 @@ module m_ec_parameters
    integer, parameter :: ztype_z = 1 !< z (absolute) coordinates
    !
    ! enumeration for operand types
-   integer, parameter :: EC_OPERAND_UNDEFINED = 0 !< EC equivalent of FM's OPERAND_UNKNOWN
-   integer, parameter :: EC_OPERAND_ADD = 1 !< EC quivalent of FM's OPERAND_ADD
-   integer, parameter :: EC_OPERAND_REPLACE = 2 !< EC equivalent of FM's OPERAND_OVERRIDE
+   integer, parameter :: EC_OPERAND_UNDEFINED = 0 !< Invalid operand set.
+   integer, parameter :: EC_OPERAND_ADD = 1 !< Add provided value to the target's existing value.
+   integer, parameter :: EC_OPERAND_REPLACE = 2 !< Replace the target's existing value with the provided value.
    integer, parameter :: EC_OPERAND_REPLACE_ELEMENT = 3
    integer, parameter :: EC_OPERAND_ADD_ELEMENT = 4
-   integer, parameter :: EC_OPERAND_REPLACE_IF_MISSING = 5 !< EC equivalent of FM's OPERAND_OVERRIDE_IF_MISSING
-   integer, parameter :: EC_OPERAND_MULTIPLY = 6 !< EC equivalent of FM's OPERAND_MULTIPLY
-   integer, parameter :: EC_OPERAND_MINIMUM = 7 !< EC equivalent of FM's OPERAND_MINIMUM
-   integer, parameter :: EC_OPERAND_MAXIMUM = 8 !< EC equivalent of FM's OPERAND_MAXIMUM
+   integer, parameter :: EC_OPERAND_REPLACE_IF_MISSING = 5 !< Replace the target's existing value if it is missing.
+   integer, parameter :: EC_OPERAND_MULTIPLY = 6 !< Multiply the target's existing value by the provided value.
+   integer, parameter :: EC_OPERAND_MINIMUM = 7 !< Set the target's value to the minimum of the existing and provided values.
+   integer, parameter :: EC_OPERAND_MAXIMUM = 8 !< Set the target's value to the maximum of the existing and provided values.
    !
    ! enumeration for tEcConverter types
    integer, parameter :: convType_undefined = 0
