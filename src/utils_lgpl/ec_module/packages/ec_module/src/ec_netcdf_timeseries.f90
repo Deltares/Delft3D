@@ -115,7 +115,9 @@ contains
          do i = 1, n_nc_objs
             if (ecNetCDFFree(ptr(i)%ptr)) then
                deallocate (ptr(i)%ptr, stat=istat)
-               if (istat /= 0) success = .false.
+               if (istat /= 0) then
+                  success = .false.
+               end if
             else
                success = .false.
             end if
@@ -123,7 +125,9 @@ contains
          ! Finally deallocate the tEcNetCDFPtr(:) pointer.
          if (success) then
             deallocate (ptr, stat=istat)
-            if (istat /= 0) success = .false.
+            if (istat /= 0) then
+               success = .false.
+            end if
          end if
       end if
       n_nc_objs = 0
@@ -146,7 +150,7 @@ contains
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
       integer :: tslen
       integer :: dimids_tsid(2)
-      integer :: len_vectordef 
+      integer :: len_vectordef
       logical :: isVector
       integer, dimension(:, :), allocatable :: var_dimids
       integer, dimension(:), allocatable :: var_ndims
@@ -176,26 +180,42 @@ contains
       end do
  
       allocate (ncptr%variable_names(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       allocate (ncptr%variable_dimension(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       allocate (ncptr%vector_definitions(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       allocate (ncptr%fillvalues(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       allocate (ncptr%scales(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       allocate (ncptr%offsets(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       
       ncptr%variable_names = ' '
       ncptr%fillvalues = -huge(dp)
       ncptr%scales = 1.0_dp
       ncptr%offsets = 0.0_dp
       allocate (var_dimids(n_dims, nVars), stat=ierr) ! NOTE: n_dims is only an upper bound here!
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       allocate (var_ndims(nVars), stat=ierr)
-      if (ierr /= 0) return
+      if (ierr /= 0) then
+         return
+      end if
       var_ndims = 0
       
       do iVars = 1, nVars ! Inventorize variables
@@ -203,15 +223,15 @@ contains
          
          !
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
-         if (ierr /= NF90_NOERR) then 
+         if (ierr /= NF90_NOERR) then
             ncptr%fillvalues(iVars) = -huge(dp)
          end if
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
-         if (ierr /= NF90_NOERR) then 
+         if (ierr /= NF90_NOERR) then
             ncptr%scales(iVars) = 1.0_dp
          end if
          ierr = nf90_get_att(ncptr%ncid, iVars, 'add_offset', ncptr%offsets(iVars))
-         if (ierr /= NF90_NOERR) then 
+         if (ierr /= NF90_NOERR) then
             ncptr%offsets(iVars) = 0.0_dp
          end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
@@ -290,11 +310,19 @@ contains
                   return
                end if
                if (strcmpi(zunits, 'm')) then
-                  if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
-                  if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
+                  if (strcmpi(positive, 'up')) then
+                     ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
+                  end if
+                  if (strcmpi(positive, 'down')) then
+                     ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
+                  end if
                else
-                  if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
-                  if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
+                  if (strcmpi(positive, 'up')) then
+                     ncptr%vptyp = BC_VPTYP_PERCBED ! sigma upward
+                  end if
+                  if (strcmpi(positive, 'down')) then
+                     ncptr%vptyp = BC_VPTYP_PERCSURF ! sigma downward
+                  end if
                end if
                if (ncptr%vptyp < 1) then
                   call set_EC_Message("ec_bcreader::ecNetCDFCreate: Unable to determine vertical coordinate system.")
@@ -306,7 +334,7 @@ contains
       ! if so, specify names of firts and second component
       do iVars = 1, nVars 
          ! existing nc files
-         if (strcmpi(ncptr%variable_names(iVars),'ux') ) then
+         if (strcmpi(ncptr%variable_names(iVars),'ux')) then
             allocate (character :: ncptr%vector_definitions(iVars)%s, stat=ierr)
             if (ierr /= 0) then 
                return
@@ -314,7 +342,7 @@ contains
             ncptr%vector_definitions(iVars)%s = 'ux,uy'
          end if 
          ! velocities for nchis files
-         if (strcmpi(ncptr%variable_names(iVars),'x_velocity') ) then
+         if (strcmpi(ncptr%variable_names(iVars),'x_velocity')) then
             allocate (character :: ncptr%vector_definitions(iVars)%s, stat=ierr)
             if (ierr /= 0) then
                return
@@ -354,7 +382,9 @@ contains
 
      do ivar = 1, ncptr%nVars
          ltl = len_trim(quantity)
-         if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) exit
+         if (strcmpi(ncptr%variable_names(ivar), quantity, ltl)) then
+            exit
+         end if
      end do 
 
      if (ivar <= ncptr%nVars) then
@@ -365,7 +395,9 @@ contains
             call realloc(q_id, vmax, keepexisting=.true., fill=0)
             do iv = 2, vmax
                do ivar = 1, ncptr%nVars
-                   if (strcmpi(ncptr%variable_names(ivar), elmnames(iv))) exit
+                   if (strcmpi(ncptr%variable_names(ivar), elmnames(iv))) then
+                      exit
+                   end if
                end do
                q_id(iv) = ivar
             end do
@@ -391,14 +423,22 @@ contains
       if (ierr /= NF90_NOERR) return
       if (.not. allocated(dimids)) then
          allocate (dimids(n_dims), stat=ierr)
-         if (ierr /= 0) return
+         if (ierr /= 0) then
+            return
+         end if
          ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids)
-         if (ierr /= NF90_NOERR) return
+         if (ierr /= NF90_NOERR) then
+            return
+         end if
       else
          allocate (dimids_check(n_dims), stat=ierr)
-         if (ierr /= 0) return
+         if (ierr /= 0) then
+            return
+         end if
          ierr = nf90_Inquire_Variable(ncptr%ncid, q_id(1), dimids=dimids_check)
-         if (ierr /= NF90_NOERR) return
+         if (ierr /= NF90_NOERR) then
+            return
+         end if
          if (.not. (all(dimids == dimids_check) .and. n_dims == size(dimids))) then
             ! sanity check: all elements should have the same dimensions vector
             return ! unsuccessfully

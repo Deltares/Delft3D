@@ -110,11 +110,17 @@ contains
        
        ! Find number of quantity, get dimension (2 or 3) and then decide TSERIES or TIM3D
        do nrVar = 1, size(bc%ncptr%variable_names)
-          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) exit
-       enddo
+          if (strcmpi(bc%ncptr%variable_names(nrVar),quantityName)) then
+            exit
+          end if
+       end do
                               
-       if (bc%ncptr%variable_dimension(nrVar) == 2) bc%func = BC_FUNC_TSERIES
-       if (bc%ncptr%variable_dimension(nrVar) == 3) bc%func = BC_FUNC_TIM3D
+       if (bc%ncptr%variable_dimension(nrVar) == 2) then 
+          bc%func = BC_FUNC_TSERIES
+       end if
+       if (bc%ncptr%variable_dimension(nrVar) == 3) then
+         bc%func = BC_FUNC_TIM3D
+       end if
        
        ! TODO:
        ! Support specification of the time-interpolation type in the netcdf timeseries variable as an attribute
@@ -895,7 +901,7 @@ contains
        endif
                  
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
-          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%FUNC)) then
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%func)) then
           call set_ec_message("Read failure in file: "//trim(BCPtr%fname))
           return
        else

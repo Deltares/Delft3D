@@ -1187,7 +1187,6 @@ contains
       integer :: jmin, jmax !< from target position jmin through target position jmax is filled
       !
       integer, dimension(:), pointer :: targetMask
-
       success = .false.
       valuesT0 => null()
       valuesT1 => null()
@@ -1205,7 +1204,6 @@ contains
       end if
       allocate (valuesT(maxlay * n_data), stat=istat)
       valuesT = ec_undef_hp
-
       if (connection%converterPtr%interpolationType == interpolate_passthrough) then
          !
          ! ===== block function (no interpolation in time) =====
@@ -1247,8 +1245,12 @@ contains
                do i = 1, size(valuesT0, dim=1)
                   ! For fixed layers, surface layer(s) may exist for T0 but not for T1 (and vice versa) 
                   ! Avoid time interpolation between realistic value and dmiss
-                  if (valuesT0(i) == dmiss .and. valuesT1(i) /= dmiss) valuesT0(i) = valuesT1(i)
-                  if (valuesT0(i) /= dmiss .and. valuesT1(i) == dmiss) valuesT1(i) = valuesT0(i)
+                  if (valuesT0(i) == dmiss .and. valuesT1(i) /= dmiss) then
+                     valuesT0(i) = valuesT1(i)
+                  end if
+                  if (valuesT0(i) /= dmiss .and. valuesT1(i) == dmiss) then
+                     valuesT1(i) = valuesT0(i)
+                  end if
                   ! "val0+(val1-val0)*a1" is more precise than "val0*a0+val1*a1" when val0 and val1 are huge
                   valuesT(i) = valuesT0(i) * (a1 + a0) + (valuesT1(i) - valuesT0(i)) * a1
                end do
@@ -1328,7 +1330,6 @@ contains
             end if
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
-
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
             ! NOTE: No targetMask is checked here
@@ -1719,22 +1720,32 @@ contains
             if (kL > 0) then
                kbeginL = vectormax * maxlay_src * (kL - 1) +  1! refers to source right column
                kendL   = kbeginL + vectormax*maxlay_src - 1
-               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginL:kendL) == dmiss) ) kL = 0
+               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginL:kendL) == dmiss)) then
+                  kL = 0
+               end if
             end if
             ! TK_Temp: Right side
             if (kR > 0) then
                kbeginR = vectormax * maxlay_src * (kR - 1) +  1! refers to source right column
                kendR   = kbeginR + vectormax*maxlay_src -1
-               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginR:kendR) == dmiss ) ) kR = 0
+               if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(kbeginR:kendR) == dmiss)) then
+                  kR = 0
+               end if
             end if
 
             ! deal with one-sided interpolation
-            if (kL == 0 .and. kR /= 0) kL = kR
-            if (kR == 0 .and. kL /= 0) kR = kL
+            if (kL == 0 .and. kR /= 0) then
+               kL = kR
+            end if
+            if (kR == 0 .and. kL /= 0) then
+               kR = kL
+            end if
  
             ! No left or right point, do nothing (hence boundary values remain unchanged)
-            if (kL == 0 .and. kR == 0) cycle
-            
+            if (kL == 0 .and. kR == 0) then
+               cycle
+            end if
+
             select case (connection%converterPtr%operandType)
             case (operand_replace_element, operand_replace, operand_add)
                ! Are the subproviders 3D or 2D?
@@ -1774,15 +1785,21 @@ contains
                   ! Convert target elementset
                   if (.not. ecElementSetGetAbsZ(connection%targetItemsPtr(1)%ptr%ElementSetPtr, &
                                                 kbegin, kend, &
-                                                zmin(i), zmax(i), sigma(kbegin:kend))) return
+                                                zmin(i), zmax(i), sigma(kbegin:kend))) then
+                     return
+                  end if
                   ! Convert source elementset, first point
                   if (.not. ecElementSetGetAbsZ(connection%sourceItemsPtr(1)%ptr%ElementSetPtr, &
                                                 kbeginR, kendR, &
-                                                zmin(i), zmax(i), sigmaR)) return
+                                                zmin(i), zmax(i), sigmaR)) then
+                     return
+                  end if
                   ! Convert source elementset, second point
                   if (.not. ecElementSetGetAbsZ(connection%sourceItemsPtr(1)%ptr%ElementSetPtr, &
                                                 kbeginL, kendL, &
-                                                zmin(i), zmax(i), sigmaL)) return
+                                                zmin(i), zmax(i), sigmaL)) then
+                     return
+                  end if
                   ! Prepare sigmaR and valR
                   maxlay_srcR = 0
                   sigmaRR = ec_undef_hp
@@ -1855,7 +1872,9 @@ contains
                   else
                      do k = kbegin, kend
                         ! RL: BUG!!! z(k) not initialised if the target side is not 3D !!! TO BE FIXED !!!!!!!!!!!!!!
-                        if (sigma(k) < 0.5 * ec_undef_hp) cycle
+                        if (sigma(k) < 0.5 * ec_undef_hp) then
+                           cycle
+                        end if
 
                         ! find vertical indices and weights for the LEFT point
                         call findVerticalIndexWeight(sigma(k), sigmaLL, maxlay_srcL, kL, wwL, idxL1, idxL2)
