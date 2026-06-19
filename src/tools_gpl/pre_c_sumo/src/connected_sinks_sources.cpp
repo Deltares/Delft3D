@@ -4,6 +4,20 @@
 
 namespace pre_c_sumo
 {
+    /**
+     * @brief Adds a connected sink and source entry to this instance.
+     * @param double sink_x Sink X coordinates
+     * @param double sink_y Sink Y coordninate
+     * @param double sink_z_top Sink Z extent highest point
+     * @param double sink_z_bottom Sink Z extent lowest point
+     * @param double source_x Source X coordinate
+     * @param double source_y Source Y coordinate
+     * @param double source_z_top Source Z extent highest point
+     * @param double source_z_bottom Source Z extent lowest point
+     * @param double discharge Discharge value
+     * @param double momentum_magnitude Momentum magnitude value
+     * @param double momentum_direction Momentum direction
+     */
     void ConnectedSinkSources::add_entry(double sink_x, double sink_y, double sink_z_bottom, double sink_z_top,
                                          double source_x, double source_y, double source_z_bottom, double source_z_top,
                                          double discharge, double momentum_magnitude, double momentum_direction)
@@ -19,9 +33,12 @@ namespace pre_c_sumo
         discharge_vector.push_back(discharge);
         momentum_magnitude_vector.push_back(momentum_magnitude);
         momentum_direction_vector.push_back(momentum_direction);
-        // TODO: convert moment (U) to sin/cos?
-    };
+        // TODO: convert moment to sin/cos?
+    }
 
+    /**
+     * @brief Clear all data from this class instance.
+     */
     void ConnectedSinkSources::clear()
     {
         sink_x_vector.clear();
@@ -37,8 +54,20 @@ namespace pre_c_sumo
         momentum_direction_vector.clear();
         momentum_sin_vector.clear();
         momentum_cos_vector.clear();
-    };
+    }
 
+    /**
+     * @brief Get the number of entries stored.
+     */
+    const std::size_t ConnectedSinkSources::size() { return sink_x_vector.size(); }
+
+    /**
+     * @brief Writes all accrued data to preCICE as the specified participant on the specified
+     * mesh and accompanying vertices. After writing the data, the accrued data is cleared.
+     * @param participant preCICE participant of the connection
+     * @param mesh_name Provided mesh name
+     * @param precice_ids Vertex ID's registered on the provided mesh.
+     */
     void ConnectedSinkSources::write_to_precice(precice::Participant& participant, std::string_view mesh_name,
                                                 std::vector<int> precice_ids)
     {
@@ -55,6 +84,6 @@ namespace pre_c_sumo
 
         // After the write, we can clear the list.
         clear();
-    };
+    }
 
 } // namespace pre_c_sumo
