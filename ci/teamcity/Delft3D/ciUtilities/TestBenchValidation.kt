@@ -22,8 +22,9 @@ object TestBenchValidation : BuildType({
     // Using the name `coverage.zip` will ensure TeamCity adds the `Coverage` tab to the build.
     // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
-        +:test/deltares_testbench/report/*.* => report
-        +:test/deltares_testbench/report/htmlcov/* => coverage.zip
+        +:test/deltares_testbench/*.xml => report
+        +:test/deltares_testbench/ruff_format.patch => report
+        +:test/deltares_testbench/htmlcov/* => coverage.zip
     """.trimIndent()
 
     params {
@@ -91,10 +92,9 @@ object TestBenchValidation : BuildType({
                 source .venv/bin/activate
                 set -exo pipefail
 
-                mkdir -p report
-                ruff format --diff . > report/ruff_format.patch
-                ruff check --select F4,F5,F6,F7,W,I --output-format=junit --output-file=report/ruff_check.xml
-                pytest --junitxml=report/pytest.xml --cov-report=html:report/htmlcov --cov=.
+                ruff format --diff . > ruff_format.patch
+                ruff check --select F4,F5,F6,F7,W,I --output-format=junit --output-file=ruff_check.xml
+                pytest --junitxml=pytest.xml --cov-report=html --cov=.
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
@@ -110,8 +110,8 @@ object TestBenchValidation : BuildType({
         xmlReport { 
             reportType = XmlReport.XmlReportType.JUNIT
             rules = """
-                +:test/deltares_testbench/report/ruff_check.xml
-                +:test/deltares_testbench/report/pytest.xml
+                +:test/deltares_testbench/ruff_check.xml
+                +:test/deltares_testbench/pytest.xml
             """.trimIndent()
         }
     }
