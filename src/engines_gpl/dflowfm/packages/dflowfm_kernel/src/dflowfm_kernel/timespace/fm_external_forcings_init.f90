@@ -85,8 +85,8 @@ contains
          return
       end if
 
-      if (file_name(len_trim(file_name)-3:) == '.ini') then
-         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '// trim(file_name) //' to the external forcings file.' 
+      if (file_name(len_trim(file_name) - 3:) == '.ini') then
+         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '//trim(file_name)//' to the external forcings file.'
          call warn_flush()
       end if
 
@@ -153,11 +153,14 @@ contains
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
       call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
+
       max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
       if (max_num_src > 0) then
          call source_sinks%initialize(max_num_src)
       end if
+
+      res = res .and. add_bubblescreen_source_sinks()
 
       ib = 0
       ibqh = 0
@@ -183,15 +186,13 @@ contains
          case ('sourcesink')
             res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
 
-         case ('bubblescreen')
-            res = res .and. add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name)
-
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
             call warn_flush()
          end select
       end do
+
       threshold_abort = initial_threshold_abort
 
       if (allocated(itpenzr)) then
@@ -733,7 +734,7 @@ contains
       use stdlib_kinds, only: c_bool
       use timespace_parameters, only: FIELD1D
       use unstruc_inifields, only: init1dField, fm_quantity_name_to_source_quantity_name, set_global_values, set_global_water_values, finish_initialization, &
-      specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
+                                   specified_water_1dfield, specified_friction_1dfield, water_global_value_1dfield, friction_global_value_1dfield, water_global_quantity_1dfield
       use m_flowgeom, only: ndx2D, ndxi, lnx1d
       use dfm_error, only: DFM_NOERR
       use messageHandling, only: err_flush, msgbuf
@@ -1184,12 +1185,9 @@ contains
       use messageHandling, only: err_flush, msgbuf
       use tree_data_types, only: tree_data
       use properties, only: prop_get
-      use unstruc_files, only: resolvePath
       use m_missing, only: dmiss
-      use m_filez, only: oldfil
-      use m_polygon, only: xpl, ypl, zpl, npl, dzL, colpl, m_polygon_destructor
-      use m_reapol, only: reapol
-
+      use m_polygon, only: dzL, npl
+      use m_read_location_info, only: read_polyline_coordinates
       type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to sourcesink block in extforce file; child node of the extforce file tree
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
@@ -1201,16 +1199,14 @@ contains
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_source
       real(kind=dp), dimension(num_range_points), intent(out) :: z_range_sink
 
-      character(len=INI_VALUE_LEN) :: location_file
       character(len=INI_VALUE_LEN) :: sourcesink_id
-
-      integer :: num_coordinates
-      integer :: ierr
-      integer :: polyline_file_lun ! polyline file logical unit number
+      real(kind=dp), dimension(:), allocatable :: z_coordinates
+      integer :: num_columns
       logical :: is_successful
       logical :: is_read
       logical :: source_z_in_ext_file, sink_z_in_ext_file
-      logical :: have_location_file, have_location_coordinates
+      logical :: have_location_file
+      integer :: npts
 
       is_successful = .false.
       z_range_source(:) = dmiss
@@ -1222,78 +1218,49 @@ contains
       call prop_get(block_ptr, '', 'zSource', z_range_source, num_range_points, source_z_in_ext_file)
       call prop_get(block_ptr, '', 'zSink', z_range_sink, num_range_points, sink_z_in_ext_file)
 
-      call prop_get(block_ptr, '', 'locationFile', location_file, have_location_file)
-      if (have_location_file) then
-         ! Read data from polyline file
-         call resolvePath(location_file, base_dir)
+      ! Read the id for error messages
+      sourcesink_id = ' '
+      call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
 
-         call oldfil(polyline_file_lun, location_file)
-         if (polyline_file_lun == 0) then
-            write (msgbuf, '(a)') "Error in source sink initialization, failed to read polyline file '"//trim(location_file)//"'"
-            call err_flush()
-            return
-         end if
-         ierr = m_polygon_destructor()
-         call reapol(polyline_file_lun, 0)
-         if (npl == 0) then
-            write (msgbuf, '(a)') "Error in source sink initialization, no data in polyline file '"//trim(location_file)//"'"
-            call err_flush()
-            return
-         end if
+      ! Use generic polyline reader
+      call read_polyline_coordinates(block_ptr, trim(sourcesink_id), file_name, base_dir, group_name, &
+                                     x_coordinates, y_coordinates, z_coordinates, num_columns, is_successful)
+      if (.not. is_successful) return
+
+      ! Source/sink-specific: interpret z columns as z_range_source / z_range_sink
+      have_location_file = (num_columns > 0)
+      if (have_location_file) then
+         npts = size(z_coordinates)
 
          ! Avoid having two places specifying the same (and potentially conflicting) z data.
-         if (colpl > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
+         if (num_columns > 2 .and. (source_z_in_ext_file .or. sink_z_in_ext_file)) then
             write (msgbuf, '(a)') 'Error in source sink initialization, source/sink z information cannot be specified both ' &
                //'in the ext file and in the polyline file. Make sure the polyline file only contains x and y columns'
             call err_flush()
+            is_successful = .false.
             return
          end if
 
          if (.not. source_z_in_ext_file) then
-            z_range_source(1) = zpl(npl)
-            if (colpl > 3) then
-               z_range_source(2) = dzL(npl) ! 3rd and 4th column contain z range
+            z_range_source(1) = z_coordinates(npts)
+            if (num_columns > 3) then
+               ! 4th column (dzL) needs to be read from the polygon module directly,
+               ! since read_polyline_coordinates only returns the 3rd column (zpl).
+               z_range_source(2) = dzL(npl)
             end if
          end if
 
          if (.not. sink_z_in_ext_file) then
-            z_range_sink(1) = zpl(1)
-            if (colpl > 3) then
-               z_range_sink(2) = dzL(1) ! 3rd and 4th column contain z range
+            z_range_sink(1) = z_coordinates(1)
+            if (num_columns > 3) then
+               z_range_sink(2) = dzL(1)
             end if
          end if
-
-         allocate (x_coordinates(npl), stat=ierr)
-         allocate (y_coordinates(npl), stat=ierr)
-         x_coordinates = xpl(1:npl)
-         y_coordinates = ypl(1:npl)
-      else
-         ! Read data directly from ext file
-         call prop_get(block_ptr, '', 'numCoordinates', num_coordinates, is_read)
-         if (is_read) then
-            if (num_coordinates <= 0) then
-               call prop_get(block_ptr, '', 'id', sourcesink_id, is_read)
-               write (msgbuf, '(a)') 'SourceSink '''//trim(sourcesink_id)//''': numCoordinates must be greater than 0.'
-               call err_flush()
-               return
-            end if
-            allocate (x_coordinates(num_coordinates), stat=ierr)
-            call prop_get(block_ptr, '', 'xCoordinates', x_coordinates, num_coordinates, is_read)
-            if (is_read) then
-               allocate (y_coordinates(num_coordinates), stat=ierr)
-               call prop_get(block_ptr, '', 'yCoordinates', y_coordinates, num_coordinates, is_read)
-            end if
-         end if
-         have_location_coordinates = is_read
       end if
 
-      if (.not. have_location_file .and. .not. have_location_coordinates) then
-         write (msgbuf, '(a)') 'Incomplete block in file '''//trim(file_name)//''': ['//trim(group_name)//']. Location information is incomplete or missing.'
-         call err_flush()
-         return
-      end if
-
+      if (allocated(z_coordinates)) deallocate (z_coordinates)
       is_successful = .true.
+
    end function
 
    !> Read sourcesink blocks from new external forcings file.
@@ -1430,28 +1397,26 @@ contains
 
    end function init_sourcesink_forcings
 
-   !> Read bubblescreen blocs from the extfile, read its polygon file, find flowcells crossed by the polygon and calculate the resulting bubblescreen area.
+   !> Read bubblescreen blocs from the extfile, read its polyline (file or inline coordinates), find flowcells crossed by the polyline and calculate the resulting bubblescreen area.
    subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
       use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
-      use m_filez, only: oldfil
-      use m_reapol, only: reapol
       use tree_data_types, only: tree_data
       use tree_structures, only: tree_data, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use string_module, only: strcmpi, str_tolower
-      use m_polygon, only: npl
       use network_data
       use m_flow
       use m_cellmask_from_polygon_set, only: find_cells_crossed_by_polyline, init_cell_geom_as_polylines, cleanup_cell_geom_polylines
       use m_alloc, only: realloc
       use m_find_flownode, only: find_nearest_flownodes
       use m_GlobalParameters, only: INDTP_2D
-      use messageHandling, only: err_flush, msgbuf
+      use messageHandling, only: err_flush, msgbuf, warn_flush
       use m_bubblescreen, only: compute_bubblescreen_area
       use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen
       use m_partitioninfo, only: jampi, reduce_cells
       use m_flowgeom, only: ndx
+      use m_read_location_info, only: read_polyline_coordinates
 
       ! Parameters
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
@@ -1461,17 +1426,16 @@ contains
 
       ! Local variables
       logical :: is_successful
-      integer :: file_pointer
       integer :: i !< Loop index
       integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
       integer :: num_bubblescreens
       integer :: num_items_in_file
+      integer :: num_columns
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
       real(kind=dp), dimension(:), allocatable :: polygon_y_coordinates !< y-coordinates of bubblescreen
-      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      real(kind=dp), dimension(:), allocatable :: polygon_z_coordinates !< z-coordinates of bubblescreen (unused, required by generic reader)
       character(len=:), allocatable :: group_name !< Name of the block, only used in error messages
       character(len=:), allocatable :: id !< Bubblescreen id
-      character(len=:), allocatable :: location_file !< Bubblescreen location file
       character, dimension(:), allocatable :: error
 
       type(tree_data), pointer :: block_ptr
@@ -1505,25 +1469,22 @@ contains
 
          if (str_tolower(group_name) == 'bubblescreen') then
             i_bubblescreen = i_bubblescreen + 1
-            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, bubblescreen%z_level, discharge_input)
-            bubblescreen%id = id
-
+            is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, bubblescreen%id, &
+                                                                 polygon_x_coordinates, polygon_y_coordinates, polygon_z_coordinates, num_columns, bubblescreen%z_level, bubblescreen%discharge_input)
             if (is_successful) then
-
-               ! Read the polyline file to polygon data and get the x,y coordinates of the polyline points
-               call savepol()
-               call oldfil(file_pointer, location_file)
-               call reapol(file_pointer, 0)
-               polygon_x_coordinates = xpl(1:npl)
-               polygon_y_coordinates = ypl(1:npl)
-               call restorepol()
-
+               if (num_columns > 2 .and. allocated(polygon_z_coordinates)) then
+                  if (any(polygon_z_coordinates /= dmiss)) then
+                     write (msgbuf, '(a)') 'Bubblescreen '''//trim(id)//''': z-coordinates were read from polygon input (pliz), but they are ignored. '// &
+                        'use zLevel to specify Bubblescreen location.'
+                     call warn_flush()
+                  end if
+               end if
                ! Find cells crossed by the polyline and pre-init the bubblescreen data structure
                call find_cells_crossed_by_polyline(polygon_x_coordinates, polygon_y_coordinates, bubblescreen%flowcell_indices, error)
                bubblescreen%num_flowcells = size(bubblescreen%flowcell_indices)
                n_cells = bubblescreen%num_flowcells
                ! we need the global number of bubblescreen cells, otherswise when doing addSourceSink the vectors will be re-allocated
-               ! and then EC-module will be left with dangling pointers. 
+               ! and then EC-module will be left with dangling pointers.
                bubblescreen_cells = bubblescreen%flowcell_indices
                if (jampi == 1) then
                   bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
@@ -1549,7 +1510,7 @@ contains
 
    !> Create bubblescreen source-sinks and set up the EC module connection. In parallel models the bubblescreen input is reduced, as
    !! Source-sinks need to be added globally.
-   function add_bubblescreen_source_sinks(block_ptr, base_dir, file_name, group_name) result(is_successful)
+   function add_bubblescreen_source_sinks() result(is_successful)
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
       use m_filez, only: oldfil
       use m_reapol, only: reapol
@@ -1567,16 +1528,10 @@ contains
       use m_flowgeom, only: ndx
       use m_structures, only: nNodesBubbleScreen, nodeCountBubbleScreen, geomXBubbleScreen, geomYBubbleScreen
 
-      ! Parameters
-      type(tree_data), pointer, intent(in) :: block_ptr !< Pointer to bubblescreen block in extforce file; child node of the extforce file tree
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
-      character(len=*), intent(in) :: group_name !< Name of the block, only used in error messages
-
       ! Local variables
       logical :: is_successful !< Success flag
       integer :: cidx !< Index for crossed cells
-      integer :: i, bi !< Loop indices
+      integer :: i, j !< Loop indices
       integer :: ierr !< Error code
       integer :: bubblescreen_source_sink_count
       integer :: n_cells
@@ -1588,32 +1543,18 @@ contains
       real(kind=dp), dimension(:), allocatable :: y_flowcell !< y-coordinate of flow cell
       real(kind=dp), dimension(2) :: z_flowcell_source !< z-coordinate of flow cell source
       real(kind=dp), dimension(2) :: z_flowcell_sink !< z-coordinate of flow cell sink
-      real(kind=dp) :: z_dummy !< Dummy readout variable for z_level
 
-      character(len=:), allocatable :: id !< Bubblescreen id
-      character(len=:), allocatable :: srcid !< Source id
-      character(len=:), allocatable :: location_file !< Bubblescreen location file
-      character(len=:), allocatable :: discharge_input !< Bubblescreen discharge input file
+      character(len=305) :: srcid !< Source id (length 255 + 50 for bubblescreen index)
 
       ! Initialization
       is_successful = .false.
-      bubblescreen_source_sink_count = 0
-      local_count = 0
 
-      ! Read bubble screen attributes from the tree node
-      is_successful = read_bubblescreen_forcing_attributes(block_ptr, base_dir, file_name, group_name, id, location_file, z_dummy, discharge_input)
-      if (is_successful) then
-         allocate (character(len=len_trim(id) + 50) :: srcid)
+      ! Find the bubblescreen with matching id
+      do i = 1, size(bubblescreens)
 
-         ! Find the bubblescreen with matching id
-         do i = 1, size(bubblescreens)
-            if (trim(bubblescreens(i)%id) == trim(id)) then
-               bi = i
-               exit
-            end if
-         end do
-
-         associate (bubblescreen => bubblescreens(bi))
+         bubblescreen_source_sink_count = 0
+         local_count = 0
+         associate (bubblescreen => bubblescreens(i))
 
             n_cells = bubblescreen%num_flowcells
             bubblescreen_cells = bubblescreen%flowcell_indices
@@ -1622,12 +1563,12 @@ contains
                bubblescreen_cells = reduce_cells(bubblescreen%flowcell_indices, ndx)
                n_cells = size(bubblescreen_cells)
             end if
-            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp))
-            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp))
-            do i = 1, n_cells
-               if (.not. bubblescreen_cells(i) == -1) then
-                  x_flowcell(i) = xzw(bubblescreen_cells(i))
-                  y_flowcell(i) = yzw(bubblescreen_cells(i))
+            call realloc(x_flowcell, n_cells, fill=-huge(1.0_dp), keepexisting=.false.)
+            call realloc(y_flowcell, n_cells, fill=-huge(1.0_dp), keepexisting=.false.)
+            do j = 1, n_cells
+               if (.not. bubblescreen_cells(j) == -1) then
+                  x_flowcell(j) = xzw(bubblescreen_cells(j))
+                  y_flowcell(j) = yzw(bubblescreen_cells(j))
                end if
             end do
             if (jampi == 1) then
@@ -1638,18 +1579,18 @@ contains
             nNodesBubbleScreen = nNodesBubbleScreen + n_cells
             call realloc(geomXBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
             call realloc(geomYBubbleScreen, nNodesBubbleScreen, keepExisting=.true.)
-            geomXBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = x_flowcell
-            geomYBubbleScreen(tm_global_count+1:nNodesBubbleScreen) = y_flowcell
-            nodeCountBubbleScreen(bi) = n_cells
+            geomXBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = x_flowcell
+            geomYBubbleScreen(tm_global_count + 1:nNodesBubbleScreen) = y_flowcell
+            nodeCountBubbleScreen(i) = n_cells
 
             z_flowcell_source = 0.0_dp ! Dummy value, will be set properly later
             z_flowcell_sink = bubblescreen%z_level
-            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1)
+            call realloc(bubblescreen%source_sink_indices, bubblescreen%num_flowcells, fill=-1, keepexisting=.false.)
             ! Cycle through all bubblescreen flow cells and create source/sink objects for each of them
             do cidx = 1, n_cells
                ! Create the source/sink name
                bubblescreen_source_sink_count = bubblescreen_source_sink_count + 1
-               write (srcid, '(A,I0)') trim(id), bubblescreen_source_sink_count
+               write (srcid, '(A,I0)') trim(bubblescreen%id), bubblescreen_source_sink_count
 
                ! Create a linked source/sink in the flow cell
                call addsorsin(srcid, [x_flowcell(cidx), x_flowcell(cidx)], [y_flowcell(cidx), y_flowcell(cidx)], z_flowcell_source, z_flowcell_sink, 0.0_dp, ierr)
@@ -1659,18 +1600,17 @@ contains
                   bubblescreen%source_sink_indices(local_count) = source_sinks%num_total !> global counter which has just been incremented by addsorsin
                end if
             end do
+
+            is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(bubblescreen%id), 'discharge', &
+                                                           trim(bubblescreen%discharge_input), i, 1, bubblescreen_air_discharge)
+
+            if (.not. is_successful) then
+               write (msgbuf, '(5a)') 'Could not initialize discharge data in ''', trim(bubblescreen%discharge_input), ''' for bubble screen with id='//trim(bubblescreen%id)//'.'
+               call err_flush()
+               return
+            end if
          end associate
-      end if
-
-      is_successful = adduniformtimerelation_objects('bubblescreen_discharge', '', 'source sink', trim(id), 'discharge', &
-                                                     trim(discharge_input), bi, 1, bubblescreen_air_discharge)
-
-      if (.not. is_successful) then
-         write (msgbuf, '(5a)') 'Error while processing ''', trim(file_name), ''': [', trim(group_name), ']. ' &
-            //'Could not initialize discharge data in ''', trim(discharge_input), ''' for bubble screen with id='//trim(id)//'.'
-         call err_flush()
-         return
-      end if
+      end do
 
       is_successful = .true.
 
