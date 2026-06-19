@@ -159,7 +159,7 @@ contains
 
    !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
    !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns SPATIAL_LOCATION_INVALID when the string is absent, returns SPATIAL_LOCATION_INVALID when unrecognized.
+   !! Returns SPATIAL_LOCATION_INVALID when the string is absent or unrecognized.
    function parse_spatial_location_type(location_type_string) result(spatial_location_type)
       use string_module, only: str_tolower
 
@@ -180,7 +180,7 @@ contains
       case ('1d2d', 'all')
          spatial_location_type = SPATIAL_LOCATION_ALL
       case default
-         spatial_location_type = SPATIAL_LOCATION_ALL
+         spatial_location_type = SPATIAL_LOCATION_INVALID
       end select
 
    end function parse_spatial_location_type

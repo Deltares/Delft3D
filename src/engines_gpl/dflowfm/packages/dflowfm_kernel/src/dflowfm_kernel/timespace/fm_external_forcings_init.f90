@@ -551,7 +551,7 @@ contains
 
       ! locationType = optional for lateral
       ! locationType = 1d | 2d | all/1d2d
-      item_type = ' '
+      item_type = 'all'
       if (major >= 2) then
          call prop_get(block_ptr, 'Lateral', 'locationType', item_type, is_read)
       else
