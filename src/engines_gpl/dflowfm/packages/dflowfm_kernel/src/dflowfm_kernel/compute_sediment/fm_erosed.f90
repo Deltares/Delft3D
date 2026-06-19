@@ -104,6 +104,7 @@ contains
                              dll_strings, dll_function, dll_handle, mfluff, wetslope, oldmudfrac, i10, i15, i50, i90, bed, bedw, camax, &
                              cdryb, depfac, dss, dcwwlc, espir, factcr, rsdqlc, sddflc, susw, sus, aks, factsd, pmcrit, uau, ithresh, &
                              frac_he, dm_he, mudfrac_he, dg_he, dgsd_he, dxx_he, spatial_d50
+      use m_fm_erosed, only: difparam, seddif_cal
       use m_fm_erosed, only: ndx => ndx_mor
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: ln => ln_mor
@@ -172,8 +173,6 @@ contains
       real(fp) :: delr
       real(fp) :: di50
       real(fp) :: difbot
-      real(fp), pointer :: seddif_cal
-      real(fp), pointer :: difparam
       real(fp) :: drho
       real(fp) :: dtmor
       real(fp) :: fracf
@@ -249,8 +248,6 @@ contains
       integer, parameter :: BED_LAYER_TO = 2 !< End index of the bed layer to compute mean grain size and derived variables. 
       integer, parameter :: HIDING_AND_EXPOSURE_BASED_ON_ACTIVE_LAYER_AND_COARSE_LAYER = 1
    !! executable statements -------------------------------------------------------
-      seddif_cal => stmpar%sedpar%seddif_cal
-      difparam => stmpar%sedpar%difparam
       !
       !   exit the routine immediately if sediment transport (and morphology) is not included in the simulation
       !
