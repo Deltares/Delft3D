@@ -1569,9 +1569,10 @@ contains
          block
             integer, dimension(:), allocatable :: sourceItemIds
             integer :: idIdx
+            ! with nesting there can be more than one source item now. But the first is always the main one
+            ! The second is made for nesting to be able to interpolate z-values in time
             sourceItemIds = ecFindItemsInFileReader(ecInstancePtr, fileReaderId, sourceItemName)
-
-            if (size(sourceItemIds) == 0) then
+            if (.not. allocated(sourceItemIds)) then
                goto 1234
             end if
 

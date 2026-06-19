@@ -165,7 +165,7 @@
       <maxRunTime>3600.0</maxRunTime>
       <!-- seconds -->
     </testCase>
-        <testCase name="dflowfm_default">
+        <testCase name="dflowfm_nesting">
             <programs>
                 <program ref="dimr">
                     <arguments>
