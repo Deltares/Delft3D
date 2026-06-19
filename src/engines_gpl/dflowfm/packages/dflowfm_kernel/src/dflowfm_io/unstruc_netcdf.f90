@@ -5353,6 +5353,7 @@ contains
       use m_nudge, only: nudge_rate, nudge_temperature, nudge_salinity
       use m_turbulence, only: in_situ_density, potential_density
       use m_source_sink, only: source_sinks, source_sink_all_discharges
+      use m_flowgeom_interpolate, only: link_to_node_vector
 
       implicit none
 
@@ -7541,7 +7542,7 @@ contains
          end if
 
          if (map_write_settings%wind > 0) then
-            call linktonode2(wx, wy, windx, windy, ndxndxi)
+            call link_to_node_vector(wx, wy, windx, windy, ndxndxi)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windx, UNC_LOC_S, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windy, UNC_LOC_S, windy, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windxu, UNC_LOC_U, wx, jabndnd=jabndnd_)
@@ -7549,7 +7550,7 @@ contains
          end if
 
          if (map_write_settings%windstress > 0) then
-            call linktonode2(wdsu_x, wdsu_y, windx, windy, ndxndxi)
+            call link_to_node_vector(wdsu_x, wdsu_y, windx, windy, ndxndxi)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressx, UNC_LOC_S, windx, jabndnd=jabndnd_)
             ierr = unc_put_var_map(mapids%ncid, mapids%id_tsp, mapids%id_windstressy, UNC_LOC_S, windy, jabndnd=jabndnd_)
          end if
@@ -18464,36 +18465,6 @@ contains
 
       end if
    end subroutine convert_hysteresis_summerdike
-
-   subroutine linktonode2(u_x, u_y, s_x, s_y, ndxndxi) ! bring 2 scalars on u points to zeta points
-      use precision, only: dp
-
-      use m_flowgeom
-      use m_flow
-
-      implicit none
-
-      real(kind=dp) :: u_x(:), u_y(:), s_x(:), s_y(:)
-      integer :: ndxndxi
-
-      integer :: n, LL, LLL, k1, k2, k3
-
-      s_x = 0.0_dp
-      s_y = 0.0_dp
-      do n = 1, ndxndxi
-         do LL = 1, nd(n)%lnx
-            LLL = abs(nd(n)%ln(LL))
-            k1 = ln(1, LLL)
-            k2 = ln(2, LLL)
-            k3 = 1
-            if (nd(n)%ln(LL) > 0) then
-               k3 = 2
-            end if
-            s_x(n) = s_x(n) + u_x(LLL) * wcL(k3, LLL)
-            s_y(n) = s_y(n) + u_y(LLL) * wcL(k3, LLL)
-         end do
-      end do
-   end subroutine linktonode2
 
 !> write_array_with_dmiss_for_dry_cells_into_netcdf_file
    function write_array_with_dmiss_for_dry_cells_into_netcdf_file(ncid, id_tsp, id_var, data_location, array, jabndnd) result(ierr)
