@@ -1,0 +1,1 @@
+{ "file-series-version" : "1.0", "files" : [ { "name" : "fm_flow_cells-fm.init.vtu", "time" : 0 }, { "name" : "fm_flow_cells-fm.dt1.vtu", "time" : 7200 }, { "name" : "fm_flow_cells-fm.dt2.vtu", "time" : 14400 }, { "name" : "fm_flow_cells-fm.dt3.vtu", "time" : 21600 } ] }

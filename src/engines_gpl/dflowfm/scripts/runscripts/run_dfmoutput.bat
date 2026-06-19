@@ -36,7 +36,6 @@ set D3D_HOME=%~dp0..
 echo D3D_HOME         : %D3D_HOME%
 set exedir=%D3D_HOME%\bin
 set sharedir=%D3D_HOME%\share
-set libdir=%D3D_HOME%\lib
 
     rem Run
 set PATH=%sharedir%;%libdir%

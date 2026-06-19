@@ -196,6 +196,20 @@
             </checks>
         </testCase>
         <!-- ======================================================================== -->
+		<testCase name="e04_f02_c06_windfields" ref="dimr_noconf">
+            <path version="2026-06-11T12:52:41.165000">e04_wave/f02-windfields/c06</path>
+            <maxRunTime>900.0</maxRunTime>
+            <checks>
+                <file name="wavm-osaka.nc" type="NETCDF">
+                    <parameters>
+                        <parameter name="dir" toleranceAbsolute="400.0"/>
+                        <parameter name="hsign" toleranceAbsolute="0.01"/>
+                        <parameter name="period" toleranceAbsolute="0.022"/>
+                    </parameters>
+                </file>
+            </checks>
+        </testCase>
+        <!-- ======================================================================== -->
         <testCase name="e04_f03_c01_windoncurvi" ref="dimr_trunk" ignore="false">
             <path version="2025-07-29T12:52:44.018000">e04_wave/f03-windoncurvi/c01</path>
             <maxRunTime>60.0</maxRunTime>

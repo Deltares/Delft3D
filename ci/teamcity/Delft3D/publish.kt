@@ -16,7 +16,7 @@ object Publish : BuildType({
     )
 
     name = "Publish Container"
-    description = "Currently only used for publishing the container."
+    description = "Retag and publish container images to Harbor after all previous steps are successful."
     buildNumberPattern = "%build.vcs.number%"
     maxRunningBuilds = 1
     allowExternalStatus = true

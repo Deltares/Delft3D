@@ -57,6 +57,8 @@ src/**/FortranCInterface.h
 /ci/teamcity/Delft3D/target/**
 **/result_doc/**
 unit-test-report-windows.xml
+/src/delft3d-apidoc
+/src/delwaq-apidoc
 
 # dvc: ignore data but allow .dvc files
 test/deltares_testbench/data/cases/*
@@ -64,6 +66,7 @@ test/deltares_testbench/data/cases/*
 
 # precice
 examples/dflowfm/**/precice_debug_output.txt
-examples/dflowfm/**/precice-profiling/**
 examples/dflowfm/**/precice-run/**
-examples/dflowfm/**/precice-exports/**
+
+# conan
+conan/**/test_package/**

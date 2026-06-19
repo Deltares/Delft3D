@@ -74,6 +74,7 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_DREDGE = 39 !< Data location: dredge
    integer, parameter, public :: UNC_LOC_DUMP = 40 !< Data location: dump
    integer, parameter, public :: UNC_LOC_DRED_LINK = 41 !< Data location: dredge links
+   integer, parameter, public :: UNC_LOC_BUBBLE_SCREEN = 43 !< Data location: bubble screen
 contains
    !> Convert a location specifier to a human-readable string
    function get_location_specifier_string(location_specifier) result(string)

@@ -33,6 +33,9 @@ module fm_statistical_output
    real(dp), dimension(:), allocatable, target :: SBCX, SBCY, SBWX, SBWY, SSWX, SSWY, SSCX, SSCY
    real(dp), dimension(:), allocatable, target :: qplat_data
 
+   real(dp), dimension(:), allocatable, target :: source_sink_discharge_out, source_sink_discharge2_out, source_sink_discharge3_out, &
+            source_sink_cumulative_volume_out, source_sink_water_discharge_out, source_sink_average_discharge_previous_out
+
    logical, public :: apply_statistics_on_output
 
 contains
@@ -111,21 +114,12 @@ contains
       integer, intent(in) :: IPNT_X, IPNT_Y !< location specifier inside valobs array
 
       integer :: l, k, ntot
-      real(dp) :: rhol
 
       ntot = numobs + nummovobs
       do l = 1, stmpar%lsedtot
-         select case (stmpar%morpar%moroutput%transptype)
-         case (0)
-            rhol = 1.0_dp
-         case (1)
-            rhol = stmpar%sedpar%cdryb(l)
-         case (2)
-            rhol = stmpar%sedpar%rhosol(l)
-         end select
          k = ntot * (l - 1)
-         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / rhol
-         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / rhol
+         X(k + 1:k + ntot) = valobs(:, IPNT_X + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
+         Y(k + 1:k + ntot) = valobs(:, IPNT_Y + l - 1) / stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
       end do
    end subroutine assign_sediment_transport
 
@@ -185,6 +179,82 @@ contains
       call allocate_and_associate(source_input, get_sediment_array_size(), SBCX, SBCY)
       call assign_sediment_transport(SBCX, SBCY, IPNT_SBCX1, IPNT_SBCY1)
    end subroutine calculate_sediment_SBC
+
+   subroutine filter_source_sink_discharge(source_input)
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge" item, to be assigned once on first call.
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge_out)
+      source_sink_discharge_out = pack(source_sink_all_discharges(1, :), source_sinks%is_normal)
+
+   end subroutine filter_source_sink_discharge
+
+   subroutine filter_source_sink_discharge2(source_input)
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge2" item, to be assigned once on first call.
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge2_out)
+      source_sink_discharge2_out = pack(source_sink_all_discharges(2, :), source_sinks%is_normal)
+
+   end subroutine filter_source_sink_discharge2
+
+   subroutine filter_source_sink_discharge3(source_input)
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_discharge3" item, to be assigned once on first call.
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_discharge3_out)
+      source_sink_discharge3_out = pack(source_sink_all_discharges(3, :), source_sinks%is_normal)
+
+   end subroutine filter_source_sink_discharge3
+
+   subroutine filter_source_sink_cumulative_volume(source_input)
+      use m_source_sink, only: source_sinks
+
+      ! Parameters
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_cumulative_volume" item, to be assigned once on first call.
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_cumulative_volume_out)
+      source_sink_cumulative_volume_out = pack(source_sinks%cumulative_volume, source_sinks%is_normal)
+
+   end subroutine filter_source_sink_cumulative_volume
+
+   subroutine filter_source_sink_water_discharge(source_input)
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_water_discharge" item, to be assigned once on first call.
+      
+      ! Local variables
+      logical :: is_init
+
+      is_init = .not. associated(source_input)
+
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_water_discharge_out)
+
+      if (is_init) then
+         source_sinks%discharge = source_sink_all_discharges(1, :)
+      end if
+
+      source_sink_water_discharge_out = pack(source_sinks%discharge, source_sinks%is_normal)
+
+   end subroutine filter_source_sink_water_discharge
+
+   subroutine filter_source_sink_average_discharge_previous(source_input)
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
+
+      ! Parameters
+      real(dp), pointer, dimension(:), intent(inout) :: source_input !< Pointer to source input array for the "source_sink_average_discharge_previous" item, to be assigned once on first call.
+      
+      call allocate_and_associate(source_input, source_sinks%num_normal, source_sink_average_discharge_previous_out)
+      source_sink_average_discharge_previous_out = pack(source_sinks%average_discharge_previous, source_sinks%is_normal)
+      
+   end subroutine filter_source_sink_average_discharge_previous
 
    subroutine add_station_water_quality_configs(output_config_set, idx_his_hwq)
       use processes_input, only: num_wq_user_outputs => noout_user
@@ -387,14 +457,7 @@ contains
          IP = IPNT_HUA + num
          if (num >= ISED1 .and. num <= ISEDN .and. stm_included) then
             l = sedtot2sedsus(num - ISED1 + 1)
-            select case (stmpar%morpar%moroutput%transptype)
-            case (0)
-               rhol = 1.0_dp
-            case (1)
-               rhol = stmpar%sedpar%cdryb(l)
-            case (2)
-               rhol = stmpar%sedpar%rhosol(l)
-            end select
+            rhol = stmpar%morpar%moroutput%unit_transport_conversion_factor(l)
          else
             rhol = 1.0_dp ! dummy
          end if
@@ -809,6 +872,15 @@ contains
       call add_output_config(config_set_his, IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE, &
                              'Wrihis_sourcesink', 'source_sink_discharge_average', 'Average discharge in the past his-file output-interval at each source/sink', '', &
                              'm3 s-1', UNC_LOC_SOSI, nc_attributes=atts(1:1))
+
+      !
+      ! HIS: Bubble Screens
+      !
+      call ncu_set_att(atts(1), 'geometry', 'bubblescreen_geom')                             
+      call add_output_config(config_set_his, IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE, &
+                             'Wrihis_bubblescreens', 'bubblescreen_air_discharge', '', '', &
+                             'm3 s-1', UNC_LOC_BUBBLE_SCREEN, nc_attributes=atts(1:1), description='Bubble Screen Air discharge')
+
 
       !
       ! HIS: run-up gauges
@@ -2220,6 +2292,7 @@ contains
       use m_ug_nc_attribute
       use m_flow
       use fm_external_forcings_data
+      use m_source_sink, only: source_sinks, source_sink_all_discharges
       use m_structures
       use m_observations_data
       use m_density_parameters, only: apply_thermobaricity
@@ -2308,20 +2381,34 @@ contains
       !
       ! Source-sink variables
       !
-      if (his_write_settings%sourcesink > 0 .and. num_source_sink > 0) then
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_sink_all_discharges(1, :))
+      if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
+         function_pointer => filter_source_sink_discharge
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
          i = 1
          if (isalt > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), source_sink_all_discharges(i, :))
+            function_pointer => filter_source_sink_discharge2
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), null(), function_pointer)
          end if
          if (itemp > 0) then
             i = i + 1
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), source_sink_all_discharges(i, :))
+            if (i == 3) then
+               function_pointer => filter_source_sink_discharge3
+            else
+               function_pointer => filter_source_sink_discharge2
+            end if
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), null(), function_pointer)
          end if
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_sink_water_discharge)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_sink_cumulative_volume)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_sink_average_discharge_previous)
+         function_pointer => filter_source_sink_water_discharge
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), null(), function_pointer)
+         function_pointer => filter_source_sink_cumulative_volume
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), null(), function_pointer)
+         function_pointer => filter_source_sink_average_discharge_previous
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), null(), function_pointer)
+      end if
+
+      if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_BUBBLE_SCREEN_AIR_DISCHARGE), bubblescreen_air_discharge)
       end if
 
       !

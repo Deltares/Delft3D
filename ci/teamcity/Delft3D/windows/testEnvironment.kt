@@ -24,7 +24,7 @@ object WindowsTestEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "test-environment")
+        param("container.tag", "test-environment-ltsc2025")
     }
 
     vcs {
@@ -91,7 +91,9 @@ object WindowsTestEnvironment : BuildType({
         vcs {
             triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
             branchFilter = "+:<default>".trimIndent()
-            param("trigger.type", "vcs")
+            buildParams {
+                param("trigger.type", "vcs")
+            }
         }
         schedule {
             schedulingPolicy = weekly {
@@ -102,7 +104,9 @@ object WindowsTestEnvironment : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
-            param("trigger.type", "schedule")
+            buildParams {
+                param("trigger.type", "schedule")
+            }
         }
     }
 

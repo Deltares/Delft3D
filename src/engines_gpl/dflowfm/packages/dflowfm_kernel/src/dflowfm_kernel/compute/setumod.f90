@@ -32,7 +32,7 @@
 
 module m_setumod
    use precision, only: dp
-   implicit none
+   implicit none(type, external)
 
    private
 
@@ -133,9 +133,7 @@ contains
       call prefetch_node_velocities(ucx, ucy, ucxq, ucyq)
       if (kmx == 0) then
          ! pre compute hmin as it is reused a lot
-         if (.not. allocated(hmin_)) then
-            allocate (hmin_(lnkx))
-         end if
+         call realloc(hmin_,lnkx)
          do L = lnx1D + 1, lnx
             k1 = ln(1, L)
             k2 = ln(2, L)
@@ -709,6 +707,7 @@ contains
       use m_xbeach_data, only: DR
       use m_waveconst, only: WAVE_SURFBEAT
       use m_flowtimes, only: dti
+      use m_alloc, only: realloc
 
       real(dp), intent(in) :: Smagorinsky, Elder, vicouv, vicuship, nuhfac, rhomean
       integer, intent(in) :: javiusp, nshiptxy, ja_timestep_auto_visc
@@ -734,13 +733,11 @@ contains
       L2 = lnx
       vksag6 = vonkar * sag / 6.0_dp
 
-      if (.not. allocated(dvx1)) then
-         allocate (dvx1(lnx))
-         allocate (dvy1(lnx))
-         allocate (dvx2(lnx))
-         allocate (dvy2(lnx))
-         allocate (volmin(lnx))
-      end if
+      call realloc(dvx1,lnx)
+      call realloc(dvy1,lnx)
+      call realloc(dvx2,lnx)
+      call realloc(dvy2,lnx)
+      call realloc(volmin,lnx)
 
       !precompute indirect volumes and conditionals (visc_limit)
       if (ja_timestep_auto_visc == 0) then

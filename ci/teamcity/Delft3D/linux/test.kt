@@ -45,6 +45,7 @@ object LinuxTest : BuildType({
     val linesForAll = linuxLines.filter { line -> line.split(",")[2] == "TRUE" }
     val selectedConfigs = linesForAll.map { line -> line.split(",")[1] }
 
+
     vcs {
         root(DslContext.settingsRoot)
         cleanCheckout = true
@@ -70,7 +71,8 @@ object LinuxTest : BuildType({
             display = ParameterDisplay.PROMPT
         )
         param("product", "unknown")
-        checkbox("copy_cases", "false", label = "Copy cases", description = "ZIP a complete copy of the ./data/cases directory.", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
+        checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         text("case_filter", "", label = "Case filter", display = ParameterDisplay.PROMPT, allowEmpty = true)
         param("s3_dsctestbench_accesskey", DslContext.getParameter("s3_dsctestbench_accesskey"))
         password("s3_dsctestbench_secret", DslContext.getParameter("s3_dsctestbench_secret"))
@@ -86,36 +88,41 @@ object LinuxTest : BuildType({
     }
 
     steps {
-        python {
-            name = "Run TestBench.py"
-            id = "RUNNER_testbench"
-            workingDir = "test/deltares_testbench/"
-            pythonVersion = customPython {
-                executable = "python3"
-            }
-            command = file {
-                filename = "TestBench.py"
-                scriptArguments = """
-                    --username "%s3_dsctestbench_accesskey%"
-                    --password "%s3_dsctestbench_secret%"
-                    --compare
-                    --config "configs/%configfile%"
-                    --filter "testcase=%case_filter%"
-                    --log-level DEBUG
-                    --parallel
-                    --teamcity
-                    --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
-                """.trimIndent()
-            }
-            dockerImage = "%testbench_container_image%"
-            dockerImagePlatform = PythonBuildStep.ImagePlatform.Linux
-            dockerPull = true
-            dockerRunParameters = """
-                --rm
-                --pull always
-                --shm-size 8G
-            """.trimIndent()
+        // script is necessary to dynamically set the copy-failed-cases depending on the paramter 
+        script {
+        name = "Run TestBench.py"
+        id = "RUNNER_testbench"
+        workingDir = "test/deltares_testbench/"
+        scriptContent = """
+            #!/bin/bash
+            
+            ARGS="--username "%s3_dsctestbench_accesskey%" \
+                --password "%s3_dsctestbench_secret%" \
+                --compare \
+                --config "configs/%configfile%" \
+                --filter "testcase=%case_filter%" \
+                --log-level DEBUG \
+                --parallel \
+                --teamcity \
+                --override-paths from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"
+            
+            # Add flag only if copy_failed_cases is true
+            if [[ "%copy_failed_cases%" == "true" ]]; then
+                ARGS="${'$'}ARGS --copy-failed-cases"
+            fi
+            
+            python3 TestBench.py ${'$'}ARGS
+        """.trimIndent()
+        dockerImage = "%testbench_container_image%"
+        dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
+        dockerPull = true
+        dockerRunParameters = """
+            --rm
+            --pull always
+            --shm-size 8G
+        """.trimIndent()
         }
+        
         dockerCommand {
             name = "Remove container"
             executionMode = BuildStep.ExecutionMode.ALWAYS
@@ -135,7 +142,7 @@ object LinuxTest : BuildType({
         script {
             name = "Copy cases"
             executionMode = BuildStep.ExecutionMode.RUN_ON_FAILURE
-            conditions { equals("copy_cases", "true") }
+            conditions { equals("copy_tested_cases", "true") }
             workingDir = "test/deltares_testbench"
             scriptContent = "cp -r data/cases copy_cases"
         }

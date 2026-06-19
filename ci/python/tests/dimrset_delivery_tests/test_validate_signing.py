@@ -584,5 +584,5 @@ class TestPrintExampleJsonFileStructure:
         assert '"issuedTo": "party A"' in output
         assert '"notSigned": [' in output
         assert '"file_3.dll",' in output
-        assert '"lib\\file_4.dll"' in output
+        assert '"bin\\file_4.dll"' in output
         assert "}" in output

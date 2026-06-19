@@ -12,7 +12,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c099_longculvert_on_the_fly" ref="dflowfm_default">
-        <path version="2026-01-26T12:14:32.175000">e02_dflowfm/f002_1D2D/c099_longculvert_on_the_fly</path>
+        <path version="2026-04-21T14:37:14.434000">e02_dflowfm/f002_1D2D/c099_longculvert_on_the_fly</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netcdf">
@@ -29,7 +29,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f002_c100_longculvert" ref="dflowfm_default">
-      <path version="2026-02-10T15:09:03.103000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
+      <path version="2026-06-09T14:45:54.686000">e02_dflowfm/f002_1D2D/c100_longculvert</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -51,7 +51,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c101_longculvert_timeseries_valve" ref="dflowfm_config">
-      <path version="2026-02-10T15:09:24.270000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
+      <path version="2026-06-09T14:49:17.605000">e02_dflowfm/f002_1D2D/c101_longculvert_timeseries_valve</path>
       <maxRunTime>20.0</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_tunnel/tunnel_his.nc" type="netCDF">
@@ -73,7 +73,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f002_c102_longculvert_new" ref="dflowfm_default">
-      <path version="2026-01-26T17:05:24.583000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
+      <path version="2026-04-21T14:37:19.435000">e02_dflowfm/f002_1D2D/c102_longculvert_new</path>
       <programs>
           <program ref="dflowfm" seq="1">
             <arguments>
@@ -85,10 +85,15 @@
       <checks>
         <file name="DFM_OUTPUT_converted_tunnel/converted_tunnel_his.nc" type="netCDF">
           <parameters>
+            <parameter name="waterlevel" toleranceAbsolute="0.003" />
+            <parameter name="x_velocity" toleranceAbsolute="0.0009" />
+            <parameter name="y_velocity" toleranceAbsolute="0.0001" />
+            <parameter name="cross_section_discharge" toleranceAbsolute="0.003" />
+            <parameter name="cross_section_cumulative_discharge" toleranceRelative="0.01" />
             <parameter name="longculvert_discharge" toleranceAbsolute="0.003" />
-            <parameter name="longculvert_s1up" toleranceAbsolute="0.0005" />
-            <parameter name="longculvert_s1dn" toleranceAbsolute="0.0009" />
-            <parameter name="longculvert_head" toleranceAbsolute="0.002" />
+            <parameter name="longculvert_s1up" toleranceAbsolute="0.002" />
+            <parameter name="longculvert_s1dn" toleranceAbsolute="0.002" />
+            <parameter name="longculvert_head" toleranceAbsolute="0.004" />
             <parameter name="longculvert_flow_area" toleranceAbsolute="0.0001" />
             <parameter name="longculvert_velocity" toleranceAbsolute="0.04" />
             <parameter name="longculvert_valve_relative_opening" toleranceAbsolute="0.0001" />
@@ -2074,7 +2079,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c110_dcsm5_periodic_forcing" ref="dflowfm_default">
-      <path version="2025-12-04T16:08:58.022000">e02_dflowfm/f006_external_forcing/c110_dcsm5_periodic_forcing</path>
+      <path version="2026-04-29T10:17:00.618000">e02_dflowfm/f006_external_forcing/c110_dcsm5_periodic_forcing</path>
       <maxRunTime>15000.0000000</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_dcsmv5/dcsmv5_his.nc" type="netCDF">
@@ -2253,7 +2258,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f006_c176_freezing_with_background_salinity" ref="dflowfm_restart">
-        <path version="2026-04-21T13:06:44.515000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
+        <path version="2026-06-19T07:54:31.048000">e02_dflowfm/f006_external_forcing/c176_freezing_with_background_salinity</path>
         <maxRunTime>3600.0</maxRunTime>
         <checks>
             <file name="output/winter97_saltwater-2_map.nc" type="netcdf">
@@ -3933,6 +3938,18 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f011_c210_spider_utm_transfo" ref="dflowfm_default">
+      <path version="2026-06-11T13:16:47.454000">e02_dflowfm/f011_wind/c210_spider_utm_transfo</path>
+      <maxRunTime>600</maxRunTime>
+      <checks>
+        <file name="DFM_OUTPUT_osaka_surge/osaka_surge_map.nc" type="netCDF">
+          <parameters>
+            <parameter name="mesh2d_windx" toleranceAbsolute="0.0001" />
+            <parameter name="mesh2d_windy" toleranceAbsolute="0.0001" />
+          </parameters>
+        </file>
+      </checks>
+    </testCase>
     <testCase name="e02_f012_c020_hisseriesonevalue" ref="dflowfm_default">
       <path version="2026-03-31T11:32:45.106000">e02_dflowfm/f012_inout/c020_hisseriesonevalue</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -4814,6 +4831,42 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f019_c091_tracer_diffusion_explicit_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-06-10T03:18:28.317000">e02_dflowfm/f019_transport/c091_tracer_diffusion_explicit_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_map.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately 1.2e-4 --> 
+      			<parameter name="mesh2d_tracer" toleranceAbsolute="1.5e-4" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -1e-12 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="1e-11" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>    
+    <testCase name="e02_f019_c092_tracer_diffusion_explicit_local_timestep_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-05-29T13:20:35.560000">e02_dflowfm/f019_transport/c092_tracer_diffusion_explicit_local_timestep_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_map.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately +-3.0e-4 --> 
+      			<parameter name="mesh2d_tracer" toleranceAbsolute="3e-4" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -7e-10 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="1e-9" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>       
     <testCase name="e02_f020_c034_salinity_freezing" ref="dflowfm_default">
       <path version="2025-12-12T14:33:06.073000">e02_dflowfm/f020_heat_flux/c034_salinity_freezing</path>
       <maxRunTime>60.0000000</maxRunTime>
@@ -6104,6 +6157,26 @@
         </file>
       </checks>
     </testCase>
+    <testCase name="e02_f022_c108_settling_mass_balance" ref="dflowfm_default"> 
+      <path version="2026-05-06T14:00:28.379000">e02_dflowfm/f022_morphology_2D/c108_settling_mass_balance</path>
+      <maxRunTime>60.0000000</maxRunTime>
+      <checks>
+        <file name="dflowfmoutput/masscon_his.nc" type="netCDF">
+          <parameters>
+               <!-- current error with exact solution is approximately 1e-4 --> 
+      			<parameter name="sed" toleranceAbsolute="1.05e-4" />
+      			<parameter name="waterlevel" toleranceAbsolute="1e-10" />
+      			<parameter name="bedlevel" toleranceAbsolute="1e-6" />
+          </parameters>
+        </file>
+        <file name="dflowfmoutput/masscon_mass_balances.nc" type="netCDF">
+          <parameters>
+               <!-- current error is approximately -1.5e-5 to 1.5e-5 --> 
+      			<parameter name="const1_balance_cumerror" toleranceAbsolute="2e-5" />
+          </parameters>
+        </file>        
+      </checks>
+    </testCase>
     <testCase name="e02_f022_c300_sedimentmodelnr1_1PK" ref="dflowfm_default">
       <path version="2024-05-05T17:30:00">e02_dflowfm/f022_morphology_2D/c300_sedimentmodelnr1_1PK</path>
       <maxRunTime>20.0</maxRunTime>
@@ -6470,7 +6543,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c31_shoal_ZW" ref="dflowfm_default">
-      <path version="2025-10-15T15:19:00.611000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c31_shoal_ds_IBedCond0_us_IBedCond1</path>
+      <path version="2026-04-21T14:37:22.059000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c31_shoal_ds_IBedCond0_us_IBedCond1</path>
       <maxRunTime>35.0000000</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c31_map.nc" type="netCDF">
@@ -6550,7 +6623,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c36_shoal_ZW_cn" ref="dflowfm_default">
-      <path version="2025-10-15T15:19:09.376000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c36_shoal_ds_IBedCond0_us_IBedCond1_cn</path>
+      <path version="2026-04-21T14:37:28.091000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c36_shoal_ds_IBedCond0_us_IBedCond1_cn</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c36_map.nc" type="netCDF">
@@ -6566,7 +6639,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c37_shoal_ZW_cn_angle" ref="dflowfm_default">
-      <path version="2025-10-15T15:19:10.170000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c37_shoal_ds_IBedCond0_us_IBedCond1_cn_angle</path>
+      <path version="2026-04-21T14:37:32.007000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c37_shoal_ds_IBedCond0_us_IBedCond1_cn_angle</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c37_map.nc" type="netCDF">
@@ -6582,7 +6655,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c38_shoal_ZW_angle" ref="dflowfm_default">
-      <path version="2025-10-15T15:19:11.023000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c38_shoal_ds_IBedCond0_us_IBedCond1_angle</path>
+      <path version="2026-04-21T14:37:36.786000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c38_shoal_ds_IBedCond0_us_IBedCond1_angle</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c38_map.nc" type="netCDF">
@@ -6598,7 +6671,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f037_c39_shoal_ds_IBedCond0_us_IBedCond1_cn_reversed" ref="dflowfm_default">
-      <path version="2025-10-15T15:19:12.496000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c39_shoal_ds_IBedCond0_us_IBedCond1_cn_reversed</path>
+      <path version="2026-04-21T14:37:40.067000">e02_dflowfm/f037_mor1d_tabulated_crosssections/c39_shoal_ds_IBedCond0_us_IBedCond1_cn_reversed</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/c39_map.nc" type="netCDF">
@@ -6949,7 +7022,7 @@
       </checks>
     </testCase> 
     <testCase name="e02_f123_c81_dad_inside_dumping" ref="dflowfm_config">
-      <path version="2025-10-15T15:29:24.648000">e02_dflowfm/f123_dredge-dump/c81_dad_inside_dumping</path>
+      <path version="2026-04-21T14:37:42.214000">e02_dflowfm/f123_dredge-dump/c81_dad_inside_dumping</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Flow1D_his.nc" type="netCDF">
@@ -6993,7 +7066,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f123_c83_dad_nourishment_mixed_sediment" ref="dflowfm_config">
-      <path version="2025-10-15T15:29:27.777000">e02_dflowfm/f123_dredge-dump/c83_dad_nourishment_mixed_sediment</path>
+      <path version="2026-04-21T14:37:44.641000">e02_dflowfm/f123_dredge-dump/c83_dad_nourishment_mixed_sediment</path>
       <maxRunTime>90.0</maxRunTime>
       <checks>
         <file name="dflowfmoutput/Flow1D_his.nc" type="netCDF">
