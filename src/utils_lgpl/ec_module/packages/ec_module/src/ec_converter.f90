@@ -2116,10 +2116,10 @@ contains
                            end if
                            val = wL * valL1 + wR * valR1
                            do k = kbegin, kend ! Set the average value for all vertical positions
-                              call apply_operand(
+                              call apply_operand( &
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                                  val(1:vectormax), &
-                                 connection%converterPtr%operandType
+                                 connection%converterPtr%operandType &
                               )
                            end do ! target layers
                         else
@@ -2156,10 +2156,10 @@ contains
                                  return
                               end select
                               
-                              call apply_operand(
+                              call apply_operand( &
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                                  val(1:vectormax), &
-                                 connection%converterPtr%operandType
+                                 connection%converterPtr%operandType &
                               )
                            end do ! target layers
                         end if ! are we averaging the source in the vertical direction ?
@@ -2186,10 +2186,10 @@ contains
                         from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                         thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
 
-                        call apply_operand(
+                        call apply_operand( &
                            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
                            val(1:vectormax), &
-                           connection%converterPtr%operandType
+                           connection%converterPtr%operandType &
                         )
                      end do
                   end if ! valid left or right point ?
@@ -4118,37 +4118,37 @@ contains
       case (EC_OPERAND_ADD)
 
          if (.not. any(target_array == ec_undef_hp)) then
-             target_array = target_array + values
+            target_array = target_array + values
          else
-             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to add to.")
-             return
+            call set_ec_message("ERROR: ec_converter: Missing existing value(s) to add to.")
+            return
          end if
 
       case (EC_OPERAND_MULTIPLY)
 
          if (.not. any(target_array == ec_undef_hp)) then
-             target_array = target_array * values
+            target_array = target_array * values
          else
-             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to multiply with.")
-             return
+            call set_ec_message("ERROR: ec_converter: Missing existing value(s) to multiply with.")
+            return
          end if
 
       case (EC_OPERAND_MINIMUM)
 
          if (.not. any(target_array == ec_undef_hp)) then
-             target_array = min(target_array, values)
+            target_array = min(target_array, values)
          else
-             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to compare for minimum.")
-             return
+            call set_ec_message("ERROR: ec_converter: Missing existing value(s) to compare for minimum.")
+            return
          end if
 
       case (EC_OPERAND_MAXIMUM)
 
          if (.not. any(target_array == ec_undef_hp)) then
-             target_array = max(target_array, values)
+            target_array = max(target_array, values)
          else
-             call set_ec_message("ERROR: ec_converter: Missing existing value(s) to compare for maximum.")
-             return
+            call set_ec_message("ERROR: ec_converter: Missing existing value(s) to compare for maximum.")
+            return
          end if
 
       case default
