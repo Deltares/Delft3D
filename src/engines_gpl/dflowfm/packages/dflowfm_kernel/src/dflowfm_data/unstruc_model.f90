@@ -1422,6 +1422,11 @@ contains
          end if
       end if
 
+      call prop_get(md_ptr, 'meteo', 'AirSeaInteractionModel', air_water_interaction_model)
+      call prop_get(md_ptr, 'meteo', 'StabilityFunction', atmospheric_stability_function)
+      call prop_get(md_ptr, 'meteo', 'FreeConvection', free_convection)
+      call prop_get(md_ptr, 'meteo', 'QsatFactor', salinity_reduction_factor_saturation_humidity)
+
       call prop_get(md_ptr, 'wind', 'ICdtyp', wind_drag_type)
       if (wind_drag_type == CD_TYPE_CONST) then
          call prop_get(md_ptr, 'wind', 'Cdbreakpoints', cdb, 1)
