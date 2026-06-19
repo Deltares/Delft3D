@@ -1815,7 +1815,6 @@ contains
       use unstruc_messages, only: callback_msg
       use m_meteo
 
-
       integer :: iresult
 
       call setup(iresult)
@@ -1831,10 +1830,6 @@ contains
       if (iresult == DFM_NOERR) then
          call finalize()
       end if
-
-      call ecInstancePrintState(ecInstancePtr, callback_msg, LEVEL_INFO)
-
-
    end function flow_initexternalforcings
 
 !> prepare all arrays that are necessary for both old and new external forcing. Only called as part of flow_initexternalforcings

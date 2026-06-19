@@ -1528,7 +1528,7 @@ contains
          if (.not. ecBCReadLine(fileReaderPtr, valueptr%sourceT1FieldPtr%arr1dPtr, valueptr%sourceT1FieldPtr%timesteps)) return
               
          case default
-         call set_EC_Message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
+         call set_ec_message("ERROR: ec_provider::ecProviderCreatet3DItems: Unknown file type.")
          return
       end select
 
@@ -1962,13 +1962,22 @@ contains
          if (zTargetItemId == 0 .and. bcBlockPtr%func == BC_FUNC_TIM3D .and. bcBlockPtr%is_vertical_coord_time_varying) then
             zTargetItemId = ecInstanceCreateItem(instancePtr)
 
-            fieldId = ecInstanceCreateField(instancePtr)
-            
-            if (.not. ecItemSetRole(instancePtr, zTargetItemId, itemPT%role)) return
-            if (.not. ecItemSetType(instancePtr, zTargetItemId, itemPT%accessType)) return
-            if (.not. ecItemSetQuantity(instancePtr, zTargetItemId, itemPT%quantityPtr%id)) return
-            if (.not. ecItemSetElementSet(instancePtr, zTargetItemId, itemPT%elementSetPtr%id)) return
-            if (.not. ecItemSetTargetField(instancePtr, zTargetItemId, fieldId)) return
+            fieldId = ecInstanceCreateField(instancePtr)            
+            if (.not. ecItemSetRole(instancePtr, zTargetItemId, itemPT%role)) then 
+               return
+            end if
+            if (.not. ecItemSetType(instancePtr, zTargetItemId, itemPT%accessType)) then
+               return
+            end if
+            if (.not. ecItemSetQuantity(instancePtr, zTargetItemId, itemPT%quantityPtr%id)) then
+               return
+            end if
+            if (.not. ecItemSetElementSet(instancePtr, zTargetItemId, itemPT%elementSetPtr%id)) then
+               return
+            end if
+            if (.not. ecItemSetTargetField(instancePtr, zTargetItemId, fieldId)) then
+               return
+            end if
 
          end if
 
@@ -2237,15 +2246,24 @@ contains
                   if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
                            ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
                            ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
-                           ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
+                           ecConverterSetElement(instancePtr, subconverterId, targetIndex))) then 
+                              return
+                  end if
                   ! Construct a new Connection.
                   connectionId = ecInstanceCreateConnection(instancePtr)
-                  if (.not. ecConnectionSetConverter(instancePtr, connectionId, subconverterId)) return
+                  if (.not. ecConnectionSetConverter(instancePtr, connectionId, subconverterId)) then 
+                     return
+                  end if
                   zItemId = ecFileReaderFindItem(instancePtr, zFileReaderId, trim("uniform_item"))
-
-                  if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, zItemId)) return
-                  if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) return
-                  if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) return
+                  if (.not. ecConnectionAddSourceItem(instancePtr, connectionId, zItemId)) then
+                     return
+                  end if
+                  if (.not. ecConnectionAddTargetItem(instancePtr, connectionId, zTargetItemId)) then
+                     return
+                  end if
+                  if (.not. ecItemAddConnection(instancePtr, zTargetItemId, connectionId)) then
+                     return
+                  end if
                end if
             end if 
          end block

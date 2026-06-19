@@ -1195,7 +1195,7 @@ contains
 
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
-      valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPTR
+      valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr
       valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
       n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
       if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then

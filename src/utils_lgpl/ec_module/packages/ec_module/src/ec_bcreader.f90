@@ -895,8 +895,8 @@ contains
        endif
                  
        if (.not.ecNetCDFGetTimeseriesValue (BCPtr%ncptr,BCPtr%ncvarndx,BCPtr%nclocndx,BCPtr%dimvector, &
-          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr.FUNC)) then
-          call set_EC_Message("Read failure in file: "//trim(BCPtr%fname))
+          BCPtr%nctimndx,ec_timesteps,values, BCPtr%buffer,BCPtr%FUNC)) then
+          call set_ec_message("Read failure in file: "//trim(BCPtr%fname))
           return
        else
           BCPtr%nctimndx = BCPtr%nctimndx + 1

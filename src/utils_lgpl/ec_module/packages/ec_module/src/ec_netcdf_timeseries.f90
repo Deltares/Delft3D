@@ -146,7 +146,7 @@ contains
       integer :: i_dim, n_dims, iVars, iTims, nVars, nTims, nGlobalAtts, unlimdimid, ierr
       integer :: tslen
       integer :: dimids_tsid(2)
-      integer :: len_vectordef = 40 
+      integer :: len_vectordef 
       logical :: isVector
       integer, dimension(:, :), allocatable :: var_dimids
       integer, dimension(:), allocatable :: var_ndims
@@ -154,6 +154,7 @@ contains
       success = .false.
       station_id_found = .false.
       time_found = .false.
+      len_vectordef = 40
             
       allocate (character(len=0) :: positive)
       allocate (character(len=0) :: zunits)
@@ -202,11 +203,16 @@ contains
          
          !
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
-         if (ierr /= NF90_NOERR) ncptr%fillvalues(iVars) = -huge(dp)
+         if (ierr /= NF90_NOERR) then 
+            ncptr%fillvalues(iVars) = -huge(dp)
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
-         if (ierr /= NF90_NOERR) ncptr%scales(iVars) = 1.0_dp
+         if (ierr /= NF90_NOERR) then 
+            ncptr%scales(iVars) = 1.0_dp
+         end if
          ierr = nf90_get_att(ncptr%ncid, iVars, 'add_offset', ncptr%offsets(iVars))
-         if (ierr /= NF90_NOERR) ncptr%offsets(iVars) = 0.0_dp
+         if (ierr /= NF90_NOERR) then 
+            ncptr%offsets(iVars) = 0.0_dp
+         end if
          ierr = nf90_inquire_variable(ncptr%ncid, iVars, ndims=var_ndims(iVars), dimids=var_dimids(:, iVars))
          ncptr%variable_dimension(iVars) = var_ndims(iVars)
                   
@@ -214,17 +220,23 @@ contains
          if (strcmpi(ncptr%variable_names(iVars),'station_id') .or. strcmpi(ncptr%variable_names(iVars),'location') ) then        
             ! Compose an index timeseries id's 
             ierr = nf90_inquire_variable(ncptr%ncid, iVars, dimids=dimids_tsid)
-            if (ierr /= NF90_NOERR) return
+            if (ierr /= NF90_NOERR) then
+               return
+            end if
             tslen = ncptr%dimlen(dimids_tsid(1)) ! timeseries ID length
             nTims = ncptr%dimlen(dimids_tsid(2)) ! number of timeseries IDs
             ncptr%nTims = nTims
             allocate (ncptr%tsid(nTims), stat=ierr)
-            if (ierr /= 0) return
+            if (ierr /= 0) then
+               return
+            end if
             tslen = min(tslen, len(ncptr%tsid(1)))
             ncptr%tsid = ''
             do iTims = 1, nTims
                ierr = nf90_get_var(ncptr%ncid, iVars, ncptr%tsid(iTims), (/1, iTims/), (/tslen, 1/))
-               if (ierr /= NF90_NOERR) return
+               if (ierr /= NF90_NOERR) then
+                  return
+               end if
                call replace_char(ncptr%tsid(iTims), 0, 32) ! Replace NULL char by whitespace: iachar(' ') == 32
             end do
             ncptr%tsidvarid = iVars ! For convenience also store the Station ID explicitly
@@ -235,7 +247,9 @@ contains
          ! Check for important var: was it time?
          if (strcmpi(ncptr%variable_names(iVars),'time')) then 
                ierr = nf90_get_att(ncptr%ncid, iVars, 'units', ncptr%timeunit) ! Store the unit string of the time variable
-               if (ierr /= NF90_NOERR) return
+               if (ierr /= NF90_NOERR) then
+                  return
+               end if
                ncptr%timevarid = iVars ! For convenience also store the ID explicitly
                ncptr%timedimid = var_dimids(1, iVars)
                time_found = .true.
@@ -263,11 +277,17 @@ contains
                allocate (ncptr%vp(ncptr%nLayer), stat=ierr)
                if (.not. ncptr%is_vertical_coord_time_varying) then
                   ierr = nf90_get_var(ncptr%ncid, ncptr%vertical_coordinate_id, ncptr%vp, (/1/), (/ncptr%nLayer/))
-                  if (ierr /= NF90_NOERR) return
+                  if (ierr /= NF90_NOERR) then 
+                     return
+                  end if
                end if
-               if (ierr /= 0) return
+               if (ierr /= 0) then
+                  return
+               end if
                ierr = ncu_get_att(ncptr%ncid, ncptr%vertical_coordinate_id, 'units', zunits)
-               if (ierr /= NF90_NOERR) return
+               if (ierr /= NF90_NOERR) then
+                  return
+               end if
                if (strcmpi(zunits, 'm')) then
                   if (strcmpi(positive, 'up')) ncptr%vptyp = BC_VPTYP_ZDATUM ! z upward from datum, unmodified z-values
                   if (strcmpi(positive, 'down')) ncptr%vptyp = BC_VPTYP_ZSURF ! z downward
@@ -287,13 +307,17 @@ contains
          ! existing nc files
          if (strcmpi(ncptr%variable_names(iVars),'ux') ) then
             allocate (character :: ncptr%vector_definitions(iVars)%s, stat=ierr)
-            if (ierr /= 0) return
+            if (ierr /= 0) then 
+               return
+            end if
             ncptr%vector_definitions(iVars)%s = 'ux,uy'
          end if 
          ! velocities for nchis files
          if (strcmpi(ncptr%variable_names(iVars),'x_velocity') ) then
             allocate (character :: ncptr%vector_definitions(iVars)%s, stat=ierr)
-            if (ierr /= 0) return
+            if (ierr /= 0) then
+               return
+            end if
             ncptr%vector_definitions(iVars)%s = 'x_velocity,y_velocity'
          end if 
       end do
