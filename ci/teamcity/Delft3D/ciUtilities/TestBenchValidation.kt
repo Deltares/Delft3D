@@ -71,6 +71,7 @@ object TestBenchValidation : BuildType({
             scriptContent = """
                 #!/usr/bin/env bash
                 uv venv
+                source .venv/bin/activate
                 uv pip sync pip/lnx-dev-requirements.txt
             """.trimIndent()
             dockerImage = "%docker_image%"
@@ -87,12 +88,13 @@ object TestBenchValidation : BuildType({
             workingDir = "test/deltares_testbench"
             scriptContent = """
                 #!/usr/bin/env bash
+                source .venv/bin/activate
                 set -exo pipefail
-                
+
                 mkdir -p report
-                uv run ruff format --diff . > report/ruff_format.patch
-                uv run ruff check --select F4,F5,F6,F7,W,I --output-format=junit --output-file=report/ruff_check.xml
-                uv run pytest --junitxml=report/pytest.xml --cov-report=html:report/htmlcov --cov=.
+                ruff format --diff . > report/ruff_format.patch
+                ruff check --select F4,F5,F6,F7,W,I --output-format=junit --output-file=report/ruff_check.xml
+                pytest --junitxml=report/pytest.xml --cov-report=html:report/htmlcov --cov=.
             """.trimIndent()
             dockerImage = "%docker_image%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Linux
