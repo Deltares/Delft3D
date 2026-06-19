@@ -22,22 +22,22 @@ module dflowfm_io
 
     interface
         function c_mdu_document_create(out_handle) result(res) bind(C, name="mdu_document_create")
-            import :: c_ptr, c_int
+            import :: c_ptr, c_int32_t
             type(c_ptr), intent(out) :: out_handle
-            integer(c_int) :: res
+            integer(c_int32_t) :: res
         end function
 
         function c_mdu_document_destroy(handle) result(res) bind(C, name="mdu_document_destroy")
-            import :: c_ptr, c_int
+            import :: c_ptr, c_int32_t
             type(c_ptr), intent(inout) :: handle
-            integer(c_int) :: res
+            integer(c_int32_t) :: res
         end function
 
         function c_mdu_model_get_dummy_value(handle, out_value) result(res) bind(C, name="mdu_model_get_dummy_value")
-            import :: c_ptr, c_int
+            import :: c_ptr, c_int32_t
             type(c_ptr), value, intent(in) :: handle
-            integer(c_int), intent(out)    :: out_value
-            integer(c_int) :: res
+            integer(c_int32_t), intent(out)    :: out_value
+            integer(c_int32_t) :: res
         end function
 
         function c_dflowfm_io_get_last_error() result(ptr) bind(C, name="dflowfm_io_get_last_error")
@@ -66,7 +66,7 @@ contains
         class(MduModel), intent(in) :: self
         integer, intent(out) :: value
         integer, intent(out) :: result_code
-        integer(c_int) :: c_value
+        integer(c_int32_t) :: c_value
 
         result_code = int(c_mdu_model_get_dummy_value(self%handle, c_value))
         value = int(c_value)
@@ -105,7 +105,7 @@ contains
 
     subroutine mdu_model_finalizer(self)
         type(MduModel), intent(inout) :: self
-        integer(c_int) :: res
+        integer(c_int32_t) :: res
 
         res = c_mdu_document_destroy(self%handle)
     end subroutine
