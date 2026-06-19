@@ -34,11 +34,11 @@ namespace pre_c_sumo
         std::vector<double> source_y_vector;
         std::vector<double> source_z_bottom_vector;
         std::vector<double> source_z_top_vector;
-        std::vector<double> q_vector;
-        std::vector<double> u_magnitude_vector;
-        std::vector<double> u_direction_vector;
-        std::vector<double> u_sin_vector; // ??
-        std::vector<double> u_cos_vector; // ??
+        std::vector<double> discharge_vector;
+        std::vector<double> momentum_magnitude_vector;
+        std::vector<double> momentum_direction_vector;
+        std::vector<double> momentum_sin_vector; // ??
+        std::vector<double> momentum_cos_vector; // ??
 
     }; // ConnectedSinksSources
 } // namespace pre_c_sumo
