@@ -205,6 +205,7 @@ contains
          ierr = nf90_get_att(ncptr%ncid, iVars, '_FillValue', ncptr%fillvalues(iVars))
          if (ierr /= NF90_NOERR) then 
             ncptr%fillvalues(iVars) = -huge(dp)
+         end if
          ierr = nf90_get_att(ncptr%ncid, iVars, 'scale_factor', ncptr%scales(iVars))
          if (ierr /= NF90_NOERR) then 
             ncptr%scales(iVars) = 1.0_dp
