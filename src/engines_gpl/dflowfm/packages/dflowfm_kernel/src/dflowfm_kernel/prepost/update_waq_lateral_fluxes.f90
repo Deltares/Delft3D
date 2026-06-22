@@ -48,15 +48,16 @@ module m_update_waq_lateral_fluxes
 contains
 
    subroutine update_waq_lateral_fluxes()
-      use waq
+      use waq, only: waqpar
       use m_partitioninfo, only: is_ghost_node
+      use m_getkbotktopmax
       use m_flow
       use m_flowgeom
       use m_flowtimes
       use m_laterals, only: num_layers, numlatsg, n1latsg, n2latsg, nnlat, qqlat, qlatwaq
 
       integer :: i_node, k1
-      integer :: i_lat, i_latwaq, i_layer
+      integer :: i_lat, i_latwaq, i_layer, i_layer_waq
 
 ! Accumulate lateral discharges for waq
       i_latwaq = 0
@@ -65,10 +66,11 @@ contains
             i_node = nnlat(k1)
             if (i_node > 0) then
                if (.not. is_ghost_node(i_node)) then
-                  i_latwaq = i_latwaq + 1
                   do i_layer = 1, num_layers
-                     qlatwaq(i_latwaq) = qlatwaq(i_latwaq) + dts * qqLat(i_layer, k1)
+                     i_layer_waq = i_latwaq + waqpar%ilaggr(num_layers - i_layer + 1)
+                     qlatwaq(i_layer_waq) = qlatwaq(i_layer_waq) + dts * qqLat(i_layer, k1)
                   end do
+                  i_latwaq = i_latwaq + waqpar%kmxnxa
                end if
             end if
          end do

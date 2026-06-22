@@ -50,7 +50,7 @@ contains
 
    subroutine update_waq_sink_source_fluxes()
       use m_getkbotktopmax
-      use waq
+      use waq, only: waqpar
       use m_flow
       use m_flowgeom
       use m_flowtimes
