@@ -143,6 +143,18 @@ namespace ini
         return result;
     }
 
+    IniProperty& IniSection::SetPropertyValue(const std::string& key, const std::string& value)
+    {
+        const auto it = FindProperty(key);
+        if (it == end())
+        {
+            return AddProperty(key, value);
+        }
+
+        it->SetValue(value);
+        return *it;
+    }
+
     void IniSection::RemoveProperty(const IniProperty& property)
     {
         const auto it = std::find(properties.begin(), properties.end(), property);

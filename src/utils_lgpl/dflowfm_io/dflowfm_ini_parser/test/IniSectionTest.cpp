@@ -415,184 +415,6 @@ namespace ini::test
     }
 
     // -------------------------------------------------------------------------
-    // AddOrUpdateProperty - key/value
-    // -------------------------------------------------------------------------
-
-    TEST(IniSectionTest, AddOrUpdateProperty_EmptyKeyAndValidValue_ThrowsInvalidArgument)
-    {
-        IniSection section("TestSection");
-
-        EXPECT_THROW(section.AddOrUpdateProperty("", "TestValue"), std::invalid_argument);
-    }
-
-    class IniSectionAddOrUpdatePropertyCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
-    {
-    };
-
-    TEST_P(IniSectionAddOrUpdatePropertyCaseInsensitiveTest,
-           AddOrUpdateProperty_ExistingKeyCaseInsensitive_UpdatesPropertyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& updatedProperty = section.AddOrUpdateProperty(GetParam(), "UpdatedValue");
-
-        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(updatedProperty.GetValue(), "UpdatedValue");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
-    }
-
-    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionAddOrUpdatePropertyCaseInsensitiveTest,
-                             ::testing::Values("testkey", "TestKey", "TESTKEY"));
-
-    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndEmptyValue_UpdatesPropertyToEmptyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", "");
-
-        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
-        EXPECT_TRUE(updatedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndValidValue_AddsPropertyWithValue)
-    {
-        IniSection section("TestSection");
-
-        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", "TestValue");
-
-        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(addedProperty.GetValue(), "TestValue");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndEmptyValue_AddsPropertyWithEmptyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", "");
-
-        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_TRUE(addedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
-    }
-
-    // -------------------------------------------------------------------------
-    // AddOrUpdateProperty - key/values
-    // -------------------------------------------------------------------------
-
-    TEST(IniSectionTest, AddOrUpdateProperty_EmptyKeyAndValidValues_ThrowsInvalidArgument)
-    {
-        IniSection section("TestSection");
-
-        EXPECT_THROW(section.AddOrUpdateProperty("", std::vector<int>{1, 2, 2}), std::invalid_argument);
-    }
-
-    class IniSectionAddOrUpdatePropertyCollectionCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
-    {
-    };
-
-    TEST_P(IniSectionAddOrUpdatePropertyCollectionCaseInsensitiveTest,
-           AddOrUpdateProperty_ExistingKeyCaseInsensitive_UpdatesPropertyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& updatedProperty = section.AddOrUpdateProperty(GetParam(), std::vector<int>{9, 2, 9});
-
-        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(updatedProperty.GetValue(), "9 2 9");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
-    }
-
-    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionAddOrUpdatePropertyCollectionCaseInsensitiveTest,
-                             ::testing::Values("testkey", "TestKey", "TESTKEY"));
-
-    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndValidValuesAndSpaceSeparator_UpdatesPropertyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{1, 1, 1}, ' ');
-
-        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(updatedProperty.GetValue(), "1 1 1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndValidValuesAndSemicolonSeparator_UpdatesPropertyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{1, 1, 1}, ';');
-
-        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(updatedProperty.GetValue(), "1;1;1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_ExistingKeyAndEmptyValues_UpdatesPropertyToEmptyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& updatedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{});
-
-        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
-        EXPECT_TRUE(updatedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], updatedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndValidValuesAndSpaceSeparator_AddsPropertyWithValue)
-    {
-        IniSection section("TestSection");
-
-        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{9, 2, 1}, ' ');
-
-        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(addedProperty.GetValue(), "9 2 1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndValidValuesAndSemicolonSeparator_AddsPropertyWithValue)
-    {
-        IniSection section("TestSection");
-
-        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", std::vector<int>{9, 2, 1}, ';');
-
-        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_EQ(addedProperty.GetValue(), "9;2;1");
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
-    }
-
-    TEST(IniSectionTest, AddOrUpdateProperty_NonExistingKeyAndEmptyValues_AddsPropertyWithEmptyValue)
-    {
-        IniSection section("TestSection");
-        section.AddProperty("TestKey", "TestValue");
-
-        IniProperty& addedProperty = section.AddOrUpdateProperty("TestKey", std::vector<double>{});
-
-        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
-        EXPECT_TRUE(addedProperty.GetValue().empty());
-        ASSERT_EQ(section.size(), 1);
-        EXPECT_EQ(section[0], addedProperty);
-    }
-
-    // -------------------------------------------------------------------------
     // HasProperty
     // -------------------------------------------------------------------------
 
@@ -1056,6 +878,184 @@ namespace ini::test
         const std::vector<int> values = section.GetPropertyValues<int>("TestKey");
 
         EXPECT_TRUE(values.empty());
+    }
+
+    // -------------------------------------------------------------------------
+    // SetPropertyValue - key/value
+    // -------------------------------------------------------------------------
+
+    TEST(IniSectionTest, SetPropertyValue_EmptyKeyAndValidValue_ThrowsInvalidArgument)
+    {
+        IniSection section("TestSection");
+
+        EXPECT_THROW(section.SetPropertyValue("", "TestValue"), std::invalid_argument);
+    }
+
+    class IniSectionSetPropertyValueCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniSectionSetPropertyValueCaseInsensitiveTest,
+           SetPropertyValue_ExistingKeyCaseInsensitive_UpdatesPropertyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& updatedProperty = section.SetPropertyValue(GetParam(), "UpdatedValue");
+
+        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(updatedProperty.GetValue(), "UpdatedValue");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], updatedProperty);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionSetPropertyValueCaseInsensitiveTest,
+                             ::testing::Values("testkey", "TestKey", "TESTKEY"));
+
+    TEST(IniSectionTest, SetPropertyValue_ExistingKeyAndEmptyValue_UpdatesPropertyToEmptyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& updatedProperty = section.SetPropertyValue("TestKey", "");
+
+        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
+        EXPECT_TRUE(updatedProperty.GetValue().empty());
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], updatedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValue_NonExistingKeyAndValidValue_AddsPropertyWithValue)
+    {
+        IniSection section("TestSection");
+
+        IniProperty& addedProperty = section.SetPropertyValue("TestKey", "TestValue");
+
+        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(addedProperty.GetValue(), "TestValue");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], addedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValue_NonExistingKeyAndEmptyValue_AddsPropertyWithEmptyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& addedProperty = section.SetPropertyValue("TestKey", "");
+
+        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
+        EXPECT_TRUE(addedProperty.GetValue().empty());
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], addedProperty);
+    }
+
+    // -------------------------------------------------------------------------
+    // SetPropertyValues - key/values
+    // -------------------------------------------------------------------------
+
+    TEST(IniSectionTest, SetPropertyValues_EmptyKeyAndValidValues_ThrowsInvalidArgument)
+    {
+        IniSection section("TestSection");
+
+        EXPECT_THROW(section.SetPropertyValues("", std::vector<int>{1, 2, 2}), std::invalid_argument);
+    }
+
+    class IniSectionSetPropertyValuesCaseInsensitiveTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniSectionSetPropertyValuesCaseInsensitiveTest,
+           SetPropertyValues_ExistingKeyCaseInsensitive_UpdatesPropertyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& updatedProperty = section.SetPropertyValues(GetParam(), std::vector<int>{9, 2, 9});
+
+        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(updatedProperty.GetValue(), "9 2 9");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], updatedProperty);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniSectionTest, IniSectionSetPropertyValuesCaseInsensitiveTest,
+                             ::testing::Values("testkey", "TestKey", "TESTKEY"));
+
+    TEST(IniSectionTest, SetPropertyValues_ExistingKeyAndValidValuesAndSpaceSeparator_UpdatesPropertyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& updatedProperty = section.SetPropertyValues("TestKey", std::vector<int>{1, 1, 1}, ' ');
+
+        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(updatedProperty.GetValue(), "1 1 1");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], updatedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValues_ExistingKeyAndValidValuesAndSemicolonSeparator_UpdatesPropertyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& updatedProperty = section.SetPropertyValues("TestKey", std::vector<int>{1, 1, 1}, ';');
+
+        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(updatedProperty.GetValue(), "1;1;1");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], updatedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValues_ExistingKeyAndEmptyValues_UpdatesPropertyToEmptyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& updatedProperty = section.SetPropertyValues("TestKey", std::vector<int>{});
+
+        EXPECT_EQ(updatedProperty.GetKey(), "TestKey");
+        EXPECT_TRUE(updatedProperty.GetValue().empty());
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], updatedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValues_NonExistingKeyAndValidValuesAndSpaceSeparator_AddsPropertyWithValue)
+    {
+        IniSection section("TestSection");
+
+        IniProperty& addedProperty = section.SetPropertyValues("TestKey", std::vector<int>{9, 2, 1}, ' ');
+
+        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(addedProperty.GetValue(), "9 2 1");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], addedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValues_NonExistingKeyAndValidValuesAndSemicolonSeparator_AddsPropertyWithValue)
+    {
+        IniSection section("TestSection");
+
+        IniProperty& addedProperty = section.SetPropertyValues("TestKey", std::vector<int>{9, 2, 1}, ';');
+
+        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
+        EXPECT_EQ(addedProperty.GetValue(), "9;2;1");
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], addedProperty);
+    }
+
+    TEST(IniSectionTest, SetPropertyValues_NonExistingKeyAndEmptyValues_AddsPropertyWithEmptyValue)
+    {
+        IniSection section("TestSection");
+        section.AddProperty("TestKey", "TestValue");
+
+        IniProperty& addedProperty = section.SetPropertyValues("TestKey", std::vector<double>{});
+
+        EXPECT_EQ(addedProperty.GetKey(), "TestKey");
+        EXPECT_TRUE(addedProperty.GetValue().empty());
+        ASSERT_EQ(section.size(), 1);
+        EXPECT_EQ(section[0], addedProperty);
     }
 
     // -------------------------------------------------------------------------
