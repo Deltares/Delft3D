@@ -20,6 +20,7 @@ CONFIGURATIONS = [
     "rr-testbench",
     "wave-testbench",
     "swan-testbench",
+    "tc-testbench",
     "dflowfm_interacter",
     "dflowfm",
     "dimr",
@@ -231,9 +232,7 @@ def main() -> None:
 
     # Resolve build and install directories
     build_dir = ROOT / (args.build_dir or build_dir_name(args.config, args.build_type))
-    install_dir = ROOT / (
-        args.install_dir or install_dir_name(args.config, args.build_type)
-    )
+    install_dir = ROOT / (args.install_dir or install_dir_name(args.config, args.build_type))
 
     # Verify VS environment is active when building on Windows
     if platform.system() == "Windows" and args.build and vs_year:

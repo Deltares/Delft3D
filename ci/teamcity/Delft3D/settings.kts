@@ -11,7 +11,7 @@ import Delft3D.template.*
 import Delft3D.ciUtilities.*
 import Delft3D.verschilanalyse.*
 
-version = "2025.11"
+version = "2026.1"
 
 project {
 
@@ -59,10 +59,12 @@ project {
             buildType(LinuxBuildTools)
             buildType(LinuxThirdPartyLibs)
             buildType(LinuxDevContainer)
+            buildType(LinuxPython)
             buildTypesOrder = listOf(
                 LinuxBuildTools,
                 LinuxThirdPartyLibs,
                 LinuxDevContainer,
+                LinuxPython,
             )
         }        
         subProject {

@@ -111,11 +111,13 @@ contains
    subroutine precice_adapter_initialize(self)
       use precice, only: precicef_set_vertices, precicef_initialize, &
                          precicef_create_with_communicator, precicef_create, &
-                         precicef_requires_initial_data
+                         precicef_requires_initial_data, precicef_set_mesh_access_region
       implicit none(type, external)
       class(precice_adapter_t), intent(inout) :: self
 
       integer(kind=c_int) :: is_initial_data_required = 0_c_int
+      character(kind=c_char, len=19) :: sources_sinks_mesh_name = "sources_sinks_nodes"
+      real(kind=c_double), dimension(4) :: sources_sinks_bounding_box = [-1.0, 1.0, -1.0, 1.0]
 
       if (self%is_communicator_set) then
          call precicef_create_with_communicator(self%name, self%config_file, self%my_rank, &
@@ -130,6 +132,8 @@ contains
       allocate (self%vertex_ids_3d(self%mesh_3d_size))
       call precicef_set_vertices(self%cell_center_mesh_name, self%mesh_size, self%cell_center_mesh_coordinates_2d, self%vertex_ids, len(self%cell_center_mesh_name))
       call precicef_set_vertices(self%cell_center_mesh_3d_name, self%mesh_3d_size, self%cell_center_mesh_coordinates_3d, self%vertex_ids_3d, len(self%cell_center_mesh_3d_name))
+
+      call precicef_set_mesh_access_region(sources_sinks_mesh_name, sources_sinks_bounding_box, len(sources_sinks_mesh_name))
 
       call precicef_requires_initial_data(is_initial_data_required)
       if (is_initial_data_required /= 0) then

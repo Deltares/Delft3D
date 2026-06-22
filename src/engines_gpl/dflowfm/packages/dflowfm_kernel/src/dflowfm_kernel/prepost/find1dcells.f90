@@ -88,8 +88,12 @@ contains
          end if
       end do
 
-      ! Create branch node index array and inverse.
-      nump1d = size(meshgeom1d%nodebranchidx) !< Old number of nodes contained in meshgeom1d
+      if (associated(meshgeom1d%nodebranchidx)) then
+         ! Create branch node index array and inverse.
+         nump1d = size(meshgeom1d%nodebranchidx) !< Old number of nodes contained in meshgeom1d
+      else
+         nump1d = 0
+      end if
       if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
          allocate (meshgeom1d%nodeidx(nump1d))
          meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
@@ -192,7 +196,7 @@ contains
 
       if (NC == 0) then
          branches_first = .true.
-         if (preserve_branch_order) then
+         if (associated(meshgeom1d%nodebranchidx) .and. preserve_branch_order) then
             ! if the branch order is to be preserved, check if the next found node matches the next node in the branchorder.
             next_found_node = meshgeom1d%nodeidx_inverse(k)
             next_branch_node = nump1d2d - nump + 1

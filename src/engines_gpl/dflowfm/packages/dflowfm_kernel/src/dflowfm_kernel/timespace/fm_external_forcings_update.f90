@@ -30,14 +30,14 @@
 submodule(fm_external_forcings) fm_external_forcings_update
    use timers, only: timstrt, timstop
    use m_flowtimes, only: handle_ext, irefdate, tunit, time1
-   use m_flowgeom, only: ndx
+   use m_flowgeom, only: ndx, lnx
    use m_meteo, only: ec_gettimespacevalue, ecgetvalues, twav, success, air_pressure, pavbnd, ja_airdensity, item_air_density, &
                       air_density, ja_computed_airdensity, item_atmosphericpressure, item_air_temperature, air_temperature, &
                       item_dew_point_temperature, dew_point_temperature, update_wind_stress_each_time_step, temperature_model, &
                       TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, ja_friction_coefficient_time_dependent, item_frcu, frcu, tzone, &
                       ecsupporttimeunitconversionfactor, ncdamsg, item_damlevel, zcdam, ncgensg, item_generalstructure, zcgen, npumpsg, &
                       item_pump, qpump, item_longculvert_valve_relative_opening, nvalv, item_valve1d, jatidep, jaselfal, ecinstanceptr, &
-                      item_lateraldischarge, npumpswithlevels, num_source_sink, item_discharge_salinity_temperature_sorsin, source_sink_all_discharges, &
+                      item_lateraldischarge, npumpswithlevels, item_discharge_salinity_temperature_sorsin, &
                       item_sourcesink_discharge, item_sourcesink_constituent_delta, jasubsupl, jaheat_eachstep, jacali, jatrt, stm_included, &
                       jased, item_nudge_temperature, ec_undef_int, janudge, itempforcingtyp, item_relative_humidity, &
                       item_solar_radiation, item_cloudiness, &
@@ -50,7 +50,9 @@ submodule(fm_external_forcings) fm_external_forcings_update
                       item_culvert_valveopeningheight, item_weir_crestlevel, item_orifice_crestlevel, item_orifice_gateloweredgelevel, &
                       item_gate_crestlevel, item_gate_gateloweredgelevel, item_gate_gateopeningwidth, item_general_structure_crestlevel, &
                       item_general_structure_gateloweredgelevel, item_general_structure_crestwidth, item_general_structure_gateopeningwidth, &
-                      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt
+                      sdu_first, subsupl_tp, subsupl, item_subsiduplift, subsupl_t0, nbndt, kbndt, air_water_interaction_model, &
+                      AIR_WATER_INTERACTION_MODEL_MOST, wx, wy, wcharnock
+   use m_source_sink, only: source_sinks, source_sink_all_discharges
    use ieee_arithmetic, only: ieee_is_nan
    use m_bedform, only: bfm_included, bfmpar
    use dfm_error, only: dfm_noerr, dfm_extforcerror
@@ -64,7 +66,6 @@ submodule(fm_external_forcings) fm_external_forcings_update
    use m_physcoef, only: BACKGROUND_AIR_PRESSURE
    use m_flow_initwaveforcings_runtime, only: flow_initwaveforcings_runtime
    use m_waveconst
-   use m_setsorsin, only: setsorsin
 
    implicit none
 
@@ -100,11 +101,10 @@ contains
       use m_physcoef, only: BACKGROUND_AIR_PRESSURE
       use m_transportdata, only: numconst
       use m_calbedform, only: fm_calbf, fm_calksc
-      use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
-                         item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature, &
-                         item_bubblescreen_discharge, item_secchi_depth
+      use m_meteo, only: item_bubblescreen_discharge, item_secchi_depth
       use m_bubblescreen, only: update_bubblescreen_discharge_wrapper
       use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
+      use m_flowparameters, only: air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
 
       real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
       logical, intent(in) :: initialization !< initialization phase
@@ -133,29 +133,26 @@ contains
       if (ja_airdensity > 0) then
          call get_timespace_value_by_item_and_consider_success_value(item_air_density, time_in_seconds)
       end if
+      if (ja_computed_airdensity == 1 .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         call prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+      end if
+      
       if (ja_computed_airdensity == 1) then
-         ! air pressure items
-         call get_timespace_value_by_item_and_consider_success_value(item_apwxwy_p, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_atmosphericpressure, time_in_seconds)
-
-         ! air temperature items
-         call get_timespace_value_by_item_and_consider_success_value(item_hac_air_temperature, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_hacs_air_temperature, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_dac_air_temperature, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_dacs_air_temperature, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_air_temperature, time_in_seconds)
-
-         ! dew point temperature items
-         call get_timespace_value_by_item_and_consider_success_value(item_dac_dew_point_temperature, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_dacs_dew_point_temperature, time_in_seconds)
-         call get_timespace_value_by_item_and_consider_success_value(item_dew_point_temperature, time_in_seconds)
-
          ! Compute air_density based on air_pressure, air_temperature and dew_point_temperature
          call get_airdensity(air_pressure, air_temperature, dew_point_temperature, air_density, iresult)
       end if
 
+      call prepare_wind(time_in_seconds, iresult)
+      if (iresult /= DFM_NOERR) then
+         return
+      end if
+      
+      if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+         call compute_air_water_interaction_most_fluxes()
+      end if
+
       if (update_wind_stress_each_time_step == 0) then ! Update wind in set_external_forcing (each user timestep)
-         call calculate_wind_stresses(time_in_seconds, iresult)
+         call calculate_wind_stresses(iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
@@ -216,7 +213,7 @@ contains
          call update_pumps_with_levels()
       end if
 
-      if (num_source_sink > 0) then
+      if (source_sinks%num_total > 0) then
          ! Create 1D pointer view of 2D source_sink_all_discharges array to pass to ec_gettimespacevalue
          ! This avoids copying while satisfying the 1D array interface requirement
          source_sink_all_discharges_1d(1:size(source_sink_all_discharges)) => source_sink_all_discharges
@@ -250,7 +247,8 @@ contains
          return
       end if
 
-      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+      if (temperature_model == TEMPERATURE_MODEL_EXCESS .or. temperature_model == TEMPERATURE_MODEL_COMPOSITE &
+          .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
          if (jaheat_eachstep == 0) then
             call heatu(time_in_seconds / 3600.0_dp)
          end if
@@ -303,6 +301,56 @@ contains
       iresult = DFM_NOERR
 
    end subroutine set_external_forcings
+
+   module subroutine compute_air_water_interaction_most_fluxes()
+      use precision, only: dp
+      use m_flowgeom, only: ndx
+      use m_get_surface_temperature, only: get_surface_temperature
+      use m_flowgeom_interpolate, only: link_to_node_vector, link_to_node_scalar
+      use m_atmospheric_stability, only: compute_scales_and_fluxes, t_options
+      use physicalconsts, only: celsius_to_kelvin
+      use m_flowparameters, only: atmospheric_stability_function, ATMOSPHERIC_STABILITY_FUNCTION_ECMWF, &
+                                  free_convection, FREE_CONVECTION_ON, salinity_reduction_factor_saturation_humidity
+
+      real(kind=dp), dimension(:), allocatable, save :: surface_temperature
+      real(kind=dp), dimension(:), allocatable, save :: windx, windy, charnock
+      real(kind=dp), dimension(:), allocatable, save :: surface_temperature_kelvin, air_temperature_kelvin, dew_point_temperature_kelvin
+      type(t_options) :: atm_stability_options
+
+      if (.not. allocated(windx)) then
+         allocate(windx(ndx))
+         allocate(windy(ndx))
+         allocate(charnock(ndx))
+         allocate(surface_temperature(ndx))
+         allocate(surface_temperature_kelvin(ndx))
+         allocate(air_temperature_kelvin(ndx))
+         allocate(dew_point_temperature_kelvin(ndx))
+      end if
+      
+
+      call link_to_node_vector(wx, wy, windx, windy, ndx)
+      call link_to_node_scalar(wcharnock, charnock, ndx)
+
+      call get_surface_temperature(surface_temperature)
+      surface_temperature_kelvin = celsius_to_kelvin(surface_temperature)
+      air_temperature_kelvin = celsius_to_kelvin(air_temperature)
+      dew_point_temperature_kelvin = celsius_to_kelvin(dew_point_temperature)
+
+      atm_stability_options%include_stability = .false.
+      if (atmospheric_stability_function == ATMOSPHERIC_STABILITY_FUNCTION_ECMWF) then
+         atm_stability_options%include_stability = .true.
+      end if
+
+      atm_stability_options%include_free_convection = .false.
+      if (free_convection == FREE_CONVECTION_ON) then
+         atm_stability_options%include_free_convection = .true.
+      end if
+
+      atm_stability_options%fqsat = salinity_reduction_factor_saturation_humidity
+
+      call compute_scales_and_fluxes(windx, windy, air_temperature_kelvin, dew_point_temperature_kelvin, &
+                                     air_pressure, charnock, surface_temperature_kelvin, atm_stability_options)
+   end subroutine compute_air_water_interaction_most_fluxes
 
    !> Update the relative humidity, dew point temperature, air temperature, cloudiness, solar radiation, and long wave radiation forcings used in the composite heat flux model
    subroutine update_temperature_forcings(time_in_seconds)
@@ -825,5 +873,29 @@ contains
       end if
 
    end subroutine update_subsidence_and_uplift_data
+
+!> prepare_air_pressure_temperature_dew_point_temperature
+   module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+      use m_meteo, only: item_apwxwy_p, item_atmosphericpressure, item_hac_air_temperature, item_hacs_air_temperature, item_dac_air_temperature, &
+       item_dacs_air_temperature, item_air_temperature, item_dac_dew_point_temperature, item_dacs_dew_point_temperature, item_dew_point_temperature
+
+      real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+      
+      ! air pressure items
+      call get_timespace_value_by_item_and_consider_success_value(item_apwxwy_p, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_atmosphericpressure, time_in_seconds)
+
+      ! air temperature items
+      call get_timespace_value_by_item_and_consider_success_value(item_hac_air_temperature, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_hacs_air_temperature, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_dac_air_temperature, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_dacs_air_temperature, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_air_temperature, time_in_seconds)
+
+      ! dew point temperature items
+      call get_timespace_value_by_item_and_consider_success_value(item_dac_dew_point_temperature, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_dacs_dew_point_temperature, time_in_seconds)
+      call get_timespace_value_by_item_and_consider_success_value(item_dew_point_temperature, time_in_seconds)
+   end subroutine prepare_air_pressure_temperature_dew_point_temperature
 
 end submodule fm_external_forcings_update

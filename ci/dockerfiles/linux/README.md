@@ -15,7 +15,7 @@ Using another container platform `podman` should also work.
   We are adjusting the code to use the updated Fortran API of the latest PETSc version.
 
 ## Buildtools container
-The `buildtools.Dockerfile` contains build instructions to build the `buildtools` container image. 
+The `buildtools.Dockerfile` contains build instructions to build the `buildtools` container image.
 It uses a 'base' almalinux 8 image copied from [dockerhub](https://hub.docker.com/_/almalinux) and  pushed to our own [Harbor registry](https://containers.deltares.nl/harbor/projects/21/repositories/almalinux/artifacts-tab).
 Outside Deltares, you may need to point to the original image; see the `BASE_IMAGE_URL` build argument.
 
@@ -29,7 +29,7 @@ These can also be installed using `dnf`, but unfortunately even the most recent 
 Some libraries that we want to compile from source code can't be built using the outdated versions of this software.
 
 ### Build arguments
-The dockerfile has two build arguments: 
+The dockerfile has two build arguments:
 - `BASE_IMAGE_URL` (default value: `containers.deltares.nl/base_linux_containers/8-base:latest`)
 - `INTEL_ONEAPI_VERSION` (default value: `2024`)
 
@@ -69,11 +69,7 @@ When building on Linux, some third party libraries are needed that are not vendo
 These include:
 
 - libuuid
-- HDF5
-- NetCDF (There are separate libraries for C and Fortran)
 - METIS
-- PROJ
-- GDAL
 - PETSc
 - ESMF
 - precice (Recently added; not yet used in the main branch)
@@ -130,7 +126,7 @@ sudo docker build . -f ci/dockerfiles/linux/third-party-libs.Dockerfile -t local
 Note:
 - Passing the build arguments is not necessary if the default value is required.
 - In case you get an invalid tag message referring to `"localhost/third-party-libs:"` as invalid reference format, you may have lost the definition of `TAG`.
-  The value of `TAG` was set just before the building of the buildtools container. 
+  The value of `TAG` was set just before the building of the buildtools container.
 
 ### Push
 Optionally push the Docker container to a repository:

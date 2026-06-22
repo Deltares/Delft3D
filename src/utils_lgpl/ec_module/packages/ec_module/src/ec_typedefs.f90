@@ -302,6 +302,8 @@ module m_ec_typedefs
       real(hp) :: radius !< radius of a spiderweb
       real(hp) :: spw_merge_frac = 0. !< relative range of merging spiderweb with background (see Delft3D)
       character(len=maxNameLen) :: radius_unit !< unit of the radius of a spiderweb
+      character(len=maxNameLen) :: utmzone = 'undefined' !< UTM zone of the spiderweb target grid
+      character(len=maxNameLen) :: gridunit = 'degree' !< unit of grid spatial definition spiderweb
       character(len=maxNameLen), dimension(:), pointer :: ids => null() !< string array with locations
       real(hp), dimension(:, :), pointer :: xyen => null() !<
       real(hp), dimension(:), pointer :: zmin => null() !< vertical min

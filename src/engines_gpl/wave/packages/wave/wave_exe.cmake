@@ -6,9 +6,9 @@ set(icon_file resource/wl.ico)
 
 # Define executable
 set(executable_name wave_exe)
-add_executable(${executable_name}   ${executable_files}
-                                    ${rc_version_file}
-                                    ${icon_file})
+add_rc_object_library(${executable_name} "${rc_version_file};${icon_file}" "${version_include_dir};${wave_version_path}")
+add_executable(${executable_name} ${executable_files})
+target_link_libraries(${executable_name} PRIVATE ${executable_name}_rc)
 
 # Set dependencies
 if (WIN32)
@@ -24,23 +24,17 @@ if (WIN32)
                             wave_kernel
                             wave_manager
                             nefis
-                            netcdff
+                            netCDF::netcdff
                             triangle_c
                             swan
-                            ) 
+                            )
 
-    target_link_libraries(${executable_name} ${exe_dependencies})
+    target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
 endif(WIN32)
 
 # Add dependencies
 if(UNIX)
-    # the `pkg_check_modules` function is created with this call
-    find_package(PkgConfig REQUIRED)
-
-    # these calls create special `PkgConfig::<MODULE>` variables
-    pkg_check_modules(NETCDF REQUIRED IMPORTED_TARGET netcdf)
-
     set(exe_dependencies    wave_data
                             delftio
                             delftio_shm
@@ -56,12 +50,11 @@ if(UNIX)
                             triangle_c
                             swan
                             esmfsm
-                            netcdff
+                            netCDF::netcdff
                             )
 
-    target_link_libraries(${executable_name}
+    target_link_libraries(${executable_name} PRIVATE
          ${exe_dependencies}
-         PkgConfig::NETCDF
          )
 endif(UNIX)
 
@@ -72,13 +65,11 @@ if (WIN32)
     message(STATUS "Setting linker properties on windows")
     target_link_directories(${executable_name}
                             PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/netCDF 4.6.1/lib"
                             "${checkout_src_root}/third_party_open/pthreads/bin/x64"
                             "${mpi_library_path}")
 
-    target_link_libraries(${executable_name}                                                   
+    target_link_libraries(${executable_name} PRIVATE
                             "pthreadVC2.lib"
-                            "netcdf.lib"
                             "${mpi_fortran_library}")
 
     # Set linker options
@@ -87,11 +78,6 @@ if (WIN32)
 endif(WIN32)
 
 if (UNIX)
-    # Set linker properties
-    message(STATUS "netcdf lib dir is ${NETCDF_LIBRARY_DIRS}")
-    target_link_directories(${executable_name} PRIVATE ${NETCDF_LIBRARY_DIRS})
-    
-    #target_link_options(${executable_name} PRIVATE ${openmp_flag})
     set_property(TARGET ${executable_name} PROPERTY LINKER_LANGUAGE Fortran)
 endif(UNIX)
 
@@ -127,7 +113,7 @@ if (UNIX)
 endif(UNIX)
 if(WIN32)
     install(PROGRAMS ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/scripts/ESMF_RegridWeightGen_in_Delft3D-WAVE.bat DESTINATION bin)
-    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION lib
+    install (DIRECTORY ${CMAKE_SOURCE_DIR}/../third_party_open/esmf/win64/bin/ DESTINATION bin
 FILES_MATCHING
 PATTERN "*.dll"
 PATTERN "*.dll.a"
