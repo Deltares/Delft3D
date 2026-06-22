@@ -29,14 +29,6 @@ namespace dflowfm_io
                            [severity](const Issue& issue) { return issue.severity == severity; });
     }
 
-    void IssueReport::Merge(const IssueReport& other)
-    {
-        for (const auto& issue : other.issues)
-        {
-            AddIssue(issue.severity, issue.lineNumber, issue.message);
-        }
-    }
-
     std::string IssueReport::Format() const
     {
         std::ostringstream oss;
@@ -68,21 +60,5 @@ namespace dflowfm_io
 
         return oss.str();
     }
-
-    bool IssueReport::empty() const { return issues.empty(); }
-
-    std::size_t IssueReport::size() const { return issues.size(); }
-
-    std::vector<Issue>::iterator IssueReport::begin() { return issues.begin(); }
-
-    std::vector<Issue>::const_iterator IssueReport::begin() const { return issues.begin(); }
-
-    std::vector<Issue>::iterator IssueReport::end() { return issues.end(); }
-
-    std::vector<Issue>::const_iterator IssueReport::end() const { return issues.end(); }
-
-    Issue& IssueReport::operator[](std::size_t index) { return issues[index]; }
-
-    const Issue& IssueReport::operator[](std::size_t index) const { return issues[index]; }
 
 } // namespace dflowfm_io

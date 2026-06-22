@@ -2711,7 +2711,7 @@ namespace dflowfm_io
                         .required          = false,
                         .value_type        = ValueType::FloatList,
                         .default_value     = std::vector<double>{0.00063, 0.00723},
-                        .default_value_str = "0.00063, 0.00723",
+                        .default_value_str = "0.00063 0.00723",
                         .description       = "Wind drag breakpoints."
                     },
                     PropertySchema {
@@ -2719,7 +2719,7 @@ namespace dflowfm_io
                         .required          = false,
                         .value_type        = ValueType::FloatList,
                         .default_value     = std::vector<double>{0.0, 100.0},
-                        .default_value_str = "0.0, 100.0",
+                        .default_value_str = "0.0 100.0",
                         .description       = "Wind speed breakpoints."
                     },
                     PropertySchema {
