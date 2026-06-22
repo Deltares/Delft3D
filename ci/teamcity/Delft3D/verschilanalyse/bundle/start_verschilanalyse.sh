@@ -123,24 +123,20 @@ DELFT3D_SIF="${HOME}/.cache/verschilanalyse/delft3dfm.sif"
 module purge
 module load apptainer/1.2.5
 
-# Create log, input and config dir.
-mkdir -p "${LOG_DIR}/models" "${VAHOME}/${MODELS_PATH}" "${VAHOME}/${JSON_CONFIGS_PATH}"
+# Create log dir
+mkdir -p "${LOG_DIR}/models"
 
-# Get latest input and config data from MinIO.
-MINIO_PATHS=("${MODELS_PATH}" "${JSON_CONFIGS_PATH}")
-for minio_path in "${MINIO_PATHS[@]}"; do
-    srun --nodes=1 --ntasks=1 --cpus-per-task=16 --partition=16vcpu_spot \
-        --account=verschilanalyse --qos=verschilanalyse \
-        docker run --rm --volume="${HOME}/.aws:/root/.aws:ro" --volume="${VAHOME}/${minio_path}:/data" \
-        -e AWS_CA_BUNDLE="/etc/pki/tls/cert.pem" \
-        docker.io/amazon/aws-cli:2.32.14 \
-        --profile=verschilanalyse --endpoint-url=https://s3.deltares.nl \
-        s3 sync --delete --no-progress "${BUCKET}/${minio_path}/" /data
-done
+# Download input data.
+DOWNLOAD_INPUT_JOB_ID=$(
+    sbatch --parsable \
+        --output="${LOG_DIR}/va-download-input-%j.out" \
+        ./jobs/download_input.sh
+)
 
 # Download reference output data.
 DOWNLOAD_REFS_JOB_ID=$(
     sbatch --parsable \
+	    --dependency="afterany:${DOWNLOAD_INPUT_JOB_ID}" \
         --output="${LOG_DIR}/va-download-refs-%j.out" \
         ./jobs/download_references.sh
 )
