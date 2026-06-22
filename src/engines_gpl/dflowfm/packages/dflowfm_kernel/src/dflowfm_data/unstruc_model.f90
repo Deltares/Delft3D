@@ -629,8 +629,11 @@ contains
       call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
       call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
       call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
-      call prop_get(md_ptr, bnam, 'ConvertLongCulverts', md_convertlongculverts)
-
+      if (jampi == 0) then
+         call prop_get(md_ptr, bnam, 'ConvertLongCulverts', md_convertlongculverts)
+      else
+         md_convertlongculverts = 0 !> long culverts cannot be converted in parallel mode.
+      end if
       ! Geometry
       call prop_get(md_ptr, 'geometry', 'CrossDefFile', md_1dfiles%cross_section_definitions, success)
       call prop_get(md_ptr, 'geometry', 'CrossLocFile', md_1dfiles%cross_section_locations, success)
