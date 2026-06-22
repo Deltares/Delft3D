@@ -46,7 +46,7 @@ contains
       use m_heatfluxes, only: EMMISIVITY_FACTOR, albedo, SPECIFIC_HEAT_AIR, secchi_depth_is_spatially_varying, spatial_secchi_depth, rcpi, fwind, qtotmap, qsunmap, qevamap, &
                               qconmap, qlongmap, qfrevamap, qfrconmap, qsunav, qlongav, qconav, qevaav, qfrconav, qfrevaav, &
                               PRANDTL_NUMBER_SQUARED, KINEMATIC_VISCOSITY_AIR, GAS_CONSTANT_DRY_AIR, GAS_CONSTANT_WATER_VAPOR, MIN_ICE_SNOW_THICKNESS
-      use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop
+      use m_flow, only: kmx, hs, solar_radiation_factor, zws, ucx, ucy, ktop, air_water_interaction_model, AIR_WATER_INTERACTION_MODEL_MOST
       use m_flowparameters, only: his_write_settings, map_write_settings, temperature_model, TEMPERATURE_MODEL_EXCESS, TEMPERATURE_MODEL_COMPOSITE, &
                                   ja_solar_radiation_factor
       use m_missing, only: dmiss
@@ -88,7 +88,7 @@ contains
       real(kind=dp) :: surface_albedo !< local surface albedo (may differ from albedo when ice/snow is present)
       real(kind=dp) :: salinity !< water salinity (ppt)
       integer :: cell_index_3D, k_bot, k_top, k2, L, LL, j, j2, ncols
-
+      
       if (ja_icecover /= ICECOVER_NONE) then
          ice_free_area_fraction = 1.0_dp - ice_area_fraction(n)
       else
@@ -146,7 +146,7 @@ contains
             qtotmap(n) = total_heat_flux
          end if
 
-      else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE) then
+      else if (temperature_model == TEMPERATURE_MODEL_COMPOSITE .or. air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
 
          ! Set surface_temperature either to water_temperature_in_cell or to ice_temperature(n) or to snow_temperature(n)
          ! and use a local surface_albedo so we do not overwrite the module variable `albedo`.
@@ -169,8 +169,13 @@ contains
             surface_temperature = water_temperature_in_cell
          end if
 
-         relative_humidity_in_cell = min(1.0_dp, max(0.0_dp, 0.01_dp * relative_humidity(n)))
-         cloudiness_in_cell = min(1.0_dp, max(0.0_dp, 0.01_dp * cloudiness(n)))
+         if (allocated(relative_humidity)) then
+            relative_humidity_in_cell = min(1.0_dp, max(0.0_dp, 0.01_dp * relative_humidity(n)))
+         end if
+         
+         if (allocated(cloudiness)) then
+            cloudiness_in_cell = min(1.0_dp, max(0.0_dp, 0.01_dp * cloudiness(n)))
+         end if
 
          if (air_pressure_available) then
             air_pressure_in_cell = 0.01_dp * air_pressure(n)
@@ -197,7 +202,10 @@ contains
                net_solar_radiation_in_cell = net_solar_radiation_in_cell * solar_radiation_factor(n)
             end if
          end if
-         net_solar_radiation(n) = net_solar_radiation_in_cell ! net_solar_radiation is passed on to fm_wq_processes
+         if (allocated(net_solar_radiation)) then
+            net_solar_radiation(n) = net_solar_radiation_in_cell ! net_solar_radiation is passed on to fm_wq_processes
+         end if
+    
 
          heat_capacity_water_cell_area = rcpi * ba(n)
          solar_radiation_flux = net_solar_radiation_in_cell * heat_capacity_water_cell_area
@@ -334,9 +342,13 @@ contains
                free_convective_latent_heat_flux = min(0.0_dp, -free_convection_velocity * (specific_humidity_surface_saturation - specific_humidity_air_surface) * latent_heat_vaporization * (air_density_surface + air_density_10m) * 0.5_dp)
             end if
          end if
-
-         total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
-
+         
+         if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
+            total_heat_flux = latent_heat_flux(n) + sensible_heat_flux(n) + longwave_radiation_flux 
+         else
+            total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
+         end if
+         
          if (jaevap > 0) then
             evap(n) = (forced_latent_heat_flux + free_convective_latent_heat_flux) / (latent_heat_vaporization * rhomean) * ice_free_area_fraction
          end if

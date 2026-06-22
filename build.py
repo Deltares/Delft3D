@@ -20,6 +20,7 @@ CONFIGURATIONS = [
     "rr-testbench",
     "wave-testbench",
     "swan-testbench",
+    "tc-testbench",
     "dflowfm_interacter",
     "dflowfm",
     "dimr",

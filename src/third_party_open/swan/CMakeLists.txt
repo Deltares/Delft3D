@@ -25,7 +25,7 @@ target_link_libraries(${library_name} PRIVATE no_compiler_warnings metis)
 # Add dependencies
 if (UNIX)
     target_link_libraries(${library_name} PRIVATE
-         netcdff)
+         netCDF::netcdff)
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${version_include_dir})
 
@@ -33,7 +33,7 @@ if (UNIX)
 endif(UNIX)
 
 if (WIN32)
-    set(oss_dependencies netcdff)
+    set(oss_dependencies netCDF::netcdff)
     target_link_libraries(${library_name} PRIVATE ${oss_dependencies})
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
                         ${mpi_module_path}

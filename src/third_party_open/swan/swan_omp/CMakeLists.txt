@@ -32,20 +32,12 @@ target_link_libraries(${executable_name} PRIVATE no_compiler_warnings metis)
 
 # Set dependencies
 if (WIN32)
-    set(exe_dependencies netcdff)
+    set(exe_dependencies netCDF::netcdff)
 
     target_link_libraries(${executable_name} PRIVATE ${exe_dependencies})
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir})
-    # Set linker properties
-    message(STATUS "Setting linker properties in windows")
-    target_link_directories(${executable_name}
-                            PRIVATE
-                            "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib")
-
-    target_link_libraries(${executable_name} PRIVATE
-                            "netcdf.lib")
 
     # Set linker options
     message(STATUS "Setting target_link_options in windows")
@@ -55,7 +47,7 @@ endif(WIN32)
 
 if(UNIX)
     target_link_libraries(${executable_name} PRIVATE
-         netcdff)
+         netCDF::netcdff)
 
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}/../include"
                         ${version_include_dir}
