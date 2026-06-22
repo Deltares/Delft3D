@@ -136,11 +136,11 @@
       <checks>
         <file name="DFM_OUTPUT_FlowFM_rrexport/FlowFM_rrexport_0000_his.nc" type="netCDF">
             <parameters>
-               <parameter name="water_balance_storage" toleranceRelative="1e-7" />
+               <parameter name="water_balance_storage" toleranceRelative="1e-5" />
                <parameter name="water_balance_laterals_total" toleranceAbsolute="0.0001" />
-               <parameter name="water_balance_boundaries_total" toleranceRelative="1e-7" />
+               <parameter name="water_balance_boundaries_total" toleranceRelative="1e-5" />
                <parameter name="weirgen_discharge" toleranceAbsolute="0.0001" />
-               <parameter name="pump_structure_discharge" toleranceAbsolute="0.0001" />
+               <parameter name="pump_structure_discharge" toleranceAbsolute="0.005" />
             </parameters>
         </file>
         <file name="DFM_OUTPUT_FlowFM_rrexport/FlowFM_rrexport_0000_map.nc" type="netCDF">

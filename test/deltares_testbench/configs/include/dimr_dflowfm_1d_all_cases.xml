@@ -1198,7 +1198,7 @@
 		</checks>
 	</testCase>
 	<testCase name="e02_f106_c24_control-pump-through-bmi" ref="dflowfm_bmi_default">
-		<path version="2026-05-12T09:07:37.038000">e02_dflowfm/f106_hydraulic-structures/c24_control-pump-through-bmi</path>
+		<path version="2026-06-22T14:48:35.560000">e02_dflowfm/f106_hydraulic-structures/c24_control-pump-through-bmi</path>
 		<checks>
 			<file name="DFM_OUTPUT_r/r_map.nc" type="netCDF">
 				<parameters>
