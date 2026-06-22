@@ -1,6 +1,6 @@
 <testCases xmlns="http://schemas.deltares.nl/deltaresTestbench_v3">
     <testCase name="e109_f02_c011_weir_timeseries_mpi" ref="dimr">
-      <path version="2026-06-16T14:47:11.873000">e109_dflowfm-drtc-dwaves/f02_dflowfm_parallel/c011_weir_timeseries_mpi</path>
+      <path version="2026-06-22T13:57:37.022000">e109_dflowfm-drtc-dwaves/f02_dflowfm_parallel/c011_weir_timeseries_mpi</path>
             <programs>
                 <program ref="dimr">
                     <arguments>

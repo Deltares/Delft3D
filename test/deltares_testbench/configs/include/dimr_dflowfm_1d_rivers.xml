@@ -52,7 +52,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c50_closed_rectangle_river" ref="dflowfm_default">
-        <path version="2026-06-16T14:28:48.560000">e02_dflowfm/f105_cross-sections/c50_closed_rectangle_river</path>
+        <path version="2026-06-22T12:53:43.008000">e02_dflowfm/f105_cross-sections/c50_closed_rectangle_river</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/DFlowFM_his.nc" type="netCDF">
@@ -66,7 +66,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c61_Chezy_all_roughness_settings" ref="dflowfm_default">
-        <path version="2026-06-16T14:28:51.792000">e02_dflowfm/f105_cross-sections/c61_Chezy_all_roughness_settings</path>
+        <path version="2026-06-22T12:53:46.337000">e02_dflowfm/f105_cross-sections/c61_Chezy_all_roughness_settings</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
@@ -79,7 +79,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c62_Manning_all_roughness_settings" ref="dflowfm_default">
-        <path version="2026-06-16T14:28:55.085000">e02_dflowfm/f105_cross-sections/c62_Manning_all_roughness_settings</path>
+        <path version="2026-06-22T12:53:50.037000">e02_dflowfm/f105_cross-sections/c62_Manning_all_roughness_settings</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
@@ -92,7 +92,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c63_Stickler_kn_all_roughness_settings" ref="dflowfm_default">
-        <path version="2026-06-16T14:28:58.397000">e02_dflowfm/f105_cross-sections/c63_Strickler_kn_all_roughness_settings</path>
+        <path version="2026-06-22T12:53:53.396000">e02_dflowfm/f105_cross-sections/c63_Strickler_kn_all_roughness_settings</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
@@ -105,7 +105,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c64_Strickler_ks_all_roughness_settings" ref="dflowfm_default">
-        <path version="2026-06-16T14:29:01.709000">e02_dflowfm/f105_cross-sections/c64_Strickler_ks_all_roughness_settings</path>
+        <path version="2026-06-22T12:53:57.615000">e02_dflowfm/f105_cross-sections/c64_Strickler_ks_all_roughness_settings</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
@@ -131,7 +131,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c66_Bos_Bijkerk_all_roughness_settings" ref="dflowfm_default">
-        <path version="2026-06-16T14:29:05.086000">e02_dflowfm/f105_cross-sections/c66_Bos_Bijkerk_all_roughness_settings</path>
+        <path version="2026-06-22T12:54:01.344000">e02_dflowfm/f105_cross-sections/c66_Bos_Bijkerk_all_roughness_settings</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
@@ -144,7 +144,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c20_profile_2_floodplains" ref="dflowfm_default">
-        <path version="2026-06-16T14:28:34.731000">e02_dflowfm/f105_cross-sections/c20_profile_2_floodplains</path>
+        <path version="2026-06-22T12:53:27.977000">e02_dflowfm/f105_cross-sections/c20_profile_2_floodplains</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">
@@ -157,7 +157,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f105_c21_trapezium_profile" ref="dflowfm_default">
-        <path version="2026-06-16T14:28:41.219000">e02_dflowfm/f105_cross-sections/c21_trapezium_profile</path>
+        <path version="2026-06-22T12:53:35.036000">e02_dflowfm/f105_cross-sections/c21_trapezium_profile</path>
         <maxRunTime>15.0</maxRunTime>
         <checks>
             <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">

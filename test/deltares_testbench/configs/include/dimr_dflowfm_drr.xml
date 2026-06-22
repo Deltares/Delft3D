@@ -103,7 +103,7 @@
             </checks>
         </testCase>
         <testCase name="e112_f01_c05_pipes_and_manholes" ref="dimr_trunk">
-            <path version="2026-06-16T14:47:17.858000">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
+            <path version="2026-06-22T13:57:43.721000">e112_dflowfm-drr/f01_1d_rr/c05_pipes_and_manholes</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_FM_model/FM_model_his.nc" type="NETCDF">
                     <parameters>
@@ -142,7 +142,7 @@
         </testCase>
         -->
         <testCase name="e112_f01_c11_waardenburg" ref="dimr_trunk">
-            <path version="2026-06-16T14:47:23.955000">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
+            <path version="2026-06-22T13:57:49.168000">e112_dflowfm-drr/f01_1d_rr/c11_waardenburg</path>
             <checks>
                 <file name="fm/DFM_OUTPUT_flowfm/flowfm_his.nc" type="NETCDF">
                     <parameters>
