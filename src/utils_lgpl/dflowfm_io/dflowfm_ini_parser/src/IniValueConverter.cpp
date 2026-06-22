@@ -12,10 +12,6 @@ namespace ini
 
     std::string IniValueConverter::BoolToString(bool value) { return value ? "True" : "False"; }
 
-    std::string IniValueConverter::FloatToString(double value) { return std::format("{:.7g}", value); }
-
-    std::string IniValueConverter::FloatToString(float value) { return std::format("{:.7g}", value); }
-
     std::string IniValueConverter::TimePointToString(std::chrono::system_clock::time_point value)
     {
         auto truncated = std::chrono::floor<std::chrono::seconds>(value);

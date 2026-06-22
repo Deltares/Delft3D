@@ -30,7 +30,7 @@ namespace ini
             }
             else if constexpr (std::is_floating_point_v<T>)
             {
-                return FloatToString(value);
+                return FloatingPointToString(value);
             }
             else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
             {
@@ -135,10 +135,22 @@ namespace ini
 
     private:
         static std::string BoolToString(bool value);
-        static std::string FloatToString(double value);
-        static std::string FloatToString(float value);
         static std::string TimePointToString(std::chrono::system_clock::time_point value);
         static std::string PathToString(const std::filesystem::path& value);
+
+        template <std::floating_point T>
+        static std::string FloatingPointToString(T value)
+        {
+            std::string result = std::format("{:.7g}", value);
+
+            if (result.find('.') == std::string::npos &&
+                result.find('e') == std::string::npos &&
+                result.find('E') == std::string::npos)
+            {
+                result += ".0";
+            }
+            return result;
+        }
 
         template <typename T>
         static std::string DefaultToString(const T& value)

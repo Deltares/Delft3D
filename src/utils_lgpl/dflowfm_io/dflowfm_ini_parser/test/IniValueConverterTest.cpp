@@ -56,7 +56,7 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringFloatTest,
-                             ::testing::Values(std::make_pair(3.14f, "3.14"), std::make_pair(0.0f, "0"),
+                             ::testing::Values(std::make_pair(3.14f, "3.14"), std::make_pair(0.0f, "0.0"),
                                                std::make_pair(-1.5f, "-1.5")));
 
     // -------------------------------------------------------------------------
@@ -74,7 +74,7 @@ namespace ini::test
     }
 
     INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToStringDoubleTest,
-                             ::testing::Values(std::make_pair(2.718281828, "2.718282"), std::make_pair(0.0, "0"),
+                             ::testing::Values(std::make_pair(2.718281828, "2.718282"), std::make_pair(0.0, "0.0"),
                                                std::make_pair(-12345.6789, "-12345.68")));
 
     // -------------------------------------------------------------------------
@@ -440,8 +440,8 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterToMultiValueStringFloatTest,
                              ::testing::Values(std::make_pair(std::vector<float>{3.14f, -11.12f, 89.44f},
                                                               "3.14 -11.12 89.44"),
-                                               std::make_pair(std::vector<float>{0.0f, 1.5f, -2.6f}, "0 1.5 -2.6"),
-                                               std::make_pair(std::vector<float>{100.0f}, "100")));
+                                               std::make_pair(std::vector<float>{0.0f, 1.5f, -2.6f}, "0.0 1.5 -2.6"),
+                                               std::make_pair(std::vector<float>{100.0f}, "100.0")));
 
     // -------------------------------------------------------------------------
     // ToMultiValueString - double
@@ -461,8 +461,8 @@ namespace ini::test
     INSTANTIATE_TEST_SUITE_P(
         IniValueConverterTest, IniValueConverterToMultiValueStringDoubleTest,
         ::testing::Values(std::make_pair(std::vector<double>{1.218281, 2.22358, -7.7412}, "1.218281 2.22358 -7.7412"),
-                          std::make_pair(std::vector<double>{0.0, 3.14, 2.71828}, "0 3.14 2.71828"),
-                          std::make_pair(std::vector<double>{42.0}, "42")));
+                          std::make_pair(std::vector<double>{0.0, 3.14, 2.71828}, "0.0 3.14 2.71828"),
+                          std::make_pair(std::vector<double>{42.0}, "42.0")));
 
     // -------------------------------------------------------------------------
     // ToMultiValueString - time_point
