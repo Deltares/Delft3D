@@ -1015,7 +1015,7 @@ contains
       real(kind=dp), intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
 
-      integer :: jpoint, jstart, jend, ipoly
+      integer :: jpoint, jstart, jend, ipoly, inode
 
       if (meshgeom1d%numnode == -1 .and. meshgeom1d%nnodes == -1) then
          ! This is to allow more than one call to loadNetwork/unc_read_net_ugrid. Remove any previously read network state.
@@ -1025,6 +1025,19 @@ contains
          meshgeom1d%nnodes = 0
          meshgeom1d%numedge = 0
          meshgeom1d%numnode = 0
+      end if
+
+      if (.not. associated(meshgeom1d%nodeidx) .and. meshgeom1d%numnode > 0) then
+         ! A pre-existing 1D network was read, but find1dcells (which normally fills nodeidx/
+         ! nodeidx_inverse) has not run yet. Initialize them here, assuming the existing nodes
+         ! were put at the front in order during network reading (same assumption as find1dcells).
+         allocate (meshgeom1d%nodeidx(meshgeom1d%numnode))
+         meshgeom1d%nodeidx = [(inode, inode=1, meshgeom1d%numnode)]
+         if (associated(meshgeom1d%nodeidx_inverse)) deallocate (meshgeom1d%nodeidx_inverse)
+         allocate (meshgeom1d%nodeidx_inverse(meshgeom1d%numnode))
+         do inode = 1, meshgeom1d%numnode
+            meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(inode)) = inode
+         end do
       end if
 
       ipoly = 0
@@ -1645,6 +1658,8 @@ contains
       use m_network, only: admin_network
       use m_1d_networkreader, only: construct_network_from_meshgeom
       use m_save_ugrid_state
+      use m_node, only: dealloc
+      use m_branch, only: dealloc
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
@@ -1689,6 +1704,8 @@ contains
             call realloc(nodeids, meshgeom1d%numnode)
             call realloc(nodelongnames, meshgeom1d%numnode)
             network%numl = meshgeom1d%numedge
+            call dealloc(network%nds)
+            call dealloc(network%brs)
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)
