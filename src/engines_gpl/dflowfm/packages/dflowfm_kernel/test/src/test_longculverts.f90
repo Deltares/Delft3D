@@ -1019,6 +1019,73 @@ contains
    end subroutine test_2pt_friction_converted
    !$f90tw)
 
+   !$f90tw TESTCODE(TEST, test_longculvert, test_2pt_default_friction_converted, test_2pt_default_friction_converted,
+   subroutine test_2pt_default_friction_converted() bind(C)
+      use m_flow, only: q1
+      use m_longculverts_data, only: nlongculverts, longculverts
+      use dfm_error, only: DFM_NOERR
+      use m_flow_spatietimestep, only: flow_spatietimestep
+      use precision, only: dp
+
+      integer :: iresult, i
+      real(kind=dp) :: q_low_friction, q_high_friction
+      character(len=*), parameter :: STR_FILE = "test_lc2pt_default_friction_str.ini"
+      character(len=256) :: MDU_FILE = "test_lc2pt_default_friction_converted.mdu"
+      character(len=*), parameter :: NET_FILE = "test_lc_convert_2pt_net.nc"
+
+      call create_file(STR_FILE, [ &
+                       "[General]                                     ", &
+                       "    fileVersion     = 3.00                    ", &
+                       "    fileType        = structures              ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc01                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 50.0 50.0               ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    valveRelativeOpening = 1.0                ", &
+                       "                                              ", &
+                       "[Structure]                                   ", &
+                       "    id              = lc02                    ", &
+                       "    type            = longCulvert             ", &
+                       "    numCoordinates  = 2                       ", &
+                       "    xCoordinates    = 50.0 350.0              ", &
+                       "    yCoordinates    = 150.0 150.0             ", &
+                       "    zCoordinates    = -5.0 -5.0               ", &
+                       "    allowedFlowDir  = both                    ", &
+                       "    width           = 2.0                     ", &
+                       "    height          = 2.0                     ", &
+                       "    frictionType    = Manning                 ", &
+                       "    frictionValue   = 0.023                    ", &
+                       "    valveRelativeOpening = 1.0                "])
+
+      call create_two_row_netfile(NET_FILE)
+      call create_mdu_file(mdu_file, NET_FILE, STR_FILE)
+      call convertlongculverts(mdu_file, STR_FILE, NET_FILE)
+      call init_two_culvert_scenario(mdu_file, iresult)
+      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(longculverts(1)%numlinks, 1, to_c_string("2-point culvert should have 1 link"))
+      call f90_assert_eq(iresult, DFM_NOERR, to_c_string("model init must succeed"))
+      call f90_assert_eq(nlongculverts, 2, to_c_string("two long culverts should be registered"))
+
+      do i = 1, 4
+         call flow_spatietimestep()
+      end do
+
+      q_low_friction = q1(longculverts(1)%flowlinks(1))
+      q_high_friction = q1(longculverts(2)%flowlinks(1))
+      call f90_expect_true(q_low_friction > 0.0_dp, to_c_string("low-friction discharge should be positive"))
+      call f90_expect_true(q_high_friction > 0.0_dp, to_c_string("high-friction discharge should be positive"))
+      call f90_expect_near(q_high_friction, q_low_friction, 1.0e-10_dp, to_c_string("discharge should be equal due to equal roughness"))
+      call default_longculverts
+   end subroutine test_2pt_default_friction_converted
+   !$f90tw)
+
    !$f90tw TESTCODE(TEST, test_longculvert, test_friction_type_affects_discharge, test_friction_type_affects_discharge,
    subroutine test_friction_type_affects_discharge() bind(C)
       use m_flow, only: q1
