@@ -22,10 +22,6 @@ VALUE_TYPE_MAP = {
 CPP_TEMPLATE = """\
 #include <dflowfm_io/MduSchema.h>
 
-#include <chrono>
-#include <string>
-#include <vector>
-
 // This file is generated from mdu.json. Manual edits will be lost.
 
 namespace dflowfm_io
@@ -45,7 +41,7 @@ namespace dflowfm_io
 def default_value_str(value):
     """Produce the human-readable default value string stored in the schema."""
     if isinstance(value, list):
-        return ", ".join(str(v) for v in value)
+        return " ".join(str(v) for v in value)
     return str(value)
 
 
@@ -67,46 +63,6 @@ def enum_entries(prop):
     return entries
 
 
-def render_default(prop):
-    """Render the C++ initializer for ``.default_value`` or None if absent."""
-    if "default_value" not in prop:
-        return None
-
-    value = prop["default_value"]
-    value_type = prop["value_type"]
-
-    if value_type == "string":
-        return f'std::string{{"{value}"}}'
-    if value_type == "int":
-        return str(int(value))
-    if value_type == "float":
-        return str(value)
-    if value_type == "intbool":
-        return "true" if int(value) != 0 else "false"
-    if value_type == "path":
-        return f'std::filesystem::path{{"{value}"}}'
-    if value_type == "intenum":
-        return f"EnumValue{{{int(value)}}}"
-    if value_type == "enum":
-        names = list(prop.get("enum_values", {}).keys())
-        if value in names:
-            return f"EnumValue{{{names.index(value)}}}"
-        return None
-    if value_type == "list[float]":
-        joined = ", ".join(str(v) for v in value)
-        return f"std::vector<double>{{{joined}}}"
-    if value_type == "datetime":
-        text = str(value)
-        if len(text) >= 8 and text[:8].isdigit():
-            year, month, day = int(text[0:4]), int(text[4:6]), int(text[6:8])
-            return (
-                f"std::chrono::sys_days{{std::chrono::year{{{year}}}"
-                f"/std::chrono::month{{{month}}}/std::chrono::day{{{day}}}}}"
-            )
-        return None
-    return None
-
-
 def render_property(prop, indent):
     """Render a single PropertySchema block."""
     pad = " " * indent
@@ -118,7 +74,7 @@ def render_property(prop, indent):
 
     # Field names are padded to the width of the longest one so the
     # "=" signs line up in the generated C++.
-    width = len(".default_value_str")
+    width = len(".default_value")
 
     def field(name, value):
         return f"{inner}{name.ljust(width)} = {value}"
@@ -127,11 +83,9 @@ def render_property(prop, indent):
     lines.append(field(".required", f"{'true' if required else 'false'},"))
     lines.append(field(".value_type", f"ValueType::{value_type},"))
 
-    default = render_default(prop)
-    if default is not None:
-        lines.append(field(".default_value", f"{default},"))
+    if "default_value" in prop:
         dvs = default_value_str(prop["default_value"])
-        lines.append(field(".default_value_str", f'"{dvs}",'))
+        lines.append(field(".default_value", f'"{dvs}",'))
 
     entries = enum_entries(prop)
     if entries:

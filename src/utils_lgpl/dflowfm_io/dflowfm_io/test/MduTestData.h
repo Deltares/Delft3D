@@ -20,7 +20,7 @@ namespace dflowfm_io::test
 
     inline Value ConvertToValue(const PropertySchema& propSchema)
     {
-        const auto& str = propSchema.default_value_str;
+        const auto& str = propSchema.default_value;
         switch (propSchema.value_type)
         {
             case ValueType::Int:
@@ -62,7 +62,7 @@ namespace dflowfm_io::test
     {
         for (const auto& s : MDU_SCHEMA.sections)
             for (const auto& p : s.properties)
-                if (!p.required && p.value_type == type && !p.default_value_str.empty()) return {&s, &p};
+                if (!p.required && p.value_type == type && !p.default_value.empty()) return {&s, &p};
         throw std::runtime_error(
             std::format("No optional property of the specified type with a default value found in MDU_SCHEMA"));
     }
@@ -96,8 +96,8 @@ namespace dflowfm_io::test
         {
             ini::IniSection section(sectionSchema.name);
             for (const auto& propSchema : sectionSchema.properties)
-                if (propSchema.required || !propSchema.default_value_str.empty())
-                    section.AddProperty(propSchema.key, propSchema.default_value_str);
+                if (propSchema.required || !propSchema.default_value.empty())
+                    section.AddProperty(propSchema.key, propSchema.default_value);
             iniData.AddSection(std::move(section));
         }
         iniData.GetSection("general").SetPropertyValue("fileType", "modelDef");
@@ -111,7 +111,7 @@ namespace dflowfm_io::test
         MduData mduData;
         for (const auto& sectionSchema : MDU_SCHEMA.sections)
             for (const auto& propSchema : sectionSchema.properties)
-                if (propSchema.required || !propSchema.default_value_str.empty())
+                if (propSchema.required || !propSchema.default_value.empty())
                     mduData.data_entries[FormatKey(sectionSchema.name, propSchema.key)] = ConvertToValue(propSchema);
 
         mduData.data_entries[FormatKey("general", "fileType")] = EnumValue{0};

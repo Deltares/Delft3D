@@ -55,8 +55,7 @@ namespace dflowfm_io
         std::string key; ///< Case-insensitive property key as it appears in the MDU file.
         bool required; ///< Whether the property must be present in the MDU file.
         ValueType value_type; ///< Expected type of the property value.
-        std::optional<Value> default_value; ///< Typed default value, if any.
-        std::string default_value_str; ///< Default value as a raw string, as it appears in the MDU file.
+        std::string default_value; ///< Default value as a raw string, as it appears in the MDU file.
         std::map<int, std::string> enum_values; ///< Mapping from integer to name for Enum and IntEnum types.
         std::string description; ///< Human-readable description of the property.
     };

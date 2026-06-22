@@ -193,7 +193,7 @@ namespace dflowfm_io::test
 
         const Issue* info = FirstIssue(report, Severity::Info);
         ASSERT_NE(info, nullptr);
-        EXPECT_NE(info->message.find(targetProperty->default_value_str), std::string::npos);
+        EXPECT_NE(info->message.find(targetProperty->default_value), std::string::npos);
     }
 
     // -------------------------------------------------------------------------

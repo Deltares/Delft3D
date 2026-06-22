@@ -87,7 +87,7 @@ namespace dflowfm_io
         return FindEnumEntry(enum_value, propertySchema).first;
     }
 
-    static std::optional<Value> GetPropertyValue(
+    static std::optional<Value> TryGetPropertyValue(
         const IniProperty& iniProperty,
         const PropertySchema& propertySchema)
     {
@@ -118,6 +118,20 @@ namespace dflowfm_io
             default:
                 throw std::logic_error("INTERNAL ERROR: Unhandled value type");
         }
+    }
+
+    static Value GetDefaultPropertyValue(const PropertySchema& propertySchema)
+    {
+        const auto tempProperty = IniProperty::Create(propertySchema.key, propertySchema.default_value);
+
+        auto value = TryGetPropertyValue(tempProperty, propertySchema);
+        if (!value.has_value())
+        {
+            throw std::logic_error(
+                std::format("INTERNAL ERROR: Default value \"{}\" for property '{}' could not be converted.",
+                            propertySchema.default_value, propertySchema.key));
+        }
+        return std::move(*value);
     }
 
     static IniProperty CreateIniProperty(
@@ -172,12 +186,12 @@ namespace dflowfm_io
                 // fall back to the schema default if one is defined.
                 if (!iniProperty || !iniProperty->HasValue())
                 {
-                    if (propertySchema.default_value.has_value())
-                        mduData.data_entries[key] = *propertySchema.default_value;
+                    if (!propertySchema.default_value.empty())
+                        mduData.data_entries[key] = GetDefaultPropertyValue(propertySchema);
                     continue;
                 }
 
-                auto converted_value = GetPropertyValue(*iniProperty, propertySchema);
+                auto converted_value = TryGetPropertyValue(*iniProperty, propertySchema);
                 if (!converted_value.has_value())
                 {
                     report.AddError(iniProperty->GetLineNumber(), "Property [{}].{} contains invalid value: \"{}\".",

@@ -162,7 +162,7 @@ namespace dflowfm_io::test
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_EQ(mduData.getValueAs<int>(key), std::stoi(targetProperty->default_value_str));
+        EXPECT_EQ(mduData.getValueAs<int>(key), std::stoi(targetProperty->default_value));
     }
 
     TEST_F(MduConverterTest, ConvertIniData_AbsentFloatPropertyWithDefault_UsesCorrectDefaultValue)
@@ -176,7 +176,7 @@ namespace dflowfm_io::test
 
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         EXPECT_TRUE(mduData.hasValue(key));
-        EXPECT_DOUBLE_EQ(mduData.getValueAs<double>(key), std::stod(targetProperty->default_value_str));
+        EXPECT_DOUBLE_EQ(mduData.getValueAs<double>(key), std::stod(targetProperty->default_value));
     }
 
     TEST_F(MduConverterTest, ConvertIniData_AbsentEnumPropertyWithDefault_UsesCorrectDefaultValue)
@@ -191,7 +191,7 @@ namespace dflowfm_io::test
         const std::string key = FormatKey(targetSection->name, targetProperty->key);
         const auto it =
             std::find_if(targetProperty->enum_values.begin(), targetProperty->enum_values.end(),
-                         [&](const auto& pair) { return pair.second == targetProperty->default_value_str; });
+                         [&](const auto& pair) { return pair.second == targetProperty->default_value; });
         ASSERT_NE(it, targetProperty->enum_values.end());
         EXPECT_TRUE(mduData.hasValue(key));
         EXPECT_EQ(mduData.getValueAs<EnumValue>(key).value, it->first);
