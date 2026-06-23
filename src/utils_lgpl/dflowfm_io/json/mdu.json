@@ -2937,13 +2937,19 @@
                     "key": "startDateTime",
                     "value_type": "datetime",
                     "description": "Computation start datetime, when specified, overrides `tStart`.",
-                    "unit": "yyyymmddhhmmss"
+                    "unit": "yyyymmddhhmmss",
+                    "validation": {
+                        "is_nullable": true
+                    }
                 },
                 {
                     "key": "stopDateTime",
                     "value_type": "datetime",
                     "description": "Computation stop datetime, when specified, overrides `tStop`.",
-                    "unit": "yyyymmddhhmmss"
+                    "unit": "yyyymmddhhmmss",
+                    "validation": {
+                        "is_nullable": true
+                    }
                 },
                 {
                     "key": "updateRoughnessInterval",

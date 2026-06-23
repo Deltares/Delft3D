@@ -2918,12 +2918,14 @@ namespace dflowfm_io
                     PropertySchema {
                         .key           = "startDateTime",
                         .required      = false,
+                        .nullable      = true,
                         .value_type    = ValueType::DateTime,
                         .description   = "Computation start datetime, when specified, overrides `tStart`."
                     },
                     PropertySchema {
                         .key           = "stopDateTime",
                         .required      = false,
+                        .nullable      = true,
                         .value_type    = ValueType::DateTime,
                         .description   = "Computation stop datetime, when specified, overrides `tStop`."
                     },

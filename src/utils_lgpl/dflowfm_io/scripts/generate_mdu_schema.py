@@ -70,6 +70,7 @@ def render_property(prop, indent):
     lines = [pad + "PropertySchema {"]
 
     required = bool(prop.get("validation", {}).get("is_required", False))
+    nullable = bool(prop.get("validation", {}).get("is_nullable", False))
     value_type = VALUE_TYPE_MAP[prop["value_type"]]
 
     # Field names are padded to the width of the longest one so the
@@ -81,6 +82,8 @@ def render_property(prop, indent):
 
     lines.append(field(".key", f'"{prop["key"]}",'))
     lines.append(field(".required", f"{'true' if required else 'false'},"))
+    if nullable:
+        lines.append(field(".nullable", "true,"))
     lines.append(field(".value_type", f"ValueType::{value_type},"))
 
     if "default_value" in prop:
