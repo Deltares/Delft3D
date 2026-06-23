@@ -23,7 +23,7 @@ module test_init_spatial_fields_integration
 contains
 
    !> Set up a minimal 1-cell s-point grid so that get_location_target_properties
-   !! and construct_target_mask do not dereference unallocated arrays.
+   !! and construct_mask do not dereference unallocated arrays.
    subroutine setup_minimal_grid()
       ndx = 1
       ndxi = 1
@@ -110,21 +110,6 @@ contains
       call f90_expect_eq(tc(1), -999.0_dp, "transformcoef(1) should be untouched")
       call f90_expect_eq(tc(2), -999.0_dp, "transformcoef(2) should be untouched")
    end subroutine test_averaging_params_to_transformcoef
-   !$f90tw)
-
-   !$f90tw TESTCODE(TEST, test_init_spatial_field, test_parse_location_type, test_parse_location_type,
-   !> parse_location_type must map all recognized strings and default to ALL for unknown/empty.
-   subroutine test_parse_location_type() bind(C)
-      use m_spatial_field, only: parse_location_type
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-
-      call f90_expect_eq(parse_location_type('1d'), ILATTP_1D, "'1d' should map to ILATTP_1D")
-      call f90_expect_eq(parse_location_type('2d'), ILATTP_2D, "'2d' should map to ILATTP_2D")
-      call f90_expect_eq(parse_location_type('1d2d'), ILATTP_ALL, "'1d2d' should map to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type('all'), ILATTP_ALL, "'all' should map to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type(' '), ILATTP_ALL, "empty string should default to ILATTP_ALL")
-      call f90_expect_eq(parse_location_type('bogus'), ILATTP_ALL, "unknown string should default to ILATTP_ALL")
-   end subroutine test_parse_location_type
    !$f90tw)
 
    !$f90tw TESTCODE(TEST, test_init_spatial_fields_integration, test_rainfall_bcascii_registers_ec_connection, test_rainfall_bcascii_registers_ec_connection,

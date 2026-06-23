@@ -39,7 +39,6 @@ module m_spatial_field
    public :: t_spatial_field_input, t_averaging_input
    public :: read_spatial_field_block, validate_spatial_field_input
    public :: read_averaging_input, averaging_params_to_transformcoef
-   public :: parse_location_type
 
    integer, parameter :: INI_VALUE_LEN = 256
 
@@ -179,29 +178,6 @@ contains
       end select
 
    end function is_static_file_type
-
-   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
-   !! ILATTP_* enum used by prepare_lateral_mask.
-   !! Returns ILATTP_ALL when the string is absent or unrecognized.
-   function parse_location_type(location_type_string) result(ilattype)
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
-      use string_module, only: str_tolower
-
-      character(len=*), intent(in) :: location_type_string
-      integer :: ilattype
-
-      select case (str_tolower(trim(location_type_string)))
-      case ('1d')
-         ilattype = ILATTP_1D
-      case ('2d')
-         ilattype = ILATTP_2D
-      case ('1d2d', 'all')
-         ilattype = ILATTP_ALL
-      case default
-         ilattype = ILATTP_ALL
-      end select
-
-   end function parse_location_type
 
    !> Validate a t_spatial_field_input. Derives method and filetype.
    !! Returns .false. and writes error messages on failure.
