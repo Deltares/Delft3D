@@ -1179,7 +1179,7 @@ contains
       real(dp), dimension(:), pointer :: valuesT1 !< values at time t1
       real(dp), dimension(:), allocatable :: valuesT !< values at time t
       integer :: istat !< allocation status
-      integer :: i, j, k !< loop counters
+      integer :: i, j !< loop counters
       type(tEcField), pointer :: targetField !< Converter's result goes in here
       integer :: maxlay !< maximum number of layers (3D)
       integer :: from, thru !< contiguous range of indices in the target array
@@ -1196,33 +1196,38 @@ contains
       valuesT0 => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr
       valuesT1 => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr
       n_data = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
+
       if (associated(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z)) then
          maxlay = size(connection%targetItemsPtr(1)%ptr%ElementSetPtr%z) / size(connection%targetItemsPtr(1)%ptr%ElementSetPtr%x)
       else
          maxlay = 1
       end if
+
       allocate (valuesT(maxlay * n_data), stat=istat)
       valuesT = ec_undef_hp
+
       if (connection%converterPtr%interpolationType == interpolate_passthrough) then
-         !
+
          ! ===== block function (no interpolation in time) =====
-         !
+
          if (timesteps < t1) then
             ! use valuesT0 when timesteps is less than t1
             do i = 1, size(valuesT0, dim=1)
                valuesT(i) = valuesT0(i)
             end do
+
          else
             ! use valuesT1 when timesteps is equals to t1 (timesteps should never be higher than t1)
             do i = 1, size(valuesT0, dim=1)
                valuesT(i) = valuesT1(i)
             end do
+
          end if
-         !
+         
       else
-         !
+
          ! ===== interpolation in time =====
-         !
+
          if (.not. connection%sourceItemsPtr(1)%ptr%quantityptr%constant) then
             select case (connection%sourceItemsPtr(1)%ptr%quantityptr%timeint)
             case (timeint_lin, timeint_lin_extrapol, timeint_rainfall)
@@ -1271,54 +1276,16 @@ contains
 
          select case (connection%converterPtr%operandType)
 
-         case (EC_OPERAND_REPLACE)
+         case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
             ! Write all values to one target Item or each value to its own target Item.
             if (connection%nTargetItems == 1) then ! All in one target item
+
                targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
                targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
+
                do j = jmin, jmax
-                  if (associated(targetmask)) then
-                     if (targetmask(j) == 0) then
-                        cycle
-                     end if
-                  end if
 
-                  from = (j - 1) * (maxlay * n_data) + 1
-                  thru = (j) * (maxlay * n_data)
-                  if (allocated(connection%converterPtr%srcmask%msk)) then
-                     targetField%arr1dPtr(from:thru) = valuesT * real(connection%converterPtr%srcmask%msk(from:thru), hp)
-                  else
-                     targetField%arr1dPtr(from:thru) = valuesT
-                  end if
-               end do
-               targetField%timesteps = timesteps
-            else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
-               do i = 1, connection%nTargetItems
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
-                  do j = jmin, jmax
-                     if (associated(targetmask)) then
-                        if (targetmask(j) == 0) then
-                           cycle
-                        end if
-                     end if
-                     targetField%arr1dPtr(j) = valuesT(i)
-                  end do
-                  targetField%timesteps = timesteps
-               end do
-            else
-               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
-               return
-            end if
-
-         case (EC_OPERAND_REPLACE_IF_MISSING)
-
-            ! Write all values to one target Item or each value to its own target Item.
-            if (connection%nTargetItems == 1) then ! All in one target item
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
-               do j = jmin, jmax
                   if (associated(targetmask)) then
                      if (targetmask(j) == 0) then
                         cycle
@@ -1328,45 +1295,49 @@ contains
                   from = (j - 1) * (maxlay * n_data) + 1
                   thru = (j) * (maxlay * n_data)
 
+                  ! Apply source mask if provided.
                   if (allocated(connection%converterPtr%srcmask%msk)) then
-                     do k = from, thru
-                        if (targetField%arr1dPtr(k) == ec_undef_hp) then
-                           targetField%arr1dPtr(k) = valuesT(k-from+1) * real(connection%converterPtr%srcmask%msk(k), hp)
-                        end if
-                     end do
-                  else
-                     do k = from, thru
-                        if (targetField%arr1dPtr(k) == ec_undef_hp) then
-                           targetField%arr1dPtr(k) = valuesT(k-from+1)
-                        end if
-                     end do
+                     valuesT = valuesT * real(connection%converterPtr%srcmask%msk(from:thru), hp)
                   end if
+
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru))
+
+                  call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
+               
                end do
+
                targetField%timesteps = timesteps
+
             else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
+
                do i = 1, connection%nTargetItems
+
                   targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
                   targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
+
                   do j = jmin, jmax
-                     from = (j - 1) * (maxlay * n_data) + 1
-                     thru = (j) * (maxlay * n_data)
 
                      if (associated(targetmask)) then
                         if (targetmask(j) == 0) then
                            cycle
                         end if
                      end if
-                     do k = from, thru
-                        if (targetField%arr1dPtr(k) == ec_undef_hp) then
-                           targetField%arr1dPtr(k) = valuesT(i)
-                        end if
-                     end do
+
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)])
+
+                     call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), valuesT(i))
+
                   end do
+
                   targetField%timesteps = timesteps
+
                end do
+
             else
+
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
                return
+
             end if
 
          case (EC_OPERAND_REPLACE_ELEMENT) ! TODO: AvD/EB: why does EC_OPERAND_REPLACE require a targetIndex, whereas EC_OPERAND_ADD does not?
@@ -1375,49 +1346,15 @@ contains
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
+
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
+
             ! NOTE: No targetMask is checked here
-            targetField%arr1dPtr(from:thru) = valuesT
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
             targetField%timesteps = timesteps
-
-         case (EC_OPERAND_ADD) ! TODO: AvD/EB: it seems that EC_OPERAND_ADD does not support targetIndex (offset). Should we not make this available?
-
-            ! Add all values to one target Item or each value to its own target Item.
-            if (connection%nTargetItems == 1) then ! All in one target item
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
-               do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-                  if (associated(targetmask)) then
-                     if (targetmask(j) == 0) then
-                        cycle
-                     end if
-                  end if
-                  from = (j - 1) * (maxlay * n_data) + 1
-                  thru = (j) * (maxlay * n_data)
-                  targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) + valuesT
-               end do
-               targetField%timesteps = timesteps
-            else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
-               do i = 1, connection%nTargetItems
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     if (associated(targetmask)) then
-                        if (targetmask(j) == 0) then
-                           cycle
-                        end if
-                     end if
-                     targetField%arr1dPtr(j) = targetField%arr1dPtr(j) + valuesT(i)
-                  end do
-                  targetField%timesteps = timesteps
-               end do
-            else
-               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
-               return
-            end if
 
          case (EC_OPERAND_ADD_ELEMENT)
 
@@ -1425,121 +1362,15 @@ contains
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
             end if
+
             targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
             j = connection%converterPtr%targetIndex
             from = (j - 1) * (maxlay * n_data) + 1
             thru = (j) * (maxlay * n_data)
+
             ! NOTE: No targetMask is checked here
-            targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) + valuesT
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
             targetField%timesteps = timesteps
-
-         case (EC_OPERAND_MULTIPLY)
-
-            ! Add all values to one target Item or each value to its own target Item.
-            if (connection%nTargetItems == 1) then ! All in one target item
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
-               do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-                  if (associated(targetmask)) then
-                     if (targetmask(j) == 0) then
-                        cycle
-                     end if
-                  end if
-                  from = (j - 1) * (maxlay * n_data) + 1
-                  thru = (j) * (maxlay * n_data)
-                  targetField%arr1dPtr(from:thru) = targetField%arr1dPtr(from:thru) * valuesT
-               end do
-               targetField%timesteps = timesteps
-            else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
-               do i = 1, connection%nTargetItems
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     if (associated(targetmask)) then
-                        if (targetmask(j) == 0) then
-                           cycle
-                        end if
-                     end if
-                     targetField%arr1dPtr(j) = targetField%arr1dPtr(j) * valuesT(i)
-                  end do
-                  targetField%timesteps = timesteps
-               end do
-            else
-               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
-               return
-            end if
-
-         case (EC_OPERAND_MINIMUM)
-
-            ! Add all values to one target Item or each value to its own target Item.
-            if (connection%nTargetItems == 1) then ! All in one target item
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
-               do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-                  if (associated(targetmask)) then
-                     if (targetmask(j) == 0) then
-                        cycle
-                     end if
-                  end if
-                  from = (j - 1) * (maxlay * n_data) + 1
-                  thru = (j) * (maxlay * n_data)
-                  targetField%arr1dPtr(from:thru) = min(targetField%arr1dPtr(from:thru), valuesT)
-               end do
-               targetField%timesteps = timesteps
-            else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
-               do i = 1, connection%nTargetItems
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     if (associated(targetmask)) then
-                        if (targetmask(j) == 0) then
-                           cycle
-                        end if
-                     end if
-                     targetField%arr1dPtr(j) = min(targetField%arr1dPtr(j), valuesT(i))
-                  end do
-                  targetField%timesteps = timesteps
-               end do
-            else
-               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
-               return
-            end if
-
-         case (EC_OPERAND_MAXIMUM)
-
-            ! Add all values to one target Item or each value to its own target Item.
-            if (connection%nTargetItems == 1) then ! All in one target item
-               targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
-               targetMask => connection%targetItemsPtr(1)%ptr%elementSetPtr%mask
-               do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-                  if (associated(targetmask)) then
-                     if (targetmask(j) == 0) then
-                        cycle
-                     end if
-                  end if
-                  from = (j - 1) * (maxlay * n_data) + 1
-                  thru = (j) * (maxlay * n_data)
-                  targetField%arr1dPtr(from:thru) = max(targetField%arr1dPtr(from:thru), valuesT)
-               end do
-               targetField%timesteps = timesteps
-            else if (connection%nTargetItems == maxlay * n_data) then ! Separate target items
-               do i = 1, connection%nTargetItems
-                  targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
-                  targetMask => connection%targetItemsPtr(i)%ptr%elementSetPtr%mask
-                  do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
-                     if (associated(targetmask)) then
-                        if (targetmask(j) == 0) then
-                           cycle
-                        end if
-                     end if
-                     targetField%arr1dPtr(j) = max(targetField%arr1dPtr(j), valuesT(i))
-                  end do
-                  targetField%timesteps = timesteps
-               end do
-            else
-               call set_ec_message("ERROR: ec_converter::ecConverterUniform: Number of source Quantities does not match the number of target Items.")
-               return
-            end if
 
          case default
 
@@ -1549,9 +1380,13 @@ contains
          end select
 
       case (interpolate_time, interpolate_time_extrapolation_ok) ! performs implicit space conversion from 2D to 3D,
+
          ! ===== operation =====
+
          select case (connection%converterPtr%operandType)
+
          case (EC_OPERAND_REPLACE_ELEMENT)
+
             if (connection%converterPtr%targetIndex == ec_undef_int) then
                call set_ec_message("ERROR: ec_converter::ecConverterUniform: Converter's target Field array index not set.")
                return
@@ -1568,30 +1403,39 @@ contains
             ! targetField%arr1dPtr((connection%converterPtr%targetIndex-1)*maxlay*n_data + 1 : connection%converterPtr%targetIndex*maxlay*n_data) = valuesT
             ! NOTE: RL: Currently this most definitely not the case: targetindex is not set correctly upon init.
             targetField%timesteps = timesteps
+
          case default
+
             call set_ec_message("ERROR: ec_converter::ecConverterUniform: Unsupported operand type requested.")
             return
+
          end select
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterUniform: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
       deallocate (valuesT, stat=istat)
+
    end function ecConverterUniform
 
-   ! =======================================================================
-
    !> Perform the configured conversion, if supported, for a uniform FileReader.
-      !! Supports linear interpolation in time, no interpolation in space and no weights.
-      !! Supports overwriting and adding-to the entire target Field array, as well all as overwriting only one array element.
-      !! Converts all sources into one target: the magnitude of the wind.
+   !! Supports linear interpolation in time, no interpolation in space and no weights.
+   !! Supports overwriting and adding-to the entire target Field array, as well all as overwriting only one array element.
+   !! Converts all sources into one target: the magnitude of the wind.
    function ecConverterUniformToMagnitude(connection, timesteps) result(success)
+      ! Parameters
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      
+      ! Local variables
       integer :: j !< loop counter
+      integer :: targetnCoordinates !< number of coordinates in the target Field
       real(dp) :: t0 !< source item t0
       real(dp) :: t1 !< source item t1
       real(dp) :: a0 !< weight for source t0 data
@@ -1609,12 +1453,16 @@ contains
       targetField => null()
 
       ! ===== interpolation =====
+
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_time)
+
          ! linear interpolation in time
          t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
          t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
+         targetnCoordinates = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
+
          call time_weight_factors(a0, a1, timesteps, t0, t1)
          
          targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
@@ -1627,30 +1475,20 @@ contains
          magnitude = sqrt(windXT * windXT + windYT * windYT)
 
          ! ===== operation =====
+
          select case (connection%converterPtr%operandType)
 
-         case (EC_OPERAND_REPLACE)
+         case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
+            if (targetnCoordinates == ec_undef_int) then
                call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
                return
             end if
-            do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = magnitude
-            end do
-            targetField%timesteps = timesteps
 
-         case (EC_OPERAND_REPLACE_IF_MISSING)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates))
 
-            if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
-               return
-            end if
-            do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               if (targetField%arr1dPtr(j) == ec_undef_hp) then
-                  targetField%arr1dPtr(j) = magnitude
-               end if
-            end do
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), magnitude)
+
             targetField%timesteps = timesteps
 
          case (EC_OPERAND_REPLACE_ELEMENT)
@@ -1659,63 +1497,8 @@ contains
                call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Converter's target Field array index not set.")
                return
             end if
+
             targetField%arr1dPtr(connection%converterPtr%targetIndex) = magnitude
-            targetField%timesteps = timesteps
-
-         case (EC_OPERAND_ADD)
-
-            if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
-               return
-            end if
-            do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = targetField%arr1dPtr(j) + magnitude
-            end do
-            targetField%timesteps = timesteps
-
-         case (EC_OPERAND_MULTIPLY)
-
-            if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
-               return
-            end if
-            if (any(targetField%arr1dPtr(1:connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates) == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Missing existing value(s) to multiply with.")
-               return
-            end if
-            do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = targetField%arr1dPtr(j) * magnitude
-            end do
-            targetField%timesteps = timesteps
-
-         case (EC_OPERAND_MINIMUM)
-
-            if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
-               return
-            end if
-            if (any(targetField%arr1dPtr(1:connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates) == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Missing existing value(s) to minimize with.")
-               return
-            end if
-            do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = min(targetField%arr1dPtr(j), magnitude)
-            end do
-            targetField%timesteps = timesteps
-
-         case (EC_OPERAND_MAXIMUM)
-
-            if (connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Target ElementSet's number of coordinates not set.")
-               return
-            end if
-            if (any(targetField%arr1dPtr(1:connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates) == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Missing existing value(s) to maximize with.")
-               return
-            end if
-            do j = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               targetField%arr1dPtr(j) = max(targetField%arr1dPtr(j), magnitude)
-            end do
             targetField%timesteps = timesteps
 
          case default
@@ -1726,25 +1509,29 @@ contains
          end select
 
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterUniformToMagnitude: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
+
    end function ecConverterUniformToMagnitude
 
-   ! =======================================================================
-
    !> Perform the configured conversion, if supported, for a unimagdir FileReader.
-      !! Supports linear interpolation in time, no interpolation in space and no weights.
-      !! Supports overwriting and adding-to the entire target Field array.
-      !! Converts wind_magnitude and wind_direction into wind_u and wind_v.
-      !! Assumes target(1) == wind_u and target(2) == wind_v.
-      !! meteo1 : regdir, magdir2uv
+   !! Supports linear interpolation in time, no interpolation in space and no weights.
+   !! Supports overwriting and adding-to the entire target Field array.
+   !! Converts wind_magnitude and wind_direction into wind_u and wind_v.
+   !! Assumes target(1) == wind_u and target(2) == wind_v.
+   !! meteo1 : regdir, magdir2uv
    function ecConverterUnimagdir(connection, timesteps) result(success)
+      ! Parameters
       logical :: success !< function status
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      
+      ! Local variables
       real(dp) :: t0 !< source item t0
       real(dp) :: t1 !< source item t1
       real(dp) :: a0 !< weight for source t0 data
@@ -1758,107 +1545,53 @@ contains
       real(dp), dimension(:), pointer :: u !< calculated u value
       real(dp), dimension(:), pointer :: v !< calculated v value
       integer :: i !< loop counter
+      integer :: targetnCoordinates !< number of coordinates in the target Field
       real(dp) :: targetU !< new u value to be written to all target grid points
       real(dp) :: targetV !< new v value to be written to all target grid points
-      type(tEcField), pointer :: targetField !< Converter's result goes in here
       
       success = .false.
-      targetField => null()
       u => null()
       v => null()
 
       ! ===== interpolation =====
+
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_timespace)
+
          ! === linear interpolation in time ===
          t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
          t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
          call time_weight_factors(a0, a1, timesteps, t0, t1)
+
          ! determine windspeed at t=timesteps
          windspeed0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)
          windspeed1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(1)
          windspeed = a0 * windspeed0 + a1 * windspeed1
+
          ! determine winddirection at t=timesteps
          winddirection0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(2)
          winddirection1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%arr1dPtr(2)
          winddirection = cyclic_interpolation(winddirection0, winddirection1, a0, a1)
+
          ! === space conversion using nautical convention ===
          winddirection = (270.0_dp - winddirection) * degrad
          u => connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr
          v => connection%targetItemsPtr(2)%ptr%targetFieldPtr%arr1dPtr
          targetU = windspeed * cos(winddirection)
          targetV = windspeed * sin(winddirection)
-         targetField => connection%targetItemsPtr(1)%ptr%targetFieldPtr
+         targetnCoordinates = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
 
          select case (connection%converterPtr%operandType)
 
-         case (EC_OPERAND_REPLACE)
+         case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = targetU
-               v(i) = targetV
-            end do
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-            connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates))
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates))
 
-         case (EC_OPERAND_REPLACE_IF_MISSING)
+            call apply_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), targetU)
+            call apply_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), targetV)
 
-            do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = merge(targetU, u(i), u(i) == ec_undef_hp)
-               v(i) = merge(targetV, v(i), v(i) == ec_undef_hp)
-            end do
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-            connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
-
-         case (EC_OPERAND_ADD)
-
-            do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = u(i) + targetU
-               v(i) = v(i) + targetV
-            end do
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-            connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
-
-         case (EC_OPERAND_MULTIPLY)
-
-            if (any(targetField%arr1dPtr(1:connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates) == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Missing existing value(s) to multiply with.")
-               return
-            end if
-
-            do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = u(i) * targetU
-               v(i) = v(i) * targetV
-            end do
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-            connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
-
-         case (EC_OPERAND_MINIMUM)
-
-            if (any(targetField%arr1dPtr(1:connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates) == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Missing existing value(s) to minimize with.")
-               return
-            end if
-
-            do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = min(u(i), targetU)
-               v(i) = min(v(i), targetV)
-            end do
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-            connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
-
-         case (EC_OPERAND_MAXIMUM)
-
-            if (any(targetField%arr1dPtr(1:connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates) == ec_undef_hp)) then
-               call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Missing existing value(s) to maximize with.")
-               return
-            end if
-
-            do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
-               u(i) = max(u(i), targetU)
-               v(i) = max(v(i), targetV)
-            end do
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
             connection%targetItemsPtr(2)%ptr%targetFieldPtr%timesteps = timesteps
 
@@ -1866,63 +1599,88 @@ contains
 
             call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Unsupported operand type requested.")
             return
+
          end select
-         
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterUnimagdir: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
+
    end function ecConverterUnimagdir
 
-   ! =======================================================================
-
    function ecConverterVerticalMean(zpos, val, zmin, zmax, ndxmin, ndxmax) result(integral)
+      ! Parameters
       real(dp) :: integral
       real(dp), dimension(:), intent(in) :: zpos, val
       real(dp), intent(in) :: zmin, zmax
       integer, intent(out) :: ndxmin, ndxmax
 
+      ! Local variables
       real(dp) :: wt, dz
       integer :: ndx
+
       ndxmin = size(zpos)
       ndxmax = 1
+
       do ndx = 1, size(zpos)
+
          if (zpos(ndx) >= zmin .and. zpos(ndx) <= zmax) then
             ndxmin = min(ndxmin, ndx)
             ndxmax = max(ndxmax, ndx)
          end if
+
       end do
+
       integral = sum(abs(zpos(ndxmin + 1:ndxmax) - zpos(ndxmin:ndxmax - 1)) &
-                     * (val(ndxmin + 1:ndxmax) + val(ndxmin:ndxmax - 1)) * 0.5)
+         * (val(ndxmin + 1:ndxmax) + val(ndxmin:ndxmax - 1)) * 0.5)
       dz = min(abs(zpos(ndxmin) - zmin), abs(zpos(ndxmin) - zmax))
+
       if (ndxmin > 1) then
+
          wt = dz / abs((zpos(ndxmin - 1) - zpos(ndxmin))) * 0.5
          integral = integral + ((1_dp - wt) * val(ndxmin) + wt * val(ndxmin - 1)) * dz
+
       else
+
          integral = integral + val(ndxmin) * dz
+
       end if
+
       dz = min(abs(zpos(ndxmax) - zmin), abs(zpos(ndxmax) - zmax))
+
       if (ndxmax < size(zpos)) then
+
          wt = dz / abs((zpos(ndxmax - 1) - zpos(ndxmax))) * 0.5
          integral = integral + ((1_dp - wt) * val(ndxmax) + wt * val(ndxmax - 1)) * dz
+
       else
+
          wt = 0_dp
          integral = integral + val(ndxmax) * dz
+
       end if
+
       integral = integral / (zmax - zmin)
+
    end function ecConverterVerticalMean
-   ! =======================================================================
 
    !> Execute the Converters in the Connection sequentially.
-      !! meteo1 : polyint
+   !! meteo1 : polyint
    function ecConverterPolytim(connection, timesteps) result(success)
       use m_ec_elementset, only: ecElementSetGetAbsZ
       use m_ec_message
-      logical :: success !< function status
+
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      logical :: success !< function status
+      
+      ! Local variables
       integer :: i, k !< loop counters
       real(dp) :: wL, wR !< left and right weights
       integer :: kL, kR !<
@@ -1946,20 +1704,29 @@ contains
       integer :: from, thru !< contiguous range of indices in the target array
       character(MAXIMUM_EC_MESSAGE_LENGTH) :: errormsg
 
-      !
       success = .false.
+
       select case (connection%converterPtr%interpolationType)
+
       case (interpolate_passthrough)
+
          select case (connection%converterPtr%operandType)
+
          case (EC_OPERAND_REPLACE_ELEMENT)
+
             idx = connection%converterPtr%targetIndex
             ! Highly specific: 1 source Item with 1 value.
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(idx) = connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(idx)
+
          case default
+
             call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported operand type requested.")
             return
+
          end select
+
       case (interpolate_spacetimeSaveWeightFactors, interpolate_spacetime)
+
          vectormax = connection%sourceItemsPtr(1)%ptr%quantityPtr%vectorMax
          missing = connection%sourceItemsPtr(1)%ptr%quantityPtr%fillvalue
          allocate (valL1(vectormax))
@@ -2004,16 +1771,18 @@ contains
          ! zmax and zmin are absolute top and bottom at target point coordinates
          zmax => connection%targetItemsPtr(1)%ptr%elementSetPtr%zmax
          zmin => connection%targetItemsPtr(1)%ptr%elementSetPtr%zmin
-         !
+         
          ! The polytim FileReader's source Item is actually a target Item, containing the time-interpolated wind_magnitude from the subFileReaders.
          do i = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
             kL = connection%converterPtr%indexWeight%indices(1, i)
             kR = connection%converterPtr%indexWeight%indices(2, i)
             wL = connection%converterPtr%indexWeight%weightFactors(1, i)
             wR = connection%converterPtr%indexWeight%weightFactors(2, i)
+
             select case (connection%converterPtr%operandType)
 
-            case (EC_OPERAND_REPLACE_ELEMENT, EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
+            case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
+
                ! Are the subproviders 3D or 2D?
                if (associated(connection%sourceItemsPtr(1)%ptr%elementSetPtr%z) .and. & ! source has a vertical coordinate
                    associated(connection%targetItemsPtr(1)%ptr%elementSetPtr%z)) then ! target has a vertical coordinate
@@ -2046,30 +1815,44 @@ contains
                         ! Convert target elementset
                         if (.not. ecElementSetGetAbsZ(connection%targetItemsPtr(1)%ptr%ElementSetPtr, &
                                                       kbegin, kend, &
-                                                      zmin(i), zmax(i), sigma(kbegin:kend))) return
+                                                      zmin(i), zmax(i), sigma(kbegin:kend))) then
+                           return
+                        end if
+
                         ! Convert source elementset, first point
                         if (.not. ecElementSetGetAbsZ(connection%sourceItemsPtr(1)%ptr%ElementSetPtr, &
                                                       kbeginR, kendR, &
-                                                      zmin(i), zmax(i), sigmaR)) return
+                                                      zmin(i), zmax(i), sigmaR)) then
+                           return
+                        end if
+
                         ! Convert source elementset, second point
                         if (.not. ecElementSetGetAbsZ(connection%sourceItemsPtr(1)%ptr%ElementSetPtr, &
                                                       kbeginL, kendL, &
-                                                      zmin(i), zmax(i), sigmaL)) return
+                                                      zmin(i), zmax(i), sigmaL)) then
+                           return
+                        end if
+
                         ! Prepare sigmaR and valR
                         maxlay_srcR = 0
                         sigmaRR = ec_undef_hp
                         vmaskR = .false.
                         valR = ec_undef_hp
+
                         do k = 1, maxlay_src
+
                            from = vectormax * maxlay_src * (kR - 1) + vectormax * (k - 1) + 1
                            thru = vectormax * maxlay_src * (kR - 1) + vectormax * (k)
+
                            ! check if all vector components are unequal missing for this layer
                            if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru) /= missing) .and. (sigmaR(k) > 0.5 * ec_undef_hp)) then
                               maxlay_srcR = maxlay_srcR + 1
                               valR((maxlay_srcR - 1) * vectormax + 1:maxlay_srcR * vectormax) = connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru)
                               sigmaRR(maxlay_srcR) = sigmaR(k)
                            end if
+
                         end do
+
                         if (maxlay_srcR < 1) then
                            write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid sigma (layer) associated with point ", &
                               kR, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
@@ -2082,16 +1865,21 @@ contains
                         sigmaLL = ec_undef_hp
                         vmaskL = .false.
                         valL = ec_undef_hp
+
                         do k = 1, maxlay_src
+
                            from = vectormax * maxlay_src * (kL - 1) + vectormax * (k - 1) + 1
                            thru = vectormax * maxlay_src * (kL - 1) + vectormax * (k)
+
                            ! check if all vector components are unequal missing for this layer
                            if (all(connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru) /= missing) .and. (sigmaL(k) > 0.5 * ec_undef_hp)) then
                               maxlay_srcL = maxlay_srcL + 1
                               valL((maxlay_srcL - 1) * vectormax + 1:maxlay_srcL * vectormax) = connection%sourceItemsPtr(1)%ptr%targetFieldPtr%arr1Dptr(from:thru)
                               sigmaLL(maxlay_srcL) = sigmaL(k)
                            end if
+
                         end do
+
                         if (maxlay_srcL < 1) then
                            write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid sigma (layer) associated with point ", &
                               kL, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
@@ -2100,52 +1888,43 @@ contains
                         end if
 
                         if (connection%sourceItemsPtr(1)%ptr%quantityPtr%zInterpolationType == zinterpolate_mean) then
+
                            valL1 = ecConverterVerticalMean(sigmaLL, valL, zmin(i), zmax(i), ndxmin, ndxmax)
+
                            if (ndxmax - ndxmin < 1) then
                               write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid layer for averaging for point ", &
                                  kL, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
                               call set_ec_message(errormsg)
                               return
                            end if
+
                            valR1 = ecConverterVerticalMean(sigmaRR, valR, zmin(i), zmax(i), ndxmin, ndxmax)
+
                            if (ndxmax - ndxmin < 1) then
                               write (errormsg, '(a,i0,a,i5.5)') "ERROR: ec_converter::ecConverterPolytim: No valid layer for averaging for point ", &
                                  kR, " of polytim item ", connection%sourceItemsPtr(1)%ptr%id
                               call set_ec_message(errormsg)
                               return
                            end if
+
                            val = wL * valL1 + wR * valR1
+
                            do k = kbegin, kend ! Set the average value for all vertical positions
-                              select case (connection%converterPtr%operandType)
-                              
-                              case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    val(1:vectormax)
 
-                              case (EC_OPERAND_REPLACE_IF_MISSING)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    merge(val(1:vectormax), connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) == ec_undef_hp)
+                              call check_undefined_values_for_operand( &
+                                 connection%converterPtr%operandType, &
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
+                              )
 
-                              case (EC_OPERAND_ADD)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-
-                              case (EC_OPERAND_MULTIPLY)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) * val(1:vectormax)
-
-                              case (EC_OPERAND_MINIMUM)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-
-                              case (EC_OPERAND_MAXIMUM)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-
-                              end select
+                              call apply_operand( &
+                                 connection%converterPtr%operandType, &
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
+                                 val(1:vectormax) &
+                              )
                            end do ! target layers
+
                         else
+
                            do k = kbegin, kend
                               ! RL: BUG!!! z(k) not initialised if the target side is not 3D !!! TO BE FIXED !!!!!!!!!!!!!!
                               if (sigma(k) < 0.5 * ec_undef_hp) cycle
@@ -2160,53 +1939,47 @@ contains
                               valL2(1:vectormax) = valL((idxL2 - 1) * vectormax + 1:(idxL2) * vectormax)
                               valR1(1:vectormax) = valR((idxR1 - 1) * vectormax + 1:(idxR1) * vectormax)
                               valR2(1:vectormax) = valR((idxR2 - 1) * vectormax + 1:(idxR2) * vectormax)
-                              !
+                              
                               select case (connection%sourceItemsPtr(1)%ptr%quantityPtr%zInterpolationType)
+
                               case (zinterpolate_unknown)
+
                                  if (.not. alreadyPrinted) then
                                     call set_ec_message("WARNING: ec_converter::ecConverterPolytim: Unknown vertical interpolation type given, will proceed with linear method.")
                                     alreadyPrinted = .true.
                                  end if
                                  val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
+
                               case (zinterpolate_linear)
+
                                  val = wL * (wwL * valL1 + (1.0_dp - wwL) * valL2) + wR * (wwR * valR1 + (1.0_dp - wwR) * valR2)
+
                               case (zinterpolate_block)
+
                                  val = wL * valL1 + wR * valR1
+
                               case (zinterpolate_log)
+
                                  val = wL * (valL1**wwL) * (valL2**(1.0_dp - wwL)) + wR * (valR1**wwR) * (valR2**(1.0_dp - wwR))
+
                               case default
+
                                  call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported vertical interpolation type requested.")
                                  return
-                              end select
-                              
-                              select case (connection%converterPtr%operandType)
-                              
-                              case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    val(1:vectormax)
-
-                              case (EC_OPERAND_REPLACE_IF_MISSING)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    merge(val(1:vectormax), connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) == ec_undef_hp)
-
-                              case (EC_OPERAND_ADD)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-
-                              case (EC_OPERAND_MULTIPLY)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) * val(1:vectormax)
-
-                              case (EC_OPERAND_MINIMUM)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-
-                              case (EC_OPERAND_MAXIMUM)
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                                    max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
 
                               end select
+
+                              call check_undefined_values_for_operand( &
+                                 connection%converterPtr%operandType, &
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
+                              )
+
+                              call apply_operand( &
+                                 connection%converterPtr%operandType, &
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
+                                 val(1:vectormax) &
+                              )
+                              
                            end do ! target layers
                         end if ! are we averaging the source in the vertical direction ?
                      end if ! kR > 0: right support point exists
@@ -2229,37 +2002,21 @@ contains
                   if (kL /= 0 .or. kR /= 0) then
                      ! Write value
                      do k = 1, maxlay_tgt
+
                         from = (i - 1) * maxlay_tgt * vectormax + (k - 1) * vectormax + 1
                         thru = (i - 1) * maxlay_tgt * vectormax + k * vectormax
 
-                        select case (connection%converterPtr%operandType)
-                              
-                        case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                              val(1:vectormax)
+                        call check_undefined_values_for_operand( &
+                           connection%converterPtr%operandType, &
+                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) &
+                        )
 
-                        case (EC_OPERAND_REPLACE_IF_MISSING)
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                              merge(val(1:vectormax), connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
-                              connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) == ec_undef_hp)
+                        call apply_operand( &
+                           connection%converterPtr%operandType, &
+                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
+                           val(1:vectormax) &
+                        )
 
-                        case (EC_OPERAND_ADD)
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                              connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) + val(1:vectormax)
-
-                        case (EC_OPERAND_MULTIPLY)
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                              connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) * val(1:vectormax)
-
-                        case (EC_OPERAND_MINIMUM)
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                              min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-
-                        case (EC_OPERAND_MAXIMUM)
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) = &
-                              max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), val(1:vectormax))
-
-                        end select
                      end do
                   end if ! valid left or right point ?
                end if ! vertical coordinate for this source item, i.e. is it a 3D source  ?
@@ -2273,13 +2030,24 @@ contains
          end do
 
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterPolytim: Unsupported interpolation type requested.")
          return
+
       end select
-      if (allocated(sigma)) deallocate (sigma)
-      if (allocated(sigmaL)) deallocate (sigmaL)
-      if (allocated(sigmaR)) deallocate (sigmaR)
+
+      if (allocated(sigma)) then 
+         deallocate (sigma)
+      end if
+      if (allocated(sigmaL)) then
+         deallocate (sigmaL)
+      end if
+      if (allocated(sigmaR)) then
+         deallocate (sigmaR)
+      end if
+
       success = .true.
+
    end function ecConverterPolytim
 
    subroutine findVerticalIndexWeight(sigmak, sigma, maxlay_src, kLR, ww, idx1, idx2)
@@ -2308,18 +2076,19 @@ contains
          end do
       end if
    end subroutine findVerticalIndexWeight
-   ! =======================================================================
 
    !> Perform the configured conversion, if supported, for a curvi FileReader.
-      !! Supports linear interpolation in time and interpolation is space.
-      !! Supports overwriting and adding-to the entire target Field array.
-      !! Converts data from source Item i to target Item i.
-      !! unstruc : gettimespacevalue
+   !! Supports linear interpolation in time and interpolation is space.
+   !! Supports overwriting and adding-to the entire target Field array.
+   !! Converts data from source Item i to target Item i.
+   !! unstruc : gettimespacevalue
    function ecConverterCurvi(connection, timesteps) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      logical :: success !< function status
+      
+      ! Local variables
       type(tEcField), pointer :: sourceT0Field !< helper pointer
       type(tEcField), pointer :: sourceT1Field !< helper pointer
       real(dp) :: sourceMissing !< Source side missing value
@@ -2336,48 +2105,56 @@ contains
       real(dp) :: a0, a1
       real(dp) :: t0, t1
       real(dp), dimension(4) :: wf_i !< helper containing indexWeight%weightFactors(1:4,i)
-      !
+      
       success = .false.
       sourceT0Field => null()
       sourceT1Field => null()
       targetField => null()
       indexWeight => null()
       sourceElementSet => null()
-      !
+      
       if (connection%nSourceItems /= connection%nTargetItems) then
          call set_ec_message("ERROR: ec_converter::ecConverterCurvi: The number of source and target Items differ and should have been identical.")
          return
       end if
-      !
+      
       select case (connection%converterPtr%interpolationType)
+
       case (interpolate_spacetimeSaveWeightFactors)
+
          indexWeight => connection%converterPtr%indexWeight
          sourceElementSet => connection%sourceItemsPtr(1)%ptr%elementSetPtr
          n_points = connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          n_cols = sourceElementSet%n_cols
          n_rows = sourceElementSet%n_rows
-         !
+         
          sourceT0Field => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
          t0 = sourceT0Field%timesteps
          t1 = sourceT1Field%timesteps
          call time_weight_factors(a0, a1, timesteps, t0, t1)
-         !
+         
          ! TODO: Take care of the allocation of targetValues(n_point)
          do j = 1, connection%nSourceItems
+            
             sourceT0Field => connection%sourceItemsPtr(j)%ptr%sourceT0FieldPtr
             sourceT1Field => connection%sourceItemsPtr(j)%ptr%sourceT1FieldPtr
             sourceMissing = connection%sourceItemsPtr(j)%ptr%quantityPtr%fillvalue
             targetField => connection%targetItemsPtr(j)%ptr%targetFieldPtr
             targetValues => targetField%arr1dPtr
-            !
+            
             s2D_T0(1:n_cols, 1:n_rows) => sourceT0Field%arr1d
             s2D_T1(1:n_cols, 1:n_rows) => sourceT1Field%arr1d
+
             do i = 1, n_points
+
                np = indexWeight%indices(1, i)
                mp = indexWeight%indices(2, i)
+
                if (mp > 0 .and. np > 0) then
+
                   nmiss = 0
+
                   do jj = 0, 1
                      do ii = 0, 1
                         if (comparereal(s2D_T0(mp + ii, np + jj), sourceT0Field%missingValue, .true.) == 0 .or. &
@@ -2404,26 +2181,33 @@ contains
                   end if
                end if
             end do
+            
             targetField%timesteps = timesteps
-            !
+            
          end do
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterCurvi: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
+
    end function ecConverterCurvi
 
-   ! =======================================================================
    !> Perform the configured conversion, if supported, for a arcinfo FileReader.
-      !! Supports linear interpolation in time, interpolation in space and no weights.
-      !! Supports overwriting and adding-to the entire target Field array.
-      !! meteo1 : gettimespacevalue
+   !! Supports linear interpolation in time, interpolation in space and no weights.
+   !! Supports overwriting and adding-to the entire target Field array.
+   !! meteo1 : gettimespacevalue
    function ecConverterArcinfo(connection, timesteps) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      logical :: success !< function status
+      
+      ! Local variables
       real(dp) :: x01, y01, dx1, dy1 !< uniform grid parameters
       integer :: mx !< n_cols (x or latitude coordinate)
       integer :: grid_width !< n_rows (y or longitude coordinate)
@@ -2453,46 +2237,53 @@ contains
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_timespace, interpolate_spacetime, interpolate_time_extrapolation_ok)
+
          ! TODO: cleanup this FM-compliancy code segment.
          if (connection%sourceItemsPtr(1)%ptr%elementSetPtr%ofType == elmSetType_cartesian) then
+
             ! Only legal for uniform grids...
             x01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%x(1)
             y01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%y(1)
             dx1 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%x(2) - connection%sourceItemsPtr(1)%ptr%elementSetPtr%x(1)
             dy1 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%y(2) - connection%sourceItemsPtr(1)%ptr%elementSetPtr%y(1)
+
          else
+
             x01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%x0
             y01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%y0
             dx1 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%dx
             dy1 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%dy
+
          end if
+
          mx = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_cols
          grid_width = connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows
          sourceT0Field => connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr
          sourceT1Field => connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr
-         !
+         
          do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
             ! TODO : Calculate target value depending on ElementSet mask.
             ! === interpolate in space ===
             x1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n) - x01) / dx1
             if (x1 < -0.5_dp .or. x1 > mx - 0.5_dp) cycle
-            !
+            
             y1 = (connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n) - y01) / dy1
             if (y1 < -0.5_dp .or. y1 > grid_width - 0.5_dp) cycle
-            !
+            
             i1 = int(x1 + 1)
             i1 = min(mx - 1, max(1, i1))
             di1 = x1 + 1 - i1
-            !
+            
             j1 = int(y1 + 1)
             j1 = min(grid_width - 1, max(1, j1))
             dj1 = y1 + 1 - j1
+
             ! spatial weight factors
             f(1) = (1 - di1) * (1 - dj1)
             f(2) = (di1) * (1 - dj1)
             f(3) = (di1) * (dj1)
             f(4) = (1 - di1) * (dj1)
-            !
+            
             u(1) = sourceT0Field%arr1dPtr(i1 + mx * (j1 - 1))
             u(2) = sourceT0Field%arr1dPtr(i1 + 1 + mx * (j1 - 1))
             u(3) = sourceT0Field%arr1dPtr(i1 + 1 + mx * j1)
@@ -2521,64 +2312,54 @@ contains
 
             vv0 = u(1) * f(1) + u(2) * f(2) + u(3) * f(3) + u(4) * f(4)
             vv1 = v(1) * f(1) + v(2) * f(2) + v(3) * f(3) + v(4) * f(4)
+
             ! === linear interpolation in time ===
             t0 = sourceT0Field%timesteps
             t1 = sourceT1Field%timesteps
+
             call time_weight_factors(a0, a1, timesteps, t0, t1)
+            
             rr = a0 * vv0 + a1 * vv1
 
             select case (connection%converterPtr%operandType)
 
-            case (EC_OPERAND_REPLACE)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = rr
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
+            case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            case (EC_OPERAND_REPLACE_IF_MISSING)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = &
-                  merge(rr, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), &
-                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) == ec_undef_hp)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n)])
 
-            case (EC_OPERAND_ADD)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) + rr
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
+               call apply_operand(connection%converterPtr%operandType, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr)
 
-            case (EC_OPERAND_MULTIPLY)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) * rr
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case (EC_OPERAND_MINIMUM)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
-
-            case (EC_OPERAND_MAXIMUM)
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) = max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr)
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%timesteps = timesteps
 
             case default
+
                call set_ec_message("ERROR: ec_converter::ecConverterArcinfo: Unsupported operand type requested.")
                return
 
             end select
-
          end do
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterArcinfo: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
+
    end function ecConverterArcinfo
 
-   ! =======================================================================
-
    !> Perform the configured conversion, if supported, for a samples FileReader.
-      !! Supports linear triangle interpolation in space, no time, no weights.
-      !! meteo1 : timespaceinitialfield
+   !! Supports linear triangle interpolation in space, no time, no weights.
+   !! meteo1 : timespaceinitialfield
    function ecConverterSamples(connection, timesteps) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      logical :: success !< function status
+      
+      ! Local variables
       real(dp) :: x01, y01 !< uniform grid parameters
       real(dp) :: rr !< target u, v or p at timesteps=t
       type(tEcField), pointer :: sourceT0Field !< helper pointer
@@ -2593,6 +2374,7 @@ contains
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_triangle)
+
          x01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%x(1)
          y01 = connection%sourceItemsPtr(1)%ptr%elementSetPtr%y(1)
 
@@ -2601,6 +2383,7 @@ contains
 
          call set_ec_message('ERROR: ec_converter::ecConverterSamples: triangle interpolation is work in progress.')
          return
+
          rr = 0.0_dp ! TODO: AvD: WIP
          !select case(connection%converterPtr%operandType)
          !   case(EC_OPERAND_REPLACE)
@@ -2613,22 +2396,26 @@ contains
          !      call set_ec_message("ERROR: ec_converter::ecConverterSamples: Unsupported operand type requested.")
          !      return
          !end select
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterSamples: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
+
    end function ecConverterSamples
 
-   ! =======================================================================
-
    !> Perform the configured conversion, if supported, for a qhtable FileReader.
-      !! No interpolation is supported. Data is constant over time.
-      !! Supports overwriting an array element of the target Field's data array.
+   !! No interpolation is supported. Data is constant over time.
+   !! Supports overwriting an array element of the target Field's data array.
    function ecConverterQhtable(connection) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), pointer :: input !< input value to the lookup table (referenced by pointer
+      logical :: success !< function status
       
       integer :: j
       integer :: start_j
@@ -2639,16 +2426,25 @@ contains
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_passthrough)
+
          select case (connection%converterPtr%operandType)
+
          case (EC_OPERAND_REPLACE_ELEMENT)
+
             tgtndx = connection%converterPtr%targetIndex
             grid_width = connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
             input => connection%converterPtr%inputptr
+
             if (input < connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(1)) then
+
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(1) ! waterlevel(i)
+
             else if (input > connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width)) then
+
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(2)%ptr%sourceT0FieldPtr%arr1dPtr(grid_width) ! waterlevel(grid_width)
+
             else
+
                do j = 2, grid_width
                   if (input < connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%arr1dPtr(j)) then ! discharge(j)
                      start_j = j
@@ -2658,29 +2454,37 @@ contains
                connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(tgtndx) = connection%sourceItemsPtr(3)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1) * input &
                                                                                   + connection%sourceItemsPtr(4)%ptr%sourceT0FieldPtr%arr1dPtr(start_j - 1)
             end if
+
          case default
+
             call set_ec_message("ERROR: ec_converter::ecConverterQhtable: Unsupported operand type requested.")
             return
+
          end select
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterQhtable: Unsupported interpolation type requested.")
          return
+
       end select
+
       success = .true.
 
    end function ecConverterQhtable
-   ! =======================================================================
 
    !> Perform the configured conversion, if supported, for a unimagdir FileReader.
-      !! No interpolation is supported. Data is generated from seed values.
-      !! Supports overwriting and adding-to the target Field's single data value, as well all as overwriting only one array element.
-      !! Converts angular velocity, phase and magnitude into an amplitude.
-      !! meteo1 : readfouriercompstim
+   !! No interpolation is supported. Data is generated from seed values.
+   !! Supports overwriting and adding-to the target Field's single data value, as well all as overwriting only one array element.
+   !! Converts angular velocity, phase and magnitude into an amplitude.
+   !! meteo1 : readfouriercompstim
    function ecConverterFourier(connection, timesteps) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       type(c_time), intent(in) :: timesteps !< time in mjd
-      !
+      logical :: success !< function status
+      
+      ! Local variables
       integer :: i, j !< loop counters
       character(len=maxNameLen) :: str !< helper variable
       logical :: is_astro !< flag for astronomical signal
@@ -2700,59 +2504,54 @@ contains
       select case (connection%converterPtr%interpolationType)
 
       case (interpolate_passthrough)
+
          ! Source data at timesteps t is generated from the seed data in sourceT0Field.
          ! === FileReader contains periods. ===
          is_astro = .false.
          refdate = connection%sourceItemsPtr(1)%ptr%tframe%ec_refdate
+
          do j = 1, connection%sourceItemsPtr(1)%ptr%elementSetPtr%nCoordinates
+
             do i = 1, connection%nSourceItems
+
                str = connection%sourceItemsPtr(i)%ptr%quantityPtr%name
+
                if (trim(str) == 'period') then
+
                   omega = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
                   is_astro = allocated(connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%astro_components)
                   tnodal = (connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%timesteps - refdate)
+
                else if (trim(str) == 'phase') then
+
                   phase0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
+
                else if (trim(str) == 'magnitude') then
+
                   magnitude = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
+
                end if
+
             end do
+
             if (is_astro) then
                tseconds = timesteps%seconds() - tnodal * 86400.0_dp
             else
                tseconds = timesteps%seconds()
             end if
+
             phase = omega * (tseconds / 60.0_dp) - phase0 ! omega, angle velocity [rad/minute]
             deflection = deflection + magnitude * cos(phase)
+
          end do
 
          select case (connection%converterPtr%operandType)
 
-         case (EC_OPERAND_REPLACE)
+         case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = deflection
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1)])
 
-         case (EC_OPERAND_REPLACE_IF_MISSING)
-
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = &
-               merge(deflection, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), &
-               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) == ec_undef_hp)
-         
-         case (EC_OPERAND_ADD)
-
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) + deflection
-
-         case (EC_OPERAND_MULTIPLY)
-
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) * deflection
-
-         case (EC_OPERAND_MINIMUM)
-
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = min(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
-
-         case (EC_OPERAND_MAXIMUM)
-
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1) = max(connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
+            call apply_operand(connection%converterPtr%operandType, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
 
          case (EC_OPERAND_REPLACE_ELEMENT)
 
@@ -2761,6 +2560,7 @@ contains
                call set_ec_message("ERROR: ec_converter::ecConverterFourier: Converter's target Field array index not set.")
                return
             end if
+
             connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(connection%converterPtr%targetIndex) = deflection
 
          case default
@@ -2771,23 +2571,25 @@ contains
          end select
 
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterFourier: Unsupported interpolation type requested.")
          return
+
       end select
       success = .true.
    end function ecConverterFourier
 
-   ! =======================================================================
-
    !> Cyclic interpolation of two scalars, based on periodicity of 360 (degrees)
-      !! Sort data in monotonically increasing order and rotate over smallest angle
+   !! Sort data in monotonically increasing order and rotate over smallest angle
    elemental function cyclic_interpolation(var1, var2, weight1, weight2)
+      ! Parameters
       real(dp), intent(in) :: var1 !< First input argument for in interpolation functions using a scalar weight value
       real(dp), intent(in) :: var2 !< Second input argument for in interpolation functions using a scalar weight value
       real(dp), intent(in) :: weight1 !< Value for weighing two variables: 'weight1' holds for var1
       real(dp), intent(in) :: weight2 !< Value for weighing two variables: 'weight2' holds for var2
       real(dp) :: cyclic_interpolation !< Result value after linear interpolation between var1 and var2 using weightvalue weight
-      !
+      
+      ! Local variables
       real(dp) :: minangle
       real(dp) :: maxangle
       real(dp) :: delta
@@ -2801,11 +2603,13 @@ contains
       minangle = var1
       maxangle = var2
       weightfac = weight1
+
       if (var2 < var1) then
          minangle = var2
          maxangle = var1
          weightfac = 1.0_dp - weightfac
       end if
+
       delta = maxangle - minangle
 
       ! Carry out the interpolation
@@ -2818,17 +2622,18 @@ contains
       ! Rotate backwards over the smallest angle
       cyclic_interpolation = cyclic_interpolation + minangle
       cyclic_interpolation = modulo(cyclic_interpolation, 360.0_dp)
-   end function
 
-   ! =======================================================================
+   end function
 
    !> Execute the Converters in the Connection sequentially.
    !! meteo1: gettimespacevalue
    function ecConverterSpiderweb(connection, timesteps) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
+      logical :: success !< function status
       
+      ! Local variables
       integer :: i
       real(dp) :: spwdphi !< angular increment: 2pi/#colums
       real(dp) :: spwdrad !< radial increment: radius/#rows
@@ -2897,7 +2702,9 @@ contains
       swr = 0
       swd = 0
       swp = 0
+
       select case (connection%targetItemsPtr(1)%ptr%quantityPtr%name)
+
       case ('airpressure_windx_windy')
          twx = 1
          twy = 2
@@ -2912,11 +2719,14 @@ contains
          twx = 1
          twy = 2
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterSpiderweb: '" &
                            //trim(connection%targetItemsPtr(1)%ptr%quantityPtr%name) &
                            //"' is not a known spiderweb quantity.")
          return
+
       end select
+
       do i = 1, connection%nSourceItems
          select case (connection%sourceItemsPtr(i)%ptr%quantityPtr%name)
          case ('windspeed')
@@ -2936,7 +2746,9 @@ contains
       ! Determine the (x,y) coordinate pair of the cyclone eye at t=timesteps.
       t0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%timesteps
       t1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%timesteps
+
       call time_weight_factors(a0, a1, timesteps, t0, t1)
+
       xeye0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%x_spw_eye
       yeye0 = connection%sourceItemsPtr(1)%ptr%sourceT0FieldPtr%y_spw_eye
       xeye1 = connection%sourceItemsPtr(1)%ptr%sourceT1FieldPtr%x_spw_eye
@@ -2947,6 +2759,7 @@ contains
       do n = 1, connection%targetItemsPtr(1)%ptr%elementSetPtr%nCoordinates
          xctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%x(n),dp)
          yctemp = real(connection%targetItemsPtr(1)%ptr%elementSetPtr%y(n),dp)
+
          if (trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone) /= 'undefined' .and.  &
              trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%gridunit) == 'degree') then
             call utm2deg(xctemp, yctemp, trim(connection%sourceItemsPtr(1)%ptr%elementSetPtr%utmzone), xc, yc, utm_success)
@@ -2955,29 +2768,36 @@ contains
             xc = xctemp
             yc = yctemp
          end if
+
          dlat = modulo(yc, 360.0_dp) - yeye
          dlon = modulo(xc, 360.0_dp) - xeye
          h1 = (sin(dlat / 2.0_dp * fa))**2 + cos(yeye * fa) * cos(yc * fa) * (sin(dlon / 2.0_dp * fa))**2
          h2 = 2.0_dp * atan(sqrt(h1) / sqrt(1.0_dp - h1))
          spwradhat = earthrad * h2
          spwphihat = cos(yeye * fa) * sin(yc * fa) - sin(yeye * fa) * cos(yc * fa) * cos(dlon * fa)
+
          if (.not. comparereal(spwphihat, 0.0_dp) == 0) then
             spwphihat = atan(sin(dlon * fa) * cos(yc * fa) / (spwphihat)) * fi
          else
             spwphihat = 0.0_dp
          end if
+
          if (comparereal(dlon, 0.0_dp) == 0) then ! exceptional case of being excatly SOUTH of the eye, phi should be 180 degrees
             if (dlat < 0) then
                spwphihat = 180.0_dp
             end if
          end if
+
          if (dlon * spwphihat < 0) then ! relative longitude should have the same sign as phi
             spwphihat = spwphihat + 180.0_dp
          end if
+
          spwphihat = modulo(spwphihat, 360.0_dp)
+
          ! Find the four nearest points in the spiderweb
          mf = floor(spwphihat / spwdphi) + 1 ! find orientation in windrose
          nf = floor(spwradhat / spwdrad) + 1 ! find orientation on radius
+
          ! If outside spiderweb or exactly in eye, then set windspeed to zero, else find weightfactors and interpolate
          if (nf >= connection%sourceItemsPtr(1)%ptr%elementSetPtr%n_rows .or. (dlat == 0.0_dp .and. dlon == 0.0_dp)) then
             uintp = 0.0_dp
@@ -3067,34 +2887,16 @@ contains
                connection%targetItemsPtr(twp)%ptr%targetFieldPtr%timesteps = timesteps
             end if
 
-         case (EC_OPERAND_REPLACE_IF_MISSING)
-
-            if (twx > 0 .and. connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) == ec_undef_hp) then
-               connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) = uintp
-               connection%targetItemsPtr(twx)%ptr%targetFieldPtr%timesteps = timesteps
-            end if
-
-            if (twy > 0 .and. connection%targetItemsPtr(twy)%ptr%targetFieldPtr%arr1dPtr(n) == ec_undef_hp) then
-               connection%targetItemsPtr(twy)%ptr%targetFieldPtr%arr1dPtr(n) = vintp
-               connection%targetItemsPtr(twy)%ptr%targetFieldPtr%timesteps = timesteps
-            end if
-            
-            if (twp > 0 .and. connection%targetItemsPtr(twp)%ptr%targetFieldPtr%arr1dPtr(n) == ec_undef_hp) then
-               ! Only pressure is considered relative here, so we don't overwrite the background pressure
-               connection%targetItemsPtr(twp)%ptr%targetFieldPtr%arr1dPtr(n) = &
-                  connection%targetItemsPtr(twp)%ptr%targetFieldPtr%arr1dPtr(n) - pintp
-               connection%targetItemsPtr(twp)%ptr%targetFieldPtr%timesteps = timesteps
-            end if
-
          case (EC_OPERAND_ADD)
 
             rcycl = connection%sourceItemsPtr(1)%ptr%elementSetPtr%radius
             yy = spwradhat
             spwf = 0.0_dp
+
             if (yy < rcycl) then
                spwf = min((1.0_dp - yy / rcycl) / spw_merge_frac, 1.0_dp)
-               ! spwf is the weightfactor for the spiderweb! Differs from the Delft3D implementation
 
+               ! spwf is the weightfactor for the spiderweb! Differs from the Delft3D implementation
                if (twx > 0) then
                   connection%targetItemsPtr(twx)%ptr%targetFieldPtr%arr1dPtr(n) = &
                      (1.0_dp - spwf) * connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n) &
@@ -3117,16 +2919,14 @@ contains
             end if
 
          case default
-
             call set_ec_message("ERROR: ec_converter::ecConverterSpiderweb: Unsupported operand type requested.")
             return
-
          end select
       end do
-      success = .true.
-   end function ecConverterSpiderweb
 
-   ! =======================================================================
+      success = .true.
+
+   end function ecConverterSpiderweb
 
    !> Perform the configured conversion, if supported, for a NetCDF FileReader.
    !! Supports linear interpolation in time, no interpolation in space and no weights.
@@ -3135,11 +2935,13 @@ contains
    function ecConverterNetcdf(connection, timesteps) result(success)
       use m_alloc
       use kdtree2Factory
-      implicit none
-      logical :: success !< function status
+
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
-      !
+      logical :: success !< function status
+      
+      ! Local variables
       integer :: i, j, k, ipt !< loop counters
       integer :: i_weight_index
       integer :: kbot, ktop
@@ -3240,16 +3042,20 @@ contains
       has_wave_direction = .false.
       
       do i = 1, connection%nSourceItems
+
          if (connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'eastward_wind') then
             windxPtr => connection%SourceItemsPtr(i)%ptr
          end if
+
          if (connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'northward_wind') then
             windyPtr => connection%SourceItemsPtr(i)%ptr
          end if
+
          if (connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'grid_eastward_wind' .or. connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'x_wind') then
             windxPtr => connection%SourceItemsPtr(i)%ptr
             has_x_wind = .true.
          end if
+
          if (connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'grid_northward_wind' .or. connection%SourceItemsPtr(i)%ptr%quantityPtr%name == 'y_wind') then
             windyPtr => connection%SourceItemsPtr(i)%ptr
             has_y_wind = .true.
@@ -3258,14 +3064,17 @@ contains
          ! Check presence fields
          if (trim(connection%SourceItemsPtr(i)%ptr%quantityPtr%name) == 'sea_surface_wave_from_direction') then
             wavedirPtr => connection%SourceItemsPtr(i)%ptr
+
             do j = 1, connection%nSourceItems
                if (trim(connection%SourceItemsPtr(j)%ptr%quantityPtr%name) == 'sea_surface_wave_significant_height') then
                   wavehgtPtr => connection%SourceItemsPtr(j)%ptr
                end if
             end do
+
             if (.not. associated(wavehgtPtr)) then
                return
             end if
+
             has_wave_direction = .true.
             col0 = wavehgtPtr%SourceT0fieldptr%bbox(1)
             row0 = wavehgtPtr%SourceT0fieldptr%bbox(2)
@@ -3273,18 +3082,22 @@ contains
             row1 = wavehgtPtr%SourceT0fieldptr%bbox(4)
             nrow = row1 - row0 + 1
             ncol = col1 - col0 + 1
+
             waveheightT0(1:ncol, 1:nrow) => wavehgtPtr%SourceT0fieldptr%arr1d
             waveheightT1(1:ncol, 1:nrow) => wavehgtPtr%SourceT1fieldptr%arr1d
             allocate (wdtemp(ncol * nrow))
             allocate (wd2d(ncol, nrow))
+
             wdtemp = 0.0_dp
             wd2d = 0.0_dp
             coswd = 0.0_dp
             sinwd = 0.0_dp
             waveheight = 0.0_dp
-         end if
-      end do
 
+         end if
+
+      end do
+      
       if (has_x_wind .and. has_y_wind) then
          ! This should only be performed if the standard_name for the x-component was x_wind or grid_eastward_wind (and similar for the y-component)
          ! If eastward_wind was given, this operation should formally be ommitted, according to the CF-convention
@@ -3635,8 +3448,10 @@ contains
                      allocate (x_extrapolate(n_points))
                      x_extrapolate = targetElementSet%x
                   end if
+
                   allocate (missing(n_points))
                   missing = .false.
+
                   do j = 1, n_points
                      np = indexWeight%indices(1, j)
                      mp = indexWeight%indices(2, j)
@@ -3752,17 +3567,22 @@ contains
             end if ! if the elementset type was not samples
             connection%targetItemsPtr(i)%ptr%targetFieldPtr%timesteps = timesteps
          end do ! target items i
+
          if (connection%converterPtr%interpolationType == extrapolate_spacetimeSaveWeightFactors) then
             connection%converterPtr%extrapolated = .true.
          end if
+
       case (interpolate_time, interpolate_time_extrapolation_ok)
          ! linear interpolation in time
          do i = 1, connection%nSourceItems
             t0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%timesteps
             t1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%timesteps
             targetField => connection%targetItemsPtr(i)%ptr%targetFieldPtr
+
             if (t0 > t1) then
+
                call set_ec_message("WARNING: ec_converter::ecConverterNetcdf: Only one data field available.")
+
                if (connection%converterPtr%interpolationType == interpolate_time) then
                   call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Extrapolation not allowed.")
                   return
@@ -3772,18 +3592,22 @@ contains
                select case (connection%converterPtr%operandType)
 
                case (EC_OPERAND_REPLACE)
+
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates == ec_undef_int) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                      return
                   end if
+
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates /= &
                     & connection%sourceItemsPtr(i)%ptr%elementSetPtr%nCoordinates) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: ElementSet's number of coordinates differs (Source vs. Target).")
                      return
                   end if
+
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
                      targetField%arr1dPtr(j) = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
                   end do
+
                   targetField%timesteps = timesteps
 
                case default
@@ -3792,7 +3616,9 @@ contains
                   return
 
                end select
+
             else
+
                call time_weight_factors(a0, a1, timesteps, t0, t1, extrapolated)
                if (extrapolated .and. connection%converterPtr%interpolationType == interpolate_time) then
                   call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Extrapolation not allowed.")
@@ -3808,16 +3634,19 @@ contains
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Target ElementSet's number of coordinates not set.")
                      return
                   end if
+
                   if (connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates /= &
                     & connection%sourceItemsPtr(i)%ptr%elementSetPtr%nCoordinates) then
                      call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: ElementSet's number of coordinates differs (Source vs. Target).")
                      return
                   end if
+
                   do j = 1, connection%targetItemsPtr(i)%ptr%elementSetPtr%nCoordinates
                      sourceValueT0 = connection%sourceItemsPtr(i)%ptr%sourceT0FieldPtr%arr1dPtr(j)
                      sourceValueT1 = connection%sourceItemsPtr(i)%ptr%sourceT1FieldPtr%arr1dPtr(j)
                      targetField%arr1dPtr(j) = sourceValueT0 * a0 + sourceValueT1 * a1
                   end do
+
                   targetField%timesteps = timesteps
 
                case default
@@ -3826,27 +3655,35 @@ contains
                   return
 
                end select
+
             end if
          end do
+
       case default
+
          call set_ec_message("ERROR: ec_converter::ecConverterNetcdf: Unsupported interpolation type requested.")
          return
-      end select
-      success = .true.
-   end function ecConverterNetcdf
 
-   ! =======================================================================
+      end select
+
+      success = .true.
+
+   end function ecConverterNetcdf
 
    !> For every connected target item,
    !> if the target field has an associated scalar pointer, fill it with the first element of the arr1DPtr array.
    !> This scalar pointer is connected with a scalar in a kernel, such as a single field in a derived type
    function ecConverterUpdateScalar(connection) result(success)
-      logical :: success !< function status
+      ! Parameters
       type(tEcConnection), intent(inout) :: connection !< access to Converter and Items
+      logical :: success !< function status
+
+      ! Local variables
       type(tEcField), pointer :: fieldPtr
       integer :: itgt
-      !
+      
       success = .false.
+
       do itgt = 1, connection%nTargetItems
          fieldPtr => connection%targetItemsPtr(itgt)%ptr%targetFieldPtr
          if (associated(fieldPtr)) then
@@ -3855,18 +3692,19 @@ contains
             end if
          end if
       end do
+
       success = .true.
+
    end function ecConverterUpdateScalar
 
-   ! =======================================================================
-
    !> Selects the index of the polyline segment that intersects with line e--en
-      !! with the intersection closest to point e.
-      !! The search range is thus from e to en, and not a distance rdis as before.
-      !! The normal direction is now
-      !! defined by e--en and not normal to the polyline. Also, *all* polyline
-      !! segments are checked, not the closest based on dbdistance of pli points.
+   !! with the intersection closest to point e.
+   !! The search range is thus from e to en, and not a distance rdis as before.
+   !! The normal direction is now
+   !! defined by e--en and not normal to the polyline. Also, *all* polyline
+   !! segments are checked, not the closest based on dbdistance of pli points.
    subroutine polyindexweight(xe, ye, xen, yen, xs, ys, kcs, ns, kL, wL, kR, wR)
+      ! Parameters
       integer, intent(in) :: ns !< Dimension of polygon OR LINE BOUNDARY
       real(dp), dimension(:), intent(in) :: xs !< polygon
       real(dp), dimension(:), intent(in) :: ys
@@ -3877,11 +3715,12 @@ contains
       real(dp), intent(out) :: wL !< Relative weight of left nearest polyline point.
       integer, intent(out) :: kR !< Index of right nearest polyline point (with kcs==1!)
       real(dp), intent(out) :: wR !< Relative weight of right nearest polyline point.
-      !
+      
+      ! Local variables
       integer :: k, km, JACROS
       real(dp) :: dis, disM, disL, disR
       real(dp) :: SL, SM, SMM, SLM, XCR, YCR, CRP, CRPM, DEPS
-      !
+      
       DISM = huge(DISM)
       kL = 0 ! Default: No valid point found
       kR = 0 ! idem
@@ -3892,10 +3731,11 @@ contains
       disL = 0.0_dp
       disR = 0.0_dp
       DEPS = 1.0e-3_dp
-      !
+      
       do k = 1, ns - 1
          crp = 0.0_dp
          call CROSS(xe, ye, xen, yen, xs(k), ys(k), xs(k + 1), ys(k + 1), JACROS, SL, SM, XCR, YCR, CRP)
+
          if (SL >= 0.0_dp .and. SL <= 1.0_dp .and. SM > -DEPS .and. SM < 1.0_dp + DEPS) then ! instead of jacros==1
             DIS = DBDISTANCE(XE, YE, XCR, YCR)
             if (DIS < DISM) then ! Found a better intersection point
@@ -3907,11 +3747,12 @@ contains
             end if
          end if
       end do
-      !
+      
       if (km > 0) then
          dis = dbdistance(xs(km), ys(km), xs(km + 1), ys(km + 1)) ! Length of this segment.
          ! Find nearest valid polyline point left of the intersection (i.e.: kcs(kL) == 1)
          disL = SMM * dis
+
          do k = km, 1, -1
             if (kcs(k) == 1) then
                kL = k
@@ -3920,6 +3761,7 @@ contains
                disL = disL + dbdistance(xs(k - 1), ys(k - 1), xs(k), ys(k)) ! Add entire length of this segment.
             end if
          end do
+
          ! Find nearest valid polyline point right of the intersection (i.e.: kcs(kR) == 1)
          disR = (1.0_dp - SMM) * dis
          do k = km + 1, ns
@@ -3931,7 +3773,7 @@ contains
             end if
          end do
       end if
-      !
+      
       if (kL /= 0 .and. kR /= 0) then
          wL = disR / (disL + disR)
          wR = 1.0_dp - wL
@@ -3940,6 +3782,7 @@ contains
       else if (kR /= 0) then
          wR = 1.0_dp
       end if
+
    end subroutine polyindexweight
 
    !> Checks whether lines 1-2 and 3-4 intersect.
@@ -3948,18 +3791,23 @@ contains
    !! @param[out] sl lambda in [0,1] on line segment 1-2 (outside [0,1] if no intersection). Unchanged if no intersect!!
    !! @param[out] sm lambda in [0,1] on line segment 3-4 (outside [0,1] if no intersection). Unchanged if no intersect!!
    !! @param[out] xcr,ycr x-coord. of intersection point.
-   subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, JACROS, SL, SM, XCR, YCR, CRP)
+   subroutine CROSS(x1, y1, x2, y2, x3, y3, x4, y4, jacros, sl, sm, xcr, ycr, crp)
       use ieee_arithmetic, only: ieee_is_nan
 
+      ! Parameters
+      real(dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
+      integer, intent(inout) :: jacros
+      real(dp), intent(inout) :: sl
+      real(dp), intent(inout) :: sm
+      real(dp), intent(inout) :: xcr, ycr
       real(dp), intent(inout) :: crp !< crp (in)==-1234 will make crp (out) non-dimensional
+
+      ! Local variables
       real(dp) :: det
       real(dp) :: eps
-      integer :: jacros, jamakenondimensional
-      real(dp) :: sl
-      real(dp) :: sm
-      real(dp), intent(in) :: x1, y1, x2, y2, x3, y3, x4, y4
-      real(dp) :: x21, y21, x31, y31, x43, y43, xcr, ycr
-      real(dp) :: dmiss = -999_dp
+      integer :: jamakenondimensional
+      real(dp) :: x21, y21, x31, y31, x43, y43
+      real(dp), parameter :: DMISS = -999_dp
 
       ! safety check on crp (in)
       if (ieee_is_nan(crp)) then
@@ -3973,92 +3821,92 @@ contains
          crp = 0.0_dp
       end if
 
-      JACROS = 0
-      EPS = 0.00001_dp
-      SL = DMISS
-      SM = DMISS
+      jacros = 0
+      eps = 0.00001_dp
+      sl = DMISS
+      sm = DMISS
 
-      !call getdxdy(x1,y1,x2,y2,x21,y21) ! TODO : all is cartesian, kernel must provide it as such
       x21 = x2 - x1
       y21 = y2 - y1
-      !call getdxdy(x3,y3,x4,y4,x43,y43) ! TODO : all is cartesian, kernel must provide it as such
+
       x43 = x4 - x3
       y43 = y4 - y3
-      !call getdxdy(x1,y1,x3,y3,x31,y31) ! TODO : all is cartesian, kernel must provide it as such
+
       x31 = x3 - x1
       y31 = y3 - y1
 
-      DET = X43 * Y21 - Y43 * X21
+      det = x43 * y21 - y43 * x21
 
       ! SPvdP: make eps have proper dimension
-      EPS = max(EPS * maxval((/X21, Y21, X43, Y43, X31, Y31/)), tiny(0.0_dp))
-      if (abs(DET) < EPS) then
+      eps = max(eps * maxval((/x21, y21, x43, y43, x31, y31/)), tiny(0.0_dp))
+      if (abs(det) < eps) then
          return
       else
-         SM = (Y31 * X21 - X31 * Y21) / DET
-         if (abs(X21) > EPS) then
-            SL = (SM * X43 + X31) / X21
-         else if (abs(Y21) > EPS) then
-            SL = (SM * Y43 + Y31) / Y21
+         sm = (y31 * x21 - x31 * y21) / det
+         if (abs(x21) > eps) then
+            sl = (sm * x43 + x31) / x21
+         else if (abs(y21) > eps) then
+            sl = (sm * y43 + y31) / y21
          else
-            SL = 0.0_dp
+            sl = 0.0_dp
          end if
-         if (SM >= 0.0_dp .and. SM <= 1.0_dp .and. &
-             SL >= 0.0_dp .and. SL <= 1.0_dp) then
-            JACROS = 1
+         if (sm >= 0.0_dp .and. sm <= 1.0_dp .and. &
+             sl >= 0.0_dp .and. sl <= 1.0_dp) then
+            jacros = 1
          end if
-         XCR = X1 + SL * (X2 - X1)
-         YCR = Y1 + SL * (Y2 - Y1)
+         xcr = x1 + sl * (x2 - x1)
+         ycr = y1 + sl * (y2 - y1)
          if (jamakenondimensional == 1) then ! make crp non-dimensional (for spline2curvi)
-            CRP = -DET / (sqrt(x21**2 + y21**2) * sqrt(x43**2 + y43**2) + 1d-8)
+            crp = -det / (sqrt(x21**2 + y21**2) * sqrt(x43**2 + y43**2) + 1d-8)
          else
-            CRP = -DET
+            crp = -det
          end if
       end if
+
       return
+
    end subroutine CROSS
 
    !> distance point 1 -> 2
    real(dp) function dbdistance(x1, y1, x2, y2)
-      real(dp), intent(in) :: x1
-      real(dp), intent(in) :: y1
-      real(dp), intent(in) :: x2
-      real(dp), intent(in) :: y2
+      ! Parameters
+      real(dp) :: x1, y1, x2, y2
 
-      ! locals
+      ! Local variables
       real(dp) :: ddx, ddy, rr
-      real(dp) :: dmiss = -999_dp
+      real(dp), parameter :: DMISS = -999_dp
       
       if (x1 == DMISS .or. x2 == DMISS .or. y1 == DMISS .or. y2 == DMISS) then
          dbdistance = 0.0_dp
          return
       end if
       
-      !ddx = getdx(x1,y1,x2,y2) ! TODO : all is cartesian, kernel must provide it as such
       ddx = x2 - x1
-      !ddy = getdy(x1,y1,x2,y2) ! TODO : all is cartesian, kernel must provide it as such
       ddy = y2 - y1
       rr = ddx * ddx + ddy * ddy
+
       if (rr == 0.0_dp) then
          dbdistance = 0.0_dp
       else
          dbdistance = sqrt(rr)
       end if
+
    end function dbdistance
 
    !> get field bounding box indices
    subroutine ecConverterGetBbox(instancePtr, itemID, t01, col0, col1, row0, row1, ncols, nrows, issparse, Ndatasize)
+      ! Parameters
       type(tEcInstance), pointer :: instancePtr !< intent(in)
       integer, intent(in) :: itemId !< unique Item id
       integer, intent(in) :: t01 !< field 0 (0) or 1 (other)
       integer, intent(out) :: col0, col1, row0, row1 !< boundix box start (0) and end (1) indices
       integer, intent(out) :: ncols, nrows
-
-      type(tEcItem), pointer :: itemPtr !< Item corresponding to itemId
-      type(tEcField), pointer :: FieldPtr
-
       integer, intent(out) :: issparse
       integer, intent(out) :: Ndatasize
+
+      ! Local variables
+      type(tEcItem), pointer :: itemPtr !< Item corresponding to itemId
+      type(tEcField), pointer :: FieldPtr
 
       col0 = 0
       row0 = 0
@@ -4086,15 +3934,18 @@ contains
       end if
 
       return
+
    end subroutine ecConverterGetBbox
 
    subroutine MaskToSparse(n_cols, n_rows, imask, ia, ja)
+      ! Parameters
       integer, intent(in) :: n_cols !< number of columns
       integer, intent(in) :: n_rows !< number of rows
       integer, dimension(n_cols, n_rows), intent(in) :: imask !< active (1) or not (0)
       integer, dimension(:), allocatable, intent(out) :: ia !< startpointers
       integer, dimension(:), allocatable, intent(out) :: ja !< column numbers
 
+      ! Local variables
       integer :: mp ! column
       integer :: np ! row
       integer :: i
@@ -4133,9 +3984,11 @@ contains
       end do
 
       return
+
    end subroutine MaskToSparse
 
    subroutine SetSparsityPattern(srcfld, n_cols, n_rows, ia, ja)
+      ! Parameters
       type(tEcField), intent(inout) :: srcfld !< source field
       integer, intent(in) :: n_cols !< number of columns
       integer, intent(in) :: n_rows !< number of rows
@@ -4154,19 +4007,22 @@ contains
       srcfld%bbox = (/1, 1, n_cols, n_rows/)
 
       return
+
    end subroutine SetSparsityPattern
 
-   !< convert (1:ncol,2:mrow) indices of lower-left source point to sparse indices of (1:lower-left,2:upper-left) source points (out),
+   !> convert (1:ncol,2:mrow) indices of lower-left source point to sparse indices of (1:lower-left,2:upper-left) source points (out),
    !!  left-right: increasing column index,
    !!  down-up: increasing row index
    !!  note: input indices are (row,col), not (col,row)
    subroutine ConvertToSparseIndices(n_points, indices, n_rows, ia, ja)
+      ! Parameters
       integer, intent(in) :: n_points !< number of target points
       integer, dimension(2, n_points), intent(inout) :: indices !<(mrow,ncol) indices of lower-left source point (in), sparse index of (lower-left,upper-left) source points (out)
       integer, intent(in) :: n_rows !< number of rows of source
       integer, dimension(n_rows), intent(in) :: ia !< sparsity pattern in CRS format, start pointers
       integer, dimension(:), intent(in) :: ja !< sparsity pattern in CRS format, column numbers
 
+      ! Local variables
       integer :: idx
       integer :: i, j, last
       integer :: irow, idownup
@@ -4187,13 +4043,14 @@ contains
          idownup = 0
          do idownup = 1, 2
             irow = nrow + idownup - 1
-
             idx = 0
+
             if (irow < size(ia)) then
                last = ia(irow + 1) - 1
             else
                last = size(ja)
             end if
+
             do j = ia(irow), last
                if (ja(j) == mcol) then
                   idx = j
@@ -4201,9 +4058,13 @@ contains
                end if
             end do
 
+            ! check if index is found
             if (idx > 0) then
+               ! overwrite index
                indices(idownup, i) = idx
             else
+
+               ! error
                call set_ec_message("ERROR: conversion to sparse indices failed for point ", i)
             end if
          end do
@@ -4211,6 +4072,98 @@ contains
       end do
 
       return
+
    end subroutine ConvertToSparseIndices
+
+   !> Applies the specified operand to the given target value with the provided value.
+   elemental subroutine apply_operand(operand, target_value, provided_value)
+      ! Parameters
+      integer, intent(in) :: operand !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY)
+      real(dp), intent(inout) :: target_value !< target_value to apply the operand to
+      real(dp), intent(in) :: provided_value !< value to apply with the operand
+
+      select case (operand)
+
+      case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_ELEMENT)
+
+         target_value = provided_value
+
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+
+         if (target_value == ec_undef_hp) then
+            target_value = provided_value
+         end if
+
+      case (EC_OPERAND_ADD, EC_OPERAND_ADD_ELEMENT)
+
+         target_value = target_value + provided_value
+
+      case (EC_OPERAND_MULTIPLY)
+
+         target_value = target_value * provided_value
+
+      case (EC_OPERAND_MINIMUM)
+
+         target_value = min(target_value, provided_value)
+
+      case (EC_OPERAND_MAXIMUM)
+
+         target_value = max(target_value, provided_value)
+
+      case default
+
+         return
+
+      end select
+
+   end subroutine apply_operand
+
+   !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
+   subroutine check_undefined_values_for_operand(operand, target_values)
+      ! Parameters
+      integer, intent(in) :: operand !< operand type (EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
+      real(dp), dimension(:), intent(in) :: target_values !< array of target values to check for undefined values
+
+      if (any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
+         if (any(target_values == ec_undef_hp)) then
+            call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// parse_ec_operand_enum_to_string(operand) //"' operation.")
+            return
+         end if
+      end if
+
+   end subroutine check_undefined_values_for_operand
+
+   !> Converts an operand enumeration to its corresponding string representation.
+   pure function parse_ec_operand_enum_to_string(operand_enum) result(operand_str)
+      ! Parameters
+      integer, intent(in) :: operand_enum !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, etc.)
+      character(len=:), allocatable :: operand_str !< string representation of the operand
+
+      select case (operand_enum)
+
+      case (EC_OPERAND_REPLACE)
+         operand_str = "override"
+
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+         operand_str = "overrideIfMissing"
+
+      case (EC_OPERAND_ADD)
+         operand_str = "add"
+      
+      case (EC_OPERAND_MULTIPLY)
+         operand_str = "multiply"
+
+      case (EC_OPERAND_MINIMUM)
+         operand_str = "minimum"
+
+      case (EC_OPERAND_MAXIMUM)
+         operand_str = "maximum"
+
+      case default
+         operand_str = "unknown"
+
+      end select
+
+   end function parse_ec_operand_enum_to_string
 
 end module m_ec_converter
