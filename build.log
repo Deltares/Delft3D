@@ -1,0 +1,937 @@
+
+Microsoft Visual Studio 2022 Version 17.14.29 (March 2026).
+Copyright (C) Microsoft Corp. All rights reserved.
+Build started at 19:54...
+1>------ Build started: Project: test_unstruc_model_f2h, Configuration: Debug x64 ------
+2>------ Build started: Project: test_sources_sinks_f2h, Configuration: Debug x64 ------
+3>------ Build started: Project: test_pol_to_cellmask_f2h, Configuration: Debug x64 ------
+4>------ Build started: Project: test_mdu_file_read_write_f2h, Configuration: Debug x64 ------
+5>------ Build started: Project: test_longculverts_f2h, Configuration: Debug x64 ------
+6>------ Build started: Project: test_ec_module_f2h, Configuration: Debug x64 ------
+1>1>
+3>1>
+6>1>
+7>------ Build started: Project: test_ec_module_block_f2h, Configuration: Debug x64 ------
+8>------ Build started: Project: test_dflowfm_kernel_example_f2h, Configuration: Debug x64 ------
+4>1>
+9>------ Build started: Project: test_deltares_common_gtest_f2h, Configuration: Debug x64 ------
+10>------ Build started: Project: test_compute_horton_infiltration_f2h, Configuration: Debug x64 ------
+11>------ Build started: Project: test_bubblescreen_f2h, Configuration: Debug x64 ------
+8>1>
+2>1>
+12>------ Build started: Project: test_Readstructure_f2h, Configuration: Debug x64 ------
+13>------ Build started: Project: test_3d_layer_administration_f2h, Configuration: Debug x64 ------
+7>1>
+10>1>
+5>1>
+12>1>
+14>------ Build started: Project: nefis_tests_f2h, Configuration: Debug x64 ------
+15>------ Build started: Project: swan_mpi (third_party_open\swan_mpi\swan_mpi), Configuration: Debug x64 ------
+Linking...
+16>------ Build started: Project: generate_assertions_gtest_f90, Configuration: Debug x64 ------
+11>1>
+9>1>
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\swan_mpi\Debug\swan_mpi.exe
+/VERSION:0.0
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+/MANIFEST:NO
+/DEBUG
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\swan_mpi\Debug/swan_mpi.pdb
+/SUBSYSTEM:CONSOLE
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\swan_mpi\Debug\swan_mpi.lib
+17>------ Build started: Project: waqpb_lib, Configuration: Debug x64 ------
+user32.lib
+..\netcdff\Debug\netcdff.lib
+impi.lib
+Compiling with Intel© Fortran Compiler 2024.2.1 [Intel(R) 64]...
+netcdf.lib
+wripdn.f90
+..\netcdff\Debug\netcdf_c_extension.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+/machine:x64
+/LARGEADDRESSAWARE
+/STACK:20000000
+/debug
+/INCREMENTAL
+swan_mpi.dir\Debug\fftpack51.obj
+swan_mpi.dir\Debug\serv_xnl4v5.obj
+swan_mpi.dir\Debug\SwanGridobjects.obj
+swan_mpi.dir\Debug\SwanGriddata.obj
+swan_mpi.dir\Debug\swmod1.obj
+swan_mpi.dir\Debug\netcdf_tools.obj
+swan_mpi.dir\Debug\SwanSpectPart.obj
+swan_mpi.dir\Debug\SdsBabanin.obj
+swan_mpi.dir\Debug\m_constants.obj
+swan_mpi.dir\Debug\nctablemd.obj
+swan_mpi.dir\Debug\swmod2.obj
+swan_mpi.dir\Debug\m_fileio.obj
+swan_mpi.dir\Debug\agioncmd.obj
+swan_mpi.dir\Debug\SwanCompdata.obj
+swan_mpi.dir\Debug\mod_xnl4v5.obj
+swan_mpi.dir\Debug\SwanBraggScat.obj
+swan_mpi.dir\Debug\SwanQCM.obj
+swan_mpi.dir\Debug\SwanIEM.obj
+swan_mpi.dir\Debug\swn_outnc.obj
+swan_mpi.dir\Debug\HRextensions.obj
+swan_mpi.dir\Debug\SwanGSECorr.obj
+swan_mpi.dir\Debug\SwanDiffPar.obj
+swan_mpi.dir\Debug\SwanCompUnstruc.obj
+swan_mpi.dir\Debug\SwanVertlist.obj
+swan_mpi.dir\Debug\SwanInterpolateAc.obj
+swan_mpi.dir\Debug\SwanSweepSel.obj
+swan_mpi.dir\Debug\SwanInterpolatePoint.obj
+swan_mpi.dir\Debug\SwanCreateEdges.obj
+swan_mpi.dir\Debug\SwanBpntlist.obj
+swan_mpi.dir\Debug\SwanTranspX.obj
+swan_mpi.dir\Debug\SwanGridVert.obj
+swan_mpi.dir\Debug\SwanFindPoint.obj
+swan_mpi.dir\Debug\swancom3.obj
+swan_mpi.dir\Debug\SwanPropvelS.obj
+swan_mpi.dir\Debug\SwanInterpolateOutput.obj
+swan_mpi.dir\Debug\swancom5.obj
+swan_mpi.dir\Debug\SwanPropvelX.obj
+swan_mpi.dir\Debug\SwanPrepComp.obj
+swan_mpi.dir\Debug\SwanDispParm.obj
+swan_mpi.dir\Debug\SwanCrossObstacle.obj
+swan_mpi.dir\Debug\SwanVTKWriteData.obj
+swan_mpi.dir\Debug\swanout2.obj
+swan_mpi.dir\Debug\SwanGradVel.obj
+swan_mpi.dir\Debug\SwanCheckGrid.obj
+swan_mpi.dir\Debug\ocpmix.obj
+swan_mpi.dir\Debug\SwanPointinMesh.obj
+swan_mpi.dir\Debug\swancom2.obj
+swan_mpi.dir\Debug\SwanVTKWriteHeader.obj
+swan_mpi.dir\Debug\SwanPrintGridInfo.obj
+swan_mpi.dir\Debug\SwanConvStopc.obj
+swan_mpi.dir\Debug\ocpcre.obj
+swan_mpi.dir\Debug\SwanGridFace.obj
+swan_mpi.dir\Debug\swanser.obj
+swan_mpi.dir\Debug\SwanInitCompGrid.obj
+swan_mpi.dir\Debug\SwanReadTriangleGrid.obj
+swan_mpi.dir\Debug\SwanIntgratSpc.obj
+swan_mpi.dir\Debug\swancom1.obj
+swan_mpi.dir\Debug\ocpids.obj
+swan_mpi.dir\Debug\SwanReadEasymeshGrid.obj
+swan_mpi.dir\Debug\swanpre2.obj
+swan_mpi.dir\Debug\SwanGradDepthorK.obj
+swan_mpi.dir\Debug\swancom4.obj
+swan_mpi.dir\Debug\SwanBndStruc.obj
+swan_mpi.dir\Debug\SwanTranspAc.obj
+swan_mpi.dir\Debug\SwanThreadBounds.obj
+swan_mpi.dir\Debug\swanmain.obj
+swan_mpi.dir\Debug\SwanComputeForce.obj
+18>------ Build started: Project: delwaq_lib, Configuration: Debug x64 ------
+swan_mpi.dir\Debug\SwanVTKPDataSets.obj
+swan_mpi.dir\Debug\SwanReadGrid.obj
+swan_mpi.dir\Debug\swanout1.obj
+Linking...
+swan_mpi.dir\Debug\SwanFindObstacles.obj
+swan_mpi.dir\Debug\swanparll.obj
+swan_mpi.dir\Debug\SwanGridCell.obj
+swan_mpi.dir\Debug\SwanReadADCGrid.obj
+swan_mpi.dir\Debug\swanpre1.obj
+swan_mpi.dir\Debug\SwanGridTopology.obj
+13>1>
+swan_mpi.dir\Debug\SwanConvAccur.obj
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/swan_mpi/swan_mpi.dir/Debug/BuildLog.htm"
+swan_mpi - 0 error(s), 0 warning(s)
+Creating library...
+
+19>------ Build started: Project: delwaq, Configuration: Debug x64 ------
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/waqpb_lib/waqpb_lib.dir/Debug/BuildLog.htm"
+Link: executing 'C:\PROGRA~2\Intel\oneAPI\compiler\2024.2\bin\..\bin\compiler\lld-link.exe'
+waqpb_lib - 0 error(s), 0 warning(s)
+lld-link: warning: delwaq_lib.dir\Debug\waq_dimr_bmi_adapter.obj: locally defined symbol imported: MAXSTRLEN (defined in delwaq_lib.dir\Debug\waq_bmi_adapter.obj) [LNK4217]
+Linking...
+lld-link: warning: delwaq_lib.dir\Debug\waq_dimr_bmi_adapter.obj: locally defined symbol imported: BMI2_get_start_time (defined in delwaq_lib.dir\Debug\waq_bmi_adapter.obj) [LNK4217]
+lld-link: warning: delwaq_lib.dir\Debug\waq_dimr_bmi_adapter.obj: locally defined symbol imported: BMI2_get_end_time (defined in delwaq_lib.dir\Debug\waq_bmi_adapter.obj) [LNK4217]
+lld-link: warning: delwaq_lib.dir\Debug\waq_dimr_bmi_adapter.obj: locally defined symbol imported: BMI2_get_time_step (defined in delwaq_lib.dir\Debug\waq_bmi_adapter.obj) [LNK4217]
+lld-link: warning: delwaq_lib.dir\Debug\waq_dimr_bmi_adapter.obj: locally defined symbol imported: BMI2_get_current_time (defined in delwaq_lib.dir\Debug\waq_bmi_adapter.obj) [LNK4217]
+lld-link: warning: io_netcdf.lib(io_netcdf.obj): locally defined symbol imported: set_progress_c_callback (defined in deltares_common.lib(MessageHandling.obj)) [LNK4217]
+lld-link: warning: io_netcdf.lib(io_netcdf.obj): locally defined symbol imported: set_logger (defined in deltares_common.lib(MessageHandling.obj)) [LNK4217]
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/delwaq_lib/delwaq_lib.dir/Debug/BuildLog.htm"
+delwaq_lib - 0 error(s), 7 warning(s)
+14>1>
+20>------ Build started: Project: dflowfm_kernel_test, Configuration: Debug x64 ------
+21>------ Build started: Project: dflowfm_dll, Configuration: Debug x64 ------
+22>------ Build started: Project: waqpb_import, Configuration: Debug x64 ------
+Linking...
+Linking...
+Linking...
+23>------ Build started: Project: waqpb_export, Configuration: Debug x64 ------
+24>------ Build started: Project: dflowfm-cli, Configuration: Debug x64 ------
+Linking...
+Linking...
+16>1>
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\waqpb_import\Debug\waqpb_import.exe
+/VERSION:0.0
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+Copyright (C) Microsoft Corporation.  All rights reserved.
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\waqpb_export\Debug\waqpb_export.exe
+/MANIFEST:NO
+/VERSION:0.0
+/DEBUG
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\waqpb_import\Debug/waqpb_import.pdb
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+/SUBSYSTEM:CONSOLE
+/MANIFEST:NO
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\waqpb_import\Debug\waqpb_import.lib
+/DEBUG
+kernel32.lib
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\waqpb_export\Debug/waqpb_export.pdb
+user32.lib
+/SUBSYSTEM:CONSOLE
+gdi32.lib
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\waqpb_export\Debug\waqpb_export.lib
+winspool.lib
+kernel32.lib
+shell32.lib
+user32.lib
+ole32.lib
+gdi32.lib
+oleaut32.lib
+winspool.lib
+uuid.lib
+shell32.lib
+comdlg32.lib
+ole32.lib
+advapi32.lib
+oleaut32.lib
+..\deltares_common\Debug\deltares_common.lib
+uuid.lib
+..\waq_utils_f\Debug\waq_utils_f.lib
+comdlg32.lib
+..\waqpb_lib\Debug\waqpb_lib.lib
+advapi32.lib
+..\waq_definition\Debug\waq_definition.lib
+..\deltares_common\Debug\deltares_common.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+..\nefis\Debug\nefis.lib
+..\nefis\Debug\nefis.lib
+/machine:x64
+..\waq_utils_f\Debug\waq_utils_f.lib
+/LARGEADDRESSAWARE
+..\waqpb_lib\Debug\waqpb_lib.lib
+/STACK:20000000
+..\waq_definition\Debug\waq_definition.lib
+/debug
+/machine:x64
+/INCREMENTAL
+/LARGEADDRESSAWARE
+waqpb_import.dir\Debug\waqpb_import_settings.obj
+/STACK:20000000
+waqpb_import.dir\Debug\waqpb_import_utils.obj
+/debug
+waqpb_import.dir\Debug\waqpb_import.obj
+/INCREMENTAL
+waqpb_import.dir\Debug/version_number_waqpb_import.res
+waqpb_export.dir\Debug\waqpb_export_helper.obj
+
+waqpb_export.dir\Debug\waqpb_export_settings.obj
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/waqpb_import/waqpb_import.dir/Debug/BuildLog.htm"
+waqpb_export.dir\Debug\waqpb_export.obj
+waqpb_import - 0 error(s), 0 warning(s)
+waqpb_export.dir\Debug/version_number_waqpb_export.res
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/waqpb_export/waqpb_export.dir/Debug/BuildLog.htm"
+waqpb_export - 0 error(s), 0 warning(s)
+25>------ Build started: Project: test_mdu_file_read_write, Configuration: Debug x64 ------
+Link: executing 'C:\PROGRA~2\Intel\oneAPI\compiler\2024.2\bin\..\bin\compiler\lld-link.exe'
+lld-link: warning: dflowfm_dll.dir\Debug\unstruc_bmi.obj: locally defined symbol imported: set_logger (defined in deltares_common.lib(MessageHandling.obj)) [LNK4217]
+lld-link: warning: io_netcdf.lib(io_netcdf.obj): locally defined symbol imported: set_progress_c_callback (defined in deltares_common.lib(MessageHandling.obj)) [LNK4217]
+lld-link: warning: io_netcdf.lib(io_netcdf.obj): locally defined symbol imported: set_logger (defined in deltares_common.lib(MessageHandling.obj)) [LNK4217]
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/dflowfm_lib/dflowfm_dll.dir/Debug/BuildLog.htm"
+dflowfm_dll - 0 error(s), 3 warning(s)
+26>------ Build started: Project: wave_exe, Configuration: Debug x64 ------
+27>------ Build started: Project: wave (engines_gpl\wave\wave), Configuration: Debug x64 ------
+Linking...
+Linking...
+28>------ Build started: Project: dfmoutput (tools_gpl\dfmoutput\dfmoutput), Configuration: Debug x64 ------
+Linking...
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\delwaq\Debug\delwaq.exe
+/VERSION:0.0
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+/MANIFEST:NO
+/DEBUG
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\delwaq\Debug/delwaq.pdb
+/SUBSYSTEM:CONSOLE
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\delwaq\Debug\delwaq.lib
+kernel32.lib
+user32.lib
+gdi32.lib
+winspool.lib
+shell32.lib
+ole32.lib
+oleaut32.lib
+uuid.lib
+comdlg32.lib
+advapi32.lib
+..\waq_external_access_layer\Debug\waq_external_access_layer.lib
+..\waq_logging\Debug\waq_logging.lib
+comctl32.lib
+wsock32.lib
+netapi32.lib
+kernel32.lib
+user32.lib
+Shlwapi.lib
+Gdi32.lib
+Winspool.lib
+netcdf.lib
+impi.lib
+pthreadVC2.lib
+..\waq_preprocessor\Debug\waq_preprocessor.lib
+..\waq_io\Debug\waq_io.lib
+..\waq_validation\Debug\waq_validation.lib
+..\waq_proc_preprocess\Debug\waq_proc_preprocess.lib
+..\waq_computation\Debug\waq_computation.lib
+..\waq_kernel\Debug\waq_kernel.lib
+..\waq_memory\Debug\waq_memory.lib
+..\waq_netcdf\Debug\waq_netcdf.lib
+..\part_kernel_f\Debug\part_kernel_f.lib
+..\part_io_f\Debug\part_io_f.lib
+..\io_hyd\Debug\io_hyd.lib
+..\io_netcdf\Debug\io_netcdf.lib
+..\fortrangis\Debug\fortrangis.lib
+25>Copying PETSc runtime dependency C:/Users/bi/Repositories/Delft3D-FM/src/cmake/../third_party_open/petsc/petsc-3.24.5/include/../lib/x64/Release-oneAPI//libpetsc.dll to C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/dflowfm_kernel/test/io/test_mdu_file_read_write/Debug	Copying impi runtime dependency	Copying mkl runtime dependency	Copying mkl runtime dependency	Copying hdf5_hl runtime dependency	Copying zlib runtime dependency
+..\fortrangis\Debug\fortranc.lib
+..\shp\Debug\shp.lib
+..\proj\lib\Debug\proj_d.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\sqlite3\sqlite-3.44.0\lib\sqlite3.lib
+shell32.lib
+ole32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\gdal\lib\gdal.lib
+netcdf.lib
+..\netcdff\Debug\netcdff.lib
+..\netcdff\Debug\netcdf_c_extension.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+..\gridgeom\Debug\gridgeom.lib
+..\kdtree_wrapper\Debug\kdtree_wrapper.lib
+..\kdtree2\Debug\kdtree2.lib
+..\triangle_c\Debug\triangle_c.lib
+..\part_utils_f\Debug\part_utils_f.lib
+..\part_data_f\Debug\part_data_f.lib
+..\waq_plugin_wasteload\Debug\waq_plugin_wasteload.lib
+..\waq_process\Debug\waq_process.lib
+..\waq_utils_f\Debug\waq_utils_f.lib
+..\waq_hyd_data\Debug\waq_hyd_data.lib
+..\io_netcdf_data\Debug\io_netcdf_data.lib
+..\waq_data\Debug\waq_data.lib
+..\waq_definition\Debug\waq_definition.lib
+..\nefis\Debug\nefis.lib
+..\morphology_data\Debug\morphology_data.lib
+..\solvesaphe\Debug\solvesaphe.lib
+..\deltares_common\Debug\deltares_common.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+..\waq_utils_c\Debug\waq_utils_c.lib
+/machine:x64
+/LARGEADDRESSAWARE
+/STACK:20000000
+/debug
+/INCREMENTAL
+delwaq.dir\Debug\delwaq_version.obj
+delwaq.dir\Debug\command_line_help.obj
+delwaq.dir\Debug\delwaq_program.obj
+delwaq.dir\Debug/version_number_delwaq.res
+delwaq.dir\Debug/waq_icon.res
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/delwaq/delwaq.dir/Debug/BuildLog.htm"
+delwaq - 0 error(s), 0 warning(s)
+29>------ Build started: Project: dfm_volume_tool (tools_gpl\dfm_volume_tool\dfm_volume_tool), Configuration: Debug x64 ------
+Linking...
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+Link: executing 'C:\PROGRA~2\Intel\oneAPI\compiler\2024.2\bin\..\bin\compiler\lld-link.exe'
+Copyright (C) Microsoft Corporation.  All rights reserved.
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\test_dflowfm_kernel\Debug\dflowfm_kernel_test.exe
+
+/VERSION:0.0
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/wave/wave.dir/Debug/BuildLog.htm"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+wave - 0 error(s), 0 warning(s)
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+/MANIFEST:NO
+/DEBUG
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\test_dflowfm_kernel\Debug/dflowfm_kernel_test.pdb
+/SUBSYSTEM:CONSOLE
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\test_dflowfm_kernel\Debug\dflowfm_kernel_test.lib
+kernel32.lib
+user32.lib
+gdi32.lib
+winspool.lib
+shell32.lib
+ole32.lib
+oleaut32.lib
+uuid.lib
+comdlg32.lib
+advapi32.lib
+..\deltares_common\Debug\deltares_common.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+..\deltares_common_mpi\Debug\deltares_common_mpi.lib
+..\dhydrology_kernel\Debug\dhydrology_kernel.lib
+..\ec_module\Debug\ec_module.lib
+..\flow1d\Debug\flow1d.lib
+..\flow1d_core\Debug\flow1d_core.lib
+..\flow1d_io\Debug\flow1d_io.lib
+..\tests_unit_delwaq\ftnunit\Debug\ftnunit.lib
+..\gridgeom\Debug\gridgeom.lib
+..\io_netcdf\Debug\io_netcdf.lib
+..\io_netcdf_data\Debug\io_netcdf_data.lib
+..\kdtree_wrapper\Debug\kdtree_wrapper.lib
+..\kdtree2\Debug\kdtree2.lib
+..\fortrangis\Debug\fortrangis.lib
+..\libsigwatch\Debug\libsigwatch.lib
+..\md5\Debug\md5digest.lib
+..\md5\Debug\md5.lib
+25>Scanning sources for module dependencies...
+25>Scanning sources for module dependencies...
+25>Scanning sources for module dependencies...
+25>Scanning sources for module dependencies...
+..\morphology_data\Debug\morphology_data.lib
+..\morphology_io\Debug\morphology_io.lib
+..\morphology_kernel\Debug\morphology_kernel.lib
+..\morphology_plugins_c\Debug\morphology_plugins_c.lib
+..\netcdff\Debug\netcdff.lib
+..\polypack\Debug\polypack.lib
+..\trachytopes_io\Debug\trachytopes_io.lib
+..\trachytopes_kernel\Debug\trachytopes_kernel.lib
+..\triangle_c\Debug\triangle_c.lib
+..\wq_processes\Debug\wq_processes.lib
+..\waq_process\Debug\waq_process.lib
+..\waq_utils_c\Debug\waq_utils_c.lib
+..\waq_utils_f\Debug\waq_utils_f.lib
+..\interacter_stub\Debug\interacter_stub.lib
+..\dflowfm_kernel\Debug\dflowfm_kernel.lib
+comctl32.lib
+wsock32.lib
+netapi32.lib
+kernel32.lib
+user32.lib
+Shlwapi.lib
+Gdi32.lib
+Winspool.lib
+netcdf.lib
+pthreadVC2.lib
+impi.lib
+..\fortrangis\Debug\fortranc.lib
+..\shp\Debug\shp.lib
+..\proj\lib\Debug\proj_d.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\sqlite3\sqlite-3.44.0\lib\sqlite3.lib
+shell32.lib
+ole32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\gdal\lib\gdal.lib
+netcdf.lib
+..\netcdff\Debug\netcdf_c_extension.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+..\waq_proc_preprocess\Debug\waq_proc_preprocess.lib
+..\nefis\Debug\nefis.lib
+..\solvesaphe\Debug\solvesaphe.lib
+..\waq_data\Debug\waq_data.lib
+..\waq_definition\Debug\waq_definition.lib
+..\waq_hyd_data\Debug\waq_hyd_data.lib
+..\flow1d_implicit\Debug\flow1d_implicit.lib
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+..\ice_io\Debug\ice_io.lib
+Copyright (C) Microsoft Corporation.  All rights reserved.
+..\ice_data\Debug\ice_data.lib
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dfm_volume_tool\Debug\dfm_volume_tool.exe
+..\metisoptions\Debug\metisoptions.lib
+/VERSION:0.0
+..\metis\libmetis\Debug\metis.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+..\precicef\Debug\precicef.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\precice\precice-3_3_1\lib\precice.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\libxml2\libxml2-v2.15.1\lib\libxml2.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_log_setup-vc143-mt-x64-1_90.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64\Debug
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_log-vc143-mt-x64-1_90.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_filesystem-vc143-mt-x64-1_90.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_regex-vc143-mt-x64-1_90.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_serialization-vc143-mt-x64-1_90.lib
+/MANIFEST:NO
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_program_options-vc143-mt-x64-1_90.lib
+/DEBUG
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_thread-vc143-mt-x64-1_90.lib
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dfm_volume_tool\Debug/dfm_volume_tool.pdb
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_atomic-vc143-mt-x64-1_90.lib
+/SUBSYSTEM:CONSOLE
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_chrono-vc143-mt-x64-1_90.lib
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dfm_volume_tool\Debug\dfm_volume_tool.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_container-vc143-mt-x64-1_90.lib
+kernel32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_date_time-vc143-mt-x64-1_90.lib
+user32.lib
+..\spherepack\Debug\spherepack.lib
+gdi32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\petsc\petsc-3.24.5\include\..\lib\x64\Release-oneAPI\\libpetsc.lib
+winspool.lib
+"C:\Program Files (x86)\Intel\oneAPI\mkl\latest\lib\mkl_sequential.lib"
+shell32.lib
+/machine:x64
+ole32.lib
+/LARGEADDRESSAWARE
+oleaut32.lib
+/STACK:20000000
+uuid.lib
+/debug
+comdlg32.lib
+/INCREMENTAL
+advapi32.lib
+dflowfm_kernel_test.dir\Debug\test_temporal_statistics.obj
+..\deltares_common\Debug\deltares_common.lib
+dflowfm_kernel_test.dir\Debug\test_read_statistical_output.obj
+..\deltares_common_c\Debug\deltares_common_c.lib
+dflowfm_kernel_test.dir\Debug\test_laterals.obj
+..\dflowfm_kernel\Debug\dflowfm_kernel.lib
+dflowfm_kernel_test.dir\Debug\test_cross_section.obj
+..\gridgeom\Debug\gridgeom.lib
+dflowfm_kernel_test.dir\Debug\test_statistical_output.obj
+..\flow1d_core\Debug\flow1d_core.lib
+dflowfm_kernel_test.dir\Debug\test_1d_grid.obj
+..\io_netcdf\Debug\io_netcdf.lib
+dflowfm_kernel_test.dir\Debug\test_observ_Cross_Sections.obj
+..\io_netcdf_data\Debug\io_netcdf_data.lib
+dflowfm_kernel_test.dir\Debug\test_storage_nodes.obj
+..\FLAP\Debug\FLAP.lib
+dflowfm_kernel_test.dir\Debug\test_iniField_1dField.obj
+..\netcdff\Debug\netcdff.lib
+dflowfm_kernel_test.dir\Debug\test_airdensity.obj
+..\dfm_api_access\Debug\dfm_api_access.lib
+dflowfm_kernel_test.dir\Debug\test_read_property.obj
+comctl32.lib
+dflowfm_kernel_test.dir\Debug\test_observations.obj
+wsock32.lib
+dflowfm_kernel_test.dir\Debug\test_roughness.obj
+netapi32.lib
+dflowfm_kernel_test.dir\Debug\test_dflowfm_kernel_f.obj
+kernel32.lib
+
+user32.lib
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/test_dflowfm_kernel/dflowfm_kernel_test.dir/Debug/BuildLog.htm"
+Shlwapi.lib
+dflowfm_kernel_test - 0 error(s), 0 warning(s)
+Gdi32.lib
+Winspool.lib
+netcdf.lib
+pthreadVC2.lib
+impi.lib
+..\dhydrology_kernel\Debug\dhydrology_kernel.lib
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+..\flow1d\Debug\flow1d.lib
+Copyright (C) Microsoft Corporation.  All rights reserved.
+..\flow1d_io\Debug\flow1d_io.lib
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dfmoutput\Debug\dfmoutput.exe
+..\flow1d_implicit\Debug\flow1d_implicit.lib
+/VERSION:0.0
+..\ice_io\Debug\ice_io.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+..\ice_data\Debug\ice_data.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+..\libsigwatch\Debug\libsigwatch.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+..\md5\Debug\md5digest.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+..\md5\Debug\md5.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64\Debug
+..\metisoptions\Debug\metisoptions.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64
+..\metis\libmetis\Debug\metis.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+..\morphology_io\Debug\morphology_io.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+..\ec_module\Debug\ec_module.lib
+/MANIFEST:NO
+..\fortrangis\Debug\fortrangis.lib
+/DEBUG
+..\fortrangis\Debug\fortranc.lib
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dfmoutput\Debug/dfmoutput.pdb
+..\shp\Debug\shp.lib
+/SUBSYSTEM:CONSOLE
+..\proj\lib\Debug\proj_d.lib
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dfmoutput\Debug\dfmoutput.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\sqlite3\sqlite-3.44.0\lib\sqlite3.lib
+kernel32.lib
+shell32.lib
+user32.lib
+ole32.lib
+gdi32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\gdal\lib\gdal.lib
+winspool.lib
+netcdf.lib
+shell32.lib
+..\netcdff\Debug\netcdf_c_extension.lib
+ole32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+oleaut32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+uuid.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+comdlg32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+advapi32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+..\deltares_common\Debug\deltares_common.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+..\gridgeom\Debug\gridgeom.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+..\io_netcdf\Debug\io_netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+..\io_netcdf_data\Debug\io_netcdf_data.lib
+..\kdtree_wrapper\Debug\kdtree_wrapper.lib
+..\FLAP\Debug\FLAP.lib
+..\kdtree2\Debug\kdtree2.lib
+..\netcdff\Debug\netcdff.lib
+..\morphology_kernel\Debug\morphology_kernel.lib
+comctl32.lib
+..\morphology_plugins_c\Debug\morphology_plugins_c.lib
+wsock32.lib
+..\polypack\Debug\polypack.lib
+netapi32.lib
+..\precicef\Debug\precicef.lib
+kernel32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\precice\precice-3_3_1\lib\precice.lib
+user32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\libxml2\libxml2-v2.15.1\lib\libxml2.lib
+Shlwapi.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_log_setup-vc143-mt-x64-1_90.lib
+Gdi32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_log-vc143-mt-x64-1_90.lib
+Winspool.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_filesystem-vc143-mt-x64-1_90.lib
+netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_regex-vc143-mt-x64-1_90.lib
+pthreadVC2.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_serialization-vc143-mt-x64-1_90.lib
+impi.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_program_options-vc143-mt-x64-1_90.lib
+..\kdtree_wrapper\Debug\kdtree_wrapper.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_thread-vc143-mt-x64-1_90.lib
+..\kdtree2\Debug\kdtree2.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_atomic-vc143-mt-x64-1_90.lib
+..\triangle_c\Debug\triangle_c.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_chrono-vc143-mt-x64-1_90.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_container-vc143-mt-x64-1_90.lib
+..\netcdff\Debug\netcdf_c_extension.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_date_time-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+..\trachytopes_io\Debug\trachytopes_io.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+..\deltares_common_mpi\Debug\deltares_common_mpi.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+Copyright (C) Microsoft Corporation.  All rights reserved.
+..\trachytopes_kernel\Debug\trachytopes_kernel.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dflowfm_cli_exe\Debug\dflowfm-cli.exe
+..\triangle_c\Debug\triangle_c.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+/VERSION:0.0
+..\wq_processes\Debug\wq_processes.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+..\waq_proc_preprocess\Debug\waq_proc_preprocess.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+..\waq_process\Debug\waq_process.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+..\morphology_data\Debug\morphology_data.lib
+..\fortrangis\Debug\fortrangis.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+..\nefis\Debug\nefis.lib
+..\fortrangis\Debug\fortranc.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64\Debug
+..\solvesaphe\Debug\solvesaphe.lib
+..\shp\Debug\shp.lib
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64
+..\waq_data\Debug\waq_data.lib
+..\proj\lib\Debug\proj_d.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+..\waq_hyd_data\Debug\waq_hyd_data.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\sqlite3\sqlite-3.44.0\lib\sqlite3.lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+..\waq_utils_c\Debug\waq_utils_c.lib
+shell32.lib
+/MANIFEST:NO
+..\waq_utils_f\Debug\waq_utils_f.lib
+ole32.lib
+/DEBUG
+..\waq_definition\Debug\waq_definition.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\gdal\lib\gdal.lib
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dflowfm_cli_exe\Debug/dflowfm-cli.pdb
+..\spherepack\Debug\spherepack.lib
+netcdf.lib
+/SUBSYSTEM:CONSOLE
+..\interacter_stub\Debug\interacter_stub.lib
+/machine:x64
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dflowfm_cli_exe\Debug\dflowfm-cli.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\petsc\petsc-3.24.5\include\..\lib\x64\Release-oneAPI\\libpetsc.lib
+/LARGEADDRESSAWARE
+kernel32.lib
+"C:\Program Files (x86)\Intel\oneAPI\mkl\latest\lib\mkl_sequential.lib"
+/STACK:20000000
+user32.lib
+/machine:x64
+/debug
+gdi32.lib
+/LARGEADDRESSAWARE
+/INCREMENTAL
+winspool.lib
+/STACK:20000000
+dfmoutput.dir\Debug\dfm_params.obj
+shell32.lib
+/debug
+dfmoutput.dir\Debug\dfmoutput_static_version_info.obj
+ole32.lib
+/INCREMENTAL
+dfmoutput.dir\Debug\dfm_max25_write_extremes_his.obj
+oleaut32.lib
+dfm_volume_tool.dir\Debug\dfm_volume_tool_static_version_info.obj
+dfmoutput.dir\Debug\dfm_max25_read_nc_histories.obj
+uuid.lib
+dfm_volume_tool.dir\Debug\dfm_volume_tool_version.obj
+dfmoutput.dir\Debug\dfm_max25_getdata.obj
+comdlg32.lib
+dfm_volume_tool.dir\Debug\m_storagetable.obj
+dfmoutput.dir\Debug\dfm_merge.obj
+advapi32.lib
+dfm_volume_tool.dir\Debug\m_netcdf_output.obj
+dfmoutput.dir\Debug\dfm_gen_filter.obj
+..\dflowfm_kernel\Debug\dflowfm_kernel.lib
+dfm_volume_tool.dir\Debug\dfm_volume_tool_main.obj
+dfmoutput.dir\Debug\dfmoutput_version.obj
+..\gridgeom\Debug\gridgeom.lib
+dfm_volume_tool.dir\Debug/dfm_volume_tool_version.res
+dfmoutput.dir\Debug\dfmoutput_main.obj
+..\deltares_common\Debug\deltares_common.lib
+dfmoutput.dir\Debug/dfmoutput_version.res
+..\netcdff\Debug\netcdff.lib
+netcdf.lib
+
+pthreadVC2.lib
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/dfm_volume_tool/dfm_volume_tool.dir/Debug/BuildLog.htm"
+impi.lib
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/dfmoutput/dfmoutput.dir/Debug/BuildLog.htm"
+dfm_volume_tool - 0 error(s), 0 warning(s)
+..\dhydrology_kernel\Debug\dhydrology_kernel.lib
+dfmoutput - 0 error(s), 0 warning(s)
+..\flow1d\Debug\flow1d.lib
+..\flow1d_io\Debug\flow1d_io.lib
+..\flow1d_implicit\Debug\flow1d_implicit.lib
+..\flow1d_core\Debug\flow1d_core.lib
+..\ice_io\Debug\ice_io.lib
+..\ice_data\Debug\ice_data.lib
+..\libsigwatch\Debug\libsigwatch.lib
+..\md5\Debug\md5digest.lib
+..\md5\Debug\md5.lib
+..\metisoptions\Debug\metisoptions.lib
+..\metis\libmetis\Debug\metis.lib
+..\morphology_io\Debug\morphology_io.lib
+..\ec_module\Debug\ec_module.lib
+..\io_netcdf\Debug\io_netcdf.lib
+..\netcdff\Debug\netcdf_c_extension.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+..\fortrangis\Debug\fortrangis.lib
+..\fortrangis\Debug\fortranc.lib
+..\shp\Debug\shp.lib
+..\proj\lib\Debug\proj_d.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\sqlite3\sqlite-3.44.0\lib\sqlite3.lib
+shell32.lib
+ole32.lib
+25>Scanning sources for module dependencies...
+25>test_mdu_file_read_write.vcxproj -> C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\dflowfm_kernel\test\io\test_mdu_file_read_write\Debug\test_mdu_file_read_write.exe
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\gdal\lib\gdal.lib
+..\kdtree_wrapper\Debug\kdtree_wrapper.lib
+..\kdtree2\Debug\kdtree2.lib
+..\morphology_kernel\Debug\morphology_kernel.lib
+..\morphology_plugins_c\Debug\morphology_plugins_c.lib
+..\polypack\Debug\polypack.lib
+..\precicef\Debug\precicef.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\precice\precice-3_3_1\lib\precice.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\libxml2\libxml2-v2.15.1\lib\libxml2.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_log_setup-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_log-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_filesystem-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_regex-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_serialization-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_program_options-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_thread-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_atomic-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_chrono-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_container-vc143-mt-x64-1_90.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\boost\boost_1_90_0\lib\boost_date_time-vc143-mt-x64-1_90.lib
+..\trachytopes_io\Debug\trachytopes_io.lib
+..\deltares_common_mpi\Debug\deltares_common_mpi.lib
+..\trachytopes_kernel\Debug\trachytopes_kernel.lib
+..\triangle_c\Debug\triangle_c.lib
+..\wq_processes\Debug\wq_processes.lib
+..\waq_proc_preprocess\Debug\waq_proc_preprocess.lib
+..\waq_process\Debug\waq_process.lib
+..\morphology_data\Debug\morphology_data.lib
+..\nefis\Debug\nefis.lib
+..\solvesaphe\Debug\solvesaphe.lib
+..\waq_data\Debug\waq_data.lib
+..\waq_hyd_data\Debug\waq_hyd_data.lib
+..\io_netcdf_data\Debug\io_netcdf_data.lib
+..\waq_utils_c\Debug\waq_utils_c.lib
+..\waq_utils_f\Debug\waq_utils_f.lib
+..\waq_definition\Debug\waq_definition.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+..\spherepack\Debug\spherepack.lib
+..\interacter_stub\Debug\interacter_stub.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\petsc\petsc-3.24.5\include\..\lib\x64\Release-oneAPI\\libpetsc.lib
+"C:\Program Files (x86)\Intel\oneAPI\mkl\latest\lib\mkl_sequential.lib"
+/machine:x64
+/LARGEADDRESSAWARE
+/STACK:20000000
+/debug
+/INCREMENTAL
+dflowfm-cli.dir\Debug\net_main.obj
+dflowfm-cli.dir\Debug/dflowfm_cli_version.res
+dflowfm-cli.dir\Debug/dflowfm_icon.res
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/dflowfm_cli_exe/dflowfm-cli.dir/Debug/BuildLog.htm"
+dflowfm-cli - 0 error(s), 0 warning(s)
+Microsoft (R) Incremental Linker Version 14.44.35225.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+/OUT:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\wave\Debug\wave_exe.exe
+/VERSION:0.0
+"/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netCDF 4.6.1\lib\Debug"
+"/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netCDF 4.6.1\lib"
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\pthreads\bin\x64
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug\Debug"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\mpi\latest\lib\mpi\debug"
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib\Debug
+/LIBPATH:C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\netcdf\netcdf-c-4.9.2\lib
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib\Debug"
+"/LIBPATH:C:\Program Files (x86)\Intel\oneAPI\compiler\2024.2\lib"
+/MANIFEST:NO
+/DEBUG
+/PDB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\wave\Debug/wave_exe.pdb
+/SUBSYSTEM:CONSOLE
+/IMPLIB:C:\Users\bi\Repositories\Delft3D-FM\build_fm-suite\wave\Debug\wave_exe.lib
+kernel32.lib
+user32.lib
+gdi32.lib
+winspool.lib
+shell32.lib
+ole32.lib
+oleaut32.lib
+uuid.lib
+comdlg32.lib
+advapi32.lib
+..\wave_data\Debug\wave_data.lib
+..\delftio\Debug\delftio.lib
+..\delftio_shm\Debug\delftio_shm.lib
+..\deltares_common\Debug\deltares_common.lib
+..\deltares_common_c\Debug\deltares_common_c.lib
+..\ec_module\Debug\ec_module.lib
+..\gridgeom\Debug\gridgeom.lib
+..\wave_io\Debug\wave_io.lib
+..\io_netcdf\Debug\io_netcdf.lib
+..\wave_kernel\Debug\wave_kernel.lib
+..\wave_manager\Debug\wave_manager.lib
+..\nefis\Debug\nefis.lib
+..\netcdff\Debug\netcdff.lib
+..\triangle_c\Debug\triangle_c.lib
+..\swan_mpi_lib\Debug\swan.lib
+pthreadVC2.lib
+netcdf.lib
+impi.lib
+..\kdtree_wrapper\Debug\kdtree_wrapper.lib
+..\kdtree2\Debug\kdtree2.lib
+..\fortrangis\Debug\fortrangis.lib
+..\fortrangis\Debug\fortranc.lib
+..\shp\Debug\shp.lib
+..\proj\lib\Debug\proj_d.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\sqlite3\sqlite-3.44.0\lib\sqlite3.lib
+shell32.lib
+ole32.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\gdal\lib\gdal.lib
+netcdf.lib
+..\io_netcdf_data\Debug\io_netcdf_data.lib
+..\netcdff\Debug\netcdf_c_extension.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\cmake_deltares\..\..\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\netcdf\netcdf-c-4.9.2\lib\netcdf.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\curl\lib\libcurl_imp.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\third_party_open\zlib\cmake\..\lib\zlib.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\hdf5\lib\hdf5_hl.lib
+C:\Users\bi\Repositories\Delft3D-FM\src\cmake\..\third_party_open\zlib\lib\zlib.lib
+/machine:x64
+/LARGEADDRESSAWARE
+/STACK:20000000
+/debug
+/INCREMENTAL
+wave_exe.dir\Debug\wave_exe.obj
+wave_exe.dir\Debug/wave_version.res
+
+Build log written to  "file://C:/Users/bi/Repositories/Delft3D-FM/build_fm-suite/wave/wave_exe.dir/Debug/BuildLog.htm"
+wave_exe - 0 error(s), 0 warning(s)
+========== Build: 29 succeeded, 0 failed, 171 up-to-date, 0 skipped ==========
+========== Build completed at 19:55 and took 43,582 seconds ==========

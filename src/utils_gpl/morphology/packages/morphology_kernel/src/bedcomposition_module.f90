@@ -5189,11 +5189,6 @@ subroutine consolidate_decon(this, nm, dtmor)
             z_low=sum(plyrthk((k+1):size(plyrthk)))*(thconlyreqm-thsandgibson_new)     !elevation of the lower border of the layer
             !averaged integral of the concentration profile from z low to z up
             cmudlyr(k)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*(max(0.0_fp,thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
-            !print *, 'cmudlyr(k)', k, cmudlyr(k)
-            !print *, 'cmudlyr(k)', k, rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
-            !print *, 'cmudlyr(k)', k, rhos/thlyr(k,nm),((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp))),(-(nfd-1.0_fp)/nfd),((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
-            !print *, 'cmudlyr(k)', max(0.0_fp,thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp)),(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp))
-            !print *, 'cmudlyr(k)', (thconlyreqm-z_up-thsandgibson_new),(nfd/(nfd-1.0_fp)),(thconlyreqm-z_low-thsandgibson_new),(nfd/(nfd-1.0_fp))
             svfracmud(k) = cmudlyr(k)/rhos
             svfrac(k,nm) = svfracmud(k) + svfracsand(k)
        enddo
@@ -5382,256 +5377,246 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
     use precision
     use sediment_basics_module
     use morphology_data_module
-    
+
     implicit none
-    !
+
     ! Call variables
-    !
-    type(bedcomp_data)                                                              :: this     !< bed composition object
-    integer                                                           , intent(in)  :: nm
-    real(hp)                                                          , intent(in)  :: morft ! morphological time [days since reference date]
-    real(fp)                                                          , intent(in)  :: dtmor ! morphological time step [s]
-    
-    integer                              :: istat
-    
-    !
+    type(bedcomp_data)                                             :: this     !< bed composition object
+    integer                                          , intent(in)  :: nm
+    real(hp)                                         , intent(in)  :: morft    !< morphological time [days since reference date]
+    real(fp)                                         , intent(in)  :: dtmor    !< morphological time step [s]
+
+    ! State/settings pointers
+    real(fp), dimension(:,:,:), pointer :: msed       !< sediment mass per unit area [kg/m2]
+    real(fp), dimension(:,:)  , pointer :: preload    !< maximum previous overburden mass [kg/m2]
+    real(fp), dimension(:,:)  , pointer :: td         !< time of latest load increment [days]
+    real(fp), dimension(:,:)  , pointer :: svfrac     !< total solid volume fraction [-]
+    real(fp), dimension(:,:)  , pointer :: strain     !< peat strain diagnostic [-]
+    real(fp), dimension(:,:)  , pointer :: thlyr      !< layer thickness including pore water [m]
+    real(fp), dimension(:)    , pointer :: rhofrac    !< solid density per fraction [kg/m3]
+    real(fp), dimension(:)    , pointer :: ymod       !< Young's modulus per fraction
+    real(fp), dimension(:)    , pointer :: cc         !< consolidation coefficient per fraction
+    real(fp)                  , pointer :: ag         !< gravitational acceleration [m/s2]
+
+    ! Peat settings
+    integer , pointer :: peatfrac
+    real(fp), pointer :: peatloi
+    real(fp), pointer :: parb
+    real(fp), pointer :: parc
+    real(fp), pointer :: pard
+    real(fp), pointer :: peatthick
+
     ! Local variables
-    !
-    integer                                   :: j         ! loop index used to deal with 0 layer thickness!, z.z
-    integer                                   :: k
-    integer                                   :: i         ! loop index used for replenish step, property change for transport layer, z.z
-    integer                                   :: l
-    real(fp)                                  :: svfractemp  ! temp real store and read in the volume fraction, z.z
-    real(fp)                                  :: nfd       ! sediment fractal exponent number, = 2.0/(3.0-nf), z.z 
-    real(fp)                                  :: load      ! not used in Gibson's formulation, z.z
-    real(fp)                                  :: thnew     ! not used in Gibson's formulation, z.z
-    real(fp) , dimension(this%settings%nfrac) :: dzl
-    real(fp) , dimension(:), pointer          :: dzc
-    real(fp) , dimension(:,:,:), pointer      :: msed 
-    real(fp) , dimension(:,:)  , pointer      :: preload   ! not used in Gibson's formulation, z.z
-    real(fp) , dimension(:,:)  , pointer      :: svfrac
-    real(fp) , dimension(:,:)  , pointer      :: strain
-    real(fp) , dimension(:,:)  , pointer      :: thlyr     ! including pore water
-    real(fp) , dimension(:)    , pointer      :: rhow
-    real(fp) , dimension(:)    , pointer      :: ymod
-    real(fp) , dimension(:)    , pointer      :: cc
-    real(fp)                                  :: frac
-    real(fp) , dimension(:)    , pointer      :: rhofrac
-    real(fp)                                  :: thtrlyr
-    
-    real(fp)                                  :: thconlyr    ! consolidate layer thickness
-    real(fp)                                  :: thconlyreqm ! equilibrium consolidate layer thickness
-    
-    ! used for replenish step average volume fraction between transport layer and layers below
-    real(fp)                                  :: thtemp
-    real(fp)                                  :: temp1
-    real(fp)                                  :: temp2
+    integer  :: k
+    integer  :: l
+    real(fp) :: load                         !< cumulative sediment mass above current layer [kg/m2]
+    real(fp) :: oldload
+    real(fp) :: load_eff
+    real(fp) :: load_pa
+    real(fp) :: thold
+    real(fp) :: thnew
+    real(fp) :: thtrial
+    real(fp) :: thmin_mass
+    real(fp) :: solidvol
+    real(fp) :: v_mud
+    real(fp) :: v_sand
+    real(fp) :: vfrac_l
+    real(fp) :: svnew
+    real(fp) :: critpor
+    real(fp) :: svmax_allowed
+    real(fp) :: cceff_primary
+    real(fp) :: cceff_secondary
+    real(fp) :: load_increment
+    real(fp) :: age_new
+    real(fp) :: age_old
+    real(fp) :: dlogage
+    real(fp) :: tmor_sec
+    real(fp) :: para
+    real(fp) :: mpeat
 
-    ! Dynamic Equilibrium CONsolidation (DECON)
-    real(fp)                                  :: thmudgibson_new    ! total gibson height for mud
-    real(fp)                                  :: thsandgibson_new   ! total gibson height for sand
-    integer ,dimension(this%settings%nconlyr) :: kzlyr        ! number of vertical grid used to discretize equilibrium concentration profile in each layer
-    real(fp),dimension(this%settings%nfrac)   :: permud       ! mud fraction mass percentage
-    real(fp),dimension(this%settings%nfrac)   :: persand      ! sand fraction mass percentage
-    real(fp),dimension(this%settings%nfrac)   :: mmud         ! mud fraction mass 
-    real(fp),dimension(this%settings%nfrac)   :: msand        ! sand fraction mass
-    real(fp)                                  :: mmudtot      ! total mud mass
-    real(fp)                                  :: msandtot     ! total sand mass
-    !real(fp),dimension(this%settings%nconlyr) :: czmudlyr
-    integer                                   :: kztotal
-    integer                                   :: lowerindex
-    integer                                   :: upperindex
-    real(fp), pointer                         :: dzprofile
-    real(fp) , dimension(:) , allocatable     :: zcprofile
-    real(fp) , dimension(:) , allocatable     :: czmud       ! equilibrium mud concentration profile
-    real(fp)                                  :: z_up
-    real(fp)                                  :: z_low
-    
-    !! ---> more variables used
-    integer, pointer  :: nlyr
-    real(fp), pointer :: ag
-    
-    integer, pointer  :: nconlyr                           ! number of consolidating layers
-    real(fp), pointer :: ksigma                            ! effective stress coefficient, Pa
-    real(fp), pointer :: kk                                ! permeability., m/s
-    real(fp), pointer :: kbioturb                          ! bioturbation coefficient, m2/s
-        
-    real(fp), parameter :: sigmawbnd=0.0_fp                ! effective stress at upward boundary, Pa
-    real(fp) :: rhos                                       ! sediment specific density, kg/m3
-    !!--->  add more working arrays
-    real(fp), dimension(:)   , pointer :: svfrac2          ! new solids fraction after consolidation, temp 
-    real(fp), dimension(:)   , pointer :: thlyr2           ! new layer thickness after consolidation
+    ! Numerical constants
+    real(fp), parameter :: eps_thick = 1.0e-12_fp
+    real(fp), parameter :: eps_mass  = 1.0e-12_fp
+    real(fp), parameter :: eps_sv    = 1.0e-12_fp
+    real(fp), parameter :: ref_stress_peat = 1000.0_fp   !< reference stress [Pa]
 
-    real(fp), dimension(:)   , pointer :: dthsedlyr        ! thickness of average pure sediment between two neighbouring layers, m
+    ! Pointer associations
+    msed      => this%state%msed
+    preload   => this%state%preload
+    td        => this%state%td
+    svfrac    => this%state%svfrac
+    strain    => this%state%strain
+    thlyr     => this%state%thlyr
+    rhofrac   => this%settings%rhofrac
+    ymod      => this%settings%ymod
+    cc        => this%settings%cc
+    ag        => this%settings%ag
 
-    real(fp), dimension(:)   , pointer :: sigmaeff         ! effective stress, Pa
-    real(fp), dimension(:)   , pointer :: thsedlyr         ! thickness of pure sediment in each layer, m
-    real(fp), dimension(:)   , pointer :: svfracsand       ! total sand solids fraction at each layer
-    real(fp), dimension(:)   , pointer :: svfracmud        ! total mud solids fraction at each layer    
+    peatfrac  => this%settings%peatfrac
+    peatloi   => this%settings%peatloi
+    parb      => this%settings%parb
+    parc      => this%settings%parc
+    pard      => this%settings%pard
+    peatthick => this%settings%peatthick
 
-    real(fp), dimension(:)   , pointer :: vs0p5            ! particle settling velocity at layer interface, m/s  
-    real(fp), dimension(:)   , pointer :: k0p5             ! permeability at layer interface, m/s
-    real(fp), dimension(:)   , pointer :: svfrac0p5        ! solids fraction at layer interface
-    real(fp), dimension(:)   , pointer :: svfracsand0p5    ! sand solids fraction at layer interface
-    real(fp), dimension(:)   , pointer :: svfracmud0p5     ! mud solids fraction at layer interface 
-    
-    !--> low-concentration consoldiation
-    real(fp), dimension(:)     , pointer :: msandlyr       ! sand mass at each layer
-    real(fp), dimension(:)     , pointer :: mmudlyr        ! mud mass at each layer
-    real(fp), dimension(:)     , pointer :: plyrthk
-    real(fp), dimension(:)     , pointer :: thmudgibson    ! total gibson height for mud
-    real(fp), dimension(:)     , pointer :: thsandgibson   ! total gibson height for sand  
-    real(fp), dimension(:)     , pointer :: thlyrnew
-    real(fp), dimension(:,:)   , pointer :: thlyrtprev
-    
-    !Peat 
-    real(fp), pointer  :: ymodpeat
-    real(fp), pointer  :: ccpeat
-    integer , pointer  :: peatfrac
-    real(fp), pointer  :: peatloi
-    real(fp), pointer  :: parb
-    real(fp), pointer  :: parc
-    real(fp), pointer  :: pard
-    real(fp), pointer  :: peatthick
-    real(fp)           :: para
-    real(fp)           :: mpeat
-
-    !critical porosity
-    real(fp)           :: critpor
-    real(fp)           :: thicks
-    real(fp)           :: thickm
-
-    !! executable statements -------------------------------------------------------
-    msed           => this%state%msed
-    preload        => this%state%preload
-    svfrac         => this%state%svfrac
-    thlyr          => this%state%thlyr
-    rhow           => this%state%rhow
-    dzc            => this%state%dzc
-    rhofrac        => this%settings%rhofrac
-    ymod           => this%settings%ymod
-    cc             => this%settings%cc
-    !peat
-    ymodpeat       => this%settings%ymodpeat
-    ccpeat         => this%settings%ccpeat
-    peatloi        => this%settings%peatloi
-    parb           => this%settings%parb
-    parc           => this%settings%parc
-    pard           => this%settings%pard
-    peatfrac       => this%settings%peatfrac
-    peatthick      => this%settings%peatthick
-    strain         => this%state%strain
-    
-    thsandgibson   => this%state%thsandgibson
-    thmudgibson    => this%state%thmudgibson
-    thlyrtprev      => this%state%thlyrtprev
-    thlyrnew        => this%work%thlyrnew
-
-    thlyr2         => this%work%thlyr2
-    svfrac2        => this%work%svfrac2
-
-    dthsedlyr      => this%work%dthsedlyr
-
-    sigmaeff       => this%work%sigmaeff   
-    thsedlyr       => this%work%thsedlyr  
-    svfracsand     => this%work%svfracsand
-    svfracmud      => this%work%svfracmud 
-
-    vs0p5          => this%work%vs0p5   
-    k0p5           => this%work%k0p5   
-    svfrac0p5      => this%work%svfrac0p5 
-    svfracsand0p5  => this%work%svfracsand0p5 
-    svfracmud0p5   => this%work%svfracmud0p5
-
-    msandlyr       => this%work%msandlyr
-    mmudlyr        => this%work%mmudlyr
-
-    nlyr           => this%settings%nlyr 
-    ag             => this%settings%ag
-    nconlyr        => this%settings%nconlyr  
-    ksigma         => this%settings%ksigma
-    kk             => this%settings%kk
-    kbioturb       => this%settings%kbioturb
-    plyrthk        => this%settings%plyrthk
-    dzprofile      => this%settings%dzprofile
-    
-    ! Bert, Zhou, assume the sediment density is using constant for all fractions
-    rhos     = this%settings%rhofrac(1)            ! sediment density
-    nfd      = 2.0_fp/(3.0_fp-this%settings%nf)
-    thtrlyr  = this%settings%thtrlyr(nm)           ! get the transport layer thickness
-    thtemp   = 0.0_fp                              ! temporary thickness used for transition calculation
-    temp1    = 0.0_fp                              ! temporary variable
-    temp2    = 0.0_fp                              ! temporary variable
-    
-    load = 0.0_fp
-    parb = 0.009_fp
-    parc = 0.08_fp
-    pard = 0.05_fp
-    mpeat = 0.0_fp
+    ! Peat compression coefficient A = parc*LOI + pard.
+    ! Do not overwrite parb/parc/pard here; they should come from settings/input.
     para = parc * peatloi + pard
-    do k = 2, this%settings%nlyr
+
+    ! Guarded time used in the peat logarithmic strain relation.
+    tmor_sec = max(real(morft, fp) * 86400.0_fp, 1.0_fp)
+
+    ! Peat load definition: mass above the current layer only.
+    load = 0.0_fp
+
+    ! Do not compact the transport layer. Also leave the last/base layer unchanged.
+    ! If the base layer is intentionally part of the consolidating bed in your model,
+    ! change the upper bound from nlyr-1 to nlyr, but keep the mass-volume limiter.
+    do k = 2, this%settings%nlyr - 1
+
+        ! Load acting on layer k is the cumulative dry sediment mass above it.
         do l = 1, this%settings%nfrac
             load = load + msed(l, k-1, nm)
         enddo
-        if (comparereal(thlyr(k, nm),0.0_fp)==0) then
-            !
-            ! layers with zero thickness don't consolidate
-            !
-        else
-            mpeat = 0.0_fp
-            if (peatfrac>0) mpeat = msed(peatfrac, k, nm)
-            !
-            if (mpeat > 0.0_fp) then 
-                if (load > preload(k, nm)) then
-                    !
-                    !compute consolidation
-                    !
-                    if (load * ag < 1000) then    !*msed > 1000 is only at base layer?
-                        thnew = thlyr(k, nm)
-                        preload(k, nm) = load
-                    else
-                        strain(k, nm) = para * log(load*ag/1000) + parb * log(real(morft,fp)*86400.0_fp)
-                        thnew = min(thlyr(k,nm), peatthick * exp(-strain(k,nm))) ! avoid artificial layer expansion and a porosity jump, better solution: replace global peatthick by a layer-specific reference thickness
-                        preload(k, nm) = load
-                    endif
+
+        if (comparereal(thlyr(k, nm), 0.0_fp) == 0) cycle
+
+        thold = thlyr(k, nm)
+        thnew = thold
+
+        ! Compute total solid volume and composition-dependent critical porosity.
+        solidvol = 0.0_fp
+        v_mud    = 0.0_fp
+        v_sand   = 0.0_fp
+        do l = 1, this%settings%nfrac
+            if (rhofrac(l) > 0.0_fp) then
+                vfrac_l = msed(l, k, nm) / rhofrac(l)
+                solidvol = solidvol + vfrac_l
+                if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                    v_mud = v_mud + vfrac_l
                 else
-                    if (load == 0) then
-                        thnew = thlyr(k, nm)
-                        preload(k, nm) = preload(k, nm)
-                    else 
-                        strain(k, nm) = para * log(preload(k, nm)*ag/1000) + parb * log(real(morft,fp)*86400.0_fp)
-                        thnew =  min(thlyr(k,nm), peatthick * exp(-strain(k,nm))) ! avoid artificial layer expansion and a porosity jump
-                        preload(k, nm) = preload(k, nm)
-                    endif
+                    v_sand = v_sand + vfrac_l
                 endif
-                svfrac(k, nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
-                thlyr(k, nm) = thnew
-            else
-                if (load > preload(k, nm)) then
-                    if (preload(k,nm)==0) then
-                        dzc(nm) = 0.0_fp
-                    else
-                        frac = msed(l,k,nm)/rhofrac(l)/thlyr(k,nm)/svfrac(k,nm);
-                        dzl(l) = cc(l) * 1.0_fp/ymod(l) * ag  * (load-preload(k,nm)) * frac 
-                        dzc(nm) = dzc(nm) + dzl(l)
-                    endif
-                elseif (load < preload(k, nm) .and. load > 0.0_fp) then
-                    if (preload(k,nm)==0) then
-                        dzc(nm) = 0.0_fp
-                    else
-                        frac = msed(l,k,nm)/rhofrac(l)/thlyr(k,nm)/svfrac(k,nm);
-                        dzl(l) = cc(l) * 1.0_fp/ymod(l) * ag  * load * frac ! function of load-preload(k,nm) | the cc, and ymod paramaters were define at subroutine setbedfracprop
-                        dzc(nm) = dzc(nm) + dzl(l)
-                    endif
-                endif
-                thnew = thlyr(k, nm) - dzc(nm)
-                svfrac(k, nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
-                thlyr(k, nm) = thnew
-                preload(k, nm) = load
             endif
-        !else
-            ! Non peat compaction
+        enddo
+
+        if (solidvol > eps_mass) then
+            critpor = (v_mud*this%settings%minporm + v_sand*this%settings%minpors) &
+                    / max(v_mud + v_sand, eps_mass)
+        else
+            critpor = this%settings%porini
         endif
+        critpor = max(0.0_fp, min(0.99_fp, critpor))
+
+        ! Maximum allowed solid volume fraction. Use both the model svmax and the
+        ! composition-dependent critical porosity limit. This prevents negative porosity.
+        svmax_allowed = min(this%settings%svmax, 1.0_fp - critpor)
+        svmax_allowed = max(eps_sv, min(0.99_fp, svmax_allowed))
+
+        ! Peat mass in layer k.
+        mpeat = 0.0_fp
+        if (peatfrac > 0 .and. peatfrac <= this%settings%nfrac) then
+            mpeat = msed(peatfrac, k, nm)
+        endif
+
+        oldload = preload(k, nm)
+
+        if (mpeat > eps_mass) then
+            ! Peat branch.
+            ! Use the larger of current load and preload in the peat strain relation,
+            ! while preserving preload as a maximum historical load.
+            load_eff = max(load, oldload)
+            load_pa  = load_eff * ag
+
+            thtrial = thold
+            if (load_pa > ref_stress_peat) then
+                strain(k, nm) = para * log(load_pa / ref_stress_peat) &
+                              + parb * log(tmor_sec)
+                thtrial = peatthick * exp(-strain(k, nm))
+                ! Prevent artificial expansion from the global reference thickness.
+                thtrial = min(thold, thtrial)
+            endif
+
+            thnew = thtrial
+
+            if (load > oldload) then
+                td(k, nm) = real(morft, fp)
+            endif
+            preload(k, nm) = max(oldload, load)
+
+        else
+            ! Mineral/non-peat branch.
+            ! Primary compaction when the current load exceeds the historical preload.
+            cceff_primary = 0.0_fp
+            load_increment = max(load - oldload, 0.0_fp)
+
+            if (load_increment > 0.0_fp .and. solidvol > eps_mass) then
+                do l = 1, this%settings%nfrac
+                    if (l == peatfrac) cycle
+                    if (msed(l, k, nm) <= eps_mass) cycle
+                    if (rhofrac(l) <= 0.0_fp .or. ymod(l) <= 0.0_fp) cycle
+
+                    vfrac_l = (msed(l, k, nm) / rhofrac(l)) / max(solidvol, eps_mass)
+                    vfrac_l = max(0.0_fp, min(1.0_fp, vfrac_l))
+
+                    ! 0.5 factor follows the Terzaghi primary-compaction formulation.
+                    cceff_primary = cceff_primary + 0.5_fp * vfrac_l * cc(l) / ymod(l)
+                enddo
+
+                thnew = thnew - cceff_primary * thold * load_increment * ag
+                td(k, nm) = real(morft, fp)
+            endif
+
+            ! Secondary mud consolidation. This is an incremental logarithmic-age term
+            ! and is applied only after a layer has experienced loading history.
+            if (this%settings%crmsec > 0.0_fp .and. oldload > 0.0_fp .and. solidvol > eps_mass) then
+                age_new = max((real(morft, fp) - td(k, nm)) * 86400.0_fp, 0.0_fp)
+                age_old = max(age_new - dtmor, 0.0_fp)
+                dlogage = log(1.0_fp + age_new) - log(1.0_fp + age_old)
+
+                if (dlogage > 0.0_fp) then
+                    cceff_secondary = 0.0_fp
+                    do l = 1, this%settings%nfrac
+                        if (l == peatfrac) cycle
+                        if (msed(l, k, nm) <= eps_mass) cycle
+                        if (rhofrac(l) <= 0.0_fp) cycle
+
+                        ! Apply secondary compaction only to mud-like mineral fractions.
+                        if (this%settings%sedtyp(l) <= this%settings%max_mud_sedtyp) then
+                            vfrac_l = (msed(l, k, nm) / rhofrac(l)) / max(solidvol, eps_mass)
+                            vfrac_l = max(0.0_fp, min(1.0_fp, vfrac_l))
+                            cceff_secondary = cceff_secondary + vfrac_l * cc(l)
+                        endif
+                    enddo
+
+                    thnew = thnew - cceff_secondary * thold * this%settings%crmsec * dlogage
+                endif
+            endif
+
+            preload(k, nm) = max(oldload, load)
+        endif
+
+        ! Final physical mass-volume limiter.
+        ! This is the key robustness guard for accelerated MorFac runs: after all
+        ! deposition and consolidation effects, the layer must be thick enough to
+        ! contain its solid volume without exceeding svmax_allowed.
+        if (solidvol > eps_mass) then
+            thmin_mass = solidvol / svmax_allowed
+            thnew = max(thnew, thmin_mass)
+        endif
+        thnew = max(thnew, eps_thick)
+
+        ! Recompute solid volume fraction from the final mass and final thickness.
+        if (solidvol > eps_mass) then
+            svnew = solidvol / thnew
+        else
+            svnew = 0.0_fp
+        endif
+        svnew = max(0.0_fp, min(svmax_allowed, svnew))
+
+        thlyr(k, nm)  = thnew
+        svfrac(k, nm) = svnew
+
     enddo
 end subroutine consolidate_terzaghi_peat
 
