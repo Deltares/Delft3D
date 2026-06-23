@@ -458,11 +458,12 @@ contains
 
       type(t_grid_helper) :: grid_helper
       integer, parameter :: japerim = 1
-      integer, parameter :: calcconv = 0
+      integer, parameter :: calcconv = 1
       integer :: new_link, error_code
       real(kind=dp) :: area, width, perim, hydrad, chezy
 
       ! Arrange
+      call default_physcoef()
       call disable_timers_logging_and_mpi()
       ! Generate mesh
       grid_helper = t_grid_helper()

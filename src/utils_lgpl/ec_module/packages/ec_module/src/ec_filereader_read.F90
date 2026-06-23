@@ -423,7 +423,7 @@ contains
    ! =======================================================================
    ! TODO: we should really switch to newer spiderweb reader in
    ! ec_module\packages\ec_module\src\meteo\meteo_read.f90
-
+   
    !> Read the next record from a spiderweb file.
       !! meteo1: reaspwtim
    function ecSpiderwebReadBlock(fileReaderPtr, item1, item2, item3, t0t1, n_cols, n_rows) result(success)
