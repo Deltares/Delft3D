@@ -650,7 +650,6 @@ contains
       call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success, value_parsed)
       if (success .and. .not. value_parsed) then
          call mess(LEVEL_ERROR, 'Did not recognise UseCaching value. It must be 0 or 1.')
-         call mess(LEVEL_ERROR, 'Did not recognise UseCaching value. It must be 0 or 1.')
       end if
 
       ! Merge cmd line switches with mdu file settings
