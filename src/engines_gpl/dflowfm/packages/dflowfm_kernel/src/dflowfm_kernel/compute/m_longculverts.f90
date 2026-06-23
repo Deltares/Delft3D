@@ -1028,12 +1028,12 @@ contains
       end if
 
       if (.not. associated(meshgeom1d%nodeidx) .and. meshgeom1d%numnode > 0) then
-         ! A pre-existing 1D network was read, but find1dcells (which normally fills nodeidx/
-         ! nodeidx_inverse) has not run yet. Initialize them here, assuming the existing nodes
-         ! were put at the front in order during network reading (same assumption as find1dcells).
+         !if an existing network is read but nodeidx and nodeidx_inverse are not allocated, fill them here.
          allocate (meshgeom1d%nodeidx(meshgeom1d%numnode))
          meshgeom1d%nodeidx = [(inode, inode=1, meshgeom1d%numnode)]
-         if (associated(meshgeom1d%nodeidx_inverse)) deallocate (meshgeom1d%nodeidx_inverse)
+         if (associated(meshgeom1d%nodeidx_inverse)) then
+            deallocate (meshgeom1d%nodeidx_inverse)
+         end if
          allocate (meshgeom1d%nodeidx_inverse(meshgeom1d%numnode))
          do inode = 1, meshgeom1d%numnode
             meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(inode)) = inode
@@ -1541,6 +1541,7 @@ contains
       use messageHandling
       use properties
       use unstruc_channel_flow
+      use m_unstruc_model_data, only: md_convertlongculverts
 
       character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
 
@@ -1585,6 +1586,7 @@ contains
          nlongculverts = num_longculverts
          if (num_newculverts > 0) then
             newculverts = .true.
+            md_convertlongculverts = 0
             if (num_newculverts /= num_longculverts) then
                call mess(LEVEL_ERROR, 'Error loading long culverts, only one input type is supported!')
             end if

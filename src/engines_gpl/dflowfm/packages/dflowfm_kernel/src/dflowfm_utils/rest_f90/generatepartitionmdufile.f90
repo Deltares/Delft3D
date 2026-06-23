@@ -53,9 +53,7 @@ contains
       ! Local variables
       logical :: in_numerics !< Flag to check if currently in [numerics] block
       logical :: in_geometry !< Flag to check if currently in [geometry] block
-      logical :: in_model !< Flag to check if currently in [model] block
       logical :: icgsolver_present !< Flag to check if icgsolver keyword is present in input *.mdu file, to decide whether it needs to be added
-      logical :: convertlongculverts_present !< Flag to check if convertlongculverts keyword is present in input *.mdu file, to decide whether it needs to be added
       logical, dimension(10) :: keyword_present !< Flags to check if keywords that need to be replaced are present in input *.mdu file, to decide whether find-and-replace is needed
       integer :: equal_pos !< Position of the equal sign in the line, to separate keyword from value
       integer :: stat !< Status of I/O operations
@@ -82,9 +80,7 @@ contains
       ! Initialization
       in_numerics = .false.
       in_geometry = .false.
-      in_model = .false.
       icgsolver_present = .false.
-      convertlongculverts_present = .false.
       keyword_present = .false.
       stat = 0
 
@@ -116,17 +112,6 @@ contains
                write (unit_partition, "(a)") trim(mdu_line_partition)
             end if
             in_geometry = .false.
-         end if
-
-         ! In case convertlongculverts was not present in input *.mdu file, find-and-replace is not possible, so add it to the partition *.mdu file
-         if (strcmpi(mdu_line_main, '[model]', 7)) then
-            in_model = .true.
-         elseif (mdu_line_main(1:1) == '[' .and. in_model) then ! About to close [model] block
-            if (.not. convertlongculverts_present) then ! Long culverts are already converted during partitioning, so force the keyword to 0
-               mdu_line_partition = "ConvertLongCulverts         = 0                   # Default: 0. Whether or not to convert long culvert input to 1D2D long culverts"
-               write (unit_partition, "(a)") trim(mdu_line_partition)
-            end if
-            in_model = .false.
          end if
 
          ! Get keyword and convert to lower case for find-and-replace
@@ -195,7 +180,6 @@ contains
             else if (keyword_present(10)) then ! Modify ConvertLongCulverts, set the value 0 as long culverts are already converted during partitioning.
                mdu_line_partition = "ConvertLongCulverts         = 0                   # Default: 0. Whether or not to convert long culvert input to 1D2D long culverts"
                write (unit_partition, "(a)") trim(mdu_line_partition)
-               convertlongculverts_present = .true.
             end if
          end if
       end do

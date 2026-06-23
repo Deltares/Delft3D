@@ -629,11 +629,8 @@ contains
       call prop_get(md_ptr, bnam, 'InputSpecific', md_input_specific)
       call prop_get(md_ptr, bnam, 'ModelSpecific', md_specific)
       call prop_get(md_ptr, bnam, 'PathsRelativeToParent', md_paths_relto_parent)
-      if (jampi == 0) then
-         call prop_get(md_ptr, bnam, 'ConvertLongCulverts', md_convertlongculverts)
-      else
-         md_convertlongculverts = 0 !> long culverts cannot be converted in parallel mode.
-      end if
+      call prop_get(md_ptr, bnam, 'ConvertLongCulverts', md_convertlongculverts)
+
       ! Geometry
       call prop_get(md_ptr, 'geometry', 'CrossDefFile', md_1dfiles%cross_section_definitions, success)
       call prop_get(md_ptr, 'geometry', 'CrossLocFile', md_1dfiles%cross_section_locations, success)
@@ -652,6 +649,7 @@ contains
 
       call prop_get(md_ptr, 'geometry', 'UseCaching', md_usecaching, success, value_parsed)
       if (success .and. .not. value_parsed) then
+         call mess(LEVEL_ERROR, 'Did not recognise UseCaching value. It must be 0 or 1.')
          call mess(LEVEL_ERROR, 'Did not recognise UseCaching value. It must be 0 or 1.')
       end if
 
