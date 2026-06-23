@@ -59,7 +59,6 @@ TimeStepType      = 2
 Limtyphu          = 0
 Limtypmom         = 4
 Limtypsa          = 4
-verticalAdvectionType = 5
 Icgsolver         = 4
 Maxdegree         = 6
 FixedWeirScheme   = 6
