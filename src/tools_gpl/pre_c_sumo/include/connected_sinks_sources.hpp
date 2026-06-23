@@ -42,7 +42,7 @@ namespace pre_c_sumo
         /**
          * @brief Get the number of entries stored.
          */
-        const std::size_t size();
+        std::size_t size();
 
         /**
          * @brief Writes all accrued data to preCICE as the specified participant on the specified

@@ -59,7 +59,7 @@ namespace pre_c_sumo
     /**
      * @brief Get the number of entries stored.
      */
-    const std::size_t ConnectedSinkSources::size() { return sink_x_vector.size(); }
+    std::size_t ConnectedSinkSources::size() { return sink_x_vector.size(); }
 
     /**
      * @brief Writes all accrued data to preCICE as the specified participant on the specified
