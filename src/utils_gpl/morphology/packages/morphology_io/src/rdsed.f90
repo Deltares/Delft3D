@@ -430,6 +430,10 @@ subroutine rdsed(lundia    ,error     ,lsal      ,ltem      ,lsed      , &
        !
        iopsus = 0
        call prop_get(sed_ptr, 'SedimentOverall', 'IopSus', iopsus)
+       call prop_get(sed_ptr, 'SedimentOverall', 'diffusionCal', sedpar%seddif_cal)
+       sedpar%seddif_cal = max(sedpar%seddif_cal, 0.0_fp)
+       call prop_get(sed_ptr, 'SedimentOverall', 'diffusionScaling', sedpar%difparam)
+       sedpar%difparam = max(sedpar%difparam, 0.0_fp)
        !
        floc_str = 'none'
        call prop_get(sed_ptr, 'SedimentOverall', 'FlocModel', floc_str)
@@ -1398,6 +1402,14 @@ subroutine echosed(lundia    ,error     ,lsed      ,lsedtot   , &
     endif
     txtput1 = 'Option Dss'
     write (lundia, '(2a,i12)') txtput1, ':', iopsus
+    if (sedpar%seddif_cal > 0.0_fp) then
+       txtput1 = 'Diffusion calibration'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%seddif_cal
+    endif
+    if (sedpar%difparam > 0.0_fp) then
+       txtput1 = 'Near-bed diffusion scaling'
+       write (lundia, '(2a,e12.4)') txtput1, ':', sedpar%difparam
+    endif
     if (anymud) then
        if (flsmdc /= ' ' .or. comparereal(mdcuni,0.0_fp) /= 0) then
           errmsg = 'User defined mud content ignored: mud fraction simulated.'
