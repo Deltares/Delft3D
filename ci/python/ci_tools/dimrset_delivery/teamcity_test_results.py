@@ -238,9 +238,7 @@ def log_executive_summary(log_file: TextIOWrapper, summarydata: ExecutiveSummary
     """
     log_to_file(log_file, f"\nTestbench root: {summarydata.name}")
     for summary in summarydata.summary:
-        total = (
-            summary.sum_passed + summary.sum_failed + summary.sum_exception + summary.sum_muted
-        )
+        total = summary.sum_passed + summary.sum_failed + summary.sum_exception + summary.sum_muted
         not_passed = summary.sum_failed + summary.sum_exception + summary.sum_muted
         percentage = 0.0
         if total > 0:
