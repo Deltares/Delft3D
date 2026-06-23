@@ -2626,9 +2626,9 @@ contains
       ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
       ! capacity, while is_source_sink_bubblescreen is sized to num_total.
       if (allocated(source_sinks%is_normal)) then
-         source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
-         source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
-         source_sinks%num_normal = count(source_sinks%is_normal)
+          source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+          source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+          source_sinks%num_normal = count(source_sinks%is_normal)
       end if
 
       call fill_geometry_source_sinks()

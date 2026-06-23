@@ -344,6 +344,12 @@ contains
       use m_get_Lbot_Ltop
 
       implicit none
+      
+   !!
+   !! Local parameters
+   !!
+
+      real(kind=dp), parameter :: AKSU_THRESHOLD_FOR_SCORR_COMPUTATION = 1e-10_dp !< Threshold for aksu value below which don't compute the near bed suspended transport
 
    !!
    !! Local variables
@@ -427,8 +433,11 @@ contains
                            aksu = ac1 * aks(k1, l) + ac2 * aks(k2, l)
                         end if
                         !
-                        ! work up through layers integrating transport flux
-                        ! below aksu, according to Bert's new implementation
+                        if (aksu < AKSU_THRESHOLD_FOR_SCORR_COMPUTATION) then
+                           cycle
+                        end if
+                        !
+                        ! work up through layers integrating transport flux below aksu
                         !
                         zktop = 0.0_dp
                         ka = 0
