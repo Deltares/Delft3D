@@ -21,7 +21,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 
 # Enable OpenMP
 find_package(OpenMP)
-if(OPENMP_FOUND)
+if(OpenMP_FOUND)
     add_compile_options("${OpenMP_CXX_FLAGS}")
 endif()
 
@@ -118,8 +118,8 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
                        boost_filesystem)
 endif()
 
-if(${CMAKE_COMPILER_IS_GNUCXX})
-    set(LINK_LIBRARIES ${LINK_LIBRARIES} gomp)
+if(OpenMP_CXX_FOUND)
+    set(LINK_LIBRARIES ${LINK_LIBRARIES} OpenMP::OpenMP_CXX)
 endif()
 
 target_link_libraries(FBCTools PRIVATE ${LINK_LIBRARIES})
@@ -149,14 +149,14 @@ set(FBC_SUPPORT_FILES
 )
   install(FILES ${FBC_SUPPORT_FILES} DESTINATION share/drtc)
   install(TARGETS FBCTools RUNTIME DESTINATION bin)
-  install(TARGETS FBCTools_BMI RUNTIME DESTINATION lib
+  install(TARGETS FBCTools_BMI RUNTIME DESTINATION bin
                                LIBRARY DESTINATION lib
   )
   if(WIN32)
-     install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION lib)
+     install(FILES ${PROJECT_SOURCE_DIR}/thirdParty/xerces/xerces-c-3.1.1-x86_64-windows-vc-10.0/bin/xerces-c_3_1.dll DESTINATION bin)
      if(NOT Boost_USE_STATIC_LIBS)
         get_target_property(BOOST_FILESYSTEM_DLL Boost::filesystem LOCATION)
         get_target_property(BOOST_DATETIME_DLL Boost::date_time LOCATION)
-        install(FILES ${BOOST_FILESYSTEM_DLL} ${BOOST_DATETIME_DLL} DESTINATION lib)
+        install(FILES ${BOOST_FILESYSTEM_DLL} ${BOOST_DATETIME_DLL} DESTINATION bin)
      endif()
   endif()

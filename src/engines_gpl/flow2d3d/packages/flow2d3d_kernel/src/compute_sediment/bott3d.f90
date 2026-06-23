@@ -1,3 +1,5 @@
+module m_bott3d
+contains
 subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                 & lsal      ,ltem      ,kfs       ,kfu       ,kfv       , &
                 & r1        ,s0        ,kcs       ,rhowat    , &
@@ -140,8 +142,6 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp), dimension(:,:,:)           , pointer :: fluxv
     logical                              , pointer :: lfbedfrm
     logical                              , pointer :: crslyr
-    real(fp), dimension(:)               , pointer :: duneheight
-    real(fp), dimension(:)               , pointer :: dunelength
     integer                              , pointer :: iflufflyr
     real(fp), dimension(:,:)             , pointer :: mfluff
     real(fp), dimension(:,:)             , pointer :: sinkf
@@ -271,7 +271,7 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     real(fp) :: trndiv
     real(fp) :: z
     real(hp) :: dim_real
-    real(fp) , dimension(:)   , allocatable :: dunelength_tmp  !  Copy of dune length. It is necessary in case of using the coarse-layer (HANNEKE) model. 
+    real(fp) , dimension(:)   , pointer     :: dunelength_tmp  !  Copy of dune length. It is necessary in case of using the coarse-layer (HANNEKE) model. 
     real(fp) , dimension(:,:) , allocatable :: sbot       !  Description and declaration in rjdim.f90
 !
 !! executable statements -------------------------------------------------------
@@ -279,7 +279,6 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     lundia              => gdp%gdinout%lundia
     hydrt               => gdp%gdmorpar%hydrt
     lfbedfrm            => gdp%gdbedformpar%lfbedfrm
-    dunelength          => gdp%gdbedformpar%dunelength
     morft               => gdp%gdmorpar%morft
     morfac              => gdp%gdmorpar%morfac
     sus                 => gdp%gdmorpar%sus
@@ -342,7 +341,6 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     ntstep              => gdp%gdinttim%ntstep
     fluxu               => gdp%gdflwpar%fluxu
     fluxv               => gdp%gdflwpar%fluxv
-    duneheight          => gdp%gdbedformpar%duneheight
     iflufflyr           => gdp%gdmorpar%flufflyr%iflufflyr
     mfluff              => gdp%gdmorpar%flufflyr%mfluff
     sinkf               => gdp%gdmorpar%flufflyr%sinkf
@@ -352,10 +350,10 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
     
     iconsolidate        => gdp%gdmorlyr%settings%iconsolidate
     !
-    lstart   = max(lsal, ltem)
-    bedload  = .false.
-    dtmor    = dt*morfac
-    nm_pos   = 1
+    lstart  = max(lsal, ltem)
+    bedload = .false.
+    dtmor   = dt*morfac
+    nm_pos  = 1
     dim_real = real(nmmax*lsedtot,hp)
     !
     !   Calculate suspended sediment transport correction vector (for SAND)
@@ -1054,9 +1052,13 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           enddo
           !
           allocate(sbot     (gdp%d%nmlb:gdp%d%nmub, lsedtot))
-          allocate(dunelength_tmp(gdp%d%nmlb:gdp%d%nmub))
-          sbot      = 0.0_fp 
-          dunelength_tmp = 1.0e10_fp
+          sbot      = 0.0_fp
+          if (associated(gdp%gdbedformpar%dunelength)) then
+              dunelength_tmp => gdp%gdbedformpar%dunelength
+          else
+              allocate(dunelength_tmp(gdp%d%nmlb:gdp%d%nmub))
+              dunelength_tmp = 1.0e10_fp
+          endif
           !
           istat =  bedcomp_getpointer_logical(gdp%gdmorlyr,'crslyr',crslyr)
           istat =  bedcomp_getpointer_integer(gdp%gdmorlyr,'imobility',imobility)
@@ -1069,10 +1071,6 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
           endif    
           ! 
           if (crslyr) then 
-              !
-              ! Get dunelength
-              !
-              dunelength_tmp = dunelength
               !
               ! Compute average bed load transport in cel
               ! 
@@ -1111,7 +1109,9 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
                        & gdp       )
           !
           deallocate(sbot)
-          deallocate(dunelength_tmp)
+          if (.not.associated(gdp%gdbedformpar%dunelength)) then
+              deallocate(dunelength_tmp)
+          endif
           !
        endif
     endif ! nst >= itcmp
@@ -1326,3 +1326,5 @@ subroutine bott3d(nmmax     ,kmax      ,lsed      ,lsedtot  , &
        enddo
     endif
 end subroutine bott3d
+
+end module m_bott3d

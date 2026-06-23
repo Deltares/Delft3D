@@ -74,7 +74,7 @@ if(WIN32)
                          morphology_io
                          morphology_kernel
                          morphology_plugins_c
-                         netcdff
+                         netCDF::netcdff
                          polypack
                          trachytopes_io
                          trachytopes_kernel
@@ -86,27 +86,7 @@ if(WIN32)
                          interacter_stub
                          dflowfm_kernel
 )
-
-
-target_link_directories(${executable_name} PRIVATE
-                        "${mpi_library_path}"
-                        "${checkout_src_root}/third_party_open/netcdf/${netcdf_version}/lib"
-                        "${checkout_src_root}/third_party_open/pthreads/bin/x64")
-
-target_link_libraries(${executable_name} PRIVATE ${oss_dependencies}
-                          "comctl32.lib"
-                          "wsock32.lib"
-                          "netapi32.lib"
-                          "kernel32.lib"
-                          "user32.lib"
-                          "Shlwapi.lib"
-                          "Gdi32.lib"
-                          "Winspool.lib"
-                          "netcdf.lib"
-                          "pthreadVC2.lib"
-                          "${mpi_fortran_library}"
-)
-
+target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
 endif(WIN32)
 

@@ -38,14 +38,9 @@ object Sign : BuildType({
         }
         step {
             name = "Sign"
-            type = "AzureSigningTemplate"
+            type = "AzureSigningTemplate2"
             param("workingDir", "to_sign")
             param("binaryPatterns", "*.exe,*.dll")
-            param("timestampUrl", "http://timestamp.acs.microsoft.com")
-            param("digestAlgorithm", "SHA256")
-            param("timestampDigestAlgorithm", "SHA256")
-            param("dlibPath", """C:\\ProgramData\\Microsoft\\MicrosoftTrustedSigningClientTools\\Azure.CodeSigning.Dlib.dll""")
-            param("metadataPath", """C:\\ProgramData\\Microsoft\\MicrosoftTrustedSigningClientTools\\metadata.json""")
         }
         powerShell {
             name = "Move back signed binaries"
@@ -74,7 +69,6 @@ object Sign : BuildType({
                 cleanDestination = true
                 artifactRules = """
                     ?:*_x64_*.zip!/x64/bin/** => to_sign/bin
-                    ?:*_x64_*.zip!/x64/lib/** => to_sign/lib
                     ?:*_x64_*.zip!/x64/share/** => to_sign/share
                 """.trimIndent()
             }
@@ -87,7 +81,7 @@ object Sign : BuildType({
             artifacts {
                 cleanDestination = true
                 artifactRules = """
-                    ?:*_x64_*.zip!/x64/lib/flow2d3d_sp.dll => to_sign/lib
+                    ?:*_x64_*.zip!/x64/bin/flow2d3d_sp.dll => to_sign/bin
                 """.trimIndent()
             }
         }

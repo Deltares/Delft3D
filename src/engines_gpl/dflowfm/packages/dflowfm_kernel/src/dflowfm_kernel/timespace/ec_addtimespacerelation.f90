@@ -66,7 +66,7 @@ contains
       character(len=*), intent(in) :: filename !< File name of meteo data file.
       integer, intent(in) :: filetype !< FM's filetype enumeration.
       integer, intent(in) :: method !< FM's method enumeration.
-      character(len=1), intent(in) :: operand !< FM's operand enumeration.
+      integer, intent(in) :: operand !< FM's operand enumeration.
       real(kind=dp), optional, intent(in) :: xyen(:, :) !< FM's distance tolerance / cellsize of ElementSet.
       real(kind=dp), dimension(:), optional, intent(in), target :: z !< FM's array of z/sigma coordinates
       real(kind=dp), dimension(:), optional, pointer :: pzmin !< FM's array of minimal z coordinate
@@ -136,7 +136,7 @@ contains
       type(tEcMask) :: srcmask
 
       integer :: itargetMaskSelect !< 1:targetMaskSelect='i' or absent, 0:targetMaskSelect='o'
-      logical :: exist, opened, withCharnock, withStress
+      logical :: exist, opened, withCharnock, withStress, quantity_found
 
       real(kind=dp) :: relrow, relcol
       real(kind=dp), allocatable :: transformcoef(:)
@@ -173,7 +173,7 @@ contains
       end if
       call operand_fm_to_ec(operand, ec_operand)
       if (ec_operand == operand_undefined) then
-         write (msgbuf, '(a,a,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
+         write (msgbuf, '(a,i0,a)') 'm_meteo::ec_addtimespacerelation: Unsupported operand ''', operand, &
             ''' for quantity '''//trim(name)//''' and file '''//trim(filename)//'''.'
          call err_flush()
          return
@@ -360,40 +360,55 @@ contains
       ! Construct the target field and the target item
       ! ==============================================
       ! determine which target item (id) will be created, and which FM data array has to be used
-      if (.not. fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, &
-                                             targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
-                                             dataPtr1, dataPtr2, dataPtr3, dataPtr4)) then
-         return
-      end if
-      continue
 
-      ! Overrule hard-coded pointers to target data by optional pointers passed in the call
-      if (present(tgt_data1)) then
-         dataPtr1 => tgt_data1
-      end if
-      if (present(tgt_data2)) then
-         dataPtr2 => tgt_data2
-      end if
-      if (present(tgt_data3)) then
-         dataPtr3 => tgt_data3
-      end if
-      if (present(tgt_data4)) then
-         dataPtr4 => tgt_data4
+      quantity_found = fm_ext_force_name_to_ec_item(trname, sfname, waqinput, constituent_name, qidname, targetItemPtr1, targetItemPtr2, targetItemPtr3, targetItemPtr4, &
+                                                    dataPtr1, dataPtr2, dataPtr3, dataPtr4)
+
+      if (.not. quantity_found .and. .not. present(tgt_item1)) then
+         return ! a target item must be supplied from either source
       end if
 
-      ! Overrule hard-coded pointers to target items by optional pointers passed in the call
-      if (present(tgt_item1)) then
+      ! we don not want to override fm_ext_force_name_to_ec_item result, unless multuni is present.
+      if (present(tgt_item1) .and. (present(multuni1) .or. .not. quantity_found)) then
          targetItemPtr1 => tgt_item1
       end if
-      if (present(tgt_item2)) then
+      if (present(tgt_item2) .and. (present(multuni2) .or. .not. quantity_found)) then
          targetItemPtr2 => tgt_item2
       end if
-      if (present(tgt_item3)) then
+      if (present(tgt_item3) .and. (present(multuni3) .or. .not. quantity_found)) then
          targetItemPtr3 => tgt_item3
       end if
-      if (present(tgt_item4)) then
+      if (present(tgt_item4) .and. (present(multuni4) .or. .not. quantity_found)) then
          targetItemPtr4 => tgt_item4
       end if
+
+      if (present(tgt_data1)) then
+         if (associated(tgt_data1)) then
+            dataPtr1 => tgt_data1
+         end if
+      end if
+      if (present(tgt_data2)) then
+         if (associated(tgt_data2)) then
+            dataPtr2 => tgt_data2
+         end if
+      end if
+      if (present(tgt_data3)) then
+         if (associated(tgt_data3)) then
+            dataPtr3 => tgt_data3
+         end if
+      end if
+      if (present(tgt_data4)) then
+         if (associated(tgt_data4)) then
+            dataPtr4 => tgt_data4
+         end if
+      end if
+      
+      ! When a multuni item is provided from the call site, we assume that those
+      ! multuni1..4 item(s) are the ones to be used. Any targetItemPtr1..4 just set
+      ! above by fm_ext_force_name_to_ec_item() should never resolve to the same
+      ! registered item (e.g., item_lateraldischarge), causing a self-loop in the EC
+      ! connection graph. Therefore, UNset the child targetItemPtr1..4 below.
+
 
       ! Create the field and the target item, and if needed additional ones.
       fieldId = ecCreateField(ecInstancePtr)
@@ -567,7 +582,7 @@ contains
          ! Converter will put qh value in target_array(n_qhbnd)
       case ('windx', 'windy', 'windxy', 'stressxy', 'airpressure', 'atmosphericpressure', 'airpressure_windx_windy', 'airdensity', &
             'airpressure_windx_windy_charnock', 'charnock', 'airpressure_stressx_stressy', 'humidity', 'dewpoint', 'airtemperature', &
-            'cloudiness', 'solarradiation', 'longwaveradiation')
+            'cloudiness', 'solarradiation', 'longwaveradiation', 'sensibleheatflux', 'latentheatflux')
          if (present(srcmaskfile)) then
             if (ec_filetype == provFile_arcinfo .or. ec_filetype == provFile_curvi) then
                if (.not. ecParseARCinfoMask(srcmaskfile, srcmask, fileReaderPtr)) then
@@ -838,7 +853,12 @@ contains
       case ('wavesignificantheight', 'waveperiod', 'xwaveforce', 'ywaveforce', &
             'wavebreakerdissipation', 'whitecappingdissipation', 'totalwaveenergydissipation')
          ! the name of the source item created by the file reader will be the same as the ext.force. var name
-
+         if (.not. present(varname)) then !> these variables will crash without a varname
+            write (msgbuf, '(3a)') 'm_meteo::ec_addtimespacerelation: ''dataVariableName'' is required for quantity ''', &
+               trim(target_name), ''' but was not provided. Add dataVariableName= to the [Parameter] block.'
+            call err_flush()
+            goto 1234
+         end if
          ! TODO: UNST-9110: this is actually introduces a bug: the identification of the source item should be consistent with this
          ! code here and the code in m_ec_provider::ecProviderCreateNetcdfItems()
          sourceItemName = varname
@@ -965,7 +985,14 @@ contains
          if (ec_filetype == provFile_netcdf) then
             sourceItemName = 'friction_coefficient'
          else
-            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: friction_coefficient_time_dependent only implemented for NetCDF.')
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent frictioncoefficient only implemented for NetCDF.')
+            return
+         end if
+      case ('secchidepth')
+         if (ec_filetype == provFile_netcdf) then
+            sourceItemName = 'secchi_depth'
+         else
+            call mess(LEVEL_FATAL, 'm_meteo::ec_addtimespacerelation: time-dependent secchidepth only implemented for NetCDF.')
             return
          end if
       case ('windxy')
@@ -1416,6 +1443,10 @@ contains
          end if
       case ('longwaveradiation')
          sourceItemName = 'surface_net_downward_longwave_flux'
+      case ('sensibleheatflux')
+         sourceItemName = 'surface_upward_sensible_heat_flux'
+      case ('latentheatflux')
+         sourceItemName = 'surface_upward_latent_heat_flux'
       case ('nudge_salinity_temperature', 'nudgesalinitytemperature')
          if (ec_filetype == provFile_netcdf) then
             sourceItemId = ecFindItemInFileReader(ecInstancePtr, fileReaderId, 'sea_water_potential_temperature')

@@ -35,7 +35,7 @@ module m_structures
    use properties
    use unstruc_channel_flow, only: network
    use MessageHandling
-   use m_flowparameters, only: jahiscgen, jahispump, jahisgate, jahiscdam, jahisweir, jahisdambreak, jahisorif, jahisculv, jahisuniweir, jahiscmpstru, jahislongculv, jahisbridge
+   use m_flowparameters, only: his_write_settings
    use m_structures_indices ! all of these indices are used in the module
 
    use precision, only: dp
@@ -137,6 +137,18 @@ module m_structures
    real(kind=dp), allocatable, target :: geomXLongCulv(:) !< [m] x coordinates of long culverts.
    real(kind=dp), allocatable, target :: geomYLongCulv(:) !< [m] y coordinates of long culverts.
 
+   ! source/sinks
+   integer :: nNodesSourceSink !< [-] Total number of nodes for all source/sinks
+   integer, dimension(:), allocatable, target :: nodeCountSourceSink !< [-] Count of nodes per source/sink.
+   real(kind=dp), dimension(:), allocatable, target :: geomXSourceSink !< [m] x coordinates of source/sinks.
+   real(kind=dp), dimension(:), allocatable, target :: geomYSourceSink !< [m] y coordinates of source/sinks.
+
+   ! bubble screens
+   integer :: nNodesBubbleScreen !< [-] Total number of nodes for all bubble screens
+   integer, dimension(:), allocatable, target :: nodeCountBubbleScreen !< [-] Count of nodes per bubble screen.
+   real(kind=dp), dimension(:), allocatable, target :: geomXBubbleScreen !< [m] x coordinates of bubble screens.
+   real(kind=dp), dimension(:), allocatable, target :: geomYBubbleScreen !< [m] y coordinates of bubble screens.
+
    !> Whether or not the model has any structures that lie across multiple partitions
  !! (needed to disable possibly invalid statistical output items)
  !! (set in fill_geometry_arrays_structure)
@@ -178,14 +190,14 @@ contains
       use m_dambreak_breach, only: n_db_signals
       implicit none
 
-      if ((ti_rst > 0 .or. jahispump > 0) .and. npumpsg > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%pump > 0) .and. npumpsg > 0) then
          if (allocated(valpump)) then
             deallocate (valpump)
          end if
          allocate (valpump(NUMVALS_PUMP, npumpsg))
          valpump = 0.0_dp
       end if
-      if (ti_rst > 0 .or. jahiscgen > 0) then
+      if (ti_rst > 0 .or. his_write_settings%cgen > 0) then
          if (ncgensg > 0) then
             if (allocated(valcgen)) then
                deallocate (valcgen)
@@ -205,7 +217,7 @@ contains
             valgenstru = 0.0_dp
          end if
       end if
-      if (jahisgate > 0) then
+      if (his_write_settings%gate > 0) then
          if (ngatesg > 0) then
             if (allocated(valgate)) then
                deallocate (valgate)
@@ -221,7 +233,7 @@ contains
             valgategen = 0.0_dp
          end if
       end if
-      if (jahiscdam > 0 .and. ncdamsg > 0) then
+      if (his_write_settings%cdam > 0 .and. ncdamsg > 0) then
          if (allocated(valcdam)) then
             deallocate (valcdam)
          end if
@@ -232,55 +244,55 @@ contains
          nweirgen = network%sts%numWeirs
       end if
 
-      if ((ti_rst > 0 .or. jahisweir > 0) .and. nweirgen > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%weir > 0) .and. nweirgen > 0) then
          if (allocated(valweirgen)) then
             deallocate (valweirgen)
          end if
          allocate (valweirgen(NUMVALS_WEIRGEN, nweirgen))
          valweirgen = 0.0_dp
       end if
-      if (jahisdambreak > 0 .and. n_db_signals > 0) then
+      if (his_write_settings%dambreak > 0 .and. n_db_signals > 0) then
          if (allocated(valdambreak)) then
             deallocate (valdambreak)
          end if
          allocate (valdambreak(NUMVALS_DAMBREAK, n_db_signals), source=0.0_dp)
       end if
-      if ((ti_rst > 0 .or. jahisorif > 0) .and. network%sts%numOrifices > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%orifice > 0) .and. network%sts%numOrifices > 0) then
          if (allocated(valorifgen)) then
             deallocate (valorifgen)
          end if
          allocate (valorifgen(NUMVALS_ORIFGEN, network%sts%numOrifices))
          valorifgen = 0.0_dp
       end if
-      if (jahisbridge > 0 .and. network%sts%numBridges > 0) then
+      if (his_write_settings%bridge > 0 .and. network%sts%numBridges > 0) then
          if (allocated(valbridge)) then
             deallocate (valbridge)
          end if
          allocate (valbridge(NUMVALS_BRIDGE, network%sts%numBridges))
          valbridge = 0.0_dp
       end if
-      if ((ti_rst > 0 .or. jahisculv > 0) .and. network%sts%numCulverts > 0) then
+      if ((ti_rst > 0 .or. his_write_settings%culvert > 0) .and. network%sts%numCulverts > 0) then
          if (allocated(valculvert)) then
             deallocate (valculvert)
          end if
          allocate (valculvert(NUMVALS_CULVERT, network%sts%numCulverts))
          valculvert = 0.0_dp
       end if
-      if (jahisuniweir > 0 .and. network%sts%numUniWeirs > 0) then
+      if (his_write_settings%universal_weir > 0 .and. network%sts%numUniWeirs > 0) then
          if (allocated(valuniweir)) then
             deallocate (valuniweir)
          end if
          allocate (valuniweir(NUMVALS_UNIWEIR, network%sts%numUniWeirs))
          valuniweir = 0.0_dp
       end if
-      if (jahiscmpstru > 0 .and. network%cmps%count > 0) then
+      if (his_write_settings%compound_structure > 0 .and. network%cmps%count > 0) then
          if (allocated(valcmpstru)) then
             deallocate (valcmpstru)
          end if
          allocate (valcmpstru(NUMVALS_CMPSTRU, network%cmps%count))
          valcmpstru = 0.0_dp
       end if
-      if (jahislongculv > 0 .and. nlongculverts > 0) then
+      if (his_write_settings%long_culvert > 0 .and. nlongculverts > 0) then
          if (allocated(vallongculvert)) then
             deallocate (vallongculvert)
          end if
@@ -292,29 +304,15 @@ contains
 
    end subroutine init_structure_hisvalues
 
-!> Sets ALL (scalar) variables in this module to their default values.
-!! For a reinit prior to flow computation, only call reset_structures() instead.
+   !> Sets ALL (scalar) variables in this module to their default values.
+   !! For a reinit prior to flow computation, only call reset_structures() instead.
    subroutine default_structures()
 
       call tree_destroy(strs_ptr)
 
       call reset_structures()
 
-! TIDAL TURBINES: Insert calls to deallocate_turbines and init_turbines here
-
-      ! default settings for structure output to history file
-      jahiscgen = 1
-      jahispump = 1
-      jahisgate = 1
-      jahiscdam = 1
-      jahisweir = 1
-      jahisorif = 1
-      jahisculv = 1
-      jahisbridge = 1
-      jahisdambreak = 1
-      jahisuniweir = 1
-      jahiscmpstru = 1
-      jahislongculv = 1
+      ! TIDAL TURBINES: Insert calls to deallocate_turbines and init_turbines here
 
    end subroutine default_structures
 
@@ -404,15 +402,15 @@ contains
 
       if (hs(ku) > epshs) then
          valstruct(IVAL_WIDTHUP) = valstruct(IVAL_WIDTHUP) + wu(L)
-         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP) + s1(ku) * wu(L)
+         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP) + s1(ku)*wu(L)
       end if
       if (hs(kd) > epshs) then
          valstruct(IVAL_WIDTHDN) = valstruct(IVAL_WIDTHDN) + wu(L)
-         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN) + s1(kd) * wu(L)
+         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN) + s1(kd)*wu(L)
       end if
       if (hs(ku) > epshs .and. hs(kd) > epshs) then
          valstruct(IVAL_WIDTHUPDN) = valstruct(IVAL_WIDTHUPDN) + wu(L)
-         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD) + (s1(ku) - s1(kd)) * wu(L)
+         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD) + (s1(ku) - s1(kd))*wu(L)
       end if
 
       if (hu(L) > epshu) then ! when link L is wet
@@ -422,9 +420,9 @@ contains
             k1 = ln(1, L)
             k2 = ln(2, L)
             qcmp = get_discharge_under_compound_struc(network%sts%struct(istru), L0, s1(k1), s1(k2), teta(L))
-            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp * dir
+            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + qcmp*dir
          else
-            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L) * dir
+            valstruct(IVAL_DIS) = valstruct(IVAL_DIS) + q1(L)*dir
          end if
 
          if (istrtypein /= ST_PUMP) then ! Compute flow area for structures except for pump
@@ -443,8 +441,8 @@ contains
 
          ! 2a. General structure-based structures with a crest.
          if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
-            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0) * wu(L)
-            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L) * wu(L)
+            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) + network%sts%struct(istru)%generalst%sOnCrest(L0)*wu(L)
+            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) + get_force_difference(istru, L)*wu(L)
          end if
 
          ! 2b. General structure-based structures with a (gate) door.
@@ -453,9 +451,9 @@ contains
             k2 = ln(2, L)
             genstr => network%sts%struct(istru)%generalst
 
-            valstruct(IVAL_DIS_OPEN) = valstruct(IVAL_DIS_OPEN) + get_discharge_through_gate_opening(genstr, L0, s1(k1), s1(k2)) * dir
-            valstruct(IVAL_DIS_OVER) = valstruct(IVAL_DIS_OVER) + get_discharge_over_gate(genstr, L0, s1(k1), s1(k2)) * dir
-            valstruct(IVAL_DIS_UNDER) = valstruct(IVAL_DIS_UNDER) + get_discharge_under_gate(genstr, L0, s1(k1), s1(k2)) * dir
+            valstruct(IVAL_DIS_OPEN) = valstruct(IVAL_DIS_OPEN) + get_discharge_through_gate_opening(genstr, L0, s1(k1), s1(k2))*dir
+            valstruct(IVAL_DIS_OVER) = valstruct(IVAL_DIS_OVER) + get_discharge_over_gate(genstr, L0, s1(k1), s1(k2))*dir
+            valstruct(IVAL_DIS_UNDER) = valstruct(IVAL_DIS_UNDER) + get_discharge_under_gate(genstr, L0, s1(k1), s1(k2))*dir
 
             valstruct(IVAL_AREA_OPEN) = valstruct(IVAL_AREA_OPEN) + genstr%au(3, L0) ! flow area through gate opening
             valstruct(IVAL_AREA_OVER) = valstruct(IVAL_AREA_OVER) + genstr%au(2, L0) ! flow area over gate
@@ -470,9 +468,9 @@ contains
 
       ! 2d. More specific values that apply to bridge
       if (istrtypein == ST_BRIDGE) then
-         valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) + bl(ku) * wu(L)
-         valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) + bl(kd) * wu(L)
-         valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%bridge%bedLevel_actual * wu(L)
+         valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) + bl(ku)*wu(L)
+         valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) + bl(kd)*wu(L)
+         valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) + network%sts%struct(istru)%bridge%bedLevel_actual*wu(L)
       end if
 
    end subroutine fill_valstruct_perlink
@@ -527,17 +525,17 @@ contains
       ! 1. Generic values that apply to all structure types
       ! 1a. average for waterlevel upstream, downstream and head
       if (valstruct(IVAL_WIDTHUP) > 0) then
-         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP) / valstruct(IVAL_WIDTHUP)
+         valstruct(IVAL_S1UP) = valstruct(IVAL_S1UP)/valstruct(IVAL_WIDTHUP)
       else
          valstruct(IVAL_S1UP) = dmiss
       end if
       if (valstruct(IVAL_WIDTHDN) > 0) then
-         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN) / valstruct(IVAL_WIDTHDN)
+         valstruct(IVAL_S1DN) = valstruct(IVAL_S1DN)/valstruct(IVAL_WIDTHDN)
       else
          valstruct(IVAL_S1DN) = dmiss
       end if
       if (valstruct(IVAL_WIDTHUPDN) > 0) then
-         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD) / valstruct(IVAL_WIDTHUPDN)
+         valstruct(IVAL_HEAD) = valstruct(IVAL_HEAD)/valstruct(IVAL_WIDTHUPDN)
       else
          valstruct(IVAL_HEAD) = dmiss
       end if
@@ -565,7 +563,7 @@ contains
 
          if (istrtypein /= ST_PUMP) then
             if (valstruct(IVAL_AREA) > 0.0_dp) then ! non-zero flow area
-               valstruct(IVAL_VEL) = valstruct(IVAL_DIS) / valstruct(IVAL_AREA) ! velocity
+               valstruct(IVAL_VEL) = valstruct(IVAL_DIS)/valstruct(IVAL_AREA) ! velocity
             else
                valstruct(IVAL_VEL) = 0.0_dp
             end if
@@ -573,8 +571,8 @@ contains
 
          if (any(istrtypein == [ST_GENERAL_ST, ST_WEIR, ST_ORIFICE])) then ! TODO: ST_GATE
             pstru => network%sts%struct(istru)
-            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST) / valstruct(IVAL_WIDTHWET) ! water level on crest
-            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF) / valstruct(IVAL_WIDTHWET) ! force difference per unit width
+            valstruct(IVAL_S1ONCREST) = valstruct(IVAL_S1ONCREST)/valstruct(IVAL_WIDTHWET) ! water level on crest
+            valstruct(IVAL_FORCEDIF) = valstruct(IVAL_FORCEDIF)/valstruct(IVAL_WIDTHWET) ! force difference per unit width
          end if
       end if
 
@@ -590,13 +588,13 @@ contains
             ! only for general structure
             if (istrtypein == ST_GENERAL_ST) then
                if (valstruct(IVAL_AREA_OPEN) > 0) then ! flow area in gate opening
-                  valstruct(IVAL_VEL_OPEN) = valstruct(IVAL_DIS_OPEN) / valstruct(IVAL_AREA_OPEN) ! velocity through gate opening
+                  valstruct(IVAL_VEL_OPEN) = valstruct(IVAL_DIS_OPEN)/valstruct(IVAL_AREA_OPEN) ! velocity through gate opening
                end if
                if (valstruct(IVAL_AREA_OVER) > 0) then ! flow area over gate
-                  valstruct(IVAL_VEL_OVER) = valstruct(IVAL_DIS_OVER) / valstruct(IVAL_AREA_OVER) ! velocity over gate
+                  valstruct(IVAL_VEL_OVER) = valstruct(IVAL_DIS_OVER)/valstruct(IVAL_AREA_OVER) ! velocity over gate
                end if
                if (valstruct(IVAL_AREA_UNDER) > 0) then ! flow area under gate
-                  valstruct(IVAL_VEL_UNDER) = valstruct(IVAL_DIS_UNDER) / valstruct(IVAL_AREA_UNDER) ! velocity under gate
+                  valstruct(IVAL_VEL_UNDER) = valstruct(IVAL_DIS_UNDER)/valstruct(IVAL_AREA_UNDER) ! velocity under gate
                end if
             end if
          end if
@@ -609,9 +607,9 @@ contains
             valstruct(IVAL_BLDN) = dmiss
             valstruct(IVAL_BLACTUAL) = dmiss
          else
-            valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP) / valstruct(IVAL_WIDTH)
-            valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN) / valstruct(IVAL_WIDTH)
-            valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL) / valstruct(IVAL_WIDTH)
+            valstruct(IVAL_BLUP) = valstruct(IVAL_BLUP)/valstruct(IVAL_WIDTH)
+            valstruct(IVAL_BLDN) = valstruct(IVAL_BLDN)/valstruct(IVAL_WIDTH)
+            valstruct(IVAL_BLACTUAL) = valstruct(IVAL_BLACTUAL)/valstruct(IVAL_WIDTH)
          end if
       end if
 
@@ -653,8 +651,8 @@ contains
          rholeft = 1000.0_dp
          rhoright = 1000.0_dp
 
-         get_force_difference = max((s1up - crestl), 0.0_dp)**2 * rholeft * gravity * 0.5_dp - &
-                                max((s1dn - crestl), 0.0_dp)**2 * rhoright * gravity * 0.5_dp
+         get_force_difference = max((s1up - crestl), 0.0_dp)**2*rholeft*gravity*0.5_dp - &
+                                max((s1dn - crestl), 0.0_dp)**2*rhoright*gravity*0.5_dp
       else
          get_force_difference = dmiss
       end if
@@ -676,8 +674,8 @@ contains
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
       if (gatefraction < 1.0_dp - GATE_FRACTION_EPS) then
-         u1L = genstr%ru(3, L0) - genstr%fu(3, L0) * dsL
-         get_discharge_through_gate_opening = genstr%au(3, L0) * u1L
+         u1L = genstr%ru(3, L0) - genstr%fu(3, L0)*dsL
+         get_discharge_through_gate_opening = genstr%au(3, L0)*u1L
       else
          get_discharge_through_gate_opening = 0.0_dp
       end if
@@ -699,8 +697,8 @@ contains
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
       if (gatefraction > GATE_FRACTION_EPS) then
-         u1L = genstr%ru(2, L0) - genstr%fu(2, L0) * dsL
-         get_discharge_over_gate = genstr%au(2, L0) * u1L
+         u1L = genstr%ru(2, L0) - genstr%fu(2, L0)*dsL
+         get_discharge_over_gate = genstr%au(2, L0)*u1L
       else
          get_discharge_over_gate = 0.0_dp
       end if
@@ -722,8 +720,8 @@ contains
       gatefraction = genstr%gateclosedfractiononlink(L0)
 
       if (gatefraction > GATE_FRACTION_EPS) then
-         u1L = genstr%ru(1, L0) - genstr%fu(1, L0) * dsL
-         get_discharge_under_gate = genstr%au(1, L0) * u1L
+         u1L = genstr%ru(1, L0) - genstr%fu(1, L0)*dsL
+         get_discharge_under_gate = genstr%au(1, L0)*u1L
       else
          get_discharge_under_gate = 0.0_dp
       end if
@@ -1071,12 +1069,83 @@ contains
       end if
    end subroutine get_geom_coordinates_of_structure
 
+   !> Fills in the geometry arrays of source/sinks taking into account the parallel domain decomposition.
+   subroutine fill_geometry_source_sinks()
+      use m_source_sink, only: source_sinks
+      use m_flowgeom, only: xz, yz
+      use m_alloc
+      use m_partitioninfo, only: jampi, my_rank, reduce_int_max, reduce_double_array_max
+      use m_GlobalParameters
+
+      ! Local Variables
+      real(kind=dp), dimension(:,:), allocatable :: localGeomXSourceSink !< [m] x coordinates of source/sinks.
+      real(kind=dp), dimension(:,:), allocatable :: localGeomYSourceSink !< [m] y coordinates of source/sinks.
+      real(kind=dp), dimension(:), allocatable :: geom_x
+      real(kind=dp), dimension(:), allocatable :: geom_y
+      integer :: i
+      integer :: j
+      integer :: k1
+      integer :: k2
+      integer :: nNodes
+
+      j = 1
+
+      call realloc(geom_x, 2)
+      call realloc(geom_y, 2)
+      call realloc(nodeCountSourceSink, source_sinks%num_normal)
+      call realloc(localGeomXSourceSink, source_sinks%num_normal, 2)
+      call realloc(localGeomYSourceSink, source_sinks%num_normal, 2)
+      localGeomXSourceSink = -huge(1.0_dp)
+      localGeomYSourceSink = -huge(1.0_dp)
+      do i = 1, source_sinks%num_total
+         if (source_sinks%is_normal(i)) then
+            k1 = source_sinks%indices(i, 1)
+            k2 = source_sinks%indices(i, 4)
+            nNodes = 0
+            if (k1 > 0) then
+               nNodes = nNodes + 1
+               geom_x(nNodes) = xz(k1)
+               geom_y(nNodes) = yz(k1)
+            end if
+            if (k2 > 0) then
+               nNodes = nNodes + 1
+               geom_x(nNodes) = xz(k2)
+               geom_y(nNodes) = yz(k2)
+            end if
+            nodeCountSourceSink(j) = nNodes
+            if (nNodes > 0) then
+               localGeomXSourceSink(j, 1:nNodes) = geom_x(1:nNodes)
+               localGeomYSourceSink(j, 1:nNodes) = geom_y(1:nNodes)
+            end if
+            j = j + 1
+         end if
+      end do
+      if (jampi > 0) then
+         call reduce_int_max(source_sinks%num_normal, nodeCountSourceSink)
+      end if
+      nNodesSourceSink = sum(nodeCountSourceSink)
+      call realloc(geomXSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
+      call realloc(geomYSourceSink, nNodesSourceSink, fill=-huge(1.0_dp))
+      j = 1
+      do i = 1, source_sinks%num_normal
+         nNodes = nodeCountSourceSink(i)
+         geomXSourceSink(j:j + nNodes - 1) = localGeomXSourceSink(i, 1:nNodes)
+         geomYSourceSink(j:j + nNodes - 1) = localGeomYSourceSink(i, 1:nNodes)
+         j = j + nNodes
+      end do
+      if (jampi > 0) then
+         call reduce_double_array_max(nNodesSourceSink, geomXSourceSink)
+         call reduce_double_array_max(nNodesSourceSink, geomYSourceSink)
+      end if
+
+   end subroutine fill_geometry_source_sinks
+
 !> Fills in the geometry arrays of a structure type for history output
    subroutine fill_geometry_arrays_structure(struc_type_id, nstru, nNodesStru, nodeCountStru, geomXStru, geomYStru)
       use m_alloc
       use m_partitioninfo
       use m_GlobalParameters
-      use m_flowparameters, only: eps6
+      use m_flowparameters, only: EPS6
       use precision_basics
       implicit none
       integer, intent(in) :: struc_type_id !< The id of the type of the structure (e.g. ST_CULVERT). May differ from the struct%type
@@ -1172,7 +1241,7 @@ contains
 
             ! Allocate arrays that gather information from all subdomains
             ! Data on all subdomains will be gathered in a contiguous way
-            call realloc(nodeCountStruGat, nstru * ndomains, keepExisting=.false., fill=0)
+            call realloc(nodeCountStruGat, nstru*ndomains, keepExisting=.false., fill=0)
             call realloc(xGat, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(yGat, nNodesStruMPI, keepExisting=.false., fill=0.0_dp)
             call realloc(displs, ndomains, keepExisting=.false., fill=0)
@@ -1186,13 +1255,13 @@ contains
          end if
 
          ! Gather integer data, where the same number of data, i.e. nstru, are gathered from each subdomain to process 0000
-         call gather_int_data_mpi_same(nstru, nodeCountStru, nstru * ndomains, nodeCountStruGat, nstru, 0, ierror)
+         call gather_int_data_mpi_same(nstru, nodeCountStru, nstru*ndomains, nodeCountStruGat, nstru, 0, ierror)
 
          if (my_rank == 0) then
             ! To use mpi gather call, construct displs, and nNodesStruGat (used as receive count for mpi gather call)
             displs(1) = 0
             do i = 1, ndomains
-               is = (i - 1) * nstru + 1 ! Starting index in nodeCountStruGat
+               is = (i - 1)*nstru + 1 ! Starting index in nodeCountStruGat
                ie = is + nstru - 1 ! Endding index in nodeCountStruGat
                nNodesStruGat(i) = sum(nodeCountStruGat(is:ie)) ! Total number of nodes on subdomain i
                if (i > 1) then
@@ -1212,7 +1281,7 @@ contains
             ! Construct nodeCountStruMPI for history output
             do i = 1, nstru
                do n = 1, ndomains
-                  k = (n - 1) * nstru + i
+                  k = (n - 1)*nstru + i
                   nodeCountStruMPI(i) = nodeCountStruMPI(i) + nodeCountStruGat(k) ! Total number of nodes for structure i among all subdomains
                end do
             end do
@@ -1230,11 +1299,11 @@ contains
                   call realloc(indLocalStartEndMPI, nodeCountStruMPI(i), keepExisting=.false., fill=0)
                   call realloc(jaCoincide, nodeCountStruMPI(i), keepExisting=.false., fill=0)
                   do n = 1, ndomains ! on each sudomain
-                     k = (n - 1) * nstru + i ! index in nodeCountStruGat
+                     k = (n - 1)*nstru + i ! index in nodeCountStruGat
                      nNodes = nodeCountStruGat(k) ! structure i on sumdomain n has nNodes nodes
                      if (nNodes > 0) then
                         nPar = nPar + 1
-                        ii = (n - 1) * nstru
+                        ii = (n - 1)*nstru
                         is = sum(nNodesStruGat(1:n - 1)) + sum(nodeCountStruGat(ii + 1:ii + i - 1)) ! starting index in xGat
                         ks = 1
                         ke = nNodes
@@ -1254,7 +1323,7 @@ contains
                                        ! coincide with another start/end node maximal ONCE.
                                        xOld = geomXStruMPI(indLocalStartEndMPI(j1))
                                        yOld = geomYStruMPI(indLocalStartEndMPI(j1))
-                                       if (comparereal(xNew, xOld, eps6) == 0 .and. comparereal(xNew, xOld, eps6) == 0) then
+                                       if (comparereal(xNew, xOld, EPS6) == 0 .and. comparereal(xNew, xOld, EPS6) == 0) then
                                           jaexist = 1
                                           jaCoincide(j1) = 1
                                           exit
@@ -1297,10 +1366,10 @@ contains
                j = 1
                do i = 1, nstru ! for each structure
                   do n = 1, ndomains ! on each sudomain
-                     k = (n - 1) * nstru + i ! index in nodeCountStruGat
+                     k = (n - 1)*nstru + i ! index in nodeCountStruGat
                      nNodes = nodeCountStruGat(k) ! structure i on sumdomain n has nNodes nodes
                      if (nNodes > 0) then
-                        ii = (n - 1) * nstru
+                        ii = (n - 1)*nstru
                         is = sum(nNodesStruGat(1:n - 1)) + sum(nodeCountStruGat(ii + 1:ii + i - 1)) ! starting index in xGat
                         do k1 = 1, nNodes
                            geomXStruMPI(j) = xGat(is + k1)
@@ -1561,7 +1630,7 @@ contains
                associate (branch => network%brs%branch(network%sts%struct(j)%IBRAN))
                   if (branch%GRIDPOINTSCOUNT > 0) then
                      ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, branch%xs, branch%ys, &
-                                                   [branch%gridpointscount], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
+                                   [branch%gridpointscount], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
                   else
                      ierr = odu_get_xy_coordinates([1], network%sts%struct(j:j)%CHAINAGE, [branch%FROMNODE%X, branch%TONODE%X], [branch%FROMNODE%Y, branch%TONODE%Y], &
                                                    [2], [branch%length], jsferic, geomXStructInput(i:i), geomYStructInput(i:i))
@@ -1579,7 +1648,7 @@ contains
 !> Determine the combined number of geometry nodes for all pumps
 !! (used to determine the size of geometry variables in the his-file)
    integer function number_of_pump_nodes()
-      use m_flowparameters, only: jahispump
+      use m_flowparameters, only: his_write_settings
       use fm_external_forcings_data, only: npumpsg, L1pumpsg, L2pumpsg
       use unstruc_channel_flow, only: network
 
@@ -1587,7 +1656,7 @@ contains
 
       number_of_pump_nodes = 0
 
-      if (jahispump > 0 .and. npumpsg > 0) then
+      if (his_write_settings%pump > 0 .and. npumpsg > 0) then
          if (network%sts%numPumps > 0) then ! newpump
             number_of_pump_nodes = nNodesPump
          else ! old pump
@@ -1764,7 +1833,7 @@ contains
       distance_along_flowlink_set = 0.0_dp
       do i = 1, number_of_flowlinks
          Lf = abs(links(i))
-         if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set / 2.0_dp) then
+         if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set/2.0_dp) then
             ! The midpoint must lie on this flowlink; calculate exactly where
             if (kcu(Lf) == 2) then
                ! 2D flowlink
@@ -1775,9 +1844,9 @@ contains
                   k3 = lncn(2, Lf)
                   k4 = lncn(1, Lf)
                end if
-               w1 = (total_length_of_flowlink_set / 2.0_dp - distance_along_flowlink_set) / wu(Lf)
-               xmid = w1 * xk(k3) + (1.0_dp - w1) * xk(k4)
-               ymid = w1 * yk(k3) + (1.0_dp - w1) * yk(k4)
+               w1 = (total_length_of_flowlink_set/2.0_dp - distance_along_flowlink_set)/wu(Lf)
+               xmid = w1*xk(k3) + (1.0_dp - w1)*xk(k4)
+               ymid = w1*yk(k3) + (1.0_dp - w1)*yk(k4)
             else
                ! 1D flowlink
                xmid = xu(Lf)

@@ -47,6 +47,10 @@ subroutine trisol(dischy    ,solver    ,icreep    ,ithisc    , &
     use SyncRtcFlow
     use flow2d3d_timers
     use flow_tables
+    use m_erosed, only: erosed
+    use m_bott3d, only: bott3d
+    use m_fallve, only: fallve
+    use m_d3d4_flocculate, only: d3d4_flocculate
     !
     use globaldata
     !

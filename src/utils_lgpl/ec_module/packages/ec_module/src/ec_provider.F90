@@ -388,12 +388,14 @@ contains
                   "dewpoint_airtemperature_cloudiness", &
                   "dewpoint_airtemperature_cloudiness_solarradiation", &
                   "sea_ice_area_fraction", "sea_ice_thickness", &
-                  "solarradiation", "netsolarradiation", "longwaveradiation", "wavesignificantheight", &
+                  "solarradiation", "netsolarradiation", "longwaveradiation", & 
+                  "sensibleheatflux", "latentheatflux", "wavesignificantheight", &
                   "waveperiod", "wavedirection", "friction_coefficient_time_dependent", &
                   "xwaveforce", "ywaveforce", &
                   "wavebreakerdissipation", "whitecappingdissipation", "totalwaveenergydissipation", &
                   "pseudoairpressure", "waterlevelcorrection", &
-                  "frictioncoefficient")
+                  "frictioncoefficient", &
+                  "secchidepth")
                success = ecProviderCreateNetcdfItems(instancePtr, fileReaderPtr, quantityname, varname)
             case ("hrms", "tp", "tps", "rtp", "dir", "fx", "fy", "wsbu", "wsbv", "mx", "my", "dissurf", "diswcap", "ubot")
                success = ecProviderCreateWaveNetcdfItems(instancePtr, fileReaderPtr, quantityname)
@@ -2169,7 +2171,6 @@ contains
    ! =======================================================================
 
    !> Create source Items and their contained types, based on a spiderweb file's header.
-      !! meteo1.f90: reaspwheader
    function ecProviderCreateSpiderwebItems(instancePtr, fileReaderPtr) result(success)
       logical :: success !< function status
       type(tEcInstance), pointer :: instancePtr !< intent(in)
@@ -2190,6 +2191,8 @@ contains
       type(tEcItem), pointer :: item2 !< Item containing quantity2
       type(tEcItem), pointer :: item3 !< Item containing quantity3
       character(len=maxNameLen) :: rec !< helper variable
+      character(len=maxNameLen) :: utmzone
+      character(len=maxNameLen) :: gridunit
       !
       success = .false.
       item1 => null()
@@ -2211,13 +2214,21 @@ contains
       spw_merge_frac = 0.5
       rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_merge_frac')
       if (len_trim(rec) > 0) read (rec, *) spw_merge_frac
+      utmzone = 'undefined'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'spw_utm_zone_target')
+      if (len_trim(rec) > 0) read (rec, *) utmzone
+      gridunit = 'degree'
+      rec = ecSpiderwebAndCurviFindInFile(fileReaderPtr%fileHandle, 'grid_unit')
+      if (len_trim(rec) > 0) read (rec, *) gridunit
       !
       ! One common ElementSet.
       elementSetId = ecInstanceCreateElementSet(instancePtr)
       if (.not. (ecElementSetSetType(instancePtr, elementSetId, elmSetType_spw) .and. &
                  ecElementSetSetRadius(instancePtr, elementSetId, radius, spw_merge_frac, radius_unit) .and. &
-                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols))) then
+                 ecElementSetSetRowsCols(instancePtr, elementSetId, n_rows, n_cols) .and. &
+                 ecElementSetSetUTMzone(instancePtr, elementSetId, utmzone, gridunit))) then
          success = .false.
+         return
       end if
       !
       ! ===== quantity1: wind_speed =====

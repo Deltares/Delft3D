@@ -39,7 +39,7 @@ contains
    subroutine teksorsin() ! teksrc
       use precision, only: dp
       use m_settextsizefac
-      use fm_external_forcings_data
+      use m_source_sink, only: source_sinks
       use unstruc_display, only: klsrc
       use m_transport, only: isalt, itemp
       use m_drawthis
@@ -52,69 +52,69 @@ contains
       character(len=40) :: tex
       real(kind=dp) :: xp, yp
 
-      if (ndraw(41) <= 1 .or. num_source_sink == 0) then
+      if (ndraw(41) <= 1 .or. source_sinks%num_total == 0) then
          return
       end if
 
       call IGrCharJustify('L')
       call settextsizefac(1.0_dp)
 
-      do n = 1, num_source_sink ! teksorsin
-         k = source_sink_indices(1, n)
+      do n = 1, source_sinks%num_total ! teksorsin
+         k = source_sinks%indices(n, 1)
          if (k /= 0) then
             n2 = 1
-            xp = source_sink_x(n, n2)
-            yp = source_sink_y(n, n2)
+            xp = source_sinks%x(n, n2)
+            yp = source_sinks%y(n, n2)
             if (inview(xp, yp)) then
-               if (source_sink_water_discharge(n) > 0) then
+               if (source_sinks%discharge(n) > 0) then
                   ncol = 3
                else
                   ncol = 221
                end if
                call cirr(xp, yp, ncol)
                if (ndraw(41) == 3) then
-                  call gtext(' '//trim(source_sink_name(n)), xp, yp, klsrc)
+                  call gtext(' '//trim(source_sinks%name(n)), xp, yp, klsrc)
                else if (ndraw(41) == 4) then
-                  write (tex, '(f10.3)') - source_sink_water_discharge(n)
+                  write (tex, '(f10.3)') - source_sinks%discharge(n)
                   call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
                else if (ndraw(41) == 5 .and. isalt > 0) then
-                  if (source_sink_water_discharge(n) < 0.0_dp) then
-                     write (tex, '(f10.3)') source_sink_constituents(isalt, n)
+                  if (source_sinks%discharge(n) < 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, isalt)
                      call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
                   end if
                else if (ndraw(41) == 6 .and. itemp > 0) then
-                  if (source_sink_water_discharge(n) < 0.0_dp) then
-                     write (tex, '(f10.3)') source_sink_constituents(itemp, n)
+                  if (source_sinks%discharge(n) < 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, itemp)
                      call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
                   end if
                end if
             end if
          end if
-         k = source_sink_indices(4, n)
+         k = source_sinks%indices(n, 4)
          if (k /= 0) then
-            n2 = source_sink_max_xy_points(n)
-            xp = source_sink_x(n, n2)
-            yp = source_sink_y(n, n2)
+            n2 = source_sinks%max_xy_points(n)
+            xp = source_sinks%x(n, n2)
+            yp = source_sinks%y(n, n2)
             if (inview(xp, yp)) then
-               if (source_sink_water_discharge(n) > 0) then
+               if (source_sinks%discharge(n) > 0) then
                   ncol = 221
                else
                   ncol = 3
                end if
                call cirr(xp, yp, ncol)
                if (ndraw(41) == 3) then
-                  call gtext(' '//trim(source_sink_name(n)), xp, yp, klsrc)
+                  call gtext(' '//trim(source_sinks%name(n)), xp, yp, klsrc)
                else if (ndraw(41) == 4) then
-                  write (tex, '(f10.3)') source_sink_water_discharge(n)
+                  write (tex, '(f10.3)') source_sinks%discharge(n)
                   call gtext(trim(tex)//' (m3/s)', xp, yp, klsrc)
                else if (ndraw(41) == 5 .and. isalt > 0) then
-                  if (source_sink_water_discharge(n) > 0.0_dp) then
-                     write (tex, '(f10.3)') source_sink_constituents(isalt, n)
+                  if (source_sinks%discharge(n) > 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, isalt)
                      call gtext(trim(tex)//' (ppt)', xp, yp, klsrc)
                   end if
                else if (ndraw(41) == 6 .and. itemp > 0) then
-                  if (source_sink_water_discharge(n) > 0.0_dp) then
-                     write (tex, '(f10.3)') source_sink_constituents(itemp, n)
+                  if (source_sinks%discharge(n) > 0.0_dp) then
+                     write (tex, '(f10.3)') source_sinks%constituents(n, itemp)
                      call gtext(trim(tex)//' (degC)', xp, yp, klsrc)
                   end if
                end if

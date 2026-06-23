@@ -66,6 +66,8 @@ get_fortran_source_files(${dflowfm_kernel_timespace_path} dflowfm_kernel_timespa
 # Gather source files
 set(dflowfm_manager_path ${src_path}/dflowfm_manager/)
 get_fortran_source_files(${dflowfm_manager_path} dflowfm_manager)
+set(dflowfm_manager_precice_adapter_path ${src_path}/dflowfm_manager/precice_adapter)
+get_fortran_source_files(${dflowfm_manager_precice_adapter_path} dflowfm_manager_precice_adapter)
 
 # Gather source files
 set(dflowfm_rgf_path ${src_path}/dflowfm_rgf/)
@@ -104,6 +106,7 @@ set(library_source_list     ${fortran_version_files}
                             ${dflowfm_kernel_prepost}
                             ${dflowfm_kernel_timespace}
                             ${dflowfm_manager}
+                            ${dflowfm_manager_precice_adapter}
                             ${dflowfm_rgf}
                             ${dflowfm_utils}
                             ${dflowfm_utils_rest_f90}
@@ -145,7 +148,7 @@ target_link_libraries(${library_name} PRIVATE
                       morphology_io
                       morphology_kernel
                       morphology_plugins_c
-                      netcdff
+                      netCDF::netcdff
                       polypack
                       precicef
                       trachytopes_io
@@ -190,14 +193,13 @@ if (WIN32)
         target_link_libraries(${library_name} PRIVATE interacter_stub)
     endif()
 
-    target_link_directories(${library_name} PUBLIC
-                                "${mpi_library_path}"
-    )
-
     target_link_libraries(${library_name} PRIVATE
-                            "${mpi_fortran_library}"
                             petsc
     )
+    if(NOT TARGET impi)
+      message(FATAL_ERROR "no valid intel MPI target found, please check your installation.")
+    endif()
+    target_link_libraries(${library_name} PRIVATE impi)
 endif(WIN32)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -257,6 +259,7 @@ set_source_files_properties(${fortran_version_files}
 
 # Define preprocessor definitions
 set_target_properties(${library_name} PROPERTIES COMPILE_FLAGS ${openmp_flag})
+target_compile_definitions(${library_name} PRIVATE DFLOWFM_STACK_SIZE_BYTES=${DFLOWFM_STACK_SIZE_BYTES})
 if (WIN32)
     if(WITH_INTERACTER)
         # Add HAVE_DISPLAY=1
