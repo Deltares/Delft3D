@@ -596,14 +596,6 @@ TEST(FF2NFWriterTest, NoBlankLineBetweenLastDataLineAndClosingTag)
         << "Found blank line between last data line and closing tag";
 }
 
-TEST(FF2NFWriterTest, DISABLED_WriteToFile)
-{
-    std::filesystem::remove("FF2NF_test_output.xml");
-    const auto result = pre_c_sumo::FF2NFWriter(buildExampleConfig()).toFile("FF2NF_test_output.xml");
-    ASSERT_TRUE(result.has_value()) << result.error().message;
-    EXPECT_TRUE(std::filesystem::exists("FF2NF_test_output.xml"));
-}
-
 // ---------------------------------------------------------------------------
 // Settings section (copied from the C-SUMO configuration file)
 // ---------------------------------------------------------------------------
