@@ -3959,7 +3959,7 @@ function bedcomp_getpointer_integer_scalar(this, variable, val) result (istat)
        val => this%settings%ndiff
     case ('number_of_layers','nlyr')
        val => this%settings%nlyr
-    case ('number_of_consolidating layers','nconlyr')
+    case ('number_of_consolidating_layers','nconlyr')
        val => this%settings%nconlyr       
     case ('max_num_shortage_warnings')
        val => this%settings%morlyrnum%max_num_shortage_warnings
@@ -4545,7 +4545,7 @@ subroutine consolidate(this, nm, morft, dtmor)
     
     case (CONSOL_DECON) ! Dynamic Equilibrium CONsolidation (DECON)
         ! The actual consolidation step is only executed once every x time steps
-        if (morft < this%state%tdecon + real(this%settings%dtdecon,hp)/86400.0_hp) return
+        if (morft < this%state%tdecon - real(this%settings%dtdecon,hp)/86400.0_hp) return
 
         call consolidate_decon(this, nm, dtmor)
 
@@ -5105,6 +5105,18 @@ subroutine consolidate_decon(this, nm, dtmor)
     plyrthk        => this%settings%plyrthk
     dzprofile      => this%settings%dzprofile
     
+    cmudlyr(:)   = 0.0_fp
+    csandlyr(:)  = 0.0_fp
+    permud(:)    = 0.0_fp
+    persand(:)   = 0.0_fp
+    mmud(:)      = 0.0_fp
+    msand(:)     = 0.0_fp
+    
+    svfracmud(1:nconlyr)  = 0.0_fp
+    svfracsand(1:nconlyr) = 0.0_fp
+    mmudlyr(1:nconlyr)    = 0.0_fp
+    msandlyr(1:nconlyr)   = 0.0_fp
+    
     ! Bert, Zhou, assume the sediment density is using constant for all fractions
     rhos     = this%settings%rhofrac(1)            ! sediment density
     nfd      = 2.0_fp/(3.0_fp-this%settings%nf)
@@ -5179,7 +5191,12 @@ subroutine consolidate_decon(this, nm, dtmor)
             z_up=sum(plyrthk(k:size(plyrthk)))*(thconlyreqm-thsandgibson_new)          !elevation of the upper border of the layer
             z_low=sum(plyrthk((k+1):size(plyrthk)))*(thconlyreqm-thsandgibson_new)     !elevation of the lower border of the layer
             !averaged integral of the concentration profile from z low to z up
-            cmudlyr(k)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
+            cmudlyr(k)=rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*(max(0.0_fp,thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
+            !print *, 'cmudlyr(k)', k, cmudlyr(k)
+            !print *, 'cmudlyr(k)', k, rhos/thlyr(k,nm)*((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp)))*(-(nfd-1.0_fp)/nfd)*((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
+            !print *, 'cmudlyr(k)', k, rhos/thlyr(k,nm),((((nfd-1.0_fp)/nfd)*ag*(rhos-rhow(nm))/ksigma)**(1.0_fp/(nfd-1.0_fp))),(-(nfd-1.0_fp)/nfd),((thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp))-(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp)))
+            !print *, 'cmudlyr(k)', max(0.0_fp,thconlyreqm-z_up-thsandgibson_new)**(nfd/(nfd-1.0_fp)),(thconlyreqm-z_low-thsandgibson_new)**(nfd/(nfd-1.0_fp))
+            !print *, 'cmudlyr(k)', (thconlyreqm-z_up-thsandgibson_new),(nfd/(nfd-1.0_fp)),(thconlyreqm-z_low-thsandgibson_new),(nfd/(nfd-1.0_fp))
             svfracmud(k) = cmudlyr(k)/rhos
             svfrac(k,nm) = svfracmud(k) + svfracsand(k)
        enddo
@@ -5302,7 +5319,7 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
                 cceff = 0.0_fp
                 do l = 1, this%settings%nfrac
                     frac = msed(l,k,nm)/rhofrac(l)/thlyr(k,nm)/svfrac(k,nm)
-                    cceff = cceff + frac * cc(l) * 1.0_fp/ymod(l)  
+                    cceff = cceff + 0.5_fp * frac * cc(l) * 1.0_fp/ymod(l)  
                 enddo
                 thnew = thlyr(k,nm) - cceff * thlyr(k,nm) * (load - preload(k, nm)) * ag
             endif
@@ -5315,9 +5332,9 @@ subroutine consolidate_terzaghi(this, nm, morft, dtmor)
             endif
             svfrac(k,nm) = svfrac(k, nm) * thlyr(k, nm) / thnew
             thlyr(k,nm) = thnew
-            preload(k,nm) = preload(k,nm)
+            preload(k,nm) = max(preload(k,nm), load) ! the preload should be updated to the current load
             !
-        elseif (load <= preload(k,nm)) then ! secondary consolidation
+        elseif (load <= preload(k,nm) .and. preload(k,nm) > 0.0_fp) then ! secondary consolidationonly starts after primary compaction has been activated
             !
             ! compute critical porosity
             !
@@ -5577,7 +5594,7 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
                         preload(k, nm) = load
                     else
                         strain(k, nm) = para * log(load*ag/1000) + parb * log(real(morft,fp)*86400.0_fp)
-                        thnew = peatthick * exp(-1 * strain(k, nm))
+                        thnew = min(thlyr(k,nm), peatthick * exp(-strain(k,nm))) ! avoid artificial layer expansion and a porosity jump, better solution: replace global peatthick by a layer-specific reference thickness
                         preload(k, nm) = load
                     endif
                 else
@@ -5586,7 +5603,7 @@ subroutine consolidate_terzaghi_peat(this, nm, morft, dtmor)
                         preload(k, nm) = preload(k, nm)
                     else 
                         strain(k, nm) = para * log(preload(k, nm)*ag/1000) + parb * log(real(morft,fp)*86400.0_fp)
-                        thnew =  peatthick * exp(-1 * strain(k, nm))
+                        thnew =  min(thlyr(k,nm), peatthick * exp(-strain(k,nm))) ! avoid artificial layer expansion and a porosity jump
                         preload(k, nm) = preload(k, nm)
                     endif
                 endif
@@ -5680,6 +5697,7 @@ subroutine initpreload(this)
     !
     msed       => this%state%msed
     preload    => this%state%preload
+    td         => this%state%td
     !
     select case (this%settings%iunderlyr)
     case (BED_LAYERED)
