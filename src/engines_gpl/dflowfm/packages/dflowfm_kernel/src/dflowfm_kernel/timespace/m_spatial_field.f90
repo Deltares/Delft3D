@@ -132,20 +132,13 @@ contains
       avg = t_averaging_input() ! defaults
 
       call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
-      if (.not. is_read) then
-         averagingType = 'mean'
-      end if  
-      call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      if (is_read) then
+         call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      end if
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (.not. is_read) avg%rel_size = RCEL_DEFAULT ! old default
-
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (.not. is_read) avg%num_min = 1
-
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (.not. is_read) avg%percentile = 0.0_dp
-
    end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
