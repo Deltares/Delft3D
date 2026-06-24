@@ -112,12 +112,6 @@ object WindowsTest : BuildType({
                 scriptContent = """
                     @echo off
 
-                    echo ===== uv cache check =====
-                    uv cache dir
-                    dir C:\uv\cache
-                    dir /b /s C:\uv\cache 2>nul | find /c /i ".whl"
-                    echo ==========================
-
                     set argsList=--username %s3_dsctestbench_accesskey% ^
                     --password %s3_dsctestbench_secret% ^
                     --compare ^
@@ -131,11 +125,10 @@ object WindowsTest : BuildType({
                         set argsList=%%argsList%% --copy-failed-cases
                     )
 
-                    rem Fresh venv for this branch; wheels come from the image's uv cache (fast/offline if unchanged)
-                    rem DEBUG: --offline forces cache-only; a miss fails loudly instead of silently downloading
+                    rem Fresh venv for this branch; wheels come from the mounted uv cache volume
                     uv venv
                     if errorlevel 1 exit /b 1
-                    uv pip install --offline -r pip/win-requirements.txt
+                    uv pip sync pip/win-requirements.txt
                     if errorlevel 1 exit /b 1
 
                     call .venv\Scripts\activate.bat
@@ -149,6 +142,7 @@ object WindowsTest : BuildType({
                 --memory %teamcity.agent.hardware.memorySizeMb%m
                 --cpus %teamcity.agent.hardware.cpuCount%
                 --env UV_LINK_MODE=copy
+                --volume test-environment-uv-cache:C:\uv\cache
             """.trimIndent()
         }
         script {

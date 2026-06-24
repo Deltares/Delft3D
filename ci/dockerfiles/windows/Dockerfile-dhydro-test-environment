@@ -22,12 +22,3 @@ RUN $machinePath = [Environment]::GetEnvironmentVariable('Path', 'Machine'); \
 # Install Python 3.12.7; --default also creates the 'python' and 'python3' executables
 RUN $env:Path = 'C:\uv;C:\uv\bin;' + $env:Path; \
     uv python install 3.12.7 --default; exit $LASTEXITCODE
-
-ADD win-requirements.txt C:\\temp\\win-requirements.txt
-
-# Create a venv and install the requirements into it; this populates the uv cache (C:\uv\cache),
-# which is baked into the image so agent-side venv creation is fast/offline in the normal case
-RUN $env:Path = 'C:\uv;C:\uv\bin;' + $env:Path; \
-    uv venv C:\venv; if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }; \
-    uv pip install --python C:\venv\Scripts\python.exe -r C:\\temp\\win-requirements.txt; exit $LASTEXITCODE
-RUN Remove-Item C:\\temp\\win-requirements.txt

@@ -33,22 +33,6 @@ object WindowsTestEnvironment : BuildType({
     }
 
     steps {
-        powerShell {
-            name = "Get tooling from network share"
-            platform = PowerShellStep.Platform.x64
-            scriptMode = script {
-                content = """
-                    # Get the current working directory
-                    ${'$'}destinationDir = "ci\\dockerfiles\\windows"
-
-                    # Copy the files from the source to the destination
-                    Copy-Item -Path "test\\deltares_testbench\\pip\\win-requirements.txt" -Destination ${'$'}destinationDir
-
-                    # List all the files in the destination directory
-                    Get-ChildItem -Path ${'$'}destinationDir
-                """.trimIndent()
-            }
-        }
         dockerCommand {
             name = "Docker build dhydro test-environment container"
             commandType = build {
@@ -91,7 +75,6 @@ object WindowsTestEnvironment : BuildType({
             triggerRules = """
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-test-environment
                 +:ci/teamcity/Delft3D/windows/testEnvironment.kt
-                +:test/deltares_testbench/pip/win-requirements.txt
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
