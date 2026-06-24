@@ -2336,7 +2336,7 @@ contains
       use messagehandling, only: msgbuf, err_flush
       implicit none
 
-      integer :: ibnd, isrc, K, K1, K2, kk, iseg
+      integer :: ibnd, isrc, K, K1, K2, kk
       integer :: kk1
       integer :: kk2
 
@@ -2351,16 +2351,14 @@ contains
             if (kk1 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
-                  iseg = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
-                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = iseg * waqpar%kmk1(iseg)
+                  waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = waqpar%iapnt(kk1) + (K - 1) * waqpar%nosegl
                   waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = -ibnd - waqpar%numbnd * (K - 1)
                end do
             else if (kk2 > 0) then
                ibnd = ibnd + 1
                do K = 1, waqpar%kmxnxa
                   waqpar%ifrmtosrc(1, source_sinks%waq_index(isrc) + K) = -ibnd - waqpar%numbnd * (K - 1)
-                  iseg = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
-                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = iseg * waqpar%kmk1(iseg)
+                  waqpar%ifrmtosrc(2, source_sinks%waq_index(isrc) + K) = waqpar%iapnt(kk2) + (K - 1) * waqpar%nosegl
                end do
             end if
          else
@@ -2441,7 +2439,7 @@ contains
       use m_alloc
       implicit none
 
-      integer :: ilat, ilatwaq, ibnd, k1, kk, K, iseg
+      integer :: ilat, ilatwaq, ibnd, k1, kk, K
 
       ibnd = ndx - ndxi + waqpar%numsrcbnd ! starting number for lateral boundaries
 
@@ -2457,8 +2455,7 @@ contains
                      do K = 1, waqpar%kmxnxa
                         ilatwaq = ilatwaq + 1
                         waqpar%ifrmtolat(1, ilatwaq) = -ibnd - waqpar%numbnd * (K - 1)
-                        iseg = waqpar%iapnt(kk) + (K - 1) * waqpar%nosegl
-                        waqpar%ifrmtolat(2, ilatwaq) = iseg * waqpar%kmk1(iseg)
+                        waqpar%ifrmtolat(2, ilatwaq) = waqpar%iapnt(kk) + (K - 1) * waqpar%nosegl
                      end do
                   end if
                end if
