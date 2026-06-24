@@ -1230,8 +1230,8 @@ contains
 
       call reallocP(meshgeom1d%nnodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
       call reallocP(meshgeom1d%nnodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodex, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
-      call reallocP(meshgeom1d%nodey, meshgeom1d%nnodes, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodex, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
+      call reallocP(meshgeom1d%nodey, meshgeom1d%numnode, keepexisting=.true., fill=-999.0_dp)
       call realloc(nnodeids, meshgeom1d%nnodes, keepexisting=.true.)
 
       call reallocP(meshgeom1d%nodeidx_inverse, size(kc), keepexisting=.true., fill=-999)

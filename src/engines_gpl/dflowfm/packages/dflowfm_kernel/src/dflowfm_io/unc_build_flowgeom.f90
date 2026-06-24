@@ -432,7 +432,7 @@ contains
       use m_flowgeom, only: ndxi, ndx2d, ndx1db, nd, xz, yz, &
                             lnx1d, lnxi, lnx1db, ln, kcu, xu, yu, ln2lne, t_fm_flowgeom
       use m_save_ugrid_state, only: mesh1dname, meshgeom1d
-      use network_data, only: nodepermutation, Lperm
+      use network_data, only: Lperm
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
       use precision, only: dp
@@ -591,9 +591,29 @@ contains
       end if
 
       ! =========================================================
-      ! Fill node coordinates via node_map_1d
+      ! Fill node coordinates (and branch metadata) via node_map_1d
       ! =========================================================
-      ! Iterating over node_map_1d keeps this loop independent of global indexing.
+      ! WARNING: this loop juggles FOUR different node-index spaces. Keep them apart:
+      !
+      !   (1) output 1D node index    n              : 1 .. n1d_out, index into the mesh1D arrays being written.
+      !   (2) flow node index         node_map_1d(n) : global flow-node numbering, ordered [2D cells | 1D nodes | bnd].
+      !                                                1D nodes start at ndx2d+1, so node_map_1d holds values > ndx2d.
+      !       local 1D index          i = node_map_1d(n) - ndx2d
+      !   (3) current net-node index  nd(node_map_1d(n))%nod(1) : net node attached to the 1D flow node, in the
+      !                                                renumbered (post-setnodadm) network_data numbering.
+      !   (4) original net-node index nodePermutation(...)      : net-node numbering as read from *_net.nc (pre-setnodadm).
+      !       mesh1D node index       meshgeom1d%nodeidx_inverse(...) : 1 .. numnode index into the branch-metadata
+      !                                                arrays (nodebranchidx, nodeoffsets), keyed by the ORIGINAL numbering.
+      !
+      ! The two-step translation below converts (3) -> (4) -> mesh1D index, because the branch-metadata in
+      ! meshgeom1d is stored against the original net.nc numbering:
+      !
+      !   k1 = nodePermutation(current net node)   ! (3) -> (4): undo setnodadm renumbering
+      !   k1 = meshgeom1d%nodeidx_inverse(k1)      ! (4) -> mesh1D node index (1..numnode)
+      !
+      ! PRECONDITION: nodePermutation must be the real permutation built by setnodadm (gridoperations.F90, only
+      ! filled when called with jacrosscheck_ >= 10). If left as the identity, step (3)->(4) is a no-op and
+      ! nodeidx_inverse is indexed with a current net-node number, reading uninitialised slots -> garbage indices.
 
       do n = 1, n1d_out
          i = flowgeom%node_map_1d(n) - ndx2d ! local 1D index
@@ -601,12 +621,14 @@ contains
          flowgeom%mesh1D%nodey(n) = yz(flowgeom%node_map_1d(n))
 
          if (i <= ndx1d .and. associated(meshgeom1d%ngeopointx)) then
-            k1 = nodePermutation(nd(flowgeom%node_map_1d(n))%nod(1))
-            if (size(meshgeom1d%nodeidx_inverse) > 0) then
+            k1 = nd(flowgeom%node_map_1d(n))%nod(1)
+            if (associated(meshgeom1d%nodeidx_inverse)) then
                k1 = meshgeom1d%nodeidx_inverse(k1)
             end if
-            flowgeom%mesh1D%nodebranchidx(n) = meshgeom1d%nodebranchidx(k1)
-            flowgeom%mesh1D%nodeoffsets(n) = meshgeom1d%nodeoffsets(k1)
+            if (k1 >= 1 .and. k1 <= size(meshgeom1d%nodebranchidx)) then
+               flowgeom%mesh1D%nodebranchidx(n) = meshgeom1d%nodebranchidx(k1)
+               flowgeom%mesh1D%nodeoffsets(n) = meshgeom1d%nodeoffsets(k1)
+            end if
          end if
       end do
 
