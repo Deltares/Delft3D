@@ -55,7 +55,7 @@ object WindowsTest : BuildType({
             options = processor.configs.zip(processor.labels) { config, label -> label to config },
             display = ParameterDisplay.PROMPT
         )
-        param("container.tag", "%build.vcs.number%")
+        param("container.tag", "test-environment")
         param("product", "unknown")
         checkbox("copy_tested_cases", "false", label = "Copy tested cases", description = "ZIP a copy of the ./data/cases directory (wil include only cases that ran in this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
         checkbox("copy_failed_cases", "false", label = "Copy failed cases", description = "ZIP a copy of the ./data/cases directory (will include only cases that failed this job).", display = ParameterDisplay.PROMPT, checked = "true", unchecked = "false")
@@ -109,8 +109,10 @@ object WindowsTest : BuildType({
             name = "Run TestBench.py"
             id = "RUNNER_testbench"
             workingDir = "test/deltares_testbench/"
-                scriptContent = """   
+                scriptContent = """
                     @echo off
+
+                    echo UV_CACHE_DIR=%%UV_CACHE_DIR%%
 
                     set argsList=--username %s3_dsctestbench_accesskey% ^
                     --password %s3_dsctestbench_secret% ^
@@ -125,10 +127,15 @@ object WindowsTest : BuildType({
                         set argsList=%%argsList%% --copy-failed-cases
                     )
 
-                    python TestBench.py %%argsList%%
+                    rem Fresh venv for this branch; wheels come from the image's uv cache (fast/offline if unchanged)
+                    uv venv
+                    if errorlevel 1 exit /b 1
+                    uv pip install -r pip/win-requirements.txt
+                    if errorlevel 1 exit /b 1
+
+                    uv run python TestBench.py %%argsList%%
 
             """.trimIndent()
-        
 
             dockerImage = "containers.deltares.nl/delft3d-dev/test/delft3d-test-environment-windows:%container.tag%"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
@@ -158,12 +165,6 @@ object WindowsTest : BuildType({
             artifacts {
                 cleanDestination = true
                 artifactRules = "dimrset_x64_*.zip!/x64/**=>test/deltares_testbench/data/engines/teamcity_artifacts/x64"
-            }
-        }
-        dependency(WindowsTestEnvironment) {
-            snapshot {
-                onDependencyFailure = FailureAction.FAIL_TO_START
-                onDependencyCancel = FailureAction.CANCEL
             }
         }
         artifacts(AbsoluteId("Wanda_WandaCore_Wanda4TrunkX64")) {

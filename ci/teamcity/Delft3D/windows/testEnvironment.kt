@@ -24,7 +24,7 @@ object WindowsTestEnvironment : BuildType({
 
     params {
         param("trigger.type", "")
-        param("container.tag", "test-environment-ltsc2025")
+        param("container.tag", "test-environment")
     }
 
     vcs {
@@ -37,12 +37,11 @@ object WindowsTestEnvironment : BuildType({
             name = "Get tooling from network share"
             platform = PowerShellStep.Platform.x64
             scriptMode = script {
-                content = """                    
+                content = """
                     # Get the current working directory
                     ${'$'}destinationDir = "ci\\dockerfiles\\windows"
-                    
+
                     # Copy the files from the source to the destination
-                    Copy-Item -Path "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024\python-3.12.7-amd64.exe" -Destination ${'$'}destinationDir
                     Copy-Item -Path "test\\deltares_testbench\\pip\\win-requirements.txt" -Destination ${'$'}destinationDir
 
                     # List all the files in the destination directory
@@ -82,7 +81,7 @@ object WindowsTestEnvironment : BuildType({
                 """.trimIndent()
             }
             conditions {
-                equals("trigger.type", "vcs")
+                matches("trigger.type", "vcs|schedule")
             }
         }
     }
