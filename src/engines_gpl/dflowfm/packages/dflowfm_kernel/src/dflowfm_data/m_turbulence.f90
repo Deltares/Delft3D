@@ -134,7 +134,7 @@ contains
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
       use m_physcoef, only: vonkar
-      c1e = c2e - vonkar**2 / (sigeps * sqrt(cmukep))
+      c1e = 1.44_dp
       c1t = (1.0_dp - c1e) * cmukep
       c3t_unstable = (1.0_dp - c1e) * cmukep
       c3e_stable = 0.0_dp
