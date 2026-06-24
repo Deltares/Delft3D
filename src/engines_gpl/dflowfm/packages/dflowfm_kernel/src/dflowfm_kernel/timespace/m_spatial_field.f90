@@ -32,6 +32,8 @@
 module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
+   use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   
    implicit none(type, external)
 
    private
@@ -120,7 +122,6 @@ contains
       use tree_data_types, only: tree_data
       use properties, only: prop_get
       use unstruc_inifields, only: averagingTypeStringToInteger
-      use m_ec_interpolationsettings, only: RCEL_DEFAULT
 
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_averaging_input), intent(out) :: avg
