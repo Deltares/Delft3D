@@ -45,7 +45,7 @@ module m_spatial_field
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
       integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      real(dp) :: rel_size = RCEL_DEFAULT !< averagingRelSize= negative = use EC default.
       integer :: num_min = 1 !< averagingNumMin=
       real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
@@ -140,10 +140,10 @@ contains
       if (.not. is_read) avg%rel_size = RCEL_DEFAULT ! old default
 
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (is_read .and. avg%num_min < 1) avg%num_min = 1
+      if (.not. is_read) avg%num_min = 1
 
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
+      if (.not. is_read) avg%percentile = 0.0_dp
 
    end subroutine read_averaging_input
 
