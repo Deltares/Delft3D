@@ -119,19 +119,25 @@ contains
    subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use unstruc_inifields, only: averagingTypeStringToInteger
+      use m_ec_interpolationsettings, only: RCEL_DEFAULT
 
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_averaging_input), intent(out) :: avg
 
       logical :: is_read
+      character(len=256) :: averagingType
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
-      if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
+      call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
+      if (.not. is_read) then
+         averagingType = 'mean'
+      end if  
+      call averagingTypeStringToInteger(averagingType, avg%averaging_type)
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
+      if (.not. is_read) avg%rel_size = RCEL_DEFAULT ! old default
 
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
       if (is_read .and. avg%num_min < 1) avg%num_min = 1
