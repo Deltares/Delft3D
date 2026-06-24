@@ -10,14 +10,9 @@ RUN reg add "HKLM\SYSTEM\CurrentControlSet\Control\FileSystem" /v "LongPathsEnab
 ENV UV_INSTALL_DIR="C:\\uv"
 ENV UV_PYTHON_INSTALL_DIR="C:\\uv\\python"
 ENV UV_PYTHON_BIN_DIR="C:\\uv\\bin"
-
-# Fixed cache location so the baked cache is found at runtime regardless of the container user
 ENV UV_CACHE_DIR="C:\\uv\\cache"
 
-# Pin uv to a fixed version so the container does not silently change
 ARG UV_VERSION=0.11.21
-
-# Install the pinned uv version from the internet
 RUN irm https://astral.sh/uv/${UV_VERSION}/install.ps1 | iex
 
 # Add uv and the Python executables to the machine PATH (persists at container runtime)
