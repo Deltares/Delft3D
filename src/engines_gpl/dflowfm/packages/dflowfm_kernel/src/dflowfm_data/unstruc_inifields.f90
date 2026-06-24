@@ -218,7 +218,6 @@ contains
 
       use fm_external_forcings_data, only: qid, operand, transformcoef, success, trnames
 
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
       use m_hydrology_data, only: DFM_HYD_INFILT_CONST, &
                                   DFM_HYD_INTERCEPT_LAYER
       use m_transportdata, only: itrac2const, constituents
@@ -490,7 +489,7 @@ contains
       use fm_external_forcings_utils, only: read_tracer_properties
       use m_ec_interpolationsettings, only: RCEL_DEFAULT
       use m_ec_parameters, only: interpolate_time, interpolate_spacetimeSaveWeightFactors
-      use m_laterals, only: ILATTP_1D, ILATTP_2D, ILATTP_ALL
+      use fm_location_types, only: parse_spatial_location_type, SPATIAL_LOCATION_ALL
       use m_grw
       use m_Roughness, only: frictionTypeStringToInteger
 
@@ -663,18 +662,9 @@ contains
 
          call prop_get(node_ptr, '', 'locationType ', locationType, retVal)
          if (.not. retVal) then
-            ilocType = ILATTP_ALL
+            ilocType = SPATIAL_LOCATION_ALL
          else
-            select case (trim(str_tolower(locationType)))
-            case ('1d')
-               ilocType = ILATTP_1D
-            case ('2d')
-               ilocType = ILATTP_2D
-            case ('1d2d')
-               ilocType = ILATTP_ALL
-            case default
-               ilocType = ILATTP_ALL
-            end select
+            ilocType = parse_spatial_location_type(locationType)
          end if
 
          ! if the infiltrationmodel is not horton, but a horton quantity is detected, then send a error message
@@ -2205,7 +2195,7 @@ contains
       use m_nudge, only: nudge_time, nudge_rate
       use m_physcoef, only: constant_dicoww, dicoww
       use m_array_or_scalar, only: assign_pointer_to_t_array, realloc
-      use unstruc_model, only: md_extfile, md_ptr
+      use unstruc_model, only: md_ptr
       use m_fm_icecover, only: ja_ice_area_fraction_read, ja_ice_thickness_read, fm_ice_activate_by_ext_forces
       use m_waveconst, only: WAVE_NC_OFFLINE, WAVEFORCING_DISSIPATION_3D, WAVEFORCING_RADIATION_STRESS, WAVEFORCING_DISSIPATION_TOTAL
       use processes_input, only: sfunname, sfuninp, num_spatial_time_fuctions
@@ -2727,18 +2717,18 @@ contains
       use network_data, only: xk, yk, numk
       use m_flowgeom, only: ndx, lnx, xu, yu
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_S3D, UNC_LOC_CN
-      use m_lateral_helper_fuctions, only: prepare_lateral_mask
+      use m_flowgeom_mask, only: construct_mask
 
       integer, intent(in) :: target_location_type !< The spatial type of the target locations: 1D, 2D or all.
       real(kind=dp), pointer, dimension(:), intent(out) :: x_loc, y_loc !< The x and y coordinates of the target locations.
       integer, intent(out) :: num_items !< The number of target locations.
-      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all. Used for filling the kcsini mask array. Valid values: ILATTP_1D, ILATTP_2D, ILATTP_ALL.
+      integer, intent(in) :: iloctype !< The spatial type of the target locations: 1D, 2D or all. Used for filling the kcsini mask array. Valid values: SPATIAL_LOCATION_ALL/1D/2D.
       integer, dimension(:), allocatable, intent(inout) :: kcsini !< Mask array.
 
       select case (target_location_type)
       case (UNC_LOC_S, UNC_LOC_S3D)
          call realloc(kcsini, ndx)
-         call prepare_lateral_mask(kcsini, iloctype)
+         call construct_mask(kcsini, target_location_type, iloctype)
          x_loc => xz(1:ndx)
          y_loc => yz(1:ndx)
          num_items = ndx

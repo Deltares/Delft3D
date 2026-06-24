@@ -33,7 +33,7 @@
                0 0 0 0 0 0 0 
             </DataArray>
             <DataArray type="Float64" Name="sea_surface_height" NumberOfComponents="1" format="ascii">
-               2.20497e-07 -1.2 3.94716e-07 1.0149e-07 1.98049e-07 -2.4 1.1996 
+               7.20697e-08 -0.600005 -3.08424e-08 -5.12702e-08 1.14117e-07 -2.4 3.00001 
             </DataArray>
             <DataArray type="Float64" Name="sea_floor_depth_below_geoid" NumberOfComponents="1" format="ascii">
                10 10 10 10 10 10 10 
