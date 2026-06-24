@@ -88,7 +88,10 @@ object WindowsTestEnvironment : BuildType({
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-test-environment
+                +:ci/teamcity/Delft3D/windows/testEnvironment.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
                 param("trigger.type", "vcs")
