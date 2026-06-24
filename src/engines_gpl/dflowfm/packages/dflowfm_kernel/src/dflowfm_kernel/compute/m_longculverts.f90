@@ -1587,12 +1587,14 @@ contains
    subroutine initialize_long_culverts(md_1dfiles, md_convertlongculverts, write_converted_files)
       use m_set_nod_adm, only: setnodadm
       use m_globalparameters, only: t_filenames
+      use network_data, only: numl1d
 
       type(t_filenames), intent(inout) :: md_1dfiles
       integer, intent(in) :: md_convertlongculverts !< Flag to indicate whether to convert old-style long culverts on-the-fly.
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
       character(:), allocatable :: structure_files
       logical :: write_converted_files_
+      integer :: ilongc, num_longculvert_links
 
       write_converted_files_ = .false.
       if (present(write_converted_files)) then
@@ -1616,6 +1618,14 @@ contains
             end if
          end if
       end if
+
+      ! Determine whether all 1D netlinks belong to long culverts.
+      num_longculvert_links = 0
+      do ilongc = 1, nlongculverts
+         num_longculvert_links = num_longculvert_links + longculverts(ilongc)%numlinks
+      end do
+
+      only_longculvert_1D = (num_longculvert_links == numl1d)
 
    end subroutine initialize_long_culverts
 

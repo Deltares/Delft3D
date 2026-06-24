@@ -95,6 +95,7 @@ contains
       use m_flowgeom, only: wu1duni
       use m_flow, only: nonlin1d, nonlin, flow_solver, flow_solver_sre
       use unstruc_channel_flow, only: default_width, network, cscalculationoption, cs_type_plus
+      use m_longculverts_data, only: only_longculvert_1d
 
       integer handle_tot
       integer handle
@@ -105,7 +106,7 @@ contains
 
       if (network%loaded) then
          ! nonlinear computation is required for 1d flow
-         if (nonlin1D == 0) then
+         if (nonlin1D == 0 .and. .not. only_longculvert_1D) then
             nonLin1D = 1
          elseif (nonlin1D >= 2) then
             CSCalculationOption = CS_TYPE_PLUS
