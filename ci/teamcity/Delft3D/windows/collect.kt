@@ -90,7 +90,7 @@ object WindowsCollect : BuildType({
         }
         script {
             name = "Prepare artifact to upload"
-            dockerImage = "containers.deltares.nl/base_windows_containers/server:ltsc2022"
+            dockerImage = "containers.deltares.nl/mcr-proxy/windows/server:ltsc2025"
             dockerImagePlatform = ScriptBuildStep.ImagePlatform.Windows
             dockerPull = true
             scriptContent = """

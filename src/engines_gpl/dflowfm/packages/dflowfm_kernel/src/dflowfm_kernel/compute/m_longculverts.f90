@@ -1017,7 +1017,7 @@ contains
       real(kind=dp), intent(in) :: zplCulv(:) !< z-coordinates of the polyline of one or more culverts.
       integer, intent(in) :: nplCulv !< Number of points in the culvert polyline.
 
-      integer :: jpoint, jstart, jend, ipoly
+      integer :: jpoint, jstart, jend, ipoly, inode
 
       if (meshgeom1d%numnode == -1 .and. meshgeom1d%nnodes == -1) then
          ! This is to allow more than one call to loadNetwork/unc_read_net_ugrid. Remove any previously read network state.
@@ -1027,6 +1027,19 @@ contains
          meshgeom1d%nnodes = 0
          meshgeom1d%numedge = 0
          meshgeom1d%numnode = 0
+      end if
+
+      if (.not. associated(meshgeom1d%nodeidx) .and. meshgeom1d%numnode > 0) then
+         !if an existing network is read but nodeidx and nodeidx_inverse are not allocated, fill them here.
+         allocate (meshgeom1d%nodeidx(meshgeom1d%numnode))
+         meshgeom1d%nodeidx = [(inode, inode=1, meshgeom1d%numnode)]
+         if (associated(meshgeom1d%nodeidx_inverse)) then
+            deallocate (meshgeom1d%nodeidx_inverse)
+         end if
+         allocate (meshgeom1d%nodeidx_inverse(meshgeom1d%numnode))
+         do inode = 1, meshgeom1d%numnode
+            meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(inode)) = inode
+         end do
       end if
 
       ipoly = 0
@@ -1530,6 +1543,7 @@ contains
       use messageHandling
       use properties
       use unstruc_channel_flow
+      use m_unstruc_model_data, only: md_convertlongculverts
 
       character(len=*), intent(in) :: structurefiles !< File name of the structure.ini file.
 
@@ -1574,6 +1588,7 @@ contains
          nlongculverts = num_longculverts
          if (num_newculverts > 0) then
             newculverts = .true.
+            md_convertlongculverts = 0
             if (num_newculverts /= num_longculverts) then
                call mess(LEVEL_ERROR, 'Error loading long culverts, only one input type is supported!')
             end if
@@ -1647,6 +1662,8 @@ contains
       use m_network, only: admin_network
       use m_1d_networkreader, only: construct_network_from_meshgeom
       use m_save_ugrid_state
+      use m_node, only: dealloc
+      use m_branch, only: dealloc
 
       type(t_filenames), intent(inout) :: md_1dfiles
       logical, optional, intent(in) :: write_converted_files !< Whether or not to write the converted structures and cross-sections files. (default = .false.)
@@ -1691,6 +1708,8 @@ contains
             call realloc(nodeids, meshgeom1d%numnode)
             call realloc(nodelongnames, meshgeom1d%numnode)
             network%numl = meshgeom1d%numedge
+            call dealloc(network%nds)
+            call dealloc(network%brs)
 
             ierr = construct_network_from_meshgeom(network, meshgeom1d, nbranchids, nbranchlongnames, nnodeids, &
                                                    nnodelongnames, nodeids, nodelongnames, network1dname, mesh1dname, 0, 0, 0)

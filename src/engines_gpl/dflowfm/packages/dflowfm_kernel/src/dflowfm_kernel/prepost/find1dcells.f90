@@ -91,17 +91,17 @@ contains
       if (associated(meshgeom1d%nodebranchidx)) then
          ! Create branch node index array and inverse.
          nump1d = size(meshgeom1d%nodebranchidx) !< Old number of nodes contained in meshgeom1d
+         if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
+            allocate (meshgeom1d%nodeidx(nump1d))
+            meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
+         end if
+         allocate (meshgeom1d%nodeidx_inverse(maxval(meshgeom1d%nodeidx)))
+         do i = 1, nump1d
+            meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i
+         end do
       else
          nump1d = 0
       end if
-      if (.not. associated(meshgeom1d%nodeidx)) then ! assume that the nodes were put at the front in order during network reading.
-         allocate (meshgeom1d%nodeidx(nump1d))
-         meshgeom1d%nodeidx = [(nump1d_i, nump1d_i=1, nump1d)]
-      end if
-      allocate (meshgeom1d%nodeidx_inverse(maxval(meshgeom1d%nodeidx)))
-      do i = 1, nump1d
-         meshgeom1d%nodeidx_inverse(meshgeom1d%nodeidx(i)) = i
-      end do
 
       nump1d2d = nump !> start from 2D cells
       !> two passes, second one in case branch order cannot be preserved.
