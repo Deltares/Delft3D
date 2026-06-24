@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import sys
@@ -140,19 +141,23 @@ def generate_schema_file(spec):
 
 
 def main():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    input_path = os.path.join(script_dir, "..", "json", "mdu.json")
-    output_path = os.path.join(script_dir, "..", "dflowfm_io", "src", "MduSchema.cpp")
+    parser = argparse.ArgumentParser(description="Generate the C++ MDU schema source from mdu.json.")
+    parser.add_argument("input", help="Path to the mdu.json specification.")
+    parser.add_argument("output", help="Path of the C++ source file to generate.")
+    args = parser.parse_args()
 
-    with open(input_path, "r", encoding="utf-8") as f:
+    with open(args.input, "r", encoding="utf-8") as f:
         spec = json.load(f)
 
     source = generate_schema_file(spec)
 
-    with open(output_path, "w", encoding="utf-8", newline="\n") as f:
+    output_dir = os.path.dirname(os.path.abspath(args.output))
+    os.makedirs(output_dir, exist_ok=True)
+
+    with open(args.output, "w", encoding="utf-8", newline="\n") as f:
         f.write(source)
 
-    print(f"Generated {os.path.normpath(output_path)} from {os.path.normpath(input_path)}")
+    print(f"Generated {os.path.normpath(args.output)} from {os.path.normpath(args.input)}")
     return 0
 
 
