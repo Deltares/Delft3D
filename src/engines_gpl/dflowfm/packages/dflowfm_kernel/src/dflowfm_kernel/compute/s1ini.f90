@@ -233,6 +233,8 @@ contains
                         if (i_layer >= index_active_bottom_layer) then
                            layer_index = kbot(k) + i_layer - index_active_bottom_layer
                            qin(layer_index) = qin(layer_index) + qqlat(i_layer, k1)
+                        else
+                           qin(kbot(k)) = qin(kbot(k)) + qqlat(i_layer, k1)
                         end if
                      end if
                   end do

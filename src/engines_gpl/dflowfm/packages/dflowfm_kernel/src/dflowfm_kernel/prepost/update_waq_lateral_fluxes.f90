@@ -67,7 +67,7 @@ contains
             if (i_node > 0) then
                if (.not. is_ghost_node(i_node)) then
                   do i_layer = 1, num_layers
-                     i_layer_waq = i_latwaq + waqpar%ilaggr(num_layers - i_layer + 1)
+                     i_layer_waq = i_latwaq + waqpar%ilaggr(min(num_layers - i_layer + 1, kmxn(i_node)))
                      qlatwaq(i_layer_waq) = qlatwaq(i_layer_waq) + dts * qqLat(i_layer, k1)
                   end do
                   i_latwaq = i_latwaq + waqpar%kmxnxa
