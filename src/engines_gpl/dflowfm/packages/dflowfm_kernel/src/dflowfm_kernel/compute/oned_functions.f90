@@ -105,7 +105,8 @@ contains
       default_width = wu1DUNI
 
       if (network%loaded) then
-         ! nonlinear computation is required for 1d flow
+         ! nonlinear computation is required for 1d flow, but since long culverts use only rectangular profiles, we do not override nonlin1D if there's only long culverts in the model.
+         ! Note that nonlin1D = 0 still introduces an error the moment the long culvert transitions from partially filled to fully submerged, but this is small enough to be not force nonlin1D to 1 in that case.
          if (nonlin1D == 0 .and. .not. only_longculvert_1D) then
             nonLin1D = 1
          elseif (nonlin1D >= 2) then
