@@ -71,6 +71,7 @@ contains
                               ssxcum, ssycum, sinkse, sourse, sour_im, srcmax, taub, taurat, &
                               ust2, umod, uuu, vvv, wslc, zumod, rca, statqnt, ithresh, &
                               dm_he, dg_he, dgsd_he, dxx_he, frac_he, mudfrac_he, spatial_d50
+      use m_fm_erosed, only : difparam, seddif_cal
 
       if (.not. stm_included) then
          return
@@ -123,6 +124,8 @@ contains
       floclist => stmpar%sedpar%floclist
       tbreakup => stmpar%sedpar%tbreakup
       tfloc => stmpar%sedpar%tfloc
+      difparam => stmpar%sedpar%difparam
+      seddif_cal => stmpar%sedpar%seddif_cal
 
       ! morpar
       thresh => stmpar%morpar%thresh

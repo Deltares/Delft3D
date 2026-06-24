@@ -628,6 +628,11 @@ contains
          call fm_precice_adapter_builder%set_config_file("../precice_config.xml")
          call fm_precice_adapter_builder%set_cell_center_mesh_2d("fm_flow_cells", ndx, xz, yz)
          call fm_precice_adapter_builder%set_cell_center_mesh_3d("fm_flow_cells_3d", ndx, kmx, xz, yz, zws)
+         call fm_precice_adapter_builder%set_sources_sinks_mesh_name("sources_sinks_nodes")
+         if (jampi == 1) then
+             call fm_precice_adapter_builder%set_mpi_rank(my_rank, numranks)
+             call fm_precice_adapter_builder%set_mpi_communicator(DFM_COMM_DFMWORLD)
+         end if
       end if
 
       iresult = DFM_NOERR
