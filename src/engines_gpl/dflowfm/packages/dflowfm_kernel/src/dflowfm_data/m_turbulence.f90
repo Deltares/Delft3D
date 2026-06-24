@@ -133,13 +133,11 @@ contains
 
    !> Sets (underived) variables in this module to their default values.
    subroutine default_turbulence()
-      use m_physcoef, only: vonkar
       c1e = 1.44_dp
-      c1t = (1.0_dp - c1e) * cmukep
-      c3t_unstable = (1.0_dp - c1e) * cmukep
+      c1t = (1.0_dp - c1e) * CMUKEP
+      c3t_unstable = (1.0_dp - c1e) * CMUKEP
       c3e_stable = 0.0_dp
       c3e_unstable = c1e ! Can be overriden by user and is therefore not a derived coefficient
-
       tke_min = MINIMUM_VALUE_K_EPS_TAU
       eps_min = MINIMUM_VALUE_K_EPS_TAU
    end subroutine default_turbulence
