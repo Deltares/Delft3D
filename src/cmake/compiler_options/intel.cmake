@@ -32,7 +32,9 @@ if (WIN32)
     set(openmp_flag                           /Qopenmp)   # To disable: set to /Qopenmp-stubs
     set(avx2_flag                             /arch:CORE-AVX2)
     set(generate_reentrancy_threaded_flag     /reentrancy:threaded)
-    set(floating_point_exception_flag         /fpe:0)
+    # Disabled as it breaks HDF5's init checks. See https://github.com/HDFGroup/hdf5/issues/3831 
+	# for more info and HDF5 PR 3837 which adds the problematic feholdexcept check.
+    #set(floating_point_exception_flag         /fpe:0) 
     set(floating_point_source_flag            /fp:source)
     set(floating_point_speculation_safe_flag  /Qfp-speculation:safe)
     set(flush_to_zero_flag                    /Qftz)
@@ -48,7 +50,7 @@ if (WIN32)
     set(debug_information_flag                /Z7)
 
     # Set debug flags:
-    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${debug_information_flag} ${check_pointers_flag}")
     string(APPEND CMAKE_Fortran_FLAGS_RELWITHDEBINFO " ${debug_information_flag}")
 
     # To prevent Visual Studio compilation failures when trying to write the manifest file
@@ -101,14 +103,14 @@ if (UNIX)
     set(openmp_flag                              "-qopenmp")     # To disable: set to -qopenmp-stubs
     set(avx2_flag                                "-arch CORE-AVX2")
     set(generate_reentrancy_threaded_flag        "-reentrancy threaded")
-    set(floating_point_exception_flag            "-fpe0")
+    #set(floating_point_exception_flag            "-fpe0") # Intentionally disabled as it breaks HDF5's init checks in debug
     set(flush_to_zero_flag                       "-ftz")
     set(traceback_flag                           "-traceback")
     set(heap_arrays_100_flag                     "-heap-arrays 100")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     # Set debug flags:
-    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag} ${floating_point_exception_flag}")
+    string(APPEND CMAKE_Fortran_FLAGS_DEBUG " ${check_stack_flag} ${check_bounds_flag} ${traceback_flag} ${check_pointers_flag}")
 endif(UNIX)
 
 set(qauto_threaded_flags "SHELL:${automatic_local_variable_storage_flag}" "SHELL:${generate_reentrancy_threaded_flag}")
