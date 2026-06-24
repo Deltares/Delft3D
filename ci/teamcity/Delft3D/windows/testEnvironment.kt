@@ -91,6 +91,7 @@ object WindowsTestEnvironment : BuildType({
             triggerRules = """
                 +:ci/dockerfiles/windows/Dockerfile-dhydro-test-environment
                 +:ci/teamcity/Delft3D/windows/testEnvironment.kt
+                +:test/deltares_testbench/pip/win-requirements.txt
             """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
             buildParams {
