@@ -118,7 +118,9 @@
       hyd%waqgeom%num_layers = d_hyd%waqgeom%num_layers
       hyd%waqgeom%numtopsig = d_hyd%waqgeom%numtopsig
       hyd%waqgeom%layertype = d_hyd%waqgeom%layertype
-      hyd%layer_type        = d_hyd%waqgeom%layertype
+      hyd%layer_type        = d_hyd%layer_type
+      hyd%zbot              = d_hyd%zbot
+      hyd%ztop              = d_hyd%ztop
       allocate( hyd%waqgeom%layer_zs, source = d_hyd%waqgeom%layer_zs )
       allocate( hyd%waqgeom%interface_zs, source = d_hyd%waqgeom%interface_zs )
 
@@ -445,7 +447,7 @@
             no_bnd = openbndsect%openbndlin_coll%current_size
             do i_bnd = 1 , no_bnd
                openbndlin => openbndsect%openbndlin_coll%openbndlin_pnts(i_bnd)
-               if (comparereal(openbndlin%x1, openbndlin%x2) == 0 .and. comparereal(openbndlin%x1, openbndlin%x2) == 0) then
+               if (comparereal(openbndlin%x1, openbndlin%x2) == 0 .and. comparereal(openbndlin%y1, openbndlin%y2) == 0) then
                   do ilay = 1, d_hyd%num_layers
                      d_hyd%ispoint_bnd(abs(openbndlin%ibnd)+(ilay-1)*d_hyd%nobndl) = .true.
                   end do
