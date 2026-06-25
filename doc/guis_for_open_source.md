@@ -1,9 +1,9 @@
 # User interfaces for the Delft3D open source community
 Back to [main page](../README.md).
 
-## Delft3D Flexible Mesh
+## Delft3D Flexible Mesh 2D3D
 - Register and log in to the https://download.deltares.nl/en website.
-- Go to https://download.deltares.nl/delft3d-fm-suite-2d3d-graphical-user-interface-gui-open-source and add the zipped installer for the Delft3D FM Suite to your cart.
+- Go to https://download.deltares.nl/delft3d-fm-suite-2d3d-graphical-user-interface-gui-open-source and add the zipped installer for the Delft3D FM Suite 2D3D to your cart.
 - Click on the cart symbol at the top of the page.
   Complete the required forms, accept the Deltares software license terms, select one of the available download sites and press "Send Request".
 - You will automatically receive an email containing with a download link for the installer (share link) and a download link for  the license file.
@@ -16,6 +16,7 @@ Back to [main page](../README.md).
   Initially, it will only contain a `DeltaShell.Dimr.dll`.
   Create a new folder named `kernels` with subdirectory `x64` next to this dll-file, such that the folder `plugins\DeltaShell.Dimr\kernels\x64` exists.
 - Build the kernels from the source code in this repository.
+  **Note: combine the 2026.02 version of the user interface with the kernels built from the [`DIMRset_2026.02` tag](https://github.com/Deltares/Delft3D/releases/tag/DIMRset_2026.02). The main branch includes changes that are not compatible with the 2026.02 user interface.**
   Build the Release configuration for either `fm-suite` or `all` (see [this page](compiling_Windows.md) for detailed Windows compilation instructions).
 - Copy the content (`bin`, `lib` and `share` directories) of the `install_fm-suite` (or `install_all`) folder in your development environment to the `plugins\DeltaShell.Dimr\kernels\x64` folder created above.
 
