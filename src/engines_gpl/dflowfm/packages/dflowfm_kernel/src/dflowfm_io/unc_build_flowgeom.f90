@@ -1,3 +1,16 @@
+!> Builds a flow geometry object (t_fm_flowgeom) for use by the NetCDF/UGRID writers.
+!!
+!! The flow solver stores 1D and 2D topology together in a single set of merged
+!! arrays, whereas the UGRID convention requires the 1D and 2D meshes to be written
+!! as separate, self-contained mesh objects. 
+!! The flowgeom builders gather the relevant connectivity and coordinates from m_flowgeom/network_data
+!! to build mesh1D and mesh2D structures for UGRID, and additionally some FM specific variables contained in t_fm_flowgeom.
+!!
+!! Optional output masking is supported. When a cell/node selection mask is supplied, only the selected faces and nodes
+!! enter the output set, and mapping arrays (face_map, edge_map, node_map,
+!! node_map_1d, edgetoln, contactstoln) are built to relate the reduced set of output
+!! indices back to the full-grid indices.
+!!
 module m_unc_flowgeom
    use m_unstruc_netcdf_data, only: t_fm_flowgeom
 
