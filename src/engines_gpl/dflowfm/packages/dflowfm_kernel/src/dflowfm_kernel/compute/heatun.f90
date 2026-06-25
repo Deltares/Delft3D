@@ -344,10 +344,13 @@ contains
          end if
          
          if (air_water_interaction_model == AIR_WATER_INTERACTION_MODEL_MOST) then
-            total_heat_flux = latent_heat_flux(n) + sensible_heat_flux(n) + longwave_radiation_flux 
-         else
-            total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
+            forced_latent_heat_flux = latent_heat_flux(n)
+            forced_sensible_heat_flux = sensible_heat_flux(n)
+            free_convective_sensible_heat_flux = 0.0_dp
+            free_convective_latent_heat_flux = 0.0_dp
          end if
+         
+         total_heat_flux = forced_latent_heat_flux + forced_sensible_heat_flux + longwave_radiation_flux + free_convective_sensible_heat_flux + free_convective_latent_heat_flux
          
          if (jaevap > 0) then
             evap(n) = (forced_latent_heat_flux + free_convective_latent_heat_flux) / (latent_heat_vaporization * rhomean) * ice_free_area_fraction
