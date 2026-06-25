@@ -11,7 +11,7 @@ while [[ "$#" -gt 0 ]]; do
         --image) image="$2"; shift ;;
         --apptainer) container_runtime="apptainer" ;;
         --docker) container_runtime="docker" ;;
-        --help) 
+        --help)
             echo "Usage: $0 [OPTIONS]"
             echo "Options:"
             echo "  --image <IMAGE>    Specify container image (default: containers.deltares.nl/delft3d/delft3dfm:daily)"
@@ -34,16 +34,28 @@ if [ "$container_runtime" = "apptainer" ]; then
         container_image="$image"
     fi
     echo "Using Apptainer with Docker image: $container_image"
-    
+
     # Check if apptainer is available in PATH
     if ! command -v apptainer &> /dev/null; then
         echo "Error: 'apptainer' command not found. Please install Apptainer and ensure it is in your PATH."
         exit 1
     fi
+
+    # Ensure the calling user is resolvable so Apptainer does not abort with
+    # "Couldn't determine user account information" (common on CI agents whose
+    # UID is an LDAP/AD account missing from /etc/passwd). Any setup performed
+    # here (e.g. nss_wrapper environment) is inherited by the per-example
+    # run_apptainer.sh child scripts.
+    user_setup="$(dirname "$(realpath "$0")")/apptainer_user_setup.sh"
+    if [ -f "$user_setup" ]; then
+        # shellcheck source=/dev/null
+        . "$user_setup"
+        ensure_apptainer_user || exit 1
+    fi
 else
     container_image="$image"
     echo "Using Docker with image: $container_image"
-    
+
     # Check if docker is available in PATH
     if ! command -v docker &> /dev/null; then
         echo "Error: 'docker' command not found. Please install Docker and ensure it is in your PATH."
@@ -58,19 +70,19 @@ echo "Looking for run_${container_runtime}.sh scripts in subdirectories..."
 found_scripts=0
 for dir in */ ; do
     script_name="run_${container_runtime}.sh"
-    
+
     # Check if the appropriate script exists in the subdirectory
     if [ -f "$dir/$script_name" ]; then
         echo "Found $script_name in $dir. Executing..."
         found_scripts=$((found_scripts + 1))
-        
+
         # Start test reporting for TeamCity
         test_name="${dir%/}_${container_runtime}"
         echo "##teamcity[testStarted name='$test_name']"
-        
+
         # Run the script with the appropriate image format
         "${dir}${script_name}" --image "$container_image"
-        
+
         # Check exit status and report test result
         exit_code=$?
         if [ $exit_code -ne 0 ]; then
