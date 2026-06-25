@@ -56,38 +56,6 @@ module m_flowgeom
       integer, dimension(:), allocatable :: nw !< wallnrs attached to this node
    end type tnode
 
-!> DFlowFM-specific flow geometry object.
-!! The t_ug_meshgeom member holds the UGRID-compliant mesh data (nodes, edges, faces,
-!! connectivity) that can be passed directly to io_ugrid write routines.
-!! The remaining fields hold DFlowFM-specific administration that has no place
-!! in the generic UGRID type.
-
-   type t_fm_flowgeom
-
-      type(t_ug_meshgeom) :: mesh2D !< Node/edge/face topology and coordinates for the 2D mesh.
-      type(t_ug_meshgeom) :: mesh1D !< Node/edge/face topology and coordinates for the 1D mesh.
-
-      integer, dimension(:), allocatable :: face_map !< 2D: mapping from reduced output set UGRID face index to global flow cell number.
-      integer, dimension(:), allocatable :: edge_map !< 2D: mapping from reduced output set UGRID node index to global flow node number.
-      integer, dimension(:), allocatable :: node_map !< 2D: mapping from reduced output set UGRID node index to global flow node number.
-      integer, dimension(:), allocatable :: node_map_1d !< 1D: mapping from reduced output set UGRID node index to global flow node number.
-
-      integer, dimension(:), allocatable :: edge_type !< Edge type array (size numl2d): encodes the flow-link relation for each 2D mesh edge.
-      integer, dimension(:), allocatable :: edgetoln !< 1D: mapping from mesh1D UGRID edge index to flow link number.
-      integer, dimension(:), allocatable :: contactstoln !< 1D2D: mapping from contact index to flow link number.
-      integer, dimension(:, :), allocatable :: contacts !< 1D2D contact node pairs [2, n1d2dcontacts].
-      integer, dimension(:), allocatable :: contacttype !< 1D2D contact type per contact entry.
-      integer :: n1d2dcontacts = 0 !< Number of 1D2D contacts.
-
-      !> fm-specific counters, difference between internal and boundary nodes/links, needed for output writing
-      integer :: lnx2d_int = 0 !< Number of internal 2D flow links in the output set.
-      integer :: lnx2d_bnd = 0 !< Number of boundary 2D flow links in the output set.
-      integer :: numl2d_closed = 0 !< Number of closed 2D edges in the output set.
-      integer :: ndx_out = 0 !< Total output nodes (3D work array loop bound).
-      integer, allocatable :: netlink_perm(:) !< Pre-computed permutation for UNC_LOC_L writing.
-
-   end type t_fm_flowgeom
-
    real(kind=dp) :: bamin !< minimum 2D cell area
    real(kind=dp) :: bamin1D !< minimum cell area 1d nodes
    real(kind=dp) :: dxmin = 1.0e-3_dp !< minimum link length 1D (m)

@@ -13724,7 +13724,7 @@ contains
 
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
-      use m_flowgeom, only: t_fm_flowgeom, bl, bl_min, ba
+      use m_flowgeom, only: bl, bl_min, ba
       use m_unc_flowgeom, only: flowgeom
       use m_sferic
       use m_missing
@@ -13960,7 +13960,7 @@ contains
       use precision, only: dp
       use m_sferic, only: jsferic
       use m_missing, only: dmiss
-      use m_flowgeom, only: t_fm_flowgeom, nd
+      use m_flowgeom, only: nd
       use netcdf
       use m_alloc, only: realloc, reallocP
       use dfm_error
@@ -13971,7 +13971,7 @@ contains
       use Timers
       use m_modelbounds, only: mb_latmin, mb_latmax, mb_lonmin, mb_lonmax
       use io_netcdf_acdd, only: ionc_add_geospatial_bounds
-      use m_flowgeom, only: t_fm_flowgeom
+
       implicit none(type, external)
 
       type(t_fm_flowgeom), intent(inout) :: flowgeom1d

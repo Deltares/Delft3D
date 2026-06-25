@@ -1,8 +1,9 @@
 module m_unc_flowgeom
-   use m_flowgeom, only: t_fm_flowgeom
+   use m_unstruc_netcdf_data, only: t_fm_flowgeom
+
    implicit none(type, external)
 
-   type(t_fm_flowgeom) :: flowgeom
+   type(t_fm_flowgeom), public :: flowgeom
 
 contains
 
@@ -167,7 +168,7 @@ contains
    end subroutine get_2d_edge_data
 
    subroutine build_flowgeom_2d(flowgeom, cell_mask)
-      use m_flowgeom, only: ndx2d, nd, xz, yz, t_fm_flowgeom
+      use m_flowgeom, only: ndx2d, nd, xz, yz
       use network_data, only: xk, yk, zk, kc, numk, numl, numl1d
       use m_missing, only: dmiss
       use m_alloc, only: realloc, reallocP
@@ -430,7 +431,7 @@ contains
 !! flowgeom%edgetoln(i) gives the full-grid flow link number for output 1D edge i.
    subroutine build_flowgeom_1d(flowgeom, jabndnd, node_mask)
       use m_flowgeom, only: ndxi, ndx2d, ndx1db, nd, xz, yz, &
-                            lnx1d, lnxi, lnx1db, ln, kcu, xu, yu, ln2lne, t_fm_flowgeom
+                            lnx1d, lnxi, lnx1db, ln, kcu, xu, yu, ln2lne
       use m_save_ugrid_state, only: mesh1dname, meshgeom1d
       use network_data, only: Lperm
       use m_missing, only: dmiss
@@ -717,7 +718,7 @@ contains
 !! forwarded to build_flowgeom_2d and the 1D slice (ndx2d+1:ndxi) is forwarded
 !! to build_flowgeom_1d as the node mask.
    function build_flowgeom(jabndnd, md_polygon_file) result(flowgeom)
-      use m_flowgeom, only: t_fm_flowgeom, ndx2d
+      use m_flowgeom, only: ndx2d
       use m_pol_to_cellmask, only: cell_mask_from_polygon_file
       implicit none
 

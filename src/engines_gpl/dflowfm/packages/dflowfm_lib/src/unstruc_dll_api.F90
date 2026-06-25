@@ -67,6 +67,7 @@ contains
       !DEC$ ATTRIBUTES DLLEXPORT :: write_1D_flowgeom_ugrid
 
       use unstruc_netcdf, only: unc_write_1D_flowgeom_ugrid, t_unc_mapids
+      use m_unstruc_netcdf_data, only: t_fm_flowgeom
       use messageHandling, only: Idlen
       use iso_c_utils
 
