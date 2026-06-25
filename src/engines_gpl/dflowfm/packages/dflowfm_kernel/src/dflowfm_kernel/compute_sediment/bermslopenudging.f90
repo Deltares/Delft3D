@@ -51,7 +51,7 @@ contains
 
       integer :: L, k1, k2
       integer :: lsd
-      real(kind=dp) :: hwavu, slope, flx, fixf, trmag_u, slpfac
+      real(kind=dp) :: hwavu, slope, flx, frc, fixf, trmag_u, slpfac
       real(kind=dp) :: cosw, sinw, coswu
 
       error = .true.
@@ -130,28 +130,28 @@ contains
                trmag_u = hypot(e_sbcn(L, lsd), e_sbct(L, lsd))
                flx = trmag_u * slpfac
                e_sbcn(L, lsd) = e_sbcn(L, lsd) - flx
-               call getfixfac(L, k1, k2, lsd, e_sbcn(L, lsd), fixf)
-               e_sbcn(L, lsd) = e_sbcn(L, lsd) * fixf
+               call getfracfixfac(L, k1, k2, lsd, e_sbcn(L, lsd), frc, fixf)
+               e_sbcn(L, lsd) = e_sbcn(L, lsd) * frc * fixf
                !
                trmag_u = hypot(e_sbwn(L, lsd), e_sbwt(L, lsd))
                flx = trmag_u * slpfac
                e_sbwn(L, lsd) = e_sbwn(L, lsd) - flx
-               call getfixfac(L, k1, k2, lsd, e_sbwn(L, lsd), fixf)
-               e_sbwn(L, lsd) = e_sbwn(L, lsd) * fixf
+               call getfracfixfac(L, k1, k2, lsd, e_sbwn(L, lsd), frc, fixf)
+               e_sbwn(L, lsd) = e_sbwn(L, lsd) * frc * fixf
             end if
             !
             if (bermslopeindexsus(L) .and. sus /= 0.0 .and. lsd <= lsed) then
                trmag_u = abs(e_ssn(L, lsd))
                flx = trmag_u * slpfac
                e_ssn(L, lsd) = e_ssn(L, lsd) - flx
-               call getfixfac(L, k1, k2, lsd, e_ssn(L, lsd), fixf)
-               e_ssn(L, lsd) = e_ssn(L, lsd) * fixf
+               call getfracfixfac(L, k1, k2, lsd, e_ssn(L, lsd), frc, fixf)
+               e_ssn(L, lsd) = e_ssn(L, lsd) * frc * fixf
                !
                trmag_u = hypot(e_sswn(L, lsd), e_sswt(L, lsd))
                flx = trmag_u * slpfac
                e_sswn(L, lsd) = e_sswn(L, lsd) - flx
-               call getfixfac(L, k1, k2, lsd, e_sswn(L, lsd), fixf)
-               e_sswn(L, lsd) = e_sswn(L, lsd) * fixf
+               call getfracfixfac(L, k1, k2, lsd, e_sswn(L, lsd), frc, fixf)
+               e_sswn(L, lsd) = e_sswn(L, lsd) * frc * fixf
             end if
          end do
       end do
@@ -161,9 +161,9 @@ contains
 
    end subroutine bermslopenudging
 
-   subroutine getfixfac(L, k1, k2, lsd, transp, fixf)
+   subroutine getfracfixfac(L, k1, k2, lsd, transp, frc, fixf)
       use precision, only: dp
-      use m_fm_erosed, only: fixfac
+      use m_fm_erosed, only: fixfac, frac
       use m_flowgeom, only: lnxi
       use m_flow, only: hu, epshu
 
@@ -171,17 +171,20 @@ contains
 
       integer, intent(in) :: L, k1, k2, lsd
       real(kind=dp), intent(in) :: transp
-      real(kind=dp), intent(out) :: fixf
+      real(kind=dp), intent(out) :: frc, fixf
 
       if (L > lnxi .and. hu(L) > epshu) then
          fixf = fixfac(k2, lsd)
+         frc = frac(k2, lsd)
       else
          if (transp >= 0) then
             fixf = fixfac(k1, lsd)
+            frc = frac(k1, lsd)
          else
             fixf = fixfac(k2, lsd)
+            frc = frac(k2, lsd)
          end if
       end if
-   end subroutine getfixfac
+   end subroutine getfracfixfac
 
 end module m_bermslopenudging
