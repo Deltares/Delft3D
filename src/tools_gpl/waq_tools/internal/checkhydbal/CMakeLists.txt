@@ -33,10 +33,7 @@ set_target_properties (${executable_name} PROPERTIES FOLDER tools_gpl/checkhydba
 target_compile_options(${executable_name} PRIVATE ${waq_default_flags})
 
 # Set post-build step
-set(install_dir ${CMAKE_BINARY_DIR})
-set(build_dir ${CMAKE_BINARY_DIR})
-
-install(TARGETS ${executable_name} RUNTIME  DESTINATION bin)
+# internal use only - not part of the DIMR set
 
 if(WIN32)
     configure_visual_studio_user_file(${executable_name})
