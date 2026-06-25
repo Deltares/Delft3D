@@ -19,7 +19,7 @@ contains
                                     monin_obukhov_length(:), richardson_number(:)
       type(t_options) :: options
       
-      options%include_monin_obukhov = .true.
+      options%include_stability = .true.
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]
@@ -98,7 +98,7 @@ contains
       real(kind=dp) :: tolerance = 1e-5_dp
       type(t_options) :: options
       
-      options%include_monin_obukhov = .false.
+      options%include_stability = .false.
       wind_velocity_u = [7.869952506297818_dp, 0.117833360326781_dp, 18.539150194088315_dp]
       wind_velocity_v = [8.218675428381800_dp, -0.455614551078914_dp, -11.095442028172844_dp]
       air_temperature = [286.212334904992247_dp, 285.769323685018151_dp, 280.824297920699621_dp]

@@ -33,24 +33,28 @@ class ResultInfo:
         self.muted_exception = muted_exception
 
     def get_total(self) -> int:
-        """Get total number of testcases.
+        """Get total number of testcases counted by the release pipeline.
+
+        Ignored tests (e.g. Google Test ``DISABLED_*`` cases) are excluded.
 
         Returns
         -------
         int
             Total testcases.
         """
-        return self.passed + self.failed + self.exception + self.ignored + self.muted - self.muted_exception
+        return self.passed + self.failed + self.exception + self.muted - self.muted_exception
 
     def get_not_passed_total(self) -> int:
         """Get total number of testcases that did not pass.
+
+        Ignored tests are excluded; they do not affect release pass/fail.
 
         Returns
         -------
         int
             Total testcases that did not pass.
         """
-        return self.failed + self.exception + self.ignored + self.muted
+        return self.failed + self.exception + self.muted
 
 
 class ConfigurationTestResult:
