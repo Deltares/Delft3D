@@ -72,8 +72,17 @@
                 <!-- <environment name="LD_PRELOAD" type="path">[programpath(dimr)]/../lib/libmkl_core.so</environment> -->
             </environments>
         </program>
-        <program name="checkhydbal" addSearchPaths="false">
+        <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >
+            <location ref="local" type="check">
+                <from>teamcity_artifacts/lnx64</from>
+            </location>
+            <path>bin/run_waqmerge.sh</path>
+        </program>
+        <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
             <path>thirdparty/checkhydbal/lnx64/run_checkhydbal.sh</path>
+        </program>
+        <program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
+            <path>thirdparty/poi2asc/lnx64/run_poi2asc.sh</path>
         </program>
     </programs>
     <!--
