@@ -1,4 +1,4 @@
-module m_unc_build_flowgeom
+module m_unc_flowgeom
    use m_flowgeom, only: t_fm_flowgeom
    implicit none(type, external)
 
