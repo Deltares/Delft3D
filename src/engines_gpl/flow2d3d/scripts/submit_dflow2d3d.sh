@@ -1,15 +1,26 @@
-#!/bin/bash
-#$ -V
-#$ -j yes
-#$ -cwd
+#! /bin/bash
+  
+# Usage:
     #
-    # This script runs Delft3D-FLOW in parallel on Linux
+    # This script runs Delft3D-FLOW in parallel on Linux H7
     # Adapt and use it for your own purpose
     #
     # Usage example:
     # Execute in the working directory:
     # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
-    # More examples: check run scripts in https://github.com/Deltares/Delft3D/tree/main/examples/*
+
+# Set bash options. Exit on failures (and propagate errors in pipes).
+set -eo pipefail
+
+# These variables should be modified.
+NODES=1
+TASKS_PER_NODE=3
+JOB_NAME=Delft3D4-FLOW
+PARTITION="4vcpu"
+TIME_LIMIT="00:15:00"
+CONFIG_FILE="${PWD}/config_d_hydro.xml"
+# Optional variables:
+
 
 function print_usage_info {
     echo "Usage: ${0##*/} [OPTION]..."
@@ -17,17 +28,20 @@ function print_usage_info {
     echo
     echo "Options:"
     echo "-c, --corespernode <M>"
-    echo "       number of partitions per node, default $corespernodedefault"
+    echo "       number of partitions per node, default $TASKS_PER_NODE"
     echo "-h, --help"
     echo "       print this help message and exit"
     echo "-j, --jobname <jobname>"
     echo "       jobname prefix, default Delft3D4-FLOW"
     echo "-m, --masterfile <filename>"
     echo "       Delft3D-FLOW configuration filename, default config_d_hydro.xml"
-    echo "-n, --numnode <N>"
-    echo "       number of nodes, default 1"
-    echo "-q, --queue <qname>"
-    echo "       queue, default normal-e3-c7"
+    echo "-n, --NODES <N>"
+    echo "       number of nodes, default $NODES"
+    echo "-p, --PARTITION <PARTITION>"
+    echo "       PARTITION, default $PARTITION"
+    echo "       see also: https://publicwiki.deltares.nl/display/Deltareken/Compute+nodes"
+    echo "-t, --TIME_LIMIT <TIME_LIMIT>"
+    echo "       TIME_LIMIT, default $TIME_LIMIT" 
     echo "--rtc"
     echo "       Online with RTC. Not possible with parallel Delft3D-FLOW."
     echo "-w, --wavefile <wname>"
@@ -43,19 +57,12 @@ function print_usage_info {
 #
 ## Defaults
 configfile=config_d_hydro.xml
-corespernodedefault=1
-corespernode=$corespernodedefault
 D3D_HOME=
-JOBNAME=Delft3D4-FLOW
-numnode=1
-queue=normal-e3-c7
 runscript_extraopts=
 wavefile=runwithoutwaveonlinebydefault
 withrtc=false
 
-
 ulimit -s unlimited
-
 
 #
 ## Start processing command line options:
@@ -67,18 +74,22 @@ do
 
     case $key in
         -c|--corespernode)
-        corespernode=$1
+        TASKS_PER_NODE=$1
         shift
         ;;
         -h|--help)
         print_usage_info
         ;;
-        -n|--numnode)
-        numnode="$1"
+        -n|--NODES)
+        NODES="$1"
         shift
         ;;
-        -q|--queue)
-        queue="$1"
+        -p|--PARTITION)
+        PARTITION="$1"
+        shift
+        ;;
+        -t|--TIME_LIMIT)
+        TIME_LIMIT="$1"
         shift
         ;;
         --rtc)
@@ -90,7 +101,7 @@ do
         shift
         ;;
         -j|--jobname)
-        JOBNAME="$1"
+        JOB_NAME="$1"
         shift
         ;;
         -m|--masterfile)
@@ -128,35 +139,40 @@ if [ ! -d $D3D_HOME ]; then
 fi
 export D3D_HOME
 RUNSCRIPT=$scriptdir/rd2d3d.sh
+runscript_opts="$runscript_opts --D3D_HOME ${D3D_HOME}"
 
-JOBNAME="${JOBNAME}_${numnode}x${corespernode}"
+JOB_NAME="${JOB_NAME}_${NODES}x${TASKS_PER_NODE}"
 
 echo "    Configfile                : $configfile"
 echo "    D3D_HOME                  : $D3D_HOME"
 echo "    Working directory         : $workdir"
-echo "    nr of partitions          : $numnode"
-echo "    nr of partitions per node : $corespernode"
-echo "    Queue                     : $queue"
-echo "    Job name                  : $JOBNAME"
-echo
+echo "    nr of nodes               : $NODES"
+echo "    nr of tasks per node      : $TASKS_PER_NODE"
+echo "    SLURM Partition Name      : $PARTITION"
+echo "    Maximum run time          : $TIME_LIMIT"
+echo "    Job name                  : $JOB_NAME"
+echo 
 
     #
     # Set the directories containing the binaries
     #
 
 
-runscript_opts="-m ${configfile} -c $corespernode --NNODES $numnode --D3D_HOME ${D3D_HOME}"
+runscript_opts="-m ${configfile} -c $TASKS_PER_NODE"
 if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
     runscript_opts="$runscript_opts -w ${wavefile}"
 fi
 if $withrtc ; then
     runscript_opts="$runscript_opts --rtc"
 fi
+runscript_opts="$runscript_opts --NODES $NODES --D3D_HOME ${D3D_HOME}"
 runscript_opts="$runscript_opts $runscript_extraopts"
-if [ $numnode == 1 ]; then
-    echo "qsub -q $queue  -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}"
-          qsub -q $queue  -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
-else
-    echo "qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}"
-          qsub -q $queue -pe distrib ${numnode} -N ${JOBNAME} ${RUNSCRIPT} ${runscript_opts}
-fi
+echo "    run script options        : $runscript_opts"
+# Run simulation
+echo "Run simulation..."
+sbatch --job-name=$JOB_NAME \
+    --partition=$PARTITION \
+    --time=$TIME_LIMIT \
+    --nodes=$NODES \
+    --ntasks-per-node=$TASKS_PER_NODE \
+    ${RUNSCRIPT} ${runscript_opts}

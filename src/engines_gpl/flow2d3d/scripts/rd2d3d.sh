@@ -1,19 +1,19 @@
-#!/bin/bash
-#$ -V
-#$ -j yes
-#$ -cwd
-    #
-    # This script runs Delft3D-FLOW on Linux
-    # Adapt and use it for your own purpose
-    #
-    # Usage example:
-    # Execute in the working directory:
-    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d.sh
-    # More examples: check run scripts in https://github.com/Deltares/Delft3D/tree/main/examples/*
+#! /bin/bash  
+# Specify Slurm SBATCH directives 
+#SBATCH --nodes=1              # Number of nodes.
+#SBATCH --ntasks-per-node=1     # The number of tasks to be invoked on each node.
+                                # For sequential runs, the number of tasks should be '1'.
+                                # Note: SLURM_NTASKS is equal to "--nodes" multiplied by "--ntasks-per-node".
+#SBATCH --job-name=delft3d4     # Specify a name for the job allocation.
+#SBATCH --time=00:15:00         # Set a limit on the total run time of the job allocation.
+#SBATCH --partition=4vcpu       # Request a specific partition for the resource allocation.
+                                # See: https://publicwiki.deltares.nl/display/Deltareken/Compute+nodes.
+
+set -eo pipefail
 
 function print_usage_info {
-    echo "Usage: ${0##*/} [OPTION]..."
-    echo "This script is called by submit_dflow2d3d.sh."
+    echo "Usage: sbatch [SLURM OPTIONS]... ${0##*/} [OPTION]..."
+    echo "Run delft3d4 on H7."
     echo
     echo "Options:"
     echo "-c, --corespernode <M>"
@@ -26,11 +26,11 @@ function print_usage_info {
     echo "       name of mdw file"
     echo "--rtc"
     echo "       Online with RTC. Not possible with parallel Delft3D-FLOW."
-    echo "The following arguments are used when called by submit_dflow2d3d.sh:"
-    echo "    --D3D_HOME <path>"
+    echo "The following arguments are used when called by submit_dflow2d3d_h7.sh:"
+    echo "--D3D_HOME <path>"
     echo "       path to binaries and scripts"
-    echo "    --NNODES <N>"
-    echo "       number of partitions=NNODES*CoresPerNode, default 1 (not parallel)"
+    echo "    --NODES <N>"
+    echo "       number of partitions=NODES*CoresPerNode, default 1 (not parallel)"
     exit 1
 }
 
@@ -44,16 +44,18 @@ function print_usage_info {
 configfile=config_d_hydro.xml
 corespernodedefault=1
 corespernode=$corespernodedefault
-D3D_HOME=
+NSLOTS=$SLURM_TASKS_PER_NODE
 debuglevel=-1
 runscript_extraopts=
-NNODES=1
 wavefile=runwithoutwaveonlinebydefault
 withrtc=0
 
 
 ulimit -s unlimited
-
+export I_MPI_FABRICS=ofi
+export FI_PROVIDER=tcp
+export I_MPI_OFI_PROVIDER=tcp
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 #
 ## Start processing command line options:
@@ -80,15 +82,13 @@ case $key in
     shift
     ;;
     -w|--wavefile)
+    echo " Wavefile     "
     wavefile="$1"
+    echo $wavefile
     shift
     ;;
     --D3D_HOME)
     D3D_HOME="$1"
-    shift
-    ;;
-    --NNODES)
-    NNODES="$1"
     shift
     ;;
     --)
@@ -104,13 +104,11 @@ case $key in
 esac
 done
 
-# Check configfile
+# Check configfile    
 if [ ! -f $configfile ]; then
     echo "ERROR: configfile $configfile does not exist"
     print_usage_info
 fi
-
-export NSLOTS=`expr $NNODES \* $corespernode`
 
 workdir=`pwd`
 
@@ -135,25 +133,13 @@ fi
 
 export D3D_HOME
 
-
-# On Deltares systems only:
-if [ -f "/opt/apps/deltares/.nl" ]; then
-    # Try the following module load
-    module load intelmpi/21.2.0 &>/dev/null
-
-    # If not defined yet: Define I_MPI_FABRICS and FI_PROVIDER with proper values for Deltares systems
-    [ ! -z "$I_MPI_FABRICS" ] && echo "I_MPI_FABRICS is already defined" || export I_MPI_FABRICS=shm
-    [ ! -z "$FI_PROVIDER" ] && echo "FI_PROVIDER is already defined" || export FI_PROVIDER=tcp
-fi
-
-
 echo "    Configfile           : $configfile"
 echo "    D3D_HOME             : $D3D_HOME"
 echo "    Working directory    : $workdir"
+echo "    nr of tasks per node : $SLURM_TASKS_PER_NODE"
 echo "    Number of partitions : $NSLOTS"
-echo "    `type mpiexec`"
 echo "    FI_PROVIDER          : $FI_PROVIDER"
-echo "    I_MPI_FABRICS        : $I_MPI_FABRICS"
+echo "    I_MPI_FABRICS        : $I_MPI_FABRICS" 
 if [ "$wavefile" != "runwithoutwaveonlinebydefault" ]; then
     echo "    Wave file            : $wavefile"
 fi
@@ -177,7 +163,6 @@ sharedir=$D3D_HOME/share
     # Run
 export LD_LIBRARY_PATH=$libdir:$LD_LIBRARY_PATH
 export PATH=$bindir:$PATH
-# export LD_PRELOAD=$libdir/libmkl_core.so
 
 # For debugging only
 if [ $debuglevel -eq 0 ]; then
@@ -215,8 +200,7 @@ if [ $withrtc -ne 0 ] ; then
     $bindir/rtc $sharedir/rtc/RTC.FNM $workdir/RTC.RTN
 
     # Remove allocated shared memory
-    $bindir/esm_delete $DIO_SHM_ESM
-
+    $bindir/esm_delete $DIO_SHM_ESM 
 
 
 else
@@ -234,33 +218,16 @@ else
         echo "$bindir/wave $wavefile 1 &"
               $bindir/wave $wavefile 1 &
     fi
-
+    
     if [ $NSLOTS -eq 1 ]; then
         echo "executing:"
         echo "$bindir/d_hydro $configfile"
               $bindir/d_hydro $configfile
     else
-        #
-        # Create machinefile using $PE_HOSTFILE
-        if [ $NNODES -eq 1 ]; then
-            echo " ">$(pwd)/machinefile
-        else
-            if [ -n $corespernode ]; then
-                if [ -e $(pwd)/machinefile ]; then
-                    rm -f machinefile
-                fi
-                for (( i = 1 ; i <= $corespernode; i++ )); do
-                    awk '{print $1":"1}' $PE_HOSTFILE >> $(pwd)/machinefile
-                done
-            else
-               awk '{print $1":"2}' $PE_HOSTFILE > $(pwd)/machinefile
-            fi
-        fi
-        echo Contents of machinefile:
-        cat $(pwd)/machinefile
+        module load intelmpi/2021.11.0 &>/dev/null
         echo ----------------------------------------------------------------------
-        echo "mpiexec -np $NSLOTS $bindir/d_hydro $configfile"
-              mpiexec -np $NSLOTS $bindir/d_hydro $configfile
+        echo "srun $bindir/d_hydro $configfile"
+              srun $bindir/d_hydro $configfile
     fi
 fi
 
