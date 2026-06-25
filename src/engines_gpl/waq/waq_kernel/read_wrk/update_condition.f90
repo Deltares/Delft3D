@@ -87,8 +87,10 @@ contains
         integer(kind = int_wp), intent(in) :: ftype  (*) !< type of files to be opened
         type(delwaq_data), intent(inout) :: dlwqd      !< derived type for persistent storage
 
-        integer(kind = int_wp) :: IHARM (*), IPOINT(*), file_unit_list   (*), IWORK (*)
-        real(kind = real_wp) :: HARMAT(*), FARRAY(*), RESULT(*), RECLST(*)
+        integer(kind = int_wp) :: file_unit_list   (*)  ! Left as "assumed size"!
+        integer(kind = int_wp) :: IWORK (*)             ! Ditto
+        integer(kind = int_wp) :: IHARM (:), IPOINT(:)
+        real(kind = real_wp) :: HARMAT(:), FARRAY(:), RESULT(:), RECLST(:)
         character(len = *) LUNTXT(*)
         character(len = 12)  CHLP
         LOGICAL       UPDATE, NEWSET, LSTREC, LREWIN
@@ -200,7 +202,7 @@ contains
         end do
         !
         I2 = NRHARM + 1
-        CALL DLWQT3 (ITIME, IHARM, HARMAT, HARMAT(I2), NRHARM, &
+        CALL DLWQT3 (ITIME, IHARM, HARMAT, HARMAT(I2:), NRHARM, &
                 NOSUB, NOSPAC, IPOINT, NPOINT, RESULT, &
                 LUNTXT(3), file_unit_list(3), file_unit_list(19), ISFLAG, IFFLAG, &
                 UPDATH)
@@ -215,7 +217,7 @@ contains
         !         5 arguments of integer and real array space removed
         !         opening of binary file moved inside DLWQT4         July 2002
         CALL DLWQT4 (file_unit_list, LUNTXT, ftype, file_unit_list(19), IS, &
-                ITIME, RESULT, IPOINT(NPOINT), NOSUB, NRFTOT, &
+                ITIME, RESULT, IPOINT(NPOINT:), NOSUB, NRFTOT, &
                 ISFLAG, IFFLAG, UPDATB, NTOTAL, LSTREC, &
                 LREWIN, RECLST, dlwqd)
         IF (UPDATB) UPDATE = .TRUE.
@@ -569,7 +571,7 @@ contains
         integer(kind = int_wp) :: i, ij, ntt, irec, nobrk, itimf, integration_id, it1c, it2c, idtc
         real(kind = real_wp) :: missing_value, aa, ab
 
-        !  	local
+        !       local
         integer(kind = int_wp) :: ll, jj, kk
 
         integer(kind = int_wp) :: ithandl = 0

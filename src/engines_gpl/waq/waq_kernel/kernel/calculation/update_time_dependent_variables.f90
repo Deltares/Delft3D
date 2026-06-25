@@ -52,22 +52,22 @@ contains
         integer(kind = int_wp), intent(in) :: file_unit_list(*) !< Array with unit numbers
         integer(kind = int_wp), intent(in) :: itime             !< The model timer
         integer(kind = int_wp), intent(in) :: itimel            !< The model timer last step
-        real(kind = real_wp), intent(inout) :: harmat(*)         !< Matrices harmonic components
-        real(kind = real_wp), intent(inout) :: array (*)         !< Set of double file buffers
-        integer(kind = int_wp), intent(in) :: iharm (*)         !< Harmonic time space
-        integer(kind = int_wp), intent(in) :: nrharm(*)         !< Set of nrs of harmonic records
-        integer(kind = int_wp), intent(in) :: nrftot(*)         !< Set of record lengthes
-        integer(kind = int_wp), intent(in) :: num_cells             !< Nr of computational volumes
-        real(kind = real_wp), intent(out) :: volume(num_cells)     !< Array of volumes per gridcell
-        integer(kind = int_wp), intent(in) :: ipoint(*)         !< Set of pointers to destination
-        character(len = *), intent(in) :: luntxt(*)         !< Text with the unit numbers
+        real(kind = real_wp), intent(inout) :: harmat(harmonicss_arr_len)  !< Matrices harmonic components
+        real(kind = real_wp), intent(inout) :: array (nlines)              !< Set of double file buffers
+        integer(kind = int_wp), intent(in) :: iharm (num_harmonics)        !< Harmonic time space
+        integer(kind = int_wp), intent(in) :: nrharm(num_items_time_fn)    !< Set of nrs of harmonic records
+        integer(kind = int_wp), intent(in) :: nrftot(num_items_time_fn)    !< Set of record lengthes
+        integer(kind = int_wp), intent(in) :: num_cells                    !< Nr of computational volumes
+        real(kind = real_wp), intent(out) :: volume(num_cells)             !< Array of volumes per gridcell
+        integer(kind = int_wp), intent(in) :: ipoint(num_indices)          !< Set of pointers to destination
+        character(len = *), intent(in) :: luntxt(*)             !< Text with the unit numbers
         integer(kind = int_wp), intent(in) :: ftype (*)         !< Type of file to read
         integer(kind = int_wp), intent(in) :: isflag            !< = 1 then 'ddhhmmss' format
         integer(kind = int_wp), intent(in) :: ivflag            !< = 1 then computed volumes
         logical, intent(out) :: updatv            !< set to T if volume is updated
-        integer(kind = int_wp), intent(inout) :: inwspc(*)         !< Integer space new time functions
-        real(kind = real_wp), intent(inout) :: anwspc(*)         !< Real space new time functions
-        integer(kind = int_wp), intent(in) :: inwtyp(*)         !< Types of items
+        integer(kind = int_wp), intent(inout) :: inwspc(newisp)  !< Integer space new time functions
+        real(kind = real_wp), intent(inout) :: anwspc(newrsp)    !< Real space new time functions
+        integer(kind = int_wp), intent(in) :: inwtyp(num_boundary_conditions+num_waste_loads)         !< Types of items
         integer(kind = int_wp), intent(inout) :: iwork (*)         !< Integer workspace
         logical, intent(in) :: lstrec            !< Switch last record on rewind wanted
         logical, intent(out) :: lrewin            !< If T then rewindtook place
@@ -100,8 +100,8 @@ contains
 
         !volumes
         if (nrharm(2) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), volume, 1, nrharm(2), &
                     num_cells, nrftot(2), ipa, iph, ipf, &
                     ipi, luntxt, 7, isflag, ifflag, &
                     update, .false., 0, iwork, lstrec, &
@@ -218,8 +218,8 @@ contains
 
         ! integration step size IDT
         if (nrftot(1) > 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), adt, 1, nrharm(1), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), adt, 1, nrharm(1), &
                     1, nrftot(1), ipa, iph, ipf, &
                     ipi, luntxt, 5, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -244,8 +244,8 @@ contains
             if   (rdvolu) then
                 ! if .not. computed volumes .or. this is the first time
                 if (ivflag     == 0 .or. ifflag == 1) then
-                    call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                            array(ipa), ipoint(ipi), volume, 1, nrharm(2), &
+                    call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                            array(ipa:), ipoint(ipi:), volume, 1, nrharm(2), &
                             num_cells, nrftot(2), ipa, iph, ipf, &
                             ipi, luntxt, 7, isflag, ifflag, &
                             update, othset, 0, iwork, lstrec, &
@@ -270,8 +270,8 @@ contains
 
         !         dispersions
         if (nrharm(3) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), disper, num_dispersion_arrays, nrharm(3), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), disper, num_dispersion_arrays, nrharm(3), &
                     num_exchanges, nrftot(3), ipa, iph, ipf, &
                     ipi, luntxt, 9, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -290,8 +290,8 @@ contains
 
         ! area
         if (nrharm(4) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), area, 1, nrharm(4), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), area, 1, nrharm(4), &
                     num_exchanges, nrftot(4), ipa, iph, ipf, &
                     ipi, luntxt, 10, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -310,8 +310,8 @@ contains
 
         ! flow
         if (nrharm(5) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), flow, 1, nrharm(5), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), flow, 1, nrharm(5), &
                     num_exchanges, nrftot(5), ipa, iph, ipf, &
                     ipi, luntxt, 11, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -330,8 +330,8 @@ contains
 
         ! velocities
         if (nrharm(6) >= 0) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), velo, num_velocity_arrays, nrharm(6), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ip:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), velo, num_velocity_arrays, nrharm(6), &
                     num_exchanges, nrftot(6), ipa, iph, ipf, &
                     ipi, luntxt, 12, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -350,8 +350,8 @@ contains
 
         ! 'from'- and 'to'-length
         if (nrharm(7) >= 0 .and. ilflag == 1) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), aleng, 2, nrharm(7), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), aleng, 2, nrharm(7), &
                     num_exchanges, nrftot(7), ipa, iph, ipf, &
                     ipi, luntxt, 13, isflag, ifflag, &
                     update, othset, 0, iwork, lstdum, &
@@ -374,8 +374,8 @@ contains
             nosubs = num_substances_transported
         endif
         if (nrharm(8) >= 0 .and. .not. bndset) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), bounds, nosubs, nrharm(8), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), bounds, nosubs, nrharm(8), &
                     num_boundary_conditions, nrftot(8), ipa, iph, ipf, &
                     ipi, luntxt, 14, isflag, ifflag, &
                     update, bndset, 0, iwork, lstdum, &
@@ -390,8 +390,8 @@ contains
         endif
 
         if (bndset) then
-            call update_condition (file_unit_list, itime, itimel, inwspc(ipni), anwspc(ipna), &
-                    adummy, inwtyp(it), bounds, nosubs, isnul2, &
+            call update_condition (file_unit_list, itime, itimel, inwspc(ipni:), anwspc(ipna:), &
+                    adummy, inwtyp(it:), bounds, nosubs, isnul2, &
                     num_boundary_conditions, isnul, ipni, ipna, idummy, &
                     ibndmx, luntxt, 14, isflag, ifflag, &
                     update, bndset, 0, iwork, lstdum, &
@@ -407,8 +407,8 @@ contains
 
         ! wastes
         if (nrharm(9) >= 0 .and. .not. wstset) then
-            call update_condition (file_unit_list, itime, itimel, iharm(ipf), harmat(iph), &
-                    array(ipa), ipoint(ipi), wastes, num_substances_total + 1, nrharm(9), &
+            call update_condition (file_unit_list, itime, itimel, iharm(ipf:), harmat(iph:), &
+                    array(ipa:), ipoint(ipi:), wastes, num_substances_total + 1, nrharm(9), &
                     num_waste_loads, nrftot(9), ipa, iph, ipf, &
                     ipi, luntxt, 15, isflag, ifflag, &
                     update, wstset, 1, iwork, lstdum, &
@@ -425,8 +425,8 @@ contains
         isnul = 0
         isnul2 = 0
         if (wstset) then
-            call update_condition (file_unit_list, itime, itimel, inwspc(ipni), anwspc(ipna), &
-                    adummy, inwtyp(it), wastes, num_substances_total + 1, isnul2, &
+            call update_condition (file_unit_list, itime, itimel, inwspc(ipni:), anwspc(ipna:), &
+                    adummy, inwtyp(it:), wastes, num_substances_total + 1, isnul2, &
                     num_waste_loads, isnul, ipni, ipna, idummy, &
                     iwstmx, luntxt, 15, isflag, ifflag, &
                     update, wstset, 1, iwork, lstdum, &
