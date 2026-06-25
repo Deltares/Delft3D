@@ -31,10 +31,12 @@
 !! at which various FM state data can be located.
 !! Consists mainly of staggered grid locations and various object locations.
 module fm_location_types
-   implicit none
+   implicit none(type, external)
+
    private
 
    public get_location_specifier_string
+   public parse_spatial_location_type
 
    integer, parameter, public :: UNC_LOC_UNKNOWN = 0 !< Data location: unknown or invalid location.
    ! Grid locations:
@@ -47,7 +49,13 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_W = 6 !< Data location: vertical velocity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_WU = 16 !< Data location: vertical viscosity point on all layer interfaces.
    integer, parameter, public :: UNC_LOC_3DV = 17 !< Data location: vertical positions at pressure points and constant for
-                                                          !! all gridpoints.
+                                                  !! all gridpoints.
+
+   ! Spatial locations:
+   integer, parameter, public :: SPATIAL_LOCATION_INVALID = -1 !< Invalid spatial location.
+   integer, parameter, public :: SPATIAL_LOCATION_ALL = 0 !< Spatial location: all elements (1D and 2D).
+   integer, parameter, public :: SPATIAL_LOCATION_1D = 1 !< Spatial location: 1D element.
+   integer, parameter, public :: SPATIAL_LOCATION_2D = 2 !< Spatial location: 2D element.
 
    ! Model global:
    integer, parameter, public :: UNC_LOC_GLOBAL = 21 !< Data location: model global (e.g. water balance)
@@ -75,6 +83,7 @@ module fm_location_types
    integer, parameter, public :: UNC_LOC_DUMP = 40 !< Data location: dump
    integer, parameter, public :: UNC_LOC_DRED_LINK = 41 !< Data location: dredge links
    integer, parameter, public :: UNC_LOC_BUBBLE_SCREEN = 43 !< Data location: bubble screen
+   
 contains
    !> Convert a location specifier to a human-readable string
    function get_location_specifier_string(location_specifier) result(string)
@@ -147,4 +156,33 @@ contains
          call mess(LEVEL_ERROR, 'Programming error, please report: unrecognised location_specifier in fm_location_types::get_location_specifier_string(), location_specifier = ', location_specifier)
       end select
    end function get_location_specifier_string
+
+   !> Parse a locationType= string ('1d', '2d', '1d2d', 'all') to the
+   !! SPATIAL_LOCATION_* enum.
+   !! Returns SPATIAL_LOCATION_INVALID when the string is absent or unrecognized.
+   function parse_spatial_location_type(location_type_string) result(spatial_location_type)
+      use string_module, only: str_tolower
+
+      ! Parameters
+      character(len=*), intent(in) :: location_type_string
+      integer :: spatial_location_type
+
+      if (len_trim(location_type_string) == 0) then
+         spatial_location_type = SPATIAL_LOCATION_INVALID
+         return
+      end if
+
+      select case (str_tolower(trim(location_type_string)))
+      case ('1d')
+         spatial_location_type = SPATIAL_LOCATION_1D
+      case ('2d')
+         spatial_location_type = SPATIAL_LOCATION_2D
+      case ('1d2d', 'all')
+         spatial_location_type = SPATIAL_LOCATION_ALL
+      case default
+         spatial_location_type = SPATIAL_LOCATION_INVALID
+      end select
+
+   end function parse_spatial_location_type
+
 end module fm_location_types
