@@ -65,7 +65,7 @@ contains
       do k = 1, size(nd(n1)%ln)
          LL = nd(n1)%ln(k)
          L = abs(LL)
-         if (kcu(L) /= FLOWLINK_1D2D_LATERAL) then
+         if (kcu(L) /= LINK_1D2D_LATERAL) then
             k1 = ln(1, L)
             k2 = ln(2, L)
             n2 = k2

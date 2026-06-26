@@ -72,7 +72,7 @@ contains
 
       if (kmx < 1) then ! original 2D coding
          do L = 1, lnx1D
-            if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= FLOWLINK_1D2D_LATERAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+            if (u1_loc(L) /= 0.0_dp .and. kcu(L) /= LINK_1D2D_LATERAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                k1 = ln(1, L)
                k2 = ln(2, L)
                wcxu = wcx1(L) * u1_loc(L)

@@ -141,7 +141,7 @@ contains
          L = linnrs(LL)
          La = abs(L)
 
-         if (kcu(La) /= FLOWLINK_1D .and. kcu(La) /= FLOWLINK_1D2D_LONGITUDINAL) then
+         if (kcu(La) /= LINK_1D .and. kcu(La) /= LINK_1D2D_LONGITUDINAL) then
             cycle ! Only use real 1D links in the flow node contour, no 1d2d links
          end if
 

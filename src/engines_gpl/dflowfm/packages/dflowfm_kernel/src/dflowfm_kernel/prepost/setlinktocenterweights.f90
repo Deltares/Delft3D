@@ -63,7 +63,7 @@ contains
 
       do L = 1, lnx
 
-         if (kcu(L) == FLOWLINK_1D2D_LATERAL) then
+         if (kcu(L) == LINK_1D2D_LATERAL) then
             cycle ! no contribution from 1D2D internal links
          end if
 

@@ -139,7 +139,7 @@ contains
       do i = 1, ilinkcount
          L = ilink(i)
 
-         if (kcu(L) == FLOWLINK_1D2D_LATERAL) then ! Lateral 1d2d link
+         if (kcu(L) == LINK_1D2D_LATERAL) then ! Lateral 1d2d link
 
             n_1d2d_fixedweirs = n_1d2d_fixedweirs + 1
             index_1d2d_fixedweirs(n_1d2d_fixedweirs) = L
@@ -608,7 +608,7 @@ contains
          L = index_1d2d_fixedweirs(n)
          do kk = 1, nd(nod)%lnx
             LL = abs(nd(nod)%ln(kk))
-            if (kcu(LL) == FLOWLINK_2D) then ! Only for regular 2D.
+            if (kcu(LL) == LINK_2D) then ! Only for regular 2D.
                if (iadvec /= 0 .and. direction(n) * u0(L) < 0) then
                   iadv(LL) = 0
                else

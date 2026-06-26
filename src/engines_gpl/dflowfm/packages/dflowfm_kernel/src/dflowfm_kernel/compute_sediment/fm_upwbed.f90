@@ -174,7 +174,7 @@ contains
                      cycle
                   end if
                   !
-                  if (pure1d_mor .and. kcu(Lf) == FLOWLINK_1D_BOUNDARY) then
+                  if (pure1d_mor .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                      if (link1(k2) == Lf) then
                         e_sn(Lf, l) = sx(k2, l)
                      else

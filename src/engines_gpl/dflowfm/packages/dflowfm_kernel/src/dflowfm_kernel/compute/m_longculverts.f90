@@ -821,7 +821,7 @@ contains
          do ilongc = 1, nlongculverts
             do i = 1, longculverts(ilongc)%numlinks
                Lf = abs(longculverts(ilongc)%flowlinks(i))
-               !if (kcu(lf) == FLOWLINK_1D) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
+               !if (kcu(lf) == LINK_1D) then ! TODO: UNST-5433: change when 1d2d links are *extra* in addition to culvert polyline
                k1 = ln(1, Lf)
                k2 = ln(2, Lf)
 
@@ -1498,7 +1498,7 @@ contains
                      othernode = ln(1, linkabs) + ln(2, linkabs) - nodenum
 
                      if (j <= ie) then
-                        if ((kcu(linkabs) == FLOWLINK_1D .or. kcu(linkabs) == FLOWLINK_1D2D_STREETINLET) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
+                        if ((kcu(linkabs) == LINK_1D .or. kcu(linkabs) == LINK_1D2D_STREETINLET) .and. (comparereal(xz(othernode), longculvert%xcoords(j + 1), EPS10) == 0 .and. comparereal(yz(othernode), longculvert%ycoords(j + 1), EPS10) == 0)) then
                            longculvert%flowlinks(j) = -1 * linknum
                            exit
                         end if

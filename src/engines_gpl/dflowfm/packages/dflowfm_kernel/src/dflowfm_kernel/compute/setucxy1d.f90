@@ -59,7 +59,7 @@ contains
       end do
 
       do LL = lnxi + 1, lnx ! bnd
-         if (kcu(LL) == FLOWLINK_1D_BOUNDARY) then ! 1D type link
+         if (kcu(LL) == LINK_1D_BOUNDARY) then ! 1D type link
             n = Ln(1, LL)
             k2 = Ln(2, LL)
             if (uc1D(k2) /= 0) then

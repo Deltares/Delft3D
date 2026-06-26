@@ -58,7 +58,7 @@ contains
       !if (kcs(ln(1,L) ) == 21)  k = ln(2,L)
       !if (kcs(ln(2,L) ) == 21)  k = ln(1,L)
       !do kk = 1,nd(k)%lnx
-      !   if (kcu(L) == FLOWLINK_1D) then
+      !   if (kcu(L) == LINK_1D) then
       !      n   = n + 1
       !      LL  = abs( nd(k)%ln(kk) )
       !      wu1 = wu1 + dx(L)

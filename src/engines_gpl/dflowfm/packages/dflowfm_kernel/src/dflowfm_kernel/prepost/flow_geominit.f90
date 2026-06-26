@@ -620,7 +620,7 @@ contains
             ln2lne(LF) = L
             lne2ln(L) = LF
             if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! 1D link
-               kcu(Lf) = FLOWLINK_1D
+               kcu(Lf) = LINK_1D
             else if (kn(3, L) == 4) then
                k1 = kn(1, L)
                k2 = kn(2, L)
@@ -630,7 +630,7 @@ contains
                end if
                if (jaend == 1 .and. n1a > ndx2d .and. n2a <= ndx2d .or. &
                    jaend == 1 .and. n2a > ndx2d .and. n1a <= ndx2d) then
-                  kcu(Lf) = FLOWLINK_1D2D_LONGITUDINAL ! 1D2D longitudinal link
+                  kcu(Lf) = LINK_1D2D_LONGITUDINAL ! 1D2D longitudinal link
                   nc2 = n2a
                   if (n1a <= ndx2d) then
                      nc2 = n1a
@@ -647,7 +647,7 @@ contains
                      noncrossinglink = .true.
                   end if
                else ! 1D link
-                  kcu(Lf) = FLOWLINK_1D
+                  kcu(Lf) = LINK_1D
                end if
             else if (kn(3, L) == 3 .or. kn(3, L) == 7) then
                if (n1a > ndx2d .and. n2a <= ndx2d .or. &
@@ -683,7 +683,7 @@ contains
                   call qnerror('1d2d link kn3 = 5 not connected to 2D cell ', trim(msgbuf), ' ')
                end if
             else if (kn(3, L) == 2) then ! 2D link
-               kcu(Lf) = FLOWLINK_2D
+               kcu(Lf) = LINK_2D
             end if
          else if (n1 == 0) then ! if negative, refer back to attached node
             lne2ln(L) = -n2
@@ -710,7 +710,7 @@ contains
          ! i.e., flux is 'to the right' through net link 3--4.
 
          ja1D = 0
-         if (kcu(L) == FLOWLINK_1D .or. kcu(L) == FLOWLINK_1D_BOUNDARY .or. kcu(L) == FLOWLINK_1D2D_LONGITUDINAL) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_LONGITUDINAL) then
             ja1D = 1
          end if
 
@@ -733,10 +733,10 @@ contains
 
             lncn(1, L) = k3 ! used in eddy visc terms
             lncn(2, L) = k4
-         else if (kcu(L) == FLOWLINK_1D) then ! keep natural reference
+         else if (kcu(L) == LINK_1D) then ! keep natural reference
             lncn(1, L) = k3
             lncn(2, L) = k4
-         else if (kcu(L) == FLOWLINK_1D_BOUNDARY) then ! refer twice to last netnode
+         else if (kcu(L) == LINK_1D_BOUNDARY) then ! refer twice to last netnode
             if (nmk(k3) == 1) then
                lncn(1, L) = k3
                lncn(2, L) = k3
@@ -745,7 +745,7 @@ contains
                lncn(2, L) = k4
             end if
 
-         else if (kcu(L) == FLOWLINK_1D2D_LATERAL .or. kcu(L) == FLOWLINK_1D2D_LONGITUDINAL .or. kcu(L) == FLOWLINK_1D2D_STREETINLET .or. kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then ! 1D2D, inherit 2D keep natural reference
+         else if (kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! 1D2D, inherit 2D keep natural reference
 
             lncn(1, L) = k3
             lncn(2, L) = k4
@@ -817,7 +817,7 @@ contains
          k4 = lncn(2, L)
 
          ja1D = 0
-         if (kcu(L) == FLOWLINK_1D .or. kcu(L) == FLOWLINK_1D_BOUNDARY .or. kcu(L) == FLOWLINK_1D2D_LONGITUDINAL) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_LONGITUDINAL) then
             ja1D = 1
          end if
 
@@ -836,7 +836,7 @@ contains
             end if
          end if
 
-         if (kcu(L) == FLOWLINK_1D2D_LONGITUDINAL) then ! 1D2D lateral link, normal to 2D netlink
+         if (kcu(L) == LINK_1D2D_LONGITUDINAL) then ! 1D2D lateral link, normal to 2D netlink
             call normalout(xk(k3), yk(k3), xk(k4), yk(k4), xn, yn, jsferic, jasfer3D, dmiss, dxymis)
             call normalin(xz(k1), yz(k1), xz(k2), yz(k2), xt, yt, xu(L), yu(L), jsferic, jasfer3D, dxymis)
             if (xn * xt + yn * yt < 0.0_dp) then
@@ -844,7 +844,7 @@ contains
                lncn(2, L) = k3
             end if
             dx(L) = dx(L) * abs(xn * xt + yn * yt)
-         else if (kcu(L) == FLOWLINK_1D2D_LATERAL .or. kcu(L) == FLOWLINK_1D2D_STREETINLET .or. kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then ! 1D2D internal link, some averaged 2D length
+         else if (kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! 1D2D internal link, some averaged 2D length
             k = 0
             if (kcs(k1) == 21) then
                k = k1
@@ -858,7 +858,7 @@ contains
             else
                dx(L) = max(dx(L), 0.5_dp * sqrt(ba(k)))
             end if
-            if (kcu(L) == FLOWLINK_1D2D_LATERAL .and. fixedweirtopwidth > 0.0_dp) then
+            if (kcu(L) == LINK_1D2D_LATERAL .and. fixedweirtopwidth > 0.0_dp) then
                weirheight = fixedweirtopwidth ! we don't have bl nor bobs yet !max(0d0, 0.5d0*(bob(1,L) + bob(2,L)) - 0.5d0*(bl(k1) + bl(k2)) )
                weirlength = fixedweirtopwidth
                dx(L) = min(dx(L), max(weirlength + 2.0_dp * weirheight * fixedweirtalud, 0.5_dp * sqrt(ba(k))))
@@ -866,7 +866,7 @@ contains
          end if
 
 !   for partition_init: compute temporary csu, snu (will be overwritten in phase 2), based on xzw, yzw (instead of xz, yz)
-         if (kcu(L) /= FLOWLINK_1D2D_LONGITUDINAL) then
+         if (kcu(L) /= LINK_1D2D_LONGITUDINAL) then
             call normalin(xzw(k1), yzw(k1), xzw(k2), yzw(k2), rn, rt, xu(L), yu(L), jsferic, jasfer3D, dxymis) ! = normalin (k1,k2)
          else
             call normalout(xk(k3), yk(k3), xk(k4), yk(k4), rn, rt, jsferic, jasfer3D, dmiss, dxymis) ! 1D2D
@@ -904,10 +904,10 @@ contains
 
       ! Default parameters for 1D2D links
       do L = 1, lnx1D
-         if (kcu(L) == FLOWLINK_1D2D_STREETINLET) then
+         if (kcu(L) == LINK_1D2D_STREETINLET) then
             wu1D2D(L) = wu1Duni5
             hh1D2D(L) = hh1Duni5
-         else if (kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then
+         else if (kcu(L) == LINK_1D2D_ROOF_GUTTER) then
             wu1D2D(L) = wu1Duni7
             hh1D2D(L) = hh1Duni7
          else
@@ -931,9 +931,9 @@ contains
       do L = 1, lnx1D
          prof1D(1, L) = wu1D2D(L) !  prof1d(1,*) > 0 : width   or prof1d(1,*) < 0 : ka ref
          prof1D(2, L) = hh1D2D(L) !  prof1d(2,*) > 0 : height  or prof1d(2,*) < 0 : kb ref
-         if (kcu(L) == FLOWLINK_1D2D_STREETINLET) then !  restricting dimensions of streetinlet
+         if (kcu(L) == LINK_1D2D_STREETINLET) then !  restricting dimensions of streetinlet
             prof1D(3, L) = iproftypuni5 !  prof1d(3,*) > 0 : ityp    or prof1d(3,*) < 0 : alfa tussen a en b .
-         else if (kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then !  restricting dimensions of roofgutterpipe
+         else if (kcu(L) == LINK_1D2D_ROOF_GUTTER) then !  restricting dimensions of roofgutterpipe
             prof1D(3, L) = iproftypuni7 !  prof1d(3,*) > 0 : ityp    or prof1d(3,*) < 0 : alfa tussen a en b .
          else
             prof1D(3, L) = iproftypuni !  prof1d(3,*) > 0 : ityp    or prof1d(3,*) < 0 : alfa tussen a en b .
@@ -974,9 +974,9 @@ contains
          k3 = lncn(1, L)
          k4 = lncn(2, L)
 
-         if (kcu(L) == FLOWLINK_1D .or. kcu(L) == FLOWLINK_1D_BOUNDARY .or. kcu(L) == FLOWLINK_1D2D_LATERAL .or. kcu(L) == FLOWLINK_1D2D_LONGITUDINAL .or. kcu(L) == FLOWLINK_1D2D_STREETINLET .or. kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then
             LL = L
-            if (kcu(L) == FLOWLINK_1D_BOUNDARY) then ! 1D boundary link, find attached regular link
+            if (kcu(L) == LINK_1D_BOUNDARY) then ! 1D boundary link, find attached regular link
                if (abs(nd(k2)%ln(1)) == L) then
                   LBND1D(L) = abs(nd(k2)%ln(2))
                end if
@@ -985,9 +985,9 @@ contains
                end if
                LL = LBND1D(L) ! LL refers to prof1D
             end if
-            if (kcu(L) == FLOWLINK_1D2D_LONGITUDINAL) then ! 1D2D lateral link inherits 2D
+            if (kcu(L) == LINK_1D2D_LONGITUDINAL) then ! 1D2D lateral link inherits 2D
                wu(L) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) ! set 2D link width
-            else if (kcu(L) == FLOWLINK_1D2D_LATERAL) then ! 1D2D internal link 3  flows over side of attached 1D channel
+            else if (kcu(L) == LINK_1D2D_LATERAL) then ! 1D2D internal link 3  flows over side of attached 1D channel
                call getdxofconnectedkcu1(L, wu(L)) !  dbdistance ( xk(k3), yk(k3), xk(k4), yk(k4) )  ! set 2D link width
             else
                if (prof1D(1, LL) >= 0) then
@@ -1011,7 +1011,7 @@ contains
 
       k = 0 ! count MAX nr of 1D endpoints, dir zijn dead ends
       do L = 1, lnx
-         if (kcu(L) == FLOWLINK_1D) then
+         if (kcu(L) == LINK_1D) then
             k1 = ln(1, L)
             k2 = ln(2, L)
             if (nd(k1)%lnx == 1) then
@@ -1033,7 +1033,7 @@ contains
 
       k = 0
       do L = 1, lnx
-         if (kcu(L) == FLOWLINK_1D) then
+         if (kcu(L) == LINK_1D) then
             k1 = ln(1, L)
             k2 = ln(2, L)
             if (nd(k1)%lnx == 1) then
@@ -1089,7 +1089,7 @@ contains
             acn(2, L) = dxn2e / (dxn1e + dxn2e) ! weight factor of nd2, sum = 1d0 !
          end if
 
-         if (kcu(L) /= FLOWLINK_1D2D_LONGITUDINAL .and. (iNormalMethod == 0 .or. L <= Lnx1D)) then
+         if (kcu(L) /= LINK_1D2D_LONGITUDINAL .and. (iNormalMethod == 0 .or. L <= Lnx1D)) then
             call normalin(xz(k1), yz(k1), xz(k2), yz(k2), rn, rt, xu(L), yu(L), jsferic, jasfer3D, dxymis) ! = normalin (k1,k2)
          else
             call normalout(xk(k3), yk(k3), xk(k4), yk(k4), rn, rt, jsferic, jasfer3D, dmiss, dxymis) ! 1D2D

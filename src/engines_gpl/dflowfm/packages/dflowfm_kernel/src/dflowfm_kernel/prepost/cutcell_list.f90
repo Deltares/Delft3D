@@ -260,7 +260,7 @@ contains
       if (n12 == 5) then
 !    SPvdP: disable flow-links that are associated to disabled net-links
          do Lf = 1, Lnx
-            if (kcu(Lf) /= FLOWLINK_2D) then
+            if (kcu(Lf) /= LINK_2D) then
                cycle
             end if
             L = abs(ln2lne(Lf))

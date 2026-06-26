@@ -293,19 +293,19 @@ contains
 
             do L = 1, Lnx1D
                if (prof1D(1, L) >= 0) then ! only direct profiles
-                  if (kcu(L) == FLOWLINK_1D) then
+                  if (kcu(L) == LINK_1D) then
                      if (wu1DUNI /= w1) then
                         prof1D(1, L) = wu1DUNI
                      else if (hh1DUNI /= h1) then
                         prof1D(2, L) = hh1DUNI
                      end if
-                  else if (kcu(L) == FLOWLINK_1D2D_STREETINLET) then
+                  else if (kcu(L) == LINK_1D2D_STREETINLET) then
                      if (wu1DUNI5 /= w5) then
                         prof1D(1, L) = wu1DUNI5
                      else if (hh1DUNI5 /= h5) then
                         prof1D(2, L) = hh1DUNI5
                      end if
-                  else if (kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then
+                  else if (kcu(L) == LINK_1D2D_ROOF_GUTTER) then
                      if (wu1DUNI7 /= w7) then
                         prof1D(1, L) = wu1DUNI7
                      else if (hh1DUNI7 /= h7) then

@@ -375,7 +375,7 @@ contains
                if (L > lnxi) then
                   L = lbnd1d(L)
                end if
-               if (kcu(L) /= FLOWLINK_1D) then
+               if (kcu(L) /= LINK_1D) then
                   ! This is a 1d2d link and is not added to the volume tables
                   cycle
                end if
@@ -675,7 +675,7 @@ contains
          end if
 
          jacustombnd1d = 0
-         if (kcu(L) == FLOWLINK_1D_BOUNDARY .and. allocated(bndWidth1D)) then
+         if (kcu(L) == LINK_1D_BOUNDARY .and. allocated(bndWidth1D)) then
             ibndsect = lnxbnd(L - lnxi)
             if (ibndsect > 0) then
                if (bndWidth1D(ibndsect) /= dmiss) then

@@ -635,13 +635,13 @@ contains
 
       do link = 1, lnxi
          if (iadv(link) /= OFF) then
-            if (kcu(link) == FLOWLINK_1D2D_LATERAL) then
+            if (kcu(link) == LINK_1D2D_LATERAL) then
                if (iadveccorr1D2D == 2) then
                   iadv(link) = OFF
                else
                   iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
-            else if (kcu(link) == FLOWLINK_1D2D_STREETINLET .or. kcu(link) == FLOWLINK_1D2D_ROOF_GUTTER) then
+            else if (kcu(link) == LINK_1D2D_STREETINLET .or. kcu(link) == LINK_1D2D_ROOF_GUTTER) then
                iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end if
@@ -695,13 +695,13 @@ contains
       do link = 1, lnx
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
-               if (kcu(link) == FLOWLINK_1D2D_LATERAL) then
+               if (kcu(link) == LINK_1D2D_LATERAL) then
                   frcu(link) = frcuni1d2d
-               else if (kcu(link) == FLOWLINK_1D2D_STREETINLET) then
+               else if (kcu(link) == LINK_1D2D_STREETINLET) then
                   ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
                   frcu(link) = frcunistreetinlet
                   ifrcutp(link) = MANNING
-               else if (kcu(link) == FLOWLINK_1D2D_ROOF_GUTTER) then
+               else if (kcu(link) == LINK_1D2D_ROOF_GUTTER) then
                   ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
                   frcu(link) = frcuniroofgutterpipe
                   ifrcutp(link) = MANNING
@@ -970,7 +970,7 @@ contains
       integer :: boundary_link
 
       do flow_link = lnxi + 1, lnx
-         if (kcu(flow_link) == FLOWLINK_1D_BOUNDARY) then
+         if (kcu(flow_link) == LINK_1D_BOUNDARY) then
             boundary_link = Lbnd1D(flow_link)
             frcu(flow_link) = frcu(boundary_link)
             ifrcutp(flow_link) = ifrcutp(boundary_link)
@@ -1021,7 +1021,7 @@ contains
             end if
          end do
          do boundary_link = lnxi + 1, lnx
-            if (kcu(boundary_link) == FLOWLINK_1D_BOUNDARY) then
+            if (kcu(boundary_link) == LINK_1D_BOUNDARY) then
                link1D = lbnd1d(boundary_link)
                if (abs(prof1d(3, link1D)) == CIRCLE) then
                   teta(boundary_link) = 1.0_dp ! closed pipes always implicit

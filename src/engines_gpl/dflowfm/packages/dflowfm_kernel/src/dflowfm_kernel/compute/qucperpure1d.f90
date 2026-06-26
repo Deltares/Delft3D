@@ -64,7 +64,7 @@ contains
       real(kind=dp) :: sn !< sine of link direction (+1 for link in positive y-direction)
       real(kind=dp) :: ucin !< representative velocity transported along link
 
-      if (kcu(L) == FLOWLINK_1D_BOUNDARY) then
+      if (kcu(L) == LINK_1D_BOUNDARY) then
          QucPerpure1D = 0.0_dp
          return
       end if

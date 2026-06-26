@@ -403,13 +403,13 @@ contains
                   end if
 
                   if (jarhoxu == 0) then
-                     if (kcu(L) == FLOWLINK_1D) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                      else
                         volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                      end if
                   else
-                     if (kcu(L) == FLOWLINK_1D) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
                      else
                         volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
@@ -649,13 +649,13 @@ contains
                else if (iadvL == 5 .or. iadvL == 6) then ! 5,6 = advection like 3,4, now Piaczek teta
 
                   if (jarhoxu == 0) then
-                     if (kcu(L) == FLOWLINK_1D) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
                      else
                         volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
                      end if
                   else
-                     if (kcu(L) == FLOWLINK_1D) then
+                     if (kcu(L) == LINK_1D) then
                         volu = acl(L) * vol1_f(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1_f(k2) * rho(k2)
                      else
                         volu = acl(L) * vol1(k1) * rho(k1) + (1.0_dp - acl(L)) * vol1(k2) * rho(k2)
@@ -686,9 +686,9 @@ contains
                      iad = 4
                   end if
 
-                  if (kcu(L) == FLOWLINK_1D) then
+                  if (kcu(L) == LINK_1D) then
                      volu = acl(L) * vol1_f(k1) + (1.0_dp - acl(L)) * vol1_f(k2)
-                  else if (kcu(L) == FLOWLINK_1D2D_LATERAL .and. iadveccorr1D2D == 1) then
+                  else if (kcu(L) == LINK_1D2D_LATERAL .and. iadveccorr1D2D == 1) then
                      volu = au(L) * dx(L) ! Use volume weighting based on approximated "lateral volume", to avoid large 1D river volumes.
                   else
                      volu = acl(L) * vol1(k1) + (1.0_dp - acl(L)) * vol1(k2)
@@ -930,13 +930,13 @@ contains
                            end if
 
                            if (jarhoxu > 0) then
-                              !if (kcu(LL) ==FLOWLINK_1D) then
+                              !if (kcu(LL) ==LINK_1D) then
                               !   volu  = ac1*vol1_f(k1)*rho(k1) + ac2*vol1_f(k2)*rho(k2)
                               !else
                               volu = ac1 * vol1(k1) * rho(k1) + ac2 * vol1(k2) * rho(k2)
                               !endif
                            else
-                              !if (kcu(LL) ==FLOWLINK_1D) then
+                              !if (kcu(LL) ==LINK_1D) then
                               !   volu  = ac1*vol1_f(k1)         + ac2*vol1_f(k2)
                               !else
                               volu = ac1 * vol1(k1) + ac2 * vol1(k2)

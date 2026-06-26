@@ -1995,7 +1995,7 @@ contains
                teta(L) = 1.0_dp
             end do
 
-            if (iadvec /= 0 .and. kcu(L) == FLOWLINK_1D_BOUNDARY) then
+            if (iadvec /= 0 .and. kcu(L) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2015,7 +2015,7 @@ contains
          do k = 1, nbndz
             kbi = kbndz(2, k)
             Lf = kbndz(3, k)
-            if (iadvec /= 0 .and. kcu(Lf) == FLOWLINK_1D_BOUNDARY) then
+            if (iadvec /= 0 .and. kcu(Lf) == LINK_1D_BOUNDARY) then
                iad = iadvec1D
             else
                iad = iadvec
@@ -2995,7 +2995,7 @@ contains
             do L = 1, lnx1D ! for all links, set link width
                k1 = ln(1, L)
                k2 = ln(2, L)
-               if (kcu(L) == FLOWLINK_1D) then
+               if (kcu(L) == LINK_1D) then
                   ! Calculate maximal total area by using a water depth of 1000 m. FOR BARE we need the maximal possible catchment area.
                   ! For this reason the total width is used and also the area of the storage nodes is added tot BARE.
                   ! Since BA contains the flow area only and not the total area or the area of the storage nodes, BARE has to be recalculated.

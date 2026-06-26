@@ -80,7 +80,7 @@ contains
 
             do i = 1, wetLink2D - 1
                L = onlyWetLinks(i)
-               if (kcu(L) /= FLOWLINK_1D2D_LATERAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
+               if (kcu(L) /= LINK_1D2D_LATERAL) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
                   k1 = ln(1, L)
                   k2 = ln(2, L)
                   ucx(k1) = ucx(k1) + wcx1(L) * u1(L)
