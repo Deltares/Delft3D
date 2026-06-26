@@ -20,7 +20,6 @@ module m_atmospheric_stability
    use precision, only: dp
    use m_sferic, only: pi
    use m_physcoef, only: vonkarw
-   use messagehandling, only: LEVEL_INFO, mess
    
    implicit none(type, external)
    
@@ -95,7 +94,7 @@ module m_atmospheric_stability
 contains
 
    !> Compute turbulence scaling parameters for a point value.
-   function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
+   pure function compute_scaling_parameters(wind_velocity_x, wind_velocity_y, air_temperature, dew_point_temperature, &
                                   air_pressure, charnock, surface_temperature, options) result(result)
       real(kind=dp), intent(in) :: wind_velocity_x         !< x-direction wind component [m/s].
       real(kind=dp), intent(in) :: wind_velocity_y         !< y-direction wind component [m/s].
@@ -241,11 +240,7 @@ contains
             exit
          end if
       end do
-      
-      if (iteration == MAXIMUM_ITERATION) then
-         call mess(LEVEL_INFO, 'AirSeaInteractionModel MOST: iteration does not converge.')
-      end if
-      
+
       result%u_star = u_star
       result%t_star = t_star
       result%q_star = q_star
