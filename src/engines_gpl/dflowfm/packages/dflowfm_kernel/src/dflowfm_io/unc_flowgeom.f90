@@ -16,7 +16,7 @@ module m_unc_flowgeom
 
    implicit none(type, external)
 
-   type(t_fm_flowgeom), public :: flowgeom
+   type(t_fm_flowgeom), public :: flowgeom !< global flow geometry object to be built by build_flowgeom_2d and build_flowgeom_1d.
 
 contains
 
@@ -191,7 +191,7 @@ contains
       implicit none
 
       type(t_fm_flowgeom), intent(inout) :: flowgeom !< Populated flow geometry object.
-      logical, intent(in), optional :: cell_mask(:) !< Selection mask over ndx2d cells; if absent, all cells are included.
+      integer, intent(in), optional :: cell_mask(:) !< Selection mask over ndx2d cells (nonzero = include); if absent, all cells are included.
 
       integer :: numl2d, numNodes, numFace, numEdge
       integer :: i, l, n, nn, nnSize, netNodeReMappedIndex
@@ -207,7 +207,7 @@ contains
 
       numl2d = numl - numl1d
       if (use_mask) then
-         numFace = count(cell_mask)
+         numFace = count(cell_mask /= 0)
       else
          numFace = ndx2d
       end if
@@ -238,7 +238,7 @@ contains
          call realloc(inverse_face_map, ndx2d, keepExisting=.false., fill=0)
          n = 0
          do i = 1, ndx2d
-            if (cell_mask(i)) then
+            if (cell_mask(i) /= 0) then
                n = n + 1
                flowgeom%face_map(n) = i
                inverse_face_map(i) = n
@@ -454,7 +454,7 @@ contains
 
       type(t_fm_flowgeom), intent(inout) :: flowgeom
       integer, intent(in) :: jabndnd
-      logical, intent(in), optional :: node_mask(:)
+      integer, intent(in), optional :: node_mask(:) !< Selection mask over internal 1D nodes (nonzero = include).
 
       integer :: ndx1d, n1d_write, last_1d, n1dedges, n1d2dcontacts, n1d_out
       integer :: n, L, k1, L1, face_2d, i
@@ -503,7 +503,7 @@ contains
       inverse_node_map_1D = 0
 
       if (use_mask) then
-         n1d_out = count(node_mask(1:ndx1d))
+         n1d_out = count(node_mask(1:ndx1d) /= 0)
          if (jabndnd == 1) n1d_out = n1d_out + (ndx1db - ndxi)
       else
          n1d_out = n1d_write
@@ -515,7 +515,7 @@ contains
       n = 0
       do i = 1, ndx1d
          if (use_mask) then
-            if (.not. node_mask(i)) cycle
+            if (node_mask(i) == 0) cycle
          end if
          n = n + 1
          flowgeom%node_map_1d(n) = ndx2d + i
@@ -730,18 +730,18 @@ contains
 !! cell_mask covers all internal cells (1:ndxi): the 2D slice (1:ndx2d) is
 !! forwarded to build_flowgeom_2d and the 1D slice (ndx2d+1:ndxi) is forwarded
 !! to build_flowgeom_1d as the node mask.
-   function build_flowgeom(jabndnd, md_polygon_file) result(flowgeom)
+   function build_flowgeom(jabndnd, polygon_file) result(flowgeom)
       use m_flowgeom, only: ndx2d
       use m_pol_to_cellmask, only: cell_mask_from_polygon_file
       implicit none
 
       type(t_fm_flowgeom) :: flowgeom !< Populated geometry object for both 1D and 2D meshes.
       integer, intent(in) :: jabndnd !< Include boundary nodes (1) or not (0).
-      character(len=*), intent(in), optional :: md_polygon_file !< File containing output polygon (e.g., *_output.pol)
-      logical, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells; if absent, all cells are included.
+      character(len=*), intent(in), optional :: polygon_file !< File containing output polygon (e.g., *_output.pol)
+      integer, allocatable :: cell_mask(:) !< Selection mask over all ndxi internal cells (nonzero = include); if absent, all cells are included.
 
-      if (present(md_polygon_file)) then
-         cell_mask = cell_mask_from_polygon_file(md_polygon_file)
+      if (present(polygon_file)) then
+         cell_mask = cell_mask_from_polygon_file(polygon_file)
          call build_flowgeom_2d(flowgeom, cell_mask(1:ndx2d))
          call build_flowgeom_1d(flowgeom, jabndnd, cell_mask(ndx2d + 1:))
       else

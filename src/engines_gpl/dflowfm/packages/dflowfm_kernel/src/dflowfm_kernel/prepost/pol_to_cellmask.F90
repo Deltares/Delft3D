@@ -40,13 +40,14 @@ module m_pol_to_cellmask
 
 contains
 
-   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, xcenters, ycenters) result(mask)
+   !> Create a cellmask from a set of x,y coordinates and a set of polygon points. Any  point inside the polygon is masked as 1.
+   function pol_to_cellmask(polygon_points, x_poly, y_poly, z_poly, num_netcells, x_points, y_points) result(mask)
       use m_alloc, only: realloc
 
       integer, intent(in) :: polygon_points !< Number of polygon points
       integer, intent(in) :: num_netcells !< Number of points to mask
       real(kind=dp), intent(in) :: x_poly(polygon_points), y_poly(polygon_points), z_poly(polygon_points) !< Polygon coordinate arrays
-      real(kind=dp), intent(in), dimension(:) :: xcenters, ycenters !< Point coordinates
+      real(kind=dp), intent(in), dimension(:) :: x_points, y_points !< Point coordinates to mask
       integer, dimension(:), allocatable :: mask !< Output mask array (1 if inside polygon, 0 if outside)
 
       integer :: k
@@ -62,7 +63,7 @@ contains
       !> Dynamic scheduling in case of unequal work, chunksize guided
       !$OMP PARALLEL DO SCHEDULE(GUIDED)
       do k = 1, num_netcells
-         mask(k) = cellmask_from_polygon_set(xcenters(k), ycenters(k))
+         mask(k) = cellmask_from_polygon_set(x_points(k), y_points(k))
       end do
       !$OMP END PARALLEL DO
 
@@ -70,68 +71,55 @@ contains
 
    end function pol_to_cellmask
 
-!> Builds a logical selection mask over all ndxi internal cells (2D + 1D)
-!! by testing each cell's circumcenter against the polygon in the given file.
-!! Cells whose center falls inside the polygon are marked .true.; all others .false..
-!! Returns an unallocated array when the file path is empty or the polygon is empty —
-!! the caller should treat an unallocated result as "include all cells".
-!!
-!! 2D cell centers are taken from xzw/yzw (net cell circumcenters).
-!! 1D cell centers are taken from xz/yz (flow node circumcenters, offset by ndx2d).
-function cell_mask_from_polygon_file(md_polygon_file) result(mask)
-   use m_flowgeom, only: ndxi, ndx2d, xz, yz
-   use network_data, only: nump, xzw, yzw
-   use m_polygon, only: npl, xpl, ypl, zpl, savepol, restorepol
-   use m_delpol, only: delpol
-   use m_sferic, only: jsferic
-   use m_filez, only: oldfil
-   use m_reapol, only: reapol
-   use m_fix_global_polygons, only: fix_global_polygons
-   implicit none
+!> Wrapper around pol_to_cellmask that loads a polygon from a file and returns a mask over all internal cells (ndxi). 
+!! treating 1D and 2D separately. The mask is unallocated if no polygon is loaded. 2D cells are masked by x/y zw, and 1D cells are masked by x/y z.
+   function cell_mask_from_polygon_file(polygon_file) result(mask)
+      use m_flowgeom, only: ndxi, ndx2d, xz, yz
+      use network_data, only: nump, xzw, yzw
+      use m_polygon, only: npl, xpl, ypl, zpl, savepol, restorepol
+      use m_delpol, only: delpol
+      use m_sferic, only: jsferic
+      use m_filez, only: oldfil
+      use m_reapol, only: reapol
+      use m_fix_global_polygons, only: fix_global_polygons
+      implicit none
 
-   character(len=*), intent(in) :: md_polygon_file !< Path to polygon file defining the output region.
-   logical, allocatable :: mask(:) !< Output mask over ndxi internal cells; unallocated when no polygon is loaded.
+      character(len=*), intent(in) :: polygon_file !< Path to polygon file defining the output region.
+      integer, allocatable :: mask(:) !< Output mask over ndxi internal cells (nonzero = include); unallocated when no polygon is loaded.
 
-   integer :: minp, ndx1d
-   integer, allocatable :: int_mask(:)
+      integer :: minp, ndx1d
 
-   if (len_trim(md_polygon_file) == 0) return
+      if (len_trim(polygon_file) == 0) return
 
-   ndx1d = ndxi - ndx2d
+      ndx1d = ndxi - ndx2d
 
-   ! Save any polygon currently in memory, load the output polygon, then restore afterwards.
-   call savepol()
-   call oldfil(minp, md_polygon_file)
-   call reapol(minp, 0)
+      ! Save any polygon currently in memory, load the output polygon, then restore afterwards.
+      call savepol()
+      call oldfil(minp, polygon_file)
+      call reapol(minp, 0)
 
-   if (npl == 0) then
+      if (npl == 0) then
+         call restorepol()
+         return
+      end if
+
+      if (jsferic == 1) then
+         call fix_global_polygons(1, 0)
+      end if
+
+      allocate (mask(ndxi), source=0)
+
+      if (ndx2d > 0) then
+         mask(1:ndx2d) = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw(1:nump), yzw(1:nump))
+      end if
+
+      if (ndx1d > 0) then
+         mask(ndx2d + 1:ndxi) = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), yz(ndx2d + 1:ndxi))
+      end if
+
+      call delpol()
       call restorepol()
-      return
-   end if
 
-   if (jsferic == 1) then
-      call fix_global_polygons(1, 0)
-   end if
-
-   allocate(mask(ndxi))
-   mask = .false.
-
-   ! --- 2D cells: test net cell circumcenters (xzw/yzw, 1:nump == 1:ndx2d) ---
-   if (ndx2d > 0) then
-      int_mask = pol_to_cellmask(npl, xpl, ypl, zpl, nump, xzw(1:nump), yzw(1:nump))
-      mask(1:ndx2d) = (int_mask(1:ndx2d) /= 0)
-   end if
-
-   ! --- 1D cells: test flow node circumcenters (xz/yz, offset by ndx2d) ---
-   ! pol_to_cellmask is called separately in 1D-local indexing (1:ndx1d).
-   if (ndx1d > 0) then
-      int_mask = pol_to_cellmask(npl, xpl, ypl, zpl, ndx1d, xz(ndx2d + 1:ndxi), yz(ndx2d + 1:ndxi))
-      mask(ndx2d + 1:ndxi) = (int_mask(1:ndx1d) /= 0)
-   end if
-
-   call delpol()
-   call restorepol()
-
-end function cell_mask_from_polygon_file
+   end function cell_mask_from_polygon_file
 
 end module m_pol_to_cellmask

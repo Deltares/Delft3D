@@ -9,11 +9,14 @@ module m_unstruc_netcdf_data
 
    implicit none(type, external)
 
-!> DFlowFM-specific flow geometry object.
-!! The t_ug_meshgeom member holds the UGRID-compliant mesh data (nodes, edges, faces,
-!! connectivity) that can be passed directly to io_ugrid write routines.
-!! The remaining fields hold DFlowFM-specific administration that has no place
-!! in the generic UGRID type.
+!> D-Flow FM-specific flow geometry object, intended for two features:
+!! * UGRID-compliant output must write 1D and 2D mesh parts as separate geometries.
+!! * An optional masking polygon to restrict output to a particular region needs bookkeeping of
+!!   the reduced geometry numbering in relation to the original global numbering.
+!! The t_ug_meshgeom members hold the UGRID-compliant mesh data (nodes, edges, faces,
+!! connectivity) for 1d and 2d separately, such that they can be passed directly to io_ugrid write routines.
+!! The remaining members hold D-FlowFM-specific administration, amongst others mapping from 1D+2D
+!! global numbering in D-Flow FM to the 1D/2D separate (possibly mask-reduced) UGRID numbering.
    type t_fm_flowgeom
 
       type(t_ug_meshgeom) :: mesh2D !< Node/edge/face topology and coordinates for the 2D mesh.
