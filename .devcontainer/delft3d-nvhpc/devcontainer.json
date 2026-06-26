@@ -1,0 +1,39 @@
+{
+    // Devcontainer for the nvfortran (NVHPC) proof-of-concept build of D-Flow FM.
+    // Prerequisite: build the third-party-libs image first (see the Dockerfile header).
+    "name": "delft3d-nvhpc",
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+    "postCreateCommand": "bash .devcontainer/delft3d-nvhpc/scripts/post_create_command.sh",
+    "mounts": [
+        {
+            "type": "volume",
+            "source": "delft3d-nvhpc-history",
+            "target": "/home/dev/.history"
+        },
+        {
+            "type": "volume",
+            "source": "delft3d-nvhpc-conan",
+            "target": "/home/dev/.conan2"
+        }
+    ],
+    // --ulimit stack=-1 matches the Intel devcontainer (FM needs a large stack).
+    // For the GPU offload phase, add "--gpus", "all" below. This requires the
+    // NVIDIA Container Toolkit on the host; leave it out for the CPU-only phase.
+    "runArgs": [
+        "--ulimit", "stack=-1:-1"
+        // , "--gpus", "all"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-containers",
+                "ms-vscode.cmake-tools",
+                "fortran-lang.linter-gfortran",
+                "ms-vscode.cpptools",
+                "ms-python.python"
+            ]
+        }
+    }
+}

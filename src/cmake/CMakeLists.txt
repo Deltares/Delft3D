@@ -83,6 +83,12 @@ if(${CMAKE_Fortran_COMPILER_ID} MATCHES "GNU")
 elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "Intel")
     get_intel_version()
     include(compiler_options/intel.cmake)
+elseif(${CMAKE_Fortran_COMPILER_ID} MATCHES "NVHPC")
+    # Proof-of-concept nvfortran build (stepping stone towards OpenMP GPU offload).
+    # Sets NVHPC so downstream CMake can drop Intel-tied, non-essential dependencies
+    # (e.g. PETSc) for a serial dflowfm build.
+    set(NVHPC TRUE)
+    include(compiler_options/nvhpc.cmake)
 else()
     message(FATAL_ERROR "Compiler \"${CMAKE_Fortran_COMPILER_ID}\" does not match known compilers.")
 endif()
@@ -159,8 +165,11 @@ if (UNIX)
     add_definitions(-DHAVE_MPI)
     set(mpi_module_path ${mpi_include_path})
 
-    # Petsc
-    pkg_check_modules(PETSC REQUIRED PETSc)
+    # Petsc (disabled for the NVHPC proof-of-concept: serial dflowfm uses the
+    # internal Saad solver, Icgsolver=4, and PETSc source is #ifdef HAVE_PETSC guarded).
+    if(NOT NVHPC)
+        pkg_check_modules(PETSC REQUIRED PETSc)
+    endif()
 endif(UNIX)
 
 if (UNIX)

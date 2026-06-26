@@ -167,13 +167,18 @@ target_link_libraries(${library_name} PRIVATE
 if (UNIX)
     # the `pkg_check_modules` function is created with this call
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
 
     target_link_libraries(${library_name} PRIVATE
                           interacter_stub
-                          PkgConfig::PETSC
                           uuid
     )
+
+    # PETSc is dropped for the NVHPC proof-of-concept (serial dflowfm uses the
+    # internal Saad solver). Source is #ifdef HAVE_PETSC guarded, so it compiles out.
+    if(NOT NVHPC)
+        pkg_check_modules(PETSC REQUIRED IMPORTED_TARGET PETSc)
+        target_link_libraries(${library_name} PRIVATE PkgConfig::PETSC)
+    endif()
 endif(UNIX)
 
 if (WIN32)
@@ -272,7 +277,12 @@ if (WIN32)
 endif(WIN32)
 
 if (UNIX)
-    target_compile_definitions(${library_name} PUBLIC "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    if(NVHPC)
+        # PETSc dropped for the NVHPC proof-of-concept build (see above).
+        target_compile_definitions(${library_name} PUBLIC "HAVE_METIS;HAVE_MPI")
+    else()
+        target_compile_definitions(${library_name} PUBLIC "HAVE_METIS;HAVE_MPI;HAVE_PETSC")
+    endif()
     find_package(OpenMP COMPONENTS Fortran)
     if(OpenMP_Fortran_FOUND)
          target_link_libraries(${library_name} PRIVATE ${OpenMP_Fortran_LIBRARIES})
