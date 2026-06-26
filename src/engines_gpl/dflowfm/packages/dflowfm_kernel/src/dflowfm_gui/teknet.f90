@@ -96,7 +96,7 @@ contains
                end if
             end if
 
-            if (kn(3, L) == 2) then
+            if (kn(3, L) == LINK_2D) then
                K1 = KN(1, L)
                K2 = KN(2, L)
                if (K1 /= 0 .and. K2 /= 0) then
@@ -125,7 +125,7 @@ contains
          if (ndraw(2) == 4) then
             call setcol(ncoldg)
             do L = 1, numl
-               if (kn(3, L) == 1 .or. kn(3, L) == 3 .or. kn(3, L) == 4) then
+               if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D2D_INTERNAL .or. kn(3, L) == LINK_1D2D_LONGITUDINAL) then
                   k1 = kn(1, L)
                   x = xk(k1)
                   y = yk(k1)

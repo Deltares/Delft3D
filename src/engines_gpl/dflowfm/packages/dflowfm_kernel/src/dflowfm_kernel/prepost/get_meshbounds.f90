@@ -55,7 +55,7 @@ contains
       xboundmin = huge(1.0_dp)
       xboundmax = -huge(1.0_dp)
       do L = 1, numL
-         if (kn(3, L) == 2) then
+         if (kn(3, L) == LINK_2D) then
             k1 = kn(1, L)
             k2 = kn(2, L)
             if (k1 > 0 .and. k2 > 0) then ! safety

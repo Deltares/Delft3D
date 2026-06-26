@@ -93,11 +93,11 @@ contains
 
                ! KC(1D NODES) = 1 , KC(2D NODES) = 2
 
-               if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then
+               if (kn(3, LL) == LINK_1D .or. kn(3, LL) == LINK_1D_MAINBRANCH) then
                   itp = 1 ! "1D" netnode type
-               else if (kn(3, LL) == 3 .or. kn(3, LL) == 4 .or. kn(3, LL) == 5 .or. kn(3, LL) == 7) then
+               else if (kn(3, LL) == LINK_1D2D_INTERNAL .or. kn(3, LL) == LINK_1D2D_LONGITUDINAL .or. kn(3, LL) == LINK_1D2D_STREETINLET .or. kn(3, LL) == LINK_1D2D_ROOF) then
                   itp = kn(3, LL) ! 1d2d connections
-               else if (kn(3, LL) == 2) then
+               else if (kn(3, LL) == LINK_2D) then
                   itp = 2 ! "2D" netnode type
                else
                   itp = 0
@@ -292,7 +292,7 @@ contains
 
          KC = 1
          do L = 1, NUML
-            if (KN(3, L) == 2) then ! KC(1D NODES) = 1 , KC(2D NODES) = 2
+            if (KN(3, L) == LINK_2D) then ! KC(1D NODES) = 1 , KC(2D NODES) = 2
                KC(KN(1, L)) = 2
                KC(KN(2, L)) = 2
             end if
@@ -302,7 +302,7 @@ contains
             if (mod(L, Lint) == 0) then
                call READYY(' ', 0.5_dp + 0.5_dp * min(1.0_dp, real(L, kind=dp) / Lint))
             end if
-            if (KN(3, L) == 1 .or. KN(3, L) == 4) then
+            if (KN(3, L) == LINK_1D .or. KN(3, L) == LINK_1D2D_LONGITUDINAL) then
                kn3 = kn(3, L)
                K1 = KN(1, L)
                K2 = KN(2, L)

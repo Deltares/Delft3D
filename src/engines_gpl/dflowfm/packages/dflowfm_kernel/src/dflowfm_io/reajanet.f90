@@ -118,7 +118,7 @@ contains
          read (REC, *, ERR=888) x10, KN(1, L), KN(2, L)
          KN(1, L) = KN(1, L) + K0
          KN(2, L) = KN(2, L) + K0
-         KN(3, L) = 2
+         KN(3, L) = LINK_2D
       end do
       NUML = L0 + NUMLN
 

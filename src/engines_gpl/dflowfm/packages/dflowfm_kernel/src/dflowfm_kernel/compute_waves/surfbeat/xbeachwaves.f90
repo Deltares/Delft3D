@@ -5473,7 +5473,7 @@ contains
          !
          ! Find internal node attached to bnd node (implicitly assumes *no* triangular borders, if so takes last one)
          !! network_data::NB values: 1=INTERN, 2=RAND, 3=HOEK, 0/-1=DOET NIET MEE OF 1D
-         !  (KN(3,L) == 2) 2D
+         !  (KN(3,L) == LINK_2D) 2D
          do LL = 1, size(nod(cn1)%lin)
             if (kn(3, abs(nod(cn1)%lin(LL))) /= 2) then
                cycle ! not 2d link

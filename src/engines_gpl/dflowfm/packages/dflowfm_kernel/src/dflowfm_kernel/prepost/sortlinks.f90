@@ -73,7 +73,7 @@ contains
             knext = 0 ! next link
 
             !        1D-links are fine: proceed  ! is .or. necessary? all 1D has lnn==0
-            if (lnn(L1) < 1 .or. kn(3, L1) == 1 .or. kn(3, L1) == 3 .or. kn(3, L1) == 4 .or. kn(3, L1) == 5 .or. kn(3, L1) == 6 .or. kn(3, L1) == 7) then
+            if (lnn(L1) < 1 .or. kn(3, L1) == LINK_1D .or. kn(3, L1) == LINK_1D2D_INTERNAL .or. kn(3, L1) == LINK_1D2D_LONGITUDINAL .or. kn(3, L1) == LINK_1D2D_STREETINLET .or. kn(3, L1) == LINK_1D_MAINBRANCH .or. kn(3, L1) == LINK_1D2D_ROOF) then
                cycle
             end if
 
@@ -82,7 +82,7 @@ contains
             i1 = min(lnn(L1), 2)
             do k2 = k1 + 1, N ! loop over remaining links
                L2 = nod(k0)%lin(k2)
-               if (lnn(L2) < 1 .or. kn(3, L2) == 1 .or. kn(3, L2) == 3 .or. kn(3, L2) == 4 .or. kn(3, L1) == 5 .or. kn(3, L1) == 6 .or. kn(3, L1) == 7) then
+               if (lnn(L2) < 1 .or. kn(3, L2) == LINK_1D .or. kn(3, L2) == LINK_1D2D_INTERNAL .or. kn(3, L2) == LINK_1D2D_LONGITUDINAL .or. kn(3, L1) == LINK_1D2D_STREETINLET .or. kn(3, L1) == LINK_1D_MAINBRANCH .or. kn(3, L1) == LINK_1D2D_ROOF) then
                   cycle ! 1D-link
                end if
                i2 = min(lnn(L2), 2)
@@ -113,7 +113,7 @@ contains
                   !              find next non-internal link
                   do k2 = k1 + 1, N
                      L2 = nod(k0)%lin(k2)
-                     if (lnn(L2) < 2 .or. kn(3, L2) == 1 .or. kn(3, L2) == 3 .or. kn(3, L2) == 4) then ! .or. kn(3,L1).eq.5 .or. kn(3,L1).eq.6 .or. kn(3,L1).eq.7) then  ! found
+                     if (lnn(L2) < 2 .or. kn(3, L2) == LINK_1D .or. kn(3, L2) == LINK_1D2D_INTERNAL .or. kn(3, L2) == LINK_1D2D_LONGITUDINAL) then ! .or. kn(3,L1).eq.5 .or. kn(3,L1).eq.6 .or. kn(3,L1).eq.7) then  ! found
                         knext = k2
                         exit
                      end if

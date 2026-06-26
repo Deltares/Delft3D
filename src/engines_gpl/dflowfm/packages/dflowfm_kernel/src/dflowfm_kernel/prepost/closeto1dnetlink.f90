@@ -62,7 +62,7 @@ contains
       N1 = 0
       DISMIN = 9e+33
       do L = 1, numl
-         if (kn(3, L) == 1 .or. kn(3, L) == 6 .or. (kn3channelonly == 0 .and. (kn(3, L) == 5 .or. kn(3, L) == 7))) then !  .or. kn(3,L) == 4) THEN
+         if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH .or. (kn3channelonly == 0 .and. (kn(3, L) == LINK_1D2D_STREETINLET .or. kn(3, L) == LINK_1D2D_ROOF))) then !  .or. kn(3,L) == LINK_1D2D_LONGITUDINAL) THEN
             K1 = kn(1, L)
             K2 = kn(2, L)
             XA = Xk(K1)

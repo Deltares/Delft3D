@@ -87,11 +87,11 @@ contains
                   lnu = lnu + 1
                   kn(1, lnu) = k
                   kn(2, lnu) = km
-                  kn(3, lnu) = 2
+                  kn(3, lnu) = LINK_2D
                   lnu = lnu + 1
                   kn(1, lnu) = k
                   kn(2, lnu) = kp
-                  kn(3, lnu) = 2
+                  kn(3, lnu) = LINK_2D
                   !call connectdbn(k,km,lnu)
                   !call connectdbn(k,kp,lnu)
                end if

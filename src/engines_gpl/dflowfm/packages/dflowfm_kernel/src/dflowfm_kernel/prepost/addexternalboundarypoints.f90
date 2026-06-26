@@ -106,7 +106,7 @@ contains
 
             k3 = kn(1, L)
             k4 = kn(2, L)
-            if (kn(3, L) == 2) then ! in 2D mirror cell
+            if (kn(3, L) == LINK_2D) then ! in 2D mirror cell
                call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
                xzw(k1) = xz(k1)
                yzw(k1) = yz(k1)
@@ -199,7 +199,7 @@ contains
             call aerr('nd(k1)%x(nn), nd(k1)%y(nn)', ierr, nn * 2)
             k3 = kn(1, L)
             k4 = kn(2, L)
-            if (kn(3, L) == 2) then ! in 2D mirror cell
+            if (kn(3, L) == LINK_2D) then ! in 2D mirror cell
                call mirrorcell(k2, xk(k3), yk(k3), xk(k4), yk(k4), xci, yci, xz(k1), yz(k1), xce2, yce2, nd(k1)%x, nd(k1)%y)
                xzw(k1) = xz(k1)
                yzw(k1) = yz(k1)

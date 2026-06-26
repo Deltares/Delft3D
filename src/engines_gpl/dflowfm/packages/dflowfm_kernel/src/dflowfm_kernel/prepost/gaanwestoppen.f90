@@ -56,9 +56,9 @@ contains
 
       do KK = 1, NMK(K)
          L = NOD(K)%LIN(KK)
-         if (KN(3, L) == 1) then
+         if (KN(3, L) == LINK_1D) then
             N1 = N1 + 1
-         else if (KN(3, L) == 6) then
+         else if (KN(3, L) == LINK_1D_MAINBRANCH) then
             N6 = N6 + 1
          end if
       end do

@@ -46,7 +46,7 @@ contains
 
       isactive = 1
 
-      if (kn(3, L) == 1 .or. kn(3, L) == 3 .or. kn(3, L) == 4) then
+      if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D2D_INTERNAL .or. kn(3, L) == LINK_1D2D_LONGITUDINAL) then
          n1 = kn(1, L)
          n2 = kn(2, L)
          xza = xk(n1)

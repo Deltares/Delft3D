@@ -112,7 +112,7 @@ contains
                L = L + 1
                kn(1, L) = mn(i, j)
                kn(2, L) = mn(i + 1, j)
-               KN(3, L) = 2
+               KN(3, L) = LINK_2D
             end if
          end do
       end do
@@ -126,7 +126,7 @@ contains
                L = L + 1
                kn(1, L) = mn(i, j)
                kn(2, L) = mn(i, j + 1)
-               KN(3, L) = 2
+               KN(3, L) = LINK_2D
             end if
          end do
       end do

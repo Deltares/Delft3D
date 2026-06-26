@@ -393,7 +393,7 @@ contains
                dxt = dxt + dx0
                kn(1, L + L0) = k - 1
                kn(2, L + L0) = k
-               kn(3, L + L0) = 1
+               kn(3, L + L0) = LINK_1D
             end do
             dxt = dxt + dx0
             f = pi * radius / dxt
@@ -415,7 +415,7 @@ contains
             zk(k) = zk(k - 1) - bedslope * dx0
             kn(1, L + L0) = k - 1
             kn(2, L + L0) = k
-            kn(3, L + L0) = 1
+            kn(3, L + L0) = LINK_1D
          end do
 
          numk = k
@@ -458,7 +458,7 @@ contains
             zk(k) = zk(k - 1) - bedslope * dx0
             kn(1, L) = k - 1
             kn(2, L) = k
-            kn(3, L) = 1
+            kn(3, L) = LINK_1D
          end do
 
          numk = k

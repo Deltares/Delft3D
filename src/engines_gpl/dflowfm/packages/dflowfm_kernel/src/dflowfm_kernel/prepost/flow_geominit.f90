@@ -409,7 +409,7 @@ contains
       fwind = (5.0e6_dp / max(sarea, 1.0e4_dp))**0.05_dp ! Only for temperature_model == TEMPERATURE_MODEL_EXCESS.
 
       do L = 1, NUML1D ! get cell center coordinates 1D
-         if (KN(3, L) == 1 .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then
+         if (KN(3, L) == LINK_1D .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then
             K1n = KN(1, L)
             K2n = KN(2, L)
             nc1 = lne(1, L)
@@ -473,7 +473,7 @@ contains
 
             isbadlink = .false.
             ! Check on too short flow links. Only for 2D. 1D is always considered 'good'.
-            if (KN(3, L) == 2) then
+            if (KN(3, L) == LINK_2D) then
                dxlim = 0.9_dp * removesmalllinkstrsh * 0.5_dp * (sqrt(ba(n1)) + sqrt(ba(n2)))
                dxlink = dbdistance(xz(n1), yz(n1), xz(n2), yz(n2), jsferic, jasfer3D, dmiss)
                if (dxlink < dxlim) then
@@ -483,7 +483,7 @@ contains
 
             if (.not. isbadlink) then
                lnxi = lnxi + 1 ! prevents connection between overlying identical elements
-               if (KN(3, L) == 1 .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then ! Also recount 1D flow links (in case some are
+               if (KN(3, L) == LINK_1D .or. KN(3, L) >= 3 .and. KN(3, L) <= 7) then ! Also recount 1D flow links (in case some are
                   lnx1D = lnx1D + 1 ! thrown away by this distance check)
                end if
             else
@@ -619,9 +619,9 @@ contains
             ln(2, LF) = n2a
             ln2lne(LF) = L
             lne2ln(L) = LF
-            if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! 1D link
+            if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then ! 1D link
                kcu(Lf) = LINK_1D
-            else if (kn(3, L) == 4) then
+            else if (kn(3, L) == LINK_1D2D_LONGITUDINAL) then
                k1 = kn(1, L)
                k2 = kn(2, L)
                jaend = 0
@@ -649,7 +649,7 @@ contains
                else ! 1D link
                   kcu(Lf) = LINK_1D
                end if
-            else if (kn(3, L) == 3 .or. kn(3, L) == 7) then
+            else if (kn(3, L) == LINK_1D2D_INTERNAL .or. kn(3, L) == LINK_1D2D_ROOF) then
                if (n1a > ndx2d .and. n2a <= ndx2d .or. &
                    n2a > ndx2d .and. n1a <= ndx2d) then
                   kcu(Lf) = kn(3, L) ! 1D2D internal link
@@ -667,7 +667,7 @@ contains
                   write (msgbuf, '(a,i0,a)') '(netlink L=', L, ')'
                   call qnerror('1d2d link kn3 = 3 or 7 not connected between 1D node and 2D cell ', trim(msgbuf), ' ')
                end if
-            else if (kn(3, L) == 5) then
+            else if (kn(3, L) == LINK_1D2D_STREETINLET) then
                if (n1a > ndx2d .and. n2a <= ndx2d .or. &
                    n2a > ndx2d .and. n1a <= ndx2d .or. &
                    n2a <= ndx2d .and. n1a <= ndx2d) then
@@ -682,7 +682,7 @@ contains
                   write (msgbuf, '(a,i0,a)') '(netlink L=', L, ')'
                   call qnerror('1d2d link kn3 = 5 not connected to 2D cell ', trim(msgbuf), ' ')
                end if
-            else if (kn(3, L) == 2) then ! 2D link
+            else if (kn(3, L) == LINK_2D) then ! 2D link
                kcu(Lf) = LINK_2D
             end if
          else if (n1 == 0) then ! if negative, refer back to attached node

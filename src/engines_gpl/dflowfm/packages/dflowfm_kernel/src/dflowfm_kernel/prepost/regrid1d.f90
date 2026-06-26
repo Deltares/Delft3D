@@ -129,7 +129,7 @@ contains
                yk(numk) = yh(k)
                kn(2, numl) = numk
                kn(1, numl) = numk - 1
-               kn(3, numl) = 1 ! NOTE: regridded 1D now does not have kn(3,L)=4 at end points.
+               kn(3, numl) = LINK_1D ! NOTE: regridded 1D now does not have kn(3,L)=LINK_1D2D_LONGITUDINAL at end points.
             end do
 
             deallocate (xh, yh, zh)

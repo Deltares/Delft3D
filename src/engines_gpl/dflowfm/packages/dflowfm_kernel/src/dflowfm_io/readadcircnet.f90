@@ -99,15 +99,15 @@ contains
          L = L + 1
          kn(1, L) = k1
          kn(2, L) = k2
-         kn(3, L) = 2
+         kn(3, L) = LINK_2D
          L = L + 1
          kn(1, L) = k2
          kn(2, L) = k3
-         kn(3, L) = 2
+         kn(3, L) = LINK_2D
          L = L + 1
          kn(1, L) = k3
          kn(2, L) = k1
-         kn(3, L) = 2
+         kn(3, L) = LINK_2D
       end do
 
       NUML = L

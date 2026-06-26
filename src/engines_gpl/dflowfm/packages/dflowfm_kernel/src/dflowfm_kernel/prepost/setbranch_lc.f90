@@ -55,15 +55,15 @@ contains
       NRL1D = 0
       NRL1D6 = 0
       do L = 1, NUML
-         if (KN(3, L) == 1 .or. KN(3, L) == 6) then
+         if (KN(3, L) == LINK_1D .or. KN(3, L) == LINK_1D_MAINBRANCH) then
             K1 = KN(1, L)
             K2 = KN(2, L)
             K3 = KN(3, L)
             NMK0(K1) = NMK0(K1) + 1
             NMK0(K2) = NMK0(K2) + 1
-            if (KN(3, L) == 1) then
+            if (KN(3, L) == LINK_1D) then
                NRL1D = NRL1D + 1 ! count 1D links
-            else if (KN(3, L) == 6) then
+            else if (KN(3, L) == LINK_1D_MAINBRANCH) then
                NRL1D6 = NRL1D6 + 1
             end if
          else

@@ -197,7 +197,7 @@ contains
          numkmax = -numkmin
          do Lf = Lnx1D + 1, Lnx ! we only need netnode nrs in 2D, todo: trim to numkmin
             L = ln2lne(Lf)
-            if (kn(3, L) == 2) then
+            if (kn(3, L) == LINK_2D) then
                numkmin = min(numkmin, kn(1, L), kn(2, L))
                numkmax = max(numkmax, kn(1, L), kn(2, L))
             end if

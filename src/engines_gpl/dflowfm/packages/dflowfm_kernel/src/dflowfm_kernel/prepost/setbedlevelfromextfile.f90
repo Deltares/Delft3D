@@ -114,7 +114,7 @@ contains
          call realloc(kc, mx, keepExisting=.false., fill=0)
 
          do L = 1, numL1D
-            if (kn(3, L) == 1 .or. kn(3, L) == 6) then ! TODO: AvD: why not also type 3/4/5/7?
+            if (kn(3, L) == LINK_1D .or. kn(3, L) == LINK_1D_MAINBRANCH) then ! TODO: AvD: why not also type 3/4/5/7?
                k1 = kn(1, L)
                k2 = kn(2, L)
                if (nmk(k1) > 1) then
@@ -128,7 +128,7 @@ contains
 
          if (iprimpos == 3) then
             do L = 1, numL
-               if (kn(3, L) == 2) then
+               if (kn(3, L) == LINK_2D) then
                   k1 = kn(1, L)
                   k2 = kn(2, L)
                   kc2D(k1) = 1

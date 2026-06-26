@@ -62,11 +62,11 @@ contains
 
       do L = 1, numL
 !     check if link is 2D
-         if (kn(3, L) == 2) then
+         if (kn(3, L) == LINK_2D) then
             Lother = Linkbrother(L)
             if (Lother > 0) then
 !           check if other link is 2D
-               if (kn(3, L) == 2) then
+               if (kn(3, L) == LINK_2D) then
 
 !              find common node
                   call find_common_node(L, Lother, k)

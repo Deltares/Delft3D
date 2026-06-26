@@ -231,7 +231,7 @@ contains
          L = L + 1
          KN(1, L) = KS(EDGEINDX(1, LL))
          KN(2, L) = KS(EDGEINDX(2, LL))
-         KN(3, L) = 2
+         KN(3, L) = LINK_2D
 
          call setcol(31)
          call movabs(xk(kn(1, L)), yk(kn(1, L)))

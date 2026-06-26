@@ -89,7 +89,7 @@ contains
       Nnext = 0
       Lnext = 0
 
-      if (kn(3, L) == 2) then
+      if (kn(3, L) == LINK_2D) then
          N2Dcells = lnn(L)
       else ! 1D
          N2Dcells = 0

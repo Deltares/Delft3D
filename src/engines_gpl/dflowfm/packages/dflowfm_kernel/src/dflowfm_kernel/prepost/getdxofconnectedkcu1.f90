@@ -76,7 +76,7 @@ contains
       end if
       do kk = 1, nmk(k)
          LL = abs(nod(k)%lin(kk))
-         if (kn(3, LL) == 1 .or. kn(3, LL) == 6) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == 4) then
+         if (kn(3, LL) == LINK_1D .or. kn(3, LL) == LINK_1D_MAINBRANCH) then ! on second thought, only true 1D links should influence lateral inflow width ! .or. kn(3,LL) == LINK_1D2D_LONGITUDINAL) then
             n = n + 1
             wu1 = wu1 + dx(lne2ln(LL))
          end if
