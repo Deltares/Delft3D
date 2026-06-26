@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Target Name="DFlowFM.IO.NET.PostBuild" AfterTargets="Build">
+    <ItemGroup>
+      <_FilesToCopy Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\**\*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(OutDir)\win-x64\native\%(RecursiveDir)" SkipUnchangedFiles="true"/>
+  </Target>
+  <Target Name="DFlowFM.IO.NET.Clean" AfterTargets="Clean">
+    <ItemGroup>
+      <_OriginalFiles Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\**\*"/>
+      <_FilesToClean Include="$(OutDir)\win-x64\native\%(_OriginalFiles.RecursiveDir)%(_OriginalFiles.FileName)%(_OriginalFiles.Extension)"/>
+    </ItemGroup>
+    <Delete Files="@(_FilesToClean)"/>
+  </Target>
+</Project>

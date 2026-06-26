@@ -26,4 +26,10 @@ if(CMAKE_Fortran_COMPILER)
     add_subdirectory(wrappers/fortran)
 endif()
 
+check_language(CSharp)
+if(CMAKE_CSharp_COMPILER)
+    enable_language(CSharp)
+    add_subdirectory(wrappers/csharp)
+endif()
+
 add_subdirectory(test)

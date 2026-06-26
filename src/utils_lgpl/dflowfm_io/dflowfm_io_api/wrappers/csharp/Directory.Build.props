@@ -1,0 +1,50 @@
+﻿<Project>
+
+  <!-- General metadata -->
+  <PropertyGroup>
+    <Company>Deltares</Company>
+    <Authors>$(Company)</Authors>
+    <Copyright>Copyright © Deltares $([System.DateTime]::Now.Year)</Copyright>
+    <RepositoryUrl>https://github.com/Deltares/Delft3D</RepositoryUrl>
+  </PropertyGroup>
+
+  <!-- Assembly identity -->
+  <PropertyGroup>
+    <Product>$(MSBuildProjectName)</Product>
+    <AssemblyTitle>$(MSBuildProjectName)</AssemblyTitle>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- Versioning -->
+  <PropertyGroup>
+    <GitHash>DEV</GitHash>
+    <BuildNumber>0</BuildNumber>
+    <DFlowFM_IO_Version>0.1.0</DFlowFM_IO_Version>
+    <Version>$(DFlowFM_IO_Version).$(BuildNumber)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <InformationalVersion>$(Version)+$(GitHash)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <!-- Language and compiler settings -->
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
+  </PropertyGroup>
+
+  <!-- Output configuration -->
+  <PropertyGroup>
+    <OutputPath>$(SolutionDir)bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <!-- Debugging -->
+  <PropertyGroup>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+</Project>
