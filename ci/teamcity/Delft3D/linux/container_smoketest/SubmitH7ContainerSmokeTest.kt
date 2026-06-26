@@ -53,7 +53,7 @@ object LinuxSubmitH7ContainerSmokeTest : BuildType({
                     --reference
                     --skip-run 
                     --skip-post-processing 
-                    --config configs/container_smoke_tests/apptainer_lnx64.xml
+                    --config configs/smoke_tests/apptainer_lnx64.xml
                     --log-level INFO
                     --parallel
                     --override-paths "from[local]=/dimrset,root[local]=/opt,from[engines_to_compare]=/dimrset,root[engines_to_compare]=/opt,from[engines]=/dimrset,root[engines]=/opt"

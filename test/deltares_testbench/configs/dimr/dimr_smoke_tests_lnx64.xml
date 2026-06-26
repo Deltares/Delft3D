@@ -91,6 +91,6 @@
 	</testCase>
     </defaultTestCases>
   <!-- ======================================================================== -->
-    <xi:include href="../include/dimr_container_smoke_test.xml"/>
+    <xi:include href="../include/dimr_smoke_tests.xml"/>
   <!-- ======================================================================== -->
 </deltaresTestbench_v3>
