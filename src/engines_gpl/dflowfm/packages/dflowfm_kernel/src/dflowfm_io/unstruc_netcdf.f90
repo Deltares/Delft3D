@@ -13847,8 +13847,8 @@ contains
          nodes_1d = [(flowgeom%mesh2d%numFace + i, i=1, flowgeom%mesh1D%numNode)]
       end if
 
-      if (allocated(flowgeom%face_map)) then
-         faces = flowgeom%face_map
+      if (allocated(flowgeom%face_map_2D)) then
+         faces = flowgeom%face_map_2D
       else
          faces = [(i, i=1, flowgeom%mesh2d%numFace)]
       end if
@@ -14048,10 +14048,10 @@ contains
          if (mesh1d%numNode <= 0) goto 999
 
          ! --- Copy mappings into id_tsp (needed by unc_put_var_map for time-dep writes) ---
-         call realloc(id_tsp%edgetoln, size(flowgeom1d%edgetoln), keepExisting=.false., fill=0)
-         call realloc(id_tsp%contactstoln, size(flowgeom1d%contactstoln), keepExisting=.false., fill=0)
-         id_tsp%edgetoln = flowgeom1d%edgetoln
-         id_tsp%contactstoln = flowgeom1d%contactstoln
+         call realloc(id_tsp%edgetoln, size(flowgeom1d%edge_map_1D), keepExisting=.false., fill=0)
+         call realloc(id_tsp%contactstoln, size(flowgeom1d%contacts_map), keepExisting=.false., fill=0)
+         id_tsp%edgetoln = flowgeom1d%edge_map_1D
+         id_tsp%contactstoln = flowgeom1d%contacts_map
 
 ! --- Build string metadata remapping (branch node ids in flowgeom order) ---
          if (associated(meshgeom1d%ngeopointx)) then

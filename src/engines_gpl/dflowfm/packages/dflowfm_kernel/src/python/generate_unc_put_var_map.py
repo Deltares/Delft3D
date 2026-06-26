@@ -80,13 +80,13 @@ def generate_rank1(ftype: FortranType) -> str:
 
    case (UNC_LOC_U)
       if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-         if (size(flowgeom%edgetoln, 1) > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), values(flowgeom%edgetoln(:)), start=[1, id_tsp%idx_curtime])
+         if (size(flowgeom%edge_map_1D, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(1), values(flowgeom%edge_map_1D(:)), start=[1, id_tsp%idx_curtime])
          end if
       end if
       if (id_var(4) > 0 .and. flowgeom%n1d2dcontacts > 0) then
-         if (size(flowgeom%contactstoln, 1) > 0) then
-            ierr = nf90_put_var(ncid, id_var(4), values(flowgeom%contactstoln(:)), start=[1, id_tsp%idx_curtime])
+         if (size(flowgeom%contacts_map, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(4), values(flowgeom%contacts_map(:)), start=[1, id_tsp%idx_curtime])
          end if
       end if
       lnx2d = lnxi - lnx1d
@@ -162,9 +162,9 @@ def generate_rank1(ftype: FortranType) -> str:
          end do
       end do
       if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-         if (size(flowgeom%edgetoln, 1) > 0) then
-            ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, flowgeom%edgetoln(:)), &
-                                start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom%edgetoln, 1), 1])
+         if (size(flowgeom%edge_map_1D, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, flowgeom%edge_map_1D(:)), &
+                                start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom%edge_map_1D, 1), 1])
          end if
       end if
       lnx2d = lnx - lnx1d

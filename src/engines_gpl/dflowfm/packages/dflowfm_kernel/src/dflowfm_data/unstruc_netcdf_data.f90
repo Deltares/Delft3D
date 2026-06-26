@@ -22,14 +22,14 @@ module m_unstruc_netcdf_data
       type(t_ug_meshgeom) :: mesh2D !< Node/edge/face topology and coordinates for the 2D mesh.
       type(t_ug_meshgeom) :: mesh1D !< Node/edge/face topology and coordinates for the 1D mesh.
 
-      integer, dimension(:), allocatable :: face_map !< 2D: mapping from reduced output set UGRID face index to global flow cell number.
-      integer, dimension(:), allocatable :: edge_map !< 2D: mapping from reduced output set UGRID node index to global flow node number.
-      integer, dimension(:), allocatable :: node_map !< 2D: mapping from reduced output set UGRID node index to global flow node number.
-      integer, dimension(:), allocatable :: node_map_1d !< 1D: mapping from reduced output set UGRID node index to global flow node number.
+      integer, dimension(:), allocatable :: face_map_2D !< 2D: mapping from reduced output set UGRID face index to global flow cell number.
+      integer, dimension(:), allocatable :: edge_map_2D !< 2D: mapping from reduced output set UGRID node index to global flow node number.
+      integer, dimension(:), allocatable :: node_map_2D !< 2D: mapping from reduced output set UGRID node index to global flow node number.
+      integer, dimension(:), allocatable :: node_map_1D !< 1D: mapping from reduced output set UGRID node index to global flow node number.
 
       integer, dimension(:), allocatable :: edge_type !< Edge type array (size numl2d): encodes the flow-link relation for each 2D mesh edge.
-      integer, dimension(:), allocatable :: edgetoln !< 1D: mapping from mesh1D UGRID edge index to flow link number.
-      integer, dimension(:), allocatable :: contactstoln !< 1D2D: mapping from contact index to flow link number.
+      integer, dimension(:), allocatable :: edge_map_1D !< 1D: mapping from mesh1D UGRID edge index to flow link number.
+      integer, dimension(:), allocatable :: contacts_map !< 1D2D: mapping from contact index to flow link number.
       integer, dimension(:, :), allocatable :: contacts !< 1D2D contact node pairs [2, n1d2dcontacts].
       integer, dimension(:), allocatable :: contacttype !< 1D2D contact type per contact entry.
       integer :: n1d2dcontacts = 0 !< Number of 1D2D contacts.
@@ -130,7 +130,7 @@ module m_unstruc_netcdf_data
       integer :: id_erolaydim = -1 !< Dimension ID for location of erodable layer thickness.
       integer :: id_sedtotdim = -1 !< Dimension ID for number of all sediment fractions.
       integer :: id_sedsusdim = -1 !< Dimension ID for number of suspended sediment fractions.
-      ! arrays to identify 1d mesh and 1d2d contacts
+      ! arrays to identify 1d mesh and 1d2d contacts !> TODO: Remove these as they are already in t_fm_flowgeom
       integer, allocatable :: edgetoln(:)
       integer, allocatable :: contactstoln(:)
       ! geometry fieldss
