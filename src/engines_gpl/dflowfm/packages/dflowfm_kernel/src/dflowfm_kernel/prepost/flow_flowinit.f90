@@ -1229,16 +1229,15 @@ contains
    subroutine temporary_fix_for_sepr_3D()
       use m_flow, only: kmx, hu, au
       use m_flowgeom, only: lnx, kcu, wu
+      use network_data, only: LINK_1D
 
       implicit none
-
-      integer, parameter :: link_1D = 1
 
       integer :: link
 
       if (kmx > 0) then
          do link = 1, lnx
-            if (abs(kcu(link)) == link_1D) then
+            if (abs(kcu(link)) == LINK_1D) then
                call addlink1D(link, 1)
                if (hu(link) > 0.0_dp) then
                   wu(link) = au(link) / hu(link)

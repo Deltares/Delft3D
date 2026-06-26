@@ -110,6 +110,8 @@ module network_data
 
    ! Net link related :
    integer, allocatable, target :: kn(:, :) !< [-] Net links: kn(1,:)=from-idx, kn(2,:)=to-idx, kn(3,:)=net link type (0/1/2/3/4) {"shape": [3, "numl"]}
+   integer, public, parameter :: LINK_2D_BOUNDARY = -2 !< Type code for flow links that are 2D boundaries
+   integer, public, parameter :: LINK_1D_BOUNDARY = -1 !< Type code for flow links that are 1D boundaries
    integer, public, parameter :: LINK_1D = 1 !< Type code for flow links that are 1D
    integer, public, parameter :: LINK_2D = 2 !< Type code for flow links that are 2D
    integer, public, parameter :: LINK_1D2D_INTERNAL = 3 !< Type code for 1D2D flow links of type 'internal'
