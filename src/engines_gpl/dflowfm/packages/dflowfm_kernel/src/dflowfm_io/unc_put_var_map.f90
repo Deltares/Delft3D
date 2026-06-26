@@ -31,12 +31,12 @@ contains
       integer, intent(in) :: tl !< last time in buffer to be written
       integer, optional, intent(in) :: jabndnd
 
-      integer :: ierr !< Result status, DFM_NOERR if successful.
+      integer :: ierr
 
-      integer :: tstart !< time index of t1
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: n1d_write !< Number of 1D nodes to write.
-      integer :: ndx2d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
+      integer :: tstart
+      integer :: jabndnd_
+      integer :: n1d_write
+      integer :: ndx2d 
       
       if (present(jabndnd)) then
          jabndnd_ = jabndnd
@@ -88,17 +88,17 @@ contains
       integer, optional, intent(in) :: locdim !< Optional index of the location dimension (default = 1)
       integer, optional, intent(in) :: jabndnd
 
-      integer :: ierr !< Result status, DFM_NOERR if successful.
+      integer :: ierr 
 
-      integer :: n1d_write !< Number of 1D nodes to write.
+      integer :: n1d_write
       integer :: lnx2d, lnx2db, numl2d
       integer :: ilocdim
       integer :: lndim
       integer, dimension(3) :: dimids_var
       real(kind=dp), allocatable :: work(:, :)
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndx2d !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
+      integer :: jabndnd_
+      integer :: ndx2d
+      integer :: last_1d 
 
       ierr = DFM_NOERR
 
@@ -245,17 +245,17 @@ contains
       integer, optional, intent(in) :: locdim !< Optional index of the location dimension (default = 1)
       integer, optional, intent(in) :: jabndnd
 
-      integer :: ierr !< Result status, DFM_NOERR if successful.
+      integer :: ierr
 
-      integer :: n1d_write !< Number of 1D nodes to write.
+      integer :: n1d_write
       integer :: lnx2d, lnx2db, numl2d
       integer :: ilocdim
       integer :: lndim1, lndim2
       integer, dimension(4) :: dimids_var
       real(kind=dp), allocatable :: work(:, :, :)
-      integer :: jabndnd_ !< Flag specifying whether boundary nodes are to be written.
-      integer :: ndx2d !< Last node to be saved. Equals ndx when boundary nodes are written, or ndxi otherwise.
-      integer :: last_1d !< Last 1d node to be saved. Equals ndx1db when boundary nodes are written, or ndxi otherwise.
+      integer :: jabndnd_
+      integer :: ndx2d
+      integer :: last_1d
 
       ierr = DFM_NOERR
       if (present(locdim)) then

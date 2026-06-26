@@ -30,17 +30,18 @@ def generate_rank1(ftype: FortranType) -> str:
     proc = f"unc_put_var_map_{ftype.name}"
     T = ftype.dtype
     return f"""\
+   !> Write variable specified by id_var and values to netcdf file ncid on the location specified by iloc. 
    function {proc}(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
 
    implicit none
 
-   integer, intent(in) :: ncid
-   type(t_unc_timespace_id), intent(in) :: id_tsp
-   integer, intent(in) :: id_var(:)
-   integer, intent(in) :: iloc
-   {T}, intent(in) :: values(:)
-   {T}, optional, intent(in) :: default_value
-   integer, optional, intent(in) :: jabndnd
+   integer, intent(in) :: ncid !< file ID of open netcdf file.
+   type(t_unc_timespace_id), intent(in) :: id_tsp !> unc_timespace_id, only the index for current time is needed.
+   integer, intent(in) :: id_var(:) !< Ids of variable to write values into, one for each submesh (1d/2d/3d if applicable).
+   integer, intent(in) :: iloc !< Stagger location for this variable (one of UNC_LOC_CN, UNC_LOC_S, UNC_LOC_U, UNC_LOC_L, UNC_LOC_S3D, UNC_LOC_U3D, UNC_LOC_W).
+   {T}, intent(in) :: values(:) !< The data values to be written. Should in standard FM order (1d/2d/3d node/link conventions, @see m_flow).
+   {T}, optional, intent(in) :: default_value !< Optional default value to be written when no value is available.
+   integer, optional, intent(in) :: jabndnd !< flag specifying whether boundary nodes are written (1) or not (0).
 
    integer :: ierr
 
