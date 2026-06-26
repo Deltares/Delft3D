@@ -31,7 +31,7 @@
 !
 
 !> Put the polyline thin dams on the network links.
-!! All crossed net links are set to kn(3,L) = 0, such that flow_geominit
+!! All crossed net links are set to kn(3,L) = LINK_CLOSED, such that flow_geominit
 !! does not even create a flow link across it.
 module m_thindams_on_netgeom
 
@@ -87,7 +87,7 @@ contains
             do L = 1, thd(ic)%lnx
                LL = abs(thd(ic)%ln(L))
                if (LL > 0 .and. LL <= numl) then
-                  kn(3, LL) = 0
+                  kn(3, LL) = LINK_CLOSED
                end if
             end do
          end do
@@ -136,7 +136,7 @@ contains
                      do L = 1, thd(ic)%lnx
                         LL = abs(thd(ic)%ln(L))
                         if (LL > 0 .and. LL <= numl) then
-                           kn(3, LL) = 0
+                           kn(3, LL) = LINK_CLOSED
                         end if
                      end do
                   end if
@@ -168,7 +168,7 @@ contains
                do L = 1, thd(ic)%lnx
                   LL = abs(thd(ic)%ln(L))
                   if (LL > 0 .and. LL <= numl) then
-                     kn(3, LL) = 0
+                     kn(3, LL) = LINK_CLOSED
                   end if
                end do
             end do

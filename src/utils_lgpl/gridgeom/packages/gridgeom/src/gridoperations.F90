@@ -791,7 +791,7 @@ contains
       jathindams = 0
       lc = 0
       nlinkremoved = 0
-      if (any(kn(3, :) == 0)) then
+      if (any(kn(3, :) == LINK_CLOSED)) then
          jathindams = 1
       end if
       valid_links = pack([(L, L=1, NUML)], is_valid_link([(L, L=1, NUML)], kn(1, 1:NUML), kn(2, 1:NUML), kn(3, 1:NUML)))

@@ -658,7 +658,7 @@ contains
          if (Lc(L) == 0) then
             kn(1, L) = 0
             kn(2, L) = 0
-            kn(3, L) = 0
+            kn(3, L) = LINK_CLOSED
          end if
       end do
 

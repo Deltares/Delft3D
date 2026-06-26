@@ -101,7 +101,7 @@ contains
                   yR = ykc + half * (yk(k2) - yk(k1))
                   kn(1, Ls) = 0
                   kn(2, Ls) = 0
-                  kn(3, Ls) = 0
+                  kn(3, Ls) = LINK_CLOSED
                   call setnewpoint(xL, YL, zx, kL)
                   call connectdbn(k1, kL, LnL)
                   call setnewpoint(xR, YR, zx, kR)

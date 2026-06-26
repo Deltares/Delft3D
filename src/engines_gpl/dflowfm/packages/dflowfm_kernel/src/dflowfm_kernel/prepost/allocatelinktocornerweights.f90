@@ -108,7 +108,7 @@ contains
 
       ! exclude all nodes with a disabled netlink attached from the projection
       do L = 1, numL
-         if (kn(3, L) == 0) then
+         if (kn(3, L) == LINK_CLOSED) then
             k1 = kn(1, L)
             k2 = kn(2, L)
             jacorner(k1) = 0

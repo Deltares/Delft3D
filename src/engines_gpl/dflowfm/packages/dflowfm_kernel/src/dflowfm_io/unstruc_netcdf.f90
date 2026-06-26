@@ -15364,7 +15364,7 @@ contains
                edge_nodes(1:2, i) = KN(1:2, L)
                if (lnn(L) < 2) then
                   edge_type(i) = UG_EDGETYPE_BND_CLOSED
-               else if (kn(3, L) == 0) then
+               else if (kn(3, L) == LINK_CLOSED) then
                   edge_type(i) = UG_EDGETYPE_INTERNAL_CLOSED
                end if
 

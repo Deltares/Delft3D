@@ -45,7 +45,7 @@ contains
       if (NCOL == 0) then ! ERASE
          NCL = 0
       else if (NCOL == 1) then ! 1 MEANS: DRAW IN KN3 PREDEFINED COLOUR
-         if (KN(3, L) == 0) then
+         if (KN(3, L) == LINK_CLOSED) then
             NCL = 31
          else if (KN(3, L) == LINK_1D) then ! 1D
             NCL = NCOLRG

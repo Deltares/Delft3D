@@ -75,7 +75,7 @@ contains
          do kk = 1, netcell(n)%n
             L = netcell(n)%lin(kk)
 
-            if (kn(3, L) == 0) then
+            if (kn(3, L) == LINK_CLOSED) then
                nthd = nthd + 1
                k1 = n
                k3 = kn(1, L) ! netnode 1

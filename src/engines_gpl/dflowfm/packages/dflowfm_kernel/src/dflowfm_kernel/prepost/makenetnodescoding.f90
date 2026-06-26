@@ -60,7 +60,7 @@ contains
          if (k1 < 1 .or. k2 < 1) then
             cycle ! SPvdP: safety
          end if
-         if (KN(3, L) == LINK_2D .or. KN(3, L) == 0) then
+         if (KN(3, L) == LINK_2D .or. KN(3, L) == LINK_CLOSED) then
             if (NB(K1) /= -1 .and. NB(K2) /= -1) then
                if (LNN(L) == 0) then ! LINK ZONDER BUURCELLEN
                   NB(K1) = -1

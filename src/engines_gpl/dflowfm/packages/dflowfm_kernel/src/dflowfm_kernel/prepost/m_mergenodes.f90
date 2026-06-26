@@ -70,7 +70,7 @@ contains
          if (L12 /= 0) then
             kn(1, L12) = 0
             kn(2, L12) = 0
-            kn(3, L12) = 0
+            kn(3, L12) = LINK_CLOSED
          end if
 
          do NM = 1, NM1 ! CHECK OF JE NIET VIA EEN ANDER PAD OOK BIJ K2 UIT KAN KOMEN. ZO JA, VERWIJDER LINK
@@ -84,7 +84,7 @@ contains
                   if (K22A == K2) then
                      kn(1, L2A) = 0
                      kn(2, L2A) = 0
-                     kn(3, L2A) = 0
+                     kn(3, L2A) = LINK_CLOSED
                   end if
                end do
             end if

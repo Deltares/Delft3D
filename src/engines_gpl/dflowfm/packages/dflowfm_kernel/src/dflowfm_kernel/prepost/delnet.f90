@@ -109,7 +109,7 @@ contains
             K2 = KN(2, L)
             if (K1 /= 0 .and. K2 /= 0) then
                ! Delete links IF all of the cells they participate in are in pol.
-               if (jacheckcells == 1 .and. (kn(3, L) == 0 .or. kn(3, L) == LINK_2D)) then
+               if (jacheckcells == 1 .and. (kn(3, L) == LINK_CLOSED .or. kn(3, L) == LINK_2D)) then
                   if (lnn(L) > 0) then
                      inall = 1 ! todo: check als LNN(L) == 0
                      do ip = 1, LNN(L)

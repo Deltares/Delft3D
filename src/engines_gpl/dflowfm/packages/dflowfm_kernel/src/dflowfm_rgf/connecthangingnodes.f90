@@ -119,7 +119,7 @@ contains
          if (abs(xk(k1) - xk(k2)) > 1.0e-10_dp .and. abs(yk(k1) - yk(k2)) > 1.0e-10_dp) then
             kn(1, L) = 0
             kn(2, L) = 0
-            kn(3, L) = 0
+            kn(3, L) = LINK_CLOSED
          end if
       end do
 
