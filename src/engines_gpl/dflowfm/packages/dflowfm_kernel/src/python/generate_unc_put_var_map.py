@@ -30,203 +30,203 @@ def generate_rank1(ftype: FortranType) -> str:
     proc = f"unc_put_var_map_{ftype.name}"
     T = ftype.dtype
     return f"""\
-function {proc}(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
+   function {proc}(ncid, id_tsp, id_var, iloc, values, default_value, jabndnd) result(ierr)
 
-implicit none
+   implicit none
 
-integer, intent(in) :: ncid
-type(t_unc_timespace_id), intent(in) :: id_tsp
-integer, intent(in) :: id_var(:)
-integer, intent(in) :: iloc
-{T}, intent(in) :: values(:)
-{T}, optional, intent(in) :: default_value
-integer, optional, intent(in) :: jabndnd
+   integer, intent(in) :: ncid
+   type(t_unc_timespace_id), intent(in) :: id_tsp
+   integer, intent(in) :: id_var(:)
+   integer, intent(in) :: iloc
+   {T}, intent(in) :: values(:)
+   {T}, optional, intent(in) :: default_value
+   integer, optional, intent(in) :: jabndnd
 
-integer :: ierr
+   integer :: ierr
 
-integer :: ndx2d, n1d_write
-integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
-{T}, allocatable, save :: workL(:)
-{T}, allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
+   integer :: ndx2d, n1d_write
+   integer :: lnx2d, lnx2db, numl2d, Lf, L, i, n, k, kb, kt, nlayb, nrlay, LL, Lb, Ltx, nlaybL, nrlayLx
+   {T}, allocatable, save :: workL(:)
+   {T}, allocatable, save :: workS3D(:, :), workU3D(:, :), workW(:, :), workWU(:, :)
 
-ierr = DFM_NOERR
+   ierr = DFM_NOERR
 
-if (present(jabndnd)) then
-   associate (dummy => jabndnd)
-   end associate
-end if
+   if (present(jabndnd)) then
+      associate (dummy => jabndnd)
+      end associate
+   end if
 
-ndx2d = flowgeom%mesh2d%numFace
-n1d_write = flowgeom%mesh1D%numNode
+   ndx2d = flowgeom%mesh2d%numFace
+   n1d_write = flowgeom%mesh1D%numNode
 
-select case (iloc)
-case (UNC_LOC_CN)
-   if (id_var(1) > 0 .and. n1d_write > 0) then
-      ierr = UG_NOTIMPLEMENTED
+   select case (iloc)
+   case (UNC_LOC_CN)
+      if (id_var(1) > 0 .and. n1d_write > 0) then
+         ierr = UG_NOTIMPLEMENTED
+         goto 888
+      end if
+      if (id_var(2) > 0 .and. ndx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), values(1:flowgeom%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
+      end if
+
+   case (UNC_LOC_S)
+      if (id_var(1) > 0 .and. n1d_write > 0) then
+         ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
+      end if
+      if (id_var(2) > 0 .and. ndx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), values(1:ndx2d), start=[1, id_tsp%idx_curtime])
+      end if
+
+   case (UNC_LOC_U)
+      if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
+         if (size(flowgeom%edgetoln, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(1), values(flowgeom%edgetoln(:)), start=[1, id_tsp%idx_curtime])
+         end if
+      end if
+      if (id_var(4) > 0 .and. flowgeom%n1d2dcontacts > 0) then
+         if (size(flowgeom%contactstoln, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(4), values(flowgeom%contactstoln(:)), start=[1, id_tsp%idx_curtime])
+         end if
+      end if
+      lnx2d = lnxi - lnx1d
+      if (id_var(2) > 0 .and. lnx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), values(lnx1d + 1:lnxi), start=[1, id_tsp%idx_curtime])
+      end if
+      lnx2db = lnx - lnx1db
+      if (id_var(2) > 0 .and. lnx2db > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), values(lnx1db + 1:lnx), start=[lnx2d + 1, id_tsp%idx_curtime])
+      end if
+      if (present(default_value)) then
+         numl2d = numl - numl1d
+         if (id_var(2) > 0 .and. numl2d - lnx2d - lnx2db > 0) then
+            ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[lnx2d + lnx2db + 1, id_tsp%idx_curtime], &
+                                count=[numl2d - lnx2d - lnx2db, 1], map=[0])
+         end if
+      end if
+
+   case (UNC_LOC_L)
+      call realloc(workL, numl, keepExisting=.false.)
+      do Lf = 1, lnx1d
+         L = abs(ln2lne(Lf))
+         workL(Lf) = values(L)
+      end do
+      if (id_var(1) > 0 .and. lnx1d > 0) then
+         ierr = nf90_put_var(ncid, id_var(1), workL(1:lnx1d), start=[1, id_tsp%idx_curtime])
+      end if
+      lnx2d = lnxi - lnx1d
+      lnx2db = lnx - lnx1db
+      i = lnx2d + lnx2db
+      do L = numl1d + 1, numl
+         Lf = lne2ln(L)
+         if (Lf > lnx1db) then
+            workL(Lf - lnx1db + lnx2d) = values(L)
+         else if (Lf > lnx1d) then
+            workL(Lf - lnx1d) = values(L)
+         else
+            i = i + 1
+            workL(i) = values(L)
+         end if
+      end do
+      if (id_var(2) > 0 .and. numl - numl1d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), workL(1:(numl - numl1d)), start=[1, id_tsp%idx_curtime])
+      end if
+
+   case (UNC_LOC_S3D)
+      call realloc(workS3D, [kmx, flowgeom%ndx_out], keepExisting=.false.)
+      do n = 1, flowgeom%ndx_out
+         workS3D(:, n) = dmiss
+         call getlayerindices(n, nlayb, nrlay)
+         call getkbotktop(n, kb, kt)
+         do k = kb, kt
+            workS3D(k - kb + nlayb, n) = values(k)
+         end do
+      end do
+      if (id_var(1) > 0 .and. n1d_write > 0) then
+         ierr = nf90_put_var(ncid, id_var(1), workS3D(1:kmx, ndx2d + 1:ndx2d + n1d_write), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx, n1d_write, 1])
+      end if
+      if (id_var(2) > 0 .and. ndx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), workS3D(1:kmx, 1:ndx2d), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx, ndx2d, 1])
+      end if
+
+   case (UNC_LOC_U3D)
+      call realloc(workU3D, [kmx, lnx], keepExisting=.false.)
+      do LL = 1, lnx
+         workU3D(:, LL) = dmiss
+         call getlayerindicesLmax(LL, nlaybL, nrlayLx)
+         call getLbotLtopmax(LL, Lb, Ltx)
+         do L = Lb, Ltx
+            workU3D(L - Lb + nlaybL, LL) = values(L)
+         end do
+      end do
+      if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
+         if (size(flowgeom%edgetoln, 1) > 0) then
+            ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, flowgeom%edgetoln(:)), &
+                                start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom%edgetoln, 1), 1])
+         end if
+      end if
+      lnx2d = lnx - lnx1d
+      if (id_var(2) > 0 .and. lnx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), workU3D(1:kmx, lnx1d + 1:lnx), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx, lnx2d, 1])
+      end if
+      if (id_var(2) > 0 .and. present(default_value)) then
+         numl2d = numl - numl1d
+         ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[1, lnx2d + 1, id_tsp%idx_curtime], &
+                             count=[kmx, numl2d - lnx2d, 1], map=[0, 0, 0])
+      end if
+
+   case (UNC_LOC_W)
+      call realloc(workW, [kmx, flowgeom%ndx_out], lindex=[0, 1], keepExisting=.false.)
+      do n = 1, flowgeom%ndx_out
+         workW(:, n) = dmiss
+         call getlayerindices(n, nlayb, nrlay)
+         call getkbotktop(n, kb, kt)
+         do k = kb - 1, kt
+            workW(k - kb + nlayb, n) = values(k)
+         end do
+      end do
+      if (id_var(1) > 0 .and. n1d_write > 0) then
+         ierr = nf90_put_var(ncid, id_var(1), workW(0:kmx, ndx2d + 1:ndx2d + n1d_write), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, n1d_write, 1])
+      end if
+      if (id_var(2) > 0 .and. ndx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), workW(0:kmx, 1:ndx2d), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, ndx2d, 1])
+      end if
+
+   case (UNC_LOC_WU)
+      call realloc(workWU, [kmx, lnx], lindex=[0, 1], keepExisting=.false.)
+      do LL = 1, lnx
+         workWU(:, LL) = dmiss
+         call getlayerindicesLmax(LL, nlaybL, nrlayLx)
+         call getLbotLtopmax(LL, Lb, Ltx)
+         do L = Lb - 1, Ltx
+            workWU(L - Lb + nlaybL, LL) = values(L)
+         end do
+      end do
+      if (id_var(1) > 0 .and. lnx1d > 0) then
+         ierr = nf90_put_var(ncid, id_var(1), workWU(0:kmx, 1:lnx1d), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, lnx1d, 1])
+      end if
+      lnx2d = lnx - lnx1d
+      if (id_var(2) > 0 .and. lnx2d > 0) then
+         ierr = nf90_put_var(ncid, id_var(2), workWU(0:kmx, lnx1d + 1:lnx), &
+                             start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, lnx2d, 1])
+      end if
+      if (id_var(2) > 0 .and. present(default_value)) then
+         numl2d = numl - numl1d
+         ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[1, lnx2d + 1, id_tsp%idx_curtime], &
+                             count=[kmx + 1, numl2d - lnx2d, 1], map=[0])
+      end if
+
+   case default
+      ierr = UG_INVALID_DATALOCATION
       goto 888
-   end if
-   if (id_var(2) > 0 .and. ndx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), values(1:flowgeom%mesh2d%numNode), start=[1, id_tsp%idx_curtime])
-   end if
+   end select
 
-case (UNC_LOC_S)
-   if (id_var(1) > 0 .and. n1d_write > 0) then
-      ierr = nf90_put_var(ncid, id_var(1), values(ndx2d + 1:ndx2d + n1d_write), start=[1, id_tsp%idx_curtime])
-   end if
-   if (id_var(2) > 0 .and. ndx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), values(1:ndx2d), start=[1, id_tsp%idx_curtime])
-   end if
-
-case (UNC_LOC_U)
-   if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-      if (size(flowgeom%edgetoln, 1) > 0) then
-         ierr = nf90_put_var(ncid, id_var(1), values(flowgeom%edgetoln(:)), start=[1, id_tsp%idx_curtime])
-      end if
-   end if
-   if (id_var(4) > 0 .and. flowgeom%n1d2dcontacts > 0) then
-      if (size(flowgeom%contactstoln, 1) > 0) then
-         ierr = nf90_put_var(ncid, id_var(4), values(flowgeom%contactstoln(:)), start=[1, id_tsp%idx_curtime])
-      end if
-   end if
-   lnx2d = lnxi - lnx1d
-   if (id_var(2) > 0 .and. lnx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), values(lnx1d + 1:lnxi), start=[1, id_tsp%idx_curtime])
-   end if
-   lnx2db = lnx - lnx1db
-   if (id_var(2) > 0 .and. lnx2db > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), values(lnx1db + 1:lnx), start=[lnx2d + 1, id_tsp%idx_curtime])
-   end if
-   if (present(default_value)) then
-      numl2d = numl - numl1d
-      if (id_var(2) > 0 .and. numl2d - lnx2d - lnx2db > 0) then
-         ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[lnx2d + lnx2db + 1, id_tsp%idx_curtime], &
-                             count=[numl2d - lnx2d - lnx2db, 1], map=[0])
-      end if
-   end if
-
-case (UNC_LOC_L)
-   call realloc(workL, numl, keepExisting=.false.)
-   do Lf = 1, lnx1d
-      L = abs(ln2lne(Lf))
-      workL(Lf) = values(L)
-   end do
-   if (id_var(1) > 0 .and. lnx1d > 0) then
-      ierr = nf90_put_var(ncid, id_var(1), workL(1:lnx1d), start=[1, id_tsp%idx_curtime])
-   end if
-   lnx2d = lnxi - lnx1d
-   lnx2db = lnx - lnx1db
-   i = lnx2d + lnx2db
-   do L = numl1d + 1, numl
-      Lf = lne2ln(L)
-      if (Lf > lnx1db) then
-         workL(Lf - lnx1db + lnx2d) = values(L)
-      else if (Lf > lnx1d) then
-         workL(Lf - lnx1d) = values(L)
-      else
-         i = i + 1
-         workL(i) = values(L)
-      end if
-   end do
-   if (id_var(2) > 0 .and. numl - numl1d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), workL(1:(numl - numl1d)), start=[1, id_tsp%idx_curtime])
-   end if
-
-case (UNC_LOC_S3D)
-   call realloc(workS3D, [kmx, flowgeom%ndx_out], keepExisting=.false.)
-   do n = 1, flowgeom%ndx_out
-      workS3D(:, n) = dmiss
-      call getlayerindices(n, nlayb, nrlay)
-      call getkbotktop(n, kb, kt)
-      do k = kb, kt
-         workS3D(k - kb + nlayb, n) = values(k)
-      end do
-   end do
-   if (id_var(1) > 0 .and. n1d_write > 0) then
-      ierr = nf90_put_var(ncid, id_var(1), workS3D(1:kmx, ndx2d + 1:ndx2d + n1d_write), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx, n1d_write, 1])
-   end if
-   if (id_var(2) > 0 .and. ndx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), workS3D(1:kmx, 1:ndx2d), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx, ndx2d, 1])
-   end if
-
-case (UNC_LOC_U3D)
-   call realloc(workU3D, [kmx, lnx], keepExisting=.false.)
-   do LL = 1, lnx
-      workU3D(:, LL) = dmiss
-      call getlayerindicesLmax(LL, nlaybL, nrlayLx)
-      call getLbotLtopmax(LL, Lb, Ltx)
-      do L = Lb, Ltx
-         workU3D(L - Lb + nlaybL, LL) = values(L)
-      end do
-   end do
-   if (id_var(1) > 0 .and. flowgeom%mesh1D%numEdge > 0) then
-      if (size(flowgeom%edgetoln, 1) > 0) then
-         ierr = nf90_put_var(ncid, id_var(1), workU3D(1:kmx, flowgeom%edgetoln(:)), &
-                             start=[1, 1, id_tsp%idx_curtime], count=[kmx, size(flowgeom%edgetoln, 1), 1])
-      end if
-   end if
-   lnx2d = lnx - lnx1d
-   if (id_var(2) > 0 .and. lnx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), workU3D(1:kmx, lnx1d + 1:lnx), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx, lnx2d, 1])
-   end if
-   if (id_var(2) > 0 .and. present(default_value)) then
-      numl2d = numl - numl1d
-      ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[1, lnx2d + 1, id_tsp%idx_curtime], &
-                          count=[kmx, numl2d - lnx2d, 1], map=[0, 0, 0])
-   end if
-
-case (UNC_LOC_W)
-   call realloc(workW, [kmx, flowgeom%ndx_out], lindex=[0, 1], keepExisting=.false.)
-   do n = 1, flowgeom%ndx_out
-      workW(:, n) = dmiss
-      call getlayerindices(n, nlayb, nrlay)
-      call getkbotktop(n, kb, kt)
-      do k = kb - 1, kt
-         workW(k - kb + nlayb, n) = values(k)
-      end do
-   end do
-   if (id_var(1) > 0 .and. n1d_write > 0) then
-      ierr = nf90_put_var(ncid, id_var(1), workW(0:kmx, ndx2d + 1:ndx2d + n1d_write), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, n1d_write, 1])
-   end if
-   if (id_var(2) > 0 .and. ndx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), workW(0:kmx, 1:ndx2d), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, ndx2d, 1])
-   end if
-
-case (UNC_LOC_WU)
-   call realloc(workWU, [kmx, lnx], lindex=[0, 1], keepExisting=.false.)
-   do LL = 1, lnx
-      workWU(:, LL) = dmiss
-      call getlayerindicesLmax(LL, nlaybL, nrlayLx)
-      call getLbotLtopmax(LL, Lb, Ltx)
-      do L = Lb - 1, Ltx
-         workWU(L - Lb + nlaybL, LL) = values(L)
-      end do
-   end do
-   if (id_var(1) > 0 .and. lnx1d > 0) then
-      ierr = nf90_put_var(ncid, id_var(1), workWU(0:kmx, 1:lnx1d), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, lnx1d, 1])
-   end if
-   lnx2d = lnx - lnx1d
-   if (id_var(2) > 0 .and. lnx2d > 0) then
-      ierr = nf90_put_var(ncid, id_var(2), workWU(0:kmx, lnx1d + 1:lnx), &
-                          start=[1, 1, id_tsp%idx_curtime], count=[kmx + 1, lnx2d, 1])
-   end if
-   if (id_var(2) > 0 .and. present(default_value)) then
-      numl2d = numl - numl1d
-      ierr = nf90_put_var(ncid, id_var(2), [default_value], start=[1, lnx2d + 1, id_tsp%idx_curtime], &
-                          count=[kmx + 1, numl2d - lnx2d, 1], map=[0])
-   end if
-
-case default
-   ierr = UG_INVALID_DATALOCATION
-   goto 888
-end select
-
-return
+   return
 888 continue
    end function {proc}"""
 
@@ -249,7 +249,7 @@ def generate(output_file: Path) -> None:
     all_bodies = "\n\n".join(subroutines)
 
     content = f"""\
-! This file is generated by generate_unc_put_var_map.py — do not edit manually.
+! This file is generated by generate_unc_put_var_map.py. do not edit manually.
 module m_unc_put_var_map_generated
    use m_unstruc_netcdf_data, only: t_unc_timespace_id, t_fm_flowgeom
    use io_ugrid, only: UG_NOTIMPLEMENTED, UG_INVALID_DATALOCATION
@@ -271,7 +271,7 @@ module m_unc_put_var_map_generated
    implicit none(type, external)
 
    interface unc_put_var_map
-{interface_block}
+      {interface_block}
    end interface unc_put_var_map
 
 contains
