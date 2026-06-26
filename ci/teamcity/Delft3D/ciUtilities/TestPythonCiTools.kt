@@ -23,6 +23,7 @@ object TestPythonCiTools : BuildType({
     // See: https://www.jetbrains.com/help/teamcity/importing-arbitrary-coverage-results-to-teamcity.html
     artifactRules = """
         +:ci/python/*.xml => report
+        +:ci/python/ruff_format.patch => report
         +:ci/python/htmlcov/* => coverage.zip
     """.trimIndent()
 
@@ -71,7 +72,7 @@ object TestPythonCiTools : BuildType({
             scriptContent = """
                 #!/usr/bin/env bash
                 set -exo pipefail
-                uv run ruff format --diff
+                uv run ruff format --diff . > ruff_format.patch
                 uv run ruff check --output-format=junit --output-file=ruff.xml
                 uv run mypy ci_tools --junit-xml=mypy.xml
                 uv run pytest --junitxml=pytest.xml --cov-report=html --cov=.
