@@ -7,7 +7,7 @@
     #
     # Usage example:
     # Execute in the working directory:
-    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d_AL8.sh
+    # /path/to/delft3d/installation/lnx64/bin/submit_dflow2d3d_csumo.sh
 
 # Set bash options. Exit on failures (and propagate errors in pipes).
 set -eo pipefail
@@ -171,7 +171,7 @@ if [ ! -d $D3D_HOME ]; then
     print_usage_info
 fi
 export D3D_HOME
-RUNSCRIPT=$scriptdir/rd2d3d_AL8_csumo.sh
+RUNSCRIPT=$scriptdir/rd2d3d_csumo.sh
 runscript_opts="$runscript_opts --D3D_HOME ${D3D_HOME}"
 
 JOB_NAME="${JOB_NAME}_${NODES}x${TASKS_PER_NODE}"
