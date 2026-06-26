@@ -186,7 +186,7 @@ contains
                      end if
 
                   else if (ifxedweirfrictscheme > 0) then
-                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == 3) then
+                     if (iadv(L) == IADV_SUBGRID_WEIR .or. kcu(L) == FLOWLINK_1D2D_LATERAL) then
                         call fixedweirfriction2D(L, k1, k2, frL)
                      else
                         frL = cfuhi(L) * sqrt(u1L * u1L + v2) ! g / (H.C.C) = (g.K.K) / (A.A) travels in cfu

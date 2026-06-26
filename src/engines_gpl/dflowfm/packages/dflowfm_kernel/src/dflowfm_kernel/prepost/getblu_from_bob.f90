@@ -63,9 +63,9 @@ contains
       end if
 
       if (L <= lnx1D) then ! 1D
-         if (kcu(L) == 4 .and. jaconveyance2D >= 1) then
+         if (kcu(L) == FLOWLINK_1D2D_LONGITUDINAL .and. jaconveyance2D >= 1) then
             blu = min(bob(1, L), bob(2, L))
-         else if (kcu(L) == 5 .or. kcu(L) == 7) then
+         else if (kcu(L) == FLOWLINK_1D2D_STREETINLET .or. kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then
             blu = max(bob(1, L), bob(2, L))
          else
             blu = max(bob(1, L), bob(2, L))

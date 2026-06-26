@@ -125,7 +125,7 @@ contains
       end do
 
       do LL = lnxi + 1, lnx ! loop over open boundary links
-         if (kcu(LL) == -1) then ! 1D boundary link
+         if (kcu(LL) == FLOWLINK_1D_BOUNDARY) then ! 1D boundary link
             n = Ln(1, LL)
 
             ! a 1D boundary node has just one link (the boundary link)

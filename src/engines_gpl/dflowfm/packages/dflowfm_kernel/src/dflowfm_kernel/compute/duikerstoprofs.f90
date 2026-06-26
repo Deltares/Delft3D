@@ -93,7 +93,7 @@ contains
             call CLOSETO1Dnetlink(Xc, Yc, LS, XLS, YLS, dum, 0)
             if (Ls > 0) then
                Lf = lne2ln(Ls)
-               if (kcu(Lf) == 1 .or. kcu(Lf) == 5) then
+               if (kcu(Lf) == FLOWLINK_1D .or. kcu(Lf) == FLOWLINK_1D2D_STREETINLET) then
                   k1 = ln(1, Lf)
                   k2 = ln(2, Lf)
                   if (dbdistance(X1, Y1, Xzw(K1), Yzw(K1), jsferic, jasfer3D, dmiss) < dbdistance(X1, Y1, Xzw(K2), Yzw(K2), jsferic, jasfer3D, dmiss)) then

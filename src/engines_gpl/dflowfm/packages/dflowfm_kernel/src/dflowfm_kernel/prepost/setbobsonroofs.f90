@@ -141,7 +141,7 @@ contains
                k = polygon_nodes(iL)
             end if
 
-            if (kcu(L) /= 2) then
+            if (kcu(L) /= FLOWLINK_2D) then
                cycle
             end if
 
@@ -210,7 +210,7 @@ contains
          end do
 
          do L = 1, lnxi ! make flat roof
-            if (kcu(L) == 2) then
+            if (kcu(L) == FLOWLINK_2D) then
                n1 = ln(1, L)
                n2 = ln(2, L)
                ip1 = kc(n1)
@@ -232,7 +232,7 @@ contains
          end do
 
          do L = 1, lnxi
-            if (kcu(L) == 2) then
+            if (kcu(L) == FLOWLINK_2D) then
                n1 = ln(1, L)
                n2 = ln(2, L)
                bob(1, L) = max(bob(1, L), bl(n1), bl(n2))
@@ -257,7 +257,7 @@ contains
             k = polygon_nodes(iL)
          end if
 
-         if (kcu(L) /= 2) then
+         if (kcu(L) /= FLOWLINK_2D) then
             cycle
          end if
 
@@ -332,7 +332,7 @@ contains
       end do
 
       do L = 1, lnxi ! roofgutter connection
-         if (kcu(L) == 7) then
+         if (kcu(L) == FLOWLINK_1D2D_ROOF_GUTTER) then
             n1 = ln(1, L)
             n2 = ln(2, L)
             k1 = lncn(1, L)

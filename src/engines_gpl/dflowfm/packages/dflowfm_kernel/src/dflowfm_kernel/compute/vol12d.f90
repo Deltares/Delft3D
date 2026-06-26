@@ -119,9 +119,9 @@ contains
                L = onlyWetLinks(i)
             end if
 
-            if (kcu(L) == 4) then
+            if (kcu(L) == FLOWLINK_1D2D_LONGITUDINAL) then
                call addlink1D2D(L, japerim) ! 1D2D lateral inherits 2D
-            else if (kcu(L) == 3) then
+            else if (kcu(L) == FLOWLINK_1D2D_LATERAL) then
                if (ja1D2Dinternallinktype >= 1) then ! testing one two...
                   call addlink1D2Dinternal(L, japerim)
                else
@@ -145,7 +145,7 @@ contains
       end if
 
       do L = lnxi + 1, lnx
-         if (kcu(L) == -1) then
+         if (kcu(L) == FLOWLINK_1D_BOUNDARY) then
             if (japerim == 0 .and. nonlin1D == 0) then
                cycle
             end if

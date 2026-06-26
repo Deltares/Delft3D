@@ -65,10 +65,10 @@ module m_flowgeom
    real(kind=dp) :: wu1DUNI !< uniform 1D profile width
    real(kind=dp) :: hh1DUNI !< uniform 1D profile height
 
-   real(kind=dp) :: wu1DUNI5 !< uniform 1D profile width in  streetinlet kn(3,L) = 5
+   real(kind=dp) :: wu1DUNI5 !< uniform 1D profile width in  streetinlet kn(3,L) = FLOWLINK_1D2D_STREETINLET
    real(kind=dp) :: hh1DUNI5 !< uniform 1D profile height in streetinlet
 
-   real(kind=dp) :: wu1DUNI7 !< uniform 1D profile width in  roofgutterpipe kn(3,L) = 7
+   real(kind=dp) :: wu1DUNI7 !< uniform 1D profile width in  roofgutterpipe kn(3,L) = FLOWLINK_1D2D_ROOT_GUTTER
    real(kind=dp) :: hh1DUNI7 !< uniform 1D profile height in roofgutterpipe
 
    integer :: ja1D2Dinternallinktype = 1
@@ -132,6 +132,16 @@ module m_flowgeom
    integer, dimension(:, :), allocatable, target :: LLkkk !< [-]    Link Link admin (5,*) , 1=lowL 2=hihL, 3=leftk, 4= midk, 5=rightk {"shape": [5, "lnx"]}
    integer, dimension(:, :), allocatable, target :: lncn !< [-] 2D link (2,*) corner administration, 1=nod1, 2=nod2  linker en rechter netnr {"shape": [2, "lnkx"]}
    integer, dimension(:), allocatable, target :: kcu !< [-] link code, 1=1D link, 2=2D link, -1= bc 1D, -2=bc 2D, 3=lateral_1d2d_link, 4=longitudinal_1d2d_link, 5=street_inlet_1d2d_link, 7=roof_gutter_1d2d_link {"shape": ["lnx"]}
+   
+   integer, parameter :: FLOWLINK_1D = 1
+   integer, parameter :: FLOWLINK_2D = 2
+   integer, parameter :: FLOWLINK_1D_BOUNDARY = -1
+   integer, parameter :: FLOWLINK_2D_BOUNDARY = -2
+   integer, parameter :: FLOWLINK_1D2D_LATERAL = 3
+   integer, parameter :: FLOWLINK_1D2D_LONGITUDINAL = 4
+   integer, parameter :: FLOWLINK_1D2D_STREETINLET = 5
+   integer, parameter :: FLOWLINK_1D2D_ROOF_GUTTER = 7
+
    integer, dimension(:), allocatable :: Linkdried !< [-] latest dried links
 
    integer, dimension(:), allocatable, target :: iadv !< [-] type of advection for this link {"location": "edge", "shape": ["lnx"]}

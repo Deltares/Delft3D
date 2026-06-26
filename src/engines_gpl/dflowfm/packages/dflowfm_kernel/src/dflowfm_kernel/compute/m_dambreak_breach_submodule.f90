@@ -1252,7 +1252,7 @@ contains
       ! compute the normal projections of the start and endpoints of the flow links
       do k = 1, dambreak%number_of_links
          link = abs(dambreak%link_indices(k))
-         if (kcu(link) == 3) then ! 1d2d flow link
+         if (kcu(link) == FLOWLINK_1D2D_LATERAL) then ! 1d2d flow link
             dambreak%link_effective_width(k) = wu(link)
          else
             point = lftopol(k + dambreak%link_map_offset)

@@ -77,7 +77,7 @@ contains
       ! FRCU and FRCU_MOR should only be used after SETAU - VOL12D.
       ! Therefore initialise these arrays with a negative value.
       if (network%loaded) then
-         where (kcu(1:lnx1d) == 1)
+         where (kcu(1:lnx1d) == FLOWLINK_1D)
             frcu(1:lnx1d) = dmiss
             ifrcutp(1:lnx1d) = 0
             frcu_mor(1:lnx1d) = dmiss
@@ -527,7 +527,7 @@ contains
       end do
 
       do L = 1, lnx1D
-         if (kcu(L) == 1) then
+         if (kcu(L) == FLOWLINK_1D) then
             bob(:, L) = getbobs(network, L)
             bob0(:, L) = bob(:, L)
             n1 = ln(1, L)
@@ -1111,7 +1111,7 @@ contains
       qCur1d2d = 0.0_dp
       ! Don't reset vTot1d2d
       do Lf = 1, lnx1d
-         if (kcu(Lf) == 3 .or. kcu(Lf) == 4 .or. kcu(Lf) == 5 .or. kcu(Lf) == 7) then
+         if (kcu(Lf) == FLOWLINK_1D2D_LATERAL .or. kcu(Lf) == FLOWLINK_1D2D_LONGITUDINAL .or. kcu(Lf) == FLOWLINK_1D2D_STREETINLET .or. kcu(Lf) == FLOWLINK_1D2D_ROOF_GUTTER) then
             n = ln(1, Lf)
             if (n < ndx2d) then
                n = ln(2, Lf)

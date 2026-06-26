@@ -1835,7 +1835,7 @@ contains
          Lf = abs(links(i))
          if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set/2.0_dp) then
             ! The midpoint must lie on this flowlink; calculate exactly where
-            if (kcu(Lf) == 2) then
+            if (kcu(Lf) == FLOWLINK_2D) then
                ! 2D flowlink
                if (links(i) > 0) then
                   k3 = lncn(1, Lf)

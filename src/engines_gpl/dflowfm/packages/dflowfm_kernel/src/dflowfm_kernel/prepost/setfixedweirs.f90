@@ -296,7 +296,7 @@ contains
          n1 = ln(1, L)
          n2 = ln(2, L)
 
-         if (kcu(L) == 1 .or. kcu(L) == 5) then
+         if (kcu(L) == FLOWLINK_1D .or. kcu(L) == FLOWLINK_1D2D_STREETINLET) then
             cycle ! UNST-2226: test code for forbidding fixed weirs on 1D
          end if
 
@@ -317,7 +317,7 @@ contains
             bob(1, L) = max(bob(1, L), zc)
             bob(2, L) = max(bob(2, L), zc)
 
-            if (kcu(L) /= 2 .and. kcu(L) /= 1) then
+            if (kcu(L) /= FLOWLINK_2D .and. kcu(L) /= FLOWLINK_1D) then
                cycle ! weirs only on regular links
             end if
 
