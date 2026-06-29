@@ -2303,6 +2303,18 @@
             </file>            
         </checks>
     </testCase>
+    <testCase name="e02_f006_c402_katwijk_kmx0" ref="dflowfm_nesting">
+        <path version="2026-06-29T09:31:39.297000">e02_dflowfm/f006_external_forcing/c402_katwijk_kmx0</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c012_katwijkSmall_fixed_nchis_kmx0/results/small_fixed_nchis_kmx0_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceAbsolute="0.0001" />
+                    <parameter name="temperature" toleranceAbsolute="0.0001" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
     <testCase name="e02_f008_c010_ws_bedlevel_asdefault" ref="dflowfm_default">
       <path version="2026-03-13T16:40:13.275000">e02_dflowfm/f008_network/c010_ws_bedlevel_asdefault</path>
       <maxRunTime>15000.0000000</maxRunTime>
