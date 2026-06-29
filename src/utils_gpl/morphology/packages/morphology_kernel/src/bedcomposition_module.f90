@@ -2911,7 +2911,7 @@ function allocwork(this) result (istat)
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data), intent(in)  :: this    
+    type (bedcomp_data)              :: this    
     integer                          :: istat
     !
     ! Local variables
@@ -2952,7 +2952,7 @@ function deallocwork(this) result (istat)
     !
     ! Function/routine arguments
     !
-    type (bedcomp_data), intent(in)  :: this    
+    type (bedcomp_data)              :: this    
     integer                          :: istat
     !
     ! Local variables
