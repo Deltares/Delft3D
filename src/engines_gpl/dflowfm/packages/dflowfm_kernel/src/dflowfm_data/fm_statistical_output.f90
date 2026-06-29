@@ -2383,12 +2383,12 @@ contains
       !
       if (his_write_settings%sourcesink > 0 .and. source_sinks%num_normal > 0) then
          function_pointer => filter_source_sink_discharge
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), null(), function_pointer)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_DISCHARGE), source_input_function_pointer=function_pointer)
          i = 1
          if (isalt > 0) then
             i = i + 1
             function_pointer => filter_source_sink_discharge2
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), null(), function_pointer)
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_SALINITY_INCREMENT), source_input_function_pointer=function_pointer)
          end if
          if (itemp > 0) then
             i = i + 1
@@ -2397,14 +2397,14 @@ contains
             else
                function_pointer => filter_source_sink_discharge2
             end if
-            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), null(), function_pointer)
+            call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_PRESCRIBED_TEMPERATURE_INCREMENT), source_input_function_pointer=function_pointer)
          end if
          function_pointer => filter_source_sink_water_discharge
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), null(), function_pointer)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CURRENT_DISCHARGE), source_input_function_pointer=function_pointer)
          function_pointer => filter_source_sink_cumulative_volume
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), null(), function_pointer)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_CUMULATIVE_VOLUME), source_input_function_pointer=function_pointer)
          function_pointer => filter_source_sink_average_discharge_previous
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), null(), function_pointer)
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SOURCE_SINK_DISCHARGE_AVERAGE), source_input_function_pointer=function_pointer)
       end if
 
       if (his_write_settings%bubblescreens > 0 .and. size(bubblescreen_air_discharge) > 0) then
@@ -2862,22 +2862,22 @@ contains
                call add_station_sedtrans_configs(output_config_set)
                if (stmpar%morpar%moroutput%sbcuv) then
                   function_pointer => calculate_sediment_SBC
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBCX), null(), function_pointer)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBCX), source_input_function_pointer=function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBCY), SBCY)
                end if
                if (stmpar%morpar%moroutput%sscuv) then
                   function_pointer => calculate_sediment_SSC
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX), null(), function_pointer)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCX), source_input_function_pointer=function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSCY), SSCY)
                end if
                if (stmpar%morpar%moroutput%sbwuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SBW
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX), null(), function_pointer)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWX), source_input_function_pointer=function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SBWY), SBWY)
                end if
                if (stmpar%morpar%moroutput%sswuv .and. jawave > NO_WAVES .and. .not. flow_without_waves) then
                   function_pointer => calculate_sediment_SSW
-                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWX), null(), function_pointer)
+                  call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWX), source_input_function_pointer=function_pointer)
                   call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_SSWY), SSWY)
                end if
             end if
@@ -2974,7 +2974,8 @@ contains
          !
          ! Basic flow quantities
          !
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE), obscrs_data(:, 1), aggregate_obscrs_data)
+         function_pointer => aggregate_obscrs_data
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE), obscrs_data(:, 1), function_pointer)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_DISCHARGE_CUMUL), obscrs_data(:, 2))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_AREA), obscrs_data(:, 3))
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_OBSCRS_VELOCITY), obscrs_data(:, 4))
@@ -2993,7 +2994,8 @@ contains
       !
       if (his_write_settings%lateral > 0 .and. numlatsg > 0) then
          allocate (qplat_data(size(qplat, dim=2)))
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, transform_qplat)
+         function_pointer => transform_qplat
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_INSTANTANEOUS), qplat_data, function_pointer)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_PRESCRIBED_DISCHARGE_AVERAGE), qplatAve)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_INSTANTANEOUS), qLatReal)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_LATERAL_REALIZED_DISCHARGE_AVERAGE), qLatRealAve)
@@ -3003,7 +3005,8 @@ contains
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_LINK_DISCHARGE), temp_pointer)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_DISCHARGE), dadpar%totvoldred)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DUMP_DISCHARGE), dadpar%totvoldump)
-         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC), null(), calculate_dredge_time_fraction)
+         function_pointer => calculate_dredge_time_fraction
+         call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_DRED_TIME_FRAC), source_input_function_pointer=function_pointer)
          call add_stat_output_items(output_set, output_config_set%configs(IDX_HIS_PLOUGH_TIME_FRAC), time_ploughed)
       end if
 

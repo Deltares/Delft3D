@@ -221,7 +221,8 @@ contains
 
       type(t_output_variable_set), intent(inout) :: output_set !< Output set that item will be added to
       type(t_output_quantity_config), intent(in) :: output_config !< Output quantity config linked to this output item, a copy will be stored in the new output item
-      real(kind=dp), pointer, dimension(:), intent(in) :: data_pointer !< Pointer to output quantity data ("source input")
+      real(kind=dp), dimension(:), target, optional, intent(in) :: data_pointer !< Output quantity data ("source input"). Target (not pointer) so that plain
+                                                                                 !< array/section actuals can be passed portably; item%source_input is associated with it below.
       procedure(process_data_interface_double), optional, pointer, intent(in) :: source_input_function_pointer !< (optional) Function pointer for producing/processing the source data, if no direct data_pointer is available
 
       type(t_output_variable_item) :: item ! new item to be added
@@ -250,7 +251,11 @@ contains
             call realloc(output_set)
 
             item%output_config = output_config
-            item%source_input => data_pointer
+            if (present(data_pointer)) then
+               item%source_input => data_pointer
+            else
+               item%source_input => null()
+            end if
             if (present(source_input_function_pointer)) then
                if (associated(source_input_function_pointer)) then
                   item%source_input_function_pointer => source_input_function_pointer
