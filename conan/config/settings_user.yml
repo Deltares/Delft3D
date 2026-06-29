@@ -3,4 +3,4 @@ compiler:
         version: ["2024.2"]
 os:
     Linux:
-        distro: ["Alma8", "Alma9", "Alma10"]
+        distro: ["Alma8", "Alma9", "Alma10", "Ubuntu22"]

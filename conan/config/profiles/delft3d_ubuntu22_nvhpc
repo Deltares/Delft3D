@@ -1,0 +1,14 @@
+[settings]
+arch=x86_64
+compiler=gcc
+compiler.cppstd=20
+compiler.libcxx=libstdc++11
+compiler.version=11
+os=Linux
+os.distro=Ubuntu22
+
+[conf]
+# C/C++ build with GNU (gcc/g++), Fortran with nvfortran (NVHPC PoC).
+# Use the OpenMPI wrappers so mpi.h is found; OMPI_CC/OMPI_CXX/OMPI_FC select
+# the underlying gcc/g++/nvfortran (set in the devcontainer environment).
+tools.build:compiler_executables={"c": "mpicc", "cpp": "mpicxx", "fortran": "mpif90"}

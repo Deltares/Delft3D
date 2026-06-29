@@ -55,6 +55,7 @@ export HISTFILE=/home/dev/.history/.bash_history
 
 # nvfortran PoC toolchain (C/C++ via GNU, Fortran via nvfortran, MPI via bundled OpenMPI).
 export OMPI_CC=gcc OMPI_CXX=g++ OMPI_FC=nvfortran
+export DELFT3D_CONAN_PROFILE=delft3d_ubuntu22_nvhpc
 export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 export CMAKE_PREFIX_PATH=/usr/local:$CMAKE_PREFIX_PATH

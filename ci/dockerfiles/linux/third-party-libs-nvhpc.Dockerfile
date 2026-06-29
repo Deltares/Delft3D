@@ -18,7 +18,7 @@
 #
 # Build:  docker build -f ci/dockerfiles/linux/third-party-libs-nvhpc.Dockerfile -t delft3d-third-party-libs:nvhpc .
 
-ARG NVHPC_TAG=24.5-devel-cuda12.4-ubuntu22.04
+ARG NVHPC_TAG=nvcr.io/nvidia/nvhpc:26.3-devel-cuda_multi-ubuntu22.04
 FROM nvcr.io/nvidia/nvhpc:${NVHPC_TAG} AS base
 
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
@@ -118,7 +118,8 @@ set -eo pipefail
 wget -qO- https://gitlab.com/libeigen/eigen/-/archive/5.0.1/eigen-5.0.1.tar.gz | tar xz
 cd eigen-5.0.1
 cmake -S . -B build -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DEIGEN_BUILD_TESTING=OFF -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF
+    -DEIGEN_BUILD_TESTING=OFF -DEIGEN_BUILD_DOC=OFF -DEIGEN_BUILD_DEMOS=OFF \
+    -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF
 cmake --install build
 EOF
 
@@ -152,7 +153,7 @@ cmake --install build
 EOF
 
 # Final environment for downstream FM build.
-RUN cat >> /etc/bashrc <<'EOT' 2>/dev/null || cat >> /etc/profile <<'EOT'
+RUN cat >> /etc/profile.d/delft3d-env.sh <<'EOT'
 export FC=mpif90
 export CC=mpicc
 export CXX=mpic++
