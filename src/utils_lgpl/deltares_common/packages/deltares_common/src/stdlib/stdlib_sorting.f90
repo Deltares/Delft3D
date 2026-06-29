@@ -119,14 +119,14 @@ module stdlib_sorting
     integer, parameter, public :: int_size = int32 !! Integer kind for indexing
 
 ! Constants for use by tim_sort
-    integer, parameter :: &
+    integer, parameter, public :: &
 ! The maximum number of entries in a run stack, good for an array of
 ! 2**64 elements see
 ! https://svn.python.org/projects/python/trunk/Objects/listsort.txt
         max_merge_stack = int( ceiling( log( 2._dp**64 ) / &
                                log(1.6180339887_dp) ) )
 
-    type run_type
+    type, public :: run_type
 !! Version: experimental
 !!
 !! Used to pass state around in a stack among helper functions for the
