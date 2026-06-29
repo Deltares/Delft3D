@@ -26,7 +26,7 @@ class netcdf_fortranRecipe(ConanFile):
 
     def requirements(self):
         self.requires("netcdf/4.9.2")
-        self.requires("hdf5/1.14.6")
+        self.requires("hdf5/1.14.2")
 
     def source(self):
         get(self, **self.conan_data["sources"][self.version], strip_root=True)
