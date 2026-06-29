@@ -6374,7 +6374,7 @@
       </checks>
     </testCase>
     <testCase name="e02_f022_c400_hanneke_struiksma_coarse" ref="dflowfm_default">
-      <path version="2026-06-29T14:27:09.722000">e02_dflowfm/f022_morphology_2D/c400_hanneke_struiksma_coarse</path>
+      <path version="2026-06-29T15:32:47.685000">e02_dflowfm/f022_morphology_2D/c400_hanneke_struiksma_coarse</path>
       <maxRunTime>600</maxRunTime>
       <checks>
         <file name="DFM_OUTPUT_r002/r002_map.nc" type="netCDF">
