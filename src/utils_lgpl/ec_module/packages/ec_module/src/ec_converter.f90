@@ -1179,6 +1179,7 @@ contains
       real(dp), dimension(:), pointer :: valuesT1 !< values at time t1
       real(dp), dimension(:), allocatable :: valuesT !< values at time t
       integer :: istat !< allocation status
+      integer :: status !< status of undefined values check
       integer :: i, j !< loop counters
       type(tEcField), pointer :: targetField !< Converter's result goes in here
       integer :: maxlay !< maximum number of layers (3D)
@@ -1300,7 +1301,11 @@ contains
                      valuesT = valuesT * real(connection%converterPtr%srcmask%msk(from:thru), hp)
                   end if
 
-                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru))
+                  call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), status)
+
+                  if (.not. status) then
+                     return
+                  end if
 
                   call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(from:thru), valuesT)
                
@@ -1317,13 +1322,17 @@ contains
 
                   do j = jmin, jmax
 
-                     if (associated(targetmask)) then
+                     if (associated(targetmask)) thenv
                         if (targetmask(j) == 0) then
                            cycle
                         end if
                      end if
 
-                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)])
+                     call check_undefined_values_for_operand(connection%converterPtr%operandType, [targetField%arr1dPtr(j)], status)
+
+                     if (.not. status) then
+                        return
+                     end if
 
                      call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(j), valuesT(i))
 
@@ -1434,6 +1443,7 @@ contains
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       
       ! Local variables
+      logical :: status !< status of undefined values check
       integer :: j !< loop counter
       integer :: targetnCoordinates !< number of coordinates in the target Field
       real(dp) :: t0 !< source item t0
@@ -1485,7 +1495,11 @@ contains
                return
             end if
 
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates))
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), status)
+
+            if (.not. status) then
+               return
+            end if
 
             call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(1:targetnCoordinates), magnitude)
 
@@ -1498,7 +1512,7 @@ contains
                return
             end if
 
-            targetField%arr1dPtr(connection%converterPtr%targetIndex) = magnitude
+            call apply_operand(connection%converterPtr%operandType, targetField%arr1dPtr(connection%converterPtr%targetIndex), magnitude)
             targetField%timesteps = timesteps
 
          case default
@@ -1532,6 +1546,8 @@ contains
       real(dp), intent(in) :: timesteps !< convert to this number of timesteps past the kernel's reference date
       
       ! Local variables
+      logical :: status_u !< status of undefined values check for u
+      logical :: status_v !< status of undefined values check for v
       real(dp) :: t0 !< source item t0
       real(dp) :: t1 !< source item t1
       real(dp) :: a0 !< weight for source t0 data
@@ -1586,8 +1602,12 @@ contains
 
          case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates))
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates))
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), status_u)
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), status_v)
+
+            if (.not. status_u .or. .not. status_v) then
+               return
+            end if
 
             call apply_operand(connection%converterPtr%operandType, u(1:targetnCoordinates), targetU)
             call apply_operand(connection%converterPtr%operandType, v(1:targetnCoordinates), targetV)
@@ -1681,6 +1701,7 @@ contains
       logical :: success !< function status
       
       ! Local variables
+      logical :: status !< status of undefined values check
       integer :: i, k !< loop counters
       real(dp) :: wL, wR !< left and right weights
       integer :: kL, kR !<
@@ -1913,14 +1934,20 @@ contains
 
                               call check_undefined_values_for_operand( &
                                  connection%converterPtr%operandType, &
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
+                                 status &
                               )
+
+                              if (.not. status) then
+                                 return
+                              end if
 
                               call apply_operand( &
                                  connection%converterPtr%operandType, &
                                  connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
                                  val(1:vectormax) &
                               )
+
                            end do ! target layers
 
                         else
@@ -1971,8 +1998,13 @@ contains
 
                               call check_undefined_values_for_operand( &
                                  connection%converterPtr%operandType, &
-                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax) &
+                                 connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr((k - 1) * vectormax + 1:k * vectormax), &
+                                 status &
                               )
+
+                              if (.not. status) then
+                                 return
+                              end if
 
                               call apply_operand( &
                                  connection%converterPtr%operandType, &
@@ -2008,8 +2040,13 @@ contains
 
                         call check_undefined_values_for_operand( &
                            connection%converterPtr%operandType, &
-                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru) &
+                           connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(from:thru), &
+                           status &
                         )
+
+                        if (.not. status) then
+                           return
+                        end if
 
                         call apply_operand( &
                            connection%converterPtr%operandType, &
@@ -2208,6 +2245,7 @@ contains
       logical :: success !< function status
       
       ! Local variables
+      logical :: status !< status of undefined values check
       real(dp) :: x01, y01, dx1, dy1 !< uniform grid parameters
       integer :: mx !< n_cols (x or latitude coordinate)
       integer :: grid_width !< n_rows (y or longitude coordinate)
@@ -2325,7 +2363,11 @@ contains
 
             case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-               call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n)])
+               call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n)], status)
+
+               if (.not. status) then
+                  return
+               end if
 
                call apply_operand(connection%converterPtr%operandType, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(n), rr)
 
@@ -2485,6 +2527,7 @@ contains
       logical :: success !< function status
       
       ! Local variables
+      logical :: status !< status of undefined values check
       integer :: i, j !< loop counters
       character(len=maxNameLen) :: str !< helper variable
       logical :: is_astro !< flag for astronomical signal
@@ -2549,7 +2592,11 @@ contains
 
          case (EC_OPERAND_REPLACE, EC_OPERAND_REPLACE_IF_MISSING, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
 
-            call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1)])
+            call check_undefined_values_for_operand(connection%converterPtr%operandType, [connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1)], status)
+            
+            if (.not. status) then
+               return
+            end if
 
             call apply_operand(connection%converterPtr%operandType, connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(1), deflection)
 
@@ -2561,7 +2608,11 @@ contains
                return
             end if
 
-            connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(connection%converterPtr%targetIndex) = deflection
+            call apply_operand( &
+               connection%converterPtr%operandType, &
+               connection%targetItemsPtr(1)%ptr%targetFieldPtr%arr1dPtr(connection%converterPtr%targetIndex), &
+               deflection &
+            )
 
          case default
 
@@ -4119,10 +4170,13 @@ contains
    end subroutine apply_operand
 
    !> Checks for undefined values in the target values array when using add, multiply, minimum, or maximum operands.
-   subroutine check_undefined_values_for_operand(operand, target_values)
+   subroutine check_undefined_values_for_operand(operand, target_values, istat)
       ! Parameters
       integer, intent(in) :: operand !< operand type (EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM)
       real(dp), dimension(:), intent(in) :: target_values !< array of target values to check for undefined values
+      logical, intent(out) :: istat !< status code (.true. for success, .false. for error)
+
+      istat = .false.
 
       if (any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
          if (any(target_values == ec_undef_hp)) then
@@ -4130,6 +4184,8 @@ contains
             return
          end if
       end if
+
+      istat = .true.
 
    end subroutine check_undefined_values_for_operand
 
