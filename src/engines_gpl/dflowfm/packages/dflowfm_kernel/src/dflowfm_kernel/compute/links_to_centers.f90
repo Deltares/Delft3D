@@ -69,7 +69,7 @@ contains
          do kk = 1, ndx
             k_start = ktop(kk) + 1
             k_end = kbot(kk) + kmxn(kk) - 1
-            !$OMP SIMD ASSERT
+            !$OMP SIMD
             do k = k_start, k_end
                if (k <= ndkx) then ! Vector/simd code may go out of bounds without explicit check
                   vnod(k) = vnod(ktop(kk))
