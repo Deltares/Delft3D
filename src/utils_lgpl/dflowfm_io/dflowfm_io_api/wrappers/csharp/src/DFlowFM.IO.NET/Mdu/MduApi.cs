@@ -5,7 +5,7 @@ using DFlowFM.IO.Reporting;
 
 namespace DFlowFM.IO.Mdu;
 
-public sealed class MduDocumentApi : IDisposable
+public sealed class MduApi : IDisposable
 {
     private readonly SafeMduHandle handle = new();
 

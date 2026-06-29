@@ -7,12 +7,12 @@ namespace DFlowFM.IO.Tests.Mdu;
 // ReSharper disable AccessToDisposedClosure
 // ReSharper disable ConvertClosureToMethodGroup
 [TestFixture]
-public class MduDocumentApiTest
+public class MduApiTest
 {
     [Test]
     public void Dispose_TwiceDoesNotThrow()
     {
-        var api = new MduDocumentApi();
+        var api = new MduApi();
 
         api.Dispose();
 
@@ -22,7 +22,7 @@ public class MduDocumentApiTest
     [Test]
     public void LoadFromFile_NonExistentPath_ThrowsInvalidOperationException()
     {
-        using var api = new MduDocumentApi();
+        using var api = new MduApi();
 
         Assert.Throws<InvalidOperationException>(() => api.LoadFromFile("nonexistent_file.mdu"));
     }
@@ -30,7 +30,7 @@ public class MduDocumentApiTest
     [Test]
     public void LoadFromString_ValidContent_DoesNotThrow()
     {
-        using var api = new MduDocumentApi();
+        using var api = new MduApi();
 
         Assert.DoesNotThrow(() => api.LoadFromString(MduTestFixtures.ValidMduContent));
     }
@@ -38,7 +38,7 @@ public class MduDocumentApiTest
     [Test]
     public void SaveToString_ContainsExpectedContent()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         string content = api.SaveToString();
 
@@ -51,7 +51,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetInt_KnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         int result = api.GetInt("geometry.kmx");
 
@@ -61,7 +61,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetInt_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetInt("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -69,7 +69,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetInt_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetInt("geometry.kmx", 5);
 
@@ -79,7 +79,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetInt_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetInt("nonexisting.key", 42), Throws.TypeOf<InvalidOperationException>());
     }
@@ -87,7 +87,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetDouble_KnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         double result = api.GetDouble("numerics.cflmax");
 
@@ -97,7 +97,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetDouble_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetDouble("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -105,7 +105,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDouble_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetDouble("numerics.cflmax", 0.9);
 
@@ -115,7 +115,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDouble_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetDouble("nonexisting.key", 3.14), Throws.TypeOf<InvalidOperationException>());
     }
@@ -123,7 +123,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetBool_KnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(api.GetBool("geometry.usecaching"), Is.True);
     }
@@ -131,7 +131,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetBool_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetBool("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -139,7 +139,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetBool_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetBool("geometry.usecaching", false);
 
@@ -149,7 +149,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetBool_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetBool("nonexisting.key", true), Throws.TypeOf<InvalidOperationException>());
     }
@@ -157,7 +157,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetString_KnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(api.GetString("general.program"), Is.EqualTo("D-Flow FM"));
     }
@@ -165,7 +165,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetString_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetString("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -173,7 +173,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetString_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetString("general.program", "My Program");
 
@@ -183,7 +183,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetString_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetString("nonexisting.key", "hello"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -191,7 +191,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetPath_KnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         string result = api.GetPath("geometry.netfile");
 
@@ -201,7 +201,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetPath_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetPath("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -209,7 +209,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetPath_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetPath("geometry.netfile", "new_net.nc");
 
@@ -219,7 +219,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetPath_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetPath("nonexisting.key", "some/path.nc"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -227,7 +227,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetPathList_KnownKey_ReturnsExpectedValues()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         List<string> result = api.GetPathList("geometry.thindamfile").ToList();
 
@@ -237,7 +237,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetPathList_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetPathList("unknown.key").ToList(), Throws.TypeOf<InvalidOperationException>());
     }
@@ -245,7 +245,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetPathList_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         var newPaths = new[] { "a.pol", "b.xyz", "c.nc" };
         api.SetPathList("geometry.thindamfile", newPaths);
@@ -258,7 +258,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetPathList_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetPathList("nonexisting.key", ["a.pol"]), Throws.TypeOf<InvalidOperationException>());
     }
@@ -266,7 +266,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetDoubleList_KnownKey_ReturnsExpectedValues()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         List<double> result = api.GetDoubleList("output.hisinterval").ToList();
 
@@ -276,7 +276,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetDoubleList_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetDoubleList("unknown.key").ToList(), Throws.TypeOf<InvalidOperationException>());
     }
@@ -284,7 +284,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDoubleList_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         var newValues = new[] { 100.0, 200.0, 300.0 };
         api.SetDoubleList("output.hisinterval", newValues);
@@ -297,7 +297,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDoubleList_EmptyList_ResultsInEmptyList()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetDoubleList("output.hisinterval", []);
 
@@ -307,7 +307,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDoubleList_SingleValue_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetDoubleList("output.hisinterval", [200.0]);
 
@@ -319,7 +319,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDoubleList_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetDoubleList("nonexisting.key", [1.0, 2.0]), Throws.TypeOf<InvalidOperationException>());
     }
@@ -327,7 +327,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetEnum_StringEnumKnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(api.GetEnum("time.tunit"), Is.EqualTo(1));
     }
@@ -335,7 +335,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetEnum_IntEnumKnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(api.GetEnum("numerics.timesteptype"), Is.EqualTo(3));
     }
@@ -343,7 +343,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetEnum_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetEnum("unknown.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -351,7 +351,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetEnum_StringEnumKnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetEnum("time.tunit", 3);
 
@@ -361,7 +361,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetEnum_IntEnumKnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         api.SetEnum("numerics.timesteptype", 2);
 
@@ -371,7 +371,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetEnum_OutOfRange_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetEnum("numerics.timesteptype", -1), Throws.TypeOf<InvalidOperationException>());
     }
@@ -379,7 +379,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetEnum_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetEnum("nonexisting.key", 0), Throws.TypeOf<InvalidOperationException>());
     }
@@ -387,7 +387,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetDateTime_KnownKey_ReturnsExpectedValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         DateTime result = api.GetDateTime("time.refdate");
 
@@ -397,7 +397,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetDateTime_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.GetDateTime("nonexisting.key"), Throws.TypeOf<InvalidOperationException>());
     }
@@ -405,7 +405,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDateTime_KnownKey_UpdatesValue()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         var newDateTime = new DateTime(2025, 6, 11, 8, 30, 22, DateTimeKind.Utc);
         api.SetDateTime("time.refdate", newDateTime);
@@ -416,7 +416,7 @@ public class MduDocumentApiTest
     [Test]
     public void SetDateTime_UnknownKey_ThrowsInvalidOperationException()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         Assert.That(() => api.SetDateTime("nonexisting.key", DateTime.UtcNow), Throws.TypeOf<InvalidOperationException>());
     }
@@ -424,7 +424,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetIssueReport_ReturnsIssueReport()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         IssueReport report = api.GetIssueReport();
 
@@ -435,7 +435,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetIssueReport_ValidFile_HasNoErrors()
     {
-        using MduDocumentApi api = CreateWithValidContent();
+        using MduApi api = CreateWithValidContent();
 
         IssueReport report = api.GetIssueReport();
 
@@ -445,7 +445,7 @@ public class MduDocumentApiTest
     [Test]
     public void GetIssueReport_InvalidFile_HasErrors()
     {
-        using MduDocumentApi api = CreateWithInvalidContent();
+        using MduApi api = CreateWithInvalidContent();
 
         IssueReport report = api.GetIssueReport();
 
@@ -455,8 +455,8 @@ public class MduDocumentApiTest
     [Test]
     public void MultipleInstances_AreIndependent()
     {
-        using MduDocumentApi api1 = CreateWithValidContent();
-        using MduDocumentApi api2 = CreateWithValidContent();
+        using MduApi api1 = CreateWithValidContent();
+        using MduApi api2 = CreateWithValidContent();
 
         using (Assert.EnterMultipleScope())
         {
@@ -472,15 +472,15 @@ public class MduDocumentApiTest
         }
     }
 
-    private static MduDocumentApi CreateWithValidContent()
+    private static MduApi CreateWithValidContent()
         => CreateWithContent(MduTestFixtures.ValidMduContent);
 
-    private static MduDocumentApi CreateWithInvalidContent()
+    private static MduApi CreateWithInvalidContent()
         => CreateWithContent(MduTestFixtures.InvalidMduContent);
 
-    private static MduDocumentApi CreateWithContent(string content)
+    private static MduApi CreateWithContent(string content)
     {
-        var api = new MduDocumentApi();
+        var api = new MduApi();
         api.LoadFromString(content);
         return api;
     }

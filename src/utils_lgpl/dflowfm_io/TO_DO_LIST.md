@@ -4,12 +4,12 @@
 - Do we want automatic padding with between values and comments?
 - Talk to Mostafa about python api design
 - Support typed enums in dflowfm_io for custom validation rules (currently enums are converted to ints)
-- Error handling: have more error codes in the C API
-- Add support for creating new MDU data from scratch: currently MDU properties cannot be set if there's no MDU file loaded first
-- Support getting/setting unknown MDU properties: to be treated as string values
-- Support nullable types: mainly used for datetime's
-- Add 'interval' datatype to the mdu.json for interval properties
-- Additional mdu.json metadata:
--- some property keys start with a number (not suited for code generation)
--- some enum property values are no suited for code generation
--- captions for the settings UI
+- Support nullable types; mainly required for datetime properties
+- Better error handling; support more error codes in the C api
+- Allow for creating new MDU data from scratch; currently MDU properties cannot be set if no MDU file is loaded first
+- Support getting/setting unknown MDU properties; to be treated as string values
+- Add 'interval' data type to the mdu.json for interval properties
+- Require additional metadata in mdu.json for code generation of a typed data model?
+  -- several property keys start with a number
+  -- many enum values are not suited for generating typed enums
+  -- property captions (GUI)
