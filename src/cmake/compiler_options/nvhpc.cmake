@@ -32,6 +32,17 @@ if (UNIX)
     set(CMAKE_Fortran_FLAGS_RELWITHDEBINFO "-g -O2")
     set(CMAKE_Fortran_FLAGS_DEBUG          "-g -O0")
 
+    # nvfortran (26.3) does not support the F2018 "implicit none(type, external)"
+    # specifier list, which is used throughout the code base. Instead of editing
+    # every file, force-preprocess all Fortran sources and define a function-like
+    # macro that drops the specifier list:
+    #   implicit none(type, external)  -->  implicit none
+    # Plain "implicit none" (no parentheses) is a non-invocation of the macro and
+    # is left untouched. The argument is added via add_compile_options so CMake
+    # quotes the parentheses correctly for the build tool / shell.
+    add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mpreprocess>")
+    add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Dnone(...)=none>")
+
     set(fortran_standard_flag                    "-std")
     set(cpp_compiler_flags                       "-std=c++17")
     set(automatic_local_variable_storage_flag    "-Mrecursive")
