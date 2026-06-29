@@ -35,7 +35,7 @@ module m_find_crossed_links_kdtree2
    integer, parameter :: ITYPE_NETLINK_DUAL = 1 !< cross with dual netlink
    integer, parameter :: ITYPE_FLOWLINK = 2 !< cross with flowlink
    integer, parameter :: ITYPE_NETLINK = 3 !< cross with netlink
-   integer, parameter :: ITYPE_LINK_1D_DUAL = 4 !< cross with dual 1D flowlink
+   integer, parameter :: ITYPE_FLOWLINK_1D_DUAL = 4 !< cross with dual 1D flowlink
 
    integer, parameter :: BOUNDARY_NONE = 0 !< do not include boundary links
    integer, parameter :: BOUNDARY_ALL = 1 !< include all boundary links
@@ -63,7 +63,7 @@ contains
       type(kdtree_instance), intent(inout) :: treeinst
       integer, intent(in) :: NPL !< polyline length
       real(kind=dp), dimension(NPL), intent(in) :: xpl, ypl !< polyline node coordinates
-      integer, intent(in) :: itype !< Type of intersection (ITYPE_NETLINK_DUAL, ITYPE_FLOWLINK, ITYPE_NETLINK, ITYPE_LINK_1D_DUAL)
+      integer, intent(in) :: itype !< Type of intersection (ITYPE_NETLINK_DUAL, ITYPE_FLOWLINK, ITYPE_NETLINK, ITYPE_FLOWLINK_1D_DUAL)
       integer, intent(in) :: n_links_polyline_nodes !< array_size e.g. number of links ( Lnx for flowlinks, numL for netlinks) or npl for number of polyline nodes
       integer, intent(in) :: jaboundarylinks !< include boundary links ( BOUNDARY_NONE, BOUNDARY_ALL, BOUNDARY_2D )
       integer, intent(out) :: intersection_count !< number of link intersections
@@ -186,7 +186,7 @@ contains
             ya = yk(n1)
             xb = xk(n2)
             yb = yk(n2)
-         else if (itype == ITYPE_LINK_1D_DUAL) then
+         else if (itype == ITYPE_FLOWLINK_1D_DUAL) then
             if (L <= lnx1D) then ! flowlinks, cross with perpendicular in 1D
                n1 = ln(1, L)
                n2 = ln(2, L)

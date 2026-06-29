@@ -1813,7 +1813,7 @@ contains
       real(dp), intent(out) :: ymid !< y-coordinate of the midpoint
 
       integer :: number_of_flowlinks, i, Lf, k3, k4
-      real(dp) :: total_length_of_LINK_set, distance_along_LINK_set, w1
+      real(dp) :: total_length_of_flowlink_set, distance_along_flowlink_set, w1
 
       xmid = dmiss
       ymid = dmiss
@@ -1824,17 +1824,17 @@ contains
          return
       end if
 
-      total_length_of_LINK_set = 0.0_dp
+      total_length_of_flowlink_set = 0.0_dp
       do i = 1, number_of_flowlinks
          Lf = abs(links(i))
-         total_length_of_LINK_set = total_length_of_LINK_set + wu(Lf)
+         total_length_of_flowlink_set = total_length_of_flowlink_set + wu(Lf)
       end do
 
       ! Find the mid point on the snapped flow link path
-      distance_along_LINK_set = 0.0_dp
+      distance_along_flowlink_set = 0.0_dp
       do i = 1, number_of_flowlinks
          Lf = abs(links(i))
-         if (distance_along_LINK_set + wu(Lf) >= total_length_of_LINK_set/2.0_dp) then
+         if (distance_along_flowlink_set + wu(Lf) >= total_length_of_flowlink_set/2.0_dp) then
             ! The midpoint must lie on this flowlink; calculate exactly where
             if (kcu(Lf) == LINK_2D) then
                ! 2D flowlink
@@ -1845,7 +1845,7 @@ contains
                   k3 = lncn(2, Lf)
                   k4 = lncn(1, Lf)
                end if
-               w1 = (total_length_of_LINK_set/2.0_dp - distance_along_LINK_set)/wu(Lf)
+               w1 = (total_length_of_flowlink_set/2.0_dp - distance_along_flowlink_set)/wu(Lf)
                xmid = w1*xk(k3) + (1.0_dp - w1)*xk(k4)
                ymid = w1*yk(k3) + (1.0_dp - w1)*yk(k4)
             else
@@ -1856,7 +1856,7 @@ contains
             exit ! midpoint was found
          else
             ! The midpoint must lie beyond this flowlink; add its entire length
-            distance_along_LINK_set = distance_along_LINK_set + wu(Lf)
+            distance_along_flowlink_set = distance_along_flowlink_set + wu(Lf)
          end if
       end do
 

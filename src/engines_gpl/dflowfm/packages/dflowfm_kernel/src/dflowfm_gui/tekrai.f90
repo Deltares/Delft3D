@@ -119,7 +119,7 @@ contains
          if (japol == 0) then
             kc = 0
             allocate (crossed_links(Lnx), polygon_nodes(Lnx), polygon_segment_weights(Lnx))
-            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_LINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
+            call find_crossed_links_kdtree2(treeglob, NPL, XPL, YPL, ITYPE_FLOWLINK_1D_DUAL, Lnx, BOUNDARY_ALL, intersection_count, crossed_links, polygon_nodes, polygon_segment_weights, ierror)
             do LL = 1, intersection_count
                L = crossed_links(LL)
                kc(ln(1, L)) = 1

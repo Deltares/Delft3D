@@ -3013,7 +3013,7 @@ contains
          id_orifgen_linkdim, &
          id_pumpdim, &
          id_pump_stagedim, &
-         id_1dLINK_dim, &
+         id_1dflowlink_dim, &
          id_time, id_timestep, &
          id_s1, id_taus, id_ucx, id_ucy, id_ucz, id_unorm, id_q1, id_ww1, id_sa1, id_tem1, id_sed, id_ero, id_s0, id_u0, &
          id_ice_thickness, id_ice_area_fraction, id_snow_thickness, id_ice_pressure, id_ice_temperature, id_snow_temperature, &
@@ -3250,13 +3250,13 @@ contains
          ierr = nf90_def_var(irstfile, 'unorm', nf90_double, [id_laydim, id_flowlinkdim, id_timedim], id_unorm)
          ierr = nf90_put_att(irstfile, id_unorm, 'long_name', 'normal component of sea_water_speed')
          ierr = nf90_put_att(irstfile, id_unorm, 'units', 'm s-1')
-         ierr = nf90_put_att(irstfile, id_unorm, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_unorm, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of flow data on edges: velocity magnitude at previous timestep
          ierr = nf90_def_var(irstfile, 'u0', nf90_double, [id_laydim, id_flowlinkdim, id_timedim], id_u0)
          ierr = nf90_put_att(irstfile, id_u0, 'long_name', 'normal component of sea_water_speed at previous time t0')
          ierr = nf90_put_att(irstfile, id_u0, 'units', 'm s-1')
-         ierr = nf90_put_att(irstfile, id_u0, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_u0, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of flow data on edges: cell center velocity, q based  global x-dir (m/s)
          ierr = nf90_def_var(irstfile, 'ucxq', nf90_double, [id_laydim, id_flowelemdim, id_timedim], id_ucxq)
@@ -3275,7 +3275,7 @@ contains
          ierr = nf90_put_att(irstfile, id_q1, 'standard_name', 'discharge')
          ierr = nf90_put_att(irstfile, id_q1, 'long_name', 'discharge through flow link at current time')
          ierr = nf90_put_att(irstfile, id_q1, 'units', 'm3 s-1')
-         ierr = nf90_put_att(irstfile, id_q1, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_q1, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of flow data on centres: x-component of the velocity
          ierr = nf90_def_var(irstfile, 'ucx', nf90_double, [id_laydim, id_flowelemdim, id_timedim], id_ucx)
@@ -3320,7 +3320,7 @@ contains
          ierr = nf90_def_var(irstfile, 'unorm_averaged', nf90_double, [id_flowlinkdim, id_timedim], id_unorma)
          ierr = nf90_put_att(irstfile, id_unorma, 'long_name', 'depth averaged normal component of sea_water_speed')
          ierr = nf90_put_att(irstfile, id_unorma, 'units', 'm3 s-1')
-         ierr = nf90_put_att(irstfile, id_unorma, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_unorma, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of vertical flux through interface qw
          ierr = nf90_def_var(irstfile, 'qw', nf90_double, [id_wdim, id_flowelemdim, id_timedim], id_qw)
@@ -3330,7 +3330,7 @@ contains
 
          ! Definition and attributes of discharge used in advection qa
          ierr = nf90_def_var(irstfile, 'qa', nf90_double, [id_laydim, id_flowlinkdim, id_timedim], id_qa)
-         ierr = nf90_put_att(irstfile, id_qa, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_qa, 'coordinates', 'FlowLink_xu FlowLink_yu')
          ierr = nf90_put_att(irstfile, id_qa, 'long_name', 'discharge used in advection')
          ierr = nf90_put_att(irstfile, id_qa, 'units', 'm3 s-1')
 
@@ -3348,14 +3348,14 @@ contains
 
          ! Flow depth at links
          ierr = nf90_def_var(irstfile, 'hu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_hu)
-         ierr = nf90_put_att(irstfile, id_hu, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_hu, 'coordinates', 'FlowLink_xu FlowLink_yu')
          ierr = nf90_put_att(irstfile, id_hu, 'long_name', 'flow depth at link')
          ierr = nf90_put_att(irstfile, id_hu, 'units', 'm')
 
          ! Coriolis
          if (Corioadamsbashfordfac > 0.0_dp) then
             ierr = nf90_def_var(irstfile, 'fvcoro', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_fvcoro)
-            ierr = nf90_put_att(irstfile, id_fvcoro, 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(irstfile, id_fvcoro, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_fvcoro, 'long_name', 'Coriolis term Adams-Bashford')
             ierr = nf90_put_att(irstfile, id_fvcoro, 'units', 'm s-2')
          end if
@@ -3363,14 +3363,14 @@ contains
          if (iturbulencemodel >= 3) then
             ! Definition and attributes of vertical eddy viscosity vicwwu
             ierr = nf90_def_var(irstfile, 'vicwwu', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_vicwwu)
-            ierr = nf90_put_att(irstfile, id_vicwwu, 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(irstfile, id_vicwwu, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_vicwwu, 'long_name', 'turbulent vertical eddy viscosity')
             ierr = nf90_put_att(irstfile, id_vicwwu, 'units', 'm2 s-1')
             ierr = nf90_put_att(irstfile, id_vicwwu, '_FillValue', dmiss)
 
             ! Definition and attributes of kinetic energy
             ierr = nf90_def_var(irstfile, 'turkin1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_turkin1)
-            ierr = nf90_put_att(irstfile, id_turkin1, 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(irstfile, id_turkin1, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_turkin1, 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
             ierr = nf90_put_att(irstfile, id_turkin1, 'long_name', 'turbulent kinetic energy')
             ierr = nf90_put_att(irstfile, id_turkin1, 'units', 'm2 s-2')
@@ -3378,7 +3378,7 @@ contains
 
             ! Definition and attributes of energy_dissipation or turbulence_time_scale
             ierr = nf90_def_var(irstfile, 'tureps1', nf90_double, [id_wdim, id_flowlinkdim, id_timedim], id_tureps1)
-            ierr = nf90_put_att(irstfile, id_tureps1, 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(irstfile, id_tureps1, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_tureps1, '_FillValue', dmiss)
             if (iturbulencemodel == 3) then
                ierr = nf90_put_att(irstfile, id_tureps1, 'standard_name', 'specific_turbulent_kinetic_energy_dissipation_in_sea_water')
@@ -3419,13 +3419,13 @@ contains
          ierr = nf90_def_var(irstfile, 'unorm', nf90_double, [id_flowlinkdim, id_timedim], id_unorm)
          ierr = nf90_put_att(irstfile, id_unorm, 'long_name', 'normal component of sea_water_speed')
          ierr = nf90_put_att(irstfile, id_unorm, 'units', 'm s-1')
-         ierr = nf90_put_att(irstfile, id_unorm, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_unorm, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of flow data on edges: velocity magnitude at previous timestep
          ierr = nf90_def_var(irstfile, 'u0', nf90_double, [id_flowlinkdim, id_timedim], id_u0)
          ierr = nf90_put_att(irstfile, id_u0, 'long_name', 'normal component of velocity through flow link at previous time t0')
          ierr = nf90_put_att(irstfile, id_u0, 'units', 'm s-1')
-         ierr = nf90_put_att(irstfile, id_u0, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_u0, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of flow data on edges: cell center velocity, q based  global x-dir (m/s)
          ierr = nf90_def_var(irstfile, 'ucxq', nf90_double, [id_flowelemdim, id_timedim], id_ucxq)
@@ -3444,13 +3444,13 @@ contains
          ierr = nf90_put_att(irstfile, id_q1, 'standard_name', 'discharge')
          ierr = nf90_put_att(irstfile, id_q1, 'long_name', 'discharge through flow link at current time')
          ierr = nf90_put_att(irstfile, id_q1, 'units', 'm3 s-1')
-         ierr = nf90_put_att(irstfile, id_q1, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_q1, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of flow data on edges: velocity magnitude at previous timestep
          ierr = nf90_def_var(irstfile, 'qa', nf90_double, [id_flowlinkdim, id_timedim], id_qa)
          ierr = nf90_put_att(irstfile, id_qa, 'long_name', 'discharge used in advection')
          ierr = nf90_put_att(irstfile, id_qa, 'units', 'm3 s-1')
-         ierr = nf90_put_att(irstfile, id_qa, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_qa, 'coordinates', 'FlowLink_xu FlowLink_yu')
 
          ! Definition and attributes of cell center outcoming flux
          ierr = nf90_def_var(irstfile, 'squ', nf90_double, [id_flowelemdim, id_timedim], id_squ)
@@ -3466,13 +3466,13 @@ contains
 
          ! Flow depth at links
          ierr = nf90_def_var(irstfile, 'hu', nf90_double, [id_flowlinkdim, id_timedim], id_hu)
-         ierr = nf90_put_att(irstfile, id_hu, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_hu, 'coordinates', 'FlowLink_xu FlowLink_yu')
          ierr = nf90_put_att(irstfile, id_hu, 'long_name', 'flow depth at link')
          ierr = nf90_put_att(irstfile, id_hu, 'units', 'm')
 
          if (Corioadamsbashfordfac > 0.0_dp) then
             ierr = nf90_def_var(irstfile, 'fvcoro', nf90_double, [id_flowlinkdim, id_timedim], id_fvcoro)
-            ierr = nf90_put_att(irstfile, id_fvcoro, 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(irstfile, id_fvcoro, 'coordinates', 'FlowLink_xu FlowLink_yu')
             ierr = nf90_put_att(irstfile, id_fvcoro, 'long_name', 'Coriolis term Adams-Bashford')
             ierr = nf90_put_att(irstfile, id_fvcoro, 'units', 'm s-2')
          end if
@@ -3482,7 +3482,7 @@ contains
       !fixed weirs data
       if (ncdamsg > 0 .or. ifixedweirscheme > 0) then
          ierr = nf90_def_var(irstfile, 'weirdte', nf90_double, [id_flowlinkdim, id_timedim], id_weirdte)
-         ierr = nf90_put_att(irstfile, id_weirdte, 'coordinates', 'LINK_xu LINK_yu')
+         ierr = nf90_put_att(irstfile, id_weirdte, 'coordinates', 'FlowLink_xu FlowLink_yu')
          ierr = nf90_put_att(irstfile, id_weirdte, 'long_name', 'energy-head loss')
          ierr = nf90_put_att(irstfile, id_weirdte, 'units', 'm')
       end if
@@ -3729,7 +3729,7 @@ contains
 
             if (stmpar%morlyr%settings%active_layer_diffusion > 0) then
                ierr = nf90_def_var(irstfile, 'aldiff', nf90_double, [id_flowlinkdim, id_timedim], id_aldiff)
-               ierr = nf90_put_att(irstfile, id_aldiff, 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(irstfile, id_aldiff, 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(irstfile, id_aldiff, 'long_name', 'Diffusion coefficient in the active-layer')
                ierr = nf90_put_att(irstfile, id_aldiff, 'units', 'm s-2')
             end if
@@ -3881,8 +3881,8 @@ contains
       ierr = nf90_put_att(irstfile, id_flowelemycc, 'long_name', 'y-coordinate of flow element circumcenter')
 
       if (lnx > 0) then
-         ierr = nf90_def_var(irstfile, 'LINK_xu', nf90_double, [id_flowlinkdim], id_flowlinkxu)
-         ierr = nf90_def_var(irstfile, 'LINK_yu', nf90_double, [id_flowlinkdim], id_flowlinkyu)
+         ierr = nf90_def_var(irstfile, 'FlowLink_xu', nf90_double, [id_flowlinkdim], id_flowlinkxu)
+         ierr = nf90_def_var(irstfile, 'FlowLink_yu', nf90_double, [id_flowlinkdim], id_flowlinkyu)
          ierr = unc_addcoordatts(irstfile, id_flowlinkxu, id_flowlinkyu, jsferic)
          ierr = nf90_put_att(irstfile, id_flowlinkxu, 'long_name', 'x-coordinate of flow link center (velocity point)')
          ierr = nf90_put_att(irstfile, id_flowlinkyu, 'long_name', 'y-coordinate of flow link center (velocity point)')
@@ -4167,8 +4167,8 @@ contains
       ! Write network%adm%hysteresis_for_summerdike for all 1d links
       if (network%loaded) then
          if (network%numl > 0) then
-            ierr = nf90_def_dim(irstfile, 'n1DFlowLink', network%numl, id_1dLINK_dim)
-            ierr = nf90_def_var(irstfile, 'hysteresis_for_summerdike', nf90_short, [id_1dLINK_dim], id_hysteresis)
+            ierr = nf90_def_dim(irstfile, 'n1DFlowLink', network%numl, id_1dflowlink_dim)
+            ierr = nf90_def_var(irstfile, 'hysteresis_for_summerdike', nf90_short, [id_1dflowlink_dim], id_hysteresis)
             ierr = nf90_put_att(irstfile, id_hysteresis, 'long_name', 'Hysteresis information for summer dike. 3 is true-true, 2 is false-true, 1 is true-false, 0 is false-false.')
             ierr = nf90_put_att(irstfile, id_hysteresis, 'units', '')
          end if
@@ -5507,8 +5507,8 @@ contains
             ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowelemzw, nc_precision, UNC_LOC_W, 'flowelem_zw', 'altitude', 'Vertical coordinate of layer interfaces at pressure points', 'm', jabndnd=jabndnd_)
 
             ! Edge-centred z-coordinates:
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu, nc_precision, UNC_LOC_U3D, 'LINK_zu', 'altitude', 'Vertical coordinate of layer centres at velocity points', 'm', jabndnd=jabndnd_)
-            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzwu, nc_precision, UNC_LOC_WU, 'LINK_zwu', 'altitude', 'Vertical coordinate of layer interfaces at velocity points', 'm', jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu, nc_precision, UNC_LOC_U3D, 'flowlink_zu', 'altitude', 'Vertical coordinate of layer centres at velocity points', 'm', jabndnd=jabndnd_)
+            ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzwu, nc_precision, UNC_LOC_WU, 'flowlink_zwu', 'altitude', 'Vertical coordinate of layer interfaces at velocity points', 'm', jabndnd=jabndnd_)
 
             if (jafullgridoutput == 2) then
                if (ndx2d > 0) then ! Borrow the "2-dimension" from the already defined mesh (either 2d or 1d, does not matter)
@@ -5524,10 +5524,10 @@ contains
                ierr = nf90_put_att(mapids%ncid, mapids%id_flowelemzcc(1), 'bounds', trim(mesh1dname)//'_flowelem_zcc_bnd')
 
                ! Bounds variable for edge-centred z-coordinates:
-               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu_bnd, nc_precision, UNC_LOC_U3D, 'LINK_zu_bnd', 'altitude', 'Bounds of vertical coordinate of layers at velocity points', 'm', &
+               ierr = unc_def_var_map(mapids%ncid, mapids%id_tsp, mapids%id_flowlinkzu_bnd, nc_precision, UNC_LOC_U3D, 'flowlink_zu_bnd', 'altitude', 'Bounds of vertical coordinate of layers at velocity points', 'm', &
                                       dimids=[id_twodim, -3, -2, -1], jabndnd=jabndnd_)
-               ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(2), 'bounds', trim(mesh2dname)//'_LINK_zu_bnd')
-               ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(1), 'bounds', trim(mesh1dname)//'_LINK_zu_bnd')
+               ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(2), 'bounds', trim(mesh2dname)//'_flowlink_zu_bnd')
+               ierr = nf90_put_att(mapids%ncid, mapids%id_flowlinkzu(1), 'bounds', trim(mesh1dname)//'_flowlink_zu_bnd')
             end if
          end if
 
@@ -8514,27 +8514,27 @@ contains
             end if
 
             if (map_write_settings%u1 > 0) then
-               ierr = nf90_put_att(imapfile, id_unorm(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_unorm(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(imapfile, id_unorm(iid), 'long_name', 'normal component of sea_water_speed')
                ierr = nf90_put_att(imapfile, id_unorm(iid), 'units', 'm s-1')
                ierr = nf90_put_att(imapfile, id_unorm(iid), '_FillValue', dmiss)
             end if
 
             if (map_write_settings%u0 > 0) then
-               ierr = nf90_put_att(imapfile, id_u0(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_u0(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(imapfile, id_u0(iid), 'long_name', 'normal component of sea_water_speed at previous timestep')
                ierr = nf90_put_att(imapfile, id_u0(iid), 'units', 'm s-1')
                ierr = nf90_put_att(imapfile, id_u0(iid), '_FillValue', dmiss)
             end if
             if (map_write_settings%q1 > 0) then
-               ierr = nf90_put_att(imapfile, id_q1(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_q1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                !ierr = nf90_put_att(imapfile, id_q1(iid)   ,'standard_name', 'discharge') ! not CF
                ierr = nf90_put_att(imapfile, id_q1(iid), 'long_name', 'flow flux')
                ierr = nf90_put_att(imapfile, id_q1(iid), 'units', 'm3 s-1')
                ierr = nf90_put_att(imapfile, id_q1(iid), '_FillValue', dmiss)
             end if
             if (map_write_settings%q1main > 0 .and. allocated(q1_main)) then
-               ierr = nf90_put_att(imapfile, id_q1main(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_q1main(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                !ierr = nf90_put_att(imapfile, id_q1main(iid)   ,'standard_name', 'discharge') ! not CF
                ierr = nf90_put_att(imapfile, id_q1main(iid), 'long_name', 'flow flux in main channel')
                ierr = nf90_put_att(imapfile, id_q1main(iid), 'units', 'm3 s-1')
@@ -8542,13 +8542,13 @@ contains
             end if
 
             if (map_write_settings%viu > 0) then
-               ierr = nf90_put_att(imapfile, id_viu(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_viu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(imapfile, id_viu(iid), 'long_name', 'horizontal viscosity')
                ierr = nf90_put_att(imapfile, id_viu(iid), 'units', 'm2 s-1')
                ierr = nf90_put_att(imapfile, id_viu(iid), '_FillValue', dmiss)
             end if
             if (map_write_settings%diu > 0) then
-               ierr = nf90_put_att(imapfile, id_diu(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_diu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(imapfile, id_diu(iid), 'long_name', 'horizontal diffusivity')
                ierr = nf90_put_att(imapfile, id_diu(iid), 'units', 'm2 s-1')
                ierr = nf90_put_att(imapfile, id_diu(iid), '_FillValue', dmiss)
@@ -8774,14 +8774,14 @@ contains
             if (map_write_settings%tur > 0 .and. kmx > 0) then
                if (iturbulencemodel >= 3) then
                   ierr = nf90_def_var(imapfile, 'turkin1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_turkin1(iid))
-                  ierr = nf90_put_att(imapfile, id_turkin1(iid), 'coordinates', 'LINK_xu LINK_yu')
+                  ierr = nf90_put_att(imapfile, id_turkin1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'standard_name', 'specific_turbulent_kinetic_energy_of_sea_water')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'long_name', 'turbulent kinetic energy')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), 'units', 'm2 s-2')
                   ierr = nf90_put_att(imapfile, id_turkin1(iid), '_FillValue', dmiss)
 
                   ierr = nf90_def_var(imapfile, 'vicwwu', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_vicwwu(iid))
-                  ierr = nf90_put_att(imapfile, id_vicwwu(iid), 'coordinates', 'LINK_xu LINK_yu')
+                  ierr = nf90_put_att(imapfile, id_vicwwu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_vicwwu(iid), 'long_name', 'turbulent vertical eddy viscosity at velocity points')
                   ierr = nf90_put_att(imapfile, id_vicwwu(iid), 'units', 'm2 s-1')
                   ierr = nf90_put_att(imapfile, id_vicwwu(iid), '_FillValue', dmiss)
@@ -8793,7 +8793,7 @@ contains
                   ierr = nf90_put_att(imapfile, id_vicwws(iid), '_FillValue', dmiss)
 
                   ierr = nf90_def_var(imapfile, 'tureps1', nf90_double, [id_wdim(iid), id_flowlinkdim(iid), id_timedim(iid)], id_tureps1(iid))
-                  ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'LINK_xu LINK_yu')
+                  ierr = nf90_put_att(imapfile, id_tureps1(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_tureps1(iid), '_FillValue', dmiss)
 
                   if (iturbulencemodel == 3) then
@@ -8862,12 +8862,12 @@ contains
 
                   if (stmpar%morpar%moroutput%suvcor) then
                      ierr = nf90_def_var(imapfile, 'e_scrn', nf90_double, [id_flowlinkdim(iid), id_sedsusdim(iid), id_timedim(iid)], id_scrn(iid))
-                     ierr = nf90_put_att(imapfile, id_scrn(iid), 'coordinates', 'LINK_xu LINK_yu')
+                     ierr = nf90_put_att(imapfile, id_scrn(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                      ierr = nf90_put_att(imapfile, id_scrn(iid), 'long_name', 'Near-bed transport correction in face-normal direction')
                      ierr = nf90_put_att(imapfile, id_scrn(iid), 'units', stmpar%morpar%moroutput%unit_transport_rate)
 
                      !ierr = nf90_def_var(imapfile, 'e_scrt' , nf90_double, [ id_flowlinkdim(iid) , id_sedsusdim(iid) , id_timedim(iid) ] , id_scrt(iid))
-                     !ierr = nf90_put_att(imapfile, id_scrt(iid) ,  'coordinates'  , 'LINK_xu LINK_yu')
+                     !ierr = nf90_put_att(imapfile, id_scrt(iid) ,  'coordinates'  , 'FlowLink_xu FlowLink_yu')
                      !ierr = nf90_put_att(imapfile, id_scrt(iid) ,  'long_name'    , 'Near-bed transport correction face-tangential direction')
                      !ierr = nf90_put_att(imapfile, id_scrt(iid) ,  'units'        , stmpar%morpar%moroutput%unit_transport_rate)
                   end if
@@ -8891,12 +8891,12 @@ contains
 
                if (stmpar%morpar%moroutput%dzduuvv) then ! bedslope
                   ierr = nf90_def_var(imapfile, 'e_dzdn', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_dzdn(iid))
-                  ierr = nf90_put_att(imapfile, id_dzdn(iid), 'coordinates', 'LINK_xu LINK_yu')
+                  ierr = nf90_put_att(imapfile, id_dzdn(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_dzdn(iid), 'long_name', 'Bed slope, n-component')
                   ierr = nf90_put_att(imapfile, id_dzdn(iid), 'units', '-')
 
                   ierr = nf90_def_var(imapfile, 'e_dzdt', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_dzdt(iid))
-                  ierr = nf90_put_att(imapfile, id_dzdt(iid), 'coordinates', 'LINK_xu LINK_yu')
+                  ierr = nf90_put_att(imapfile, id_dzdt(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                   ierr = nf90_put_att(imapfile, id_dzdt(iid), 'long_name', 'Bed slope, t-component')
                   ierr = nf90_put_att(imapfile, id_dzdt(iid), 'units', '-')
                end if
@@ -9365,7 +9365,7 @@ contains
                ! Chezy data on flow-links
                ierr = nf90_def_var(imapfile, 'czu', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_czu(iid))
                ierr = nf90_put_att(imapfile, id_czu(iid), 'long_name', 'Chezy roughness on flow links')
-               ierr = nf90_put_att(imapfile, id_czu(iid), 'coordinates', 'LINK_xu LINK_yu')
+               ierr = nf90_put_att(imapfile, id_czu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
                ierr = nf90_put_att(imapfile, id_czu(iid), 'units', 'm0.5s-1')
             end if
 
@@ -9528,7 +9528,7 @@ contains
             ierr = nf90_def_var(imapfile, 'windxu', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_windxu(iid))
             ierr = nf90_def_var(imapfile, 'windyu', nf90_double, [id_flowlinkdim(iid), id_timedim(iid)], id_windyu(iid))
 
-            ierr = nf90_put_att(imapfile, id_windxu(iid), 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(imapfile, id_windxu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
             if (jsferic == 0) then
                ierr = nf90_put_att(imapfile, id_windxu(iid), 'long_name', 'velocity of air on flow links, x-component')
                ierr = nf90_put_att(imapfile, id_windxu(iid), 'standard_name', 'x_velocity_wind')
@@ -9538,7 +9538,7 @@ contains
             end if
             ierr = nf90_put_att(imapfile, id_windxu(iid), 'units', 'm s-1')
 
-            ierr = nf90_put_att(imapfile, id_windyu(iid), 'coordinates', 'LINK_xu LINK_yu')
+            ierr = nf90_put_att(imapfile, id_windyu(iid), 'coordinates', 'FlowLink_xu FlowLink_yu')
             if (jsferic == 0) then
                ierr = nf90_put_att(imapfile, id_windyu(iid), 'long_name', 'velocity of air on flow links, y-component')
                ierr = nf90_put_att(imapfile, id_windyu(iid), 'standard_name', 'y_velocity_wind')
@@ -14720,8 +14720,8 @@ contains
                call check_error(ierr, 'nFlowLink')
                ierr = nf90_inquire_dimension(imapfile, id_flowlinkdim, len=lnx_merge)
                call check_error(ierr, 'link count')
-               ierr = nf90_inq_varid(imapfile, 'LINK_xu', id_xu)
-               ierr = nf90_inq_varid(imapfile, 'LINK_yu', id_yu)
+               ierr = nf90_inq_varid(imapfile, 'FlowLink_xu', id_xu)
+               ierr = nf90_inq_varid(imapfile, 'FlowLink_yu', id_yu)
                if (nerr_ > 0) then
                   return
                end if
@@ -14907,10 +14907,10 @@ contains
                call qnerror('Global number of links read from the merged restart file unequal to global number of links in model, ' &
                             //' therefore some links may not be found', ' ', ' ')
             end if
-            ierr = nf90_inq_varid(imapfile, 'LINK_xu', id_xu)
-            call check_error(ierr, 'LINK_xu')
-            ierr = nf90_inq_varid(imapfile, 'LINK_yu', id_yu)
-            call check_error(ierr, 'LINK_yu')
+            ierr = nf90_inq_varid(imapfile, 'FlowLink_xu', id_xu)
+            call check_error(ierr, 'FlowLink_xu')
+            ierr = nf90_inq_varid(imapfile, 'FlowLink_yu', id_yu)
+            call check_error(ierr, 'FlowLink_yu')
 
             call realloc(xuu, lnx_merge, keepExisting=.false.)
             call realloc(yuu, lnx_merge, keepExisting=.false.)
@@ -15086,9 +15086,9 @@ contains
             ! Read coordinates of flowlinks
             call realloc(xuu, um%lnx_read, keepExisting=.false.)
             call realloc(yuu, um%lnx_read, keepExisting=.false.)
-            ierr = nf90_inq_varid(imapfile, 'LINK_xu', id_xu)
+            ierr = nf90_inq_varid(imapfile, 'FlowLink_xu', id_xu)
             call check_error(ierr, 'velocity point x-coordinate')
-            ierr = nf90_inq_varid(imapfile, 'LINK_yu', id_yu)
+            ierr = nf90_inq_varid(imapfile, 'FlowLink_yu', id_yu)
             call check_error(ierr, 'velocity point y-coordinate')
 
             if (ierr == nf90_noerr) then
@@ -16384,8 +16384,8 @@ contains
          ierr = nf90_put_att(igeomfile, id_flowlinktype, 'flag_values', [1, 2, 3, 4, 5, 7])
          ierr = nf90_put_att(igeomfile, id_flowlinktype, 'flag_meanings', 'link_between_1D_nodes link_between_2D_nodes embedded_1D2D_link longitudinal_1D2D_link vertically_stacked_1D2D_link roof_gutter_1D2D_link')
 
-         ierr = nf90_def_var(igeomfile, 'LINK_xu', nf90_double, [id_flowlinkdim], id_flowlinkxu)
-         ierr = nf90_def_var(igeomfile, 'LINK_yu', nf90_double, [id_flowlinkdim], id_flowlinkyu)
+         ierr = nf90_def_var(igeomfile, 'FlowLink_xu', nf90_double, [id_flowlinkdim], id_flowlinkxu)
+         ierr = nf90_def_var(igeomfile, 'FlowLink_yu', nf90_double, [id_flowlinkdim], id_flowlinkyu)
          ierr = unc_addcoordatts(igeomfile, id_flowlinkxu, id_flowlinkyu, jsferic)
          ierr = nf90_put_att(igeomfile, id_flowlinkxu, 'long_name', 'x-coordinate of flow link center (velocity point)')
          ierr = nf90_put_att(igeomfile, id_flowlinkyu, 'long_name', 'y-coordinate of flow link center (velocity point)')
