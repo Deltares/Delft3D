@@ -39,31 +39,22 @@ contains
 
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_new(external_force_file_name, iresult)
-      use properties, only: get_version_number, prop_file
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
-      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu, set_lateral_count_in_external_forcings_file
-      use m_flowgeom, only: ba
-      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg, kclat, numlatsg, nnlat
       use string_module, only: str_tolower
       use system_utils, only: split_filename
-      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
       use m_ec_parameters, only: provFile_uniform
-      use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
-      use m_flow, only: kmx
       use m_deprecation, only: check_file_tree_for_deprecated_keywords
       use fm_deprecated_keywords, only: deprecated_ext_keywords
       use dfm_error, only: DFM_NOERR, DFM_WRONGINPUT
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
-      use m_source_sink, only: source_sinks
 
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
 
       integer :: initial_threshold_abort
       logical :: res
-      logical :: is_successful
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       type(tree_data), pointer :: block_ptr
       integer :: istat
@@ -71,51 +62,16 @@ contains
       integer :: i
       integer :: num_items_in_file
       character(len=INI_VALUE_LEN) :: fnam, base_dir
-      integer :: k, n, k1
-      integer :: ib, ibqh, ibt
-      integer :: maxlatsg, max_num_src
-      integer :: major, minor
+      integer :: ib, ibqh
+      integer :: major
       character(len=:), allocatable :: file_name
       integer, allocatable :: itpenzr(:), itpenur(:)
 
       iresult = DFM_NOERR
-      file_name = trim(external_force_file_name)
-      if (len_trim(file_name) <= 0) then
-         ! empty line in MDU is allowed: exit without error
-         return
-      end if
 
-      if (file_name(len_trim(file_name) - 3:) == '.ini') then
-         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '//trim(file_name)//' to the external forcings file.'
-         call warn_flush()
-      end if
+      call validate_and_open_external_forcing_file(external_force_file_name, bnd_ptr, file_name, major, iresult)
 
       res = .true.
-
-      call tree_create(file_name, bnd_ptr)
-      call prop_file('ini', file_name, bnd_ptr, istat)
-      if (istat /= 0) then
-         write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
-         call err_flush()
-         iresult = DFM_WRONGINPUT
-         return
-      end if
-
-      ! check FileVersion
-      major = 0
-      minor = 0
-      call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
-      if (.not. is_successful) then
-         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
-         call warn_flush()
-      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
-         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
-            //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
-            '. Ignoring this file.'
-         call err_flush()
-         iresult = DFM_WRONGINPUT
-         return
-      end if
 
       call init_registered_items()
 
@@ -123,42 +79,9 @@ contains
 
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
-      ! Build temporary reverse lookup table that maps boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
-      allocate (itpenzr(num_items_in_file))
-      allocate (itpenur(num_items_in_file))
-      itpenzr(:) = 0
-      itpenur(:) = 0
-      do ibt = 1, nbndz
-         ib = itpenz(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
-            itpenzr(ib) = ibt
-         end if
-      end do
-      do ibt = 1, nbndu
-         ib = itpenu(ibt)
-         if (ib > 0 .and. ib <= num_items_in_file) then
-            itpenur(ib) = ibt
-         end if
-      end do
+      call build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
 
-      ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      maxlatsg = tree_count_nodes_byname(bnd_ptr, 'lateral')
-      if (maxlatsg > 0) then
-         call realloc(balat, maxlatsg, keepExisting=.false., fill=0.0_dp)
-         call realloc(qplat, [max(1, kmx), maxlatsg], keepExisting=.false., fill=0.0_dp)
-         call realloc(lat_ids, maxlatsg, keepExisting=.false.)
-         call realloc(n1latsg, maxlatsg, keepExisting=.false., fill=0)
-         call realloc(n2latsg, maxlatsg, keepExisting=.false., fill=0)
-      end if
-
-      ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      call initialize_bubblescreens(bnd_ptr, base_dir, file_name, max_num_src)
-
-      max_num_src = max_num_src + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
-
-      if (max_num_src > 0) then
-         call source_sinks%initialize(max_num_src)
-      end if
+      call allocate_laterals_and_source_sinks(bnd_ptr, file_name, base_dir)
 
       res = res .and. add_bubblescreen_source_sinks()
 
@@ -186,6 +109,9 @@ contains
          case ('sourcesink')
             res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
 
+         case ('bubblescreen')
+            ! Empty, since bubblescreens are already initialized.
+
          case default ! Unrecognized item in an ext block
             ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
             write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
@@ -198,9 +124,178 @@ contains
       if (allocated(itpenzr)) then
          deallocate (itpenzr)
       end if
+
       if (allocated(itpenur)) then
          deallocate (itpenur)
       end if
+
+      call finalize_lateral_forcings()
+
+      call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
+
+      call tree_destroy(bnd_ptr)
+
+      if (res) then
+         iresult = DFM_NOERR
+      else
+         iresult = DFM_WRONGINPUT
+      end if
+
+   end subroutine init_new
+
+   !> Validates the external forcing file and opens it, returning a pointer to the tree of boundary blocks.
+   subroutine validate_and_open_external_forcing_file(external_force_file_name, bnd_ptr, file_name, major, iresult)
+      use properties, only: get_version_number, prop_file
+      use tree_structures, only: tree_data, tree_create
+      use messageHandling, only: warn_flush, err_flush, msgbuf
+      use unstruc_model, only: ExtfileNewMajorVersion, ExtfileNewMinorVersion
+      use dfm_error, only: DFM_WRONGINPUT
+
+      ! Parameters
+      character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
+      type(tree_data), pointer, intent(out) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      character(len=:), allocatable, intent(out) :: file_name !< Trimmed file name
+      integer, intent(out) :: major !< Major version number of ext-file
+      integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
+
+      ! Local variables
+      integer :: minor !< Version numbers of the external forcing file
+      integer :: istat !< Status code for file reading
+      logical :: is_successful !< Flag indicating if the version number was successfully retrieved
+
+      ! Check if the external forcing file name is empty, if so, exit without error.
+      file_name = trim(external_force_file_name)
+      if (len_trim(file_name) <= 0) then
+         ! empty line in MDU is allowed: exit without error
+         bnd_ptr => null()
+         return
+      end if
+
+      ! Inifieldfile is deprecated, issue a warning if the file name ends with '.ini'.
+      if (file_name(len_trim(file_name) - 3:) == '.ini') then
+         write (msgbuf, '(a)') 'The inifieldfile is deprecated. Consider moving the content of '//trim(file_name)//' to the external forcings file.'
+         call warn_flush()
+      end if
+
+      ! Check if the external forcing file can be read.
+      call tree_create(file_name, bnd_ptr)
+      call prop_file('ini', file_name, bnd_ptr, istat)
+      if (istat /= 0) then
+         write (msgbuf, '(a,a,a)') 'External forcing file ''', trim(file_name), ''' could not be read'
+         call err_flush()
+         iresult = DFM_WRONGINPUT
+         return
+      end if
+
+      ! Check the version number of the external forcing file.
+      major = 0
+      minor = 0
+      call get_version_number(bnd_ptr, major=major, minor=minor, success=is_successful)
+
+      if (.not. is_successful) then
+
+         write (msgbuf, '(a,a,a)') 'File version number not found in external forcing file ''', trim(file_name), '''.'
+         call warn_flush()
+
+      else if (major > ExtfileNewMajorVersion .or. (major == ExtfileNewMajorVersion .and. minor > ExtfileNewMinorVersion)) then
+
+         write (msgbuf, '(a,i0,".",i2.2,a,i0,".",i2.2,a)') 'Unsupported format of new external forcing file detected in ''' &
+            //file_name//''': v', major, minor, '. Current format: v', ExtfileNewMajorVersion, ExtfileNewMinorVersion, &
+            '. Ignoring this file.'
+
+         call err_flush()
+
+         iresult = DFM_WRONGINPUT
+         return
+
+      end if
+
+   end subroutine validate_and_open_external_forcing_file
+
+   !> Builds temporary reverse lookup tables that map boundary block # in file -> boundary condition nr in openbndsect (separate for u and z).
+   subroutine build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
+      use fm_external_forcings_data, only: nbndz, itpenz, nbndu, itpenu
+
+      ! Parameters
+      integer, dimension(:), allocatable, intent(out) :: itpenzr
+      integer, dimension(:), allocatable, intent(out) :: itpenur
+      integer, intent(in) :: num_items_in_file !< Number of items in the external forcing file
+
+      ! Local variables
+      integer :: ibt
+      integer :: ib
+
+      allocate (itpenzr(num_items_in_file))
+      allocate (itpenur(num_items_in_file))
+      itpenzr(:) = 0
+      itpenur(:) = 0
+
+      do ibt = 1, nbndz
+         ib = itpenz(ibt)
+         if (ib > 0 .and. ib <= num_items_in_file) then
+            itpenzr(ib) = ibt
+         end if
+      end do
+
+      do ibt = 1, nbndu
+         ib = itpenu(ibt)
+         if (ib > 0 .and. ib <= num_items_in_file) then
+            itpenur(ib) = ibt
+         end if
+      end do
+
+   end subroutine build_itpenzr_and_itpenur
+
+   !> Allocates lateral and source-sink arrays based on the number of lateral and source-sink blocks in the external forcing file.
+   subroutine allocate_laterals_and_source_sinks(bnd_ptr, file_name, base_dir)
+      use tree_structures, only: tree_data, tree_count_nodes_byname
+      use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg
+      use m_source_sink, only: source_sinks
+      use m_alloc, only: realloc
+      use m_flow, only: kmx
+
+      ! Parameters
+      type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
+      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
+
+      ! Local variables
+      integer :: num_laterals !< Number of lateral blocks in the external forcing file
+      integer :: num_source_sinks !< Number of source-sink blocks in the external forcing file
+
+      ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
+      num_laterals = tree_count_nodes_byname(bnd_ptr, 'lateral')
+      if (num_laterals > 0) then
+         call realloc(balat, num_laterals, keepExisting=.false., fill=0.0_dp)
+         call realloc(qplat, [max(1, kmx), num_laterals], keepExisting=.false., fill=0.0_dp)
+         call realloc(lat_ids, num_laterals, keepExisting=.false.)
+         call realloc(n1latsg, num_laterals, keepExisting=.false., fill=0)
+         call realloc(n2latsg, num_laterals, keepExisting=.false., fill=0)
+      end if
+
+      ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
+      call initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_source_sinks)
+
+      num_source_sinks = num_source_sinks + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+
+      if (num_source_sinks > 0) then
+         call source_sinks%initialize(num_source_sinks)
+      end if
+
+   end subroutine allocate_laterals_and_source_sinks
+
+   !> Finalizes the lateral forcing arrays by summing up the total lateral discharge for each lateral and saving the number of laterals to a module variable.
+   subroutine finalize_lateral_forcings()
+      use m_flowgeom, only: ba
+      use m_laterals, only: balat, n1latsg, n2latsg, kclat, numlatsg, nnlat
+      use m_partitioninfo, only: jampi, reduce_sum, is_ghost_node
+      use fm_external_forcings_data, only: set_lateral_count_in_external_forcings_file
+
+      ! Local variables
+      integer :: n !< Lateral index
+      integer :: k1 !< Node index in lateral
+      integer :: k !< Node index in flow geometry
+
       if (numlatsg > 0) then
          do n = 1, numlatsg
             balat(n) = 0.0_dp
@@ -213,26 +308,20 @@ contains
                end if
             end do
          end do
+
          if (jampi > 0) then
             call reduce_sum(numlatsg, balat)
          end if
+
          if (allocated(kclat)) then
             deallocate (kclat)
          end if
-      end if
 
-      call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
+      end if
 
       call set_lateral_count_in_external_forcings_file(numlatsg) !save number of laterals to module variable
 
-      call tree_destroy(bnd_ptr)
-
-      if (res) then
-         iresult = DFM_NOERR
-      else
-         iresult = DFM_WRONGINPUT
-      end if
-   end subroutine init_new
+   end subroutine finalize_lateral_forcings
 
    !> reads boundary blocks from new external forcings file and makes required initialisations
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
