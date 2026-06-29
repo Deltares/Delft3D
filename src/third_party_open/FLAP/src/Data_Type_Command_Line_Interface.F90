@@ -2568,9 +2568,9 @@ contains
 
   ! parsing passed CLAs grouping in indexes
   if (present(args)) then
-    call cli%get_args(args=args,ai=ai)
+    call cli%get_args_from_string(args=args,ai=ai)
   else
-    call cli%get_args(ai=ai)
+    call cli%get_args_from_invocation(ai=ai)
   endif
 
   ! checking CLI consistency
