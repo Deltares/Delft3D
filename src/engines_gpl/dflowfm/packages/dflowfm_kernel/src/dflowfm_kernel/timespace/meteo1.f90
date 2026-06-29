@@ -1117,7 +1117,13 @@ contains
    end subroutine findleftright
 
    subroutine selfattraction(avhs, self, i1, i2, j1, j2, jaselfal)
-      use spherepack, only: shaec, shaeci, shsec, shseci
+      ! Use the regular-grid scalar transform modules directly instead of the
+      ! 'spherepack' umbrella module. This lets the nvfortran build compile only
+      ! the minimal scalar dependency closure (the umbrella re-exports vector/
+      ! divergence/etc. routines that nvfortran cannot compile). Behaviour is
+      ! identical for the Intel/GNU builds, where these modules are also present.
+      use scalar_analysis_routines, only: shaec, shaeci
+      use scalar_synthesis_routines, only: shsec, shseci
       use m_timespace_data_tables, only: LOAD_LOVE_NUMBERS_H, LOAD_LOVE_NUMBERS_K
       implicit none
 

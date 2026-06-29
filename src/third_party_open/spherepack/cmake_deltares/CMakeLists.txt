@@ -121,6 +121,29 @@ set(sources
     ${source_dir}/vorticity_routines.f90
 )
 
+if(NVHPC)
+    # nvfortran (26.3) cannot compile the full modernized Spherepack: it rejects
+    # F2018 procedure-argument interface matches (e.g. passing vhsgs as a
+    # procedure(vector_synthesis) actual argument) and assumed-shape automatic
+    # array bounds used throughout the vector/divergence/vorticity/laplacian/
+    # gradient routines. D-Flow FM only uses the regular-grid scalar transforms
+    # shaec/shaeci/shsec/shseci (see meteo1.f90), so for the nvfortran build we
+    # compile just their minimal dependency closure, which is nvfortran-clean.
+    set(sources
+        ${source_dir}/spherepack_precision.f90
+        ${source_dir}/spherepack_interfaces.f90
+        ${source_dir}/type_RealPeriodicFastFourierTransform.f90
+        ${source_dir}/type_ScalarHarmonic.f90
+        ${source_dir}/type_WavetableUtility.f90
+        ${source_dir}/type_SpherepackUtility.f90
+        ${source_dir}/gaussian_latitudes_and_weights_routines.f90
+        ${source_dir}/scalar_analysis_routines.f90
+        ${source_dir}/scalar_analysis_regular_grid.f90
+        ${source_dir}/scalar_synthesis_routines.f90
+        ${source_dir}/scalar_synthesis_regular_grid.f90
+    )
+endif()
+
 add_library(spherepack ${sources})
 
 set_target_properties(spherepack PROPERTIES FOLDER third_party_open/spherepack)
