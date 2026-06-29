@@ -221,7 +221,7 @@ contains
                   time_com = tstop_user + 1
                else
                   tem_dif = (tim - ti_coms) / ti_com
-                  if (isnan(tem_dif)) then
+                  if (tem_dif /= tem_dif) then ! NaN check (portable; isnan is a non-standard extension)
                      tem_dif = 0.0_hp
                   end if
                   time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
