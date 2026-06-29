@@ -221,7 +221,11 @@ contains
                   time_com = tstop_user + 1
                else
                   tem_dif = (tim - ti_coms) / ti_com
-                  if (tem_dif /= tem_dif) then ! NaN check (portable; isnan is a non-standard extension)
+#ifdef __NVCOMPILER
+                  if (tem_dif /= tem_dif) then ! NaN check (nvfortran lacks the isnan extension)
+#else
+                  if (isnan(tem_dif)) then
+#endif
                      tem_dif = 0.0_hp
                   end if
                   time_com = max(ti_coms + (floor(tem_dif + 0.001_dp) + 1) * ti_com, ti_coms)
