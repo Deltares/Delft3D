@@ -1,7 +1,7 @@
 ﻿namespace DFlowFM.IO.Reporting;
 
 /// <summary>
-/// Indicates the severity level of a single <see cref="Issue"/>.
+/// Indicates the severity level of a single <see cref="Issue" />.
 /// </summary>
 public enum IssueSeverity
 {

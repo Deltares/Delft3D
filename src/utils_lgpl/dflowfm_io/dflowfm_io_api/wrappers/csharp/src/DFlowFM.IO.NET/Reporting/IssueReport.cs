@@ -1,7 +1,7 @@
 ﻿namespace DFlowFM.IO.Reporting;
 
 /// <summary>
-/// A report of <see cref="Issue"/> instances produced during validation or conversion of a model file.
+/// A report of <see cref="Issue" /> instances produced during validation or conversion of a model file.
 /// </summary>
 /// <param name="issues">The issues to include in the report.</param>
 public sealed class IssueReport(IReadOnlyList<Issue> issues)
@@ -32,26 +32,30 @@ public sealed class IssueReport(IReadOnlyList<Issue> issues)
     public bool HasWarnings => Warnings.Any();
 
     /// <summary>
-    /// Gets all issues with <see cref="IssueSeverity.Error"/> severity.
+    /// Gets all issues with <see cref="IssueSeverity.Error" /> severity.
     /// </summary>
     public IEnumerable<Issue> Errors => IssuesOf(IssueSeverity.Error);
 
     /// <summary>
-    /// Gets all issues with <see cref="IssueSeverity.Warning"/> severity.
+    /// Gets all issues with <see cref="IssueSeverity.Warning" /> severity.
     /// </summary>
     public IEnumerable<Issue> Warnings => IssuesOf(IssueSeverity.Warning);
 
     /// <summary>
-    /// Gets all issues with <see cref="IssueSeverity.Info"/> severity.
+    /// Gets all issues with <see cref="IssueSeverity.Info" /> severity.
     /// </summary>
     public IEnumerable<Issue> Infos => IssuesOf(IssueSeverity.Info);
 
-    /// <inheritdoc/>
-    public override string ToString() =>
-        HasIssues
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return HasIssues
             ? string.Join(Environment.NewLine, Issues)
             : "No issues.";
+    }
 
-    private IEnumerable<Issue> IssuesOf(IssueSeverity severity) =>
-        Issues.Where(i => i.Severity == severity);
+    private IEnumerable<Issue> IssuesOf(IssueSeverity severity)
+    {
+        return Issues.Where(i => i.Severity == severity);
+    }
 }

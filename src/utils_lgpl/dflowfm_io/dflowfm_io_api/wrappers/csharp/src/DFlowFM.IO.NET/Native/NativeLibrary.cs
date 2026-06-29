@@ -20,13 +20,13 @@ internal static class NativeLibrary
             }
 
             int error = Marshal.GetLastWin32Error();
-            var exception = new Win32Exception(error);
+            Win32Exception exception = new(error);
 
             throw new FileNotFoundException(
                 string.Join(Environment.NewLine,
-                            $"Could not find / load {dllFileName}",
-                            $"Error: {error} - {exception.Message}",
-                            $"File: {directory}\\{dllFileName}"));
+                    $"Could not find / load {dllFileName}",
+                    $"Error: {error} - {exception.Message}",
+                    $"File: {directory}\\{dllFileName}"));
         }
     }
 
@@ -53,7 +53,7 @@ internal static class NativeLibrary
 
         private static string GetCurrentDirectory()
         {
-            var buffer = new StringBuilder(4096);
+            StringBuilder buffer = new(4096);
             GetDllDirectory(4096, buffer);
             return buffer.ToString();
         }

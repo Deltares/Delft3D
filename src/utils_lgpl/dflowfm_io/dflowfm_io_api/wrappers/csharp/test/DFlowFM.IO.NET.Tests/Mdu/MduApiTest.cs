@@ -1,5 +1,6 @@
 ﻿using DFlowFM.IO.Mdu;
 using DFlowFM.IO.Reporting;
+
 using NUnit.Framework;
 
 namespace DFlowFM.IO.Tests.Mdu;
@@ -12,7 +13,7 @@ public class MduApiTest
     [Test]
     public void Dispose_TwiceDoesNotThrow()
     {
-        var api = new MduApi();
+        MduApi api = new();
 
         api.Dispose();
 
@@ -22,7 +23,7 @@ public class MduApiTest
     [Test]
     public void LoadFromFile_NonExistentPath_ThrowsInvalidOperationException()
     {
-        using var api = new MduApi();
+        using MduApi api = new();
 
         Assert.Throws<InvalidOperationException>(() => api.LoadFromFile("nonexistent_file.mdu"));
     }
@@ -30,7 +31,7 @@ public class MduApiTest
     [Test]
     public void LoadFromString_ValidContent_DoesNotThrow()
     {
-        using var api = new MduApi();
+        using MduApi api = new();
 
         Assert.DoesNotThrow(() => api.LoadFromString(MduTestFixtures.ValidMduContent));
     }
@@ -247,7 +248,7 @@ public class MduApiTest
     {
         using MduApi api = CreateWithValidContent();
 
-        var newPaths = new[] { "a.pol", "b.xyz", "c.nc" };
+        string[] newPaths = ["a.pol", "b.xyz", "c.nc"];
         api.SetPathList("geometry.thindamfile", newPaths);
 
         List<string> result = api.GetPathList("geometry.thindamfile").ToList();
@@ -286,7 +287,7 @@ public class MduApiTest
     {
         using MduApi api = CreateWithValidContent();
 
-        var newValues = new[] { 100.0, 200.0, 300.0 };
+        double[] newValues = [100.0, 200.0, 300.0];
         api.SetDoubleList("output.hisinterval", newValues);
 
         List<double> result = api.GetDoubleList("output.hisinterval").ToList();
@@ -407,7 +408,7 @@ public class MduApiTest
     {
         using MduApi api = CreateWithValidContent();
 
-        var newDateTime = new DateTime(2025, 6, 11, 8, 30, 22, DateTimeKind.Utc);
+        DateTime newDateTime = new(2025, 6, 11, 8, 30, 22, DateTimeKind.Utc);
         api.SetDateTime("time.refdate", newDateTime);
 
         Assert.That(api.GetDateTime("time.refdate"), Is.EqualTo(newDateTime));
@@ -418,7 +419,8 @@ public class MduApiTest
     {
         using MduApi api = CreateWithValidContent();
 
-        Assert.That(() => api.SetDateTime("nonexisting.key", DateTime.UtcNow), Throws.TypeOf<InvalidOperationException>());
+        Assert.That(() => api.SetDateTime("nonexisting.key", DateTime.UtcNow),
+            Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]
@@ -473,23 +475,29 @@ public class MduApiTest
     }
 
     private static MduApi CreateWithValidContent()
-        => CreateWithContent(MduTestFixtures.ValidMduContent);
+    {
+        return CreateWithContent(MduTestFixtures.ValidMduContent);
+    }
 
     private static MduApi CreateWithInvalidContent()
-        => CreateWithContent(MduTestFixtures.InvalidMduContent);
+    {
+        return CreateWithContent(MduTestFixtures.InvalidMduContent);
+    }
 
     private static MduApi CreateWithContent(string content)
     {
-        var api = new MduApi();
+        MduApi api = new();
         api.LoadFromString(content);
         return api;
     }
 
-    private static IEnumerable<string> NormalizeMduLines(string content) =>
-        content.Split('\n')
-               .Select(line => line.Contains('#') ? line[..line.IndexOf('#')] : line)
-               .Select(line => line.Trim())
-               .Select(line => FormatMduLine(line));
+    private static IEnumerable<string> NormalizeMduLines(string content)
+    {
+        return content.Split('\n')
+            .Select(line => line.Contains('#') ? line[..line.IndexOf('#')] : line)
+            .Select(line => line.Trim())
+            .Select(line => FormatMduLine(line));
+    }
 
     private static string FormatMduLine(string line)
     {

@@ -16,5 +16,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\DFlowFM.IO.NET\DFlowFM.IO.NET.csproj"/>
   </ItemGroup>
-  
+
 </Project>

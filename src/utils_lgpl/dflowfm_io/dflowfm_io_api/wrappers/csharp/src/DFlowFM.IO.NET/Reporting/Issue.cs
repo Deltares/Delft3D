@@ -20,13 +20,15 @@ public sealed class Issue(IssueSeverity severity, string message, int? lineNumbe
 
     /// <summary>
     /// Gets the line number in the source file where the issue was found,
-    /// or <see langword="null"/> if not available.
+    /// or <see langword="null" /> if not available.
     /// </summary>
     public int? LineNumber { get; } = lineNumber;
 
-    /// <inheritdoc/>
-    public override string ToString() =>
-        LineNumber is {} line
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return LineNumber is { } line
             ? $"[{Severity}] - Line {line}: {Message}"
             : $"[{Severity}] - {Message}";
+    }
 }
