@@ -18,8 +18,6 @@ namespace dflowfm_io
     /// whose type is determined by the @ref MduSchema.
     struct MduData
     {
-        int GetDummyValue() const;
-
         /// @brief Returns true if a value is stored for the given key.
         /// @param key Fully qualified property key in the form "section.property" (case-insensitive).
         bool hasValue(std::string_view key) const

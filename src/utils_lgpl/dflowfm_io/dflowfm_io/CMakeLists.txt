@@ -26,7 +26,6 @@ add_library(dflowfm_io STATIC
 
     src/IssueReport.cpp
     src/MduConverter.cpp
-    src/MduData.cpp
     src/MduDocument.cpp
     ${MDU_SCHEMA_GENERATED}
     src/MduValidator.cpp

@@ -155,11 +155,6 @@ class MduModel:
     def __init__(self, ref: _HandleRef):
         self._ref = ref
 
-    def get_dummy_value(self) -> int:
-        value = ctypes.c_int32()
-        _check_result(_lib.mdu_get_dummy_value(self._ref.handle, ctypes.byref(value)))
-        return value.value
-
     def get_int(self, key: str) -> int:
         value = ctypes.c_int32()
         _check_result(_lib.mdu_get_int(self._ref.handle, key.encode("utf-8"), ctypes.byref(value)))

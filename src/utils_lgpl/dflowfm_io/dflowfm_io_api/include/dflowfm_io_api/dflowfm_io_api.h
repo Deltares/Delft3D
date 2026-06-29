@@ -44,8 +44,6 @@ DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_load_from_string(mdu_handle_t hand
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_save_to_file(mdu_handle_t handle, const char* filename);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_save_to_string(mdu_handle_t handle, const char** data_out);
 
-DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_dummy_value(mdu_handle_t handle, int32_t* value_out);
-
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_int(mdu_handle_t handle, const char* key, int32_t* int_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_bool(mdu_handle_t handle, const char* key, dflowfm_io_bool_t* bool_out);
 DFLOWFM_IO_API_EXPORT dflowfm_io_result_t mdu_get_double(mdu_handle_t handle, const char* key, double* double_out);

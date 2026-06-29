@@ -157,17 +157,6 @@ dflowfm_io_result_t mdu_save_to_string(mdu_handle_t handle, const char** data_ou
     });
 }
 
-dflowfm_io_result_t mdu_get_dummy_value(mdu_handle_t handle, int32_t* value_out)
-{
-    ENSURE_ARGUMENT_NOT_NULL(handle);
-    ENSURE_ARGUMENT_NOT_NULL(value_out);
-
-    return exceptionToResult([&]()
-    {
-        *value_out = asDocument(handle)->GetData().GetDummyValue();
-    });
-}
-
 dflowfm_io_result_t mdu_get_int(mdu_handle_t handle, const char* key, int32_t* int_out)
 {
     ENSURE_ARGUMENT_NOT_NULL(handle);
