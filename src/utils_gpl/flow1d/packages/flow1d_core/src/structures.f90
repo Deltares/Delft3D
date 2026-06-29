@@ -468,10 +468,16 @@ end subroutine deallocstructure
    pure function GetStrucType_from_string(string) result(istrtype)
       use string_module, only: str_lower
 
-      character(len=*), value :: string
+      ! NOTE: a local copy is lowercased rather than declaring 'string' with the
+      ! VALUE attribute: nvfortran does not support VALUE on an assumed-length
+      ! (len=*) character dummy (NVFORTRAN-S-0155). intent(in) + local copy is
+      ! equivalent and portable across all compilers.
+      character(len=*), intent(in) :: string
       integer :: istrtype
-      call str_lower(string, 999)
-      select case(trim(string))
+      character(len=len(string)) :: local_string
+      local_string = string
+      call str_lower(local_string, 999)
+      select case(trim(local_string))
       case ('pump')
          istrtype = ST_PUMP
       case ('generalstructure')
