@@ -2292,7 +2292,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c401_katwijk_fixed" ref="dflowfm_nesting">
-        <path version="2026-06-29T09:15:37.635000">e02_dflowfm/f006_external_forcing/c401_katwijk_fixed</path>
+        <path version="2026-06-29T11:35:43.750000">e02_dflowfm/f006_external_forcing/c401_katwijk_fixed</path>
         <maxRunTime>6000.0</maxRunTime>
         <checks>
             <file name="c011_katwijkSmall_fixed_nchis_fixed/results/small_fixed_nchis_fixed_his.nc" type="netcdf">
@@ -2304,7 +2304,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c402_katwijk_kmx0" ref="dflowfm_nesting">
-        <path version="2026-06-29T09:31:39.297000">e02_dflowfm/f006_external_forcing/c402_katwijk_kmx0</path>
+        <path version="2026-06-29T11:59:54.953000">e02_dflowfm/f006_external_forcing/c402_katwijk_kmx0</path>
         <maxRunTime>6000.0</maxRunTime>
         <checks>
             <file name="c012_katwijkSmall_fixed_nchis_kmx0/results/small_fixed_nchis_kmx0_his.nc" type="netcdf">
@@ -2316,7 +2316,7 @@
         </checks>
     </testCase>
     <testCase name="e02_f006_c403_katwijk_sigma" ref="dflowfm_nesting">
-        <path version="2026-06-29T09:39:49.022000">e02_dflowfm/f006_external_forcing/c403_katwijk_sigma</path>
+        <path version="2026-06-29T12:09:55.211000">e02_dflowfm/f006_external_forcing/c403_katwijk_sigma</path>
         <maxRunTime>6000.0</maxRunTime>
         <checks>
             <file name="c013_katwijkSmall_fixed_nchis_sigma/results/small_fixed_nchis_sigma_his.nc" type="netcdf">
