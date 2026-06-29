@@ -490,6 +490,19 @@ module m_output_config
    integer, public, parameter :: id_nc_double = -56
 
    public t_output_quantity_config
+
+   !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for observation stations, since they do are not uniform.
+   type, public :: t_station_nc_dimensions
+      logical :: laydim = .false.
+      logical :: laydim_interface_center = .false.
+      logical :: laydim_interface_edge = .false.
+      logical :: nlyrdim = .false.
+      logical :: statdim = .false.
+      logical :: sedsusdim = .false.
+      logical :: sedtotdim = .false.
+      logical :: timedim = .false.
+   end type t_station_nc_dimensions
+
    !> Derived type for the input items, defining one entry [output] section of the MDU file.
    type t_output_quantity_config
       character(len=Idlen) :: key !< Key of the input item in the MDU file (e.g. wrimap_s1).
@@ -510,18 +523,6 @@ module m_output_config
       integer :: capacity = 0 !< Allocated size of config set (size = count + # of empty configs)
       type(t_output_quantity_config), allocatable, dimension(:) :: configs !< array of output quantity configs in config set
    end type t_output_quantity_config_set
-
-   !> Derived type that stores flags to include/exclude netcdf dimensions NetCDF variables for observation stations, since they do are not uniform.
-   type, public :: t_station_nc_dimensions
-      logical :: laydim = .false.
-      logical :: laydim_interface_center = .false.
-      logical :: laydim_interface_edge = .false.
-      logical :: nlyrdim = .false.
-      logical :: statdim = .false.
-      logical :: sedsusdim = .false.
-      logical :: sedtotdim = .false.
-      logical :: timedim = .false.
-   end type t_station_nc_dimensions
 
 contains
 
