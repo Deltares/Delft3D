@@ -4182,7 +4182,7 @@ contains
 
       if (any(operand == [EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, EC_OPERAND_MINIMUM, EC_OPERAND_MAXIMUM])) then
          if (any(target_values == ec_undef_hp)) then
-            call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// parse_ec_operand_enum_to_string(operand) //"' operation.")
+            call set_ec_message("ERROR: ec_converter::check_undefined_values_for_operand: Target Field contains undefined values, cannot perform '"// ec_operand_enum_to_string(operand) //"' operation.")
             return
          end if
       end if
@@ -4190,38 +4190,5 @@ contains
       istat = .true.
 
    end subroutine check_undefined_values_for_operand
-
-   !> Converts an operand enumeration to its corresponding string representation.
-   pure function parse_ec_operand_enum_to_string(operand_enum) result(operand_str)
-      ! Parameters
-      integer, intent(in) :: operand_enum !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, etc.)
-      character(len=:), allocatable :: operand_str !< string representation of the operand
-
-      select case (operand_enum)
-
-      case (EC_OPERAND_REPLACE)
-         operand_str = "override"
-
-      case (EC_OPERAND_REPLACE_IF_MISSING)
-         operand_str = "overrideIfMissing"
-
-      case (EC_OPERAND_ADD)
-         operand_str = "add"
-      
-      case (EC_OPERAND_MULTIPLY)
-         operand_str = "multiply"
-
-      case (EC_OPERAND_MINIMUM)
-         operand_str = "minimum"
-
-      case (EC_OPERAND_MAXIMUM)
-         operand_str = "maximum"
-
-      case default
-         operand_str = "unknown"
-
-      end select
-
-   end function parse_ec_operand_enum_to_string
 
 end module m_ec_converter
