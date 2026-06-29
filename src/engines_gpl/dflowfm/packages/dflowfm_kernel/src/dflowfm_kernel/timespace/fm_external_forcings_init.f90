@@ -39,6 +39,7 @@ contains
 
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
    module subroutine init_new(external_force_file_name, iresult)
+      use tree_data_types, only: tree_data_ptr
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
       use string_module, only: str_tolower
@@ -50,38 +51,99 @@ contains
       use m_alloc, only: realloc
       use unstruc_messages, only: threshold_abort
 
+      ! Parameters
       character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
 
+      ! Local variables
       integer :: initial_threshold_abort
       logical :: res
       type(tree_data), pointer :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
+      type(tree_data_ptr), dimension(:), allocatable :: bnd_ptrs !< array of pointers to extForceBnd-file's [boundary] blocks
       type(tree_data), pointer :: block_ptr
       integer :: istat
       character(len=:), allocatable :: group_name
       integer :: i
+      integer :: i_ext !< Index of the external forcing file in the list of external forcing files
+      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file.
       integer :: num_items_in_file
       character(len=INI_VALUE_LEN) :: fnam, base_dir
       integer :: ib, ibqh
       integer :: major
       character(len=:), allocatable :: file_name
+      character(len=256), dimension(:), allocatable :: extforce_list !< List of external forcing files
       integer, allocatable :: itpenzr(:), itpenur(:)
+      integer :: num_laterals !< Total number of laterals in all external forcing files
+      integer :: num_source_sinks !< Total number of source-sinks in all external forcing files
+      integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
+      integer :: num_bubblescreens !< Total number of bubblescreens in all external forcing files
 
+      ! Initialization
       iresult = DFM_NOERR
+      num_laterals = 0
+      num_source_sinks = 0
+      num_bubblescreens = 0
 
-      call validate_and_open_external_forcing_file(external_force_file_name, bnd_ptr, file_name, major, iresult)
+      extforce_list = [external_force_file_name]
+      allocate (bnd_ptrs(size(extforce_list)))
+
+      call init_registered_items()
+
+      ! First cycle, validate all external forcing files and add their contents to the bnd_ptrs list.
+      do i_ext = 1, size(extforce_list)
+
+         call validate_and_open_external_forcing_file(extforce_list(i_ext), bnd_ptrs(i_ext)%node_ptr, file_name, major, iresult)
+         if (iresult /= DFM_NOERR) then
+            cycle ! Skip this external forcing file if it could not be validated or opened.
+         end if
+
+      end do
+
+      ! Second cycle, count all bubblescreen blocks in all external forcing files to allocate the bubblescreens array.
+      do i_ext = 1, size(extforce_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+
+         if (.not. associated(bnd_ptr)) then
+            cycle ! Skip this external forcing file if it could not be validated or opened.
+         end if
+
+         num_bubblescreens = num_bubblescreens + tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
+      end do
+
+      call allocate_bubblescreens_array(num_bubblescreens)
+
+      ! Third cycle, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
+      i_bubblescreen = 0
+      do i_ext = 1, size(extforce_list)
+         bnd_ptr => bnd_ptrs(i_ext)%node_ptr
+
+         if (.not. associated(bnd_ptr)) then
+            cycle ! Skip this external forcing file if it could not be validated or opened.
+         end if
+
+         num_laterals = num_laterals + tree_count_nodes_byname(bnd_ptr, 'lateral')
+         num_source_sinks = num_source_sinks + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
+
+         call initialize_bubblescreens(bnd_ptr, base_dir, file_name, i_bubblescreen, bubblescreen_source_sinks)
+         num_source_sinks = num_source_sinks + bubblescreen_source_sinks
+      end do
+
+      call allocate_laterals_and_source_sinks(num_laterals, num_source_sinks)
+
+
+      ! ===== old init_new() procedure =====
+
 
       res = .true.
 
-      call init_registered_items()
+      bnd_ptr => bnd_ptrs(1)%node_ptr
+      file_name = trim(extforce_list(1))
 
       call split_filename(file_name, base_dir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
 
       num_items_in_file = tree_num_nodes(bnd_ptr)
 
       call build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
-
-      call allocate_laterals_and_source_sinks(bnd_ptr, file_name, base_dir)
 
       res = res .and. add_bubblescreen_source_sinks()
 
@@ -142,6 +204,28 @@ contains
       end if
 
    end subroutine init_new
+
+   !> Allocates the bubblescreens and bubblescreen_air_discharge arrays based on the number of bubblescreens in all external forcing files.
+   subroutine allocate_bubblescreens_array(num_bubblescreens)
+      use fm_external_forcings_data, only: bubblescreens, bubblescreen_air_discharge
+
+      ! Parameters
+      integer, intent(in) :: num_bubblescreens !< Total number of bubblescreens in all external forcing files
+
+      ! Deallocate bubblescreens and bubblescreen_air_discharge arrays if they are already allocated
+      if (allocated(bubblescreens)) then
+         deallocate (bubblescreens)
+      end if
+
+      if (allocated(bubblescreen_air_discharge)) then
+         deallocate (bubblescreen_air_discharge)
+      end if
+
+      ! Allocate the bubblescreens and bubblescreen_air_discharge arrays based on the number of bubblescreens
+      allocate (bubblescreens(num_bubblescreens))
+      allocate (bubblescreen_air_discharge(num_bubblescreens))
+
+   end subroutine allocate_bubblescreens_array
 
    !> Validates the external forcing file and opens it, returning a pointer to the tree of boundary blocks.
    subroutine validate_and_open_external_forcing_file(external_force_file_name, bnd_ptr, file_name, major, iresult)
@@ -246,25 +330,18 @@ contains
 
    end subroutine build_itpenzr_and_itpenur
 
-   !> Allocates lateral and source-sink arrays based on the number of lateral and source-sink blocks in the external forcing file.
-   subroutine allocate_laterals_and_source_sinks(bnd_ptr, file_name, base_dir)
-      use tree_structures, only: tree_data, tree_count_nodes_byname
+   !> Allocates lateral and source-sink arrays based on the number of lateral and source-sink blocks in all external forcing files.
+   subroutine allocate_laterals_and_source_sinks(num_laterals, num_source_sinks)
       use m_laterals, only: balat, qplat, lat_ids, n1latsg, n2latsg
       use m_source_sink, only: source_sinks
       use m_alloc, only: realloc
       use m_flow, only: kmx
 
       ! Parameters
-      type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
-      character(len=*), intent(in) :: file_name !< Name of the ext file, only used in warning messages, actual data is read from block_ptr
-      character(len=*), intent(in) :: base_dir !< Base directory of the ext file
-
-      ! Local variables
-      integer :: num_laterals !< Number of lateral blocks in the external forcing file
-      integer :: num_source_sinks !< Number of source-sink blocks in the external forcing file
+      integer, intent(in) :: num_laterals !< Number of lateral blocks in all external forcing files
+      integer, intent(in) :: num_source_sinks !< Number of source-sink blocks in all external forcing files
 
       ! Allocate lateral provider array now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      num_laterals = tree_count_nodes_byname(bnd_ptr, 'lateral')
       if (num_laterals > 0) then
          call realloc(balat, num_laterals, keepExisting=.false., fill=0.0_dp)
          call realloc(qplat, [max(1, kmx), num_laterals], keepExisting=.false., fill=0.0_dp)
@@ -274,10 +351,6 @@ contains
       end if
 
       ! Allocate source-sink related arrays now, just once, because otherwise realloc's in the loop would destroy target arrays in ecInstance.
-      call initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_source_sinks)
-
-      num_source_sinks = num_source_sinks + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
-
       if (num_source_sinks > 0) then
          call source_sinks%initialize(num_source_sinks)
       end if
@@ -1487,7 +1560,7 @@ contains
    end function init_sourcesink_forcings
 
    !> Read bubblescreen blocs from the extfile, read its polyline (file or inline coordinates), find flowcells crossed by the polyline and calculate the resulting bubblescreen area.
-   subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, num_bubblescreen_source_sinks)
+   subroutine initialize_bubblescreens(bnd_ptr, base_dir, file_name, i_bubblescreen, num_bubblescreen_source_sinks)
       use fm_external_forcings_data, only: t_Bubblescreen, bubblescreens
       use m_source_sink, only: source_sinks
       use fm_external_forcings_utils, only: read_bubblescreen_forcing_attributes
@@ -1511,13 +1584,12 @@ contains
       type(tree_data), pointer, intent(in) :: bnd_ptr !< tree of extForceBnd-file's [boundary] blocks
       character(len=*), intent(in) :: base_dir !< Base directory of the ext file
       character(len=*), intent(in) :: file_name !< Name of the ext file, only used in error messages, actual data is read from block_ptr
+      integer, intent(inout) :: i_bubblescreen !< Loop index for bubblescreens within the .ext file. 
       integer, intent(out) :: num_bubblescreen_source_sinks !< Number of source/sinks needed for all bubblescreens, used for preallocation in EC module
 
       ! Local variables
       logical :: is_successful
       integer :: i !< Loop index
-      integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file
-      integer :: num_bubblescreens
       integer :: num_items_in_file
       integer :: num_columns
       real(kind=dp), dimension(:), allocatable :: polygon_x_coordinates !< x-coordinates of bubblescreen
@@ -1533,20 +1605,8 @@ contains
       integer, dimension(:), allocatable :: bubblescreen_cells
 
       ! Initialization
-      i_bubblescreen = 0
       num_bubblescreen_source_sinks = 0
       num_items_in_file = tree_num_nodes(bnd_ptr)
-
-      if (allocated(bubblescreens)) then
-         deallocate (bubblescreens)
-      end if
-      if (allocated(bubblescreen_air_discharge)) then
-         deallocate (bubblescreen_air_discharge)
-      end if
-      ! Count the number of [bubblescreen] blocks and allocate the bubblescreens and bubblescreen_air_discharge arrays
-      num_bubblescreens = tree_count_nodes_byname(bnd_ptr, 'bubblescreen')
-      allocate (bubblescreens(num_bubblescreens))
-      allocate (bubblescreen_air_discharge(num_bubblescreens))
 
       ! Initialize cache
       call init_cell_geom_as_polylines()
