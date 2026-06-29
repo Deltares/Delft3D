@@ -255,185 +255,189 @@ contains
         if (first) then
             first = .false.
 
-            process_routine = [ &
-                    process_routine_info('DDEPTH', DDEPTH), &
-                            process_routine_info('DSURF', DSURF), &
-                            process_routine_info('TOTDEP', TOTDEP), &
-                            process_routine_info('EMERSI', EMERSI), &
-                            process_routine_info('METEO', METEO), &
-                            process_routine_info('HEATFL', HEATFL), &
-                            process_routine_info('AVERAD', AVERAD), &
-                            process_routine_info('DAYRAD', DAYRAD), &
-                            process_routine_info('TEMPER', TEMPER), &
-                            process_routine_info('VELOC', VELOC), &
-                            process_routine_info('RESTIM', RESTIM), &
-                            process_routine_info('STOX3D', STOX3D), &
-                            process_routine_info('HDISP', HDISP), &
-                            process_routine_info('HDISPV', HDISPV), &
-                            process_routine_info('WATAGE', WATAGE), &
-                            process_routine_info('INTPOL', INTPOL), &
-                            process_routine_info('CALCHZ', CALCHZ), &
-                            process_routine_info('CALWAV', CALWAV), &
-                            process_routine_info('CALTAU', CALTAU), &
-                            process_routine_info('SIMPH', SIMPH), &
-                            process_routine_info('SPCARB', SPCARB), &
-                            process_routine_info('EXTINA', EXTINA), &
-                            process_routine_info('EXTINC', EXTINC), &
-                            process_routine_info('CLCRAD', CLCRAD), &
-                            process_routine_info('DAYL', DAYL), &
-                            process_routine_info('DEPAVE', DEPAVE), &
-                            process_routine_info('VTRANS', VTRANS), &
-                            process_routine_info('D40BLO', D40BLO), &
-                            process_routine_info('PHCOMB', PHCOMB), &
-                            process_routine_info('MAKPOC', MAKPOC), &
-                            process_routine_info('PHCOMP', PHCOMP), &
-                            process_routine_info('SEDCOM', SEDCOM), &
-                            process_routine_info('WKCOMP', WKCOMP), &
-                            process_routine_info('DMVOL', DMVOL), &
-                            process_routine_info('BACMRT', BACMRT), &
-                            process_routine_info('SATCO2', SATCO2), &
-                            process_routine_info('REAR', REAR), &
-                            process_routine_info('ADSPO4', ADSPO4), &
-                            process_routine_info('DENSED', DENSED), &
-                            process_routine_info('DENWAT', DENWAT), &
-                            process_routine_info('NITRIF', NITRIF), &
-                            process_routine_info('SATOXY', SATOXY), &
-                            process_routine_info('VAROXY', VAROXY), &
-                            process_routine_info('BOTMIN', BOTMIN), &
-                            process_routine_info('BODCOD', BODCOD), &
-                            process_routine_info('DECBOD', DECBOD), &
-                            process_routine_info('DECPC5', DECPC5), &
-                            process_routine_info('VIVIAN', VIVIAN), &
-                            process_routine_info('DISSI', DISSI), &
-                            process_routine_info('SEDOX', SEDOX), &
-                            process_routine_info('NLALG', NLALG), &
-                            process_routine_info('RDBALG', RDBALG), &
-							process_routine_info('DYNAMO', DYNAMO), &
-                            process_routine_info('SDPPRO', SDPPRO), &
-							process_routine_info('DYNPRO', DYNPRO), &
-                            process_routine_info('NRALGS', NRALGS), &
-                            process_routine_info('OXYMIN', OXYMIN), &
-                            process_routine_info('CSELAC', CSELAC), &
-                            process_routine_info('EBUCH4', EBUCH4), &
-                            process_routine_info('SATCH4', SATCH4), &
-                            process_routine_info('SULFID', SULFID), &
-                            process_routine_info('SULFOX', SULFOX), &
-                            process_routine_info('SULFPR', SULFPR), &
-                            process_routine_info('METHOX', METHOX), &
-                            process_routine_info('SPECFE', SPECFE), &
-                            process_routine_info('IRONOX', IRONOX), &
-                            process_routine_info('SULPHO', SULPHO), &
-                            process_routine_info('IRONRE', IRONRE), &
-                            process_routine_info('PRIRON', PRIRON), &
-                            process_routine_info('CALSED', CALSED), &
-                            process_routine_info('SEDCAR', SEDCAR), &
-                            process_routine_info('SEDNU2', SEDNU2), &
-                            process_routine_info('SEDSOD', SEDSOD), &
-                            process_routine_info('SSEDPH', SSEDPH), &
-                            process_routine_info('SOMSED', SOMSED), &
-                            process_routine_info('SEDAAP', SEDAAP), &
-                            process_routine_info('RESDM', RESDM), &
-                            process_routine_info('BURIAL', BURIAL), &
-                            process_routine_info('DIGGIN', DIGGIN), &
-                            process_routine_info('ADVTRA', ADVTRA), &
-                            process_routine_info('DSPTRA', DSPTRA), &
-                            process_routine_info('RFPART', RFPART), &
-                            process_routine_info('PARTMP', PARTMP), &
-                            process_routine_info('TRASE2', TRASE2), &
-                            process_routine_info('ULFIX', ULFIX), &
-                            process_routine_info('CONSBL', CONSBL), &
-                            process_routine_info('SWOXY', SWOXY), &
-                            process_routine_info('TRCOEF', TRCOEF), &
-                            process_routine_info('VERVLU', VERVLU), &
-                            process_routine_info('DEGMP', DEGMP), &
-                            process_routine_info('SEDHM', SEDHM), &
-                            process_routine_info('SEDOMV', SEDOMV), &
-                            process_routine_info('ATMDEP', ATMDEP), &
-                            process_routine_info('NH3FRE', NH3FRE), &
-                            process_routine_info('POSOXY', POSOXY), &
-                            process_routine_info('SECCHI', SECCHI), &
-                            process_routine_info('PTEWOR', PTEWOR), &
-                            process_routine_info('STREAR', STREAR), &
-                            process_routine_info('TRSOXY', TRSOXY), &
-                            process_routine_info('APATIT', APATIT), &
-                            process_routine_info('HARVES', HARVES), &
-                            process_routine_info('VEG2DN', VEG2DN), &
-                            process_routine_info('VBSTAT', VBSTAT), &
-                            process_routine_info('VBGRO', VBGRO), &
-                            process_routine_info('VBMRT', VBMRT), &
-                            process_routine_info('VEG3DX', VEG3DX), &
-                            process_routine_info('VBUPT', VBUPT), &
-                            process_routine_info('VEG3DU', VEG3DU), &
-                            process_routine_info('SALCHL', SALCHL), &
-                            process_routine_info('DECDET', DECDET), &
-                            process_routine_info('S12TRA', S12TRA), &
-                            process_routine_info('RESANT', RESANT), &
-                            process_routine_info('STADAY', STADAY), &
-                            process_routine_info('STADPT', STADPT), &
-                            process_routine_info('STADSC', STADSC), &
-                            process_routine_info('STAMEA', STAMEA), &
-                            process_routine_info('STADEV', STADEV), &
-                            process_routine_info('STAGEO', STAGEO), &
-                            process_routine_info('STAPRC', STAPRC), &
-                            process_routine_info('STAQTL', STAQTL), &
-                            process_routine_info('SUMFRC', SUMFRC), &
-                            process_routine_info('FLXFRC', FLXFRC), &
-                            process_routine_info('PHCARB', PHCARB), &
-                            process_routine_info('HDISPA', HDISPA), &
-                            process_routine_info('MAXMAC', MAXMAC), &
-                            process_routine_info('COVMAC', COVMAC), &
-                            process_routine_info('MACDIS', MACDIS), &
-                            process_routine_info('RADMAC', RADMAC), &
-                            process_routine_info('MACNUT', MACNUT), &
-                            process_routine_info('MACROP', MACROP), &
-                            process_routine_info('MAC3DU', MAC3DU), &
-                            process_routine_info('GRZMAC', GRZMAC), &
-                            process_routine_info('NPPS12', NPPS12), &
-                            process_routine_info('DEBGRZ', DEBGRZ), &
-                            process_routine_info('FLOCEQ', FLOCEQ), &
-                            process_routine_info('DREDGE', dredge_process), &
-                            process_routine_info('RESBUF', RESBUF), &
-                            process_routine_info('SEDIM ', SEDIM), &
-                            process_routine_info('S12TIM', S12TIM), &
-                            process_routine_info('REFL  ', REFL), &
-                            process_routine_info('ATTOUT', ATTOUT), &
-                            process_routine_info('CASCAD', CASCAD), &
-                            process_routine_info('EFFBLO', EFFBLO), &
-                            process_routine_info('EFFAVE', EFFAVE), &
-                            process_routine_info('DECTRA', DECTRA), &
-                            process_routine_info('ESPACE', ESPACE), &
-                            process_routine_info('CALTEM', CALTEM), &
-                            process_routine_info('PLASTC', PLASTC), &
-                            process_routine_info('WLCWOC', WLCWOC), &
-                            process_routine_info('HDISS', HDISS), &
-                            process_routine_info('TMODE', TMODE), &
-                            process_routine_info('DLWQG2', DLWQG2), &
-                            process_routine_info('GEMMPB', GEMMPB), &
-                            process_routine_info('MPBNUT', MPBNUT), &
-                            process_routine_info('MPBTMP', MPBTMP), &
-                            process_routine_info('MPBLLM', MPBLLM), &
-                            process_routine_info('MPBNLM', MPBNLM), &
-                            process_routine_info('VBXS12', VBXS12), &
-                            process_routine_info('VBXSUM', VBXSUM), &
-                            process_routine_info('PROPSG', PROPSG), &
-                            process_routine_info('PRPAGG', PRPAGG), &
-                            process_routine_info('HETAGG', HETAGG), &
-                            process_routine_info('SEDTYR', SEDTYR), &
-                            process_routine_info('SEDAGG', SEDAGG), &
-                            process_routine_info('SUMTYR', SUMTYR), &
-                            process_routine_info('PROPFD', PROPFD), &
-                            process_routine_info('PRODIA', PRODIA), &
-                            process_routine_info('PROGRE', PROGRE), &
-                            process_routine_info('PRONCM', PRONCM), &
-                            process_routine_info('PROSED', PROSED), &
-                            process_routine_info('PROTCM', PROTCM), &
-                            process_routine_info('PROZOO', PROZOO), &
-                            process_routine_info('DRADIO', DRADIO), &
-                            process_routine_info('PHPROT', PHPROT), &
-                            process_routine_info('FLOCSD', FLOCSD), &
-                            process_routine_info('AGECAR', AGECART), &
-                            process_routine_info( 'PRTMRT', protist_mortality_salinity) &
-                    ]
+            ! NOTE: build the registration table element-by-element with explicit
+            ! procedure-pointer assignment. nvfortran (26.3) mis-parses a bare
+            ! procedure name used as a structure-constructor value for a
+            ! procedure-pointer component (NVFORTRAN-S-0084), so process_routine_info
+            ! array constructors cannot be used here. This form is compiler-agnostic.
+            allocate(process_routine(177))
+            process_routine(  1)%pronam = 'DDEPTH' ; process_routine(  1)%procpnt => DDEPTH
+            process_routine(  2)%pronam = 'DSURF'  ; process_routine(  2)%procpnt => DSURF
+            process_routine(  3)%pronam = 'TOTDEP' ; process_routine(  3)%procpnt => TOTDEP
+            process_routine(  4)%pronam = 'EMERSI' ; process_routine(  4)%procpnt => EMERSI
+            process_routine(  5)%pronam = 'METEO'  ; process_routine(  5)%procpnt => METEO
+            process_routine(  6)%pronam = 'HEATFL' ; process_routine(  6)%procpnt => HEATFL
+            process_routine(  7)%pronam = 'AVERAD' ; process_routine(  7)%procpnt => AVERAD
+            process_routine(  8)%pronam = 'DAYRAD' ; process_routine(  8)%procpnt => DAYRAD
+            process_routine(  9)%pronam = 'TEMPER' ; process_routine(  9)%procpnt => TEMPER
+            process_routine( 10)%pronam = 'VELOC'  ; process_routine( 10)%procpnt => VELOC
+            process_routine( 11)%pronam = 'RESTIM' ; process_routine( 11)%procpnt => RESTIM
+            process_routine( 12)%pronam = 'STOX3D' ; process_routine( 12)%procpnt => STOX3D
+            process_routine( 13)%pronam = 'HDISP'  ; process_routine( 13)%procpnt => HDISP
+            process_routine( 14)%pronam = 'HDISPV' ; process_routine( 14)%procpnt => HDISPV
+            process_routine( 15)%pronam = 'WATAGE' ; process_routine( 15)%procpnt => WATAGE
+            process_routine( 16)%pronam = 'INTPOL' ; process_routine( 16)%procpnt => INTPOL
+            process_routine( 17)%pronam = 'CALCHZ' ; process_routine( 17)%procpnt => CALCHZ
+            process_routine( 18)%pronam = 'CALWAV' ; process_routine( 18)%procpnt => CALWAV
+            process_routine( 19)%pronam = 'CALTAU' ; process_routine( 19)%procpnt => CALTAU
+            process_routine( 20)%pronam = 'SIMPH'  ; process_routine( 20)%procpnt => SIMPH
+            process_routine( 21)%pronam = 'SPCARB' ; process_routine( 21)%procpnt => SPCARB
+            process_routine( 22)%pronam = 'EXTINA' ; process_routine( 22)%procpnt => EXTINA
+            process_routine( 23)%pronam = 'EXTINC' ; process_routine( 23)%procpnt => EXTINC
+            process_routine( 24)%pronam = 'CLCRAD' ; process_routine( 24)%procpnt => CLCRAD
+            process_routine( 25)%pronam = 'DAYL'   ; process_routine( 25)%procpnt => DAYL
+            process_routine( 26)%pronam = 'DEPAVE' ; process_routine( 26)%procpnt => DEPAVE
+            process_routine( 27)%pronam = 'VTRANS' ; process_routine( 27)%procpnt => VTRANS
+            process_routine( 28)%pronam = 'D40BLO' ; process_routine( 28)%procpnt => D40BLO
+            process_routine( 29)%pronam = 'PHCOMB' ; process_routine( 29)%procpnt => PHCOMB
+            process_routine( 30)%pronam = 'MAKPOC' ; process_routine( 30)%procpnt => MAKPOC
+            process_routine( 31)%pronam = 'PHCOMP' ; process_routine( 31)%procpnt => PHCOMP
+            process_routine( 32)%pronam = 'SEDCOM' ; process_routine( 32)%procpnt => SEDCOM
+            process_routine( 33)%pronam = 'WKCOMP' ; process_routine( 33)%procpnt => WKCOMP
+            process_routine( 34)%pronam = 'DMVOL'  ; process_routine( 34)%procpnt => DMVOL
+            process_routine( 35)%pronam = 'BACMRT' ; process_routine( 35)%procpnt => BACMRT
+            process_routine( 36)%pronam = 'SATCO2' ; process_routine( 36)%procpnt => SATCO2
+            process_routine( 37)%pronam = 'REAR'   ; process_routine( 37)%procpnt => REAR
+            process_routine( 38)%pronam = 'ADSPO4' ; process_routine( 38)%procpnt => ADSPO4
+            process_routine( 39)%pronam = 'DENSED' ; process_routine( 39)%procpnt => DENSED
+            process_routine( 40)%pronam = 'DENWAT' ; process_routine( 40)%procpnt => DENWAT
+            process_routine( 41)%pronam = 'NITRIF' ; process_routine( 41)%procpnt => NITRIF
+            process_routine( 42)%pronam = 'SATOXY' ; process_routine( 42)%procpnt => SATOXY
+            process_routine( 43)%pronam = 'VAROXY' ; process_routine( 43)%procpnt => VAROXY
+            process_routine( 44)%pronam = 'BOTMIN' ; process_routine( 44)%procpnt => BOTMIN
+            process_routine( 45)%pronam = 'BODCOD' ; process_routine( 45)%procpnt => BODCOD
+            process_routine( 46)%pronam = 'DECBOD' ; process_routine( 46)%procpnt => DECBOD
+            process_routine( 47)%pronam = 'DECPC5' ; process_routine( 47)%procpnt => DECPC5
+            process_routine( 48)%pronam = 'VIVIAN' ; process_routine( 48)%procpnt => VIVIAN
+            process_routine( 49)%pronam = 'DISSI'  ; process_routine( 49)%procpnt => DISSI
+            process_routine( 50)%pronam = 'SEDOX'  ; process_routine( 50)%procpnt => SEDOX
+            process_routine( 51)%pronam = 'NLALG'  ; process_routine( 51)%procpnt => NLALG
+            process_routine( 52)%pronam = 'RDBALG' ; process_routine( 52)%procpnt => RDBALG
+            process_routine( 53)%pronam = 'DYNAMO' ; process_routine( 53)%procpnt => DYNAMO
+            process_routine( 54)%pronam = 'SDPPRO' ; process_routine( 54)%procpnt => SDPPRO
+            process_routine( 55)%pronam = 'DYNPRO' ; process_routine( 55)%procpnt => DYNPRO
+            process_routine( 56)%pronam = 'NRALGS' ; process_routine( 56)%procpnt => NRALGS
+            process_routine( 57)%pronam = 'OXYMIN' ; process_routine( 57)%procpnt => OXYMIN
+            process_routine( 58)%pronam = 'CSELAC' ; process_routine( 58)%procpnt => CSELAC
+            process_routine( 59)%pronam = 'EBUCH4' ; process_routine( 59)%procpnt => EBUCH4
+            process_routine( 60)%pronam = 'SATCH4' ; process_routine( 60)%procpnt => SATCH4
+            process_routine( 61)%pronam = 'SULFID' ; process_routine( 61)%procpnt => SULFID
+            process_routine( 62)%pronam = 'SULFOX' ; process_routine( 62)%procpnt => SULFOX
+            process_routine( 63)%pronam = 'SULFPR' ; process_routine( 63)%procpnt => SULFPR
+            process_routine( 64)%pronam = 'METHOX' ; process_routine( 64)%procpnt => METHOX
+            process_routine( 65)%pronam = 'SPECFE' ; process_routine( 65)%procpnt => SPECFE
+            process_routine( 66)%pronam = 'IRONOX' ; process_routine( 66)%procpnt => IRONOX
+            process_routine( 67)%pronam = 'SULPHO' ; process_routine( 67)%procpnt => SULPHO
+            process_routine( 68)%pronam = 'IRONRE' ; process_routine( 68)%procpnt => IRONRE
+            process_routine( 69)%pronam = 'PRIRON' ; process_routine( 69)%procpnt => PRIRON
+            process_routine( 70)%pronam = 'CALSED' ; process_routine( 70)%procpnt => CALSED
+            process_routine( 71)%pronam = 'SEDCAR' ; process_routine( 71)%procpnt => SEDCAR
+            process_routine( 72)%pronam = 'SEDNU2' ; process_routine( 72)%procpnt => SEDNU2
+            process_routine( 73)%pronam = 'SEDSOD' ; process_routine( 73)%procpnt => SEDSOD
+            process_routine( 74)%pronam = 'SSEDPH' ; process_routine( 74)%procpnt => SSEDPH
+            process_routine( 75)%pronam = 'SOMSED' ; process_routine( 75)%procpnt => SOMSED
+            process_routine( 76)%pronam = 'SEDAAP' ; process_routine( 76)%procpnt => SEDAAP
+            process_routine( 77)%pronam = 'RESDM'  ; process_routine( 77)%procpnt => RESDM
+            process_routine( 78)%pronam = 'BURIAL' ; process_routine( 78)%procpnt => BURIAL
+            process_routine( 79)%pronam = 'DIGGIN' ; process_routine( 79)%procpnt => DIGGIN
+            process_routine( 80)%pronam = 'ADVTRA' ; process_routine( 80)%procpnt => ADVTRA
+            process_routine( 81)%pronam = 'DSPTRA' ; process_routine( 81)%procpnt => DSPTRA
+            process_routine( 82)%pronam = 'RFPART' ; process_routine( 82)%procpnt => RFPART
+            process_routine( 83)%pronam = 'PARTMP' ; process_routine( 83)%procpnt => PARTMP
+            process_routine( 84)%pronam = 'TRASE2' ; process_routine( 84)%procpnt => TRASE2
+            process_routine( 85)%pronam = 'ULFIX'  ; process_routine( 85)%procpnt => ULFIX
+            process_routine( 86)%pronam = 'CONSBL' ; process_routine( 86)%procpnt => CONSBL
+            process_routine( 87)%pronam = 'SWOXY'  ; process_routine( 87)%procpnt => SWOXY
+            process_routine( 88)%pronam = 'TRCOEF' ; process_routine( 88)%procpnt => TRCOEF
+            process_routine( 89)%pronam = 'VERVLU' ; process_routine( 89)%procpnt => VERVLU
+            process_routine( 90)%pronam = 'DEGMP'  ; process_routine( 90)%procpnt => DEGMP
+            process_routine( 91)%pronam = 'SEDHM'  ; process_routine( 91)%procpnt => SEDHM
+            process_routine( 92)%pronam = 'SEDOMV' ; process_routine( 92)%procpnt => SEDOMV
+            process_routine( 93)%pronam = 'ATMDEP' ; process_routine( 93)%procpnt => ATMDEP
+            process_routine( 94)%pronam = 'NH3FRE' ; process_routine( 94)%procpnt => NH3FRE
+            process_routine( 95)%pronam = 'POSOXY' ; process_routine( 95)%procpnt => POSOXY
+            process_routine( 96)%pronam = 'SECCHI' ; process_routine( 96)%procpnt => SECCHI
+            process_routine( 97)%pronam = 'PTEWOR' ; process_routine( 97)%procpnt => PTEWOR
+            process_routine( 98)%pronam = 'STREAR' ; process_routine( 98)%procpnt => STREAR
+            process_routine( 99)%pronam = 'TRSOXY' ; process_routine( 99)%procpnt => TRSOXY
+            process_routine(100)%pronam = 'APATIT' ; process_routine(100)%procpnt => APATIT
+            process_routine(101)%pronam = 'HARVES' ; process_routine(101)%procpnt => HARVES
+            process_routine(102)%pronam = 'VEG2DN' ; process_routine(102)%procpnt => VEG2DN
+            process_routine(103)%pronam = 'VBSTAT' ; process_routine(103)%procpnt => VBSTAT
+            process_routine(104)%pronam = 'VBGRO'  ; process_routine(104)%procpnt => VBGRO
+            process_routine(105)%pronam = 'VBMRT'  ; process_routine(105)%procpnt => VBMRT
+            process_routine(106)%pronam = 'VEG3DX' ; process_routine(106)%procpnt => VEG3DX
+            process_routine(107)%pronam = 'VBUPT'  ; process_routine(107)%procpnt => VBUPT
+            process_routine(108)%pronam = 'VEG3DU' ; process_routine(108)%procpnt => VEG3DU
+            process_routine(109)%pronam = 'SALCHL' ; process_routine(109)%procpnt => SALCHL
+            process_routine(110)%pronam = 'DECDET' ; process_routine(110)%procpnt => DECDET
+            process_routine(111)%pronam = 'S12TRA' ; process_routine(111)%procpnt => S12TRA
+            process_routine(112)%pronam = 'RESANT' ; process_routine(112)%procpnt => RESANT
+            process_routine(113)%pronam = 'STADAY' ; process_routine(113)%procpnt => STADAY
+            process_routine(114)%pronam = 'STADPT' ; process_routine(114)%procpnt => STADPT
+            process_routine(115)%pronam = 'STADSC' ; process_routine(115)%procpnt => STADSC
+            process_routine(116)%pronam = 'STAMEA' ; process_routine(116)%procpnt => STAMEA
+            process_routine(117)%pronam = 'STADEV' ; process_routine(117)%procpnt => STADEV
+            process_routine(118)%pronam = 'STAGEO' ; process_routine(118)%procpnt => STAGEO
+            process_routine(119)%pronam = 'STAPRC' ; process_routine(119)%procpnt => STAPRC
+            process_routine(120)%pronam = 'STAQTL' ; process_routine(120)%procpnt => STAQTL
+            process_routine(121)%pronam = 'SUMFRC' ; process_routine(121)%procpnt => SUMFRC
+            process_routine(122)%pronam = 'FLXFRC' ; process_routine(122)%procpnt => FLXFRC
+            process_routine(123)%pronam = 'PHCARB' ; process_routine(123)%procpnt => PHCARB
+            process_routine(124)%pronam = 'HDISPA' ; process_routine(124)%procpnt => HDISPA
+            process_routine(125)%pronam = 'MAXMAC' ; process_routine(125)%procpnt => MAXMAC
+            process_routine(126)%pronam = 'COVMAC' ; process_routine(126)%procpnt => COVMAC
+            process_routine(127)%pronam = 'MACDIS' ; process_routine(127)%procpnt => MACDIS
+            process_routine(128)%pronam = 'RADMAC' ; process_routine(128)%procpnt => RADMAC
+            process_routine(129)%pronam = 'MACNUT' ; process_routine(129)%procpnt => MACNUT
+            process_routine(130)%pronam = 'MACROP' ; process_routine(130)%procpnt => MACROP
+            process_routine(131)%pronam = 'MAC3DU' ; process_routine(131)%procpnt => MAC3DU
+            process_routine(132)%pronam = 'GRZMAC' ; process_routine(132)%procpnt => GRZMAC
+            process_routine(133)%pronam = 'NPPS12' ; process_routine(133)%procpnt => NPPS12
+            process_routine(134)%pronam = 'DEBGRZ' ; process_routine(134)%procpnt => DEBGRZ
+            process_routine(135)%pronam = 'FLOCEQ' ; process_routine(135)%procpnt => FLOCEQ
+            process_routine(136)%pronam = 'DREDGE' ; process_routine(136)%procpnt => dredge_process
+            process_routine(137)%pronam = 'RESBUF' ; process_routine(137)%procpnt => RESBUF
+            process_routine(138)%pronam = 'SEDIM ' ; process_routine(138)%procpnt => SEDIM
+            process_routine(139)%pronam = 'S12TIM' ; process_routine(139)%procpnt => S12TIM
+            process_routine(140)%pronam = 'REFL  ' ; process_routine(140)%procpnt => REFL
+            process_routine(141)%pronam = 'ATTOUT' ; process_routine(141)%procpnt => ATTOUT
+            process_routine(142)%pronam = 'CASCAD' ; process_routine(142)%procpnt => CASCAD
+            process_routine(143)%pronam = 'EFFBLO' ; process_routine(143)%procpnt => EFFBLO
+            process_routine(144)%pronam = 'EFFAVE' ; process_routine(144)%procpnt => EFFAVE
+            process_routine(145)%pronam = 'DECTRA' ; process_routine(145)%procpnt => DECTRA
+            process_routine(146)%pronam = 'ESPACE' ; process_routine(146)%procpnt => ESPACE
+            process_routine(147)%pronam = 'CALTEM' ; process_routine(147)%procpnt => CALTEM
+            process_routine(148)%pronam = 'PLASTC' ; process_routine(148)%procpnt => PLASTC
+            process_routine(149)%pronam = 'WLCWOC' ; process_routine(149)%procpnt => WLCWOC
+            process_routine(150)%pronam = 'HDISS'  ; process_routine(150)%procpnt => HDISS
+            process_routine(151)%pronam = 'TMODE'  ; process_routine(151)%procpnt => TMODE
+            process_routine(152)%pronam = 'DLWQG2' ; process_routine(152)%procpnt => DLWQG2
+            process_routine(153)%pronam = 'GEMMPB' ; process_routine(153)%procpnt => GEMMPB
+            process_routine(154)%pronam = 'MPBNUT' ; process_routine(154)%procpnt => MPBNUT
+            process_routine(155)%pronam = 'MPBTMP' ; process_routine(155)%procpnt => MPBTMP
+            process_routine(156)%pronam = 'MPBLLM' ; process_routine(156)%procpnt => MPBLLM
+            process_routine(157)%pronam = 'MPBNLM' ; process_routine(157)%procpnt => MPBNLM
+            process_routine(158)%pronam = 'VBXS12' ; process_routine(158)%procpnt => VBXS12
+            process_routine(159)%pronam = 'VBXSUM' ; process_routine(159)%procpnt => VBXSUM
+            process_routine(160)%pronam = 'PROPSG' ; process_routine(160)%procpnt => PROPSG
+            process_routine(161)%pronam = 'PRPAGG' ; process_routine(161)%procpnt => PRPAGG
+            process_routine(162)%pronam = 'HETAGG' ; process_routine(162)%procpnt => HETAGG
+            process_routine(163)%pronam = 'SEDTYR' ; process_routine(163)%procpnt => SEDTYR
+            process_routine(164)%pronam = 'SEDAGG' ; process_routine(164)%procpnt => SEDAGG
+            process_routine(165)%pronam = 'SUMTYR' ; process_routine(165)%procpnt => SUMTYR
+            process_routine(166)%pronam = 'PROPFD' ; process_routine(166)%procpnt => PROPFD
+            process_routine(167)%pronam = 'PRODIA' ; process_routine(167)%procpnt => PRODIA
+            process_routine(168)%pronam = 'PROGRE' ; process_routine(168)%procpnt => PROGRE
+            process_routine(169)%pronam = 'PRONCM' ; process_routine(169)%procpnt => PRONCM
+            process_routine(170)%pronam = 'PROSED' ; process_routine(170)%procpnt => PROSED
+            process_routine(171)%pronam = 'PROTCM' ; process_routine(171)%procpnt => PROTCM
+            process_routine(172)%pronam = 'PROZOO' ; process_routine(172)%procpnt => PROZOO
+            process_routine(173)%pronam = 'DRADIO' ; process_routine(173)%procpnt => DRADIO
+            process_routine(174)%pronam = 'PHPROT' ; process_routine(174)%procpnt => PHPROT
+            process_routine(175)%pronam = 'FLOCSD' ; process_routine(175)%procpnt => FLOCSD
+            process_routine(176)%pronam = 'AGECAR' ; process_routine(176)%procpnt => AGECART
+            process_routine(177)%pronam = 'PRTMRT' ; process_routine(177)%procpnt => protist_mortality_salinity
 
             max_processes = size(process_routine)
 
