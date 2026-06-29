@@ -52,6 +52,7 @@ contains
       use m_fm_erosed, only: lnx => lnx_mor
       use m_fm_erosed, only: lnxi => lnxi_mor
       use m_fm_erosed, only: ndx => ndx_mor
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 

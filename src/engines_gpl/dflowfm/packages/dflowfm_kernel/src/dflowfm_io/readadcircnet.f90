@@ -51,6 +51,7 @@ contains
       use m_qn_read_error
       use m_qn_eof_error
       use m_filez, only: doclose
+      use network_data, only: LINK_2D
 
       integer :: MNET, JA, JADOORLADEN
       integer :: k, j

@@ -42,6 +42,7 @@ contains
       use m_missing, only: dxymis
       use geometry_module, only: dcosphi
       use gridoperations
+      use network_data, only: LINK_CLOSED, LINK_2D
 
       integer :: k
       integer :: k1

@@ -58,6 +58,7 @@ contains
       use m_nod2linx, only: nod2linx
       use m_nod2liny, only: nod2liny
       use m_boundary_condition_type, only: BOUNDARY_WATER_LEVEL_NEUMANN
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
       implicit none
 
       logical :: make2dh
@@ -79,7 +80,7 @@ contains
 
             do L = 1, lnx1D
                if (u1(L) /= 0.0_dp) then ! link flows ; in 2D, the loop is split to save kcu check in 2D
-                  if ((kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+                  if ((kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else
@@ -109,7 +110,7 @@ contains
                   end if
                end if
                if (u1(L) /= 0.0_dp) then ! link flows
-                  if ((kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
+                  if ((kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. (iadv(L) >= IADV_SUBGRID_WEIR .and. iadv(L) <= 29)) .and. ChangeVelocityAtStructures) then
                      ! Apply only on some barrier-like hydraulic structures, and typically on 1D2D links for dambreaks
                      u1L = q1(L) / au_nostrucs(L)
                   else

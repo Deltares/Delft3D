@@ -48,6 +48,8 @@ contains
       use m_help, only: help
       use m_highlight_form_line, only: highlight_form_line
       use dflowfm_version_module, only: company, product_name
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
+      
       implicit none
 
       integer :: numpar, numfld, numparactual, numfldactual
@@ -305,7 +307,7 @@ contains
                      else if (hh1DUNI5 /= h5) then
                         prof1D(2, L) = hh1DUNI5
                      end if
-                  else if (kcu(L) == LINK_1D2D_ROOF_GUTTER) then
+                  else if (kcu(L) == LINK_1D2D_ROOF) then
                      if (wu1DUNI7 /= w7) then
                         prof1D(1, L) = wu1DUNI7
                      else if (hh1DUNI7 /= h7) then

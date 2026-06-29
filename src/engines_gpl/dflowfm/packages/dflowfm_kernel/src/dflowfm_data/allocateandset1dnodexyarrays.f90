@@ -45,6 +45,8 @@ contains
       use m_missing
       use geometry_module, only: getdx, getdy
       use gridoperations
+      use network_data, only: LINK_1D, LINK_1D2D_LONGITUDINAL
+      
       implicit none
 
       integer :: n, LL

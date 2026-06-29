@@ -67,6 +67,7 @@ contains
       use m_find_crossed_links_kdtree2
       use m_filez, only: oldfil, doclose, newfil
       use precision_basics, only: comparereal
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_STREETINLET
 
       integer :: k, kk, n1, n2, n, L, LL, jacros, minp, kint, ierr, nh, nhh, i, Lf
       integer :: jaweir, Lastfoundk, kf, kL, Lnt, nna, nnb, k3, k4

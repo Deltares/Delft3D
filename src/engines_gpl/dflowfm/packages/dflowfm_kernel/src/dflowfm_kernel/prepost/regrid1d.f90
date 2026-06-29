@@ -52,6 +52,7 @@ contains
       use gridoperations
       use m_set_nod_adm
       use m_set_branch_lc
+      use network_data, only: LINK_1D
 
       integer :: jaregrid
       real(kind=dp) :: dxa, xlb

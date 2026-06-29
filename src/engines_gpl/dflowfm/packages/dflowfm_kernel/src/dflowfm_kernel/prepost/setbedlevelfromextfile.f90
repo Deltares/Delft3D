@@ -59,6 +59,7 @@ contains
       use fm_location_types, only: UNC_LOC_S, UNC_LOC_U, UNC_LOC_CN, SPATIAL_LOCATION_1D, SPATIAL_LOCATION_2D, SPATIAL_LOCATION_ALL
       use m_delpol
       use m_timespaceinitialfield_mpi
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D_MAINBRANCH
 
       logical :: bl_set_from_zkuni = .false.
       integer :: ja, ja1, ja2, method, iprimpos

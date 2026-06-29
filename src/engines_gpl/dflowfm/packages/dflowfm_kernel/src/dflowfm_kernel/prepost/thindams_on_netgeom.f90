@@ -57,6 +57,7 @@ contains
       use m_get_link_neighboring_cell_coords, only: get_link_neighboringcellcoords
       use m_append_crspath_to_pol, only: appendCRSPathToPol
       use unstruc_caching, only: cache_retrieved, cache_thin_dams, copy_cached_thin_dams
+      use network_data, only: LINK_CLOSED
 
       real(kind=dp), dimension(:), allocatable :: polygon_segment_weights
       integer, dimension(:), allocatable :: crossed_links, polygon_nodes, idum

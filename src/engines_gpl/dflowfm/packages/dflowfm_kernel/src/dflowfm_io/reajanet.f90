@@ -47,6 +47,7 @@ contains
       use m_set_nod_adm
       use m_qn_read_error
       use m_qn_eof_error
+      use network_data, only: LINK_2D
 
       implicit none
       integer :: MNET, JA, JADOORLADEN

@@ -56,6 +56,7 @@ contains
       use m_readyy
       use m_set_nod_adm
       use m_set_branch_lc
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
 
       integer :: K, KK, KM, K1, K2, KA, KB, kn3, L, LL, JA
       integer :: JADUM

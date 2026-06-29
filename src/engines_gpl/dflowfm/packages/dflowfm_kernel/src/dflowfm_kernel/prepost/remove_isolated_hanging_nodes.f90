@@ -46,6 +46,7 @@ contains
       use m_netw
       use messagehandling, only: LEVEL_INFO, LEVEL_ERROR, mess
       use m_find_common_node
+      use network_data, only: LINK_2D
 
       integer, dimension(numL), intent(inout) :: linkbrother !< brotherlink, that shares a (hanging) node, dim: numL
       integer, intent(out) :: num !< number of removed isolated hanging nodes

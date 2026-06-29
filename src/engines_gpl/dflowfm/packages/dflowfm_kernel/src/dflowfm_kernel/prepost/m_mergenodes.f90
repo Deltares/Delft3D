@@ -41,6 +41,7 @@ contains
       use network_data, only: NMK, KN, NOD, KC, XK
       use m_missing, only: dxymis
       use gridoperations, only: OTHERNODE
+      use network_data, only: LINK_CLOSED
 
       implicit none
       integer, intent(in) :: K1, K2 ! netnode indices of the 2 nodes to be merged

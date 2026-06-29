@@ -49,6 +49,7 @@ contains
       use m_flowgeom
       use m_flow
       use m_netw
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer :: Lf, L, LL, k, kk, n, k1, k2, k3, k4, n1, n2, n2d
       real(kind=dp) :: wu1, wu2, wuL

@@ -55,6 +55,7 @@ contains
       use m_movabs
       use m_lnabs
       use m_ptabs
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL
 
       implicit none
       integer :: ja

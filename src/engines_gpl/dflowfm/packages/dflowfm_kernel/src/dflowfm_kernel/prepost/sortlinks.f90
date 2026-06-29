@@ -43,6 +43,7 @@ contains
       use unstruc_colors, only: ncolhl
       use m_qnerror
       use m_cirr
+      use network_data, only: LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
 
       integer :: k0 ! node number
 

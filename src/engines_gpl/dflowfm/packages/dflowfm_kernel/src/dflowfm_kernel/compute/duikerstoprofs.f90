@@ -51,6 +51,7 @@ contains
       use m_qnerror
       use m_reapol
       use m_filez, only: oldfil
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
       implicit none
 
       integer :: minp, Ls, Lf, n, k1, k2

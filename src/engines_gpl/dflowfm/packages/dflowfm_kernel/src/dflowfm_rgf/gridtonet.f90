@@ -52,6 +52,7 @@ contains
       use m_mergenodes
       use m_readyy
       use m_set_nod_adm
+      use network_data, only: LINK_2D
 
       real(kind=dp) :: af
 

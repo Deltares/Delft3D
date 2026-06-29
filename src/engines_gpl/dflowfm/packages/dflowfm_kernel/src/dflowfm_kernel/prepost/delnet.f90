@@ -51,6 +51,7 @@ contains
       use gridoperations
       use m_delpol
       use m_set_nod_adm
+      use network_data, only: LINK_CLOSED, LINK_2D
 
       integer :: KEY, jacheckcells, JASAVE
 

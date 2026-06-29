@@ -59,6 +59,7 @@ contains
       use m_set_col
       use m_movabs
       use m_lnabs
+      use network_data, only: LINK_2D
 
       integer :: jadoorladen ! ,npl
       !real(kind=dp) :: xpl(npl),ypl(npl)

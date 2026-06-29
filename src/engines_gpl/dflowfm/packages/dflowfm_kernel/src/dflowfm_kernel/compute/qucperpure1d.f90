@@ -47,6 +47,7 @@ contains
       use precision, only: dp
       use m_flow, only: japure1d, jajunction1d, u1du, ucxu, ucyu, qa, u1
       use m_flowgeom, only: kcu, ln, csu, snu, nd
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer, intent(in) :: L !< link number
       integer, intent(in) :: n12 !< index of the node to be processed: 1 (from node) or 2 (to node)

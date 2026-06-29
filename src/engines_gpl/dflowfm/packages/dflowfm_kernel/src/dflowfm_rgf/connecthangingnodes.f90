@@ -46,6 +46,7 @@ contains
       use m_missing
       use gridoperations
       use m_filez, only: doclose, newfil
+      use network_data, only: LINK_2D
 
       integer :: mout, np, kk, k, kk3, kkx, lnu, km, kp
 

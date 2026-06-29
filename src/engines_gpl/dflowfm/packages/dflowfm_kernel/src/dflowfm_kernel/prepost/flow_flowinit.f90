@@ -628,6 +628,7 @@ contains
    subroutine set_advection_type_for_lateral_flow_and_pipes()
       use m_flowparameters, only: iadveccorr1D2D
       use m_flowgeom, only: lnxi, iadv, kcu, IADV_ORIGINAL_LATERAL_OVERFLOW
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -635,13 +636,13 @@ contains
 
       do link = 1, lnxi
          if (iadv(link) /= OFF) then
-            if (kcu(link) == LINK_1D2D_LATERAL) then
+            if (kcu(link) == LINK_1D2D_INTERNAL) then
                if (iadveccorr1D2D == 2) then
                   iadv(link) = OFF
                else
                   iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
                end if
-            else if (kcu(link) == LINK_1D2D_STREETINLET .or. kcu(link) == LINK_1D2D_ROOF_GUTTER) then
+            else if (kcu(link) == LINK_1D2D_STREETINLET .or. kcu(link) == LINK_1D2D_ROOF) then
                iadv(link) = IADV_ORIGINAL_LATERAL_OVERFLOW
             end if
          end if
@@ -685,6 +686,7 @@ contains
       use m_flow, only: frcu, ifrcutp
       use m_physcoef, only: frcuni1d, frcuni1d2d, frcunistreetinlet, frcuniroofgutterpipe, frcuni, frcmax, ifrctypuni
       use m_missing, only: dmiss, imiss
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       implicit none
 
@@ -695,13 +697,13 @@ contains
       do link = 1, lnx
          if (frcu(link) == dmiss) then
             if (link <= lnx1D) then
-               if (kcu(link) == LINK_1D2D_LATERAL) then
+               if (kcu(link) == LINK_1D2D_INTERNAL) then
                   frcu(link) = frcuni1d2d
                else if (kcu(link) == LINK_1D2D_STREETINLET) then
                   ! Because frcunistreetinlet is not available in the mdu file, the friction type is always manning.
                   frcu(link) = frcunistreetinlet
                   ifrcutp(link) = MANNING
-               else if (kcu(link) == LINK_1D2D_ROOF_GUTTER) then
+               else if (kcu(link) == LINK_1D2D_ROOF) then
                   ! Because frcuniroofgutterpipe is not available in the mdu file, the friction type is always manning
                   frcu(link) = frcuniroofgutterpipe
                   ifrcutp(link) = MANNING
@@ -963,6 +965,7 @@ contains
       use m_flowparameters, only: jaconveyance2D
       use m_flowgeom, only: lnxi, lnx, kcu, Lbnd1D, aifu
       use m_flow, only: frcu, ifrcutp
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 
@@ -999,6 +1002,7 @@ contains
       use m_flowparameters, only: nonlin1d, nonlin2D
       use m_flowgeom, only: kcu, lbnd1d, lnx1D, lnxi, lnx, prof1d, teta
       use m_missing, only: dmiss
+      use network_data, only: LINK_1D_BOUNDARY
 
       implicit none
 

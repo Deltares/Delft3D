@@ -42,6 +42,7 @@ contains
 
    subroutine GAANWESTOPPEN(K, KN316, JASTOP) !SET JASTOP = 1 ALS WE GAAN STOPPEN
       use M_NETW
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer :: KN316, JASTOP, N1, N6, KK, L, K
 

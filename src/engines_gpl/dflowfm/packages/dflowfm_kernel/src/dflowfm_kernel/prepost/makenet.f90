@@ -62,6 +62,7 @@ contains
       use m_set_nod_adm
       use m_increase_grid
       use m_dbdistance_hk
+      use network_data, only: LINK_1D
       use m_filez, only: doclose, newfil
 
       integer, intent(in) :: japaramscreen !< Load parameter screen or not (1/0)

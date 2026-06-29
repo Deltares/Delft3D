@@ -295,6 +295,7 @@ contains
       use m_storage, only: t_storage
       use unstruc_channel_flow, only: usevolumetablefile, volumetablefile, network
       use m_flowgeom, only: ndx, ndx2d, lnx1d, kcs, nd, lnxi, lbnd1d, kcu
+      use network_data, only: LINK_1D
 
       character(len=*), intent(in) :: filename !< Name of the volumetablefile
       logical, optional, intent(in) :: branchOutput !< Flag indicates whether the volumes on flow links are required.
@@ -626,6 +627,7 @@ contains
       use m_flowparameters
       use fm_external_forcings_data
       use m_Crosssections
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer, intent(in) :: Lorg !< FLow link.
       integer, intent(in) :: n !< 1d node number.

@@ -51,6 +51,7 @@ contains
       use m_longculverts, only: find1d2dculvertlinks, longculvertsToProfs
       use m_longculverts_data, only: newculverts, nlongculverts, longculverts
       use unstruc_model, only: md_convertlongculverts
+      use network_data, only: LINK_1D_BOUNDARY, LINK_1D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       integer :: L, k1, k2, n1, n2, n, k, k3, LL, kk, Ls, Lf, mis, i, numcoords, ibotL
       real(kind=dp) :: bl1, bl2, bedlevel_at_link, bln, zn1, zn2, zn3, wn, alf, skewn, xt, yt, xn, yn
@@ -238,7 +239,7 @@ contains
             zn2 = zkuni
          end if
 
-         if (kcu(L) == LINK_1D2D_LATERAL) then ! 1D2D internal link, bobs at minimum
+         if (kcu(L) == LINK_1D2D_INTERNAL) then ! 1D2D internal link, bobs at minimum
             if (kcs(n1) == 21) then
                bedlevel_at_link = bl(n1)
                call get2Dnormal(n1, xn, yn) ! xn, yn = 2D land normal vector pointing upward, both zero = flat
@@ -264,7 +265,7 @@ contains
             bob0(2, L) = zn2
             bl(n1) = min(bl(n1), bedlevel_at_link)
             bl(n2) = min(bl(n2), bedlevel_at_link)
-         else if (kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! keep 1D and 2D levels
+         else if (kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then ! keep 1D and 2D levels
             if (bl(n1) /= 1.0e30_dp) then
                bob(1, L) = bl(n1)
             else

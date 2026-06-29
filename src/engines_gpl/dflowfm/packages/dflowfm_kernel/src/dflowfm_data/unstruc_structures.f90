@@ -1806,6 +1806,7 @@ contains
       use m_flowgeom, only: kcu, wu, lncn, xu, yu
       use network_data, only: xk, yk
       use precision_basics, only: comparereal, dp
+      use network_data, only: LINK_2D
 
       integer, dimension(:), intent(in) :: links !< The set of flowlinks
       real(dp), intent(out) :: xmid !< x-coordinate of the midpoint

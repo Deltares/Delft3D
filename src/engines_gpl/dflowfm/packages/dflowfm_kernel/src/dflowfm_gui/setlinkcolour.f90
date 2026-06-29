@@ -40,6 +40,7 @@ contains
       use m_netw
       use unstruc_colors
       use m_set_col
+      use network_data, only: LINK_CLOSED, LINK_1D, LINK_2D, LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
       implicit none
       integer :: L, NCOL, NCL
       if (NCOL == 0) then ! ERASE

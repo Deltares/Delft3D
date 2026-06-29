@@ -51,6 +51,7 @@ contains
       use m_missing
       use gridoperations
       use m_set_nod_adm
+      use network_data, only: LINK_1D
 
       integer :: MX = 1000000
       integer :: k, kk, k1, k2, n, LL, NL, ierr, nh

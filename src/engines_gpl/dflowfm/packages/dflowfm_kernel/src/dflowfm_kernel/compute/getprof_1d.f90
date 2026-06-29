@@ -46,6 +46,7 @@ contains
       use m_flowtimes, only: time1, times_update_roughness
       use m_get_chezy, only: get_chezy
       use m_roughness, only: getchezy
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer :: L, japerim, calcConv
       real(kind=dp) :: hprL !< hoogte in profiel

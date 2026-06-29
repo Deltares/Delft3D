@@ -43,6 +43,8 @@ contains
    subroutine switchiadvnearlink(L)
       use m_flowgeom, only: ln, iadv_original_lateral_overflow, nd, iadv, iadv_general_structure, kcu
       use m_flow, only: iadvec, u0
+      use network_data, only: LINK_1D, LINK_2D
+      
       implicit none
       integer :: L, k1, k2, kk, LL, iadv1, iadv2
 

@@ -43,6 +43,7 @@ contains
 
       use m_flowgeom, only: ndx, lnx, lnxi, kcu, ln
       use m_flow, only: ucx, ucy, uc1d
+      use network_data, only: LINK_1D_BOUNDARY
 
       integer :: n, LL, k2
       real(kind=dp) :: uxy

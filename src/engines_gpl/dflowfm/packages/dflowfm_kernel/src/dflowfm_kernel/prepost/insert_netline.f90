@@ -53,6 +53,7 @@ contains
       use gridoperations
       use m_readyy
       use m_is_link
+      use network_data, only: LINK_2D
 
       real(kind=dp), intent(in) :: xp, yp !< link coordinates (used only if L_.eq.0)
       integer, intent(in) :: L_ !< link number (set to 0 first time)

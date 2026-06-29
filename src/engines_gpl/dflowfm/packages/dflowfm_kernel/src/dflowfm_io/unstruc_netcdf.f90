@@ -15996,7 +15996,7 @@ contains
          do L = 1, lnx1d
             if (kcu(L) == LINK_1D) then
                n1dedges = n1dedges + 1
-            else if (kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+            else if (kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                n1d2dcontacts = n1d2dcontacts + 1
             else
                continue
@@ -16051,7 +16051,7 @@ contains
                   edgeoffsets_remap(n1dedges) = meshgeom1d%edgeoffsets(L1)
                end if
 
-            else if (kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
+            else if (kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then ! 1d2d, lateralLinks, streetinlet, roofgutterpipe
                ! 1D2D link, find the 2D flow node and store its cell center as '1D' node coordinates
                n1d2dcontacts = n1d2dcontacts + 1
                id_tsp%contactstoln(n1d2dcontacts) = L

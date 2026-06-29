@@ -39,6 +39,7 @@ contains
       use M_NETW
       use m_okay
       use m_set_nod_adm
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer :: NRL1D, NRL, NRLO, L, K, K1, K2, K3, IBR, N, JASTOP, JASTART, IERR, IBX, KS, KK, KE, ja
       integer :: NRL1D6, KN316, NRL1D16, J

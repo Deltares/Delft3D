@@ -46,6 +46,7 @@ contains
       use precision, only: dp
       use network_data, only: numL, kn, lne, xk, yk
       use m_is_1d_boundary_candidate, only: is_1d_boundary_candidate
+      use network_data, only: LINK_1D, LINK_2D, LINK_1D_MAINBRANCH
 
       integer, intent(in) :: Nx !< number of links
       real(kind=dp), dimension(Nx), intent(out) :: xe, ye !< inner cell center coordinates

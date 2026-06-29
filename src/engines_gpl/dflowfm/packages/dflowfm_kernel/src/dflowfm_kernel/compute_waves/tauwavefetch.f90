@@ -380,6 +380,7 @@ contains
       use m_sferic
       use m_fetch_local_data
       use m_alloc
+      use network_data, only: LINK_CLOSED
 
       real(kind=dp), intent(in) :: u_wind, v_wind
       integer, intent(out) :: nr_cells_done

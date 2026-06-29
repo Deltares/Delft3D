@@ -1375,6 +1375,7 @@ contains
       use m_find_flownode, only: find_nearest_flownodes_kdtree
       use kdtree2Factory, only: treeglob
       use m_save_ugrid_state, only: contact_cell_idx, contactnetlinks, hashlist_contactids
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET
 
       implicit none
 

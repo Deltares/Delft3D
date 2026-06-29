@@ -745,7 +745,7 @@ contains
                lncn(2, L) = k4
             end if
 
-         else if (kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! 1D2D, inherit 2D keep natural reference
+         else if (kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then ! 1D2D, inherit 2D keep natural reference
 
             lncn(1, L) = k3
             lncn(2, L) = k4
@@ -844,7 +844,7 @@ contains
                lncn(2, L) = k3
             end if
             dx(L) = dx(L) * abs(xn * xt + yn * yt)
-         else if (kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then ! 1D2D internal link, some averaged 2D length
+         else if (kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then ! 1D2D internal link, some averaged 2D length
             k = 0
             if (kcs(k1) == 21) then
                k = k1
@@ -858,7 +858,7 @@ contains
             else
                dx(L) = max(dx(L), 0.5_dp * sqrt(ba(k)))
             end if
-            if (kcu(L) == LINK_1D2D_LATERAL .and. fixedweirtopwidth > 0.0_dp) then
+            if (kcu(L) == LINK_1D2D_INTERNAL .and. fixedweirtopwidth > 0.0_dp) then
                weirheight = fixedweirtopwidth ! we don't have bl nor bobs yet !max(0d0, 0.5d0*(bob(1,L) + bob(2,L)) - 0.5d0*(bl(k1) + bl(k2)) )
                weirlength = fixedweirtopwidth
                dx(L) = min(dx(L), max(weirlength + 2.0_dp * weirheight * fixedweirtalud, 0.5_dp * sqrt(ba(k))))
@@ -907,7 +907,7 @@ contains
          if (kcu(L) == LINK_1D2D_STREETINLET) then
             wu1D2D(L) = wu1Duni5
             hh1D2D(L) = hh1Duni5
-         else if (kcu(L) == LINK_1D2D_ROOF_GUTTER) then
+         else if (kcu(L) == LINK_1D2D_ROOF) then
             wu1D2D(L) = wu1Duni7
             hh1D2D(L) = hh1Duni7
          else
@@ -933,7 +933,7 @@ contains
          prof1D(2, L) = hh1D2D(L) !  prof1d(2,*) > 0 : height  or prof1d(2,*) < 0 : kb ref
          if (kcu(L) == LINK_1D2D_STREETINLET) then !  restricting dimensions of streetinlet
             prof1D(3, L) = iproftypuni5 !  prof1d(3,*) > 0 : ityp    or prof1d(3,*) < 0 : alfa tussen a en b .
-         else if (kcu(L) == LINK_1D2D_ROOF_GUTTER) then !  restricting dimensions of roofgutterpipe
+         else if (kcu(L) == LINK_1D2D_ROOF) then !  restricting dimensions of roofgutterpipe
             prof1D(3, L) = iproftypuni7 !  prof1d(3,*) > 0 : ityp    or prof1d(3,*) < 0 : alfa tussen a en b .
          else
             prof1D(3, L) = iproftypuni !  prof1d(3,*) > 0 : ityp    or prof1d(3,*) < 0 : alfa tussen a en b .
@@ -974,7 +974,7 @@ contains
          k3 = lncn(1, L)
          k4 = lncn(2, L)
 
-         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_LATERAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF_GUTTER) then
+         if (kcu(L) == LINK_1D .or. kcu(L) == LINK_1D_BOUNDARY .or. kcu(L) == LINK_1D2D_INTERNAL .or. kcu(L) == LINK_1D2D_LONGITUDINAL .or. kcu(L) == LINK_1D2D_STREETINLET .or. kcu(L) == LINK_1D2D_ROOF) then
             LL = L
             if (kcu(L) == LINK_1D_BOUNDARY) then ! 1D boundary link, find attached regular link
                if (abs(nd(k2)%ln(1)) == L) then
@@ -987,7 +987,7 @@ contains
             end if
             if (kcu(L) == LINK_1D2D_LONGITUDINAL) then ! 1D2D lateral link inherits 2D
                wu(L) = dbdistance(xk(k3), yk(k3), xk(k4), yk(k4), jsferic, jasfer3D, dmiss) ! set 2D link width
-            else if (kcu(L) == LINK_1D2D_LATERAL) then ! 1D2D internal link 3  flows over side of attached 1D channel
+            else if (kcu(L) == LINK_1D2D_INTERNAL) then ! 1D2D internal link 3  flows over side of attached 1D channel
                call getdxofconnectedkcu1(L, wu(L)) !  dbdistance ( xk(k3), yk(k3), xk(k4), yk(k4) )  ! set 2D link width
             else
                if (prof1D(1, LL) >= 0) then

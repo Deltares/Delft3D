@@ -51,6 +51,7 @@ contains
       use unstruc_channel_flow, only: network, st_pump, st_general_st, getcsparsflow, st_dambreak, st_culvert, st_uni_weir, st_bridge, st_longculvert, msgbuf, err_flush, level_warn
       use m_get_chezy, only: get_chezy
       use m_distribute_linearized_3d_structure_coefficients, only: distribute_linearized_3d_structure_coefficients
+      use network_data, only: LINK_1D
 
       implicit none
 

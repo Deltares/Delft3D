@@ -73,6 +73,7 @@ contains
       use m_flowgeom, only: kcu, lnx1d
       use unstruc_channel_flow, only: network
       use m_flow, only: frcu, ifrcutp, frcu_mor
+      use network_data, only: LINK_1D
 
       ! FRCU and FRCU_MOR should only be used after SETAU - VOL12D.
       ! Therefore initialise these arrays with a negative value.
@@ -502,6 +503,7 @@ contains
       use m_1d_structures, only: get_crest_level, t_structure
       use m_storage, only: t_storage
       use m_flowparameters, only: EPS3
+      use network_data, only: LINK_1D
 
       integer :: i
       integer :: L, L0
@@ -1102,6 +1104,7 @@ contains
       use precision, only: dp
       use m_flow, only: vTot1d2d, qCur1d2d, q1
       use m_flowgeom, only: ndx2d, lnx1d, kcu, ln
+      use network_data, only: LINK_1D2D_INTERNAL, LINK_1D2D_LONGITUDINAL, LINK_1D2D_STREETINLET, LINK_1D2D_ROOF
 
       real(kind=dp), intent(in) :: dts ! current computational time step
 
@@ -1111,7 +1114,7 @@ contains
       qCur1d2d = 0.0_dp
       ! Don't reset vTot1d2d
       do Lf = 1, lnx1d
-         if (kcu(Lf) == LINK_1D2D_LATERAL .or. kcu(Lf) == LINK_1D2D_LONGITUDINAL .or. kcu(Lf) == LINK_1D2D_STREETINLET .or. kcu(Lf) == LINK_1D2D_ROOF_GUTTER) then
+         if (kcu(Lf) == LINK_1D2D_INTERNAL .or. kcu(Lf) == LINK_1D2D_LONGITUDINAL .or. kcu(Lf) == LINK_1D2D_STREETINLET .or. kcu(Lf) == LINK_1D2D_ROOF) then
             n = ln(1, Lf)
             if (n < ndx2d) then
                n = ln(2, Lf)

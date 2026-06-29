@@ -46,6 +46,7 @@ contains
       use m_flowgeom, only: wcnx3, wcny3, wcnx4, wcny4, wcLn, cscnw, sncnw, kcnw, nwalcnw, sfcnw, lnx, nrcnw, jacorner, lne2ln
       use m_netw, only: numk, numl, kn, lnn
       use m_alloc
+      use network_data, only: LINK_CLOSED, LINK_2D
 
       implicit none
 

@@ -95,7 +95,7 @@ contains
       use m_add_baroclinic_pressure, only: rhointerfaces
       use m_set_kbot_ktop, only: set_kbot_ktop
       use m_alloc, only: realloc
-      use network_data, only: LINK_1D2D_STREETINLET     
+      use network_data, only: LINK_2D, LINK_1D2D_STREETINLET
 
       integer :: ierr, n, k, mxn, j, kk, LL, L, k1, k2, k3, n1, n2, n3, n4, kb1, kb2, numkmin, numkmax, kbc1, kbc2
       integer :: nlayb, nrlay, nlayb1, nrlay1, nlayb2, nrlay2, Lb, Lt, mx, ltn, mpol, Lt1, Lt2, Ldn

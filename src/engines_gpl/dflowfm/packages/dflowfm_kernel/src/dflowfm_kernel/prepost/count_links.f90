@@ -43,6 +43,7 @@ contains
 
    subroutine count_links(mx1Dend, Nx)
       use network_data, only: numL, numL1D, kn, lne, nmk
+      use network_data, only: LINK_1D, LINK_1D_MAINBRANCH
 
       integer, intent(out) :: mx1Dend !< number of 1D endpoints
       integer, intent(out) :: Nx !< number of 2D links and 1D endpoints

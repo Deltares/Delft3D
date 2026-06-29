@@ -47,6 +47,7 @@ contains
       use geometry_module, only: dbdistance, dlinedis
       use m_missing, only: dmiss
       use m_sferic, only: jsferic, jasfer3D
+      use network_data, only: LINK_1D, LINK_1D2D_STREETINLET, LINK_1D_MAINBRANCH, LINK_1D2D_ROOF
 
       integer :: n1
       real(kind=dp) :: XP1, YP1, XN1, YN1

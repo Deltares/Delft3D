@@ -48,6 +48,7 @@ contains
       use m_sferic, only: jsferic, jasfer3D
       use geometry_module, only: getdxdy, duitpl, dlinedis
       use m_missing, only: dmiss
+      use network_data, only: LINK_CLOSED
 
       integer :: n, kk, L, k1, k3, k4, ja, ierr
       real(kind=dp) :: cs, sn, a, b, sig, dis, xn, yn, rrr
