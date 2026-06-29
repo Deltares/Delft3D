@@ -33,23 +33,6 @@ object WindowsTestEnvironment : BuildType({
     }
 
     steps {
-        powerShell {
-            name = "Get tooling from network share"
-            platform = PowerShellStep.Platform.x64
-            scriptMode = script {
-                content = """                    
-                    # Get the current working directory
-                    ${'$'}destinationDir = "ci\\dockerfiles\\windows"
-                    
-                    # Copy the files from the source to the destination
-                    Copy-Item -Path "\\directory.intra\project\d-hydro\dsc-tools\toolchain2024\python-3.12.7-amd64.exe" -Destination ${'$'}destinationDir
-                    Copy-Item -Path "test\\deltares_testbench\\pip\\win-requirements.txt" -Destination ${'$'}destinationDir
-
-                    # List all the files in the destination directory
-                    Get-ChildItem -Path ${'$'}destinationDir
-                """.trimIndent()
-            }
-        }
         dockerCommand {
             name = "Docker build dhydro test-environment container"
             commandType = build {
@@ -82,16 +65,21 @@ object WindowsTestEnvironment : BuildType({
                 """.trimIndent()
             }
             conditions {
-                equals("trigger.type", "vcs")
+                matches("trigger.type", "vcs|schedule")
             }
         }
     }
 
     triggers {
         vcs {
-            triggerRules = "+:ci/dockerfiles/windows/**".trimIndent()
+            triggerRules = """
+                +:ci/dockerfiles/windows/Dockerfile-dhydro-test-environment
+                +:ci/teamcity/Delft3D/windows/testEnvironment.kt
+            """.trimIndent()
             branchFilter = "+:<default>".trimIndent()
-            param("trigger.type", "vcs")
+            buildParams {
+                param("trigger.type", "vcs")
+            }
         }
         schedule {
             schedulingPolicy = weekly {
@@ -102,7 +90,9 @@ object WindowsTestEnvironment : BuildType({
             branchFilter = "+:<default>"
             triggerBuild = always()
             withPendingChangesOnly = false
-            param("trigger.type", "schedule")
+            buildParams {
+                param("trigger.type", "schedule")
+            }
         }
     }
 

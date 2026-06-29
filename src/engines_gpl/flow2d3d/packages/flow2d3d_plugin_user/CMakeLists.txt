@@ -47,7 +47,7 @@ set(oss_dependencies_general    delftio
 
 if(UNIX)
     set(oss_dependencies ${oss_dependencies_general}
-                         netcdff)
+                         netCDF::netcdff)
 
     target_link_libraries(${library_name}
         ${oss_dependencies}
@@ -56,7 +56,7 @@ if(UNIX)
 endif(UNIX)
 if (WIN32)
     set(oss_dependencies ${oss_dependencies_general}
-                        netcdff)
+                        netCDF::netcdff)
 
 
 endif(WIN32)
