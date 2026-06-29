@@ -65,6 +65,17 @@ module fm_external_forcings
    end interface
 
    interface
+      module subroutine prepare_air_pressure_temperature_dew_point_temperature(time_in_seconds)
+         real(kind=dp), intent(in) :: time_in_seconds !< Time in seconds
+      end subroutine prepare_air_pressure_temperature_dew_point_temperature
+   end interface
+
+   interface
+      module subroutine compute_air_water_interaction_most_fluxes()
+      end subroutine compute_air_water_interaction_most_fluxes
+   end interface
+
+   interface
       module subroutine init_new(external_force_file_name, iresult)
          character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
          integer, intent(inout) :: iresult
@@ -121,6 +132,9 @@ module fm_external_forcings
 
    public :: set_external_forcings
    public :: calculate_wind_stresses
+   public :: prepare_wind
+   public :: prepare_air_pressure_temperature_dew_point_temperature
+   public :: compute_air_water_interaction_most_fluxes
    public :: sourcesink_parse_coordinates
 
    procedure(fill_open_boundary_cells_with_inner_values_any), pointer :: fill_open_boundary_cells_with_inner_values !< boundary update routine to be called
@@ -351,19 +365,29 @@ contains
 
    end subroutine prepare_wind_model_data
 
-!> Gets windstress (and air pressure) from input files, and sets the windstress
-   subroutine calculate_wind_stresses(time_in_seconds, iresult)
+!> Prepare wind data if jawind=1 and air_pressure_available
+   subroutine prepare_wind(time_in_seconds, iresult)
       use m_wind, only: jawind, air_pressure_available
       use dfm_error, only: DFM_NOERR
 
       real(kind=dp), intent(in) :: time_in_seconds !< Current time when getting and applying winds
       integer, intent(out) :: iresult !< Error indicator
+
       if (jawind == 1 .or. air_pressure_available) then
          call prepare_wind_model_data(time_in_seconds, iresult)
          if (iresult /= DFM_NOERR) then
             return
          end if
       end if
+      iresult = DFM_NOERR
+   end subroutine prepare_wind
+
+!> Gets windstress (and air pressure) from input files, and sets the windstress
+   subroutine calculate_wind_stresses(iresult)
+      use m_wind, only: jawind
+      use dfm_error, only: DFM_NOERR
+
+      integer, intent(out) :: iresult !< Error indicator
 
       if (jawind > 0) then
          call setwindstress()
@@ -654,7 +678,7 @@ contains
 
          call read_initialtracer_properties(trim(md_extfile_new), nx)
       end if
-      
+
       if (len(trim(md_inifieldfile)) > 0) then
          call read_initialtracer_properties(trim(md_inifieldfile), nx)
       end if
@@ -787,7 +811,6 @@ contains
       call tree_destroy(bnd_ptr)
 
    end subroutine read_initialtracer_properties
-
 
    subroutine read_location_files_from_boundary_blocks(filename, nx, kce, num_bc_ini_blocks, &
                                                        numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf)
@@ -1010,7 +1033,7 @@ contains
       integer, dimension(nx), intent(inout) :: kce !
       real(kind=dp), intent(in) :: return_time
       integer, intent(in) :: numz, numu, nums, numtm, numsd, & !
-                                numt, numuxy, numn, num1d2d, numw, numtr, numsf !
+                             numt, numuxy, numn, num1d2d, numw, numtr, numsf !
       integer, intent(inout) :: numqh
       real(kind=dp), intent(in) :: rrtolrel !< To enable a more strict rrtolerance value than the global rrtol. Measured w.r.t. global rrtol.
 
@@ -1212,7 +1235,7 @@ contains
             nbndtr(itrac) = nbndtr(itrac) + numtr
             nbndtr_all = maxval(nbndtr(1:numtracers))
          end if
-      
+
       else if (qid(1:13) == 'initialtracer') then ! Deprecated, still required for old extforce file support. Can safely be removed when old extforce file support is removed.
          call get_tracername(qid, tracnam, qidnam)
          tracunit = " "
@@ -1526,6 +1549,12 @@ contains
             end if
 
             fnam = trim(valuestring)
+            inquire (file=fnam, exist=file_exists)
+            if (.not. file_exists) then
+               call mess(LEVEL_ERROR, 'File '''//fnam//''' does not exist.')
+               success = .false.
+               return
+            end if
             ! Time-interpolated value will be placed in target array (e.g., qplat(n)) when calling ec_gettimespacevalue.
             if (index(trim(fnam)//'|', '.tim|') > 0) then
                ! uniform=single time series vectormax = 1
@@ -1840,7 +1869,6 @@ contains
       use m_flowtimes, only: refdat, julrefdat, timjan
       use m_flowgeom, only: ndx, lnx, lnxi, lne2ln, ln, xyen, nd, teta, kcu, kcs, iadv, lncn, ntheta
       use m_netw, only: xe, ye, zk
-      use unstruc_model, only: md_inifieldfile
       use m_meteo
       use m_sediment, only: jaceneqtr, grainlay, mxgr
       use m_mass_balance_areas, only: mbadef, mbadefdomain, mbaname
@@ -2556,9 +2584,9 @@ contains
 
    end subroutine setup
 
-   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read. 
+   !> Finalize the source/sink setup after all source/sink and bubblescreen blocks have been read.
    !> This includes determining which source/sinks are normal source/sinks and which are bubblescreen source/sinks and
-   !> filling the geometry of the source/sinks and bubblescreens. (used for output)  
+   !> filling the geometry of the source/sinks and bubblescreens. (used for output)
    subroutine finalize_source_sinks()
       use m_source_sink, only: source_sinks
       use fm_external_forcings_data, only: bubblescreens
@@ -2590,16 +2618,18 @@ contains
          end associate
       end do
 
-      if(jampi == 1) then
-        call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
+      if (jampi == 1) then
+         call reduce_logical_array_or(source_sinks%num_total, is_source_sink_bubblescreen)
       end if
 
       ! Negate to get is_source_sink_normal (as we actually compute is_source_sink_bubble).
       ! Note: source_sinks%is_normal (and the other source/sink arrays) are sized to the over-allocated
       ! capacity, while is_source_sink_bubblescreen is sized to num_total.
-      source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
-      source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
-      source_sinks%num_normal = count(source_sinks%is_normal)
+      if (allocated(source_sinks%is_normal)) then
+          source_sinks%is_normal(1:source_sinks%num_total) = .not. is_source_sink_bubblescreen
+          source_sinks%is_normal(source_sinks%num_total + 1:) = .false.
+          source_sinks%num_normal = count(source_sinks%is_normal)
+      end if
 
       call fill_geometry_source_sinks()
 
