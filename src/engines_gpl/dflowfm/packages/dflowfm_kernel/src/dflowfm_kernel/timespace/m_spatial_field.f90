@@ -32,6 +32,8 @@
 module m_spatial_field
    use precision, only: dp
    use timespace_parameters, only: OPERAND_OVERRIDE
+   use m_ec_interpolationsettings, only: RCEL_DEFAULT
+   
    implicit none(type, external)
 
    private
@@ -45,7 +47,7 @@ module m_spatial_field
    !> Averaging parameters, only meaningful when method = averaging.
    type :: t_averaging_input
       integer :: averaging_type = 1 !< averagingType=   EC integer enum; 1 = mean (default).
-      real(dp) :: rel_size = -1.0_dp !< averagingRelSize= negative = use EC default.
+      real(dp) :: rel_size = RCEL_DEFAULT !< averagingRelSize= negative = use EC default.
       integer :: num_min = 1 !< averagingNumMin=
       real(dp) :: percentile = 0.0_dp !< averagingPercentile=
    end type t_averaging_input
@@ -119,26 +121,24 @@ contains
    subroutine read_averaging_input(block_ptr, avg)
       use tree_data_types, only: tree_data
       use properties, only: prop_get
+      use unstruc_inifields, only: averagingTypeStringToInteger
 
       type(tree_data), pointer, intent(in) :: block_ptr
       type(t_averaging_input), intent(out) :: avg
 
       logical :: is_read
+      character(len=256) :: averagingType
 
       avg = t_averaging_input() ! defaults
 
-      call prop_get(block_ptr, '', 'averagingType', avg%averaging_type, is_read)
-      if (is_read .and. avg%averaging_type < 1) avg%averaging_type = 1
+      call prop_get(block_ptr, '', 'averagingType ', averagingType, is_read)
+      if (is_read) then
+         call averagingTypeStringToInteger(averagingType, avg%averaging_type)
+      end if
 
       call prop_get(block_ptr, '', 'averagingRelSize', avg%rel_size, is_read)
-      if (is_read .and. avg%rel_size <= 0.0_dp) avg%rel_size = -1.0_dp ! let EC use its default
-
       call prop_get(block_ptr, '', 'averagingNumMin', avg%num_min, is_read)
-      if (is_read .and. avg%num_min < 1) avg%num_min = 1
-
       call prop_get(block_ptr, '', 'averagingPercentile', avg%percentile, is_read)
-      if (is_read .and. avg%percentile < 0.0_dp) avg%percentile = 0.0_dp
-
    end subroutine read_averaging_input
 
    !> Copy averaging params from a t_averaging_input into the correct
