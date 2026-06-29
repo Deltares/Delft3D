@@ -43,6 +43,13 @@ if (UNIX)
     add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mpreprocess>")
     add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Dnone(...)=none>")
 
+    # nvfortran by default treats backslash as a C-style escape character inside
+    # character literals, so lone-backslash constants like '\' (used for the
+    # Windows path separator and slash searches) are misread as an escaped quote
+    # and trigger "Unmatched quote" errors. -Mbackslash tells nvfortran to treat
+    # backslash like any other character, matching Intel/GNU default behaviour.
+    add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Mbackslash>")
+
     set(fortran_standard_flag                    "-std")
     set(cpp_compiler_flags                       "-std=c++17")
     set(automatic_local_variable_storage_flag    "-Mrecursive")
