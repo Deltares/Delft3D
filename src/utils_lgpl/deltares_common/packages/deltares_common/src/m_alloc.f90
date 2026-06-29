@@ -29,7 +29,7 @@
 !> Utility routines for memory (re)allocation.
 module m_alloc
    use m_alloc_generated, only: realloc, reallocP
-   use m_alloc_handwritten, only: realloc, reallocP, aerr, allocSize, reserve_sufficient_space
+   use m_alloc_handwritten, only: realloc, aerr, allocSize, reserve_sufficient_space
    implicit none
    private
 
