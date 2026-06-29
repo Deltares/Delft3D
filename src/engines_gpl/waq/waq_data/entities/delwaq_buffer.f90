@@ -66,16 +66,9 @@ contains
         integer(kind=int_wp), intent(in) :: number_of_strings !< number of strings to create
         character(len=20) :: result_val(number_of_strings)       !< created string array
 
-        result_val = convert(this%chbuf(start_index), number_of_strings)
+        integer(kind=int_wp) :: last_index !< last chbuf index consumed
+
+        last_index = start_index + 20 * number_of_strings - 1
+        result_val = transfer(this%chbuf(start_index:last_index), result_val)
     end function create_strings_20_array
-
-    function convert(item_to_convert, number_of_strings) result(result_val)
-        !< implicitly converts provided item_to_convert to string array
-        integer(kind=int_wp), intent(in) :: number_of_strings !< number of strings to create
-        character(len=20) :: item_to_convert(number_of_strings)  !< character array to convert
-        character(len=20) :: result_val(number_of_strings)       !< created string array
-
-        result_val = item_to_convert
-
-    end function convert
 end module m_waq_data_buffer
