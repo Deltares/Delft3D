@@ -2280,6 +2280,29 @@
             </file>
         </checks>
     </testCase>
+    <testCase name="e02_f006_c400_nesting_salinity_uxuyadvection" ref="dflowfm_nesting">
+        <path version="2026-06-16T11:06:22.097000">e02_dflowfm/f006_external_forcing/c400_nesting_salinity_uxuyadvection</path>
+        <maxRunTime>60.0</maxRunTime>
+        <checks>
+            <file name="small/output/TestFine_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceRelative="1e-7" />
+                </parameters>
+            </file>
+        </checks>
+    </testCase>
+    <testCase name="e02_f006_c401_katwijk_fixed" ref="dflowfm_nesting">
+        <path version="2026-06-29T09:15:37.635000">e02_dflowfm/f006_external_forcing/c401_katwijk_fixed</path>
+        <maxRunTime>6000.0</maxRunTime>
+        <checks>
+            <file name="c011_katwijkSmall_fixed_nchis_fixed/results/small_fixed_nchis_fixed_his.nc" type="netcdf">
+                <parameters>
+                    <parameter name="salinity" toleranceRelative="1e-7" />
+                    <parameter name="temperature" toleranceAbsolute="0.005" />
+                </parameters>
+            </file>            
+        </checks>
+    </testCase>
     <testCase name="e02_f008_c010_ws_bedlevel_asdefault" ref="dflowfm_default">
       <path version="2026-03-13T16:40:13.275000">e02_dflowfm/f008_network/c010_ws_bedlevel_asdefault</path>
       <maxRunTime>15000.0000000</maxRunTime>
@@ -9338,16 +9361,5 @@
           </parameters>
         </file>
       </checks>
-    </testCase>
-    <testCase name="e02_f006_c400_nesting_salinity_uxuyadvection" ref="dflowfm_nesting">
-        <path version="2026-06-16T11:06:22.097000">e02_dflowfm/f006_external_forcing/c400_nesting_salinity_uxuyadvection</path>
-        <maxRunTime>60.0</maxRunTime>
-        <checks>
-            <file name="small/output/TestFine_his.nc" type="netcdf">
-                <parameters>
-                    <parameter name="salinity" toleranceRelative="1e-7" />
-                </parameters>
-            </file>
-        </checks>
     </testCase>
   </testCases>
