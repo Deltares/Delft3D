@@ -1179,7 +1179,7 @@ contains
       real(dp), dimension(:), pointer :: valuesT1 !< values at time t1
       real(dp), dimension(:), allocatable :: valuesT !< values at time t
       integer :: istat !< allocation status
-      integer :: status !< status of undefined values check
+      logical :: status !< status of undefined values check
       integer :: i, j !< loop counters
       type(tEcField), pointer :: targetField !< Converter's result goes in here
       integer :: maxlay !< maximum number of layers (3D)
@@ -1322,7 +1322,7 @@ contains
 
                   do j = jmin, jmax
 
-                     if (associated(targetmask)) thenv
+                     if (associated(targetmask)) then
                         if (targetmask(j) == 0) then
                            cycle
                         end if
