@@ -278,6 +278,12 @@ contains
          call restore_au_q1_3D_for_1st_history_record()
       end if
 
+      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
+      if (is_error_at_any_processor(error)) then
+         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
+         return
+      end if
+
       call initialize_salinity_and_temperature_with_nudge_variables()
 
       if (jasal > OFF) then
@@ -288,12 +294,6 @@ contains
       end if
 
       call initialise_density_at_cell_centres()
-
-      call set_external_forcings(tstart_user, INITIALIZATION_PHASE, error)
-      if (is_error_at_any_processor(error)) then
-         call qnerror('Error occurred when setting external forcings.', ' ', ' ')
-         return
-      end if
 
       if (len_trim(md_restartfile) == 0) then
          if (ice_apply_pressure) then
