@@ -121,7 +121,7 @@ contains
    !> Test if any output is requested in the value string
    function is_output_requested_in_value_string(value_string) result(res)
       use m_statistical_output_types, only: SO_UNKNOWN, SO_NONE
-      character(*), value :: value_string !< The string provided as a value in the MDU file
+      character(*) :: value_string !< The string provided as a value in the MDU file
       logical :: res
 
       integer :: ierr, operation_type, moving_average_window
