@@ -507,7 +507,7 @@ subroutine sre_FLOW (time   ,dt1    ,steady ,iter   ,istep  ,itim,&
    &omqlat ,ibuf   ,lfrou  ,qtyp   ,indx   ,bicg   ,solbuf ,&
    &stdbq  ,nstdb                                          ,&
    &debug_wr                                               ,&
-   &fm1dimp                                                ,&
+   &fm1dimp                                                &
    &)
 !
    if (ker .eq. fatal) goto 1000

@@ -272,7 +272,7 @@ subroutine FLHYPA(time   ,iter   ,nbran  ,ngrid  ,branch ,typcr  ,&
    &waoft(1,7)     ,waoft(1,8)     ,waoft(1,9)     ,&
 !  <wf>
    &waoft(1,1)     ,juer   ,ker                    ,&
-   &fm1dimp                                        ,&
+   &fm1dimp                                        &
    &)
 
 !     FM1DIMP2DO: remove debug

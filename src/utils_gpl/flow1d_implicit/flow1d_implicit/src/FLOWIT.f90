@@ -395,7 +395,7 @@ subroutine FLOWIT(g      ,istep  ,time   ,dt1    ,steady ,iter   ,&
    &prslot  ,psltvr  ,waoft   ,cpa    ,rpa     ,alfab  ,&
    &tauwi   ,ksi     ,a1m     ,ker    ,dt1     ,theta2 ,&
    &exrstp  ,omalfa  ,omc     ,omr    ,omw             ,&
-   &fm1dimp                                            ,&
+   &fm1dimp                                            &
    &)
 !
 !     Debug variables FM1DIMP2DO: remove
