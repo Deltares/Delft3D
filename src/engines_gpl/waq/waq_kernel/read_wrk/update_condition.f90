@@ -90,7 +90,8 @@ contains
         integer(kind = int_wp) :: file_unit_list   (*)  ! Left as "assumed size"!
         integer(kind = int_wp) :: IWORK (*)             ! Ditto
         integer(kind = int_wp) :: IHARM (:), IPOINT(:)
-        real(kind = real_wp) :: HARMAT(:), FARRAY(:), RESULT(:), RECLST(:)
+        real(kind = real_wp)   :: HARMAT(:), FARRAY(:), RECLST(:)
+        real(kind = real_wp)   :: RESULT(*)             ! Left as "assumed size": sometimes one-dimensional, sometimes two-dimensional
         character(len = *) LUNTXT(*)
         character(len = 12)  CHLP
         LOGICAL       UPDATE, NEWSET, LSTREC, LREWIN
