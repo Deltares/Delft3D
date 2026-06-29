@@ -71,6 +71,7 @@ module m_longculverts_data
 
    integer, public :: nlongculverts !< Number of longculverts
    logical, public :: newculverts
+   logical, public :: only_longculvert_1D = .false. !< Whether all 1D and 1D2D netlinks belong to long culverts
 
 contains
 
