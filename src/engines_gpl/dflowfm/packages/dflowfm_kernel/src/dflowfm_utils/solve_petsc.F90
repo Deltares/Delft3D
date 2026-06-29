@@ -32,6 +32,8 @@
 #include "config.h"
 #endif
 
+#ifdef HAVE_PETSC
+
 module m_petsc
 #include <petsc/finclude/petscksp.h>
    use iso_c_binding, only: c_int32_t, c_int64_t, c_double
@@ -833,3 +835,5 @@ contains
       end if
    end subroutine killSolverPETSC
 end submodule m_solve_petsc_
+
+#endif
