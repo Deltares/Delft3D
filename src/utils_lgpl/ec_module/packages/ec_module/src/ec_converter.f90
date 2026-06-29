@@ -3640,6 +3640,8 @@ contains
                end if
 
                ! ===== operation =====
+
+               ! TODO: UNST-7626: support all operands via apply_operand() approach
                select case (connection%converterPtr%operandType)
 
                case (EC_OPERAND_REPLACE)
