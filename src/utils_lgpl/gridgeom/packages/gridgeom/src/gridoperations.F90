@@ -2159,7 +2159,11 @@ contains
       end do
    end subroutine ggeo_construct_netcelllin_from_netcellnod
 
-   elemental recursive subroutine INCELLS(XA, YA, KIN)
+   ! NOTE: ELEMENTAL implies PURE, and a PURE procedure may not have SAVE local
+   ! variables, so XH/YH are automatic (per-invocation) locals by definition.
+   ! The (previously added) RECURSIVE attribute was therefore redundant for that
+   ! purpose, and nvfortran rejects 'ELEMENTAL RECURSIVE' (NVFORTRAN-S-0460).
+   elemental subroutine INCELLS(XA, YA, KIN)
       use network_data
       use geometry_module, only: pinpok
       use m_missing, only: jins, dmiss
