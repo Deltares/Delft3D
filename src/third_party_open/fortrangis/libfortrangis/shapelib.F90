@@ -88,7 +88,7 @@ TYPE shpobject
   INTEGER :: nparts=0 !< number of parts (0 implies single part with no info)
   INTEGER,POINTER :: panpartstart(:)=>NULL() !< starting vertex of each part
   INTEGER,POINTER :: panparttype(:)=>NULL() !< part type (SHPP_RING if not SHPT_MULTIPATCH)
-  INTEGER :: nvertices !< number of vertices
+  INTEGER :: nvertices=0 !< number of vertices
   REAL(kind=c_double),POINTER :: padfx(:)=>NULL() !< x coordinates of vertices
   REAL(kind=c_double),POINTER :: padfy(:)=>NULL() !< y coordinates of vertices
   REAL(kind=c_double),POINTER :: padfz(:)=>NULL() !< z coordinates of vertices
@@ -104,11 +104,12 @@ TYPE shpobject
 END TYPE shpobject
 
 !TYPE(shpfileobject),PARAMETER :: shpfileobject_null = shpfileobject(0, 0)
-TYPE(shpobject),PARAMETER :: shpobject_null = shpobject(c_null_ptr, &
- 0, -1, 0, &
- NULL(), NULL(), 0, NULL(), NULL(), NULL(), NULL(), &
- 0.0_c_double, 0.0_c_double, 0.0_c_double, 0.0_c_double, &
- 0.0_c_double, 0.0_c_double, 0.0_c_double, 0.0_c_double)
+! Every component of shpobject now has a default initializer, so a plain
+! default-initialized module variable already holds the desired "null" value.
+! It is intentionally NOT a PARAMETER: nvfortran mis-counts the NULL() pointer
+! components when building a constant structure constructor (NVFORTRAN-S-0066),
+! whereas component default initialization works on all compilers.
+TYPE(shpobject) :: shpobject_null
 
 !> Interface to SUBROUTINEs for reading dbf attributes.
 !! The type of the attribute can be either INTEGER,
