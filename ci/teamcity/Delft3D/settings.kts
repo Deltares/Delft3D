@@ -101,7 +101,7 @@ project {
         id("Windows")
         name = "Windows"
 
-        buildType(WindowsBuildEnvironmentI24)
+        buildType(WindowsBuildEnvironment)
         buildType(WindowsTestEnvironment)
         buildType(WindowsCollectEnvironment)
         buildType(WindowsConanPackages)
@@ -112,7 +112,7 @@ project {
         buildType(WindowsUnitTest)
         buildType(WindowsBuildDflowfmInteracter)
         buildTypesOrder = arrayListOf(
-            WindowsBuildEnvironmentI24,
+            WindowsBuildEnvironment,
             WindowsTestEnvironment,
             WindowsCollectEnvironment,
             WindowsConanPackages,
