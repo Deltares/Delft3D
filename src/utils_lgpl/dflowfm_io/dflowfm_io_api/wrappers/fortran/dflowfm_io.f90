@@ -10,30 +10,30 @@ module dflowfm_io
         private
         type(c_ptr) :: handle = c_null_ptr
     contains
-        procedure :: create           => mdu_model_create_f
-        procedure :: destroy          => mdu_model_destroy_f
-        procedure :: has_valid_handle => mdu_model_has_valid_handle_f
-        procedure :: get_dummy_value  => mdu_model_get_dummy_value_f
-        procedure :: get_last_error   => mdu_model_get_last_error_f
-        procedure, private :: mdu_model_assign
-        generic :: assignment(=) => mdu_model_assign
-        final     :: mdu_model_finalizer
+        procedure :: create           => mdu_create_f
+        procedure :: destroy          => mdu_destroy_f
+        procedure :: has_valid_handle => mdu_has_valid_handle_f
+        procedure :: get_dummy_value  => mdu_get_dummy_value_f
+        procedure :: get_last_error   => mdu_get_last_error_f
+        procedure, private :: mdu_assign
+        generic :: assignment(=) => mdu_assign
+        final     :: mdu_finalizer
     end type MduModel
 
     interface
-        function c_mdu_document_create(out_handle) result(res) bind(C, name="mdu_document_create")
+        function c_mdu_create(out_handle) result(res) bind(C, name="mdu_create")
             import :: c_ptr, c_int32_t
             type(c_ptr), intent(out) :: out_handle
             integer(c_int32_t) :: res
         end function
 
-        function c_mdu_document_destroy(handle) result(res) bind(C, name="mdu_document_destroy")
+        function c_mdu_destroy(handle) result(res) bind(C, name="mdu_destroy")
             import :: c_ptr, c_int32_t
             type(c_ptr), intent(inout) :: handle
             integer(c_int32_t) :: res
         end function
 
-        function c_mdu_model_get_dummy_value(handle, out_value) result(res) bind(C, name="mdu_model_get_dummy_value")
+        function c_mdu_get_dummy_value(handle, out_value) result(res) bind(C, name="mdu_get_dummy_value")
             import :: c_ptr, c_int32_t
             type(c_ptr), value, intent(in) :: handle
             integer(c_int32_t), intent(out)    :: out_value
@@ -48,31 +48,31 @@ module dflowfm_io
 
 contains
 
-    subroutine mdu_model_create_f(self, result_code)
+    subroutine mdu_create_f(self, result_code)
         class(MduModel), intent(inout) :: self
         integer, intent(out) :: result_code
 
-        result_code = int(c_mdu_document_create(self%handle))
+        result_code = int(c_mdu_create(self%handle))
     end subroutine
 
-    function mdu_model_has_valid_handle_f(self) result(valid)
+    function mdu_has_valid_handle_f(self) result(valid)
         class(MduModel), intent(in) :: self
         logical :: valid
 
         valid = c_associated(self%handle)
     end function
 
-    subroutine mdu_model_get_dummy_value_f(self, value, result_code)
+    subroutine mdu_get_dummy_value_f(self, value, result_code)
         class(MduModel), intent(in) :: self
         integer, intent(out) :: value
         integer, intent(out) :: result_code
         integer(c_int32_t) :: c_value
 
-        result_code = int(c_mdu_model_get_dummy_value(self%handle, c_value))
+        result_code = int(c_mdu_get_dummy_value(self%handle, c_value))
         value = int(c_value)
     end subroutine
 
-    subroutine mdu_model_get_last_error_f(self, msg)
+    subroutine mdu_get_last_error_f(self, msg)
         class(MduModel), intent(in) :: self
         character(len=*), intent(out) :: msg
         type(c_ptr) :: cptr
@@ -96,21 +96,21 @@ contains
         end do
     end subroutine
 
-    subroutine mdu_model_destroy_f(self, result_code)
+    subroutine mdu_destroy_f(self, result_code)
         class(MduModel), intent(inout) :: self
         integer, intent(out) :: result_code
 
-        result_code = int(c_mdu_document_destroy(self%handle))
+        result_code = int(c_mdu_destroy(self%handle))
     end subroutine
 
-    subroutine mdu_model_finalizer(self)
+    subroutine mdu_finalizer(self)
         type(MduModel), intent(inout) :: self
         integer(c_int32_t) :: res
 
-        res = c_mdu_document_destroy(self%handle)
+        res = c_mdu_destroy(self%handle)
     end subroutine
 
-    subroutine mdu_model_assign(lhs, rhs)
+    subroutine mdu_assign(lhs, rhs)
         class(MduModel), intent(inout) :: lhs
         type(MduModel), intent(in) :: rhs
         error stop "ERROR: MduModel can't be copied or assigned"

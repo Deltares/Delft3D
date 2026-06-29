@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 
 namespace DFlowFM.IO.Native;
 
@@ -7,7 +7,7 @@ internal sealed class SafeMduHandle : SafeHandle
     public SafeMduHandle()
         : base(IntPtr.Zero, true)
     {
-        int result = NativeMduApi.mdu_document_create(out IntPtr ptr);
+        int result = NativeMduApi.mdu_create(out IntPtr ptr);
 
         if (result != 0)
         {
@@ -21,7 +21,7 @@ internal sealed class SafeMduHandle : SafeHandle
 
     protected override bool ReleaseHandle()
     {
-        int result = NativeMduApi.mdu_document_destroy(ref handle);
+        int result = NativeMduApi.mdu_destroy(ref handle);
         return result == 0;
     }
 }
