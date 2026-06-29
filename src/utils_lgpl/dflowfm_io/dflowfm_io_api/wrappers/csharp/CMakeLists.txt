@@ -5,6 +5,7 @@ add_custom_target(${CSHARP_PROJECT_NAME} ALL
     COMMAND dotnet build
         ${CSHARP_SOLUTION_FILE}
         --configuration $<IF:$<CONFIG:Debug>,Debug,Release>
+        -p:Platform="Any CPU"
         -p:OutputPath=${CMAKE_BINARY_DIR}/bin/${CSHARP_PROJECT_NAME}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Building C# solution ${CSHARP_PROJECT_NAME}"
@@ -16,6 +17,7 @@ add_test(NAME ${CSHARP_PROJECT_NAME}.Tests
     COMMAND dotnet test
         ${CSHARP_SOLUTION_FILE}
         --configuration $<IF:$<CONFIG:Debug>,Debug,Release>
+        -p:Platform="Any CPU"
         --no-build
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
