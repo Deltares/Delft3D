@@ -865,7 +865,7 @@ contains
       call tree_create(trim(filename), bnd_ptr)
       call prop_file('ini', trim(filename), bnd_ptr, istat)
       if (istat /= 0) then
-         call qnerror('Boundary external forcing file ', trim(filename), ' could not be read')
+         call qnerror('External forcing file ', trim(filename), ' could not be read.')
          return
       end if
 
