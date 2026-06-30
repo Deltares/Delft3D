@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "csumo_settings_reader.hpp"
+#include "connected_sinks_sources.hpp"
 #include "parsing_types.hpp"
 #include "NF2FF_reader.hpp"
 #include "pre_c_sumo_lib.hpp"
@@ -118,6 +119,8 @@ namespace pre_c_sumo
      */
     void convertNFToSourcesSinks(const CSumoSettingsReader& csumoSettings);
 
+    pre_c_sumo::ConnectedSinkSources convertNFtoConnectedSinkSources(const pre_c_sumo::CSumoSettingsReader& settings,
+                                                                     const std::vector<NF2FFReader>& readers);
     /**
      * @brief Send computed sources/sinks to the farfield model.
      *
@@ -129,35 +132,11 @@ namespace pre_c_sumo
     void sendSourcesSinksToFF(precice::Participant& participant, SourcesSinks& sources_sinks);
 
     /**
-     * @brief Convert NF sinks to farfield sinks.
-     *
-     * Converts NF sink information into the format required by the
-     * farfield component.
-     */
-    void convertNFSinksToFF();
-
-    /**
-     * @brief Convert NF intakes to farfield sinks.
-     *
-     * Converts NF intake information into the format required by the
-     * farfield component.
-     */
-    void convertNFIntakesToFF();
-
-    /**
-     * @brief Convert NF source definitions to farfield sources.
-     *
-     * Depending on whether a diffuser is modelled this will either
-     * process explicit source locations or build a diffuser model.
-     */
-    void convertNFSourcesToFF();
-
-    /**
      * @brief Query whether the diffuser is modelled explicitly.
      *
      * @return true if the diffuser is modelled, false otherwise.
      */
-    bool isDiffuserModelled();
+    bool isDiffuserModelled(const NF2FFReader& diffuser);
 
     /**
      * @brief Process explicit source locations from NF data.
