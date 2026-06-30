@@ -258,6 +258,37 @@ namespace ini::test
                                                std::make_pair("1234.567890", 1234.56789),
                                                std::make_pair("-1.2e+02", -120.0)));
 
+    class IniValueConverterFromStringFortranDoubleTest : public ::testing::TestWithParam<std::pair<std::string, double>>
+    {
+    };
+
+    TEST_P(IniValueConverterFromStringFortranDoubleTest, FromString_FortranFormattedDoubleString_ReturnsDoubleValue)
+    {
+        auto [value, expected] = GetParam();
+        EXPECT_DOUBLE_EQ(IniValueConverter::FromString<double>(value), expected);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringFortranDoubleTest,
+                             ::testing::Values(std::make_pair("1.234D+05", 1.234e5),
+                                               std::make_pair("1.234d+05", 1.234e5),
+                                               std::make_pair("1.234D-05", 1.234e-5),
+                                               std::make_pair("1.234d-05", 1.234e-5),
+                                               std::make_pair("-1.234D+05", -1.234e5), std::make_pair("5D3", 5e3),
+                                               std::make_pair("5d3", 5e3)));
+
+    class IniValueConverterFromStringInvalidFortranDoubleTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniValueConverterFromStringInvalidFortranDoubleTest,
+           FromString_InvalidFortranFormattedDoubleString_ThrowsInvalidArgument)
+    {
+        EXPECT_THROW(IniValueConverter::FromString<double>(GetParam()), std::invalid_argument);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidFortranDoubleTest,
+                             ::testing::Values("1.234D+05D", "DD", "1.2.3D5"));
+
     // -------------------------------------------------------------------------
     // FromString - float
     // -------------------------------------------------------------------------
@@ -295,6 +326,33 @@ namespace ini::test
                                                std::make_pair("1e3", 1000.0f), std::make_pair("2.5e-3", 0.0025f),
                                                std::make_pair("1234.567890", 1234.56789f),
                                                std::make_pair("-1.2e+02", -120.0f)));
+
+    class IniValueConverterFromStringFortranFloatTest : public ::testing::TestWithParam<std::pair<std::string, float>>
+    {
+    };
+
+    TEST_P(IniValueConverterFromStringFortranFloatTest, FromString_FortranFormattedFloatString_ReturnsFloatValue)
+    {
+        auto [value, expected] = GetParam();
+        EXPECT_FLOAT_EQ(IniValueConverter::FromString<float>(value), expected);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringFortranFloatTest,
+                             ::testing::Values(std::make_pair("1.5D2", 1.5e2f), std::make_pair("1.5d2", 1.5e2f),
+                                               std::make_pair("-3.25D-01", -3.25e-1f)));
+
+    class IniValueConverterFromStringInvalidFortranFloatTest : public ::testing::TestWithParam<std::string>
+    {
+    };
+
+    TEST_P(IniValueConverterFromStringInvalidFortranFloatTest,
+           FromString_InvalidFortranFormattedFloatString_ThrowsInvalidArgument)
+    {
+        EXPECT_THROW(IniValueConverter::FromString<float>(GetParam()), std::invalid_argument);
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromStringInvalidFortranFloatTest,
+                             ::testing::Values("1.5D2D", "DD", "1.2.3D5"));
 
     // -------------------------------------------------------------------------
     // FromString - time_point
@@ -687,6 +745,30 @@ namespace ini::test
                           std::make_pair("3.14 \n 2.71 \n 1.62", std::vector<double>{3.14, 2.71, 1.62}),
                           std::make_pair("0.1 0.2 0.3", std::vector<double>{0.1, 0.2, 0.3})));
 
+    class IniValueConverterFromMultiValueStringFortranDoubleTest
+        : public ::testing::TestWithParam<std::pair<std::string, std::vector<double>>>
+    {
+    };
+
+    TEST_P(IniValueConverterFromMultiValueStringFortranDoubleTest,
+           FromMultiValueString_FortranFormattedDoubleString_ReturnsDoubleValues)
+    {
+        auto [value, expected] = GetParam();
+        const std::vector<double> result = IniValueConverter::FromMultiValueString<double>(value);
+        ASSERT_EQ(result.size(), expected.size());
+        for (std::size_t i = 0; i < result.size(); ++i)
+        {
+            EXPECT_DOUBLE_EQ(result[i], expected[i]);
+        }
+    }
+
+    INSTANTIATE_TEST_SUITE_P(
+        IniValueConverterTest, IniValueConverterFromMultiValueStringFortranDoubleTest,
+        ::testing::Values(std::make_pair("1.234D+05 5.678D-02", std::vector<double>{1.234e5, 5.678e-2}),
+                          std::make_pair("1.234d+05\r\n5.678d-02", std::vector<double>{1.234e5, 5.678e-2}),
+                          std::make_pair("-1.234D+05 5D3 -3.25d-01", std::vector<double>{-1.234e5, 5e3, -3.25e-1}),
+                          std::make_pair("1.0D0 2.0E0 3.0", std::vector<double>{1.0, 2.0, 3.0})));
+
     // -------------------------------------------------------------------------
     // FromMultiValueString - float
     // -------------------------------------------------------------------------
@@ -737,6 +819,29 @@ namespace ini::test
                           std::make_pair("3.0 -4.5 5.0 2.1", std::vector<float>{3.0f, -4.5f, 5.0f, 2.1f}),
                           std::make_pair("1.0\n2.0\n3.0\n4.0", std::vector<float>{1.0f, 2.0f, 3.0f, 4.0f}),
                           std::make_pair("0.1 0.2 0.3 0.4 0.5", std::vector<float>{0.1f, 0.2f, 0.3f, 0.4f, 0.5f})));
+
+    class IniValueConverterFromMultiValueStringFortranFloatTest
+        : public ::testing::TestWithParam<std::pair<std::string, std::vector<float>>>
+    {
+    };
+
+    TEST_P(IniValueConverterFromMultiValueStringFortranFloatTest,
+           FromMultiValueString_FortranFormattedFloatString_ReturnsFloatValues)
+    {
+        auto [value, expected] = GetParam();
+        const std::vector<float> result = IniValueConverter::FromMultiValueString<float>(value);
+        ASSERT_EQ(result.size(), expected.size());
+        for (std::size_t i = 0; i < result.size(); ++i)
+        {
+            EXPECT_FLOAT_EQ(result[i], expected[i]);
+        }
+    }
+
+    INSTANTIATE_TEST_SUITE_P(IniValueConverterTest, IniValueConverterFromMultiValueStringFortranFloatTest,
+                             ::testing::Values(std::make_pair("1.5D2 -3.25d-01", std::vector<float>{1.5e2f, -3.25e-1f}),
+                                               std::make_pair("1.5d2\r\n2.5D1", std::vector<float>{1.5e2f, 2.5e1f}),
+                                               std::make_pair("5D3 1.0e2 -2.0",
+                                                              std::vector<float>{5e3f, 1.0e2f, -2.0f})));
 
     // -------------------------------------------------------------------------
     // FromMultiValueString - time_point

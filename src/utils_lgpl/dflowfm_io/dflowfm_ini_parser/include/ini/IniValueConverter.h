@@ -85,6 +85,10 @@ namespace ini
             {
                 return BoolFromString(trimmed);
             }
+            else if constexpr (std::is_floating_point_v<T>)
+            {
+                return FloatingPointFromString<T>(trimmed);
+            }
             else if constexpr (std::is_same_v<T, std::chrono::system_clock::time_point>)
             {
                 return TimePointFromString(trimmed);
@@ -163,6 +167,21 @@ namespace ini
         static bool BoolFromString(const std::string& value);
         static std::chrono::system_clock::time_point TimePointFromString(const std::string& value);
         static std::filesystem::path PathFromString(const std::string& value);
+
+        template <std::floating_point T>
+        static T FloatingPointFromString(const std::string& value)
+        {
+            // Fortran uses 'D'/'d' as the exponent marker (e.g. 1.234D+05).
+            // Replace it with 'e' so std::istringstream can parse it.
+            std::string normalized = value;
+            const std::size_t pos = normalized.find_first_of("dD");
+            if (pos != std::string::npos)
+            {
+                normalized[pos] = 'e';
+            }
+
+            return DefaultFromString<T>(normalized);
+        }
 
         template <typename T>
         static T DefaultFromString(const std::string& value)
