@@ -197,7 +197,7 @@ if (ierr==0) then
 
    call BMI_GET_VAR_SHAPE(dfm, string_to_char_array('zbndz'), xptr)  
    allocate(shapearray(MAXDIMS)) 
-   call c_f_pointer(xptr, shapearray)
+   call c_f_pointer(xptr, shapearray, (/MAXDIMS/))
    numbnd = shapearray(1)
    
    call BMI_GET_VAR_POINTER(dfm, string_to_char_array('ndx2d'), xptr)
