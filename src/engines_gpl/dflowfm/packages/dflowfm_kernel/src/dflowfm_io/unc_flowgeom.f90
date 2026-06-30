@@ -12,7 +12,7 @@
 !! indices back to the full-grid indices.
 !!
 module m_unc_flowgeom
-   use m_unstruc_netcdf_data, only: t_fm_flowgeom
+   use m_unstruc_netcdf_types, only: t_fm_flowgeom
 
    implicit none(type, external)
 
@@ -723,11 +723,7 @@ contains
    end subroutine build_flowgeom_1d
 
 !> Builds the complete flow geometry object for both 1D and 2D meshes.
-!! Delegates to build_flowgeom_2d and build_flowgeom_1d in order; the call site
-!! owns the t_fm_flowgeom object and receives a fully populated result.
-!! cell_mask covers all internal cells (1:ndxi): the 2D slice (1:ndx2d) is
-!! forwarded to build_flowgeom_2d and the 1D slice (ndx2d+1:ndxi) is forwarded
-!! to build_flowgeom_1d as the node mask.
+!! An optional polygon file can be provided to crop the geometry to a subset of the 1D and 2D meshes.
    function build_flowgeom(jabndnd, polygon_file) result(flowgeom)
       use m_flowgeom, only: ndx2d
       use m_pol_to_cellmask, only: cell_mask_from_polygon_file
