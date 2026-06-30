@@ -61,12 +61,12 @@ module m_1d_networkreader
    !in variables
    type(t_network),                             intent(inout) :: network
    type(t_ug_meshgeom),                         intent(in   ) :: meshgeom
-   character(len=*), allocatable, dimension(:), intent(in   ) :: branchids
-   character(len=*), allocatable, dimension(:), intent(in   ) :: branchlongnames
-   character(len=*), allocatable, dimension(:), intent(in   ) :: nodeids
-   character(len=*), allocatable, dimension(:), intent(in   ) :: nodelongnames
-   character(len=*), allocatable, dimension(:), intent(inout) :: gpsID
-   character(len=*), allocatable, dimension(:), intent(inout) :: gpsIDLongnames
+   character(len=:), allocatable, dimension(:), intent(in   ) :: branchids
+   character(len=:), allocatable, dimension(:), intent(in   ) :: branchlongnames
+   character(len=:), allocatable, dimension(:), intent(in   ) :: nodeids
+   character(len=:), allocatable, dimension(:), intent(in   ) :: nodelongnames
+   character(len=:), allocatable, dimension(:), intent(inout) :: gpsID
+   character(len=:), allocatable, dimension(:), intent(inout) :: gpsIDLongnames
    character(len=*),                            intent(in   ) :: network1dname
    character(len=*),                            intent(in   ) :: mesh1dname
    integer,                                     intent(in   ) :: nodesOnBranchVertices !< Whether or not (1/0) the input meshgeom itself already contains duplicate points on each connection node between multiple branches.
@@ -291,8 +291,8 @@ module m_1d_networkreader
    double precision,     allocatable, dimension(:), intent(inout) :: localGpsX
    double precision,     allocatable, dimension(:), intent(inout) :: localGpsY
    double precision,     allocatable, dimension(:), intent(inout) :: localOffsets
-   character(len=*),     allocatable, dimension(:), intent(inout) :: localGpsID
-   character(len=*),     allocatable, dimension(:), intent(in   ) :: idMeshNodesInNetworkNodes
+   character(len=:),     allocatable, dimension(:), intent(inout) :: localGpsID
+   character(len=:),     allocatable, dimension(:), intent(in   ) :: idMeshNodesInNetworkNodes
    integer,                                         intent(inout) :: gridPointsCount
    integer,                                         intent(in   ) :: ibran
    type(t_ug_meshgeom),                             intent(in   ) :: meshgeom
