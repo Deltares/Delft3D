@@ -1,6 +1,5 @@
 module m_unc_put_var_map
-use m_unstruc_netcdf_data, only: t_unc_timespace_id, t_fm_flowgeom
-use m_unc_flowgeom, only: flowgeom
+use m_unstruc_netcdf_data, only: t_unc_timespace_id, t_fm_flowgeom, flowgeom
 use io_ugrid, only: UG_NOTIMPLEMENTED, UG_INVALID_DATALOCATION
 use netcdf, only: nf90_put_var, nf90_inquire_variable, nf90_inquire_dimension
 
@@ -19,7 +18,7 @@ contains
       
       use dfm_error, only: dfm_noerr
       use fm_location_types, only: unc_loc_s
-      use m_unc_flowgeom, only: flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom
 
       implicit none
       integer, intent(in) :: ncid

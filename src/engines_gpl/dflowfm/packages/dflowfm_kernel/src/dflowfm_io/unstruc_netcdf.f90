@@ -13725,7 +13725,7 @@ contains
    subroutine unc_write_flowgeom_filepointer_ugrid(ncid, id_tsp, jabndnd, jafou, ja2D)
       use precision, only: dp
       use m_flowgeom, only: bl, bl_min, ba
-      use m_unc_flowgeom, only: flowgeom
+      use m_unstruc_netcdf_data, only: flowgeom
       use m_sferic
       use m_missing
       use netcdf

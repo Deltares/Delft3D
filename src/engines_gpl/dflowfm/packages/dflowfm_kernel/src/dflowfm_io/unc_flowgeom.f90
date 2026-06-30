@@ -16,8 +16,6 @@ module m_unc_flowgeom
 
    implicit none(type, external)
 
-   type(t_fm_flowgeom), public :: flowgeom !< global flow geometry object to be built by build_flowgeom_2d and build_flowgeom_1d.
-
 contains
 
 !> Returns the output index of a full-grid face in face_map_2D, or -999 if not found.
