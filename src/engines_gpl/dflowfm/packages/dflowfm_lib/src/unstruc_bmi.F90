@@ -195,7 +195,7 @@ contains
       character(kind=c_char), intent(in) :: c_att_name(MAXSTRLEN) !< Attribute name as C-delimited character string.
       character(kind=c_char), intent(out) :: c_att_value(MAXSTRLEN) !< Returned attribute value as C-delimited character string.
 
-      character(len=strlen(c_att_name)) :: att_name
+      character(len=MAXSTRLEN) :: att_name
       character(len=MAXSTRLEN) :: att_value
 
       ! Store the name
@@ -245,7 +245,7 @@ contains
 #endif
 
       character(kind=c_char), intent(in) :: c_config_file(MAXSTRLEN)
-      character(len=strlen(c_config_file)) :: config_file
+      character(len=MAXSTRLEN) :: config_file
 
       ! Extra local variables
       integer :: inerr ! number of the initialisation error
@@ -1463,7 +1463,7 @@ contains
       character(len=strlen(c_var_name)) :: tmp_var_name
       character(len=strlen(c_var_name)) :: varset_name, item_name, field_name !< For parsing compound variable names.
       character(kind=c_char), dimension(:), pointer :: c_value => null()
-      character(len=:), allocatable :: levels
+      character(len=MAXSTRLEN) :: levels
       character(len=10) :: threadsString = ' '
       integer :: i, k, ipos, n, ierr
 
@@ -1538,15 +1538,15 @@ contains
          levels = ''
          do i = 1, MAXSTRLEN
             if (c_value(i) == c_null_char) exit
-            levels = levels//c_value(i)
+            levels(i:i) = c_value(i)
          end do
          ipos = index(levels, ':')
          if (ipos > 0) then
             loglevel_StdOut = stringtolevel(levels(:ipos - 1))
-            loglevel_file = stringtolevel(levels(ipos + 1:))
+            loglevel_file = stringtolevel(trim(levels(ipos + 1:)))
          else
-            loglevel_StdOut = stringtolevel(levels)
-            loglevel_file = stringtolevel(levels)
+            loglevel_StdOut = stringtolevel(trim(levels))
+            loglevel_file = stringtolevel(trim(levels))
          end if
          call initMessaging(mdia)
          return
@@ -1683,16 +1683,26 @@ contains
          nearfield_mode = NEARFIELD_UPDATED
          return
       case ("sourcesinks/COSUMO/nf_const_operator_shape")
+#ifndef __NVCOMPILER
          call c_f_pointer(xptr, x_1d_int_ptr, [6])
          nf_numconst = x_1d_int_ptr(1)
          nf_namlen = x_1d_int_ptr(2)
          allocate (character(nf_namlen) :: nf_const_operator(nf_numconst))
+#else
+         ! nvfortran 26.3 ICEs on the deferred-length character pointer nf_const_operator.
+         call mess(LEVEL_ERROR, 'set_var: nf_const_operator is not supported in this build (nvfortran deferred-length character limitation).')
+#endif
          return
       case ("sourcesinks/COSUMO/nf_const_operator")
+#ifndef __NVCOMPILER
          call c_f_pointer(xptr, x_1d_char_ptr, [nf_numconst * nf_namlen])
          nf_const_operator = transfer(x_1d_char_ptr, nf_const_operator)
          ! Switch on nearfield
          nearfield_mode = NEARFIELD_UPDATED
+#else
+         ! nvfortran 26.3 ICEs on the deferred-length character pointer nf_const_operator.
+         call mess(LEVEL_ERROR, 'set_var: nf_const_operator is not supported in this build (nvfortran deferred-length character limitation).')
+#endif
          return
       case ("sourcesinks/COSUMO/nf_src_mom_shape")
          call c_f_pointer(xptr, x_1d_int_ptr, [6])
