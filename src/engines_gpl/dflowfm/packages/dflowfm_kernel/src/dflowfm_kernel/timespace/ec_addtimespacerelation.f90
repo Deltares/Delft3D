@@ -559,7 +559,7 @@ contains
       converterId = ecCreateConverter(ecInstancePtr)
 
       select case (str_tolower(trim(target_name)))
-      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1d', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreaklevelsandwidths', 'sourcesink_discharge', 'sourcesink_constituentdelta', 'bubblescreen_discharge')
+      case ('shiptxy', 'movingstationtxy', 'discharge_salinity_temperature_sorsin', 'pump', 'valve1d', 'damlevel', 'gateloweredgelevel', 'generalstructure', 'lateral_discharge', 'dambreaklevelsandwidths', 'sourcesink_discharge', 'sourcesink_constituent', 'sourcesink_constituentdelta', 'bubblescreen_discharge')
          ! for the FM 'target' arrays, the index is provided by the caller
          if (.not. present(targetIndex)) then
             message = 'Internal program error: missing targetIndex for quantity '''//trim(target_name)
