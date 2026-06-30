@@ -1394,14 +1394,15 @@ contains
             end if
 
             ! Try `{constituent}` first, and if we can't find that property try `{constituent}Delta` instead.
-            call prop_get(block_ptr, '', const_name_with_prefix, constituent_delta_file(i_const), is_read)
+            property_name = const_name_with_prefix
+            call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
             if (.not. is_read) then
                property_name = trim(const_name_with_prefix)//'Delta'
                call prop_get(block_ptr, '', property_name, constituent_delta_file(i_const), is_read)
             end if
 
             if (is_read) then
-               quantity_id = 'sourcesink_'//trim(const_name_with_prefix)//'Delta' ! New quantity name in .bc files
+               quantity_id = 'sourcesink_'//trim(property_name) ! New quantity name in .bc files
                !call resolvePath(filename, basedir) ! TODO!
                is_successful = adduniformtimerelation_objects(quantity_id, '', 'source sink', trim(sourcesink_id), trim(property_name), trim(constituent_delta_file(i_const)), source_sinks%num_total, &
                                                               1, source_sink_all_discharges(1 + i_const, :))
