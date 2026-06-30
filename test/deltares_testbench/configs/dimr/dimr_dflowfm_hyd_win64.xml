@@ -49,14 +49,11 @@
             <from>teamcity_artifacts/x64</from>
         </location>
     </program>
-    <program name="checkhydbal" addSearchPaths="false">
-      <path>thirdparty\checkhydbal\win64\checkhydbal.exe</path>
+    <program name="checkhydbal" addSearchPaths="true"  logOutputToFile="true">
+      <path>thirdparty/checkhydbal/win64/run_checkhydbal.bat</path>
     </program>
     <program name="waqmerge" addSearchPaths="false" logOutputToFile="true" >
       <path>data/engines/teamcity_artifacts/x64/bin/run_waqmerge.bat</path>
-    </program>
-    <program name="checkhydbal" addSearchPaths="false" logOutputToFile="true">
-      <path>thirdparty/checkhydbal/win64/checkhydbal.exe</path>
     </program>
     <program name="poi2asc" addSearchPaths="false" logOutputToFile="true">
       <path>thirdparty/poi2asc/win64/poi2asc.exe</path>
