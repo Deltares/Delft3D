@@ -38,7 +38,8 @@ submodule(fm_external_forcings) fm_external_forcings_init
 contains
 
    !> reads new external forcings file and makes required initialisations. Only to be called once as part of fm_initexternalforcings.
-   module subroutine init_new(external_force_file_name, iresult)
+   module subroutine init_new(iresult)
+      use m_unstruc_model_data, only: extfile_new_list
       use tree_data_types, only: tree_data_ptr
       use tree_structures, only: tree_data, tree_create, tree_destroy, tree_num_nodes, tree_count_nodes_byname, tree_get_name
       use messageHandling, only: warn_flush, err_flush, msgbuf, LEVEL_FATAL
@@ -52,7 +53,6 @@ contains
       use unstruc_messages, only: threshold_abort
 
       ! Parameters
-      character(len=*), intent(in) :: external_force_file_name !< file name for new external forcing boundary blocks
       integer, intent(inout) :: iresult !< integer error code. Intent(inout) to preserve earlier errors.
 
       ! Local variables
@@ -67,9 +67,8 @@ contains
       integer :: i_ext !< Index of the external forcing file in the list of external forcing files
       integer :: i_bubblescreen !< Loop index for bubblescreens within the .ext file.
       integer :: num_items_in_file
-      character(len=INI_VALUE_LEN) :: fnam, base_dir
+      character(len=INI_VALUE_LEN) :: fnam
       integer :: ib, ibqh
-      character(len=:), allocatable :: file_name
       integer, allocatable :: itpenzr(:), itpenur(:)
 
       integer :: num_laterals !< Total number of laterals in all external forcing files
@@ -77,7 +76,8 @@ contains
       integer :: bubblescreen_source_sinks !< Number of source-sinks in bubblescreen
       integer :: num_bubblescreens !< Total number of bubblescreens in all external forcing files
 
-      character(len=256), dimension(:), allocatable :: extforce_list !< List of external forcing files
+      character(len=256), dimension(:), allocatable :: file_names !< List of file names
+      character(len=256), dimension(:), allocatable :: base_dirs !< List of base directories
       integer, dimension(:), allocatable :: major !< Major version numbers of the external forcing files
 
       ! Initialization
@@ -86,28 +86,28 @@ contains
       num_source_sinks = 0
       num_bubblescreens = 0
 
-      extforce_list = [external_force_file_name]
-
-      allocate (bnd_ptrs(size(extforce_list)))
-      allocate (major(size(extforce_list)))
+      allocate (bnd_ptrs(size(extfile_new_list)))
+      allocate (major(size(extfile_new_list)))
+      allocate (file_names(size(extfile_new_list)))
+      allocate (base_dirs(size(extfile_new_list)))
 
       call init_registered_items()
       call build_itpenzr_and_itpenur(itpenzr, itpenur, num_items_in_file)
 
-
       ! First cycle, validate all external forcing files and add their contents to the bnd_ptrs list.
-      do i_ext = 1, size(extforce_list)
+      do i_ext = 1, size(extfile_new_list)
 
-         call validate_and_open_external_forcing_file(extforce_list(i_ext), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
+         call validate_and_open_external_forcing_file(extfile_new_list(i_ext), bnd_ptrs(i_ext)%node_ptr, major(i_ext), iresult)
          if (iresult /= DFM_NOERR) then
             cycle ! Skip this external forcing file if it could not be validated or opened.
          end if
 
+         call split_filename(file_names(i_ext), base_dirs(i_ext), fnam)
+
       end do
 
-
       ! Second cycle, count all bubblescreen blocks in all external forcing files to allocate the bubblescreens array.
-      do i_ext = 1, size(extforce_list)
+      do i_ext = 1, size(extfile_new_list)
          bnd_ptr => bnd_ptrs(i_ext)%node_ptr
 
          if (.not. associated(bnd_ptr)) then
@@ -119,10 +119,9 @@ contains
 
       call allocate_bubblescreens_array(num_bubblescreens)
 
-
       ! Third cycle, count laterals and sourcesink blocks, including bubblescreen source-sinks. Then allocate the lateral and source-sink arrays.
       i_bubblescreen = 0
-      do i_ext = 1, size(extforce_list)
+      do i_ext = 1, size(extfile_new_list)
          bnd_ptr => bnd_ptrs(i_ext)%node_ptr
 
          if (.not. associated(bnd_ptr)) then
@@ -132,30 +131,25 @@ contains
          num_laterals = num_laterals + tree_count_nodes_byname(bnd_ptr, 'lateral')
          num_source_sinks = num_source_sinks + tree_count_nodes_byname(bnd_ptr, 'sourcesink')
 
-         call initialize_bubblescreens(bnd_ptr, base_dir, file_name, i_bubblescreen, bubblescreen_source_sinks)
+         call initialize_bubblescreens(bnd_ptr, base_dirs(i_ext), file_names(i_ext), i_bubblescreen, bubblescreen_source_sinks)
          num_source_sinks = num_source_sinks + bubblescreen_source_sinks
       end do
 
       call allocate_laterals_and_source_sinks(num_laterals, num_source_sinks)
 
+      res = .true.
+
+      res = res .and. add_bubblescreen_source_sinks()
 
       ! Fourth cycle, read all external forcing files and initialize the boundary, lateral, spatial, and source-sink forcings.
-      do i_ext = 1, size(extforce_list)
+      do i_ext = 1, size(extfile_new_list)
          bnd_ptr => bnd_ptrs(i_ext)%node_ptr
 
          if (.not. associated(bnd_ptr)) then
             cycle ! Skip this external forcing file if it could not be validated or opened.
          end if
 
-         res = .true.
-
-         file_name = trim(extforce_list(i_ext))
-
-         call split_filename(file_name, base_dir, fnam) ! Remember base dir of input file, to resolve all refenced files below w.r.t. that base dir.
-
          num_items_in_file = tree_num_nodes(bnd_ptr)
-
-         res = res .and. add_bubblescreen_source_sinks()
 
          ib = 0
          ibqh = 0
@@ -170,33 +164,32 @@ contains
                ! General block, was already read.
 
             case ('boundary')
-               res = res .and. init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh)
+               res = res .and. init_boundary_forcings(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name, itpenzr, itpenur, ib, ibqh)
 
             case ('lateral')
-               res = res .and. init_lateral_forcings(block_ptr, base_dir, i, major(i_ext))
+               res = res .and. init_lateral_forcings(block_ptr, base_dirs(i_ext), i, major(i_ext))
 
             case ('spatial', 'meteo', 'parameter', 'initial')
-               res = res .and. init_spatial_fields(block_ptr, base_dir, file_name, group_name)
+               res = res .and. init_spatial_fields(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name)
 
             case ('sourcesink')
-               res = res .and. init_sourcesink_forcings(block_ptr, base_dir, file_name, group_name)
+               res = res .and. init_sourcesink_forcings(block_ptr, base_dirs(i_ext), file_names(i_ext), group_name)
 
             case ('bubblescreen')
                ! Empty, since bubblescreens are already initialized.
 
             case default ! Unrecognized item in an ext block
                ! res remains unchanged: Not an error (support commented/disabled blocks in ext file)
-               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_name, ''': [', group_name, ']. Ignoring this block.'
+               write (msgbuf, '(5a)') 'Unrecognized block in file ''', file_names(i_ext), ''': [', group_name, ']. Ignoring this block.'
                call warn_flush()
             end select
          end do
 
          threshold_abort = initial_threshold_abort
 
-         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_name)//'''')
+         call check_file_tree_for_deprecated_keywords(bnd_ptr, deprecated_ext_keywords, istat, prefix='While reading '''//trim(file_names(i_ext))//'''')
 
       end do
-
 
       if (allocated(itpenzr)) then
          deallocate (itpenzr)
@@ -208,14 +201,12 @@ contains
 
       call finalize_lateral_forcings()
 
-
       ! Fifth cycle, destroy all trees of boundary blocks to free memory.
-      do i_ext = 1, size(extforce_list)
+      do i_ext = 1, size(extfile_new_list)
          if (associated(bnd_ptrs(i_ext)%node_ptr)) then
             call tree_destroy(bnd_ptrs(i_ext)%node_ptr)
          end if
       end do
-
 
       if (res) then
          iresult = DFM_NOERR

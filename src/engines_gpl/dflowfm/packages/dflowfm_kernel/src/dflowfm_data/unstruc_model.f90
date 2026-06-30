@@ -1698,6 +1698,21 @@ contains
 ! External forcings
       call prop_get(md_ptr, 'external forcing', 'ExtForceFile', md_extfile, success)
       call prop_get(md_ptr, 'external forcing', 'ExtForceFileNew', md_extfile_new, success)
+
+      if (len_trim(md_extfile_new) > 0) then
+         call strsplit(md_extfile_new, 1, extfile_new_list, 1)
+
+         if (len_trim(md_inifieldfile) > 0) then
+            call realloc(extfile_new_list, size(extfile_new_list) + 1, fill=' ', keepExisting=.true.)
+            extfile_new_list(size(extfile_new_list)) = md_inifieldfile
+         end if
+      else
+         if (len_trim(md_inifieldfile) > 0) then
+            allocate(extfile_new_list(1))
+            extfile_new_list(1) = md_inifieldfile
+         end if
+      end if
+
       call prop_get(md_ptr, 'external forcing', 'Rainfall', jarain, success)
       if (jarain > 0) then
          jaqin = 1
