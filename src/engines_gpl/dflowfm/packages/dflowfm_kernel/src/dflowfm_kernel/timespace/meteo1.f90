@@ -4102,17 +4102,25 @@ contains
 
    !> Translate FM's meteo1 'operand' enum to EC's 'operand' enum.
    subroutine operand_fm_to_ec(operand, ec_operand)
-      use timespace_parameters, only: FM_OVERRIDE => OPERAND_OVERRIDE, FM_ADD => OPERAND_ADD
+      use timespace_parameters, only: OPERAND_OVERRIDE, OPERAND_OVERRIDE_IF_MISSING, OPERAND_ADD, OPERAND_MULTIPLY, OPERAND_MINIMUM, OPERAND_MAXIMUM
       integer, intent(in) :: operand
       integer, intent(out) :: ec_operand
       
       select case (operand)
-      case (FM_OVERRIDE)
-         ec_operand = operand_replace
-      case (FM_ADD)
-         ec_operand = operand_add
+      case (OPERAND_OVERRIDE)
+         ec_operand = EC_OPERAND_REPLACE
+      case (OPERAND_OVERRIDE_IF_MISSING)
+         ec_operand = EC_OPERAND_REPLACE_IF_MISSING
+      case (OPERAND_ADD)
+         ec_operand = EC_OPERAND_ADD
+      case (OPERAND_MULTIPLY)
+         ec_operand = EC_OPERAND_MULTIPLY
+      case (OPERAND_MINIMUM)
+         ec_operand = EC_OPERAND_MINIMUM
+      case (OPERAND_MAXIMUM)
+         ec_operand = EC_OPERAND_MAXIMUM
       case default
-         ec_operand = operand_undefined
+         ec_operand = EC_OPERAND_UNDEFINED
       end select
    end subroutine operand_fm_to_ec
 
