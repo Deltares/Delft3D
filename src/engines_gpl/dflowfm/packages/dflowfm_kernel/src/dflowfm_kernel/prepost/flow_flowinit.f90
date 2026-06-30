@@ -33,8 +33,6 @@ module m_flow_flowinit
    use m_statisticsini, only: statisticsini
    use m_setzminmax, only: setzminmax
    use m_flow_settidepotential, only: flow_settidepotential
-   use m_set_saltem_nudge, only: set_saltem_nudge
-   use m_set_nudgerate, only: set_nudgerate
    use m_setvelocityfield, only: setvelocityfield
    use m_setupwslopes, only: setupwslopes
    use m_setstruclink, only: setstruclink
@@ -283,8 +281,6 @@ contains
          call qnerror('Error occurred when setting external forcings.', ' ', ' ')
          return
       end if
-
-      call initialize_salinity_and_temperature_with_nudge_variables()
 
       if (jasal > OFF) then
          call fill_constituents_with_salinity()
@@ -1572,26 +1568,6 @@ contains
       end if
 
    end subroutine initialize_salinity_temperature_on_boundary
-
-!> initialize salinity and temperature with nudge variables
-   subroutine initialize_salinity_and_temperature_with_nudge_variables()
-      use m_flowparameters, only: janudge, jainiwithnudge
-      use m_nudge
-
-      implicit none
-
-      if (janudge == ON) then ! and here last actions on sal/tem nudging, before we set rho
-         call set_nudgerate()
-         if (jainiwithnudge > OFF) then
-            call set_saltem_nudge()
-            if (jainiwithnudge == 2) then
-               janudge = OFF
-               deallocate (nudge_temperature, nudge_salinity, nudge_rate, nudge_time)
-            end if
-         end if
-      end if
-
-   end subroutine initialize_salinity_and_temperature_with_nudge_variables
 
 !> fill_constituents_with_salinity
    subroutine fill_constituents_with_salinity()
