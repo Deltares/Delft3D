@@ -11,12 +11,16 @@
     <Description>.NET library for reading, writing, validating and migrating D-Flow FM model files.</Description>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DFlowFM_IO_NativeLibrary Condition="'$(DFlowFM_IO_NativeLibrary)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\build\$(Configuration)\dflowfm_io_api.dll</DFlowFM_IO_NativeLibrary>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\..\build\DFlowFM.IO.NET.targets" Visible="false">
       <Pack>true</Pack>
       <PackagePath>build\</PackagePath>
     </None>
-    <None Include="..\..\..\..\..\build\$(Configuration)\dflowfm_io_api.dll" Visible="false">
+    <None Include="$(DFlowFM_IO_NativeLibrary)" Visible="false">
       <Pack>true</Pack>
       <PackagePath>runtimes\win-x64\native\%(Filename)%(Extension)</PackagePath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

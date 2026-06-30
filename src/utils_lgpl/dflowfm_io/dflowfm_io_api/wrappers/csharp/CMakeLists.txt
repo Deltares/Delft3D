@@ -7,6 +7,7 @@ add_custom_target(${CSHARP_PROJECT_NAME} ALL
         --configuration $<IF:$<CONFIG:Debug>,Debug,Release>
         -p:Platform="Any CPU"
         -p:OutputPath=${CMAKE_BINARY_DIR}/bin/${CSHARP_PROJECT_NAME}
+        -p:DFlowFM_IO_NativeLibrary=$<TARGET_FILE:dflowfm_io_api>
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Building C# solution ${CSHARP_PROJECT_NAME}"
 )
