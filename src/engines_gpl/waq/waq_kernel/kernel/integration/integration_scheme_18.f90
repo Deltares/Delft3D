@@ -233,7 +233,7 @@ contains
                         a(iwdmp:), substance_i, 1)
 
                 ! fill the diagonal of the matrix, with conc-array and closure error
-                call fill_matrix_set_diagonal_steady_state(num_cells, num_substances_total, num_boundary_conditions, substance_i, gm_diag(1, ith), &
+                call fill_matrix_set_diagonal_steady_state(num_cells, num_substances_total, num_boundary_conditions, substance_i, gm_diag(1:, ith), &
                         a(ivol2:), a(iconc:))
 
                 ! build rest of matrix like in option 16
@@ -242,25 +242,25 @@ contains
                         j(ixpnt:), nddim, nvdim, j(idpnw:), j(ivpnw:), &
                         a(iarea:), a(iflow:), a(ileng:), a(idisp:), a(idnew:), &
                         a(ivnew:), substance_i, intopt, ilflag, fast_solver_arr_size, &
-                        gm_amat(1, ith), j(imat:), rowpnt, gm_diag(1, ith), gm_diac(1:, ith), &
+                        gm_amat(1:, ith), j(imat:), rowpnt, gm_diag(1:, ith), gm_diac(1:, ith), &
                         iscale, fmat, tmat, iknmkv)
 
                 ! initial guess : take rhs / diagonal
                 call copy_derivatives_boundaries_to_rhs_gmres (num_cells, num_substances_transported, num_substances_total, num_boundary_conditions, substance_i, &
-                        a(iderv:), a(iboun:), gm_rhs(1, ith), gm_diac(1:, ith), gm_sol (1, ith))
+                        a(iderv:), a(iboun:), gm_rhs(1:, ith), gm_diac(1:, ith), gm_sol (1:, ith))
 
                 ! solve linear system of equations
                 ! note that RHS is in A(IDERV:) for steady state otpions
-                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1, ith), gm_sol (1, ith), num_fast_solver_vectors, gm_work(1, ith), &
-                        num_cells + num_boundary_conditions, gm_hess(1, ith), num_fast_solver_vectors + 1, iter, tol, &
-                        fast_solver_arr_size, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
-                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1, ith), iexseg (:, ith), &
+                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1:, ith), gm_sol (1:, ith), num_fast_solver_vectors, gm_work(1:, ith), &
+                        num_cells + num_boundary_conditions, gm_hess(1:, ith), num_fast_solver_vectors + 1, iter, tol, &
+                        fast_solver_arr_size, gm_amat(1:, ith), j(imat:), gm_diag(1:, ith), rowpnt, &
+                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1:, ith), iexseg (:, ith), &
                         file_unit_list(19), litrep)
 
                 ! copy solution for this substance into concentration array, note that the array for
                 ! segment dumps is not filled yet
                 call copy_steady_state_solution_to_concentration_array(num_cells, num_substances_total, substance_i, 1, a(iconc:), &
-                        gm_sol(1, ith), a(imas2:), a(idmps:), intopt, j(isdmp:))
+                        gm_sol(1:, ith), a(imas2:), a(idmps:), intopt, j(isdmp:))
             end do
 
             ! mass balance

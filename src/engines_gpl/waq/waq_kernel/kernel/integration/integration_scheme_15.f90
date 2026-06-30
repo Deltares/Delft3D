@@ -422,32 +422,32 @@ contains
 
                 ! make flow and dispersion arrays
                 call create_substance_dependent_flow_and_diffusion_array(substance_i, num_substances_transported, num_exchanges, num_exchanges_u_dir, num_exchanges_v_dir, &
-                        a(iarea:), a(iflow:), flowtot(1, ith), nvdim, j(ivpnw:), &
-                        a(ivnew:), a(idisp:), disptot(1, ith), nddim, j(idpnw:), &
+                        a(iarea:), a(iflow:), flowtot(1:, ith), nvdim, j(ivpnw:), &
+                        a(ivnew:), a(idisp:), disptot(1:, ith), nddim, j(idpnw:), &
                         a(idnew:), mixlen)
 
                 ! do the transport itself, fill matrix, scale diagonal
                 call fill_matrix_hz_upwind_diff_vl_upwind_diff(idt, num_cells, a(ivol2:), num_boundary_conditions, num_exchanges, &
-                        j(ixpnt:), flowtot(1, ith), disptot(1, ith), gm_diag(1, ith), iscale, &
-                        gm_diac(1:, ith), fast_solver_arr_size, gm_amat(1, ith), rowpnt, fmat, &
+                        j(ixpnt:), flowtot(1:, ith), disptot(1:, ith), gm_diag(1:, ith), iscale, &
+                        gm_diac(1:, ith), fast_solver_arr_size, gm_amat(1:, ith), rowpnt, fmat, &
                         tmat)
 
                 ! compute RHS (substance after substance)
                 call fill_rhs_for_gmres_solver(num_cells, num_boundary_conditions, num_substances_transported, num_substances_total, substance_i, &
                         idt, a(iconc:), a(iderv:), a(ivol:), a(iboun:), &
-                        gm_rhs(1, ith), gm_diac(1:, ith), gm_sol(1, ith))
+                        gm_rhs(1:, ith), gm_diac(1:, ith), gm_sol(1:, ith))
 
                 ! solve linear system of equations
-                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1, ith), gm_sol (1, ith), num_fast_solver_vectors, gm_work(1, ith), &
-                        num_cells + num_boundary_conditions, gm_hess(1, ith), num_fast_solver_vectors + 1, iter, tol, &
-                        fast_solver_arr_size, gm_amat(1, ith), j(imat:), gm_diag(1, ith), rowpnt, &
-                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1, ith), iexseg (:, ith), &
+                call sgmres(num_cells + num_boundary_conditions, gm_rhs (1:, ith), gm_sol (1:, ith), num_fast_solver_vectors, gm_work(1:, ith), &
+                        num_cells + num_boundary_conditions, gm_hess(1:, ith), num_fast_solver_vectors + 1, iter, tol, &
+                        fast_solver_arr_size, gm_amat(1:, ith), j(imat:), gm_diag(1:, ith), rowpnt, &
+                        num_layers, ioptpc, num_boundary_conditions, gm_trid(1:, ith), iexseg (:, ith), &
                         file_unit_list(19), litrep)
 
                 ! mass balance of transport and copy of solution in the concentration array
                 call calculate_mass_balance_copy_sol_to_concentration(substance_i, num_substances_transported, num_substances_total, num_cells, a(iconc:), &
-                        gm_sol (1, ith), num_boundary_conditions, a(iboun:), num_exchanges, j(ixpnt:), &
-                        flowtot(1, ith), disptot(1, ith), a(imas2:), ndmpq, j(iqdmp:), &
+                        gm_sol (1:, ith), num_boundary_conditions, a(iboun:), num_exchanges, j(ixpnt:), &
+                        flowtot(1:, ith), disptot(1:, ith), a(imas2:), ndmpq, j(iqdmp:), &
                         a(idmpq:), iknmkv, idt)
             end do
 
