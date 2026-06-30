@@ -520,7 +520,7 @@ void parameterInterface::write(string filename)
     // xml output
     wofstream xmlFile;
 #ifdef _WIN32
-    xmlFile.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>));
+    xmlFile.imbue(std::locale(std::locale{}, new std::codecvt_utf8<wchar_t, 0x10ffff, std::generate_header>));
 #endif
     xmlFile.open(filename.c_str(), ios::out | ios::trunc);
 

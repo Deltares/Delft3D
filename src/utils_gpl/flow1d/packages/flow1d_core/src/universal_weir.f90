@@ -382,7 +382,7 @@ module m_Universal_Weir
       fr = cu / fuast
       rhsc = -rhsc + fr * ustru
       
-      call furu_iter(fum, rum, s1m2, s1m1, u1m, qm, aum, fr, cu, rhsc, dxdt, 0d0, 0d0, 0d0, 0d0)
+      call furu_iter(fum, rum, s1m2, s1m1, u1m, aum, fr, cu, rhsc, dxdt, 0d0, 0d0, 0d0, 0d0)
 
       qm = aum * u1m
       

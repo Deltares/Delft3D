@@ -123,7 +123,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c081_generalstructure_door_closing_at_sill_v2" ref="dimr_trunk">
-            <path version="2026-03-16T12:49:56.724000">e105_dflowfm-drtc/f01_general/c081_generalstructure_door_closing_at_sill_v2</path>
+            <path version="2026-05-13T06:49:52.646000">e105_dflowfm-drtc/f01_general/c081_generalstructure_door_closing_at_sill_v2</path>
             <checks>
                 <file name="dflowfm/output/t2_his.nc" type="NETCDF">
                     <parameters>
@@ -155,7 +155,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f01_c083_generalstructure_lowering_closed_door_v2" ref="dimr_trunk">
-            <path version="2026-03-16T12:51:02.055000">e105_dflowfm-drtc/f01_general/c083_generalstructure_lowering_closed_door_v2</path>
+            <path version="2026-05-13T06:50:02.271000">e105_dflowfm-drtc/f01_general/c083_generalstructure_lowering_closed_door_v2</path>
             <checks>
                 <file name="dflowfm/output/t4_his.nc" type="NETCDF">
                     <parameters>
@@ -171,7 +171,7 @@
             </checks>
         </testCase>
         <testCase name="e105_f04_c103_orifice_crestLevel_TimeController" ref="dimr_trunk">
-            <path version="2025-10-16T07:21:06.237000">e105_dflowfm-drtc/f04_1D2D/c103_orifice_crestLevel_TimeController</path>
+            <path version="2026-05-13T06:50:31.263000">e105_dflowfm-drtc/f04_1D2D/c103_orifice_crestLevel_TimeController</path>
             <maxRunTime>20.0</maxRunTime>
             <checks>
               <file name="dflowfm/output/FlowFM_his.nc" type="netCDF">

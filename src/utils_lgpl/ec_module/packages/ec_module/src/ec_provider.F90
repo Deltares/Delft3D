@@ -2127,7 +2127,7 @@ contains
          end if
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2146,7 +2146,7 @@ contains
          nr_fourier_items = ecFileReaderGetNumberOfItems(instancePtr, fileReaderId)
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_fourier) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_passthrough) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2187,7 +2187,7 @@ contains
          ItemIDList(targetIndex) = magnitude
          ! Initialize the new Converter.
          if (.not. (ecConverterSetType(instancePtr, subconverterId, convType_uniform) .and. &
-                    ecConverterSetOperand(instancePtr, subconverterId, operand_replace_element) .and. &
+                    ecConverterSetOperand(instancePtr, subconverterId, EC_OPERAND_REPLACE_ELEMENT) .and. &
                     ecConverterSetInterpolation(instancePtr, subconverterId, interpolate_timespace) .and. &
                     ecConverterSetElement(instancePtr, subconverterId, targetIndex))) return
          ! Construct a new Connection.
@@ -2452,7 +2452,7 @@ contains
 
       ! Initialize the new Converter.
       if (.not. (ecConverterSetType(instancePtr, converterId, convType_uniform))) return
-      if (.not. (ecConverterSetOperand(instancePtr, converterId, operand_replace_element))) return
+      if (.not. (ecConverterSetOperand(instancePtr, converterId, EC_OPERAND_REPLACE_ELEMENT))) return
       if (.not. (ecConverterSetInterpolation(instancePtr, converterId, interpolate_time_extrapolation_ok))) return
       if (.not. (ecConverterSetElement(instancePtr, converterId, targetIndex))) return
 

@@ -23,9 +23,6 @@
 !  are registered trademarks of Stichting Deltares, and remain the property of
 !  Stichting Deltares. All rights reserved.
 
-!
-!
-
 !> This module contains the Ec-module's enumerations and constants.
 !! @author arjen.markus@deltares.nl
 !! @author adri.mourits@deltares.nl
@@ -34,7 +31,7 @@
 module m_ec_parameters
    use precision
 
-   implicit none
+   implicit none(type, external)
 
    integer, parameter :: maxNameLen = 256
    integer, parameter :: maxFileNameLen = 256
@@ -146,11 +143,15 @@ module m_ec_parameters
    integer, parameter :: ztype_z = 1 !< z (absolute) coordinates
    !
    ! enumeration for operand types
-   integer, parameter :: operand_undefined = 0
-   integer, parameter :: operand_add = 1
-   integer, parameter :: operand_replace = 2
-   integer, parameter :: operand_replace_element = 3
-   integer, parameter :: operand_add_element = 4
+   integer, parameter :: EC_OPERAND_UNDEFINED = 0 !< Invalid operand set.
+   integer, parameter :: EC_OPERAND_ADD = 1 !< Add provided value to the target's existing value.
+   integer, parameter :: EC_OPERAND_REPLACE = 2 !< Replace the target's existing value with the provided value.
+   integer, parameter :: EC_OPERAND_REPLACE_ELEMENT = 3
+   integer, parameter :: EC_OPERAND_ADD_ELEMENT = 4
+   integer, parameter :: EC_OPERAND_REPLACE_IF_MISSING = 5 !< Replace the target's existing value if it is missing.
+   integer, parameter :: EC_OPERAND_MULTIPLY = 6 !< Multiply the target's existing value by the provided value.
+   integer, parameter :: EC_OPERAND_MINIMUM = 7 !< Set the target's value to the minimum of the existing and provided values.
+   integer, parameter :: EC_OPERAND_MAXIMUM = 8 !< Set the target's value to the maximum of the existing and provided values.
    !
    ! enumeration for tEcConverter types
    integer, parameter :: convType_undefined = 0
@@ -218,5 +219,87 @@ module m_ec_parameters
    integer, parameter :: BC_FTYPE_ASCII = 1   !< ASCII BC file
    integer, parameter :: BC_FTYPE_NETCDF = 2   !< NETCDF BC file
    !------------------------ BC-header related parameters ----------------------------------
+
+contains
+
+   !> Converts a string representation of an operand to its corresponding enumeration.
+   pure function ec_operand_string_to_enum(operand_str) result(operand_enum)
+      use string_module, only: str_tolower
+
+      ! Parameters
+      character(len=*), intent(in) :: operand_str !< string representation of the operand
+      integer :: operand_enum !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, etc.)
+
+      select case (str_tolower(trim(operand_str)))
+
+      case ("override")
+         operand_enum = EC_OPERAND_REPLACE
+
+      case ("overrideelement")
+         operand_enum = EC_OPERAND_REPLACE_ELEMENT
+
+      case ("overrideifmissing")
+         operand_enum = EC_OPERAND_REPLACE_IF_MISSING
+
+      case ("add")
+         operand_enum = EC_OPERAND_ADD
+
+      case ("addelement")
+         operand_enum = EC_OPERAND_ADD_ELEMENT
+
+      case ("multiply")
+         operand_enum = EC_OPERAND_MULTIPLY
+
+      case ("minimum")
+         operand_enum = EC_OPERAND_MINIMUM
+
+      case ("maximum")
+         operand_enum = EC_OPERAND_MAXIMUM
+
+      case default
+         operand_enum = EC_OPERAND_UNDEFINED
+
+      end select
+
+   end function ec_operand_string_to_enum
+
+   !> Converts an operand enumeration to its corresponding string representation.
+   pure function ec_operand_enum_to_string(operand_enum) result(operand_str)
+      ! Parameters
+      integer, intent(in) :: operand_enum !< operand type (EC_OPERAND_REPLACE, EC_OPERAND_ADD, EC_OPERAND_MULTIPLY, etc.)
+      character(len=:), allocatable :: operand_str !< string representation of the operand
+
+      select case (operand_enum)
+
+      case (EC_OPERAND_REPLACE)
+         operand_str = "override"
+
+      case (EC_OPERAND_REPLACE_ELEMENT)
+         operand_str = "overrideElement"
+
+      case (EC_OPERAND_REPLACE_IF_MISSING)
+         operand_str = "overrideIfMissing"
+
+      case (EC_OPERAND_ADD)
+         operand_str = "add"
+
+      case (EC_OPERAND_ADD_ELEMENT)
+         operand_str = "addElement"
+      
+      case (EC_OPERAND_MULTIPLY)
+         operand_str = "multiply"
+
+      case (EC_OPERAND_MINIMUM)
+         operand_str = "minimum"
+
+      case (EC_OPERAND_MAXIMUM)
+         operand_str = "maximum"
+
+      case default
+         operand_str = "unknown"
+
+      end select
+
+   end function ec_operand_enum_to_string
 
 end module m_ec_parameters
