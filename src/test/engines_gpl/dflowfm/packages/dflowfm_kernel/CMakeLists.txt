@@ -39,7 +39,8 @@ if(UNIX)
                             waq_process
                             waq_utils_c
                             waq_utils_f
-                            dflowfm_kernel)
+                            dflowfm_kernel
+                            test_helpers)
 
 
     target_link_libraries(${executable_name} PRIVATE
@@ -85,6 +86,7 @@ if(WIN32)
                          waq_utils_f
                          interacter_stub
                          dflowfm_kernel
+                         test_helpers
 )
 target_link_libraries(${executable_name} PRIVATE ${oss_dependencies})
 
