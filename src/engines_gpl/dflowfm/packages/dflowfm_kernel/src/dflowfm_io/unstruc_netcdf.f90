@@ -18215,6 +18215,7 @@ contains
                   istru = network%sts%pumpIndices(i)
                   pstru => network%sts%struct(istru)
                   pstru%pump%current_capacity = tmpvar(i)
+                  pstru%pump%capacity = tmpvar(i)
                end do
             end if
 
