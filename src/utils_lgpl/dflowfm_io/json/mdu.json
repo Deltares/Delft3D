@@ -28,9 +28,6 @@
                     "description": "File type. Do not edit this.",
                     "enum_values": {
                         "modelDef": "model definition file"
-                    },
-                    "validation": {
-                        "is_required": true
                     }
                 },
                 {

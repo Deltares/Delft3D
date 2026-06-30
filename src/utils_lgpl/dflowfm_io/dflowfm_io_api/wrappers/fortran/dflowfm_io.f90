@@ -371,7 +371,9 @@ contains
         type(c_ptr) :: cptr
 
         result_code = int(c_mdu_save_to_string(self%handle, cptr))
-        data = c_string_to_f(cptr)
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+            data = c_string_to_f(cptr)
+        end if
     end subroutine
 
     !---------------------------------------------------------------------------
@@ -416,7 +418,9 @@ contains
         type(c_ptr) :: cptr
 
         result_code = int(c_mdu_get_string(self%handle, f_to_c_string(key), cptr))
-        value = c_string_to_f(cptr)
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+            value = c_string_to_f(cptr)
+        end if
     end subroutine
 
     subroutine mdu_get_path_f(self, key, value, result_code)
@@ -427,7 +431,9 @@ contains
         type(c_ptr) :: cptr
 
         result_code = int(c_mdu_get_path(self%handle, f_to_c_string(key), cptr))
-        value = c_string_to_f(cptr)
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+            value = c_string_to_f(cptr)
+        end if
     end subroutine
 
     subroutine mdu_get_datetime_f(self, key, epoch, result_code)
@@ -462,7 +468,9 @@ contains
         integer(c_int64_t) :: c_size
 
         result_code = int(c_mdu_get_string_list(self%handle, f_to_c_string(key), list_ptr, c_size))
-        values = c_string_array_to_f(list_ptr, c_size)
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+            values = c_string_array_to_f(list_ptr, c_size)
+        end if
     end subroutine
 
     subroutine mdu_get_path_list_f(self, key, values, result_code)
@@ -474,7 +482,9 @@ contains
         integer(c_int64_t) :: c_size
 
         result_code = int(c_mdu_get_path_list(self%handle, f_to_c_string(key), list_ptr, c_size))
-        values = c_string_array_to_f(list_ptr, c_size)
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS) then
+            values = c_string_array_to_f(list_ptr, c_size)
+        end if
     end subroutine
 
     subroutine mdu_get_double_list_f(self, key, values, result_code)
@@ -487,7 +497,7 @@ contains
         real(c_double), pointer :: fptr(:)
 
         result_code = int(c_mdu_get_double_list(self%handle, f_to_c_string(key), list_ptr, c_size))
-        if (c_associated(list_ptr) .and. c_size > 0) then
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS .and. c_associated(list_ptr) .and. c_size > 0) then
             call c_f_pointer(list_ptr, fptr, [int(c_size)])
             values = fptr
         else
@@ -608,7 +618,7 @@ contains
         integer :: i
 
         result_code = int(c_mdu_get_issue_list(self%handle, list_ptr, c_size))
-        if (c_associated(list_ptr) .and. c_size > 0) then
+        if (result_code == DFLOWFM_IO_RESULT_SUCCESS .and. c_associated(list_ptr) .and. c_size > 0) then
             call c_f_pointer(list_ptr, c_issues, [int(c_size)])
             allocate(issues(int(c_size)))
             do i = 1, int(c_size)
