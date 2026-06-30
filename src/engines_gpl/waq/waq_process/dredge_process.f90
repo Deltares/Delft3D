@@ -38,14 +38,14 @@ contains
 
       ! declaration of the arguments
 
-      real(kind=real_wp) :: process_space_real(*) !I/O Process Manager System Array, window of routine to process library
-      real(kind=real_wp) :: fl(*) ! O  Array of fluxes made by this process in mass/volume/time
-      integer(kind=int_wp) :: ipoint(*) ! I  Array of pointers in process_space_real to get and store the data
-      integer(kind=int_wp) :: increm(*) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
+      real(kind=real_wp) :: process_space_real(:) !I/O Process Manager System Array, window of routine to process library
+      real(kind=real_wp) :: fl(:) ! O  Array of fluxes made by this process in mass/volume/time
+      integer(kind=int_wp) :: ipoint(:) ! I  Array of pointers in process_space_real to get and store the data
+      integer(kind=int_wp) :: increm(:) ! I  Increments in IPOINT for segment loop, 0=constant, 1=spatially varying
       integer(kind=int_wp) :: num_cells ! I  Number of computational elements in the whole model schematisation
       integer(kind=int_wp) :: noflux ! I  Number of fluxes, increment in the FL array
-      integer(kind=int_wp) :: iexpnt(4, *) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
-      integer(kind=int_wp) :: iknmrk(*) ! I  Active-Inactive, Surface-water-bottom, see manual for use
+      integer(kind=int_wp) :: iexpnt(:,:) ! I  From, To, From-1 and To+1 segment numbers of the exchange surfaces
+      integer(kind=int_wp) :: iknmrk(:) ! I  Active-Inactive, Surface-water-bottom, see manual for use
       integer(kind=int_wp) :: num_exchanges_u_dir ! I  Nr of exchanges in 1st direction, only horizontal dir if irregular mesh
       integer(kind=int_wp) :: num_exchanges_v_dir ! I  Nr of exchanges in 2nd direction, num_exchanges_u_dir+num_exchanges_v_dir gives hor. dir. reg. grid
       integer(kind=int_wp) :: num_exchanges_z_dir ! I  Nr of exchanges in 3rd direction, vertical direction, pos. downward

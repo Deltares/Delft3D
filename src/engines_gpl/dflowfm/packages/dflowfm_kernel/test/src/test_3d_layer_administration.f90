@@ -23,6 +23,7 @@ contains
       logical, target :: ice_apply_pressure_target
       real(kind=dp), parameter :: normalized_layer_thickness = 1.0_dp
       real(kind=dp), parameter :: bottom_area = 1.0_dp
+      integer :: i
 
       ! Test set-up
       call realloc(zws, number_of_boundary_points * (number_of_layers + 1), fill=0.0_dp)
@@ -59,7 +60,7 @@ contains
       ! Check results
       call f90_expect_near(hs, s0, tolerance, "water depth is not consistent with water level")
       call f90_expect_near(vol1, &
-                           [(bottom_area*normalized_layer_thickness*new_water_level, integer :: i=1, number_of_boundary_points * (number_of_layers + 1))], &
+                           [(bottom_area*normalized_layer_thickness*new_water_level, i=1, number_of_boundary_points * (number_of_layers + 1))], &
                            tolerance, "cell volume is not consistent with water level")
       call f90_expect_near(zws(2), s0(1), tolerance, "top layer interface is not consistent with water level")
 
