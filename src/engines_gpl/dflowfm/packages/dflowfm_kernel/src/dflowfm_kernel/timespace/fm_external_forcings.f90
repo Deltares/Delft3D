@@ -850,7 +850,7 @@ contains
       real(kind=dp) :: rrtolb ! Local, optional boundary tolerance value.
       real(kind=dp) :: width1D ! Local, optional custom 1D boundary width
       real(kind=dp) :: blDepth ! Local, optional custom boundary bed level depth below initial water level
-
+      
       integer :: i
       integer :: num_items_in_file
       logical :: file_ok
@@ -953,6 +953,7 @@ contains
                   call processexternalboundarypoints(quantity, location_file, filetype, return_time, nx, kce, numz, numu, nums, numtm, numsd, numt, numuxy, numn, num1d2d, numqh, numw, numtr, numsf, rrtolrel=1.0_dp, tfc=transformcoef, width1D=width1D, blDepth=blDepth)
                end if
                num_bc_ini_blocks = num_bc_ini_blocks + 1
+           
             end if
 
             file_ok = file_ok .and. group_ok
@@ -1359,6 +1360,9 @@ contains
          end if
          success = ec_addtimespacerelation(qid, xbndu, ybndu, kdu, kx, filename, filetype, method, operand, xy2bndu, forcingfile=forcing_file, targetindex=targetindex)
 
+   
+      
+      
       else if (nbndu > 0 .and. qid == 'velocitybnd') then
          pzmin => zminmaxu(1:nbndu)
          pzmax => zminmaxu(nbndu + 1:2 * nbndu)
@@ -1886,7 +1890,7 @@ contains
 
       integer :: ierr
       integer :: k, L, LF, KB, KBI, N, K2, iad, numnos, isf, mx, itrac
-      integer, parameter :: N4 = 6
+      integer, parameter :: N4 = 7
       character(len=256) :: rec
       integer :: tmp_nbndu, tmp_nbndt, tmp_nbndn
 
@@ -2098,7 +2102,7 @@ contains
             kbndu(4, k) = itpeu(k)
             kbndu(5, k) = itpenu(k)
             kbndu(6, k) = ftpet(k) ! riemann relaxation time
-
+            kbndu(7, k) = 0        ! factor for multiplification of discharge boundaries 
             lnxbnd(Lf - lnxi) = itpenu(k)
 
             do n = 1, nd(kbi)%lnx
@@ -3143,5 +3147,79 @@ contains
       end if
 
    end subroutine allocatewindarrays
+   
+   subroutine det_sign_discharge(pliFile,facdis)
+     use m_filez,            only: oldfil, doclose
+     use m_polygon
+     use m_reapol,           only: reapol
+     use m_missing
+     use m_GlobalParameters, only: INDTP_All
+     use m_find_flownode,    only: find_nearest_flownodes
+     use m_flowgeom,         only: xz, yz
+     implicit none
+  
+      character(len=*), intent(in) :: pliFile
+      integer         , intent(out):: facdis
+      
+      integer                        :: mpli, i_first, i_last, i_bndpnt, jakdtree 
+      real(kind=dp)                  :: xpli_centre, ypli_centre, xbnd_centre, ybnd_centre, dist, distmin, vx,vy, wx, wy,cross    
+
+      character(len=4), dimension(1) :: tmpname
+      integer         , dimension(1) :: kbnd_centre
+      real(kind=dp)   , dimension(1) :: x_tmp, y_tmp   
+      
+      ! Read the boundary pli
+      call oldfil(mpli, pliFile)
+      call reapol(mpli, 0)
+      call doclose(mpli)
+      
+      ! determine centre point of boundary pli 
+      i_first = floor(npl/2.0_dp)
+      i_last  = i_first
+      if (mod(npl,2) == 0)  i_last = i_first + 1
+      xpli_centre = (xpl(i_first) + xpl(i_last))/2.0_dp
+      ypli_centre = (ypl(i_first) + ypl(i_last))/2.0_dp
+      
+      ! Determine closest boundary point (probably more ellegant to use find_nearest_flownode, for now keep it simple)
+      tmpname(1)      = 'dummy'
+      x_tmp(1)        = xpli_centre
+      y_tmp(1)        = ypli_centre
+      kbnd_centre(1)  = 0
+      jakdtree        = 0
+      call find_nearest_flownodes(1, x_tmp, y_tmp, tmpname(1),kbnd_centre(1), jakdtree, 1, INDTP_ALL)
+      ! looks like point found is mirrored point, ik mirrorod point is left, sign = 1, if mirrored point is right, sign = -1
+      xbnd_centre = xz(kbnd_centre(1))
+      ybnd_centre = yz(kbnd_centre(1))
+      
+      ! distmin = sqrt((xbnd(1) - xpli_centre)**2 + (ybnd(1) - ypli_centre)**2)
+      ! xbnd_centre = xbnd(1)
+      ! ybnd_centre = ybnd(1)
+      ! do i_bndpnt = 2, size(xbnd)
+      !   dist = sqrt((xbnd(i_bndpnt) - xpli_centre)**2 + (ybnd(i_bndpnt) - ypli_centre)**2)
+      !   if (dist < distmin) then
+      !       distmin = dist 
+      !       xbnd_centre = xbnd(i_bndpnt)
+      !       ybnd_centre = ybnd(i_bndpnt)
+      !   end if
+      !end do
+      
+      ! Determine cross product of pli and centre point bnd
+      ! orientation vector pli
+      vx = xpl(i_first + 1) - xpl(i_first)
+      vy = ypl(i_first + 1) - ypl(i_first)
+      ! orientation vector from centre bnd point to firts pli point
+      wx = xbnd_centre - xpl(i_first)
+      wy = ybnd_centre - ypl(i_first)
+      ! cross product
+      cross = (vx*wy) - (vy*wx)
+      
+      ! cross > 0 ==> Model right of pli or obove pli
+      if (cross < 0.0_dp) then
+         facdis = -1
+      else if (cross > 0.0_dp) then 
+         facdis = 1
+      end if
+
+   end subroutine det_sign_discharge
 
 end module fm_external_forcings

@@ -191,6 +191,7 @@ module m_ec_typedefs
       integer :: nLayer = -1 !< Number of vertical layers, default single layer
       integer :: nVars = 0 !< Number of variables
       character(len=maxNameLen), allocatable, dimension(:) :: tsid !< list of timeseries identifiers
+      character(len=maxNameLen), allocatable, dimension(:) :: tsid_q !< list of timeseries identifiers for dischrge cross sections
       integer :: tsidvarid = -1 !< var_id for the timeseries ID variable
       integer :: tsiddimid = -1 !< dim_id for the timeseries IDs coordinate
       integer :: timevarid = -1 !< var_id for the designated time variable

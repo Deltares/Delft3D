@@ -289,6 +289,7 @@ contains
 
          !Original:  !zbndun = zbndu( (n-1)*kmxd + 1 )
          if (itpbn == 4) then ! dischargebnd
+            ! TK_Temp: probably not right place but here ensure for nested models inflow is postive 
             zbndun = zbndq(n)
          else if (itpbn == 5) then ! absgenbc
             zbndun = u1(LL) ! set in xbeach_absgen_bc

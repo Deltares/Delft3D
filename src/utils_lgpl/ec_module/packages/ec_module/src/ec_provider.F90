@@ -1897,7 +1897,7 @@ contains
             if (strcmpi(quantityname     ,'salinitybnd'             )) quantityname = 'salinity'
             if (strcmpi(quantityname     ,'temperaturebnd'          )) quantityname = 'temperature'
             if (strcmpi(quantityname     ,'uxuyadvectionvelocitybnd')) quantityname = 'x_velocity'
-   
+            if (strcmpi(quantityname     ,'dischargebnd'            )) quantityname = 'cross_section_discharge'
             
          else
             ! Old existing nc files 
@@ -1930,11 +1930,16 @@ contains
          ! plipoint labels read from the third column in the pli-file. Currently this goes wrong if in the test third-column labels are not unique
          if (.not. allocated(plipointlbls(i)%s)) then
             write (cnum, '(i4.4)') i
-            plipointlbl = polyline_name//'_'//cnum ! using polyline_name from tekal-block
+            plipointlbl = polyline_name//'_'//cnum ! using polyline_name from tekal- 
             has_label = .false.
          else
             plipointlbl = trim(plipointlbls(i)%s)
             has_label = .true.
+         end if
+         
+         ! TK_Temp: if it is a discharge from the history file, remove the pli point number
+         if (strcmpi(quantityname,'CROSS_SECTION_DISCHARGE') ) then
+              plipointlbl = plipointlbl (1:len(plipointlbl) - 5)
          end if
 
          if (.not. ecProviderInitializeBCBlock(InstancePtr, bcBlockId, fileReaderPtr%tframe%k_refdate, fileReaderPtr%tframe%k_timezone, fileReaderPtr%tframe%k_timestep_unit, &

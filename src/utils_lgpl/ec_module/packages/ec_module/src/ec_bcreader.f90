@@ -75,8 +75,10 @@ contains
     integer, optional,             intent(out)     :: iostat
     character(len=*), optional,    intent(in)      :: funtype
 
+    real(kind=hp)                                  :: factor    
     integer(kind=8)                                :: fhandle
     integer                                        :: nrVar
+    character(len=20)                              :: fileName
     
     success = .false.
     bc%qname = quantityName
@@ -919,6 +921,8 @@ contains
        else
           BCPtr%nctimndx = BCPtr%nctimndx + 1
           time_steps = ecSupportThisTimeToMJD(fileReaderPtr%tframe, ec_timesteps(1))
+          ! TK_temp: for discharge boundaries, factor can be -1 (detailled model left of pli)
+          values = values*BCPtr%quantity%factor
        endif
     case default
        call set_ec_message("Invalid filetype set for file: "//trim(bcPtr%fname)//' (internal EC-error)')
@@ -1098,5 +1102,5 @@ end function ecBCBlockFree1dArray
        endif
     enddo
   end subroutine sortndx
-
+ 
 end module m_ec_bcreader

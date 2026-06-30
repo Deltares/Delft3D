@@ -165,6 +165,7 @@ contains
 
       if (item_dischargebnd /= ec_undef_int) then
          success = ec_gettimespacevalue(ecInstancePtr, item_dischargebnd, irefdate, tzone, tunit, time)
+         zbndq = zbndq*kbndu(7,:)
          if (.not. success) then
             goto 888
          end if

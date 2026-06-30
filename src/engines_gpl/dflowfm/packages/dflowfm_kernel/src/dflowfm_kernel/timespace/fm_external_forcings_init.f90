@@ -237,7 +237,7 @@ contains
    !> reads boundary blocks from new external forcings file and makes required initialisations
    function init_boundary_forcings(block_ptr, base_dir, file_name, group_name, itpenzr, itpenur, ib, ibqh) result(res)
       use tree_data_types, only: tree_data
-      use fm_external_forcings_data, only: filetype, qhpliname
+      use fm_external_forcings_data, only: filetype, qhpliname,kbndu
       use timespace_parameters, only: NODE_ID, OPERAND_OVERRIDE, OPERAND_ADD, OPERAND_UNKNOWN, convert_legacy_operand_string_to_integer
       use timespace_data, only: WEIGHTFACTORS, POLY_TIM, SPACEANDTIME, getmeteoerror
       use tree_structures, only: tree_get_name, tree_get_data_string
@@ -260,9 +260,11 @@ contains
       character(len=INI_VALUE_LEN) :: location_file, quantity, forcing_file, property_name, property_value
       type(tree_data), pointer :: key_value_ptr
       character(len=300) :: error_message
-      integer :: operand
-      logical :: is_successful
-      integer :: method, num_items_in_block, j
+      integer       :: operand, ibndu,facdis
+      
+
+      logical       :: is_successful
+      integer       :: method, num_items_in_block, j
 
       res = .true.
 
@@ -369,6 +371,19 @@ contains
                else
                   is_successful = addtimespacerelation_boundaries(quantity, location_file, filetype=filetype, method=method, &
                                                                   operand=operand, forcing_file=forcing_file)
+                  ! TK_temp: Determine sign needed for discharge boundaries from history file
+                  if (quantity == 'dischargebnd') then
+                     facdis = 1
+                     if (index(trim(forcing_file)//'|', '_his.nc|') > 0 ) then
+                        call det_sign_discharge(location_file,facdis)
+                     end if
+                     ! fill kbndu(7,:) with multiplification discharge boundaries
+                     do ibndu = 1, size(kbndu,2)
+                        if (kbndu(5,ibndu) == ib) then
+                            kbndu(7,ibndu) = facdis
+                        end if
+                     end do
+                 end if
                end if
                res = res .and. is_successful ! Remember any previous errors.
                operand = OPERAND_UNKNOWN

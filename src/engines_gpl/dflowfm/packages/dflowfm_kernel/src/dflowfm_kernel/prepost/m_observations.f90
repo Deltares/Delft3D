@@ -52,7 +52,6 @@ module m_observations
    end interface
 
    public :: read_moving_stations
-
 contains
 
 !> (re)initialize valobs and set pointers for observation stations
@@ -1087,4 +1086,5 @@ contains
       
        call doclose(mpli)
    end subroutine loadObservations_from_pli
+      
 end module m_observations
