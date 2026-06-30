@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DFlowFM_IO_NativeLibrary Condition="'$(DFlowFM_IO_NativeLibrary)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\build\$(Configuration)\dflowfm_io_api.dll</DFlowFM_IO_NativeLibrary>
+    <DFlowFM_IO_NativeLibrary Condition="'$(DFlowFM_IO_NativeLibrary)' == ''">$(MSBuildThisFileDirectory)..\..\..\..\..\**\dflowfm_io_api.dll</DFlowFM_IO_NativeLibrary>
   </PropertyGroup>
 
   <ItemGroup>

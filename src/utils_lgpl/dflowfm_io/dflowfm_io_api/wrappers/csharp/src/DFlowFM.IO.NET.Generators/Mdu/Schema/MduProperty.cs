@@ -13,6 +13,9 @@ internal sealed class MduProperty
     [JsonPropertyName("value_type")]
     public string ValueType { get; set; } = "";
 
+    [JsonPropertyName("unit")]
+    public string? Unit { get; set; }
+
     [JsonPropertyName("enum_values")]
     public Dictionary<string, string> EnumValues { get; set; } = new();
 }

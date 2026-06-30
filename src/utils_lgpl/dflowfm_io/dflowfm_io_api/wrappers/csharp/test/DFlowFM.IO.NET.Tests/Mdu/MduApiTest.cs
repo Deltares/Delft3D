@@ -17,7 +17,7 @@ public class MduApiTest
 
         api.Dispose();
 
-        Assert.DoesNotThrow(() => api.Dispose());
+        Assert.DoesNotThrow(api.Dispose);
     }
 
     [Test]
@@ -25,7 +25,7 @@ public class MduApiTest
     {
         using MduApi api = new();
 
-        Assert.Throws<InvalidOperationException>(() => api.LoadFromFile("nonexistent_file.mdu"));
+        Assert.That(() => api.LoadFromFile("nonexistent_file.mdu"), Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]

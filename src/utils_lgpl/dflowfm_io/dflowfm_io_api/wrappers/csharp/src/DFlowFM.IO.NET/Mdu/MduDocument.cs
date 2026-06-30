@@ -14,6 +14,18 @@ public sealed partial class MduDocument : IDisposable
     /// </summary>
     public IssueReport Report { get; private set; } = IssueReport.Empty;
 
+    /// <summary>
+    /// Gets or sets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// </summary>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
+    /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
+    public object this[string key]
+    {
+        get => GetProperty(key);
+        set => SetProperty(key, value);
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -56,5 +68,97 @@ public sealed partial class MduDocument : IDisposable
     public string SaveToString()
     {
         return _api.SaveToString();
+    }
+
+    /// <summary>
+    /// Gets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// </summary>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <returns>The property value.</returns>
+    /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
+    /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
+    public object GetProperty(string key)
+    {
+        MduPropertySchema schema = GetPropertySchema(key);
+
+        return schema.ValueType switch
+        {
+            MduValueType.Int => _api.GetInt(key),
+            MduValueType.Bool => _api.GetBool(key),
+            MduValueType.Double => _api.GetDouble(key),
+            MduValueType.String => _api.GetString(key),
+            MduValueType.Path => _api.GetPath(key),
+            MduValueType.DateTime => _api.GetDateTime(key),
+            MduValueType.Enum => _api.GetEnum(key),
+            MduValueType.DoubleList => _api.GetDoubleList(key),
+            MduValueType.StringList => _api.GetStringList(key),
+            MduValueType.PathList => _api.GetPathList(key),
+            _ => throw new NotSupportedException(
+                $"Value type '{schema.ValueType}' is not supported.")
+        };
+    }
+
+    /// <summary>
+    /// Gets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// </summary>
+    /// <typeparam name="T">The type of the property value.</typeparam>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <returns>The property value.</returns>
+    /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
+    /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
+    public T GetProperty<T>(string key)
+    {
+        return (T)GetProperty(key);
+    }
+
+    /// <summary>
+    /// Sets a property value by its fully-qualified key (e.g. "geometry.netfile").
+    /// </summary>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <param name="value">The value to assign.</param>
+    /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
+    /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
+    public void SetProperty(string key, object value)
+    {
+        MduPropertySchema schema = GetPropertySchema(key);
+
+        switch (schema.ValueType)
+        {
+            case MduValueType.Int: _api.SetInt(key, (int)value); break;
+            case MduValueType.Bool: _api.SetBool(key, (bool)value); break;
+            case MduValueType.Double: _api.SetDouble(key, (double)value); break;
+            case MduValueType.String: _api.SetString(key, (string)value); break;
+            case MduValueType.Path: _api.SetPath(key, (string)value); break;
+            case MduValueType.DateTime: _api.SetDateTime(key, (DateTime)value); break;
+            case MduValueType.Enum: _api.SetEnum(key, (int)value); break;
+            case MduValueType.DoubleList: _api.SetDoubleList(key, (IEnumerable<double>)value); break;
+            case MduValueType.StringList: _api.SetStringList(key, (IEnumerable<string>)value); break;
+            case MduValueType.PathList: _api.SetPathList(key, (IEnumerable<string>)value); break;
+            default:
+                throw new NotSupportedException(
+                    $"Value type '{schema.ValueType}' is not supported.");
+        }
+    }
+
+    /// <summary>
+    /// Gets the schema for the property with the given fully-qualified key.
+    /// </summary>
+    /// <param name="key">The fully-qualified property key.</param>
+    /// <returns>The property schema.</returns>
+    /// <exception cref="ArgumentException">When <paramref name="key" /> is null or whitespace.</exception>
+    /// <exception cref="KeyNotFoundException">When <paramref name="key" /> is not a known property.</exception>
+    public static MduPropertySchema GetPropertySchema(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            throw new ArgumentException("The property key must not be null or whitespace.", nameof(key));
+        }
+
+        if (!MduSchema.TryGetProperty(key, out MduPropertySchema? schema) || schema is null)
+        {
+            throw new KeyNotFoundException($"Unknown MDU property key '{key}'.");
+        }
+
+        return schema;
     }
 }

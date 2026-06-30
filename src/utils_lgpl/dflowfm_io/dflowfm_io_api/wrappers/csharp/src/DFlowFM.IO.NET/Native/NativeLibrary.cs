@@ -32,17 +32,17 @@ internal static class NativeLibrary
 
     private sealed class DllSearchDirectoryScope : IDisposable
     {
-        private readonly string oldDirectory;
+        private readonly string _oldDirectory;
 
         public DllSearchDirectoryScope(string directory)
         {
-            oldDirectory = GetCurrentDirectory();
+            _oldDirectory = GetCurrentDirectory();
             SetDllDirectory(directory);
         }
 
         public void Dispose()
         {
-            SetDllDirectory(oldDirectory);
+            SetDllDirectory(_oldDirectory);
         }
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
