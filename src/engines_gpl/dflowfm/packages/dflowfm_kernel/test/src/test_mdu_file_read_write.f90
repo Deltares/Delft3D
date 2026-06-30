@@ -38,6 +38,7 @@ contains
       use m_partitioninfo, only: jampi
       use ifport, only: CHANGEDIRQQ
       use m_resetfullflowmodel, only: resetFullFlowModel
+      use m_unstruc_model_data, only: extfile_new_list
 
       character(len=1024) :: tm_md_obsfile
       character(len=1024) :: tm_md_crsfile
@@ -66,6 +67,7 @@ contains
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when writing MDU file.')
 
       call resetFullFlowModel()
+      deallocate(extfile_new_list) ! Deallocate extfile_new_list to re-read the MDU file without errors
       call readMDUFile('test_output.mdu', ierr)
       call f90_assert_eq(ierr, DFM_NOERR, 'Error when re-reading MDU file.')
 
