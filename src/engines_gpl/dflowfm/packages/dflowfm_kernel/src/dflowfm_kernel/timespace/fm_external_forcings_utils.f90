@@ -156,7 +156,9 @@ contains
 
    !> Convert quantity (from .ext file) to constituent name (split in generic base_quantity and specific constituent_name).
    !! If the original_quantity does not involve consituents, then the passed base_quantity is unchanged (and empty constituent name).
+   !! The quantity can have a postfix 'Delta', but this is optional:
    !! For example: 'sourcesink_salinityDelta' -> 'sourcesink_constituentDelta', 'salinity'.
+   !! Or:          'sourcesink_salinity' -> 'sourcesink_constituent', 'salinity'.
    !!
    !! This subroutine currently only covers source sinks, because they are the only external forcings that generalize on
    !! constituents. Other external forcings are handled in get_tracername, get_sedfracname, etc.
